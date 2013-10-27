@@ -1,0 +1,51 @@
+#!/usr/bin/env node
+'use strict';
+
+var controlServer = require('../lib/controlServer'),
+    cli = require('../lib/cli');
+
+function usage() {
+    console.log("Usage: mb <command> [--port <port>] [--pidfile <pidfile>]\n");
+    console.log("where <command> is one of:");
+    console.log("\tstart, stop, restart");
+}
+
+function error(message) {
+    console.log(message + "\n");
+    usage();
+    process.exit(1);
+}
+
+var serverAt = function (options) {
+    return {
+        start: function () {
+            var fs = require('fs'),
+                server = controlServer.create(options.port);
+
+            fs.writeFileSync(options.pidfile, process.pid.toString());
+            process.on('SIGINT', function () {
+                fs.unlinkSync(options.pidfile);
+                server.close();
+            process.exit();
+            });
+        }
+    };
+};
+
+try {
+    var defaultOptions = { port: 3000, pidfile: 'mb.pid' },
+        commandLine = cli.parse(process.argv.slice(2), defaultOptions),
+        server = serverAt(commandLine.options);
+
+    switch (commandLine.command) {
+    case 'start':
+        server.start();
+        break;
+    default:
+        error("Invalid command '" + commandLine.command + "'.");
+        break;
+    }
+}
+catch (err) {
+    error(err.message);
+}
