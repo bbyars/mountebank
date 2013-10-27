@@ -1,11 +1,12 @@
-## Stories
+Stories
+=======
 
-# --Allow starting up server on specified port and pidfile--
-# Bundle as npm package
-# Allow creating server at new port
-# Wire up in cloud CI
-# Allow base mock expectation of SMTP
-# Allow advanced header expectation of SMTP
-# Allow body expetations of SMTP
-# Allow base mock expectation of HTTP
-# Allow base stub of HTTP
+1. ~~Allow starting up server on specified port and pidfile~~
+2. Bundle as npm package
+3. Allow creating server at new port
+4. Wire up in cloud CI
+5. Allow base mock expectation of SMTP
+6. Allow advanced header expectation of SMTP
+7. Allow body expetations of SMTP
+8. Allow base mock expectation of HTTP
+9. Allow base stub of HTTP
