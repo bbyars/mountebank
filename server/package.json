@@ -1,0 +1,29 @@
+{
+  "name": "mountebank",
+  "preferGlobal": true,
+  "version": "0.1.0",
+  "author": "Brandon Byars <brandon.byars@gmail.com>",
+  "description": "A charlatan that tricks your app into thinking it's talking to a real server",
+  "bin": {
+    "mb": "./bin/mb"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/bbyars/mountebank.git"
+  },
+  "keywords": [
+    "test",
+    "stub",
+    "mock",
+    "smtp",
+    "email"
+  ],
+  "devDependencies": {
+    "grunt": "~0.4.1",
+    "grunt-contrib-nodeunit": "~0.2.2",
+    "grunt-contrib-jshint": "~0.7.0"
+  },
+  "engines": {
+    "node": ">=0.10"
+  }
+}

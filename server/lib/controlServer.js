@@ -1,4 +1,4 @@
-'use strict'
+'use strict';
 
 var http = require('http');
 
@@ -15,6 +15,6 @@ var create = function create (port) {
             console.log('Goodbye...');
         }
     };
-}
+};
 
 exports.create = create;
