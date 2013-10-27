@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 'use strict';
 
-var controlServer = require('../lib/controlServer'),
-    cli = require('../lib/cli'),
+var controlServer = require('../src/controlServer'),
+    cli = require('../src/cli'),
     fs = require('fs'),
     exec = require('child_process').exec;
 
