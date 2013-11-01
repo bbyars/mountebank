@@ -1,0 +1,7 @@
+#!/usr/bin/env sh
+
+(
+cd server
+npm install
+grunt
+)

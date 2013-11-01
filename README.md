@@ -1,7 +1,7 @@
 mountebank
 ==========
 
-mountebank is meant to deceive your app and let you trick it into letting you test it.
+mountebank is a liar and an imposter, but your application will never know the difference.
 It achieves its mischievous aims by pretending to be something it is not, starting with
 an SMTP server.  It's designed for functional testing, where you want to test your code
 full-stack, but you don't want your tests to fail because environmental conditions.
