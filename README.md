@@ -17,6 +17,12 @@ unix-like platform (including cygwin).  The easiest way to install it is probabl
 package manager (e.g. `brew install node`).  [nvm](https://github.com/creationix/nvm) allows
 you to install multiple versions of node and quickly switch versions.
 
+## Building
+
+[![Build Status](https://travis-ci.org/[bbyars]/[mountebank].png)](https://travis-ci.org/[bbyars]/[mountebank])
+
+`./build` should do the trick.  If not, yell at me.
+
 ## Running
 
 Once installed, `mb` will start the server on port 3000.  The `mb` command accepts the following
