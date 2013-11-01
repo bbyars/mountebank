@@ -7,11 +7,15 @@ module.exports = function(grunt) {
             options: {
                 node: true
             }
+        },
+        nodeunit: {
+            all: ['test/**/*.test.js']
         }
     });
 
     grunt.loadNpmTasks('grunt-contrib-jshint');
+    grunt.loadNpmTasks('grunt-contrib-nodeunit');
 
-    grunt.registerTask('default', ['jshint']);
+    grunt.registerTask('default', ['nodeunit', 'jshint']);
 
 };
