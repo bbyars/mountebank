@@ -17,6 +17,27 @@ unix-like platform (including cygwin).  The easiest way to install it is probabl
 package manager (e.g. `brew install node`).  [nvm](https://github.com/creationix/nvm) allows
 you to install multiple versions of node and quickly switch versions.
 
+## Running
+
+Once installed, `mb` will start the server on port 3000.  The `mb` command accepts the following
+options:
+
+    mb start --port 8000
+
+starts the server on the provided port
+
+    mb stop
+
+stops the server
+
+    mb start --pidfile first.pid --port 8000
+    mb start --pidfile second.pid --port 8001
+
+allows multiple servers to be managed with the `mb` command, for instance:
+
+    mb restart --pidfile first.pid
+    mb stop --pidfile second.pid
+
 ## Contributing
 
 Contributions are welcome (see TODO for my own open loops, although I welcome other ideas).
