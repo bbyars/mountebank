@@ -5,17 +5,40 @@ module.exports = function(grunt) {
         jshint: {
             all: ['Gruntfile.js', 'lib/**/*.js', 'test/**/*.js'],
             options: {
-                node: true
+                node: true,
+                globals: {
+                    "describe"   : false,
+                    "it"         : false,
+                    "before"     : false,
+                    "beforeEach" : false,
+                    "after"      : false,
+                    "afterEach"  : false
+                }
             }
         },
-        nodeunit: {
-            all: ['test/**/*.test.js']
+        mochaTest: {
+            test: {
+                options: {
+                    reporter: 'spec',
+                    require: 'coverage/blanket'
+                },
+                src: ['test/**/*.js']
+            },
+            coverage: {
+                options: {
+                    reporter: 'html-cov',
+                    quiet: true,
+                    captureFile: 'coverage.html'
+                },
+                src: ['test/**/*.js']
+            }
         }
     });
 
     grunt.loadNpmTasks('grunt-contrib-jshint');
-    grunt.loadNpmTasks('grunt-contrib-nodeunit');
+    grunt.loadNpmTasks('grunt-mocha-test');
 
-    grunt.registerTask('default', ['nodeunit', 'jshint']);
+    grunt.registerTask('test', ['mochaTest:test']);
+    grunt.registerTask('default', ['mochaTest', 'jshint']);
 
 };

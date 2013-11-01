@@ -20,9 +20,10 @@
   ],
   "devDependencies": {
     "grunt": "~0.4.1",
-    "grunt-contrib-nodeunit": "~0.2.2",
     "grunt-contrib-jshint": "~0.7.0",
-    "nodeunit": "~0.8.1"
+    "mocha": "~1.13.0",
+    "grunt-mocha-test": "~0.7.0",
+    "blanket": "~1.1.5"
   },
   "engines": {
     "node": ">=0.10"
