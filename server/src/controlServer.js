@@ -1,14 +1,18 @@
 'use strict';
 
-var http = require('http');
+var express = require('express');
 
 var create = function create (port) {
-    http.createServer(function (request, response) {
+
+    var app = express();
+    app.use(express.logger({format: '[ROOT]: :method :url'}));
+    app.listen(port);
+    console.log('Server running at http://127.0.0.1:' + port);
+
+    app.get('/', function (request, response) {
         response.writeHead(200, {'Content-Type': 'text/plain'});
         response.end('Hello World\n');
-    }).listen(port);
-
-    console.log('Server running at http://127.0.0.1:' + port);
+    });
 
     return {
         close: function () {

@@ -18,6 +18,9 @@
     "smtp",
     "email"
   ],
+  "dependencies": {
+    "express": "~3.4.4"
+  },
   "devDependencies": {
     "grunt": "~0.4.1",
     "grunt-contrib-jshint": "~0.7.0",
