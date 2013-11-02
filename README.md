@@ -24,7 +24,7 @@ you to install multiple versions of node and quickly switch versions.
 
 ## Running
 
-Once installed, `mb` will start the server on port 3000.  The `mb` command accepts the following
+Once installed, `mb` will start the server on port 2525.  The `mb` command accepts the following
 options:
 
     mb start --port 8000

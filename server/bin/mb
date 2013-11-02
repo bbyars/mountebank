@@ -58,7 +58,7 @@ var serverAt = function (options) {
 };
 
 try {
-    var defaultOptions = { port: 3000, pidfile: 'mb.pid' },
+    var defaultOptions = { port: 2525, pidfile: 'mb.pid' },
         commandLine = cli.parse(process.argv.slice(2), defaultOptions),
         server = serverAt(commandLine.options);
 
