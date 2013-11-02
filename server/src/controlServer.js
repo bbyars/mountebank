@@ -1,7 +1,8 @@
 'use strict';
 
 var express = require('express'),
-    middleware = require('./middleware');
+    middleware = require('./middleware'),
+    homeController = require('./controllers/homeController');
 
 function create (port) {
     var app = express();
@@ -10,17 +11,7 @@ function create (port) {
     app.listen(port);
     console.log('Server running at http://127.0.0.1:' + port);
 
-    app.get('/', function (request, response) {
-        var hypermedia = {
-            links: [
-                {
-                    href: response.absoluteUrl('/servers'),
-                    rel: response.absoluteUrl('/relations/servers')
-                }
-            ]
-        };
-        response.send(hypermedia);
-    });
+    app.get('/', homeController.get);
 
     return {
         close: function () {
