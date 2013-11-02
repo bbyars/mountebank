@@ -1,17 +1,25 @@
 'use strict';
 
-var express = require('express');
+var express = require('express'),
+    middleware = require('./middleware');
 
-var create = function create (port) {
-
+function create (port) {
     var app = express();
+    app.use(middleware.createAbsoluteUrl(port));
     app.use(express.logger({format: '[ROOT]: :method :url'}));
     app.listen(port);
     console.log('Server running at http://127.0.0.1:' + port);
 
     app.get('/', function (request, response) {
-        response.writeHead(200, {'Content-Type': 'text/plain'});
-        response.end('Hello World\n');
+        var hypermedia = {
+            links: [
+                {
+                    href: response.absoluteUrl('/servers'),
+                    rel: response.absoluteUrl('/relations/servers')
+                }
+            ]
+        };
+        response.send(hypermedia);
     });
 
     return {
@@ -19,6 +27,8 @@ var create = function create (port) {
             console.log('Goodbye...');
         }
     };
-};
+}
 
-exports.create = create;
+module.exports = {
+    create: create
+};
