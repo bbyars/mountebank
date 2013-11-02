@@ -18,8 +18,7 @@ package manager (e.g. `brew install node`).  [nvm](https://github.com/creationix
 you to install multiple versions of node and quickly switch versions.
 
 ## Building
-
-[![Build Status](https://travis-ci.org/[bbyars]/[mountebank].png)](https://travis-ci.org/[bbyars]/[mountebank])
+[![Build Status](https://travis-ci.org/bbyars/mountebank.png)](https://travis-ci.org/bbyars/mountebank)
 
 `./build` should do the trick.  If not, yell at me.
 
