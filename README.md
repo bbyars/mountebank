@@ -1,10 +1,15 @@
 mountebank
 ==========
 
-mountebank is a liar and an imposter, but your application will never know the difference.
-It achieves its mischievous aims by pretending to be something it is not, starting with
-an SMTP server.  It's designed for functional testing, where you want to test your code
-full-stack, but you don't want your tests to fail because environmental conditions.
+mountebank is a liar and an imposter.  He will pretend to do everything that your
+application asks of him, while actually doing only as little as your tests tell him to.
+One of mountebank's gimmicks is that he doesn't ask your application to change
+anything, except perhaps a few lines of configuration defining external
+dependencies.
+
+mountebank will tell you that he supports every protocol ever invented, and a few
+lying in the weeds.  He will swear that he supports bindings in every language
+know to humanity.
 
 ## Prerequisites
 

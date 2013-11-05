@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 'use strict';
 
-var controlServer = require('../src/controlServer'),
+var mountebank = require('../src/mountebank'),
     cli = require('../src/cli'),
     fs = require('fs'),
     exec = require('child_process').exec;
@@ -21,7 +21,7 @@ function error (message) {
 var serverAt = function (options) {
     return {
         start: function () {
-            var server = controlServer.create(options.port);
+            var server = mountebank.create(options.port);
 
             fs.writeFileSync(options.pidfile, process.pid.toString());
             var shutdown = function shutdown () {
