@@ -1,6 +1,6 @@
 'use strict';
 
-var cli = require('../src/cli'),
+var cli = require('../../src/util/cli'),
     assert = require('assert');
 
 describe('cli', function () {

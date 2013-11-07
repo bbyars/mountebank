@@ -1,7 +1,7 @@
 'use strict';
 
 var express = require('express'),
-    middleware = require('./middleware'),
+    middleware = require('./util/middleware'),
     homeController = require('./controllers/homeController'),
     ImpostersController = require('./controllers/impostersController'),
     protocols = {

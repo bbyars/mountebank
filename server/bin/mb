@@ -2,7 +2,7 @@
 'use strict';
 
 var mountebank = require('../src/mountebank'),
-    cli = require('../src/cli'),
+    cli = require('../src/util/cli'),
     fs = require('fs'),
     exec = require('child_process').exec;
 

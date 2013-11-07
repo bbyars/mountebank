@@ -1,6 +1,6 @@
 'use strict';
 
-var middleware = require('../src/middleware'),
+var middleware = require('../../src/util/middleware'),
     assert = require('assert');
 
 describe('middleware', function () {
