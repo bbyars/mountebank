@@ -18,9 +18,9 @@ describe('imposter#create', function () {
                  protocol: 'http',
                  port: 8000,
                  links: [
-                     { href: 'http://localhost/servers/8000', rel: 'self' },
-                     { href: 'http://localhost/servers/8000/requests', rel: 'requests' },
-                     { href: 'http://localhost/servers/8000/stubs', rel: 'stubs' }
+                     { href: 'http://localhost/imposters/8000', rel: 'self' },
+                     { href: 'http://localhost/imposters/8000/requests', rel: 'requests' },
+                     { href: 'http://localhost/imposters/8000/stubs', rel: 'stubs' }
                  ]
              });
         });

@@ -4,8 +4,8 @@ function get (request, response) {
     var hypermedia = {
         links: [
             {
-                href: response.absoluteUrl('/servers'),
-                rel: 'servers'
+                href: response.absoluteUrl('/imposters'),
+                rel: 'imposters'
             }
         ]
     };

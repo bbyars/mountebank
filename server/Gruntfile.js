@@ -24,12 +24,12 @@ module.exports = function(grunt) {
                 },
                 src: ['test/**/*.js']
             },
-            integrationTest: {
-                options: {
-                    reporter: 'spec'
-                },
-                src: ['integrationTest/**/*.js']
-            },
+//            integrationTest: {
+//                options: {
+//                    reporter: 'spec'
+//                },
+//                src: ['integrationTest/**/*.js']
+//            },
             coverage: {
                 options: {
                     reporter: 'html-cov',

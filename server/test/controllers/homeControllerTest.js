@@ -20,8 +20,8 @@ describe('homeController', function () {
 
             assert.deepEqual(responseBody, {
                 links: [{
-                    href: 'http://localhost/servers',
-                    rel: 'servers'
+                    href: 'http://localhost/imposters',
+                    rel: 'imposters'
                 }]
             });
         });

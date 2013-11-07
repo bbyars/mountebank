@@ -14,14 +14,14 @@ function create (port) {
         impostersController = ImpostersController.create(protocols, imposters);
 
     app.use(middleware.createAbsoluteUrl(port));
-    app.use(express.logger({format: '[mountebank:' + port + ']: :method :url'}))
+    app.use(express.logger({format: '[mountebank]: :method :url'}))
     app.use(express.json());
     app.listen(port);
     console.log('mountebank accepting orders at http://localhost:' + port);
 
     app.get('/', homeController.get);
-    app.get('/servers', impostersController.get);
-    app.post('/servers', impostersController.post);
+    app.get('/imposters', impostersController.get);
+    app.post('/imposters', impostersController.post);
 
     return {
         close: function () {
