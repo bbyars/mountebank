@@ -19,7 +19,12 @@ and URL templates are here provided for your viewing pleasure.
 
 ### Home
 
-Unpretentious and welcoming, mirroring mountebank's simple good nature.
+Unpretentious and welcoming, mirroring mountebank's simple good nature.  This endpoint
+exists for those who aspire to the upper echelons of [Richardson's Maturity
+Model](http://martinfowler.com/articles/richardsonMaturityModel.html), though they
+may be disappointed to find such a lowly language as `application/json` and the lack
+of URLs for relationships.  mountebank has no intention of forcing anybody to use
+this endpoint.
 
     GET / HTTP/1.1
     Host: localhost:2525
