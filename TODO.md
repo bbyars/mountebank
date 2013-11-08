@@ -19,4 +19,7 @@ Stories
 10. Build HTML representation of mocks
 11. Build HTML docs
 12. Support HTML stubbing
-13. Add rpm / nuget / etc packages so not dependent on node.js
+13. Add rpm / nuget / brew etc packages so not dependent on node.js
+14. Allow javascript injection for stubs to dynamically change behavior
+  - maybe with a config switch to allow insecure, or do I care?
+
