@@ -1,4 +1,4 @@
-'use strict'
+'use strict';
 
 var ports = require('../util/ports'),
     Imposter = require('../models/imposter');

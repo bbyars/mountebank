@@ -1,4 +1,4 @@
-'use strict'
+'use strict';
 
 function get (request, response) {
     var hypermedia = {

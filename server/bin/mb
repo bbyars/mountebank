@@ -36,9 +36,6 @@ var serverAt = function (options) {
         stop: function () {
             var kill = 'if [ -e PIDFILE ]; then\n' +
                        '    kill `cat PIDFILE`\n' +
-                       'else\n' +
-                       '    echo "No such pidfile: PIDFILE"\n' +
-                       '    exit 1\n' +
                        'fi',
                 command = kill.replace(/PIDFILE/g, options.pidfile);
 

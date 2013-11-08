@@ -9,7 +9,7 @@ var api = {
         var deferred = Q.defer(),
             options = {
                 hostname: 'localhost',
-                port: 2525,
+                port: 3535,
                 path: path,
                 method: 'GET',
                 headers: {
@@ -26,7 +26,7 @@ var api = {
             response.on('end', function () {
                 response.body = JSON.parse(response.body);
                 deferred.resolve(response);
-            })
+            });
         });
 
         request.on('error', function (error) {
@@ -46,7 +46,7 @@ describe('homeController', function () {
                 assert.deepEqual(response.body, {
                     links: [
                         {
-                            href: "http://localhost:2525/imposters",
+                            href: "http://localhost:3535/imposters",
                             rel: "imposters"
                         }
                     ]

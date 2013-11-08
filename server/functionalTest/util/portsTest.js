@@ -22,7 +22,7 @@ describe('ports', function () {
             ports.isPortInUse(3333).then(function (result) {
                 assert(!result);
                 done();
-            })
+            });
         });
     });
 });
