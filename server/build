@@ -2,4 +2,4 @@
 
 npm install
 npm install grunt-cli
-node_modules/grunt-cli/bin/grunt
+MB_PORT=3535 node_modules/grunt-cli/bin/grunt

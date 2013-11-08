@@ -1,6 +1,7 @@
 'use strict';
 
-var spawn = require('child_process').spawn;
+var spawn = require('child_process').spawn,
+    port = process.env.MB_PORT || 3535;
 
 module.exports = function(grunt) {
 
@@ -55,7 +56,7 @@ module.exports = function(grunt) {
         }
 
         var done = this.async(),
-            mb = spawn('bin/mb', [command, '--port', '3535', '--pidfile', 'mb-grunt.pid']);
+            mb = spawn('bin/mb', [command, '--port', port, '--pidfile', 'mb-grunt.pid']);
 
         ['stdout', 'stderr'].forEach(function (stream) {
             mb[stream].setEncoding('utf8');

@@ -2,14 +2,15 @@
 
 var assert = require('assert'),
     http = require('http'),
-    Q = require('q');
+    Q = require('q'),
+    port = process.env.MB_PORT || 2525;
 
 var api = {
     get: function get (path) {
         var deferred = Q.defer(),
             options = {
                 hostname: 'localhost',
-                port: 3535,
+                port: port,
                 path: path,
                 method: 'GET',
                 headers: {
