@@ -23,4 +23,5 @@ Stories
 14. Allow javascript injection for stubs to dynamically change behavior
   - maybe with a config switch to allow insecure, or do I care?
 15. build script to normalize whitespace
+15. build script to error on mocha .only calls
 

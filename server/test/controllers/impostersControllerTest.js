@@ -3,22 +3,18 @@
 var assert = require('assert'),
     mock = require('../mock').mock,
     mockery = require('mockery'),
-    Controller = require('../../src/controllers/impostersController');
+    Controller = require('../../src/controllers/impostersController'),
+    FakeResponse = require('../fakes/fakeResponse');
 
 describe('ImpostersController', function () {
     var response;
 
     beforeEach(function () {
-        response = {
-            headers: {},
-            send: function (body) { this.body = body; },
-            setHeader: function (key, value) { this.headers[key] = value; },
-            absoluteUrl: function (endpoint) { return 'http://localhost' + endpoint; }
-        };
+        response = FakeResponse.create();
     });
 
     describe('#get', function () {
-        it('should send an empty array if no servers', function () {
+        it('should send an empty array if no imposters', function () {
             var controller = Controller.create({}, []);
 
             controller.get({}, response);
@@ -26,10 +22,10 @@ describe('ImpostersController', function () {
             assert.deepEqual(response.body, {imposters: []});
         });
 
-        it('should send hypermedia for all servers', function () {
-            var firstServer = { hypermedia: function () { return "firstHypermedia"; } },
-                secondServer = { hypermedia: function () { return "secondHypermedia"; } },
-                controller = Controller.create({}, [firstServer, secondServer]);
+        it('should send hypermedia for all imposters', function () {
+            var firstImposter = { hypermedia: mock().returns("firstHypermedia") },
+                secondImposter = { hypermedia: mock().returns("secondHypermedia") },
+                controller = Controller.create({}, [firstImposter, secondImposter]);
 
             controller.get({}, response);
 
@@ -38,7 +34,7 @@ describe('ImpostersController', function () {
     });
 
     describe('#post', function () {
-        var request, Imposter, imposter;
+        var request, Imposter, imposter, ports;
 
         beforeEach(function () {
             request = { body: {} };
@@ -50,6 +46,12 @@ describe('ImpostersController', function () {
                     then: function (fn) { fn(imposter); }
                 })
             };
+            ports = {
+                isValidPortNumber: mock().returns(true),
+                isPortInUse: mock().returns({
+                    then: function (fn) { fn(false); }
+                })
+            };
 
             mockery.enable({
                 useCleanCache: true,
@@ -57,6 +59,8 @@ describe('ImpostersController', function () {
                 warnOnUnregistered: false
             });
             mockery.registerMock('../models/imposter', Imposter);
+            mockery.registerMock('../util/ports', ports);
+            mockery.registerMock('q', require('../fakes/fakeQ'));
             Controller = require('../../src/controllers/impostersController');
         });
 
@@ -108,6 +112,49 @@ describe('ImpostersController', function () {
             });
         });
 
+        it('should return a 400 for an invalid port', function () {
+            var controller = Controller.create({ http: {} }, []);
+            request.body = { protocol: 'http', port: 'invalid' };
+            ports.isValidPortNumber = mock().returns(false);
+
+            controller.post(request, response);
+
+            assert.strictEqual(response.statusCode, 400);
+            assert.deepEqual(response.body, {
+                errors: [{
+                    code: "bad data",
+                    message: "invalid value for 'port'"
+                }]
+            });
+        });
+
+        it('should return a 400 when the port is in use', function () {
+            var controller = Controller.create({ http: {} }, []);
+            request.body = { protocol: 'http', port: 'invalid' };
+            ports.isPortInUse = mock().returns({
+                then: function (fn) { fn(true); }
+            });
+
+            controller.post(request, response);
+
+            assert.strictEqual(response.statusCode, 400);
+            assert.deepEqual(response.body, {
+                errors: [{
+                    code: "port conflict",
+                    message: "port already in use"
+                }]
+            });
+        });
+
+        it('should not check port availability if missing port', function () {
+            var controller = Controller.create({ http: {} }, []);
+            request.body = { protocol: 'http' };
+
+            controller.post(request, response);
+
+            assert(!ports.isPortInUse.wasCalled());
+        });
+
         it('should return a 400 for a missing protocol', function () {
             var controller = Controller.create({ http: {} }, []);
             request.body = { port: 3535 };
@@ -133,6 +180,14 @@ describe('ImpostersController', function () {
             assert.strictEqual(response.statusCode, 400);
             assert.strictEqual(response.body.errors.length, 1);
             assert.strictEqual(response.body.errors[0].code, 'unsupported protocol');
+        });
+
+        it('should aggregate multiple errors', function () {
+            var controller = Controller.create({}, []);
+
+            controller.post(request, response);
+
+            assert.strictEqual(response.body.errors.length, 2, response.body.errors);
         });
     });
 });
