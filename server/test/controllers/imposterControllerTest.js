@@ -16,7 +16,7 @@ describe('ImposterController', function () {
         it('should return 404 for invalid id', function () {
             var controller = Controller.create({});
 
-            controller.get({ id: 1 }, response);
+            controller.get({ params: { id: 1 }}, response);
 
             assert.strictEqual(response.statusCode, 404);
         });
@@ -28,7 +28,7 @@ describe('ImposterController', function () {
                 },
                 controller = Controller.create(imposters);
 
-            controller.get({ id: 2 }, response);
+            controller.get({ params: { id: 2 }}, response);
 
             assert.strictEqual(response.body, "secondHypermedia");
         });
@@ -38,7 +38,7 @@ describe('ImposterController', function () {
         it('should return 404 for invalid id', function () {
             var controller = Controller.create({});
 
-            controller.del({ id: 1 }, response);
+            controller.del({ params: { id: 1 }}, response);
 
             assert.strictEqual(response.statusCode, 404);
         });
@@ -47,7 +47,7 @@ describe('ImposterController', function () {
             var imposter = { stop: mock() },
                 controller = Controller.create({ 1: imposter });
 
-            controller.del({ id: 1 }, response);
+            controller.del({ params: { id: 1 }}, response);
 
             assert(imposter.stop.wasCalled());
         });
@@ -56,7 +56,7 @@ describe('ImposterController', function () {
             var imposters = { 1: { stop: mock() }},
                 controller = Controller.create(imposters);
 
-            controller.del({ id: 1 }, response);
+            controller.del({ params: { id: 1 }}, response);
 
             assert.deepEqual(imposters, {});
         });

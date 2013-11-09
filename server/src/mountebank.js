@@ -24,8 +24,8 @@ function create (port) {
     app.get('/', homeController.get);
     app.get('/imposters', impostersController.get);
     app.post('/imposters', impostersController.post);
-    app.get('/imposter/:port', imposterController.get);
-    app.del('/imposter/:port', imposterController.del);
+    app.get('/imposters/:id', imposterController.get);
+    app.del('/imposters/:id', imposterController.del);
 
     return {
         close: function () {

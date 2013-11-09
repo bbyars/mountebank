@@ -3,7 +3,7 @@
 function create (imposters) {
 
     function get (request, response) {
-        var imposter = imposters[request.id];
+        var imposter = imposters[request.params.id];
 
         if (imposter) {
             response.send(imposter.hypermedia(response));
@@ -15,11 +15,11 @@ function create (imposters) {
     }
 
     function del (request, response) {
-        var imposter = imposters[request.id];
+        var imposter = imposters[request.params.id];
 
         if (imposter) {
             imposter.stop();
-            delete imposters[request.id];
+            delete imposters[request.params.id];
             response.send();
         }
         else {

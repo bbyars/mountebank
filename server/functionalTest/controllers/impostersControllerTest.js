@@ -5,20 +5,18 @@ var assert = require('assert'),
 
 describe('impostersController', function () {
     describe('POST /imposters', function () {
-        it('should return hypermedia for new imposter', function (done) {
+        it('should return create new imposter with the consistent hypermedia', function (done) {
             api.post('/imposters', { protocol: 'http', port: 4545 }).then(function (response) {
                 assert.strictEqual(response.statusCode, 201);
-                assert.strictEqual(response.headers.location, api.url + '/imposters/4545');
-                assert.deepEqual(response.body, {
-                    protocol: 'http',
-                    port: 4545,
-                    links: [
-                        { href: api.url + '/imposters/4545', rel: 'self' },
-                        { href: api.url + '/imposters/4545/requests', rel: 'requests' },
-                        { href: api.url + '/imposters/4545/stubs', rel: 'stubs' }
-                    ]
+
+                var createdBody = response.body,
+                    imposterUrl = response.headers.location.replace(api.url, '');
+
+                api.get(imposterUrl).then(function (imposterResponse) {
+                    assert.strictEqual(imposterResponse.statusCode, 200);
+                    assert.deepEqual(imposterResponse.body, createdBody);
+                    done();
                 });
-                done();
             });
         });
 
