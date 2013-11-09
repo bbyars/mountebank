@@ -5,8 +5,14 @@ var connect = require('connect'),
 
 var create = function (port) {
     var logPrefix = '[http/' + port + '] ',
-        server = connect.createServer(connect.logger({format: logPrefix + ':method :url'})),
+        server = connect(),
         deferred = Q.defer();
+
+    server.use(connect.logger({format: logPrefix + ':method :url'}));
+    server.use(function (request, response) {
+        response.statusCode = 200;
+        response.end();
+    });
 
     server.on('close', function () {
         console.log(logPrefix + 'Ciao');

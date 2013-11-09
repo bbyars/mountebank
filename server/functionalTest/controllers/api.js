@@ -20,9 +20,13 @@ var optionsFor = function (spec) {
     return result;
 };
 
-function responseFor (method, path, body) {
+function responseFor (spec, body) {
     var deferred = Q.defer(),
-        options = optionsFor({method: method, path: path});
+        options = optionsFor(spec);
+
+    if (body) {
+        options.headers['Content-Type'] = 'application/json';
+    }
 
     var request = http.request(options, function (response) {
         response.body = '';
@@ -31,7 +35,10 @@ function responseFor (method, path, body) {
             response.body += chunk;
         });
         response.on('end', function () {
-            response.body = JSON.parse(response.body);
+            var contentType = response.headers['content-type'] || '';
+            if (contentType.indexOf('application/json') === 0) {
+                response.body = JSON.parse(response.body);
+            }
             deferred.resolve(response);
         });
     });
@@ -42,18 +49,22 @@ function responseFor (method, path, body) {
     });
 
     if (body) {
-        request.write(body.toString());
+        request.write(JSON.stringify(body));
     }
     request.end();
     return deferred.promise;
 }
 
-function get (path) {
-    return responseFor('GET', path);
+function get (path, port) {
+    var spec = { method: 'GET', path: path };
+    if (port) {
+        spec.port = port;
+    }
+    return responseFor(spec);
 }
 
 function post (path, body) {
-    return responseFor('POST', path, body);
+    return responseFor({ method: 'POST', path: path }, body);
 }
 
 module.exports = {
