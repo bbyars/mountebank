@@ -4,14 +4,16 @@ var express = require('express'),
     middleware = require('./util/middleware'),
     homeController = require('./controllers/homeController'),
     ImpostersController = require('./controllers/impostersController'),
-    protocols = {
-        'http': require('./models/http/server')
-    };
+    ImposterController = require('./controllers/imposterController'),
+    protocols = [
+        require('./models/http/server')
+    ];
 
 function create (port) {
     var app = express(),
         imposters = [],
-        impostersController = ImpostersController.create(protocols, imposters);
+        impostersController = ImpostersController.create(protocols, imposters),
+        imposterController = ImposterController.create(imposter);
 
     app.use(middleware.createAbsoluteUrl(port));
     app.use(express.logger({immediate: true, format: '[mb/' + port + '] :method :url'}));
@@ -22,6 +24,8 @@ function create (port) {
     app.get('/', homeController.get);
     app.get('/imposters', impostersController.get);
     app.post('/imposters', impostersController.post);
+    app.get('/imposter/:port', imposterController.get);
+    app.del('/imposter/:port', imposterController.del);
 
     return {
         close: function () {

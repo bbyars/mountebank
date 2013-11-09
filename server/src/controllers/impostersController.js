@@ -6,6 +6,13 @@ var ports = require('../util/ports'),
 
 function create (protocols, imposters) {
 
+    function protocolFor (protocolName) {
+        var matches = protocols.filter(function (protocol) {
+            return protocol.name === protocolName;
+        });
+        return (matches.length === 0) ? undefined : matches[0];
+    }
+
     function validate (protocol, port) {
         var errors = [];
 
@@ -20,7 +27,7 @@ function create (protocols, imposters) {
                 message: "'protocol' is a required field"
             });
         }
-        if (protocol && !protocols[protocol]) {
+        if (protocol && !protocolFor(protocol)) {
             errors.push({
                 code: "unsupported protocol",
                 message: "Of course I can support the " + protocol + " protocol.  I have it on good authority that in just a few days, my team of open source contributors will have it ready for you!"
@@ -77,7 +84,7 @@ function create (protocols, imposters) {
             port = request.body.port;
 
         validate(protocol, port).then(function () {
-                Imposter.create(protocols[protocol], port).then(
+                Imposter.create(protocolFor(protocol), port).then(
                     function (imposter) {
                         imposters.push(imposter);
                         response.setHeader('Location', imposter.url(response));

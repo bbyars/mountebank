@@ -15,7 +15,7 @@ describe('ImpostersController', function () {
 
     describe('#get', function () {
         it('should send an empty array if no imposters', function () {
-            var controller = Controller.create({}, []);
+            var controller = Controller.create([], []);
 
             controller.get({}, response);
 
@@ -25,7 +25,7 @@ describe('ImpostersController', function () {
         it('should send hypermedia for all imposters', function () {
             var firstImposter = { hypermedia: mock().returns("firstHypermedia") },
                 secondImposter = { hypermedia: mock().returns("secondHypermedia") },
-                controller = Controller.create({}, [firstImposter, secondImposter]);
+                controller = Controller.create([], [firstImposter, secondImposter]);
 
             controller.get({}, response);
 
@@ -70,7 +70,7 @@ describe('ImpostersController', function () {
         });
 
         it('should return a 201 with the Location header set', function () {
-            var controller = Controller.create({ http: {} }, []);
+            var controller = Controller.create([{ name: 'http' }], []);
             request.body = { port: 3535, protocol: 'http' };
 
             controller.post(request, response);
@@ -80,7 +80,7 @@ describe('ImpostersController', function () {
         });
 
         it('should return imposter hypermedia', function () {
-            var controller = Controller.create({ http : {} }, []);
+            var controller = Controller.create([{ name: 'http' }], []);
             request.body = { port: 3535, protocol: 'http' };
 
             controller.post(request, response);
@@ -90,7 +90,7 @@ describe('ImpostersController', function () {
 
         it('should add new imposter to list of all imposters', function () {
             var imposters = [],
-                controller = Controller.create({ http: {} }, imposters);
+                controller = Controller.create([{ name: 'http' }], imposters);
             request.body = { port: 3535, protocol: 'http' };
 
             controller.post(request, response);
@@ -99,7 +99,7 @@ describe('ImpostersController', function () {
         });
 
         it('should return a 400 for a missing port', function () {
-            var controller = Controller.create({ http: {} }, []);
+            var controller = Controller.create([{ name: 'http' }], []);
             request.body = { protocol: 'http' };
 
             controller.post(request, response);
@@ -114,7 +114,7 @@ describe('ImpostersController', function () {
         });
 
         it('should return a 400 for an invalid port', function () {
-            var controller = Controller.create({ http: {} }, []);
+            var controller = Controller.create([{ name: 'http' }], []);
             request.body = { protocol: 'http', port: 'invalid' };
             ports.isValidPortNumber = mock().returns(false);
 
@@ -130,7 +130,7 @@ describe('ImpostersController', function () {
         });
 
         it('should return a 400 when the port is in use', function () {
-            var controller = Controller.create({ http: {} }, []);
+            var controller = Controller.create([{ name: 'http' }], []);
             request.body = { protocol: 'http', port: 'invalid' };
             ports.isPortInUse = mock().returns({
                 then: function (fn) { fn(true); }
@@ -148,7 +148,7 @@ describe('ImpostersController', function () {
         });
 
         it('should not check port availability if missing port', function () {
-            var controller = Controller.create({ http: {} }, []);
+            var controller = Controller.create([{ name: 'http' }], []);
             request.body = { protocol: 'http' };
 
             controller.post(request, response);
@@ -157,7 +157,7 @@ describe('ImpostersController', function () {
         });
 
         it('should return a 400 for a missing protocol', function () {
-            var controller = Controller.create({ http: {} }, []);
+            var controller = Controller.create([{ name: 'http' }], []);
             request.body = { port: 3535 };
 
             controller.post(request, response);
@@ -172,7 +172,7 @@ describe('ImpostersController', function () {
         });
 
         it('should return a 400 for unsupported protocols', function () {
-            var protocols = {},
+            var protocols = [],
                 controller = Controller.create(protocols, []);
             request.body = { port: 3535, protocol: 'unsupported' };
 
@@ -184,7 +184,7 @@ describe('ImpostersController', function () {
         });
 
         it('should aggregate multiple errors', function () {
-            var controller = Controller.create({}, []);
+            var controller = Controller.create([], []);
 
             controller.post(request, response);
 
