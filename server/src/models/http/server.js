@@ -4,7 +4,7 @@ var connect = require('connect'),
     Q = require('q');
 
 var create = function (port) {
-    var logPrefix = '[http:' + port + ']: ',
+    var logPrefix = '[http]:',// + port + ']: ',
         server = connect.createServer(connect.logger({format: logPrefix + ':method :url'})),
         deferred = Q.defer();
 
