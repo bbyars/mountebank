@@ -39,6 +39,7 @@ describe('ImpostersController', function () {
         beforeEach(function () {
             request = { body: {} };
             imposter = {
+                url: mock().returns("imposter-url"),
                 hypermedia: mock().returns("hypermedia")
             };
             Imposter = {

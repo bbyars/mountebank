@@ -34,6 +34,12 @@ describe('imposter', function () {
             mockery.disable();
         });
 
+        it('should return url', function () {
+            Imposter.create(Protocol, 3535).then(function (imposter) {
+                assert.strictEqual(imposter.url(response), 'http://localhost/imposters/3535');
+            });
+        });
+
         it('should return hypermedia links', function () {
             Imposter.create(Protocol, 3535).then(function (imposter) {
                 assert.deepEqual(imposter.hypermedia(response), {

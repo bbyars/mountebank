@@ -4,14 +4,18 @@ var Q = require('q');
 
 function create (Protocol, port) {
 
+    function url (response) {
+        return response.absoluteUrl('/imposters/' + port);
+    }
+
     function hypermedia (response) {
         return {
             protocol: Protocol.name,
             port: port,
             links: [
-                { href: response.absoluteUrl('/imposters/' + port), rel: 'self' },
-                { href: response.absoluteUrl('/imposters/' + port + '/requests'), rel: 'requests' },
-                { href: response.absoluteUrl('/imposters/' + port + '/stubs'), rel: 'stubs' }
+                { href: url(response), rel: 'self' },
+                { href: url(response) + '/requests', rel: 'requests' },
+                { href: url(response) + '/stubs', rel: 'stubs' }
             ]
         };
     }
@@ -19,6 +23,7 @@ function create (Protocol, port) {
     var deferred = Q.defer();
     Protocol.create(port).then(function () {
         deferred.resolve({
+            url: url,
             hypermedia: hypermedia
         });
     });

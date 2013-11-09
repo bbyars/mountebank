@@ -80,7 +80,7 @@ function create (protocols, imposters) {
                 Imposter.create(protocols[protocol], port).then(
                     function (imposter) {
                         imposters.push(imposter);
-                        response.setHeader('Location', response.absoluteUrl('/servers/' + port)); // imposter.url
+                        response.setHeader('Location', imposter.url(response));
                         response.statusCode = 201;
                         response.send(imposter.hypermedia(response));
                     });
