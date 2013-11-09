@@ -73,8 +73,8 @@ function create (protocols, imposters) {
     }
 
     function get (request, response) {
-        var result = imposters.reduce(function (accumulator, imposter) {
-            return accumulator.concat(imposter.hypermedia(response));
+        var result = Object.keys(imposters).reduce(function (accumulator, id) {
+            return accumulator.concat(imposters[id].hypermedia(response));
         }, []);
         response.send({ imposters: result });
     }
@@ -86,7 +86,7 @@ function create (protocols, imposters) {
         validate(protocol, port).then(function () {
                 Imposter.create(protocolFor(protocol), port).then(
                     function (imposter) {
-                        imposters.push(imposter);
+                        imposters[port] = imposter;
                         response.setHeader('Location', imposter.url(response));
                         response.statusCode = 201;
                         response.send(imposter.hypermedia(response));

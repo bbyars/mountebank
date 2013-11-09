@@ -11,9 +11,9 @@ var express = require('express'),
 
 function create (port) {
     var app = express(),
-        imposters = [],
+        imposters = {},
         impostersController = ImpostersController.create(protocols, imposters),
-        imposterController = ImposterController.create(imposter);
+        imposterController = ImposterController.create(imposters);
 
     app.use(middleware.createAbsoluteUrl(port));
     app.use(express.logger({immediate: true, format: '[mb/' + port + '] :method :url'}));
