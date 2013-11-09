@@ -38,7 +38,7 @@ function responseFor (method, path, body) {
 
     request.on('error', function (error) {
         console.log(error.message);
-        deferred.reject();
+        deferred.reject(error);
     });
 
     if (body) {

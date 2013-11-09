@@ -1,11 +1,13 @@
 'use strict';
 
-function create (protocol, port) {
+var Q = require('q');
+
+function create (Protocol, port) {
 
     function hypermedia (response) {
         return {
-            protocol: protocol,
-            port: parseInt(port, 10),
+            protocol: Protocol.name,
+            port: port,
             links: [
                 { href: response.absoluteUrl('/imposters/' + port), rel: 'self' },
                 { href: response.absoluteUrl('/imposters/' + port + '/requests'), rel: 'requests' },
@@ -14,9 +16,13 @@ function create (protocol, port) {
         };
     }
 
-    return {
-        hypermedia: hypermedia
-    };
+    var deferred = Q.defer();
+    Protocol.create(port).then(function () {
+        deferred.resolve({
+            hypermedia: hypermedia
+        });
+    });
+    return deferred.promise;
 }
 
 module.exports = {

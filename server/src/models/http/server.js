@@ -19,4 +19,7 @@ var create = function (port) {
     return deferred.promise;
 };
 
-exports.create = create;
+module.exports = {
+    name: 'http',
+    create: create
+};

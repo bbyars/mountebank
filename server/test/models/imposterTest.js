@@ -1,28 +1,57 @@
 'use strict';
 
 var assert = require('assert'),
-    Imposter = require('../../src/models/imposter');
+    mock = require('../mock').mock,
+    mockery = require('mockery'),
+    fakeQ = require('../fakes/fakeQ');
 
-describe('imposter#create', function () {
+describe('imposter', function () {
+    describe('#create', function () {
+        var response, Protocol, Imposter;
 
-    describe('#hypermedia', function () {
+        beforeEach(function () {
+            response = {
+                absoluteUrl: function (endpoint) {
+                    return 'http://localhost' + endpoint;
+                }
+            };
+            Protocol = {
+                name: 'http',
+                create: mock().returns({
+                    then: function (fn) { fn(); }
+                })
+            };
+            mockery.enable({
+                useCleanCache: true,
+                warnOnUnregistered: false,
+                warnOnReplace: false
+            });
+            mockery.registerMock('q', fakeQ);
+            Imposter = require('../../src/models/imposter');
+        });
+
+        afterEach(function () {
+            mockery.disable();
+        });
+
         it('should return hypermedia links', function () {
-            var imposter = Imposter.create('http', 8000),
-                response = {
-                    absoluteUrl: function (endpoint, port) {
-                        return 'http://localhost' + endpoint;
-                    }
-                };
+            Imposter.create(Protocol, 3535).then(function (imposter) {
+                assert.deepEqual(imposter.hypermedia(response), {
+                    protocol: 'http',
+                    port: 3535,
+                    links: [
+                        { href: 'http://localhost/imposters/3535', rel: 'self' },
+                        { href: 'http://localhost/imposters/3535/requests', rel: 'requests' },
+                        { href: 'http://localhost/imposters/3535/stubs', rel: 'stubs' }
+                    ]
+                });
+            });
+        });
 
-            assert.deepEqual(imposter.hypermedia(response), {
-                 protocol: 'http',
-                 port: 8000,
-                 links: [
-                     { href: 'http://localhost/imposters/8000', rel: 'self' },
-                     { href: 'http://localhost/imposters/8000/requests', rel: 'requests' },
-                     { href: 'http://localhost/imposters/8000/stubs', rel: 'stubs' }
-                 ]
-             });
+        it('should create protocol server on provided port', function () {
+            Imposter.create(Protocol, 3535).then(function () {
+                assert(Protocol.create.wasCalledWith(3535));
+            });
         });
     });
 });

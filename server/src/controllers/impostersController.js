@@ -46,11 +46,12 @@ function create (protocols, imposters) {
             response.send({errors: errors});
         }
         else {
-            var imposter = Imposter.create(protocol, port);
-            imposters.push(imposter);
-            response.setHeader('Location', response.absoluteUrl('/servers/' + port));
-            response.statusCode = 201;
-            response.send(imposter.hypermedia(response));
+            Imposter.create(protocols[protocol], port).then(function (imposter) {
+                imposters.push(imposter);
+                response.setHeader('Location', response.absoluteUrl('/servers/' + port)); // imposter.url
+                response.statusCode = 201;
+                response.send(imposter.hypermedia(response));
+            });
         }
     }
 

@@ -15,20 +15,23 @@ module.exports = function(grunt) {
             options: {
                 node: true,
                 globals: {
-                    "describe"   : false,
-                    "it"         : false,
-                    "before"     : false,
-                    "beforeEach" : false,
-                    "after"      : false,
-                    "afterEach"  : false
+                    describe: false,
+                    it: false,
+                    before: false,
+                    beforeEach: false,
+                    after: false,
+                    afterEach: false
                 }
             }
         },
         mochaTest: {
             unit: {
                 options: {
-                    reporter: 'spec',
+                    reporter: 'spec'
+                    /*,
+                    This breaks some of the mock tests
                     require: 'coverage/blanket'
+                    */
                 },
                 src: ['test/**/*.js']
             },
