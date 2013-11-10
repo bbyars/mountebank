@@ -21,10 +21,11 @@ function create (Protocol, port) {
     }
 
     var deferred = Q.defer();
-    Protocol.create(port).then(function () {
+    Protocol.create(port).then(function (server) {
         deferred.resolve({
             url: url,
-            hypermedia: hypermedia
+            hypermedia: hypermedia,
+            stop: function () { server.close(); }
         });
     });
     return deferred.promise;

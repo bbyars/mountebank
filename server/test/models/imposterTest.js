@@ -19,7 +19,8 @@ describe('imposter', function () {
                 name: 'http',
                 create: mock().returns({
                     then: function (fn) { fn(); }
-                })
+                }),
+                close: mock()
             };
             mockery.enable({
                 useCleanCache: true,

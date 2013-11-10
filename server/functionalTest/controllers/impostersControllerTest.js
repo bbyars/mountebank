@@ -15,7 +15,10 @@ describe('impostersController', function () {
                 api.get(imposterUrl).then(function (imposterResponse) {
                     assert.strictEqual(imposterResponse.statusCode, 200);
                     assert.deepEqual(imposterResponse.body, createdBody);
-                    done();
+
+                    api.del(imposterUrl).then(function () {
+                        done();
+                    });
                 });
             });
         });
@@ -24,7 +27,10 @@ describe('impostersController', function () {
             api.post('/imposters', { protocol: 'http', port: 5555 }).then(function () {
                 api.get("/", 5555).then(function (imposterResponse) {
                     assert.strictEqual(imposterResponse.statusCode, 200);
-                    done();
+
+                    api.del('/imposters/5555').then(function () {
+                        done();
+                    });
                 });
             });
         });

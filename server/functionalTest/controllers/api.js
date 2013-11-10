@@ -67,8 +67,13 @@ function post (path, body) {
     return responseFor({ method: 'POST', path: path }, body);
 }
 
+function del (path) {
+    return responseFor({ method: 'DELETE', path: path });
+}
+
 module.exports = {
     url: url,
     get: get,
-    post: post
+    post: post,
+    del: del
 };

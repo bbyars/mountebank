@@ -20,8 +20,7 @@
   ],
   "dependencies": {
     "express": "~3.4.4",
-    "q": "~0.9.7",
-    "connect": "~2.11.0"
+    "q": "~0.9.7"
   },
   "devDependencies": {
     "grunt": "~0.4.1",

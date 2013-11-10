@@ -16,7 +16,7 @@ function create (port) {
         imposterController = ImposterController.create(imposters);
 
     app.use(middleware.createAbsoluteUrl(port));
-    app.use(express.logger({immediate: true, format: '[mb/' + port + '] :method :url'}));
+    app.use(express.logger({immediate: true, format: '[mb  /' + port + '] :method :url'}));
     app.use(express.json());
     app.listen(port);
     console.log('mountebank accepting orders at http://localhost:' + port);
