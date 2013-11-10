@@ -83,22 +83,17 @@ function create (protocols, imposters) {
         var protocol = request.body.protocol,
             port = request.body.port;
 
-        validate(protocol, port).then(
-            function () {
-                Imposter.create(protocolFor(protocol), port).then(
-                    function (imposter) {
-                        imposters[port] = imposter;
-                        response.setHeader('Location', imposter.url(response));
-                        response.statusCode = 201;
-                        response.send(imposter.hypermedia(response));
-                    }
-                );
-            },
-            function (errors) {
-                response.statusCode = 400;
-                response.send({errors: errors});
-            }
-        );
+        validate(protocol, port).then(function () {
+            return Imposter.create(protocolFor(protocol), port);
+        }).then(function (imposter) {
+            imposters[port] = imposter;
+            response.setHeader('Location', imposter.url(response));
+            response.statusCode = 201;
+            response.send(imposter.hypermedia(response));
+        }, function (errors) {
+            response.statusCode = 400;
+            response.send({errors: errors});
+        });
     }
 
     return {

@@ -19,4 +19,5 @@ Stories
   - maybe with a config switch to allow insecure, or do I care?
 15. build script to normalize whitespace
 15. build script to error on mocha .only calls
+15. build script to error on no use strict (unless jshint does this)
 

@@ -43,15 +43,11 @@ describe('ImpostersController', function () {
                 hypermedia: mock().returns("hypermedia")
             };
             Imposter = {
-                create: mock().returns({
-                    then: function (fn) { fn(imposter); }
-                })
+                create: mock().returnsPromiseResolvingTo(imposter)
             };
             ports = {
                 isValidPortNumber: mock().returns(true),
-                isPortInUse: mock().returns({
-                    then: function (fn) { fn(false); }
-                })
+                isPortInUse: mock().returnsPromiseResolvingTo(false)
             };
 
             mockery.enable({
@@ -132,9 +128,7 @@ describe('ImpostersController', function () {
         it('should return a 400 when the port is in use', function () {
             var controller = Controller.create([{ name: 'http' }], {});
             request.body = { protocol: 'http', port: 'invalid' };
-            ports.isPortInUse = mock().returns({
-                then: function (fn) { fn(true); }
-            });
+            ports.isPortInUse = mock().returnsPromiseResolvingTo(true);
 
             controller.post(request, response);
 

@@ -1,19 +1,21 @@
 'use strict';
 
+var Q = require('./fakes/fakeQ');
+
 function mock() {
     var wasCalled = false,
         actualArguments = [],
         message = '',
         slice = Array.prototype.slice,
-        retVal = null;
+        retVal;
 
     function setMessage (expected, actual) {
-        message = '\nExpected call with ' + expected;
+        message = '\nExpected call with ' + JSON.stringify(expected);
         if (wasCalled) {
-            message += '\nActual called with ' + actual;
+            message += '\nActual called with ' + JSON.stringify(actual);
         }
         else {
-            message += '\nNever called';
+            message += '\nActually never called';
         }
     }
 
@@ -25,6 +27,20 @@ function mock() {
 
     stubFunction.returns = function (value) {
         retVal = value;
+        return stubFunction;
+    };
+
+    stubFunction.returnsPromiseResolvingTo = function (value) {
+        var deferred = Q.defer();
+        deferred.resolve(value);
+        retVal = deferred.promise;
+        return stubFunction;
+    };
+
+    stubFunction.returnsPromiseRejection = function (reason) {
+        var deferred = Q.defer();
+        deferred.reject(reason);
+        retVal = deferred.promise;
         return stubFunction;
     };
 
