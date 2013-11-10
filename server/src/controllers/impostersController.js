@@ -20,7 +20,7 @@ function create (protocols, imposters) {
         return validatePort(port, errors);
     }
 
-    function validateProtocol(protocol, errors) {
+    function validateProtocol (protocol, errors) {
         if (!protocol) {
             errors.push({
                 code: "missing field",
@@ -35,7 +35,7 @@ function create (protocols, imposters) {
         }
     }
 
-    function validatePort(port, errors) {
+    function validatePort (port, errors) {
         var deferred = Q.defer();
 
         if (!port) {

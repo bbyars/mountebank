@@ -1,7 +1,7 @@
 'use strict';
 
 var parse = function (argv, defaultOptions) {
-    function parseOption(key, value) {
+    function parseOption (key, value) {
         var OPTION_PREFIX = /^--/,
             optionName;
 
@@ -23,7 +23,7 @@ var parse = function (argv, defaultOptions) {
         };
     }
 
-    function parseOptions() {
+    function parseOptions () {
         var options = {},
             option,
             key,
@@ -45,7 +45,7 @@ var parse = function (argv, defaultOptions) {
         return options;
     }
 
-    function parseCommand() {
+    function parseCommand () {
         return argv[0] || 'start';
     }
 

@@ -2,7 +2,7 @@
 
 var Q = require('./fakes/fakeQ');
 
-function mock() {
+function mock () {
     var wasCalled = false,
         actualArguments = [],
         message = '',
