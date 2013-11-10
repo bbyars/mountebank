@@ -4,7 +4,7 @@ var spawn = require('child_process').spawn,
     exec = require('child_process').exec,
     port = process.env.MB_PORT || 2525;
 
-module.exports = function(grunt) {
+module.exports = function (grunt) {
 
     grunt.loadNpmTasks('grunt-contrib-jshint');
     grunt.loadNpmTasks('grunt-mocha-test');

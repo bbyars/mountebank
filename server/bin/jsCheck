@@ -18,7 +18,7 @@ for FILE in `find . -type f -name '*.js' -not \( -path "*/node_modules/*" \)`; d
     fi
 
     # Check function definition convention
-    grep 'function [A-Za-z]\+(' "$FILE" > /dev/null
+    grep 'function [A-Za-z]\+(\|function(' "$FILE" > /dev/null
     if [ $? -eq 0 ]; then
         STATUS=1
         echo "$FILE uses function xyz() instead of function xyz () style for function definitions" >&2
