@@ -1,29 +1,66 @@
 'use strict';
 
-function defer() {
-    var resolved = false,
-        args = [],
-        promise = {
-            then: function (successFn, errorFn) {
-                if (resolved) {
-                    successFn.apply(this, args);
-                }
-                else {
-                    errorFn.apply(this, args);
-                }
-                return this;
-            }
-        },
-        slice = Array.prototype.slice;
+function isPromise (value) {
+    return value && typeof value.then === 'function';
+}
 
-    function resolve() {
-        args = slice.call(arguments);
-        resolved = true;
+function defer () {
+    var isResolved = false,
+        onResolve = function () {},
+        resolvedValue,
+        isRejected = false,
+        onReject = function () {},
+        rejectedReason,
+        promise = {
+            then: function (callback, errback) {
+                errback = errback || function (reason) {
+                    return reason;
+                };
+
+                onResolve = function () {
+                    var value = callback(resolvedValue);
+
+                    if (isPromise(value)) {
+                        return value;
+                    }
+                    else {
+                        var deferred = defer();
+                        deferred.resolve(value);
+                        return deferred.promise;
+                    }
+                };
+                onReject = function () {
+                    var value = errback(rejectedReason);
+
+                    if (isPromise(value)) {
+                        return value;
+                    }
+                    else {
+                        var deferred = defer();
+                        deferred.reject(value);
+                        return deferred.promise;
+                    }
+                };
+
+                if (isResolved) {
+                    return onResolve();
+                }
+                else if (isRejected) {
+                    return onReject();
+                }
+            }
+        };
+
+    function resolve (value) {
+        resolvedValue = value;
+        isResolved = true;
+        onResolve();
     }
 
-    function reject() {
-        args = slice.call(arguments);
-        resolved = false;
+    function reject (reason) {
+        rejectedReason = reason;
+        isRejected = true;
+        onReject();
     }
 
     return {
