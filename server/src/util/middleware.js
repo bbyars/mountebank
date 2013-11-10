@@ -1,3 +1,5 @@
+'use strict';
+
 function createAbsoluteUrl (port) {
     return function (request, response, next) {
         var host = request.headers.host || 'localhost:' + port;

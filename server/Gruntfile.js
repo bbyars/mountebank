@@ -1,6 +1,7 @@
 'use strict';
 
 var spawn = require('child_process').spawn,
+    exec = require('child_process').exec,
     port = process.env.MB_PORT || 2525;
 
 module.exports = function(grunt) {
@@ -72,8 +73,20 @@ module.exports = function(grunt) {
         });
     });
 
+    grunt.registerTask('jsCheck', 'Run JavaScript checks not covered by jshint', function () {
+        var done = this.async();
+
+        exec('bin/jsCheck', function (error, stdout, stderr) {
+            if (error) {
+                throw error;
+            }
+            done();
+        });
+    });
+
     grunt.registerTask('test:unit', 'Run the unit tests', ['mochaTest:unit']);
     grunt.registerTask('test:functional', 'Run the functional tests', ['mb:restart', 'mochaTest:functional', 'mb:stop']);
     grunt.registerTask('test', 'Run all tests', ['test:unit', 'test:functional']);
-    grunt.registerTask('default', ['test', 'jshint']);
+    grunt.registerTask('lint', 'Run all JavaScript lint checks', ['jsCheck', 'jshint']);
+    grunt.registerTask('default', ['test', 'lint']);
 };
