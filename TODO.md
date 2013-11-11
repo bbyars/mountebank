@@ -1,7 +1,6 @@
 Stories
 =======
 
-8. Allow base mock expectation of HTTP
 9. Allow base stub of HTTP (make requests array to allow different responses)
 4. Add coveralls.io (https://npmjs.org/package/grunt-mocha-cov)
 5. Allow base mock expectation of SMTP

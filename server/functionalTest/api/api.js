@@ -30,6 +30,11 @@ function responseFor (spec, body) {
 
     var request = http.request(options, function (response) {
         response.body = '';
+        response.getLinkFor = function (rel) {
+            return response.body.links.filter(function (link) {
+                return link.rel === rel;
+            })[0].href.replace(url, '');
+        };
         response.setEncoding('utf8');
         response.on('data', function (chunk) {
             response.body += chunk;
@@ -44,7 +49,6 @@ function responseFor (spec, body) {
     });
 
     request.on('error', function (error) {
-        console.log(error.message);
         deferred.reject(error);
     });
 
