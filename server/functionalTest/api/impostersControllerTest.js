@@ -51,6 +51,6 @@ describe('POST /imposters', function () {
         api.post('/imposters', {}).then(function (response) {
             assert.strictEqual(response.statusCode, 400);
             done();
-        })
+        });
     });
 });

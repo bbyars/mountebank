@@ -6,13 +6,13 @@ var assert = require('assert'),
 
 describe('http imposter', function () {
     describe('GET /imposters/:id', function () {
-        it('should return 404 if imposter has not been created', function () {
+        it('should return 404 if imposter has not been created', function (done) {
             api.get('/imposters/3535').then(function (response) {
                 assert.strictEqual(response.statusCode, 404);
                 done();
             }, function (error) {
                 done(error);
-            })
+            });
         });
     });
     describe('DELETE /imposters/:id should shutdown server at that port', function (done) {

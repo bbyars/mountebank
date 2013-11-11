@@ -24,7 +24,7 @@ function createImposterValidator (imposters) {
                 message: "I'm sure I can get someone to help you, but you have to ask first.  Try POSTing to /imposters?"
             }] });
         }
-    }
+    };
 }
 
 module.exports = {
