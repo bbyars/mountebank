@@ -25,6 +25,7 @@ function create (Protocol, port) {
         deferred.resolve({
             url: url,
             hypermedia: hypermedia,
+            requests: server.requests,
             stop: function () { server.close(); }
         });
     });

@@ -61,4 +61,25 @@ describe('ImposterController', function () {
             assert.deepEqual(imposters, {});
         });
     });
+
+    describe('#getRequests', function () {
+        it('should return 404 for invalid id', function () {
+            var controller = Controller.create({});
+
+            controller.getRequests({ params: { id: 1 }}, response);
+
+            assert.strictEqual(response.statusCode, 404);
+        });
+
+        it('should return imposter requests', function () {
+            var imposter = {
+                    requests: [1, 2, 3]
+                },
+                controller = Controller.create({ 1: imposter });
+
+            controller.getRequests({ params: { id: 1 }}, response);
+
+            assert.deepEqual(response.body, { requests: [1, 2, 3] });
+        });
+    });
 });

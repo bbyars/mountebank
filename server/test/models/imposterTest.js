@@ -17,8 +17,8 @@ describe('imposter', function () {
             };
             Protocol = {
                 name: 'http',
-                create: mock().returns({
-                    then: function (fn) { fn(); }
+                create: mock().returnsPromiseResolvingTo({
+                    requests: []
                 }),
                 close: mock()
             };

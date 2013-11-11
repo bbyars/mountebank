@@ -26,10 +26,11 @@ function create (port) {
     app.post('/imposters', impostersController.post);
     app.get('/imposters/:id', imposterController.get);
     app.del('/imposters/:id', imposterController.del);
+    app.get('/imposters/:id/requests', imposterController.getRequests);
 
     return {
         close: function () {
-            console.log('Ciao - see you soon?');
+            console.log('Adios - see you soon?');
         }
     };
 }

@@ -28,9 +28,22 @@ function create (imposters) {
         }
     }
 
+    function getRequests (request, response) {
+        var imposter = imposters[request.params.id];
+
+        if (imposter) {
+            response.send({ requests: imposter.requests });
+        }
+        else {
+            response.statusCode = 404;
+            response.send();
+        }
+    }
+
     return {
         get: get,
-        del: del
+        del: del,
+        getRequests: getRequests
     };
 }
 
