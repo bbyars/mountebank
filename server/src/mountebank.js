@@ -13,7 +13,8 @@ function create (port) {
     var app = express(),
         imposters = {},
         impostersController = ImpostersController.create(protocols, imposters),
-        imposterController = ImposterController.create(imposters);
+        imposterController = ImposterController.create(imposters),
+        validateImposterExists = middleware.createImposterValidator(imposters);
 
     app.use(middleware.createAbsoluteUrl(port));
     app.use(express.logger({immediate: true, format: '[mb  /' + port + '] :method :url'}));
@@ -24,9 +25,10 @@ function create (port) {
     app.get('/', homeController.get);
     app.get('/imposters', impostersController.get);
     app.post('/imposters', impostersController.post);
-    app.get('/imposters/:id', imposterController.get);
-    app.del('/imposters/:id', imposterController.del);
-    app.get('/imposters/:id/requests', imposterController.getRequests);
+    app.get('/imposters/:id', validateImposterExists, imposterController.get);
+    app.del('/imposters/:id', validateImposterExists, imposterController.del);
+    app.get('/imposters/:id/requests', validateImposterExists, imposterController.getRequests);
+    app.post('/imposters/:id/stubs', validateImposterExists, imposterController.addStub);
 
     return {
         close: function () {

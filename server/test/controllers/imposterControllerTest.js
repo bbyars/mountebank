@@ -13,14 +13,6 @@ describe('ImposterController', function () {
     });
 
     describe('#get', function () {
-        it('should return 404 for invalid id', function () {
-            var controller = Controller.create({});
-
-            controller.get({ params: { id: 1 }}, response);
-
-            assert.strictEqual(response.statusCode, 404);
-        });
-
         it('should return hypermedia for imposter at given id', function () {
             var imposters = {
                     1: { hypermedia: mock().returns("firstHypermedia") },
@@ -35,14 +27,6 @@ describe('ImposterController', function () {
     });
 
     describe('#del', function () {
-        it('should return 404 for invalid id', function () {
-            var controller = Controller.create({});
-
-            controller.del({ params: { id: 1 }}, response);
-
-            assert.strictEqual(response.statusCode, 404);
-        });
-
         it('should stop the imposter', function () {
             var imposter = { stop: mock() },
                 controller = Controller.create({ 1: imposter });
@@ -63,14 +47,6 @@ describe('ImposterController', function () {
     });
 
     describe('#getRequests', function () {
-        it('should return 404 for invalid id', function () {
-            var controller = Controller.create({});
-
-            controller.getRequests({ params: { id: 1 }}, response);
-
-            assert.strictEqual(response.statusCode, 404);
-        });
-
         it('should return imposter requests', function () {
             var imposter = {
                     requests: [1, 2, 3]

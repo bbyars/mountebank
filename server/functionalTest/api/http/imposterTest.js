@@ -5,6 +5,16 @@ var assert = require('assert'),
     ports = require('../../../src/util/ports');
 
 describe('http imposter', function () {
+    describe('GET /imposters/:id', function () {
+        it('should return 404 if imposter has not been created', function () {
+            api.get('/imposters/3535').then(function (response) {
+                assert.strictEqual(response.statusCode, 404);
+                done();
+            }, function (error) {
+                done(error);
+            })
+        });
+    });
     describe('DELETE /imposters/:id should shutdown server at that port', function (done) {
         api.post('/imposters', { protocol: 'http', port: 5555 }).then(function () {
             return ports.isPortInUse(5555);
@@ -21,7 +31,7 @@ describe('http imposter', function () {
         });
     });
 
-    describe('GET /imposter/:id/requests', function () {
+    describe('GET /imposters/:id/requests', function () {
         it('should provide access to all requests', function (done) {
             var requestsPath;
 

@@ -46,4 +46,11 @@ describe('POST /imposters', function () {
             done(error);
         });
     });
+
+    it('should return 400 on invalid input', function (done) {
+        api.post('/imposters', {}).then(function (response) {
+            assert.strictEqual(response.statusCode, 400);
+            done();
+        })
+    });
 });
