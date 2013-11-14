@@ -1,6 +1,7 @@
 #!/usr/bin/env sh
 
-env
+REVISION=${TRAVIS_BUILD_NUMBER:-0}
+
 scripts/normalizeWhitespace
 
 (

@@ -1,6 +1,7 @@
 Stories
 =======
 
+1. Continuous publishing with versioning of npm module
 9. Allow base stub of HTTP (make requests array to allow different responses)
 4. Add coveralls.io (https://npmjs.org/package/grunt-mocha-cov)
 5. Allow base mock expectation of SMTP

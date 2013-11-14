@@ -2,7 +2,8 @@
 
 var spawn = require('child_process').spawn,
     exec = require('child_process').exec,
-    port = process.env.MB_PORT || 2525;
+    port = process.env.MB_PORT || 2525,
+    revision = process.env.REVISION || 0;
 
 module.exports = function (grunt) {
 
@@ -76,7 +77,22 @@ module.exports = function (grunt) {
     grunt.registerTask('jsCheck', 'Run JavaScript checks not covered by jshint', function () {
         var done = this.async();
 
-        exec('bin/jsCheck', function (error, stdout, stderr) {
+        exec('bin/jsCheck', function (error) {
+            if (error) {
+                throw error;
+            }
+            done();
+        });
+    });
+
+    grunt.registerTask('version', 'Set the version number', function () {
+        var done = this.async(),
+            pattern = '"version": "([0-9]+)\\.([0-9]+)\\.([0-9]+)"',
+            replacement = '"version": "\\1.\\2.' + revision + '"',
+            sed = "sed -i '' -E 's/" + pattern + "/" + replacement + "/' package.json";
+
+        console.log(sed);
+        exec(sed, function (error) {
             if (error) {
                 throw error;
             }
@@ -88,5 +104,5 @@ module.exports = function (grunt) {
     grunt.registerTask('test:functional', 'Run the functional tests', ['mb:restart', 'mochaTest:functional', 'mb:stop']);
     grunt.registerTask('test', 'Run all tests', ['test:unit', 'test:functional']);
     grunt.registerTask('lint', 'Run all JavaScript lint checks', ['jsCheck', 'jshint']);
-    grunt.registerTask('default', ['test', 'lint']);
+    grunt.registerTask('default', ['version', 'test', 'lint']);
 };
