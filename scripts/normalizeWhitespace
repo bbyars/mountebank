@@ -2,10 +2,7 @@
 
 for FILE in `find . -type f -not \( -path "*/node_modules/*" -o -path "*/.git/*" -o -path "*/.DS_Store" -o -path "*/.idea/*" \)`
 do
-    echo $FILE
-    sed -i '' -E 's/[[:space:]]*$//' "$FILE"
-    
     # Remove trailing whitespace
-    sed -i '' -E 's/[[:space:]]*$//' "$FILE"
+    sed -i '' -E -e 's/[[:space:]]*$//' "$FILE"
 done
 
