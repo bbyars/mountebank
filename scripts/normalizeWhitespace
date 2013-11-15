@@ -1,8 +1,10 @@
 #!/usr/bin/env sh
 
+which sh
+uname
 for FILE in `find . -type f -not \( -path "*/node_modules/*" -o -path "*/.git/*" -o -path "*/.DS_Store" -o -path "*/.idea/*" \)`
 do
     # Remove trailing whitespace
-    sed -i '' -E -e 's/[[:space:]]*$//' "$FILE"
+    sed -E -e 's/[[:space:]]*$//' -i '' "$FILE"
 done
 
