@@ -70,9 +70,14 @@ allows multiple servers to be managed with the `mb` command, for instance:
 ## Building
 [![Build Status](https://travis-ci.org/bbyars/mountebank.png)](https://travis-ci.org/bbyars/mountebank)
 
-`./build` should do the trick.  If not, yell at me.
+`./build` should do the trick.  If not, yell at me.  At the moment I've tested on OS X and Linux.
+Windows support is coming.
 
 ## Contributing
 
 Contributions are welcome (see TODO for my own open loops, although I welcome other ideas).
 You can reach me at brandon.byars@gmail.com.
+
+Special thanks to [Pete Hodgson](http://blog.thepete.net/), who wrote up how to
+[test asynchronous JavaScript](http://martinfowler.com/articles/asyncJS.html) and, when I
+still didn't get it, showed me how to do it inside mountebank.
