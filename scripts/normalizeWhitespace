@@ -1,5 +1,6 @@
 #!/usr/bin/env sh
 
+ls -al /bin
 which sh
 uname
 for FILE in `find . -type f -not \( -path "*/node_modules/*" -o -path "*/.git/*" -o -path "*/.DS_Store" -o -path "*/.idea/*" \)`
