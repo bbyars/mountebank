@@ -1,5 +1,7 @@
 #!/usr/bin/env sh
 
+set -e
+
 npm install
 npm install grunt-cli
 MB_PORT=3535 node_modules/grunt-cli/bin/grunt

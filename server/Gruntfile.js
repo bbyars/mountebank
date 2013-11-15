@@ -2,6 +2,7 @@
 
 var spawn = require('child_process').spawn,
     exec = require('child_process').exec,
+    os = require('os'),
     port = process.env.MB_PORT || 2525,
     revision = process.env.REVISION || 0;
 
@@ -89,9 +90,15 @@ module.exports = function (grunt) {
         var done = this.async(),
             pattern = '"version": "([0-9]+)\\.([0-9]+)\\.([0-9]+)"',
             replacement = '"version": "\\1.\\2.' + revision + '"',
-            sed = "sed -i '' -E 's/" + pattern + "/" + replacement + "/' package.json";
+            sed = "sed -E -e 's/" + pattern + "/" + replacement + "/' ";// package.json";
 
-        console.log(sed);
+        if (os.platform() === 'darwin') {
+            sed += "-i '' package.json";
+        }
+        else {
+            sed += "-i'' package.json";
+        }
+
         exec(sed, function (error) {
             if (error) {
                 throw error;

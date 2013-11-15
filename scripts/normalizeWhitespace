@@ -3,6 +3,11 @@
 for FILE in `find . -type f -not \( -path "*/node_modules/*" -o -path "*/.git/*" -o -path "*/.DS_Store" -o -path "*/.idea/*" \)`
 do
     # Remove trailing whitespace
-    sed -E -e 's/[[:space:]]*$//' -i '' "$FILE"
+    # No consistent in-place operator between OS X and Linux
+    if [ `uname` = 'Darwin' ]; then
+        sed -E -e 's/[[:space:]]*$//' -i '' "$FILE"
+    else
+        sed -E -e 's/[[:space:]]*$//' -i'' "$FILE"
+    fi
 done
 
