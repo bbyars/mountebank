@@ -4,9 +4,3 @@ node_js:
 - '0.10'
 - '0.8'
 script: ./build
-deploy:
-  skip_cleanup: true
-  provider: npm
-  email: brandon.byars@gmail.com
-  api_key:
-    secure: rcu3zaApI5lJlch5aNXgg4eir9RAlNHp/I6YSBcm4ttIeS4zXpW2+9pO5BLEpMeMI3ToiBJEOV+Ii9y4RAeQTZc0Sd//y6ipZt/qXoyF2falNWC+oBvr1KI4yk5yoDWKMo4vb3U+Ns3GftgppJkeXEd7tSexkTH6J3DX1XxQAG8=
