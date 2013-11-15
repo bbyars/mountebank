@@ -17,3 +17,9 @@ Stories
 13. Add rpm / nuget / brew etc packages so not dependent on node.js
 14. Allow javascript injection for stubs to dynamically change behavior
   - maybe with a config switch to allow insecure, or do I care?
+
+Tweaks
+======
+
+1. Consider getting rid of isPortInUse.  There's a race condition anyway with it.
+   Just catch the exception and return the HTTP conflict code

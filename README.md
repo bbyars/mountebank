@@ -9,7 +9,7 @@ dependencies.
 
 mountebank will tell you that he supports every protocol ever invented, and a few
 lying in the weeds.  He will swear that he supports bindings in every language
-know to humanity.  Some of the implementations are lagging, but worry not, for his
+known to humanity.  Some of the implementations are lagging, but worry not, for his
 team of open source developers is legion.
 
 ## Goals
@@ -24,9 +24,9 @@ mountebank promises that he will do all these things.  Not yet of course, but hi
 of open source developers are working on it.
 
 mountebank wants you to have a good experience, but don't expect him to do too much.
-He knows that other products will sell you a microwave and give you a kitchen.
-mountebank has a more machiavellian aim.  He wants to sell you a kitchen and give you a
-fork.  Be forewarned - if you're looking for mountebank to parlay between real products and
+He knows that other products will sell you a toaster and give you a full oven.
+mountebank has a more machiavellian aim.  He wants to sell you an entire kitchen and give you
+a fork.  Be forewarned - if you're looking for mountebank to parlay between real products and
 remember the transactions, you may be disappointed.
 
 mountebank sees tremendous opportunity in the Uncharted Territories.  To some degree, this
@@ -34,23 +34,19 @@ is verification mocking for HTTP.  To a larger degree, this is verification mock
 other protocols.  He will provide HTTP stubs, because he knows you already know and expect
 such functionality, but that is not where his heart is.
 
-## Prerequisites
+## Installation
 
-mountebank is composed of two parts: a server that sits in for the third party web service,
-and client bindings.  The server is written using [node.js](http://nodejs.org/).  The client
-bindings are written in whatever language you are using.
+While his goals remain momentarily unfulfilled, mountebank humbly asks you to recognize
+[node.js](http://nodejs.org/) as a dependency.  Once you've installed node using your
+package manager of choice, `npm install -g mountebank` will install the
+[server](https://github.com/bbyars/mountebank/blob/master/server/README.md).
 
-Node.js is the only dependency to get the server up and running.  Node.js will work on any
-unix-like platform (including cygwin).  The easiest way to install it is probably you're
-package manager (e.g. `brew install node`).  [nvm](https://github.com/creationix/nvm) allows
-you to install multiple versions of node and quickly switch versions.
-
-## Building
-[![Build Status](https://travis-ci.org/bbyars/mountebank.png)](https://travis-ci.org/bbyars/mountebank)
-
-`./build` should do the trick.  If not, yell at me.
+The native language bindings are coming, of course.
 
 ## Running
+
+mountebank does not require that you say his full name, or even be able to pronounce it.
+`mb` works, because `mb` is the soul of wit.
 
 Once installed, `mb` will start the server on port 2525.  The `mb` command accepts the following
 options:
@@ -70,6 +66,11 @@ allows multiple servers to be managed with the `mb` command, for instance:
 
     mb restart --pidfile first.pid
     mb stop --pidfile second.pid
+
+## Building
+[![Build Status](https://travis-ci.org/bbyars/mountebank.png)](https://travis-ci.org/bbyars/mountebank)
+
+`./build` should do the trick.  If not, yell at me.
 
 ## Contributing
 

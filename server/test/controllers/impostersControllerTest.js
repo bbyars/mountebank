@@ -127,7 +127,7 @@ describe('ImpostersController', function () {
 
         it('should return a 400 when the port is in use', function () {
             var controller = Controller.create([{ name: 'http' }], {});
-            request.body = { protocol: 'http', port: 'invalid' };
+            request.body = { protocol: 'http', port: '80' };
             ports.isPortInUse = mock().returnsPromiseResolvingTo(true);
 
             controller.post(request, response);

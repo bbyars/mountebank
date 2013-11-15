@@ -1,6 +1,6 @@
 # mountebank server
 
-Here lies the brains of the operation.  The mountebank server happily accepts your
+Here lies the brains of the operation.  mountebank happily accepts your
 orders and delegates to his team of imposters.  While you are free to parlay with
 mountebank through his RESTful API, he would prefer to converse in your native
 language.  The API is [Esperanto](http://en.wikipedia.org/wiki/Esperanto), designed
@@ -15,13 +15,13 @@ the silvery speech of the priesthood.  As if to prove the point, he speaks in
 `application/json` rather than `application\vnd.mountebank+json`.  While he does
 provide hypermedia, it is more as a convenience to you, with no professorial dictate
 that you follow the script provided.  For your viewing pleasure, all resources
-and URL templates are here provided for your viewing pleasure.
+and URL templates are here provided.
 
 ### Home
 
 Unpretentious and welcoming, mirroring mountebank's simple good nature.  This endpoint
-exists for those who aspire to the upper echelons of [Richardson's Maturity
-Model](http://martinfowler.com/articles/richardsonMaturityModel.html), though they
+exists for those who aspire to the
+[priesthood](http://martinfowler.com/articles/richardsonMaturityModel.html), though they
 may be disappointed to find such a lowly language as `application/json` and the lack
 of URLs for relationships.  mountebank has no intention of forcing anybody to use
 this endpoint.
