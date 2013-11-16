@@ -46,8 +46,7 @@ describe('ImpostersController', function () {
                 create: mock().returnsPromiseResolvingTo(imposter)
             };
             ports = {
-                isValidPortNumber: mock().returns(true),
-                isPortInUse: mock().returnsPromiseResolvingTo(false)
+                isValidPortNumber: mock().returns(true)
             };
 
             mockery.enable({
@@ -57,7 +56,6 @@ describe('ImpostersController', function () {
             });
             mockery.registerMock('../models/imposter', Imposter);
             mockery.registerMock('../util/ports', ports);
-            mockery.registerMock('q', require('../fakes/fakeQ'));
             Controller = require('../../src/controllers/impostersController');
         });
 
@@ -123,31 +121,6 @@ describe('ImpostersController', function () {
                     message: "invalid value for 'port'"
                 }]
             });
-        });
-
-        it('should return a 400 when the port is in use', function () {
-            var controller = Controller.create([{ name: 'http' }], {});
-            request.body = { protocol: 'http', port: '80' };
-            ports.isPortInUse = mock().returnsPromiseResolvingTo(true);
-
-            controller.post(request, response);
-
-            assert.strictEqual(response.statusCode, 400);
-            assert.deepEqual(response.body, {
-                errors: [{
-                    code: "port conflict",
-                    message: "port already in use"
-                }]
-            });
-        });
-
-        it('should not check port availability if missing port', function () {
-            var controller = Controller.create([{ name: 'http' }], {});
-            request.body = { protocol: 'http' };
-
-            controller.post(request, response);
-
-            assert(!ports.isPortInUse.wasCalled());
         });
 
         it('should return a 400 for a missing protocol', function () {

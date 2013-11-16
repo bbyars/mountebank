@@ -21,6 +21,25 @@ function create (Protocol, port) {
     }
 
     var deferred = Q.defer();
+
+    process.on('uncaughtException', function (error) {
+        if (error.errno === 'EADDRINUSE') {
+            deferred.reject({
+                code: 'port in use',
+                message: 'The port is already in use'
+            });
+        }
+        else if (error.errno === 'EACCES') {
+            deferred.reject({
+                code: 'invalid access',
+                message: 'Run mb in superuser mode if you want to bind to that port'
+            });
+        }
+        else {
+            throw error;
+        }
+    });
+
     Protocol.create(port).then(function (server) {
         deferred.resolve({
             url: url,
@@ -29,6 +48,7 @@ function create (Protocol, port) {
             stop: function () { server.close(); }
         });
     });
+
     return deferred.promise;
 }
 

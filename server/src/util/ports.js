@@ -10,16 +10,6 @@ function isValidPortNumber (port) {
         port < 65536;
 }
 
-function isPortInUse (port) {
-    var deferred = Q.defer();
-    exec('lsof -i :' + port, function (error) {
-        // lsof returns 0 when it finds a bound process
-        deferred.resolve(error === null);
-    });
-    return deferred.promise;
-}
-
 module.exports = {
-    isValidPortNumber: isValidPortNumber,
-    isPortInUse: isPortInUse
+    isValidPortNumber: isValidPortNumber
 };

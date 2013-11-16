@@ -1,8 +1,7 @@
 'use strict';
 
 var ports = require('../util/ports'),
-    Imposter = require('../models/imposter'),
-    Q = require('q');
+    Imposter = require('../models/imposter');
 
 function create (protocols, imposters) {
 
@@ -13,14 +12,19 @@ function create (protocols, imposters) {
         return (matches.length === 0) ? undefined : matches[0];
     }
 
-    function validate (protocol, port) {
-        var errors = [];
-
-        validateProtocol(protocol, errors);
-        return validatePort(port, errors);
+    function isValid (protocol, port) {
+        return errorsFor(protocol, port).length === 0;
     }
 
-    function validateProtocol (protocol, errors) {
+    function errorsFor (protocol, port) {
+        var errors = [];
+
+        addProtocolErrors(protocol, errors);
+        addPortErrors(port, errors);
+        return errors;
+    }
+
+    function addProtocolErrors (protocol, errors) {
         if (!protocol) {
             errors.push({
                 code: "missing field",
@@ -35,9 +39,7 @@ function create (protocols, imposters) {
         }
     }
 
-    function validatePort (port, errors) {
-        var deferred = Q.defer();
-
+    function addPortErrors (port, errors) {
         if (!port) {
             errors.push({
                 code: "missing field",
@@ -50,26 +52,6 @@ function create (protocols, imposters) {
                 message: "invalid value for 'port'"
             });
         }
-
-        // Only check port availability if everything is good up to this point
-        if (errors.length > 0) {
-            deferred.reject(errors);
-            return deferred.promise;
-        }
-
-        ports.isPortInUse(port).then(function (portConflict) {
-            if (portConflict) {
-                errors.push({
-                    code: "port conflict",
-                    message: "port already in use"
-                });
-                deferred.reject(errors);
-            }
-            else {
-                deferred.resolve();
-            }
-        });
-        return deferred.promise;
     }
 
     function get (request, response) {
@@ -83,16 +65,25 @@ function create (protocols, imposters) {
         var protocol = request.body.protocol,
             port = request.body.port;
 
-        validate(protocol, port).then(function () {
-            return Imposter.create(protocolFor(protocol), port);
-        }).then(function (imposter) {
+        if (!isValid(protocol, port)) {
+            response.statusCode = 400;
+            response.send({errors: errorsFor(protocol, port)});
+            return;
+        }
+
+        Imposter.create(protocolFor(protocol), port).then(function (imposter) {
             imposters[port] = imposter;
             response.setHeader('Location', imposter.url(response));
             response.statusCode = 201;
             response.send(imposter.hypermedia(response));
-        }, function (errors) {
-            response.statusCode = 400;
-            response.send({errors: errors});
+        }, function (error) {
+            if (error.code === 'invalid access') {
+                response.statusCode = 403;
+            }
+            else {
+                response.statusCode = 400;
+            }
+            response.send({errors: [error]});
         });
     }
 

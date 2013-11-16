@@ -53,4 +53,27 @@ describe('POST /imposters', function () {
             done();
         });
     });
+
+    it('should return 400 on port conflict', function (done) {
+        api.post('/imposters', { protocol: 'http', port: 6565 }).then(function (response) {
+            assert.strictEqual(response.statusCode, 201);
+            return api.post('/imposters', { protocol: 'http', port: 6565 });
+        }).then(function (response) {
+            assert.strictEqual(response.statusCode, 400);
+            return api.del('/imposters/6565');
+        }).then(function () {
+            done();
+        }, function (error) {
+            done(error);
+        });
+    });
+
+    it('should return 403 when does not have permission to bind to port', function (done) {
+        api.post('/imposters', { protocol: 'http', port: 90 }).then(function (response) {
+            assert.strictEqual(response.statusCode, 403);
+            done();
+        }, function (error) {
+            done(error);
+        });
+    });
 });
