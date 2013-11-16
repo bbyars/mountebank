@@ -12,3 +12,4 @@ cd server
 )
 
 echo "TEST KEY: $unencrypted"
+echo "ENCRYPTED KEY: $encrypted"
