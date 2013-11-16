@@ -1,26 +1,31 @@
 Stories
 =======
 
-1. Continuous publishing with versioning of npm module
-9. Allow base stub of HTTP (make requests array to allow different responses)
-4. Add coveralls.io (https://npmjs.org/package/grunt-mocha-cov)
-5. Allow base mock expectation of SMTP
-6. Allow advanced header expectation of SMTP
-7. Allow body expectations of SMTP
-7. Build Java implementation of SMTP mock
-7. Wire up Java code in CI
-8. Build C# implementation of SMTP mock
-9. Wire up C# code in CI
-10. Build HTML representation of mocks
-11. Build HTML docs
-12. Support HTML stubbing
-13. Add rpm / nuget / brew etc packages so not dependent on node.js
-14. Allow javascript injection for stubs to dynamically change behavior
+1. Allow stub of HTTP (make requests array to allow different responses)
+2. Allow javascript injection for stubs to dynamically change behavior
   - maybe with a config switch to allow insecure, or do I care?
+3. Allow base mock expectation of SMTP
+4. Allow advanced header expectation of SMTP
+5. Allow body expectations of SMTP
+6. Add brew package
+7. Add rpm package
+8. Build Java implementation
+9. Wire up Java code in CI
+10. Allow building in Windows
+11. Build C# implementation
+12. Wire up C# code in CI
+13. Add nuget package
 
-Tweaks
-======
+Build Improvements
+==================
+1. Create .npmignore
+2. Continuous publishing with versioning of npm module
+ - generate readme in package.json
+3. Add coveralls.io (https://npmjs.org/package/grunt-mocha-cov)
 
-1. Get rid of ports
-2. Dependency injection; use require() calls outside
-3. Remove fakeQ and replace with Pete's suggestion.
+Future Directions
+=================
+1. Add HTML views for manual QA?
+2. Docs and website support
+3. Inline docs with mb app
+4. FTP?
