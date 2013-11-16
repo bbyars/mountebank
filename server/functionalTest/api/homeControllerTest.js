@@ -1,7 +1,6 @@
 'use strict';
 
 var assert = require('assert'),
-    http = require('http'),
     api = require('./api');
 
 describe('GET /', function () {

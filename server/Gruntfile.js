@@ -25,7 +25,17 @@ module.exports = function (grunt) {
                     after: false,
                     afterEach: false
                 },
-                newcap: false
+                newcap: false,
+                camelcase: true,
+                curly: true,
+                eqeqeq: true,
+                latedef: true,
+                undef: true,
+                unused: true,
+                trailing: true,
+                maxparams: 3,
+                maxdepth: 3,
+                maxcomplexity: 5
             }
         },
         mochaTest: {
@@ -67,7 +77,7 @@ module.exports = function (grunt) {
             mb = spawn('bin/mb', [command, '--port', port, '--pidfile', 'mb-grunt.pid']);
 
         ['stdout', 'stderr'].forEach(function (stream) {
-            mb[stream].on('data', function (data) {
+            mb[stream].on('data', function () {
                 if (!calledDone) {
                     calledDone = true;
                     done();

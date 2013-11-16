@@ -22,7 +22,7 @@ function create (imposters) {
         response.send({ requests: imposter.requests });
     }
 
-    function addStub (request, response) {
+    function addStub (/*request, response*/) {
 
     }
 
