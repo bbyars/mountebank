@@ -10,3 +10,5 @@ scripts/normalizeWhitespace
 cd server
 ./build
 )
+
+echo "TEST KEY: $unencrypted"
