@@ -6,9 +6,7 @@ node_js:
 
 env:
   global:
-    matrix:
-    - unencrypted: Unencrypted
-    - encrypted:
-      secure: SCgZHbMjs3XaSOnZ0r0rbi/oEe1dJrX97GeK6OG4CAr0qUiM5Rx5BWMsetjAFH2hjT53G8zReWm6ggZ8ASKae/kFXQbcms2pis/x0vA8x27ISYvikHDI0uzdD5yodBr6DZ0tB4cr9nEYKHghn7wnSuHxwzBTHA/cuDNkrh0zYbY=
+    encrypted:
+      secure: "VzLI2H/ubkQIs9oSuwEebVrxpZVqsfxDb8LKVhSMYJRstYA0YuhxZ4XQCoZcBmBeqf/5WTUzCwqVaXU3k+mWea6/MI/QPVgsT5dbGI0ToDOKDiJs4+f0jXl0KEHNl/hloJegE44i66Vsev5Wjex0idik899tjVbOhd1k7FF2j7Q="
 
 script: ./build
