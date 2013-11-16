@@ -118,36 +118,6 @@ describe('ImpostersController', function () {
             });
         });
 
-        it('should return a 400 for a port value too low', function () {
-            var controller = Controller.create([{ name: 'http' }], {});
-            request.body = { protocol: 'http', port: '0' };
-
-            controller.post(request, response);
-
-            assert.strictEqual(response.statusCode, 400);
-            assert.deepEqual(response.body, {
-                errors: [{
-                    code: "bad data",
-                    message: "invalid value for 'port'"
-                }]
-            });
-        });
-
-        it('should return a 400 for a port value too high', function () {
-            var controller = Controller.create([{ name: 'http' }], {});
-            request.body = { protocol: 'http', port: '65536' };
-
-            controller.post(request, response);
-
-            assert.strictEqual(response.statusCode, 400);
-            assert.deepEqual(response.body, {
-                errors: [{
-                    code: "bad data",
-                    message: "invalid value for 'port'"
-                }]
-            });
-        });
-
         it('should return a 400 for a missing protocol', function () {
             var controller = Controller.create([{ name: 'http' }], {});
             request.body = { port: 3535 };
