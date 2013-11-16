@@ -157,5 +157,43 @@ describe('ImpostersController', function () {
 
             assert.strictEqual(response.body.errors.length, 2, response.body.errors);
         });
+
+        it('should return a 403 for insufficient access', function () {
+            Imposter.create = mock().returnsPromiseRejection({
+                code: 'insufficient access',
+                key: 'value'
+            });
+            var controller = Controller.create([{ name: 'http' }], {});
+            request.body = { port: 3535, protocol: 'http' };
+
+            controller.post(request, response);
+
+            assert.strictEqual(response.statusCode, 403);
+            assert.deepEqual(response.body, {
+                errors: [{
+                    code: 'insufficient access',
+                    key: 'value'
+                }]
+            });
+        });
+
+        it('should return a 400 for other protocol creation errors', function () {
+            Imposter.create = mock().returnsPromiseRejection({
+                code: 'error',
+                key: 'value'
+            });
+            var controller = Controller.create([{ name: 'http' }], {});
+            request.body = { port: 3535, protocol: 'http' };
+
+            controller.post(request, response);
+
+            assert.strictEqual(response.statusCode, 400);
+            assert.deepEqual(response.body, {
+                errors: [{
+                    code: 'error',
+                    key: 'value'
+                }]
+            });
+        });
     });
 });

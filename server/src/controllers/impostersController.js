@@ -77,12 +77,7 @@ function create (protocols, imposters) {
             response.statusCode = 201;
             response.send(imposter.hypermedia(response));
         }, function (error) {
-            if (error.code === 'invalid access') {
-                response.statusCode = 403;
-            }
-            else {
-                response.statusCode = 400;
-            }
+            response.statusCode = (error.code === 'insufficient access') ? 403 : 400;
             response.send({errors: [error]});
         });
     }

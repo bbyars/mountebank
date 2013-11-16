@@ -31,7 +31,7 @@ function create (Protocol, port) {
         }
         else if (error.errno === 'EACCES') {
             deferred.reject({
-                code: 'invalid access',
+                code: 'insufficient access',
                 message: 'Run mb in superuser mode if you want to bind to that port'
             });
         }

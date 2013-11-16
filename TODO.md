@@ -21,7 +21,6 @@ Stories
 Tweaks
 ======
 
-1. Consider getting rid of isPortInUse.  There's a race condition anyway with it.
-   Just catch the exception and return the HTTP conflict code
+1. Get rid of ports
 2. Dependency injection; use require() calls outside
 3. Remove fakeQ and replace with Pete's suggestion.
