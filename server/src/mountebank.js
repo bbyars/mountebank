@@ -5,6 +5,7 @@ var express = require('express'),
     homeController = require('./controllers/homeController'),
     ImpostersController = require('./controllers/impostersController'),
     ImposterController = require('./controllers/imposterController'),
+    Imposter = require('./models/imposter'),
     protocols = [
         require('./models/http/server')
     ];
@@ -12,7 +13,11 @@ var express = require('express'),
 function create (port) {
     var app = express(),
         imposters = {},
-        impostersController = ImpostersController.create(protocols, imposters),
+        impostersController = ImpostersController.create({
+            protocols: protocols,
+            imposters: imposters,
+            Imposter: Imposter
+        }),
         imposterController = ImposterController.create(imposters),
         validateImposterExists = middleware.createImposterValidator(imposters);
 

@@ -1,20 +1,19 @@
 'use strict';
 
-var Imposter = require('../models/imposter'),
-    Validator = require('../util/validator');
+var Validator = require('../util/validator');
 
-function create (protocols, imposters) {
+function create (spec) {
 
     function protocolFor (protocolName) {
-        var matches = protocols.filter(function (protocol) {
+        var matches = spec.protocols.filter(function (protocol) {
             return protocol.name === protocolName;
         });
         return (matches.length === 0) ? undefined : matches[0];
     }
 
     function get (request, response) {
-        var result = Object.keys(imposters).reduce(function (accumulator, id) {
-            return accumulator.concat(imposters[id].hypermedia(response));
+        var result = Object.keys(spec.imposters).reduce(function (accumulator, id) {
+            return accumulator.concat(spec.imposters[id].hypermedia(response));
         }, []);
         response.send({ imposters: result });
     }
@@ -36,8 +35,8 @@ function create (protocols, imposters) {
         });
 
         if (validator.isValid()) {
-            Imposter.create(protocolFor(protocol), port).then(function (imposter) {
-                imposters[port] = imposter;
+            spec.Imposter.create(protocolFor(protocol), port).then(function (imposter) {
+                spec.imposters[port] = imposter;
                 response.setHeader('Location', imposter.url(response));
                 response.statusCode = 201;
                 response.send(imposter.hypermedia(response));
