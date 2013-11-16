@@ -6,6 +6,12 @@ node_js:
 
 env:
   global:
-    secure: "VzLI2H/ubkQIs9oSuwEebVrxpZVqsfxDb8LKVhSMYJRstYA0YuhxZ4XQCoZcBmBeqf/5WTUzCwqVaXU3k+mWea6/MI/QPVgsT5dbGI0ToDOKDiJs4+f0jXl0KEHNl/hloJegE44i66Vsev5Wjex0idik899tjVbOhd1k7FF2j7Q="
+    secure: "J5vdNiybfYg9syfhHlu40YqVAmntfciXsdkNpnXkG2bVV3JMTQ6dPysMU8ZInsoOC3FCEtrO7ZxSvo3n9p8GHC3lMSg4NDfpsGwt2TckpeKBhzOTARhbyEIg2GNxPUh2cGkxMUXYRVW1KlTiPnWaSqsDsrak93CBVXu3B7dXmOI="
 
 script: ./build
+
+after_success:
+  - echo "_auth = $npm_api_key" > ~/.npmrc
+  - echo "email = brandon.byars@gmail.com" >> ~/.npmrc
+  - echo >> ~/.npmrc
+  - (cd server && npm publish)
