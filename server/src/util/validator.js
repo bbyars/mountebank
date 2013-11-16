@@ -48,7 +48,7 @@ function Validator () {
 function create (options) {
 
     function errors () {
-        var validator = new Validator();
+        var validator = Validator();
         Object.keys(options).forEach(function (validation) {
             validator[validation](options[validation]);
         });

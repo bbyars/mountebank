@@ -1,6 +1,7 @@
 'use strict';
 
-var Validator = require('../util/validator');
+var Validator = require('../util/validator'),
+    Q = require('q');
 
 function create (spec) {
 
@@ -34,21 +35,21 @@ function create (spec) {
             requireProtocolSupport: protocolSupport
         });
 
-        if (validator.isValid()) {
-            spec.Imposter.create(protocolFor(protocol), port).then(function (imposter) {
-                spec.imposters[port] = imposter;
-                response.setHeader('Location', imposter.url(response));
-                response.statusCode = 201;
-                response.send(imposter.hypermedia(response));
-            }, function (error) {
-                response.statusCode = (error.code === 'insufficient access') ? 403 : 400;
-                response.send({errors: [error]});
-            });
-        }
-        else {
+        if (!validator.isValid()) {
             response.statusCode = 400;
             response.send({errors: validator.errors()});
+            return Q(true);
         }
+
+        return spec.Imposter.create(protocolFor(protocol), port).then(function (imposter) {
+            spec.imposters[port] = imposter;
+            response.setHeader('Location', imposter.url(response));
+            response.statusCode = 201;
+            response.send(imposter.hypermedia(response));
+        }, function (error) {
+            response.statusCode = (error.code === 'insufficient access') ? 403 : 400;
+            response.send({errors: [error]});
+        });
     }
 
     return {

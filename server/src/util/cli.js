@@ -6,15 +6,15 @@ var parse = function (argv, defaultOptions) {
             optionName;
 
         if (key.match(OPTION_PREFIX) === null) {
-            throw new Error("Invalid option '" + key + "'.");
+            throw Error("Invalid option '" + key + "'.");
         }
         optionName = key.replace(OPTION_PREFIX, '');
 
         if (!defaultOptions.hasOwnProperty(optionName)) {
-            throw new Error("Option '" + optionName + "' not recognized.");
+            throw Error("Option '" + optionName + "' not recognized.");
         }
         if (value === undefined) {
-            throw new Error("No argument provided for option '" + optionName + "'.");
+            throw Error("No argument provided for option '" + optionName + "'.");
         }
 
         return {

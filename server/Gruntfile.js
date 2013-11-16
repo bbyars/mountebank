@@ -24,7 +24,8 @@ module.exports = function (grunt) {
                     beforeEach: false,
                     after: false,
                     afterEach: false
-                }
+                },
+                newcap: false
             }
         },
         mochaTest: {

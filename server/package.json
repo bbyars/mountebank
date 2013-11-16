@@ -27,8 +27,7 @@
     "grunt-contrib-jshint": "~0.7.0",
     "mocha": "~1.13.0",
     "grunt-mocha-test": "~0.7.0",
-    "blanket": "~1.1.5",
-    "mockery": "~1.4.0"
+    "blanket": "~1.1.5"
   },
   "engines": {
     "node": ">=0.8"

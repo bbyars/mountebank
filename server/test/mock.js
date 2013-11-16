@@ -1,7 +1,5 @@
 'use strict';
 
-var Q = require('./fakes/fakeQ');
-
 function mock () {
     var wasCalled = false,
         actualArguments = [],
@@ -27,20 +25,6 @@ function mock () {
 
     stubFunction.returns = function (value) {
         retVal = value;
-        return stubFunction;
-    };
-
-    stubFunction.returnsPromiseResolvingTo = function (value) {
-        var deferred = Q.defer();
-        deferred.resolve(value);
-        retVal = deferred.promise;
-        return stubFunction;
-    };
-
-    stubFunction.returnsPromiseRejection = function (reason) {
-        var deferred = Q.defer();
-        deferred.reject(reason);
-        retVal = deferred.promise;
         return stubFunction;
     };
 

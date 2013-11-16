@@ -2,12 +2,12 @@
 
 var assert = require('assert'),
     mock = require('../mock').mock,
-    mockery = require('mockery'),
-    fakeQ = require('../fakes/fakeQ');
+    Imposter = require('../../src/models/imposter'),
+    Q = require('q');
 
 describe('imposter', function () {
     describe('#create', function () {
-        var response, Protocol, Imposter;
+        var response, Protocol;
 
         beforeEach(function () {
             response = {
@@ -17,31 +17,19 @@ describe('imposter', function () {
             };
             Protocol = {
                 name: 'http',
-                create: mock().returnsPromiseResolvingTo({
-                    requests: []
-                }),
+                create: mock().returns(Q({ requests: [] })),
                 close: mock()
             };
-            mockery.enable({
-                useCleanCache: true,
-                warnOnUnregistered: false,
-                warnOnReplace: false
-            });
-            mockery.registerMock('q', fakeQ);
-            Imposter = require('../../src/models/imposter');
         });
 
-        afterEach(function () {
-            mockery.disable();
-        });
-
-        it('should return url', function () {
+        it('should return url', function (done) {
             Imposter.create(Protocol, 3535).then(function (imposter) {
                 assert.strictEqual(imposter.url(response), 'http://localhost/imposters/3535');
+                done();
             });
         });
 
-        it('should return hypermedia links', function () {
+        it('should return hypermedia links', function (done) {
             Imposter.create(Protocol, 3535).then(function (imposter) {
                 assert.deepEqual(imposter.hypermedia(response), {
                     protocol: 'http',
@@ -52,12 +40,14 @@ describe('imposter', function () {
                         { href: 'http://localhost/imposters/3535/stubs', rel: 'stubs' }
                     ]
                 });
+                done();
             });
         });
 
-        it('should create protocol server on provided port', function () {
+        it('should create protocol server on provided port', function (done) {
             Imposter.create(Protocol, 3535).then(function () {
                 assert(Protocol.create.wasCalledWith(3535));
+                done();
             });
         });
     });
