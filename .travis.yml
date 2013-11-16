@@ -6,7 +6,6 @@ node_js:
 
 env:
   global:
-    encrypted:
-      secure: "VzLI2H/ubkQIs9oSuwEebVrxpZVqsfxDb8LKVhSMYJRstYA0YuhxZ4XQCoZcBmBeqf/5WTUzCwqVaXU3k+mWea6/MI/QPVgsT5dbGI0ToDOKDiJs4+f0jXl0KEHNl/hloJegE44i66Vsev5Wjex0idik899tjVbOhd1k7FF2j7Q="
+    secure: "VzLI2H/ubkQIs9oSuwEebVrxpZVqsfxDb8LKVhSMYJRstYA0YuhxZ4XQCoZcBmBeqf/5WTUzCwqVaXU3k+mWea6/MI/QPVgsT5dbGI0ToDOKDiJs4+f0jXl0KEHNl/hloJegE44i66Vsev5Wjex0idik899tjVbOhd1k7FF2j7Q="
 
 script: ./build
