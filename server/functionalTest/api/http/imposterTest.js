@@ -1,8 +1,7 @@
 'use strict';
 
 var assert = require('assert'),
-    api = require('../api'),
-    ports = require('../../../src/util/ports');
+    api = require('../api');
 
 describe('http imposter', function () {
 
@@ -19,14 +18,20 @@ describe('http imposter', function () {
 
     describe('DELETE /imposters/:id should shutdown server at that port', function (done) {
         api.post('/imposters', { protocol: 'http', port: 5555 }).then(function () {
-            return ports.isPortInUse(5555);
-        }).then(function (isPortInUse) {
-            assert.strictEqual(isPortInUse, true);
+            return api.post('/imposters', { protocol: 'http', port: 5555 });
+        }).then(function (response) {
+            assert.strictEqual(response.statusCode, 400, "Allowed to bind to port twice");
+
+            return api.del('/imposters/5555');
+        }).then(function (response) {
+            assert.strictEqual(response.statusCode, 200, "Delete failed");
+
+            return api.post('/imposters', { protocol: 'http', port: 5555 });
+        }).then(function (response) {
+            assert.strictEqual(response.statusCode, 201, "Delete did not free up port");
+
             return api.del('/imposters/5555');
         }).then(function () {
-            return ports.isPortInUse(5555);
-        }).then(function (isPortInUse) {
-            assert.strictEqual(isPortInUse, false);
             done();
         }, function (error) {
             done(error);

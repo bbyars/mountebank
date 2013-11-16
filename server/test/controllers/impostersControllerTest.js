@@ -34,7 +34,7 @@ describe('ImpostersController', function () {
     });
 
     describe('#post', function () {
-        var request, Imposter, imposter, ports;
+        var request, Imposter, imposter;
 
         beforeEach(function () {
             request = { body: {} };
@@ -45,9 +45,6 @@ describe('ImpostersController', function () {
             Imposter = {
                 create: mock().returnsPromiseResolvingTo(imposter)
             };
-            ports = {
-                isValidPortNumber: mock().returns(true)
-            };
 
             mockery.enable({
                 useCleanCache: true,
@@ -55,7 +52,6 @@ describe('ImpostersController', function () {
                 warnOnUnregistered: false
             });
             mockery.registerMock('../models/imposter', Imposter);
-            mockery.registerMock('../util/ports', ports);
             Controller = require('../../src/controllers/impostersController');
         });
 
@@ -107,10 +103,39 @@ describe('ImpostersController', function () {
             });
         });
 
-        it('should return a 400 for an invalid port', function () {
+        it('should return a 400 for a floating point port', function () {
             var controller = Controller.create([{ name: 'http' }], {});
-            request.body = { protocol: 'http', port: 'invalid' };
-            ports.isValidPortNumber = mock().returns(false);
+            request.body = { protocol: 'http', port: '123.45' };
+
+            controller.post(request, response);
+
+            assert.strictEqual(response.statusCode, 400);
+            assert.deepEqual(response.body, {
+                errors: [{
+                    code: "bad data",
+                    message: "invalid value for 'port'"
+                }]
+            });
+        });
+
+        it('should return a 400 for a port value too low', function () {
+            var controller = Controller.create([{ name: 'http' }], {});
+            request.body = { protocol: 'http', port: '0' };
+
+            controller.post(request, response);
+
+            assert.strictEqual(response.statusCode, 400);
+            assert.deepEqual(response.body, {
+                errors: [{
+                    code: "bad data",
+                    message: "invalid value for 'port'"
+                }]
+            });
+        });
+
+        it('should return a 400 for a port value too high', function () {
+            var controller = Controller.create([{ name: 'http' }], {});
+            request.body = { protocol: 'http', port: '65536' };
 
             controller.post(request, response);
 

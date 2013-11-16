@@ -1,7 +1,6 @@
 'use strict';
 
-var ports = require('../util/ports'),
-    Imposter = require('../models/imposter');
+var Imposter = require('../models/imposter');
 
 function create (protocols, imposters) {
 
@@ -46,12 +45,19 @@ function create (protocols, imposters) {
                 message: "'port' is a required field"
             });
         }
-        if (port && !ports.isValidPortNumber(port)) {
+        if (port && !isValidPortNumber(port)) {
             errors.push({
                 code: "bad data",
                 message: "invalid value for 'port'"
             });
         }
+    }
+
+    function isValidPortNumber (port) {
+        return typeof(port) !== 'undefined' &&
+            port.toString().indexOf('.') === -1 &&
+            port > 0 &&
+            port < 65536;
     }
 
     function get (request, response) {
