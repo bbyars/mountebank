@@ -3,15 +3,16 @@ node_js:
 - '0.11'
 - '0.10'
 - '0.8'
+
 env:
   global:
-    npm_api_key:
-      secure: TXkrFgYnEO2b0JeBJMO3QUO/4sr1ooITHlj4rCAYDmT49dqB3oCi/9aCdWnYZZ8r5IhnHoiOqM8dGWBfG3iG2Jo6M6mjjFKKTmiYlUGifEvyZzO8fN0Ic2F0LSWw0uJVRFXSqqARy6y7g8wtIFFp4UQvRDiMKA8MXbomb84dp+M=
-    test_key:
-      secure: POTZIHT2SFx/LUpwOa1kE4DXP1TaTI6dawKbLAnUVAAyyo1n+qnWveEL/W2OuuQYbIX3FmEzwEW5fdqcvFnuG/Bl8HNw1aOF4/BYwwQQgjWkYe1zCBLD19jt2wCU2njgSnTJfDm4F8NqgxEVaZr2uy1RxR2JwStKyMarGk6k0j8=
+    - npm_api_key:
+        secure: TXkrFgYnEO2b0JeBJMO3QUO/4sr1ooITHlj4rCAYDmT49dqB3oCi/9aCdWnYZZ8r5IhnHoiOqM8dGWBfG3iG2Jo6M6mjjFKKTmiYlUGifEvyZzO8fN0Ic2F0LSWw0uJVRFXSqqARy6y7g8wtIFFp4UQvRDiMKA8MXbomb84dp+M=
+    - test_key:
+        secure: POTZIHT2SFx/LUpwOa1kE4DXP1TaTI6dawKbLAnUVAAyyo1n+qnWveEL/W2OuuQYbIX3FmEzwEW5fdqcvFnuG/Bl8HNw1aOF4/BYwwQQgjWkYe1zCBLD19jt2wCU2njgSnTJfDm4F8NqgxEVaZr2uy1RxR2JwStKyMarGk6k0j8=
+
 script: ./build
-deploy:
-  skip_cleanup: true
+
 after_success:
 - echo "TEST KEY: $test_key"
 - echo "_auth = $npm_api_key" > ~/.npmrc
