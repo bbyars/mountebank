@@ -9,7 +9,7 @@ describe('GET /', function () {
             assert.strictEqual(response.statusCode, 200);
             var impostersUrl = response.getLinkFor('imposters');
             return api.get(impostersUrl);
-        }).then(function (response) {
+        }).done(function (response) {
             assert.strictEqual(response.statusCode, 200);
             done();
         }, function (error) {

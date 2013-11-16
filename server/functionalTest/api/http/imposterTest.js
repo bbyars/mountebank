@@ -7,7 +7,7 @@ describe('http imposter', function () {
 
     describe('GET /imposters/:id', function () {
         it('should return 404 if imposter has not been created', function (done) {
-            api.get('/imposters/3535').then(function (response) {
+            api.get('/imposters/3535').done(function (response) {
                 assert.strictEqual(response.statusCode, 404);
                 done();
             }, function (error) {
@@ -16,25 +16,23 @@ describe('http imposter', function () {
         });
     });
 
-    describe('DELETE /imposters/:id should shutdown server at that port', function (done) {
-        api.post('/imposters', { protocol: 'http', port: 5555 }).then(function () {
-            return api.post('/imposters', { protocol: 'http', port: 5555 });
-        }).then(function (response) {
-            assert.strictEqual(response.statusCode, 400, "Allowed to bind to port twice");
+    describe('DELETE /imposters/:id should shutdown server at that port', function () {
+        it('should shutdown server at that port', function (done) {
+            api.post('/imposters', { protocol: 'http', port: 5555 }).then(function () {
+                return api.del('/imposters/5555');
+            }).then(function (response) {
+                assert.strictEqual(response.statusCode, 200, 'Delete failed');
 
-            return api.del('/imposters/5555');
-        }).then(function (response) {
-            assert.strictEqual(response.statusCode, 200, "Delete failed");
+                return api.post('/imposters', { protocol: 'http', port: 5555 });
+            }).then(function (response) {
+                assert.strictEqual(response.statusCode, 201, 'Delete did not free up port');
 
-            return api.post('/imposters', { protocol: 'http', port: 5555 });
-        }).then(function (response) {
-            assert.strictEqual(response.statusCode, 201, "Delete did not free up port");
-
-            return api.del('/imposters/5555');
-        }).then(function () {
-            done();
-        }, function (error) {
-            done(error);
+                return api.del('/imposters/5555');
+            }).done(function () {
+                done();
+            }, function (error) {
+                done(error);
+            });
         });
     });
 
@@ -56,7 +54,7 @@ describe('http imposter', function () {
                 assert.deepEqual(requests, ['/first', '/second']);
 
                 return api.del('/imposters/6565');
-            }).then(function () {
+            }).done(function () {
                 done();
             }, function (error) {
                 done(error);

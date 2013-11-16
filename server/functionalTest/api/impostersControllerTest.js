@@ -26,7 +26,7 @@ describe('POST /imposters', function () {
             assert.strictEqual(response.statusCode, 200);
 
             return api.del(imposterPath);
-        }).then(function () {
+        }).done(function () {
             done();
         }, function (error) {
             done(error);
@@ -40,7 +40,7 @@ describe('POST /imposters', function () {
             assert.strictEqual(response.statusCode, 200);
 
             return api.del('/imposters/5555');
-        }).then(function () {
+        }).done(function () {
             done();
         }, function (error) {
             done(error);
@@ -48,9 +48,11 @@ describe('POST /imposters', function () {
     });
 
     it('should return 400 on invalid input', function (done) {
-        api.post('/imposters', {}).then(function (response) {
+        api.post('/imposters', {}).done(function (response) {
             assert.strictEqual(response.statusCode, 400);
             done();
+        }, function (error) {
+            done(error);
         });
     });
 
@@ -61,7 +63,7 @@ describe('POST /imposters', function () {
         }).then(function (response) {
             assert.strictEqual(response.statusCode, 400);
             return api.del('/imposters/6565');
-        }).then(function () {
+        }).done(function () {
             done();
         }, function (error) {
             done(error);
@@ -69,7 +71,7 @@ describe('POST /imposters', function () {
     });
 
     it('should return 403 when does not have permission to bind to port', function (done) {
-        api.post('/imposters', { protocol: 'http', port: 90 }).then(function (response) {
+        api.post('/imposters', { protocol: 'http', port: 90 }).done(function (response) {
             assert.strictEqual(response.statusCode, 403);
             done();
         }, function (error) {

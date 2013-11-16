@@ -40,7 +40,7 @@ function create (Protocol, port) {
         }
     });
 
-    Protocol.create(port).then(function (server) {
+    Protocol.create(port).done(function (server) {
         deferred.resolve({
             url: url,
             hypermedia: hypermedia,
