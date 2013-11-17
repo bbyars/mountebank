@@ -18,10 +18,7 @@ Stories
 
 Build Improvements
 ==================
-1. Create .npmignore
-2. Continuous publishing with versioning of npm module
- - generate readme in package.json
-3. Add coveralls.io (https://npmjs.org/package/grunt-mocha-cov)
+1. Add coveralls.io (https://npmjs.org/package/grunt-mocha-cov)
 
 Future Directions
 =================

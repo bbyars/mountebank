@@ -5,10 +5,12 @@
   "author": "Brandon Byars <brandon.byars@gmail.com>",
   "description": "Over the wire test doubles",
   "homepage": "https://github.com/bbyars/mountebank",
-  "license": { "license": "MIT" },
+  "license": {
+    "license": "MIT"
+  },
   "repository": {
-     "type": "git",
-     "url": "https://github.com/bbyars/mountebank.git"
+    "type": "git",
+    "url": "https://github.com/bbyars/mountebank.git"
   },
   "bin": {
     "mb": "./bin/mb"
@@ -17,11 +19,8 @@
     "start": "./bin/mb",
     "restart": "./bin/mb restart",
     "stop": "./bin/mb stop",
-    "test": "grunt test"
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/bbyars/mountebank.git"
+    "test": "grunt test",
+    "blanket": { "pattern": "src" }
   },
   "keywords": [
     "test",
@@ -40,10 +39,15 @@
     "grunt-contrib-jshint": "~0.7.0",
     "mocha": "~1.13.0",
     "grunt-mocha-test": "~0.7.0",
-    "blanket": "~1.1.5"
+    "blanket": "~1.1.5",
+    "coveralls": "~2.3.0",
+    "mocha-lcov-reporter": "0.0.1"
   },
   "engines": {
     "node": ">=0.8"
   },
-  "os": ["darwin", "linux"]
+  "os": [
+    "darwin",
+    "linux"
+  ]
 }

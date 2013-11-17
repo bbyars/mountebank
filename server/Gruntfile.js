@@ -42,10 +42,6 @@ module.exports = function (grunt) {
             unit: {
                 options: {
                     reporter: 'spec'
-                    /*,
-                    This breaks some of the mock tests
-                    require: 'coverage/blanket'
-                    */
                 },
                 src: ['test/**/*.js']
             },
@@ -59,7 +55,8 @@ module.exports = function (grunt) {
                 options: {
                     reporter: 'html-cov',
                     quiet: true,
-                    captureFile: 'coverage.html'
+                    captureFile: 'coverage.html',
+                    require: 'coverage/blanket'
                 },
                 src: ['test/**/*.js']
             }
@@ -123,6 +120,7 @@ module.exports = function (grunt) {
     grunt.registerTask('test:unit', 'Run the unit tests', ['mochaTest:unit']);
     grunt.registerTask('test:functional', 'Run the functional tests', ['mb:restart', 'mochaTest:functional', 'mb:stop']);
     grunt.registerTask('test', 'Run all tests', ['test:unit', 'test:functional']);
+    grunt.registerTask('coverage', 'Generate code coverage', ['mochaTest:coverage']);
     grunt.registerTask('lint', 'Run all JavaScript lint checks', ['jsCheck', 'jshint']);
     grunt.registerTask('default', ['version', 'test', 'lint']);
 };

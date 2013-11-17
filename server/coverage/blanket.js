@@ -1,6 +1,6 @@
 'use strict';
 
+console.log('Current directory: ' + process.cwd());
 require('blanket')({
-    // Only files that match the pattern will be instrumented
-    pattern: 'server/src/'
+    pattern: '/server/src/'
 });
