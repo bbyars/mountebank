@@ -26,4 +26,3 @@ Future Directions
 
 Fixes
 =====
-1. Remove uncaughtException handler in imposter once create returns

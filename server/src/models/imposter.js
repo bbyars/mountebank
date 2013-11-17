@@ -20,27 +20,29 @@ function create (Protocol, port) {
         };
     }
 
-    var deferred = Q.defer();
+    var deferred = Q.defer(),
+        errorHandler = function (error) {
+            if (error.errno === 'EADDRINUSE') {
+                deferred.reject({
+                    code: 'port in use',
+                    message: 'The port is already in use'
+                });
+            }
+            else if (error.errno === 'EACCES') {
+                deferred.reject({
+                    code: 'insufficient access',
+                    message: 'Run mb in superuser mode if you want to bind to that port'
+                });
+            }
+            else {
+                throw error;
+            }
+        };
 
-    process.on('uncaughtException', function (error) {
-        if (error.errno === 'EADDRINUSE') {
-            deferred.reject({
-                code: 'port in use',
-                message: 'The port is already in use'
-            });
-        }
-        else if (error.errno === 'EACCES') {
-            deferred.reject({
-                code: 'insufficient access',
-                message: 'Run mb in superuser mode if you want to bind to that port'
-            });
-        }
-        else {
-            throw error;
-        }
-    });
-
+    process.once('uncaughtException', errorHandler);
     Protocol.create(port).done(function (server) {
+        process.removeListener('uncaughtException', errorHandler);
+
         deferred.resolve({
             url: url,
             hypermedia: hypermedia,
