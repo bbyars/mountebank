@@ -117,6 +117,18 @@ module.exports = function (grunt) {
         });
     });
 
+    grunt.registerTask('coveralls', 'Send coverage output to coveralls.io', function (done) {
+        var mocha = './node_modules/.bin/mocha --require blanket --reporter mocha-lcov-reporter test/**/*.js',
+            command = mocha + '  | ./node_modules/coveralls/bin/coveralls.js';
+
+        exec(command, function (error) {
+            if (error) {
+                throw error;
+            }
+            done();
+        });
+    });
+
     grunt.registerTask('test:unit', 'Run the unit tests', ['mochaTest:unit']);
     grunt.registerTask('test:functional', 'Run the functional tests', ['mb:restart', 'mochaTest:functional', 'mb:stop']);
     grunt.registerTask('test', 'Run all tests', ['test:unit', 'test:functional']);

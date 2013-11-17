@@ -25,6 +25,6 @@ if [ $REVISION -gt 0 ]; then
         echo "_auth = $npm_api_key" > ~/.npmrc
         echo "email = brandon.byars@gmail.com" >> ~/.npmrc
         echo >> ~/.npmrc
-        (cd server && npm publish)
+        (cd server && grunt coveralls && npm publish)
     fi
 fi

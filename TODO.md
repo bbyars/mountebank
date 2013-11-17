@@ -16,10 +16,6 @@ Stories
 12. Wire up C# code in CI
 13. Add nuget package
 
-Build Improvements
-==================
-1. Add coveralls.io (https://npmjs.org/package/grunt-mocha-cov)
-
 Future Directions
 =================
 1. Add HTML views for manual QA?

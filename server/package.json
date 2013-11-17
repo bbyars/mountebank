@@ -20,7 +20,7 @@
     "restart": "./bin/mb restart",
     "stop": "./bin/mb stop",
     "test": "grunt test",
-    "blanket": { "pattern": "src" }
+    "blanket": { "pattern": "/server/src/" }
   },
   "keywords": [
     "test",
