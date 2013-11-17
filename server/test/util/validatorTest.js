@@ -91,6 +91,30 @@ describe('Validator', function () {
 
             assert.ok(!validator.isValid());
         });
+
+        it('should not be valid for non array', function () {
+            var validator = Validator.create({
+                requireNonEmptyArrays: { key: 'value' }
+            });
+
+            assert.ok(!validator.isValid());
+        });
+
+        it('should not be valid for empty array', function () {
+            var validator = Validator.create({
+                requireNonEmptyArrays: { key: [] }
+            });
+
+            assert.ok(!validator.isValid());
+        });
+
+        it('should be valid for non-empty array', function () {
+            var validator = Validator.create({
+                requireNonEmptyArrays: { key: [0] }
+            });
+
+            assert.ok(validator.isValid());
+        });
     });
 
     describe('#errorsFor', function () {
@@ -145,6 +169,17 @@ describe('Validator', function () {
             });
 
             assert.deepEqual(validator.errors(), []);
+        });
+
+        it('should add error for non-empty array', function () {
+            var validator = Validator.create({
+                requireNonEmptyArrays: { key: [] }
+            });
+
+            assert.deepEqual(validator.errors(), [{
+                code: "bad data",
+                message: "'key' must be a non-empty array"
+            }]);
         });
     });
 });

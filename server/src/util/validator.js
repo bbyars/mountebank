@@ -37,10 +37,26 @@ function Validator () {
         }
     }
 
+    function isArray (value) {
+        return Object.prototype.toString.call(value) === '[object Array]';
+    }
+
+    function requireNonEmptyArrays (spec) {
+        Object.keys(spec).forEach(function (name) {
+            if (!isArray(spec[name]) || spec[name].length === 0) {
+                errors.push({
+                    code: "bad data",
+                    message: "'" + name + "' must be a non-empty array"
+                });
+            }
+        });
+    }
+
     return {
         requiredFields: requiredFields,
         requireProtocolSupport: requireProtocolSupport,
         requireValidPort: requireValidPort,
+        requireNonEmptyArrays: requireNonEmptyArrays,
         errors: errors
     };
 }

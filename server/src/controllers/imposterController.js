@@ -22,8 +22,18 @@ function create (imposters) {
         response.send({ requests: imposter.requests });
     }
 
-    function addStub (/*request, response*/) {
+    function addStub (request, response) {
+        var imposter = imposters[request.params.id];
 
+        if (imposter.isValidStubRequest(request.body)) {
+            imposter.addStub(request.body);
+            response.statusCode = 200;
+            response.send();
+        }
+        else {
+            response.statusCode = 400;
+            response.send({ errors: imposter.stubRequestErrorsFor(request.body) });
+        }
     }
 
     return {

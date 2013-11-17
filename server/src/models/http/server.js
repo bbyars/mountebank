@@ -1,7 +1,8 @@
 'use strict';
 
 var http = require('http'),
-    Q = require('q');
+    Q = require('q'),
+    StubRepository = require('./stubRepository');
 
 function simplify (request) {
     var deferred = Q.defer();
@@ -26,15 +27,17 @@ function simplify (request) {
 var create = function (port) {
     var logPrefix = '[http/' + port + '] ',
         deferred = Q.defer(),
-        requests = [];
+        requests = [],
+        stubs = StubRepository.create();
 
     var server = http.createServer(function (request, response) {
         console.log(logPrefix + request.method + ' ' + request.url);
 
         simplify(request).then(function (simpleRequest) {
             requests.push(simpleRequest);
-            response.writeHead(200);
-            response.end();
+            var stubResponse = stubs.resolve(simpleRequest);
+            response.writeHead(stubResponse.statusCode, stubResponse.headers);
+            response.end(stubResponse.body, 'utf8');
         });
     });
 
@@ -46,6 +49,9 @@ var create = function (port) {
         console.log(logPrefix + 'Open for business...');
         deferred.resolve({
             requests: requests,
+            isValidStubRequest: stubs.isValidStubRequest,
+            stubRequestErrorsFor: stubs.stubRequestErrorsFor,
+            addStub: stubs.addStub,
             close: function () {
                 server.close();
             }

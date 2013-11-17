@@ -45,6 +45,9 @@ function create (Protocol, port) {
             url: url,
             hypermedia: hypermedia,
             requests: server.requests,
+            isValidStubRequest: server.isValidStubRequest,
+            stubRequestErrorsFor: server.stubRequestErrorsFor,
+            addStub: server.addStub,
             stop: function () { server.close(); }
         });
     });

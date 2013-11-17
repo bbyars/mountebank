@@ -61,4 +61,42 @@ describe('http imposter', function () {
             });
         });
     });
+
+    describe('POST /imposters/:id/stubs', function () {
+        it('should return stubbed response', function (done) {
+            api.post('/imposters', { protocol: 'http', port: 5555 }).then(function (response) {
+                var stubsPath = response.getLinkFor('stubs'),
+                    stubBody = {
+                        path: '/test',
+                        responses: [{
+                            statusCode: 400,
+                            headers: { 'X-Test': 'test header' },
+                            body: 'test body'
+                        }]
+                    };
+
+                return api.post(stubsPath, stubBody);
+            }).then(function (response) {
+                assert.strictEqual(response.statusCode, 200);
+
+                return api.get('/test', 5555);
+            }).then(function (response) {
+                assert.strictEqual(response.statusCode, 400);
+                assert.strictEqual(response.body, 'test body');
+                assert.strictEqual(response.headers['x-test'], 'test header');
+
+                return api.del('/imposters/5555');
+            }).done(function () {
+                done();
+            }, function (error) {
+                done(error);
+            });
+        });
+
+        it('should allow a sequence of stubs');
+        it('should only return stubbed response if matches header');
+        it('should only return stubbed response if matches body');
+        it('should only return stubbed response if matches method');
+        it('should allow javascript injection');
+    });
 });

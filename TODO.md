@@ -15,6 +15,7 @@ Stories
 11. Build C# implementation
 12. Wire up C# code in CI
 13. Add nuget package
+14. Allow GET/DELETE for individual stubs
 
 Future Directions
 =================
@@ -22,3 +23,8 @@ Future Directions
 2. Docs and website support
 3. Inline docs with mb app
 4. FTP?
+
+Fixes
+=====
+1. Remove uncaughtException handler in imposter once create returns
+2. Validator#requireValidPort should take in name of field instead of hard-coding it
