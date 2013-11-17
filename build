@@ -2,9 +2,6 @@
 
 set -e
 
-echo "FIRST=$FIRST"
-echo "SECOND=$SECOND"
-
 REVISION=${TRAVIS_BUILD_NUMBER:-0}
 
 scripts/normalizeWhitespace
@@ -30,6 +27,8 @@ if [ $REVISION -gt 0 ]; then
         echo >> ~/.npmrc
         (
         cd server
+        echo "TRAVIS_JOB_ID=$TRAVIS_JOB_ID"
+        ./node_modules/.bin/mocha --require blanket --reporter mocha-lcov-reporter test/**/*.js
         grunt coveralls
 
         # On Travis Linux machine, npm publish fails with blanket in package.json

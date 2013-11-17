@@ -69,6 +69,7 @@ allows multiple servers to be managed with the `mb` command, for instance:
 
 ## Building
 [![Build Status](https://travis-ci.org/bbyars/mountebank.png)](https://travis-ci.org/bbyars/mountebank)
+[![Coverage Status](https://coveralls.io/repos/bbyars/mountebank/badge.png?branch=master)](https://coveralls.io/r/bbyars/mountebank?branch=master)
 
 `./build` should do the trick.  If not, yell at me.  At the moment I've tested on OS X and Linux.
 Windows support is coming.
