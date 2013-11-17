@@ -101,7 +101,9 @@ module.exports = function (grunt) {
         var done = this.async(),
             pattern = '"version": "([0-9]+)\\.([0-9]+)\\.([0-9]+)"',
             replacement = '"version": "\\1.\\2.' + revision + '"',
-            sed = "sed -E -e 's/" + pattern + "/" + replacement + "/' ";// package.json";
+            sed = "sed -E -e 's/" + pattern + "/" + replacement + "/' ";
+
+        console.log("Using " + revision);
 
         if (os.platform() === 'darwin') {
             sed += "-i '' package.json";

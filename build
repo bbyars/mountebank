@@ -3,6 +3,8 @@
 set -e
 
 REVISION=${TRAVIS_BUILD_NUMBER:-0}
+echo "REVISION=$REVISION"
+env
 
 scripts/normalizeWhitespace
 
