@@ -7,5 +7,6 @@ node_js:
 env:
   global:
     secure: "J5vdNiybfYg9syfhHlu40YqVAmntfciXsdkNpnXkG2bVV3JMTQ6dPysMU8ZInsoOC3FCEtrO7ZxSvo3n9p8GHC3lMSg4NDfpsGwt2TckpeKBhzOTARhbyEIg2GNxPUh2cGkxMUXYRVW1KlTiPnWaSqsDsrak93CBVXu3B7dXmOI="
+    secure: "mosC45ibrN9XpUZexTTf8dzBRzTOb557jRxAKVpUMsKBIAsO+gB5hXq2gBfyKS64HiI11C6nUd39gIP6qdbma67HGZ1bl2fdBwyh8wrI5RFg5KMCKdKy6g6mIvno1ZqwNWBbZnyf/hyncvhsbN4HLitZWc0AH8+TlQGmnwnd8Hc="
 
 script: ./build
