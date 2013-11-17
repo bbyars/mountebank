@@ -6,7 +6,9 @@ node_js:
 
 env:
   global:
-    secure: "J5vdNiybfYg9syfhHlu40YqVAmntfciXsdkNpnXkG2bVV3JMTQ6dPysMU8ZInsoOC3FCEtrO7ZxSvo3n9p8GHC3lMSg4NDfpsGwt2TckpeKBhzOTARhbyEIg2GNxPUh2cGkxMUXYRVW1KlTiPnWaSqsDsrak93CBVXu3B7dXmOI="
-    secure: "mosC45ibrN9XpUZexTTf8dzBRzTOb557jRxAKVpUMsKBIAsO+gB5hXq2gBfyKS64HiI11C6nUd39gIP6qdbma67HGZ1bl2fdBwyh8wrI5RFg5KMCKdKy6g6mIvno1ZqwNWBbZnyf/hyncvhsbN4HLitZWc0AH8+TlQGmnwnd8Hc="
+    NPM_API_KEY:
+      secure: "MY/g9ug4502AZPHMX+ehW0/lmea745weQ5IXyE/UgTfbgVxK44WrY7V09b9YUYoxm34aVCffDzz+cprBZKnVwNDgWj7dvCnDM58HwX4z00XlxfvnzzHrYRL3UCcIy2jl5Dp8Purtc3bDEPdQQGRglrq+98kSnFE5vThw25bLKto="
+    COVERALLS_REPO_TOKEN:
+      secure: "nLWa1EUU44PfEFXx8H2ZLz1rENOZ8e4wJ+5drcb63Yu3k0Qj6eTrGRU5dPuDHbw5mr609FgsOwIsbQeOmBpYLdaUbtHkX7rTeWUD9zsLnJDVoB2OBC4FY4owyxqYOSBAQVgbB8m7ITVUUr+GsyN1B+lC0Xcw7h05BtoNtnjAxbI="
 
 script: ./build
