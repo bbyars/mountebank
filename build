@@ -3,12 +3,29 @@
 set -e
 
 REVISION=${TRAVIS_BUILD_NUMBER:-0}
-echo "REVISION=$REVISION"
-env
 
 scripts/normalizeWhitespace
 
 (
 cd server
-./build
+REVISION=$REVISION ./build
 )
+
+if [ $REVISION -gt 0 ]; then
+    # Publish only on the node 0.10 Travis CI matric
+    # This is less than ideal; I'd rather only publish
+    # after all matrixes complete, but I don't know that
+    # I can using Travis.  The npm deploy provider wants
+    # to have the root directory contain the package.json,
+    # and after_success runs on every matrix with the
+    # versioned package.json already cleaned up
+
+    NODE_MINOR_VERSION=`node --version | sed -E -e 's/v[0-9]+\.([0-9]+)\.[0-9]+/\1/'`
+    ls -al ~
+    if [ ! -f ~/.npmrc -a $NODE_MINOR_VERSION -eq 10 ]; then
+        echo "_auth = $npm_api_key" > ~/.npmrc
+        echo "email = brandon.byars@gmail.com" >> ~/.npmrc
+        echo >> ~/.npmrc
+        (cd server && npm publish)
+    fi
+fi
