@@ -121,7 +121,7 @@ describe('stubRepository', function () {
             });
         });
 
-        it('should return stubs in order', function () {
+        it('should return stubs in order, looping around', function () {
             var request = {
                 path: '/test',
                 headers: {},
@@ -139,7 +139,7 @@ describe('stubRepository', function () {
                 return value.body;
             });
 
-            assert.deepEqual(bodies, ['First', 'Second', '']);
+            assert.deepEqual(bodies, ['First', 'Second', 'First']);
         });
     });
 });

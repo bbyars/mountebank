@@ -43,7 +43,11 @@ function create () {
     }
 
     function resolve (request) {
-        var stub = (hasStub(request)) ? stubs[request.path].shift() : {};
+        var stub = {};
+        if (hasStub(request)) {
+            stub = stubs[request.path].shift();
+            stubs[request.path].push(stub);
+        }
         return createResponse(stub);
     }
 
