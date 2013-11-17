@@ -14,4 +14,5 @@ after_success:
   - echo "_auth = $npm_api_key" > ~/.npmrc
   - echo "email = brandon.byars@gmail.com" >> ~/.npmrc
   - echo >> ~/.npmrc
+  - cat server/package.json
   - (cd server && npm publish)
