@@ -16,11 +16,11 @@
     "mb": "./bin/mb"
   },
   "scripts": {
+    "blanket": { "pattern": "/server/src/" },
     "start": "./bin/mb",
     "restart": "./bin/mb restart",
     "stop": "./bin/mb stop",
-    "test": "grunt test",
-    "blanket": { "pattern": "/server/src/" }
+    "test": "grunt test"
   },
   "keywords": [
     "test",
