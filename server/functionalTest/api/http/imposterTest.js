@@ -3,6 +3,15 @@
 var assert = require('assert'),
     api = require('../api');
 
+
+function doneCallback (done) {
+    return function () { done(); };
+}
+
+function doneErrback (done) {
+    return function (error) { done(error); };
+}
+
 describe('http imposter', function () {
 
     describe('GET /imposters/:id', function () {
@@ -10,9 +19,7 @@ describe('http imposter', function () {
             api.get('/imposters/3535').done(function (response) {
                 assert.strictEqual(response.statusCode, 404);
                 done();
-            }, function (error) {
-                done(error);
-            });
+            }, doneErrback(done));
         });
     });
 
@@ -28,11 +35,7 @@ describe('http imposter', function () {
                 assert.strictEqual(response.statusCode, 201, 'Delete did not free up port');
 
                 return api.del('/imposters/5555');
-            }).done(function () {
-                done();
-            }, function (error) {
-                done(error);
-            });
+            }).done(doneCallback(done), doneErrback(done));
         });
     });
 
@@ -54,11 +57,7 @@ describe('http imposter', function () {
                 assert.deepEqual(requests, ['/first', '/second']);
 
                 return api.del('/imposters/6565');
-            }).done(function () {
-                done();
-            }, function (error) {
-                done(error);
-            });
+            }).done(doneCallback(done), doneErrback(done));
         });
     });
 
@@ -86,14 +85,39 @@ describe('http imposter', function () {
                 assert.strictEqual(response.headers['x-test'], 'test header');
 
                 return api.del('/imposters/5555');
-            }).done(function () {
-                done();
-            }, function (error) {
-                done(error);
-            });
+            }).done(doneCallback(done), doneErrback(done));
         });
 
-        it('should allow a sequence of stubs');
+        it('should allow a sequence of stubs as a circular buffer', function (done) {
+            api.post('/imposters', { protocol: 'http', port: 6565 }).then(function (response) {
+                var stubsPath = response.getLinkFor('stubs'),
+                    stubBody = {
+                        path: '/test',
+                        responses: [{ statusCode: 400 }, { statusCode: 405 }]
+                    };
+
+                return api.post(stubsPath, stubBody);
+            }).then(function () {
+                return api.get('/test', 6565);
+            }).then(function (response) {
+                assert.strictEqual(response.statusCode, 400);
+
+                return api.get('/test', 6565);
+            }).then(function (response) {
+                assert.strictEqual(response.statusCode, 405);
+
+                return api.get('/test', 6565);
+            }).then(function (response) {
+                assert.strictEqual(response.statusCode, 400);
+
+                return api.get('/test', 6565);
+            }).then(function (response) {
+                assert.strictEqual(response.statusCode, 405);
+
+                return api.del('/imposters/6565');
+            }).done(doneCallback(done), doneErrback(done));
+        });
+
         it('should only return stubbed response if matches header');
         it('should only return stubbed response if matches body');
         it('should only return stubbed response if matches method');
