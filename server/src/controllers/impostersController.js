@@ -31,7 +31,7 @@ function create (spec) {
                 protocol: protocol,
                 port: port
             },
-            requireValidPort: port,
+            requireValidPorts: { port: port },
             requireProtocolSupport: protocolSupport
         });
 

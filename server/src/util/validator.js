@@ -3,59 +3,51 @@
 function Validator () {
     var errors = [];
 
-    function requiredFields (fields) {
-        Object.keys(fields).forEach(function (name) {
-            if (!fields[name]) {
-                errors.push({
-                    code: "missing field",
-                    message: "'" + name + "' is a required field"
-                });
-            }
-        });
-    }
-
-    function requireProtocolSupport (spec) {
-        Object.keys(spec).forEach(function (name) {
-            if (name !== 'undefined' && !spec[name]) {
-                errors.push({
-                    code: "unsupported protocol",
-                    message: "the " + name + " protocol is not yet supported"
-                });
-            }
-        });
-    }
-
-    function requireValidPort (port) {
-        var isValid = (port === undefined) ||
-                      (port.toString().indexOf('.') === -1 && port > 0 && port < 65536);
-
-        if (!isValid) {
-            errors.push({
-                code: "bad data",
-                message: "invalid value for 'port'"
-            });
-        }
-    }
-
     function isArray (value) {
         return Object.prototype.toString.call(value) === '[object Array]';
     }
 
-    function requireNonEmptyArrays (spec) {
+    function addAllErrorsIf (spec, code, message, predicate) {
         Object.keys(spec).forEach(function (name) {
-            if (!isArray(spec[name]) || spec[name].length === 0) {
+            if (predicate(spec[name], name)) {
                 errors.push({
-                    code: "bad data",
-                    message: "'" + name + "' must be a non-empty array"
+                    code: code,
+                    message: message.replace('$NAME$', name)
                 });
             }
+        });
+    }
+
+    function requiredFields (spec) {
+        addAllErrorsIf(spec, "missing field", "'$NAME$' is a required field", function (value) {
+            return !value;
+        });
+    }
+
+    function requireProtocolSupport (spec) {
+        addAllErrorsIf(spec, "unsupported protocol", "the $NAME$ protocol is not yet supported", function (value, name) {
+            return name !== 'undefined' && !value;
+        });
+    }
+
+    function requireValidPorts (spec) {
+        addAllErrorsIf(spec, "bad data", "invalid value for '$NAME$'", function (value) {
+            var isValid = (value === undefined) ||
+                (value.toString().indexOf('.') === -1 && value > 0 && value < 65536);
+            return !isValid;
+        });
+    }
+
+    function requireNonEmptyArrays (spec) {
+        addAllErrorsIf(spec, "bad data", "'$NAME$' must be a non-empty array", function (value) {
+            return !isArray(value) || value.length === 0;
         });
     }
 
     return {
         requiredFields: requiredFields,
         requireProtocolSupport: requireProtocolSupport,
-        requireValidPort: requireValidPort,
+        requireValidPorts: requireValidPorts,
         requireNonEmptyArrays: requireNonEmptyArrays,
         errors: errors
     };

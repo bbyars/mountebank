@@ -27,4 +27,3 @@ Future Directions
 Fixes
 =====
 1. Remove uncaughtException handler in imposter once create returns
-2. Validator#requireValidPort should take in name of field instead of hard-coding it

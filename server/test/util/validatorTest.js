@@ -46,7 +46,7 @@ describe('Validator', function () {
 
         it('should not be valid for floating point port', function () {
             var validator = Validator.create({
-                requireValidPort: 12.34
+                requireValidPorts: { port: 12.34 }
             });
 
             assert.ok(!validator.isValid());
@@ -54,7 +54,7 @@ describe('Validator', function () {
 
         it('should not be valid for string port', function () {
             var validator = Validator.create({
-                requireValidPort: "invalid"
+                requireValidPorts: { port: "invalid" }
             });
 
             assert.ok(!validator.isValid());
@@ -62,7 +62,7 @@ describe('Validator', function () {
 
         it('should not be valid for a port number too low', function () {
             var validator = Validator.create({
-                requireValidPort: 0
+                requireValidPorts: { port: 0 }
             });
 
             assert.ok(!validator.isValid());
@@ -70,7 +70,7 @@ describe('Validator', function () {
 
         it('should be valid for lower end of possible ports', function () {
             var validator = Validator.create({
-                requireValidPort: 1
+                requireValidPorts: { port: 1 }
             });
 
             assert.ok(validator.isValid());
@@ -78,7 +78,7 @@ describe('Validator', function () {
 
         it('should be valid for upper end of possible ports', function () {
             var validator = Validator.create({
-                requireValidPort: 65535
+                requireValidPorts: { port: 65535 }
             });
 
             assert.ok(validator.isValid());
@@ -86,7 +86,7 @@ describe('Validator', function () {
 
         it('should not be valid for a port number too high', function () {
             var validator = Validator.create({
-                requireValidPort: 65536
+                requireValidPorts: { port: 65536 }
             });
 
             assert.ok(!validator.isValid());
@@ -154,7 +154,7 @@ describe('Validator', function () {
 
         it('should include an error for an invalid port', function () {
             var validator = Validator.create({
-                requireValidPort: 'invalid'
+                requireValidPorts: { port: 'invalid' }
             });
 
             assert.deepEqual(validator.errors(), [{
@@ -165,7 +165,7 @@ describe('Validator', function () {
 
         it('should not include an error for an invalid port if port is missing', function () {
             var validator = Validator.create({
-                requireValidPort: undefined
+                requireValidPorts: { port: undefined }
             });
 
             assert.deepEqual(validator.errors(), []);
