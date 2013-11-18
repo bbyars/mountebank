@@ -44,11 +44,18 @@ function Validator () {
         });
     }
 
+    function requireValidPredicate (spec) {
+        addAllErrorsIf(spec, "bad data", "invalid predicate '$NAME$'", function (value) {
+            return value && typeof value !== 'object';
+        });
+    }
+
     return {
         requiredFields: requiredFields,
         requireProtocolSupport: requireProtocolSupport,
         requireValidPorts: requireValidPorts,
         requireNonEmptyArrays: requireNonEmptyArrays,
+        requireValidPredicates: requireValidPredicate,
         errors: errors
     };
 }

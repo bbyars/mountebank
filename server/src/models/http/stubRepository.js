@@ -23,11 +23,18 @@ function create () {
     }
 
     function pathMatches (request, predicates) {
-        return (!predicates || !predicates.path || !predicates.path.is || request.path === predicates.path.is);
+        return (!predicates || !predicates.path || !predicates.path.is ||
+            request.path.toLowerCase() === predicates.path.is.toLowerCase());
     }
 
     function methodMatches (request, predicates) {
-        return (!predicates || !predicates.method || !predicates.method.is || request.method === predicates.method.is);
+        return (!predicates || !predicates.method || !predicates.method.is ||
+            request.method.toLowerCase() === predicates.method.is.toLowerCase());
+    }
+
+    function bodyMatches (request, predicates) {
+        return (!predicates || !predicates.body || !predicates.body.is ||
+            request.body.toLowerCase() === predicates.body.is.toLowerCase());
     }
 
     function findFirstMatch (request) {
@@ -35,20 +42,29 @@ function create () {
             return undefined;
         }
         var matches = stubs.filter(function (stub) {
-            return pathMatches(request, stub.predicates) && methodMatches(request, stub.predicates);
+            return pathMatches(request, stub.predicates) &&
+                methodMatches(request, stub.predicates) &&
+                bodyMatches(request, stub.predicates);
         });
         return (matches.length === 0) ? undefined : matches[0];
     }
 
-    function isValidStubRequest (request) {
-        return stubRequestErrorsFor(request).length === 0;
+    function isValidStubRequest (stub) {
+        return stubRequestErrorsFor(stub).length === 0;
     }
 
-    function stubRequestErrorsFor (request) {
-        var validator = Validator.create({
-            requireNonEmptyArrays: { responses: request.responses }
-        });
-        return validator.errors();
+    function stubRequestErrorsFor (stub) {
+        var spec = {
+            requireNonEmptyArrays: { responses: stub.responses }
+        };
+        if (stub.predicates) {
+            spec.requireValidPredicates = {
+                path: stub.predicates.path,
+                method: stub.predicates.method,
+                body: stub.predicates.body
+            };
+        }
+        return Validator.create(spec).errors();
     }
 
     function addStub (stub) {
