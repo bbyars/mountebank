@@ -26,3 +26,10 @@ Future Directions
 
 Fixes
 =====
+1. Can't seem to get coveralls.io integration working from Travis
+
+Food For Thought
+================
+1. Stubs act like a circular buffer mapped to path.  Should predicate be part of the key?
+2. Possible for more than 1 stub to match if same path different predicates?
+3. Move path into predicate, allow is, contains, startsWith, etc...

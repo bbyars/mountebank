@@ -3,7 +3,7 @@
 var Validator = require('../../util/validator');
 
 function create () {
-    var stubs = {};
+    var stubs = [];
 
     function createResponse (stub) {
         var response = {
@@ -22,8 +22,22 @@ function create () {
         return response;
     }
 
-    function hasStub (request) {
-        return stubs[request.path] && stubs[request.path].length > 0;
+    function pathMatches (request, predicates) {
+        return (!predicates || !predicates.path || !predicates.path.is || request.path === predicates.path.is);
+    }
+
+    function methodMatches (request, predicates) {
+        return (!predicates || !predicates.method || !predicates.method.is || request.method === predicates.method.is);
+    }
+
+    function findFirstMatch (request) {
+        if (stubs.length === 0) {
+            return undefined;
+        }
+        var matches = stubs.filter(function (stub) {
+            return pathMatches(request, stub.predicates) && methodMatches(request, stub.predicates);
+        });
+        return (matches.length === 0) ? undefined : matches[0];
     }
 
     function isValidStubRequest (request) {
@@ -32,23 +46,24 @@ function create () {
 
     function stubRequestErrorsFor (request) {
         var validator = Validator.create({
-            requiredFields: { path: request.path },
             requireNonEmptyArrays: { responses: request.responses }
         });
         return validator.errors();
     }
 
-    function addStub (request) {
-        stubs[request.path] = request.responses;
+    function addStub (stub) {
+        stubs.push(stub);
     }
 
     function resolve (request) {
-        var stub = {};
-        if (hasStub(request)) {
-            stub = stubs[request.path].shift();
-            stubs[request.path].push(stub);
+        var stubResponse = {},
+            stub = findFirstMatch(request);
+
+        if (stub) {
+            stubResponse = stub.responses.shift();
+            stub.responses.push(stubResponse);
         }
-        return createResponse(stub);
+        return createResponse(stubResponse);
     }
 
     return {

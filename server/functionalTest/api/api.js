@@ -24,7 +24,7 @@ function responseFor (spec, body) {
     var deferred = Q.defer(),
         options = optionsFor(spec);
 
-    if (body) {
+    if (body && !options.headers['Content-Type']) {
         options.headers['Content-Type'] = 'application/json';
     }
 
@@ -53,7 +53,12 @@ function responseFor (spec, body) {
     });
 
     if (body) {
-        request.write(JSON.stringify(body));
+        if (options.headers['Content-Type'] === 'application/json') {
+            request.write(JSON.stringify(body));
+        }
+        else {
+            request.write(body);
+        }
     }
     request.end();
     return deferred.promise;
@@ -67,8 +72,12 @@ function get (path, port) {
     return responseFor(spec);
 }
 
-function post (path, body) {
-    return responseFor({ method: 'POST', path: path }, body);
+function post (path, body, port) {
+    var spec = { method: 'POST', path: path };
+    if (port) {
+        spec.port = port;
+    }
+    return responseFor(spec, body);
 }
 
 function del (path) {
@@ -79,5 +88,6 @@ module.exports = {
     url: url,
     get: get,
     post: post,
-    del: del
+    del: del,
+    responseFor: responseFor
 };
