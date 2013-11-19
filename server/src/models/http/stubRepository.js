@@ -22,19 +22,11 @@ function create () {
         return response;
     }
 
-    function pathMatches (request, predicates) {
-        return (!predicates || !predicates.path || !predicates.path.is ||
-            request.path.toLowerCase() === predicates.path.is.toLowerCase());
-    }
-
-    function methodMatches (request, predicates) {
-        return (!predicates || !predicates.method || !predicates.method.is ||
-            request.method.toLowerCase() === predicates.method.is.toLowerCase());
-    }
-
-    function bodyMatches (request, predicates) {
-        return (!predicates || !predicates.body || !predicates.body.is ||
-            request.body.toLowerCase() === predicates.body.is.toLowerCase());
+    function matchesPredicate (fieldName, predicate, request) {
+        if (predicate.is) {
+            return request[fieldName].toLowerCase() === predicate.is.toLowerCase();
+        }
+        return true;
     }
 
     function findFirstMatch (request) {
@@ -42,9 +34,10 @@ function create () {
             return undefined;
         }
         var matches = stubs.filter(function (stub) {
-            return pathMatches(request, stub.predicates) &&
-                methodMatches(request, stub.predicates) &&
-                bodyMatches(request, stub.predicates);
+            var predicates = stub.predicates || {};
+            return Object.keys(predicates).every(function (fieldName) {
+                return matchesPredicate(fieldName, predicates[fieldName], request);
+            });
         });
         return (matches.length === 0) ? undefined : matches[0];
     }
