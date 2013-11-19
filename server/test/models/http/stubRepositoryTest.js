@@ -14,9 +14,11 @@ describe('stubRepository', function () {
         it('should return true for valid request', function () {
             var request =  {
                     responses: [{
-                        statusCode: 400,
-                        headers: { 'X-Test': 'test header' },
-                        body: 'test body'
+                        is: {
+                            statusCode: 400,
+                            headers: { 'X-Test': 'test header' },
+                            body: 'test body'
+                        }
                     }]
                 };
 
@@ -83,7 +85,7 @@ describe('stubRepository', function () {
         it('should return stub if no predicate', function () {
             var request = { path: '/test', headers: {}, body: '' };
             stubs.addStub({
-                responses: [{ statusCode: 400 }]
+                responses: [{ is: { statusCode: 400 }}]
             });
 
             var response = stubs.resolve(request);
@@ -95,7 +97,7 @@ describe('stubRepository', function () {
             var request = { path: '/test', headers: {}, body: '' };
             stubs.addStub({
                 predicates: { path: { is: '/test' }},
-                responses: [{ statusCode: 400, headers: { 'X-Test': 'Test' }, body: 'Test successful' }]
+                responses: [{ is: { statusCode: 400, headers: { 'X-Test': 'Test' }, body: 'Test successful' }}]
             });
 
             var response = stubs.resolve(request);
@@ -111,7 +113,7 @@ describe('stubRepository', function () {
             var request = { path: '/test', headers: {}, body: '' };
             stubs.addStub({
                 predicates: { path: { is: '/test' }},
-                responses: [{ body: 'Test successful' }]
+                responses: [{ is: { body: 'Test successful' }}]
             });
 
             var response = stubs.resolve(request);
@@ -127,7 +129,7 @@ describe('stubRepository', function () {
             var request = { path: '/test', headers: {}, body: '' };
             stubs.addStub({
                 predicates: { path: { is: '/test' }},
-                responses: [{ body: 'First' }, { body: 'Second' }]
+                responses: [{ is: { body: 'First' }}, { is: { body: 'Second' }}]
             });
 
             var bodies = [stubs.resolve(request), stubs.resolve(request), stubs.resolve(request)].map(function (value) {
@@ -141,7 +143,7 @@ describe('stubRepository', function () {
             var request = { path: '/test', headers: {}, body: '', method: 'GET' };
             stubs.addStub({
                 predicates: { path: { is: '/test' }, method: { is: 'POST' }},
-                responses: [{ body: 'Matched' }]
+                responses: [{ is: { body: 'Matched' }}]
             });
 
             var response = stubs.resolve(request);
@@ -153,7 +155,7 @@ describe('stubRepository', function () {
             var request = { path: '/test', headers: {}, body: '', method: 'GET' };
             stubs.addStub({
                 predicates: { path: { is: '/TEST' }, method: { is: 'get' }},
-                responses: [{ body: 'Matched' }]
+                responses: [{ is: { body: 'Matched' }}]
             });
 
             var response = stubs.resolve(request);
@@ -165,7 +167,7 @@ describe('stubRepository', function () {
             var request = { path: '/test', headers: {}, body: 'TEST', method: 'POST' };
             stubs.addStub({
                 predicates: { path: { is: '/test' }, body: { is: 'TESTING' }},
-                responses: [{ body: 'Matched' }]
+                responses: [{ is: { body: 'Matched' }}]
             });
 
             var response = stubs.resolve(request);
@@ -177,7 +179,7 @@ describe('stubRepository', function () {
             var request = { path: '/test', headers: {}, body: 'TEST', method: 'POST' };
             stubs.addStub({
                 predicates: { path: { is: '/test' }, body: { is: 'TEST' }},
-                responses: [{ body: 'Matched' }]
+                responses: [{ is: { body: 'Matched' }}]
             });
 
             var response = stubs.resolve(request);

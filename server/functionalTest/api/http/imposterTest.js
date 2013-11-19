@@ -68,9 +68,11 @@ describe('http imposter', function () {
                     stubBody = {
                         predicates: { path: { is: '/test' }},
                         responses: [{
-                            statusCode: 400,
-                            headers: { 'X-Test': 'test header' },
-                            body: 'test body'
+                            is: {
+                                statusCode: 400,
+                                headers: { 'X-Test': 'test header' },
+                                body: 'test body'
+                            }
                         }]
                     };
 
@@ -93,7 +95,7 @@ describe('http imposter', function () {
                 var stubsPath = response.getLinkFor('stubs'),
                     stubBody = {
                         predicates: { path: { is: '/test' }},
-                        responses: [{ statusCode: 400 }, { statusCode: 405 }]
+                        responses: [{ is: { statusCode: 400 }}, { is: { statusCode: 405 }}]
                     };
 
                 return api.post(stubsPath, stubBody);
@@ -134,7 +136,7 @@ describe('http imposter', function () {
 //                var stubsPath = response.getLinkFor('stubs'),
 //                    stubBody = {
 //                        path: '/test',
-//                        responses: [{ statusCode: 400 }],
+//                        responses: [{ is: { statusCode: 400 }}],
 //                        predicates: {
 //                            path: { is: '/test' },
 //                            method: { is: 'POST' },

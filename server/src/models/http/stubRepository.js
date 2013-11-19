@@ -69,8 +69,9 @@ function create () {
             stub = findFirstMatch(request);
 
         if (stub) {
-            stubResponse = stub.responses.shift();
-            stub.responses.push(stubResponse);
+            var stubResolver = stub.responses.shift();
+            stubResponse = stubResolver.is;
+            stub.responses.push(stubResolver);
         }
         return createResponse(stubResponse);
     }
