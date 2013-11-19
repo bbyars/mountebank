@@ -1,6 +1,7 @@
 'use strict';
 
-var Validator = require('../../util/validator');
+var Validator = require('../../util/validator'),
+    predicates = require('./predicates');
 
 function create () {
     var stubs = [];
@@ -23,10 +24,9 @@ function create () {
     }
 
     function matchesPredicate (fieldName, predicate, request) {
-        if (predicate.is) {
-            return request[fieldName].toLowerCase() === predicate.is.toLowerCase();
-        }
-        return true;
+        return Object.keys(predicate).every(function (key) {
+            return predicates[key](fieldName, predicate[key], request);
+        });
     }
 
     function findFirstMatch (request) {

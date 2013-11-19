@@ -186,5 +186,17 @@ describe('stubRepository', function () {
 
             assert.strictEqual(response.body, 'Matched');
         });
+
+        it('should not return stub if does not match predicate header', function () {
+            var request = { path: '/test', headers: {}, body: 'TEST', method: 'POST' };
+            stubs.addStub({
+                predicates: { headers: { is: { key: 'value' }}},
+                responses: [{ is: { body: 'Matched' }}]
+            });
+
+            var response = stubs.resolve(request);
+
+            assert.strictEqual(response.body, '');
+        });
     });
 });
