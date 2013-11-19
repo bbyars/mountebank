@@ -117,14 +117,15 @@ module.exports = function (grunt) {
         });
     });
 
-    grunt.registerTask('coveralls', 'Send coverage output to coveralls.io', function (done) {
-        var mocha = './node_modules/.bin/mocha --require blanket --reporter mocha-lcov-reporter test/**/*.js',
+    grunt.registerTask('coveralls', 'Send coverage output to coveralls.io', function () {
+        var done = this.async(),
+            mocha = './node_modules/.bin/mocha --require blanket --reporter mocha-lcov-reporter test/**/*.js',
             command = mocha + ' | ./node_modules/coveralls/bin/coveralls.js';
 
-        exec(command, function (error) {
-            if (error) {
-                throw error;
-            }
+        exec(command, function (error, stdout, stderr) {
+            if (stdout) { console.log(stdout); }
+            if (stderr) { console.log(stderr); }
+            if (error) { throw error; }
             done();
         });
     });
