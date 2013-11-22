@@ -164,7 +164,31 @@ describe('stubRepository', function () {
         it('should return stub if header predicate passes', function () {
             var request = { path: '/test', headers: {}, body: '', method: 'GET' };
             stubs.addStub({
-                predicates: { headers: { exists: { first: false, second: false} }},
+                predicates: { headers: { exists: { first: false, second: false } }},
+                responses: [{ is: { body: 'Matched' }}]
+            });
+
+            var response = stubs.resolve(request);
+
+            assert.strictEqual(response.body, 'Matched');
+        });
+
+        it('should return default stub if not predicates fails', function () {
+            var request = { path: '/test', headers: {}, body: '', method: 'GET' };
+            stubs.addStub({
+                predicates: { method: { not: { is: 'GET' } }},
+                responses: [{ is: { body: 'Matched' }}]
+            });
+
+            var response = stubs.resolve(request);
+
+            assert.strictEqual(response.body, '');
+        });
+
+        it('should return stub if not predicate passes', function () {
+            var request = { path: '/test', headers: {}, body: '', method: 'GET' };
+            stubs.addStub({
+                predicates: { method: { not: { is: 'POST' } }},
                 responses: [{ is: { body: 'Matched' }}]
             });
 

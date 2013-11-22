@@ -142,7 +142,8 @@ describe('http imposter', function () {
                             method: { is: 'POST' },
                             headers: {
                                 exists: { 'X-One': true, 'X-Two': true },
-                                is: { 'X-Two': 'Test' }
+                                is: { 'X-Two': 'Test' },
+                                not: { exists: { 'X-Three': true }}
                             },
                             body: {
                                 startsWith: 'T',

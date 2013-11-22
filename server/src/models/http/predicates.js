@@ -35,5 +35,10 @@ module.exports = {
     startsWith: create(function (actual, expected) { return actual.toLowerCase().indexOf(expected.toLowerCase()) === 0; }),
     endsWith: create(function (actual, expected) { return actual.toLowerCase().indexOf(expected.toLowerCase(), actual.length - expected.length) >= 0; }),
     matches: create(function (actual, expected) { return new RegExp(expected).test(actual); }),
-    exists: create(function (actual, expected) { return expected ? actual.length > 0 : actual.length === 0; })
+    exists: create(function (actual, expected) { return expected ? actual.length > 0 : actual.length === 0; }),
+    not: function (fieldName, expected, request) {
+        return !Object.keys(expected).some(function (predicate) {
+            return module.exports[predicate](fieldName, expected[predicate], request);
+        });
+    }
 };

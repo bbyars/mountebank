@@ -211,4 +211,14 @@ describe('predicates', function () {
             assert.ok(predicates.exists('headers', { key: false }, { headers: { key: '' }}));
         });
     });
+
+    describe('#not', function () {
+        it('should return true for non empty request field if exists is true', function () {
+            assert.ok(predicates.not('field', { is: 'this' }, { field: 'that' }));
+        });
+
+        it('should return false for empty request field if exists is true', function () {
+            assert.ok(!predicates.not('field', { is: 'this' }, { field: 'this' }));
+        });
+    });
 });
