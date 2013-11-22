@@ -112,7 +112,6 @@ describe('stubRepository', function () {
         it('should merge default values with stub response', function () {
             var request = { path: '/test', headers: {}, body: '' };
             stubs.addStub({
-                predicates: { path: { is: '/test' }},
                 responses: [{ is: { body: 'Test successful' }}]
             });
 
@@ -128,7 +127,6 @@ describe('stubRepository', function () {
         it('should return stubs in order, looping around', function () {
             var request = { path: '/test', headers: {}, body: '' };
             stubs.addStub({
-                predicates: { path: { is: '/test' }},
                 responses: [{ is: { body: 'First' }}, { is: { body: 'Second' }}]
             });
 
@@ -151,52 +149,28 @@ describe('stubRepository', function () {
             assert.strictEqual(response.body, '');
         });
 
-        it('is should be case-insensitive', function () {
+        it('should return default stub if header predicates fails', function () {
+            var request = { path: '/test', headers: { first: 'value' }, body: '', method: 'GET' };
+            stubs.addStub({
+                predicates: { headers: { exists: { first: true, second: true } }},
+                responses: [{ is: { body: 'Matched' }}]
+            });
+
+            var response = stubs.resolve(request);
+
+            assert.strictEqual(response.body, '');
+        });
+
+        it('should return stub if header predicate passes', function () {
             var request = { path: '/test', headers: {}, body: '', method: 'GET' };
             stubs.addStub({
-                predicates: { path: { is: '/TEST' }, method: { is: 'get' }},
+                predicates: { headers: { exists: { first: false, second: false} }},
                 responses: [{ is: { body: 'Matched' }}]
             });
 
             var response = stubs.resolve(request);
 
             assert.strictEqual(response.body, 'Matched');
-        });
-
-        it('should not return stub if does not match predicate body', function () {
-            var request = { path: '/test', headers: {}, body: 'TEST', method: 'POST' };
-            stubs.addStub({
-                predicates: { path: { is: '/test' }, body: { is: 'TESTING' }},
-                responses: [{ is: { body: 'Matched' }}]
-            });
-
-            var response = stubs.resolve(request);
-
-            assert.strictEqual(response.body, '');
-        });
-
-        it('should return stub if it matches predicate body', function () {
-            var request = { path: '/test', headers: {}, body: 'TEST', method: 'POST' };
-            stubs.addStub({
-                predicates: { path: { is: '/test' }, body: { is: 'TEST' }},
-                responses: [{ is: { body: 'Matched' }}]
-            });
-
-            var response = stubs.resolve(request);
-
-            assert.strictEqual(response.body, 'Matched');
-        });
-
-        it('should not return stub if does not match predicate header', function () {
-            var request = { path: '/test', headers: {}, body: 'TEST', method: 'POST' };
-            stubs.addStub({
-                predicates: { headers: { is: { key: 'value' }}},
-                responses: [{ is: { body: 'Matched' }}]
-            });
-
-            var response = stubs.resolve(request);
-
-            assert.strictEqual(response.body, '');
         });
     });
 });

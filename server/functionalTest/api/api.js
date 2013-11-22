@@ -5,8 +5,25 @@ var http = require('http'),
     port = process.env.MB_PORT || 2525,
     url = 'http://localhost:' + port;
 
-var optionsFor = function (spec) {
-    var result = {
+function clone (obj) {
+    return JSON.parse(JSON.stringify(obj));
+}
+
+function merge (defaults, overrides) {
+    var result = clone(defaults);
+    Object.keys(overrides).forEach(function (key) {
+        if (typeof overrides[key] === 'object') {
+            result[key] = merge(result[key], overrides[key]);
+        }
+        else {
+            result[key] = overrides[key];
+        }
+    });
+    return result;
+}
+
+function optionsFor (spec) {
+    var defaults = {
         hostname: 'localhost',
         port: port,
         headers: {
@@ -14,11 +31,8 @@ var optionsFor = function (spec) {
         }
     };
 
-    Object.keys(spec).forEach(function (key) {
-        result[key] = spec[key];
-    });
-    return result;
-};
+    return merge(defaults, spec);
+}
 
 function responseFor (spec, body) {
     var deferred = Q.defer(),
@@ -89,5 +103,6 @@ module.exports = {
     get: get,
     post: post,
     del: del,
-    responseFor: responseFor
+    responseFor: responseFor,
+    merge: merge
 };

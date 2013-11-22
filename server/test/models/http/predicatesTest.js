@@ -33,6 +33,10 @@ describe('predicates', function () {
             assert.ok(predicates.is('headers', { key: 'value' }, { headers: { key: 'VALUE' }}));
         });
 
+        it('should match keys in a case insensitive fashion for object', function () {
+            assert.ok(predicates.is('headers', { KEY: 'value' }, { headers: { key: 'value' }}));
+        });
+
         it('should return false for types other than strings and objects', function () {
             assert.ok(!predicates.is('field', 1, { field: 1 }));
         });
@@ -163,6 +167,48 @@ describe('predicates', function () {
 
         it('should return false for types other than strings and objects', function () {
             assert.ok(!predicates.matches('field', 1, { field: 1 }));
+        });
+    });
+
+    describe('#exists', function () {
+        it('should return true for non empty request field if exists is true', function () {
+            assert.ok(predicates.exists('field', true, { field: 'nonempty' }));
+        });
+
+        it('should return false for empty request field if exists is true', function () {
+            assert.ok(!predicates.exists('field', true, { field: '' }));
+        });
+
+        it('should return false for non empty request field if exists is false', function () {
+            assert.ok(!predicates.exists('field', false, { field: 'nonempty' }));
+        });
+
+        it('should return true for empty request field if exists is false', function () {
+            assert.ok(predicates.exists('field', false, { field: '' }));
+        });
+
+        it('should return false if no key for object and exists is true', function () {
+            assert.ok(!predicates.exists('headers', { key: true }, { headers: {}}));
+        });
+
+        it('should return true if no key for object and exists is false', function () {
+            assert.ok(predicates.exists('headers', { key: false }, { headers: {}}));
+        });
+
+        it('should return true for non empty object key if exists is true', function () {
+            assert.ok(predicates.exists('headers', { key: true }, { headers: { key: 'nonempty' }}));
+        });
+
+        it('should return false for empty object key if exists is true', function () {
+            assert.ok(!predicates.exists('headers', { key: true }, { headers: { key: '' }}));
+        });
+
+        it('should return false for non empty object key if exists is false', function () {
+            assert.ok(!predicates.exists('headers', { key: false }, { headers: { key: 'nonempty' }}));
+        });
+
+        it('should return true for empty object key if exists is false', function () {
+            assert.ok(predicates.exists('headers', { key: false }, { headers: { key: '' }}));
         });
     });
 });

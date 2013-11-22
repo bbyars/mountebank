@@ -120,74 +120,76 @@ describe('http imposter', function () {
             }).done(doneCallback(done), doneErrback(done));
         });
 
-//        it('should only return stubbed response if matches complex predicate', function (done) {
-//            var spec = {
-//                    path: '/test',
-//                    port: 7575,
-//                    method: 'POST',
-//                    headers: {
-//                        'X-One': '',
-//                        'X-Two': 'Test',
-//                        'Content-Type': 'text/plain'
-//                    }
-//                };
-//
-//            api.post('/imposters', { protocol: 'http', port: 7575 }).then(function (response) {
-//                var stubsPath = response.getLinkFor('stubs'),
-//                    stubBody = {
-//                        path: '/test',
-//                        responses: [{ is: { statusCode: 400 }}],
-//                        predicates: {
-//                            path: { is: '/test' },
-//                            method: { is: 'POST' },
-//                            headers: [
-//                                { exists: 'X-One' },
-//                                { is: { 'X-Two': 'Test' } }
-//                            ],
-//                            body: { is: 'TEST' }
-//                        }
-//                    };
-//
-//                return api.post(stubsPath, stubBody);
-//            }).then(function () {
-//                var options = Object.create(spec);
-//                options.path = '/';
-//                return api.responseFor(options, 'TEST');
-//            }).then(function (response) {
-//                assert.strictEqual(response.statusCode, 200, 'should not have matched; wrong path');
-//
-//                var options = Object.create(spec);
-//                options.method = 'PUT';
-//                return api.responseFor(options, 'TEST');
-//            }).then(function (response) {
-//                assert.strictEqual(response.statusCode, 200, 'should not have matched; wrong method');
-//
-//                var options = Object.create(spec);
-//                delete options.headers['X-One'];
-//                return api.responseFor(options, 'TEST');
-//            }).then(function (response) {
-//                assert.strictEqual(response.statusCode, 200, 'should not have matched; missing header');
-//
-//                var options = Object.create(spec);
-//                options.headers['X-Two'] = 'Testing';
-//                return api.responseFor(options, 'TEST');
-//            }).then(function (response) {
-//                assert.strictEqual(response.statusCode, 200, 'should not have matched; wrong value for header');
-//
-//                return api.responseFor(Object.create(spec), 'TESTing');
-//            }).then(function (response) {
-//                assert.strictEqual(response.statusCode, 200, 'should not have matched; wrong value for body');
-//
-//                return api.responseFor(Object.create(spec), 'TEST');
-//            }).then(function (response) {
-//                assert.strictEqual(response.statusCode, 400, 'should have matched');
-//
-//                return api.del('/imposters/7575');
-//            }).done(doneCallback(done), doneErrback(done));
-//        });
+        it('should only return stubbed response if matches complex predicate', function (done) {
+            var spec = {
+                    path: '/test',
+                    port: 1515,
+                    method: 'POST',
+                    headers: {
+                        'X-One': 'Test',
+                        'X-Two': 'Test',
+                        'Content-Type': 'text/plain'
+                    }
+                };
 
-        it('should only return stubbed response if matches partial body');
-        it('should only return stubbed response if matches method');
+            api.post('/imposters', { protocol: 'http', port: 1515 }).then(function (response) {
+                var stubsPath = response.getLinkFor('stubs'),
+                    stubBody = {
+                        path: '/test',
+                        responses: [{ is: { statusCode: 400 }}],
+                        predicates: {
+                            path: { is: '/test' },
+                            method: { is: 'POST' },
+                            headers: {
+                                exists: { 'X-One': true, 'X-Two': true },
+                                is: { 'X-Two': 'Test' }
+                            },
+                            body: {
+                                startsWith: 'T',
+                                contains: 'ES',
+                                endsWith: 'T',
+                                matches: '^TEST$',
+                                is: 'TEST',
+                                exists: true
+                            }
+                        }
+                    };
+
+                return api.post(stubsPath, stubBody);
+            }).then(function () {
+                var options = api.merge(spec, { path: '/' });
+                return api.responseFor(options, 'TEST');
+            }).then(function (response) {
+                assert.strictEqual(response.statusCode, 200, 'should not have matched; wrong path');
+
+                var options = api.merge(spec, { method: 'PUT' });
+                return api.responseFor(options, 'TEST');
+            }).then(function (response) {
+                assert.strictEqual(response.statusCode, 200, 'should not have matched; wrong method');
+
+                var options = api.merge(spec, {});
+                delete options.headers['X-One'];
+                return api.responseFor(options, 'TEST');
+            }).then(function (response) {
+                assert.strictEqual(response.statusCode, 200, 'should not have matched; missing header');
+
+                var options = api.merge(spec, { headers: { 'X-Two': 'Testing' }});
+                return api.responseFor(options, 'TEST');
+            }).then(function (response) {
+                assert.strictEqual(response.statusCode, 200, 'should not have matched; wrong value for header');
+
+                return api.responseFor(api.merge(spec, {}), 'TESTing');
+            }).then(function (response) {
+                assert.strictEqual(response.statusCode, 200, 'should not have matched; wrong value for body');
+
+                return api.responseFor(api.merge(spec, {}), 'TEST');
+            }).then(function (response) {
+                assert.strictEqual(response.statusCode, 400, 'should have matched');
+
+                return api.del('/imposters/1515');
+            }).done(doneCallback(done), doneErrback(done));
+        });
+
         it('should allow javascript injection');
         it('should allow javascript predicate for matching');
     });
