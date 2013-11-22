@@ -27,10 +27,7 @@ describe('stubRepository', function () {
         });
 
         it('should have at least one response', function () {
-            var request =  {
-                path: '/test',
-                responses: []
-            };
+            var request =  { responses: [] };
 
             assert.ok(!stubs.isValidStubRequest(request));
             assert.deepEqual(stubs.stubRequestErrorsFor(request), [{
@@ -46,7 +43,7 @@ describe('stubRepository', function () {
                     path: { is: '/test' },
                     method: { is: 'GET' },
                     body: { is: 'BODY' },
-                    headers: [ { exists: 'HEADER' } ]
+                    headers: { exists: { 'TEST': true } }
                 }
             };
 
@@ -64,7 +61,53 @@ describe('stubRepository', function () {
             assert.ok(!stubs.isValidStubRequest(request));
             assert.deepEqual(stubs.stubRequestErrorsFor(request), [{
                 code: 'bad data',
-                message: "invalid predicate 'path'"
+                message: "invalid predicate for 'path'"
+            }]);
+        });
+
+        it('should detect invalid predicate', function () {
+            var request = {
+                responses: [{}],
+                predicates: {
+                    path: { invalidPredicate: '/test' }
+                }
+            };
+
+            assert.ok(!stubs.isValidStubRequest(request));
+            assert.deepEqual(stubs.stubRequestErrorsFor(request), [{
+                code: 'bad data',
+                message: "no predicate 'invalidPredicate'"
+            }]);
+        });
+
+        it('should detect invalid predicate mixed with valid predicates', function () {
+            var request = {
+                responses: [{}],
+                predicates: {
+                    path: { is: '/test' },
+                    body: { invalidPredicate: 'value' }
+                }
+            };
+
+            assert.ok(!stubs.isValidStubRequest(request));
+            assert.deepEqual(stubs.stubRequestErrorsFor(request), [{
+                code: 'bad data',
+                message: "no predicate 'invalidPredicate'"
+            }]);
+        });
+
+        it('should detect malformed predicate', function () {
+            var request = {
+                responses: [{}],
+                predicates: {
+                    headers: [ { exists: 'Test' }]
+                }
+            };
+
+            assert.ok(!stubs.isValidStubRequest(request));
+            assert.deepEqual(stubs.stubRequestErrorsFor(request), [{
+                code: 'bad data',
+                message: "malformed predicate"
             }]);
         });
     });

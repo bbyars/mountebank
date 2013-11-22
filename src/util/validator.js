@@ -45,7 +45,7 @@ function Validator () {
     }
 
     function requireValidPredicate (spec) {
-        addAllErrorsIf(spec, "bad data", "invalid predicate '$NAME$'", function (value) {
+        addAllErrorsIf(spec, "bad data", "invalid predicate for '$NAME$'", function (value) {
             return value && typeof value !== 'object';
         });
     }

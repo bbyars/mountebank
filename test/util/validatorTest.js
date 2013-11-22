@@ -213,7 +213,7 @@ describe('Validator', function () {
 
             assert.deepEqual(validator.errors(), [{
                 code: "bad data",
-                message: "invalid predicate 'key'"
+                message: "invalid predicate for 'key'"
             }]);
         });
     });

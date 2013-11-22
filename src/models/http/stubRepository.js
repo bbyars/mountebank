@@ -23,8 +23,14 @@ function create () {
         return response;
     }
 
+    function trueForAll (obj, predicate) {
+        // we avoid using 'every' to dry run every predicate during validation
+        var results = Object.keys(obj).map(predicate);
+        return results.every(function (result) { return result; });
+    }
+
     function matchesPredicate (fieldName, predicate, request) {
-        return Object.keys(predicate).every(function (key) {
+        return trueForAll(predicate, function (key) {
             return predicates[key](fieldName, predicate[key], request);
         });
     }
@@ -35,7 +41,7 @@ function create () {
         }
         var matches = stubs.filter(function (stub) {
             var predicates = stub.predicates || {};
-            return Object.keys(predicates).every(function (fieldName) {
+            return trueForAll(predicates, function (fieldName) {
                 return matchesPredicate(fieldName, predicates[fieldName], request);
             });
         });
@@ -57,7 +63,36 @@ function create () {
                 body: stub.predicates.body
             };
         }
-        return Validator.create(spec).errors();
+        var result = Validator.create(spec).errors();
+        if (result.length === 0) {
+            addDryRunErrors(stub, result);
+        }
+        return result;
+    }
+
+    function addDryRunErrors (stub, errors) {
+        try {
+            var dryRun = create();
+            dryRun.addStub(stub);
+            dryRun.resolve({ path: '/', method: 'GET', headers: {}, body: '' });
+        }
+        catch (error) {
+            // Avoid digit methods, which probably represent incorrectly using an array, e.g.
+            // Object #<Object> has no method '0'
+            var invalidPredicate = /has no method '([A-Za-z_]+)'/.exec(error.message);
+            if (invalidPredicate) {
+                errors.push({
+                    code: "bad data",
+                    message: "no predicate '" + invalidPredicate[1] + "'"
+                });
+            }
+            else {
+                errors.push({
+                    code: "bad data",
+                    message: "malformed predicate"
+                });
+            }
+        }
     }
 
     function addStub (stub) {

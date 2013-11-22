@@ -1,8 +1,10 @@
 Stories
 =======
 
+1. Use Travis CI to publish npm?
 2. Allow javascript injection for stubs to dynamically change behavior
   - maybe with a config switch to allow insecure, or do I care?
+2. Allow GET/DELETE for individual stubs
 3. Allow base mock expectation of SMTP
 4. Allow advanced header expectation of SMTP
 5. Allow body expectations of SMTP
@@ -14,7 +16,6 @@ Stories
 11. Build C# implementation
 12. Wire up C# code in CI
 13. Add nuget package
-14. Allow GET/DELETE for individual stubs
 
 Future Directions
 =================
@@ -25,5 +26,3 @@ Future Directions
 
 Fixes
 =====
-1. Send 400 for invalid request[fieldName] in predicates
-  - unrecognized type in 'is'
