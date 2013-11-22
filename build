@@ -4,12 +4,11 @@ set -e
 
 REVISION=${TRAVIS_BUILD_NUMBER:-0}
 
-scripts/normalizeWhitespace
+bin/normalizeWhitespace
 
-(
-cd server
-REVISION=$REVISION ./build
-)
+npm install
+npm install grunt-cli
+MB_PORT=3535 node_modules/grunt-cli/bin/grunt
 
 if [ $REVISION -gt 0 ]; then
     # Publish only on the node 0.10 Travis CI matric

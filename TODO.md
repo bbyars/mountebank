@@ -1,7 +1,6 @@
 Stories
 =======
 
-1. Allow stub of HTTP (make requests array to allow different responses)
 2. Allow javascript injection for stubs to dynamically change behavior
   - maybe with a config switch to allow insecure, or do I care?
 3. Allow base mock expectation of SMTP
@@ -26,10 +25,5 @@ Future Directions
 
 Fixes
 =====
-1. Can't seem to get coveralls.io integration working from Travis
-
-Food For Thought
-================
-1. Stubs act like a circular buffer mapped to path.  Should predicate be part of the key?
-2. Possible for more than 1 stub to match if same path different predicates?
-3. Move path into predicate, allow is, contains, startsWith, etc...
+1. Send 400 for invalid request[fieldName] in predicates
+  - unrecognized type in 'is'
