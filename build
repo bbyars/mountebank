@@ -22,7 +22,7 @@ if [ $REVISION -gt 0 ]; then
         echo "email = brandon.byars@gmail.com" >> ~/.npmrc
         echo >> ~/.npmrc
 
-        grunt coveralls
+        node_modules/grunt-cli/bin/grunt coveralls
 
         # On Travis Linux machine, npm publish fails with blanket in package.json
         sed -E -e '/blanket/d' -i'' package.json
