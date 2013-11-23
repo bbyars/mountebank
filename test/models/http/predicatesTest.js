@@ -221,4 +221,26 @@ describe('predicates', function () {
             assert.ok(!predicates.not('field', { is: 'this' }, { field: 'this' }));
         });
     });
+
+    describe('#inject', function () {
+        it('should return true if injected function returns true', function () {
+            var fn = "function () { return true; }";
+            assert.ok(predicates.inject('request', fn, {}));
+        });
+
+        it('should return false if injected function returns false', function () {
+            var fn = "function () { return false; }";
+            assert.ok(!predicates.inject('request', fn, {}));
+        });
+
+        it('should return true if injected function matches request', function () {
+            var fn = "function (obj) { return obj.path === '/' && obj.method === 'GET'; }";
+            assert.ok(predicates.inject('request', fn, { path: '/', method: 'GET' }));
+        });
+
+        it('should return true if injected function matches path', function () {
+            var fn = "function (path) { return path === '/'; }";
+            assert.ok(predicates.inject('path', fn, { path: '/' }));
+        });
+    });
 });

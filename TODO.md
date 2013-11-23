@@ -1,9 +1,8 @@
 Stories
 =======
 
-1. Use Travis CI to publish npm?
-2. Allow javascript injection for stubs to dynamically change behavior
-  - maybe with a config switch to allow insecure, or do I care?
+1. Allow javascript injection for stubs to dynamically change behavior
+1. Disable inject unless command line option set
 2. Allow GET/DELETE for individual stubs
 3. Allow base mock expectation of SMTP
 4. Allow advanced header expectation of SMTP

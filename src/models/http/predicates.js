@@ -40,5 +40,12 @@ module.exports = {
         return !Object.keys(expected).some(function (predicate) {
             return module.exports[predicate](fieldName, expected[predicate], request);
         });
+    },
+    inject: function (fieldName, predicate, request) {
+        /* jshint evil: true, unused: false */
+        var arg = fieldName === 'request' ? request : request[fieldName],
+            scope = JSON.parse(JSON.stringify(arg)), // prevent state-changing operations
+            injected = '(' + predicate + ')(scope);';
+        return eval(injected);
     }
 };

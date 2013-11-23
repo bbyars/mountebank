@@ -39,7 +39,7 @@ such functionality, but that is not where his heart is.
 While his goals remain momentarily unfulfilled, mountebank humbly asks you to recognize
 [node.js](http://nodejs.org/) as a dependency.  Once you've installed node using your
 package manager of choice, `npm install -g mountebank` will install the
-[server](https://github.com/bbyars/mountebank/blob/master/server/README.md).
+[server](https://github.com/bbyars/mountebank/blob/master/API.md).
 
 The native language bindings are coming, of course.
 

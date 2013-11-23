@@ -191,7 +191,42 @@ describe('http imposter', function () {
             }).done(doneCallback(done), doneErrback(done));
         });
 
+        it('should allow javascript predicate for matching', function (done) {
+            api.post('/imposters', { protocol: 'http', port: 5555 }).then(function (response) {
+                var stubsPath = response.getLinkFor('stubs'),
+                    stubBody = {
+                        predicates: {
+                            path: { inject: "function (path) { return path === '/test'; }" },
+                            method: { inject: "function (method) { return method === 'POST'; }"},
+                                // note the lower-case key!!!
+                            headers: { inject: "function (headers) { return headers['x-test'] === 'test header'; }"},
+                            body: { inject: "function (body) { return body === 'BODY'; }"},
+                            request: { inject: "function (request) { return request.path === '/test'; }"}
+                        },
+                        responses: [{ is: { body: 'MATCHED' } }]
+                    };
+
+                return api.post(stubsPath, stubBody);
+            }).then(function (response) {
+                assert.strictEqual(response.statusCode, 200, JSON.stringify(response.body));
+
+                var spec = {
+                    path: '/test',
+                    port: 5555,
+                    method: 'POST',
+                    headers: {
+                        'X-Test': 'test header',
+                        'Content-Type': 'text/plain'
+                    }
+                };
+                return api.responseFor(spec, 'BODY');
+            }).then(function (response) {
+                assert.strictEqual(response.body, 'MATCHED');
+
+                return api.del('/imposters/5555');
+            }).done(doneCallback(done), doneErrback(done));
+        });
+
         it('should allow javascript injection');
-        it('should allow javascript predicate for matching');
     });
 });

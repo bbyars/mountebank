@@ -110,6 +110,28 @@ describe('stubRepository', function () {
                 message: "malformed predicate"
             }]);
         });
+
+        it('should accept well formed inject', function () {
+            var request = {
+                predicates: { request: { inject: "function () { return true; }" } },
+                responses: [{ is: { body: 'Matched' }}]
+            };
+
+            assert.ok(stubs.isValidStubRequest(request));
+        });
+
+        it('should reject inject with no wrapper function', function () {
+            var request = {
+                predicates: { request: { inject: "return true;" } },
+                responses: [{ is: { body: 'Matched' }}]
+            };
+
+            assert.ok(!stubs.isValidStubRequest(request));
+            assert.deepEqual(stubs.stubRequestErrorsFor(request), [{
+                code: 'bad data',
+                message: "malformed predicate"
+            }]);
+        });
     });
 
     describe('#addStub and #resolve', function () {
@@ -232,6 +254,22 @@ describe('stubRepository', function () {
             var request = { path: '/test', headers: {}, body: '', method: 'GET' };
             stubs.addStub({
                 predicates: { method: { not: { is: 'POST' } }},
+                responses: [{ is: { body: 'Matched' }}]
+            });
+
+            var response = stubs.resolve(request);
+
+            assert.strictEqual(response.body, 'Matched');
+        });
+
+        it('should not be able to change state through inject', function () {
+            var predicate = "function (request) { request.path = 'CHANGED'; return true; }",
+                request = { path: '/test', headers: {}, body: '', method: 'GET' };
+            stubs.addStub({
+                predicates: {
+                    request: { inject: predicate },
+                    path: { is: '/test' } // this will fail if predicate executes on same request instance
+                },
                 responses: [{ is: { body: 'Matched' }}]
             });
 
