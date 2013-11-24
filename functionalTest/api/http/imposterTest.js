@@ -264,7 +264,37 @@ describe('http imposter', function () {
             }).done(doneCallback(done), doneErrback(done));
         });
 
-        it('should allow proxyOnce behavior');
+        it('should allow proxyOnce behavior', function (done) {
+            var proxyPort = port + 1;
+
+            api.post('/imposters', { protocol: 'http', port: proxyPort }).then(function (response) {
+                return api.post(response.getLinkFor('stubs'), { responses: [{ is: { body: 'PROXIED' } }] });
+            }).then(function () {
+                return api.post('/imposters', { protocol: 'http', port: port });
+            }).then(function (response) {
+                var stub = { responses: [{ proxyOnce: 'http://localhost:' + proxyPort }] };
+                return api.post(response.getLinkFor('stubs'), stub);
+            }).then(function (response) {
+                assert.strictEqual(response.statusCode, 200, JSON.stringify(response.body));
+
+                return api.get('/', port);
+            }).then(function (response) {
+                assert.strictEqual(response.body, 'PROXIED');
+
+                return api.get('/', port);
+            }).then(function (response) {
+                assert.strictEqual(response.body, 'PROXIED');
+
+                return api.get('/imposters/' + proxyPort + '/requests');
+            }).then(function (response) {
+                assert.strictEqual(response.body.requests.length, 1);
+
+                return Q(true);
+            }).finally(function () {
+                return api.del('/imposters/' + proxyPort);
+            }).done(doneCallback(done), doneErrback(done));
+        });
+
         it('should allow javascript injection');
     });
 });

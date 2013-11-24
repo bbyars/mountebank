@@ -310,9 +310,27 @@ describe('stubRepository', function () {
             var request = { path: '/test', headers: { key: 'value' }, body: 'BODY', method: 'GET' };
             stubs.addStub({ responses: [{ proxy: 'PROXIED URL' }] });
 
-            stubs.resolve(request).then(function (response) {
+            stubs.resolve(request).done(function (response) {
                 assert.ok(proxy.to.wasCalledWith('PROXIED URL', request));
                 assert.strictEqual(response, 'PROXY');
+                done();
+            });
+        });
+
+        it('should only call proxy first time for proxyOnce stub', function (done) {
+            proxy.to = mock().returns(Q({ body: 'PROXIED' }));
+            var request = { path: '/test', headers: { key: 'value' }, body: 'BODY', method: 'GET' };
+            stubs.addStub({ responses: [{ proxyOnce: 'PROXIED URL' }] });
+
+            stubs.resolve(request).then(function (response) {
+                assert.ok(proxy.to.wasCalledWith('PROXIED URL', request));
+                assert.strictEqual(response.body, 'PROXIED');
+
+                proxy.to = mock().returns(Q('PROXY'));
+                return stubs.resolve(request);
+            }).done(function (response) {
+                assert.ok(!proxy.to.wasCalled());
+                assert.strictEqual(response.body, 'PROXIED');
                 done();
             });
         });

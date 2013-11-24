@@ -116,6 +116,13 @@ function create (proxy) {
             if (stubResolver.proxy) {
                 return proxy.to(stubResolver.proxy, request);
             }
+            else if (stubResolver.proxyOnce) {
+                return proxy.to(stubResolver.proxyOnce, request).then(function (response) {
+                    stubResolver.is = response;
+                    delete stubResolver.proxyOnce;
+                    return Q(response);
+                });
+            }
         }
 
         return Q(createResponse(stubResponse));
