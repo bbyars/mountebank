@@ -16,7 +16,7 @@
     "mb": "./bin/mb"
   },
   "scripts": {
-    "blanket": { "pattern": "/server/src/" },
+    "blanket": { "pattern": "/mountebank/src/" },
     "start": "./bin/mb",
     "restart": "./bin/mb restart",
     "stop": "./bin/mb stop",
