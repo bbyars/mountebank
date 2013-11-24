@@ -110,7 +110,7 @@ describe('stubRepository', function () {
             assert.ok(!stubs.isValidStubRequest(request));
             assert.deepEqual(stubs.stubRequestErrorsFor(request), [{
                 code: 'bad data',
-                message: "malformed predicate"
+                message: "malformed stub request"
             }]);
         });
 
@@ -132,14 +132,30 @@ describe('stubRepository', function () {
             assert.ok(!stubs.isValidStubRequest(request));
             assert.deepEqual(stubs.stubRequestErrorsFor(request), [{
                 code: 'bad data',
-                message: "malformed predicate"
+                message: "malformed stub request"
             }]);
         });
 
         it('should accept proxy response', function () {
-            var request = { responses: [{ proxy: 'http://google.com '}]};
+            var request = { responses: [{ proxy: 'http://google.com' }]};
 
             assert.ok(stubs.isValidStubRequest(request));
+        });
+
+        it('should accept proxyOnce response', function () {
+            var request = { responses: [{ proxyOnce: 'http://google.com' }]};
+
+            assert.ok(stubs.isValidStubRequest(request));
+        });
+
+        it('should reject unrecognized response resolver', function () {
+            var request = { responses: [{ invalid: 'INVALID'}]};
+
+            assert.ok(!stubs.isValidStubRequest(request));
+            assert.deepEqual(stubs.stubRequestErrorsFor(request), [{
+                code: 'bad data',
+                message: "malformed stub request"
+            }]);
         });
     });
 

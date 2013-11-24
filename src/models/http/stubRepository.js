@@ -73,13 +73,20 @@ function create (proxy) {
 
     function addDryRunErrors (stub, errors) {
         try {
-            var dryRun = create(),
-                clone = JSON.parse(JSON.stringify(stub));
+            // keep strictly synchronous
+            var fakeProxy = {
+                    to: function () {
+                        return {
+                            then: function () { return {}; }
+                        };
+                    }
+                },
+                fakeRequest = { path: '/', method: 'GET', headers: {}, body: '' },
+                dryRun = create(fakeProxy),
+                clone = JSON.parse(JSON.stringify(stub)); // proxyOnce changes state
 
-            // change response to avoid calling proxy during dry run
-            clone.responses = [{ body: { is: 'OK' }}];
             dryRun.addStub(clone);
-            dryRun.resolve({ path: '/', method: 'GET', headers: {}, body: '' });
+            dryRun.resolve(fakeRequest);
         }
         catch (error) {
             // Avoid digit methods, which probably represent incorrectly using an array, e.g.
@@ -94,7 +101,7 @@ function create (proxy) {
             else {
                 errors.push({
                     code: "bad data",
-                    message: "malformed predicate"
+                    message: "malformed stub request"
                 });
             }
         }
@@ -105,27 +112,30 @@ function create (proxy) {
     }
 
     function resolve (request) {
-        var stubResponse = {},
-            stub = findFirstMatch(request);
+        var stub = findFirstMatch(request) || { responses: [{ is: {} }]},
+            stubResolver = stub.responses.shift();
 
-        if (stub) {
-            var stubResolver = stub.responses.shift();
-            stub.responses.push(stubResolver);
-            stubResponse = stubResolver.is || {};
+        stub.responses.push(stubResolver);
 
-            if (stubResolver.proxy) {
-                return proxy.to(stubResolver.proxy, request);
-            }
-            else if (stubResolver.proxyOnce) {
-                return proxy.to(stubResolver.proxyOnce, request).then(function (response) {
-                    stubResolver.is = response;
-                    delete stubResolver.proxyOnce;
-                    return Q(response);
-                });
-            }
+        if (stubResolver.is) {
+            return Q(createResponse(stubResolver.is));
         }
-
-        return Q(createResponse(stubResponse));
+        else if (stubResolver.proxy) {
+            return proxy.to(stubResolver.proxy, request);
+        }
+        else if (stubResolver.proxyOnce) {
+            return proxy.to(stubResolver.proxyOnce, request).then(function (response) {
+                stubResolver.is = response;
+                delete stubResolver.proxyOnce;
+                return Q(response);
+            });
+        }
+        else {
+            throw {
+                code: 'bad data',
+                message: 'unrecognized stub resolver'
+            };
+        }
     }
 
     return {
