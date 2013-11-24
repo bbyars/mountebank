@@ -15,12 +15,17 @@ function doneErrback (done) {
 
 describe('http imposter', function () {
 
+    afterEach(function (done) {
+        api.del('/imposters/' + port).done(doneCallback(done), done);
+    });
+
     describe('GET /imposters/:id', function () {
         it('should return 404 if imposter has not been created', function (done) {
-            api.get('/imposters/3535').done(function (response) {
+            api.get('/imposters/3535').then(function (response) {
                 assert.strictEqual(response.statusCode, 404);
-                done();
-            }, doneErrback(done));
+
+                return Q(true);
+            }).done(doneCallback(done), doneErrback(done));
         });
     });
 
@@ -35,13 +40,14 @@ describe('http imposter', function () {
             }).then(function (response) {
                 assert.strictEqual(response.statusCode, 201, 'Delete did not free up port');
 
-                return api.del(response.getLinkFor('self'));
+                return Q(true);
             }).done(doneCallback(done), doneErrback(done));
         });
 
         it('should return a 200 even if the server does not exist', function (done) {
             api.del('/imposters/9999').then(function (response) {
                 assert.strictEqual(response.statusCode, 200);
+
                 return Q(true);
             }).done(doneCallback(done), doneErrback(done));
         });
@@ -51,11 +57,11 @@ describe('http imposter', function () {
         it('should provide access to all requests', function (done) {
             var requestsPath;
 
-            api.post('/imposters', { protocol: 'http', port: 6565 }).then(function (response) {
+            api.post('/imposters', { protocol: 'http', port: port }).then(function (response) {
                 requestsPath = response.getLinkFor('requests');
-                return api.get('/first', 6565);
+                return api.get('/first', port);
             }).then(function () {
-                return api.get('/second', 6565);
+                return api.get('/second', port);
             }).then(function () {
                 return api.get(requestsPath);
             }).then(function (response) {
@@ -64,14 +70,14 @@ describe('http imposter', function () {
                 });
                 assert.deepEqual(requests, ['/first', '/second']);
 
-                return api.del('/imposters/6565');
+                return Q(true);
             }).done(doneCallback(done), doneErrback(done));
         });
     });
 
     describe('POST /imposters/:id/stubs', function () {
         it('should return stubbed response', function (done) {
-            api.post('/imposters', { protocol: 'http', port: 5555 }).then(function (response) {
+            api.post('/imposters', { protocol: 'http', port: port }).then(function (response) {
                 var stubsPath = response.getLinkFor('stubs'),
                     stubBody = {
                         predicates: { path: { is: '/test' }},
@@ -88,18 +94,18 @@ describe('http imposter', function () {
             }).then(function (response) {
                 assert.strictEqual(response.statusCode, 200);
 
-                return api.get('/test', 5555);
+                return api.get('/test', port);
             }).then(function (response) {
                 assert.strictEqual(response.statusCode, 400);
                 assert.strictEqual(response.body, 'test body');
                 assert.strictEqual(response.headers['x-test'], 'test header');
 
-                return api.del('/imposters/5555');
+                return Q(true);
             }).done(doneCallback(done), doneErrback(done));
         });
 
         it('should allow a sequence of stubs as a circular buffer', function (done) {
-            api.post('/imposters', { protocol: 'http', port: 6565 }).then(function (response) {
+            api.post('/imposters', { protocol: 'http', port: port }).then(function (response) {
                 var stubsPath = response.getLinkFor('stubs'),
                     stubBody = {
                         predicates: { path: { is: '/test' }},
@@ -108,30 +114,30 @@ describe('http imposter', function () {
 
                 return api.post(stubsPath, stubBody);
             }).then(function () {
-                return api.get('/test', 6565);
+                return api.get('/test', port);
             }).then(function (response) {
                 assert.strictEqual(response.statusCode, 400);
 
-                return api.get('/test', 6565);
+                return api.get('/test', port);
             }).then(function (response) {
                 assert.strictEqual(response.statusCode, 405);
 
-                return api.get('/test', 6565);
+                return api.get('/test', port);
             }).then(function (response) {
                 assert.strictEqual(response.statusCode, 400);
 
-                return api.get('/test', 6565);
+                return api.get('/test', port);
             }).then(function (response) {
                 assert.strictEqual(response.statusCode, 405);
 
-                return api.del('/imposters/6565');
+                return Q(true);
             }).done(doneCallback(done), doneErrback(done));
         });
 
         it('should only return stubbed response if matches complex predicate', function (done) {
             var spec = {
                     path: '/test',
-                    port: 1515,
+                    port: port,
                     method: 'POST',
                     headers: {
                         'X-One': 'Test',
@@ -140,7 +146,7 @@ describe('http imposter', function () {
                     }
                 };
 
-            api.post('/imposters', { protocol: 'http', port: 1515 }).then(function (response) {
+            api.post('/imposters', { protocol: 'http', port: port }).then(function (response) {
                 var stubsPath = response.getLinkFor('stubs'),
                     stubBody = {
                         path: '/test',
@@ -195,12 +201,12 @@ describe('http imposter', function () {
             }).then(function (response) {
                 assert.strictEqual(response.statusCode, 400, 'should have matched');
 
-                return api.del('/imposters/1515');
+                return Q(true);
             }).done(doneCallback(done), doneErrback(done));
         });
 
         it('should allow javascript predicate for matching', function (done) {
-            api.post('/imposters', { protocol: 'http', port: 5555 }).then(function (response) {
+            api.post('/imposters', { protocol: 'http', port: port }).then(function (response) {
                 var stubsPath = response.getLinkFor('stubs'),
                     stubBody = {
                         predicates: {
@@ -220,7 +226,7 @@ describe('http imposter', function () {
 
                 var spec = {
                     path: '/test',
-                    port: 5555,
+                    port: port,
                     method: 'POST',
                     headers: {
                         'X-Test': 'test header',
@@ -231,27 +237,30 @@ describe('http imposter', function () {
             }).then(function (response) {
                 assert.strictEqual(response.body, 'MATCHED');
 
-                return api.del('/imposters/5555');
+                return Q(true);
             }).done(doneCallback(done), doneErrback(done));
         });
 
         it('should allow proxy stubs', function (done) {
-            api.post('/imposters', { protocol: 'http', port: 4545 }).then(function () {
-                return api.post('/imposters/4545/stubs', { responses: [{ is: { body: 'PROXIED' } }] });
+            var proxyPort = port + 1;
+
+            api.post('/imposters', { protocol: 'http', port: proxyPort }).then(function (response) {
+                assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body));
+
+                return api.post(response.getLinkFor('stubs'), { responses: [{ is: { body: 'PROXIED' } }] });
             }).then(function () {
-                return api.post('/imposters', { protocol: 'http', port: 5555 });
-            }).then(function () {
-                return api.post('/imposters/5555/stubs', { responses: [{ proxy: 'http://localhost:4545' }] });
+                return api.post('/imposters', { protocol: 'http', port: port });
+            }).then(function (response) {
+                var stub = { responses: [{ proxy: 'http://localhost:' + proxyPort }] };
+                return api.post(response.getLinkFor('stubs'), stub);
             }).then(function (response) {
                 assert.strictEqual(response.statusCode, 200, JSON.stringify(response.body));
 
-                return api.get('/', 5555);
+                return api.get('/', port);
             }).then(function (response) {
                 assert.strictEqual(response.body, 'PROXIED');
 
-                return api.del('/imposters/5555');
-            }).then(function () {
-                return api.del('/imposters/4545');
+                return api.del('/imposters/' + proxyPort);
             }).done(doneCallback(done), doneErrback(done));
         });
 

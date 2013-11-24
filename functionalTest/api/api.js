@@ -2,7 +2,7 @@
 
 var http = require('http'),
     Q = require('q'),
-    port = process.env.MB_PORT || 2525,
+    port = parseInt(process.env.MB_PORT || 2525),
     url = 'http://localhost:' + port;
 
 function clone (obj) {
