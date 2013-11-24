@@ -5,7 +5,8 @@ var Validator = require('../../util/validator'),
     Q = require('q');
 
 function create (proxy) {
-    var stubs = [];
+    var stubs = [],
+        injectState = {};
 
     function createResponse (stub) {
         var response = {
@@ -91,19 +92,18 @@ function create (proxy) {
         catch (error) {
             // Avoid digit methods, which probably represent incorrectly using an array, e.g.
             // Object #<Object> has no method '0'
-            var invalidPredicate = /has no method '([A-Za-z_]+)'/.exec(error.message);
+            var invalidPredicate = /has no method '([A-Za-z_]+)'/.exec(error.message),
+                message = 'malformed stub request';
+
             if (invalidPredicate) {
-                errors.push({
-                    code: "bad data",
-                    message: "no predicate '" + invalidPredicate[1] + "'"
-                });
+                message = "no predicate '" + invalidPredicate[1] + "'";
             }
-            else {
-                errors.push({
-                    code: "bad data",
-                    message: "malformed stub request"
-                });
-            }
+
+            errors.push({
+                code: "bad data",
+                message: message,
+                data: error.message
+            });
         }
     }
 
@@ -126,16 +126,22 @@ function create (proxy) {
         else if (stubResolver.proxyOnce) {
             return proxy.to(stubResolver.proxyOnce, request).then(function (response) {
                 stubResolver.is = response;
-                delete stubResolver.proxyOnce;
                 return Q(response);
             });
         }
-        else {
-            throw {
-                code: 'bad data',
-                message: 'unrecognized stub resolver'
-            };
+        else if (stubResolver.inject) {
+            return Q(createResponse(inject(request, stubResolver.inject, injectState)));
         }
+        else {
+            throw { message: 'unrecognized stub resolver' };
+        }
+    }
+
+    function inject (request, fn, state) {
+        /* jshint evil: true, unused: false */
+        var scope = JSON.parse(JSON.stringify(request)),
+            injected = '(' + fn + ')(scope, state);';
+        return eval(injected);
     }
 
     return {

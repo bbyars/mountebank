@@ -295,6 +295,81 @@ describe('http imposter', function () {
             }).done(doneCallback(done), doneErrback(done));
         });
 
-        it('should allow javascript injection');
+        it('should allow javascript injection', function (done) {
+            api.post('/imposters', { protocol: 'http', port: port }).then(function (response) {
+                var fn = "function (request) { return { body: request.method + ' INJECTED' }; }";
+                return api.post(response.getLinkFor('stubs'), { responses: [{ inject: fn }] });
+            }).then(function (response) {
+                assert.strictEqual(response.statusCode, 200, JSON.stringify(response.body));
+
+                return api.get('/', port);
+            }).then(function (response) {
+                assert.strictEqual(response.body, 'GET INJECTED');
+                assert.strictEqual(response.statusCode, 200);
+                assert.strictEqual(response.headers.connection, 'close');
+
+                return Q(true);
+            }).done(doneCallback(done), doneErrback(done));
+        });
+
+        it('should allow javascript injection to keep state between requests', function (done) {
+            api.post('/imposters', { protocol: 'http', port: port }).then(function (response) {
+                var fn = "function (request, state) {\n" +
+                            "if (!state.calls) { state.calls = 0; }\n" +
+                            "state.calls += 1;\n" +
+                            "return { body: state.calls.toString() };\n" +
+                         "}";
+                return api.post(response.getLinkFor('stubs'), { responses: [{ inject: fn }] });
+            }).then(function (response) {
+                assert.strictEqual(response.statusCode, 200, JSON.stringify(response.body));
+
+                return api.get('/', port);
+            }).then(function (response) {
+                assert.strictEqual(response.body, '1');
+
+                return api.get('/', port);
+            }).then(function (response) {
+                assert.deepEqual(response.body, '2');
+
+                return Q(true);
+            }).done(doneCallback(done), doneErrback(done));
+        });
+
+        // Struggling to get the next two tests to pass:
+
+//        it('should not crash due to bad javascript injection', function (done) {
+//            api.post('/imposters', { protocol: 'http', port: port }).then(function (response) {
+//                var fn = "function (request) { return { body: 1 }; }";
+//                return api.post(response.getLinkFor('stubs'), { responses: [{ inject: fn }] });
+//            }).then(function (response) {
+//                assert.strictEqual(response.statusCode, 200, JSON.stringify(response.body));
+//
+//                return api.get('/', port);
+//            }).then(function (response) {
+//                assert.strictEqual(response.statusCode, 500);
+//                assert.strictEqual(response.body, '');
+//
+//                return Q(true);
+//            }).done(doneCallback(done), doneErrback(done));
+//        });
+
+//        it('should allow asynchronous injection', function (done) {
+//            api.post('/imposters', { protocol: 'http', port: port }).then(function (response) {
+//                var fn = "function () {\n" +
+//                            "process.nextTick(function () {\n" +
+//                                "return { body: 'INJECTED' };\n" +
+//                            "});\n" +
+//                         "}";
+//                return api.post(response.getLinkFor('stubs'), { responses: [{ inject: fn }] });
+//            }).then(function (response) {
+//                assert.strictEqual(response.statusCode, 200, JSON.stringify(response.body));
+//
+//                return api.get('/', port);
+//            }).then(function (response) {
+//                assert.strictEqual(response.body, 'INJECTED');
+//
+//                return Q(true);
+//            }).done(doneCallback(done), doneErrback(done));
+//        });
     });
 });

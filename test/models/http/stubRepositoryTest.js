@@ -79,7 +79,8 @@ describe('stubRepository', function () {
             assert.ok(!stubs.isValidStubRequest(request));
             assert.deepEqual(stubs.stubRequestErrorsFor(request), [{
                 code: 'bad data',
-                message: "no predicate 'invalidPredicate'"
+                message: "no predicate 'invalidPredicate'",
+                data: "Object #<Object> has no method 'invalidPredicate'"
             }]);
         });
 
@@ -95,7 +96,8 @@ describe('stubRepository', function () {
             assert.ok(!stubs.isValidStubRequest(request));
             assert.deepEqual(stubs.stubRequestErrorsFor(request), [{
                 code: 'bad data',
-                message: "no predicate 'invalidPredicate'"
+                message: "no predicate 'invalidPredicate'",
+                data: "Object #<Object> has no method 'invalidPredicate'"
             }]);
         });
 
@@ -110,7 +112,8 @@ describe('stubRepository', function () {
             assert.ok(!stubs.isValidStubRequest(request));
             assert.deepEqual(stubs.stubRequestErrorsFor(request), [{
                 code: 'bad data',
-                message: "malformed stub request"
+                message: 'malformed stub request',
+                data: "Property '0' of object #<Object> is not a function"
             }]);
         });
 
@@ -132,7 +135,8 @@ describe('stubRepository', function () {
             assert.ok(!stubs.isValidStubRequest(request));
             assert.deepEqual(stubs.stubRequestErrorsFor(request), [{
                 code: 'bad data',
-                message: "malformed stub request"
+                message: 'malformed stub request',
+                data: 'Unexpected token return'
             }]);
         });
 
@@ -154,7 +158,8 @@ describe('stubRepository', function () {
             assert.ok(!stubs.isValidStubRequest(request));
             assert.deepEqual(stubs.stubRequestErrorsFor(request), [{
                 code: 'bad data',
-                message: "malformed stub request"
+                message: 'malformed stub request',
+                data: 'unrecognized stub resolver'
             }]);
         });
     });
@@ -347,6 +352,29 @@ describe('stubRepository', function () {
             }).done(function (response) {
                 assert.ok(!proxy.to.wasCalled());
                 assert.strictEqual(response.body, 'PROXIED');
+                done();
+            });
+        });
+
+        it('should allow injected response', function (done) {
+            var request = { path: '/test', headers: {}, body: '', method: 'GET' },
+                fn = "function (request) { return { body: request.method + ' INJECTED' }; }";
+            stubs.addStub({ responses: [{ inject: fn }] });
+
+            stubs.resolve(request).done(function (response) {
+                assert.strictEqual(response.body, 'GET INJECTED');
+                done();
+            });
+        });
+
+        it('should merge injected response with default values', function (done) {
+            var request = { path: '/test', headers: {}, body: '', method: 'GET' },
+                fn = "function (request) { return { body: 'INJECTED' }; }";
+            stubs.addStub({ responses: [{ inject: fn }] });
+
+            stubs.resolve(request).done(function (response) {
+                assert.strictEqual(response.statusCode, 200);
+                assert.strictEqual(response.headers.connection, 'close');
                 done();
             });
         });

@@ -2,6 +2,7 @@
 
 var http = require('http'),
     Q = require('q'),
+    Domain = require('domain'),
     StubRepository = require('./stubRepository'),
     Proxy = require('./proxy');
 
@@ -34,16 +35,26 @@ var create = function (port) {
     var server = http.createServer(function (request, response) {
         console.log(logPrefix + request.method + ' ' + request.url);
 
-        simplify(request).done(function (simpleRequest) {
-            requests.push(simpleRequest);
-            stubs.resolve(simpleRequest).done(function (stubResponse) {
+        var domain = Domain.create(),
+            errorHandler = function (error) {
+                console.log(logPrefix + 'ERROR: ' + error);
+                response.writeHead(500, { 'content-type': 'application/json' });
+                response.end(error, 'utf8');
+            };
+
+        // Primarily intended to catch bad JavaScript injections,
+        // but I can't seem to catch them (see commented out test
+        // in functionalTest/api/http/imposterTest.js)
+        domain.on('error', errorHandler);
+
+        domain.run(function () {
+            simplify(request).then(function (simpleRequest) {
+                requests.push(simpleRequest);
+                return stubs.resolve(simpleRequest);
+            }).done(function (stubResponse) {
                 response.writeHead(stubResponse.statusCode, stubResponse.headers);
                 response.end(stubResponse.body, 'utf8');
-            }, function (error) {
-                console.log(logPrefix + 'ERROR: ' + error);
-                response.writeHead(500);
-                response.end(error, 'utf8');
-            });
+            }, errorHandler);
         });
     });
 

@@ -1,7 +1,6 @@
 Stories
 =======
 
-1. Allow inject for stubs
 1. Disable inject unless command line option set
 2. Allow GET/DELETE for individual stubs (change POST to 201)
 2. better logging

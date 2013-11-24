@@ -1,6 +1,7 @@
 'use strict';
 
-var Q = require('q');
+var Q = require('q'),
+    Domain = require('domain');
 
 function create (Protocol, port) {
 
@@ -21,6 +22,7 @@ function create (Protocol, port) {
     }
 
     var deferred = Q.defer(),
+        domain = Domain.create(),
         errorHandler = function (error) {
             if (error.errno === 'EADDRINUSE') {
                 deferred.reject({
@@ -39,18 +41,18 @@ function create (Protocol, port) {
             }
         };
 
-    process.once('uncaughtException', errorHandler);
-    Protocol.create(port).done(function (server) {
-        process.removeListener('uncaughtException', errorHandler);
-
-        deferred.resolve({
-            url: url,
-            hypermedia: hypermedia,
-            requests: server.requests,
-            isValidStubRequest: server.isValidStubRequest,
-            stubRequestErrorsFor: server.stubRequestErrorsFor,
-            addStub: server.addStub,
-            stop: function () { server.close(); }
+    domain.on('error', errorHandler);
+    domain.run(function () {
+        Protocol.create(port).done(function (server) {
+            deferred.resolve({
+                url: url,
+                hypermedia: hypermedia,
+                requests: server.requests,
+                isValidStubRequest: server.isValidStubRequest,
+                stubRequestErrorsFor: server.stubRequestErrorsFor,
+                addStub: server.addStub,
+                stop: function () { server.close(); }
+            });
         });
     });
 
