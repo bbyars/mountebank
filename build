@@ -2,7 +2,7 @@
 
 set -e
 
-REVISION=${TRAVIS_BUILD_NUMBER:-0}
+export REVISION=${TRAVIS_BUILD_NUMBER:-0}
 
 bin/normalizeWhitespace
 
