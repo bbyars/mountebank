@@ -1,9 +1,13 @@
 Stories
 =======
 
-1. Allow javascript injection for stubs to dynamically change behavior
+- does dry run call proxy?
+1. Allow proxy for stubs
+1. Allow proxyOnce for stubs
+1. Allow inject for stubs
 1. Disable inject unless command line option set
-2. Allow GET/DELETE for individual stubs
+2. Allow GET/DELETE for individual stubs (change POST to 201)
+2. better logging
 3. Allow base mock expectation of SMTP
 4. Allow advanced header expectation of SMTP
 5. Allow body expectations of SMTP

@@ -100,6 +100,7 @@ function del (path) {
 
 module.exports = {
     url: url,
+    port: port,
     get: get,
     post: post,
     del: del,

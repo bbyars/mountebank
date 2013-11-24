@@ -1,13 +1,16 @@
 'use strict';
 
 var assert = require('assert'),
-    StubRepository = require('../../../src/models/http/stubRepository');
+    StubRepository = require('../../../src/models/http/stubRepository'),
+    mock = require('../../mock').mock,
+    Q = require('q');
 
 describe('stubRepository', function () {
-    var stubs;
+    var stubs, proxy;
 
     beforeEach(function () {
-        stubs = StubRepository.create();
+        proxy = {};
+        stubs = StubRepository.create(proxy);
     });
 
     describe('#isValidStubRequest and #stubRequestErrorsFor', function () {
@@ -132,137 +135,160 @@ describe('stubRepository', function () {
                 message: "malformed predicate"
             }]);
         });
+
+        it('should accept proxy response', function () {
+            var request = { responses: [{ proxy: 'http://google.com '}]};
+
+            assert.ok(stubs.isValidStubRequest(request));
+        });
     });
 
     describe('#addStub and #resolve', function () {
-        it('should return default response if no match', function () {
+        it('should return default response if no match', function (done) {
             var request = { path: '/test', headers: {}, body: '' };
 
-            var response = stubs.resolve(request);
-
-            assert.deepEqual(response, {
-                statusCode: 200,
-                headers: { connection: 'close' },
-                body: ''
+            stubs.resolve(request).done(function (response) {
+                assert.deepEqual(response, {
+                    statusCode: 200,
+                    headers: { connection: 'close' },
+                    body: ''
+                });
+                done();
             });
         });
 
-        it('should return stub if no predicate', function () {
+        it('should return stub if no predicate', function (done) {
             var request = { path: '/test', headers: {}, body: '' };
             stubs.addStub({
                 responses: [{ is: { statusCode: 400 }}]
             });
 
-            var response = stubs.resolve(request);
-
-            assert.strictEqual(response.statusCode, 400);
+            stubs.resolve(request).done(function (response) {
+                assert.strictEqual(response.statusCode, 400);
+                done();
+            });
         });
 
-        it('should return match on path', function () {
+        it('should return match on path', function (done) {
             var request = { path: '/test', headers: {}, body: '' };
             stubs.addStub({
                 predicates: { path: { is: '/test' }},
                 responses: [{ is: { statusCode: 400, headers: { 'X-Test': 'Test' }, body: 'Test successful' }}]
             });
 
-            var response = stubs.resolve(request);
-
-            assert.deepEqual(response, {
-                statusCode: 400,
-                headers: { connection: 'close', 'X-Test': 'Test' },
-                body: 'Test successful'
+            stubs.resolve(request).done(function (response) {
+                assert.deepEqual(response, {
+                    statusCode: 400,
+                    headers: { connection: 'close', 'X-Test': 'Test' },
+                    body: 'Test successful'
+                });
+                done();
             });
         });
 
-        it('should merge default values with stub response', function () {
+        it('should merge default values with stub response', function (done) {
             var request = { path: '/test', headers: {}, body: '' };
             stubs.addStub({
                 responses: [{ is: { body: 'Test successful' }}]
             });
 
-            var response = stubs.resolve(request);
-
-            assert.deepEqual(response, {
-                statusCode: 200,
-                headers: { connection: 'close' },
-                body: 'Test successful'
+            stubs.resolve(request).done(function (response) {
+                assert.deepEqual(response, {
+                    statusCode: 200,
+                    headers: { connection: 'close' },
+                    body: 'Test successful'
+                });
+                done();
             });
         });
 
-        it('should return stubs in order, looping around', function () {
-            var request = { path: '/test', headers: {}, body: '' };
+        it('should return stubs in order, looping around', function (done) {
+            var request = { path: '/test', headers: {}, body: '' },
+                bodies = [];
             stubs.addStub({
                 responses: [{ is: { body: 'First' }}, { is: { body: 'Second' }}]
             });
 
-            var bodies = [stubs.resolve(request), stubs.resolve(request), stubs.resolve(request)].map(function (value) {
-                return value.body;
-            });
+            stubs.resolve(request).then(function (response) {
+                bodies.push(response.body);
+                return stubs.resolve(request);
+            }).then(function (response) {
+                bodies.push(response.body);
+                return stubs.resolve(request);
+            }).done(function (response) {
+                bodies.push(response.body);
 
-            assert.deepEqual(bodies, ['First', 'Second', 'First']);
+                assert.deepEqual(bodies, ['First', 'Second', 'First']);
+                done();
+            });
         });
 
-        it('should not return stub if does not match predicate method', function () {
+        it('should not return stub if does not match predicate method', function (done) {
             var request = { path: '/test', headers: {}, body: '', method: 'GET' };
             stubs.addStub({
                 predicates: { path: { is: '/test' }, method: { is: 'POST' }},
                 responses: [{ is: { body: 'Matched' }}]
             });
 
-            var response = stubs.resolve(request);
-
-            assert.strictEqual(response.body, '');
+            stubs.resolve(request).done(function (response) {
+                assert.strictEqual(response.body, '');
+                done();
+            });
         });
 
-        it('should return default stub if header predicates fails', function () {
+        it('should return default stub if header predicates fails', function (done) {
             var request = { path: '/test', headers: { first: 'value' }, body: '', method: 'GET' };
             stubs.addStub({
                 predicates: { headers: { exists: { first: true, second: true } }},
                 responses: [{ is: { body: 'Matched' }}]
             });
 
-            var response = stubs.resolve(request);
-
-            assert.strictEqual(response.body, '');
+            stubs.resolve(request).done(function (response) {
+                assert.strictEqual(response.body, '');
+                done();
+            });
         });
 
-        it('should return stub if header predicate passes', function () {
+        it('should return stub if header predicate passes', function (done) {
             var request = { path: '/test', headers: {}, body: '', method: 'GET' };
             stubs.addStub({
                 predicates: { headers: { exists: { first: false, second: false } }},
                 responses: [{ is: { body: 'Matched' }}]
             });
 
-            var response = stubs.resolve(request);
-
-            assert.strictEqual(response.body, 'Matched');
+            stubs.resolve(request).done(function (response) {
+                assert.strictEqual(response.body, 'Matched');
+                done();
+            });
         });
 
-        it('should return default stub if not predicates fails', function () {
+        it('should return default stub if not predicates fails', function (done) {
             var request = { path: '/test', headers: {}, body: '', method: 'GET' };
             stubs.addStub({
                 predicates: { method: { not: { is: 'GET' } }},
                 responses: [{ is: { body: 'Matched' }}]
             });
 
-            var response = stubs.resolve(request);
-
-            assert.strictEqual(response.body, '');
+            stubs.resolve(request).done(function (response) {
+                assert.strictEqual(response.body, '');
+                done();
+            });
         });
 
-        it('should return stub if not predicate passes', function () {
+        it('should return stub if not predicate passes', function (done) {
             var request = { path: '/test', headers: {}, body: '', method: 'GET' };
             stubs.addStub({
                 predicates: { method: { not: { is: 'POST' } }},
                 responses: [{ is: { body: 'Matched' }}]
             });
 
-            var response = stubs.resolve(request);
-
-            assert.strictEqual(response.body, 'Matched');
+            stubs.resolve(request).done(function (response) {
+                assert.strictEqual(response.body, 'Matched');
+                done();
+            });
         });
 
-        it('should not be able to change state through inject', function () {
+        it('should not be able to change state through inject', function (done) {
             var predicate = "function (request) { request.path = 'CHANGED'; return true; }",
                 request = { path: '/test', headers: {}, body: '', method: 'GET' };
             stubs.addStub({
@@ -273,9 +299,22 @@ describe('stubRepository', function () {
                 responses: [{ is: { body: 'Matched' }}]
             });
 
-            var response = stubs.resolve(request);
+            stubs.resolve(request).done(function (response) {
+                assert.strictEqual(response.body, 'Matched');
+                done();
+            });
+        });
 
-            assert.strictEqual(response.body, 'Matched');
+        it('should return proxied result for proxy stub', function (done) {
+            proxy.to = mock().returns(Q('PROXY'));
+            var request = { path: '/test', headers: { key: 'value' }, body: 'BODY', method: 'GET' };
+            stubs.addStub({ responses: [{ proxy: 'PROXIED URL' }] });
+
+            stubs.resolve(request).then(function (response) {
+                assert.ok(proxy.to.wasCalledWith('PROXIED URL', request));
+                assert.strictEqual(response, 'PROXY');
+                done();
+            });
         });
     });
 });

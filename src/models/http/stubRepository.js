@@ -1,9 +1,10 @@
 'use strict';
 
 var Validator = require('../../util/validator'),
-    predicates = require('./predicates');
+    predicates = require('./predicates'),
+    Q = require('q');
 
-function create () {
+function create (proxy) {
     var stubs = [];
 
     function createResponse (stub) {
@@ -72,8 +73,12 @@ function create () {
 
     function addDryRunErrors (stub, errors) {
         try {
-            var dryRun = create();
-            dryRun.addStub(stub);
+            var dryRun = create(),
+                clone = JSON.parse(JSON.stringify(stub));
+
+            // change response to avoid calling proxy during dry run
+            clone.responses = [{ body: { is: 'OK' }}];
+            dryRun.addStub(clone);
             dryRun.resolve({ path: '/', method: 'GET', headers: {}, body: '' });
         }
         catch (error) {
@@ -105,10 +110,15 @@ function create () {
 
         if (stub) {
             var stubResolver = stub.responses.shift();
-            stubResponse = stubResolver.is;
             stub.responses.push(stubResolver);
+            stubResponse = stubResolver.is || {};
+
+            if (stubResolver.proxy) {
+                return proxy.to(stubResolver.proxy, request);
+            }
         }
-        return createResponse(stubResponse);
+
+        return Q(createResponse(stubResponse));
     }
 
     return {

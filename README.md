@@ -26,13 +26,13 @@ of open source developers are working on it.
 mountebank wants you to have a good experience, but don't expect him to do too much.
 He knows that other products will sell you a toaster and give you a full oven.
 mountebank has a more machiavellian aim.  He wants to sell you an entire kitchen and give you
-a fork.  Be forewarned - if you're looking for mountebank to parlay between real products and
-remember the transactions, you may be disappointed.
+a fork.  He will provide a robust set of primitives, but any advanced interactions will
+have to be handled through code injection.
 
 mountebank sees tremendous opportunity in the Uncharted Territories.  To some degree, this
 is verification mocking for HTTP.  To a larger degree, this is verification mocking across
-other protocols.  He will provide HTTP stubs, because he knows you already know and expect
-such functionality, but that is not where his heart is.
+other protocols.  He will provide excellent and first class HTTP stubs, because he knows you
+already know and expect such functionality, but it's not where his heart lies.
 
 ## Installation
 

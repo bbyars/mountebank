@@ -227,6 +227,27 @@ describe('http imposter', function () {
             }).done(doneCallback(done), doneErrback(done));
         });
 
+        it('should allow proxy stubs', function (done) {
+            api.post('/imposters', { protocol: 'http', port: 4545 }).then(function () {
+                return api.post('/imposters/4545/stubs', { responses: [{ is: { body: 'PROXIED' } }] });
+            }).then(function () {
+                return api.post('/imposters', { protocol: 'http', port: 5555 });
+            }).then(function () {
+                return api.post('/imposters/5555/stubs', { responses: [{ proxy: 'http://localhost:4545' }] });
+            }).then(function (response) {
+                assert.strictEqual(response.statusCode, 200, JSON.stringify(response.body));
+
+                return api.get('/', 5555);
+            }).then(function (response) {
+                assert.strictEqual(response.body, 'PROXIED');
+
+                return api.del('/imposters/5555');
+            }).then(function () {
+                return api.del('/imposters/4545');
+            }).done(doneCallback(done), doneErrback(done));
+        });
+
+        it('should allow proxyOnce behavior');
         it('should allow javascript injection');
     });
 });
