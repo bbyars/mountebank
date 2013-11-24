@@ -31,7 +31,7 @@ function create (port) {
     app.get('/imposters', impostersController.get);
     app.post('/imposters', impostersController.post);
     app.get('/imposters/:id', validateImposterExists, imposterController.get);
-    app.del('/imposters/:id', validateImposterExists, imposterController.del);
+    app.del('/imposters/:id', imposterController.del);
     app.get('/imposters/:id/requests', validateImposterExists, imposterController.getRequests);
     app.post('/imposters/:id/stubs', validateImposterExists, imposterController.addStub);
 

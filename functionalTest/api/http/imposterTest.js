@@ -1,8 +1,9 @@
 'use strict';
 
 var assert = require('assert'),
-    api = require('../api');
-
+    api = require('../api'),
+    Q = require('q'),
+    port = api.port + 1;
 
 function doneCallback (done) {
     return function () { done(); };
@@ -25,16 +26,23 @@ describe('http imposter', function () {
 
     describe('DELETE /imposters/:id should shutdown server at that port', function () {
         it('should shutdown server at that port', function (done) {
-            api.post('/imposters', { protocol: 'http', port: 5555 }).then(function () {
-                return api.del('/imposters/5555');
+            api.post('/imposters', { protocol: 'http', port: port }).then(function (response) {
+                return api.del(response.getLinkFor('self'));
             }).then(function (response) {
                 assert.strictEqual(response.statusCode, 200, 'Delete failed');
 
-                return api.post('/imposters', { protocol: 'http', port: 5555 });
+                return api.post('/imposters', { protocol: 'http', port: port });
             }).then(function (response) {
                 assert.strictEqual(response.statusCode, 201, 'Delete did not free up port');
 
-                return api.del('/imposters/5555');
+                return api.del(response.getLinkFor('self'));
+            }).done(doneCallback(done), doneErrback(done));
+        });
+
+        it('should return a 200 even if the server does not exist', function (done) {
+            api.del('/imposters/9999').then(function (response) {
+                assert.strictEqual(response.statusCode, 200);
+                return Q(true);
             }).done(doneCallback(done), doneErrback(done));
         });
     });

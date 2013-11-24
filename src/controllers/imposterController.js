@@ -11,8 +11,10 @@ function create (imposters) {
     function del (request, response) {
         var imposter = imposters[request.params.id];
 
-        imposter.stop();
-        delete imposters[request.params.id];
+        if (imposter) {
+            imposter.stop();
+            delete imposters[request.params.id];
+        }
         response.send();
     }
 

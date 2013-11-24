@@ -44,6 +44,16 @@ describe('ImposterController', function () {
 
             assert.deepEqual(imposters, {});
         });
+
+        it('should send request even if no imposter exists', function () {
+            var imposters = {},
+                controller = Controller.create(imposters);
+            response.send = mock();
+
+            controller.del({ params: { id: 1 }}, response);
+
+            assert.ok(response.send.wasCalled());
+        });
     });
 
     describe('#getRequests', function () {
