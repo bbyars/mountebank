@@ -1,6 +1,7 @@
 'use strict';
 
 var http = require('http'),
+    https = require('https'),
     url = require('url'),
     Q = require('q');
 
@@ -8,6 +9,7 @@ function create () {
     function to (baseUrl, originalRequest) {
         var deferred = Q.defer(),
             parts = url.parse(baseUrl),
+            protocol = parts.protocol === 'https:' ? https : http,
             options = {
                 method: originalRequest.method,
                 hostname: parts.hostname,
@@ -19,7 +21,7 @@ function create () {
             proxiedRequest;
 
         options.headers.connection = 'close';
-        proxiedRequest = http.request(options, function (response) {
+        proxiedRequest = protocol.request(options, function (response) {
                 response.body = '';
                 response.setEncoding('utf8');
                 response.on('data', function (chunk) {

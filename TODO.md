@@ -20,6 +20,7 @@ Future Directions
 Known Bugs
 ==========
 1. Do not currently ensure validation is purely synchronous in presence of injections
+2. `mb` no longer works; should default to `mb start`
 
 Cleanup Needed
 ==============

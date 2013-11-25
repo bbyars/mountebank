@@ -83,6 +83,12 @@ describe('proxy', function () {
             });
         });
 
-        it('should proxy to https');
+        it('should proxy to https', function (done) {
+            var request = { method: 'GET', path: '/?q=mountebank', body: '', headers: {} };
+            proxy.to('https://google.com', request).then(function (response) {
+                assert.strictEqual(response.statusCode, 301);
+                assert.strictEqual(response.headers.location, 'https://www.google.com/?q=mountebank');
+            }).done(doneCallback(done), doneErrback(done));
+        });
     });
 });
