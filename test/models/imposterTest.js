@@ -17,20 +17,23 @@ describe('imposter', function () {
             };
             Protocol = {
                 name: 'http',
-                create: mock().returns(Q({ requests: [] })),
+                create: mock().returns(Q({
+                    requests: [],
+                    addStub: mock()
+                })),
                 close: mock()
             };
         });
 
         it('should return url', function (done) {
-            Imposter.create(Protocol, 3535).then(function (imposter) {
+            Imposter.create(Protocol, 3535).done(function (imposter) {
                 assert.strictEqual(imposter.url(response), 'http://localhost/imposters/3535');
                 done();
             });
         });
 
         it('should return hypermedia links', function (done) {
-            Imposter.create(Protocol, 3535).then(function (imposter) {
+            Imposter.create(Protocol, 3535).done(function (imposter) {
                 assert.deepEqual(imposter.hypermedia(response), {
                     protocol: 'http',
                     port: 3535,
@@ -45,8 +48,18 @@ describe('imposter', function () {
         });
 
         it('should create protocol server on provided port with provided injection setting', function (done) {
-            Imposter.create(Protocol, 3535, true).then(function () {
+            Imposter.create(Protocol, 3535, true).done(function () {
                 assert(Protocol.create.wasCalledWith(3535, true));
+                done();
+            });
+        });
+
+        it('should return list of stubs', function (done) {
+            Imposter.create(Protocol, 3535, true).done(function (imposter) {
+                imposter.addStub('ONE');
+                imposter.addStub('TWO');
+
+                assert.deepEqual(imposter.stubsHypermedia(), { stubs: ['ONE', 'TWO'] });
                 done();
             });
         });

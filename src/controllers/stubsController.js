@@ -2,6 +2,13 @@
 
 function create (imposters) {
 
+    function get (request, response) {
+        var imposter = imposters[request.params.id];
+
+        response.statusCode = 200;
+        response.send(imposter.stubsHypermedia(response));
+    }
+
     function post (request, response) {
         var imposter = imposters[request.params.id];
 
@@ -17,6 +24,7 @@ function create (imposters) {
     }
 
     return {
+        get: get,
         post: post
     };
 }

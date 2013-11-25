@@ -6,8 +6,8 @@ var assert = require('assert'),
     FakeResponse = require('../fakes/fakeResponse');
 
 describe('ImposterController', function () {
-    describe('#post', function () {
 
+    describe('#post', function () {
         it('should add stub to imposter for valid requests', function () {
             var response = FakeResponse.create(),
                 imposter = {
@@ -40,6 +40,20 @@ describe('ImposterController', function () {
 
             assert.strictEqual(response.statusCode, 400);
             assert.deepEqual(response.body, { errors: 'ERRORS' });
+        });
+    });
+
+    describe('#get', function () {
+        it('should return 200 with imposters list', function () {
+            var response = FakeResponse.create(),
+                imposter = { stubsHypermedia: mock().returns('STUBS') },
+                controller = Controller.create({ 1: imposter }),
+                request = { params: { id: 1 }};
+
+            controller.get(request, response);
+
+            assert.strictEqual(response.statusCode, 200);
+            assert.strictEqual(response.body, 'STUBS');
         });
     });
 });

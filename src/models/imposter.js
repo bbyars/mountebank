@@ -4,6 +4,7 @@ var Q = require('q'),
     Domain = require('domain');
 
 function create (Protocol, port, allowInjection) {
+    var stubs = [];
 
     function url (response) {
         return response.absoluteUrl('/imposters/' + port);
@@ -37,21 +38,34 @@ function create (Protocol, port, allowInjection) {
                 });
             }
             else {
-                throw error;
+                deferred.reject(error);
             }
         };
 
     domain.on('error', errorHandler);
     domain.run(function () {
         Protocol.create(port, allowInjection).done(function (server) {
+
+            function addStub (stub) {
+                server.addStub(stub);
+                stubs.push(stub);
+            }
+
+            function stubsHypermedia () {
+                return {
+                    stubs: stubs
+                };
+            }
+
             deferred.resolve({
                 url: url,
                 hypermedia: hypermedia,
                 requests: server.requests,
-                isValidStubRequest: server.isValidStubRequest,
                 stubRequestErrorsFor: server.stubRequestErrorsFor,
-                addStub: server.addStub,
-                stop: function () { server.close(); }
+                stubsHypermedia: stubsHypermedia,
+                isValidStubRequest: server.isValidStubRequest,
+                addStub: addStub,
+                stop: server.close
             });
         });
     });

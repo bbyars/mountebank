@@ -38,6 +38,7 @@ function create (port, allowInjection) {
     app.get('/imposters/:id', validateImposterExists, imposterController.get);
     app.del('/imposters/:id', imposterController.del);
     app.get('/imposters/:id/requests', validateImposterExists, requestsController.get);
+    app.get('/imposters/:id/stubs', validateImposterExists, stubsController.get);
     app.post('/imposters/:id/stubs', validateImposterExists, stubsController.post);
 
     return {

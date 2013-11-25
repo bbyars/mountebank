@@ -411,4 +411,27 @@ describe('http imposter', function () {
 //            }).done(doneCallback(done), doneErrback(done));
 //        });
     });
+
+    describe('GET /imposters/:id/stubs', function () {
+        it('should return list of stubs in order', function (done) {
+            var stubsPath;
+
+            api.post('/imposters', { protocol: 'http', port: port }).then(function (response) {
+                stubsPath = response.getLinkFor('stubs');
+                return api.post(stubsPath, { responses: [{ is: { body: '1' }}]});
+            }).then(function () {
+                return api.post(stubsPath, { responses: [{ is: { body: '2' }}]});
+            }).then(function () {
+                return api.get(stubsPath);
+            }).then(function (response) {
+                assert.strictEqual(response.statusCode, 200);
+                assert.deepEqual(response.body, { stubs: [
+                    { responses: [{ is: { body: '1' } }] },
+                    { responses: [{ is: { body: '2' } }] }
+                ]});
+
+                return Q(true);
+            }).done(doneCallback(done), doneErrback(done));
+        });
+    });
 });
