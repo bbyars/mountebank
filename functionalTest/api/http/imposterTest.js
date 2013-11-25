@@ -1,6 +1,8 @@
 'use strict';
 
 var assert = require('assert'),
+    spawn = require('child_process').spawn,
+    path = require('path'),
     api = require('../api'),
     Q = require('q'),
     port = api.port + 1;
@@ -11,6 +13,23 @@ function doneCallback (done) {
 
 function doneErrback (done) {
     return function (error) { done(error); };
+}
+
+function nonInjectableServer (command, port) {
+    var deferred = Q.defer(),
+        calledDone = false,
+        mbPath = path.normalize(__dirname + '/../../../bin/mb'),
+        mb = spawn(mbPath, [command, '--port', port, '--pidfile', 'imposter-test.pid']);
+
+    ['stdout', 'stderr'].forEach(function (stream) {
+        mb[stream].on('data', function () {
+            if (!calledDone) {
+                calledDone = true;
+                deferred.resolve();
+            }
+        });
+    });
+    return deferred.promise;
 }
 
 describe('http imposter', function () {
@@ -332,6 +351,26 @@ describe('http imposter', function () {
                 assert.deepEqual(response.body, '2');
 
                 return Q(true);
+            }).done(doneCallback(done), doneErrback(done));
+        });
+
+        it('should return a 400 if injection is disallowed and inject is used', function (done) {
+            var mbPort = port + 1;
+
+            nonInjectableServer('start', mbPort).then(function () {
+                return api.post('/imposters', { protocol: 'http', port: port }, mbPort);
+            }).then(function (response) {
+                assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body));
+
+                var fn = "function (request) { return { body: request.method + ' INJECTED' }; }";
+                return api.post(response.getLinkFor('stubs'), { responses: [{ inject: fn }] }, mbPort);
+            }).then(function (response) {
+                assert.strictEqual(response.statusCode, 400);
+                assert.strictEqual(response.body.errors[0].code, 'invalid operation');
+
+                return Q(true);
+            }).finally(function () {
+                return nonInjectableServer('stop', mbPort);
             }).done(doneCallback(done), doneErrback(done));
         });
 
