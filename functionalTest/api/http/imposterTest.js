@@ -433,5 +433,43 @@ describe('http imposter', function () {
                 return Q(true);
             }).done(doneCallback(done), doneErrback(done));
         });
+
+        it('should record matches against stubs', function (done) {
+            var stubsPath;
+
+            api.post('/imposters', { protocol: 'http', port: port }).then(function (response) {
+                stubsPath = response.getLinkFor('stubs');
+                return api.post(stubsPath, { responses: [{ is: { body: '1' }}, { is: { body: '2' }}]});
+            }).then(function () {
+                return api.get('/first', port);
+            }).then(function () {
+                return api.get('/second', port);
+            }).then(function () {
+                return api.get(stubsPath);
+            }).then(function (response) {
+                var bodyString = JSON.stringify(response.body),
+                    withTimeRemoved = bodyString.replace(/"timestamp":"[^"]+"/g, '"timestamp":"NOW"'),
+                    actualWithoutTime = JSON.parse(withTimeRemoved),
+                    requestHeaders = { accept: 'application/json', host: 'localhost:' + port, connection: 'keep-alive' };
+
+                assert.deepEqual(actualWithoutTime, { stubs: [{
+                    responses: [{ is: { body: '1' } }, { is: { body: '2' } }],
+                    matches: [
+                        {
+                            timestamp: 'NOW',
+                            request: { path: '/first', method: 'GET', headers: requestHeaders, body: '' },
+                            response: { statusCode: 200, headers: { connection: 'close' }, body: '1' }
+                        },
+                        {
+                            timestamp: 'NOW',
+                            request: { path: '/second', method: 'GET', headers: requestHeaders, body: '' },
+                            response: { statusCode: 200, headers: { connection: 'close' }, body: '2' }
+                        }
+                    ]
+                }]});
+
+                return Q(true);
+            }).done(doneCallback(done), doneErrback(done));
+        });
     });
 });

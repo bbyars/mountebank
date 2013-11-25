@@ -8,12 +8,7 @@ Stories
 5. Allow body expectations of SMTP
 6. Add brew package
 7. Add rpm package
-8. Build Java implementation
-9. Wire up Java code in CI
-10. Allow building in Windows
-11. Build C# implementation
-12. Wire up C# code in CI
-13. Add nuget package
+8. Add MSI
 
 Future Directions
 =================
@@ -22,6 +17,18 @@ Future Directions
 3. Inline docs with mb app
 4. FTP?
 
-Fixes
-=====
+Known Bugs
+==========
 1. Do not currently ensure validation is purely synchronous in presence of injections
+
+Cleanup Needed
+==============
+1. functional imposter test needs splitting up
+2. stubRepository needs cleaning up
+
+Auxiliary Projects
+==================
+1. Java binding
+2. C# binding
+3. bash import/export
+4. powershell import/export

@@ -94,7 +94,10 @@ function create (proxy, allowInjection) {
             var fakeProxy = {
                     to: function () {
                         return {
-                            then: function () { return {}; }
+                            then: function (callback) {
+                                callback({});
+                                return this;
+                            }
                         };
                     }
                 },
@@ -129,10 +132,26 @@ function create (proxy, allowInjection) {
 
     function resolve (request) {
         var stub = findFirstMatch(request) || { responses: [{ is: {} }]},
-            stubResolver = stub.responses.shift();
+            stubResolver = stub.responses.shift(),
+            deferred = Q.defer();
 
         stub.responses.push(stubResolver);
 
+        getResolvedResponsePromise(stubResolver, request).then(function (response) {
+            var match = {
+                    timestamp: new Date().toJSON(),
+                    request: request,
+                    response: response
+                };
+            stub.matches = stub.matches || [];
+            stub.matches.push(match);
+            deferred.resolve(response);
+        });
+
+        return deferred.promise;
+    }
+
+    function getResolvedResponsePromise (stubResolver, request) {
         if (stubResolver.is) {
             return Q(createResponse(stubResolver.is));
         }

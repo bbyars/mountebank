@@ -403,5 +403,23 @@ describe('stubRepository', function () {
                 done();
             });
         });
+
+        it('should record matches', function (done) {
+            var matchingRequest = { path: '/test', headers: {}, body: '' },
+                mismatchingRequest = { path: '/', headers: {}, body: '' },
+                stub = {
+                    predicates: { path: { is: '/test' }},
+                    responses: [{ is: { body: 'MATCHED' } }]
+                };
+            stubs.addStub(stub);
+
+            stubs.resolve(matchingRequest).then(function () {
+                return stubs.resolve(mismatchingRequest);
+            }).done(function () {
+                assert.strictEqual(stub.matches.length, 1);
+                assert.deepEqual(stub.matches[0].request, matchingRequest);
+                done();
+            });
+        });
     });
 });
