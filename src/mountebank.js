@@ -5,6 +5,8 @@ var express = require('express'),
     homeController = require('./controllers/homeController'),
     ImpostersController = require('./controllers/impostersController'),
     ImposterController = require('./controllers/imposterController'),
+    RequestsController = require('./controllers/requestsController'),
+    StubsController = require('./controllers/stubsController'),
     Imposter = require('./models/imposter'),
     protocols = [
         require('./models/http/server')
@@ -20,6 +22,8 @@ function create (port, allowInjection) {
             allowInjection: allowInjection
         }),
         imposterController = ImposterController.create(imposters),
+        requestsController = RequestsController.create(imposters),
+        stubsController = StubsController.create(imposters),
         validateImposterExists = middleware.createImposterValidator(imposters);
 
     app.use(middleware.createAbsoluteUrl(port));
@@ -33,8 +37,8 @@ function create (port, allowInjection) {
     app.post('/imposters', impostersController.post);
     app.get('/imposters/:id', validateImposterExists, imposterController.get);
     app.del('/imposters/:id', imposterController.del);
-    app.get('/imposters/:id/requests', validateImposterExists, imposterController.getRequests);
-    app.post('/imposters/:id/stubs', validateImposterExists, imposterController.addStub);
+    app.get('/imposters/:id/requests', validateImposterExists, requestsController.get);
+    app.post('/imposters/:id/stubs', validateImposterExists, stubsController.post);
 
     return {
         close: function () {

@@ -53,6 +53,7 @@ function create (proxy, allowInjection) {
     function isValidStubRequest (stub) {
         return stubRequestErrorsFor(stub).length === 0;
     }
+
     function stubRequestErrorsFor (stub) {
         var spec = {
             requireNonEmptyArrays: { responses: stub.responses }

@@ -18,31 +18,9 @@ function create (imposters) {
         response.send();
     }
 
-    function getRequests (request, response) {
-        var imposter = imposters[request.params.id];
-
-        response.send({ requests: imposter.requests });
-    }
-
-    function addStub (request, response) {
-        var imposter = imposters[request.params.id];
-
-        if (imposter.isValidStubRequest(request.body)) {
-            imposter.addStub(request.body);
-            response.statusCode = 200;
-            response.send();
-        }
-        else {
-            response.statusCode = 400;
-            response.send({ errors: imposter.stubRequestErrorsFor(request.body) });
-        }
-    }
-
     return {
         get: get,
         del: del,
-        getRequests: getRequests,
-        addStub: addStub
     };
 }
 
