@@ -7,7 +7,7 @@ var mountebank = require('../src/mountebank'),
     exec = require('child_process').exec;
 
 function usage () {
-    console.log("Usage: mb <command> [--port <port>] [--pidfile <pidfile>]\n");
+    console.log("Usage: mb <command> [--port <port>] [--pidfile <pidfile>] [--allowInjection]\n");
     console.log("where <command> is one of:");
     console.log("\tstart, stop, restart");
 }
@@ -21,7 +21,7 @@ function error (message) {
 var serverAt = function (options) {
     return {
         start: function () {
-            var server = mountebank.create(options.port);
+            var server = mountebank.create(options.port, options.allowInjection);
 
             fs.writeFileSync(options.pidfile, process.pid.toString());
             var shutdown = function shutdown () {
@@ -56,7 +56,7 @@ var serverAt = function (options) {
 
 try {
     var defaultOptions = { port: 2525, pidfile: 'mb.pid' },
-        commandLine = cli.parse(process.argv.slice(2), defaultOptions),
+        commandLine = cli.parse(process.argv.slice(2), defaultOptions, ['allowInjection']),
         server = serverAt(commandLine.options);
 
     switch (commandLine.command) {

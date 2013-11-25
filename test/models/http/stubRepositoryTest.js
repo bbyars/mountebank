@@ -10,7 +10,7 @@ describe('stubRepository', function () {
 
     beforeEach(function () {
         proxy = {};
-        stubs = StubRepository.create(proxy);
+        stubs = StubRepository.create(proxy, true);
     });
 
     describe('#isValidStubRequest and #stubRequestErrorsFor', function () {
@@ -160,6 +160,31 @@ describe('stubRepository', function () {
                 code: 'bad data',
                 message: 'malformed stub request',
                 data: 'unrecognized stub resolver'
+            }]);
+        });
+
+        it('should reject response injections if allowInjection is false', function () {
+            var request = { responses: [{ inject: 'function () { return {}; }' }]},
+                restrictedStubs = StubRepository.create(proxy, false);
+
+            assert.ok(!restrictedStubs.isValidStubRequest(request));
+            assert.deepEqual(restrictedStubs.stubRequestErrorsFor(request), [{
+                code: 'invalid operation',
+                message: 'inject is not allowed unless mb is run with the --allowInjection flag'
+            }]);
+        });
+
+        it('should reject predicate injections if allowInjection is false', function () {
+            var request = {
+                    predicates: { request: { inject: "function () { return true; }" } },
+                    responses: [{ is: { body: 'Matched' }}]
+                },
+                restrictedStubs = StubRepository.create(proxy, false);
+
+            assert.ok(!restrictedStubs.isValidStubRequest(request));
+            assert.deepEqual(restrictedStubs.stubRequestErrorsFor(request), [{
+                code: 'invalid operation',
+                message: 'inject is not allowed unless mb is run with the --allowInjection flag'
             }]);
         });
     });

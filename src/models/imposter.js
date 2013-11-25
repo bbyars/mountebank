@@ -3,7 +3,7 @@
 var Q = require('q'),
     Domain = require('domain');
 
-function create (Protocol, port) {
+function create (Protocol, port, allowInjection) {
 
     function url (response) {
         return response.absoluteUrl('/imposters/' + port);
@@ -43,7 +43,7 @@ function create (Protocol, port) {
 
     domain.on('error', errorHandler);
     domain.run(function () {
-        Protocol.create(port).done(function (server) {
+        Protocol.create(port, allowInjection).done(function (server) {
             deferred.resolve({
                 url: url,
                 hypermedia: hypermedia,

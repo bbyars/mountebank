@@ -1,8 +1,7 @@
 Stories
 =======
 
-1. Disable inject unless command line option set
-2. Allow GET/DELETE for individual stubs (change POST to 201)
+1. Allow GET/DELETE for individual stubs (change POST to 201)
 2. better logging
 3. Allow base mock expectation of SMTP
 4. Allow advanced header expectation of SMTP
@@ -25,3 +24,4 @@ Future Directions
 
 Fixes
 =====
+1. Do not currently ensure validation is purely synchronous in presence of injections

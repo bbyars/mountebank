@@ -26,11 +26,11 @@ function simplify (request) {
     return deferred.promise;
 }
 
-var create = function (port) {
+var create = function (port, allowInjection) {
     var logPrefix = '[http/' + port + '] ',
         deferred = Q.defer(),
         requests = [],
-        stubs = StubRepository.create(Proxy.create());
+        stubs = StubRepository.create(Proxy.create(), allowInjection);
 
     var server = http.createServer(function (request, response) {
         console.log(logPrefix + request.method + ' ' + request.url);

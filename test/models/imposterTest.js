@@ -44,9 +44,9 @@ describe('imposter', function () {
             });
         });
 
-        it('should create protocol server on provided port', function (done) {
-            Imposter.create(Protocol, 3535).then(function () {
-                assert(Protocol.create.wasCalledWith(3535));
+        it('should create protocol server on provided port with provided injection setting', function (done) {
+            Imposter.create(Protocol, 3535, true).then(function () {
+                assert(Protocol.create.wasCalledWith(3535, true));
                 done();
             });
         });

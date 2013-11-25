@@ -4,7 +4,7 @@ var Validator = require('../../util/validator'),
     predicates = require('./predicates'),
     Q = require('q');
 
-function create (proxy) {
+function create (proxy, allowInjection) {
     var stubs = [],
         injectState = {};
 
@@ -53,7 +53,6 @@ function create (proxy) {
     function isValidStubRequest (stub) {
         return stubRequestErrorsFor(stub).length === 0;
     }
-
     function stubRequestErrorsFor (stub) {
         var spec = {
             requireNonEmptyArrays: { responses: stub.responses }
@@ -66,10 +65,26 @@ function create (proxy) {
             };
         }
         var result = Validator.create(spec).errors();
+        if (!allowInjection && hasInjection(stub)) {
+            result.push({
+                code: 'invalid operation',
+                message: 'inject is not allowed unless mb is run with the --allowInjection flag'
+            });
+        }
         if (result.length === 0) {
             addDryRunErrors(stub, result);
         }
         return result;
+    }
+
+    function hasInjection (stub) {
+        var hasResponseInjections = stub.responses.some(function (response) {
+                return response.inject;
+            }),
+            hasPredicateInjections = Object.keys(stub.predicates || {}).some(function (predicate) {
+                return stub.predicates[predicate].inject;
+            });
+        return hasResponseInjections || hasPredicateInjections;
     }
 
     function addDryRunErrors (stub, errors) {
@@ -83,7 +98,7 @@ function create (proxy) {
                     }
                 },
                 fakeRequest = { path: '/', method: 'GET', headers: {}, body: '' },
-                dryRun = create(fakeProxy),
+                dryRun = create(fakeProxy, allowInjection),
                 clone = JSON.parse(JSON.stringify(stub)); // proxyOnce changes state
 
             dryRun.addStub(clone);

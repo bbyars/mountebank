@@ -41,7 +41,7 @@ function create (spec) {
             return Q(true);
         }
 
-        return spec.Imposter.create(protocolFor(protocol), port).then(function (imposter) {
+        return spec.Imposter.create(protocolFor(protocol), port, spec.allowInjection).then(function (imposter) {
             spec.imposters[port] = imposter;
             response.setHeader('Location', imposter.url(response));
             response.statusCode = 201;

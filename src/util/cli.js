@@ -1,57 +1,71 @@
 'use strict';
 
-var parse = function (argv, defaultOptions) {
-    function parseOption (key, value) {
-        var OPTION_PREFIX = /^--/,
-            optionName;
+var parse = function (argv, defaultOptions, booleanOptions) {
 
-        if (key.match(OPTION_PREFIX) === null) {
+    var OPTION_PREFIX = /^--/;
+    defaultOptions = defaultOptions || {};
+    booleanOptions = booleanOptions || [];
+
+    function validate (key, optionName, value) {
+        if (!isSwitch(key)) {
             throw Error("Invalid option '" + key + "'.");
         }
-        optionName = key.replace(OPTION_PREFIX, '');
 
-        if (!defaultOptions.hasOwnProperty(optionName)) {
+        if (!defaultOptions[optionName] && !isBoolean(optionName)) {
             throw Error("Option '" + optionName + "' not recognized.");
         }
-        if (value === undefined) {
+
+        if (defaultOptions[optionName] && !value) {
             throw Error("No argument provided for option '" + optionName + "'.");
         }
-
-        return {
-            key: optionName,
-            value: value
-        };
     }
 
-    function parseOptions () {
-        var options = {},
-            option,
-            key,
-            i;
-
-        // Add custom options
-        for (i = 1; i < argv.length; i += 2) {
-            option = parseOption(argv[i], argv[i + 1]);
-            options[option.key] = option.value;
-        }
-
-        // add default options
-        for (key in defaultOptions) {
-            if (defaultOptions.hasOwnProperty(key) && !options.hasOwnProperty(key)) {
-                options[key] = defaultOptions[key];
-            }
-        }
-
-        return options;
+    function isSwitch (arg) {
+        return OPTION_PREFIX.test(arg);
     }
 
-    function parseCommand () {
-        return argv[0] || 'start';
+    function isBoolean (arg) {
+        return booleanOptions.indexOf(arg) >= 0;
+    }
+
+    function baseOptions () {
+        var result = defaultOptions;
+        booleanOptions.forEach(function (key) {
+            result[key] = false;
+        });
+        return result;
+    }
+
+    var command = 'start',
+        options = baseOptions(),
+        i = 0;
+
+    if (!isSwitch(argv[0])) {
+        command = argv[0];
+        i =1;
+    }
+
+    while (i < argv.length) {
+        var key = argv[i],
+            optionName = key.replace(OPTION_PREFIX, ''),
+            value = argv[i+1];
+
+        validate(key, optionName, value);
+
+        if (isBoolean(optionName)) {
+            value = true;
+            i += 1;
+        }
+        else {
+            i +=2;
+        }
+
+        options[optionName] = value;
     }
 
     return {
-        command: parseCommand(),
-        options: parseOptions()
+        command: command,
+        options: options
     };
 };
 

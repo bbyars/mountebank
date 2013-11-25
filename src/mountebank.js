@@ -10,13 +10,14 @@ var express = require('express'),
         require('./models/http/server')
     ];
 
-function create (port) {
+function create (port, allowInjection) {
     var app = express(),
         imposters = {},
         impostersController = ImpostersController.create({
             protocols: protocols,
             imposters: imposters,
-            Imposter: Imposter
+            Imposter: Imposter,
+            allowInjection: allowInjection
         }),
         imposterController = ImposterController.create(imposters),
         validateImposterExists = middleware.createImposterValidator(imposters);
