@@ -86,7 +86,14 @@ describe('cli', function () {
             assert.deepEqual(result.options, { first: 'changed', bool: true });
         });
 
-        it('should default to start if missing command', function () {
+        it('should default to start if missing command with no options', function () {
+            var defaultOptions = { first: 'one' },
+                result = cli.parse([], defaultOptions, []);
+
+            assert.strictEqual(result.command, 'start');
+        });
+
+        it('should default to start if missing command with other options', function () {
             var defaultOptions = { first: 'one' },
                 result = cli.parse(['--bool', '--first', 'changed'], defaultOptions, ['bool']);
 

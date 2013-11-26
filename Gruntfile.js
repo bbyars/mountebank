@@ -35,7 +35,7 @@ module.exports = function (grunt) {
                 trailing: true,
                 maxparams: 4,
                 maxdepth: 3,
-                maxcomplexity: 6
+                maxcomplexity: 5
             }
         },
         mochaTest: {

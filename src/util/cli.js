@@ -36,32 +36,36 @@ var parse = function (argv, defaultOptions, booleanOptions) {
         return result;
     }
 
+    function parseOptions (options, i) {
+        while (i < argv.length) {
+            var key = argv[i],
+                optionName = key.replace(OPTION_PREFIX, ''),
+                value = argv[i+1];
+
+            validate(key, optionName, value);
+
+            if (isBoolean(optionName)) {
+                value = true;
+                i += 1;
+            }
+            else {
+                i +=2;
+            }
+
+            options[optionName] = value;
+        }
+    }
+
     var command = 'start',
         options = baseOptions(),
         i = 0;
 
-    if (!isSwitch(argv[0])) {
+    if (argv[0] && !isSwitch(argv[0])) {
         command = argv[0];
-        i =1;
+        i = 1;
     }
 
-    while (i < argv.length) {
-        var key = argv[i],
-            optionName = key.replace(OPTION_PREFIX, ''),
-            value = argv[i+1];
-
-        validate(key, optionName, value);
-
-        if (isBoolean(optionName)) {
-            value = true;
-            i += 1;
-        }
-        else {
-            i +=2;
-        }
-
-        options[optionName] = value;
-    }
+    parseOptions(options, i);
 
     return {
         command: command,
