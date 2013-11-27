@@ -1,7 +1,7 @@
 'use strict';
 
 var Validator = require('../../util/validator'),
-    stubRepository = require('./stubRepository'),
+    StubRepository = require('./stubRepository'),
     utils = require('util');
 
 function create (request, allowInjection) {
@@ -17,14 +17,21 @@ function create (request, allowInjection) {
             }
         };
 
-    function addDryRunErrors (stub, errors) { //TODO: rename; change return value ?
-        try {
-            var testRequest = { path: '/', method: 'GET', headers: {}, body: '' },
-                dryRun = stubRepository.create(strictlySynchronousProxy, allowInjection),//TODO: remove allowInjection
-                clone = JSON.parse(JSON.stringify(stub)); // proxyOnce changes state
+    function dryRun (stub) {
+        var testRequest = { path: '/', method: 'GET', headers: {}, body: '' },
+            stubRepository = StubRepository.create(strictlySynchronousProxy),
+            clone = JSON.parse(JSON.stringify(stub)); // proxyOnce changes state
 
-            dryRun.addStub(clone);
-            dryRun.resolve(testRequest);
+        stubRepository.addStub(clone);
+        stubRepository.resolve(testRequest);
+    }
+
+    function addDryRunErrors (stub, errors) {
+        try {
+            // Only dry run if no errors
+            if (errors.length === 0) {
+                dryRun(stub);
+            }
         }
         catch (error) {
             // Avoid digit methods, which probably represent incorrectly using an array, e.g.
@@ -37,15 +44,16 @@ function create (request, allowInjection) {
             }
 
             errors.push({
-                code: "bad data",
+                code: 'bad data',
                 message: message,
-                data: error.message //TODO: Add source: stub
+                data: error.message,
+                source: JSON.stringify(stub)
             });
         }
     }
 
     function hasInjection (stub) {
-        var hasResponseInjections = stub.responses.some(function (response) {
+        var hasResponseInjections = utils.isArray(stub.responses) && stub.responses.some(function (response) {
                 return response.inject;
             }),
             hasPredicateInjections = Object.keys(stub.predicates || {}).some(function (predicate) {
@@ -54,27 +62,24 @@ function create (request, allowInjection) {
         return hasResponseInjections || hasPredicateInjections;
     }
 
+    function addInjectionErrors (stub, errors) {
+        if (!allowInjection && hasInjection(stub)) {
+            errors.push({
+                code: 'invalid operation',
+                message: 'inject is not allowed unless mb is run with the --allowInjection flag',
+                source: JSON.stringify(stub)
+            });
+        }
+    }
+
     function errorsFor (stub) {
         var spec = {
                 requireNonEmptyArrays: { responses: stub.responses }
-            };
-        if (stub.predicates) { //TODO: Remove?
-            spec.requireValidPredicates = {
-                path: stub.predicates.path,
-                method: stub.predicates.method,
-                body: stub.predicates.body
-            };
-        }
-        var result = Validator.create(spec).errors();
-        if (!allowInjection && utils.isArray(stub.responses) && hasInjection(stub)) {
-            result.push({
-                code: 'invalid operation',
-                message: 'inject is not allowed unless mb is run with the --allowInjection flag' //TODO: source: stub
-            });
-        }
-        if (result.length === 0) {
-            addDryRunErrors(stub, result);
-        }
+            },
+            result = Validator.create(spec).errors();
+        addInjectionErrors(stub, result);
+        addDryRunErrors(stub, result);
+
         return result;
     }
 

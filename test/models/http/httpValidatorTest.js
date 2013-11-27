@@ -118,6 +118,18 @@ describe('httpValidator', function () {
 
             assert.ok(validator.isValid());
         });
+
+        it('should be false if any stub is invalid', function () {
+            var request = {
+                    stubs: [
+                        { responses: [{ is: { statusCode: 400 }  }] },
+                        {}
+                    ]
+                },
+                validator = Validator.create(request);
+
+            assert.ok(!validator.isValid());
+        });
     });
 
     describe('#errors', function () {
@@ -138,21 +150,6 @@ describe('httpValidator', function () {
             }]);
         });
 
-        it('should have a valid predicate for path', function () {
-            var request = {
-                    stubs: [{
-                        responses: [{}],
-                        predicates: { path: '/test' }
-                    }]
-                },
-                validator = Validator.create(request);
-
-            assert.deepEqual(validator.errors(), [{
-                code: 'bad data',
-                message: "invalid predicate for 'path'"
-            }]);
-        });
-
         it('should detect an invalid predicate', function () {
             var request = {
                     stubs: [{
@@ -167,7 +164,8 @@ describe('httpValidator', function () {
             assert.deepEqual(validator.errors(), [{
                 code: 'bad data',
                 message: "no predicate 'invalidPredicate'",
-                data: "Object #<Object> has no method 'invalidPredicate'"
+                data: "Object #<Object> has no method 'invalidPredicate'",
+                source: JSON.stringify(request.stubs[0])
             }]);
         });
 
@@ -186,7 +184,8 @@ describe('httpValidator', function () {
             assert.deepEqual(validator.errors(), [{
                 code: 'bad data',
                 message: "no predicate 'invalidPredicate'",
-                data: "Object #<Object> has no method 'invalidPredicate'"
+                data: "Object #<Object> has no method 'invalidPredicate'",
+                source: JSON.stringify(request.stubs[0])
             }]);
         });
 
@@ -204,7 +203,8 @@ describe('httpValidator', function () {
             assert.deepEqual(validator.errors(), [{
                 code: 'bad data',
                 message: 'malformed stub request',
-                data: "Property '0' of object #<Object> is not a function"
+                data: "Property '0' of object #<Object> is not a function",
+                source: JSON.stringify(request.stubs[0])
             }]);
         });
 
@@ -220,7 +220,8 @@ describe('httpValidator', function () {
             assert.deepEqual(validator.errors(), [{
                 code: 'bad data',
                 message: 'malformed stub request',
-                data: 'Unexpected token return'
+                data: 'Unexpected token return',
+                source: JSON.stringify(request.stubs[0])
             }]);
         });
 
@@ -235,7 +236,8 @@ describe('httpValidator', function () {
             assert.deepEqual(validator.errors(), [{
                 code: 'bad data',
                 message: 'malformed stub request',
-                data: 'unrecognized stub resolver'
+                data: 'unrecognized stub resolver',
+                source: JSON.stringify(request.stubs[0])
             }]);
         });
 
@@ -249,7 +251,23 @@ describe('httpValidator', function () {
 
             assert.deepEqual(validator.errors(), [{
                 code: 'invalid operation',
-                message: 'inject is not allowed unless mb is run with the --allowInjection flag'
+                message: 'inject is not allowed unless mb is run with the --allowInjection flag',
+                source: JSON.stringify(request.stubs[0])
+            }]);
+        });
+
+        it('should be describe errors for stub invalid stub', function () {
+            var request = {
+                    stubs: [
+                        { responses: [{ is: { statusCode: 400 }  }] },
+                        {}
+                    ]
+                },
+                validator = Validator.create(request);
+
+            assert.deepEqual(validator.errors(), [{
+                code: 'bad data',
+                message: "'responses' must be a non-empty array"
             }]);
         });
     });
