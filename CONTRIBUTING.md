@@ -17,6 +17,9 @@ scorn them.  He calls the constructor method `create`, and often exposes that as
 In typical JavaScript fashion, he names variables of the module itself with a capital first letter.  See
 mountebank.js for an example, with the constructors `require`d in at the top.
 
+mountebank's creation methods always explicitly return an object, rather than relying on the mysterious power
+of JavaScript contexts.  This helps keep mountebank's simple brain from exploding.
+
 === Dependency Injection ===
 
 node's `require` function serves a dual purpose, and mountebank initially fell into the trap of failing to

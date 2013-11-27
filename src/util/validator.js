@@ -1,11 +1,9 @@
 'use strict';
 
-function Validator () {
-    var errors = [];
+var utils = require('util');
 
-    function isArray (value) {
-        return Object.prototype.toString.call(value) === '[object Array]';
-    }
+function createDefaultValidator () {
+    var errors = [];
 
     function addAllErrorsIf (spec, code, message, predicate) {
         Object.keys(spec).forEach(function (name) {
@@ -40,7 +38,7 @@ function Validator () {
 
     function requireNonEmptyArrays (spec) {
         addAllErrorsIf(spec, "bad data", "'$NAME$' must be a non-empty array", function (value) {
-            return !isArray(value) || value.length === 0;
+            return !utils.isArray(value) || value.length === 0;
         });
     }
 
@@ -63,7 +61,7 @@ function Validator () {
 function create (options) {
 
     function errors () {
-        var validator = Validator();
+        var validator = createDefaultValidator();
         Object.keys(options).forEach(function (validation) {
             validator[validation](options[validation]);
         });
