@@ -76,9 +76,7 @@ Windows support is coming.
 
 ## Contributing
 
-Contributions are welcome (see TODO for my own open loops, although I welcome other ideas).
+Contributions are welcome (see TODO.md for my own open loops, although I welcome other ideas).
+Some tips for contributing are in CONTRIBUTING.md), but they are guidelines and not hard and
+fast rules.
 You can reach me at brandon.byars@gmail.com.
-
-Special thanks to [Pete Hodgson](http://blog.thepete.net/), who wrote up how to
-[test asynchronous JavaScript](http://martinfowler.com/articles/asyncJS.html) and, when I
-still didn't get it, showed me how to do it inside mountebank.
