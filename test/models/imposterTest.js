@@ -60,5 +60,12 @@ describe('imposter', function () {
                 assert.deepEqual(imposter.stubsHypermedia(), { stubs: ['ONE', 'TWO'] });
             });
         });
+
+        promiseIt('should add stubs during creation', function () {
+            var request = { stubs: ['ONE', 'TWO'] };
+            return Imposter.create(Protocol, 3535, true, request).then(function (imposter) {
+                assert.deepEqual(imposter.stubsHypermedia(), { stubs: ['ONE', 'TWO'] });
+            });
+        });
     });
 });
