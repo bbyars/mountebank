@@ -1,10 +1,9 @@
 'use strict';
 
-var Validator = require('../../util/validator'),
-    predicates = require('./predicates'),
+var predicates = require('./predicates'),
     Q = require('q');
 
-function create (proxy, allowInjection) {
+function create (proxy) {
     var stubs = [],
         injectState = {};
 
@@ -48,75 +47,6 @@ function create (proxy, allowInjection) {
             });
         });
         return (matches.length === 0) ? undefined : matches[0];
-    }
-
-    function isValidStubRequest (stub) {
-        return stubRequestErrorsFor(stub).length === 0;
-    }
-
-    function stubRequestErrorsFor (stub) {
-        var spec = {
-            requireNonEmptyArrays: { responses: stub.responses }
-        };
-        var result = Validator.create(spec).errors();
-        if (!allowInjection && hasInjection(stub)) {
-            result.push({
-                code: 'invalid operation',
-                message: 'inject is not allowed unless mb is run with the --allowInjection flag'
-            });
-        }
-        if (result.length === 0) {
-            addDryRunErrors(stub, result);
-        }
-        return result;
-    }
-
-    function hasInjection (stub) {
-        var hasResponseInjections = stub.responses.some(function (response) {
-                return response.inject;
-            }),
-            hasPredicateInjections = Object.keys(stub.predicates || {}).some(function (predicate) {
-                return stub.predicates[predicate].inject;
-            });
-        return hasResponseInjections || hasPredicateInjections;
-    }
-
-    function addDryRunErrors (stub, errors) {
-        try {
-            // keep strictly synchronous
-            var fakeProxy = {
-                    to: function () {
-                        return {
-                            then: function (callback) {
-                                callback({});
-                                return this;
-                            }
-                        };
-                    }
-                },
-                fakeRequest = { path: '/', method: 'GET', headers: {}, body: '' },
-                dryRun = create(fakeProxy, allowInjection),
-                clone = JSON.parse(JSON.stringify(stub)); // proxyOnce changes state
-
-            dryRun.addStub(clone);
-            dryRun.resolve(fakeRequest);
-        }
-        catch (error) {
-            // Avoid digit methods, which probably represent incorrectly using an array, e.g.
-            // Object #<Object> has no method '0'
-            var invalidPredicate = /has no method '([A-Za-z_]+)'/.exec(error.message),
-                message = 'malformed stub request';
-
-            if (invalidPredicate) {
-                message = "no predicate '" + invalidPredicate[1] + "'";
-            }
-
-            errors.push({
-                code: "bad data",
-                message: message,
-                data: error.message
-            });
-        }
     }
 
     function addStub (stub) {
@@ -173,8 +103,6 @@ function create (proxy, allowInjection) {
     }
 
     return {
-        isValidStubRequest: isValidStubRequest,
-        stubRequestErrorsFor: stubRequestErrorsFor,
         addStub: addStub,
         resolve: resolve
     };

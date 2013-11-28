@@ -48,7 +48,7 @@ function create (Protocol, port, allowInjection) {
 
     domain.on('error', errorHandler);
     domain.run(function () {
-        Protocol.create(port, allowInjection).done(function (server) {
+        Protocol.create(port).done(function (server) {
 
             function addStub (stub) {
                 server.addStub(stub);

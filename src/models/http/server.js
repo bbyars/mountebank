@@ -27,11 +27,11 @@ function simplify (request) {
     return deferred.promise;
 }
 
-var create = function (port, allowInjection) {
+var create = function (port) {
     var logPrefix = '[http/' + port + '] ',
         deferred = Q.defer(),
         requests = [],
-        stubs = StubRepository.create(Proxy.create(), allowInjection);
+        stubs = StubRepository.create(Proxy.create());
 
     var server = http.createServer(function (request, response) {
         console.log(logPrefix + request.method + ' ' + request.url);
@@ -67,8 +67,6 @@ var create = function (port, allowInjection) {
         console.log(logPrefix + 'Open for business...');
         deferred.resolve({
             requests: requests,
-            isValidStubRequest: stubs.isValidStubRequest,
-            stubRequestErrorsFor: stubs.stubRequestErrorsFor,
             addStub: stubs.addStub,
             close: function () {
                 server.close();
