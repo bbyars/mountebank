@@ -12,7 +12,7 @@ Stories
 5. Allow body expectations of SMTP
 6. Add brew package
 7. Add rpm package
-8. Add MSI
+8. Add MSI & Windows support
 
 Future Directions
 =================
@@ -33,13 +33,11 @@ Known Bugs
 Cleanup Needed
 ==============
 1. functional imposter test needs splitting up
-2. stubRepository needs cleaning up
-3. remove allowInjectable from stubRepository
 4. Move afterEach to each test in imposter test
 
 Auxiliary Projects
 ==================
 1. Java binding
 2. C# binding
-3. bash import/export
-4. powershell import/export
+3. bash import/export?
+4. powershell import/export?

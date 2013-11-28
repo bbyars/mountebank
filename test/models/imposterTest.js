@@ -26,14 +26,14 @@ describe('imposter', function () {
         });
 
         it('should return url', function (done) {
-            Imposter.create(Protocol, 3535).done(function (imposter) {
+            Imposter.create(Protocol, 3535).then(function (imposter) {
                 assert.strictEqual(imposter.url(response), 'http://localhost/imposters/3535');
-                done();
-            });
+                return Q(true);
+            }).done(function () { done(); }, done);
         });
 
         it('should return hypermedia links', function (done) {
-            Imposter.create(Protocol, 3535).done(function (imposter) {
+            Imposter.create(Protocol, 3535).then(function (imposter) {
                 assert.deepEqual(imposter.hypermedia(response), {
                     protocol: 'http',
                     port: 3535,
@@ -43,25 +43,25 @@ describe('imposter', function () {
                         { href: 'http://localhost/imposters/3535/stubs', rel: 'stubs' }
                     ]
                 });
-                done();
-            });
+                return Q(true);
+            }).done(function () { done(); }, done);
         });
 
         it('should create protocol server on provided port', function (done) {
-            Imposter.create(Protocol, 3535, true).done(function () {
+            Imposter.create(Protocol, 3535, true).then(function () {
                 assert(Protocol.create.wasCalledWith(3535));
-                done();
-            });
+                return Q(true);
+            }).done(function () { done(); }, done);
         });
 
         it('should return list of stubs', function (done) {
-            Imposter.create(Protocol, 3535, true).done(function (imposter) {
+            Imposter.create(Protocol, 3535, true).then(function (imposter) {
                 imposter.addStub('ONE');
                 imposter.addStub('TWO');
 
                 assert.deepEqual(imposter.stubsHypermedia(), { stubs: ['ONE', 'TWO'] });
-                done();
-            });
+                return Q(true);
+            }).done(function () { done(); }, done);
         });
     });
 });

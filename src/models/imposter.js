@@ -3,7 +3,7 @@
 var Q = require('q'),
     Domain = require('domain');
 
-function create (Protocol, port, allowInjection) {
+function create (Protocol, port, allowInjection, request) {
     var stubs = [];
 
     function url (response) {
@@ -53,6 +53,12 @@ function create (Protocol, port, allowInjection) {
             function addStub (stub) {
                 server.addStub(stub);
                 stubs.push(stub);
+            }
+
+            if (request && request.stubs) {
+                request.stubs.forEach(function (stub) {
+                    addStub(stub);
+                });
             }
 
             deferred.resolve({

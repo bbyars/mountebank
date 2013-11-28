@@ -34,7 +34,7 @@ describe('ImpostersController', function () {
     });
 
     describe('#post', function () {
-        var request, Imposter, imposter, imposters, controller;
+        var request, Imposter, imposter, imposters, Protocol, controller;
 
         beforeEach(function () {
             request = { body: {} };
@@ -46,8 +46,9 @@ describe('ImpostersController', function () {
                 create: mock().returns(Q(imposter))
             };
             imposters = {};
+            Protocol = { name: 'http' };
             controller = Controller.create({
-                protocols: [{ name: 'http' }],
+                protocols: [Protocol],
                 imposters: imposters,
                 Imposter: Imposter
             });
@@ -164,20 +165,38 @@ describe('ImpostersController', function () {
         });
 
         it('should return a 400 for other protocol creation errors', function (done) {
-            Imposter.create = mock().returns(Q.reject({
-                code: 'error',
-                key: 'value'
-            }));
+            Imposter.create = mock().returns(Q.reject('ERROR'));
             request.body = { port: 3535, protocol: 'http' };
 
             controller.post(request, response).done(function () {
                 assert.strictEqual(response.statusCode, 400);
-                assert.deepEqual(response.body, {
-                    errors: [{
-                        code: 'error',
-                        key: 'value'
-                    }]
-                });
+                assert.deepEqual(response.body, { errors: ['ERROR'] });
+                done();
+            });
+        });
+
+        it('should not call protocol validation if there are common validation failures', function (done) {
+            Protocol.Validator = { create: mock() };
+            request.body = { protocol: 'http' };
+
+            controller.post(request, response).done(function () {
+                assert.ok(!Protocol.Validator.create.wasCalled());
+                done();
+            });
+        });
+
+        it('should validate with Protocol if there are no common validation failures', function (done) {
+            Protocol.Validator = {
+                create: mock().returns({
+                    isValid: mock().returns(false),
+                    errors: mock().returns('ERROR')
+                })
+            };
+            request.body = { port: 3535, protocol: 'http' };
+
+            controller.post(request, response).done(function () {
+                assert.strictEqual(response.statusCode, 400);
+                assert.deepEqual(response.body, { errors: 'ERROR' });
                 done();
             });
         });
