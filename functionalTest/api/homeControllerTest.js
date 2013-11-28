@@ -1,19 +1,17 @@
 'use strict';
 
 var assert = require('assert'),
-    api = require('./api');
+    api = require('./api'),
+    promiseIt = require('../testHelpers').promiseIt;
 
 describe('GET /', function () {
-    it('should return correct hypermedia', function (done) {
-        api.get('/').then(function (response) {
+    promiseIt('should return correct hypermedia', function () {
+        return api.get('/').then(function (response) {
             assert.strictEqual(response.statusCode, 200);
             var impostersUrl = response.getLinkFor('imposters');
             return api.get(impostersUrl);
-        }).done(function (response) {
+        }).then(function (response) {
             assert.strictEqual(response.statusCode, 200);
-            done();
-        }, function (error) {
-            done(error);
         });
     });
 });

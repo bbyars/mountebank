@@ -2,36 +2,22 @@
 
 var assert = require('assert'),
     api = require('../api'),
-    Q = require('q'),
+    promiseIt = require('../../testHelpers').promiseIt,
     port = api.port + 1;
-
-function doneCallback (done) {
-    return function () { done(); };
-}
-
-function doneErrback (done) {
-    return function (error) { done(error); };
-}
 
 describe('http imposter', function () {
 
-    afterEach(function (done) {
-        api.del('/imposters/' + port).done(doneCallback(done), done);
-    });
-
     describe('GET /imposters/:id', function () {
-        it('should return 404 if imposter has not been created', function (done) {
-            api.get('/imposters/3535').then(function (response) {
+        promiseIt('should return 404 if imposter has not been created', function () {
+            return api.get('/imposters/3535').then(function (response) {
                 assert.strictEqual(response.statusCode, 404);
-
-                return Q(true);
-            }).done(doneCallback(done), doneErrback(done));
+            });
         });
     });
 
     describe('DELETE /imposters/:id should shutdown server at that port', function () {
-        it('should shutdown server at that port', function (done) {
-            api.post('/imposters', { protocol: 'http', port: port }).then(function (response) {
+        promiseIt('should shutdown server at that port', function () {
+            return api.post('/imposters', { protocol: 'http', port: port }).then(function (response) {
                 return api.del(response.getLinkFor('self'));
             }).then(function (response) {
                 assert.strictEqual(response.statusCode, 200, 'Delete failed');
@@ -39,25 +25,23 @@ describe('http imposter', function () {
                 return api.post('/imposters', { protocol: 'http', port: port });
             }).then(function (response) {
                 assert.strictEqual(response.statusCode, 201, 'Delete did not free up port');
-
-                return Q(true);
-            }).done(doneCallback(done), doneErrback(done));
+            }).finally(function () {
+                return api.del('/imposters/' + port);
+            });
         });
 
-        it('should return a 200 even if the server does not exist', function (done) {
-            api.del('/imposters/9999').then(function (response) {
+        promiseIt('should return a 200 even if the server does not exist', function () {
+            return api.del('/imposters/9999').then(function (response) {
                 assert.strictEqual(response.statusCode, 200);
-
-                return Q(true);
-            }).done(doneCallback(done), doneErrback(done));
+            });
         });
     });
 
     describe('GET /imposters/:id/requests', function () {
-        it('should provide access to all requests', function (done) {
+        promiseIt('should provide access to all requests', function () {
             var requestsPath;
 
-            api.post('/imposters', { protocol: 'http', port: port }).then(function (response) {
+            return api.post('/imposters', { protocol: 'http', port: port }).then(function (response) {
                 requestsPath = response.getLinkFor('requests');
                 return api.get('/first', port);
             }).then(function () {
@@ -69,9 +53,9 @@ describe('http imposter', function () {
                     return request.path;
                 });
                 assert.deepEqual(requests, ['/first', '/second']);
-
-                return Q(true);
-            }).done(doneCallback(done), doneErrback(done));
+            }).finally(function () {
+                return api.del('/imposters/' + port);
+            });
         });
     });
 });
