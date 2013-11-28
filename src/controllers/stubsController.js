@@ -10,16 +10,17 @@ function create (imposters) {
     }
 
     function post (request, response) {
-        var imposter = imposters[request.params.id];
+        var imposter = imposters[request.params.id],
+            validator = imposter.Validator.create({stubs: [request.body]});
 
-        if (imposter.isValidStubRequest(request.body)) {
+        if (validator.isValid()) {
             imposter.addStub(request.body);
             response.statusCode = 200;
             response.send();
         }
         else {
             response.statusCode = 400;
-            response.send({ errors: imposter.stubRequestErrorsFor(request.body) });
+            response.send({ errors: validator.errors() });
         }
     }
 

@@ -11,8 +11,12 @@ describe('ImposterController', function () {
         it('should add stub to imposter for valid requests', function () {
             var response = FakeResponse.create(),
                 imposter = {
-                    isValidStubRequest: mock().returns(true),
-                    addStub: mock()
+                    addStub: mock(),
+                    Validator: {
+                        create: mock().returns({
+                            isValid: mock().returns(true)
+                        })
+                    }
                 },
                 controller = Controller.create({ 1: imposter }),
                 request = {
@@ -22,7 +26,6 @@ describe('ImposterController', function () {
 
             controller.post(request, response);
 
-            assert.ok(imposter.isValidStubRequest.wasCalledWith('TEST BODY'));
             assert.ok(imposter.addStub.wasCalledWith('TEST BODY'));
             assert.strictEqual(response.statusCode, 200);
         });
@@ -30,8 +33,12 @@ describe('ImposterController', function () {
         it('should return 400 with imposter errors for invalid requests', function () {
             var response = FakeResponse.create(),
                 imposter = {
-                    isValidStubRequest: mock().returns(false),
-                    stubRequestErrorsFor: mock().returns('ERRORS')
+                    Validator: {
+                        create: mock().returns({
+                            isValid: mock().returns(false),
+                            errors: mock().returns('ERRORS')
+                        })
+                    }
                 },
                 controller = Controller.create({ 1: imposter }),
                 request = { params: { id: 1 }};

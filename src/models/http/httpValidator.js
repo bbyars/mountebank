@@ -77,6 +77,7 @@ function create (request, allowInjection) {
                 requireNonEmptyArrays: { responses: stub.responses }
             },
             result = Validator.create(spec).errors();
+
         addInjectionErrors(stub, result);
         addDryRunErrors(stub, result);
 

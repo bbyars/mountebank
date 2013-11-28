@@ -34,6 +34,8 @@ Cleanup Needed
 ==============
 1. functional imposter test needs splitting up
 2. stubRepository needs cleaning up
+3. remove allowInjectable from stubRepository
+4. Move afterEach to each test in imposter test
 
 Auxiliary Projects
 ==================

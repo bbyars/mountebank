@@ -59,11 +59,14 @@ function create (Protocol, port, allowInjection) {
                 url: url,
                 hypermedia: hypermedia,
                 requests: server.requests,
-                stubRequestErrorsFor: server.stubRequestErrorsFor,
                 stubsHypermedia: function () { return { stubs: stubs }; },
-                isValidStubRequest: server.isValidStubRequest,
                 addStub: addStub,
-                stop: server.close
+                stop: server.close,
+                Validator: {
+                    create: function (request) {
+                        return Protocol.Validator.create(request, allowInjection);
+                    }
+                }
             });
         });
     });
