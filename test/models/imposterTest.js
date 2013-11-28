@@ -3,7 +3,8 @@
 var assert = require('assert'),
     mock = require('../mock').mock,
     Imposter = require('../../src/models/imposter'),
-    Q = require('q');
+    Q = require('q'),
+    promiseIt = require('../testHelpers').promiseIt;
 
 describe('imposter', function () {
     describe('#create', function () {
@@ -25,15 +26,14 @@ describe('imposter', function () {
             };
         });
 
-        it('should return url', function (done) {
-            Imposter.create(Protocol, 3535).then(function (imposter) {
+        promiseIt('should return url', function () {
+            return Imposter.create(Protocol, 3535).then(function (imposter) {
                 assert.strictEqual(imposter.url(response), 'http://localhost/imposters/3535');
-                return Q(true);
-            }).done(function () { done(); }, done);
+            });
         });
 
-        it('should return hypermedia links', function (done) {
-            Imposter.create(Protocol, 3535).then(function (imposter) {
+        promiseIt('should return hypermedia links', function () {
+            return Imposter.create(Protocol, 3535).then(function (imposter) {
                 assert.deepEqual(imposter.hypermedia(response), {
                     protocol: 'http',
                     port: 3535,
@@ -43,25 +43,22 @@ describe('imposter', function () {
                         { href: 'http://localhost/imposters/3535/stubs', rel: 'stubs' }
                     ]
                 });
-                return Q(true);
-            }).done(function () { done(); }, done);
+            });
         });
 
-        it('should create protocol server on provided port', function (done) {
-            Imposter.create(Protocol, 3535, true).then(function () {
+        promiseIt('should create protocol server on provided port', function () {
+            return Imposter.create(Protocol, 3535, true).then(function () {
                 assert(Protocol.create.wasCalledWith(3535));
-                return Q(true);
-            }).done(function () { done(); }, done);
+            });
         });
 
-        it('should return list of stubs', function (done) {
-            Imposter.create(Protocol, 3535, true).then(function (imposter) {
+        promiseIt('should return list of stubs', function () {
+            return Imposter.create(Protocol, 3535, true).then(function (imposter) {
                 imposter.addStub('ONE');
                 imposter.addStub('TWO');
 
                 assert.deepEqual(imposter.stubsHypermedia(), { stubs: ['ONE', 'TWO'] });
-                return Q(true);
-            }).done(function () { done(); }, done);
+            });
         });
     });
 });
