@@ -22,9 +22,8 @@ function create (Protocol, port, allowInjection) {
         };
     }
 
-    var deferred = Q.defer(),
-        domain = Domain.create(),
-        errorHandler = function (error) {
+    function createErrorHandler (deferred) {
+        return function errorHandler (error) {
             if (error.errno === 'EADDRINUSE') {
                 deferred.reject({
                     code: 'port in use',
@@ -41,6 +40,11 @@ function create (Protocol, port, allowInjection) {
                 deferred.reject(error);
             }
         };
+    }
+
+    var deferred = Q.defer(),
+        domain = Domain.create(),
+        errorHandler = createErrorHandler(deferred);
 
     domain.on('error', errorHandler);
     domain.run(function () {
@@ -51,18 +55,12 @@ function create (Protocol, port, allowInjection) {
                 stubs.push(stub);
             }
 
-            function stubsHypermedia () {
-                return {
-                    stubs: stubs
-                };
-            }
-
             deferred.resolve({
                 url: url,
                 hypermedia: hypermedia,
                 requests: server.requests,
                 stubRequestErrorsFor: server.stubRequestErrorsFor,
-                stubsHypermedia: stubsHypermedia,
+                stubsHypermedia: function () { return { stubs: stubs }; },
                 isValidStubRequest: server.isValidStubRequest,
                 addStub: addStub,
                 stop: server.close

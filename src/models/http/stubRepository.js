@@ -58,13 +58,6 @@ function create (proxy, allowInjection) {
         var spec = {
             requireNonEmptyArrays: { responses: stub.responses }
         };
-        if (stub.predicates) {
-            spec.requireValidPredicates = {
-                path: stub.predicates.path,
-                method: stub.predicates.method,
-                body: stub.predicates.body
-            };
-        }
         var result = Validator.create(spec).errors();
         if (!allowInjection && hasInjection(stub)) {
             result.push({

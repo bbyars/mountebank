@@ -19,10 +19,12 @@ function createImposterValidator (imposters) {
         }
         else {
             response.statusCode = 404;
-            response.send({ errors: [{
-                code: "no such imposter",
-                message: "I'm sure I can get someone to help you, but you have to ask first.  Try POSTing to /imposters?"
-            }] });
+            response.send({
+                errors: [{
+                    code: 'no such imposter',
+                    message: 'Try POSTing to /imposters first?'
+                }]
+            });
         }
     };
 }

@@ -115,30 +115,6 @@ describe('Validator', function () {
 
             assert.ok(validator.isValid());
         });
-
-        it('should not be a valid predicate if it is a string', function () {
-            var validator = Validator.create({
-                requireValidPredicates: { key: 'value' }
-            });
-
-            assert.ok(!validator.isValid());
-        });
-
-        it('should be a valid predicate if it is in the correct form', function () {
-            var validator = Validator.create({
-                requireValidPredicates: { key: { is: 'value' } }
-            });
-
-            assert.ok(validator.isValid());
-        });
-
-        it('should be valid predicate if undefined', function () {
-            var validator = Validator.create({
-                requireValidPredicates: { key: undefined }
-            });
-
-            assert.ok(validator.isValid());
-        });
     });
 
     describe('#errorsFor', function () {
@@ -203,17 +179,6 @@ describe('Validator', function () {
             assert.deepEqual(validator.errors(), [{
                 code: "bad data",
                 message: "'key' must be a non-empty array"
-            }]);
-        });
-
-        it('should add error for invalid predicate', function () {
-            var validator = Validator.create({
-                requireValidPredicates: { key: 'value' }
-            });
-
-            assert.deepEqual(validator.errors(), [{
-                code: "bad data",
-                message: "invalid predicate for 'key'"
             }]);
         });
     });

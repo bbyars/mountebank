@@ -20,7 +20,7 @@ function create (imposters) {
 
     return {
         get: get,
-        del: del,
+        del: del
     };
 }
 
