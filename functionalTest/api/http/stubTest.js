@@ -216,7 +216,7 @@ describe('http imposter', function () {
             }).then(function (response) {
                 assert.strictEqual(response.body, 'PROXIED');
 
-                return api.get('/imposters/' + proxyPort + '/requests');
+                return api.get('/imposters/' + proxyPort);
             }).then(function (response) {
                 assert.strictEqual(response.body.requests.length, 1);
             }).finally(function () {

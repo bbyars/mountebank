@@ -17,7 +17,7 @@ describe('proxy', function () {
             }).then(function (response) {
                 assert.strictEqual(response.statusCode, 200, 'did not get a 200 from proxy');
 
-                return api.get('/imposters/' + port + '/requests');
+                return api.get('/imposters/' + port);
             }).then(function (response) {
                 var requests = response.body.requests;
                 assert.strictEqual(requests.length, 1);
@@ -31,13 +31,10 @@ describe('proxy', function () {
         });
 
         promiseIt('should return proxied result', function () {
-            return api.post('/imposters', { protocol: 'http', port: port }).then(function (response) {
-                assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body));
+            var stub = { responses: [{ is: { statusCode: 400, body: 'ERROR' }}]};
 
-                var stub = { responses: [{ is: { statusCode: 400, body: 'ERROR' }}]};
-                return api.post(response.getLinkFor('stubs'), stub);
-            }).then(function (response) {
-                assert.strictEqual(response.statusCode, 200, JSON.stringify(response.body));
+            return api.post('/imposters', { protocol: 'http', port: port, stubs: [stub] }).then(function (response) {
+                assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body));
 
                 return proxy.to('http://localhost:' + port, { path: '/', method: 'GET', headers: {} });
             }).then(function (response) {

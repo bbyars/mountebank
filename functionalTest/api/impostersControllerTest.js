@@ -8,12 +8,11 @@ var assert = require('assert'),
 describe('POST /imposters', function () {
 
     promiseIt('should return create new imposter with consistent hypermedia', function () {
-        var createdBody, imposterPath, requestsPath;
+        var createdBody, imposterPath;
 
         return api.post('/imposters', { protocol: 'http', port: port }).then(function (response) {
             createdBody = response.body;
             imposterPath = response.headers.location.replace(api.url, '');
-            requestsPath = response.getLinkFor('requests');
 
             assert.strictEqual(response.statusCode, 201);
             assert.strictEqual(imposterPath, response.getLinkFor('self'));
@@ -22,10 +21,6 @@ describe('POST /imposters', function () {
         }).then(function (response) {
             assert.strictEqual(response.statusCode, 200);
             assert.deepEqual(response.body, createdBody);
-
-            return api.get(requestsPath);
-        }).then(function (response) {
-            assert.strictEqual(response.statusCode, 200);
         }).finally(function () {
             return api.del(imposterPath);
         });
