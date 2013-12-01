@@ -37,6 +37,8 @@ describe('imposter', function () {
                 assert.deepEqual(imposter.hypermedia(response), {
                     protocol: 'http',
                     port: 3535,
+                    requests: [],
+                    stubs: [],
                     links: [
                         { href: 'http://localhost/imposters/3535', rel: 'self' },
                         { href: 'http://localhost/imposters/3535/requests', rel: 'requests' },

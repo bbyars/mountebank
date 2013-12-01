@@ -13,6 +13,76 @@ describe('http imposter', function () {
                 assert.strictEqual(response.statusCode, 404);
             });
         });
+
+        promiseIt('should provide access to all requests', function () {
+            return api.post('/imposters', { protocol: 'http', port: port }).then(function () {
+                return api.get('/first', port);
+            }).then(function () {
+                return api.get('/second', port);
+            }).then(function () {
+                return api.get('/imposters/' + port);
+            }).then(function (response) {
+                var requests = response.body.requests.map(function (request) {
+                    return request.path;
+                });
+                assert.deepEqual(requests, ['/first', '/second']);
+            }).finally(function () {
+                return api.del('/imposters/' + port);
+            });
+        });
+
+
+        promiseIt('should return list of stubs in order', function () {
+            var first = { responses: [{ is: { body: '1' }}]},
+                second = { responses: [{ is: { body: '2' }}]};
+
+            return api.post('/imposters', { protocol: 'http', port: port, stubs: [first, second] }).then(function () {
+                return api.get('/imposters/' + port);
+            }).then(function (response) {
+                assert.strictEqual(response.statusCode, 200);
+                assert.deepEqual(response.body.stubs, [
+                    { responses: [{ is: { body: '1' } }] },
+                    { responses: [{ is: { body: '2' } }] }
+                ]);
+            }).finally(function () {
+                return api.del('/imposters/' + port);
+            });
+        });
+
+        promiseIt('should record matches against stubs', function () {
+            var stub = { responses: [{ is: { body: '1' }}, { is: { body: '2' }}]};
+
+            return api.post('/imposters', { protocol: 'http', port: port, stubs: [stub] }).then(function () {
+                return api.get('/first', port);
+            }).then(function () {
+                return api.get('/second', port);
+            }).then(function () {
+                return api.get('/imposters/' + port);
+            }).then(function (response) {
+                var stubs = JSON.stringify(response.body.stubs),
+                    withTimeRemoved = stubs.replace(/"timestamp":"[^"]+"/g, '"timestamp":"NOW"'),
+                    actualWithoutTime = JSON.parse(withTimeRemoved),
+                    requestHeaders = { accept: 'application/json', host: 'localhost:' + port, connection: 'keep-alive' };
+
+                assert.deepEqual(actualWithoutTime, [{
+                    responses: [{ is: { body: '1' } }, { is: { body: '2' } }],
+                    matches: [
+                        {
+                            timestamp: 'NOW',
+                            request: { path: '/first', method: 'GET', headers: requestHeaders, body: '' },
+                            response: { statusCode: 200, headers: { connection: 'close' }, body: '1' }
+                        },
+                        {
+                            timestamp: 'NOW',
+                            request: { path: '/second', method: 'GET', headers: requestHeaders, body: '' },
+                            response: { statusCode: 200, headers: { connection: 'close' }, body: '2' }
+                        }
+                    ]
+                }]);
+            }).finally(function () {
+                return api.del('/imposters/' + port);
+            });
+        });
     });
 
     describe('DELETE /imposters/:id should shutdown server at that port', function () {
@@ -33,28 +103,6 @@ describe('http imposter', function () {
         promiseIt('should return a 200 even if the server does not exist', function () {
             return api.del('/imposters/9999').then(function (response) {
                 assert.strictEqual(response.statusCode, 200);
-            });
-        });
-    });
-
-    describe('GET /imposters/:id/requests', function () {
-        promiseIt('should provide access to all requests', function () {
-            var requestsPath;
-
-            return api.post('/imposters', { protocol: 'http', port: port }).then(function (response) {
-                requestsPath = response.getLinkFor('requests');
-                return api.get('/first', port);
-            }).then(function () {
-                return api.get('/second', port);
-            }).then(function () {
-                return api.get(requestsPath);
-            }).then(function (response) {
-                var requests = response.body.requests.map(function (request) {
-                    return request.path;
-                });
-                assert.deepEqual(requests, ['/first', '/second']);
-            }).finally(function () {
-                return api.del('/imposters/' + port);
             });
         });
     });

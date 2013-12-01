@@ -10,18 +10,6 @@ function create (Protocol, port, allowInjection, request) {
         return response.absoluteUrl('/imposters/' + port);
     }
 
-    function hypermedia (response) {
-        return {
-            protocol: Protocol.name,
-            port: port,
-            links: [
-                { href: url(response), rel: 'self' },
-                { href: url(response) + '/requests', rel: 'requests' },
-                { href: url(response) + '/stubs', rel: 'stubs' }
-            ]
-        };
-    }
-
     function createErrorHandler (deferred) {
         return function errorHandler (error) {
             if (error.errno === 'EADDRINUSE') {
@@ -61,9 +49,23 @@ function create (Protocol, port, allowInjection, request) {
                 });
             }
 
+            function toJSON (response) {
+                return {
+                    protocol: Protocol.name,
+                    port: port,
+                    requests: server.requests,
+                    stubs: stubs,
+                    links: [
+                        { href: url(response), rel: 'self' },
+                        { href: url(response) + '/requests', rel: 'requests' },
+                        { href: url(response) + '/stubs', rel: 'stubs' }
+                    ]
+                };
+            }
+
             deferred.resolve({
                 url: url,
-                hypermedia: hypermedia,
+                hypermedia: toJSON,
                 requests: server.requests,
                 stubsHypermedia: function () { return { stubs: stubs }; },
                 addStub: addStub,

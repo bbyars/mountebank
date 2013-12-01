@@ -32,8 +32,6 @@ Known Bugs
 
 Cleanup Needed
 ==============
-1. functional imposter test needs splitting up
-4. Move afterEach to each test in imposter test
 
 Auxiliary Projects
 ==================
