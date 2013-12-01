@@ -22,9 +22,9 @@ function useAbsoluteUrls (port) {
             var args = Array.prototype.slice.call(arguments),
                 body = args[0];
 
-            if (body && body.links) {
-                body.links.forEach(function (link) {
-                    link.href = absolutize(link.href);
+            if (body && body._links) {
+                Object.keys(body._links).forEach(function (rel) {
+                    body._links[rel].href = absolutize(body._links[rel].href);
                 });
             }
             sendOriginal.apply(this, args);

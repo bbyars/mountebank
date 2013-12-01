@@ -11,7 +11,7 @@ describe('homeController', function () {
 
             controller.get({}, response);
 
-            assert.deepEqual(response.body, { links: [{ href: '/imposters', rel: 'imposters' }] });
+            assert.deepEqual(response.body, { _links: { imposters: { href: '/imposters' } } });
         });
     });
 });

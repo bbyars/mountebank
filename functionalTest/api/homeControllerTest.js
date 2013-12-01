@@ -8,8 +8,7 @@ describe('GET /', function () {
     promiseIt('should return correct hypermedia', function () {
         return api.get('/').then(function (response) {
             assert.strictEqual(response.statusCode, 200);
-            var impostersUrl = response.getLinkFor('imposters');
-            return api.get(impostersUrl);
+            return api.get(response.body._links.imposters.href);
         }).then(function (response) {
             assert.strictEqual(response.statusCode, 200);
         });

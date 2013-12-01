@@ -12,12 +12,11 @@ describe('POST /imposters', function () {
 
         return api.post('/imposters', { protocol: 'http', port: port }).then(function (response) {
             createdBody = response.body;
-            imposterPath = response.headers.location.replace(api.url, '');
 
             assert.strictEqual(response.statusCode, 201);
-            assert.strictEqual(imposterPath, response.getLinkFor('self'));
+            assert.strictEqual(response.headers.location, response.body._links.self.href);
 
-            return api.get(imposterPath);
+            return api.get(response.headers.location);
         }).then(function (response) {
             assert.strictEqual(response.statusCode, 200);
             assert.deepEqual(response.body, createdBody);

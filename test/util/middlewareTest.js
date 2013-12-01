@@ -76,9 +76,9 @@ describe('middleware', function () {
             var middlewareFn = middleware.useAbsoluteUrls(9000);
 
             middlewareFn(request, response, next);
-            response.send({ key: 'value', links: [{ href: '/' }] });
+            response.send({ key: 'value', _links: { rel: { href: '/' } } });
 
-            assert.ok(send.wasCalledWith({ key: 'value', links: [{ href: 'http://localhost:9000/' }] }));
+            assert.ok(send.wasCalledWith({ key: 'value', _links: { rel: { href: 'http://localhost:9000/' } } }));
         });
     });
 

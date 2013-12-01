@@ -52,9 +52,7 @@ function create (Protocol, port, allowInjection, request) {
                     port: port,
                     requests: server.requests,
                     stubs: stubs,
-                    links: [
-                        { href: url, rel: 'self' }
-                    ]
+                    _links: { self: { href: url } }
                 };
             }
 

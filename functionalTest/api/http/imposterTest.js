@@ -88,7 +88,7 @@ describe('http imposter', function () {
     describe('DELETE /imposters/:id should shutdown server at that port', function () {
         promiseIt('should shutdown server at that port', function () {
             return api.post('/imposters', { protocol: 'http', port: port }).then(function (response) {
-                return api.del(response.getLinkFor('self'));
+                return api.del(response.headers.location);
             }).then(function (response) {
                 assert.strictEqual(response.statusCode, 200, 'Delete failed');
 

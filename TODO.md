@@ -32,6 +32,9 @@ Known Bugs
 
 Cleanup Needed
 ==============
+2. Have delete return JSON
+4. fakeResponse no longer needed?
+5. add error handler middleware like connect's
 
 Auxiliary Projects
 ==================

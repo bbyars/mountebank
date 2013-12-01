@@ -1,7 +1,7 @@
 'use strict';
 
 function get (request, response) {
-    response.send({ links: [{ href: '/imposters', rel: 'imposters' }] });
+    response.send({ _links: { imposters: { href: '/imposters' } } });
 }
 
 module.exports = {

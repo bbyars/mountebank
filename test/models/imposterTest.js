@@ -34,7 +34,7 @@ describe('imposter', function () {
                     port: 3535,
                     requests: [],
                     stubs: [],
-                    links: [{ href: '/imposters/3535', rel: 'self' }]
+                    _links: { self: { href: '/imposters/3535' } }
                 });
             });
         });
