@@ -9,13 +9,15 @@ function create (imposters) {
     }
 
     function del (request, response) {
-        var imposter = imposters[request.params.id];
+        var imposter = imposters[request.params.id],
+            json = {};
 
         if (imposter) {
+            json = imposter.toJSON();
             imposter.stop();
             delete imposters[request.params.id];
         }
-        response.send();
+        response.send(json);
     }
 
     return {

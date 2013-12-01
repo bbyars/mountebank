@@ -25,7 +25,7 @@ describe('ImposterController', function () {
     describe('#del', function () {
         it('should stop the imposter', function () {
             var response = FakeResponse.create(),
-                imposter = { stop: mock() },
+                imposter = { stop: mock(), toJSON: mock().returns('JSON') },
                 controller = Controller.create({ 1: imposter });
 
             controller.del({ params: { id: 1 }}, response);
@@ -35,7 +35,7 @@ describe('ImposterController', function () {
 
         it('should remove the imposter from the list', function () {
             var response = FakeResponse.create(),
-                imposters = { 1: { stop: mock() }},
+                imposters = { 1: { stop: mock(), toJSON: mock().returns('JSON') }},
                 controller = Controller.create(imposters);
 
             controller.del({ params: { id: 1 }}, response);
@@ -47,11 +47,20 @@ describe('ImposterController', function () {
             var response = FakeResponse.create(),
                 imposters = {},
                 controller = Controller.create(imposters);
-            response.send = mock();
 
             controller.del({ params: { id: 1 }}, response);
 
-            assert.ok(response.send.wasCalled());
+            assert.deepEqual(response.body, {});
+        });
+
+        it('should send JSON for the deleted the imposter', function () {
+            var response = FakeResponse.create(),
+                imposter = { stop: mock(), toJSON: mock().returns('JSON') },
+                controller = Controller.create({ 1: imposter });
+
+            controller.del({ params: { id: 1 }}, response);
+
+            assert.strictEqual(response.body, 'JSON');
         });
     });
 });
