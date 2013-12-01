@@ -39,7 +39,7 @@ function create (spec) {
 
     function get (request, response) {
         var result = Object.keys(spec.imposters).reduce(function (accumulator, id) {
-            return accumulator.concat(spec.imposters[id].hypermedia(response));
+            return accumulator.concat(spec.imposters[id].toJSON());
         }, []);
         response.send({ imposters: result });
     }
@@ -57,9 +57,9 @@ function create (spec) {
 
         return spec.Imposter.create(protocolFor(protocol), port, spec.allowInjection, request.body).then(function (imposter) {
             spec.imposters[port] = imposter;
-            response.setHeader('Location', imposter.url(response));
+            response.setHeader('Location', imposter.url);
             response.statusCode = 201;
-            response.send(imposter.hypermedia(response));
+            response.send(imposter.toJSON());
         }, function (error) {
             response.statusCode = (error.code === 'insufficient access') ? 403 : 400;
             response.send({errors: [error]});

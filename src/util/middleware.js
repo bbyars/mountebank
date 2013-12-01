@@ -1,11 +1,35 @@
 'use strict';
 
-function createAbsoluteUrl (port) {
+function useAbsoluteUrls (port) {
     return function (request, response, next) {
-        var host = request.headers.host || 'localhost:' + port;
-        response.absoluteUrl = function (endpoint) {
-            return 'http://' + host + endpoint;
+        var setHeaderOriginal = response.setHeader,
+            sendOriginal = response.send,
+            host = request.headers.host || 'localhost:' + port,
+            absolutize = function (link) {
+                return 'http://' + host + link;
+            };
+
+        response.setHeader = function () {
+            var args = Array.prototype.slice.call(arguments);
+
+            if (args[0] && args[0].toLowerCase() === 'location') {
+                args[1] = absolutize(args[1]);
+            }
+            setHeaderOriginal.apply(this, args);
         };
+
+        response.send = function () {
+            var args = Array.prototype.slice.call(arguments),
+                body = args[0];
+
+            if (body && body.links) {
+                body.links.forEach(function (link) {
+                    link.href = absolutize(link.href);
+                });
+            }
+            sendOriginal.apply(this, args);
+        };
+
         next();
     };
 }
@@ -30,6 +54,6 @@ function createImposterValidator (imposters) {
 }
 
 module.exports = {
-    createAbsoluteUrl: createAbsoluteUrl,
+    useAbsoluteUrls: useAbsoluteUrls,
     createImposterValidator: createImposterValidator
 };

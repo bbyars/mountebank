@@ -14,43 +14,71 @@ describe('middleware', function () {
         next = mock();
     });
 
-    describe('#createAbsoluteUrl', function () {
-        it('should default to localhost with given port if no host header', function () {
+    describe('#useAbsoluteUrls', function () {
+        var send, setHeader;
+
+        beforeEach(function () {
+            send = mock();
+            setHeader = mock();
+            response.send = send;
+            response.setHeader = setHeader;
+        });
+
+        it('should not change header if not location header', function () {
+            var middlewareFn = middleware.useAbsoluteUrls(9000);
+
+            middlewareFn(request, response, next);
+            response.setHeader('name', 'value');
+
+            assert.ok(setHeader.wasCalledWith('name', 'value'));
+        });
+
+        it('should default location header to localhost with given port if no host header', function () {
             request.headers.host = '';
-            var middlewareFn = middleware.createAbsoluteUrl(9000);
+            var middlewareFn = middleware.useAbsoluteUrls(9000);
 
             middlewareFn(request, response, next);
-            var url = response.absoluteUrl('');
+            response.setHeader('location', '/');
 
-            assert.strictEqual(url, 'http://localhost:9000');
+            assert.ok(setHeader.wasCalledWith('location', 'http://localhost:9000/'));
         });
 
-        it('should use host header if provides', function () {
-            request.headers.host = 'test.com';
-            var middlewareFn = middleware.createAbsoluteUrl(9000);
+        it('should match location header regardless of case', function () {
+            request.headers.host = '';
+            var middlewareFn = middleware.useAbsoluteUrls(9000);
 
             middlewareFn(request, response, next);
-            var url = response.absoluteUrl('');
+            response.setHeader('LOCATION', '/');
 
-            assert.strictEqual(url, 'http://test.com');
+            assert.ok(setHeader.wasCalledWith('LOCATION', 'http://localhost:9000/'));
         });
 
-        it('should append endpoint to url', function () {
-            var middlewareFn = middleware.createAbsoluteUrl(9000);
+        it('should use the host header if present', function () {
+            request.headers.host = 'mountebank.com';
+            var middlewareFn = middleware.useAbsoluteUrls(9000);
 
             middlewareFn(request, response, next);
-            var url = response.absoluteUrl('/test');
+            response.setHeader('location', '/');
 
-            assert.strictEqual(url, 'http://localhost:9000/test');
+            assert.ok(setHeader.wasCalledWith('location', 'http://mountebank.com/'));
         });
 
-        it('should call callback', function () {
-            var middlewareFn = middleware.createAbsoluteUrl(9000);
+        it('should do nothing if no response body links are present', function () {
+            var middlewareFn = middleware.useAbsoluteUrls(9000);
 
             middlewareFn(request, response, next);
-            response.absoluteUrl('');
+            response.send({ key: 'value' });
 
-            assert(next.wasCalled());
+            assert.ok(send.wasCalledWith({ key: 'value' }));
+        });
+
+        it('should do change response body links', function () {
+            var middlewareFn = middleware.useAbsoluteUrls(9000);
+
+            middlewareFn(request, response, next);
+            response.send({ key: 'value', links: [{ href: '/' }] });
+
+            assert.ok(send.wasCalledWith({ key: 'value', links: [{ href: 'http://localhost:9000/' }] }));
         });
     });
 

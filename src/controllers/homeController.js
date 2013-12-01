@@ -1,15 +1,7 @@
 'use strict';
 
 function get (request, response) {
-    var hypermedia = {
-        links: [
-            {
-                href: response.absoluteUrl('/imposters'),
-                rel: 'imposters'
-            }
-        ]
-    };
-    response.send(hypermedia);
+    response.send({ links: [{ href: '/imposters', rel: 'imposters' }] });
 }
 
 module.exports = {

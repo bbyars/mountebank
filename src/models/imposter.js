@@ -4,11 +4,8 @@ var Q = require('q'),
     Domain = require('domain');
 
 function create (Protocol, port, allowInjection, request) {
-    var stubs = [];
-
-    function url (response) {
-        return response.absoluteUrl('/imposters/' + port);
-    }
+    var stubs = [],
+        url = '/imposters/' + port;
 
     function createErrorHandler (deferred) {
         return function errorHandler (error) {
@@ -49,25 +46,21 @@ function create (Protocol, port, allowInjection, request) {
                 });
             }
 
-            function toJSON (response) {
+            function toJSON () {
                 return {
                     protocol: Protocol.name,
                     port: port,
                     requests: server.requests,
                     stubs: stubs,
                     links: [
-                        { href: url(response), rel: 'self' },
-                        { href: url(response) + '/requests', rel: 'requests' },
-                        { href: url(response) + '/stubs', rel: 'stubs' }
+                        { href: url, rel: 'self' }
                     ]
                 };
             }
 
             deferred.resolve({
                 url: url,
-                hypermedia: toJSON,
-                requests: server.requests,
-                stubsHypermedia: function () { return { stubs: stubs }; },
+                toJSON: toJSON,
                 addStub: addStub,
                 stop: server.close,
                 Validator: {

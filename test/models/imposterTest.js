@@ -8,14 +8,9 @@ var assert = require('assert'),
 
 describe('imposter', function () {
     describe('#create', function () {
-        var response, Protocol;
+        var Protocol;
 
         beforeEach(function () {
-            response = {
-                absoluteUrl: function (endpoint) {
-                    return 'http://localhost' + endpoint;
-                }
-            };
             Protocol = {
                 name: 'http',
                 create: mock().returns(Q({
@@ -28,22 +23,18 @@ describe('imposter', function () {
 
         promiseIt('should return url', function () {
             return Imposter.create(Protocol, 3535).then(function (imposter) {
-                assert.strictEqual(imposter.url(response), 'http://localhost/imposters/3535');
+                assert.strictEqual(imposter.url, '/imposters/3535');
             });
         });
 
-        promiseIt('should return hypermedia links', function () {
+        promiseIt('should return default JSON representation', function () {
             return Imposter.create(Protocol, 3535).then(function (imposter) {
-                assert.deepEqual(imposter.hypermedia(response), {
+                assert.deepEqual(imposter.toJSON(), {
                     protocol: 'http',
                     port: 3535,
                     requests: [],
                     stubs: [],
-                    links: [
-                        { href: 'http://localhost/imposters/3535', rel: 'self' },
-                        { href: 'http://localhost/imposters/3535/requests', rel: 'requests' },
-                        { href: 'http://localhost/imposters/3535/stubs', rel: 'stubs' }
-                    ]
+                    links: [{ href: '/imposters/3535', rel: 'self' }]
                 });
             });
         });
@@ -59,14 +50,15 @@ describe('imposter', function () {
                 imposter.addStub('ONE');
                 imposter.addStub('TWO');
 
-                assert.deepEqual(imposter.stubsHypermedia(), { stubs: ['ONE', 'TWO'] });
+                assert.deepEqual(imposter.toJSON().stubs, ['ONE', 'TWO']);
             });
         });
 
         promiseIt('should add stubs during creation', function () {
             var request = { stubs: ['ONE', 'TWO'] };
+
             return Imposter.create(Protocol, 3535, true, request).then(function (imposter) {
-                assert.deepEqual(imposter.stubsHypermedia(), { stubs: ['ONE', 'TWO'] });
+                assert.deepEqual(imposter.toJSON().stubs, ['ONE', 'TWO']);
             });
         });
     });

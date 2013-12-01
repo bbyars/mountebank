@@ -8,17 +8,17 @@ var assert = require('assert'),
 describe('ImposterController', function () {
 
     describe('#get', function () {
-        it('should return hypermedia for imposter at given id', function () {
+        it('should return JSON for imposter at given id', function () {
             var response = FakeResponse.create(),
                 imposters = {
-                    1: { hypermedia: mock().returns("firstHypermedia") },
-                    2: { hypermedia: mock().returns("secondHypermedia") }
+                    1: { toJSON: mock().returns('firstJSON') },
+                    2: { toJSON: mock().returns('secondJSON') }
                 },
                 controller = Controller.create(imposters);
 
             controller.get({ params: { id: 2 }}, response);
 
-            assert.strictEqual(response.body, "secondHypermedia");
+            assert.strictEqual(response.body, 'secondJSON');
         });
     });
 

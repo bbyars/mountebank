@@ -5,7 +5,7 @@ function create (imposters) {
     function get (request, response) {
         var imposter = imposters[request.params.id];
 
-        response.send(imposter.hypermedia(response));
+        response.send(imposter.toJSON());
     }
 
     function del (request, response) {

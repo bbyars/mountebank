@@ -23,14 +23,14 @@ describe('ImpostersController', function () {
             assert.deepEqual(response.body, {imposters: []});
         });
 
-        it('should send hypermedia for all imposters', function () {
-            var firstImposter = { hypermedia: mock().returns("firstHypermedia") },
-                secondImposter = { hypermedia: mock().returns("secondHypermedia") },
+        it('should send JSON for all imposters', function () {
+            var firstImposter = { toJSON: mock().returns('firstJSON') },
+                secondImposter = { toJSON: mock().returns('secondJSON') },
                 controller = Controller.create({ imposters: { 1: firstImposter, 2: secondImposter } });
 
             controller.get({}, response);
 
-            assert.deepEqual(response.body, {imposters: ["firstHypermedia", "secondHypermedia"]});
+            assert.deepEqual(response.body, {imposters: ['firstJSON', 'secondJSON']});
         });
     });
 
@@ -40,8 +40,8 @@ describe('ImpostersController', function () {
         beforeEach(function () {
             request = { body: {} };
             imposter = {
-                url: mock().returns("imposter-url"),
-                hypermedia: mock().returns("hypermedia")
+                url: mock().returns('imposter-url'),
+                toJSON: mock().returns('JSON')
             };
             Imposter = {
                 create: mock().returns(Q(imposter))
@@ -64,11 +64,11 @@ describe('ImpostersController', function () {
             });
         });
 
-        promiseIt('should return imposter hypermedia', function () {
+        promiseIt('should return imposter JSON', function () {
             request.body = { port: 3535, protocol: 'http' };
 
             return controller.post(request, response).then(function () {
-                assert.strictEqual(response.body, "hypermedia");
+                assert.strictEqual(response.body, 'JSON');
             });
         });
 

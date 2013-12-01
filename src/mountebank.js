@@ -22,7 +22,7 @@ function create (port, allowInjection) {
         imposterController = ImposterController.create(imposters),
         validateImposterExists = middleware.createImposterValidator(imposters);
 
-    app.use(middleware.createAbsoluteUrl(port));
+    app.use(middleware.useAbsoluteUrls(port));
     app.use(express.logger({immediate: true, format: '[mb  /' + port + '] :method :url'}));
     app.use(express.json());
     app.listen(port);
