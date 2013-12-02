@@ -13,31 +13,19 @@ Stories
 6. Add brew package
 7. Add rpm package
 8. Add MSI & Windows support
-
-Future Directions
-=================
-1. Add HTML views for manual QA?
-2. Docs and website support
-3. Inline docs with mb app
-4. FTP?
+9. FTP
 
 Known Bugs
 ==========
-1. Does not ensure validation is purely synchronous in presence of injections
-2. Does not seem to support asynchronous injection code
-    - see commented out test in functionalTest/api/http/imposterTest.js
-2. Injected code can crash mb
-    - see commented out test in functionalTest/api/http/imposterTest.js
+2. Does not support asynchronous injection code
+    - see commented out test in functionalTest/api/http/stubTest.js
+    - validation does not guarantee strictly synchronous execution with injection
 3. grunt does not kill mb if functional tests fail
 
 Cleanup Needed
 ==============
-2. Have delete return JSON
-5. add error handler middleware like connect's
 
 Auxiliary Projects
 ==================
 1. Java binding
 2. C# binding
-3. bash import/export?
-4. powershell import/export?

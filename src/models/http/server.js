@@ -43,9 +43,6 @@ var create = function (port) {
                 response.end(error, 'utf8');
             };
 
-        // Primarily intended to catch bad JavaScript injections,
-        // but I can't seem to catch them (see commented out test
-        // in functionalTest/api/http/imposterTest.js)
         domain.on('error', errorHandler);
 
         domain.run(function () {
@@ -54,7 +51,7 @@ var create = function (port) {
                 return stubs.resolve(simpleRequest);
             }).done(function (stubResponse) {
                 response.writeHead(stubResponse.statusCode, stubResponse.headers);
-                response.end(stubResponse.body, 'utf8');
+                response.end(stubResponse.body.toString(), 'utf8');
             }, errorHandler);
         });
     });

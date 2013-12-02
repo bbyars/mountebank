@@ -11,7 +11,7 @@ for FILE in `find . -type f -name '*.js' -not \( -path "*/node_modules/*" \)`; d
     fi
 
     # Check for accidental only() calls left in tests
-    grep '\(describe\|it\).only' "$FILE" > /dev/null
+    egrep "(describe|[Ii]t)\.only\('" "$FILE" > /dev/null
     if [ $? -eq 0 ]; then
         STATUS=1
         echo "$FILE appears to have been left with a mocha .only() call" >&2

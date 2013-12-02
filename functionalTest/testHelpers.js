@@ -4,12 +4,19 @@
 // Many times I'd forget to add the errback, making
 // tests harder to fix when they failed because I'd
 // miss the assertion message.
-function promiseIt (description, test) {
-    var wrappedTest = function (done) {
+function wrap (test) {
+    return function (done) {
         test().done(function () { done(); }, done);
     };
-    it(description, wrappedTest);
 }
+
+function promiseIt (description, test) {
+    it(description, wrap(test));
+}
+
+promiseIt.only = function (description, test) {
+    it.only(description, wrap(test));
+};
 
 module.exports = {
     promiseIt: promiseIt

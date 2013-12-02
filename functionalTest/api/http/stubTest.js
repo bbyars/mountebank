@@ -279,41 +279,23 @@ describe('http imposter', function () {
             });
         });
 
-        // Struggling to get the next two tests to pass:
-
-//        it('should not crash due to bad javascript injection', function (done) {
-//            api.post('/imposters', { protocol: 'http', port: port }).then(function (response) {
-//                var fn = "function (request) { return { body: 1 }; }";
-//                return api.post(response.getLinkFor('stubs'), { responses: [{ inject: fn }] });
-//            }).then(function (response) {
-//                assert.strictEqual(response.statusCode, 200, JSON.stringify(response.body));
+//        promiseIt('should allow asynchronous injection', function () {
+//            var fn = "function () {\n" +
+//                     "    process.nextTick(function () {\n" +
+//                     "        return { body: 'INJECTED' };\n" +
+//                     "    });\n" +
+//                    "}",
+//                stub = { responses: [{ inject: fn }] };
 //
-//                return api.get('/', port);
-//            }).then(function (response) {
-//                assert.strictEqual(response.statusCode, 500);
-//                assert.strictEqual(response.body, '');
-//
-//                return Q(true);
-//            }).done(doneCallback(done), doneErrback(done));
-//        });
-
-//        it('should allow asynchronous injection', function (done) {
-//            api.post('/imposters', { protocol: 'http', port: port }).then(function (response) {
-//                var fn = "function () {\n" +
-//                            "process.nextTick(function () {\n" +
-//                                "return { body: 'INJECTED' };\n" +
-//                            "});\n" +
-//                         "}";
-//                return api.post(response.getLinkFor('stubs'), { responses: [{ inject: fn }] });
-//            }).then(function (response) {
-//                assert.strictEqual(response.statusCode, 200, JSON.stringify(response.body));
+//            return api.post('/imposters', { protocol: 'http', port: port, stubs: [stub] }).then(function (response) {
+//                assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body));
 //
 //                return api.get('/', port);
 //            }).then(function (response) {
 //                assert.strictEqual(response.body, 'INJECTED');
-//
-//                return Q(true);
-//            }).done(doneCallback(done), doneErrback(done));
+//            }).finally(function () {
+//                return api.del('/imposters/' + port);
+//            });
 //        });
     });
 });

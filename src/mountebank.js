@@ -25,6 +25,7 @@ function create (port, allowInjection) {
     app.use(middleware.useAbsoluteUrls(port));
     app.use(express.logger({immediate: true, format: '[mb  /' + port + '] :method :url'}));
     app.use(express.json());
+    app.use(express.errorHandler());
     app.listen(port);
     console.log('mountebank accepting orders at http://localhost:' + port);
 
