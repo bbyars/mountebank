@@ -42,6 +42,10 @@ function create (port, allowInjection) {
     app.get('/imposters/:id', validateImposterExists, imposterController.get);
     app.del('/imposters/:id', imposterController.del);
 
+    // Brochure-ware sections
+    app.get('/faqs', function (request, response) { response.render('faqs'); });
+    app.get('/docs', function (request, response) { response.render('docs'); });
+
     return {
         close: function () {
             console.log('Adios - see you soon?');

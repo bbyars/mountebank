@@ -102,3 +102,16 @@ p.cite {
 p.cite:before {
     content: "-\00a0\00a0\00a0\00a0"
 }
+
+dl {
+    line-height: 1.5;
+}
+
+dt {
+    font-style: italic;
+}
+
+dd:after {
+    content: '\A\A';
+    white-space: pre;
+}
