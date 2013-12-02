@@ -10,7 +10,7 @@ do
     egrep '\s$' "$FILE" && SUCCESS=1 && echo "$FILE has trailing whitespace" >&2
 
     # Look for tabs instead of spaces
-    egrep '\t' "$FILE" && SUCCESS=1 && echo "$FILE has tab characters; please use spaces instead" >&2
+    grep $'\t' "$FILE" && SUCCESS=1 && echo "$FILE has tab characters; please use spaces instead" >&2
 
     # Look for a trailing newline
     LAST_CHAR=`tail -c 1 $FILE`
