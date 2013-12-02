@@ -58,12 +58,8 @@ remains pleasing to gaze upon.  He knows this is silly, and does not wish to dis
 of his obsession.
 
 mountebank has two hooks baked into the build script to help enforce surface integrity.  First, he calls
-bin/normalizeWhitespace, which destructively removes trailing whitespace.  He's considered extending it to
-strip out tabs and ensure that there is one and only one newline at the end of each file.  However, he's also
-concerned that having a destructive script like that called during every build is a bit dangerous, and would
-happily entertain other suggestions.
-
-Additionally, mountebank has taken Douglas Crockford's suggestion of using a space between the `function` keyword
+bin/wsCheck, which fails the build on inconsistent whitespace patterns.  Additionally, mountebank has taken
+Douglas Crockford's suggestion of using a space between the `function` keyword
 and its argument list for function declarations, and no space between them for function calls.  bin/jscheck
 validates that convention, and will fail the build if it is not obeyed.
 
