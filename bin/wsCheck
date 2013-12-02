@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+
+set -e
+
+SUCCESS=0
+
+for FILE in `find . -type f -not \( -path "*/node_modules/*" -o -path "*/.git/*" -o -path "*/.DS_Store" -o -path "*/.idea/*" -o -path "*/images/*" \)`
+do
+    # Look for trailing whitespace
+    egrep '\s$' "$FILE" && SUCCESS=1 && echo "$FILE has trailing whitespace" >&2
+
+    # Look for tabs instead of spaces
+    egrep '\t' "$FILE" && SUCCESS=1 && echo "$FILE has tab characters; please use spaces instead" >&2
+
+    # Look for a trailing newline
+    LAST_CHAR=`tail -c 1 $FILE`
+    [ "$LAST_CHAR" != "" ] && SUCCESS=1 && echo "$FILE has no trailing newline" >&2
+
+    # Look for only one trailing newline
+    LAST_CHARS=`tail -c 2 $FILE`
+    [ "$LAST_CHARS" = "" ] && SUCCESS=1 && echo "$FILE has more than one trailing newline" >&2
+done
+
+exit $SUCCESS

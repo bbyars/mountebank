@@ -1,6 +1,7 @@
 'use strict';
 
 var express = require('express'),
+    path = require('path'),
     middleware = require('./util/middleware'),
     homeController = require('./controllers/homeController'),
     ImpostersController = require('./controllers/impostersController'),
@@ -25,7 +26,13 @@ function create (port, allowInjection) {
     app.use(middleware.useAbsoluteUrls(port));
     app.use(express.logger({immediate: true, format: '[mb  /' + port + '] :method :url'}));
     app.use(express.json());
+    app.use(express.static(path.join(__dirname, 'public')));
     app.use(express.errorHandler());
+
+    app.disable('x-powered-by');
+    app.set('views', path.join(__dirname, 'views'));
+    app.set('view engine', 'ejs');
+
     app.listen(port);
     console.log('mountebank accepting orders at http://localhost:' + port);
 

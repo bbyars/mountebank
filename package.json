@@ -16,7 +16,9 @@
     "mb": "./bin/mb"
   },
   "scripts": {
-    "blanket": { "pattern": "/mountebank/src/" },
+    "blanket": {
+      "pattern": "/mountebank/src/"
+    },
     "start": "./bin/mb",
     "restart": "./bin/mb restart",
     "stop": "./bin/mb stop",
@@ -32,7 +34,8 @@
   ],
   "dependencies": {
     "express": "~3.4.4",
-    "q": "~0.9.7"
+    "q": "~0.9.7",
+    "ejs": "~0.8.5"
   },
   "devDependencies": {
     "grunt": "~0.4.1",

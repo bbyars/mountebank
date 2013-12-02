@@ -1,0 +1,104 @@
+@font-face {
+    font-family: 'Berkshire Swash';
+    font-style: normal;
+    font-weight: 400;
+    src: local('Berkshire Swash'), local('BerkshireSwash-Regular'), url(http://themes.googleusercontent.com/static/fonts/berkshireswash/v1/4RZJjVRPjYnC2939hKCAin6EbtqG7Ha48C3_z7erIWs.woff) format('woff');
+}
+
+body {
+    margin: 1em 20%;
+    color: #1f0909;
+    font-family: Helvetica, sans-serif;
+    background-color: #f3f2ee;
+}
+
+header {
+    position: relative;
+    height: 125px;
+}
+
+header img {
+    float: left;
+    height: 125px;
+}
+
+header p {
+    position: absolute;
+    bottom: 60px;
+    left: 150px;
+    float: left;
+    font-family: 'Berkshire Swash', Helvetica, sans-serif;
+    color: #2b2b2b;
+}
+
+header nav {
+    position: absolute;
+    bottom: 0;
+    left: 150px;
+    float: left;
+}
+
+nav ul {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+}
+
+nav li {
+    float: left;
+}
+
+nav a:link, a:visited {
+    display: block;
+    width: 120px;
+    font-weight: bold;
+    text-align: center;
+    padding: 4px;
+    text-decoration: none;
+}
+
+hr {
+    clear: both;
+}
+
+h1, h2, h3 {
+    font-family: 'Berkshire Swash', Helvetica, sans-serif;
+    color: #2b2b2b;
+    text-shadow: 1px 1px 0px #ededed, 2px 2px 0px rgba(0,0,0,0.15);
+}
+
+.fine-text {
+    font-size: 80%;
+    text-decoration: none;
+}
+
+table.comparison td:first-child {
+    text-align: left;
+}
+
+table.comparison td {
+    text-align: center;
+}
+
+blockquote {
+    background: url(/images/quote.png) no-repeat top left;
+    margin: 0;
+    padding: 0 0 0 30px;
+}
+
+blockquote p {
+    line-height: 1.5;
+    margin: 0 0 15px 0;
+    font-style: italic;
+    color: #666;
+}
+
+p.cite {
+    font-style: normal;
+    color: #222;
+}
+
+p.cite:before {
+    content: "-\00a0\00a0\00a0\00a0"
+}

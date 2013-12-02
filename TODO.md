@@ -1,10 +1,10 @@
 Stories
 =======
 
-1. Switch to coarse-grained resources:
-  - POST /imposters allows passing stubs in bulk (good for file loading)
-  - PATCH? /imposters/:id allows passing requests and stubs (to reset with only one call)
-  - remove /imposters/:id/requests and /imposters/:id/stubs
+1. HTML website
+1. analytics
+1. favicon
+1. heroku
 1. HTTPS support
 2. better logging
 3. Allow base mock expectation of SMTP
