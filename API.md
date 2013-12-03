@@ -19,29 +19,7 @@ and URL templates are here provided.
 
 ### Home
 
-Unpretentious and welcoming, mirroring mountebank's simple good nature.  This endpoint
-exists for those who aspire to the
-[priesthood](http://martinfowler.com/articles/richardsonMaturityModel.html), though they
-may be disappointed to find such a lowly language as `application/json` and the lack
-of URLs for relationships.  mountebank has no intention of forcing anybody to use
-this endpoint.
 
-    GET / HTTP/1.1
-    Host: localhost:2525
-    Accept: application/json
-
-
-    HTTP/1.1 200 OK
-    Content-Type: application/json
-
-    {
-        "links": [
-            {
-                "href": "http://localhost:2525/imposters",
-                "rel": "imposters"
-            }
-        ]
-    }
 
 ### Imposters
 

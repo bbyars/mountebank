@@ -2,11 +2,15 @@ Stories
 =======
 
 1. HTML website
+ - disable caching?
+ - setup mailing list on google
+ - command line documentation under docs
 1. analytics
-1. favicon
+1. favicon (mb)
 1. heroku
 1. HTTPS support
 2. better logging
+ - don't log HTML requests?
 3. Allow base mock expectation of SMTP
 4. Allow advanced header expectation of SMTP
 5. Allow body expectations of SMTP

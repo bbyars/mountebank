@@ -2,4 +2,119 @@
 
       <h1>Documentation</h1>
 
+      <p>mountebank happily accepts your orders and delegates to his team of imposters.
+      While you are free to parlay with mountebank through his RESTful API, his goal is
+      to make you as comfortable as possible.  As you read this, his team of open source
+      engineers are busy at work translating his API into your native language, and soon
+      you will be able to converse with the imposters using a library that has adopted
+      the idioms of mocking frameworks in your language.</p>
+
+      <p>The API is Esperanto, designed to create an easy-to-learn, neutral language that
+      transcends national borders and fosters peace and harmony.  mountebank loves your
+      native language, but if you really want to understand mountebank, the API is
+      described for your viewing pleasure.</p>
+
+      <h2>Introduction</h2>
+
+      <p>mountebank, being a man of the people, prefers the simple words of the vernacular over
+      the silvery speech of the priesthood.  As if to prove the point, he speaks in a RESTful
+      <code>application/json</code> rather than <code>application\vnd.mountebank+json</code>.
+      While he does provide hypermedia, it is more as a convenience to you, with no professorial
+      dictate that you follow the script provided.  To show how committed he is to that principle,
+      all resources are described below.</p>
+
+      <p>mountebank uses a basic set of HTTP status codes.  He knows that a 200 or 201 will
+      make you happiest, but unfortunately he cannot always guarantee that you will receive
+      one of those error codes.  In the cases where the input you provide is malformed in some
+      fashion, he will return a 400, and in situations where you ask for a port that mountebank
+      is unable to reserve, he will return you a 403.  Every effort has gone into providing response
+      bodies to help you diagnose the problems.  Each error response returned will have a
+      <code>code</code> and <code>message</code> at a minimum.  If extra information is available,
+      mountebank will happily pass it to you.</p>
+
+      <p>mountebank has made every effort to spare you from 5xx HTTP codes.  If you are
+      unfortunate enough to receive one, first you should know that mountebank apologizes
+      most profusely.  Please <a href='https://github.com/bbyars/mountebank/issues'>report</a>
+      the issue, preferably with log details, and mountebank will help make it right for you.</p>
+
+      <h2>Resources</h2>
+
+      <h3>Home</h3>
+
+      <ul>
+        <li>URL template: /</li>
+        <li>HTTP verbs: GET</li>
+      </ul>
+
+      <p>Unpretentious and welcoming, mirroring mountebank's simple good nature.  This endpoint
+      exists for those who aspire to the RESTful
+      <a href='http://martinfowler.com/articles/richardsonMaturityModel.html'>priesthood</a>,
+      though they may be disappointed to find such a lowly language as <code>application/json</code>
+      and the lack of URLs for relationships.  mountebank has no intention of forcing anybody to use
+      this endpoint.
+
+      <pre>
+        GET / HTTP/1.1
+        Host: localhost:2525
+        Accept: application/json
+
+
+        HTTP/1.1 200 OK
+        Content-Type: application/json
+
+        {
+          "_links": {
+            "imposters": {
+              "href": "http://localhost:2525/imposters"
+            }
+          }
+        }
+      </pre>
+
+      <h3>Imposters</h3>
+
+      <ul>
+        <li>URL template: /imposters</li>
+        <li>HTTP verbs: GET, POST</li>
+      </ul>
+
+      <p>Though he's not proud to admit it, mountebank employs a legion of imposters to
+      fulfill your orders.  Because your needs are varied and sundry, his imposters
+      are all different, and all are identified by a port number and associated with
+      a protocol.  mountebank expects that you will be responsible for providing the
+      port, as a convenience, of course, so that he doesn't grab a port that you
+      expect to use in the near future for another important need.  And the protocol
+      is all-important, as it describes which imposter to choose.  Of course,
+      mountebank knows all protocols, but some he doesn't quite have ready just yet.
+      Fortunately for you, his hordes of open source developers are working on it.</p>
+
+      <p>Perhaps you might start by creating an imposter:</p>
+
+      <pre>
+        POST /imposters HTTP/1.1
+        Host: localhost:2525
+        Accept: application/json
+        Content-Type: application/json
+
+        {
+          "port": 2526,
+          "protocol": "HTTP"
+        }
+
+
+        HTTP/1.1 201 Created
+        Location: http://localhost:2525/imposters/2526
+        Content-Type: application/json
+
+        {
+          "protocol": "http",
+          "port": 2526,
+          "_links": {
+            "_self": {
+              "href": "http://localhost:2525/imposters/2526"
+            }
+          }
+        }
+      </pre>
+
 <% include _footer %>
