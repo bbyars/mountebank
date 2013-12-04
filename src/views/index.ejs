@@ -2,107 +2,35 @@
 
       <h1>Welcome, friend</h1>
 
-      <p>mountebank provides multi-protocol, multi-language test doubles over the wire.
-      Learning mountebank couldn't be easier.  Start off simply by using this website.
-      The key domain concept is an <dfn>imposter</dfn>, which represents a test double.
-      The only thing you need to do is give an imposter a port and pick a protocol,
-      and mountebank will provide you access to all requests to that imposter.  If you
-      want stubbing as well, mountebank provides for you a rich set of stubbing
-      primitives.</p>
+      <p>mountebank is the first tool to provide multi-protocol, multi-language test
+      doubles over the wire.  Learning mountebank couldn't be easier.</p>
 
-      <p>Once you're satisfied that mountebank is for you, simply <code>npm install -g mb</code>.
-      mountebank has been tested with node.js 0.8 and 0.10.  Then, a simple <code>mb</code> will
-      get you going.</p>
+      <h2>Getting Started</h2>
 
-      <p>mountebank is still a work in progress.  Not all protocols are implemented yet, and
-      native language bindings are still being worked on.  Fear not, friend, for mountebank has
-      a team of open source developers, and they are legion.</p>
+      <p>mountebank requires at least version 0.8 of <a href='http://nodejs.org/'>node.js</a>
+      to run.  Install mountebank with npm: <code>npm install -g mountebank</code>.  Then, a
+      simple <code>mb</code> command will start this website on port 2525 on your local computer.
+      <code>mb help</code> will show the command line options, which are also described in
+      the <a href='/docs'>docs</a>.</p>
 
-      <p>mountebank has a FOREVER guarantee.  If, after using our product, you find yourself
-      dissatisfied, you can bring it back before FOREVER for a full refund.
-      <a href='#' class='fine-text' title='if (false) { return lotsOfMoney(); }'>Certain
-      conditions apply.</a></p>
+      <p>Probably the easiest way to get familiar with what mountebank can do is to use this
+      site (or the one you just installed locally).  The <a href='/imposters'>imposters</a>
+      page is where all the interesting logic happens.  The key domain concept is an
+      <dfn>imposter</dfn>, which represents a test double.  The only thing you need to create
+      an imposter is a port and a protocol, and mountebank will provide you access to all requests
+      to that imposter.  For instance, if you create an imposter on port 3000 as an HTTP server,
+      then all HTTP interactions on port 3000 will be recorded.  The expectation is that you have
+      configured your application under test to change it's web service dependency to
+      http://localhost:3000 so you can test your application independently of service dependencies.</p>
 
-      <h2>Why mountebank?</h2>
+      <p>mountebank provides a rich set of stubbing options, and the
+      <a href='/imposters'>imposters</a> UI will help you define stubs for the imposter as well.
+      It will also output the API call needed to create the same imposter without the UI, which
+      is how automated tests can take advantage of mountebank's functionality.  To make it even
+      easier, mountebank will provide native language bindings for common languages, that abstracts
+      the API away from your tests.</p>
 
-      <p>There are many other tools, some of them quite good, that will provide HTTP stubbing.
-      Some of them don't actually go over the wire, instead relying on faking on some low-level
-      network libraries.  As such, they are forever tied to the language in which they are
-      implemented in.  Others rely on loading the stubbing setup through a configuration file.
-      This means your tests are forced to depend on significant setup external to the test code
-      itself, and that you cannot make mock-style verifications on certain HTTP calls.</p>
-
-      <p>None of them support multiple protocols.  None of them support multiple native language
-      bindings.</p>
-
-      <p>Let's have a look at the feature set of mountebank compared to its competitors:</p>
-
-      <table class='comparison'>
-        <tr>
-          <th>&nbsp;</th>
-          <th>competitors</th>
-          <th>mountebank</th>
-        </tr>
-        <tr>
-          <td>HTTP stubbing</td>
-          <td>x</td>
-          <td>x</td>
-        </tr>
-        <tr>
-          <td>Load stubs from config file</td>
-          <td>x</td>
-          <td>x</td>
-        </tr>
-        <tr>
-          <td>Record / playback through proxies</td>
-          <td>some</td>
-          <td>x</td>
-        </tr>
-        <tr>
-          <td>Advanced predicates</td>
-          <td>some</td>
-          <td>x</td>
-        </tr>
-        <tr>
-          <td>HTTP mock verification</td>
-          <td>fewer still</td>
-          <td>x</td>
-        </tr>
-        <tr>
-          <td>In-test stub setup</td>
-          <td>very few</td>
-          <td>x</td>
-        </tr>
-        <tr>
-          <td>UI for manual testing</td>
-          <td></td>
-          <td>x</td>
-        </tr>
-        <tr>
-          <td>Bindings in multiple languages</td>
-          <td></td>
-          <td>coming soon</td>
-        </tr>
-        <tr>
-          <td>HTTPS</td>
-          <td></td>
-          <td>coming soon</td>
-        </tr>
-        <tr>
-          <td>SMTP</td>
-          <td></td>
-          <td>coming soon</td>
-        </tr>
-        <tr>
-          <td>All other protocols</td>
-          <td></td>
-          <td>coming soon</td>
-        </tr>
-      </table>
-
-      <p>mountebank will cure what ails you, guaranteed.</p>
-
-      <h3>Testimonials</h3>
+      <h2>Testimonials</h2>
 
       <blockquote>
         <p>If mountebank had been available just a few months earlier, we wouldn't be in this situation.</p>

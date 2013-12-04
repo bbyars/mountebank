@@ -68,17 +68,16 @@ h1, h2, h3 {
     text-shadow: 1px 1px 0px #ededed, 2px 2px 0px rgba(0,0,0,0.15);
 }
 
-.fine-text {
-    font-size: 80%;
-    text-decoration: none;
-}
-
-table.comparison td:first-child {
+th {
     text-align: left;
 }
 
-table.comparison td {
-    text-align: center;
+td {
+    vertical-align: top;
+}
+
+td:first-child {
+    width: 10em;
 }
 
 blockquote {

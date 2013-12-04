@@ -2,6 +2,44 @@
 
       <h1>Documentation</h1>
 
+      <h2>Command Line Options</h2>
+
+      <p><code>npm install -g mountebank</code> will install a command line application called
+      <code>mb</code>.  Running <code>mb</code> by itself will start up the API (and this site)
+      on port 2525 (if man is still alive).  Effectively, it's the same as running
+      <code>mb start --port 2525 --pidfile mb.pid</code>.  Here are the options described:</p>
+
+      <table>
+        <tr>
+          <th>Option</th>
+          <th>Description</th>
+        <tr>
+        <tr>
+          <td><code><em>command</em></code></td>
+          <td>One of <code>start</code>, <code>stop</code>, <code>restart</code>.  Defaults
+          to <code>start</code>.</td>
+        </tr>
+        <tr>
+          <td><code>--port 2525</code></td>
+          <td>The port to run the main mountebank server on.  Defaults to 2525.</td>
+        </tr>
+        <tr>
+          <td><code>--pidfile mb.pid</code></td>
+          <td>mountebank stores the process id (PID) in a file, which is used by the stop and
+          restart commands.  Defaults to mb.pid.  You would only specify this if you run two
+          instances of <code>mb</code> from the same working directory, which is a niche
+          requirement, but the mountebank build needs that capability.</td>
+        </tr>
+        <tr>
+          <td><code>--allowInjection</code></td>
+          <td>mountebank supports JavaScript injection for both predicates and stub responses,
+          but they are disabled by default.  Including this parameter will enable injections,
+          which are <code>eval</code>'d in.</td>
+        </tr>
+      </table>
+
+      <h2>API</h2>
+
       <p>mountebank happily accepts your orders and delegates to his team of imposters.
       While you are free to parlay with mountebank through his RESTful API, his goal is
       to make you as comfortable as possible.  As you read this, his team of open source
@@ -14,7 +52,7 @@
       native language, but if you really want to understand mountebank, the API is
       described for your viewing pleasure.</p>
 
-      <h2>Introduction</h2>
+      <h3>Introduction</h3>
 
       <p>mountebank, being a man of the people, prefers the simple words of the vernacular over
       the silvery speech of the priesthood.  As if to prove the point, he speaks in a RESTful
@@ -37,9 +75,9 @@
       most profusely.  Please <a href='https://github.com/bbyars/mountebank/issues'>report</a>
       the issue, preferably with log details, and mountebank will help make it right for you.</p>
 
-      <h2>Resources</h2>
+      <h3>Resources</h3>
 
-      <h3>Home</h3>
+      <h4>Home</h4>
 
       <ul>
         <li>URL template: /</li>
