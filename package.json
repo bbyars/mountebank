@@ -42,7 +42,8 @@
     "grunt-mocha-test": "~0.7.0",
     "blanket": "~1.1.5",
     "coveralls": "~2.3.0",
-    "mocha-lcov-reporter": "0.0.1"
+    "mocha-lcov-reporter": "0.0.1",
+    "w3cjs": "~0.1.21"
   },
   "engines": {
     "node": ">=0.8"
