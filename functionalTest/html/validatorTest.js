@@ -19,8 +19,8 @@ describe('html validation', function () {
                 validator.validate({
                     file: 'validation-test.html',
                     callback: function (response) {
-                        assert.strictEqual(0, response.messages.length, JSON.stringify(response.messages));
                         fs.unlinkSync('validation-test.html');
+                        assert.strictEqual(0, response.messages.length, JSON.stringify(response.messages));
                         done();
                     }
                 });
