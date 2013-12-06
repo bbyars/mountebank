@@ -27,13 +27,13 @@ is second to none.  Let's look at a simple request:</p>
   }
 </pre>
 
-<p>An imposter can be created with an array of <defn>stubs</defn>, each of which contains
-an array of at least one <defn>response</defn> and, optionally, <defn>predicates</defn>.
+<p>An imposter can be created with an array of <em>stubs</em>, each of which contains
+an array of at least one <em>response</em> and, optionally, <em>predicates</em>.
 After the initial <code>POST</code>, when you retrieve an imposter back from mountebank
 (via a <code>GET /imposters</code>, <code>GET /imposters/2526</code>, or
 <code>DELETE /imposters/2526</code>), the response body will show a record of all stub
 interactions to help you troubleshoot the stub predicates and responses in a
-<defn>matches</defn> field:</p>
+<em>matches</em> field:</p>
 
 <pre>
 HTTP/1.1 200 OK
@@ -223,8 +223,8 @@ object, which can use all four fields to make a decision.  The function returns 
   </tr>
   <tr>
     <td><code>statusCode</code></td>
-    <td>int, corresponding to a valid <a href='http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html'
-      status code</td>
+    <td>int, corresponding to a valid <a href='http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html'>
+      status code</a></td>
     <td>400</td>
     <td>200</td>
   </tr>
@@ -287,7 +287,7 @@ response types.  The following response types are supported:</p>
       the last stub you add to an imposter.  You would set up specific stubs
       for the endpoints you are interested in faking out, and rely on a
       <code>proxy</code> response to delegate all other endpoints to the real
-      dependency.  This takes advantage of the imposter's <em>first match<em>
+      dependency.  This takes advantage of the imposter's <em>first match</em>
       policy on stubs, which is based on the order you set the stubs up in
       the stubs array.</td>
     <td><code>{ "proxy": "http://real.api.com/" }</code></td>
