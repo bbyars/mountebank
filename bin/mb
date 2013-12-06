@@ -9,7 +9,7 @@ var mountebank = require('../src/mountebank'),
 function usage () {
     console.log("Usage: mb <command> [--port <port>] [--pidfile <pidfile>] [--allowInjection]\n");
     console.log("where <command> is one of:");
-    console.log("\tstart, stop, restart");
+    console.log("\tstart, stop, restart, help");
 }
 
 function error (message) {
@@ -68,6 +68,9 @@ try {
         break;
     case 'restart':
         server.restart();
+        break;
+    case 'help':
+        usage();
         break;
     default:
         error("Invalid command '" + commandLine.command + "'.");
