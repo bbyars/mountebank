@@ -6,7 +6,7 @@
 
       <p><code>npm install -g mountebank</code> will install a command line application called
       <code>mb</code>.  Running <code>mb</code> by itself will start up the API (and this site)
-      on port 2525 (if man is still alive).  Effectively, it's the same as running
+      on port 2525.  Effectively, it's the same as running
       <code>mb start --port 2525 --pidfile mb.pid</code>.  Here are the options described:</p>
 
       <table>
@@ -62,17 +62,18 @@
       all resources are described below.</p>
 
       <p>mountebank uses a basic set of HTTP status codes.  He knows that a 200 or 201 will
-      make you happiest, but unfortunately he cannot always guarantee that you will receive
-      one of those error codes.  In the cases where the input you provide is malformed in some
-      fashion, he will return a 400, and in situations where you ask for a port that mountebank
+      make you happiest, but unfortunately he cannot guarantee that you will always receive
+      one of those codes.  In the cases where the input you provide is malformed in some
+      fashion, he will offer a humble apology for not being clear about what he needs, and
+      respond with a 400.  In situations where you ask for a port that mountebank
       is unable to reserve, he will return you a 403.  Every effort has gone into providing response
       bodies to help you diagnose the problems.  Each error response returned will have a
       <code>code</code> and <code>message</code> at a minimum.  If extra information is available,
       mountebank will happily pass it to you.</p>
 
       <p>mountebank has made every effort to spare you from 5xx HTTP codes.  If you are
-      unfortunate enough to receive one, first you should know that mountebank apologizes
-      most profusely.  Please <a href='https://github.com/bbyars/mountebank/issues'>report</a>
+      unfortunate enough to receive one, first you should know that mountebank is most embarrassed.
+      Please <a href='https://github.com/bbyars/mountebank/issues'>report</a>
       the issue, preferably with log details, and mountebank will help make it right for you.</p>
 
       <h3>Resources</h3>
@@ -80,8 +81,8 @@
       <h4>Home</h4>
 
       <ul>
-        <li>URL template: /</li>
-        <li>HTTP verbs: GET</li>
+        <li>URL template: <code>/</code></li>
+        <li>HTTP verbs: <code>GET</code></li>
       </ul>
 
       <p>Unpretentious and welcoming, mirroring mountebank's simple good nature.  This endpoint
@@ -109,14 +110,14 @@
         }
       </pre>
 
-      <h3>Imposters</h3>
+      <h4>Imposters</h4>
 
       <ul>
-        <li>URL template: /imposters</li>
-        <li>HTTP verbs: GET, POST</li>
+        <li>URL template: <code>/imposters</code></li>
+        <li>HTTP verbs: <code>GET, POST</code></li>
       </ul>
 
-      <p>Though he's not proud to admit it, mountebank employs a legion of imposters to
+      <p>Though he's not proud to admit it, mountebank employs an army of imposters to
       fulfill your orders.  Because your needs are varied and sundry, his imposters
       are all different, and all are identified by a port number and associated with
       a protocol.  mountebank expects that you will be responsible for providing the
@@ -126,7 +127,8 @@
       mountebank knows all protocols, but some he doesn't quite have ready just yet.
       Fortunately for you, his hordes of open source developers are working on it.</p>
 
-      <p>Perhaps you might start by creating an imposter:</p>
+      <p>The value you get out of mountebank always starts by creating an imposter.  If
+      you don't need stubbing, then the port and protocol are all you need.</p>
 
       <pre>
         POST /imposters HTTP/1.1
@@ -154,5 +156,101 @@
           }
         }
       </pre>
+
+      <p>You would also create any stubs in the post, although the stub content varies by protocol.
+      At the moment, the only protocols supported are HTTP and HTTPS, which share the same
+      <a href='/docs/protocols/http'>stub behavior</a>.</p>
+
+      <p>Then you exercise your app under test, which depends on a web service configured to point
+      to http://localhost:2526.  To retrieve a list of all imposters, simply issue a <code>GET</code>:</p>
+
+      <pre>
+        GET /imposters HTTP/1.1
+        Host: localhost:2525
+        Accept: application/json
+
+
+        HTTP/1.1 200 OK
+        Content-Type: application/json
+
+        {
+          "imposters": [
+            {
+              "protocol": "http",
+              "port": 2526,
+              "requests": [
+                {
+                  "path": "/test-request",
+                  "method": "GET",
+                  "headers": {
+                    "host": "localhost:2526"
+                  },
+                  "body": ""
+                }
+              ],
+              "stubs": [],
+              "_links": {
+                "self": {
+                  "href": "/imposters/2526"
+                }
+              }
+            }
+          ]
+        }
+      </pre>
+
+      <p>This is nothing more than an array of the content for a single imposter.</p>
+
+      <h4>Imposter</h4>
+
+      <ul>
+        <li>URL template: <code>/imposters/{port}</code></li>
+        <li>HTTP verbs: <code>GET, DELETE</code></li>
+      </ul>
+
+      <p>This resource is likely where you will do mock verifications that certain calls were
+      made.  Both a <code>GET</code> and <code>DELETE</code> return the same body, but a
+      <code>DELETE</code> frees up the port and removes the resource.  If you are concerned
+      about optimizing the number of REST calls made during a test run, avoid the <code>GET</code>
+      and get all the requests during the <code>DELETE</code> call:</p>
+
+      <pre>
+        GET /imposters HTTP/1.1
+        Host: localhost:2525
+        Accept: application/json
+
+
+        HTTP/1.1 200 OK
+        Content-Type: application/json
+
+        {
+          "protocol": "http",
+          "port": 2526,
+          "requests": [
+            {
+              "path": "/test-request",
+              "method": "GET",
+              "headers": {
+                "host": "localhost:2526"
+              },
+              "body": ""
+            }
+          ],
+          "stubs": [],
+          "_links": {
+            "self": {
+              "href": "/imposters/2526"
+            }
+          }
+        }
+      </pre>
+
+      <h3>Protocols</h3>
+
+      <p>View more detailed information about each imposter by their protocol:</p>
+
+      <ul>
+        <li><a href='/docs/protocols/http'>http / https</a></li>
+      </ul>
 
 <% include _footer %>

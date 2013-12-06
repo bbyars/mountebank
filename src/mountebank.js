@@ -43,9 +43,10 @@ function create (port, allowInjection) {
     app.del('/imposters/:id', imposterController.del);
 
     // Brochure-ware sections
-    ['faqs', 'docs', 'license', 'contributing', 'support'].forEach(function (endpoint) {
+    ['faqs', 'docs', 'license', 'contributing', 'support', 'docs/protocols/http'].forEach(function (endpoint) {
         app.get('/' + endpoint, function (request, response) { response.render(endpoint); });
     });
+
 
     return {
         close: function () {

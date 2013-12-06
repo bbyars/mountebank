@@ -92,7 +92,6 @@ describe('http imposter', function () {
                     }
                 },
                 stub = {
-                    path: '/test',
                     responses: [{ is: { statusCode: 400 }}],
                     predicates: {
                         path: { is: '/test' },
@@ -153,11 +152,11 @@ describe('http imposter', function () {
             var stub = {
                     predicates: {
                         path: { inject: "function (path) { return path === '/test'; }" },
-                        method: { inject: "function (method) { return method === 'POST'; }"},
+                        method: { inject: "function (method) { return method === 'POST'; }" },
                                                                 // note the lower-case key!!!
-                        headers: { inject: "function (headers) { return headers['x-test'] === 'test header'; }"},
-                        body: { inject: "function (body) { return body === 'BODY'; }"},
-                        request: { inject: "function (request) { return request.path === '/test'; }"}
+                        headers: { inject: "function (headers) { return headers['x-test'] === 'test header'; }" },
+                        body: { inject: "function (body) { return body === 'BODY'; }" },
+                        request: { inject: "function (request) { return request.path === '/test'; }" }
                     },
                     responses: [{ is: { body: 'MATCHED' } }]
                 };
