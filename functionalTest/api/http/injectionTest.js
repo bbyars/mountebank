@@ -131,7 +131,11 @@ describe('http imposter', function () {
                     "                response.body += chunk;\n" +
                     "            });\n" +
                     "            response.on('end', function () {\n" +
-                    "                callback(response);\n" +
+                    "                callback({\n" +
+                    "                    statusCode: response.statusCode,\n" +
+                    "                    headers: response.headers,\n" +
+                    "                    body: response.body\n" +
+                    "                });\n" +
                     "            });\n" +
                     "        });\n" +
                     "    httpRequest.end();\n" +

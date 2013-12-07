@@ -189,5 +189,32 @@ describe('http imposter', function () {
                 return api.del('/imposters/' + port);
             });
         });
+
+        promiseIt('should save proxyOnce state between stub creations', function () {
+            var proxyPort = port + 1,
+                proxyStub = { responses: [{ is: { body: 'PROXIED' } }] },
+                stub = { responses: [{ proxyOnce: 'http://localhost:' + proxyPort }] };
+
+            return api.post('/imposters', { protocol: 'http', port: proxyPort, stubs: [proxyStub] }).then(function () {
+                return api.post('/imposters', { protocol: 'http', port: port, stubs: [stub] });
+            }).then(function () {
+                return api.get('/', port);
+            }).then(function () {
+                return api.del('/imposters/' + proxyPort);
+            }).then(function () {
+                return api.del('/imposters/' + port);
+            }).then(function (response) {
+                // replay the imposter body without change, and with the proxy shut down
+                return api.post('/imposters', response.body);
+            }).then(function (response) {
+                assert.strictEqual(201, response.statusCode, JSON.stringify(response.body));
+
+                return api.get('/', port);
+            }).then(function (response) {
+                assert.strictEqual('PROXIED', response.body);
+            }).finally(function () {
+                return api.del('/imposters/' + port);
+            });
+        });
     });
 });

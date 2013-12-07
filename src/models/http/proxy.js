@@ -28,7 +28,11 @@ function create () {
                     response.body += chunk;
                 });
                 response.on('end', function () {
-                    deferred.resolve(response);
+                    deferred.resolve({
+                        statusCode: response.statusCode,
+                        headers: response.headers,
+                        body: response.body
+                    });
                 });
             });
 
