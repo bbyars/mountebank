@@ -5,7 +5,7 @@ var http = require('http'),
     Domain = require('domain'),
     StubRepository = require('./stubRepository'),
     Proxy = require('./proxy'),
-    Validator = require('./httpValidator');
+    HttpValidator = require('./httpValidator');
 
 function simplify (request) {
     var deferred = Q.defer();
@@ -74,8 +74,18 @@ var create = function (port) {
     return deferred.promise;
 };
 
+function initialize (allowInjection) {
+    return {
+        name: 'http',
+        create: create,
+        Validator: {
+            create: function () {
+                return HttpValidator.create(allowInjection);
+            }
+        }
+    };
+}
+
 module.exports = {
-    name: 'http',
-    create: create,
-    Validator: Validator
+    initialize: initialize
 };

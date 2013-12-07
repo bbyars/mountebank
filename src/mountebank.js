@@ -6,20 +6,15 @@ var express = require('express'),
     homeController = require('./controllers/homeController'),
     ImpostersController = require('./controllers/impostersController'),
     ImposterController = require('./controllers/imposterController'),
-    Imposter = require('./models/imposter'),
-    protocols = [
-        require('./models/http/server')
-    ];
+    Imposter = require('./models/imposter');
 
 function create (port, allowInjection) {
     var app = express(),
         imposters = {},
-        impostersController = ImpostersController.create({
-            protocols: protocols,
-            imposters: imposters,
-            Imposter: Imposter,
-            allowInjection: allowInjection
-        }),
+        protocols = {
+            'http': require('./models/http/server').initialize(allowInjection)
+        },
+        impostersController = ImpostersController.create(protocols, imposters, Imposter),
         imposterController = ImposterController.create(imposters),
         validateImposterExists = middleware.createImposterValidator(imposters);
 

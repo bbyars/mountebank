@@ -16,7 +16,7 @@ describe('ImpostersController', function () {
 
     describe('#get', function () {
         it('should send an empty array if no imposters', function () {
-            var controller = Controller.create({ imposters: {} });
+            var controller = Controller.create({}, {});
 
             controller.get({}, response);
 
@@ -26,7 +26,7 @@ describe('ImpostersController', function () {
         it('should send JSON for all imposters', function () {
             var firstImposter = { toJSON: mock().returns('firstJSON') },
                 secondImposter = { toJSON: mock().returns('secondJSON') },
-                controller = Controller.create({ imposters: { 1: firstImposter, 2: secondImposter } });
+                controller = Controller.create({}, { 1: firstImposter, 2: secondImposter });
 
             controller.get({}, response);
 
@@ -48,11 +48,7 @@ describe('ImpostersController', function () {
             };
             imposters = {};
             Protocol = { name: 'http' };
-            controller = Controller.create({
-                protocols: [Protocol],
-                imposters: imposters,
-                Imposter: Imposter
-            });
+            controller = Controller.create({ 'http': Protocol }, imposters, Imposter);
         });
 
         promiseIt('should return a 201 with the Location header set', function () {

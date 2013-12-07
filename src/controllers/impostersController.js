@@ -3,19 +3,12 @@
 var Validator = require('../util/validator'),
     Q = require('q');
 
-function create (spec) {
-
-    function protocolFor (protocolName) {
-        var matches = spec.protocols.filter(function (protocol) {
-            return protocol.name === protocolName;
-        });
-        return (matches.length === 0) ? undefined : matches[0];
-    }
+function create (protocols, imposters, Imposter) {
 
     function createValidator (request) {
         var protocol = request.protocol,
             port = request.port,
-            Protocol = protocolFor(protocol),
+            Protocol = protocols[protocol],
             protocolSupport = {},
             validator;
 
@@ -30,7 +23,7 @@ function create (spec) {
         });
 
         if (validator.isValid() && Protocol.Validator) {
-            return Protocol.Validator.create(spec.allowInjection);
+            return Protocol.Validator.create();
         }
         else {
             return validator;
@@ -38,8 +31,8 @@ function create (spec) {
     }
 
     function get (request, response) {
-        var result = Object.keys(spec.imposters).reduce(function (accumulator, id) {
-            return accumulator.concat(spec.imposters[id].toJSON());
+        var result = Object.keys(imposters).reduce(function (accumulator, id) {
+            return accumulator.concat(imposters[id].toJSON());
         }, []);
         response.send({ imposters: result });
     }
@@ -51,8 +44,8 @@ function create (spec) {
 
         return validator.validate(request.body).then(function (validation) {
             if (validation.isValid) {
-                return spec.Imposter.create(protocolFor(protocol), port, request.body).then(function (imposter) {
-                    spec.imposters[port] = imposter;
+                return Imposter.create(protocols[protocol], port, request.body).then(function (imposter) {
+                    imposters[port] = imposter;
                     response.setHeader('Location', imposter.url);
                     response.statusCode = 201;
                     response.send(imposter.toJSON());
