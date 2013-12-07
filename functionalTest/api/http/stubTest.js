@@ -295,23 +295,23 @@ describe('http imposter', function () {
             });
         });
 
-//        promiseIt('should allow asynchronous injection', function () {
-//            var fn = "function () {\n" +
-//                     "    process.nextTick(function () {\n" +
-//                     "        return { body: 'INJECTED' };\n" +
-//                     "    });\n" +
-//                    "}",
-//                stub = { responses: [{ inject: fn }] };
-//
-//            return api.post('/imposters', { protocol: 'http', port: port, stubs: [stub] }).then(function (response) {
-//                assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body));
-//
-//                return api.get('/', port);
-//            }).then(function (response) {
-//                assert.strictEqual(response.body, 'INJECTED');
-//            }).finally(function () {
-//                return api.del('/imposters/' + port);
-//            });
-//        });
+        promiseIt('should allow asynchronous injection', function () {
+            var fn = "function (request, state, callback) {\n" +
+                     "    process.nextTick(function () {\n" +
+                     "        callback({ body: 'INJECTED' });\n" +
+                     "    });\n" +
+                    "}",
+                stub = { responses: [{ inject: fn }] };
+
+            return api.post('/imposters', { protocol: 'http', port: port, stubs: [stub] }).then(function (response) {
+                assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body));
+
+                return api.get('/', port);
+            }).then(function (response) {
+                assert.strictEqual(response.body, 'INJECTED');
+            }).finally(function () {
+                return api.del('/imposters/' + port);
+            });
+        });
     });
 });

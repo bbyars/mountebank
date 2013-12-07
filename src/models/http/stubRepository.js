@@ -90,7 +90,9 @@ function create (proxy) {
             });
         }
         else if (stubResolver.inject) {
-            return Q(createResponse(inject(request, stubResolver.inject, injectState)));
+            return inject(request, stubResolver.inject, injectState).then(function (response) {
+                return Q(createResponse(response));
+            });
         }
         else {
             return Q.reject({
@@ -103,9 +105,18 @@ function create (proxy) {
 
     function inject (request, fn, state) {
         /* jshint evil: true, unused: false */
-        var scope = JSON.parse(JSON.stringify(request)),
-            injected = '(' + fn + ')(scope, state);';
-        return eval(injected);
+        var deferred = Q.defer(),
+            scope = JSON.parse(JSON.stringify(request)),
+            callback = function (response) { deferred.resolve(response);},
+            injected = 'try {\n' +
+                       '    var response = (' + fn + ')(scope, state, callback);\n' +
+                       '    if (response) { callback(response); }\n' +
+                       '}\n' +
+                       'catch (error) {\n' +
+                       '    deferred.reject(error);\n' +
+                       '}';
+        eval(injected);
+        return deferred.promise;
     }
 
     return {

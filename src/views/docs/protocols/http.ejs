@@ -312,7 +312,7 @@ response types.  The following response types are supported:</p>
       empty JavaScript object for saving state between <code>inject</code> responses
       on the same imposter (even if they come from different stubs).  <em><code>inject</code>
       responses only work if <code>mb</code> is run with <code>--allowInjection</code></em>.
-      At the moment, <code>inject</code> only allows synchronous JavaScript.</td>
+      See below for asynchronous injection.</td>
     <td><code>{ "inject": "function (request, state) {" +
                           "    if (!state.calls) { state.calls = 0; }\n" +
                           "    state.calls += 1;\n" +
@@ -320,5 +320,20 @@ response types.  The following response types are supported:</p>
                           "}" }</code></td>
   </tr>
 </table>
+
+<p>Asynchronous injection is supported through a third <code>callback</code> parameter.
+If your function returns a value, the imposter will consider it as synchronous.  If
+it does not return a value, it must call the <code>callback</code> parameter with the
+response object, e.g.:</p>
+
+<pre><code>
+function (request, state, callback) {
+  process.nextTick(function () {
+    callback({ body: 'INJECTED' });
+  });
+}
+</code></pre>
+
+<p>All injections are run in a node.js environment, with full access to all node libraries.</p>
 
 <% include ../../_footer %>
