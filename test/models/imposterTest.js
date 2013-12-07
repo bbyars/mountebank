@@ -40,13 +40,13 @@ describe('imposter', function () {
         });
 
         promiseIt('should create protocol server on provided port', function () {
-            return Imposter.create(Protocol, 3535, true).then(function () {
+            return Imposter.create(Protocol, 3535).then(function () {
                 assert(Protocol.create.wasCalledWith(3535));
             });
         });
 
         promiseIt('should return list of stubs', function () {
-            return Imposter.create(Protocol, 3535, true).then(function (imposter) {
+            return Imposter.create(Protocol, 3535).then(function (imposter) {
                 imposter.addStub('ONE');
                 imposter.addStub('TWO');
 
@@ -57,7 +57,7 @@ describe('imposter', function () {
         promiseIt('should add stubs during creation', function () {
             var request = { stubs: ['ONE', 'TWO'] };
 
-            return Imposter.create(Protocol, 3535, true, request).then(function (imposter) {
+            return Imposter.create(Protocol, 3535, request).then(function (imposter) {
                 assert.deepEqual(imposter.toJSON().stubs, ['ONE', 'TWO']);
             });
         });

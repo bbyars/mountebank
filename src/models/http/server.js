@@ -38,9 +38,9 @@ var create = function (port) {
 
         var domain = Domain.create(),
             errorHandler = function (error) {
-                console.log(logPrefix + 'ERROR: ' + error);
+                console.log(logPrefix + 'ERROR: ' + JSON.stringify(error));
                 response.writeHead(500, { 'content-type': 'application/json' });
-                response.end(error, 'utf8');
+                response.end(JSON.stringify({ errors: [error] }), 'utf8');
             };
 
         domain.on('error', errorHandler);

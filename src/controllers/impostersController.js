@@ -30,7 +30,7 @@ function create (spec) {
         });
 
         if (validator.isValid() && Protocol.Validator) {
-            return Protocol.Validator.create(request, spec.allowInjection);
+            return Protocol.Validator.create(spec.allowInjection);
         }
         else {
             return validator;
@@ -49,20 +49,24 @@ function create (spec) {
             port = request.body.port,
             validator = createValidator(request.body);
 
-        if (!validator.isValid()) {
-            response.statusCode = 400;
-            response.send({errors: validator.errors()});
-            return Q(true);
-        }
+        return validator.validate(request.body).then(function (validation) {
+            if (validation.isValid) {
+                return spec.Imposter.create(protocolFor(protocol), port, request.body).then(function (imposter) {
+                    spec.imposters[port] = imposter;
+                    response.setHeader('Location', imposter.url);
+                    response.statusCode = 201;
+                    response.send(imposter.toJSON());
+                }, function (error) {
+                    response.statusCode = (error.code === 'insufficient access') ? 403 : 400;
+                    response.send({ errors: [error] });
+                });
+            }
+            else {
+                response.statusCode = 400;
+                response.send({ errors: validation.errors });
+                return Q(true);
+            }
 
-        return spec.Imposter.create(protocolFor(protocol), port, spec.allowInjection, request.body).then(function (imposter) {
-            spec.imposters[port] = imposter;
-            response.setHeader('Location', imposter.url);
-            response.statusCode = 201;
-            response.send(imposter.toJSON());
-        }, function (error) {
-            response.statusCode = (error.code === 'insufficient access') ? 403 : 400;
-            response.send({errors: [error]});
         });
     }
 

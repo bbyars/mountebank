@@ -3,7 +3,7 @@
 var Q = require('q'),
     Domain = require('domain');
 
-function create (Protocol, port, allowInjection, request) {
+function create (Protocol, port, request) {
     var stubs = [],
         url = '/imposters/' + port;
 
@@ -60,12 +60,7 @@ function create (Protocol, port, allowInjection, request) {
                 url: url,
                 toJSON: toJSON,
                 addStub: addStub,
-                stop: server.close,
-                Validator: {
-                    create: function (request) {
-                        return Protocol.Validator.create(request, allowInjection);
-                    }
-                }
+                stop: server.close
             });
         });
     });

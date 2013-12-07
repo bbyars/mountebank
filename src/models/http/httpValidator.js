@@ -1,37 +1,33 @@
 'use strict';
 
-var Validator = require('../../util/validator'),
-    StubRepository = require('./stubRepository'),
-    utils = require('util');
+var StubRepository = require('./stubRepository'),
+    utils = require('util'),
+    Q = require('q');
 
-function create (request, allowInjection) {
+function create (allowInjection) {
 
-    var strictlySynchronousProxy = {
-            to: function () {
-                return {
-                    then: function (callback) {
-                        callback({});
-                        return this;
-                    }
-                };
-            }
+    var dryRunProxy = {
+            to: function () { return Q({}); }
         };
 
     function dryRun (stub) {
         var testRequest = { path: '/', method: 'GET', headers: {}, body: '' },
-            stubRepository = StubRepository.create(strictlySynchronousProxy),
+            stubRepository = StubRepository.create(dryRunProxy),
             clone = JSON.parse(JSON.stringify(stub)); // proxyOnce changes state
 
         stubRepository.addStub(clone);
-        stubRepository.resolve(testRequest);
+        return stubRepository.resolve(testRequest);
     }
 
     function addDryRunErrors (stub, errors) {
+        var deferred = Q.defer();
+
         try {
-            // Only dry run if no errors
-            if (errors.length === 0) {
-                dryRun(stub);
-            }
+            dryRun(stub).done(deferred.resolve, function (reason) {
+                reason.source = reason.source || JSON.stringify(stub);
+                errors.push(reason);
+                deferred.resolve();
+            });
         }
         catch (error) {
             // Avoid digit methods, which probably represent incorrectly using an array, e.g.
@@ -49,7 +45,10 @@ function create (request, allowInjection) {
                 data: error.message,
                 source: JSON.stringify(stub)
             });
+            deferred.resolve();
         }
+
+        return deferred.promise;
     }
 
     function hasInjection (stub) {
@@ -73,32 +72,49 @@ function create (request, allowInjection) {
     }
 
     function errorsFor (stub) {
-        var spec = {
-                requireNonEmptyArrays: { responses: stub.responses }
-            },
-            result = Validator.create(spec).errors();
+        var errors = [],
+            deferred = Q.defer();
 
-        addInjectionErrors(stub, result);
-        addDryRunErrors(stub, result);
+        if (!utils.isArray(stub.responses) || stub.responses.length === 0) {
+            errors.push({
+                code: 'bad data',
+                message: "'responses' must be a non-empty array",
+                source: JSON.stringify(stub)
+            });
+        }
+        addInjectionErrors(stub, errors);
 
-        return result;
+        if (errors.length > 0) {
+            // no sense in dry-running if there are already problems;
+            // it will just add noise to the errors
+            deferred.resolve(errors);
+        }
+        else {
+            addDryRunErrors(stub, errors).done(function () {
+                deferred.resolve(errors);
+            });
+        }
+
+        return deferred.promise;
     }
 
-    function errors () {
-        var stubs = request.stubs || [];
+    function validate (request) {
+        var stubs = request.stubs || [],
+            validationPromises = stubs.map(function (stub) { return errorsFor(stub); }),
+            deferred = Q.defer();
 
-        return stubs.reduce(function (accumulator, stub) {
-            return accumulator.concat(errorsFor(stub));
-        }, []);
-    }
+        Q.all(validationPromises).done(function (errorsForAllStubs) {
+            var allErrors = errorsForAllStubs.reduce(function (stubErrors, accumulator) {
+                return accumulator.concat(stubErrors);
+            }, []);
+            deferred.resolve({ isValid: allErrors.length === 0, errors: allErrors });
+        });
 
-    function isValid () {
-        return errors().length === 0;
+        return deferred.promise;
     }
 
     return {
-        isValid: isValid,
-        errors: errors
+        validate: validate
     };
 }
 

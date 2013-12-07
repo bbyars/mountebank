@@ -60,7 +60,7 @@ function create (proxy) {
 
         stub.responses.push(stubResolver);
 
-        getResolvedResponsePromise(stubResolver, request).then(function (response) {
+        getResolvedResponsePromise(stubResolver, request).done(function (response) {
             var match = {
                     timestamp: new Date().toJSON(),
                     request: request,
@@ -69,6 +69,8 @@ function create (proxy) {
             stub.matches = stub.matches || [];
             stub.matches.push(match);
             deferred.resolve(response);
+        }, function (reason) {
+            deferred.reject(reason);
         });
 
         return deferred.promise;
@@ -91,7 +93,11 @@ function create (proxy) {
             return Q(createResponse(inject(request, stubResolver.inject, injectState)));
         }
         else {
-            throw { message: 'unrecognized stub resolver' };
+            return Q.reject({
+                code: 'bad data',
+                message: 'unrecognized stub resolver',
+                source: JSON.stringify(stubResolver)
+            });
         }
     }
 

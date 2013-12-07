@@ -1,6 +1,7 @@
 'use strict';
 
-var utils = require('util');
+var utils = require('util'),
+    Q = require('q');
 
 function createDefaultValidator () {
     var errors = [];
@@ -65,9 +66,18 @@ function create (options) {
         return errors().length === 0;
     }
 
+    // Matches the Protocol validator spec
+    function validate () {
+        return Q({
+            isValid: isValid(),
+            errors: errors()
+        });
+    }
+
     return {
         isValid: isValid,
-        errors: errors
+        errors: errors,
+        validate: validate
     };
 }
 

@@ -1,40 +1,65 @@
 'use strict';
 
 var assert = require('assert'),
-    Validator = require('../../../src/models/http/httpValidator');
+    Validator = require('../../../src/models/http/httpValidator'),
+    promiseIt = require('../../testHelpers').promiseIt;
 
 describe('httpValidator', function () {
 
-    describe('#isValid', function () {
-        it('should be true for an empty request', function () {
+    describe('#validate', function () {
+        promiseIt('should be valid for an empty request', function () {
             var request = {},
-                validator = Validator.create(request);
+                validator = Validator.create();
 
-            assert.ok(validator.isValid());
+            return validator.validate(request).then(function (result) {
+                assert.deepEqual(result, {
+                    isValid: true,
+                    errors: []
+                });
+            });
         });
 
-        it('should be false for a missing responses field', function () {
+        promiseIt('should not be valid for a missing responses field', function () {
             var request =  { stubs: [{}] },
-                validator = Validator.create(request);
+                validator = Validator.create();
 
-            assert.ok(!validator.isValid());
+            return validator.validate(request).then(function (result) {
+                assert.deepEqual(result, {
+                    isValid: false,
+                    errors: [{
+                        code: 'bad data',
+                        message: "'responses' must be a non-empty array",
+                        source: '{}'
+                    }]
+                });
+            });
         });
 
-        it('should be true for an empty stubs list', function () {
+        promiseIt('should be valid for an empty stubs list', function () {
             var request = { stubs: [] },
-                validator = Validator.create(request);
+                validator = Validator.create();
 
-            assert.ok(validator.isValid());
+            return validator.validate(request).then(function (result) {
+                assert.deepEqual(result, {
+                    isValid: true,
+                    errors: []
+                });
+            });
         });
 
-        it('should be true for valid stub', function () {
+        promiseIt('should be valid for valid stub', function () {
             var request =  { stubs: [{ responses: [{ is: { statusCode: 400 }  }] }] },
-                validator = Validator.create(request);
+                validator = Validator.create();
 
-            assert.ok(validator.isValid());
+            return validator.validate(request).then(function (result) {
+                assert.deepEqual(result, {
+                    isValid: true,
+                    errors: []
+                });
+            });
         });
 
-        it('should be true for a valid predicate', function () {
+        promiseIt('should be valid for a valid predicate', function () {
             var request = {
                     stubs: [{
                         responses: [{}],
@@ -46,111 +71,144 @@ describe('httpValidator', function () {
                         }
                     }]
                 },
-                validator = Validator.create(request);
+                validator = Validator.create();
 
-            assert.ok(validator.isValid());
+            return validator.validate(request).then(function (result) {
+                assert.deepEqual(result, {
+                    isValid: true,
+                    errors: []
+                });
+            });
         });
 
-        it('should be true for a well formed predicate inject if injections are allowed', function () {
+        promiseIt('should be valid for a well formed predicate inject if injections are allowed', function () {
             var request = {
                     stubs: [{
                         predicates: { request: { inject: "function () { return true; }" } },
                         responses: [{ is: { body: 'Matched' }}]
                     }]
                 },
-                validator = Validator.create(request, true);
+                validator = Validator.create(true);
 
-            assert.ok(validator.isValid());
+            return validator.validate(request).then(function (result) {
+                assert.deepEqual(result, {
+                    isValid: true,
+                    errors: []
+                });
+            });
         });
 
-        it('should be true for a well formed response inject if injections are allowed', function () {
+        promiseIt('should be true for a well formed response inject if injections are allowed', function () {
             var request = {
                     stubs: [{
                         responses: [{ inject: "function () { return {}; }" }]
                     }]
                 },
-                validator = Validator.create(request, true);
+                validator = Validator.create(true);
 
-            assert.ok(validator.isValid());
+            return validator.validate(request).then(function (result) {
+                assert.deepEqual(result, {
+                    isValid: true,
+                    errors: []
+                });
+            });
         });
 
-        it('should be false for response injection if injections are disallowed', function () {
+        promiseIt('should not be valid for response injection if injections are disallowed', function () {
             var request = {
                     stubs: [{
                         responses: [{ inject: "function () { return {}; }" }]
                     }]
                 },
-                validator = Validator.create(request, false);
+                validator = Validator.create(false);
 
-            assert.ok(!validator.isValid());
+            return validator.validate(request).then(function (result) {
+                assert.deepEqual(result, {
+                    isValid: false,
+                    errors: [{
+                        code: 'invalid operation',
+                        message: 'inject is not allowed unless mb is run with the --allowInjection flag',
+                        source: JSON.stringify(request.stubs[0])
+                    }]
+                });
+            });
         });
 
-        it('should be false for predicate injections if allowInjection is false', function () {
+        promiseIt('should not be valid for predicate injections if allowInjection is false', function () {
             var request = {
                     stubs: [{
                         predicates: { request: { inject: "function () { return true; }" } },
                         responses: [{ is: { body: 'Matched' }}]
                     }]
                 },
-                validator = Validator.create(request, false);
+                validator = Validator.create(false);
 
-            assert.ok(!validator.isValid());
+            return validator.validate(request).then(function (result) {
+                assert.deepEqual(result, {
+                    isValid: false,
+                    errors: [{
+                        code: 'invalid operation',
+                        message: 'inject is not allowed unless mb is run with the --allowInjection flag',
+                        source: JSON.stringify(request.stubs[0])
+                    }]
+                });
+            });
         });
 
-        it('should be true with a valid proxy response', function () {
+        promiseIt('should be valid with a valid proxy response', function () {
             var request = {
                     stubs: [{
                         responses: [{ proxy: 'http://google.com' }]
                     }]
                 },
-                validator = Validator.create(request);
+                validator = Validator.create();
 
-            assert.ok(validator.isValid());
+            return validator.validate(request).then(function (result) {
+                assert.deepEqual(result, {
+                    isValid: true,
+                    errors: []
+                });
+            });
         });
 
-        it('should be false with a valid proxyOnce response', function () {
+        promiseIt('should be valid with a valid proxyOnce response', function () {
             var request = {
                     stubs: [{
                         responses: [{ proxyOnce: 'http://google.com' }]
                     }]
                 },
-                validator = Validator.create(request);
+                validator = Validator.create();
 
-            assert.ok(validator.isValid());
+            return validator.validate(request).then(function (result) {
+                assert.deepEqual(result, {
+                    isValid: true,
+                    errors: []
+                });
+            });
         });
 
-        it('should be false if any stub is invalid', function () {
+        promiseIt('should not be valid if any stub is invalid', function () {
             var request = {
                     stubs: [
                         { responses: [{ is: { statusCode: 400 }  }] },
                         {}
                     ]
                 },
-                validator = Validator.create(request);
+                validator = Validator.create();
 
-            assert.ok(!validator.isValid());
-        });
-    });
-
-    describe('#errors', function () {
-        it('should be empty for valid request', function () {
-            var request =  {},
-                validator = Validator.create(request);
-
-            assert.deepEqual(validator.errors(), []);
-        });
-
-        it('should add an error for a missing responses field', function () {
-            var request =  { stubs: [{}] },
-                validator = Validator.create(request);
-
-            assert.deepEqual(validator.errors(), [{
-                code: 'bad data',
-                message: "'responses' must be a non-empty array"
-            }]);
+            return validator.validate(request).then(function (result) {
+                assert.deepEqual(result, {
+                    isValid: false,
+                    errors: [{
+                        code: 'bad data',
+                        message: "'responses' must be a non-empty array",
+                        source: '{}'
+                    }]
+                });
+            });
         });
 
-        it('should detect an invalid predicate', function () {
+        promiseIt('should detect an invalid predicate', function () {
             var request = {
                     stubs: [{
                         responses: [{}],
@@ -159,17 +217,22 @@ describe('httpValidator', function () {
                         }
                     }]
                 },
-                validator = Validator.create(request);
+                validator = Validator.create();
 
-            assert.deepEqual(validator.errors(), [{
-                code: 'bad data',
-                message: "no predicate 'invalidPredicate'",
-                data: "Object #<Object> has no method 'invalidPredicate'",
-                source: JSON.stringify(request.stubs[0])
-            }]);
+            return validator.validate(request).then(function (result) {
+                assert.deepEqual(result, {
+                    isValid: false,
+                    errors: [{
+                        code: 'bad data',
+                        message: "no predicate 'invalidPredicate'",
+                        data: "Object #<Object> has no method 'invalidPredicate'",
+                        source: JSON.stringify(request.stubs[0])
+                    }]
+                });
+            });
         });
 
-        it('should detect an invalid predicate mixed with valid predicates', function () {
+        promiseIt('should detect an invalid predicate mixed with valid predicates', function () {
             var request = {
                     stubs: [{
                         responses: [{}],
@@ -179,17 +242,22 @@ describe('httpValidator', function () {
                         }
                     }]
                 },
-                validator = Validator.create(request);
+                validator = Validator.create();
 
-            assert.deepEqual(validator.errors(), [{
-                code: 'bad data',
-                message: "no predicate 'invalidPredicate'",
-                data: "Object #<Object> has no method 'invalidPredicate'",
-                source: JSON.stringify(request.stubs[0])
-            }]);
+            return validator.validate(request).then(function (result) {
+                assert.deepEqual(result, {
+                    isValid: false,
+                    errors: [{
+                        code: 'bad data',
+                        message: "no predicate 'invalidPredicate'",
+                        data: "Object #<Object> has no method 'invalidPredicate'",
+                        source: JSON.stringify(request.stubs[0])
+                    }]
+                });
+            });
         });
 
-        it('should detect a malformed predicate', function () {
+        promiseIt('should detect a malformed predicate', function () {
             var request = {
                     stubs: [{
                         responses: [{}],
@@ -198,74 +266,55 @@ describe('httpValidator', function () {
                         }
                     }]
                 },
-                validator = Validator.create(request);
+                validator = Validator.create();
 
-            // The deepEqual test periodically fails, as node seems to alternate between
-            // two different errors that it throws in this condition
-            assert.deepEqual(validator.errors()[0].message, 'malformed stub request');
+            return validator.validate(request).then(function (result) {
+                // The deepEqual test periodically fails, as node seems to alternate between
+                // two different errors that it throws in this condition
+                assert.deepEqual(result.errors[0].message, 'malformed stub request');
+            });
         });
 
-        it('should reject inject with no wrapper function', function () {
+        promiseIt('should reject inject with no wrapper function', function () {
             var request = {
                     stubs: [{
                         predicates: { request: { inject: "return true;" } },
                         responses: [{ is: { body: 'Matched' }}]
                     }]
                 },
-                validator = Validator.create(request, true);
+                validator = Validator.create(true);
 
-            assert.deepEqual(validator.errors(), [{
-                code: 'bad data',
-                message: 'malformed stub request',
-                data: 'Unexpected token return',
-                source: JSON.stringify(request.stubs[0])
-            }]);
+            return validator.validate(request).then(function (result) {
+                assert.deepEqual(result, {
+                    isValid: false,
+                    errors: [{
+                        code: 'bad data',
+                        message: 'malformed stub request',
+                        data: 'Unexpected token return',
+                        source: JSON.stringify(request.stubs[0])
+                    }]
+                });
+            });
         });
 
-        it('should reject unrecognized response resolver', function () {
+        promiseIt('should reject unrecognized response resolver', function () {
             var request = {
                     stubs: [{
                         responses: [{ invalid: 'INVALID' }]
                     }]
                 },
-                validator = Validator.create(request);
+                validator = Validator.create();
 
-            assert.deepEqual(validator.errors(), [{
-                code: 'bad data',
-                message: 'malformed stub request',
-                data: 'unrecognized stub resolver',
-                source: JSON.stringify(request.stubs[0])
-            }]);
-        });
-
-        it('should explain response injections if allowInjection is false', function () {
-            var request = {
-                    stubs: [{
-                        responses: [{ inject: 'function () { return {}; }' }]
+            return validator.validate(request).then(function (result) {
+                assert.deepEqual(result, {
+                    isValid: false,
+                    errors: [{
+                        code: 'bad data',
+                        message: 'unrecognized stub resolver',
+                        source: JSON.stringify(request.stubs[0].responses[0])
                     }]
-                },
-                validator = Validator.create(request, false);
-
-            assert.deepEqual(validator.errors(), [{
-                code: 'invalid operation',
-                message: 'inject is not allowed unless mb is run with the --allowInjection flag',
-                source: JSON.stringify(request.stubs[0])
-            }]);
-        });
-
-        it('should be describe errors for stub invalid stub', function () {
-            var request = {
-                    stubs: [
-                        { responses: [{ is: { statusCode: 400 }  }] },
-                        {}
-                    ]
-                },
-                validator = Validator.create(request);
-
-            assert.deepEqual(validator.errors(), [{
-                code: 'bad data',
-                message: "'responses' must be a non-empty array"
-            }]);
+                });
+            });
         });
     });
 });

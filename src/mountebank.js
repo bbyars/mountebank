@@ -34,7 +34,7 @@ function create (port, allowInjection) {
     app.set('view engine', 'ejs');
 
     app.listen(port);
-    console.log('mountebank accepting orders at http://localhost:' + port);
+    console.log('mountebank now taking orders - point your browser to http://localhost:' + port + ' for help');
 
     app.get('/', homeController.get);
     app.get('/imposters', impostersController.get);

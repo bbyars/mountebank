@@ -199,6 +199,23 @@ describe('http imposter', function () {
             });
         });
 
+        promiseIt('should allow proxy stubs to invalid domains', function () {
+            var stub = { responses: [{ proxy: 'http://invalid.domain' }] };
+
+            return api.post('/imposters', { protocol: 'http', port: port, stubs: [stub] }).then(function () {
+            }).then(function () {
+                return api.get('/', port);
+            }).then(function (response) {
+                assert.strictEqual(response.statusCode, 500);
+                assert.deepEqual(response.body, { errors: [{
+                    code: 'invalid proxy',
+                    message: 'Cannot resolve http://invalid.domain'
+                }]});
+            }).finally(function () {
+                return api.del('/imposters/' + port);
+            });
+        });
+
         promiseIt('should allow proxyOnce behavior', function () {
             var proxyPort = port + 1,
                 proxyStub = { responses: [{ is: { body: 'PROXIED' } }] },
