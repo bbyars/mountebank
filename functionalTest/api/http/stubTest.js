@@ -297,18 +297,36 @@ describe('http imposter', function () {
 
         promiseIt('should allow asynchronous injection', function () {
             var fn = "function (request, state, callback) {\n" +
-                     "    process.nextTick(function () {\n" +
-                     "        callback({ body: 'INJECTED' });\n" +
-                     "    });\n" +
+                     "    var http = require('http'),\n" +
+                     "        options = {\n" +
+                     "            method: request.method,\n" +
+                     "            hostname: 'www.google.com',\n" +
+                     "            port: 80,\n" +
+                     "            path: request.path,\n" +
+                     "            headers: request.headers\n" +
+                     "        },\n" +
+                     "        httpRequest = http.request(options, function (response) {\n" +
+                     "            response.body = '';\n" +
+                     "            response.setEncoding('utf8');\n" +
+                     "            response.on('data', function (chunk) {\n" +
+                     "                response.body += chunk;\n" +
+                     "            });\n" +
+                     "            response.on('end', function () {\n" +
+                     "                callback(response);\n" +
+                     "            });\n" +
+                     "        });\n" +
+                     "    httpRequest.end();\n" +
+                     "    // No return value!!!\n" +
                     "}",
                 stub = { responses: [{ inject: fn }] };
 
             return api.post('/imposters', { protocol: 'http', port: port, stubs: [stub] }).then(function (response) {
                 assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body));
 
-                return api.get('/', port);
+                return api.get('', port);
             }).then(function (response) {
-                assert.strictEqual(response.body, 'INJECTED');
+                assert.strictEqual(response.statusCode, 302);
+                assert.strictEqual(response.headers.location, 'http://www.google.com/');
             }).finally(function () {
                 return api.del('/imposters/' + port);
             });

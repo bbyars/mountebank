@@ -31,9 +31,6 @@ Stories
 
 Known Bugs
 ==========
-2. Does not support asynchronous injection code
-    - see commented out test in functionalTest/api/http/stubTest.js
-    - validation does not guarantee strictly synchronous execution with injection
 3. grunt does not kill mb if functional tests fail
 
 Cleanup Needed
