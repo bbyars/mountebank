@@ -74,8 +74,26 @@ function logger (format) {
     };
 }
 
+function globals (vars) {
+    return function (request, response, next) {
+        var originalRender = response.render;
+        response.render = function () {
+            var args = Array.prototype.slice.call(arguments),
+                variables = args[1] || {};
+
+            Object.keys(vars).forEach(function (name) {
+                variables[name] = vars[name];
+            });
+            args[1] = variables;
+            originalRender.apply(this, args);
+        };
+        next();
+    };
+}
+
 module.exports = {
     useAbsoluteUrls: useAbsoluteUrls,
     createImposterValidator: createImposterValidator,
-    logger: logger
+    logger: logger,
+    globals: globals
 };

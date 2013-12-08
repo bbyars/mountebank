@@ -1,1 +1,1 @@
-web: bin/mb --port $PORT --allowInjection
+web: bin/mb --port $PORT --heroku

@@ -1,19 +1,5 @@
 Stories
 =======
-
-2. better logging
-  - add logs to website
-  - don't log HTML requests?
-1. HTML website
- - imposter management
-   - create imposter
-   - list imposters
-   - show imposter details
- - karma testing?
-1. Add query parameters as predicate, remove from path
-1. analytics
-1. favicon (mb)
-1. heroku
 1. HTTPS support
 3. Allow base mock expectation of SMTP
 4. Allow advanced header expectation of SMTP
@@ -21,6 +7,7 @@ Stories
 6. Add brew package
 7. Add rpm package
 8 release!!!!
+1. Add query parameters as predicate, remove from path
 8. Add MSI & Windows support
 8. Create resolver to automatically create proxyOnce/is with predicates without
   setting the predicates up by hand
@@ -29,6 +16,10 @@ Stories
 1. Add attachment support
 1. Allow regex tokens from path/query in response
 1. or predicate
+20. Prettier log output on the website, with filtering, on website
+21. Prettier /imposters HTML page
+22. Ability to create imposter from UI (with karma testing?)
+23. Prettier /imposter/{port} HTML page
 
 Known Bugs
 ==========

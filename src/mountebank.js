@@ -26,6 +26,7 @@ function create (options) {
 
     app.use(middleware.useAbsoluteUrls(options.port));
     app.use(middleware.logger('[mb  /' + options.port + '] :method :url'));
+    app.use(middleware.globals({ heroku: options.heroku }));
     app.use(express.json());
     app.use(express.static(path.join(__dirname, 'public')));
     app.use(express.errorHandler());

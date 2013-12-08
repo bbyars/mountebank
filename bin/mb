@@ -56,7 +56,7 @@ var serverAt = function (options) {
 
 try {
     var defaultOptions = { port: 2525, pidfile: 'mb.pid', logfile: 'mb.log' },
-        commandLine = cli.parse(process.argv.slice(2), defaultOptions, ['allowInjection']),
+        commandLine = cli.parse(process.argv.slice(2), defaultOptions, ['allowInjection', 'heroku']),
         server = serverAt(commandLine.options);
 
     switch (commandLine.command) {
