@@ -6,22 +6,24 @@
 
       <p><code>npm install -g mountebank</code> will install a command line application called
       <code>mb</code>.  Running <code>mb</code> by itself will start up the API (and this site)
-      on port 2525.  Effectively, it's the same as running
-      <code>mb start --port 2525 --pidfile mb.pid</code>.  Here are the options described:</p>
+      on port 2525.  Here are the options for <code>mb</code>:</p>
 
       <table>
         <tr>
           <th>Option</th>
           <th>Description</th>
+          <th>Default</th>
         </tr>
         <tr>
           <td><code><em>command</em></code></td>
           <td>One of <code>start</code>, <code>stop</code>, <code>restart</code>.  Defaults
           to <code>start</code>.</td>
+          <td>start</td>
         </tr>
         <tr>
           <td><code>--port 2525</code></td>
           <td>The port to run the main mountebank server on.  Defaults to 2525.</td>
+          <td>2525</td>
         </tr>
         <tr>
           <td><code>--pidfile mb.pid</code></td>
@@ -29,12 +31,20 @@
           restart commands.  Defaults to mb.pid.  You would only specify this if you run two
           instances of <code>mb</code> from the same working directory, which is a niche
           requirement, but the mountebank build needs that capability.</td>
+          <td>mb.pid</td>
         </tr>
+          <tr>
+            <td><code>--logfile logs/mb.log</code></td>
+            <td>The file for mountebank to store the logs in.  You can view the contents
+            on the <a href='/logs'>logs</a> page.</td>
+            <td>logs/mb.log</td>
+          </tr>
         <tr>
           <td><code>--allowInjection</code></td>
           <td>mountebank supports JavaScript injection for both predicates and stub responses,
           but they are disabled by default.  Including this parameter will enable injections,
           which are <code>eval</code>'d in.</td>
+          <td>false</td>
         </tr>
       </table>
 
