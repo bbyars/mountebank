@@ -19,7 +19,7 @@ function create (port, allowInjection) {
         validateImposterExists = middleware.createImposterValidator(imposters);
 
     app.use(middleware.useAbsoluteUrls(port));
-    app.use(express.logger({immediate: true, format: '[mb  /' + port + '] :method :url'}));
+    app.use(middleware.logger('[mb  /' + port + '] :method :url'));
     app.use(express.json());
     app.use(express.static(path.join(__dirname, 'public')));
     app.use(express.errorHandler());

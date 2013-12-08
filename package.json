@@ -33,7 +33,8 @@
   "dependencies": {
     "express": "~3.4.4",
     "q": "~0.9.7",
-    "ejs": "~0.8.5"
+    "ejs": "~0.8.5",
+    "winston": "~0.7.2"
   },
   "devDependencies": {
     "grunt": "~0.4.1",

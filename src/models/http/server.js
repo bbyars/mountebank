@@ -5,7 +5,8 @@ var http = require('http'),
     Domain = require('domain'),
     StubRepository = require('./stubRepository'),
     Proxy = require('./proxy'),
-    HttpValidator = require('./httpValidator');
+    HttpValidator = require('./httpValidator'),
+    logger = require('winston');
 
 function simplify (request) {
     var deferred = Q.defer();
@@ -34,11 +35,11 @@ var create = function (port) {
         stubs = StubRepository.create(Proxy.create());
 
     var server = http.createServer(function (request, response) {
-        console.log(logPrefix + request.method + ' ' + request.url);
+        logger.info('%s %s %s', logPrefix, request.method, request.url);
 
         var domain = Domain.create(),
             errorHandler = function (error) {
-                console.log(logPrefix + 'ERROR: ' + JSON.stringify(error));
+                logger.error('%s %s', logPrefix, JSON.stringify(error));
                 response.writeHead(500, { 'content-type': 'application/json' });
                 response.end(JSON.stringify({ errors: [error] }), 'utf8');
             };
@@ -57,11 +58,11 @@ var create = function (port) {
     });
 
     server.on('close', function () {
-        console.log(logPrefix + 'Ciao for now');
+        logger.info(logPrefix + 'Ciao for now');
     });
 
     server.listen(port, function () {
-        console.log(logPrefix + 'Open for business...');
+        logger.info(logPrefix + 'Open for business...');
         deferred.resolve({
             requests: requests,
             addStub: stubs.addStub,
