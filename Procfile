@@ -1,1 +1,1 @@
-web: bin/mb --port 80 --allowInjection
+web: bin/mb --port $PORT --allowInjection
