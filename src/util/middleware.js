@@ -57,7 +57,7 @@ function createImposterValidator (imposters) {
 
 function logger (format) {
     function shouldLog (request) {
-        var isStaticAsset = (['.js', '.css', '.png'].some(function (fileType) {
+        var isStaticAsset = (['.js', '.css', '.png', '.ico'].some(function (fileType) {
                 return request.url.indexOf(fileType) >= 0;
             })),
             isHtmlRequest = (request.headers.accept || '').indexOf('html') >= 0;
