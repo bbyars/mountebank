@@ -1,0 +1,28 @@
+<% include _header %>
+
+<h1><%= protocol %> Imposter on port <%= port %></h1>
+
+<h2>Requests</h2>
+
+<% requests.forEach(function (request) { -%>
+  <pre><code>
+    <%= request.method %> <%=request.path %> HTTP/1.1
+<% Object.keys(request.headers).forEach(function (name) { -%>
+    <%= name %>: <%= request.headers[name] %>
+<% }); -%>
+<% if (request.body) { -%>
+
+    <%= request.body %>
+<% } -%>
+  </code></pre>
+<% }); -%>
+
+<h2>Stubs</h2>
+
+<% stubs.forEach(function (stub) { -%>
+  <pre><code>
+    <%= JSON.stringify(stub, null, 2) %>
+  </code></pre>
+<% }); -%>
+
+<% include _footer %>

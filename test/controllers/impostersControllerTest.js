@@ -24,8 +24,8 @@ describe('ImpostersController', function () {
         });
 
         it('should send JSON for all imposters', function () {
-            var firstImposter = { toJSON: mock().returns('firstJSON') },
-                secondImposter = { toJSON: mock().returns('secondJSON') },
+            var firstImposter = { toListJSON: mock().returns('firstJSON') },
+                secondImposter = { toListJSON: mock().returns('secondJSON') },
                 controller = Controller.create({}, { 1: firstImposter, 2: secondImposter });
 
             controller.get({}, response);

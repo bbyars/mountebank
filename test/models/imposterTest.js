@@ -27,6 +27,16 @@ describe('imposter', function () {
             });
         });
 
+        promiseIt('should return trimmed down JSON for lists', function () {
+            return Imposter.create(Protocol, 3535).then(function (imposter) {
+                assert.deepEqual(imposter.toListJSON(), {
+                    protocol: 'http',
+                    port: 3535,
+                    _links: { self: { href: '/imposters/3535' } }
+                });
+            });
+        });
+
         promiseIt('should return default JSON representation', function () {
             return Imposter.create(Protocol, 3535).then(function (imposter) {
                 assert.deepEqual(imposter.toJSON(), {

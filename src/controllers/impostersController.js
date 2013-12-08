@@ -32,9 +32,18 @@ function create (protocols, imposters, Imposter) {
 
     function get (request, response) {
         var result = Object.keys(imposters).reduce(function (accumulator, id) {
-            return accumulator.concat(imposters[id].toJSON());
+            return accumulator.concat(imposters[id].toListJSON());
         }, []);
-        response.send({ imposters: result });
+
+        response.format({
+            json: function () {
+                response.send({ imposters: result });
+            },
+
+            html: function () {
+                response.render('imposters', { imposters: result });
+            }
+        });
     }
 
     function post (request, response) {

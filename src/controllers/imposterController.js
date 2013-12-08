@@ -3,9 +3,17 @@
 function create (imposters) {
 
     function get (request, response) {
-        var imposter = imposters[request.params.id];
+        var imposter = imposters[request.params.id].toJSON();
 
-        response.send(imposter.toJSON());
+        response.format({
+            json: function () {
+                response.send(imposter);
+            },
+
+            html: function () {
+                response.render('imposter', imposter);
+            }
+        });
     }
 
     function del (request, response) {

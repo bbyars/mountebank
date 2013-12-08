@@ -46,19 +46,25 @@ function create (Protocol, port, request) {
                 });
             }
 
-            function toJSON () {
+            function toListJSON () {
                 return {
                     protocol: Protocol.name,
                     port: port,
-                    requests: server.requests,
-                    stubs: stubs,
                     _links: { self: { href: url } }
                 };
+            }
+
+            function toJSON () {
+                var result = toListJSON();
+                result.requests = server.requests;
+                result.stubs = stubs;
+                return result;
             }
 
             deferred.resolve({
                 url: url,
                 toJSON: toJSON,
+                toListJSON: toListJSON,
                 addStub: addStub,
                 stop: server.close
             });
