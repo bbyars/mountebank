@@ -53,9 +53,9 @@ describe('http imposter', function () {
             var stub = { responses: [{ is: { body: '1' }}, { is: { body: '2' }}]};
 
             return api.post('/imposters', { protocol: 'http', port: port, stubs: [stub] }).then(function () {
-                return api.get('/first', port);
+                return api.get('/first?q=1', port);
             }).then(function () {
-                return api.get('/second', port);
+                return api.get('/second?q=2', port);
             }).then(function () {
                 return api.get('/imposters/' + port);
             }).then(function (response) {
@@ -69,12 +69,12 @@ describe('http imposter', function () {
                     matches: [
                         {
                             timestamp: 'NOW',
-                            request: { path: '/first', method: 'GET', headers: requestHeaders, body: '' },
+                            request: { path: '/first', query: { q: '1' }, method: 'GET', headers: requestHeaders, body: '' },
                             response: { statusCode: 200, headers: { connection: 'close' }, body: '1' }
                         },
                         {
                             timestamp: 'NOW',
-                            request: { path: '/second', method: 'GET', headers: requestHeaders, body: '' },
+                            request: { path: '/second', query: { q: '2'}, method: 'GET', headers: requestHeaders, body: '' },
                             response: { statusCode: 200, headers: { connection: 'close' }, body: '2' }
                         }
                     ]

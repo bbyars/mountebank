@@ -75,6 +75,9 @@ Content-Type: application/json
         "path": {
           "is": "/test"
         },
+        "query": {
+          "exists": { "q": true }
+        },
         "method": {
           "is": "POST"
         },
@@ -88,7 +91,7 @@ Content-Type: application/json
         {
           "timestamp": "2013-12-06T02:21:43.162Z",
           "request": {
-            "path": "/test",
+            "path": "/test?q=value",
             "method": "POST",
             "headers": {
               "host": "localhost:2526",
@@ -120,7 +123,7 @@ Content-Type: application/json
 
 <p>Predicates define whether a stub matches a request or not.  In the absence of a predicate,
 the stub always matches.  When multiple stubs are created on an imposter, the first stub that
-matches is selected.  All predicates are based on the following four request fields:</p>
+matches is selected.  All predicates are based on the following request fields:</p>
 
 <table>
     <tr>
@@ -131,9 +134,15 @@ matches is selected.  All predicates are based on the following four request fie
     </tr>
     <tr>
         <td><code>path</code></td>
-        <td>The path and querystring of the request</td>
+        <td>The path of the request, without the querystring</td>
         <td>string</td>
-        <td>/resource?query=param</td>
+        <td>/resource</td>
+    </tr>
+    <tr>
+        <td><code>query</code></td>
+        <td>The querystring of the request</td>
+        <td>object</td>
+        <td>{ "q": "value" }</td>
     </tr>
     <tr>
         <td><code>method</code></td>
@@ -199,7 +208,7 @@ AND'd together.  The following predicate operators are allowed:</p>
 
 <p>Most of the predicate are self-explanatory.  All the string operations are case-insensitive (this
 includes the header keys).  The <code>matches</code> operator is a JavaScript regular expression.
-The <code>exists</code> operator is satisfied if the header key is present, when true, or when missing,
+The <code>exists</code> operator is satisfied if the header or query key is present, when true, or when missing,
 when false.  When <code>exists</code> is used on a string field, like <code>body</code>, and is true,
 it is satisfied when the body is non-empty.</p>
 

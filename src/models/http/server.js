@@ -6,7 +6,8 @@ var http = require('http'),
     StubRepository = require('./stubRepository'),
     Proxy = require('./proxy'),
     HttpValidator = require('./httpValidator'),
-    logger = require('winston');
+    logger = require('winston'),
+    url = require('url');
 
 function simplify (request) {
     var deferred = Q.defer();
@@ -18,9 +19,11 @@ function simplify (request) {
     });
 
     request.on('end', function () {
+        var parts = url.parse(request.url, true);
         deferred.resolve({
-            path: request.url,
             method: request.method,
+            path: parts.pathname,
+            query: parts.query,
             headers: request.headers,
             body: request.body
         });

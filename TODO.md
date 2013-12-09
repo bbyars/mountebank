@@ -16,11 +16,12 @@
 
 Stories
 =======
-0. add missing tests
-1. Auto-deploy to heroku
 1. Add query parameters as predicate, remove from path
 1. or predicate
+1. Rearrange order of predicate to make it consistent
+  - headers { 'X-One': { is: 'value } }
 1. HTTPS support
+1. Auto-deploy to heroku
 2. Create resolver to automatically create proxyOnce/is with predicates without
   setting the predicates up by hand
 3. Allow base mock expectation of SMTP

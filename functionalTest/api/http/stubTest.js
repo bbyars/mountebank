@@ -63,7 +63,7 @@ describe('http imposter', function () {
 
         promiseIt('should only return stubbed response if matches complex predicate', function () {
             var spec = {
-                    path: '/test',
+                    path: '/test?key=value',
                     port: port,
                     method: 'POST',
                     headers: {
@@ -76,6 +76,9 @@ describe('http imposter', function () {
                     responses: [{ is: { statusCode: 400 }}],
                     predicates: {
                         path: { is: '/test' },
+                        query: {
+                            is: { key: 'value' }
+                        },
                         method: { is: 'POST' },
                         headers: {
                             exists: { 'X-One': true, 'X-Two': true },
@@ -98,6 +101,11 @@ describe('http imposter', function () {
                 return api.responseFor(options, 'TEST');
             }).then(function (response) {
                 assert.strictEqual(response.statusCode, 200, 'should not have matched; wrong path');
+
+                var options = api.merge(spec, { path: '/test?key=different' });
+                return api.responseFor(options, 'TEST');
+            }).then(function (response) {
+                assert.strictEqual(response.statusCode, 200, 'should not have matched; wrong query');
 
                 var options = api.merge(spec, { method: 'PUT' });
                 return api.responseFor(options, 'TEST');

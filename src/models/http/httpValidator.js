@@ -11,7 +11,7 @@ function create (allowInjection) {
         };
 
     function dryRun (stub) {
-        var testRequest = { path: '/', method: 'GET', headers: {}, body: '' },
+        var testRequest = { path: '/', query: {}, method: 'GET', headers: {}, body: '' },
             stubRepository = StubRepository.create(dryRunProxy),
             clone = JSON.parse(JSON.stringify(stub)); // proxyOnce changes state
 
