@@ -16,10 +16,10 @@
     "mb": "./bin/mb"
   },
   "scripts": {
+    "blanket": { "pattern": "/mountebank/src/" },
     "start": "./bin/mb",
     "restart": "./bin/mb restart",
-    "stop": "./bin/mb stop",
-    "blanket": { "pattern": "/mountebank/src/" }
+    "stop": "./bin/mb stop"
   },
   "keywords": [
     "test",

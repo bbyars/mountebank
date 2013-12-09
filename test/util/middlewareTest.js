@@ -102,4 +102,92 @@ describe('middleware', function () {
             assert(next.wasCalled());
         });
     });
+
+    describe('#logger', function () {
+        it('should log request at info level', function () {
+            var log = { info: mock() },
+                request = { url: '', headers: { accept: '' } },
+                middlewareFn = middleware.logger(log, 'TEST MESSAGE');
+
+            middlewareFn(request, {}, next);
+
+            assert(log.info.wasCalledWith('TEST MESSAGE'));
+        });
+
+        it('should log request url and method', function () {
+            var log = { info: mock() },
+                request = { method: 'METHOD', url: 'URL', headers: { accept: '' } },
+                middlewareFn = middleware.logger(log, 'MESSAGE WITH :method :url');
+
+            middlewareFn(request, {}, next);
+
+            assert(log.info.wasCalledWith('MESSAGE WITH METHOD URL'));
+        });
+
+        it('should not log static asset requests', function () {
+            var log = { info: mock() },
+                middlewareFn = middleware.logger(log, 'TEST');
+
+            ['.js', '.css', '.png', '.ico'].forEach(function (ext) {
+                request = { url: 'file' + ext, headers: { accept: '' } };
+                middlewareFn(request, {}, next);
+                assert(!log.info.wasCalled());
+            });
+        });
+
+        it('should not log html requests', function () {
+            var log = { info: mock() },
+                request = { method: 'METHOD', url: 'URL', headers: { accept: 'text/html' } },
+                middlewareFn = middleware.logger(log, 'TEST');
+
+            middlewareFn(request, {}, next);
+
+            assert(!log.info.wasCalled());
+        });
+
+        it('should call next', function () {
+            var log = { info: mock() },
+                request = { url: '', headers: { accept: '' } },
+                middlewareFn = middleware.logger(log, 'TEST');
+
+            middlewareFn(request, {}, next);
+
+            assert(next.wasCalled());
+        });
+    });
+
+    describe('#globals', function () {
+        it('should pass variables to all render calls', function () {
+            var render = mock(),
+                response = { render: render },
+                middlewareFn = middleware.globals({ first: 1, second: 2 });
+
+            middlewareFn({}, response, next);
+            response.render('view');
+
+            assert(render.wasCalledWith('view', { first: 1, second: 2 }));
+        });
+
+        it('should merge variables to all render calls', function () {
+            var render = mock(),
+                response = { render: render },
+                middlewareFn = middleware.globals({ first: 1, second: 2 });
+
+            middlewareFn({}, response, next);
+            response.render('view', { third: 3 });
+
+            assert(render.wasCalledWith('view', { third: 3, first: 1, second: 2 }));
+        });
+
+        it('should overwrite variables of the same name', function () {
+            var render = mock(),
+                response = { render: render },
+                middlewareFn = middleware.globals({ key: 'global' });
+
+            middlewareFn({}, response, next);
+            response.render('view', { key: 'local' });
+
+            assert(render.wasCalledWith('view', { key: 'global' }));
+        });
+    });
 });

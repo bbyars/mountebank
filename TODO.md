@@ -39,6 +39,7 @@ Stories
 22. Ability to create imposter from UI (with karma testing?)
 23. Prettier /imposter/{port} HTML page
 24. Status page, showing command line opions (except heroku) and process stats
+25. change to only publish to npm and then deploy to heroku on branch
 
 Known Bugs
 ==========

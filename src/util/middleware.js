@@ -1,7 +1,5 @@
 'use strict';
 
-var winston = require('winston');
-
 function useAbsoluteUrls (port) {
     return function (request, response, next) {
         var setHeaderOriginal = response.setHeader,
@@ -55,7 +53,7 @@ function createImposterValidator (imposters) {
     };
 }
 
-function logger (format) {
+function logger (log, format) {
     function shouldLog (request) {
         var isStaticAsset = (['.js', '.css', '.png', '.ico'].some(function (fileType) {
                 return request.url.indexOf(fileType) >= 0;
@@ -68,7 +66,7 @@ function logger (format) {
     return function (request, response, next) {
         if (shouldLog(request)) {
             var message = format.replace(':method', request.method).replace(':url', request.url);
-            winston.info(message);
+            log.info(message);
         }
         next();
     };

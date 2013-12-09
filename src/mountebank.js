@@ -25,7 +25,7 @@ function create (options) {
     logger.add(logger.transports.File, { filename: options.logfile, timestamp: true });
 
     app.use(middleware.useAbsoluteUrls(options.port));
-    app.use(middleware.logger('[mb  /' + options.port + '] :method :url'));
+    app.use(middleware.logger(logger, '[mb  /' + options.port + '] :method :url'));
     app.use(middleware.globals({ heroku: options.heroku }));
     app.use(express.json());
     app.use(express.static(path.join(__dirname, 'public')));
