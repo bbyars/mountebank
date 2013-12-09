@@ -38,6 +38,7 @@ Stories
 21. Prettier /imposters HTML page
 22. Ability to create imposter from UI (with karma testing?)
 23. Prettier /imposter/{port} HTML page
+24. Status page, showing command line opions (except heroku) and process stats
 
 Known Bugs
 ==========
