@@ -18,7 +18,8 @@
   "scripts": {
     "start": "./bin/mb",
     "restart": "./bin/mb restart",
-    "stop": "./bin/mb stop"
+    "stop": "./bin/mb stop",
+    "blanket": { "pattern": "/mountebank/src/" }
   },
   "keywords": [
     "test",
