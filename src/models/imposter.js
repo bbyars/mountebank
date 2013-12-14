@@ -14,7 +14,7 @@ function create (Protocol, port, request) {
                 deferred.reject(errors.ResourceConflictError('The port is already in use'));
             }
             else if (error.errno === 'EACCES') {
-                deferred.reject(errors.InsufficientAccessError('Run mb in superuser mode if you want to bind to that port'));
+                deferred.reject(errors.InsufficientAccessError());
             }
             else {
                 deferred.reject(error);

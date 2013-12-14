@@ -1,12 +1,13 @@
 Stories
 =======
-0. remove JSON.stringify on source on errors, and turn into proper errors
 1. change responses => respondWith, predicates => when
 1. or predicate
 1. HTTPS support
 2. Create resolver to automatically create proxyOnce/is with predicates without
   setting the predicates up by hand
 3. TCP protocol
+4. Better docs - with accordion examples for each operator,etc
+4. Tests for documents that actually read a class in the HTML to try each request and verify response
 3. Allow base mock expectation of SMTP
 4. Allow advanced header expectation of SMTP
 5. Allow body expectations of SMTP

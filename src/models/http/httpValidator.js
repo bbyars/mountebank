@@ -53,9 +53,7 @@ function create (allowInjection) {
 
     function addInjectionErrors (stub, errors) {
         if (!allowInjection && hasInjection(stub)) {
-            errors.push(exceptions.InjectionError('inject is not allowed unless mb is run with the --allowInjection flag', {
-                source: stub
-            }));
+            errors.push(exceptions.InjectionError({ source: stub }));
         }
     }
 
