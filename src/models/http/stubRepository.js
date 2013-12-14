@@ -1,7 +1,8 @@
 'use strict';
 
 var predicates = require('./predicates'),
-    Q = require('q');
+    Q = require('q'),
+    util = require('util');
 
 function create (proxy) {
     var stubs = [],
@@ -25,14 +26,34 @@ function create (proxy) {
     }
 
     function trueForAll (obj, predicate) {
-        // we avoid using 'every' to dry run every predicate during validation
-        var results = Object.keys(obj).map(predicate);
-        return results.every(function (result) { return result; });
+        // we call map before calling every so we make sure to call every
+        // predicate during dry run validation rather than short-circuiting
+        return Object.keys(obj).map(predicate).every(function (result) { return result; });
     }
 
     function matchesPredicate (fieldName, predicate, request) {
+        if (typeof predicate !== 'object' || util.isArray(predicate)) {
+            throw {
+                code: 'bad data',
+                message: 'predicate must be an object',
+                source: JSON.stringify(predicate)
+            };
+        }
+
         return trueForAll(predicate, function (key) {
-            return predicates[key](fieldName, predicate[key], request);
+            if (predicates[key]) {
+                return predicates[key](fieldName, predicate[key], request);
+            }
+            else if (typeof predicate[key] === 'object') {
+                return matchesPredicate(fieldName + '.' + key, predicate[key], request);
+            }
+            else {
+                throw {
+                    code: 'bad data',
+                    message: "no predicate '" + key + "'",
+                    source: JSON.stringify(predicate)
+                };
+            }
         });
     }
 

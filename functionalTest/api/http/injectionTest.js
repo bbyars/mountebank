@@ -29,11 +29,12 @@ describe('http imposter', function () {
 
     describe('POST /imposters with injections', function () {
         promiseIt('should allow javascript predicate for matching', function () {
+            // note the lower-case keys for headers!!!
             var stub = {
                 predicates: {
                     path: { inject: "function (path) { return path === '/test'; }" },
                     method: { inject: "function (method) { return method === 'POST'; }" },
-                                                            // note the lower-case key!!!
+                    query: { inject: "function (query) { return query.key = 'value'; }"},
                     headers: { inject: "function (headers) { return headers['x-test'] === 'test header'; }" },
                     body: { inject: "function (body) { return body === 'BODY'; }" },
                     request: { inject: "function (request) { return request.path === '/test'; }" }
@@ -45,7 +46,7 @@ describe('http imposter', function () {
                 assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body));
 
                 var spec = {
-                    path: '/test',
+                    path: '/test?key=value',
                     port: port,
                     method: 'POST',
                     headers: {

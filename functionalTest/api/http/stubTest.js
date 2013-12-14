@@ -77,13 +77,14 @@ describe('http imposter', function () {
                     predicates: {
                         path: { is: '/test' },
                         query: {
-                            is: { key: 'value' }
+                            key: { is: 'value' }
                         },
                         method: { is: 'POST' },
                         headers: {
-                            exists: { 'X-One': true, 'X-Two': true },
-                            is: { 'X-Two': 'Test' },
-                            not: { exists: { 'X-Three': true }}
+                            'X-One': { exists: true },
+                            'X-Two': { exists: true, is: 'Test' },
+                            'X-Three': { exists: false },
+                            'X-Four': { not: { exists: true } }
                         },
                         body: {
                             startsWith: 'T',

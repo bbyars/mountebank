@@ -18,23 +18,23 @@ describe('predicates', function () {
         });
 
         it('should match key-value pairs for objects', function () {
-            assert.ok(predicates.is('headers', { key: 'value' }, { headers: { key: 'value' }}));
+            assert.ok(predicates.is('headers.key', 'value', { headers: { key: 'value' }}));
         });
 
         it('should return false if no key for object', function () {
-            assert.ok(!predicates.is('headers', { key: 'value' }, { headers: {}}));
+            assert.ok(!predicates.is('headers.key', 'value', { headers: {}}));
         });
 
         it('should return false if mismatched key for object', function () {
-            assert.ok(!predicates.is('headers', { key: 'true' }, { headers: { key: 'false' }}));
+            assert.ok(!predicates.is('headers.key', 'true', { headers: { key: 'false' }}));
         });
 
         it('should match values in a case insensitive fashion for objects', function () {
-            assert.ok(predicates.is('headers', { key: 'value' }, { headers: { key: 'VALUE' }}));
+            assert.ok(predicates.is('headers.key', 'value', { headers: { key: 'VALUE' }}));
         });
 
         it('should match keys in a case insensitive fashion for object', function () {
-            assert.ok(predicates.is('headers', { KEY: 'value' }, { headers: { key: 'value' }}));
+            assert.ok(predicates.is('headers.KEY', 'value', { headers: { key: 'value' }}));
         });
 
         it('should return false for types other than strings and objects', function () {
@@ -56,19 +56,19 @@ describe('predicates', function () {
         });
 
         it('should match key-value pairs for objects', function () {
-            assert.ok(predicates.contains('headers', { key: 'middle' }, { headers: { key: 'begin middle end' }}));
+            assert.ok(predicates.contains('headers.key', 'middle', { headers: { key: 'begin middle end' }}));
         });
 
         it('should return false if no key for object', function () {
-            assert.ok(!predicates.contains('headers', { key: 'middle' }, { headers: {}}));
+            assert.ok(!predicates.contains('headers.key', 'middle', { headers: {}}));
         });
 
         it('should return false if key for object does not contain string', function () {
-            assert.ok(!predicates.contains('headers', { key: 'middle' }, { headers: { key: 'begin end' }}));
+            assert.ok(!predicates.contains('headers.key', 'middle', { headers: { key: 'begin end' }}));
         });
 
         it('should match values in a case insensitive fashion for objects', function () {
-            assert.ok(predicates.contains('headers', { key: 'middle' }, { headers: { key: 'MIDDLE' }}));
+            assert.ok(predicates.contains('headers.key', 'middle', { headers: { key: 'MIDDLE' }}));
         });
 
         it('should return false for types other than strings and objects', function () {
@@ -90,19 +90,19 @@ describe('predicates', function () {
         });
 
         it('should match key-value pairs for objects', function () {
-            assert.ok(predicates.startsWith('headers', { key: 'begin' }, { headers: { key: 'begin middle end' }}));
+            assert.ok(predicates.startsWith('headers.key', 'begin', { headers: { key: 'begin middle end' }}));
         });
 
         it('should return false if no key for object', function () {
-            assert.ok(!predicates.startsWith('headers', { key: 'begin' }, { headers: {}}));
+            assert.ok(!predicates.startsWith('headers.key', 'begin', { headers: {}}));
         });
 
         it('should return false if key for object does not start with string', function () {
-            assert.ok(!predicates.startsWith('headers', { key: 'end' }, { headers: { key: 'begin end' }}));
+            assert.ok(!predicates.startsWith('headers.key', 'end', { headers: { key: 'begin end' }}));
         });
 
         it('should match values in a case insensitive fashion for objects', function () {
-            assert.ok(predicates.startsWith('headers', { key: 'begin' }, { headers: { key: 'BEGIN end' }}));
+            assert.ok(predicates.startsWith('headers.key', 'begin', { headers: { key: 'BEGIN end' }}));
         });
 
         it('should return false for types other than strings and objects', function () {
@@ -124,19 +124,19 @@ describe('predicates', function () {
         });
 
         it('should match key-value pairs for objects', function () {
-            assert.ok(predicates.endsWith('headers', { key: 'end' }, { headers: { key: 'begin middle end' }}));
+            assert.ok(predicates.endsWith('headers.key', 'end', { headers: { key: 'begin middle end' }}));
         });
 
         it('should return false if no key for object', function () {
-            assert.ok(!predicates.endsWith('headers', { key: 'end' }, { headers: {}}));
+            assert.ok(!predicates.endsWith('headers.key', 'end', { headers: {}}));
         });
 
         it('should return false if key for object does not ending with string', function () {
-            assert.ok(!predicates.endsWith('headers', { key: 'begin' }, { headers: { key: 'begin end' }}));
+            assert.ok(!predicates.endsWith('headers.key', 'begin', { headers: { key: 'begin end' }}));
         });
 
         it('should match values in a case insensitive fashion for objects', function () {
-            assert.ok(predicates.endsWith('headers', { key: 'END' }, { headers: { key: 'BEGIN end' }}));
+            assert.ok(predicates.endsWith('headers.key', 'END', { headers: { key: 'BEGIN end' }}));
         });
 
         it('should return false for types other than strings and objects', function () {
@@ -154,15 +154,15 @@ describe('predicates', function () {
         });
 
         it('should match key-value pairs for objects', function () {
-            assert.ok(predicates.matches('headers', { key: 'end$' }, { headers: { key: 'begin middle end' }}));
+            assert.ok(predicates.matches('headers.key', 'end$', { headers: { key: 'begin middle end' }}));
         });
 
         it('should return false if no key for object', function () {
-            assert.ok(!predicates.matches('headers', { key: 'end$' }, { headers: {}}));
+            assert.ok(!predicates.matches('headers.key', 'end$', { headers: {}}));
         });
 
         it('should return false if key for object does not matches string', function () {
-            assert.ok(!predicates.matches('headers', { key: 'begin\\d+' }, { headers: { key: 'begin end' }}));
+            assert.ok(!predicates.matches('headers.key', 'begin\\d+', { headers: { key: 'begin end' }}));
         });
 
         it('should return false for types other than strings and objects', function () {
@@ -188,27 +188,27 @@ describe('predicates', function () {
         });
 
         it('should return false if no key for object and exists is true', function () {
-            assert.ok(!predicates.exists('headers', { key: true }, { headers: {}}));
+            assert.ok(!predicates.exists('headers.key', true, { headers: {}}));
         });
 
         it('should return true if no key for object and exists is false', function () {
-            assert.ok(predicates.exists('headers', { key: false }, { headers: {}}));
+            assert.ok(predicates.exists('headers.key', false, { headers: {}}));
         });
 
         it('should return true for non empty object key if exists is true', function () {
-            assert.ok(predicates.exists('headers', { key: true }, { headers: { key: 'nonempty' }}));
+            assert.ok(predicates.exists('headers.key', true, { headers: { key: 'nonempty' }}));
         });
 
         it('should return false for empty object key if exists is true', function () {
-            assert.ok(!predicates.exists('headers', { key: true }, { headers: { key: '' }}));
+            assert.ok(!predicates.exists('headers.key', true, { headers: { key: '' }}));
         });
 
         it('should return false for non empty object key if exists is false', function () {
-            assert.ok(!predicates.exists('headers', { key: false }, { headers: { key: 'nonempty' }}));
+            assert.ok(!predicates.exists('headers.key', false, { headers: { key: 'nonempty' }}));
         });
 
         it('should return true for empty object key if exists is false', function () {
-            assert.ok(predicates.exists('headers', { key: false }, { headers: { key: '' }}));
+            assert.ok(predicates.exists('headers.key', false, { headers: { key: '' }}));
         });
     });
 

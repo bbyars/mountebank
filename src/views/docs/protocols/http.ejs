@@ -21,7 +21,10 @@ is second to none.  Let's look at a simple request:</p>
       "predicates": {
         "path": { "is": "/test" },
         "method": { "is": "POST" },
-        "body": { "not": { "contains": "requiredField" } }
+        "body": { "not": { "contains": "requiredField" } },
+        "headers": {
+          "Content-Type": { "is": "application/json" }
+        }
       }
     }]
   }
@@ -84,6 +87,11 @@ Content-Type: application/json
         "body": {
           "not": {
             "contains": "requiredField"
+          }
+        },
+        "headers": {
+          "Content-Type": {
+            "is": "application/json"
           }
         }
       },
@@ -153,7 +161,7 @@ matches is selected.  All predicates are based on the following request fields:<
     <tr>
         <td><code>headers</code></td>
         <td>The HTTP headers</td>
-        <td>JSON object, mapping a string to a string</td>
+        <td>object</td>
         <td><code>{ "Accept": "application/json" }</code></td>
     </tr>
     <tr>
@@ -174,7 +182,7 @@ AND'd together.  The following predicate operators are allowed:</p>
     </tr>
     <tr>
         <td><code>is</code></td>
-        <td><code>"headers": { "is": { "X-Key": "Value" } }</code></td>
+        <td><code>"headers": { "X-Key": { "is": "Value" } }</code></td>
     </tr>
     <tr>
         <td><code>contains</code></td>
@@ -194,7 +202,7 @@ AND'd together.  The following predicate operators are allowed:</p>
     </tr>
     <tr>
         <td><code>exists</code></td>
-        <td><code>"headers": { "exists": { "X-First": true, "X-Second": false } }</code></td>
+        <td><code>"query": { "first": { "exists": true, "is": "1" } }</code></td>
     </tr>
     <tr>
         <td><code>not</code></td>
@@ -239,7 +247,7 @@ object, which can use all four fields to make a decision.  The function returns 
   </tr>
   <tr>
     <td><code>headers</code></td>
-    <td>JSON object, mapping a string to a string</td>
+    <td>object</td>
     <td><pre><code>
       {
         "Location": "http://localhost:2526/resource",

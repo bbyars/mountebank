@@ -1,29 +1,12 @@
-- staffing email
-- tom catch-up
-- T&E
-- agile conference
- - testing for continuous delivery
-   - contract testing
-   - stubbing
-   - UI
-     - APIs instead of UI
-     - save auth cookie
-     - test parallelization
-     - testing w / feature flags (2 combos)
-     - scenario tests
-- mf.com response
-
-
 Stories
 =======
-1. Add query parameters as predicate, remove from path
+0. remove JSON.stringify on source on errors, and turn into proper errors
+1. change responses => respondWith, predicates => when
 1. or predicate
-1. Rearrange order of predicate to make it consistent
-  - headers { 'X-One': { is: 'value } }
 1. HTTPS support
-1. Auto-deploy to heroku
 2. Create resolver to automatically create proxyOnce/is with predicates without
   setting the predicates up by hand
+3. TCP protocol
 3. Allow base mock expectation of SMTP
 4. Allow advanced header expectation of SMTP
 5. Allow body expectations of SMTP
@@ -35,12 +18,13 @@ Stories
 1. Add latency to response
 1. Add attachment support
 1. Allow regex tokens from path/query in response
-20. Prettier log output on the website, with filtering, on website
+20. Prettier log output, with filtering, on website
 21. Prettier /imposters HTML page
 22. Ability to create imposter from UI (with karma testing?)
 23. Prettier /imposter/{port} HTML page
-24. Status page, showing command line opions (except heroku) and process stats
+24. Status page, showing command line options (except heroku) and process stats
 25. change to only publish to npm and then deploy to heroku on branch
+26. Add support for case-sensitive predicates (as objects instead of strings?)
 
 Known Bugs
 ==========

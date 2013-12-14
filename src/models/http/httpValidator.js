@@ -30,20 +30,11 @@ function create (allowInjection) {
             });
         }
         catch (error) {
-            // Avoid digit methods, which probably represent incorrectly using an array, e.g.
-            // Object #<Object> has no method '0'
-            var invalidPredicate = /has no method '([A-Za-z_]+)'/.exec(error.message),
-                message = 'malformed stub request';
-
-            if (invalidPredicate) {
-                message = "no predicate '" + invalidPredicate[1] + "'";
-            }
-
             errors.push({
                 code: 'bad data',
-                message: message,
+                message: 'malformed stub request',
                 data: error.message,
-                source: JSON.stringify(stub)
+                source: error.source || JSON.stringify(stub)
             });
             deferred.resolve();
         }

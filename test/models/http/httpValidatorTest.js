@@ -224,9 +224,9 @@ describe('httpValidator', function () {
                     isValid: false,
                     errors: [{
                         code: 'bad data',
-                        message: "no predicate 'invalidPredicate'",
-                        data: "Object #<Object> has no method 'invalidPredicate'",
-                        source: JSON.stringify(request.stubs[0])
+                        message: 'malformed stub request',
+                        data: "no predicate 'invalidPredicate'",
+                        source: JSON.stringify({ invalidPredicate: '/test' })
                     }]
                 });
             });
@@ -249,9 +249,9 @@ describe('httpValidator', function () {
                     isValid: false,
                     errors: [{
                         code: 'bad data',
-                        message: "no predicate 'invalidPredicate'",
-                        data: "Object #<Object> has no method 'invalidPredicate'",
-                        source: JSON.stringify(request.stubs[0])
+                        message: 'malformed stub request',
+                        data: "no predicate 'invalidPredicate'",
+                        source: JSON.stringify({ invalidPredicate: 'value' })
                     }]
                 });
             });
@@ -262,16 +262,22 @@ describe('httpValidator', function () {
                     stubs: [{
                         responses: [{}],
                         predicates: {
-                            headers: [ { exists: 'Test' }]
+                            headers: [{ exists: 'Test' }]
                         }
                     }]
                 },
                 validator = Validator.create();
 
             return validator.validate(request).then(function (result) {
-                // The deepEqual test periodically fails, as node seems to alternate between
-                // two different errors that it throws in this condition
-                assert.deepEqual(result.errors[0].message, 'malformed stub request');
+                assert.deepEqual(result, {
+                    isValid: false,
+                    errors: [{
+                        code: 'bad data',
+                        message: 'malformed stub request',
+                        data: 'predicate must be an object',
+                        source: JSON.stringify([{ exists: 'Test' }])
+                    }]
+                });
             });
         });
 

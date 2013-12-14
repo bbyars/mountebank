@@ -116,7 +116,7 @@ describe('stubRepository', function () {
         promiseIt('should return stub if header predicate passes', function () {
             var request = { path: '/test', headers: {}, body: '', method: 'GET' };
             stubs.addStub({
-                predicates: { headers: { exists: { first: false, second: false } }},
+                predicates: { headers: { first: { exists: false }, second: { exists: false } } },
                 responses: [{ is: { body: 'Matched' }}]
             });
 
