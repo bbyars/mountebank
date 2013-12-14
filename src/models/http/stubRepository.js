@@ -2,7 +2,8 @@
 
 var predicates = require('./predicates'),
     Q = require('q'),
-    util = require('util');
+    util = require('util'),
+    errors = require('../../errors/errors');
 
 function create (proxy) {
     var stubs = [],
@@ -33,11 +34,7 @@ function create (proxy) {
 
     function matchesPredicate (fieldName, predicate, request) {
         if (typeof predicate !== 'object' || util.isArray(predicate)) {
-            throw {
-                code: 'bad data',
-                message: 'predicate must be an object',
-                source: predicate
-            };
+            throw errors.ValidationError('predicate must be an object', { source: predicate });
         }
 
         return trueForAll(predicate, function (key) {
@@ -48,11 +45,7 @@ function create (proxy) {
                 return matchesPredicate(fieldName + '.' + key, predicate[key], request);
             }
             else {
-                throw {
-                    code: 'bad data',
-                    message: "no predicate '" + key + "'",
-                    source: predicate
-                };
+                throw errors.ValidationError("no predicate '" + key + "'", { source: predicate });
             }
         });
     }
@@ -116,11 +109,7 @@ function create (proxy) {
             });
         }
         else {
-            return Q.reject({
-                code: 'bad data',
-                message: 'unrecognized stub resolver',
-                source: stubResolver
-            });
+            return Q.reject(errors.ValidationError('unrecognized stub resolver', { source: stubResolver }));
         }
     }
 

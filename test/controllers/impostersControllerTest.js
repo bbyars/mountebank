@@ -83,7 +83,7 @@ describe('ImpostersController', function () {
                 assert.strictEqual(response.statusCode, 400);
                 assert.deepEqual(response.body, {
                     errors: [{
-                        code: "missing field",
+                        code: 'bad data',
                         message: "'port' is a required field"
                     }]
                 });
@@ -97,7 +97,7 @@ describe('ImpostersController', function () {
                 assert.strictEqual(response.statusCode, 400);
                 assert.deepEqual(response.body, {
                     errors: [{
-                        code: "bad data",
+                        code: 'bad data',
                         message: "invalid value for 'port'"
                     }]
                 });
@@ -111,7 +111,7 @@ describe('ImpostersController', function () {
                 assert.strictEqual(response.statusCode, 400);
                 assert.deepEqual(response.body, {
                     errors: [{
-                        code: "missing field",
+                        code: 'bad data',
                         message: "'protocol' is a required field"
                     }]
                 });
@@ -124,7 +124,7 @@ describe('ImpostersController', function () {
             return controller.post(request, response).then(function () {
                 assert.strictEqual(response.statusCode, 400);
                 assert.strictEqual(response.body.errors.length, 1);
-                assert.strictEqual(response.body.errors[0].code, 'unsupported protocol');
+                assert.strictEqual(response.body.errors[0].code, 'bad data');
             });
         });
 

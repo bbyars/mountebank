@@ -1,5 +1,7 @@
 'use strict';
 
+var errors = require('../errors/errors');
+
 function useAbsoluteUrls (port) {
     return function (request, response, next) {
         var setHeaderOriginal = response.setHeader,
@@ -44,10 +46,7 @@ function createImposterValidator (imposters) {
         else {
             response.statusCode = 404;
             response.send({
-                errors: [{
-                    code: 'no such imposter',
-                    message: 'Try POSTing to /imposters first?'
-                }]
+                errors: [errors.MissingResourceError('Try POSTing to /imposters first?')]
             });
         }
     };

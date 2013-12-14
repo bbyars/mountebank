@@ -1,7 +1,8 @@
 'use strict';
 
 var Q = require('q'),
-    Domain = require('domain');
+    Domain = require('domain'),
+    errors = require('../errors/errors');
 
 function create (Protocol, port, request) {
     var stubs = [],
@@ -10,16 +11,10 @@ function create (Protocol, port, request) {
     function createErrorHandler (deferred) {
         return function errorHandler (error) {
             if (error.errno === 'EADDRINUSE') {
-                deferred.reject({
-                    code: 'port in use',
-                    message: 'The port is already in use'
-                });
+                deferred.reject(errors.ResourceConflictError('The port is already in use'));
             }
             else if (error.errno === 'EACCES') {
-                deferred.reject({
-                    code: 'insufficient access',
-                    message: 'Run mb in superuser mode if you want to bind to that port'
-                });
+                deferred.reject(errors.InsufficientAccessError('Run mb in superuser mode if you want to bind to that port'));
             }
             else {
                 deferred.reject(error);

@@ -2,7 +2,8 @@
 
 var StubRepository = require('./stubRepository'),
     utils = require('util'),
-    Q = require('q');
+    Q = require('q'),
+    exceptions = require('../../errors/errors');
 
 function create (allowInjection) {
 
@@ -30,12 +31,10 @@ function create (allowInjection) {
             });
         }
         catch (error) {
-            errors.push({
-                code: 'bad data',
-                message: 'malformed stub request',
+            errors.push(exceptions.ValidationError('malformed stub request', {
                 data: error.message,
                 source: error.source || stub
-            });
+            }));
             deferred.resolve();
         }
 
@@ -54,11 +53,9 @@ function create (allowInjection) {
 
     function addInjectionErrors (stub, errors) {
         if (!allowInjection && hasInjection(stub)) {
-            errors.push({
-                code: 'invalid operation',
-                message: 'inject is not allowed unless mb is run with the --allowInjection flag',
+            errors.push(exceptions.InjectionError('inject is not allowed unless mb is run with the --allowInjection flag', {
                 source: stub
-            });
+            }));
         }
     }
 
@@ -67,11 +64,9 @@ function create (allowInjection) {
             deferred = Q.defer();
 
         if (!utils.isArray(stub.responses) || stub.responses.length === 0) {
-            errors.push({
-                code: 'bad data',
-                message: "'responses' must be a non-empty array",
+            errors.push(exceptions.ValidationError("'responses' must be a non-empty array", {
                 source: stub
-            });
+            }));
         }
         addInjectionErrors(stub, errors);
 

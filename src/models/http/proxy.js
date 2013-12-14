@@ -3,7 +3,8 @@
 var http = require('http'),
     https = require('https'),
     url = require('url'),
-    Q = require('q');
+    Q = require('q'),
+    errors = require('../../errors/errors');
 
 function create () {
     function to (baseUrl, originalRequest) {
@@ -38,16 +39,10 @@ function create () {
 
         proxiedRequest.on('error', function (error) {
             if (error.code === 'ENOTFOUND') {
-                deferred.reject({
-                    code: 'invalid proxy',
-                    message: 'Cannot resolve ' + baseUrl
-                });
+                deferred.reject(errors.InvalidProxyError('Cannot resolve ' + baseUrl));
             }
             else if (error.code === 'ECONNREFUSED') {
-                deferred.reject({
-                    code: 'invalid proxy',
-                    message: 'Unable to connect to ' + baseUrl
-                });
+                deferred.reject(errors.InvalidProxyError('Unable to connect to ' + baseUrl));
             }
             else {
                 deferred.reject(error);

@@ -1,36 +1,34 @@
 'use strict';
 
 var utils = require('util'),
-    Q = require('q');
+    Q = require('q'),
+    exceptions = require('../errors/errors');
 
 function createDefaultValidator () {
     var errors = [];
 
-    function addAllErrorsIf (spec, code, message, predicate) {
+    function addAllErrorsIf (spec, message, predicate) {
         Object.keys(spec).forEach(function (name) {
             if (predicate(spec[name], name)) {
-                errors.push({
-                    code: code,
-                    message: message.replace('$NAME$', name)
-                });
+                errors.push(exceptions.ValidationError(message.replace('$NAME$', name)));
             }
         });
     }
 
     function requiredFields (spec) {
-        addAllErrorsIf(spec, "missing field", "'$NAME$' is a required field", function (value) {
+        addAllErrorsIf(spec, "'$NAME$' is a required field", function (value) {
             return !value;
         });
     }
 
     function requireProtocolSupport (spec) {
-        addAllErrorsIf(spec, "unsupported protocol", "the $NAME$ protocol is not yet supported", function (value, name) {
+        addAllErrorsIf(spec, "the $NAME$ protocol is not yet supported", function (value, name) {
             return name !== 'undefined' && !value;
         });
     }
 
     function requireValidPorts (spec) {
-        addAllErrorsIf(spec, "bad data", "invalid value for '$NAME$'", function (value) {
+        addAllErrorsIf(spec, "invalid value for '$NAME$'", function (value) {
             var isValid = (value === undefined) ||
                 (value.toString().indexOf('.') === -1 && value > 0 && value < 65536);
             return !isValid;
@@ -38,7 +36,7 @@ function createDefaultValidator () {
     }
 
     function requireNonEmptyArrays (spec) {
-        addAllErrorsIf(spec, "bad data", "'$NAME$' must be a non-empty array", function (value) {
+        addAllErrorsIf(spec, "'$NAME$' must be a non-empty array", function (value) {
             return !utils.isArray(value) || value.length === 0;
         });
     }

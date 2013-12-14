@@ -128,8 +128,8 @@ describe('Validator', function () {
             });
 
             assert.deepEqual(validator.errors(), [
-                { code: "missing field", message: "'first' is a required field" },
-                { code: "missing field", message: "'third' is a required field" }
+                { code: 'bad data', message: "'first' is a required field" },
+                { code: 'bad data', message: "'third' is a required field" }
             ]);
         });
 
@@ -139,8 +139,8 @@ describe('Validator', function () {
             });
 
             assert.deepEqual(validator.errors(), [{
-                code: "unsupported protocol",
-                message: "the http protocol is not yet supported"
+                code: 'bad data',
+                message: 'the http protocol is not yet supported'
             }]);
         });
 
@@ -177,7 +177,7 @@ describe('Validator', function () {
             });
 
             assert.deepEqual(validator.errors(), [{
-                code: "bad data",
+                code: 'bad data',
                 message: "'key' must be a non-empty array"
             }]);
         });
