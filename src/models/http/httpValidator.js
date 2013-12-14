@@ -34,7 +34,7 @@ function create (allowInjection) {
                 code: 'bad data',
                 message: 'malformed stub request',
                 data: error.message,
-                source: error.source || JSON.stringify(stub)
+                source: error.source || stub
             });
             deferred.resolve();
         }
@@ -57,7 +57,7 @@ function create (allowInjection) {
             errors.push({
                 code: 'invalid operation',
                 message: 'inject is not allowed unless mb is run with the --allowInjection flag',
-                source: JSON.stringify(stub)
+                source: stub
             });
         }
     }
@@ -70,7 +70,7 @@ function create (allowInjection) {
             errors.push({
                 code: 'bad data',
                 message: "'responses' must be a non-empty array",
-                source: JSON.stringify(stub)
+                source: stub
             });
         }
         addInjectionErrors(stub, errors);

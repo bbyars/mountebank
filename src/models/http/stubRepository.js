@@ -36,7 +36,7 @@ function create (proxy) {
             throw {
                 code: 'bad data',
                 message: 'predicate must be an object',
-                source: JSON.stringify(predicate)
+                source: predicate
             };
         }
 
@@ -51,7 +51,7 @@ function create (proxy) {
                 throw {
                     code: 'bad data',
                     message: "no predicate '" + key + "'",
-                    source: JSON.stringify(predicate)
+                    source: predicate
                 };
             }
         });
@@ -119,7 +119,7 @@ function create (proxy) {
             return Q.reject({
                 code: 'bad data',
                 message: 'unrecognized stub resolver',
-                source: JSON.stringify(stubResolver)
+                source: stubResolver
             });
         }
     }

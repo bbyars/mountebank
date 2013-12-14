@@ -29,7 +29,7 @@ describe('httpValidator', function () {
                     errors: [{
                         code: 'bad data',
                         message: "'responses' must be a non-empty array",
-                        source: '{}'
+                        source: {}
                     }]
                 });
             });
@@ -128,7 +128,7 @@ describe('httpValidator', function () {
                     errors: [{
                         code: 'invalid operation',
                         message: 'inject is not allowed unless mb is run with the --allowInjection flag',
-                        source: JSON.stringify(request.stubs[0])
+                        source: request.stubs[0]
                     }]
                 });
             });
@@ -149,7 +149,7 @@ describe('httpValidator', function () {
                     errors: [{
                         code: 'invalid operation',
                         message: 'inject is not allowed unless mb is run with the --allowInjection flag',
-                        source: JSON.stringify(request.stubs[0])
+                        source: request.stubs[0]
                     }]
                 });
             });
@@ -202,7 +202,7 @@ describe('httpValidator', function () {
                     errors: [{
                         code: 'bad data',
                         message: "'responses' must be a non-empty array",
-                        source: '{}'
+                        source: {}
                     }]
                 });
             });
@@ -226,7 +226,7 @@ describe('httpValidator', function () {
                         code: 'bad data',
                         message: 'malformed stub request',
                         data: "no predicate 'invalidPredicate'",
-                        source: JSON.stringify({ invalidPredicate: '/test' })
+                        source: { invalidPredicate: '/test' }
                     }]
                 });
             });
@@ -251,7 +251,7 @@ describe('httpValidator', function () {
                         code: 'bad data',
                         message: 'malformed stub request',
                         data: "no predicate 'invalidPredicate'",
-                        source: JSON.stringify({ invalidPredicate: 'value' })
+                        source: { invalidPredicate: 'value' }
                     }]
                 });
             });
@@ -275,7 +275,7 @@ describe('httpValidator', function () {
                         code: 'bad data',
                         message: 'malformed stub request',
                         data: 'predicate must be an object',
-                        source: JSON.stringify([{ exists: 'Test' }])
+                        source: [{ exists: 'Test' }]
                     }]
                 });
             });
@@ -297,7 +297,7 @@ describe('httpValidator', function () {
                         code: 'bad data',
                         message: 'malformed stub request',
                         data: 'Unexpected token return',
-                        source: JSON.stringify(request.stubs[0])
+                        source: request.stubs[0]
                     }]
                 });
             });
@@ -317,7 +317,7 @@ describe('httpValidator', function () {
                     errors: [{
                         code: 'bad data',
                         message: 'unrecognized stub resolver',
-                        source: JSON.stringify(request.stubs[0].responses[0])
+                        source: request.stubs[0].responses[0]
                     }]
                 });
             });
