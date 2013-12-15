@@ -14,6 +14,7 @@ function create (options) {
     var app = express(),
         imposters = {},
         protocols = {
+            'tcp': require('./models/tcp/server').initialize(options.allowInjection),
             'http': require('./models/http/server').initialize(options.allowInjection)
         },
         impostersController = ImpostersController.create(protocols, imposters, Imposter),

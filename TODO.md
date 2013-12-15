@@ -1,11 +1,12 @@
 Stories
 =======
-1. change responses => respondWith, predicates => when
-1. or predicate
+3. TCP protocol
+1. fix presentation for TCP on website
+0. log remote socket everywhere
 1. HTTPS support
+1. or predicate
 2. Create resolver to automatically create proxyOnce/is with predicates without
   setting the predicates up by hand
-3. TCP protocol
 4. Better docs - with accordion examples for each operator,etc
 4. Tests for documents that actually read a class in the HTML to try each request and verify response
 3. Allow base mock expectation of SMTP
