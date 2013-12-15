@@ -7,10 +7,20 @@ script: ./build
 
 deploy:
   skip_cleanup: true
-  provider: npm
-  email: brandon.byars@gmail.com
-  api_key:
-    secure: AFCSL5AzR+toPEzXpI5JpvYUX3c0NFEXbU36gT+5CWUJaWn4YA+fXBcwRD2cLf1OAXkMK+zVyJa2IqTA2lMWl4c4HBEC71lkoFLGXiPXKUFwt6sGGeiSPOMUbWZ3+qp8TY+r0T6DKmlF2qglBkgLy3JMnan4hW1n6VMBIqazNKw=
-  on:
-    repo: bbyars/mountebank
-    node: 0.10
+
+  - provider: npm
+    email: brandon.byars@gmail.com
+    api_key:
+      secure: AFCSL5AzR+toPEzXpI5JpvYUX3c0NFEXbU36gT+5CWUJaWn4YA+fXBcwRD2cLf1OAXkMK+zVyJa2IqTA2lMWl4c4HBEC71lkoFLGXiPXKUFwt6sGGeiSPOMUbWZ3+qp8TY+r0T6DKmlF2qglBkgLy3JMnan4hW1n6VMBIqazNKw=
+    on:
+      repo: bbyars/mountebank
+      node: 0.10
+
+  - provider: heroku
+    api_key:
+      secure: jxAbZJqLE+mkhNJMlqQRRNqGsSkygb+Z0/AB3JghTZ1iDHfZYNTrFaGHCwOanW05MWAbrO7ntzaYQMHFlLQrqCuQfajQARUDiQWNfCpFtBszBYSrnsIoF1M7LNw00dRpQocwbGKX8Z+yaeaDS88ax6gTevKuF32Qlk9PcIyQTZw=
+    app: mountebank
+    on:
+      repo: bbyars/mountebank
+      node: 0.10
+

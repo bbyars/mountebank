@@ -5,9 +5,7 @@
   "author": "Brandon Byars <brandon.byars@gmail.com>",
   "description": "Over the wire test doubles",
   "homepage": "http://mountebank.herokuapp.com",
-  "license": {
-    "license": "MIT"
-  },
+  "license": "MIT",
   "repository": {
     "type": "git",
     "url": "https://github.com/bbyars/mountebank.git"
@@ -15,6 +13,7 @@
   "bin": {
     "mb": "./bin/mb"
   },
+  "main": "./src/mountebank.js",
   "scripts": {
     "blanket": { "pattern": "/mountebank/src/" },
     "start": "./bin/mb",
@@ -38,10 +37,10 @@
   "devDependencies": {
     "grunt": "~0.4.1",
     "grunt-contrib-jshint": "~0.7.0",
-    "mocha": "~1.13.0",
-    "grunt-mocha-test": "~0.7.0",
+    "mocha": "~1.15.1",
+    "grunt-mocha-test": "~0.8.1",
     "blanket": "~1.1.5",
-    "coveralls": "~2.3.0",
+    "coveralls": "~2.6.0",
     "mocha-lcov-reporter": "0.0.1",
     "w3cjs": "~0.1.21"
   },
