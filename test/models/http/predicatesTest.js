@@ -3,7 +3,7 @@
 var assert = require('assert'),
     predicates = require('../../../src/models/http/predicates');
 
-describe('predicates', function () {
+describe('http predicates', function () {
     describe('#is', function () {
         it('should return false for mismatched string', function () {
             assert.ok(!predicates.is('field', 'false', { field: 'true' }));
