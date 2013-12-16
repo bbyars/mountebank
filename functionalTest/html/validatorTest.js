@@ -9,7 +9,7 @@ var assert = require('assert'),
 describe('html validation', function () {
     this.timeout(timeout);
 
-    ['/', '/faqs', '/docs', '/license', '/contributing', '/docs/protocols/http'].forEach(function (endpoint) {
+    ['/', '/faqs', '/docs', '/license', '/contributing', '/config', '/docs/protocols/http'].forEach(function (endpoint) {
         it(endpoint + ' should have no html errors', function (done) {
             var spec = {
                 method: 'GET',

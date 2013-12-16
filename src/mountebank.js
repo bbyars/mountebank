@@ -8,7 +8,8 @@ var express = require('express'),
     ImposterController = require('./controllers/imposterController'),
     Imposter = require('./models/imposter'),
     logger = require('winston'),
-    fs = require('fs');
+    fs = require('fs'),
+    thisPackage = require('../package.json');
 
 function create (options) {
     var app = express(),
@@ -47,6 +48,14 @@ function create (options) {
 
     app.get('/logs', function (request, response) {
         response.render('logs', { content: fs.readFileSync(options.logfile) });
+    });
+
+    app.get('/config', function (request, response) {
+        response.render('config', {
+            version: thisPackage.version,
+            logfile: options.logfile,
+            allowInjection: options.allowInjection
+        });
     });
 
     // Brochure-ware sections
