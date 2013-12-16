@@ -17,4 +17,52 @@
   </tr>
 </table>
 
+<h2>Process Information</h2>
+
+<table>
+  <tr>
+    <td>node version</td>
+    <td><%= process.version %></td>
+  </tr>
+  <tr>
+    <td>architecture</td>
+    <td><%= process.arch %></td>
+  </tr>
+  <tr>
+    <td>platform</td>
+    <td><%= process.platform %></td>
+  </tr>
+  <tr>
+    <td>rss</td>
+    <td><%= process.memoryUsage().rss %></td>
+  </tr>
+  <tr>
+    <td>heapTotal</td>
+    <td><%= process.memoryUsage().heapTotal %></td>
+  </tr>
+  <tr>
+    <td>heapUsed</td>
+    <td><%= process.memoryUsage().heapUsed %></td>
+  </tr>
+  <tr>
+    <td>uptime</td>
+    <td><%= process.uptime() %></td>
+  </tr>
+  <tr>
+    <td>cwd</td>
+    <td><%= process.cwd() %></td>
+  </tr>
+</table>
+
+<h2>Environment</h2>
+
+<table>
+<% Object.keys(process.env).forEach(function (key) { %>
+  <tr>
+    <td><%= key %></td>
+    <td><%= process.env[key] %></td>
+  </tr>
+<% }); %>
+</table>
+
 <% include _footer %>

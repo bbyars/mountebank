@@ -54,7 +54,8 @@ function create (options) {
         response.render('config', {
             version: thisPackage.version,
             logfile: options.logfile,
-            allowInjection: options.allowInjection
+            allowInjection: options.allowInjection,
+            process: process
         });
     });
 
