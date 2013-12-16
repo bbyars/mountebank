@@ -3,9 +3,11 @@
 var assert = require('assert'),
     api = require('../api'),
     promiseIt = require('../../testHelpers').promiseIt,
-    port = api.port + 1;
+    port = api.port + 1,
+    timeout = parseInt(process.env.SLOW_TEST_TIMEOUT_MS || 2000);
 
 describe('http imposter', function () {
+    this.timeout(timeout);
 
     describe('GET /imposters/:id', function () {
         promiseIt('should return 404 if imposter has not been created', function () {

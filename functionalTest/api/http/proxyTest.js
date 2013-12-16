@@ -4,9 +4,12 @@ var assert = require('assert'),
     Proxy = require('../../../src/models/http/proxy'),
     api = require('../api'),
     promiseIt = require('../../testHelpers').promiseIt,
-    port = api.port + 1;
+    port = api.port + 1,
+    timeout = parseInt(process.env.SLOW_TEST_TIMEOUT_MS || 2000);
 
 describe('proxy', function () {
+    this.timeout(timeout);
+
     var proxy = Proxy.create();
 
     describe('#to', function () {

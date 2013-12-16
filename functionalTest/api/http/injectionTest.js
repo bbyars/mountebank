@@ -6,7 +6,8 @@ var assert = require('assert'),
     api = require('../api'),
     Q = require('q'),
     promiseIt = require('../../testHelpers').promiseIt,
-    port = api.port + 1;
+    port = api.port + 1,
+    timeout = parseInt(process.env.SLOW_TEST_TIMEOUT_MS || 2000);
 
 function nonInjectableServer (command, port) {
     var deferred = Q.defer(),
@@ -26,6 +27,7 @@ function nonInjectableServer (command, port) {
 }
 
 describe('http imposter', function () {
+    this.timeout(timeout);
 
     describe('POST /imposters with injections', function () {
         promiseIt('should allow javascript predicate for matching', function () {

@@ -4,9 +4,11 @@ var assert = require('assert'),
     api = require('../api'),
     Q = require('q'),
     promiseIt = require('../../testHelpers').promiseIt,
-    port = api.port + 1;
+    port = api.port + 1,
+    timeout = parseInt(process.env.SLOW_TEST_TIMEOUT_MS || 2000);
 
 describe('http imposter', function () {
+    this.timeout(timeout);
 
     describe('POST /imposters with stubs', function () {
         promiseIt('should return stubbed response', function () {

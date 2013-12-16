@@ -3,9 +3,12 @@
 var assert = require('assert'),
     validator = require('w3cjs'),
     api = require('../api/api'),
-    fs = require('fs');
+    fs = require('fs'),
+    timeout = parseInt(process.env.SLOW_TEST_TIMEOUT_MS || 2000);
 
 describe('html validation', function () {
+    this.timeout(timeout);
+
     ['/', '/faqs', '/docs', '/license', '/contributing', '/docs/protocols/http'].forEach(function (endpoint) {
         it(endpoint + ' should have no html errors', function (done) {
             var spec = {
