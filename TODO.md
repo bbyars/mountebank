@@ -1,5 +1,6 @@
 Stories
 =======
+1. throw Error objects
 3. TCP protocol
 1. fix presentation for TCP on website
 0. log remote socket everywhere
@@ -7,7 +8,7 @@ Stories
 1. or predicate
 2. Create resolver to automatically create proxyOnce/is with predicates without
   setting the predicates up by hand
-4. Better docs - with accordion examples for each operator,etc
+4. Better docs - with accordion examples for each operator,etc (see http://codepen.io/Thoughtworks/full/BEmsu)
 4. Tests for documents that actually read a class in the HTML to try each request and verify response
 3. Allow base mock expectation of SMTP
 4. Allow advanced header expectation of SMTP
@@ -24,7 +25,6 @@ Stories
 21. Prettier /imposters HTML page
 22. Ability to create imposter from UI (with karma testing?)
 23. Prettier /imposter/{port} HTML page
-24. Status page, showing command line options (except heroku) and process stats
 25. change to only publish to npm and then deploy to heroku on branch
 26. Add support for case-sensitive predicates (as objects instead of strings?)
 
