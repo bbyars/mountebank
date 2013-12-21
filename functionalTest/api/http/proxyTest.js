@@ -7,7 +7,7 @@ var assert = require('assert'),
     port = api.port + 1,
     timeout = parseInt(process.env.SLOW_TEST_TIMEOUT_MS || 2000);
 
-describe('proxy', function () {
+describe('http proxy', function () {
     this.timeout(timeout);
 
     var proxy = Proxy.create();

@@ -1,7 +1,8 @@
 Stories
 =======
-1. throw Error objects
 3. TCP protocol
+ - proxy
+ - match
 1. fix presentation for TCP on website
 0. log remote socket everywhere
 1. HTTPS support

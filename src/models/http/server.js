@@ -35,30 +35,29 @@ var create = function (port) {
     var logPrefix = '[http/' + port + '] ',
         deferred = Q.defer(),
         requests = [],
-        stubs = StubRepository.create(Proxy.create());
+        stubs = StubRepository.create(Proxy.create()),
+        server = http.createServer(function (request, response) {
+            logger.info('%s %s %s', logPrefix, request.method, request.url);
 
-    var server = http.createServer(function (request, response) {
-        logger.info('%s %s %s', logPrefix, request.method, request.url);
+            var domain = Domain.create(),
+                errorHandler = function (error) {
+                    logger.error('%s %s', logPrefix, JSON.stringify(error));
+                    response.writeHead(500, { 'content-type': 'application/json' });
+                    response.end(JSON.stringify({ errors: [error] }), 'utf8');
+                };
 
-        var domain = Domain.create(),
-            errorHandler = function (error) {
-                logger.error('%s %s', logPrefix, JSON.stringify(error));
-                response.writeHead(500, { 'content-type': 'application/json' });
-                response.end(JSON.stringify({ errors: [error] }), 'utf8');
-            };
+            domain.on('error', errorHandler);
 
-        domain.on('error', errorHandler);
-
-        domain.run(function () {
-            simplify(request).then(function (simpleRequest) {
-                requests.push(simpleRequest);
-                return stubs.resolve(simpleRequest);
-            }).done(function (stubResponse) {
-                response.writeHead(stubResponse.statusCode, stubResponse.headers);
-                response.end(stubResponse.body.toString(), 'utf8');
-            }, errorHandler);
+            domain.run(function () {
+                simplify(request).then(function (simpleRequest) {
+                    requests.push(simpleRequest);
+                    return stubs.resolve(simpleRequest);
+                }).done(function (stubResponse) {
+                    response.writeHead(stubResponse.statusCode, stubResponse.headers);
+                    response.end(stubResponse.body.toString(), 'utf8');
+                }, errorHandler);
+            });
         });
-    });
 
     server.on('close', function () {
         logger.info(logPrefix + 'Ciao for now');

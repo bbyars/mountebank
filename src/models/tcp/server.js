@@ -2,34 +2,46 @@
 
 var net = require('net'),
     Q = require('q'),
-    logger = require('winston');
+    logger = require('winston'),
+    Domain = require('domain'),
+    StubRepository = require('./stubRepository');
 
 var create = function (port) {
     var logPrefix = '[tcp:' + port + '] ',
         deferred = Q.defer(),
-        requests = [];
+        requests = [],
+        stubs = StubRepository.create(),
+        server = net.createServer(function connectionListener (client) {
+            var clientName = client.remoteAddress + ':' + client.remotePort,
+                errorHandler = function (error) {
+                    logger.error(logPrefix + clientName + ' => ' + JSON.stringify(error));
+                    client.write('mountebank: ' + JSON.stringify(error), 'utf8');
+                };
 
-    var server = net.createServer(function connectionListener (client) {
-        client.name = client.remoteAddress + ':' + client.remotePort;
-        logger.info(logPrefix + 'connection started from ' + client.name);
+            logger.info(logPrefix + 'connection started from ' + clientName);
 
-        var request = [];
-        requests.push(request);
+            client.on('error', errorHandler);
+            client.on('data', function (data) {
+                var request = { host: client.remoteAddress, port: client.port, data: data },
+                    domain = Domain.create();
 
-        client.on('data', function (chunk) {
-            logger.info(logPrefix + client.name + ' => ' + chunk.toString('base64'));
-            request.push(chunk);
+                logger.info(logPrefix + clientName + ' => ' + data.toString('utf8'));
+                requests.push(request);
+
+                domain.on('error', errorHandler);
+                domain.run(function () {
+                    stubs.resolve(request).done(function (stubResponse) {
+                        logger.info(logPrefix + stubResponse + ' => ' + clientName);
+                        client.write(stubResponse, 'utf8');
+                    }, errorHandler);
+                });
+            });
+
+            client.on('end', function () {
+                //TODO: Allow stubResponse here?
+                logger.info(logPrefix + 'connection ended from ' + clientName);
+            });
         });
-
-        client.on('error', function (error) {
-            logger.error(logPrefix + client.name + ' => ' + JSON.stringify(error));
-        });
-
-        client.on('end', function () {
-            logger.info(logPrefix + 'connection ended from ' + client.name);
-            logger.info(logPrefix + 'full request => ' + Buffer.concat(request).toString('base64'));
-        });
-    });
 
     server.on('close', function () {
         logger.info(logPrefix + 'Bye bye...');
@@ -39,7 +51,7 @@ var create = function (port) {
         logger.info(logPrefix + 'Open for business...');
         deferred.resolve({
             requests: requests,
-            addStub: function () {},
+            addStub: stubs.addStub,
             close: function () {
                 server.close();
             }
