@@ -2,8 +2,6 @@
 
 var Q = require('q'),
     util = require('util'),
-    net = require('net'),
-    logger = require('winston'),
     predicates = require('./predicates'),
     errors = require('../../errors/errors');
 
@@ -53,7 +51,7 @@ function create (proxy) {
     }
 
     function resolve (request) {
-        var stub = findFirstMatch(request) || { responses: [{ is: {} }]},
+        var stub = findFirstMatch(request) || { responses: [{ is: '' }]},
             stubResolver = stub.responses.shift(),
             deferred = Q.defer();
 
@@ -80,20 +78,7 @@ function create (proxy) {
             return Q(stubResolver.is);
         }
         else if (stubResolver.proxy) {
-            var deferred = Q.defer(),
-                options = { host: stubResolver.proxy.hostname, port: stubResolver.proxy.port },
-                socket = net.connect(options, function () {
-                    socket.end(request, 'base64');
-                });
-
-            logger.info(util.format('Proxying to tcp://%s:%s => %s', options.host, options.port, request));
-            socket.setEncoding('base64');
-            socket.on('data', function (data) {
-                logger.info(util.format('Result from tcp://%s:%s => %s', options.host, options.port, request));
-                deferred.resolve(data);
-            });
-
-            return deferred.promise;
+            return proxy.to(stubResolver.proxy, request);
         }
         else if (stubResolver.proxyOnce) {
             return proxy.to(stubResolver.proxyOnce, request).then(function (response) {

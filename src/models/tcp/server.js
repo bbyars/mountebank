@@ -3,6 +3,7 @@
 var net = require('net'),
     Q = require('q'),
     logger = require('winston'),
+    Proxy = require('./proxy'),
     Domain = require('domain'),
     StubRepository = require('./stubRepository');
 
@@ -10,7 +11,7 @@ var create = function (port) {
     var logPrefix = '[tcp:' + port + '] ',
         deferred = Q.defer(),
         requests = [],
-        stubs = StubRepository.create(),
+        stubs = StubRepository.create(Proxy.create()),
         server = net.createServer(function connectionListener (client) {
             var clientName = client.remoteAddress + ':' + client.remotePort,
                 errorHandler = function (error) {
@@ -20,19 +21,20 @@ var create = function (port) {
 
             logger.info(logPrefix + 'connection started from ' + clientName);
 
+            client.setEncoding('utf8');
             client.on('error', errorHandler);
             client.on('data', function (data) {
-                var request = { host: client.remoteAddress, port: client.port, data: data },
+                var request = { host: client.remoteAddress, port: client.remotePort, data: data },
                     domain = Domain.create();
 
-                logger.info(logPrefix + clientName + ' => ' + data.toString('utf8'));
+                logger.info(logPrefix + clientName + ' => ' + data);
                 requests.push(request);
 
                 domain.on('error', errorHandler);
                 domain.run(function () {
                     stubs.resolve(request).done(function (stubResponse) {
-                        logger.info(logPrefix + stubResponse + ' => ' + clientName);
-                        client.write(stubResponse, 'utf8');
+                        logger.info(logPrefix + stubResponse.data + ' => ' + clientName);
+                        client.write(stubResponse.data, 'utf8');
                     }, errorHandler);
                 });
             });

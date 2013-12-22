@@ -11,7 +11,7 @@ var assert = require('assert'),
 var tcp = {
     send: function (message, serverPort) {
         var deferred = Q.defer(),
-            client = net.connect({ port: serverPort }, function () { client.end(message); });
+            client = net.connect({ port: serverPort }, function () { client.write(message); });
 
         client.setEncoding('utf8');
         client.on('error', deferred.reject);
@@ -25,7 +25,10 @@ describe('tcp imposter', function () {
 
     describe('POST /imposters with stubs', function () {
         promiseIt('should return stubbed response', function () {
-            var stub = { responses: [{ is: 'server' }] };
+            var stub = {
+                predicates: { data: { is: 'client' }},
+                responses: [{ is: { data: 'server' } }]
+            };
 
             return api.post('/imposters', { protocol: 'tcp', port: port, stubs: [stub] }).then(function (response) {
                 assert.strictEqual(response.statusCode, 201);
@@ -38,48 +41,38 @@ describe('tcp imposter', function () {
             });
         });
 
-//        promiseIt('should allow a sequence of stubs as a circular buffer', function () {
-//            var stub = {
-//                predicates: { path: { is: '/test' }},
-//                responses: [{ is: { statusCode: 400 }}, { is: { statusCode: 405 }}]
-//            };
-//
-//            return api.post('/imposters', { protocol: 'http', port: port, stubs: [stub] }).then(function () {
-//                return api.get('/test', port);
-//            }).then(function (response) {
-//                    assert.strictEqual(response.statusCode, 400);
-//
-//                    return api.get('/test', port);
-//                }).then(function (response) {
-//                    assert.strictEqual(response.statusCode, 405);
-//
-//                    return api.get('/test', port);
-//                }).then(function (response) {
-//                    assert.strictEqual(response.statusCode, 400);
-//
-//                    return api.get('/test', port);
-//                }).then(function (response) {
-//                    assert.strictEqual(response.statusCode, 405);
-//                }).finally(function () {
-//                    return api.del('/imposters/' + port);
-//                });
-//        });
-//
+        promiseIt('should allow a sequence of stubs as a circular buffer', function () {
+            var stub = {
+                predicates: { data: { is: 'request' }},
+                responses: [{ is: { data: 'first' }}, { is: { data: 'second' }}]
+            };
+
+            return api.post('/imposters', { protocol: 'tcp', port: port, stubs: [stub] }).then(function () {
+                return tcp.send('request', port);
+            }).then(function (response) {
+                assert.strictEqual(response, 'first');
+
+                return tcp.send('request', port);
+            }).then(function (response) {
+                assert.strictEqual(response, 'second');
+
+                return tcp.send('request', port);
+            }).then(function (response) {
+                assert.strictEqual(response, 'first');
+
+                return tcp.send('request', port);
+            }).then(function (response) {
+                assert.strictEqual(response, 'second');
+            }).finally(function () {
+                return api.del('/imposters/' + port);
+            });
+        });
+
 //        promiseIt('should only return stubbed response if matches complex predicate', function () {
-//            var spec = {
-//                    path: '/test?key=value',
-//                    port: port,
-//                    method: 'POST',
-//                    headers: {
-//                        'X-One': 'Test',
-//                        'X-Two': 'Test',
-//                        'Content-Type': 'text/plain'
-//                    }
-//                },
-//                stub = {
-//                    responses: [{ is: { statusCode: 400 }}],
+//            var stub = {
+//                    responses: [{ is: { data: 'MATCH' }}],
 //                    predicates: {
-//                        path: { is: '/test' },
+//                        host: { is: '/test' },
 //                        query: {
 //                            key: { is: 'value' }
 //                        },
@@ -105,129 +98,128 @@ describe('tcp imposter', function () {
 //                var options = api.merge(spec, { path: '/' });
 //                return api.responseFor(options, 'TEST');
 //            }).then(function (response) {
-//                    assert.strictEqual(response.statusCode, 200, 'should not have matched; wrong path');
+//                assert.strictEqual(response.statusCode, 200, 'should not have matched; wrong path');
 //
-//                    var options = api.merge(spec, { path: '/test?key=different' });
-//                    return api.responseFor(options, 'TEST');
-//                }).then(function (response) {
-//                    assert.strictEqual(response.statusCode, 200, 'should not have matched; wrong query');
+//                var options = api.merge(spec, { path: '/test?key=different' });
+//                return api.responseFor(options, 'TEST');
+//            }).then(function (response) {
+//                assert.strictEqual(response.statusCode, 200, 'should not have matched; wrong query');
 //
-//                    var options = api.merge(spec, { method: 'PUT' });
-//                    return api.responseFor(options, 'TEST');
-//                }).then(function (response) {
-//                    assert.strictEqual(response.statusCode, 200, 'should not have matched; wrong method');
+//                var options = api.merge(spec, { method: 'PUT' });
+//                return api.responseFor(options, 'TEST');
+//            }).then(function (response) {
+//                assert.strictEqual(response.statusCode, 200, 'should not have matched; wrong method');
 //
-//                    var options = api.merge(spec, {});
-//                    delete options.headers['X-One'];
-//                    return api.responseFor(options, 'TEST');
-//                }).then(function (response) {
-//                    assert.strictEqual(response.statusCode, 200, 'should not have matched; missing header');
+//                var options = api.merge(spec, {});
+//                delete options.headers['X-One'];
+//                return api.responseFor(options, 'TEST');
+//            }).then(function (response) {
+//                assert.strictEqual(response.statusCode, 200, 'should not have matched; missing header');
 //
-//                    var options = api.merge(spec, { headers: { 'X-Two': 'Testing' }});
-//                    return api.responseFor(options, 'TEST');
-//                }).then(function (response) {
-//                    assert.strictEqual(response.statusCode, 200, 'should not have matched; wrong value for header');
+//                var options = api.merge(spec, { headers: { 'X-Two': 'Testing' }});
+//                return api.responseFor(options, 'TEST');
+//            }).then(function (response) {
+//                assert.strictEqual(response.statusCode, 200, 'should not have matched; wrong value for header');
 //
-//                    return api.responseFor(api.merge(spec, {}), 'TESTing');
-//                }).then(function (response) {
-//                    assert.strictEqual(response.statusCode, 200, 'should not have matched; wrong value for body');
+//                return api.responseFor(api.merge(spec, {}), 'TESTing');
+//            }).then(function (response) {
+//                assert.strictEqual(response.statusCode, 200, 'should not have matched; wrong value for body');
 //
-//                    return api.responseFor(api.merge(spec, {}), 'TEST');
-//                }).then(function (response) {
-//                    assert.strictEqual(response.statusCode, 400, 'should have matched');
+//                return api.responseFor(api.merge(spec, {}), 'TEST');
+//            }).then(function (response) {
+//                assert.strictEqual(response.statusCode, 400, 'should have matched');
 //
-//                    return Q(true);
-//                }).finally(function () {
-//                    return api.del('/imposters/' + port);
-//                });
+//                return Q(true);
+//            }).finally(function () {
+//                return api.del('/imposters/' + port);
+//            });
 //        });
+
+        promiseIt('should allow proxy stubs', function () {
+            var proxyPort = port + 1,
+                proxyStub = { responses: [{ is: { data: 'PROXIED' } }] },
+                stub = { responses: [{ proxy: { host: 'localhost', port:  proxyPort } }] };
+
+            return api.post('/imposters', { protocol: 'tcp', port: proxyPort, stubs: [proxyStub] }).then(function () {
+                return api.post('/imposters', { protocol: 'tcp', port: port, stubs: [stub] });
+            }).then(function () {
+                return tcp.send('request', port);
+            }).then(function (response) {
+                assert.strictEqual(response, 'PROXIED');
+            }).finally(function () {
+                return api.del('/imposters/' + proxyPort);
+            }).finally(function () {
+                return api.del('/imposters/' + port);
+            });
+        });
+
+//        promiseIt('should allow proxy stubs to invalid hosts', function () {
+//            var stub = { responses: [{ proxy: { host: 'remotehost', port: 8000 } }] };
 //
-//        promiseIt('should allow proxy stubs', function () {
-//            var proxyPort = port + 1,
-//                proxyStub = { responses: [{ is: { body: 'PROXIED' } }] },
-//                stub = { responses: [{ proxy: 'http://localhost:' + proxyPort }] };
-//
-//            return api.post('/imposters', { protocol: 'http', port: proxyPort, stubs: [proxyStub] }).then(function () {
-//                return api.post('/imposters', { protocol: 'http', port: port, stubs: [stub] });
+//            return api.post('/imposters', { protocol: 'tcp', port: port, stubs: [stub] }).then(function () {
 //            }).then(function () {
-//                    return api.get('/', port);
-//                }).then(function (response) {
-//                    assert.strictEqual(response.body, 'PROXIED');
-//                }).finally(function () {
-//                    return api.del('/imposters/' + proxyPort);
-//                }).finally(function () {
-//                    return api.del('/imposters/' + port);
-//                });
+//                return tcp.send('request', port);
+//            }).then(function (response) {
+//                assert.deepEqual(JSON.parse(response), { errors: [{
+//                    code: 'invalid proxy',
+//                    message: 'Cannot resolve remotehost'
+//                }]});
+//            }).finally(function () {
+//                return api.del('/imposters/' + port);
+//            });
 //        });
-//
-//        promiseIt('should allow proxy stubs to invalid domains', function () {
-//            var stub = { responses: [{ proxy: 'http://invalid.domain' }] };
-//
-//            return api.post('/imposters', { protocol: 'http', port: port, stubs: [stub] }).then(function () {
-//            }).then(function () {
-//                    return api.get('/', port);
-//                }).then(function (response) {
-//                    assert.strictEqual(response.statusCode, 500);
-//                    assert.deepEqual(response.body, { errors: [{
-//                        code: 'invalid proxy',
-//                        message: 'Cannot resolve http://invalid.domain'
-//                    }]});
-//                }).finally(function () {
-//                    return api.del('/imposters/' + port);
-//                });
-//        });
-//
-//        promiseIt('should allow proxyOnce behavior', function () {
-//            var proxyPort = port + 1,
-//                proxyStub = { responses: [{ is: { body: 'PROXIED' } }] },
-//                stub = { responses: [{ proxyOnce: 'http://localhost:' + proxyPort }] };
-//
-//            return api.post('/imposters', { protocol: 'http', port: proxyPort, stubs: [proxyStub] }).then(function () {
-//                return api.post('/imposters', { protocol: 'http', port: port, stubs: [stub] });
-//            }).then(function () {
-//                    return api.get('/', port);
-//                }).then(function (response) {
-//                    assert.strictEqual(response.body, 'PROXIED');
-//
-//                    return api.get('/', port);
-//                }).then(function (response) {
-//                    assert.strictEqual(response.body, 'PROXIED');
-//
-//                    return api.get('/imposters/' + proxyPort);
-//                }).then(function (response) {
-//                    assert.strictEqual(response.body.requests.length, 1);
-//                }).finally(function () {
-//                    return api.del('/imposters/' + proxyPort);
-//                }).finally(function () {
-//                    return api.del('/imposters/' + port);
-//                });
-//        });
-//
-//        promiseIt('should save proxyOnce state between stub creations', function () {
-//            var proxyPort = port + 1,
-//                proxyStub = { responses: [{ is: { body: 'PROXIED' } }] },
-//                stub = { responses: [{ proxyOnce: 'http://localhost:' + proxyPort }] };
-//
-//            return api.post('/imposters', { protocol: 'http', port: proxyPort, stubs: [proxyStub] }).then(function () {
-//                return api.post('/imposters', { protocol: 'http', port: port, stubs: [stub] });
-//            }).then(function () {
-//                    return api.get('/', port);
-//                }).then(function () {
-//                    return api.del('/imposters/' + proxyPort);
-//                }).then(function () {
-//                    return api.del('/imposters/' + port);
-//                }).then(function (response) {
-//                    // replay the imposter body without change, and with the proxy shut down
-//                    return api.post('/imposters', response.body);
-//                }).then(function (response) {
-//                    assert.strictEqual(201, response.statusCode, JSON.stringify(response.body));
-//
-//                    return api.get('/', port);
-//                }).then(function (response) {
-//                    assert.strictEqual('PROXIED', response.body);
-//                }).finally(function () {
-//                    return api.del('/imposters/' + port);
-//                });
-//        });
+
+        promiseIt('should allow proxyOnce behavior', function () {
+            var proxyPort = port + 1,
+                proxyStub = { responses: [{ is: { data: 'PROXIED' } }] },
+                stub = { responses: [{ proxyOnce: { host: 'localhost', port: proxyPort } }] };
+
+            return api.post('/imposters', { protocol: 'tcp', port: proxyPort, stubs: [proxyStub] }).then(function () {
+                return api.post('/imposters', { protocol: 'tcp', port: port, stubs: [stub] });
+            }).then(function () {
+                return tcp.send('request', port);
+            }).then(function (response) {
+                assert.strictEqual(response, 'PROXIED');
+
+                return tcp.send('request', port);
+            }).then(function (response) {
+                assert.strictEqual(response, 'PROXIED');
+
+                return api.get('/imposters/' + proxyPort);
+            }).then(function (response) {
+                assert.strictEqual(response.body.requests.length, 1);
+            }).finally(function () {
+                return api.del('/imposters/' + proxyPort);
+            }).finally(function () {
+                return api.del('/imposters/' + port);
+            });
+        });
+
+        promiseIt('should save proxyOnce state between stub creations', function () {
+            var proxyPort = port + 1,
+                proxyStub = { responses: [{ is: { data: 'PROXIED' } }] },
+                stub = { responses: [{ proxyOnce: { host: 'localhost', port: proxyPort } }] };
+
+            return api.post('/imposters', { protocol: 'tcp', port: proxyPort, stubs: [proxyStub] }).then(function () {
+                return api.post('/imposters', { protocol: 'tcp', port: port, stubs: [stub] });
+            }).then(function () {
+                return tcp.send('request', port);
+            }).then(function () {
+                return api.del('/imposters/' + proxyPort);
+            }).then(function () {
+                return api.del('/imposters/' + port);
+            }).then(function (response) {
+                // replay the imposter body without change, and with the proxy shut down
+                return api.post('/imposters', response.body);
+            }).then(function (response) {
+                assert.strictEqual(201, response.statusCode, JSON.stringify(response.body));
+
+                return tcp.send('request', port);
+            }).then(function (response) {
+                assert.strictEqual('PROXIED', response);
+            }).finally(function () {
+                return api.del('/imposters/' + port);
+            });
+        });
     });
 });

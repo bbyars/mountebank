@@ -16,6 +16,7 @@ Stories
 5. Allow body expectations of SMTP
 6. Add brew package
 7. Add rpm package
+8. Use cluster module to isolate imposters from each other
 8 release!!!!
 8. Add MSI & Windows support
 9. Better error handling around invalid JSON requests to make consistent error messages
@@ -28,6 +29,7 @@ Stories
 23. Prettier /imposter/{port} HTML page
 25. change to only publish to npm and then deploy to heroku on branch
 26. Add support for case-sensitive predicates (as objects instead of strings?)
+27. Allow naming imposters to make log output more intelligible
 
 Known Bugs
 ==========
@@ -35,6 +37,9 @@ Known Bugs
 
 Cleanup Needed
 ==============
+- Allow case sensitive predicates
+- figure out how to change logger settings, make command line param, or run-time switch?
+- pass logger into to modules to auto-add imposter prefix
 
 Auxiliary Projects
 ==================
