@@ -49,9 +49,9 @@ describe('imposter', function () {
             });
         });
 
-        promiseIt('should create protocol server on provided port', function () {
-            return Imposter.create(Protocol, 3535).then(function () {
-                assert(Protocol.create.wasCalledWith(3535));
+        promiseIt('should create protocol server on provided port with options', function () {
+            return Imposter.create(Protocol, 3535, { key: 'value' }).then(function () {
+                assert(Protocol.create.wasCalledWith(3535, { key: 'value' }));
             });
         });
 

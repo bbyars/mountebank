@@ -10,19 +10,18 @@ function socketName (socket) {
     return socket.host + ':' + socket.port;
 }
 
-function create () {
+function create (encoding) {
     function to (options, originalRequest) {
         var deferred = Q.defer(),
             socket = net.connect(options, function () {
-                socket.end(originalRequest.data, 'utf8');
+                socket.end(originalRequest.data);
             });
 
         logger.info(util.format('Proxying %s => %s => %s',
-            socketName(originalRequest), originalRequest.data, socketName(options)));
+            socketName(originalRequest), originalRequest.data.toString(encoding), socketName(options)));
 
-        socket.setEncoding('utf8');
         socket.on('data', function (data) {
-            logger.info(util.format('%s <= %s', data, socketName(options)));
+            logger.info(util.format('%s <= %s', data.toString(encoding), socketName(options)));
             deferred.resolve({ data: data });
         });
 

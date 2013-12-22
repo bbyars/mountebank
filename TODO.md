@@ -1,8 +1,7 @@
 Stories
 =======
-3. TCP protocol
- - proxy
- - match
+0. fix encoding on tcp - utf8 or base64 or option?
+0. add tcp validator
 1. fix presentation for TCP on website
 0. log remote socket everywhere
 1. HTTPS support
@@ -29,7 +28,7 @@ Stories
 23. Prettier /imposter/{port} HTML page
 25. change to only publish to npm and then deploy to heroku on branch
 26. Add support for case-sensitive predicates (as objects instead of strings?)
-27. Allow naming imposters to make log output more intelligible
+27. Allow naming imposters to make log output more intelligible (retrofit tests!)
 
 Known Bugs
 ==========
@@ -40,6 +39,7 @@ Cleanup Needed
 - Allow case sensitive predicates
 - figure out how to change logger settings, make command line param, or run-time switch?
 - pass logger into to modules to auto-add imposter prefix
+- set Q.longstacktrace for dev (command line switch?)
 
 Auxiliary Projects
 ==================

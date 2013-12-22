@@ -26,11 +26,12 @@ describe('tcp imposter', function () {
     describe('POST /imposters with stubs', function () {
         promiseIt('should return stubbed response', function () {
             var stub = {
-                predicates: { data: { is: 'client' }},
-                responses: [{ is: { data: 'server' } }]
-            };
+                    predicates: { data: { is: 'client' }},
+                    responses: [{ is: { data: 'server' } }]
+                },
+                imposter = { protocol: 'tcp', port: port, stubs: [stub], mode: 'text' };
 
-            return api.post('/imposters', { protocol: 'tcp', port: port, stubs: [stub] }).then(function (response) {
+            return api.post('/imposters', imposter).then(function (response) {
                 assert.strictEqual(response.statusCode, 201);
 
                 return tcp.send('client', port);

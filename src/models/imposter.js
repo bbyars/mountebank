@@ -4,31 +4,30 @@ var Q = require('q'),
     Domain = require('domain'),
     errors = require('../errors/errors');
 
+function createErrorHandler (deferred) {
+    return function errorHandler (error) {
+        if (error.errno === 'EADDRINUSE') {
+            deferred.reject(errors.ResourceConflictError('The port is already in use'));
+        }
+        else if (error.errno === 'EACCES') {
+            deferred.reject(errors.InsufficientAccessError());
+        }
+        else {
+            deferred.reject(error);
+        }
+    };
+}
+
 function create (Protocol, port, request) {
     var stubs = [],
-        url = '/imposters/' + port;
-
-    function createErrorHandler (deferred) {
-        return function errorHandler (error) {
-            if (error.errno === 'EADDRINUSE') {
-                deferred.reject(errors.ResourceConflictError('The port is already in use'));
-            }
-            else if (error.errno === 'EACCES') {
-                deferred.reject(errors.InsufficientAccessError());
-            }
-            else {
-                deferred.reject(error);
-            }
-        };
-    }
-
-    var deferred = Q.defer(),
+        url = '/imposters/' + port,
+        deferred = Q.defer(),
         domain = Domain.create(),
         errorHandler = createErrorHandler(deferred);
 
     domain.on('error', errorHandler);
     domain.run(function () {
-        Protocol.create(port).done(function (server) {
+        Protocol.create(port, request).done(function (server) {
 
             function addStub (stub) {
                 server.addStub(stub);

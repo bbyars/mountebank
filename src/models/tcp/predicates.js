@@ -24,7 +24,7 @@ function getNested (obj, fieldName) {
 function satisfies (fieldName, expected, request, predicate) {
     var actual = getNested(request, fieldName);
     if (['string', 'boolean'].indexOf(typeof expected) >= 0) {
-        return predicate(actual, expected);
+        return predicate(actual.toString(), expected);
     }
     else {
         return false;
