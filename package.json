@@ -14,8 +14,10 @@
     "mb": "./bin/mb"
   },
   "main": "./src/mountebank.js",
+  "config": {
+    "blanket": { "pattern": "/mountebank/src/" }
+  },
   "scripts": {
-    "blanket": { "pattern": "/mountebank/src/" },
     "start": "./bin/mb",
     "restart": "./bin/mb restart",
     "stop": "./bin/mb stop"
