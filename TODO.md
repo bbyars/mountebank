@@ -18,7 +18,7 @@ Stories
 8. Add MSI & Windows support
 9. Better error handling around invalid JSON requests to make consistent error messages
 1. Add latency to response
-1. Add attachment support
+1. Add http attachment support
 1. Allow regex tokens from path/query in response
 20. Prettier log output, with filtering, on website
 21. Prettier /imposters HTML page
@@ -35,13 +35,11 @@ Known Bugs
 Cleanup Needed
 ==============
 - log consistently b/t imposters
-- Allow case sensitive predicates
 - figure out how to change logger settings, make command line param, or run-time switch?
 - pass logger into to modules to auto-add imposter prefix
 - set Q.longstacktrace for dev (command line switch?)
 - echo mode: binary back when GET /imposters
 - fix tcp predicates
-- allow log.debug, etc
 
 Auxiliary Projects
 ==================

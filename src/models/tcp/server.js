@@ -25,7 +25,7 @@ var create = function (port, options) {
 
             client.on('error', errorHandler);
             client.on('data', function (data) {
-                var request = { host: client.remoteAddress, port: client.remotePort, data: data },
+                var request = { host: client.remoteAddress, port: client.remotePort, data: data.toString(encoding) },
                     domain = Domain.create();
 
                 logger.info(logPrefix + clientName + ' => ' + data.toString(encoding));
