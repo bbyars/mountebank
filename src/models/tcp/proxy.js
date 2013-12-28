@@ -2,26 +2,24 @@
 
 var net = require('net'),
     Q = require('q'),
-    logger = require('winston'),
-    util = require('util'),
     errors = require('../../errors/errors');
 
 function socketName (socket) {
     return socket.host + ':' + socket.port;
 }
 
-function create (encoding) {
+function create (logger, encoding) {
     function to (options, originalRequest) {
         var deferred = Q.defer(),
             socket = net.connect(options, function () {
                 socket.end(originalRequest.data);
             });
 
-        logger.info(util.format('Proxying %s => %s => %s',
-            socketName(originalRequest), originalRequest.data.toString(encoding), socketName(options)));
+        logger.info('Proxying %s => <<%s>> => %s',
+            socketName(originalRequest), originalRequest.data.toString(encoding), socketName(options));
 
         socket.once('data', function (data) {
-            logger.info(util.format('%s <= %s', data.toString(encoding), socketName(options)));
+            logger.info('<<%s>> <= %s', data.toString(encoding), socketName(options));
             deferred.resolve({ data: data });
         });
 

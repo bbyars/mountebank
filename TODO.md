@@ -31,7 +31,9 @@ Stories
 
 Known Bugs
 ==========
-3. grunt does not kill mb if functional tests fail
+1. grunt does not kill mb if functional tests fail
+2. TCP proxying doesn't work if proxied server doesn't send a response
+   - add a timeout parameter, and always resolve if no response by that time?
 
 Cleanup Needed
 ==============
