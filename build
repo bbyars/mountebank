@@ -4,8 +4,6 @@ set -e
 
 export REVISION=${TRAVIS_BUILD_NUMBER:-0}
 
-bin/wsCheck
-
 npm install
 npm install grunt-cli
 MB_PORT=3535 node_modules/grunt-cli/bin/grunt

@@ -6,6 +6,15 @@ var spawn = require('child_process').spawn,
     port = process.env.MB_PORT || 2525,
     revision = process.env.REVISION || 0;
 
+function shell (command, done) {
+    exec(command, function (error) {
+        if (error) {
+            throw error;
+        }
+        done();
+    });
+}
+
 module.exports = function (grunt) {
 
     grunt.loadNpmTasks('grunt-contrib-jshint');
@@ -84,14 +93,11 @@ module.exports = function (grunt) {
     });
 
     grunt.registerTask('jsCheck', 'Run JavaScript checks not covered by jshint', function () {
-        var done = this.async();
+        shell('bin/jsCheck', this.async());
+    });
 
-        exec('bin/jsCheck', function (error) {
-            if (error) {
-                throw error;
-            }
-            done();
-        });
+    grunt.registerTask('wsCheck', 'Check for inconsistent whitespace', function () {
+        shell('bin/wsCheck', this.async());
     });
 
     grunt.registerTask('version', 'Set the version number', function () {
@@ -134,6 +140,6 @@ module.exports = function (grunt) {
     grunt.registerTask('test:functional', 'Run the functional tests', ['mb:restart', 'mochaTest:functional', 'mb:stop']);
     grunt.registerTask('test', 'Run all tests', ['test:unit', 'test:functional']);
     grunt.registerTask('coverage', 'Generate code coverage', ['mochaTest:coverage']);
-    grunt.registerTask('lint', 'Run all JavaScript lint checks', ['jsCheck', 'jshint']);
+    grunt.registerTask('lint', 'Run all JavaScript lint checks', ['wsCheck', 'jsCheck', 'jshint']);
     grunt.registerTask('default', ['version', 'test', 'lint']);
 };
