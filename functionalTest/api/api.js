@@ -5,6 +5,8 @@ var http = require('http'),
     port = parseInt(process.env.MB_PORT || 2525),
     url = 'http://localhost:' + port;
 
+Q.longStackSupport = true;
+
 function clone (obj) {
     return JSON.parse(JSON.stringify(obj));
 }
