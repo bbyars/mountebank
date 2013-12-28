@@ -33,12 +33,17 @@
           requirement, but the mountebank build needs that capability.</td>
           <td>mb.pid</td>
         </tr>
-          <tr>
-            <td><code>--logfile logs/mb.log</code></td>
-            <td>The file for mountebank to store the logs in.  You can view the contents
-            on the <a href='/logs'>logs</a> page.</td>
-            <td>logs/mb.log</td>
-          </tr>
+        <tr>
+          <td><code>--logfile logs/mb.log</code></td>
+          <td>The file for mountebank to store the logs in.  You can view the contents
+          on the <a href='/logs'>logs</a> page.</td>
+          <td>logs/mb.log</td>
+        </tr>
+        <tr>
+          <td><code>--loglevel debug</code></td>
+          <td>The logging level, one of debug, info, warn, error.</td>
+          <td>info</td>
+        </tr>
         <tr>
           <td><code>--allowInjection</code></td>
           <td>mountebank supports JavaScript injection for both predicates and stub responses,

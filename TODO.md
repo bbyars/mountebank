@@ -2,6 +2,7 @@ Stories
 =======
 1. fix presentation for TCP on website
 0. log remote socket everywhere
+27. Allow naming imposters to make log output more intelligible (retrofit tests!)
 1. HTTPS support
 1. or predicate
 2. Create resolver to automatically create proxyOnce/is with predicates without
@@ -26,7 +27,7 @@ Stories
 23. Prettier /imposter/{port} HTML page
 25. change to only publish to npm and then deploy to heroku on branch
 26. Add support for case-sensitive predicates (as objects instead of strings?)
-27. Allow naming imposters to make log output more intelligible (retrofit tests!)
+28. UDP and TCP syslog support (see http://en.wikipedia.org/wiki/Syslog for packet format)
 
 Known Bugs
 ==========

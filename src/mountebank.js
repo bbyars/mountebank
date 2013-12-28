@@ -23,8 +23,8 @@ function create (options) {
         validateImposterExists = middleware.createImposterValidator(imposters);
 
     logger.remove(logger.transports.Console);
-    logger.add(logger.transports.Console, { colorize: true });
-    logger.add(logger.transports.File, { filename: options.logfile, timestamp: true });
+    logger.add(logger.transports.Console, { colorize: true, level: options.loglevel });
+    logger.add(logger.transports.File, { filename: options.logfile, timestamp: true, level: options.loglevel });
 
     app.use(middleware.useAbsoluteUrls(options.port));
     app.use(middleware.logger(logger, '[mb  /' + options.port + '] :method :url'));
@@ -38,7 +38,7 @@ function create (options) {
     app.set('view engine', 'ejs');
 
     app.listen(options.port);
-    console.log('mountebank now taking orders - point your browser to http://localhost:' + options.port + ' for help');
+    logger.info('mountebank now taking orders - point your browser to http://localhost:' + options.port + ' for help');
 
     app.get('/', homeController.get);
     app.get('/imposters', impostersController.get);
@@ -66,7 +66,7 @@ function create (options) {
 
     return {
         close: function () {
-            console.log('Adios - see you soon?');
+            logger.info('Adios - see you soon?');
         }
     };
 }

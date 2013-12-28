@@ -7,7 +7,7 @@ var mountebank = require('../src/mountebank'),
     exec = require('child_process').exec;
 
 function usage () {
-    console.log("Usage: mb <command> [--port <port>] [--pidfile <pidfile>] [--logfile <file>] [--allowInjection]\n");
+    console.log("Usage: mb <command> [--port <port>] [--pidfile <pidfile>] [--logfile <file>] [--loglevel <level>] [--allowInjection]\n");
     console.log("where <command> is one of:");
     console.log("\tstart, stop, restart, help");
 }
@@ -55,7 +55,7 @@ var serverAt = function (options) {
 };
 
 try {
-    var defaultOptions = { port: 2525, pidfile: 'mb.pid', logfile: 'mb.log' },
+    var defaultOptions = { port: 2525, pidfile: 'mb.pid', logfile: 'mb.log', loglevel: 'info' },
         commandLine = cli.parse(process.argv.slice(2), defaultOptions, ['allowInjection', 'heroku']),
         server = serverAt(commandLine.options);
 
