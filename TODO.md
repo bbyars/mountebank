@@ -1,7 +1,5 @@
 Stories
 =======
-0. fix encoding on tcp - utf8 or base64 or option?
-0. add tcp validator
 1. fix presentation for TCP on website
 0. log remote socket everywhere
 1. HTTPS support
@@ -36,11 +34,14 @@ Known Bugs
 
 Cleanup Needed
 ==============
+- log consistently b/t imposters
 - Allow case sensitive predicates
 - figure out how to change logger settings, make command line param, or run-time switch?
 - pass logger into to modules to auto-add imposter prefix
 - set Q.longstacktrace for dev (command line switch?)
 - echo mode: binary back when GET /imposters
+- fix tcp predicates
+- allow log.debug, etc
 
 Auxiliary Projects
 ==================

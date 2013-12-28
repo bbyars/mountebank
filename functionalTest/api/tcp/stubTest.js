@@ -19,7 +19,7 @@ describe('tcp imposter', function () {
                 imposter = { protocol: 'tcp', port: port, stubs: [stub], mode: 'text' };
 
             return api.post('/imposters', imposter).then(function (response) {
-                assert.strictEqual(response.statusCode, 201);
+                assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body));
 
                 return tcp.send('client', port);
             }).then(function (response) {

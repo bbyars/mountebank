@@ -4,6 +4,7 @@ var net = require('net'),
     Q = require('q'),
     logger = require('winston'),
     Proxy = require('./proxy'),
+    Validator = require('./tcpValidator'),
     Domain = require('domain'),
     StubRepository = require('./stubRepository');
 
@@ -67,10 +68,15 @@ var create = function (port, options) {
     return deferred.promise;
 };
 
-function initialize () {
+function initialize (allowInjection) {
     return {
         name: 'tcp',
-        create: create
+        create: create,
+        Validator: {
+            create: function () {
+                return Validator.create(allowInjection);
+            }
+        }
     };
 }
 
