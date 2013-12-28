@@ -17,7 +17,7 @@ var create = function (port, options) {
             var clientName = client.remoteAddress + ':' + client.remotePort,
                 errorHandler = function (error) {
                     logger.error(logPrefix + clientName + ' => ' + JSON.stringify(error));
-                    client.write(JSON.stringify(error), 'utf8');
+                    client.write(JSON.stringify({ errors: [error] }), 'utf8');
                 };
 
             logger.info(logPrefix + 'connection started from ' + clientName);
@@ -33,8 +33,12 @@ var create = function (port, options) {
                 domain.on('error', errorHandler);
                 domain.run(function () {
                     stubs.resolve(request).done(function (stubResponse) {
-                        logger.info(logPrefix + stubResponse.data.toString(encoding) + ' => ' + clientName);
-                        client.write(stubResponse.data);
+                        var buffer = Buffer.isBuffer(stubResponse.data) ?
+                                stubResponse.data :
+                                new Buffer(stubResponse.data, encoding);
+
+                        logger.info(logPrefix + buffer.toString(encoding) + ' => ' + clientName);
+                        client.write(buffer);
                     }, errorHandler);
                 });
             });

@@ -5,7 +5,7 @@ var Q = require('q'),
     predicates = require('./predicates'),
     errors = require('../../errors/errors');
 
-function create (proxy, encoding) {
+function create (proxy) {
     var stubs = [],
         injectState = {};
 
@@ -73,17 +73,9 @@ function create (proxy, encoding) {
         return deferred.promise;
     }
 
-    function encode (stubResponse) {
-        // proxyOnce can set an is resolver with a Buffer
-        if (!Buffer.isBuffer(stubResponse.data)) {
-            stubResponse.data = new Buffer(stubResponse.data, encoding);
-        }
-        return stubResponse;
-    }
-
     function getResolvedResponsePromise (stubResolver, request) {
         if (stubResolver.is) {
-            return Q(encode(stubResolver.is));
+            return Q(stubResolver.is);
         }
         else if (stubResolver.proxy) {
             return proxy.to(stubResolver.proxy, request);

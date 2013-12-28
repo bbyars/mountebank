@@ -20,12 +20,12 @@ function create (encoding) {
         logger.info(util.format('Proxying %s => %s => %s',
             socketName(originalRequest), originalRequest.data.toString(encoding), socketName(options)));
 
-        socket.on('data', function (data) {
+        socket.once('data', function (data) {
             logger.info(util.format('%s <= %s', data.toString(encoding), socketName(options)));
             deferred.resolve({ data: data });
         });
 
-        socket.on('error', function (error) {
+        socket.once('error', function (error) {
             if (error.code === 'ENOTFOUND') {
                 deferred.reject(errors.InvalidProxyError('Cannot resolve ' + JSON.stringify(options)));
             }

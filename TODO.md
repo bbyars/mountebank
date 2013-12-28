@@ -40,6 +40,7 @@ Cleanup Needed
 - figure out how to change logger settings, make command line param, or run-time switch?
 - pass logger into to modules to auto-add imposter prefix
 - set Q.longstacktrace for dev (command line switch?)
+- echo mode: binary back when GET /imposters
 
 Auxiliary Projects
 ==================

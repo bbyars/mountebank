@@ -2,23 +2,10 @@
 
 var assert = require('assert'),
     api = require('../api'),
-    Q = require('q'),
-    net = require('net'),
     promiseIt = require('../../testHelpers').promiseIt,
     port = api.port + 1,
-    timeout = parseInt(process.env.SLOW_TEST_TIMEOUT_MS || 2000);
-
-var tcp = {
-    send: function (message, serverPort) {
-        var deferred = Q.defer(),
-            client = net.connect({ port: serverPort }, function () { client.write(message); });
-
-        client.setEncoding('utf8');
-        client.on('error', deferred.reject);
-        client.on('data', deferred.resolve);
-        return deferred.promise;
-    }
-};
+    timeout = parseInt(process.env.SLOW_TEST_TIMEOUT_MS || 2000),
+    tcp = require('./client');
 
 describe('tcp imposter', function () {
     this.timeout(timeout);
@@ -36,7 +23,24 @@ describe('tcp imposter', function () {
 
                 return tcp.send('client', port);
             }).then(function (response) {
-                assert.strictEqual(response, 'server');
+                assert.strictEqual(response.toString(), 'server');
+            }).finally(function () {
+                return api.del('/imposters/' + port);
+            });
+        });
+
+        promiseIt('should allow binary stub responses', function () {
+            var buffer = new Buffer([0, 1, 2, 3]),
+                stub = { responses: [{ is: { data: buffer.toString('base64') } }] },
+                imposter = { protocol: 'tcp', port: port, stubs: [stub], mode: 'binary' };
+
+            return api.post('/imposters', imposter).then(function (response) {
+                assert.strictEqual(response.statusCode, 201);
+
+                return tcp.send('0', port);
+            }).then(function (response) {
+                assert.ok(Buffer.isBuffer(response));
+                assert.deepEqual(response.toJSON(), [0, 1, 2, 3]);
             }).finally(function () {
                 return api.del('/imposters/' + port);
             });
@@ -51,19 +55,19 @@ describe('tcp imposter', function () {
             return api.post('/imposters', { protocol: 'tcp', port: port, stubs: [stub] }).then(function () {
                 return tcp.send('request', port);
             }).then(function (response) {
-                assert.strictEqual(response, 'first');
+                assert.strictEqual(response.toString(), 'first');
 
                 return tcp.send('request', port);
             }).then(function (response) {
-                assert.strictEqual(response, 'second');
+                assert.strictEqual(response.toString(), 'second');
 
                 return tcp.send('request', port);
             }).then(function (response) {
-                assert.strictEqual(response, 'first');
+                assert.strictEqual(response.toString(), 'first');
 
                 return tcp.send('request', port);
             }).then(function (response) {
-                assert.strictEqual(response, 'second');
+                assert.strictEqual(response.toString(), 'second');
             }).finally(function () {
                 return api.del('/imposters/' + port);
             });
@@ -146,7 +150,7 @@ describe('tcp imposter', function () {
             }).then(function () {
                 return tcp.send('request', port);
             }).then(function (response) {
-                assert.strictEqual(response, 'PROXIED');
+                assert.strictEqual(response.toString(), 'PROXIED');
             }).finally(function () {
                 return api.del('/imposters/' + proxyPort);
             }).finally(function () {
@@ -154,21 +158,20 @@ describe('tcp imposter', function () {
             });
         });
 
-//        promiseIt('should allow proxy stubs to invalid hosts', function () {
-//            var stub = { responses: [{ proxy: { host: 'remotehost', port: 8000 } }] };
-//
-//            return api.post('/imposters', { protocol: 'tcp', port: port, stubs: [stub] }).then(function () {
-//            }).then(function () {
-//                return tcp.send('request', port);
-//            }).then(function (response) {
-//                assert.deepEqual(JSON.parse(response), { errors: [{
-//                    code: 'invalid proxy',
-//                    message: 'Cannot resolve remotehost'
-//                }]});
-//            }).finally(function () {
-//                return api.del('/imposters/' + port);
-//            });
-//        });
+        promiseIt('should allow proxy stubs to invalid hosts', function () {
+            var stub = { responses: [{ proxy: { host: 'remotehost', port: 8000 } }] };
+
+            return api.post('/imposters', { protocol: 'tcp', port: port, stubs: [stub] }).then(function () {
+                return tcp.send('request', port);
+            }).then(function (response) {
+                assert.deepEqual(JSON.parse(response), { errors: [{
+                    code: 'invalid proxy',
+                    message: 'Cannot resolve {"host":"remotehost","port":8000}'
+                }]});
+            }).finally(function () {
+                return api.del('/imposters/' + port);
+            });
+        });
 
         promiseIt('should allow proxyOnce behavior', function () {
             var proxyPort = port + 1,
@@ -180,11 +183,11 @@ describe('tcp imposter', function () {
             }).then(function () {
                 return tcp.send('request', port);
             }).then(function (response) {
-                assert.strictEqual(response, 'PROXIED');
+                assert.strictEqual(response.toString(), 'PROXIED');
 
                 return tcp.send('request', port);
             }).then(function (response) {
-                assert.strictEqual(response, 'PROXIED');
+                assert.strictEqual(response.toString(), 'PROXIED');
 
                 return api.get('/imposters/' + proxyPort);
             }).then(function (response) {
@@ -217,7 +220,7 @@ describe('tcp imposter', function () {
 
                 return tcp.send('request', port);
             }).then(function (response) {
-                assert.strictEqual('PROXIED', response);
+                assert.strictEqual(response.toString(), 'PROXIED');
             }).finally(function () {
                 return api.del('/imposters/' + port);
             });
