@@ -36,10 +36,10 @@ Cleanup Needed
 ==============
 - log consistently b/t imposters
 - figure out how to change logger settings, make command line param, or run-time switch?
-- pass logger into to modules to auto-add imposter prefix
+- pass logger into to modules to auto-add imposter prefix; get logging out of test run
 - set Q.longstacktrace for dev (command line switch?)
-- echo mode: binary back when GET /imposters
 - fix tcp predicates
+- refactor common code between tcp and http; add unit tests
 
 Auxiliary Projects
 ==================

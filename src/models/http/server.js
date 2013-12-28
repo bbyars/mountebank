@@ -68,6 +68,7 @@ var create = function (port) {
         deferred.resolve({
             requests: requests,
             addStub: stubs.addStub,
+            metadata: {},
             close: function () {
                 server.close();
             }

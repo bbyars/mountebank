@@ -8,14 +8,16 @@ var assert = require('assert'),
 
 describe('imposter', function () {
     describe('#create', function () {
-        var Protocol;
+        var Protocol, metadata;
 
         beforeEach(function () {
+            metadata = {};
             Protocol = {
                 name: 'http',
                 create: mock().returns(Q({
                     requests: [],
-                    addStub: mock()
+                    addStub: mock(),
+                    metadata: metadata
                 })),
                 close: mock()
             };
@@ -44,6 +46,21 @@ describe('imposter', function () {
                     port: 3535,
                     requests: [],
                     stubs: [],
+                    _links: { self: { href: '/imposters/3535' } }
+                });
+            });
+        });
+
+        promiseIt('should add protocol metadata to JSON representation', function () {
+            metadata.key = 'value';
+
+            return Imposter.create(Protocol, 3535).then(function (imposter) {
+                assert.deepEqual(imposter.toJSON(), {
+                    protocol: 'http',
+                    port: 3535,
+                    requests: [],
+                    stubs: [],
+                    key: 'value',
                     _links: { self: { href: '/imposters/3535' } }
                 });
             });

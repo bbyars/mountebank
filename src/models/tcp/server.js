@@ -11,7 +11,8 @@ var net = require('net'),
 var create = function (port, options) {
     var logPrefix = '[tcp:' + port + '] ',
         deferred = Q.defer(),
-        encoding = options.mode === 'binary' ? 'base64' : 'utf8',
+        mode = options.mode ? options.mode : 'text',
+        encoding = mode === 'binary' ? 'base64' : 'utf8',
         requests = [],
         stubs = StubRepository.create(Proxy.create()),
         server = net.createServer(function connectionListener (client) {
@@ -59,6 +60,7 @@ var create = function (port, options) {
         deferred.resolve({
             requests: requests,
             addStub: stubs.addStub,
+            metadata: { mode: mode },
             close: function () {
                 server.close();
             }

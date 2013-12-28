@@ -45,6 +45,26 @@ describe('tcp imposter', function () {
             });
         });
 
+        promiseIt('should reflect default mode', function () {
+            return api.post('/imposters', { protocol: 'tcp', port: port }).then(function () {
+                return api.get('/imposters/' + port);
+            }).then(function (response) {
+                assert.strictEqual(response.statusCode, 200);
+                assert.deepEqual(response.body, {
+                    protocol: 'tcp',
+                    port: port,
+                    mode: 'text',
+                    requests: [],
+                    stubs: [],
+                    _links: {
+                        self: { href: api.url + '/imposters/' + port }
+                    }
+                });
+            }).finally(function () {
+                return api.del('/imposters/' + port);
+            });
+        });
+
         promiseIt('should record matches against stubs', function () {
             var stub = { responses: [{ is: { data: '1' }}, { is: { data: '2' }}]};
 

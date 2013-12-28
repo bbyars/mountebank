@@ -82,10 +82,20 @@ function create (allowInjection) {
         return deferred.promise;
     }
 
+    function validateMode (request) {
+        var errors = [];
+        if (request.mode && ['text', 'binary'].indexOf(request.mode) < 0) {
+            errors.push(exceptions.ValidationError("'mode' must be one of ['text', 'binary']"));
+        }
+        return errors;
+    }
+
     function validate (request) {
         var stubs = request.stubs || [],
             validationPromises = stubs.map(function (stub) { return errorsFor(stub); }),
             deferred = Q.defer();
+
+        validationPromises.push(Q(validateMode(request)));
 
         Q.all(validationPromises).done(function (errorsForAllStubs) {
             var allErrors = errorsForAllStubs.reduce(function (stubErrors, accumulator) {

@@ -52,6 +52,10 @@ function create (Protocol, port, request) {
                 var result = toListJSON();
                 result.requests = server.requests;
                 result.stubs = stubs;
+
+                Object.keys(server.metadata).forEach(function (key) {
+                    result[key] = server.metadata[key];
+                });
                 return result;
             }
 
