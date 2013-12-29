@@ -1,10 +1,9 @@
 Stories
 =======
-1. fix presentation for TCP on website
-1. HTTPS support
-1. or predicate
 2. Create resolver to automatically create proxyOnce/is with predicates without
   setting the predicates up by hand
+1. fix presentation for TCP on website
+1. or and and predicates
 4. Better docs - with accordion examples for each operator,etc (see http://codepen.io/Thoughtworks/full/BEmsu)
 4. Tests for documents that actually read a class in the HTML to try each request and verify response
 3. Allow base mock expectation of SMTP
@@ -38,7 +37,6 @@ Cleanup Needed
 ==============
 - fix tcp predicates
 - refactor common code between tcp and http; add unit tests
-- use %j for util.format
 
 Auxiliary Projects
 ==================
