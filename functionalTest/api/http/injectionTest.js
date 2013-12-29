@@ -33,18 +33,19 @@ describe('http imposter', function () {
         promiseIt('should allow javascript predicate for matching', function () {
             // note the lower-case keys for headers!!!
             var stub = {
-                predicates: {
-                    path: { inject: "function (path) { return path === '/test'; }" },
-                    method: { inject: "function (method) { return method === 'POST'; }" },
-                    query: { inject: "function (query) { return query.key = 'value'; }"},
-                    headers: { inject: "function (headers) { return headers['x-test'] === 'test header'; }" },
-                    body: { inject: "function (body) { return body === 'BODY'; }" },
-                    request: { inject: "function (request) { return request.path === '/test'; }" }
+                    predicates: {
+                        path: { inject: "function (path) { return path === '/test'; }" },
+                        method: { inject: "function (method) { return method === 'POST'; }" },
+                        query: { inject: "function (query) { return query.key = 'value'; }"},
+                        headers: { inject: "function (headers) { return headers['x-test'] === 'test header'; }" },
+                        body: { inject: "function (body) { return body === 'BODY'; }" },
+                        request: { inject: "function (request) { return request.path === '/test'; }" }
+                    },
+                    responses: [{ is: { body: 'MATCHED' } }]
                 },
-                responses: [{ is: { body: 'MATCHED' } }]
-            };
+                request = { protocol: 'http', port: port, stubs: [stub], name: this.name };
 
-            return api.post('/imposters', { protocol: 'http', port: port, stubs: [stub] }).then(function (response) {
+            return api.post('/imposters', request).then(function (response) {
                 assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body));
 
                 var spec = {
@@ -66,9 +67,10 @@ describe('http imposter', function () {
 
         promiseIt('should allow synchronous javascript injection for responses', function () {
             var fn = "function (request) { return { body: request.method + ' INJECTED' }; }",
-                stub = { responses: [{ inject: fn }] };
+                stub = { responses: [{ inject: fn }] },
+                request = { protocol: 'http', port: port, stubs: [stub], name: this.name };
 
-            return api.post('/imposters', { protocol: 'http', port: port, stubs: [stub] }).then(function () {
+            return api.post('/imposters', request).then(function () {
                 return api.get('/', port);
             }).then(function (response) {
                 assert.strictEqual(response.body, 'GET INJECTED');
@@ -85,9 +87,10 @@ describe('http imposter', function () {
                     "    state.calls += 1;\n" +
                     "    return { body: state.calls.toString() };\n" +
                     "}",
-                stub = { responses: [{ inject: fn }] };
+                stub = { responses: [{ inject: fn }] },
+                request = { protocol: 'http', port: port, stubs: [stub], name: this.name };
 
-            return api.post('/imposters', { protocol: 'http', port: port, stubs: [stub] }).then(function (response) {
+            return api.post('/imposters', request).then(function (response) {
                 assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body));
 
                 return api.get('/', port);
@@ -105,10 +108,11 @@ describe('http imposter', function () {
         promiseIt('should return a 400 if injection is disallowed and inject is used', function () {
             var mbPort = port + 1,
                 fn = "function (request) { return { body: request.method + ' INJECTED' }; }",
-                stub = { responses: [{ inject: fn }] };
+                stub = { responses: [{ inject: fn }] },
+                request = { protocol: 'http', port: port, stubs: [stub], name: this.name };
 
             return nonInjectableServer('start', mbPort).then(function () {
-                return api.post('/imposters', { protocol: 'http', port: port, stubs: [stub] }, mbPort);
+                return api.post('/imposters', request, mbPort);
             }).then(function (response) {
                 assert.strictEqual(response.statusCode, 400);
                 assert.strictEqual(response.body.errors[0].code, 'invalid operation');
@@ -144,9 +148,10 @@ describe('http imposter', function () {
                     "    httpRequest.end();\n" +
                     "    // No return value!!!\n" +
                     "}",
-                stub = { responses: [{ inject: fn }] };
+                stub = { responses: [{ inject: fn }] },
+                request = { protocol: 'http', port: port, stubs: [stub], name: this.name };
 
-            return api.post('/imposters', { protocol: 'http', port: port, stubs: [stub] }).then(function (response) {
+            return api.post('/imposters', request).then(function (response) {
                 assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body));
 
                 return api.get('', port);

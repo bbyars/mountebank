@@ -17,7 +17,9 @@ describe('http imposter', function () {
         });
 
         promiseIt('should provide access to all requests', function () {
-            return api.post('/imposters', { protocol: 'http', port: port }).then(function () {
+            var request = { protocol: 'http', port: port, name: this.name };
+
+            return api.post('/imposters', request).then(function () {
                 return api.get('/first', port);
             }).then(function () {
                 return api.get('/second', port);
@@ -36,9 +38,10 @@ describe('http imposter', function () {
 
         promiseIt('should return list of stubs in order', function () {
             var first = { responses: [{ is: { body: '1' }}]},
-                second = { responses: [{ is: { body: '2' }}]};
+                second = { responses: [{ is: { body: '2' }}]},
+                request = { protocol: 'http', port: port, stubs: [first, second], name: this.name };
 
-            return api.post('/imposters', { protocol: 'http', port: port, stubs: [first, second] }).then(function () {
+            return api.post('/imposters', request).then(function () {
                 return api.get('/imposters/' + port);
             }).then(function (response) {
                 assert.strictEqual(response.statusCode, 200);
@@ -52,9 +55,10 @@ describe('http imposter', function () {
         });
 
         promiseIt('should record matches against stubs', function () {
-            var stub = { responses: [{ is: { body: '1' }}, { is: { body: '2' }}]};
+            var stub = { responses: [{ is: { body: '1' }}, { is: { body: '2' }}]},
+                request = { protocol: 'http', port: port, stubs: [stub], name: this.name };
 
-            return api.post('/imposters', { protocol: 'http', port: port, stubs: [stub] }).then(function () {
+            return api.post('/imposters', request).then(function () {
                 return api.get('/first?q=1', port);
             }).then(function () {
                 return api.get('/second?q=2', port);
@@ -112,7 +116,9 @@ describe('http imposter', function () {
 
     describe('DELETE /imposters/:id should shutdown server at that port', function () {
         promiseIt('should shutdown server at that port', function () {
-            return api.post('/imposters', { protocol: 'http', port: port }).then(function (response) {
+            var request = { protocol: 'http', port: port, name: this.name };
+
+            return api.post('/imposters', request).then(function (response) {
                 return api.del(response.headers.location);
             }).then(function (response) {
                 assert.strictEqual(response.statusCode, 200, 'Delete failed');

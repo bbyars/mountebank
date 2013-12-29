@@ -12,7 +12,9 @@ describe('tcp imposter', function () {
 
     describe('GET /imposters/:id', function () {
         promiseIt('should provide access to all requests', function () {
-            return api.post('/imposters', { protocol: 'tcp', port: port }).then(function () {
+            var request = { protocol: 'tcp', port: port, name: this.name };
+
+            return api.post('/imposters', request).then(function () {
                 return tcp.fireAndForget('first', port);
             }).then(function () {
                 return tcp.fireAndForget('second', port);
@@ -30,9 +32,10 @@ describe('tcp imposter', function () {
 
         promiseIt('should return list of stubs in order', function () {
             var first = { responses: [{ is: { data: '1' }}]},
-                second = { responses: [{ is: { data: '2' }}]};
+                second = { responses: [{ is: { data: '2' }}]},
+                request = { protocol: 'tcp', port: port, stubs: [first, second], name: this.name };
 
-            return api.post('/imposters', { protocol: 'tcp', port: port, stubs: [first, second] }).then(function () {
+            return api.post('/imposters', request).then(function () {
                 return api.get('/imposters/' + port);
             }).then(function (response) {
                 assert.strictEqual(response.statusCode, 200);
@@ -46,7 +49,9 @@ describe('tcp imposter', function () {
         });
 
         promiseIt('should reflect default mode', function () {
-            return api.post('/imposters', { protocol: 'tcp', port: port }).then(function () {
+            var request = { protocol: 'tcp', port: port, name: this.name };
+
+            return api.post('/imposters', request).then(function () {
                 return api.get('/imposters/' + port);
             }).then(function (response) {
                 assert.strictEqual(response.statusCode, 200);
@@ -66,9 +71,10 @@ describe('tcp imposter', function () {
         });
 
         promiseIt('should record matches against stubs', function () {
-            var stub = { responses: [{ is: { data: '1' }}, { is: { data: '2' }}]};
+            var stub = { responses: [{ is: { data: '1' }}, { is: { data: '2' }}]},
+                request = { protocol: 'tcp', port: port, stubs: [stub], name: this.name };
 
-            return api.post('/imposters', { protocol: 'tcp', port: port, stubs: [stub] }).then(function () {
+            return api.post('/imposters', request).then(function () {
                 return tcp.send('first', port);
             }).then(function () {
                 return tcp.send('second', port);

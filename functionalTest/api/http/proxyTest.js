@@ -16,7 +16,9 @@ describe('http proxy', function () {
 
     describe('#to', function () {
         promiseIt('should send same request information to proxied url', function () {
-            return api.post('/imposters', { protocol: 'http', port: port }).then(function () {
+            var request = { protocol: 'http', port: port, name: this.name };
+
+            return api.post('/imposters', request).then(function () {
                 var request = { path: '/PATH', method: 'POST', body: 'BODY', headers: { 'X-Key': 'TRUE' }};
                 return proxy.to('http://localhost:' + port, request);
             }).then(function (response) {
@@ -36,9 +38,10 @@ describe('http proxy', function () {
         });
 
         promiseIt('should return proxied result', function () {
-            var stub = { responses: [{ is: { statusCode: 400, body: 'ERROR' }}]};
+            var stub = { responses: [{ is: { statusCode: 400, body: 'ERROR' }}]},
+                request = { protocol: 'http', port: port, stubs: [stub], name: this.name };
 
-            return api.post('/imposters', { protocol: 'http', port: port, stubs: [stub] }).then(function (response) {
+            return api.post('/imposters', request).then(function (response) {
                 assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body));
 
                 return proxy.to('http://localhost:' + port, { path: '/', method: 'GET', headers: {} });

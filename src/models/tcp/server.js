@@ -7,10 +7,12 @@ var net = require('net'),
     Proxy = require('./proxy'),
     Validator = require('./tcpValidator'),
     Domain = require('domain'),
-    StubRepository = require('./stubRepository');
+    StubRepository = require('./stubRepository'),
+    util = require('util');
 
 var create = function (port, options) {
-    var logger = ScopedLogger.create(winston, 'tcp', port),
+    var name = options.name ? util.format('tcp:%s %s', port, options.name) : 'tcp:' + port,
+        logger = ScopedLogger.create(winston, name),
         deferred = Q.defer(),
         mode = options.mode ? options.mode : 'text',
         encoding = mode === 'binary' ? 'base64' : 'utf8',

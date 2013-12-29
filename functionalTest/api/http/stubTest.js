@@ -21,9 +21,10 @@ describe('http imposter', function () {
                             body: 'test body'
                         }
                     }]
-                };
+                },
+                request = { protocol: 'http', port: port, stubs: [stub], name: this.name };
 
-            return api.post('/imposters', { protocol: 'http', port: port, stubs: [stub] }).then(function (response) {
+            return api.post('/imposters', request).then(function (response) {
                 assert.strictEqual(response.statusCode, 201);
 
                 return api.get('/test', port);
@@ -40,9 +41,10 @@ describe('http imposter', function () {
             var stub = {
                     predicates: { path: { is: '/test' }},
                     responses: [{ is: { statusCode: 400 }}, { is: { statusCode: 405 }}]
-                };
+                },
+                request = { protocol: 'http', port: port, stubs: [stub], name: this.name };
 
-            return api.post('/imposters', { protocol: 'http', port: port, stubs: [stub] }).then(function () {
+            return api.post('/imposters', request).then(function () {
                 return api.get('/test', port);
             }).then(function (response) {
                 assert.strictEqual(response.statusCode, 400);
@@ -97,9 +99,10 @@ describe('http imposter', function () {
                             exists: true
                         }
                     }
-                };
+                },
+                request = { protocol: 'http', port: port, stubs: [stub], name: this.name };
 
-            return api.post('/imposters', { protocol: 'http', port: port, stubs: [stub] }).then(function () {
+            return api.post('/imposters', request).then(function () {
                 var options = api.merge(spec, { path: '/' });
                 return api.responseFor(options, 'TEST');
             }).then(function (response) {
@@ -143,10 +146,12 @@ describe('http imposter', function () {
         promiseIt('should allow proxy stubs', function () {
             var proxyPort = port + 1,
                 proxyStub = { responses: [{ is: { body: 'PROXIED' } }] },
-                stub = { responses: [{ proxy: 'http://localhost:' + proxyPort }] };
+                proxyRequest = { protocol: 'http', port: proxyPort, stubs: [proxyStub], name: this.name + ' PROXY' },
+                stub = { responses: [{ proxy: 'http://localhost:' + proxyPort }] },
+                request = { protocol: 'http', port: port, stubs: [stub], name: this.name + 'MAIN' };
 
-            return api.post('/imposters', { protocol: 'http', port: proxyPort, stubs: [proxyStub] }).then(function () {
-                return api.post('/imposters', { protocol: 'http', port: port, stubs: [stub] });
+            return api.post('/imposters', proxyRequest).then(function () {
+                return api.post('/imposters', request);
             }).then(function () {
                 return api.get('/', port);
             }).then(function (response) {
@@ -159,9 +164,10 @@ describe('http imposter', function () {
         });
 
         promiseIt('should allow proxy stubs to invalid domains', function () {
-            var stub = { responses: [{ proxy: 'http://invalid.domain' }] };
+            var stub = { responses: [{ proxy: 'http://invalid.domain' }] },
+                request = { protocol: 'http', port: port, stubs: [stub], name: this.name };
 
-            return api.post('/imposters', { protocol: 'http', port: port, stubs: [stub] }).then(function () {
+            return api.post('/imposters', request).then(function () {
             }).then(function () {
                 return api.get('/', port);
             }).then(function (response) {
@@ -178,10 +184,12 @@ describe('http imposter', function () {
         promiseIt('should allow proxyOnce behavior', function () {
             var proxyPort = port + 1,
                 proxyStub = { responses: [{ is: { body: 'PROXIED' } }] },
-                stub = { responses: [{ proxyOnce: 'http://localhost:' + proxyPort }] };
+                proxyRequest = { protocol: 'http', port: proxyPort, stubs: [proxyStub], name: this.name + ' PROXY' },
+                stub = { responses: [{ proxyOnce: 'http://localhost:' + proxyPort }] },
+                request = { protocol: 'http', port: port, stubs: [stub], name: this.name + ' MAIN' };
 
-            return api.post('/imposters', { protocol: 'http', port: proxyPort, stubs: [proxyStub] }).then(function () {
-                return api.post('/imposters', { protocol: 'http', port: port, stubs: [stub] });
+            return api.post('/imposters', proxyRequest).then(function () {
+                return api.post('/imposters', request);
             }).then(function () {
                 return api.get('/', port);
             }).then(function (response) {
@@ -204,10 +212,12 @@ describe('http imposter', function () {
         promiseIt('should save proxyOnce state between stub creations', function () {
             var proxyPort = port + 1,
                 proxyStub = { responses: [{ is: { body: 'PROXIED' } }] },
-                stub = { responses: [{ proxyOnce: 'http://localhost:' + proxyPort }] };
+                proxyRequest = { protocol: 'http', port: proxyPort, stubs: [proxyStub], name: this.name + ' PROXY' },
+                stub = { responses: [{ proxyOnce: 'http://localhost:' + proxyPort }] },
+                request = { protocol: 'http', port: port, stubs: [stub], name: this.name + ' MAIN' };
 
-            return api.post('/imposters', { protocol: 'http', port: proxyPort, stubs: [proxyStub] }).then(function () {
-                return api.post('/imposters', { protocol: 'http', port: port, stubs: [stub] });
+            return api.post('/imposters', proxyRequest).then(function () {
+                return api.post('/imposters', request);
             }).then(function () {
                 return api.get('/', port);
             }).then(function () {

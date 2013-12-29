@@ -10,7 +10,7 @@ describe('POST /imposters', function () {
     promiseIt('should return create new imposter with consistent hypermedia', function () {
         var createdBody, imposterPath;
 
-        return api.post('/imposters', { protocol: 'http', port: port }).then(function (response) {
+        return api.post('/imposters', { protocol: 'http', port: port, name: this.name }).then(function (response) {
             createdBody = response.body;
 
             assert.strictEqual(response.statusCode, 201);
@@ -26,7 +26,7 @@ describe('POST /imposters', function () {
     });
 
     promiseIt('should create imposter at provided port', function () {
-        return api.post('/imposters', { protocol: 'http', port: port }).then(function () {
+        return api.post('/imposters', { protocol: 'http', port: port, name: this.name }).then(function () {
             return api.get('/', port);
         }).then(function (response) {
             assert.strictEqual(response.statusCode, 200, JSON.stringify(response.body));
@@ -42,13 +42,13 @@ describe('POST /imposters', function () {
     });
 
     promiseIt('should return 400 on port conflict', function () {
-        return api.post('/imposters', { protocol: 'http', port: api.port }).then(function (response) {
+        return api.post('/imposters', { protocol: 'http', port: api.port, name: this.name }).then(function (response) {
             assert.strictEqual(response.statusCode, 400);
         });
     });
 
     promiseIt('should return 403 when does not have permission to bind to port', function () {
-        return api.post('/imposters', { protocol: 'http', port: 90 }).then(function (response) {
+        return api.post('/imposters', { protocol: 'http', port: 90, name: this.name }).then(function (response) {
             assert.strictEqual(response.statusCode, 403);
         });
     });

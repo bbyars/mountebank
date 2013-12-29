@@ -1,7 +1,6 @@
 Stories
 =======
 1. fix presentation for TCP on website
-27. Allow naming imposters to make log output more intelligible (retrofit tests!)
 1. HTTPS support
 1. or predicate
 2. Create resolver to automatically create proxyOnce/is with predicates without
@@ -39,6 +38,7 @@ Cleanup Needed
 ==============
 - fix tcp predicates
 - refactor common code between tcp and http; add unit tests
+- use %j for util.format
 
 Auxiliary Projects
 ==================

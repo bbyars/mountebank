@@ -67,9 +67,10 @@ describe('tcp imposter', function () {
 
         promiseIt('should allow synchronous javascript injection for responses', function () {
             var fn = "function (request) { return { data: request.data + ' INJECTED' }; }",
-                stub = { responses: [{ inject: fn }] };
+                stub = { responses: [{ inject: fn }] },
+                request = { protocol: 'tcp', port: port, stubs: [stub], name: this.name };
 
-            return api.post('/imposters', { protocol: 'tcp', port: port, stubs: [stub] }).then(function () {
+            return api.post('/imposters', request).then(function () {
                 return tcp.send('request', port);
             }).then(function (response) {
                 assert.strictEqual(response.toString(), 'request INJECTED');
@@ -84,9 +85,10 @@ describe('tcp imposter', function () {
                     "    state.calls += 1;\n" +
                     "    return { data: state.calls.toString() };\n" +
                     "}",
-                stub = { responses: [{ inject: fn }] };
+                stub = { responses: [{ inject: fn }] },
+                request = { protocol: 'tcp', port: port, stubs: [stub], name: this.name };
 
-            return api.post('/imposters', { protocol: 'tcp', port: port, stubs: [stub] }).then(function (response) {
+            return api.post('/imposters', request).then(function (response) {
                 assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body));
 
                 return tcp.send('request', port);
@@ -104,10 +106,11 @@ describe('tcp imposter', function () {
         promiseIt('should return a 400 if injection is disallowed and inject is used', function () {
             var mbPort = port + 1,
                 fn = "function (request) { return { data: 'INJECTED' }; }",
-                stub = { responses: [{ inject: fn }] };
+                stub = { responses: [{ inject: fn }] },
+                request = { protocol: 'tcp', port: port, stubs: [stub], name: this.name };
 
             return nonInjectableServer('start', mbPort).then(function () {
-                return api.post('/imposters', { protocol: 'tcp', port: port, stubs: [stub] }, mbPort);
+                return api.post('/imposters', request, mbPort);
             }).then(function (response) {
                 assert.strictEqual(response.statusCode, 400);
                 assert.strictEqual(response.body.errors[0].code, 'invalid operation');

@@ -8,7 +8,8 @@ var http = require('http'),
     HttpValidator = require('./httpValidator'),
     winston = require('winston'),
     ScopedLogger = require('../../util/scopedLogger'),
-    url = require('url');
+    url = require('url'),
+    util = require('util');
 
 function simplify (request) {
     var deferred = Q.defer();
@@ -33,8 +34,9 @@ function simplify (request) {
     return deferred.promise;
 }
 
-var create = function (port) {
-    var logger = ScopedLogger.create(winston, 'http', port),
+var create = function (port, options) {
+    var name = options.name ? util.format('http:%s %s', port, options.name) : 'http:' + port,
+        logger = ScopedLogger.create(winston, name),
         deferred = Q.defer(),
         requests = [],
         proxy = Proxy.create(logger),

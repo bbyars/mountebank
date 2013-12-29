@@ -16,9 +16,10 @@ describe('tcp proxy', function () {
 
     describe('#to', function () {
         promiseIt('should send same request information to proxied socket', function () {
-            var stub = { responses: [{ is: { data: 'howdy!' } }] };
+            var stub = { responses: [{ is: { data: 'howdy!' } }] },
+                request = { protocol: 'tcp', port: port, stubs: [stub], name: this.name };
 
-            return api.post('/imposters', { protocol: 'tcp', port: port, stubs: [stub] }).then(function () {
+            return api.post('/imposters', request).then(function () {
                 return proxy.to({ host: 'localhost', port: port }, { data: 'hello, world!' });
             }).then(function (response) {
                 assert.deepEqual(response.data.toString(), 'howdy!');
@@ -30,7 +31,7 @@ describe('tcp proxy', function () {
         promiseIt('should proxy binary data', function () {
             var buffer = new Buffer([0, 1, 2, 3]),
                 stub = { responses: [{ is: { data: buffer.toString('base64') } }] },
-                request = { protocol: 'tcp', port: port, stubs: [stub], mode: 'binary' };
+                request = { protocol: 'tcp', port: port, stubs: [stub], mode: 'binary', name: this.name };
 
             return api.post('/imposters', request).then(function () {
                 return proxy.to({ host: 'localhost', port: port }, { data: buffer });
