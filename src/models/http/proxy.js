@@ -6,7 +6,7 @@ var http = require('http'),
     Q = require('q'),
     errors = require('../../errors/errors');
 
-function create () {
+function create (logger) {
     function to (baseUrl, originalRequest) {
         var deferred = Q.defer(),
             parts = url.parse(baseUrl),
@@ -22,6 +22,10 @@ function create () {
             proxiedRequest;
 
         options.headers.connection = 'close';
+
+        logger.debug('Proxy %s => %s => %s',
+            originalRequest.from, JSON.stringify(originalRequest), baseUrl);
+
         proxiedRequest = protocol.request(options, function (response) {
                 response.body = '';
                 response.setEncoding('utf8');
@@ -29,11 +33,13 @@ function create () {
                     response.body += chunk;
                 });
                 response.on('end', function () {
-                    deferred.resolve({
+                    var stubResponse = {
                         statusCode: response.statusCode,
                         headers: response.headers,
                         body: response.body
-                    });
+                    };
+                    logger.debug('Proxy %s <= %s <= %s', originalRequest.from, JSON.stringify(stubResponse), baseUrl);
+                    deferred.resolve(stubResponse);
                 });
             });
 

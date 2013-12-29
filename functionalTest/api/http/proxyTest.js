@@ -10,7 +10,9 @@ var assert = require('assert'),
 describe('http proxy', function () {
     this.timeout(timeout);
 
-    var proxy = Proxy.create();
+    var noOp = function () {},
+        logger = { debug: noOp, info: noOp, warn: noOp, error: noOp },
+        proxy = Proxy.create(logger);
 
     describe('#to', function () {
         promiseIt('should send same request information to proxied url', function () {

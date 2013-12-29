@@ -63,21 +63,44 @@ describe('http imposter', function () {
             }).then(function (response) {
                 var stubs = JSON.stringify(response.body.stubs),
                     withTimeRemoved = stubs.replace(/"timestamp":"[^"]+"/g, '"timestamp":"NOW"'),
-                    actualWithoutTime = JSON.parse(withTimeRemoved),
+                    withClientPortRemoved = withTimeRemoved.replace(/"from":"[:\.\d]+"/g, '"from":"HERE"'),
+                    actualWithoutEphemeralData = JSON.parse(withClientPortRemoved),
                     requestHeaders = { accept: 'application/json', host: 'localhost:' + port, connection: 'keep-alive' };
 
-                assert.deepEqual(actualWithoutTime, [{
+                assert.deepEqual(actualWithoutEphemeralData, [{
                     responses: [{ is: { body: '1' } }, { is: { body: '2' } }],
                     matches: [
                         {
                             timestamp: 'NOW',
-                            request: { path: '/first', query: { q: '1' }, method: 'GET', headers: requestHeaders, body: '' },
-                            response: { statusCode: 200, headers: { connection: 'close' }, body: '1' }
+                            request: {
+                                from: 'HERE',
+                                path: '/first',
+                                query: { q: '1' },
+                                method: 'GET',
+                                headers: requestHeaders,
+                                body: ''
+                            },
+                            response: {
+                                statusCode: 200,
+                                headers: { connection: 'close' },
+                                body: '1'
+                            }
                         },
                         {
                             timestamp: 'NOW',
-                            request: { path: '/second', query: { q: '2'}, method: 'GET', headers: requestHeaders, body: '' },
-                            response: { statusCode: 200, headers: { connection: 'close' }, body: '2' }
+                            request: {
+                                from: 'HERE',
+                                path: '/second',
+                                query: { q: '2'},
+                                method: 'GET',
+                                headers: requestHeaders,
+                                body: ''
+                            },
+                            response: {
+                                statusCode: 200,
+                                headers: { connection: 'close' },
+                                body: '2'
+                            }
                         }
                     ]
                 }]);

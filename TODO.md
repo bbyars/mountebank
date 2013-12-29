@@ -1,7 +1,6 @@
 Stories
 =======
 1. fix presentation for TCP on website
-0. log remote socket everywhere
 27. Allow naming imposters to make log output more intelligible (retrofit tests!)
 1. HTTPS support
 1. or predicate
@@ -27,6 +26,7 @@ Stories
 23. Prettier /imposter/{port} HTML page
 25. change to only publish to npm and then deploy to heroku on branch
 26. Add support for case-sensitive predicates (as objects instead of strings?)
+27. paging and q= filtering for imposters on GET /imposters
 28. UDP and TCP syslog support (see http://en.wikipedia.org/wiki/Syslog for packet format)
 
 Known Bugs
@@ -37,10 +37,6 @@ Known Bugs
 
 Cleanup Needed
 ==============
-- log consistently b/t imposters
-- figure out how to change logger settings, make command line param, or run-time switch?
-- pass logger into to modules to auto-add imposter prefix; get logging out of test run
-- set Q.longstacktrace for dev (command line switch?)
 - fix tcp predicates
 - refactor common code between tcp and http; add unit tests
 

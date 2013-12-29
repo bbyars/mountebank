@@ -22,6 +22,7 @@ function simplify (request) {
     request.on('end', function () {
         var parts = url.parse(request.url, true);
         deferred.resolve({
+            from: request.socket.remoteAddress + ':' + request.socket.remotePort,
             method: request.method,
             path: parts.pathname,
             query: parts.query,
@@ -36,24 +37,28 @@ var create = function (port) {
     var logger = ScopedLogger.create(winston, 'http', port),
         deferred = Q.defer(),
         requests = [],
-        stubs = StubRepository.create(Proxy.create()),
+        proxy = Proxy.create(logger),
+        stubs = StubRepository.create(proxy),
         server = http.createServer(function (request, response) {
-            logger.info('%s %s', request.method, request.url);
-
-            var domain = Domain.create(),
+            var clientName = request.socket.remoteAddress + ':' + request.socket.remotePort,
+                domain = Domain.create(),
                 errorHandler = function (error) {
                     logger.error(JSON.stringify(error));
                     response.writeHead(500, { 'content-type': 'application/json' });
                     response.end(JSON.stringify({ errors: [error] }), 'utf8');
                 };
 
+            logger.info('%s => %s %s', clientName, request.method, request.url);
+
             domain.on('error', errorHandler);
 
             domain.run(function () {
                 simplify(request).then(function (simpleRequest) {
+                    logger.debug('%s => %s', clientName, JSON.stringify(simpleRequest));
                     requests.push(simpleRequest);
                     return stubs.resolve(simpleRequest);
                 }).done(function (stubResponse) {
+                    logger.debug('%s => %s', JSON.stringify(stubResponse), clientName);
                     response.writeHead(stubResponse.statusCode, stubResponse.headers);
                     response.end(stubResponse.body.toString(), 'utf8');
                 }, errorHandler);

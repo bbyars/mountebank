@@ -10,7 +10,7 @@ function create (logger, protocol, port) {
         wrappedLogger[level] = function () {
             var args = Array.prototype.slice.call(arguments);
             args[0] = scopePrefix + args[0];
-            logger[level].apply(this, args);
+            logger[level].apply(logger, args);
         };
     });
 
