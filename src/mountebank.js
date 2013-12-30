@@ -15,10 +15,10 @@ function create (options) {
     var app = express(),
         imposters = {},
         protocols = {
-            'tcp': require('./models/tcp/server').initialize(options.allowInjection),
-            'http': require('./models/http/server').initialize(options.allowInjection),
-            'https': require('./models/https/server').initialize(options.allowInjection),
-            'smtp': require('./models/smtp/server').initialize()
+            'tcp': require('./models/tcp/tcpServer').initialize(options.allowInjection),
+            'http': require('./models/http/httpServer').initialize(options.allowInjection),
+            'https': require('./models/https/httpsServer').initialize(options.allowInjection),
+            'smtp': require('./models/smtp/smtpServer').initialize()
         },
         impostersController = ImpostersController.create(protocols, imposters, Imposter),
         imposterController = ImposterController.create(imposters),

@@ -4,7 +4,7 @@ var assert = require('assert'),
     validator = require('w3cjs'),
     api = require('../api/api'),
     fs = require('fs'),
-    timeout = parseInt(process.env.SLOW_TEST_TIMEOUT_MS || 2000);
+    timeout = parseInt(process.env.SLOW_TEST_TIMEOUT_MS || 3000);
 
 describe('html validation', function () {
     this.timeout(timeout);
