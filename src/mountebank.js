@@ -17,7 +17,8 @@ function create (options) {
         protocols = {
             'tcp': require('./models/tcp/server').initialize(options.allowInjection),
             'http': require('./models/http/server').initialize(options.allowInjection),
-            'https': require('./models/https/server').initialize(options.allowInjection)
+            'https': require('./models/https/server').initialize(options.allowInjection),
+            'smtp': require('./models/smtp/server').initialize()
         },
         impostersController = ImpostersController.create(protocols, imposters, Imposter),
         imposterController = ImposterController.create(imposters),

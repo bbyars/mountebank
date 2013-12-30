@@ -15,7 +15,9 @@
   },
   "main": "./src/mountebank.js",
   "config": {
-    "blanket": { "pattern": "/mountebank/src/" }
+    "blanket": {
+      "pattern": "/mountebank/src/"
+    }
   },
   "scripts": {
     "start": "./bin/mb",
@@ -34,7 +36,9 @@
     "express": "~3.4.4",
     "q": "~0.9.7",
     "ejs": "~0.8.5",
-    "winston": "~0.7.2"
+    "winston": "~0.7.2",
+    "simplesmtp": "~0.3.16",
+    "mailparser": "~0.3.6"
   },
   "devDependencies": {
     "grunt": "~0.4.1",
