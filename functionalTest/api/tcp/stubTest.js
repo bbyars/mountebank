@@ -74,72 +74,29 @@ describe('tcp imposter', function () {
             });
         });
 
-//        promiseIt('should only return stubbed response if matches complex predicate', function () {
-//            var stub = {
-//                    responses: [{ is: { data: 'MATCH' }}],
-//                    predicates: {
-//                        host: { is: '/test' },
-//                        query: {
-//                            key: { is: 'value' }
-//                        },
-//                        method: { is: 'POST' },
-//                        headers: {
-//                            'X-One': { exists: true },
-//                            'X-Two': { exists: true, is: 'Test' },
-//                            'X-Three': { exists: false },
-//                            'X-Four': { not: { exists: true } }
-//                        },
-//                        body: {
-//                            startsWith: 'T',
-//                            contains: 'ES',
-//                            endsWith: 'T',
-//                            matches: '^TEST$',
-//                            is: 'TEST',
-//                            exists: true
-//                        }
-//                    }
-//                };
-//
-//            return api.post('/imposters', { protocol: 'http', port: port, stubs: [stub] }).then(function () {
-//                var options = api.merge(spec, { path: '/' });
-//                return api.responseFor(options, 'TEST');
-//            }).then(function (response) {
-//                assert.strictEqual(response.statusCode, 200, 'should not have matched; wrong path');
-//
-//                var options = api.merge(spec, { path: '/test?key=different' });
-//                return api.responseFor(options, 'TEST');
-//            }).then(function (response) {
-//                assert.strictEqual(response.statusCode, 200, 'should not have matched; wrong query');
-//
-//                var options = api.merge(spec, { method: 'PUT' });
-//                return api.responseFor(options, 'TEST');
-//            }).then(function (response) {
-//                assert.strictEqual(response.statusCode, 200, 'should not have matched; wrong method');
-//
-//                var options = api.merge(spec, {});
-//                delete options.headers['X-One'];
-//                return api.responseFor(options, 'TEST');
-//            }).then(function (response) {
-//                assert.strictEqual(response.statusCode, 200, 'should not have matched; missing header');
-//
-//                var options = api.merge(spec, { headers: { 'X-Two': 'Testing' }});
-//                return api.responseFor(options, 'TEST');
-//            }).then(function (response) {
-//                assert.strictEqual(response.statusCode, 200, 'should not have matched; wrong value for header');
-//
-//                return api.responseFor(api.merge(spec, {}), 'TESTing');
-//            }).then(function (response) {
-//                assert.strictEqual(response.statusCode, 200, 'should not have matched; wrong value for body');
-//
-//                return api.responseFor(api.merge(spec, {}), 'TEST');
-//            }).then(function (response) {
-//                assert.strictEqual(response.statusCode, 400, 'should have matched');
-//
-//                return Q(true);
-//            }).finally(function () {
-//                return api.del('/imposters/' + port);
-//            });
-//        });
+        promiseIt('should only return stubbed response if matches complex predicate', function () {
+            var stub = {
+                    responses: [{ is: { data: 'MATCH' }}],
+                    predicates: {
+                        data: { is: 'test' },
+                        requestFrom: { startsWith: '127.0.0.1' }
+                    }
+                },
+                request = { protocol: 'tcp', port: port, stubs: [stub] };
+
+            return api.post('/imposters', request).then(function (response) {
+                assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body));
+                return tcp.send('not test', port, 100);
+            }).then(function (response) {
+                assert.strictEqual(response.toString(), '');
+
+                return tcp.send('test', port, 100);
+            }).then(function (response) {
+                assert.strictEqual(response.toString(), 'MATCH');
+            }).finally(function () {
+                return api.del('/imposters/' + port);
+            });
+        });
 
         promiseIt('should allow proxy stubs', function () {
             var proxyPort = port + 1,

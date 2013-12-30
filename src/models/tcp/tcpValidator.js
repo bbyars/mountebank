@@ -12,7 +12,7 @@ function create (allowInjection) {
     };
 
     function dryRun (stub) {
-        var testRequest = { data: 'test' },
+        var testRequest = { requestFrom: '', data: 'test' },
             stubRepository = StubRepository.create(dryRunProxy),
             clone = JSON.parse(JSON.stringify(stub)); // proxyOnce changes state
 

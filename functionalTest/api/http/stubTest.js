@@ -2,7 +2,6 @@
 
 var assert = require('assert'),
     api = require('../api'),
-    Q = require('q'),
     promiseIt = require('../../testHelpers').promiseIt,
     port = api.port + 1,
     timeout = parseInt(process.env.SLOW_TEST_TIMEOUT_MS || 2000);
@@ -136,8 +135,6 @@ describe('http imposter', function () {
                 return api.responseFor(api.merge(spec, {}), 'TEST');
             }).then(function (response) {
                 assert.strictEqual(response.statusCode, 400, 'should have matched');
-
-                return Q(true);
             }).finally(function () {
                 return api.del('/imposters/' + port);
             });

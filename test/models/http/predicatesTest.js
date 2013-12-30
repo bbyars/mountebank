@@ -40,6 +40,10 @@ describe('http predicates', function () {
         it('should return false for types other than strings and objects', function () {
             assert.ok(!predicates.is('field', 1, { field: 1 }));
         });
+
+        it('should match missing field with empty string', function () {
+            assert.ok(predicates.is('field', '', {}));
+        });
     });
 
     describe('#contains', function () {
