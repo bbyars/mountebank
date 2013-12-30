@@ -32,7 +32,6 @@ Known Bugs
 
 Cleanup Needed
 ==============
-- move http client for functional tests into http directory
 - fix tcp predicates
 - refactor common code between tcp and http; add unit tests
 

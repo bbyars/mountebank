@@ -1,71 +1,62 @@
 mountebank
 ==========
 
-mountebank is a liar and a fraud.  He will pretend to do everything that your
-application asks of him, while actually doing only as little as your tests tell him to.
-One of mountebank's gimmicks is that he doesn't ask your application to change
-anything, except perhaps a few lines of configuration defining external
-dependencies.
+mountebank is the first tool to provide multi-protocol, multi-language test doubles over the wire.
+Just point your application under test to mountebank instead of the real dependency,
+and test like you would with traditional stubs and mocks.
 
 mountebank will tell you that he supports every protocol ever invented, and a few
 lying in the weeds.  He will swear that he supports bindings in every language
 known to humanity.  Some of the implementations are lagging, but worry not, for his
 team of open source developers is legion.
 
-## Goals
+At the moment, the following protocols are supported:
+* http
+* https
+* tcp
+* smtp
 
-mountebank knows that first impressions are everything.  He knows how annoyed you get
-when developing in .NET on Windows, and have to install a JDK just to use some testing
-tool, or are doing a JavaScript project and have to install the right version of ruby
-only to generate the CSS.  mountebank therefore will ensure you can keep the dirt out
-of your fingernails to use his product, and will deliver it to you via brew, or nuget,
-or apt-get.  He also knows your desire to translate his product to your native language.
-mountebank promises that he will do all these things.  Not yet of course, but his hordes
-of open source developers are working on it.
+## Getting Started
 
-mountebank wants you to have a good experience, but don't expect him to do too much.
-He knows that other products will sell you a toaster and give you a full oven.
-mountebank has a more machiavellian aim.  He wants to sell you an entire kitchen and give you
-a fork.  He will provide a robust set of primitives, but any advanced interactions will
-have to be handled through code injection.
+[![NPM version](https://badge.fury.io/js/mountebank.png)](http://badge.fury.io/js/mountebank)
 
-mountebank sees tremendous opportunity in the Uncharted Territories.  To some degree, this
-is verification mocking for HTTP.  To a larger degree, this is verification mocking across
-other protocols.  He will provide excellent and first class HTTP stubs, because he knows you
-already know and expect such functionality, but it's not where his heart lies.
+Install:
 
-## Installation
+    npm install -g mountebank
 
-While his goals remain momentarily unfulfilled, mountebank humbly asks you to recognize
-[node.js](http://nodejs.org/) as a dependency.  Once you've installed node using your
-package manager of choice, `npm install -g mountebank` will install the
-[server](https://github.com/bbyars/mountebank/blob/master/API.md).
+Run:
 
-The native language bindings are coming, of course.
+    mb
 
-## Running
+Create a test double:
 
-mountebank does not require that you say his full name, or even be able to pronounce it.
-`mb` works, because `mb` is the soul of wit.
+    cat << EOF > imposter.json
+      {
+        "port": 2526,
+        "protocol": "http",
+        "stubs": [{
+          "responses": [
+            { "is": { "statusCode": 400 }}
+          ],
+          "predicates": {
+            "path": { "is": "/test" },
+            "method": { "is": "POST" },
+            "body": { "not": { "contains": "requiredField" } },
+            "headers": {
+              "Content-Type": { "is": "application/json" }
+            }
+          }
+        }]
+      }
+    EOF
 
-Once installed, `mb` will start the server on port 2525.  The `mb` command accepts the following
-options:
+    curl -i -H 'Content-Type: application/json' -d@imposter.json http://localhost:2525/imposters
 
-    mb start --port 8000
+## Learn More
 
-starts the server on the provided port
+After installing, open your browser to http://localhost:2525, or visit the
+[public site](http://mountebank.herokuapp.com/).
 
-    mb stop
-
-stops the server
-
-    mb start --pidfile first.pid --port 8000
-    mb start --pidfile second.pid --port 8001
-
-allows multiple servers to be managed with the `mb` command, for instance:
-
-    mb restart --pidfile first.pid
-    mb stop --pidfile second.pid
 
 ## Building
 [![Build Status](https://travis-ci.org/bbyars/mountebank.png)](https://travis-ci.org/bbyars/mountebank)
@@ -73,11 +64,11 @@ allows multiple servers to be managed with the `mb` command, for instance:
 [![Dependency Status](https://gemnasium.com/bbyars/mountebank.png)](https://gemnasium.com/bbyars/mountebank.png)
 
 `./build` should do the trick.  If not, yell at me.  At the moment I've tested on OS X and Linux.
-Windows support is coming.
+I test on node 0.10 (I used to test on node 0.8 as well, but struggled getting my Travis deployments
+working with both in the build matrix).
 
 ## Contributing
 
 Contributions are welcome (see TODO.md for my own open loops, although I welcome other ideas).
-Some tips for contributing are in CONTRIBUTING.md), but they are guidelines and not hard and
-fast rules.
+Some tips for contributing are in the contributing link that spins up when you run mb.
 You can reach me at brandon.byars@gmail.com.
