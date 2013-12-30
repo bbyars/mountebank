@@ -1,10 +1,14 @@
 'use strict';
 
 var assert = require('assert'),
-    StubRepository = require('../../../src/models/http/stubRepository'),
-    mock = require('../../mock').mock,
+    StubRepository = require('../../src/models/stubRepository'),
+    mock = require('../mock').mock,
     Q = require('q'),
-    promiseIt = require('../../testHelpers').promiseIt;
+    promiseIt = require('../testHelpers').promiseIt;
+
+function identity (obj) {
+    return obj;
+}
 
 describe('http stubRepository', function () {
     var stubs, proxy, logger;
@@ -12,18 +16,14 @@ describe('http stubRepository', function () {
     beforeEach(function () {
         proxy = {};
         logger = { debug: mock(), info: mock(), warn: mock(), error: mock() };
-        stubs = StubRepository.create(proxy, logger);
+        stubs = StubRepository.create(proxy, logger, identity);
     });
 
     promiseIt('should return default response if no match', function () {
         var request = { path: '/test', headers: {}, body: '' };
 
         return stubs.resolve(request).then(function (response) {
-            assert.deepEqual(response, {
-                statusCode: 200,
-                headers: { connection: 'close' },
-                body: ''
-            });
+            assert.deepEqual(response, {});
         });
     });
 
@@ -48,7 +48,7 @@ describe('http stubRepository', function () {
         return stubs.resolve(request).then(function (response) {
             assert.deepEqual(response, {
                 statusCode: 400,
-                headers: { connection: 'close', 'X-Test': 'Test' },
+                headers: { 'X-Test': 'Test' },
                 body: 'Test successful'
             });
         });
@@ -61,11 +61,7 @@ describe('http stubRepository', function () {
         });
 
         return stubs.resolve(request).then(function (response) {
-            assert.deepEqual(response, {
-                statusCode: 200,
-                headers: { connection: 'close' },
-                body: 'Test successful'
-            });
+            assert.deepEqual(response, { body: 'Test successful' });
         });
     });
 
@@ -97,7 +93,7 @@ describe('http stubRepository', function () {
         });
 
         return stubs.resolve(request).then(function (response) {
-            assert.strictEqual(response.body, '');
+            assert.deepEqual(response, {});
         });
     });
 
@@ -109,7 +105,7 @@ describe('http stubRepository', function () {
         });
 
         return stubs.resolve(request).then(function (response) {
-            assert.strictEqual(response.body, '');
+            assert.deepEqual(response, {});
         });
     });
 
@@ -133,7 +129,7 @@ describe('http stubRepository', function () {
         });
 
         return stubs.resolve(request).then(function (response) {
-            assert.strictEqual(response.body, '');
+            assert.deepEqual(response, {});
         });
     });
 
@@ -203,16 +199,16 @@ describe('http stubRepository', function () {
         });
     });
 
-    promiseIt('should merge injected response with default values', function () {
-        var request = { path: '/test', headers: {}, body: '', method: 'GET' },
-            fn = "function (request) { return { body: 'INJECTED' }; }";
-        stubs.addStub({ responses: [{ inject: fn }] });
-
-        return stubs.resolve(request).then(function (response) {
-            assert.strictEqual(response.statusCode, 200);
-            assert.strictEqual(response.headers.connection, 'close');
-        });
-    });
+//    promiseIt('should merge injected response with default values', function () {
+//        var request = { path: '/test', headers: {}, body: '', method: 'GET' },
+//            fn = "function (request) { return { body: 'INJECTED' }; }";
+//        stubs.addStub({ responses: [{ inject: fn }] });
+//
+//        return stubs.resolve(request).then(function (response) {
+//            assert.strictEqual(response.statusCode, 200);
+//            assert.strictEqual(response.headers.connection, 'close');
+//        });
+//    });
 
     promiseIt('should record matches', function () {
         var matchingRequest = { path: '/test', headers: {}, body: '' },

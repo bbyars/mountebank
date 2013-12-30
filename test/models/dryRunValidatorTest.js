@@ -3,8 +3,28 @@
 var assert = require('assert'),
     Validator = require('../../src/models/dryRunValidator'),
     promiseIt = require('../testHelpers').promiseIt,
-    StubRepository = require('../../src/models/http/stubRepository'),
-    testRequest = { requestFrom: '', path: '/', query: {}, method: 'GET', headers: {}, body: '' };
+    BaseRepository = require('../../src/models/stubRepository'),
+    testRequest = { requestFrom: '', path: '/', query: {}, method: 'GET', headers: {}, body: '' },
+    StubRepository = {
+        create: function (proxy, logger) {
+            return BaseRepository.create(proxy, logger, function (stub) {
+                var response = {
+                    statusCode: stub.statusCode || 200,
+                    headers: stub.headers || {},
+                    body: stub.body || ''
+                };
+
+                // We don't want to use keepalive connections, because a test case
+                // may shutdown the stub, which prevents new connections for
+                // the port, but that won't prevent the system under test
+                // from reusing an existing TCP connection after the stub
+                // has shutdown, causing difficult to track down bugs when
+                // multiple tests are run.
+                response.headers.connection = 'close';
+                return response;
+            });
+        }
+    };
 
 describe('dryRunValidator', function () {
     describe('#validate', function () {

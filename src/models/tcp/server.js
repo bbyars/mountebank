@@ -7,9 +7,15 @@ var net = require('net'),
     Proxy = require('./proxy'),
     DryRunValidator = require('../dryRunValidator'),
     Domain = require('domain'),
-    StubRepository = require('./stubRepository'),
+    StubRepository = require('../stubRepository'),
     util = require('util'),
     exceptions = require('../../errors/errors');
+
+function postProcess (stub) {
+    return {
+        data: stub.data || ''
+    };
+}
 
 var create = function (port, options) {
     var name = options.name ? util.format('tcp:%s %s', port, options.name) : 'tcp:' + port,
@@ -19,7 +25,7 @@ var create = function (port, options) {
         encoding = mode === 'binary' ? 'base64' : 'utf8',
         requests = [],
         proxy = Proxy.create(logger, encoding),
-        stubs = StubRepository.create(proxy, logger),
+        stubs = StubRepository.create(proxy, logger, postProcess),
         server = net.createServer(function connectionListener (client) {
             var clientName = client.remoteAddress + ':' + client.remotePort,
                 errorHandler = function (error) {
@@ -85,8 +91,13 @@ function initialize (allowInjection) {
         create: create,
         Validator: {
             create: function () {
-                var testRequest = { requestFrom: '', data: '' };
-                return DryRunValidator.create(StubRepository, testRequest, allowInjection, validateMode);
+                var testRequest = { requestFrom: '', data: '' },
+                    Repository = {
+                        create: function (proxy, logger) {
+                            return StubRepository.create(proxy,  logger, postProcess);
+                        }
+                    };
+                return DryRunValidator.create(Repository, testRequest, allowInjection, validateMode);
             }
         }
     };

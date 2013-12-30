@@ -1,30 +1,13 @@
 'use strict';
 
-var predicates = require('../predicates'),
+var predicates = require('./predicates'),
     Q = require('q'),
     util = require('util'),
-    errors = require('../../errors/errors');
+    errors = require('../errors/errors');
 
-function create (proxy, logger) {
+function create (proxy, logger, postProcess) {
     var stubs = [],
         injectState = {};
-
-    function createResponse (stub) {
-        var response = {
-            statusCode: stub.statusCode || 200,
-            headers: stub.headers || {},
-            body: stub.body || ''
-        };
-
-        // We don't want to use keepalive connections, because a test case
-        // may shutdown the stub, which prevents new connections for
-        // the port, but that won't prevent the system under test
-        // from reusing an existing TCP connection after the stub
-        // has shutdown, causing difficult to track down bugs when
-        // multiple tests are run.
-        response.headers.connection = 'close';
-        return response;
-    }
 
     function trueForAll (obj, predicate) {
         // we call map before calling every so we make sure to call every
@@ -83,10 +66,10 @@ function create (proxy, logger) {
 
         getResolvedResponsePromise(stubResolver, request).done(function (response) {
             var match = {
-                    timestamp: new Date().toJSON(),
-                    request: request,
-                    response: response
-                };
+                timestamp: new Date().toJSON(),
+                request: request,
+                response: response
+            };
             stub.matches = stub.matches || [];
             stub.matches.push(match);
             deferred.resolve(response);
@@ -97,7 +80,7 @@ function create (proxy, logger) {
 
     function getResolvedResponsePromise (stubResolver, request) {
         if (stubResolver.is) {
-            return Q(createResponse(stubResolver.is));
+            return Q(postProcess(stubResolver.is));
         }
         else if (stubResolver.proxy) {
             return proxy.to(stubResolver.proxy, request);
@@ -110,7 +93,7 @@ function create (proxy, logger) {
         }
         else if (stubResolver.inject) {
             return inject(request, stubResolver.inject, injectState).then(function (response) {
-                return Q(createResponse(response));
+                return Q(postProcess(response));
             });
         }
         else {
@@ -124,12 +107,12 @@ function create (proxy, logger) {
             scope = JSON.parse(JSON.stringify(request)),
             callback = function (response) { deferred.resolve(response);},
             injected = 'try {\n' +
-                       '    var response = (' + fn + ')(scope, state, callback);\n' +
-                       '    if (response) { callback(response); }\n' +
-                       '}\n' +
-                       'catch (error) {\n' +
-                       '    deferred.reject(error);\n' +
-                       '}';
+                '    var response = (' + fn + ')(scope, state, callback);\n' +
+                '    if (response) { callback(response); }\n' +
+                '}\n' +
+                'catch (error) {\n' +
+                '    deferred.reject(error);\n' +
+                '}';
         eval(injected);
         return deferred.promise;
     }

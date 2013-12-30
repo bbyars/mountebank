@@ -4,7 +4,7 @@ var https = require('https'),
     fs = require('fs'),
     Q = require('q'),
     Domain = require('domain'),
-    StubRepository = require('../http/stubRepository'),
+    StubRepository = require('../stubRepository'),
     Proxy = require('../http/proxy'),
     DryRunValidator = require('../dryRunValidator'),
     winston = require('winston'),
@@ -15,6 +15,23 @@ var https = require('https'),
         key: fs.readFileSync(__dirname + '/cert/mb-key.pem'),
         cert: fs.readFileSync(__dirname + '/cert/mb-cert.pem')
     };
+
+function postProcess (stub) {
+    var response = {
+        statusCode: stub.statusCode || 200,
+        headers: stub.headers || {},
+        body: stub.body || ''
+    };
+
+    // We don't want to use keepalive connections, because a test case
+    // may shutdown the stub, which prevents new connections for
+    // the port, but that won't prevent the system under test
+    // from reusing an existing TCP connection after the stub
+    // has shutdown, causing difficult to track down bugs when
+    // multiple tests are run.
+    response.headers.connection = 'close';
+    return response;
+}
 
 function simplify (request) {
     var deferred = Q.defer();
@@ -91,8 +108,13 @@ function initialize (allowInjection) {
         create: create,
         Validator: {
             create: function () {
-                var testRequest = { requestFrom: '', path: '/', query: {}, method: 'GET', headers: {}, body: '' };
-                return DryRunValidator.create(StubRepository, testRequest, allowInjection);
+                var testRequest = { requestFrom: '', path: '/', query: {}, method: 'GET', headers: {}, body: '' },
+                    Repository = {
+                        create: function (proxy, logger) {
+                            return StubRepository.create(proxy, logger, postProcess);
+                        }
+                    };
+                return DryRunValidator.create(Repository, testRequest, allowInjection);
             }
         }
     };
