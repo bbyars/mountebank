@@ -6,13 +6,8 @@ function create (imposters) {
         var imposter = imposters[request.params.id].toJSON();
 
         response.format({
-            json: function () {
-                response.send(imposter);
-            },
-
-            html: function () {
-                response.render('imposter', imposter);
-            }
+            json: function () { response.send(imposter); },
+            html: function () { response.render('imposter', imposter); }
         });
     }
 

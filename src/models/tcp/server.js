@@ -57,19 +57,13 @@ var create = function (port, options) {
             });
         });
 
-    server.on('close', function () {
-        logger.info('Bye bye...');
-    });
-
     server.listen(port, function () {
         logger.info('Open for business...');
         deferred.resolve({
             requests: requests,
             addStub: stubs.addStub,
             metadata: { mode: mode },
-            close: function () {
-                server.close();
-            }
+            close: function () { server.close(function () { logger.info('Bye bye...'); }); }
         });
     });
 

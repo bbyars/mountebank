@@ -7,9 +7,7 @@ var StubRepository = require('./stubRepository'),
 
 function create (allowInjection) {
 
-    var dryRunProxy = {
-            to: function () { return Q({}); }
-        };
+    var dryRunProxy = { to: function () { return Q({}); } };
 
     function dryRun (stub) {
         var testRequest = { path: '/', query: {}, method: 'GET', headers: {}, body: '' },
@@ -84,7 +82,7 @@ function create (allowInjection) {
 
     function validate (request) {
         var stubs = request.stubs || [],
-            validationPromises = stubs.map(function (stub) { return errorsFor(stub); }),
+            validationPromises = stubs.map(errorsFor),
             deferred = Q.defer();
 
         Q.all(validationPromises).done(function (errorsForAllStubs) {

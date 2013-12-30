@@ -35,7 +35,6 @@ Cleanup Needed
 - move http client for functional tests into http directory
 - fix tcp predicates
 - refactor common code between tcp and http; add unit tests
-- change all redundant callbacks (e.g. function (obj) { deferred.resolve(obj); } => deferred.resolve
 
 Auxiliary Projects
 ==================

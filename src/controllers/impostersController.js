@@ -36,13 +36,8 @@ function create (protocols, imposters, Imposter) {
         }, []);
 
         response.format({
-            json: function () {
-                response.send({ imposters: result });
-            },
-
-            html: function () {
-                response.render('imposters', { imposters: result });
-            }
+            json: function () { response.send({ imposters: result }); },
+            html: function () { response.render('imposters', { imposters: result }); }
         });
     }
 
@@ -68,7 +63,6 @@ function create (protocols, imposters, Imposter) {
                 response.send({ errors: validation.errors });
                 return Q(true);
             }
-
         });
     }
 

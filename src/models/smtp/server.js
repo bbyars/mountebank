@@ -45,9 +45,7 @@ var create = function (port, options) {
         server = smtp.createSimpleServer({ disableDNSValidation: true }, function (request) {
             var clientName = 'client',//request.socket.remoteAddress + ':' + request.socket.remotePort,
                 domain = Domain.create(),
-                errorHandler = function (error) {
-                    logger.error(JSON.stringify(error));
-                };
+                errorHandler = function (error) { logger.error(JSON.stringify(error)); };
 
             logger.info('%s => From: %s To: %s', clientName, request.from, JSON.stringify(request.to));
 

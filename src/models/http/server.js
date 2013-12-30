@@ -15,10 +15,7 @@ function simplify (request) {
     var deferred = Q.defer();
     request.body = '';
     request.setEncoding('utf8');
-
-    request.on('data', function (chunk) {
-        request.body += chunk;
-    });
+    request.on('data', function (chunk) { request.body += chunk; });
 
     request.on('end', function () {
         var parts = url.parse(request.url, true);
@@ -67,19 +64,13 @@ var create = function (port, options) {
             });
         });
 
-    server.on('close', function () {
-        logger.info('Ciao for now');
-    });
-
     server.listen(port, function () {
         logger.info('Open for business...');
         deferred.resolve({
             requests: requests,
             addStub: stubs.addStub,
             metadata: {},
-            close: function () {
-                server.close();
-            }
+            close: function () { server.close(function () { logger.info('Ciao for now'); }); }
         });
     });
 
@@ -91,9 +82,7 @@ function initialize (allowInjection) {
         name: 'http',
         create: create,
         Validator: {
-            create: function () {
-                return HttpValidator.create(allowInjection);
-            }
+            create: function () { return HttpValidator.create(allowInjection); }
         }
     };
 }

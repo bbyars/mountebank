@@ -65,16 +65,12 @@ var create = function (port, options) {
                     requests.push(simpleRequest);
                     return stubs.resolve(simpleRequest);
                 }).done(function (stubResponse) {
-                        logger.debug('%s => %s', JSON.stringify(stubResponse), clientName);
-                        response.writeHead(stubResponse.statusCode, stubResponse.headers);
-                        response.end(stubResponse.body.toString(), 'utf8');
-                    }, errorHandler);
+                    logger.debug('%s => %s', JSON.stringify(stubResponse), clientName);
+                    response.writeHead(stubResponse.statusCode, stubResponse.headers);
+                    response.end(stubResponse.body.toString(), 'utf8');
+                }, errorHandler);
             });
         });
-
-    server.on('close', function () {
-        logger.info('Ciao for now');
-    });
 
     server.listen(port, function () {
         logger.info('Open for business...');
@@ -82,9 +78,7 @@ var create = function (port, options) {
             requests: requests,
             addStub: stubs.addStub,
             metadata: {},
-            close: function () {
-                server.close();
-            }
+            close: function () { server.close(function () { logger.info('Ciao for now'); }); }
         });
     });
 
@@ -96,9 +90,7 @@ function initialize (allowInjection) {
         name: 'http',
         create: create,
         Validator: {
-            create: function () {
-                return HttpValidator.create(allowInjection);
-            }
+            create: function () { return HttpValidator.create(allowInjection); }
         }
     };
 }

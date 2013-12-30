@@ -67,9 +67,7 @@ function create (options) {
     });
 
     return {
-        close: function () {
-            logger.info('Adios - see you soon?');
-        }
+        close: function () { logger.info('Adios - see you soon?'); }
     };
 }
 

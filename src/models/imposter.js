@@ -35,9 +35,7 @@ function create (Protocol, port, request) {
             }
 
             if (request && request.stubs) {
-                request.stubs.forEach(function (stub) {
-                    addStub(stub);
-                });
+                request.stubs.forEach(addStub);
             }
 
             function toListJSON () {

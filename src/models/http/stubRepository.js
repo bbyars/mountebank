@@ -83,9 +83,7 @@ function create (proxy) {
             stub.matches = stub.matches || [];
             stub.matches.push(match);
             deferred.resolve(response);
-        }, function (reason) {
-            deferred.reject(reason);
-        });
+        }, deferred.reject);
 
         return deferred.promise;
     }

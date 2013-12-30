@@ -47,9 +47,7 @@ function responseFor (spec, body) {
     var request = http.request(options, function (response) {
         response.body = '';
         response.setEncoding('utf8');
-        response.on('data', function (chunk) {
-            response.body += chunk;
-        });
+        response.on('data', function (chunk) { response.body += chunk; });
         response.on('end', function () {
             var contentType = response.headers['content-type'] || '';
             if (contentType.indexOf('application/json') === 0) {
@@ -59,9 +57,7 @@ function responseFor (spec, body) {
         });
     });
 
-    request.on('error', function (error) {
-        deferred.reject(error);
-    });
+    request.on('error', deferred.reject);
 
     if (body) {
         if (options.headers['Content-Type'] === 'application/json') {

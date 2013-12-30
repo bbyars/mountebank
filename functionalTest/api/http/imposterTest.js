@@ -26,15 +26,12 @@ describe('http imposter', function () {
             }).then(function () {
                 return api.get('/imposters/' + port);
             }).then(function (response) {
-                var requests = response.body.requests.map(function (request) {
-                    return request.path;
-                });
+                var requests = response.body.requests.map(function (request) { return request.path; });
                 assert.deepEqual(requests, ['/first', '/second']);
             }).finally(function () {
                 return api.del('/imposters/' + port);
             });
         });
-
 
         promiseIt('should return list of stubs in order', function () {
             var first = { responses: [{ is: { body: '1' }}]},
