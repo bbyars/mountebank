@@ -8,8 +8,8 @@ var http = require('http'),
     DryRunValidator = require('../dryRunValidator'),
     winston = require('winston'),
     ScopedLogger = require('../../util/scopedLogger'),
-    url = require('url'),
-    util = require('util');
+    util = require('util'),
+    HttpRequest = require('./httpRequest');
 
 function postProcess (stub) {
     var response = {
@@ -26,26 +26,6 @@ function postProcess (stub) {
     // multiple tests are run.
     response.headers.connection = 'close';
     return response;
-}
-
-function simplify (request) {
-    var deferred = Q.defer();
-    request.body = '';
-    request.setEncoding('utf8');
-    request.on('data', function (chunk) { request.body += chunk; });
-
-    request.on('end', function () {
-        var parts = url.parse(request.url, true);
-        deferred.resolve({
-            requestFrom: request.socket.remoteAddress + ':' + request.socket.remotePort,
-            method: request.method,
-            path: parts.pathname,
-            query: parts.query,
-            headers: request.headers,
-            body: request.body
-        });
-    });
-    return deferred.promise;
 }
 
 var create = function (port, options) {
@@ -69,10 +49,10 @@ var create = function (port, options) {
             domain.on('error', errorHandler);
 
             domain.run(function () {
-                simplify(request).then(function (simpleRequest) {
-                    logger.debug('%s => %s', clientName, JSON.stringify(simpleRequest));
-                    requests.push(simpleRequest);
-                    return stubs.resolve(simpleRequest);
+                HttpRequest.createFrom(request).then(function (httpRequest) {
+                    logger.debug('%s => %s', clientName, JSON.stringify(httpRequest));
+                    requests.push(httpRequest);
+                    return stubs.resolve(httpRequest);
                 }).done(function (stubResponse) {
                     logger.debug('%s => %s', JSON.stringify(stubResponse), clientName);
                     response.writeHead(stubResponse.statusCode, stubResponse.headers);
@@ -100,13 +80,7 @@ function initialize (allowInjection) {
         create: create,
         Validator: {
             create: function () {
-                var testRequest = { requestFrom: '', path: '/', query: {}, method: 'GET', headers: {}, body: '' },
-                    Repository = {
-                        create: function (proxy, logger) {
-                            return StubRepository.create(proxy, logger, postProcess);
-                        }
-                    };
-                return DryRunValidator.create(Repository, testRequest, allowInjection);
+                return DryRunValidator.create(StubRepository, HttpRequest.createTestRequest(), allowInjection);
             }
         }
     };

@@ -9,12 +9,12 @@ var https = require('https'),
     DryRunValidator = require('../dryRunValidator'),
     winston = require('winston'),
     ScopedLogger = require('../../util/scopedLogger'),
-    url = require('url'),
     util = require('util'),
     cert = {
         key: fs.readFileSync(__dirname + '/cert/mb-key.pem'),
         cert: fs.readFileSync(__dirname + '/cert/mb-cert.pem')
-    };
+    },
+    HttpRequest = require('../http/httpRequest');
 
 function postProcess (stub) {
     var response = {
@@ -33,36 +33,13 @@ function postProcess (stub) {
     return response;
 }
 
-function simplify (request) {
-    var deferred = Q.defer();
-    request.body = '';
-    request.setEncoding('utf8');
-
-    request.on('data', function (chunk) {
-        request.body += chunk;
-    });
-
-    request.on('end', function () {
-        var parts = url.parse(request.url, true);
-        deferred.resolve({
-            requestFrom: request.socket.remoteAddress + ':' + request.socket.remotePort,
-            method: request.method,
-            path: parts.pathname,
-            query: parts.query,
-            headers: request.headers,
-            body: request.body
-        });
-    });
-    return deferred.promise;
-}
-
 var create = function (port, options) {
     var name = options.name ? util.format('http:%s %s', port, options.name) : 'http:' + port,
         logger = ScopedLogger.create(winston, name),
         deferred = Q.defer(),
         requests = [],
         proxy = Proxy.create(logger),
-        stubs = StubRepository.create(proxy),
+        stubs = StubRepository.create(proxy, logger, postProcess),
         server = https.createServer(cert, function (request, response) {
             var clientName = request.socket.remoteAddress + ':' + request.socket.remotePort,
                 domain = Domain.create(),
@@ -77,10 +54,10 @@ var create = function (port, options) {
             domain.on('error', errorHandler);
 
             domain.run(function () {
-                simplify(request).then(function (simpleRequest) {
-                    logger.debug('%s => %s', clientName, JSON.stringify(simpleRequest));
-                    requests.push(simpleRequest);
-                    return stubs.resolve(simpleRequest);
+                HttpRequest.createFrom(request).then(function (httpRequest) {
+                    logger.debug('%s => %s', clientName, JSON.stringify(httpRequest));
+                    requests.push(httpRequest);
+                    return stubs.resolve(httpRequest);
                 }).done(function (stubResponse) {
                     logger.debug('%s => %s', JSON.stringify(stubResponse), clientName);
                     response.writeHead(stubResponse.statusCode, stubResponse.headers);
@@ -108,13 +85,7 @@ function initialize (allowInjection) {
         create: create,
         Validator: {
             create: function () {
-                var testRequest = { requestFrom: '', path: '/', query: {}, method: 'GET', headers: {}, body: '' },
-                    Repository = {
-                        create: function (proxy, logger) {
-                            return StubRepository.create(proxy, logger, postProcess);
-                        }
-                    };
-                return DryRunValidator.create(Repository, testRequest, allowInjection);
+                return DryRunValidator.create(StubRepository, HttpRequest.createTestRequest(), allowInjection);
             }
         }
     };

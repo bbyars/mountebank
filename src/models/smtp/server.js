@@ -1,42 +1,12 @@
 'use strict';
 
 var smtp = require('simplesmtp'),
-    Parser = require('mailparser').MailParser,
     Q = require('q'),
     winston = require('winston'),
     ScopedLogger = require('../../util/scopedLogger'),
     util = require('util'),
-    Domain = require('domain');
-
-function simplify (request) {
-    var deferred = Q.defer(),
-        parser = new Parser();
-
-    request.on('data', function (chunk) { parser.write(chunk); });
-    request.once('end', function () { parser.end(); });
-
-    parser.once('end', function (email) {
-        /* jshint maxcomplexity: 7 */
-        deferred.resolve({
-            requestFrom: request.remoteAddress,
-            envelopeFrom: request.from,
-            envelopeTo: request.to,
-            from: email.from[0],
-            to: email.to,
-            cc: email.cc || [],
-            bcc: email.bcc || [],
-            subject: email.subject,
-            priority: email.priority,
-            references: email.references || [],
-            inReplyTo: email.inReplyTo || [],
-            text: email.text,
-            html: email.html || '',
-            attachments: email.attachments || []
-        });
-    });
-
-    return deferred.promise;
-}
+    Domain = require('domain'),
+    SmtpRequest = require('./smtpRequest');
 
 var create = function (port, options) {
     var name = options.name ? util.format('smtp:%s %s', port, options.name) : 'smtp:' + port,
@@ -52,9 +22,9 @@ var create = function (port, options) {
 
             domain.on('error', errorHandler);
             domain.run(function () {
-                simplify(request).done(function (simpleRequest) {
-                    logger.debug('%s => %s', clientName, JSON.stringify(simpleRequest));
-                    requests.push(simpleRequest);
+                SmtpRequest.createFrom(request).done(function (smtpRequest) {
+                    logger.debug('%s => %s', clientName, JSON.stringify(smtpRequest));
+                    requests.push(smtpRequest);
                     request.accept();
                 }, errorHandler);
             });

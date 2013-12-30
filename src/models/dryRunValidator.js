@@ -4,14 +4,15 @@ var utils = require('util'),
     Q = require('q'),
     exceptions = require('../errors/errors');
 
-function create (StubRepository, testRequest, allowInjection, preValidation) {
+function create (StubRepository, testRequest, allowInjection, additionalValidation) {
 
     var dryRunProxy = { to: function () { return Q({}); } },
         noOp = function () {},
-        dryRunLogger = { debug: noOp, info: noOp, warn: noOp, error: noOp };
+        dryRunLogger = { debug: noOp, info: noOp, warn: noOp, error: noOp },
+        identity = function (obj) { return obj; };
 
     function dryRun (stub) {
-        var stubRepository = StubRepository.create(dryRunProxy, dryRunLogger),
+        var stubRepository = StubRepository.create(dryRunProxy, dryRunLogger, identity),
             clone = JSON.parse(JSON.stringify(stub)); // proxyOnce changes state
 
         stubRepository.addStub(clone);
@@ -85,8 +86,8 @@ function create (StubRepository, testRequest, allowInjection, preValidation) {
             validationPromises = stubs.map(errorsFor),
             deferred = Q.defer();
 
-        if (preValidation) {
-            validationPromises.push(Q(preValidation(request)));
+        if (additionalValidation) {
+            validationPromises.push(Q(additionalValidation(request)));
         }
 
         Q.all(validationPromises).done(function (errorsForAllStubs) {

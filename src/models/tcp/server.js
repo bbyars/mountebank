@@ -9,7 +9,8 @@ var net = require('net'),
     Domain = require('domain'),
     StubRepository = require('../stubRepository'),
     util = require('util'),
-    exceptions = require('../../errors/errors');
+    exceptions = require('../../errors/errors'),
+    TcpRequest = require('./tcpRequest');
 
 function postProcess (stub) {
     return {
@@ -37,7 +38,7 @@ var create = function (port, options) {
 
             client.on('error', errorHandler);
             client.on('data', function (data) {
-                var request = { requestFrom: clientName, data: data.toString(encoding) },
+                var request = TcpRequest.createFrom(clientName, data.toString(encoding)),
                     domain = Domain.create();
 
                 logger.debug('%s => <<%s>>', clientName, data.toString(encoding));
@@ -91,13 +92,7 @@ function initialize (allowInjection) {
         create: create,
         Validator: {
             create: function () {
-                var testRequest = { requestFrom: '', data: '' },
-                    Repository = {
-                        create: function (proxy, logger) {
-                            return StubRepository.create(proxy,  logger, postProcess);
-                        }
-                    };
-                return DryRunValidator.create(Repository, testRequest, allowInjection, validateMode);
+                return DryRunValidator.create(StubRepository, TcpRequest.createTestRequest(), allowInjection, validateMode);
             }
         }
     };

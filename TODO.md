@@ -34,6 +34,9 @@ Cleanup Needed
 ==============
 - centralize request field information - used in dry run and in server simplify (Request.create?) (or may {} for dryRun?)
 - refactor common code between tcp and http; add unit tests
+  - refactor servers; find ways to test
+  - common proxy error handling code?
+  - adapt tests to generic, find ways to uncomment tests that got commented out
 
 Auxiliary Projects
 ==================
