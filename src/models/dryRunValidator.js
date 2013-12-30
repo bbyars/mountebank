@@ -1,19 +1,17 @@
 'use strict';
 
-var StubRepository = require('./stubRepository'),
-    utils = require('util'),
+var utils = require('util'),
     Q = require('q'),
-    exceptions = require('../../errors/errors');
+    exceptions = require('../errors/errors');
 
-function create (allowInjection) {
+function create (StubRepository, testRequest, allowInjection, preValidation) {
 
-    var dryRunProxy = { to: function () { return Q({ data: '' }); } },
+    var dryRunProxy = { to: function () { return Q({}); } },
         noOp = function () {},
         dryRunLogger = { debug: noOp, info: noOp, warn: noOp, error: noOp };
 
     function dryRun (stub) {
-        var testRequest = { requestFrom: '', data: 'test' },
-            stubRepository = StubRepository.create(dryRunProxy, dryRunLogger),
+        var stubRepository = StubRepository.create(dryRunProxy, dryRunLogger),
             clone = JSON.parse(JSON.stringify(stub)); // proxyOnce changes state
 
         stubRepository.addStub(clone);
@@ -82,20 +80,14 @@ function create (allowInjection) {
         return deferred.promise;
     }
 
-    function validateMode (request) {
-        var errors = [];
-        if (request.mode && ['text', 'binary'].indexOf(request.mode) < 0) {
-            errors.push(exceptions.ValidationError("'mode' must be one of ['text', 'binary']"));
-        }
-        return errors;
-    }
-
     function validate (request) {
         var stubs = request.stubs || [],
-            validationPromises = stubs.map(function (stub) { return errorsFor(stub); }),
+            validationPromises = stubs.map(errorsFor),
             deferred = Q.defer();
 
-        validationPromises.push(Q(validateMode(request)));
+        if (preValidation) {
+            validationPromises.push(Q(preValidation(request)));
+        }
 
         Q.all(validationPromises).done(function (errorsForAllStubs) {
             var allErrors = errorsForAllStubs.reduce(function (stubErrors, accumulator) {

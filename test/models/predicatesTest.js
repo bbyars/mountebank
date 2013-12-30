@@ -1,7 +1,7 @@
 'use strict';
 
 var assert = require('assert'),
-    predicates = require('../../../src/models/http/predicates');
+    predicates = require('../../src/models/predicates');
 
 describe('http predicates', function () {
     describe('#is', function () {

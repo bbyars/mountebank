@@ -6,7 +6,7 @@ var https = require('https'),
     Domain = require('domain'),
     StubRepository = require('../http/stubRepository'),
     Proxy = require('../http/proxy'),
-    HttpValidator = require('../http/httpValidator'),
+    DryRunValidator = require('../dryRunValidator'),
     winston = require('winston'),
     ScopedLogger = require('../../util/scopedLogger'),
     url = require('url'),
@@ -90,7 +90,10 @@ function initialize (allowInjection) {
         name: 'http',
         create: create,
         Validator: {
-            create: function () { return HttpValidator.create(allowInjection); }
+            create: function () {
+                var testRequest = { requestFrom: '', path: '/', query: {}, method: 'GET', headers: {}, body: '' };
+                return DryRunValidator.create(StubRepository, testRequest, allowInjection);
+            }
         }
     };
 }

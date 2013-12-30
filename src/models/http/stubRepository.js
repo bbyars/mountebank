@@ -1,6 +1,6 @@
 'use strict';
 
-var predicates = require('./predicates'),
+var predicates = require('../predicates'),
     Q = require('q'),
     util = require('util'),
     errors = require('../../errors/errors');

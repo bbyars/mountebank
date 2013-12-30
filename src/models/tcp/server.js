@@ -5,10 +5,11 @@ var net = require('net'),
     winston = require('winston'),
     ScopedLogger = require('../../util/scopedLogger'),
     Proxy = require('./proxy'),
-    Validator = require('./tcpValidator'),
+    DryRunValidator = require('../dryRunValidator'),
     Domain = require('domain'),
     StubRepository = require('./stubRepository'),
-    util = require('util');
+    util = require('util'),
+    exceptions = require('../../errors/errors');
 
 var create = function (port, options) {
     var name = options.name ? util.format('tcp:%s %s', port, options.name) : 'tcp:' + port,
@@ -71,12 +72,21 @@ var create = function (port, options) {
 };
 
 function initialize (allowInjection) {
+    function validateMode (request) {
+        var errors = [];
+        if (request.mode && ['text', 'binary'].indexOf(request.mode) < 0) {
+            errors.push(exceptions.ValidationError("'mode' must be one of ['text', 'binary']"));
+        }
+        return errors;
+    }
+
     return {
         name: 'tcp',
         create: create,
         Validator: {
             create: function () {
-                return Validator.create(allowInjection);
+                var testRequest = { requestFrom: '', data: '' };
+                return DryRunValidator.create(StubRepository, testRequest, allowInjection, validateMode);
             }
         }
     };

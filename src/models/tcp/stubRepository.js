@@ -2,7 +2,7 @@
 
 var Q = require('q'),
     util = require('util'),
-    predicates = require('./predicates'),
+    predicates = require('../predicates'),
     errors = require('../../errors/errors');
 
 function create (proxy, logger) {

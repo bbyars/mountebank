@@ -1,15 +1,16 @@
 'use strict';
 
 var assert = require('assert'),
-    Validator = require('../../../src/models/http/httpValidator'),
-    promiseIt = require('../../testHelpers').promiseIt;
+    Validator = require('../../src/models/dryRunValidator'),
+    promiseIt = require('../testHelpers').promiseIt,
+    StubRepository = require('../../src/models/http/stubRepository'),
+    testRequest = { requestFrom: '', path: '/', query: {}, method: 'GET', headers: {}, body: '' };
 
-describe('httpValidator', function () {
-
+describe('dryRunValidator', function () {
     describe('#validate', function () {
         promiseIt('should be valid for an empty request', function () {
             var request = {},
-                validator = Validator.create();
+                validator = Validator.create(StubRepository, testRequest);
 
             return validator.validate(request).then(function (result) {
                 assert.deepEqual(result, {
@@ -21,7 +22,7 @@ describe('httpValidator', function () {
 
         promiseIt('should not be valid for a missing responses field', function () {
             var request =  { stubs: [{}] },
-                validator = Validator.create();
+                validator = Validator.create(StubRepository, testRequest);
 
             return validator.validate(request).then(function (result) {
                 assert.deepEqual(result, {
@@ -37,7 +38,7 @@ describe('httpValidator', function () {
 
         promiseIt('should be valid for an empty stubs list', function () {
             var request = { stubs: [] },
-                validator = Validator.create();
+                validator = Validator.create(StubRepository, testRequest);
 
             return validator.validate(request).then(function (result) {
                 assert.deepEqual(result, {
@@ -49,7 +50,7 @@ describe('httpValidator', function () {
 
         promiseIt('should be valid for valid stub', function () {
             var request =  { stubs: [{ responses: [{ is: { statusCode: 400 }  }] }] },
-                validator = Validator.create();
+                validator = Validator.create(StubRepository, testRequest);
 
             return validator.validate(request).then(function (result) {
                 assert.deepEqual(result, {
@@ -71,7 +72,7 @@ describe('httpValidator', function () {
                         }
                     }]
                 },
-                validator = Validator.create();
+                validator = Validator.create(StubRepository, testRequest);
 
             return validator.validate(request).then(function (result) {
                 assert.deepEqual(result, {
@@ -88,7 +89,7 @@ describe('httpValidator', function () {
                         responses: [{ is: { body: 'Matched' }}]
                     }]
                 },
-                validator = Validator.create(true);
+                validator = Validator.create(StubRepository, testRequest, true);
 
             return validator.validate(request).then(function (result) {
                 assert.deepEqual(result, {
@@ -104,7 +105,7 @@ describe('httpValidator', function () {
                         responses: [{ inject: "function () { return {}; }" }]
                     }]
                 },
-                validator = Validator.create(true);
+                validator = Validator.create(StubRepository, testRequest, true);
 
             return validator.validate(request).then(function (result) {
                 assert.deepEqual(result, {
@@ -120,7 +121,7 @@ describe('httpValidator', function () {
                         responses: [{ inject: "function () { return {}; }" }]
                     }]
                 },
-                validator = Validator.create(false);
+                validator = Validator.create(StubRepository, testRequest, false);
 
             return validator.validate(request).then(function (result) {
                 assert.deepEqual(result, {
@@ -141,7 +142,7 @@ describe('httpValidator', function () {
                         responses: [{ is: { body: 'Matched' }}]
                     }]
                 },
-                validator = Validator.create(false);
+                validator = Validator.create(StubRepository, testRequest, false);
 
             return validator.validate(request).then(function (result) {
                 assert.deepEqual(result, {
@@ -161,7 +162,7 @@ describe('httpValidator', function () {
                         responses: [{ proxy: 'http://google.com' }]
                     }]
                 },
-                validator = Validator.create();
+                validator = Validator.create(StubRepository, testRequest);
 
             return validator.validate(request).then(function (result) {
                 assert.deepEqual(result, {
@@ -177,7 +178,7 @@ describe('httpValidator', function () {
                         responses: [{ proxyOnce: 'http://google.com' }]
                     }]
                 },
-                validator = Validator.create();
+                validator = Validator.create(StubRepository, testRequest);
 
             return validator.validate(request).then(function (result) {
                 assert.deepEqual(result, {
@@ -194,7 +195,7 @@ describe('httpValidator', function () {
                         {}
                     ]
                 },
-                validator = Validator.create();
+                validator = Validator.create(StubRepository, testRequest);
 
             return validator.validate(request).then(function (result) {
                 assert.deepEqual(result, {
@@ -217,7 +218,7 @@ describe('httpValidator', function () {
                         }
                     }]
                 },
-                validator = Validator.create();
+                validator = Validator.create(StubRepository, testRequest);
 
             return validator.validate(request).then(function (result) {
                 assert.deepEqual(result, {
@@ -242,7 +243,7 @@ describe('httpValidator', function () {
                         }
                     }]
                 },
-                validator = Validator.create();
+                validator = Validator.create(StubRepository, testRequest);
 
             return validator.validate(request).then(function (result) {
                 assert.deepEqual(result, {
@@ -266,7 +267,7 @@ describe('httpValidator', function () {
                         }
                     }]
                 },
-                validator = Validator.create();
+                validator = Validator.create(StubRepository, testRequest);
 
             return validator.validate(request).then(function (result) {
                 assert.deepEqual(result, {
@@ -288,7 +289,7 @@ describe('httpValidator', function () {
                         responses: [{ is: { body: 'Matched' }}]
                     }]
                 },
-                validator = Validator.create(true);
+                validator = Validator.create(StubRepository, testRequest, true);
 
             return validator.validate(request).then(function (result) {
                 assert.deepEqual(result, {
@@ -309,7 +310,7 @@ describe('httpValidator', function () {
                         responses: [{ invalid: 'INVALID' }]
                     }]
                 },
-                validator = Validator.create();
+                validator = Validator.create(StubRepository, testRequest);
 
             return validator.validate(request).then(function (result) {
                 assert.deepEqual(result, {
