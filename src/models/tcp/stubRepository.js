@@ -5,7 +5,7 @@ var Q = require('q'),
     predicates = require('./predicates'),
     errors = require('../../errors/errors');
 
-function create (proxy) {
+function create (proxy, logger) {
     var stubs = [],
         injectState = {};
 
@@ -43,7 +43,14 @@ function create (proxy) {
                 return matchesPredicate(fieldName, predicates[fieldName], request);
             });
         });
-        return (matches.length === 0) ? undefined : matches[0];
+        if (matches.length === 0) {
+            logger.debug('no predicate match');
+            return undefined;
+        }
+        else {
+            logger.debug('using predicate match: ' + JSON.stringify(matches[0].predicates || {}));
+            return matches[0];
+        }
     }
 
     function addStub (stub) {

@@ -7,11 +7,12 @@ var assert = require('assert'),
     promiseIt = require('../../testHelpers').promiseIt;
 
 describe('http stubRepository', function () {
-    var stubs, proxy;
+    var stubs, proxy, logger;
 
     beforeEach(function () {
         proxy = {};
-        stubs = StubRepository.create(proxy);
+        logger = { debug: mock(), info: mock(), warn: mock(), error: mock() };
+        stubs = StubRepository.create(proxy, logger);
     });
 
     promiseIt('should return default response if no match', function () {

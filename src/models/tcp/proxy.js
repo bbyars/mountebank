@@ -16,10 +16,10 @@ function create (logger, encoding) {
             });
 
         logger.debug('Proxy %s => <<%s>> => %s',
-            socketName(originalRequest), originalRequest.data.toString(encoding), socketName(options));
+            originalRequest.requestFrom, originalRequest.data.toString(encoding), socketName(options));
 
         socket.once('data', function (data) {
-            logger.debug('Proxy %s <= <<%s>> <= %s', socketName(originalRequest),
+            logger.debug('Proxy %s <= <<%s>> <= %s', originalRequest.requestFrom,
                 data.toString(encoding), socketName(options));
             deferred.resolve({ data: data });
         });

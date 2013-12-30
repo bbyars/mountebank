@@ -18,7 +18,7 @@ var create = function (port, options) {
         encoding = mode === 'binary' ? 'base64' : 'utf8',
         requests = [],
         proxy = Proxy.create(logger, encoding),
-        stubs = StubRepository.create(proxy),
+        stubs = StubRepository.create(proxy, logger),
         server = net.createServer(function connectionListener (client) {
             var clientName = client.remoteAddress + ':' + client.remotePort,
                 errorHandler = function (error) {

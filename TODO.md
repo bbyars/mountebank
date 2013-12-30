@@ -32,7 +32,7 @@ Known Bugs
 
 Cleanup Needed
 ==============
-- fix tcp predicates
+- centralize request field information - used in dry run and in server simplify (Request.create?) (or may {} for dryRun?)
 - refactor common code between tcp and http; add unit tests
 
 Auxiliary Projects

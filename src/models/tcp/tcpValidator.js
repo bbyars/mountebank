@@ -7,13 +7,13 @@ var StubRepository = require('./stubRepository'),
 
 function create (allowInjection) {
 
-    var dryRunProxy = {
-        to: function () { return Q({ data: '' }); }
-    };
+    var dryRunProxy = { to: function () { return Q({ data: '' }); } },
+        noOp = function () {},
+        dryRunLogger = { debug: noOp, info: noOp, warn: noOp, error: noOp };
 
     function dryRun (stub) {
         var testRequest = { requestFrom: '', data: 'test' },
-            stubRepository = StubRepository.create(dryRunProxy),
+            stubRepository = StubRepository.create(dryRunProxy, dryRunLogger),
             clone = JSON.parse(JSON.stringify(stub)); // proxyOnce changes state
 
         stubRepository.addStub(clone);
