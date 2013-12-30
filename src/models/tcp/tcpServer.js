@@ -34,14 +34,14 @@ var create = function (port, options) {
                     client.write(JSON.stringify({ errors: [error] }), 'utf8');
                 };
 
-            logger.debug('connection started from ' + clientName);
+            logger.debug('%s connected', clientName);
 
             client.on('error', errorHandler);
             client.on('data', function (data) {
                 var request = TcpRequest.createFrom(clientName, data.toString(encoding)),
                     domain = Domain.create();
 
-                logger.debug('%s => <<%s>>', clientName, data.toString(encoding));
+                logger.debug('%s => %j', clientName, data.toString(encoding));
                 requests.push(request);
 
                 domain.on('error', errorHandler);
@@ -52,7 +52,7 @@ var create = function (port, options) {
                                 new Buffer(stubResponse.data, encoding);
 
                         if (buffer.length > 0) {
-                            logger.debug('<<%s>> => %s', buffer.toString(encoding), clientName);
+                            logger.debug('%s <= %j', clientName, buffer.toString(encoding));
                             client.write(buffer);
                         }
                     }, errorHandler);
@@ -61,7 +61,7 @@ var create = function (port, options) {
 
             client.on('end', function () {
                 //TODO: Allow stubResponse here?
-                logger.debug('connection ended from ' + clientName);
+                logger.debug('%s ended connection', clientName);
             });
         });
 

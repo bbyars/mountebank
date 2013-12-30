@@ -59,12 +59,16 @@ var create = function (port, options) {
                     requests.push(httpRequest);
                     return stubs.resolve(httpRequest);
                 }).done(function (stubResponse) {
-                    logger.debug('%s => %s', JSON.stringify(stubResponse), clientName);
+                    logger.debug('%s <= %s', clientName, JSON.stringify(stubResponse));
                     response.writeHead(stubResponse.statusCode, stubResponse.headers);
                     response.end(stubResponse.body.toString(), 'utf8');
                 }, errorHandler);
             });
         });
+
+    server.on('connection', function (socket) {
+        logger.debug('%s:%s connected', socket.remoteAddress, socket.remotePort);
+    });
 
     server.listen(port, function () {
         logger.info('Open for business...');

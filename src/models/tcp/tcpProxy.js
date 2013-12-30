@@ -15,11 +15,11 @@ function create (logger, encoding) {
                 socket.end(originalRequest.data);
             });
 
-        logger.debug('Proxy %s => <<%s>> => %s',
+        logger.debug('Proxy %s => %j => %s',
             originalRequest.requestFrom, originalRequest.data.toString(encoding), socketName(options));
 
         socket.once('data', function (data) {
-            logger.debug('Proxy %s <= <<%s>> <= %s', originalRequest.requestFrom,
+            logger.debug('Proxy %s <= %j <= %s', originalRequest.requestFrom,
                 data.toString(encoding), socketName(options));
             deferred.resolve({ data: data });
         });

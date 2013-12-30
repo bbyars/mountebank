@@ -37,6 +37,7 @@ Cleanup Needed
   - refactor servers; find ways to test
   - common proxy error handling code?
   - adapt tests to generic, find ways to uncomment tests that got commented out
+  - https tests
 
 Auxiliary Projects
 ==================
