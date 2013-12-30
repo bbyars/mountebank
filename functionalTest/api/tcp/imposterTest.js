@@ -83,7 +83,7 @@ describe('tcp imposter', function () {
             }).then(function (response) {
                 var stubs = JSON.stringify(response.body.stubs),
                     withTimeRemoved = stubs.replace(/"timestamp":"[^"]+"/g, '"timestamp":"NOW"'),
-                    withClientPortRemoved = withTimeRemoved.replace(/"from":"[:\.\d]+"/g, '"from":"HERE"'),
+                    withClientPortRemoved = withTimeRemoved.replace(/"requestFrom":"[:\.\d]+"/g, '"requestFrom":"HERE"'),
                     actualWithoutEphemeralData = JSON.parse(withClientPortRemoved);
 
                 assert.deepEqual(actualWithoutEphemeralData, [{
@@ -91,12 +91,12 @@ describe('tcp imposter', function () {
                     matches: [
                         {
                             timestamp: 'NOW',
-                            request: { from: 'HERE', data: 'first' },
+                            request: { requestFrom: 'HERE', data: 'first' },
                             response: { data: '1' }
                         },
                         {
                             timestamp: 'NOW',
-                            request: { from: 'HERE', data: 'second' },
+                            request: { requestFrom: 'HERE', data: 'second' },
                             response: { data: '2' }
                         }
                     ]

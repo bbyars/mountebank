@@ -28,7 +28,7 @@ function simplify (request) {
     request.on('end', function () {
         var parts = url.parse(request.url, true);
         deferred.resolve({
-            from: request.socket.remoteAddress + ':' + request.socket.remotePort,
+            requestFrom: request.socket.remoteAddress + ':' + request.socket.remotePort,
             method: request.method,
             path: parts.pathname,
             query: parts.query,

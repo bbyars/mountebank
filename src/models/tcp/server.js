@@ -30,7 +30,7 @@ var create = function (port, options) {
 
             client.on('error', errorHandler);
             client.on('data', function (data) {
-                var request = { from: clientName, data: data.toString(encoding) },
+                var request = { requestFrom: clientName, data: data.toString(encoding) },
                     domain = Domain.create();
 
                 logger.debug('%s => <<%s>>', clientName, data.toString(encoding));

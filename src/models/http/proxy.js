@@ -38,7 +38,7 @@ function create (logger) {
                         headers: response.headers,
                         body: response.body
                     };
-                    logger.debug('Proxy %s <= %s <= %s', originalRequest.from, JSON.stringify(stubResponse), baseUrl);
+                    logger.debug('Proxy %s <= %s <= %s', originalRequest.requestFrom, JSON.stringify(stubResponse), baseUrl);
                     deferred.resolve(stubResponse);
                 });
             });

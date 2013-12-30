@@ -64,7 +64,7 @@ describe('http imposter', function () {
             }).then(function (response) {
                 var stubs = JSON.stringify(response.body.stubs),
                     withTimeRemoved = stubs.replace(/"timestamp":"[^"]+"/g, '"timestamp":"NOW"'),
-                    withClientPortRemoved = withTimeRemoved.replace(/"from":"[:\.\d]+"/g, '"from":"HERE"'),
+                    withClientPortRemoved = withTimeRemoved.replace(/"requestFrom":"[:\.\d]+"/g, '"requestFrom":"HERE"'),
                     actualWithoutEphemeralData = JSON.parse(withClientPortRemoved),
                     requestHeaders = { accept: 'application/json', host: 'localhost:' + port, connection: 'keep-alive' };
 
@@ -74,7 +74,7 @@ describe('http imposter', function () {
                         {
                             timestamp: 'NOW',
                             request: {
-                                from: 'HERE',
+                                requestFrom: 'HERE',
                                 path: '/first',
                                 query: { q: '1' },
                                 method: 'GET',
@@ -90,7 +90,7 @@ describe('http imposter', function () {
                         {
                             timestamp: 'NOW',
                             request: {
-                                from: 'HERE',
+                                requestFrom: 'HERE',
                                 path: '/second',
                                 query: { q: '2'},
                                 method: 'GET',

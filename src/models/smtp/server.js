@@ -18,6 +18,7 @@ function simplify (request) {
     parser.once('end', function (email) {
         /* jshint maxcomplexity: 7 */
         deferred.resolve({
+            requestFrom: request.remoteAddress,
             envelopeFrom: request.from,
             envelopeTo: request.to,
             from: email.from[0],
@@ -43,7 +44,7 @@ var create = function (port, options) {
         deferred = Q.defer(),
         requests = [],
         server = smtp.createSimpleServer({ disableDNSValidation: true }, function (request) {
-            var clientName = 'client',//request.socket.remoteAddress + ':' + request.socket.remotePort,
+            var clientName = request.remoteAddress,
                 domain = Domain.create(),
                 errorHandler = function (error) { logger.error(JSON.stringify(error)); };
 

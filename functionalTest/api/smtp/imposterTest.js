@@ -37,6 +37,7 @@ describe('smtp imposter', function () {
             }).then(function (response) {
                 assert.deepEqual(response.body.requests, [
                     {
+                        requestFrom: '127.0.0.1',
                         envelopeFrom: 'envelopeFrom1@mb.org',
                         envelopeTo: ['envelopeTo1@mb.org'],
                         from: { address: 'from1@mb.org', name: 'From 1' },
@@ -52,6 +53,7 @@ describe('smtp imposter', function () {
                         attachments: []
                     },
                     {
+                        requestFrom: '127.0.0.1',
                         envelopeFrom: 'envelopeFrom2@mb.org',
                         envelopeTo: ['envelopeTo2@mb.org'],
                         from: { address: 'from2@mb.org', name: 'From 2' },
