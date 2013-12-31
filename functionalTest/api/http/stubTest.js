@@ -171,7 +171,7 @@ describe('http imposter', function () {
                 assert.strictEqual(response.statusCode, 500);
                 assert.deepEqual(response.body, { errors: [{
                     code: 'invalid proxy',
-                    message: 'Cannot resolve http://invalid.domain'
+                    message: 'Cannot resolve "http://invalid.domain"'
                 }]});
             }).finally(function () {
                 return api.del('/imposters/' + port);

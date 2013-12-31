@@ -29,15 +29,17 @@ Known Bugs
 1. grunt does not kill mb if functional tests fail
 2. TCP proxying doesn't work if proxied server doesn't send a response
    - add a timeout parameter, and always resolve if no response by that time?
+3. TCP proxying only returns first data event (need callback instead of promise to callback multiple times?)
 
 Cleanup Needed
 ==============
-- centralize request field information - used in dry run and in server simplify (Request.create?) (or may {} for dryRun?)
 - refactor common code between tcp and http; add unit tests
   - refactor servers; find ways to test
   - common proxy error handling code?
   - adapt tests to generic, find ways to uncomment tests that got commented out
   - https tests
+- fix docs - much of it out of date
+- does tcp response need { data: '' } instead of just ''? (so we can send response more or less directly)
 
 Auxiliary Projects
 ==================

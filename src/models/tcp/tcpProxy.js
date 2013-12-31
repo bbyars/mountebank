@@ -2,46 +2,41 @@
 
 var net = require('net'),
     Q = require('q'),
-    errors = require('../../errors/errors');
-
-function socketName (socket) {
-    return socket.host + ':' + socket.port;
-}
+    AbstractProxy = require('../abstractProxy');
 
 function create (logger, encoding) {
-    function to (options, originalRequest) {
-        var deferred = Q.defer(),
-            socket = net.connect(options, function () {
-                socket.end(originalRequest.data);
-            });
 
-        logger.debug('Proxy %s => %j => %s',
-            originalRequest.requestFrom, originalRequest.data.toString(encoding), socketName(options));
+    function socketName (socket) {
+        return socket.host + ':' + socket.port;
+    }
+
+    function format (request) {
+        return request.data.toString(encoding);
+    }
+
+    function setupProxy (options, originalRequest) {
+        var socket = net.connect(options, function () {
+            socket.end(originalRequest.data);
+        });
+        return socket;
+    }
+
+    function proxy (socket) {
+        var deferred = Q.defer();
 
         socket.once('data', function (data) {
-            logger.debug('Proxy %s <= %j <= %s', originalRequest.requestFrom,
-                data.toString(encoding), socketName(options));
             deferred.resolve({ data: data });
         });
-
-        socket.once('error', function (error) {
-            if (error.code === 'ENOTFOUND') {
-                deferred.reject(errors.InvalidProxyError('Cannot resolve ' + JSON.stringify(options)));
-            }
-            else if (error.code === 'ECONNREFUSED') {
-                deferred.reject(errors.InvalidProxyError('Unable to connect to ' + JSON.stringify(options)));
-            }
-            else {
-                deferred.reject(error);
-            }
-        });
-
         return deferred.promise;
     }
 
-    return {
-        to: to
-    };
+    return AbstractProxy.implement(logger, {
+        formatRequest: format,
+        formatResponse: format,
+        formatDestination: socketName,
+        setupProxy: setupProxy,
+        proxy: proxy
+    });
 }
 
 module.exports = {

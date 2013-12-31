@@ -16,10 +16,10 @@ describe('http proxy', function () {
 
     describe('#to', function () {
         promiseIt('should send same request information to proxied url', function () {
-            var request = { protocol: 'http', port: port, name: this.name };
+            var proxyRequest = { protocol: 'http', port: port, name: this.name },
+                request = { path: '/PATH', method: 'POST', body: 'BODY', headers: { 'X-Key': 'TRUE' }};
 
-            return api.post('/imposters', request).then(function () {
-                var request = { path: '/PATH', method: 'POST', body: 'BODY', headers: { 'X-Key': 'TRUE' }};
+            return api.post('/imposters', proxyRequest).then(function () {
                 return proxy.to('http://localhost:' + port, request);
             }).then(function (response) {
                 assert.strictEqual(response.statusCode, 200, 'did not get a 200 from proxy');
@@ -59,7 +59,7 @@ describe('http proxy', function () {
             }, function (reason) {
                 assert.deepEqual(reason, {
                     code: 'invalid proxy',
-                    message: 'Cannot resolve http://no.such.domain'
+                    message: 'Cannot resolve "http://no.such.domain"'
                 });
             });
         });
@@ -70,7 +70,7 @@ describe('http proxy', function () {
             }, function (reason) {
                 assert.deepEqual(reason, {
                     code: 'invalid proxy',
-                    message: 'Unable to connect to 1 + 2'
+                    message: 'Unable to connect to "1 + 2"'
                 });
             });
         });
