@@ -23,6 +23,7 @@ Stories
 26. Add support for case-sensitive predicates (as objects instead of strings?)
 27. paging and q= filtering for imposters on GET /imposters
 28. UDP and TCP syslog support (see http://en.wikipedia.org/wiki/Syslog for packet format)
+30. javadoc style documentation? (look at simplesmtp code)
 
 Known Bugs
 ==========
@@ -35,11 +36,12 @@ Cleanup Needed
 ==============
 - refactor common code between tcp and http; add unit tests
   - refactor servers; find ways to test
-  - common proxy error handling code?
   - adapt tests to generic, find ways to uncomment tests that got commented out
   - https tests
 - fix docs - much of it out of date
 - does tcp response need { data: '' } instead of just ''? (so we can send response more or less directly)
+- make abstractserver events take socket; derive socketName there
+- inherit.from if super is function, call new on it
 
 Auxiliary Projects
 ==================

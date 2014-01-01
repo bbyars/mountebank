@@ -1,52 +1,59 @@
 'use strict';
 
-var smtp = require('simplesmtp'),
+var AbstractServer = require('../abstractServer'),
+    smtp = require('simplesmtp'),
     Q = require('q'),
-    winston = require('winston'),
-    ScopedLogger = require('../../util/scopedLogger'),
+    inherit = require('../../util/inherit'),
     util = require('util'),
-    Domain = require('domain'),
+    events = require('events'),
     SmtpRequest = require('./smtpRequest');
 
-var create = function (port, options) {
-    var name = options.name ? util.format('smtp:%s %s', port, options.name) : 'smtp:' + port,
-        logger = ScopedLogger.create(winston, name),
-        deferred = Q.defer(),
-        requests = [],
-        server = smtp.createSimpleServer({ disableDNSValidation: true }, function (request) {
-            var clientName = request.remoteAddress,
-                domain = Domain.create(),
-                errorHandler = function (error) { logger.error(JSON.stringify(error)); };
+function noOp () {}
 
-            logger.info('%s => From: %s To: %s', clientName, request.from, JSON.stringify(request.to));
+function createServer () {
+    var result = inherit.from(new events.EventEmitter()),
+        requestHandler = function (request) {
+            result.emit('request', request.remoteAddress, request);
+        },
+        server = smtp.createSimpleServer({ disableDNSValidation: true }, requestHandler);
 
-            domain.on('error', errorHandler);
-            domain.run(function () {
-                SmtpRequest.createFrom(request).done(function (smtpRequest) {
-                    logger.debug('%s => %s', clientName, JSON.stringify(smtpRequest));
-                    requests.push(smtpRequest);
-                    request.accept();
-                }, errorHandler);
-            });
-        });
-
-    server.listen(port, function () {
-        logger.info('Open for business...');
-        deferred.resolve({
-            requests: requests,
-            addStub: function () {},
-            metadata: {},
-            close: function () { server.server.end(function () { logger.info ('Ciao for now'); }); }
-        });
+    server.server.SMTPServer.on('connect', function (raiSocket) {
+        result.emit('connect', raiSocket.socket);
     });
 
-    return deferred.promise;
+    result.close = function () { server.server.end(noOp); };
+
+    result.listen = function (port) {
+        var deferred = Q.defer();
+        server.listen(port, function () {
+            deferred.resolve();
+        });
+        return deferred.promise;
+    };
+
+    return result;
+}
+
+var implementation = {
+    protocolName: 'smtp',
+    createServer: createServer,
+    errorHandler: noOp,
+    formatRequestShort: function (request) {
+        return util.format('Envelope from: %s to: %s', request.from, JSON.stringify(request.to));
+    },
+    formatRequest: function (request) { return request; },
+    respond: function (simpleRequest, originalRequest) {
+        originalRequest.accept();
+    },
+    metadata: function () { return {} },
+    addStub: noOp,
+    Request: SmtpRequest
 };
 
 function initialize () {
     return {
         name: 'smtp',
-        create: create
+        create: AbstractServer.implement(implementation).create
     };
 }
 

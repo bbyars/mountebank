@@ -55,10 +55,10 @@ function setup (protocolName, createServer) {
                         requests.push(httpRequest);
                         return stubs.resolve(httpRequest);
                     }).done(function (stubResponse) {
-                            logger.debug('%s <= %s', clientName, JSON.stringify(stubResponse));
-                            response.writeHead(stubResponse.statusCode, stubResponse.headers);
-                            response.end(stubResponse.body.toString(), 'utf8');
-                        }, errorHandler);
+                        logger.debug('%s <= %s', clientName, JSON.stringify(stubResponse));
+                        response.writeHead(stubResponse.statusCode, stubResponse.headers);
+                        response.end(stubResponse.body.toString(), 'utf8');
+                    }, errorHandler);
                 });
             };
 
