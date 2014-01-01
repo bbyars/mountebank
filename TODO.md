@@ -43,6 +43,7 @@ Cleanup Needed
 - make abstractserver events take socket; derive socketName there
 - inherit.from if super is function, call new on it
 - log TCP socket state (http://www.tcpipguide.com/free/t_TCPConnectionTermination-2.htm)
+// TODO: Use one of Q's denodeify functions?
 
 Auxiliary Projects
 ==================

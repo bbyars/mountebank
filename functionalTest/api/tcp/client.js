@@ -20,7 +20,14 @@ function send (message, serverPort, timeout) {
 }
 
 function fireAndForget (message, serverPort) {
-    var client = net.connect({ port: serverPort }, function () { client.write(message); });
+    var deferred = Q.defer(),
+        client = net.connect({ port: serverPort }, function () { client.write(message); });
+
+    // Attempt to avoid race conditions where the subsequent test code
+    // gets ahead of the server's ability to record the request
+    setTimeout(function () {
+        deferred.resolve();
+    }, 150);
 }
 
 module.exports = {

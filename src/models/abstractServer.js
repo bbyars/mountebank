@@ -24,7 +24,7 @@ function implement (implementation) {
         var deferred = Q.defer(),
             logger = createScopedLogger(),
             requests = [],
-            server = implementation.createServer(options);
+            server = implementation.createServer(logger, options);
 
         server.on('connection', function (socket) {
             var name = socketName(socket);
@@ -43,7 +43,7 @@ function implement (implementation) {
             var domain = Domain.create(),
                 errorHandler = function (error) {
                     logger.error('%s X=> %s', clientName, JSON.stringify(error));
-                    server.errorHandler(error);
+                    server.errorHandler(error, request);
                 };
 
             logger.info('%s => %s', clientName, server.formatRequestShort(request));

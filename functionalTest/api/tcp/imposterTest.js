@@ -59,6 +59,7 @@ describe('tcp imposter', function () {
                     protocol: 'tcp',
                     port: port,
                     mode: 'text',
+                    name: request.name,
                     requests: [],
                     stubs: [],
                     _links: {

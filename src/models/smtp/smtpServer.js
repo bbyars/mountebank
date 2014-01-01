@@ -17,7 +17,8 @@ function createServer () {
                 return util.format('Envelope from: %s to: %s', request.from, JSON.stringify(request.to));
             },
             formatRequest: function (request) { return request; },
-            respond: function (simpleRequest, originalRequest) { originalRequest.accept(); },
+            formatResponse: noOp,
+            respond: function (smtpRequest, originalRequest) { originalRequest.accept(); },
             metadata: function () { return {}; },
             addStub: noOp
         }),
