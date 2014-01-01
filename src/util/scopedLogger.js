@@ -3,7 +3,9 @@
 var util = require('util');
 
 function create (logger, scopePrefix) {
-    var wrappedLogger = {};
+    var wrappedLogger = {
+        level: logger.level
+    };
 
     ['debug', 'info', 'warn', 'error'].forEach(function (level) {
         wrappedLogger[level] = function () {

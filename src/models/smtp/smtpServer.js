@@ -44,13 +44,13 @@ function createServer () {
     return result;
 }
 
-var implementation = {
-    protocolName: 'smtp',
-    createServer: createServer,
-    Request: SmtpRequest
-};
-
 function initialize () {
+    var implementation = {
+        protocolName: 'smtp',
+        createServer: createServer,
+        Request: SmtpRequest
+    };
+
     return {
         name: implementation.protocolName,
         create: AbstractServer.implement(implementation).create

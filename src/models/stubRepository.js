@@ -79,6 +79,8 @@ function create (proxy, logger, postProcess) {
     }
 
     function getResolvedResponsePromise (stubResolver, request) {
+        logger.debug('using stub resolver ' + JSON.stringify(stubResolver));
+
         if (stubResolver.is) {
             return Q(postProcess(stubResolver.is));
         }

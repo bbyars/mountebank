@@ -12,6 +12,8 @@ var AbstractServer = require('../abstractServer'),
     TcpRequest = require('./tcpRequest'),
     exceptions = require('../../errors/errors');
 
+function identity (o) { return o; }
+
 function postProcess (stub) {
     return {
         data: stub.data || ''
@@ -31,8 +33,8 @@ function createServer (logger, options) {
         proxy = Proxy.create(logger, encoding),
         stubs = StubRepository.create(proxy, logger, postProcess),
         result = inherit.from(new events.EventEmitter(), {
-            errorHandler: function (error, request) {
-                request.socket.write(JSON.stringify({ errors: [error] }), 'utf8');
+            errorHandler: function (error, container) {
+                container.socket.write(JSON.stringify({ errors: [error] }), 'utf8');
             },
             formatRequestShort: function (request) {
                 if (request.data.length > 20) {
@@ -45,9 +47,7 @@ function createServer (logger, options) {
             formatRequest: function (tcpRequest) {
                 return tcpRequest.data.toString(encoding);
             },
-            formatResponse: function (stubResponse) {
-                return ensureBuffer(stubResponse.data).toString(encoding);
-            },
+            formatResponse: identity,
             respond: function (tcpRequest, originalRequest) {
                 return stubs.resolve(tcpRequest).then(function (stubResponse) {
                     var buffer = ensureBuffer(stubResponse.data);
@@ -55,6 +55,8 @@ function createServer (logger, options) {
                     if (buffer.length > 0) {
                         originalRequest.socket.write(buffer);
                     }
+
+                    return buffer.toString(encoding);
                 });
             },
             metadata: function () { return { mode: mode }; },
@@ -66,7 +68,9 @@ function createServer (logger, options) {
         result.emit('connection', socket);
 
         socket.on('data', function (data) {
-            result.emit('request', socketName(socket), { socket: socket, data: data.toString(encoding) });
+            var container = { socket: socket, data: data.toString(encoding) };
+
+            result.emit('request', socketName(socket), container);
         });
     });
 
@@ -81,13 +85,13 @@ function createServer (logger, options) {
     return result;
 }
 
-var implementation = {
-    protocolName: 'tcp',
-    createServer: createServer,
-    Request: TcpRequest
-};
-
 function initialize (allowInjection) {
+    var implementation = {
+        protocolName: 'tcp',
+        createServer: createServer,
+        Request: TcpRequest
+    };
+
     function validateMode (request) {
         var errors = [];
         if (request.mode && ['text', 'binary'].indexOf(request.mode) < 0) {

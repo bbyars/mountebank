@@ -8,7 +8,7 @@ var assert = require('assert'),
 
 describe('HttpRequest', function () {
     describe('#createFrom', function () {
-        var request;
+        var request, container;
 
         beforeEach(function () {
             /* jshint proto: true */
@@ -17,13 +17,14 @@ describe('HttpRequest', function () {
                 setEncoding: mock(),
                 url: 'http://localhost/'
             };
+            container = { request: request };
             request.__proto__ = events.EventEmitter.prototype;
         });
 
         promiseIt('should set requestFrom from socket information', function () {
             request.socket = { remoteAddress: 'HOST', remotePort: 'PORT' };
 
-            var promise = httpRequest.createFrom(request).then(function (httpRequest) {
+            var promise = httpRequest.createFrom(container).then(function (httpRequest) {
                 assert.strictEqual(httpRequest.requestFrom, 'HOST:PORT');
             });
 
@@ -36,7 +37,7 @@ describe('HttpRequest', function () {
             request.method = 'METHOD';
             request.headers = 'HEADERS';
 
-            var promise = httpRequest.createFrom(request).then(function (httpRequest) {
+            var promise = httpRequest.createFrom(container).then(function (httpRequest) {
                 assert.strictEqual(httpRequest.method, 'METHOD');
                 assert.strictEqual(httpRequest.headers, 'HEADERS');
             });
@@ -49,7 +50,7 @@ describe('HttpRequest', function () {
         promiseIt('should set path and query from request url', function () {
             request.url = 'http://localhost/path?key=value';
 
-            var promise = httpRequest.createFrom(request).then(function (httpRequest) {
+            var promise = httpRequest.createFrom(container).then(function (httpRequest) {
                 assert.strictEqual(httpRequest.path, '/path');
                 assert.deepEqual(httpRequest.query, { key: 'value' });
             });
@@ -59,8 +60,8 @@ describe('HttpRequest', function () {
             return promise;
         });
 
-        promiseIt('should set body from data eventsl', function () {
-            var promise = httpRequest.createFrom(request).then(function (httpRequest) {
+        promiseIt('should set body from data events', function () {
+            var promise = httpRequest.createFrom(container).then(function (httpRequest) {
                 assert.strictEqual(httpRequest.body, '12');
             });
 

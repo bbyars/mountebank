@@ -55,7 +55,9 @@ function implement (implementation) {
                     requests.push(simpleRequest);
                     return server.respond(simpleRequest, request);
                 }).done(function (response) {
-                    logger.debug('%s <= %s', clientName, JSON.stringify(server.formatResponse(response)));
+                    if (response) {
+                        logger.debug('%s <= %s', clientName, JSON.stringify(server.formatResponse(response)));
+                    }
                 }, errorHandler);
 //            });
         });

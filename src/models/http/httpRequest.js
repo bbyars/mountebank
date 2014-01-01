@@ -26,8 +26,9 @@ function transform (request) {
     };
 }
 
-function createFrom (request) {
-    var deferred = Q.defer();
+function createFrom (container) {
+    var deferred = Q.defer(),
+        request = container.request;
     request.body = '';
     request.setEncoding('utf8');
     request.on('data', function (chunk) { request.body += chunk; });

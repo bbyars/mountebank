@@ -1,16 +1,17 @@
 'use strict';
 
-var Q = require('q'),
-    Domain = require('domain'),
+var AbstractServer = require('../abstractServer'),
+    Q = require('q'),
+    inherit = require('../../util/inherit'),
     StubRepository = require('../stubRepository'),
     Proxy = require('./httpProxy'),
     DryRunValidator = require('../dryRunValidator'),
-    winston = require('winston'),
-    ScopedLogger = require('../../util/scopedLogger'),
-    util = require('util'),
+    events = require('events'),
     HttpRequest = require('./httpRequest');
 
-function setup (protocolName, createServer) {
+function identity (o) { return o; }
+
+function setup (protocolName, createNodeServer) {
     function postProcess (stub) {
         var response = {
             statusCode: stub.statusCode || 200,
@@ -28,62 +29,61 @@ function setup (protocolName, createServer) {
         return response;
     }
 
-    var create = function (port, options) {
-        var name = options.name ? util.format('%s:%s %s', protocolName, port, options.name) : protocolName + ':' + port,
-            logger = ScopedLogger.create(winston, name),
-            deferred = Q.defer(),
-            requests = [],
-            proxy = Proxy.create(logger),
+    function createServer (logger) {
+        var proxy = Proxy.create(logger),
             stubs = StubRepository.create(proxy, logger, postProcess),
-            server = createServer(),
-            requestListener = function (request, response) {
-                var clientName = request.socket.remoteAddress + ':' + request.socket.remotePort,
-                    domain = Domain.create(),
-                    errorHandler = function (error) {
-                        logger.error(JSON.stringify(error));
-                        response.writeHead(500, { 'content-type': 'application/json' });
-                        response.end(JSON.stringify({ errors: [error] }), 'utf8');
-                    };
+            result = inherit.from(new events.EventEmitter(), {
+                errorHandler: function (error, container) {
+                    container.response.writeHead(500, { 'content-type': 'application/json' });
+                    container.response.end(JSON.stringify({ errors: [error] }), 'utf8');
+                },
+                formatRequestShort: function (container) {
+                    return container.request.method + ' ' + container.request.url;
+                },
+                formatRequest: identity,
+                formatResponse: identity,
+                respond: function (httpRequest, container) {
+                    return stubs.resolve(httpRequest).then(function (stubResponse) {
+                        container.response.writeHead(stubResponse.statusCode, stubResponse.headers);
+                        container.response.end(stubResponse.body.toString(), 'utf8');
+                        return stubResponse;
+                    });
+                },
+                metadata: function () { return {}; },
+                addStub: stubs.addStub
+            }),
+            server = createNodeServer();
 
-                logger.info('%s => %s %s', clientName, request.method, request.url);
+        server.on('connection', function (socket) { result.emit('connection', socket); });
 
-                domain.on('error', errorHandler);
+        server.on('request', function (request, response) {
+            var clientName = request.socket.remoteAddress + ':' + request.socket.remotePort,
+                container = { request: request, response: response };
 
-                domain.run(function () {
-                    HttpRequest.createFrom(request).then(function (httpRequest) {
-                        logger.debug('%s => %s', clientName, JSON.stringify(httpRequest));
-                        requests.push(httpRequest);
-                        return stubs.resolve(httpRequest);
-                    }).done(function (stubResponse) {
-                        logger.debug('%s <= %s', clientName, JSON.stringify(stubResponse));
-                        response.writeHead(stubResponse.statusCode, stubResponse.headers);
-                        response.end(stubResponse.body.toString(), 'utf8');
-                    }, errorHandler);
-                });
-            };
-
-        server.on('request', requestListener);
-        server.on('connection', function (socket) {
-            logger.debug('%s:%s connected', socket.remoteAddress, socket.remotePort);
+            result.emit('request', clientName, container);
         });
 
-        server.listen(port, function () {
-            logger.info('Open for business...');
-            deferred.resolve({
-                requests: requests,
-                addStub: stubs.addStub,
-                metadata: {},
-                close: function () { server.close(function () { logger.info('Ciao for now'); }); }
-            });
-        });
+        result.close = function () { server.close(); };
 
-        return deferred.promise;
-    };
+        result.listen = function (port) {
+            var deferred = Q.defer();
+            server.listen(port, function () { deferred.resolve(); });
+            return deferred.promise;
+        };
+
+        return result;
+    }
 
     function initialize (allowInjection) {
+        var implementation = {
+            protocolName: protocolName,
+            createServer: createServer,
+            Request: HttpRequest
+        };
+
         return {
             name: protocolName,
-            create: create,
+            create: AbstractServer.implement(implementation).create,
             Validator: {
                 create: function () {
                     return DryRunValidator.create(StubRepository, HttpRequest.createTestRequest(), allowInjection);
