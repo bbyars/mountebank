@@ -3,37 +3,19 @@
 var http = require('http'),
     Q = require('q'),
     port = parseInt(process.env.MB_PORT || 2525),
-    url = 'http://localhost:' + port;
+    url = 'http://localhost:' + port,
+    combinators = require('../../src/util/combinators');
 
 Q.longStackSupport = true;
-
-function clone (obj) {
-    return JSON.parse(JSON.stringify(obj));
-}
-
-function merge (defaults, overrides) {
-    var result = clone(defaults);
-    Object.keys(overrides).forEach(function (key) {
-        if (typeof overrides[key] === 'object') {
-            result[key] = merge(result[key], overrides[key]);
-        }
-        else {
-            result[key] = overrides[key];
-        }
-    });
-    return result;
-}
 
 function optionsFor (spec) {
     var defaults = {
         hostname: 'localhost',
         port: port,
-        headers: {
-            accept: 'application/json'
-        }
+        headers: { accept: 'application/json' }
     };
 
-    return merge(defaults, spec);
+    return combinators.merge(defaults, spec);
 }
 
 function responseFor (spec, body) {
@@ -97,6 +79,5 @@ module.exports = {
     get: get,
     post: post,
     del: del,
-    responseFor: responseFor,
-    merge: merge
+    responseFor: responseFor
 };

@@ -2,13 +2,8 @@
 
 function get (request, response) {
     response.format({
-        json: function () {
-            response.send({ _links: { imposters: { href: '/imposters' } } });
-        },
-
-        html: function () {
-            response.render('index');
-        }
+        json: function () { response.send({ _links: { imposters: { href: '/imposters' } } }); },
+        html: function () { response.render('index'); }
     });
 }
 

@@ -4,6 +4,7 @@ var AbstractServer = require('../abstractServer'),
     net = require('net'),
     Q = require('q'),
     inherit = require('../../util/inherit'),
+    combinators = require('../../util/combinators'),
     Proxy = require('./tcpProxy'),
     DryRunValidator = require('../dryRunValidator'),
     StubRepository = require('../stubRepository'),
@@ -11,8 +12,6 @@ var AbstractServer = require('../abstractServer'),
     events = require('events'),
     TcpRequest = require('./tcpRequest'),
     exceptions = require('../../errors/errors');
-
-function identity (o) { return o; }
 
 function postProcess (stub) {
     return {
@@ -47,7 +46,7 @@ function createServer (logger, options) {
             formatRequest: function (tcpRequest) {
                 return tcpRequest.data.toString(encoding);
             },
-            formatResponse: identity,
+            formatResponse: combinators.identity,
             respond: function (tcpRequest, originalRequest) {
                 return stubs.resolve(tcpRequest).then(function (stubResponse) {
                     var buffer = ensureBuffer(stubResponse.data);

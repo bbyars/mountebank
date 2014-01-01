@@ -4,23 +4,22 @@ var AbstractServer = require('../abstractServer'),
     smtp = require('simplesmtp'),
     Q = require('q'),
     inherit = require('../../util/inherit'),
+    combinators = require('../../util/combinators'),
     util = require('util'),
     events = require('events'),
     SmtpRequest = require('./smtpRequest');
 
-function noOp () {}
-
 function createServer () {
     var result = inherit.from(new events.EventEmitter(), {
-            errorHandler: noOp,
+            errorHandler: combinators.noop,
             formatRequestShort: function (request) {
                 return util.format('Envelope from: %s to: %s', request.from, JSON.stringify(request.to));
             },
-            formatRequest: function (request) { return request; },
-            formatResponse: noOp,
+            formatRequest: combinators.identity,
+            formatResponse: combinators.noop,
             respond: function (smtpRequest, originalRequest) { originalRequest.accept(); },
-            metadata: function () { return {}; },
-            addStub: noOp
+            metadata: combinators.constant({}),
+            addStub: combinators.noop
         }),
         requestHandler = function (request) {
             result.emit('request', request.remoteAddress, request);
@@ -31,7 +30,7 @@ function createServer () {
         result.emit('connection', raiSocket.socket);
     });
 
-    result.close = function () { server.server.end(noOp); };
+    result.close = function () { server.server.end(combinators.noop); };
 
     result.listen = function (port) {
         var deferred = Q.defer();

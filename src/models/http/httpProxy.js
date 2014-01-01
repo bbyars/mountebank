@@ -4,13 +4,10 @@ var http = require('http'),
     https = require('https'),
     url = require('url'),
     Q = require('q'),
-    AbstractProxy = require('../abstractProxy');
+    AbstractProxy = require('../abstractProxy'),
+    combinators = require('../../util/combinators');
 
 function create (logger) {
-
-    function identity (what) {
-        return what;
-    }
 
     function setupProxy (baseUrl, originalRequest) {
         var parts = url.parse(baseUrl),
@@ -40,9 +37,7 @@ function create (logger) {
         proxiedRequest.once('response', function (response) {
             response.body = '';
             response.setEncoding('utf8');
-            response.on('data', function (chunk) {
-                response.body += chunk;
-            });
+            response.on('data', function (chunk) { response.body += chunk; });
             response.on('end', function () {
                 var stubResponse = {
                     statusCode: response.statusCode,
@@ -57,9 +52,9 @@ function create (logger) {
     }
 
     return AbstractProxy.implement(logger, {
-        formatRequest: identity,
-        formatResponse: identity,
-        formatDestination: identity,
+        formatRequest: combinators.identity,
+        formatResponse: combinators.identity,
+        formatDestination: combinators.identity,
         setupProxy: setupProxy,
         proxy: proxy
     });

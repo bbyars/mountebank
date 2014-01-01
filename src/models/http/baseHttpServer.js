@@ -3,13 +3,12 @@
 var AbstractServer = require('../abstractServer'),
     Q = require('q'),
     inherit = require('../../util/inherit'),
+    combinators = require('../../util/combinators'),
     StubRepository = require('../stubRepository'),
     Proxy = require('./httpProxy'),
     DryRunValidator = require('../dryRunValidator'),
     events = require('events'),
     HttpRequest = require('./httpRequest');
-
-function identity (o) { return o; }
 
 function setup (protocolName, createNodeServer) {
     function postProcess (stub) {
@@ -40,8 +39,8 @@ function setup (protocolName, createNodeServer) {
                 formatRequestShort: function (container) {
                     return container.request.method + ' ' + container.request.url;
                 },
-                formatRequest: identity,
-                formatResponse: identity,
+                formatRequest: combinators.identity,
+                formatResponse: combinators.identity,
                 respond: function (httpRequest, container) {
                     return stubs.resolve(httpRequest).then(function (stubResponse) {
                         container.response.writeHead(stubResponse.statusCode, stubResponse.headers);
@@ -49,7 +48,7 @@ function setup (protocolName, createNodeServer) {
                         return stubResponse;
                     });
                 },
-                metadata: function () { return {}; },
+                metadata: combinators.constant({}),
                 addStub: stubs.addStub
             }),
             server = createNodeServer();

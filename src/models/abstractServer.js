@@ -29,14 +29,14 @@ function implement (implementation) {
         server.on('connection', function (socket) {
             var name = socketName(socket);
 
-            logger.debug('%s connected', name);
+            logger.debug('%s ESTABLISHED', name);
 
             socket.on('error', function (error) {
                 logger.error('%s transmission error X=> %s', name, JSON.stringify(error));
             });
 
-            socket.on('end', function () { logger.debug('%s sent FIN packet', name); });
-            socket.on('close', function () { logger.debug('%s fully closed', name); });
+            socket.on('end', function () { logger.debug('%s LAST-ACK', name); });
+            socket.on('close', function () { logger.debug('%s CLOSED', name); });
         });
 
         server.on('request', function (clientName, request) {
