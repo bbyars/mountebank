@@ -2,7 +2,7 @@
 
 var assert = require('assert'),
     api = require('../api'),
-    client = require('./client'),
+    client = require('./smtpClient'),
     promiseIt = require('../../testHelpers').promiseIt,
     port = api.port + 1,
     timeout = parseInt(process.env.SLOW_TEST_TIMEOUT_MS || 2000);

@@ -5,7 +5,7 @@ var assert = require('assert'),
     promiseIt = require('../../testHelpers').promiseIt,
     port = api.port + 1,
     timeout = parseInt(process.env.SLOW_TEST_TIMEOUT_MS || 2000),
-    tcp = require('./client');
+    tcp = require('./tcpClient');
 
 describe('tcp imposter', function () {
     this.timeout(timeout);
