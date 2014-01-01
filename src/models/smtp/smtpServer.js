@@ -11,14 +11,23 @@ var AbstractServer = require('../abstractServer'),
 function noOp () {}
 
 function createServer () {
-    var result = inherit.from(new events.EventEmitter()),
+    var result = inherit.from(new events.EventEmitter(), {
+            errorHandler: noOp,
+            formatRequestShort: function (request) {
+                return util.format('Envelope from: %s to: %s', request.from, JSON.stringify(request.to));
+            },
+            formatRequest: function (request) { return request; },
+            respond: function (simpleRequest, originalRequest) { originalRequest.accept(); },
+            metadata: function () { return {}; },
+            addStub: noOp
+        }),
         requestHandler = function (request) {
             result.emit('request', request.remoteAddress, request);
         },
         server = smtp.createSimpleServer({ disableDNSValidation: true }, requestHandler);
 
     server.server.SMTPServer.on('connect', function (raiSocket) {
-        result.emit('connect', raiSocket.socket);
+        result.emit('connection', raiSocket.socket);
     });
 
     result.close = function () { server.server.end(noOp); };
@@ -37,22 +46,12 @@ function createServer () {
 var implementation = {
     protocolName: 'smtp',
     createServer: createServer,
-    errorHandler: noOp,
-    formatRequestShort: function (request) {
-        return util.format('Envelope from: %s to: %s', request.from, JSON.stringify(request.to));
-    },
-    formatRequest: function (request) { return request; },
-    respond: function (simpleRequest, originalRequest) {
-        originalRequest.accept();
-    },
-    metadata: function () { return {} },
-    addStub: noOp,
     Request: SmtpRequest
 };
 
 function initialize () {
     return {
-        name: 'smtp',
+        name: implementation.protocolName,
         create: AbstractServer.implement(implementation).create
     };
 }

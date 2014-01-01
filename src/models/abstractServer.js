@@ -24,9 +24,9 @@ function implement (implementation) {
         var deferred = Q.defer(),
             logger = createScopedLogger(),
             requests = [],
-            server = implementation.createServer();
+            server = implementation.createServer(options);
 
-        server.on('connect', function (socket) {
+        server.on('connection', function (socket) {
             var name = socketName(socket);
 
             logger.debug('%s connected', name);
@@ -36,32 +36,32 @@ function implement (implementation) {
             });
 
             socket.on('end', function () { logger.debug('%s sent FIN packet', name); });
-            socket.on('close', function () { logger.debug('%s fully closed', name); })
+            socket.on('close', function () { logger.debug('%s fully closed', name); });
         });
 
         server.on('request', function (clientName, request) {
             var domain = Domain.create(),
                 errorHandler = function (error) {
                     logger.error('%s X=> %s', clientName, JSON.stringify(error));
-                    implementation.errorHandler();
+                    server.errorHandler(error);
                 };
 
-            logger.info('%s => %s', clientName, implementation.formatRequestShort(request));
+            logger.info('%s => %s', clientName, server.formatRequestShort(request));
 
             domain.on('error', errorHandler);
 //            domain.run(function () {
                 implementation.Request.createFrom(request).then(function (simpleRequest) {
-                    logger.debug('%s => %s', clientName, JSON.stringify(implementation.formatRequest(simpleRequest)));
+                    logger.debug('%s => %s', clientName, JSON.stringify(server.formatRequest(simpleRequest)));
                     requests.push(simpleRequest);
-                    return implementation.respond(simpleRequest, request);
+                    return server.respond(simpleRequest, request);
                 }).done(function (response) {
-                    logger.debug('%s <= %s', clientName, JSON.stringify(implementation.formatResponse(response)));
+                    logger.debug('%s <= %s', clientName, JSON.stringify(server.formatResponse(response)));
                 }, errorHandler);
 //            });
         });
 
         server.listen(port).done(function () {
-            var metadata = implementation.metadata(options);
+            var metadata = server.metadata(options);
             if (options.name) {
                 metadata.name = options.name;
             }
@@ -70,7 +70,7 @@ function implement (implementation) {
 
             deferred.resolve({
                 requests: requests,
-                addStub: implementation.addStub,
+                addStub: server.addStub,
                 metadata: metadata,
                 close: function () {
                     server.close(function () { logger.info ('Ciao for now'); });

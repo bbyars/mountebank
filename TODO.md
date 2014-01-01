@@ -42,6 +42,7 @@ Cleanup Needed
 - does tcp response need { data: '' } instead of just ''? (so we can send response more or less directly)
 - make abstractserver events take socket; derive socketName there
 - inherit.from if super is function, call new on it
+- log TCP socket state (http://www.tcpipguide.com/free/t_TCPConnectionTermination-2.htm)
 
 Auxiliary Projects
 ==================
