@@ -3,6 +3,7 @@
 var AbstractServer = require('../abstractServer'),
     smtp = require('simplesmtp'),
     Q = require('q'),
+    logger = require('winston'),
     inherit = require('../../util/inherit'),
     combinators = require('../../util/combinators'),
     util = require('util'),
@@ -52,7 +53,7 @@ function initialize () {
 
     return {
         name: implementation.protocolName,
-        create: AbstractServer.implement(implementation).create
+        create: AbstractServer.implement(implementation, logger).create
     };
 }
 

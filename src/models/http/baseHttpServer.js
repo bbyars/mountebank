@@ -2,6 +2,7 @@
 
 var AbstractServer = require('../abstractServer'),
     Q = require('q'),
+    logger = require('winston'),
     inherit = require('../../util/inherit'),
     helpers = require('../../util/helpers'),
     combinators = require('../../util/combinators'),
@@ -83,7 +84,7 @@ function setup (protocolName, createNodeServer) {
 
         return {
             name: protocolName,
-            create: AbstractServer.implement(implementation).create,
+            create: AbstractServer.implement(implementation, logger).create,
             Validator: {
                 create: combinators.curry(DryRunValidator.create, StubRepository, HttpRequest.createTestRequest(), allowInjection)
             }

@@ -2,12 +2,10 @@
 
 var Q = require('q'),
     util = require('util'),
-    Domain = require('domain'),
-    winston = require('winston'),
     ScopedLogger = require('../util/scopedLogger'),
     helpers = require('../util/helpers');
 
-function implement (implementation) {
+function implement (implementation, baseLogger) {
 
     function create (port, options) {
         function createScopedLogger () {
@@ -15,7 +13,7 @@ function implement (implementation) {
             if (options.name) {
                 scope += ' ' + options.name;
             }
-            return ScopedLogger.create(winston, scope);
+            return ScopedLogger.create(baseLogger, scope);
         }
 
         var deferred = Q.defer(),
@@ -36,28 +34,30 @@ function implement (implementation) {
             socket.on('close', function () { logger.debug('%s CLOSED', name); });
         });
 
-        server.on('request', function (socket, request) {
-            var domain = Domain.create(),
-                clientName = helpers.socketName(socket),
+        server.on('request', function (socket, request, testCallback) {
+            var clientName = helpers.socketName(socket),
                 errorHandler = function (error) {
                     logger.error('%s X=> %s', clientName, JSON.stringify(error));
                     server.errorHandler(error, request);
+                    if (testCallback) {
+                        testCallback();
+                    }
                 };
 
             logger.info('%s => %s', clientName, server.formatRequestShort(request));
 
-            domain.on('error', errorHandler);
-//            domain.run(function () {
-                implementation.Request.createFrom(request).then(function (simpleRequest) {
-                    logger.debug('%s => %s', clientName, JSON.stringify(server.formatRequest(simpleRequest)));
-                    requests.push(simpleRequest);
-                    return server.respond(simpleRequest, request);
-                }).done(function (response) {
-                    if (response) {
-                        logger.debug('%s <= %s', clientName, JSON.stringify(server.formatResponse(response)));
-                    }
-                }, errorHandler);
-//            });
+            implementation.Request.createFrom(request).then(function (simpleRequest) {
+                logger.debug('%s => %s', clientName, JSON.stringify(server.formatRequest(simpleRequest)));
+                requests.push(simpleRequest);
+                return server.respond(simpleRequest, request);
+            }).done(function (response) {
+                if (response) {
+                    logger.debug('%s <= %s', clientName, JSON.stringify(server.formatResponse(response)));
+                }
+                if (testCallback) {
+                    testCallback();
+                }
+            }, errorHandler);
         });
 
         server.listen(port).done(function () {

@@ -3,6 +3,7 @@
 var AbstractServer = require('../abstractServer'),
     net = require('net'),
     Q = require('q'),
+    logger = require('winston'),
     inherit = require('../../util/inherit'),
     combinators = require('../../util/combinators'),
     helpers = require('../../util/helpers'),
@@ -90,7 +91,7 @@ function initialize (allowInjection) {
 
     return {
         name: implementation.protocolName,
-        create: AbstractServer.implement(implementation).create,
+        create: AbstractServer.implement(implementation, logger).create,
         Validator: { create: combinators.curry(TcpValidator.create, allowInjection) }
     };
 }

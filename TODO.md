@@ -36,8 +36,10 @@ Cleanup Needed
 ==============
 - https tests
 - fix docs - much of it out of date
-- does tcp response need { data: '' } instead of just ''? (so we can send response more or less directly)
-- unit test abstract server
+- move merge and clone to helpers
+- make call to transform instead of depending on Request
+- take a look at all the format calls
+- see if there's a commonality for stubbing b/t tcp and http
 
 Auxiliary Projects
 ==================
