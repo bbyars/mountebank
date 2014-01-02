@@ -34,13 +34,9 @@ Known Bugs
 
 Cleanup Needed
 ==============
-- refactor common code between tcp and http; add unit tests
-  - refactor servers; find ways to test
-  - adapt tests to generic, find ways to uncomment tests that got commented out
-  - https tests
+- https tests
 - fix docs - much of it out of date
 - does tcp response need { data: '' } instead of just ''? (so we can send response more or less directly)
-- make abstractserver events take socket; derive socketName there
 - unit test abstract server
 
 Auxiliary Projects

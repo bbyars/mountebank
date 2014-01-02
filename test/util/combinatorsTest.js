@@ -87,4 +87,27 @@ describe('combinators', function () {
             assert.deepEqual(second, { two: 2 });
         });
     });
+
+    describe('#curry', function () {
+        it('should pass curried parameter', function () {
+            var fn = function (param) { return param;},
+                curriedFn = combinators.curry(fn, 1);
+
+            assert.strictEqual(curriedFn(), 1);
+        });
+
+        it('should curry multiple parameters', function () {
+            var fn = function (param1, param2) { return param1 + param2;},
+                curriedFn = combinators.curry(fn, 1, 2);
+
+            assert.strictEqual(curriedFn(), 3);
+        });
+
+        it('should support partial currying', function () {
+            var fn = function (param1, param2) { return param1 + param2;},
+                curriedFn = combinators.curry(fn, 1);
+
+            assert.strictEqual(curriedFn(2), 3);
+        });
+    });
 });

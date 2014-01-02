@@ -76,18 +76,16 @@ function setup (protocolName, createNodeServer) {
 
     function initialize (allowInjection) {
         var implementation = {
-            protocolName: protocolName,
-            createServer: createServer,
-            Request: HttpRequest
-        };
+                protocolName: protocolName,
+                createServer: createServer,
+                Request: HttpRequest
+            };
 
         return {
             name: protocolName,
             create: AbstractServer.implement(implementation).create,
             Validator: {
-                create: function () {
-                    return DryRunValidator.create(StubRepository, HttpRequest.createTestRequest(), allowInjection);
-                }
+                create: combinators.curry(DryRunValidator.create, StubRepository, HttpRequest.createTestRequest(), allowInjection)
             }
         };
     }

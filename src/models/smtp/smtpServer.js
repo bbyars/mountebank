@@ -45,10 +45,10 @@ function createServer () {
 
 function initialize () {
     var implementation = {
-        protocolName: 'smtp',
-        createServer: createServer,
-        Request: SmtpRequest
-    };
+            protocolName: 'smtp',
+            createServer: createServer,
+            Request: SmtpRequest
+        };
 
     return {
         name: implementation.protocolName,

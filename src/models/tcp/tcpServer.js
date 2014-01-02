@@ -7,11 +7,10 @@ var AbstractServer = require('../abstractServer'),
     combinators = require('../../util/combinators'),
     helpers = require('../../util/helpers'),
     Proxy = require('./tcpProxy'),
-    DryRunValidator = require('../dryRunValidator'),
+    TcpValidator = require('./tcpValidator'),
     StubRepository = require('../stubRepository'),
     events = require('events'),
-    TcpRequest = require('./tcpRequest'),
-    exceptions = require('../../errors/errors');
+    TcpRequest = require('./tcpRequest');
 
 function postProcess (stub) {
     return {
@@ -84,27 +83,15 @@ function createServer (logger, options) {
 
 function initialize (allowInjection) {
     var implementation = {
-        protocolName: 'tcp',
-        createServer: createServer,
-        Request: TcpRequest
-    };
-
-    function validateMode (request) {
-        var errors = [];
-        if (request.mode && ['text', 'binary'].indexOf(request.mode) < 0) {
-            errors.push(exceptions.ValidationError("'mode' must be one of ['text', 'binary']"));
-        }
-        return errors;
-    }
+            protocolName: 'tcp',
+            createServer: createServer,
+            Request: TcpRequest
+        };
 
     return {
         name: implementation.protocolName,
         create: AbstractServer.implement(implementation).create,
-        Validator: {
-            create: function () {
-                return DryRunValidator.create(StubRepository, TcpRequest.createTestRequest(), allowInjection, validateMode);
-            }
-        }
+        Validator: { create: combinators.curry(TcpValidator.create, allowInjection) }
     };
 }
 
