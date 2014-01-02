@@ -3,6 +3,7 @@
 var AbstractServer = require('../abstractServer'),
     Q = require('q'),
     inherit = require('../../util/inherit'),
+    helpers = require('../../util/helpers'),
     combinators = require('../../util/combinators'),
     StubRepository = require('../stubRepository'),
     Proxy = require('./httpProxy'),
@@ -42,8 +43,7 @@ function setup (protocolName, createNodeServer) {
                 formatRequest: combinators.identity,
                 formatResponse: combinators.identity,
                 respond: function (httpRequest, container) {
-                    var clientName = container.request.socket.remoteAddress + ':' + container.request.socket.remotePort,
-                        scopedLogger = logger.withScope(clientName);
+                    var scopedLogger = logger.withScope(helpers.socketName(container.request.socket));
 
                     return stubs.resolve(httpRequest, scopedLogger).then(function (stubResponse) {
                         container.response.writeHead(stubResponse.statusCode, stubResponse.headers);
@@ -59,10 +59,8 @@ function setup (protocolName, createNodeServer) {
         server.on('connection', function (socket) { result.emit('connection', socket); });
 
         server.on('request', function (request, response) {
-            var clientName = request.socket.remoteAddress + ':' + request.socket.remotePort,
-                container = { request: request, response: response };
-
-            result.emit('request', clientName, container);
+            var container = { request: request, response: response };
+            result.emit('request', request.socket, container);
         });
 
         result.close = function () { server.close(); };

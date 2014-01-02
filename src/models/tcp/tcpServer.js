@@ -5,10 +5,10 @@ var AbstractServer = require('../abstractServer'),
     Q = require('q'),
     inherit = require('../../util/inherit'),
     combinators = require('../../util/combinators'),
+    helpers = require('../../util/helpers'),
     Proxy = require('./tcpProxy'),
     DryRunValidator = require('../dryRunValidator'),
     StubRepository = require('../stubRepository'),
-    util = require('util'),
     events = require('events'),
     TcpRequest = require('./tcpRequest'),
     exceptions = require('../../errors/errors');
@@ -17,10 +17,6 @@ function postProcess (stub) {
     return {
         data: stub.data || ''
     };
-}
-
-function socketName (socket) {
-    return util.format('%s:%s', socket.remoteAddress, socket.remotePort);
 }
 
 function createServer (logger, options) {
@@ -48,7 +44,7 @@ function createServer (logger, options) {
             },
             formatResponse: combinators.identity,
             respond: function (tcpRequest, originalRequest) {
-                var clientName = socketName(originalRequest.socket),
+                var clientName = helpers.socketName(originalRequest.socket),
                     scopedLogger = logger.withScope(clientName);
 
                 return stubs.resolve(tcpRequest, scopedLogger).then(function (stubResponse) {
@@ -71,8 +67,7 @@ function createServer (logger, options) {
 
         socket.on('data', function (data) {
             var container = { socket: socket, data: data.toString(encoding) };
-
-            result.emit('request', socketName(socket), container);
+            result.emit('request', socket, container);
         });
     });
 

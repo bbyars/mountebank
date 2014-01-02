@@ -4,11 +4,8 @@ var Q = require('q'),
     util = require('util'),
     Domain = require('domain'),
     winston = require('winston'),
-    ScopedLogger = require('../util/scopedLogger');
-
-function socketName (socket) {
-    return util.format('%s:%s', socket.remoteAddress, socket.remotePort);
-}
+    ScopedLogger = require('../util/scopedLogger'),
+    helpers = require('../util/helpers');
 
 function implement (implementation) {
 
@@ -27,7 +24,7 @@ function implement (implementation) {
             server = implementation.createServer(logger, options);
 
         server.on('connection', function (socket) {
-            var name = socketName(socket);
+            var name = helpers.socketName(socket);
 
             logger.debug('%s ESTABLISHED', name);
 
@@ -39,8 +36,9 @@ function implement (implementation) {
             socket.on('close', function () { logger.debug('%s CLOSED', name); });
         });
 
-        server.on('request', function (clientName, request) {
+        server.on('request', function (socket, request) {
             var domain = Domain.create(),
+                clientName = helpers.socketName(socket),
                 errorHandler = function (error) {
                     logger.error('%s X=> %s', clientName, JSON.stringify(error));
                     server.errorHandler(error, request);

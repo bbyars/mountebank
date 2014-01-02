@@ -41,7 +41,6 @@ Cleanup Needed
 - fix docs - much of it out of date
 - does tcp response need { data: '' } instead of just ''? (so we can send response more or less directly)
 - make abstractserver events take socket; derive socketName there
-- centralize socket name
 - unit test abstract server
 
 Auxiliary Projects

@@ -1,7 +1,8 @@
 'use strict';
 
 var Q = require('q'),
-    url = require('url');
+    url = require('url'),
+    helpers = require('../../util/helpers');
 
 function createTestRequest () {
     return {
@@ -17,7 +18,7 @@ function createTestRequest () {
 function transform (request) {
     var parts = url.parse(request.url, true);
     return {
-        requestFrom: request.socket.remoteAddress + ':' + request.socket.remotePort,
+        requestFrom: helpers.socketName(request.socket),
         method: request.method,
         path: parts.pathname,
         query: parts.query,

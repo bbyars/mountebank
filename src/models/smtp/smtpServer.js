@@ -22,7 +22,7 @@ function createServer () {
             addStub: combinators.noop
         }),
         requestHandler = function (request) {
-            result.emit('request', request.remoteAddress, request);
+            result.emit('request', { remoteAddress: request.remoteAddress }, request);
         },
         server = smtp.createSimpleServer({ disableDNSValidation: true }, requestHandler);
 

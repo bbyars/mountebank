@@ -1,11 +1,7 @@
 'use strict';
 
-var util = require('util'),
-    Q = require('q');
-
-function socketName (socket) {
-    return util.format('%s:%s', socket.remoteAddress, socket.remotePort);
-}
+var Q = require('q'),
+    helpers = require('../../util/helpers');
 
 function createTestRequest () {
     return {
@@ -16,7 +12,7 @@ function createTestRequest () {
 
 function createFrom (request) {
     return Q({
-        requestFrom: socketName(request.socket),
+        requestFrom: helpers.socketName(request.socket),
         data: request.data
     });
 }
