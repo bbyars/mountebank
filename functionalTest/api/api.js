@@ -4,7 +4,7 @@ var http = require('http'),
     Q = require('q'),
     port = parseInt(process.env.MB_PORT || 2525),
     url = 'http://localhost:' + port,
-    combinators = require('../../src/util/combinators');
+    helpers = require('../../src/util/helpers');
 
 Q.longStackSupport = true;
 
@@ -15,7 +15,7 @@ function optionsFor (spec) {
         headers: { accept: 'application/json' }
     };
 
-    return combinators.merge(defaults, spec);
+    return helpers.merge(defaults, spec);
 }
 
 function responseFor (spec, body) {

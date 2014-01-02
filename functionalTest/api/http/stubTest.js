@@ -5,7 +5,7 @@ var assert = require('assert'),
     promiseIt = require('../../testHelpers').promiseIt,
     port = api.port + 1,
     timeout = parseInt(process.env.SLOW_TEST_TIMEOUT_MS || 2000),
-    combinators = require('../../../src/util/combinators');
+    helpers = require('../../../src/util/helpers');
 
 describe('http imposter', function () {
     this.timeout(timeout);
@@ -103,37 +103,37 @@ describe('http imposter', function () {
                 request = { protocol: 'http', port: port, stubs: [stub], name: this.name };
 
             return api.post('/imposters', request).then(function () {
-                var options = combinators.merge(spec, { path: '/' });
+                var options = helpers.merge(spec, { path: '/' });
                 return api.responseFor(options, 'TEST');
             }).then(function (response) {
                 assert.strictEqual(response.statusCode, 200, 'should not have matched; wrong path');
 
-                var options = combinators.merge(spec, { path: '/test?key=different' });
+                var options = helpers.merge(spec, { path: '/test?key=different' });
                 return api.responseFor(options, 'TEST');
             }).then(function (response) {
                 assert.strictEqual(response.statusCode, 200, 'should not have matched; wrong query');
 
-                var options = combinators.merge(spec, { method: 'PUT' });
+                var options = helpers.merge(spec, { method: 'PUT' });
                 return api.responseFor(options, 'TEST');
             }).then(function (response) {
                 assert.strictEqual(response.statusCode, 200, 'should not have matched; wrong method');
 
-                var options = combinators.merge(spec, {});
+                var options = helpers.merge(spec, {});
                 delete options.headers['X-One'];
                 return api.responseFor(options, 'TEST');
             }).then(function (response) {
                 assert.strictEqual(response.statusCode, 200, 'should not have matched; missing header');
 
-                var options = combinators.merge(spec, { headers: { 'X-Two': 'Testing' }});
+                var options = helpers.merge(spec, { headers: { 'X-Two': 'Testing' }});
                 return api.responseFor(options, 'TEST');
             }).then(function (response) {
                 assert.strictEqual(response.statusCode, 200, 'should not have matched; wrong value for header');
 
-                return api.responseFor(combinators.merge(spec, {}), 'TESTing');
+                return api.responseFor(helpers.merge(spec, {}), 'TESTing');
             }).then(function (response) {
                 assert.strictEqual(response.statusCode, 200, 'should not have matched; wrong value for body');
 
-                return api.responseFor(combinators.merge(spec, {}), 'TEST');
+                return api.responseFor(helpers.merge(spec, {}), 'TEST');
             }).then(function (response) {
                 assert.strictEqual(response.statusCode, 400, 'should have matched');
             }).finally(function () {

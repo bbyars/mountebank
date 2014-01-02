@@ -5,6 +5,7 @@ var assert = require('assert'),
     mock = require('../mock').mock,
     Q = require('q'),
     promiseIt = require('../testHelpers').promiseIt,
+    helpers = require('../../src/util/helpers'),
     combinators = require('../../src/util/combinators');
 
 describe('http stubRepository', function () {
@@ -199,7 +200,7 @@ describe('http stubRepository', function () {
     promiseIt('should post-process injected response', function () {
         var request = { path: '/test', headers: {}, body: '', method: 'GET' },
             fn = "function (request) { return { body: 'INJECTED' }; }",
-            postProcess = function (response) { return combinators.merge(response, { statusCode: 200 }); };
+            postProcess = function (response) { return helpers.merge(response, { statusCode: 200 }); };
 
         stubs = StubRepository.create(proxy, postProcess);
         stubs.addStub({ responses: [{ inject: fn }] });

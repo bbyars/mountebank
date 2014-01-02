@@ -3,7 +3,7 @@
 var utils = require('util'),
     Q = require('q'),
     exceptions = require('../errors/errors'),
-    combinators = require('../util/combinators');
+    helpers = require('../util/helpers');
 
 function create (StubRepository, testRequest, allowInjection, additionalValidation) {
 
@@ -14,7 +14,7 @@ function create (StubRepository, testRequest, allowInjection, additionalValidati
 
     function dryRun (stub) {
         var stubRepository = StubRepository.create(dryRunProxy, identity),
-            clone = combinators.clone(stub); // proxyOnce changes state
+            clone = helpers.clone(stub); // proxyOnce changes state
 
         stubRepository.addStub(clone);
         return stubRepository.resolve(testRequest, dryRunLogger);
