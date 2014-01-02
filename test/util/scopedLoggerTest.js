@@ -16,5 +16,14 @@ describe('scopedLogger', function () {
                 assert.ok(logger[level].wasCalledWith('[prefix] log %s', level), logger[level].message());
             });
         });
+
+        it('should allow nested scopes', function () {
+            var logger = { debug: mock() },
+                scopedLogger = Logger.create(logger, 'prefix').withScope('nested');
+
+            scopedLogger.debug('log');
+
+            assert.ok(logger.debug.wasCalledWith('[prefix] nested log'), logger.debug.message());
+        });
     });
 });

@@ -13,11 +13,11 @@ function create (StubRepository, testRequest, allowInjection, additionalValidati
         identity = function (obj) { return obj; };
 
     function dryRun (stub) {
-        var stubRepository = StubRepository.create(dryRunProxy, dryRunLogger, identity),
+        var stubRepository = StubRepository.create(dryRunProxy, identity),
             clone = combinators.clone(stub); // proxyOnce changes state
 
         stubRepository.addStub(clone);
-        return stubRepository.resolve(testRequest);
+        return stubRepository.resolve(testRequest, dryRunLogger);
     }
 
     function addDryRunErrors (stub, errors) {

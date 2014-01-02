@@ -6,8 +6,8 @@ var assert = require('assert'),
     BaseRepository = require('../../src/models/stubRepository'),
     testRequest = { requestFrom: '', path: '/', query: {}, method: 'GET', headers: {}, body: '' },
     StubRepository = {
-        create: function (proxy, logger) {
-            return BaseRepository.create(proxy, logger, function (stub) {
+        create: function (proxy) {
+            return BaseRepository.create(proxy, function (stub) {
                 var response = {
                     statusCode: stub.statusCode || 200,
                     headers: stub.headers || {},

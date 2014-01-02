@@ -30,7 +30,7 @@ function setup (protocolName, createNodeServer) {
 
     function createServer (logger) {
         var proxy = Proxy.create(logger),
-            stubs = StubRepository.create(proxy, logger, postProcess),
+            stubs = StubRepository.create(proxy, postProcess),
             result = inherit.from(events.EventEmitter, {
                 errorHandler: function (error, container) {
                     container.response.writeHead(500, { 'content-type': 'application/json' });
@@ -42,7 +42,10 @@ function setup (protocolName, createNodeServer) {
                 formatRequest: combinators.identity,
                 formatResponse: combinators.identity,
                 respond: function (httpRequest, container) {
-                    return stubs.resolve(httpRequest).then(function (stubResponse) {
+                    var clientName = container.request.socket.remoteAddress + ':' + container.request.socket.remotePort,
+                        scopedLogger = logger.withScope(clientName);
+
+                    return stubs.resolve(httpRequest, scopedLogger).then(function (stubResponse) {
                         container.response.writeHead(stubResponse.statusCode, stubResponse.headers);
                         container.response.end(stubResponse.body.toString(), 'utf8');
                         return stubResponse;

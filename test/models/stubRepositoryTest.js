@@ -4,11 +4,8 @@ var assert = require('assert'),
     StubRepository = require('../../src/models/stubRepository'),
     mock = require('../mock').mock,
     Q = require('q'),
-    promiseIt = require('../testHelpers').promiseIt;
-
-function identity (obj) {
-    return obj;
-}
+    promiseIt = require('../testHelpers').promiseIt,
+    combinators = require('../../src/util/combinators');
 
 describe('http stubRepository', function () {
     var stubs, proxy, logger;
@@ -16,13 +13,13 @@ describe('http stubRepository', function () {
     beforeEach(function () {
         proxy = {};
         logger = { debug: mock(), info: mock(), warn: mock(), error: mock() };
-        stubs = StubRepository.create(proxy, logger, identity);
+        stubs = StubRepository.create(proxy, combinators.identity);
     });
 
     promiseIt('should return default response if no match', function () {
         var request = { path: '/test', headers: {}, body: '' };
 
-        return stubs.resolve(request).then(function (response) {
+        return stubs.resolve(request, logger).then(function (response) {
             assert.deepEqual(response, {});
         });
     });
@@ -33,7 +30,7 @@ describe('http stubRepository', function () {
             responses: [{ is: { statusCode: 400 }}]
         });
 
-        return stubs.resolve(request).then(function (response) {
+        return stubs.resolve(request, logger).then(function (response) {
             assert.strictEqual(response.statusCode, 400);
         });
     });
@@ -45,7 +42,7 @@ describe('http stubRepository', function () {
             responses: [{ is: { statusCode: 400, headers: { 'X-Test': 'Test' }, body: 'Test successful' }}]
         });
 
-        return stubs.resolve(request).then(function (response) {
+        return stubs.resolve(request, logger).then(function (response) {
             assert.deepEqual(response, {
                 statusCode: 400,
                 headers: { 'X-Test': 'Test' },
@@ -60,7 +57,7 @@ describe('http stubRepository', function () {
             responses: [{ is: { body: 'Test successful' }}]
         });
 
-        return stubs.resolve(request).then(function (response) {
+        return stubs.resolve(request, logger).then(function (response) {
             assert.deepEqual(response, { body: 'Test successful' });
         });
     });
@@ -72,12 +69,12 @@ describe('http stubRepository', function () {
             responses: [{ is: { body: 'First' }}, { is: { body: 'Second' }}]
         });
 
-        return stubs.resolve(request).then(function (response) {
+        return stubs.resolve(request, logger).then(function (response) {
             bodies.push(response.body);
-            return stubs.resolve(request);
+            return stubs.resolve(request, logger);
         }).then(function (response) {
             bodies.push(response.body);
-            return stubs.resolve(request);
+            return stubs.resolve(request, logger);
         }).then(function (response) {
             bodies.push(response.body);
 
@@ -92,7 +89,7 @@ describe('http stubRepository', function () {
             responses: [{ is: { body: 'Matched' }}]
         });
 
-        return stubs.resolve(request).then(function (response) {
+        return stubs.resolve(request, logger).then(function (response) {
             assert.deepEqual(response, {});
         });
     });
@@ -104,7 +101,7 @@ describe('http stubRepository', function () {
             responses: [{ is: { body: 'Matched' }}]
         });
 
-        return stubs.resolve(request).then(function (response) {
+        return stubs.resolve(request, logger).then(function (response) {
             assert.deepEqual(response, {});
         });
     });
@@ -116,7 +113,7 @@ describe('http stubRepository', function () {
             responses: [{ is: { body: 'Matched' }}]
         });
 
-        return stubs.resolve(request).then(function (response) {
+        return stubs.resolve(request, logger).then(function (response) {
             assert.strictEqual(response.body, 'Matched');
         });
     });
@@ -128,7 +125,7 @@ describe('http stubRepository', function () {
             responses: [{ is: { body: 'Matched' }}]
         });
 
-        return stubs.resolve(request).then(function (response) {
+        return stubs.resolve(request, logger).then(function (response) {
             assert.deepEqual(response, {});
         });
     });
@@ -140,7 +137,7 @@ describe('http stubRepository', function () {
             responses: [{ is: { body: 'Matched' }}]
         });
 
-        return stubs.resolve(request).then(function (response) {
+        return stubs.resolve(request, logger).then(function (response) {
             assert.strictEqual(response.body, 'Matched');
         });
     });
@@ -156,7 +153,7 @@ describe('http stubRepository', function () {
             responses: [{ is: { body: 'Matched' }}]
         });
 
-        return stubs.resolve(request).then(function (response) {
+        return stubs.resolve(request, logger).then(function (response) {
             assert.strictEqual(response.body, 'Matched');
         });
     });
@@ -166,7 +163,7 @@ describe('http stubRepository', function () {
         var request = { path: '/test', headers: { key: 'value' }, body: 'BODY', method: 'GET' };
         stubs.addStub({ responses: [{ proxy: 'PROXIED URL' }] });
 
-        return stubs.resolve(request).then(function (response) {
+        return stubs.resolve(request, logger).then(function (response) {
             assert.ok(proxy.to.wasCalledWith('PROXIED URL', request));
             assert.strictEqual(response, 'PROXY');
         });
@@ -177,12 +174,12 @@ describe('http stubRepository', function () {
         var request = { path: '/test', headers: { key: 'value' }, body: 'BODY', method: 'GET' };
         stubs.addStub({ responses: [{ proxyOnce: 'PROXIED URL' }] });
 
-        return stubs.resolve(request).then(function (response) {
+        return stubs.resolve(request, logger).then(function (response) {
             assert.ok(proxy.to.wasCalledWith('PROXIED URL', request));
             assert.strictEqual(response.body, 'PROXIED');
 
             proxy.to = mock().returns(Q('PROXY'));
-            return stubs.resolve(request);
+            return stubs.resolve(request, logger);
         }).then(function (response) {
             assert.ok(!proxy.to.wasCalled());
             assert.strictEqual(response.body, 'PROXIED');
@@ -194,21 +191,26 @@ describe('http stubRepository', function () {
             fn = "function (request) { return { body: request.method + ' INJECTED' }; }";
         stubs.addStub({ responses: [{ inject: fn }] });
 
-        return stubs.resolve(request).then(function (response) {
+        return stubs.resolve(request, logger).then(function (response) {
             assert.strictEqual(response.body, 'GET INJECTED');
         });
     });
 
-//    promiseIt('should merge injected response with default values', function () {
-//        var request = { path: '/test', headers: {}, body: '', method: 'GET' },
-//            fn = "function (request) { return { body: 'INJECTED' }; }";
-//        stubs.addStub({ responses: [{ inject: fn }] });
-//
-//        return stubs.resolve(request).then(function (response) {
-//            assert.strictEqual(response.statusCode, 200);
-//            assert.strictEqual(response.headers.connection, 'close');
-//        });
-//    });
+    promiseIt('should post-process injected response', function () {
+        var request = { path: '/test', headers: {}, body: '', method: 'GET' },
+            fn = "function (request) { return { body: 'INJECTED' }; }",
+            postProcess = function (response) { return combinators.merge(response, { statusCode: 200 }); };
+
+        stubs = StubRepository.create(proxy, postProcess);
+        stubs.addStub({ responses: [{ inject: fn }] });
+
+        return stubs.resolve(request, logger).then(function (response) {
+            assert.deepEqual(response, {
+                body: 'INJECTED',
+                statusCode: 200
+            });
+        });
+    });
 
     promiseIt('should record matches', function () {
         var matchingRequest = { path: '/test', headers: {}, body: '' },
@@ -219,8 +221,8 @@ describe('http stubRepository', function () {
             };
         stubs.addStub(stub);
 
-        return stubs.resolve(matchingRequest).then(function () {
-            return stubs.resolve(mismatchingRequest);
+        return stubs.resolve(matchingRequest, logger).then(function () {
+            return stubs.resolve(mismatchingRequest, logger);
         }).then(function () {
             assert.strictEqual(stub.matches.length, 1);
             assert.deepEqual(stub.matches[0].request, matchingRequest);

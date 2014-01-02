@@ -5,7 +5,7 @@ var predicates = require('./predicates'),
     util = require('util'),
     errors = require('../errors/errors');
 
-function create (proxy, logger, postProcess) {
+function create (proxy, postProcess) {
     var stubs = [],
         injectState = {};
 
@@ -33,7 +33,7 @@ function create (proxy, logger, postProcess) {
         });
     }
 
-    function findFirstMatch (request) {
+    function findFirstMatch (request, logger) {
         if (stubs.length === 0) {
             return undefined;
         }
@@ -53,32 +53,23 @@ function create (proxy, logger, postProcess) {
         }
     }
 
-    function addStub (stub) {
-        stubs.push(stub);
-    }
-
-    function resolve (request) {
-        var stub = findFirstMatch(request) || { responses: [{ is: {} }]},
-            stubResolver = stub.responses.shift(),
-            deferred = Q.defer();
-
-        stub.responses.push(stubResolver);
-
-        getResolvedResponsePromise(stubResolver, request).done(function (response) {
-            var match = {
-                timestamp: new Date().toJSON(),
-                request: request,
-                response: response
-            };
-            stub.matches = stub.matches || [];
-            stub.matches.push(match);
-            deferred.resolve(response);
-        }, deferred.reject);
-
+    function inject (request, fn, state) {
+        /* jshint evil: true, unused: false */
+        var deferred = Q.defer(),
+            scope = JSON.parse(JSON.stringify(request)),
+            callback = function (response) { deferred.resolve(response);},
+            injected = 'try {\n' +
+                '    var response = (' + fn + ')(scope, state, callback);\n' +
+                '    if (response) { callback(response); }\n' +
+                '}\n' +
+                'catch (error) {\n' +
+                '    deferred.reject(error);\n' +
+                '}';
+        eval(injected);
         return deferred.promise;
     }
 
-    function getResolvedResponsePromise (stubResolver, request) {
+    function getResolvedResponsePromise (stubResolver, request, logger) {
         logger.debug('using stub resolver ' + JSON.stringify(stubResolver));
 
         if (stubResolver.is) {
@@ -103,19 +94,28 @@ function create (proxy, logger, postProcess) {
         }
     }
 
-    function inject (request, fn, state) {
-        /* jshint evil: true, unused: false */
-        var deferred = Q.defer(),
-            scope = JSON.parse(JSON.stringify(request)),
-            callback = function (response) { deferred.resolve(response);},
-            injected = 'try {\n' +
-                '    var response = (' + fn + ')(scope, state, callback);\n' +
-                '    if (response) { callback(response); }\n' +
-                '}\n' +
-                'catch (error) {\n' +
-                '    deferred.reject(error);\n' +
-                '}';
-        eval(injected);
+    function addStub (stub) {
+        stubs.push(stub);
+    }
+
+    function resolve (request, logger) {
+        var stub = findFirstMatch(request, logger) || { responses: [{ is: {} }]},
+            stubResolver = stub.responses.shift(),
+            deferred = Q.defer();
+
+        stub.responses.push(stubResolver);
+
+        getResolvedResponsePromise(stubResolver, request, logger).done(function (response) {
+            var match = {
+                timestamp: new Date().toJSON(),
+                request: request,
+                response: response
+            };
+            stub.matches = stub.matches || [];
+            stub.matches.push(match);
+            deferred.resolve(response);
+        }, deferred.reject);
+
         return deferred.promise;
     }
 

@@ -30,7 +30,7 @@ function createServer (logger, options) {
             return Buffer.isBuffer(data) ? data : new Buffer(data, encoding);
         },
         proxy = Proxy.create(logger, encoding),
-        stubs = StubRepository.create(proxy, logger, postProcess),
+        stubs = StubRepository.create(proxy, postProcess),
         result = inherit.from(events.EventEmitter, {
             errorHandler: function (error, container) {
                 container.socket.write(JSON.stringify({ errors: [error] }), 'utf8');
@@ -48,7 +48,10 @@ function createServer (logger, options) {
             },
             formatResponse: combinators.identity,
             respond: function (tcpRequest, originalRequest) {
-                return stubs.resolve(tcpRequest).then(function (stubResponse) {
+                var clientName = socketName(originalRequest.socket),
+                    scopedLogger = logger.withScope(clientName);
+
+                return stubs.resolve(tcpRequest, scopedLogger).then(function (stubResponse) {
                     var buffer = ensureBuffer(stubResponse.data);
 
                     if (buffer.length > 0) {
