@@ -34,8 +34,8 @@ Known Bugs
 
 Cleanup Needed
 ==============
-- https tests
 - fix docs - much of it out of date
+- tcp async injection
 
 Auxiliary Projects
 ==================

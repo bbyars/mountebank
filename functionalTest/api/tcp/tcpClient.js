@@ -3,8 +3,6 @@
 var net = require('net'),
     Q = require('q');
 
-Q.longStackSupport = true;
-
 function send (message, serverPort, timeout) {
     var deferred = Q.defer(),
         client = net.connect({ port: serverPort }, function () { client.write(message); });

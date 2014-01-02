@@ -10,7 +10,8 @@ var express = require('express'),
     winston = require('winston'),
     fs = require('fs'),
     thisPackage = require('../package.json'),
-    ScopedLogger = require('./util/scopedLogger');
+    ScopedLogger = require('./util/scopedLogger'),
+    util = require('util');
 
 function create (options) {
     var app = express(),
@@ -21,7 +22,7 @@ function create (options) {
             'https': require('./models/https/httpsServer').initialize(options.allowInjection),
             'smtp': require('./models/smtp/smtpServer').initialize()
         },
-        logger = ScopedLogger.create(winston, '[mb:' + options.port + '] '),
+        logger = ScopedLogger.create(winston, util.format('[mb:%s] ', options.port)),
         impostersController = ImpostersController.create(protocols, imposters, Imposter, logger),
         imposterController = ImposterController.create(imposters),
         validateImposterExists = middleware.createImposterValidator(imposters);
@@ -42,7 +43,8 @@ function create (options) {
     app.set('view engine', 'ejs');
 
     app.listen(options.port);
-    logger.info('mountebank now taking orders - point your browser to http://localhost:' + options.port + ' for help');
+    logger.info(util.format('mountebank v%s now taking orders - point your browser to http://localhost:%s for help',
+        thisPackage.version, options.port));
 
     app.get('/', homeController.get);
     app.get('/imposters', impostersController.get);

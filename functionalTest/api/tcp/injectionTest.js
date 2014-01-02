@@ -4,6 +4,7 @@ var assert = require('assert'),
     spawn = require('child_process').spawn,
     path = require('path'),
     api = require('../api'),
+    BaseHttpClient = require('../http/baseHttpClient'),
     tcp = require('./tcpClient'),
     Q = require('q'),
     promiseIt = require('../../testHelpers').promiseIt,
@@ -107,10 +108,11 @@ describe('tcp imposter', function () {
             var mbPort = port + 1,
                 fn = "function (request) { return { data: 'INJECTED' }; }",
                 stub = { responses: [{ inject: fn }] },
-                request = { protocol: 'tcp', port: port, stubs: [stub], name: this.name };
+                request = { protocol: 'tcp', port: port, stubs: [stub], name: this.name },
+                mbApi = BaseHttpClient.create('http');
 
             return nonInjectableServer('start', mbPort).then(function () {
-                return api.post('/imposters', request, mbPort);
+                return mbApi.post('/imposters', request, mbPort);
             }).then(function (response) {
                 assert.strictEqual(response.statusCode, 400);
                 assert.strictEqual(response.body.errors[0].code, 'invalid operation');

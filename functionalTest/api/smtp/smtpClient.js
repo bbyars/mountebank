@@ -3,8 +3,6 @@
 var smtp = require('simplesmtp'),
     Q = require('q');
 
-Q.longStackSupport = true;
-
 function addressOf (email) {
     if (email.indexOf('<') < 0) {
         return email;
