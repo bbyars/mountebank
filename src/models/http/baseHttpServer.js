@@ -31,7 +31,7 @@ function setup (protocolName, createNodeServer) {
     function createServer (logger) {
         var proxy = Proxy.create(logger),
             stubs = StubRepository.create(proxy, logger, postProcess),
-            result = inherit.from(new events.EventEmitter(), {
+            result = inherit.from(events.EventEmitter, {
                 errorHandler: function (error, container) {
                     container.response.writeHead(500, { 'content-type': 'application/json' });
                     container.response.end(JSON.stringify({ errors: [error] }), 'utf8');

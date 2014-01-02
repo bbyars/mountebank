@@ -20,5 +20,15 @@ describe('inherit', function () {
             var obj = inherit.from({ key: 'prototypeValue' }, { key: 'ownValue' });
             assert.strictEqual(obj.key, 'ownValue');
         });
+
+        it('should call new on function supers', function () {
+            function F () {
+                this.key = 'value';
+            }
+
+            var obj = inherit.from(F);
+
+            assert.strictEqual(obj.key, 'value');
+        });
     });
 });

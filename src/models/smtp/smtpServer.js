@@ -10,7 +10,7 @@ var AbstractServer = require('../abstractServer'),
     SmtpRequest = require('./smtpRequest');
 
 function createServer () {
-    var result = inherit.from(new events.EventEmitter(), {
+    var result = inherit.from(events.EventEmitter, {
             errorHandler: combinators.noop,
             formatRequestShort: function (request) {
                 return util.format('Envelope from: %s to: %s', request.from, JSON.stringify(request.to));

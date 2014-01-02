@@ -4,7 +4,8 @@ var assert = require('assert'),
     httpRequest = require('../../../src/models/http/httpRequest'),
     promiseIt = require('../../testHelpers').promiseIt,
     events = require('events'),
-    mock = require('../../mock').mock;
+    mock = require('../../mock').mock,
+    inherit = require('../../../src/util/inherit');
 
 describe('HttpRequest', function () {
     describe('#createFrom', function () {
@@ -12,13 +13,12 @@ describe('HttpRequest', function () {
 
         beforeEach(function () {
             /* jshint proto: true */
-            request = {
+            request = inherit.from(events.EventEmitter, {
                 socket: { remoteAddress: '', remotePort: '' },
                 setEncoding: mock(),
                 url: 'http://localhost/'
-            };
+            });
             container = { request: request };
-            request.__proto__ = events.EventEmitter.prototype;
         });
 
         promiseIt('should set requestFrom from socket information', function () {

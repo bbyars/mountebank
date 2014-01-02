@@ -6,7 +6,8 @@ var assert = require('assert'),
     mock = require('../mock').mock,
     promiseIt = require('../testHelpers').promiseIt,
     AbstractProxy = require('../../src/models/abstractProxy'),
-    util = require('util');
+    util = require('util'),
+    inherit = require('../../src/util/inherit');
 
 describe('abstractProxy', function () {
     describe('#to', function () {
@@ -14,7 +15,6 @@ describe('abstractProxy', function () {
         var logger, implementation, proxiedRequest, proxy;
 
         beforeEach(function () {
-            /* jshint proto: true */
             logger = {
                 calls: { debug: [], info: [], warn: [], error: [] },
                 debug: function () { this.calls.debug.push(util.format.apply(this, arguments)); },
@@ -22,8 +22,7 @@ describe('abstractProxy', function () {
                 warn: function () { this.calls.warn.push(util.format.apply(this, arguments)); },
                 error: function () { this.calls.error.push(util.format.apply(this, arguments)); }
             };
-            proxiedRequest = {};
-            proxiedRequest.__proto__ = events.EventEmitter.prototype;
+            proxiedRequest = inherit.from(events.EventEmitter);
             implementation = {
                 formatRequest: mock(),
                 formatResponse: mock(),

@@ -31,7 +31,7 @@ function createServer (logger, options) {
         },
         proxy = Proxy.create(logger, encoding),
         stubs = StubRepository.create(proxy, logger, postProcess),
-        result = inherit.from(new events.EventEmitter(), {
+        result = inherit.from(events.EventEmitter, {
             errorHandler: function (error, container) {
                 container.socket.write(JSON.stringify({ errors: [error] }), 'utf8');
             },

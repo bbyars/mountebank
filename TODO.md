@@ -41,10 +41,8 @@ Cleanup Needed
 - fix docs - much of it out of date
 - does tcp response need { data: '' } instead of just ''? (so we can send response more or less directly)
 - make abstractserver events take socket; derive socketName there
-- inherit.from if super is function, call new on it
-- log TCP socket state (http://www.tcpipguide.com/free/t_TCPConnectionTermination-2.htm)
-// TODO: Use one of Q's denodeify functions?
 - centralize socket name
+- pass in scopedlogger to proxy and stubrepo to add socket info
 
 Auxiliary Projects
 ==================

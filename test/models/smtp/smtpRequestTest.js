@@ -3,18 +3,17 @@
 var assert = require('assert'),
     events = require('events'),
     SmtpRequest = require('../../../src/models/smtp/smtpRequest'),
-    promiseIt = require('../../testHelpers').promiseIt;
+    promiseIt = require('../../testHelpers').promiseIt,
+    inherit = require('../../../src/util/inherit');
 
 describe('smtpRequest', function () {
     describe('#createFrom', function () {
         promiseIt('should parse SMTP data', function () {
-            /* jshint proto: true */
-            var request = {
+            var request = inherit.from(events.EventEmitter, {
                 remoteAddress: 'RemoteAddress',
                 from: 'EnvelopeFrom',
                 to: 'EnvelopeTo'
-            };
-            request.__proto__ = events.EventEmitter.prototype;
+            });
 
             var promise = SmtpRequest.createFrom(request).then(function (smtpRequest) {
                 assert.deepEqual(smtpRequest, {
