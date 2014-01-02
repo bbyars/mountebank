@@ -2,7 +2,8 @@
 
 var Validator = require('../util/validator'),
     Q = require('q'),
-    helpers = require('../util/helpers');
+    helpers = require('../util/helpers'),
+    errors = require('../errors/errors');
 
 function create (protocols, imposters, Imposter, logger) {
 
@@ -57,6 +58,7 @@ function create (protocols, imposters, Imposter, logger) {
                     response.statusCode = 201;
                     response.send(imposter.toJSON());
                 }, function (error) {
+                    logger.warn('error creating imposter: ' + JSON.stringify(errors.details(error)));
                     response.statusCode = (error.code === 'insufficient access') ? 403 : 400;
                     response.send({ errors: [error] });
                 });

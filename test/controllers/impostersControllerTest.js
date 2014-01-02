@@ -48,7 +48,7 @@ describe('ImpostersController', function () {
             };
             imposters = {};
             Protocol = { name: 'http' };
-            logger = { debug: mock() };
+            logger = { debug: mock(), warn: mock() };
             controller = Controller.create({ 'http': Protocol }, imposters, Imposter, logger);
         });
 

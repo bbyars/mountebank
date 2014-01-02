@@ -36,7 +36,6 @@ Cleanup Needed
 ==============
 - fix docs - much of it out of date
 - tcp async injection
-- inherit errors from Error so q works ('Error: done() invoked with non-Error: BOOM!!!') - is that why domain didn't work?
 
 Auxiliary Projects
 ==================
