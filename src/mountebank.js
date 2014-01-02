@@ -7,9 +7,10 @@ var express = require('express'),
     ImpostersController = require('./controllers/impostersController'),
     ImposterController = require('./controllers/imposterController'),
     Imposter = require('./models/imposter'),
-    logger = require('winston'),
+    winston = require('winston'),
     fs = require('fs'),
-    thisPackage = require('../package.json');
+    thisPackage = require('../package.json'),
+    ScopedLogger = require('./util/scopedLogger');
 
 function create (options) {
     var app = express(),
@@ -20,16 +21,17 @@ function create (options) {
             'https': require('./models/https/httpsServer').initialize(options.allowInjection),
             'smtp': require('./models/smtp/smtpServer').initialize()
         },
-        impostersController = ImpostersController.create(protocols, imposters, Imposter),
+        logger = ScopedLogger.create(winston, '[mb:' + options.port + '] '),
+        impostersController = ImpostersController.create(protocols, imposters, Imposter, logger),
         imposterController = ImposterController.create(imposters),
         validateImposterExists = middleware.createImposterValidator(imposters);
 
     logger.remove(logger.transports.Console);
     logger.add(logger.transports.Console, { colorize: true, level: options.loglevel });
-    logger.add(logger.transports.File, { filename: options.logfile, timestamp: true, level: options.loglevel });
+    logger.add(logger.transports.File, { filename: options.logfile, timestamp: true, level: 'debug' });
 
     app.use(middleware.useAbsoluteUrls(options.port));
-    app.use(middleware.logger(logger, '[mb:' + options.port + '] :method :url'));
+    app.use(middleware.logger(logger, ':method :url'));
     app.use(middleware.globals({ heroku: options.heroku }));
     app.use(express.json());
     app.use(express.static(path.join(__dirname, 'public')));

@@ -53,3 +53,11 @@ describe('POST /imposters', function () {
         });
     });
 });
+
+describe('GET /imposters/:id', function () {
+    promiseIt('should return 404 if imposter has not been created', function () {
+        return api.get('/imposters/3535').then(function (response) {
+            assert.strictEqual(response.statusCode, 404);
+        });
+    });
+});

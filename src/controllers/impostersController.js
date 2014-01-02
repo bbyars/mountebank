@@ -1,9 +1,10 @@
 'use strict';
 
 var Validator = require('../util/validator'),
-    Q = require('q');
+    Q = require('q'),
+    helpers = require('../util/helpers');
 
-function create (protocols, imposters, Imposter) {
+function create (protocols, imposters, Imposter, logger) {
 
     function createValidator (request) {
         var protocol = request.protocol,
@@ -45,6 +46,8 @@ function create (protocols, imposters, Imposter) {
         var protocol = request.body.protocol,
             port = request.body.port,
             validator = createValidator(request.body);
+
+        logger.debug(helpers.socketName(request.socket) + ' => ' + JSON.stringify(request.body));
 
         return validator.validate(request.body).then(function (validation) {
             if (validation.isValid) {

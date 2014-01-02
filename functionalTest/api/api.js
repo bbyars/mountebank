@@ -6,8 +6,6 @@ var http = require('http'),
     url = 'http://localhost:' + port,
     helpers = require('../../src/util/helpers');
 
-Q.longStackSupport = true;
-
 function optionsFor (spec) {
     var defaults = {
         hostname: 'localhost',

@@ -35,10 +35,10 @@ describe('ImpostersController', function () {
     });
 
     describe('#post', function () {
-        var request, Imposter, imposter, imposters, Protocol, controller;
+        var request, Imposter, imposter, imposters, Protocol, controller, logger;
 
         beforeEach(function () {
-            request = { body: {} };
+            request = { body: {}, socket: { remoteAddress: 'host', remotePort: 'port' } };
             imposter = {
                 url: mock().returns('imposter-url'),
                 toJSON: mock().returns('JSON')
@@ -48,7 +48,8 @@ describe('ImpostersController', function () {
             };
             imposters = {};
             Protocol = { name: 'http' };
-            controller = Controller.create({ 'http': Protocol }, imposters, Imposter);
+            logger = { debug: mock() };
+            controller = Controller.create({ 'http': Protocol }, imposters, Imposter, logger);
         });
 
         promiseIt('should return a 201 with the Location header set', function () {
