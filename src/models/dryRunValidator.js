@@ -3,28 +3,27 @@
 var utils = require('util'),
     Q = require('q'),
     exceptions = require('../errors/errors'),
-    helpers = require('../util/helpers');
+    helpers = require('../util/helpers'),
+    combinators = require('../util/combinators');
 
-function create (StubRepository, testRequest, allowInjection, additionalValidation) {
+function create (options) {
 
-    var dryRunProxy = { to: function () { return Q({}); } },
-        noOp = function () {},
-        dryRunLogger = { debug: noOp, info: noOp, warn: noOp, error: noOp },
-        identity = function (obj) { return obj; };
-
-    function dryRun (stub) {
-        var stubRepository = StubRepository.create(dryRunProxy, identity),
+    function dryRun (stub, logger) {
+        var dryRunProxy = { to: function () { return Q({}); } },
+            errorLogger = logger ? logger.error : combinators.noop,
+            dryRunLogger = { debug: combinators.noop, info: combinators.noop, warn: combinators.noop, error: errorLogger },
+            stubRepository = options.StubRepository.create(dryRunProxy, combinators.identity),
             clone = helpers.clone(stub); // proxyOnce changes state
 
         stubRepository.addStub(clone);
-        return stubRepository.resolve(testRequest, dryRunLogger);
+        return stubRepository.resolve(options.testRequest, dryRunLogger);
     }
 
-    function addDryRunErrors (stub, errors) {
+    function addDryRunErrors (stub, errors, logger) {
         var deferred = Q.defer();
 
         try {
-            dryRun(stub).done(deferred.resolve, function (reason) {
+            dryRun(stub, logger).done(deferred.resolve, function (reason) {
                 reason.source = reason.source || JSON.stringify(stub);
                 errors.push(reason);
                 deferred.resolve();
@@ -52,12 +51,12 @@ function create (StubRepository, testRequest, allowInjection, additionalValidati
     }
 
     function addInjectionErrors (stub, errors) {
-        if (!allowInjection && hasInjection(stub)) {
+        if (!options.allowInjection && hasInjection(stub)) {
             errors.push(exceptions.InjectionError({ source: stub }));
         }
     }
 
-    function errorsFor (stub) {
+    function errorsFor (stub, logger) {
         var errors = [],
             deferred = Q.defer();
 
@@ -74,7 +73,7 @@ function create (StubRepository, testRequest, allowInjection, additionalValidati
             deferred.resolve(errors);
         }
         else {
-            addDryRunErrors(stub, errors).done(function () {
+            addDryRunErrors(stub, errors, logger).done(function () {
                 deferred.resolve(errors);
             });
         }
@@ -82,13 +81,13 @@ function create (StubRepository, testRequest, allowInjection, additionalValidati
         return deferred.promise;
     }
 
-    function validate (request) {
+    function validate (request, logger) {
         var stubs = request.stubs || [],
-            validationPromises = stubs.map(errorsFor),
+            validationPromises = stubs.map(function (stub) { return errorsFor(stub, logger); }),
             deferred = Q.defer();
 
-        if (additionalValidation) {
-            validationPromises.push(Q(additionalValidation(request)));
+        if (options.additionalValidation) {
+            validationPromises.push(Q(options.additionalValidation(request)));
         }
 
         Q.all(validationPromises).done(function (errorsForAllStubs) {

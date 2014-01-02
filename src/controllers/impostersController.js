@@ -49,7 +49,7 @@ function create (protocols, imposters, Imposter, logger) {
 
         logger.debug(helpers.socketName(request.socket) + ' => ' + JSON.stringify(request.body));
 
-        return validator.validate(request.body).then(function (validation) {
+        return validator.validate(request.body, logger).then(function (validation) {
             if (validation.isValid) {
                 return Imposter.create(protocols[protocol], port, request.body).then(function (imposter) {
                     imposters[port] = imposter;

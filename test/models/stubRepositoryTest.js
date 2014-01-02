@@ -6,9 +6,10 @@ var assert = require('assert'),
     Q = require('q'),
     promiseIt = require('../testHelpers').promiseIt,
     helpers = require('../../src/util/helpers'),
-    combinators = require('../../src/util/combinators');
+    combinators = require('../../src/util/combinators'),
+    util = require('util');
 
-describe('http stubRepository', function () {
+describe('stubRepository', function () {
     var stubs, proxy, logger;
 
     beforeEach(function () {
@@ -210,6 +211,24 @@ describe('http stubRepository', function () {
                 body: 'INJECTED',
                 statusCode: 200
             });
+        });
+    });
+
+    promiseIt('should log injection exceptions', function () {
+        var request = { path: '/test', headers: {}, body: '', method: 'GET' },
+            fn = "function (request) { throw Error('BOOM!!!'); }",
+            errorsLogged = [];
+        stubs.addStub({ responses: [{ inject: fn }] });
+        logger.error = function () {
+            var message = util.format.apply(this, Array.prototype.slice.call(arguments));
+            errorsLogged.push(message);
+        };
+
+        return stubs.resolve(request, logger).then(function () {
+            assert.fail('should not have resolved');
+        }, function (error) {
+            assert.strictEqual(error.message, 'BOOM!!!');
+            assert.ok(errorsLogged.indexOf('injection X=> Error: BOOM!!!') >= 0);
         });
     });
 

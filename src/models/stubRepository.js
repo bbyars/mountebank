@@ -53,7 +53,7 @@ function create (proxy, postProcess) {
         }
     }
 
-    function inject (request, fn, state) {
+    function inject (request, fn, state, logger) {
         /* jshint evil: true, unused: false */
         var deferred = Q.defer(),
             scope = JSON.parse(JSON.stringify(request)),
@@ -63,6 +63,10 @@ function create (proxy, postProcess) {
                 '    if (response) { callback(response); }\n' +
                 '}\n' +
                 'catch (error) {\n' +
+                '    logger.error("injection X=> " + error);\n' +
+                '    logger.error("    source: " + JSON.stringify(injected));\n' +
+                '    logger.error("    scope: " + JSON.stringify(scope));\n' +
+                '    logger.error("    state: " + JSON.stringify(state));\n' +
                 '    deferred.reject(error);\n' +
                 '}';
         eval(injected);
@@ -85,7 +89,7 @@ function create (proxy, postProcess) {
             });
         }
         else if (stubResolver.inject) {
-            return inject(request, stubResolver.inject, injectState).then(function (response) {
+            return inject(request, stubResolver.inject, injectState, logger).then(function (response) {
                 return Q(postProcess(response));
             });
         }

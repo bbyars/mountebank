@@ -15,6 +15,11 @@ function validateMode (request) {
 
 module.exports = {
     create: function (allowInjection) {
-        return DryRunValidator.create(StubRepository, TcpRequest.createTestRequest(), allowInjection, validateMode);
+        return DryRunValidator.create({
+            StubRepository: StubRepository,
+            testRequest: TcpRequest.createTestRequest(),
+            allowInjection: allowInjection,
+            additionalValidation: validateMode
+        });
     }
 };

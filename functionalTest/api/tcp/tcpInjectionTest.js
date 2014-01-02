@@ -125,41 +125,28 @@ describe('tcp imposter', function () {
 //            var fn = "function (request, state, callback) {\n" +
 //                    "    var net = require('net'),\n" +
 //                    "        options = {\n" +
-//                    "            method: request.method,\n" +
-//                    "            hostname: 'www.google.com',\n" +
-//                    "            port: 80,\n" +
-//                    "            path: request.path,\n" +
-//                    "            headers: request.headers\n" +
+//                    "            host: 'www.google.com',\n" +
+//                    "            port: 80\n" +
 //                    "        },\n" +
-//                    "        httpRequest = http.request(options, function (response) {\n" +
-//                    "            response.body = '';\n" +
-//                    "            response.setEncoding('utf8');\n" +
-//                    "            response.on('data', function (chunk) {\n" +
-//                    "                response.body += chunk;\n" +
-//                    "            });\n" +
-//                    "            response.on('end', function () {\n" +
-//                    "                callback({\n" +
-//                    "                    statusCode: response.statusCode,\n" +
-//                    "                    headers: response.headers,\n" +
-//                    "                    body: response.body\n" +
-//                    "                });\n" +
-//                    "            });\n" +
+//                    "        socket = net.connection(options, function () {\n" +
+//                    "            socket.end(request.data);\n" +
 //                    "        });\n" +
-//                    "    httpRequest.end();\n" +
+//                    "    socket.once('data', function (data) {\n" +
+//                    "        callback(data);\n" +
+//                    "    });\n" +
 //                    "    // No return value!!!\n" +
 //                    "}",
 //                stub = { responses: [{ inject: fn }] };
-//
-//            return api.post('/imposters', { protocol: 'http', port: port, stubs: [stub] }).then(function (response) {
+//console.log(fn)
+//            return api.post('/imposters', { protocol: 'tcp', port: port, stubs: [stub] }).then(function (response) {
 //                assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body));
 //
-//                return api.get('', port);
+//                return tcp.send('GET /');
 //            }).then(function (response) {
-//                    assert.strictEqual(response.statusCode, 302);
-//                    assert.strictEqual(response.headers.location, 'http://www.google.com/');
-//                }).finally(function () {
-//                    return api.del('/imposters/' + port);
-//                });
+//                assert.strictEqual(response.indexOf('HTTP/1.0 200 OK'), 0);
+//            }).finally(function () {
+//                return api.del('/imposters/' + port);
+//            });
 //        });
     });
 });

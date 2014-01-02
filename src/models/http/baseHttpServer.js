@@ -86,7 +86,13 @@ function setup (protocolName, createNodeServer) {
             name: protocolName,
             create: AbstractServer.implement(implementation, logger).create,
             Validator: {
-                create: combinators.curry(DryRunValidator.create, StubRepository, HttpRequest.createTestRequest(), allowInjection)
+                create: function () {
+                    return DryRunValidator.create({
+                        StubRepository: StubRepository,
+                        testRequest: HttpRequest.createTestRequest(),
+                        allowInjection: allowInjection
+                    });
+                }
             }
         };
     }

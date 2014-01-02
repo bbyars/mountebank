@@ -30,7 +30,7 @@ describe('dryRunValidator', function () {
     describe('#validate', function () {
         promiseIt('should be valid for an empty request', function () {
             var request = {},
-                validator = Validator.create(StubRepository, testRequest);
+                validator = Validator.create({ StubRepository: StubRepository, testRequest: testRequest });
 
             return validator.validate(request).then(function (result) {
                 assert.deepEqual(result, {
@@ -42,7 +42,7 @@ describe('dryRunValidator', function () {
 
         promiseIt('should not be valid for a missing responses field', function () {
             var request =  { stubs: [{}] },
-                validator = Validator.create(StubRepository, testRequest);
+                validator = Validator.create({ StubRepository: StubRepository, testRequest: testRequest });
 
             return validator.validate(request).then(function (result) {
                 assert.deepEqual(result, {
@@ -58,7 +58,7 @@ describe('dryRunValidator', function () {
 
         promiseIt('should be valid for an empty stubs list', function () {
             var request = { stubs: [] },
-                validator = Validator.create(StubRepository, testRequest);
+                validator = Validator.create({ StubRepository: StubRepository, testRequest: testRequest });
 
             return validator.validate(request).then(function (result) {
                 assert.deepEqual(result, {
@@ -70,7 +70,7 @@ describe('dryRunValidator', function () {
 
         promiseIt('should be valid for valid stub', function () {
             var request =  { stubs: [{ responses: [{ is: { statusCode: 400 }  }] }] },
-                validator = Validator.create(StubRepository, testRequest);
+                validator = Validator.create({ StubRepository: StubRepository, testRequest: testRequest });
 
             return validator.validate(request).then(function (result) {
                 assert.deepEqual(result, {
@@ -92,7 +92,7 @@ describe('dryRunValidator', function () {
                         }
                     }]
                 },
-                validator = Validator.create(StubRepository, testRequest);
+                validator = Validator.create({ StubRepository: StubRepository, testRequest: testRequest });
 
             return validator.validate(request).then(function (result) {
                 assert.deepEqual(result, {
@@ -109,7 +109,11 @@ describe('dryRunValidator', function () {
                         responses: [{ is: { body: 'Matched' }}]
                     }]
                 },
-                validator = Validator.create(StubRepository, testRequest, true);
+                validator = Validator.create({
+                    StubRepository: StubRepository,
+                    testRequest: testRequest,
+                    allowInjection: true
+                });
 
             return validator.validate(request).then(function (result) {
                 assert.deepEqual(result, {
@@ -125,7 +129,11 @@ describe('dryRunValidator', function () {
                         responses: [{ inject: "function () { return {}; }" }]
                     }]
                 },
-                validator = Validator.create(StubRepository, testRequest, true);
+                validator = Validator.create({
+                    StubRepository: StubRepository,
+                    testRequest: testRequest,
+                    allowInjection: true
+                });
 
             return validator.validate(request).then(function (result) {
                 assert.deepEqual(result, {
@@ -141,7 +149,11 @@ describe('dryRunValidator', function () {
                         responses: [{ inject: "function () { return {}; }" }]
                     }]
                 },
-                validator = Validator.create(StubRepository, testRequest, false);
+                validator = Validator.create({
+                    StubRepository: StubRepository,
+                    testRequest: testRequest,
+                    allowInjection: false
+                });
 
             return validator.validate(request).then(function (result) {
                 assert.deepEqual(result, {
@@ -162,7 +174,11 @@ describe('dryRunValidator', function () {
                         responses: [{ is: { body: 'Matched' }}]
                     }]
                 },
-                validator = Validator.create(StubRepository, testRequest, false);
+                validator = Validator.create({
+                    StubRepository: StubRepository,
+                    testRequest: testRequest,
+                    allowInjection: false
+                });
 
             return validator.validate(request).then(function (result) {
                 assert.deepEqual(result, {
@@ -182,7 +198,7 @@ describe('dryRunValidator', function () {
                         responses: [{ proxy: 'http://google.com' }]
                     }]
                 },
-                validator = Validator.create(StubRepository, testRequest);
+                validator = Validator.create({ StubRepository: StubRepository, testRequest: testRequest });
 
             return validator.validate(request).then(function (result) {
                 assert.deepEqual(result, {
@@ -198,7 +214,7 @@ describe('dryRunValidator', function () {
                         responses: [{ proxyOnce: 'http://google.com' }]
                     }]
                 },
-                validator = Validator.create(StubRepository, testRequest);
+                validator = Validator.create({ StubRepository: StubRepository, testRequest: testRequest });
 
             return validator.validate(request).then(function (result) {
                 assert.deepEqual(result, {
@@ -215,7 +231,7 @@ describe('dryRunValidator', function () {
                         {}
                     ]
                 },
-                validator = Validator.create(StubRepository, testRequest);
+                validator = Validator.create({ StubRepository: StubRepository, testRequest: testRequest });
 
             return validator.validate(request).then(function (result) {
                 assert.deepEqual(result, {
@@ -238,7 +254,7 @@ describe('dryRunValidator', function () {
                         }
                     }]
                 },
-                validator = Validator.create(StubRepository, testRequest);
+                validator = Validator.create({ StubRepository: StubRepository, testRequest: testRequest });
 
             return validator.validate(request).then(function (result) {
                 assert.deepEqual(result, {
@@ -263,7 +279,7 @@ describe('dryRunValidator', function () {
                         }
                     }]
                 },
-                validator = Validator.create(StubRepository, testRequest);
+                validator = Validator.create({ StubRepository: StubRepository, testRequest: testRequest });
 
             return validator.validate(request).then(function (result) {
                 assert.deepEqual(result, {
@@ -287,7 +303,7 @@ describe('dryRunValidator', function () {
                         }
                     }]
                 },
-                validator = Validator.create(StubRepository, testRequest);
+                validator = Validator.create({ StubRepository: StubRepository, testRequest: testRequest });
 
             return validator.validate(request).then(function (result) {
                 assert.deepEqual(result, {
@@ -309,7 +325,11 @@ describe('dryRunValidator', function () {
                         responses: [{ is: { body: 'Matched' }}]
                     }]
                 },
-                validator = Validator.create(StubRepository, testRequest, true);
+                validator = Validator.create({
+                    StubRepository: StubRepository,
+                    testRequest: testRequest,
+                    allowInjection: true
+                });
 
             return validator.validate(request).then(function (result) {
                 assert.deepEqual(result, {
@@ -330,7 +350,7 @@ describe('dryRunValidator', function () {
                         responses: [{ invalid: 'INVALID' }]
                     }]
                 },
-                validator = Validator.create(StubRepository, testRequest);
+                validator = Validator.create({ StubRepository: StubRepository, testRequest: testRequest });
 
             return validator.validate(request).then(function (result) {
                 assert.deepEqual(result, {
