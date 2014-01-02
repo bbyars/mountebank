@@ -9,7 +9,7 @@ var assert = require('assert'),
     Q = require('q'),
     promiseIt = require('../../testHelpers').promiseIt,
     port = api.port + 1,
-    timeout = parseInt(process.env.SLOW_TEST_TIMEOUT_MS || 2000);
+    timeout = parseInt(process.env.SLOW_TEST_TIMEOUT_MS || 3000);
 
 function nonInjectableServer (command, port) {
     var deferred = Q.defer(),
@@ -121,32 +121,32 @@ describe('tcp imposter', function () {
             });
         });
 
-//        promiseIt('should allow asynchronous injection', function () {
-//            var fn = "function (request, state, callback) {\n" +
-//                    "    var net = require('net'),\n" +
-//                    "        options = {\n" +
-//                    "            host: 'www.google.com',\n" +
-//                    "            port: 80\n" +
-//                    "        },\n" +
-//                    "        socket = net.connection(options, function () {\n" +
-//                    "            socket.end(request.data);\n" +
-//                    "        });\n" +
-//                    "    socket.once('data', function (data) {\n" +
-//                    "        callback(data);\n" +
-//                    "    });\n" +
-//                    "    // No return value!!!\n" +
-//                    "}",
-//                stub = { responses: [{ inject: fn }] };
-//console.log(fn)
-//            return api.post('/imposters', { protocol: 'tcp', port: port, stubs: [stub] }).then(function (response) {
-//                assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body));
-//
-//                return tcp.send('GET /');
-//            }).then(function (response) {
-//                assert.strictEqual(response.indexOf('HTTP/1.0 200 OK'), 0);
-//            }).finally(function () {
-//                return api.del('/imposters/' + port);
-//            });
-//        });
+        promiseIt('should allow asynchronous injection', function () {
+            var fn = "function (request, state, callback) {\n" +
+                    "    var net = require('net'),\n" +
+                    "        options = {\n" +
+                    "            host: 'www.google.com',\n" +
+                    "            port: 80\n" +
+                    "        },\n" +
+                    "        socket = net.connect(options, function () {\n" +
+                    "            socket.end(request.data + '\\n');\n" +
+                    "        });\n" +
+                    "    socket.once('data', function (data) {\n" +
+                    "        callback({ data: data });\n" +
+                    "    });\n" +
+                    "    // No return value!!!\n" +
+                    "}",
+                stub = { responses: [{ inject: fn }] };
+
+            return api.post('/imposters', { protocol: 'tcp', port: port, stubs: [stub] }).then(function (response) {
+                assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body));
+
+                return tcp.send('GET /', port);
+            }).then(function (response) {
+                assert.strictEqual(response.toString().indexOf('HTTP/1.0 200'), 0);
+            }).finally(function () {
+                return api.del('/imposters/' + port);
+            });
+        });
     });
 });

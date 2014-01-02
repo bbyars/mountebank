@@ -6,7 +6,7 @@ var Q = require('q'),
 function createTestRequest () {
     return {
         requestFrom: '',
-        data: ''
+        data: 'test'
     };
 }
 

@@ -35,6 +35,8 @@ Known Bugs
 Cleanup Needed
 ==============
 - fix docs - much of it out of date
+  - injection has access to logger, but only error logs during dry runs
+  - predicates for tcp are text only
 - tcp async injection
 
 Auxiliary Projects

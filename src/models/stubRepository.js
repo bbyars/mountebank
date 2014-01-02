@@ -3,7 +3,8 @@
 var predicates = require('./predicates'),
     Q = require('q'),
     util = require('util'),
-    errors = require('../errors/errors');
+    errors = require('../errors/errors'),
+    helpers = require('../util/helpers');
 
 function create (proxy, postProcess) {
     var stubs = [],
@@ -56,11 +57,10 @@ function create (proxy, postProcess) {
     function inject (request, fn, state, logger) {
         /* jshint evil: true, unused: false */
         var deferred = Q.defer(),
-            scope = JSON.parse(JSON.stringify(request)),
-            callback = function (response) { deferred.resolve(response);},
+            scope = helpers.clone(request),
             injected = 'try {\n' +
-                '    var response = (' + fn + ')(scope, state, callback);\n' +
-                '    if (response) { callback(response); }\n' +
+                '    var response = (' + fn + ')(scope, state, deferred.resolve);\n' +
+                '    if (response) { deferred.resolve(response); }\n' +
                 '}\n' +
                 'catch (error) {\n' +
                 '    logger.error("injection X=> " + error);\n' +
