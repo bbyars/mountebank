@@ -32,7 +32,7 @@ describe('tcp imposter', function () {
     this.timeout(timeout);
 
     describe('POST /imposters with injections', function () {
-        promiseIt.only('should allow javascript predicate for matching', function () {
+        promiseIt('should allow javascript predicate for matching', function () {
             var stub = {
                 predicates: {
                     data: { inject: "function (data) { return data.toString() === 'test'; }" },
