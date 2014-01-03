@@ -74,6 +74,7 @@ function create (proxy, postProcess) {
     }
 
     function getResolvedResponsePromise (stubResolver, request, logger) {
+        /* jshint maxcomplexity: 6 */
         logger.debug('using stub resolver ' + JSON.stringify(stubResolver));
 
         if (stubResolver.is) {
@@ -85,6 +86,16 @@ function create (proxy, postProcess) {
         else if (stubResolver.proxyOnce) {
             return proxy.to(stubResolver.proxyOnce, request).then(function (response) {
                 stubResolver.is = response;
+                return Q(response);
+            });
+        }
+        else if (stubResolver.proxyAll) {
+            return proxy.to(stubResolver.proxyAll.to, request).then(function (response) {
+                var stub = { predicates: {}, responses: [{ is: response }] };
+                stubResolver.proxyAll.remember.forEach(function (key) {
+                    stub.predicates[key] = { is: request[key] };
+                });
+                stubs.unshift(stub);
                 return Q(response);
             });
         }

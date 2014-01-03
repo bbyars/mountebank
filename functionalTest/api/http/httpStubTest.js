@@ -17,7 +17,7 @@ var assert = require('assert'),
         describe('POST /imposters with stubs', function () {
             promiseIt('should return stubbed response', function () {
                 var stub = {
-                        predicates: { path: { is: '/test' }},
+                        predicates: { path: { is: '/test' } },
                         responses: [{
                             is: {
                                 statusCode: 400,
@@ -43,8 +43,8 @@ var assert = require('assert'),
 
             promiseIt('should allow a sequence of stubs as a circular buffer', function () {
                 var stub = {
-                        predicates: { path: { is: '/test' }},
-                        responses: [{ is: { statusCode: 400 }}, { is: { statusCode: 405 }}]
+                        predicates: { path: { is: '/test' } },
+                        responses: [{ is: { statusCode: 400 }}, { is: { statusCode: 405 } }]
                     },
                     request = { protocol: protocol, port: port, stubs: [stub], name: this.name };
 
@@ -81,7 +81,7 @@ var assert = require('assert'),
                         }
                     },
                     stub = {
-                        responses: [{ is: { statusCode: 400 }}],
+                        responses: [{ is: { statusCode: 400 } }],
                         predicates: {
                             path: { is: '/test' },
                             query: {
@@ -235,6 +235,45 @@ var assert = require('assert'),
                     return client.get('/', port);
                 }).then(function (response) {
                     assert.strictEqual('PROXIED', response.body);
+                }).finally(function () {
+                    return api.del('/imposters/' + port);
+                });
+            });
+
+            promiseIt('should set predicates automatically when using proxyAll', function () {
+                var proxyPort = port + 1,
+                    proxyStubs = [
+                        {
+                            predicates: { path: { is: '/first' } },
+                            responses: [{ is: { body: 'first' }}]
+                        },
+                        {
+                            predicates: { path: { is: '/second' } },
+                            responses: [{ is: { body: 'second' }}]
+                        }
+                    ],
+                    proxyRequest = { protocol: 'http', port: proxyPort, stubs: proxyStubs, name: this.name + ' PROXY' },
+                    stub = { responses: [{ proxyAll: { to: 'http://localhost:' + proxyPort, remember: ['path'] } }] },
+                    request = { protocol: protocol, port: port, stubs: [stub], name: this.name + ' MAIN' };
+
+                return api.post('/imposters', proxyRequest).then(function () {
+                    return api.post('/imposters', request);
+                }).then(function (response) {
+                    assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body));
+                    return client.get('/first', port);
+                }).then(function (response) {
+                    assert.strictEqual(response.body, 'first');
+                    return client.get('/second', port);
+                }).then(function (response) {
+                    assert.strictEqual(response.body, 'second');
+                    return api.del('/imposters/' + proxyPort);
+                }).then(function () {
+                    return client.get('/first', port);
+                }).then(function (response) {
+                    assert.strictEqual(response.body, 'first');
+                    return client.get('/second', port);
+                }).then(function (response) {
+                    assert.strictEqual(response.body, 'second');
                 }).finally(function () {
                     return api.del('/imposters/' + port);
                 });

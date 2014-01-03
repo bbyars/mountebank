@@ -18,6 +18,10 @@ function create (protocol) {
         var deferred = Q.defer(),
             options = optionsFor(spec);
 
+        if (!options.port) {
+            throw Error('you forgot to pass the port again');
+        }
+
         if (body && !options.headers['Content-Type']) {
             options.headers['Content-Type'] = 'application/json';
         }

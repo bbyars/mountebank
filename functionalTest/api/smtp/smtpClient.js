@@ -11,8 +11,13 @@ function addressOf (email) {
 }
 
 function send (message, port) {
+    /* jshint maxcomplexity: 6 */
     var deferred = Q.defer(),
         client = smtp.connect(port);
+
+    if (!port) {
+        throw Error('you forgot to pass the port again');
+    }
 
     message.cc = message.cc || [];
     message.bcc = message.bcc || [];

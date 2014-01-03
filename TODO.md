@@ -1,14 +1,12 @@
 Stories
 =======
-2. Create resolver to automatically create proxyOnce/is with predicates without
-  setting the predicates up by hand
-1. fix presentation for TCP on website
 1. or and and predicates
 4. Better docs - with accordion examples for each operator,etc (see http://codepen.io/Thoughtworks/full/BEmsu)
 4. Tests for documents that actually read a class in the HTML to try each request and verify response
 6. Add brew package
 7. Add rpm package
 8. Use cluster module to isolate imposters from each other
+8. change to only publish to npm and then deploy to heroku on branch; bump major version
 8 release!!!!
 8. Add MSI & Windows support
 9. Better error handling around invalid JSON requests to make consistent error messages
@@ -19,7 +17,6 @@ Stories
 21. Prettier /imposters HTML page
 22. Ability to create imposter from UI (with karma testing?)
 23. Prettier /imposter/{port} HTML page
-25. change to only publish to npm and then deploy to heroku on branch
 26. Add support for case-sensitive predicates (as objects instead of strings?)
 27. paging and q= filtering for imposters on GET /imposters
 28. UDP and TCP syslog support (see http://en.wikipedia.org/wiki/Syslog for packet format)
@@ -37,7 +34,9 @@ Cleanup Needed
 - fix docs - much of it out of date
   - injection has access to logger, but only error logs during dry runs
   - predicates for tcp are text only
-- tcp async injection
+- move stub resolvers to own file (like predicates), with resolve method to handle the big switch
+- make proxy and proxyOnce take objects with a to attribute to allow future extension (e.g. withUserAgent, etc)
+- proxyAll won't work for object predicates, and test for multiple predicates for combinations?
 
 Auxiliary Projects
 ==================

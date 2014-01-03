@@ -64,6 +64,7 @@ function create (protocols, imposters, Imposter, logger) {
                 });
             }
             else {
+                logger.warn('error creating imposter: ' + JSON.stringify(errors.details(validation.errors)));
                 response.statusCode = 400;
                 response.send({ errors: validation.errors });
                 return Q(true);

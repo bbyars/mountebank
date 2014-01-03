@@ -7,6 +7,10 @@ function send (message, serverPort, timeout) {
     var deferred = Q.defer(),
         client = net.connect({ port: serverPort }, function () { client.write(message); });
 
+    if (!serverPort) {
+        throw Error('you forgot to pass the port again');
+    }
+
     client.once('error', deferred.reject);
     client.once('data', deferred.resolve);
 
