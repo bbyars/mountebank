@@ -4,7 +4,8 @@ var utils = require('util'),
     Q = require('q'),
     exceptions = require('../errors/errors'),
     helpers = require('../util/helpers'),
-    combinators = require('../util/combinators');
+    combinators = require('../util/combinators'),
+    StubResolver = require('./stubResolver');
 
 function create (options) {
 
@@ -12,7 +13,8 @@ function create (options) {
         var dryRunProxy = { to: function () { return Q({}); } },
             errorLogger = logger ? logger.error : combinators.noop,
             dryRunLogger = { debug: combinators.noop, info: combinators.noop, warn: combinators.noop, error: errorLogger },
-            stubRepository = options.StubRepository.create(dryRunProxy, combinators.identity),
+            resolver = StubResolver.create(dryRunProxy, combinators.identity),
+            stubRepository = options.StubRepository.create(resolver),
             clone = helpers.clone(stub); // proxyOnce changes state
 
         stubRepository.addStub(clone);

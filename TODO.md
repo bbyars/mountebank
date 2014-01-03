@@ -34,8 +34,8 @@ Cleanup Needed
 - fix docs - much of it out of date
   - injection has access to logger, but only error logs during dry runs
   - predicates for tcp are text only
-- move stub resolvers to own file (like predicates), with resolve method to handle the big switch
 - proxyAll won't work for object predicates, and test for multiple predicates for combinations?
+- separate stubRepo tests in stubResolver to add isolated tests
 
 Auxiliary Projects
 ==================

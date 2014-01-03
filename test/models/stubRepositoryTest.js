@@ -7,15 +7,17 @@ var assert = require('assert'),
     promiseIt = require('../testHelpers').promiseIt,
     helpers = require('../../src/util/helpers'),
     combinators = require('../../src/util/combinators'),
+    StubResolver = require('../../src/models/stubResolver'),
     util = require('util');
 
 describe('stubRepository', function () {
-    var stubs, proxy, logger;
+    var stubs, proxy, logger, resolver;
 
     beforeEach(function () {
         proxy = {};
         logger = { debug: mock(), info: mock(), warn: mock(), error: mock() };
-        stubs = StubRepository.create(proxy, combinators.identity);
+        resolver = StubResolver.create(proxy, combinators.identity);
+        stubs = StubRepository.create(resolver);
     });
 
     promiseIt('should return default response if no match', function () {
@@ -203,7 +205,7 @@ describe('stubRepository', function () {
             fn = "function (request) { return { body: 'INJECTED' }; }",
             postProcess = function (response) { return helpers.merge(response, { statusCode: 200 }); };
 
-        stubs = StubRepository.create(proxy, postProcess);
+        stubs = StubRepository.create(StubResolver.create(proxy, postProcess));
         stubs.addStub({ responses: [{ inject: fn }] });
 
         return stubs.resolve(request, logger).then(function (response) {

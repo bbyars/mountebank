@@ -9,6 +9,7 @@ var AbstractServer = require('../abstractServer'),
     helpers = require('../../util/helpers'),
     Proxy = require('./tcpProxy'),
     TcpValidator = require('./tcpValidator'),
+    StubResolver = require('../stubResolver'),
     StubRepository = require('../stubRepository'),
     events = require('events'),
     TcpRequest = require('./tcpRequest');
@@ -26,7 +27,8 @@ function createServer (logger, options) {
             return Buffer.isBuffer(data) ? data : new Buffer(data, encoding);
         },
         proxy = Proxy.create(logger, encoding),
-        stubs = StubRepository.create(proxy, postProcess),
+        resolver = StubResolver.create(proxy, postProcess),
+        stubs = StubRepository.create(resolver),
         result = inherit.from(events.EventEmitter, {
             errorHandler: function (error, container) {
                 container.socket.write(JSON.stringify({ errors: [error] }), 'utf8');

@@ -3,12 +3,10 @@
 var predicates = require('./predicates'),
     Q = require('q'),
     util = require('util'),
-    errors = require('../errors/errors'),
-    helpers = require('../util/helpers');
+    errors = require('../errors/errors');
 
-function create (proxy, postProcess) {
-    var stubs = [],
-        injectState = {};
+function create (resolver) {
+    var stubs = [];
 
     function trueForAll (obj, predicate) {
         // we call map before calling every so we make sure to call every
@@ -54,61 +52,6 @@ function create (proxy, postProcess) {
         }
     }
 
-    function inject (request, fn, state, logger) {
-        /* jshint evil: true, unused: false */
-        var deferred = Q.defer(),
-            scope = helpers.clone(request),
-            injected = 'try {\n' +
-                '    var response = (' + fn + ')(scope, state, deferred.resolve);\n' +
-                '    if (response) { deferred.resolve(response); }\n' +
-                '}\n' +
-                'catch (error) {\n' +
-                '    logger.error("injection X=> " + error);\n' +
-                '    logger.error("    source: " + JSON.stringify(injected));\n' +
-                '    logger.error("    scope: " + JSON.stringify(scope));\n' +
-                '    logger.error("    state: " + JSON.stringify(state));\n' +
-                '    deferred.reject(error);\n' +
-                '}';
-        eval(injected);
-        return deferred.promise;
-    }
-
-    function getResolvedResponsePromise (stubResolver, request, logger) {
-        /* jshint maxcomplexity: 6 */
-        logger.debug('using stub resolver ' + JSON.stringify(stubResolver));
-
-        if (stubResolver.is) {
-            return Q(stubResolver.is);
-        }
-        else if (stubResolver.proxy) {
-            return proxy.to(stubResolver.proxy.to, request);
-        }
-        else if (stubResolver.proxyOnce) {
-            return proxy.to(stubResolver.proxyOnce.to, request).then(function (response) {
-                stubResolver.is = response;
-                return Q(response);
-            });
-        }
-        else if (stubResolver.proxyAll) {
-            return proxy.to(stubResolver.proxyAll.to, request).then(function (response) {
-                var stub = { predicates: {}, responses: [{ is: response }] };
-                stubResolver.proxyAll.remember.forEach(function (key) {
-                    stub.predicates[key] = { is: request[key] };
-                });
-                stubs.unshift(stub);
-                return Q(response);
-            });
-        }
-        else if (stubResolver.inject) {
-            return inject(request, stubResolver.inject, injectState, logger).then(function (response) {
-                return Q(response);
-            });
-        }
-        else {
-            return Q.reject(errors.ValidationError('unrecognized stub resolver', { source: stubResolver }));
-        }
-    }
-
     function addStub (stub) {
         stubs.push(stub);
     }
@@ -120,9 +63,8 @@ function create (proxy, postProcess) {
 
         stub.responses.push(stubResolver);
 
-        getResolvedResponsePromise(stubResolver, request, logger).done(function (stubResponse) {
-            var response = postProcess(stubResponse),
-                match = {
+        resolver.resolve(stubResolver, request, logger, stubs).done(function (response) {
+            var match = {
                     timestamp: new Date().toJSON(),
                     request: request,
                     response: response
