@@ -2,6 +2,7 @@
 
 var assert = require('assert'),
     validator = require('w3cjs'),
+    api = require('../api/api'),
     httpClient = require('../api/http/baseHttpClient').create('http'),
     fs = require('fs'),
     timeout = parseInt(process.env.SLOW_TEST_TIMEOUT_MS || 3000);
@@ -12,6 +13,7 @@ describe('html validation', function () {
     ['/', '/faqs', '/docs', '/license', '/contributing', '/config', '/docs/protocols/http'].forEach(function (endpoint) {
         it(endpoint + ' should have no html errors', function (done) {
             var spec = {
+                port: api.port,
                 method: 'GET',
                 path: endpoint,
                 headers: { accept: 'text/html' }
