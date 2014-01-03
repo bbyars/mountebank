@@ -42,6 +42,20 @@ module.exports = {
             return module.exports[predicate](fieldName, expected[predicate], request);
         });
     },
+    or: function (fieldName, expected, request) {
+        return expected.some(function (predicate) {
+            return Object.keys(predicate).every(function (subPredicate) {
+                return module.exports[subPredicate](fieldName, predicate[subPredicate], request);
+            });
+        });
+    },
+    and: function (fieldName, expected, request) {
+        return expected.every(function (predicate) {
+            return Object.keys(predicate).every(function (subPredicate) {
+                return module.exports[subPredicate](fieldName, predicate[subPredicate], request);
+            });
+        });
+    },
     inject: function (fieldName, predicate, request) {
         /* jshint evil: true, unused: false */
         var arg = fieldName === 'request' ? request : request[fieldName],

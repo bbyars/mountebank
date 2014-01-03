@@ -3,7 +3,7 @@
 var assert = require('assert'),
     predicates = require('../../src/models/predicates');
 
-describe('http predicates', function () {
+describe('predicates', function () {
     describe('#is', function () {
         it('should return false for mismatched string', function () {
             assert.ok(!predicates.is('field', 'false', { field: 'true' }));
@@ -223,6 +223,26 @@ describe('http predicates', function () {
 
         it('should return false for empty request field if exists is true', function () {
             assert.ok(!predicates.not('field', { is: 'this' }, { field: 'this' }));
+        });
+    });
+
+    describe('#or', function () {
+        it('should return true if any sub-predicate is true', function () {
+            assert.ok(predicates.or('field', [{ is: 'this' }, { is: 'that' }], { field: 'that' }));
+        });
+
+        it('should return false if no sub-predicate is true', function () {
+            assert.ok(!predicates.or('field', [{ is: 'this' }, { is: 'that' }], { field: 'what' }));
+        });
+    });
+
+    describe('#and', function () {
+        it('should return true if all sub-predicate is true', function () {
+            assert.ok(predicates.and('field', [{ is: 'this' }, { startsWith: 'th' }], { field: 'this' }));
+        });
+
+        it('should return false if any sub-predicate is false', function () {
+            assert.ok(!predicates.and('field', [{ is: 'this' }, { is: 'that' }], { field: 'that' }));
         });
     });
 

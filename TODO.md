@@ -1,6 +1,5 @@
 Stories
 =======
-1. or and and predicates
 4. Better docs - with accordion examples for each operator,etc (see http://codepen.io/Thoughtworks/full/BEmsu)
 4. Tests for documents that actually read a class in the HTML to try each request and verify response
 6. Add brew package
