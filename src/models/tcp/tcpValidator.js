@@ -3,7 +3,7 @@
 var DryRunValidator = require('../dryRunValidator'),
     StubRepository = require('../stubRepository'),
     TcpRequest = require('./tcpRequest'),
-    exceptions = require('../../errors/errors');
+    exceptions = require('../../util/errors');
 
 function validateMode (request) {
     var errors = [];

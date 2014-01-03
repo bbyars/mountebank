@@ -3,7 +3,7 @@
 var Validator = require('../util/validator'),
     Q = require('q'),
     helpers = require('../util/helpers'),
-    errors = require('../errors/errors');
+    errors = require('../util/errors');
 
 function create (protocols, imposters, Imposter, logger) {
 

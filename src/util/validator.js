@@ -2,7 +2,7 @@
 
 var utils = require('util'),
     Q = require('q'),
-    exceptions = require('../errors/errors');
+    exceptions = require('./errors');
 
 function createDefaultValidator () {
     var errors = [];

@@ -1,7 +1,7 @@
 'use strict';
 
-var inherit = require('../util/inherit'),
-    helpers = require('../util/helpers');
+var inherit = require('./inherit'),
+    helpers = require('./helpers');
 
 function create (code) {
     return function (message, options) {

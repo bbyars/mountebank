@@ -1,7 +1,7 @@
 'use strict';
 
 var Q = require('q'),
-    errors = require('../errors/errors');
+    errors = require('../util/errors');
 
 function implement (logger, implementation) {
     function to (proxyDestination, originalRequest) {

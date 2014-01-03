@@ -2,7 +2,7 @@
 
 var utils = require('util'),
     Q = require('q'),
-    exceptions = require('../errors/errors'),
+    exceptions = require('../util/errors'),
     helpers = require('../util/helpers'),
     combinators = require('../util/combinators'),
     StubResolver = require('./stubResolver');

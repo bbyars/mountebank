@@ -5,7 +5,7 @@ var Q = require('q'),
     ScopedLogger = require('../util/scopedLogger'),
     helpers = require('../util/helpers'),
     Domain = require('domain'),
-    errors = require('../errors/errors');
+    errors = require('../util/errors');
 
 function implement (implementation, baseLogger) {
 

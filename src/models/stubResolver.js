@@ -1,7 +1,7 @@
 'use strict';
 
 var helpers = require('../util/helpers'),
-    errors = require('../errors/errors'),
+    errors = require('../util/errors'),
     Q = require('q');
 
 function create (proxy, postProcess) {

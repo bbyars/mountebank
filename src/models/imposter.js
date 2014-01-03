@@ -2,7 +2,7 @@
 
 var Q = require('q'),
     Domain = require('domain'),
-    errors = require('../errors/errors');
+    errors = require('../util/errors');
 
 function createErrorHandler (deferred) {
     return function errorHandler (error) {

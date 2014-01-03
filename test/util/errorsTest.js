@@ -1,7 +1,7 @@
 'use strict';
 
 var assert = require('assert'),
-    errors = require('../../src/errors/errors'),
+    errors = require('../../src/util/errors'),
     inherit = require('../../src/util/inherit');
 
 describe('errors', function () {

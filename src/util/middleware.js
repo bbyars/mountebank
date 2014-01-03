@@ -1,6 +1,6 @@
 'use strict';
 
-var errors = require('../errors/errors');
+var errors = require('./errors');
 
 function useAbsoluteUrls (port) {
     return function (request, response, next) {
