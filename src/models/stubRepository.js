@@ -78,13 +78,13 @@ function create (proxy, postProcess) {
         logger.debug('using stub resolver ' + JSON.stringify(stubResolver));
 
         if (stubResolver.is) {
-            return Q(postProcess(stubResolver.is));
+            return Q(stubResolver.is);
         }
         else if (stubResolver.proxy) {
-            return proxy.to(stubResolver.proxy, request);
+            return proxy.to(stubResolver.proxy.to, request);
         }
         else if (stubResolver.proxyOnce) {
-            return proxy.to(stubResolver.proxyOnce, request).then(function (response) {
+            return proxy.to(stubResolver.proxyOnce.to, request).then(function (response) {
                 stubResolver.is = response;
                 return Q(response);
             });
@@ -101,7 +101,7 @@ function create (proxy, postProcess) {
         }
         else if (stubResolver.inject) {
             return inject(request, stubResolver.inject, injectState, logger).then(function (response) {
-                return Q(postProcess(response));
+                return Q(response);
             });
         }
         else {
@@ -120,12 +120,13 @@ function create (proxy, postProcess) {
 
         stub.responses.push(stubResolver);
 
-        getResolvedResponsePromise(stubResolver, request, logger).done(function (response) {
-            var match = {
-                timestamp: new Date().toJSON(),
-                request: request,
-                response: response
-            };
+        getResolvedResponsePromise(stubResolver, request, logger).done(function (stubResponse) {
+            var response = postProcess(stubResponse),
+                match = {
+                    timestamp: new Date().toJSON(),
+                    request: request,
+                    response: response
+                };
             stub.matches = stub.matches || [];
             stub.matches.push(match);
             deferred.resolve(response);

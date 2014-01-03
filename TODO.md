@@ -35,7 +35,6 @@ Cleanup Needed
   - injection has access to logger, but only error logs during dry runs
   - predicates for tcp are text only
 - move stub resolvers to own file (like predicates), with resolve method to handle the big switch
-- make proxy and proxyOnce take objects with a to attribute to allow future extension (e.g. withUserAgent, etc)
 - proxyAll won't work for object predicates, and test for multiple predicates for combinations?
 
 Auxiliary Projects

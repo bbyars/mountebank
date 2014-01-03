@@ -163,7 +163,7 @@ describe('stubRepository', function () {
     promiseIt('should return proxied result for proxy stub', function () {
         proxy.to = mock().returns(Q('PROXY'));
         var request = { path: '/test', headers: { key: 'value' }, body: 'BODY', method: 'GET' };
-        stubs.addStub({ responses: [{ proxy: 'PROXIED URL' }] });
+        stubs.addStub({ responses: [{ proxy: { to: 'PROXIED URL' } }] });
 
         return stubs.resolve(request, logger).then(function (response) {
             assert.ok(proxy.to.wasCalledWith('PROXIED URL', request));
@@ -174,7 +174,7 @@ describe('stubRepository', function () {
     promiseIt('should only call proxy first time for proxyOnce stub', function () {
         proxy.to = mock().returns(Q({ body: 'PROXIED' }));
         var request = { path: '/test', headers: { key: 'value' }, body: 'BODY', method: 'GET' };
-        stubs.addStub({ responses: [{ proxyOnce: 'PROXIED URL' }] });
+        stubs.addStub({ responses: [{ proxyOnce: { to: 'PROXIED URL' } }] });
 
         return stubs.resolve(request, logger).then(function (response) {
             assert.ok(proxy.to.wasCalledWith('PROXIED URL', request));

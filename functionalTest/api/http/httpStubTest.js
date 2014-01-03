@@ -149,7 +149,7 @@ var assert = require('assert'),
                 var proxyPort = port + 1,
                     proxyStub = { responses: [{ is: { body: 'PROXIED' } }] },
                     proxyRequest = { protocol: 'http', port: proxyPort, stubs: [proxyStub], name: this.name + ' PROXY' },
-                    stub = { responses: [{ proxy: 'http://localhost:' + proxyPort }] },
+                    stub = { responses: [{ proxy: { to: 'http://localhost:' + proxyPort } }] },
                     request = { protocol: protocol, port: port, stubs: [stub], name: this.name + ' MAIN' };
 
                 return api.post('/imposters', proxyRequest).then(function () {
@@ -166,7 +166,7 @@ var assert = require('assert'),
             });
 
             promiseIt('should allow proxy stubs to invalid domains', function () {
-                var stub = { responses: [{ proxy: 'http://invalid.domain' }] },
+                var stub = { responses: [{ proxy: { to: 'http://invalid.domain' } }] },
                     request = { protocol: protocol, port: port, stubs: [stub], name: this.name };
 
                 return api.post('/imposters', request).then(function () {
@@ -187,7 +187,7 @@ var assert = require('assert'),
                 var proxyPort = port + 1,
                     proxyStub = { responses: [{ is: { body: 'PROXIED' } }] },
                     proxyRequest = { protocol: 'http', port: proxyPort, stubs: [proxyStub], name: this.name + ' PROXY' },
-                    stub = { responses: [{ proxyOnce: 'http://localhost:' + proxyPort }] },
+                    stub = { responses: [{ proxyOnce: { to: 'http://localhost:' + proxyPort } }] },
                     request = { protocol: protocol, port: port, stubs: [stub], name: this.name + ' MAIN' };
 
                 return api.post('/imposters', proxyRequest).then(function () {
@@ -215,7 +215,7 @@ var assert = require('assert'),
                 var proxyPort = port + 1,
                     proxyStub = { responses: [{ is: { body: 'PROXIED' } }] },
                     proxyRequest = { protocol: 'http', port: proxyPort, stubs: [proxyStub], name: this.name + ' PROXY' },
-                    stub = { responses: [{ proxyOnce: 'http://localhost:' + proxyPort }] },
+                    stub = { responses: [{ proxyOnce: { to: 'http://localhost:' + proxyPort } }] },
                     request = { protocol: protocol, port: port, stubs: [stub], name: this.name + ' MAIN' };
 
                 return api.post('/imposters', proxyRequest).then(function () {
