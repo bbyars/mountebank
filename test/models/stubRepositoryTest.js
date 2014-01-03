@@ -3,12 +3,9 @@
 var assert = require('assert'),
     StubRepository = require('../../src/models/stubRepository'),
     mock = require('../mock').mock,
-    Q = require('q'),
     promiseIt = require('../testHelpers').promiseIt,
-    helpers = require('../../src/util/helpers'),
     combinators = require('../../src/util/combinators'),
-    StubResolver = require('../../src/models/stubResolver'),
-    util = require('util');
+    StubResolver = require('../../src/models/stubResolver');
 
 describe('stubRepository', function () {
     var stubs, proxy, logger, resolver;
@@ -143,94 +140,6 @@ describe('stubRepository', function () {
 
         return stubs.resolve(request, logger).then(function (response) {
             assert.strictEqual(response.body, 'Matched');
-        });
-    });
-
-    promiseIt('should not be able to change state through inject', function () {
-        var predicate = "function (request) { request.path = 'CHANGED'; return true; }",
-            request = { path: '/test', headers: {}, body: '', method: 'GET' };
-        stubs.addStub({
-            predicates: {
-                request: { inject: predicate },
-                path: { is: '/test' } // this will fail if predicate executes on same request instance
-            },
-            responses: [{ is: { body: 'Matched' }}]
-        });
-
-        return stubs.resolve(request, logger).then(function (response) {
-            assert.strictEqual(response.body, 'Matched');
-        });
-    });
-
-    promiseIt('should return proxied result for proxy stub', function () {
-        proxy.to = mock().returns(Q('PROXY'));
-        var request = { path: '/test', headers: { key: 'value' }, body: 'BODY', method: 'GET' };
-        stubs.addStub({ responses: [{ proxy: { to: 'PROXIED URL' } }] });
-
-        return stubs.resolve(request, logger).then(function (response) {
-            assert.ok(proxy.to.wasCalledWith('PROXIED URL', request));
-            assert.strictEqual(response, 'PROXY');
-        });
-    });
-
-    promiseIt('should only call proxy first time for proxyOnce stub', function () {
-        proxy.to = mock().returns(Q({ body: 'PROXIED' }));
-        var request = { path: '/test', headers: { key: 'value' }, body: 'BODY', method: 'GET' };
-        stubs.addStub({ responses: [{ proxyOnce: { to: 'PROXIED URL' } }] });
-
-        return stubs.resolve(request, logger).then(function (response) {
-            assert.ok(proxy.to.wasCalledWith('PROXIED URL', request));
-            assert.strictEqual(response.body, 'PROXIED');
-
-            proxy.to = mock().returns(Q('PROXY'));
-            return stubs.resolve(request, logger);
-        }).then(function (response) {
-            assert.ok(!proxy.to.wasCalled());
-            assert.strictEqual(response.body, 'PROXIED');
-        });
-    });
-
-    promiseIt('should allow injected response', function () {
-        var request = { path: '/test', headers: {}, body: '', method: 'GET' },
-            fn = "function (request) { return { body: request.method + ' INJECTED' }; }";
-        stubs.addStub({ responses: [{ inject: fn }] });
-
-        return stubs.resolve(request, logger).then(function (response) {
-            assert.strictEqual(response.body, 'GET INJECTED');
-        });
-    });
-
-    promiseIt('should post-process injected response', function () {
-        var request = { path: '/test', headers: {}, body: '', method: 'GET' },
-            fn = "function (request) { return { body: 'INJECTED' }; }",
-            postProcess = function (response) { return helpers.merge(response, { statusCode: 200 }); };
-
-        stubs = StubRepository.create(StubResolver.create(proxy, postProcess));
-        stubs.addStub({ responses: [{ inject: fn }] });
-
-        return stubs.resolve(request, logger).then(function (response) {
-            assert.deepEqual(response, {
-                body: 'INJECTED',
-                statusCode: 200
-            });
-        });
-    });
-
-    promiseIt('should log injection exceptions', function () {
-        var request = { path: '/test', headers: {}, body: '', method: 'GET' },
-            fn = "function (request) { throw Error('BOOM!!!'); }",
-            errorsLogged = [];
-        stubs.addStub({ responses: [{ inject: fn }] });
-        logger.error = function () {
-            var message = util.format.apply(this, Array.prototype.slice.call(arguments));
-            errorsLogged.push(message);
-        };
-
-        return stubs.resolve(request, logger).then(function () {
-            assert.fail('should not have resolved');
-        }, function (error) {
-            assert.strictEqual(error.message, 'BOOM!!!');
-            assert.ok(errorsLogged.indexOf('injection X=> Error: BOOM!!!') >= 0);
         });
     });
 

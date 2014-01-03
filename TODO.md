@@ -34,8 +34,8 @@ Cleanup Needed
 - fix docs - much of it out of date
   - injection has access to logger, but only error logs during dry runs
   - predicates for tcp are text only
-- proxyAll won't work for object predicates, and test for multiple predicates for combinations?
-- separate stubRepo tests in stubResolver to add isolated tests
+  - predicate injection - can return truthy or falsy, but mountebank doesn't know what those words mean, so he suggests you return true or false
+- come up with better name than 'remember' for proxyAll
 
 Auxiliary Projects
 ==================

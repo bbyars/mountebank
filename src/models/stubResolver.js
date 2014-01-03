@@ -14,7 +14,7 @@ function create (proxy, postProcess) {
             scope = helpers.clone(request),
             injected = 'try {\n' +
                        '    var response = (' + fn + ')(scope, injectState, deferred.resolve);\n' +
-                       '    if (response) { deferred.resolve(response); }\n' +
+                       '    if (typeof response !== "undefined") { deferred.resolve(response); }\n' +
                        '}\n' +
                        'catch (error) {\n' +
                        '    logger.error("injection X=> " + error);\n' +
@@ -27,10 +27,27 @@ function create (proxy, postProcess) {
         return deferred.promise;
     }
 
+    function addPredicatesTo (predicates, request, predicatesToRemember) {
+        predicatesToRemember.forEach(function (key) {
+            if (key.indexOf('.') > 0) {
+                var parts = key.split('.'),
+                    next = parts[0],
+                    rest = parts.slice(1).join('.');
+                predicates[next] = {};
+                addPredicatesTo(predicates[next], request[next], [rest]);
+            }
+            else if (typeof request[key] === 'object') {
+                predicates[key] = {};
+                addPredicatesTo(predicates[key], request[key], Object.keys(request[key]));
+            }
+            else {
+                predicates[key] = { is: request[key] };
+            }
+        });
+    }
+
     function getResolvePromise (stubResolver, request, logger, stubs) {
         /* jshint maxcomplexity: 6 */
-        logger.debug('using stub resolver ' + JSON.stringify(stubResolver));
-
         if (stubResolver.is) {
             return Q(stubResolver.is);
         }
@@ -46,9 +63,7 @@ function create (proxy, postProcess) {
         else if (stubResolver.proxyAll) {
             return proxy.to(stubResolver.proxyAll.to, request).then(function (response) {
                 var stub = { predicates: {}, responses: [{ is: response }] };
-                stubResolver.proxyAll.remember.forEach(function (key) {
-                    stub.predicates[key] = { is: request[key] };
-                });
+                addPredicatesTo(stub.predicates, request, stubResolver.proxyAll.remember);
                 stubs.unshift(stub);
                 return Q(response);
             });

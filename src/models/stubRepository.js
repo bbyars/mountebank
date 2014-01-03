@@ -61,6 +61,8 @@ function create (resolver) {
             stubResolver = stub.responses.shift(),
             deferred = Q.defer();
 
+        logger.debug('using stub resolver ' + JSON.stringify(stubResolver));
+
         stub.responses.push(stubResolver);
 
         resolver.resolve(stubResolver, request, logger, stubs).done(function (response) {
