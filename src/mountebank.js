@@ -65,6 +65,15 @@ function create (options) {
         });
     });
 
+    // docs
+    [
+        'docs/gettingStarted',
+        'docs/commandLine',
+        'docs/api/overview',
+    ].forEach(function (endpoint) {
+        app.get('/' + endpoint, function (request, response) { response.render(endpoint); });
+    });
+
     // Brochure-ware sections
     ['faqs', 'docs', 'license', 'contributing', 'support', 'docs/protocols/http'].forEach(function (endpoint) {
         app.get('/' + endpoint, function (request, response) { response.render(endpoint); });

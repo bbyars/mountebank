@@ -5,11 +5,6 @@ mountebank is the first tool to provide multi-protocol, multi-language test doub
 Just point your application under test to mountebank instead of the real dependency,
 and test like you would with traditional stubs and mocks.
 
-mountebank will tell you that he supports every protocol ever invented, and a few
-lying in the weeds.  He will swear that he supports bindings in every language
-known to humanity.  Some of the implementations are lagging, but worry not, for his
-team of open source developers is legion.
-
 At the moment, the following protocols are supported:
 * http
 * https
@@ -57,8 +52,13 @@ Create a test double:
 After installing, open your browser to http://localhost:2525, or visit the
 [public site](http://mountebank.herokuapp.com/).
 
+## Support
+
+Visit the [Google group](https://groups.google.com/forum/#!forum/mountebank-discusshttps://groups.google.com/forum/#!forum/mountebank-discuss)
+for any support questions.  Don't be shy!
 
 ## Building
+
 [![Build Status](https://travis-ci.org/bbyars/mountebank.png)](https://travis-ci.org/bbyars/mountebank)
 [![Coverage Status](https://coveralls.io/repos/bbyars/mountebank/badge.png?branch=master)](https://coveralls.io/r/bbyars/mountebank?branch=master)
 [![Dependency Status](https://gemnasium.com/bbyars/mountebank.png)](https://gemnasium.com/bbyars/mountebank.png)

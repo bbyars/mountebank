@@ -1,0 +1,214 @@
+<% include ../../_header %>
+
+<h1>API Overview</h1>
+
+<p>mountebank happily accepts your orders and delegates to his team of imposters.
+While you are free to parlay with mountebank through his RESTful API, his goal is
+to make you as comfortable as possible.  As you read this, his team of open source
+engineers are busy at work translating his API into your native language, and soon
+you will be able to converse with the imposters using a library that has adopted
+the idioms of mocking frameworks in your language.</p>
+
+<p>The API is Esperanto, designed to create an easy-to-learn, neutral language that
+transcends national borders and fosters peace and harmony.  mountebank loves your
+native language, but if you really want to understand mountebank, the API is
+described for your viewing pleasure.</p>
+
+<h2>Introduction</h2>
+
+<p>mountebank, being a man of the people, prefers the simple words of the vernacular over
+the silvery speech of the priesthood.  As if to prove the point, he speaks in a RESTful
+<code>application/json</code> rather than <code>application\vnd.mountebank+json</code>.
+While he does provide hypermedia, it is more as a convenience to you, with no professorial
+dictate that you follow the script provided.  To show how committed he is to that principle,
+all resources are described below, complete with URL templates.</p>
+
+<p>mountebank uses a basic set of HTTP status codes.  He knows that a 200 or 201 will
+make you happiest, but unfortunately he cannot guarantee that you will always receive
+one of those codes.  In the cases where the input you provide is malformed in some
+fashion, he will offer a humble apology for not being clear about what he needs, and
+respond with a 400.  In situations where you ask for a port that mountebank
+is unable to reserve, he will return you a 403.  Every effort has gone into providing response
+bodies to help you diagnose the problems.  Each error response returned will have a
+<code>code</code> and <code>message</code> at a minimum.  If extra information is available,
+mountebank will happily pass it to you.  If you get stuck, email the group on the
+<a href='/support'>support page</a>, along with your logs, and mountebank will happily
+assist you.</p>
+
+<p>mountebank has made every effort to spare you from 5xx HTTP codes.  If you are
+unfortunate enough to receive one, first you should know that mountebank is most embarrassed.
+Please <a href='/support'>report</a> the issue with the log details, and mountebank will
+help make it right for you.</p>
+
+<h2>Resources</h2>
+
+<h3>Home</h3>
+
+<ul>
+  <li>URL template: <code>/</code></li>
+  <li>HTTP verbs: <code>GET</code></li>
+</ul>
+
+<p>Unpretentious and welcoming, mirroring mountebank's simple good nature.  This endpoint
+exists for those who aspire to the RESTful
+<a href='http://martinfowler.com/articles/richardsonMaturityModel.html'>priesthood</a>,
+though they may be disappointed to find such a lowly language as <code>application/json</code>
+and the lack of URLs for relationships.  mountebank has no intention of forcing anybody to use
+this endpoint, and does not intend to use it for his implemenation of native language bindings.</p>
+
+<pre><code data-test-id='home' data-test-type='http' data-test-step='1'>
+GET / HTTP/1.1
+Host: localhost:2525
+Accept: application/json
+</code></pre>
+
+<pre><code data-test-id='home' data-test-verify-step='1'>
+HTTP/1.1 200 OK
+Content-Type: application/json
+
+{
+  "_links": {
+    "imposters": {
+      "href": "http://localhost:2525/imposters"
+    }
+  }
+}
+</code></pre>
+
+<h3>Imposters</h3>
+
+<ul>
+  <li>URL template: <code>/imposters</code></li>
+  <li>HTTP verbs: <code>GET, POST</code></li>
+</ul>
+
+<p>Though he's not proud to admit it, mountebank employs an army of imposters to
+fulfill your orders.  Because your needs are varied and sundry, his imposters
+are all different, and all are identified by a port number and associated with
+a protocol.  mountebank expects that you will be responsible for providing the
+port, since you'll need to configure the application under test with the same
+port.</p>
+
+<p>The value you get out of mountebank always starts by creating an imposter.  If
+you don't need stubbing, then the port and protocol are all you need.</p>
+
+<pre><code data-test-id='imposters' data-test-type='http' data-test-step='1'>
+POST /imposters HTTP/1.1
+Host: localhost:2525
+Accept: application/json
+Content-Type: application/json
+
+{
+  "port": 2526,
+  "protocol": "HTTP"
+}
+</code></pre>
+
+<pre><code data-test-verify-step='1'>
+HTTP/1.1 201 Created
+Location: http://localhost:2525/imposters/2526
+Content-Type: application/json
+
+{
+  "protocol": "http",
+  "port": 3535,
+  "_links": {
+    "_self": {
+      "href": "http://localhost:2525/imposters/2526"
+    }
+  }
+}
+</code></pre>
+
+<p>You would also create any <a href='/docs/api/stubs'>stubs</a> in the <code>POST</code> call.
+Imposters are immutable once created.  The expected use case is that they are setup for a single
+test run and destroyed at the completion of the test.</p>
+
+<p>mountebank expects you to configure your application under test to point to the imposter.  In
+the case above, that would mean that your application has an http dependency configured to
+http://localhost:3535.  To retrieve a list of all imposters, simply issue a <code>GET</code>:</p>
+
+<pre><code data-test-id='imposters' data-test-step='2'>
+GET /imposters HTTP/1.1
+Host: localhost:2525
+Accept: application/json
+</code></pre>
+
+<pre><code data-test-id='imposters' data-test-verify-step='2'>
+HTTP/1.1 200 OK
+Content-Type: application/json
+
+{
+  "imposters": [
+    {
+      "protocol": "http",
+      "port": 2526,
+      "requests": [
+        {
+          "path": "/test-request",
+          "method": "GET",
+          "headers": {
+            "host": "localhost:2526"
+          },
+          "body": ""
+        }
+      ],
+      "stubs": [],
+      "_links": {
+        "self": {
+          "href": "/imposters/2526"
+        }
+      }
+    }
+  ]
+}
+</code></pre>
+
+<p>This is nothing more than an array of the content for a single imposter.</p>
+
+<h3>Imposter</h3>
+
+<ul>
+  <li>URL template: <code>/imposters/{port}</code></li>
+  <li>HTTP verbs: <code>GET, DELETE</code></li>
+</ul>
+
+<p>This resource is likely where you will do mock verifications that certain calls were
+made.  Both a <code>GET</code> and <code>DELETE</code> return the same body, but a
+<code>DELETE</code> frees up the port and removes the resource.  If you are concerned
+about optimizing the number of REST calls made during a test run, avoid the <code>GET</code>
+and get all the requests during the <code>DELETE</code> call:</p>
+
+<pre><code data-test-id='imposters' data-test-step='3'>
+GET /imposters HTTP/1.1
+Host: localhost:2525
+Accept: application/json
+</code></pre>
+
+<pre><code data-test-id='imposters' data-test-verify-step='3'>
+HTTP/1.1 200 OK
+Content-Type: application/json
+
+{
+  "protocol": "http",
+  "port": 2526,
+  "requests": [
+    {
+      "path": "/test-request",
+      "method": "GET",
+      "headers": {
+        "host": "localhost:2526"
+      },
+      "body": ""
+    }
+  ],
+  "stubs": [],
+  "_links": {
+    "self": {
+      "href": "/imposters/2526"
+    }
+  }
+}
+</code></pre>
+
+<% include ../../_footer %>

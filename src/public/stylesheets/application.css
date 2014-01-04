@@ -6,7 +6,7 @@
 }
 
 body {
-    margin: 1em 20%;
+    margin: 1em 15%;
     color: #1f0909;
     font-family: Helvetica, sans-serif;
     background-color: #f3f2ee;
@@ -34,28 +34,77 @@ header p {
 header nav {
     position: absolute;
     bottom: 0;
-    left: 100px;
+    left: 8em;
     float: left;
 }
 
-nav ul {
+footer nav {
+    position: relative;
+}
+
+nav.horizontal {
+    left: 8em;
+}
+
+ul {
     list-style-type: none;
     margin: 0;
     padding: 0;
     overflow: hidden;
 }
 
-nav li {
+nav.vertical ul {
+    margin-left: 1em;
+}
+
+nav.horizontal li {
     float: left;
 }
 
-nav a:link, a:visited {
-    display: block;
+nav.horizontal a:link, a:visited {
     width: 120px;
     font-weight: bold;
     text-align: center;
     padding: 4px;
+}
+
+nav a:link, a:visited {
+    display: block;
+}
+
+nav.vertical a {
+    padding-top: 1px;
+    margin-right: 1em;
+}
+
+nav.vertical p {
+    font-weight: bold;
+    color: #2b2b2b;
+}
+
+#main {
+    width: 60em;
+}
+
+#sidenav {
+    width: 10em;
+    float: left;
+    border-right: 1px solid #aaa;
+}
+
+#content {
+    width: 48.9em;
+    float: left;
+    padding-left: 1em;
+}
+
+a:link, a:visited{
+    color: #008;
     text-decoration: none;
+}
+
+a:hover{
+    text-decoration: underline;
 }
 
 hr {
@@ -70,10 +119,12 @@ h1, h2, h3 {
 
 th {
     text-align: left;
+    padding: 0.5em;
 }
 
 td {
     vertical-align: top;
+    padding: 0.5em;
 }
 
 td:first-child {
@@ -113,4 +164,21 @@ dt {
 dd:after {
     content: '\A\A';
     white-space: pre;
+}
+
+pre {
+    background-color: #ddd;
+    border: 1px solid #888;
+    border-radius: 3px;
+    overflow: auto;
+    padding: 6px 10px;
+}
+
+code {
+    font-family: "Monaco", "DejaVu Sans Mono", "Courier New", "Courier";
+    font-size: 12px;
+}
+
+code.teardown {
+    display: none;
 }

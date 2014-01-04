@@ -3,32 +3,13 @@
       <h1>Welcome, friend</h1>
 
       <p>mountebank is the first tool to provide multi-protocol, multi-language test
-      doubles over the wire.  Learning mountebank couldn't be easier.</p>
+      doubles over the wire.  Just point your application under test to mountebank
+      instead of the real dependency, and test like you would with traditional stubs and mocks.</p>
 
-      <h2>Getting Started</h2>
-
-      <p>mountebank requires at least version 0.8 of <a href='http://nodejs.org/'>node.js</a>
-      to run.  Install mountebank with npm: <code>npm install -g mountebank</code>.  Then, a
-      simple <code>mb</code> command will start this website on port 2525 on your local computer.
-      <code>mb help</code> will show the command line options, which are also described in
-      the <a href='/docs'>docs</a>.</p>
-
-      <p>Probably the easiest way to get familiar with what mountebank can do is to use this
-      site (or the one you just installed locally).  The <a href='/imposters'>imposters</a>
-      page is where all the interesting logic happens.  The key domain concept is an
-      <dfn>imposter</dfn>, which represents a test double.  The only thing you need to create
-      an imposter is a port and a protocol, and mountebank will provide you access to all requests
-      to that imposter.  For instance, if you create an imposter on port 3000 as an HTTP server,
-      then all HTTP interactions on port 3000 will be recorded.  The expectation is that you have
-      configured your application under test to change it's web service dependency to
-      http://localhost:3000 so you can test your application independently of service dependencies.</p>
-
-      <p>mountebank provides a rich set of stubbing options, and the
-      <a href='/imposters'>imposters</a> UI will help you define stubs for the imposter as well.
-      It will also output the API call needed to create the same imposter without the UI, which
-      is how automated tests can take advantage of mountebank's functionality.  To make it even
-      easier, mountebank will provide native language bindings for common languages, that abstracts
-      the API away from your tests.</p>
+      <p>mountebank will tell you that he supports every protocol ever invented, and
+      a few lying in the weeds. He will swear that he supports bindings in every language
+      known to humanity. Some of the implementations are lagging, but worry not, for his
+      team of open source developers is legion.</p>
 
       <h2>Testimonials</h2>
 

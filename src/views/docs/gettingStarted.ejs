@@ -1,0 +1,156 @@
+<% include ../_header %>
+
+<h1>Getting Started</h1>
+
+<p>Install: (requires <a href='http://nodejs.org/api/'>node.js</a> 0.8 or 0.10)</p>
+
+<pre><code>
+npm install -g mountebank
+</code></pre>
+
+<p>Run:</p>
+
+<pre><code>
+mb
+</code></pre>
+
+<p>Create an http test double:</p>
+
+<pre><code data-test-type='command-line' data-test-id='example' data-test-step='1'
+           data-test-replace-pattern='localhost:2525' data-test-replace-with='localhost:${port}'>
+cat << EOF > imposter.json
+{
+  "port": 4545,
+  "protocol": "http",
+  "stubs": [{
+    "responses": [
+      { "is": { "statusCode": 400 }}
+    ],
+    "predicates": {
+      "path": { "is": "/test" },
+      "method": { "is": "POST" },
+      "body": { "not": { "contains": "requiredField" } },
+      "headers": {
+        "Content-Type": { "is": "application/json" }
+      }
+    }
+  }]
+}
+EOF
+
+curl -i -X POST -H 'Content-Type: application/json' -d@imposter.json http://localhost:2525/imposters
+</code></pre>
+
+<p>Test your imposter:</p>
+
+<pre><code data-test-id='example' data-test-step='2'>
+curl -i -X POST -H 'Content-Type: application/json' -d'{"optionalField": true}' http://localhost:4545/test
+</code></pre>
+
+<pre><code data-test-id='example' data-test-verify-step='2' data-test-ignore-lines='["^Date"]'>
+HTTP/1.1 400 Bad Request
+connection: close
+Date: Sat, 04 Jan 2014 02:48:16 GMT
+Transfer-Encoding: chunked
+</code></pre>
+
+<p>Validate the call was made:</p>
+
+<pre><code data-test-id='example' data-test-step='3'>
+curl http://localhost:2525/imposters/4545
+</code></pre>
+
+<pre><code data-test-id='example' data-test-verify-step='3'
+           data-test-ignore-lines='["requestFrom", "user-agent", "timestamp"]'>
+{
+  "protocol": "http",
+  "port": 4545,
+  "_links": {
+    "self": {
+      "href": "http://localhost:2525/imposters/4545"
+    }
+  },
+  "requests": [
+    {
+      "requestFrom": "127.0.0.1:53856",
+      "method": "POST",
+      "path": "/test",
+      "query": {},
+      "headers": {
+        "user-agent": "curl/7.24.0 (x86_64-apple-darwin12.0) libcurl/7.24.0 OpenSSL/0.9.8y zlib/1.2.5",
+        "host": "localhost:4545",
+        "accept": "*/*",
+        "content-type": "application/json",
+        "content-length": "23"
+      },
+      "body": "{\"optionalField\": true}"
+    }
+  ],
+  "stubs": [
+    {
+      "responses": [
+        {
+          "is": {
+            "statusCode": 400
+          }
+        }
+      ],
+      "predicates": {
+        "path": {
+          "is": "/test"
+        },
+        "method": {
+          "is": "POST"
+        },
+        "body": {
+          "not": {
+            "contains": "requiredField"
+          }
+        },
+        "headers": {
+          "Content-Type": {
+            "is": "application/json"
+          }
+        }
+      },
+      "matches": [
+        {
+          "timestamp": "2014-01-04T02:48:16.426Z",
+          "request": {
+            "requestFrom": "127.0.0.1:53856",
+            "method": "POST",
+            "path": "/test",
+            "query": {},
+            "headers": {
+              "user-agent": "curl/7.24.0 (x86_64-apple-darwin12.0) libcurl/7.24.0 OpenSSL/0.9.8y zlib/1.2.5",
+              "host": "localhost:4545",
+              "accept": "*/*",
+              "content-type": "application/json",
+              "content-length": "23"
+            },
+            "body": "{\"optionalField\": true}"
+          },
+          "response": {
+            "statusCode": 400,
+            "headers": {
+              "connection": "close"
+            },
+            "body": ""
+          }
+        }
+      ]
+    }
+  ]
+}
+</code></pre>
+
+<code class='teardown' data-test-id='example' data-test-step='4'>
+rm imposter.json
+curl -X DELETE http://localhost:2525/imposters/4545
+</code>
+
+<p>Learn more:</p>
+
+<p>Check out the links on the left.  Don't hesitate to <a href='/support'>ask</a> for help!</p>
+
+<% include ../_footer %>

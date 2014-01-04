@@ -6,26 +6,56 @@
     <link rel='shortcut icon' href='/images/favicon.ico' type='image/x-icon' />
   </head>
   <body>
-    <header>
-      <img src='/images/mountebank.png' alt='mountebank' />
-      <p>mountebank - over the wire test doubles</p>
-
-      <nav>
-        <ul>
-          <li><a href='/'>home</a></li>
-          <li><a href='/imposters'>imposters</a></li>
-          <li><a href='/logs'>log</a></li>
-          <li><a href='/docs'>docs</a></li>
-          <li><a href='/faqs'>faq</a></li>
-        </ul>
-      </nav>
-
-      <a href="https://github.com/bbyars/mountebank">
-        <img style="position: absolute; top: 0; right: 0; border: 0;"
-             src="https://s3.amazonaws.com/github/ribbons/forkme_right_orange_ff7600.png" alt="Fork me on GitHub">
-      </a>
-    </header>
-
-    <hr />
-
     <div id='main'>
+      <header>
+        <img src='/images/mountebank.png' alt='mountebank' />
+        <p>mountebank - over the wire test doubles</p>
+
+        <nav class='horizontal'>
+          <ul>
+            <li><a href='/'>home</a></li>
+            <li><a href='/imposters'>imposters</a></li>
+            <li><a href='/logs'>log</a></li>
+            <li><a href='/config'>config</a></li>
+          </ul>
+        </nav>
+
+        <a href="https://github.com/bbyars/mountebank">
+          <img style="position: absolute; top: 0; right: 0; border: 0;"
+               src="https://s3.amazonaws.com/github/ribbons/forkme_right_orange_ff7600.png" alt="Fork me on GitHub">
+        </a>
+      </header>
+
+      <hr />
+
+      <div id='sidenav'>
+        <nav class='vertical'>
+          <p>docs:</p>
+          <ul>
+            <li><a href='/docs/gettingStarted'>getting started</a></li>
+            <li><a href='/docs/commandLine'>command line</a></li>
+            <li><a href='/faqs'>faq</a></li>
+            <li><a href='/support'>support</a></li>
+          </ul>
+
+          <p>api:</p>
+          <ul>
+            <li><a href='/docs/api/overview'>overview</a></li>
+            <li><a href='/docs/api/mocks'>mock verification</a></li>
+            <li><a href='/docs/api/stubs'>stubs</a></li>
+            <li><a href='/docs/api/predicates'>stub predicates</a></li>
+            <li><a href='/docs/api/proxies'>stub proxies</a></li>
+            <li><a href='/docs/api/injection'>stub injection</a></li>
+          </ul>
+
+          <p>protocols:</p>
+          <ul>
+            <li><a href='/docs/protocols/http'>http</a></li>
+            <li><a href='/docs/protocols/https'>https</a></li>
+            <li><a href='/docs/protocols/tcp'>tcp</a></li>
+            <li><a href='/docs/protocols/smtp'>smtp</a></li>
+          </ul>
+        </nav>
+      </div>
+
+      <div id='content'>

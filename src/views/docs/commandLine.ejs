@@ -1,0 +1,61 @@
+<% include ../_header %>
+
+<h1>Command Line</h1>
+
+<p>Running <code>mb</code> by itself will start up the API (and this site)
+  on port 2525.  Here are the options for <code>mb</code>:</p>
+
+<table>
+  <tr>
+    <th>Option</th>
+    <th>Description</th>
+    <th>Default</th>
+  </tr>
+  <tr>
+    <td><code><em>command</em></code></td>
+    <td>One of <code>start</code>, <code>stop</code>, <code>restart</code>, or
+      <code>help</code> (which shows the usage information).</td>
+    <td><code>start</code></td>
+  </tr>
+  <tr>
+    <td><code>--port 2525</code></td>
+    <td>The port to run the main mountebank server on.</td>
+    <td><code>2525</code></td>
+  </tr>
+  <tr>
+    <td><code>--pidfile mb.pid</code></td>
+    <td>mountebank stores the process id (PID) in a file, which is used by the
+      <code>stop</code> and <code>restart</code> commands.  You would only specify
+      this if you run two instances of <code>mb</code> from the same working directory,
+      which is a niche requirement, but the mountebank build needs that capability.</td>
+    <td><code>mb.pid</code></td>
+  </tr>
+  <tr>
+    <td><code>--logfile mb.log</code></td>
+    <td>The file for mountebank to store the debug logs in.  You can view the contents
+      on the <a href='/logs'>logs</a> page.  Please include this with any support
+      requests.</td>
+    <td><code>mb.log</code></td>
+  </tr>
+  <tr>
+    <td><code>--loglevel debug</code></td>
+    <td>The logging level for the console, one of <code>debug, info, warn, error</code>.
+      The logfile is always logged at <code>debug</code> level, to facilitate support
+      requests.  This site reads from the logfile, so all logs are visible from the
+      <a href='/logs'>logs</a> page.</td>
+    <td><code>info</code></td>
+  </tr>
+  <tr>
+    <td><code>--allowInjection</code></td>
+    <td>mountebank supports JavaScript injection for both predicates and stub responses,
+      but they are disabled by default.  Including this parameter will enable them,
+      which are <code>eval</code>'d in.  See the <a href='/docs/injection'>injection</a>
+      page for more details.</td>
+    <td><code>false</code></td>
+  </tr>
+</table>
+
+<p>Note that <code>mb</code> is not persistent.  Stopping and restarting <code>mb</code>
+will lose all stubs and all requests.</p>
+
+<% include ../_footer %>
