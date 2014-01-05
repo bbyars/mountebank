@@ -2,5 +2,100 @@
 
 <h1>Mocks</h1>
 
+<p><a href='http://martinfowler.com/articles/mocksArentStubs.html'>Mocks</a> are a type
+of test double that allow you to verify a call was made without relying on the server
+response.  mountebank supports mocking through the <code>requests</code> element on
+an imposter.  The fields saved for each request depends on the protocol, and are documented
+in the protocol pages linked to from the sidebar.</p>
+
+<h2>Example</h2>
+
+<p>The <a href='/docs/protocols/smtp'>SMTP</a> protocol is one where mocking is very valuable,
+since most applications don't rely on complex SMTP responses, but it is useful to verify
+that the application sent an SMTP request without actually sending an email.</p>
+
+<p>First let's create an imposter:</p>
+
+<pre><code data-test-id='example setup' data-test-type='http' data-test-step='1'
+           data-test-replace-pattern='localhost:2525' data-test-replace-with='localhost:${port}'>
+POST /imposters HTTP/1.1
+Host: localhost:2525
+Accept: application/json
+Content-Type: application/json
+
+{
+  "port": 4545,
+  "protocol": "smtp"
+}
+</code></pre>
+
+<pre><code data-test-id='imposters' data-test-verify-step='1' data-test-ignore-lines='["^Date"]'>
+HTTP/1.1 201 Created
+Location: http://localhost:2525/imposters/4545
+Content-Type: application/json; charset=utf-8
+Content-Length: 165
+Date: Sun, 05 Jan 2014 16:28:40 GMT
+Connection: keep-alive
+
+{
+  "protocol": "smtp",
+  "port": 4545,
+  "_links": {
+    "self": {
+      "href": "http://localhost:2525/imposters/4545"
+    }
+  },
+  "requests": [],
+  "stubs": []
+}
+</code></pre>
+
+<p>Now make the following SMTP request in your application:</p>
+
+<pre><code data-test-id='example' data-test-step='2' data-step-type='smtp'>
+From: "Customer Service" &lt;customer-service@company.com&gt;
+To: "Customer" &lt;customer@domain.com&gt;
+Subject: Thank you for your order
+
+Hello Customer,
+Thank you for your order from company.com.  Your order will
+be shipped shortly.
+
+Your friendly customer service department.
+</code></pre>
+
+<p>You can verify the call by making either a <code>GET</code> or
+<code>DELETE</code> call to the imposter.  The <code>DELETE</code> call is
+useful if you are done exercising the system under test, and want to shut down
+the imposter and get the requests to verify all in one step:</p>
+
+<pre><code data-test-id='imposters' data-test-step='3'>
+DELETE /imposters/4545 HTTP/1.1
+Host: localhost:2525
+Accept: application/json
+</code></pre>
+
+<pre><code data-test-id='imposters' data-test-verify-step='3' data-test-ignore-lines='["^Date"]'>
+HTTP/1.1 200 OK
+Content-Type: application/json; charset=utf-8
+Content-Length: 165
+Date: Sun, 05 Jan 2014 16:59:33 GMT
+Connection: keep-alive
+
+{
+  "protocol": "smtp",
+  "port": 4545,
+  "_links": {
+    "self": {
+      "href": "http://localhost:2525/imposters/4545"
+    }
+  },
+  "requests": [],
+  "stubs": []
+}
+</code></pre>
+
+<p>Now you can use the <code>requests</code> element in your test code to validate
+the application sent the correct information.</p>
 
 <% include ../../_footer %>
