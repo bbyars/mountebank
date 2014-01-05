@@ -117,14 +117,21 @@ h1, h2, h3 {
     text-shadow: 1px 1px 0px #ededed, 2px 2px 0px rgba(0,0,0,0.15);
 }
 
+table {
+    border-collapse: collapse;
+    border: 1px solid black;
+}
+
 th {
     text-align: left;
     padding: 0.5em;
+    border: 1px solid black;
 }
 
 td {
     vertical-align: top;
     padding: 0.5em;
+    border: 1px solid black;
 }
 
 td:first-child {

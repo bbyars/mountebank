@@ -56,7 +56,8 @@ though they may be disappointed to find such a lowly language as <code>applicati
 and the lack of URLs for relationships.  mountebank has no intention of forcing anybody to use
 this endpoint, and does not intend to use it for his implemenation of native language bindings.</p>
 
-<pre><code data-test-id='home' data-test-type='http' data-test-step='1'>
+<pre><code data-test-id='home' data-test-type='http' data-test-step='1'
+           data-test-replace-pattern='localhost:2525' data-test-replace-with='localhost:${port}'>
 GET / HTTP/1.1
 Host: localhost:2525
 Accept: application/json
@@ -92,21 +93,22 @@ port.</p>
 <p>The value you get out of mountebank always starts by creating an imposter.  If
 you don't need stubbing, then the port and protocol are all you need.</p>
 
-<pre><code data-test-id='imposters' data-test-type='http' data-test-step='1'>
+<pre><code data-test-id='imposters' data-test-type='http' data-test-step='1'
+           data-test-replace-pattern='localhost:2525' data-test-replace-with='localhost:${port}'>
 POST /imposters HTTP/1.1
 Host: localhost:2525
 Accept: application/json
 Content-Type: application/json
 
 {
-  "port": 2526,
+  "port": 4545,
   "protocol": "HTTP"
 }
 </code></pre>
 
-<pre><code data-test-verify-step='1'>
+<pre><code data-test-id='imposters' data-test-verify-step='1'>
 HTTP/1.1 201 Created
-Location: http://localhost:2525/imposters/2526
+Location: http://localhost:2525/imposters/4545
 Content-Type: application/json
 
 {
@@ -114,7 +116,7 @@ Content-Type: application/json
   "port": 3535,
   "_links": {
     "_self": {
-      "href": "http://localhost:2525/imposters/2526"
+      "href": "http://localhost:2525/imposters/4545"
     }
   }
 }
@@ -142,13 +144,13 @@ Content-Type: application/json
   "imposters": [
     {
       "protocol": "http",
-      "port": 2526,
+      "port": 4545,
       "requests": [
         {
           "path": "/test-request",
           "method": "GET",
           "headers": {
-            "host": "localhost:2526"
+            "host": "localhost:4545"
           },
           "body": ""
         }
@@ -156,15 +158,13 @@ Content-Type: application/json
       "stubs": [],
       "_links": {
         "self": {
-          "href": "/imposters/2526"
+          "href": "/imposters/4545"
         }
       }
     }
   ]
 }
 </code></pre>
-
-<p>This is nothing more than an array of the content for a single imposter.</p>
 
 <h3>Imposter</h3>
 
@@ -180,7 +180,7 @@ about optimizing the number of REST calls made during a test run, avoid the <cod
 and get all the requests during the <code>DELETE</code> call:</p>
 
 <pre><code data-test-id='imposters' data-test-step='3'>
-GET /imposters HTTP/1.1
+DELETE /imposters/4545 HTTP/1.1
 Host: localhost:2525
 Accept: application/json
 </code></pre>
@@ -191,13 +191,13 @@ Content-Type: application/json
 
 {
   "protocol": "http",
-  "port": 2526,
+  "port": 4545,
   "requests": [
     {
       "path": "/test-request",
       "method": "GET",
       "headers": {
-        "host": "localhost:2526"
+        "host": "localhost:4545"
       },
       "body": ""
     }
@@ -205,7 +205,7 @@ Content-Type: application/json
   "stubs": [],
   "_links": {
     "self": {
-      "href": "/imposters/2526"
+      "href": "/imposters/4545"
     }
   }
 }

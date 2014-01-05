@@ -7,9 +7,14 @@ var mountebank = require('../src/mountebank'),
     exec = require('child_process').exec;
 
 function usage () {
-    console.log("Usage: mb <command> [--port <port>] [--pidfile <pidfile>] [--logfile <file>] [--loglevel <level>] [--allowInjection]\n");
-    console.log("where <command> is one of:");
-    console.log("\tstart, stop, restart, help");
+    console.log('Usage: mb [command] [options...]');
+    console.log('Commands: start, stop, restart, help (defaults to start)');
+    console.log('Options:');
+    console.log('    --port PORT       the port to run the mountebank server on (default 2525)');
+    console.log('    --pidfile FILE    where the pid is stored for the stop command (default mb.pid)');
+    console.log('    --logfile FILE    file used for all debug logs (default mb.log)');
+    console.log('    --loglevel LEVEL  level for terminal logs (default info)');
+    console.log('    --allowInjection  set to allow JavaScript injection');
 }
 
 function error (message) {
