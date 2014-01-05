@@ -16,8 +16,11 @@ that the application sent an SMTP request without actually sending an email.</p>
 
 <p>First let's create an imposter:</p>
 
-<pre><code data-test-id='example setup' data-test-type='http' data-test-step='1'
-           data-test-replace-pattern='localhost:2525' data-test-replace-with='localhost:${port}'>
+<pre><code data-test-id='example'
+           data-test-step='1'
+           data-test-type='http'
+           data-test-replace-pattern='localhost:2525'
+           data-test-replace-with='localhost:${port}'>
 POST /imposters HTTP/1.1
 Host: localhost:2525
 Accept: application/json
@@ -29,7 +32,9 @@ Content-Type: application/json
 }
 </code></pre>
 
-<pre><code data-test-id='imposters' data-test-verify-step='1' data-test-ignore-lines='["^Date"]'>
+<pre><code data-test-id='example'
+           data-test-verify-step='1'
+           data-test-ignore-lines='["^Date"]'>
 HTTP/1.1 201 Created
 Location: http://localhost:2525/imposters/4545
 Content-Type: application/json; charset=utf-8
@@ -52,7 +57,9 @@ Connection: keep-alive
 
 <p>Now make the following SMTP request in your application:</p>
 
-<pre><code data-test-id='example' data-test-step='2' data-step-type='smtp'>
+<pre><code data-test-id='example'
+           data-test-step='2'
+           data-test-type='smtp'>
 From: "Customer Service" &lt;customer-service@company.com&gt;
 To: "Customer" &lt;customer@domain.com&gt;
 Subject: Thank you for your order
@@ -69,13 +76,17 @@ Your friendly customer service department.
 useful if you are done exercising the system under test, and want to shut down
 the imposter and get the requests to verify all in one step:</p>
 
-<pre><code data-test-id='imposters' data-test-step='3'>
+<pre><code data-test-id='example'
+           data-test-step='3'
+           data-test-type='smtp'>
 DELETE /imposters/4545 HTTP/1.1
 Host: localhost:2525
 Accept: application/json
 </code></pre>
 
-<pre><code data-test-id='imposters' data-test-verify-step='3' data-test-ignore-lines='["^Date"]'>
+<pre><code data-test-id='example'
+           data-test-verify-step='3'
+           data-test-ignore-lines='["^Date"]'>
 HTTP/1.1 200 OK
 Content-Type: application/json; charset=utf-8
 Content-Length: 165

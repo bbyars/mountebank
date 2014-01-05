@@ -35,12 +35,14 @@ Cleanup Needed
   - predicates for tcp are text only
   - predicate injection - can return truthy or falsy, but mountebank doesn't know what those words mean, so he suggests you return true or false
 - can random port be grabbed by passing in 0?
+- should the data-test-replace-pattern='localhost:2525 just be automatic instead of in the view?
 
 Pre-release review
 ==================
 API:
 - are predicates OK or do I need another layer of indirection to add case-insensitivity, etc?
 - come up with better name than 'remember' for proxyAll
+- proxy and proxyAll are confusing - proxyAll doesn't always proxy, but proxy does
 
 Auxiliary Projects
 ==================

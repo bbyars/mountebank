@@ -56,14 +56,19 @@ though they may be disappointed to find such a lowly language as <code>applicati
 and the lack of URLs for relationships.  mountebank has no intention of forcing anybody to use
 this endpoint, and does not intend to use it for his implemenation of native language bindings.</p>
 
-<pre><code data-test-id='home' data-test-type='http' data-test-step='1'
-           data-test-replace-pattern='localhost:2525' data-test-replace-with='localhost:${port}'>
+<pre><code data-test-id='home'
+           data-test-step='1'
+           data-test-type='http'
+           data-test-replace-pattern='localhost:2525'
+           data-test-replace-with='localhost:${port}'>
 GET / HTTP/1.1
 Host: localhost:2525
 Accept: application/json
 </code></pre>
 
-<pre><code data-test-id='home' data-test-verify-step='1' data-test-ignore-lines='["^Date"]'>
+<pre><code data-test-id='home'
+           data-test-verify-step='1'
+           data-test-ignore-lines='["^Date"]'>
 HTTP/1.1 200 OK
 Vary: Accept
 Content-Type: application/json
@@ -97,8 +102,11 @@ port.</p>
 <p>The value you get out of mountebank always starts by creating an imposter.  If
 you don't need stubbing, then the port and protocol are all you need.</p>
 
-<pre><code data-test-id='imposters' data-test-type='http' data-test-step='1'
-           data-test-replace-pattern='localhost:2525' data-test-replace-with='localhost:${port}'>
+<pre><code data-test-id='imposters'
+           data-test-step='1'
+           data-test-type='http'
+           data-test-replace-pattern='localhost:2525'
+           data-test-replace-with='localhost:${port}'>
 POST /imposters HTTP/1.1
 Host: localhost:2525
 Accept: application/json
@@ -110,7 +118,9 @@ Content-Type: application/json
 }
 </code></pre>
 
-<pre><code data-test-id='imposters' data-test-verify-step='1' data-test-ignore-lines='["^Date"]'>
+<pre><code data-test-id='imposters'
+           data-test-verify-step='1'
+           data-test-ignore-lines='["^Date"]'>
 HTTP/1.1 201 Created
 Location: http://localhost:2525/imposters/4545
 Content-Type: application/json; charset=utf-8
@@ -139,13 +149,17 @@ test run and destroyed at the completion of the test.</p>
 the case above, that would mean that your application has an http dependency configured to
 http://localhost:3535.  To retrieve a list of all imposters, simply issue a <code>GET</code>:</p>
 
-<pre><code data-test-id='imposters' data-test-step='2'>
+<pre><code data-test-id='imposters'
+           data-test-step='2'
+           data-test-type='http'>
 GET /imposters HTTP/1.1
 Host: localhost:2525
 Accept: application/json
 </code></pre>
 
-<pre><code data-test-id='imposters' data-test-verify-step='2' data-test-ignore-lines='["^Date"]'>
+<pre><code data-test-id='imposters'
+           data-test-verify-step='2'
+           data-test-ignore-lines='["^Date"]'>
 HTTP/1.1 200 OK
 Vary: Accept
 Content-Type: application/json
@@ -181,13 +195,17 @@ made.  Both a <code>GET</code> and <code>DELETE</code> return the same body, but
 about optimizing the number of REST calls made during a test run, avoid the <code>GET</code>
 and get all the requests during the <code>DELETE</code> call:</p>
 
-<pre><code data-test-id='imposters' data-test-step='3'>
+<pre><code data-test-id='imposters'
+           data-test-step='3'
+           data-test-type='http'>
 DELETE /imposters/4545 HTTP/1.1
 Host: localhost:2525
 Accept: application/json
 </code></pre>
 
-<pre><code data-test-id='imposters' data-test-verify-step='3' data-test-ignore-lines='["^Date"]'>
+<pre><code data-test-id='imposters'
+           data-test-verify-step='3'
+           data-test-ignore-lines='["^Date"]'>
 HTTP/1.1 200 OK
 Content-Type: application/json; charset=utf-8
 Content-Length: 165

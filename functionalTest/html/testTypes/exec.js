@@ -36,14 +36,6 @@ function runStep (step) {
     return deferred.promise;
 }
 
-function getExecutedDocs (spec) {
-    var steps = spec.steps.map(function (step) {
-            return function () { return runStep(step); };
-        });
-
-    return steps.reduce(Q.when, Q()).then(function () { return Q(spec); });
-}
-
 module.exports = {
-    getExecutedDocs: getExecutedDocs
+    runStep: runStep
 };

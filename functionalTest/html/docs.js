@@ -2,9 +2,7 @@
 
 var api = require('../api/api'),
     jsdom = require('jsdom'),
-    Q = require('q'),
-    exec = require('./testTypes/exec'),
-    http = require('./testTypes/http');
+    Q = require('q');
 
 function getDOM (endpoint) {
     var deferred = Q.defer(),
@@ -35,7 +33,7 @@ function addStep (test, stepSpec) {
     }
 
     if (!test.steps[stepIndex]) {
-        test.steps[stepIndex] = { id: stepIndex + 1, ignoreLines: [] };
+        test.steps[stepIndex] = { id: stepIndex + 1, type: stepSpec.testType, ignoreLines: [] };
     }
     if (stepSpec.stepId) {
         test.steps[stepIndex].execute = test.addReplacementsTo(stepSpec.text);
@@ -53,7 +51,6 @@ function createTestSpec (endpoint, id, testSpec) {
     return {
         endpoint: endpoint,
         name: id,
-        type: testSpec.testType,
         steps: [],
         addReplacementsTo: function (text) {
             var pattern = new RegExp(testSpec.replacePattern, 'g'),
@@ -61,14 +58,15 @@ function createTestSpec (endpoint, id, testSpec) {
             return text.replace(pattern, substitution).replace(/&lt;/g, '<').replace(/&gt;/g, '>');
         },
         execute: function () {
-            switch (this.type) {
-                case 'exec':
-                    return exec.getExecutedDocs(this);
-                case 'http':
-                    return http.getExecutedDocs(this);
-                default:
-                    throw Error('unrecognized or missing test type: ' + this.type);
-            }
+            var steps = this.steps.map(function (step) {
+                    return function () {
+                        var executor = require('./testTypes/' + step.type);
+                        return executor.runStep(step);
+                    };
+                }),
+                that = this;
+
+            return steps.reduce(Q.when, Q()).then(function () { return Q(that); });
         }
     };
 }
@@ -84,12 +82,12 @@ function get (endpoint) {
             var element = elements[i],
                 testId = getAttribute(element, 'data-test-id'),
                 testSpec = {
-                    testType: getAttribute(element, 'data-test-type'),
                     replacePattern: getAttribute(element, 'data-test-replace-pattern'),
                     replaceWith: getAttribute(element, 'data-test-replace-with')
                 },
                 stepSpec = {
                     stepId: getAttribute(element, 'data-test-step'),
+                    testType: getAttribute(element, 'data-test-type'),
                     verifyStepId: getAttribute(element, 'data-test-verify-step'),
                     ignoreLines: getAttribute(element, 'data-test-ignore-lines'),
                     text: element.textContent.trim()
