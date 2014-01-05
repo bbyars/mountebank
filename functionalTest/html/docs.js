@@ -3,7 +3,8 @@
 var api = require('../api/api'),
     jsdom = require('jsdom'),
     Q = require('q'),
-    exec = require('./testTypes/exec');
+    exec = require('./testTypes/exec'),
+    http = require('./testTypes/http');
 
 function getDOM (endpoint) {
     var deferred = Q.defer(),
@@ -48,20 +49,23 @@ function addStep (test, stepSpec) {
     }
 }
 
-function createTestSpec (id, testSpec) {
+function createTestSpec (endpoint, id, testSpec) {
     return {
+        endpoint: endpoint,
         name: id,
         type: testSpec.testType,
         steps: [],
         addReplacementsTo: function (text) {
             var pattern = new RegExp(testSpec.replacePattern, 'g'),
                 substitution = testSpec.replaceWith.replace('${port}', api.port);
-            return text.replace(pattern, substitution);
+            return text.replace(pattern, substitution).replace(/&lt;/g, '<').replace(/&gt;/g, '>');
         },
         execute: function () {
             switch (this.type) {
                 case 'exec':
                     return exec.getExecutedDocs(this);
+                case 'http':
+                    return http.getExecutedDocs(this);
                 default:
                     throw Error('unrecognized or missing test type: ' + this.type);
             }
@@ -93,7 +97,7 @@ function get (endpoint) {
 
             if (testId) {
                 if (!tests[testId]) {
-                    tests[testId] = createTestSpec(testId, testSpec);
+                    tests[testId] = createTestSpec(endpoint, testId, testSpec);
                 }
                 addStep(tests[testId], stepSpec);
             }

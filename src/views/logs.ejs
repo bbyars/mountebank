@@ -1,7 +1,20 @@
 <% include _header %>
 
-<p>
-  <%= content %>
-</p>
+<h1>Logs</h1>
+
+<table class='logs'>
+  <tr>
+    <th>level</th>
+    <th>timestamp</th>
+    <th>message</th>
+  </tr>
+<% logs.forEach(function (log) { %>
+  <tr>
+    <td><%= log.level %></td>
+    <td><%= log.timestamp %></td>
+    <td><%= log.message %></td>
+  </tr>
+<% }) %>
+</table>
 
 <% include _footer %>

@@ -10,7 +10,25 @@ var assert = require('assert'),
 describe('html validation', function () {
     this.timeout(timeout);
 
-    ['/', '/faqs', '/docs', '/license', '/contributing', '/config', '/docs/protocols/http'].forEach(function (endpoint) {
+    [
+        '/about',
+        /*'/support',*/
+        '/contributing',
+        '/license',
+        '/faqs',
+        '/docs/gettingStarted',
+        '/docs/commandLine',
+        '/docs/api/overview',
+        '/docs/api/mocks',
+        '/docs/api/stubs',
+        '/docs/api/predicates',
+        '/docs/api/proxies',
+        '/docs/api/injection',
+        '/docs/protocols/http',
+        '/docs/protocols/https',
+        '/docs/protocols/tcp',
+        '/docs/protocols/smtp'
+    ].forEach(function (endpoint) {
         it(endpoint + ' should have no html errors', function (done) {
             var spec = {
                 port: api.port,

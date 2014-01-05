@@ -24,26 +24,37 @@ function normalize (text, linesToIgnore) {
     return result.join('\n').trim();
 }
 
+function executeTest (doc) {
+    return doc.execute().then(function (spec) {
+        spec.steps.forEach(function (step) {
+            if (step.verify) {
+                var actual = normalize(step.result, step.ignoreLines),
+                    expected = normalize(step.verify, step.ignoreLines);
+
+                if (actual !== expected) {
+                    console.log("%s %s step %s failed; below is the actual result", doc.endpoint, doc.name, step.id);
+                    console.log(actual);
+                }
+                assert.strictEqual(actual, expected);
+            }
+        });
+    });
+}
+
 describe('docs', function () {
     this.timeout(timeout);
 
-    var pages = ['/docs/gettingStarted'];
+    var pages = [
+        '/docs/gettingStarted',
+        '/docs/api/overview'
+    ];
 
     pages.forEach(function (page) {
-        promiseIt.only(page + ' should be up-to-date', function () {
+        promiseIt(page + ' should be up-to-date', function () {
             return docs.get(page).then(function (docs) {
                 var tests = Object.keys(docs).map(function (testName) {
-                    var doc = docs[testName];
-                    return doc.execute().then(function (spec) {
-                        spec.steps.forEach(function (step) {
-                            if (step.verify) {
-                                var actual = normalize(step.result, step.ignoreLines),
-                                    expected = normalize(step.verify, step.ignoreLines);
+                    return executeTest(docs[testName]);
 
-                                assert.strictEqual(actual, expected);
-                            }
-                        });
-                    });
                 });
                 return Q.all(tests);
             });

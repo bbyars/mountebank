@@ -57,10 +57,6 @@ bits as best as you are able.  Perhaps the
 <a href='https://github.com/bbyars/mountebank/blob/master/test/controllers/impostersControllerTest.js'>impostersControllerTest.js</a>
 would provide some good examples?</p>
 
-<p>mountebank himself has failed to find convenient ways to unit test some of the code that directly interfaces
-with node - <code>mountebank.js</code> and <code>models/http/server.js</code> in particular.  He welcomes suggestions,
-but doesn't lose sleep over it.</p>
-
 <p>For contributors eager to fill in gaps in test coverage, mountebank provides coverage results to
 <a href='https://coveralls.io/r/bbyars/mountebank'>coveralls.io</a>.</p>
 
@@ -77,11 +73,6 @@ and its argument list for function declarations, and no space between them for f
 validates that convention, and will fail the build if it is not obeyed.</p>
 
 <p>A few other static analysis rules are configured through jshint in the <code>Gruntfile.js</code>.  If they impede your
-ability to commit a good change, mountebank is happy for you to reconfigure them.</p>
-
-<p>Finally, some people object to the lack of a .sh suffix to his shell scripts and a lack of .js suffix on his
-node scripts.  mountebank does not believe you should care which language his command line script was
-implemented in, and reserves the right to change it in the future.  He intends to do so in a way
-transparent to users, and file extensions hinder that ability.</p>
+ability to commit a good change, mountebank is happy for you to reconfigure them, or add an exclusion.</p>
 
 <% include _footer %>

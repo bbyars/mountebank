@@ -19,7 +19,7 @@ function create (protocol) {
             options = optionsFor(spec);
 
         if (!options.port) {
-            throw Error('you forgot to pass the port again');
+            throw Error('silly rabbit, you forgot to pass the port again');
         }
 
         if (body && !options.headers['Content-Type']) {
@@ -42,7 +42,7 @@ function create (protocol) {
         request.on('error', deferred.reject);
 
         if (body) {
-            if (options.headers['Content-Type'] === 'application/json') {
+            if (options.headers['Content-Type'] === 'application/json' && typeof(body) === 'object') {
                 request.write(JSON.stringify(body));
             }
             else {

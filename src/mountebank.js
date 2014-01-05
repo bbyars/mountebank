@@ -53,30 +53,42 @@ function create (options) {
     app.del('/imposters/:id', imposterController.del);
 
     app.get('/logs', function (request, response) {
-        response.render('logs', { content: fs.readFileSync(options.logfile) });
+        var json = ('[' + fs.readFileSync(options.logfile).toString().split('\n').join(',').replace(/,$/, '') + ']'),
+            logs = JSON.parse(json);
+        response.render('logs', { logs: logs });
     });
 
     app.get('/config', function (request, response) {
         response.render('config', {
             version: thisPackage.version,
             logfile: options.logfile,
+            loglevel: options.loglevel,
+            pidfile: options.pidfile,
             allowInjection: options.allowInjection,
             process: process
         });
     });
 
-    // docs
     [
-        'docs/gettingStarted',
-        'docs/commandLine',
-        'docs/api/overview',
+        '/about',
+        '/support',
+        '/contributing',
+        '/license',
+        '/faqs',
+        '/docs/gettingStarted',
+        '/docs/commandLine',
+        '/docs/api/overview',
+        '/docs/api/mocks',
+        '/docs/api/stubs',
+        '/docs/api/predicates',
+        '/docs/api/proxies',
+        '/docs/api/injection',
+        '/docs/protocols/http',
+        '/docs/protocols/https',
+        '/docs/protocols/tcp',
+        '/docs/protocols/smtp'
     ].forEach(function (endpoint) {
-        app.get('/' + endpoint, function (request, response) { response.render(endpoint); });
-    });
-
-    // Brochure-ware sections
-    ['faqs', 'docs', 'license', 'contributing', 'support', 'docs/protocols/http'].forEach(function (endpoint) {
-        app.get('/' + endpoint, function (request, response) { response.render(endpoint); });
+        app.get(endpoint, function (request, response) { response.render(endpoint.substring(1)); });
     });
 
     return {

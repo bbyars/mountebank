@@ -72,13 +72,31 @@ describe('middleware', function () {
             assert.ok(send.wasCalledWith({ key: 'value' }));
         });
 
-        it('should do change response body links', function () {
+        it('should change response body links', function () {
             var middlewareFn = middleware.useAbsoluteUrls(9000);
 
             middlewareFn(request, response, next);
             response.send({ key: 'value', _links: { rel: { href: '/' } } });
 
             assert.ok(send.wasCalledWith({ key: 'value', _links: { rel: { href: 'http://localhost:9000/' } } }));
+        });
+
+        it('should change response nested body links', function () {
+            var middlewareFn = middleware.useAbsoluteUrls(9000);
+
+            middlewareFn(request, response, next);
+            response.send({ key: { _links: { rel: { href: '/' } } } });
+
+            assert.ok(send.wasCalledWith({ key: { _links: { rel: { href: 'http://localhost:9000/' } } } }));
+        });
+
+        it('should not change html responses', function () {
+            var middlewareFn = middleware.useAbsoluteUrls(9000);
+
+            middlewareFn(request, response, next);
+            response.send('<html _links="/"></html>');
+
+            assert.ok(send.wasCalledWith('<html _links="/"></html>'));
         });
     });
 

@@ -122,6 +122,10 @@ table {
     border: 1px solid black;
 }
 
+table.logs th, table.logs td {
+    font-size: small;
+}
+
 th {
     text-align: left;
     padding: 0.5em;
@@ -132,6 +136,8 @@ td {
     vertical-align: top;
     padding: 0.5em;
     border: 1px solid black;
+    max-width: 30em;
+    word-break: break-word;
 }
 
 td:first-child {

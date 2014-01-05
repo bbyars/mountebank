@@ -20,12 +20,25 @@ function useAbsoluteUrls (port) {
 
         response.send = function () {
             var args = Array.prototype.slice.call(arguments),
-                body = args[0];
+                body = args[0],
+                changeLinks = function (obj) {
+                    if (obj._links) {
+                        Object.keys(obj._links).forEach(function (rel) {
+                            obj._links[rel].href = absolutize(obj._links[rel].href);
+                        });
+                    }
+                },
+                traverse = function (obj, fn) {
+                    fn(obj);
+                    Object.keys(obj).forEach(function (key) {
+                        if (typeof obj[key] === 'object') {
+                            traverse(obj[key], fn);
+                        }
+                    });
+                };
 
-            if (body && body._links) {
-                Object.keys(body._links).forEach(function (rel) {
-                    body._links[rel].href = absolutize(body._links[rel].href);
-                });
+            if (typeof body === 'object') {
+                traverse(body, changeLinks);
             }
             sendOriginal.apply(this, args);
         };
