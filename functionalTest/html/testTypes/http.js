@@ -72,7 +72,12 @@ function format (response) {
     });
     if (response.body) {
         result += '\n\n';
-        result += JSON.stringify(response.body, null, 2);
+        if (typeof response.body === 'object') {
+            result += JSON.stringify(response.body, null, 2);
+        }
+        else {
+            result += response.body;
+        }
     }
     return result;
 }

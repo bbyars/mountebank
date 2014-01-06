@@ -2,5 +2,317 @@
 
 <h1>Stubs</h1>
 
+<p>Stubs are a type of test double that return a canned response based on the request.
+mountebank allows you to define a list of stubs when creating an imposter.  He does not
+currently support changing stubs once the imposter has been created.</p>
+
+<p>mountebank associates both a list of <em>responses</em> and a list of
+<a href='/docs/api/predicates'><em>predicates</em></a> with each stub.  Since mountebank
+knows that setting up stubs can sometimes be difficult, he adds a <em>matches</em>
+element each time the stub is used, which you can see by issuing a <code>GET</code> or
+<code>DELETE</code> to the imposter.</p>
+
+<p>It doesn't make sense to create an empty array of responses, but each response is under no
+obligation to override the defaults (every protocol defines a default for every response field;
+see the protocol-specific documentation pages linked to from the sidebar for more details).
+The responses array defines a circular buffer - every time the stub is used for the request,
+the first response is pulled from the front of the responses array, evaluated, and pushed
+to the back of the array.  This elegantly does what you want.  In the common case, when you
+always want to return the same response, you just add one response to the array.
+More complex scenarios will require that the same endpoint returns a sequence of
+different responses for the same predicates.  Simply add them all to the array in order.
+When the sequence finishes, it will start over.  More complexity can be added by simply
+adding more responses to the array, without complicating the contract.</p>
+
+<h2>Stub resolvers</h2>
+
+<p>Each stub response is defined by a specific resolver, that defines the behavior of the
+response.  The stub resolvers currently supported are:</p>
+
+<table>
+  <tr>
+    <th>Resolver</th>
+    <th>Description</th>
+  </tr>
+  <tr>
+    <td><code>is</code></td>
+    <td>Merges the specified response fields with the response defaults (see the protocol
+      page linked to from the sidebar on the left for the defaults).</td>
+  </tr>
+  <tr>
+    <td><code>proxy</code></td>
+    <td>Proxies the request to the specified destination and returns the response.</td>
+  </tr>
+  <tr>
+    <td><code>proxyOnce</code></td>
+    <td>The first time the response is used, it will proxy to the specified
+      destination and return the response, just like <code>proxy</code>, but it will
+      also save the response as an <code>is</code> response for all future
+      matches.</td>
+  </tr>
+  <tr>
+    <td><code>proxyAll</code></td>
+    <td>Every time this resolver is used, it will proxy to the specified
+      destination, and create a new stub with an <code>is</code> response
+      and a specified set of predicates culled from the request.</td>
+  </tr>
+  <tr>
+    <td><code>inject</code></td>
+    <td>Allows you to inject a JavaScript function to create the response object.</td>
+  </tr>
+</table>
+
+<p>See the <a href='/docs/api/proxies'>proxy</a> page and the <a href='/docs/api/injection'>
+injection</a> page for detailed examples of those resolvers, and the
+<a href='/docs/api/predicates'>predicates</a> page for examples of stubs with predicates.
+Multiple stubs only make sense with predicates.</p>
+
+<h2>Example</h2>
+
+<p>Let's create an http imposter with a couple of <code>is</code> resolvers.  It will simulate
+a RESTful endpoint that creates a customer the first time it's called and returns a 400
+the second time it's called because the email already exists.</p>
+
+<pre><code data-test-id='example'
+           data-test-step='1'
+           data-test-type='http'
+           data-test-replace-pattern='localhost:2525'
+           data-test-replace-with='localhost:${port}'>
+POST /imposters HTTP/1.1
+Host: localhost:2525
+Accept: application/json
+Content-Type: application/json
+
+{
+  "port": 4545,
+  "protocol": "http",
+  "stubs": [
+    {
+      "responses": [
+        {
+          "is": {
+            "statusCode": 201,
+            "headers": {
+              "Location": "http://localhost:4545/customers/123",
+              "Content-Type": "application/xml"
+            },
+            "body": "&lt;customer&gt;&lt;email&gt;customer@test.com&lt;/name&gt;&lt;/customer&gt;"
+          }
+        },
+        {
+          "is": {
+            "statusCode": 400,
+            "headers": {
+              "Content-Type": "application/xml"
+            },
+            "body": "&lt;error&gt;email already exists&lt;/error&gt;"
+          }
+        }
+      ]
+    }
+  ]
+}
+</code></pre>
+
+<p>Let's assume the application under test makes the initial call...</p>
+
+<pre><code data-test-id='example'
+           data-test-step='2'
+           data-test-type='http'>
+POST /imposters HTTP/1.1
+Host: localhost:4545
+Accept: application/xml
+Content-Type: application/xml
+
+&lt;customer&gt;
+  &lt;email&gt;customer@test.com&lt;/email&gt;
+&lt;/customer&gt;
+</code></pre>
+
+<pre><code data-test-id='example'
+           data-test-verify-step='2'
+           data-test-ignore-lines='["^Date", "^Etag"]'>
+HTTP/1.1 201 Created
+Location: http://localhost:4545/customers/123
+Content-Type: application/xml
+Connection: close
+Transfer-Encoding: chunked
+
+&lt;customer&gt;&lt;email&gt;customer@test.com&lt;/name&gt;&lt;/customer&gt;
+</code></pre>
+
+<p>...and the second call:</p>
+
+<pre><code data-test-id='example'
+           data-test-step='3'
+           data-test-type='http'>
+POST /imposters HTTP/1.1
+Host: localhost:4545
+Accept: application/xml
+Content-Type: application/xml
+
+&lt;customer&gt;
+  &lt;email&gt;customer@test.com&lt;/email&gt;
+&lt;/customer&gt;
+</code></pre>
+
+<pre><code data-test-id='example'
+           data-test-verify-step='3'
+           data-test-ignore-lines='["^Date", "^Etag"]'>
+HTTP/1.1 400 Bad Request
+Content-Type: application/xml
+Connection: close
+Transfer-Encoding: chunked
+
+&lt;error&gt;email already exists&lt;/error&gt;
+</code></pre>
+
+<p>Now let's see the <code>matches</code> elements that mountebank
+has saved for you:</p>
+
+<pre><code data-test-id='example'
+           data-test-step='4'
+           data-test-type='http'>
+GET /imposters/4545 HTTP/1.1
+Host: localhost:2525
+Accept: application/json
+</code></pre>
+
+<pre><code data-test-id='example'
+           data-test-verify-step='4'
+           data-test-ignore-lines='["^Date", "^Etag", "timestamp", "requestFrom"]'>
+HTTP/1.1 200 OK
+Vary: Accept
+Content-Type: application/json
+Content-Length: 3433
+Connection: keep-alive
+
+{
+  "protocol": "http",
+  "port": 4545,
+  "_links": {
+    "self": {
+      "href": "http://localhost:2525/imposters/4545"
+    }
+  },
+  "requests": [
+    {
+      "requestFrom": "127.0.0.1:50641",
+      "method": "POST",
+      "path": "/imposters",
+      "query": {},
+      "headers": {
+        "accept": "application/xml",
+        "host": "localhost:4545",
+        "content-type": "application/xml",
+        "connection": "keep-alive",
+        "transfer-encoding": "chunked"
+      },
+      "body": "&lt;customer&gt;\n  &lt;email&gt;customer@test.com&lt;/email&gt;\n&lt;/customer&gt;"
+    },
+    {
+      "requestFrom": "127.0.0.1:50642",
+      "method": "POST",
+      "path": "/imposters",
+      "query": {},
+      "headers": {
+        "accept": "application/xml",
+        "host": "localhost:4545",
+        "content-type": "application/xml",
+        "connection": "keep-alive",
+        "transfer-encoding": "chunked"
+      },
+      "body": "&lt;customer&gt;\n  &lt;email&gt;customer@test.com&lt;/email&gt;\n&lt;/customer&gt;"
+    }
+  ],
+  "stubs": [
+    {
+      "responses": [
+        {
+          "is": {
+            "statusCode": 201,
+            "headers": {
+              "Location": "http://localhost:4545/customers/123",
+              "Content-Type": "application/xml",
+              "connection": "close"
+            },
+            "body": "&lt;customer&gt;&lt;email&gt;customer@test.com&lt;/name&gt;&lt;/customer&gt;"
+          }
+        },
+        {
+          "is": {
+            "statusCode": 400,
+            "headers": {
+              "Content-Type": "application/xml",
+              "connection": "close"
+            },
+            "body": "&lt;error&gt;email already exists&lt;/error&gt;"
+          }
+        }
+      ],
+      "matches": [
+        {
+          "timestamp": "2014-01-06T04:31:44.584Z",
+          "request": {
+            "requestFrom": "127.0.0.1:50641",
+            "method": "POST",
+            "path": "/imposters",
+            "query": {},
+            "headers": {
+              "accept": "application/xml",
+              "host": "localhost:4545",
+              "content-type": "application/xml",
+              "connection": "keep-alive",
+              "transfer-encoding": "chunked"
+            },
+            "body": "&lt;customer&gt;\n  &lt;email&gt;customer@test.com&lt;/email&gt;\n&lt;/customer&gt;"
+          },
+          "response": {
+            "statusCode": 201,
+            "headers": {
+              "Location": "http://localhost:4545/customers/123",
+              "Content-Type": "application/xml",
+              "connection": "close"
+            },
+            "body": "&lt;customer&gt;&lt;email&gt;customer@test.com&lt;/name&gt;&lt;/customer&gt;"
+          }
+        },
+        {
+          "timestamp": "2014-01-06T04:31:44.587Z",
+          "request": {
+            "requestFrom": "127.0.0.1:50642",
+            "method": "POST",
+            "path": "/imposters",
+            "query": {},
+            "headers": {
+              "accept": "application/xml",
+              "host": "localhost:4545",
+              "content-type": "application/xml",
+              "connection": "keep-alive",
+              "transfer-encoding": "chunked"
+            },
+            "body": "&lt;customer&gt;\n  &lt;email&gt;customer@test.com&lt;/email&gt;\n&lt;/customer&gt;"
+          },
+          "response": {
+            "statusCode": 400,
+            "headers": {
+              "Content-Type": "application/xml",
+              "connection": "close"
+            },
+            "body": "&lt;error&gt;email already exists&lt;/error&gt;"
+          }
+        }
+      ]
+    }
+  ]
+}
+</code></pre>
+
+<code class='teardown' data-test-id='example'
+                       data-test-step='5'
+                       data-test-type='http'>
+DELETE /imposters/4545 HTTP/1.1
+Host: localhost:2525
+</code>
 
 <% include ../../_footer %>

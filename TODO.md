@@ -20,6 +20,10 @@ Stories
 27. paging and q= filtering for imposters on GET /imposters
 28. UDP and TCP syslog support (see http://en.wikipedia.org/wiki/Syslog for packet format)
 30. javadoc style documentation? (look at simplesmtp code)
+31. Package npm without tests and files not needed for runtime
+32. Change logs page to tail -f the logs file?
+33. Change logs page to link the [http:2526] to the imposter page
+34. Pretty print JSON log messages on /logs page
 
 Known Bugs
 ==========
