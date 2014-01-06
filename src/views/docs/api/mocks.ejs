@@ -59,7 +59,8 @@ Connection: keep-alive
 
 <pre><code data-test-id='example'
            data-test-step='2'
-           data-test-type='smtp'>
+           data-test-type='smtp'
+           data-test-port='4545'>
 From: "Customer Service" &lt;customer-service@company.com&gt;
 To: "Customer" &lt;customer@domain.com&gt;
 Subject: Thank you for your order
@@ -78,7 +79,7 @@ the imposter and get the requests to verify all in one step:</p>
 
 <pre><code data-test-id='example'
            data-test-step='3'
-           data-test-type='smtp'>
+           data-test-type='http'>
 DELETE /imposters/4545 HTTP/1.1
 Host: localhost:2525
 Accept: application/json
@@ -89,8 +90,7 @@ Accept: application/json
            data-test-ignore-lines='["^Date"]'>
 HTTP/1.1 200 OK
 Content-Type: application/json; charset=utf-8
-Content-Length: 165
-Date: Sun, 05 Jan 2014 16:59:33 GMT
+Content-Length: 912
 Connection: keep-alive
 
 {
@@ -101,7 +101,34 @@ Connection: keep-alive
       "href": "http://localhost:2525/imposters/4545"
     }
   },
-  "requests": [],
+  "requests": [
+    {
+      "requestFrom": "127.0.0.1",
+      "envelopeFrom": "customer-service@company.com",
+      "envelopeTo": [
+        "customer@domain.com"
+      ],
+      "from": {
+        "address": "customer-service@company.com",
+        "name": "Customer Service"
+      },
+      "to": [
+        {
+          "address": "customer@domain.com",
+          "name": "Customer"
+        }
+      ],
+      "cc": [],
+      "bcc": [],
+      "subject": "Thank you for your order",
+      "priority": "normal",
+      "references": [],
+      "inReplyTo": [],
+      "text": "Hello Customer,\nThank you for your order from company.com.  Your order will\nbe shipped shortly.\n\nYour friendly customer service department.",
+      "html": "",
+      "attachments": []
+    }
+  ],
   "stubs": []
 }
 </code></pre>

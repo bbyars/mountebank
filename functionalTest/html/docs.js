@@ -25,7 +25,7 @@ function getAttribute (element, attributeName) {
 }
 
 function addStep (test, stepSpec) {
-    /* jshint maxcomplexity: 8 */
+    /* jshint maxcomplexity: 7 */
     var stepIndex = (stepSpec.stepId || stepSpec.verifyStepId || 0) - 1;
 
     if (stepIndex < 0) {
@@ -33,10 +33,13 @@ function addStep (test, stepSpec) {
     }
 
     if (!test.steps[stepIndex]) {
-        test.steps[stepIndex] = { id: stepIndex + 1, type: stepSpec.testType, ignoreLines: [] };
-    }
-    if (stepSpec.stepId) {
-        test.steps[stepIndex].execute = test.addReplacementsTo(stepSpec.text);
+        test.steps[stepIndex] = {
+            id: stepIndex + 1,
+            type: stepSpec.testType,
+            ignoreLines: [],
+            port: stepSpec.port,
+            execute: test.addReplacementsTo(stepSpec.text)
+        };
     }
     if (stepSpec.verifyStepId) {
         test.steps[stepIndex].verify = test.addReplacementsTo(stepSpec.text);
@@ -83,14 +86,15 @@ function get (endpoint) {
                 testId = getAttribute(element, 'data-test-id'),
                 testSpec = {
                     replacePattern: getAttribute(element, 'data-test-replace-pattern'),
-                    replaceWith: getAttribute(element, 'data-test-replace-with')
+                    replaceWith: getAttribute(element, 'data-test-replace-with'),
                 },
                 stepSpec = {
                     stepId: getAttribute(element, 'data-test-step'),
                     testType: getAttribute(element, 'data-test-type'),
                     verifyStepId: getAttribute(element, 'data-test-verify-step'),
                     ignoreLines: getAttribute(element, 'data-test-ignore-lines'),
-                    text: element.textContent.trim()
+                    text: element.textContent.trim(),
+                    port: getAttribute(element, 'data-test-port')
                 };
 
             if (testId) {

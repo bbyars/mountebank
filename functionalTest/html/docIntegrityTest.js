@@ -46,7 +46,8 @@ describe('docs', function () {
 
     var pages = [
         '/docs/gettingStarted',
-        '/docs/api/overview'
+        '/docs/api/overview',
+        '/docs/api/mocks'
     ];
 
     pages.forEach(function (page) {
