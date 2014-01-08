@@ -41,7 +41,7 @@ function implement (implementation, baseLogger) {
                 clientName = helpers.socketName(socket),
                 errorHandler = function (error) {
                     logger.error('%s X=> %s', clientName, JSON.stringify(errors.details(error)));
-                    server.errorHandler(error, request);
+                    server.errorHandler(errors.details(error), request);
                     if (testCallback) {
                         testCallback();
                     }

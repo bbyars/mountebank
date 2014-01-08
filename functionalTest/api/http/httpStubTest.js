@@ -174,10 +174,8 @@ var assert = require('assert'),
                     return client.get('/', port);
                 }).then(function (response) {
                     assert.strictEqual(response.statusCode, 500);
-                    assert.deepEqual(response.body, { errors: [{
-                        code: 'invalid proxy',
-                        message: 'Cannot resolve "http://invalid.domain"'
-                    }]});
+                    assert.strictEqual(response.body.errors[0].code, 'invalid proxy');
+                    assert.strictEqual(response.body.errors[0].message, 'Cannot resolve "http://invalid.domain"');
                 }).finally(function () {
                     return api.del('/imposters/' + port);
                 });

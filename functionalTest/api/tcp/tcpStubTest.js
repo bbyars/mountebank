@@ -125,10 +125,9 @@ describe('tcp imposter', function () {
             return api.post('/imposters', request).then(function () {
                 return tcp.send('request', port);
             }).then(function (response) {
-                assert.deepEqual(JSON.parse(response), { errors: [{
-                    code: 'invalid proxy',
-                    message: 'Cannot resolve {"host":"remotehost","port":8000}'
-                }]});
+                var error = JSON.parse(response).errors[0];
+                assert.strictEqual(error.code, 'invalid proxy');
+                assert.strictEqual(error.message, 'Cannot resolve {"host":"remotehost","port":8000}');
             }).finally(function () {
                 return api.del('/imposters/' + port);
             });
