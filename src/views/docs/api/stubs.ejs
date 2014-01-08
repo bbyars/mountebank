@@ -75,11 +75,9 @@ the second time it's called because the email already exists.</p>
 
 <pre><code data-test-id='example'
            data-test-step='1'
-           data-test-type='http'
-           data-test-replace-pattern='localhost:2525'
-           data-test-replace-with='localhost:${port}'>
+           data-test-type='http'>
 POST /imposters HTTP/1.1
-Host: localhost:2525
+Host: localhost:<%= port %>
 Accept: application/json
 Content-Type: application/json
 
@@ -174,7 +172,7 @@ has saved for you:</p>
            data-test-step='4'
            data-test-type='http'>
 GET /imposters/4545 HTTP/1.1
-Host: localhost:2525
+Host: localhost:<%= port %>
 Accept: application/json
 </code></pre>
 
@@ -192,7 +190,7 @@ Connection: keep-alive
   "port": 4545,
   "_links": {
     "self": {
-      "href": "http://localhost:2525/imposters/4545"
+      "href": "http://localhost:<%= port %>/imposters/4545"
     }
   },
   "requests": [
@@ -312,7 +310,7 @@ Connection: keep-alive
                      data-test-step='5'
                      data-test-type='http'>
 DELETE /imposters/4545 HTTP/1.1
-Host: localhost:2525
+Host: localhost:<%= port %>
 </code>
 
 <% include ../../_footer %>

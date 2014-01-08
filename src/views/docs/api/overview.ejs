@@ -58,11 +58,9 @@ this endpoint, and does not intend to use it for his implemenation of native lan
 
 <pre><code data-test-id='home'
            data-test-step='1'
-           data-test-type='http'
-           data-test-replace-pattern='localhost:2525'
-           data-test-replace-with='localhost:${port}'>
+           data-test-type='http'>
 GET / HTTP/1.1
-Host: localhost:2525
+Host: localhost:<%= port %>
 Accept: application/json
 </code></pre>
 
@@ -79,7 +77,7 @@ Connection: keep-alive
 {
   "_links": {
     "imposters": {
-      "href": "http://localhost:2525/imposters"
+      "href": "http://localhost:<%= port %>/imposters"
     }
   }
 }
@@ -104,11 +102,9 @@ you don't need stubbing, then the port and protocol are all you need.</p>
 
 <pre><code data-test-id='imposters'
            data-test-step='1'
-           data-test-type='http'
-           data-test-replace-pattern='localhost:2525'
-           data-test-replace-with='localhost:${port}'>
+           data-test-type='http'>
 POST /imposters HTTP/1.1
-Host: localhost:2525
+Host: localhost:<%= port %>
 Accept: application/json
 Content-Type: application/json
 
@@ -122,7 +118,7 @@ Content-Type: application/json
            data-test-verify-step='1'
            data-test-ignore-lines='["^Date"]'>
 HTTP/1.1 201 Created
-Location: http://localhost:2525/imposters/4545
+Location: http://localhost:<%= port %>/imposters/4545
 Content-Type: application/json; charset=utf-8
 Content-Length: 165
 Date: Sun, 05 Jan 2014 16:28:40 GMT
@@ -133,7 +129,7 @@ Connection: keep-alive
   "port": 4545,
   "_links": {
     "self": {
-      "href": "http://localhost:2525/imposters/4545"
+      "href": "http://localhost:<%= port %>/imposters/4545"
     }
   },
   "requests": [],
@@ -153,7 +149,7 @@ http://localhost:3535.  To retrieve a list of all imposters, simply issue a <cod
            data-test-step='2'
            data-test-type='http'>
 GET /imposters HTTP/1.1
-Host: localhost:2525
+Host: localhost:<%= port %>
 Accept: application/json
 </code></pre>
 
@@ -174,7 +170,7 @@ Connection: keep-alive
       "port": 4545,
       "_links": {
         "self": {
-          "href": "http://localhost:2525/imposters/4545"
+          "href": "http://localhost:<%= port %>/imposters/4545"
         }
       }
     }
@@ -199,7 +195,7 @@ and get all the requests during the <code>DELETE</code> call:</p>
            data-test-step='3'
            data-test-type='http'>
 DELETE /imposters/4545 HTTP/1.1
-Host: localhost:2525
+Host: localhost:<%= port %>
 Accept: application/json
 </code></pre>
 
@@ -217,7 +213,7 @@ Connection: keep-alive
   "port": 4545,
   "_links": {
     "self": {
-      "href": "http://localhost:2525/imposters/4545"
+      "href": "http://localhost:<%= port %>/imposters/4545"
     }
   },
   "requests": [],

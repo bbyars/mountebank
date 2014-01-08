@@ -34,10 +34,6 @@ Cleanup Needed
 - can random port be grabbed by passing in 0?
 
 docs:
-- should the data-test-replace-pattern='localhost:2525 just be automatic instead of in the view?
- -- mostly - just pass the port in globals, and interpolate it on the html page.  Also allows on page execution if desired
- -- requires docs and tests types to be in prod code, but also gets ajax calls in, can be a good thing
-- give each stub a different color on predicates page, match each request element and response field with same color on examples
   - injection has access to logger, but only error logs during dry runs
   - predicates for tcp are text only
   - predicate injection - can return truthy or falsy, but mountebank doesn't know what those words mean, so he suggests you return true or false
