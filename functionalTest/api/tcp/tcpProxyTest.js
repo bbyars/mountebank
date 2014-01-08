@@ -11,13 +11,13 @@ describe('tcp proxy', function () {
     this.timeout(timeout);
 
     var noOp = function () {},
-        logger = { debug: noOp, info: noOp, warn: noOp, error: noOp },
-        proxy = Proxy.create(logger, 'utf8');
+        logger = { debug: noOp, info: noOp, warn: noOp, error: noOp };
 
     describe('#to', function () {
         promiseIt('should send same request information to proxied socket', function () {
             var stub = { responses: [{ is: { data: 'howdy!' } }] },
-                request = { protocol: 'tcp', port: port, stubs: [stub], name: this.name };
+                request = { protocol: 'tcp', port: port, stubs: [stub], name: this.name },
+                proxy = Proxy.create(logger, 'utf8');
 
             return api.post('/imposters', request).then(function () {
                 return proxy.to({ host: 'localhost', port: port }, { data: 'hello, world!' });
@@ -31,19 +31,21 @@ describe('tcp proxy', function () {
         promiseIt('should proxy binary data', function () {
             var buffer = new Buffer([0, 1, 2, 3]),
                 stub = { responses: [{ is: { data: buffer.toString('base64') } }] },
-                request = { protocol: 'tcp', port: port, stubs: [stub], mode: 'binary', name: this.name };
+                request = { protocol: 'tcp', port: port, stubs: [stub], mode: 'binary', name: this.name },
+                proxy = Proxy.create(logger, 'base64');
 
             return api.post('/imposters', request).then(function () {
                 return proxy.to({ host: 'localhost', port: port }, { data: buffer });
             }).then(function (response) {
-                assert.ok(Buffer.isBuffer(response.data));
-                assert.deepEqual(response.data.toJSON(), [0, 1, 2, 3]);
+                assert.deepEqual(new Buffer(response.data, 'base64').toJSON(), [0, 1, 2, 3]);
             }).finally(function () {
                 return api.del('/imposters/' + port);
             });
         });
 
         promiseIt('should gracefully deal with DNS errors', function () {
+            var proxy = Proxy.create(logger, 'utf8');
+
             return proxy.to({ host: 'no.such.domain', port: 80 }, { data: 'hello, world!' }).then(function () {
                 assert.fail('should not have resolved promise');
             }, function (reason) {
@@ -55,6 +57,8 @@ describe('tcp proxy', function () {
         });
 
         promiseIt('should gracefully deal with non listening ports', function () {
+            var proxy = Proxy.create(logger, 'utf8');
+
             return proxy.to({ host: 'localhost', port: 18000 }, { data: 'hello, world!' }).then(function () {
                 assert.fail('should not have resolved promise');
             }, function (reason) {

@@ -21,6 +21,9 @@ Stories
 34. Pretty print JSON log messages on /logs page
 35. Have matches be returned only with a query param on GET and DELETE?  Allows for slimmer replays on proxies
 36. Reorder the JSON to have the most important info at top (e.g. _links at bottom; tcp mode above stubs and requests)
+37. Add button next to code blocks on docs site that allows user to directly execute and compare the results
+38. Add atom feed that only displays when --heroku is set that people can subscribe to for updates
+39. Add twitter handle that ppl can listen to for updates?
 
 Known Bugs
 ==========
@@ -32,6 +35,7 @@ Known Bugs
 Cleanup Needed
 ==============
 - can random port be grabbed by passing in 0?
+- add warn logging for injection dry run calls
 
 docs:
   - injection has access to logger, but only error logs during dry runs

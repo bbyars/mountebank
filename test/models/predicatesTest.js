@@ -44,6 +44,17 @@ describe('predicates', function () {
         it('should match missing field with empty string', function () {
             assert.ok(predicates.is('field', '', {}));
         });
+
+        it('should return true if is binary sequence and encoding is base64', function () {
+            var binary = new Buffer([1, 2, 3, 4]).toString('base64');
+            assert.ok(predicates.is('field', binary, { field: binary}, 'base64'));
+        });
+
+        it('should return false if is not binary sequence and encoding is base64', function () {
+            var actual = new Buffer([1, 2, 3, 4]).toString('base64'),
+                expected = new Buffer([1, 2, 4]).toString('base64');
+            assert.ok(!predicates.is('field', expected, { field: actual}, 'base64'));
+        });
     });
 
     describe('#contains', function () {
@@ -77,6 +88,18 @@ describe('predicates', function () {
 
         it('should return false for types other than strings and objects', function () {
             assert.ok(!predicates.contains('field', 1, { field: 1 }));
+        });
+
+        it('should return true if contains binary sequence and encoding is base64', function () {
+            var actual = new Buffer([1, 2, 3, 4]).toString('base64'),
+                expected = new Buffer([2, 3]).toString('base64');
+            assert.ok(predicates.contains('field', expected, { field: actual}, 'base64'));
+        });
+
+        it('should return false if not contains binary sequence and encoding is base64', function () {
+            var actual = new Buffer([1, 2, 3, 4]).toString('base64'),
+                expected = new Buffer([2, 4]).toString('base64');
+            assert.ok(!predicates.contains('field', expected, { field: actual}, 'base64'));
         });
     });
 
@@ -112,6 +135,18 @@ describe('predicates', function () {
         it('should return false for types other than strings and objects', function () {
             assert.ok(!predicates.startsWith('field', 1, { field: 1 }));
         });
+
+        it('should return true if starts with binary sequence and encoding is base64', function () {
+            var actual = new Buffer([1, 2, 3, 4]).toString('base64'),
+                expected = new Buffer([1, 2]).toString('base64');
+            assert.ok(predicates.startsWith('field', expected, { field: actual}, 'base64'));
+        });
+
+        it('should return false if does not start with binary sequence and encoding is base64', function () {
+            var actual = new Buffer([1, 2, 3, 4]).toString('base64'),
+                expected = new Buffer([2, 3, 4]).toString('base64');
+            assert.ok(!predicates.startsWith('field', expected, { field: actual}, 'base64'));
+        });
     });
 
     describe('#endsWith', function () {
@@ -145,6 +180,18 @@ describe('predicates', function () {
 
         it('should return false for types other than strings and objects', function () {
             assert.ok(!predicates.endsWith('field', 1, { field: 1 }));
+        });
+
+        it('should return true if ends with binary sequence and encoding is base64', function () {
+            var actual = new Buffer([1, 2, 3, 4]).toString('base64'),
+                expected = new Buffer([2, 3, 4]).toString('base64');
+            assert.ok(predicates.endsWith('field', expected, { field: actual}, 'base64'));
+        });
+
+        it('should return false if does not end with binary sequence and encoding is base64', function () {
+            var actual = new Buffer([1, 2, 3, 4]).toString('base64'),
+                expected = new Buffer([1, 2, 3]).toString('base64');
+            assert.ok(!predicates.endsWith('field', expected, { field: actual}, 'base64'));
         });
     });
 

@@ -28,14 +28,14 @@ function createServer (logger, options) {
         },
         proxy = Proxy.create(logger, encoding),
         resolver = StubResolver.create(proxy, postProcess),
-        stubs = StubRepository.create(resolver),
+        stubs = StubRepository.create(resolver, encoding),
         result = inherit.from(events.EventEmitter, {
             errorHandler: function (error, container) {
                 container.socket.write(JSON.stringify({ errors: [error] }), 'utf8');
             },
             formatRequestShort: function (request) {
                 if (request.data.length > 20) {
-                    return request.data.toString(encoding, 0, 20) + '...';
+                    return request.data.toString(encoding).substring(0, 20) + '...';
                 }
                 else {
                     return request.data.toString(encoding);

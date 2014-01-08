@@ -23,7 +23,7 @@ function create (logger, encoding) {
 
     function proxy (socket) {
         var deferred = Q.defer();
-        socket.once('data', function (data) { deferred.resolve({ data: data }); });
+        socket.once('data', function (data) { deferred.resolve({ data: data.toString(encoding) }); });
         return deferred.promise;
     }
 

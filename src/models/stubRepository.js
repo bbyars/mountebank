@@ -5,7 +5,7 @@ var predicates = require('./predicates'),
     util = require('util'),
     errors = require('../util/errors');
 
-function create (resolver) {
+function create (resolver, encoding) {
     var stubs = [];
 
     function trueForAll (obj, predicate) {
@@ -21,7 +21,7 @@ function create (resolver) {
 
         return trueForAll(predicate, function (key) {
             if (predicates[key]) {
-                return predicates[key](fieldName, predicate[key], request);
+                return predicates[key](fieldName, predicate[key], request, encoding);
             }
             else if (typeof predicate[key] === 'object') {
                 return matchesPredicate(fieldName + '.' + key, predicate[key], request);

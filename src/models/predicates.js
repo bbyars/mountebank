@@ -14,27 +14,37 @@ function getNested (obj, fieldName) {
     return fieldName.split('.').reduce(getCaseInsensitive, obj);
 }
 
-function satisfies (fieldName, expected, request, predicate) {
-    var actual = getNested(request, fieldName);
-    if (['string', 'boolean'].indexOf(typeof expected) >= 0) {
-        return predicate(actual.toString(), expected);
+function normalize (text, encoding) {
+    if (encoding === 'base64') {
+        return new Buffer(text, 'base64').toJSON().toString();
     }
     else {
-        return false;
+        return text.toLowerCase();
     }
 }
 
 function create (predicate) {
-    return function (fieldName, expected, request) {
-        return satisfies(fieldName, expected, request, predicate);
+    return function (fieldName, expected, request, encoding) {
+        var actual = getNested(request, fieldName);
+
+        if (typeof expected === 'string') {
+            actual = normalize(actual, encoding);
+            expected = normalize(expected, encoding);
+        }
+        if (['string', 'boolean'].indexOf(typeof expected) >= 0) {
+            return predicate(actual, expected);
+        }
+        else {
+            return false;
+        }
     };
 }
 
 module.exports = {
-    is: create(function (actual, expected) { return actual.toLowerCase() === expected.toLowerCase(); }),
-    contains: create(function (actual, expected) { return actual.toLowerCase().indexOf(expected.toLowerCase()) >= 0; }),
-    startsWith: create(function (actual, expected) { return actual.toLowerCase().indexOf(expected.toLowerCase()) === 0; }),
-    endsWith: create(function (actual, expected) { return actual.toLowerCase().indexOf(expected.toLowerCase(), actual.length - expected.length) >= 0; }),
+    is: create(function (actual, expected) { return actual === expected; }),
+    contains: create(function (actual, expected) { return actual.indexOf(expected) >= 0; }),
+    startsWith: create(function (actual, expected) { return actual.indexOf(expected) === 0; }),
+    endsWith: create(function (actual, expected) { return actual.indexOf(expected, actual.length - expected.length) >= 0; }),
     matches: create(function (actual, expected) { return new RegExp(expected).test(actual); }),
     exists: create(function (actual, expected) { return expected ? actual.length > 0 : actual.length === 0; }),
     not: function (fieldName, expected, request) {
