@@ -2,7 +2,7 @@ mountebank
 ==========
 
 mountebank is the first tool to provide multi-protocol, multi-language test doubles over the wire.
-Just point your application under test to mountebank instead of the real dependency,
+Just point your application to mountebank instead of the real dependency,
 and test like you would with traditional stubs and mocks.
 
 At the moment, the following protocols are supported:

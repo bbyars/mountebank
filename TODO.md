@@ -1,9 +1,5 @@
 Stories
 =======
-4. Better docs - with accordion examples for each operator,etc (see http://codepen.io/Thoughtworks/full/BEmsu)
-4. Tests for documents that actually read a class in the HTML to try each request and verify response
-8. change to only publish to npm and then deploy to heroku on branch; bump major version
-8 release!!!!
 6. Add brew package
 6. add pkg installer like vagrant
 7. Add rpm package
@@ -12,7 +8,6 @@ Stories
 1. Add latency to stub response
 1. Add http attachment support
 1. Allow regex tokens from request params in response
-20. Prettier log output, with filtering, on website
 21. Prettier /imposters HTML page
 22. Ability to create imposter from UI (with karma testing?)
 23. Prettier /imposter/{port} HTML page
@@ -24,6 +19,8 @@ Stories
 32. Change logs page to tail -f the logs file?
 33. Change logs page to link the [http:2526] to the imposter page
 34. Pretty print JSON log messages on /logs page
+35. Have matches be returned only with a query param on GET and DELETE?  Allows for slimmer replays on proxies
+36. Reorder the JSON to have the most important info at top (e.g. _links at bottom; tcp mode above stubs and requests)
 
 Known Bugs
 ==========
@@ -34,12 +31,24 @@ Known Bugs
 
 Cleanup Needed
 ==============
-- fix docs - much of it out of date
+- can random port be grabbed by passing in 0?
+
+docs:
+- should the data-test-replace-pattern='localhost:2525 just be automatic instead of in the view?
+ -- mostly - just pass the port in globals, and interpolate it on the html page.  Also allows on page execution if desired
+ -- requires docs and tests types to be in prod code, but also gets ajax calls in, can be a good thing
+- give each stub a different color on predicates page, match each request element and response field with same color on examples
   - injection has access to logger, but only error logs during dry runs
   - predicates for tcp are text only
   - predicate injection - can return truthy or falsy, but mountebank doesn't know what those words mean, so he suggests you return true or false
-- can random port be grabbed by passing in 0?
-- should the data-test-replace-pattern='localhost:2525 just be automatic instead of in the view?
+
+binary:
+- info log not truncating base64 string with ... at end on tcp request
+- stubs data needs to be base64 string, not buffer, on is replacement to make output sensible when GETting proxyOnce
+- binary predicates = pass in base64 substring, contains matches it against the actual buffer
+
+smtp:
+- stub smtp with accept/reject
 
 Pre-release review
 ==================

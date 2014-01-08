@@ -27,7 +27,7 @@ function runStep (step) {
     fs.writeFileSync(filename, step.execute, { mode: 484 /* 0744 */});
     nextTestId += 1;
 
-    execute('bash ./' + filename).done(function (stdout) {
+    execute('sh ./' + filename).done(function (stdout) {
         step.result = stdout;
         fs.unlinkSync(filename);
         deferred.resolve(step);

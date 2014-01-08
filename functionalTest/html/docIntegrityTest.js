@@ -48,7 +48,8 @@ describe('docs', function () {
         '/docs/gettingStarted',
         '/docs/api/overview',
         '/docs/api/mocks',
-        '/docs/api/stubs'
+        '/docs/api/stubs',
+        '/docs/api/predicates'
     ];
 
     pages.forEach(function (page) {

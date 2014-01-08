@@ -58,7 +58,7 @@ function createTestSpec (endpoint, id, testSpec) {
         addReplacementsTo: function (text) {
             var pattern = new RegExp(testSpec.replacePattern, 'g'),
                 substitution = testSpec.replaceWith.replace('${port}', api.port);
-            return text.replace(pattern, substitution).replace(/&lt;/g, '<').replace(/&gt;/g, '>');
+            return text.replace(pattern, substitution);
         },
         execute: function () {
             var steps = this.steps.map(function (step) {
@@ -86,7 +86,7 @@ function get (endpoint) {
                 testId = getAttribute(element, 'data-test-id'),
                 testSpec = {
                     replacePattern: getAttribute(element, 'data-test-replace-pattern'),
-                    replaceWith: getAttribute(element, 'data-test-replace-with'),
+                    replaceWith: getAttribute(element, 'data-test-replace-with')
                 },
                 stepSpec = {
                     stepId: getAttribute(element, 'data-test-step'),

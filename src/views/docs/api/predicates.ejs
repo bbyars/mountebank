@@ -2,5 +2,139 @@
 
 <h1>Predicates</h1>
 
+<p>In the absence of a predicate, a stub always matches, and there's never a reason to
+add more than one stub to an imposter.  Predicates allow imposter to have much richer
+behavior by defining whether or not a stub matches a request.  When multiple stubs are
+created on an imposter, the first stub that matches is selected.</p>
+
+<p>Each predicate object contains one or more of the request fields as keys.  All keys are
+AND'd together.  The following predicate operators are allowed:</p>
+
+<table>
+  <tr>
+    <th>Operator</th>
+    <th>Description</th>
+  </tr>
+  <tr>
+    <td><code>is</code></td>
+    <td>The request field matches the predicate</td>
+  </tr>
+  <tr>
+    <td><code>contains</code></td>
+    <td>The request field contains the predicate</td>
+  </tr>
+  <tr>
+    <td><code>startsWith</code></td>
+    <td>The request field starts with the predicate</td>
+  </tr>
+  <tr>
+    <td><code>endsWith</code></td>
+    <td>The request field ends with the predicate</td>
+  </tr>
+  <tr>
+    <td><code>matches</code></td>
+    <td>The request field matches the JavaScript regular expression defined
+    with the predicate.</td>
+  </tr>
+  <tr>
+    <td><code>exists</code></td>
+    <td>If <code>true</code>, the request field must exist.  If <code>false</code>,
+    the request field must not exist.</td>
+  </tr>
+  <tr>
+    <td><code>not</code></td>
+    <td>Inverts a predicate</td>
+  </tr>
+  <tr>
+    <td><code>or</code></td>
+    <td>Logically or's two predicates together</td>
+  </tr>
+  <tr>
+    <td><code>and</code></td>
+    <td>Logically and's two predicates together</td>
+  </tr>
+  <tr>
+    <td><code>inject</code></td>
+    <td>Injects JavaScript to decide whether the request matches or not.
+    See the <a href='/docs/api/injection'>injection</a> page for an example.</td>
+  </tr>
+</table>
+
+<p>All the string operations are case-insensitive (this keys for JSON objects, like
+HTTP header and query parameters).  All predicates are scoped to a request field;
+see the protocol pages linked to from the sidebar to see the request fields.
+<code>inject</code> also adds a <code>request</code> field, which represents the
+entire request.  See the <a href='/docs/api/injection'>injection</a> page for details.</p>
+
+<h2>Examples</h2>
+
+<p>Each request field can be defined with its own predicates, which allows you
+to have multiple predicates for each stub.</p>
+
+<section class="accordion">
+  <div>
+    <input id="is" name="is" type="checkbox" />
+      <label for="is">is</label>
+      <section>
+        <% include predicates/is %>
+      </section>
+  </div>
+  <div>
+    <input id="contains" name="contains" type="checkbox" />
+      <label for="contains">contains</label>
+      <section>
+        <p>Some content... </p>
+      </section>
+  </div>
+  <div>
+    <input id="startsWith" name="startsWith" type="checkbox" />
+    <label for="startsWith">startsWith</label>
+    <section>
+      <p>Some content... </p>
+    </section>
+  </div>
+  <div>
+    <input id="endsWith" name="endsWith" type="checkbox" />
+    <label for="endsWith">endsWith</label>
+    <section>
+      <p>Some content... </p>
+    </section>
+  </div>
+  <div>
+    <input id="matches" name="matches" type="checkbox" />
+    <label for="matches">matches</label>
+    <section>
+      <p>Some content... </p>
+    </section>
+  </div>
+  <div>
+    <input id="exists" name="exists" type="checkbox" />
+    <label for="exists">exists</label>
+    <section>
+      <p>Some content... </p>
+    </section>
+  </div>
+  <div>
+    <input id="not" name="not" type="checkbox" />
+    <label for="not">not</label>
+    <section>
+      <p>Some content... </p>
+    </section>
+  </div>
+  <div>
+    <input id="or" name="or" type="checkbox" />
+    <label for="or">or</label>
+    <section>
+      <p>Some content... </p>
+    </section>
+  </div>
+  <div>
+    <input id="and" name="and" type="checkbox" />
+    <label for="and">and</label>
+    <section>
+      <p>Some content... </p>
+    </section>
+  </div>
+</section>
 
 <% include ../../_footer %>

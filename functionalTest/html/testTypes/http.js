@@ -46,7 +46,11 @@ function messageFor (statusCode) {
     var codes = {
         200: 'OK',
         201: 'Created',
-        400: 'Bad Request'
+        400: 'Bad Request',
+        404: 'Not Found',
+        405: 'Method Not Allowed',
+        406: 'Not Acceptable',
+        500: 'Internal Server Error'
     };
     if (codes[statusCode]) {
         return codes[statusCode];

@@ -1,0 +1,379 @@
+<p>Let's create an imposter with multiple stubs:</p>
+
+<pre><code data-test-id='http is example'
+           data-test-step='1'
+           data-test-type='http'
+           data-test-replace-pattern='localhost:2525'
+           data-test-replace-with='localhost:${port}'>
+POST /imposters HTTP/1.1
+Host: localhost:2525
+Accept: application/json
+Content-Type: application/json
+
+{
+  "port": 4545,
+  "protocol": "http",
+  "stubs": [<strong class='highlight1'>
+    {
+      "responses": [{ "is": { "statusCode": 400 } }],
+      "predicates": {
+        "method": { "is": "POST" },
+        "path": { "is": "/test" },
+        "query": {
+          "first": { "is": "1" },
+          "second": { "is": "2" }
+        },
+        "headers": {
+          "Accept": { "is": "application/json" }
+        },
+        "body": { "is": "\"hello, world!\"" }
+      }
+    }</strong>,<strong class='highlight2'>
+    {
+      "responses": [{ "is": { "statusCode": 406 } }],
+      "predicates": {
+        "headers": {
+          "Accept": { "is": "application/xml" }
+        }
+      }
+    }</strong>,<strong class='highlight3'>
+    {
+      "responses": [{ "is": { "statusCode": 405 } }],
+      "predicates": {
+        "method": { "is": "PUT" }
+      }
+    }</strong>,<strong class='highlight4'>
+    {
+      "responses": [{ "is": { "statusCode": 500 } }],
+      "predicates": {
+        "method": { "is": "PUT" }
+      }
+    }</strong>
+  ]
+}
+</code></pre>
+
+<p>The first predicate is the most complex, and the request has to match all of the
+specified request fields.  The order of the query parameters and header fields does
+not matter, nor does the case of the keys or values.</p>
+
+<pre><code data-test-id='http is example'
+           data-test-step='2'
+           data-test-type='http'>
+<strong class='highlight1'>POST /test?Second=2&amp;First=1</strong> HTTP/1.1
+Host: localhost:4545
+<strong class='highlight1'>accept: application/json</strong>
+
+<strong class='highlight1'>"hello, world!"</strong>
+</code></pre>
+
+<pre><code data-test-id='http is example'
+           data-test-verify-step='2'
+           data-test-ignore-lines='["^Date", "^Etag"]'>
+HTTP/1.1 <strong class='highlight1'>400</strong> Bad Request
+Connection: close
+Transfer-Encoding: chunked
+</code></pre>
+
+<p>The second stub matches if the header changes.</p>
+
+<pre><code data-test-id='http is example'
+           data-test-step='3'
+           data-test-type='http'>
+POST /test?Second=2&amp;First=1 HTTP/1.1
+Host: localhost:4545
+<strong class='highlight2'>Accept: application/xml</strong>
+
+"hello, world!"
+</code></pre>
+
+<pre><code data-test-id='http is example'
+           data-test-verify-step='3'
+           data-test-ignore-lines='["^Date", "^Etag"]'>
+HTTP/1.1 <strong class='highlight2'>406</strong> Not Acceptable
+Connection: close
+Transfer-Encoding: chunked
+</code></pre>
+
+<p>The third stub matches on a <code>PUT</code>.</p>
+
+<pre><code data-test-id='http is example'
+           data-test-step='4'
+           data-test-type='http'>
+<strong class='highlight3'>PUT</strong> /test?Second=2&amp;First=1 HTTP/1.1
+Host: localhost:4545
+Accept: application/json
+
+"hello, world!"
+</code></pre>
+
+<pre><code data-test-id='http is example'
+           data-test-verify-step='4'
+           data-test-ignore-lines='["^Date", "^Etag"]'>
+HTTP/1.1 <strong class='highlight3'>405</strong> Method Not Allowed
+Connection: close
+Transfer-Encoding: chunked
+</code></pre>
+
+<p>The fourth stub will never run, since it matches the same requests as the
+third stub.  mountebank always chooses the first stub that matches based on
+the order you add them to the <code>stubs</code> array when creating the
+imposter.</p>
+
+<code class='hidden' data-test-id='http is example'
+                     data-test-step='5'
+                     data-test-type='http'>
+GET /imposters/4545 HTTP/1.1
+Host: localhost:2525
+Accept: application/json
+</code>
+
+<code class='hidden' data-test-id='http is example'
+                     data-test-verify-step='5'
+                     data-test-type='http'
+                     data-test-ignore-lines='["^Date", "^Etag", "requestFrom", "timestamp"]'>
+HTTP/1.1 200 OK
+Vary: Accept
+Content-Type: application/json
+Content-Length: 5070
+Etag: "609541298"
+Date: Wed, 08 Jan 2014 03:06:55 GMT
+Connection: keep-alive
+
+{
+  "protocol": "http",
+  "port": 4545,
+  "_links": {
+    "self": {
+      "href": "http://localhost:2525/imposters/4545"
+    }
+  },
+  "requests": [
+    {
+      "requestFrom": "127.0.0.1:60080",
+      "method": "POST",
+      "path": "/test",
+      "query": {
+        "Second": "2",
+        "First": "1"
+      },
+      "headers": {
+        "accept": "application/json",
+        "host": "localhost:4545",
+        "content-type": "application/json",
+        "connection": "keep-alive",
+        "transfer-encoding": "chunked"
+      },
+      "body": "\"hello, world!\""
+    },
+    {
+      "requestFrom": "127.0.0.1:60081",
+      "method": "POST",
+      "path": "/test",
+      "query": {
+        "Second": "2",
+        "First": "1"
+      },
+      "headers": {
+        "accept": "application/xml",
+        "host": "localhost:4545",
+        "content-type": "application/json",
+        "connection": "keep-alive",
+        "transfer-encoding": "chunked"
+      },
+      "body": "\"hello, world!\""
+    },
+    {
+      "requestFrom": "127.0.0.1:60082",
+      "method": "PUT",
+      "path": "/test",
+      "query": {
+        "Second": "2",
+        "First": "1"
+      },
+      "headers": {
+        "accept": "application/json",
+        "host": "localhost:4545",
+        "content-type": "application/json",
+        "connection": "keep-alive",
+        "transfer-encoding": "chunked"
+      },
+      "body": "\"hello, world!\""
+    }
+  ],
+  "stubs": [
+    {
+      "responses": [
+        {
+          "is": {
+            "statusCode": 400
+          }
+        }
+      ],
+      "predicates": {
+        "method": {
+          "is": "POST"
+        },
+        "path": {
+          "is": "/test"
+        },
+        "query": {
+          "first": {
+            "is": "1"
+          },
+          "second": {
+            "is": "2"
+          }
+        },
+        "headers": {
+          "Accept": {
+            "is": "application/json"
+          }
+        },
+        "body": {
+          "is": "\"hello, world!\""
+        }
+      },
+      "matches": [
+        {
+          "timestamp": "2014-01-08T03:06:55.314Z",
+          "request": {
+            "requestFrom": "127.0.0.1:60080",
+            "method": "POST",
+            "path": "/test",
+            "query": {
+              "Second": "2",
+              "First": "1"
+            },
+            "headers": {
+              "accept": "application/json",
+              "host": "localhost:4545",
+              "content-type": "application/json",
+              "connection": "keep-alive",
+              "transfer-encoding": "chunked"
+            },
+            "body": "\"hello, world!\""
+          },
+          "response": {
+            "statusCode": 400,
+            "headers": {
+              "connection": "close"
+            },
+            "body": ""
+          }
+        }
+      ]
+    },
+    {
+      "responses": [
+        {
+          "is": {
+            "statusCode": 406
+          }
+        }
+      ],
+      "predicates": {
+        "headers": {
+          "Accept": {
+            "is": "application/xml"
+          }
+        }
+      },
+      "matches": [
+        {
+          "timestamp": "2014-01-08T03:06:55.317Z",
+          "request": {
+            "requestFrom": "127.0.0.1:60081",
+            "method": "POST",
+            "path": "/test",
+            "query": {
+              "Second": "2",
+              "First": "1"
+            },
+            "headers": {
+              "accept": "application/xml",
+              "host": "localhost:4545",
+              "content-type": "application/json",
+              "connection": "keep-alive",
+              "transfer-encoding": "chunked"
+            },
+            "body": "\"hello, world!\""
+          },
+          "response": {
+            "statusCode": 406,
+            "headers": {
+              "connection": "close"
+            },
+            "body": ""
+          }
+        }
+      ]
+    },
+    {
+      "responses": [
+        {
+          "is": {
+            "statusCode": 405
+          }
+        }
+      ],
+      "predicates": {
+        "method": {
+          "is": "PUT"
+        }
+      },
+      "matches": [
+        {
+          "timestamp": "2014-01-08T03:06:55.319Z",
+          "request": {
+            "requestFrom": "127.0.0.1:60082",
+            "method": "PUT",
+            "path": "/test",
+            "query": {
+              "Second": "2",
+              "First": "1"
+            },
+            "headers": {
+              "accept": "application/json",
+              "host": "localhost:4545",
+              "content-type": "application/json",
+              "connection": "keep-alive",
+              "transfer-encoding": "chunked"
+            },
+            "body": "\"hello, world!\""
+          },
+          "response": {
+            "statusCode": 405,
+            "headers": {
+              "connection": "close"
+            },
+            "body": ""
+          }
+        }
+      ]
+    },
+    {
+      "responses": [
+        {
+          "is": {
+            "statusCode": 500
+          }
+        }
+      ],
+      "predicates": {
+        "method": {
+          "is": "PUT"
+        }
+      }
+    }
+  ]
+}
+</code>
+
+<code class='hidden' data-test-id='http is example'
+                     data-test-step='6'
+                     data-test-type='http'>
+DELETE /imposters/4545 HTTP/1.1
+Host: localhost:2525
+Accept: application/json
+</code>
