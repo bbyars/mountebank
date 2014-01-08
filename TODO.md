@@ -42,11 +42,6 @@ docs:
   - predicates for tcp are text only
   - predicate injection - can return truthy or falsy, but mountebank doesn't know what those words mean, so he suggests you return true or false
 
-binary:
-- info log not truncating base64 string with ... at end on tcp request
-- stubs data needs to be base64 string, not buffer, on is replacement to make output sensible when GETting proxyOnce
-- binary predicates = pass in base64 substring, contains matches it against the actual buffer
-
 smtp:
 - stub smtp with accept/reject
 

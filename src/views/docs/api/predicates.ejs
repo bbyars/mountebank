@@ -66,75 +66,12 @@ see the protocol pages linked to from the sidebar to see the request fields.
 <code>inject</code> also adds a <code>request</code> field, which represents the
 entire request.  See the <a href='/docs/api/injection'>injection</a> page for details.</p>
 
-<h2>Examples</h2>
+<p>The predicates work intuitively for base64-encoded binary data as well by internally
+converting the string to a JSON string representing the byte array.  For example, sending
+base64 "AQIDBA==", will get translated to "[1,2,3,4]", and predicates expecting "AgM=" will
+get translated to "[2,3]".  Even though "AQIDBA==" does not contain "AgM=", a <code>contains</code>
+predicate will match, because "[1,2,3,4]" does contain "[2,3]".</p>
 
-<p>Each request field can be defined with its own predicates, which allows you
-to have multiple predicates for each stub.</p>
-
-<section class="accordion">
-  <div>
-    <input id="is" name="is" type="checkbox" />
-      <label for="is">is</label>
-      <section>
-        <% include predicates/is %>
-      </section>
-  </div>
-  <div>
-    <input id="contains" name="contains" type="checkbox" />
-      <label for="contains">contains</label>
-      <section>
-        <p>Some content... </p>
-      </section>
-  </div>
-  <div>
-    <input id="startsWith" name="startsWith" type="checkbox" />
-    <label for="startsWith">startsWith</label>
-    <section>
-      <p>Some content... </p>
-    </section>
-  </div>
-  <div>
-    <input id="endsWith" name="endsWith" type="checkbox" />
-    <label for="endsWith">endsWith</label>
-    <section>
-      <p>Some content... </p>
-    </section>
-  </div>
-  <div>
-    <input id="matches" name="matches" type="checkbox" />
-    <label for="matches">matches</label>
-    <section>
-      <p>Some content... </p>
-    </section>
-  </div>
-  <div>
-    <input id="exists" name="exists" type="checkbox" />
-    <label for="exists">exists</label>
-    <section>
-      <p>Some content... </p>
-    </section>
-  </div>
-  <div>
-    <input id="not" name="not" type="checkbox" />
-    <label for="not">not</label>
-    <section>
-      <p>Some content... </p>
-    </section>
-  </div>
-  <div>
-    <input id="or" name="or" type="checkbox" />
-    <label for="or">or</label>
-    <section>
-      <p>Some content... </p>
-    </section>
-  </div>
-  <div>
-    <input id="and" name="and" type="checkbox" />
-    <label for="and">and</label>
-    <section>
-      <p>Some content... </p>
-    </section>
-  </div>
-</section>
+<p>See the protocol pages linked to from the sidebar for examples.</p>
 
 <% include ../../_footer %>

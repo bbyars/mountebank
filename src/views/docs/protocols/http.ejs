@@ -2,132 +2,7 @@
 
 <h1>http</h1>
 
-<p>mountebank employs world-class HTTP and HTTPS imposters.  The stubbing capability
-is second to none.  Let's look at a simple request:</p>
-
-<pre><code>
-  POST /imposters HTTP/1.1
-  Host: localhost:2525
-  Accept: application/json
-  Content-Type: application/json
-
-  {
-    "port": 2526,
-    "protocol": "http",
-    "stubs": [{
-      "responses": [
-        { "is": { "statusCode": 400 }}
-      ],
-      "predicates": {
-        "path": { "is": "/test" },
-        "method": { "is": "POST" },
-        "body": { "not": { "contains": "requiredField" } },
-        "headers": {
-          "Content-Type": { "is": "application/json" }
-        }
-      }
-    }]
-  }
-</code></pre>
-
-<p>An imposter can be created with an array of <em>stubs</em>, each of which contains
-an array of at least one <em>response</em> and, optionally, <em>predicates</em>.
-After the initial <code>POST</code>, when you retrieve an imposter back from mountebank
-(via a <code>GET /imposters</code>, <code>GET /imposters/2526</code>, or
-<code>DELETE /imposters/2526</code>), the response body will show a record of all stub
-interactions to help you troubleshoot the stub predicates and responses in a
-<em>matches</em> field:</p>
-
-<pre><code>
-HTTP/1.1 200 OK
-Content-Type: application/json
-
-{
-  "protocol": "http",
-  "port": 2526,
-  "requests": [
-    {
-      "path": "/test",
-      "method": "GET",
-      "headers": {
-        "host": "localhost:2526",
-      },
-      "body": ""
-    },
-    {
-      "path": "/test",
-      "method": "POST",
-      "headers": {
-        "host": "localhost:2526",
-        "content-type": "application/json",
-        "content-length": "28"
-      },
-      "body": "{\"optionalField\": \"present\"}"
-    }
-  ],
-  "stubs": [
-    {
-      "responses": [
-        {
-          "is": {
-            "statusCode": 400
-          }
-        }
-      ],
-      "predicates": {
-        "path": {
-          "is": "/test"
-        },
-        "query": {
-          "exists": { "q": true }
-        },
-        "method": {
-          "is": "POST"
-        },
-        "body": {
-          "not": {
-            "contains": "requiredField"
-          }
-        },
-        "headers": {
-          "Content-Type": {
-            "is": "application/json"
-          }
-        }
-      },
-      "matches": [
-        {
-          "timestamp": "2013-12-06T02:21:43.162Z",
-          "request": {
-            "path": "/test?q=value",
-            "method": "POST",
-            "headers": {
-              "host": "localhost:2526",
-              "content-type": "application/json",
-              "content-length": "28"
-            },
-            "body": "{\"optionalField\": \"present\"}"
-          },
-          "response": {
-            "statusCode": 400,
-            "headers": {
-              "connection": "close"
-            },
-            "body": ""
-          }
-        }
-      ]
-    }
-  ],
-  "_links": {
-    "self": {
-      "href": "http://localhost:2525/imposters/2526"
-    }
-  }
-}
-</code></pre>
-
-<h2>Predicates</h2>
+<h2>Request</h2>
 
 <p>Predicates define whether a stub matches a request or not.  In the absence of a predicate,
 the stub always matches.  When multiple stubs are created on an imposter, the first stub that
@@ -172,61 +47,6 @@ matches is selected.  All predicates are based on the following request fields:<
     </tr>
 </table>
 
-<p>Each predicate object contains one or more of the request fields as keys.  All keys are
-AND'd together.  The following predicate operators are allowed:</p>
-
-<table>
-    <tr>
-        <th>Operator</th>
-        <th>Example</th>
-    </tr>
-    <tr>
-        <td><code>is</code></td>
-        <td><code>"headers": { "X-Key": { "is": "Value" } }</code></td>
-    </tr>
-    <tr>
-        <td><code>contains</code></td>
-        <td><code>"body": { "contains": "message" }</code></td>
-    </tr>
-    <tr>
-        <td><code>startsWith</code></td>
-        <td><code>"path": { "startsWith": "/resource/123" }</code></td>
-    </tr>
-    <tr>
-        <td><code>endsWith</code></td>
-        <td><code>"body": { "endsWith": "message" }</code></td>
-    </tr>
-    <tr>
-        <td><code>matches</code></td>
-        <td><code>"body": { "matches": "^start.+end$" }</code></td>
-    </tr>
-    <tr>
-        <td><code>exists</code></td>
-        <td><code>"query": { "first": { "exists": true, "is": "1" } }</code></td>
-    </tr>
-    <tr>
-        <td><code>not</code></td>
-        <td><code>"body": { "not": { "contains": "message" } }</code></td>
-    </tr>
-    <tr>
-        <td><code>inject</code></td>
-        <td><code>{ "request": { "inject": "function (request) { return request.path === '/test'; }" } }</code></td>
-    </tr>
-</table>
-
-<p>Most of the predicate are self-explanatory.  All the string operations are case-insensitive (this
-includes the header keys).  The <code>matches</code> operator is a JavaScript regular expression.
-The <code>exists</code> operator is satisfied if the header or query key is present, when true, or when missing,
-when false.  When <code>exists</code> is used on a string field, like <code>body</code>, and is true,
-it is satisfied when the body is non-empty.</p>
-
-<p><code>inject</code> is the most powerful operator, but it only works when <code>mb</code> is run
-with the <code>--allowInjection</code> flag.  Like the other operators, it works against the standard
-request fields of <code>path</code>, <code>method</code>, <code>headers</code>, and <code>body</code>.
-If called against one of those fields, the <code>inject</code> value is a function whose single
-parameter is that field.  Unlike the other operators, <code>inject</code> can take an entire request
-object, which can use all four fields to make a decision.  The function returns true or false.</p>
-
 <h2>Responses</h2>
 
 <p>Every HTTP and HTTPS response from an imposter consists of the following fields:</p>
@@ -261,70 +81,6 @@ object, which can use all four fields to make a decision.  The function returns 
     <td>string</td>
     <td><code>{"errors": []}</code></td>
     <td>''</td>
-  </tr>
-</table>
-
-<p>It doesn't make sense to create an empty array of responses, but each response is under no
-obligation to override the defaults.  In the example above, the response only overrides the
-<code>statusCode</code>, and will default to <code>{ "Connection": "close" }</code> for the
-<code>headers</code> and an empty <code>body</code>.  mountebank HTTP and HTTPS <em>always</em>
-refuse to allow keepalive connections, even when you try and specify one in your response.
-The problem is that they wreak havoc with automated tests if you send a <code>DELETE</code>
-to an imposter.  mountebank will no longer be listening on that socket, but the system
-under test will reuse the existing TCP connection.  mountebank has found that this
-causes difficult to track down bugs when multiple tests are run.</p>
-
-<p>The responses array defines a circular buffer.  Every time the stub matches the request,
-the first response is pulled from the front of the responses array, evaluated, and pushed
-to the back of the array.  This elegantly does what you want.  In the common case, when you
-always want to return the same response (as in the example above), you simply add one
-response.  More complex scenarios will require that the same endpoint returns a sequence of
-different responses for the same predicates.  Simply add them all to the array in order.
-When the sequence finishes, it will start over.  More complexity can be added by simply
-adding more responses to the array, without complicating the contract.</p>
-
-<p>The example above showed an <code>is</code> response, which is the simplest of all
-response types.  The following response resolvers are supported:</p>
-
-<table>
-  <tr>
-    <th>Resolver</th>
-    <th>Description</th>
-    <th>Example</th>
-  </tr>
-  <tr>
-    <td><code>is</code></td>
-    <td>Merges the specified response fields with the defaults.</td>
-    <td><code>{ "is": { "statusCode": 400 }}</code></td>
-  </tr>
-  <tr>
-    <td><code>proxy</code></td>
-    <td>Proxies the request to the specified URL and returns the response.</td>
-    <td><code>{ "proxy": "http://real.api.com" }</code></td>
-  </tr>
-  <tr>
-    <td><code>proxyOnce</code></td>
-    <td>The first time the response is used, it will proxy to the specified
-      URL and return the response, just like <code>proxy</code>, but it will
-      also save the response as an <code>is</code> response for all future
-      matches.</td>
-      <td><code>{ "proxyOnce": "http://real.api.com" }</code></td>
-  </tr>
-  <tr>
-    <td><code>inject</code></td>
-    <td>Allows you to inject a JavaScript function to create the response object.
-      The function will be passed three parameters: the request object, an initially
-      empty JavaScript object for saving state between <code>inject</code> responses
-      on the same imposter (even if they come from different stubs), and a callback
-      for asynchronous operations (see below).  <em><code>inject</code> responses only
-      work if <code>mb</code> is run with <code>--allowInjection</code></em>.</td>
-    <td><code>
-        { "inject": "function (request, state) {" +
-                    "    if (!state.calls) { state.calls = 0; }\n" +
-                    "    state.calls += 1;\n" +
-                    "    return { body: state.calls.toString() };\n" +
-                    "}" }
-    </code></td>
   </tr>
 </table>
 
@@ -512,5 +268,73 @@ feature request.</a></p>
 <p>Finally, injections have access to mountebank's standard out and standard error streams.
 <code>console.log</code> statements may prove invaluable to help troubleshoot misbehaving
 injections.</p>
+
+<h2>Examples</h2>
+
+<section class="accordion">
+  <div>
+    <input id="is" name="is" type="checkbox" />
+      <label for="is">is</label>
+      <section>
+        <% include http/is %>
+      </section>
+  </div>
+  <div>
+    <input id="contains" name="contains" type="checkbox" />
+      <label for="contains">contains</label>
+      <section>
+        <p>Some content... </p>
+      </section>
+  </div>
+  <div>
+    <input id="startsWith" name="startsWith" type="checkbox" />
+    <label for="startsWith">startsWith</label>
+    <section>
+      <p>Some content... </p>
+    </section>
+  </div>
+  <div>
+    <input id="endsWith" name="endsWith" type="checkbox" />
+    <label for="endsWith">endsWith</label>
+    <section>
+      <p>Some content... </p>
+    </section>
+  </div>
+  <div>
+    <input id="matches" name="matches" type="checkbox" />
+    <label for="matches">matches</label>
+    <section>
+      <p>Some content... </p>
+    </section>
+  </div>
+  <div>
+    <input id="exists" name="exists" type="checkbox" />
+    <label for="exists">exists</label>
+    <section>
+      <p>Some content... </p>
+    </section>
+  </div>
+  <div>
+    <input id="not" name="not" type="checkbox" />
+    <label for="not">not</label>
+    <section>
+      <p>Some content... </p>
+    </section>
+  </div>
+  <div>
+    <input id="or" name="or" type="checkbox" />
+    <label for="or">or</label>
+    <section>
+      <p>Some content... </p>
+    </section>
+  </div>
+  <div>
+    <input id="and" name="and" type="checkbox" />
+    <label for="and">and</label>
+    <section>
+      <p>Some content... </p>
+    </section>
+  </div>
+</section>
 
 <% include ../../_footer %>
