@@ -69,7 +69,7 @@ Host: localhost:4545
 
 <pre><code data-test-id='http is example'
            data-test-verify-step='2'
-           data-test-ignore-lines='["^Date", "^Etag"]'>
+           data-test-ignore-lines='["^Date"]'>
 HTTP/1.1 <strong class='highlight1'>400</strong> Bad Request
 Connection: close
 Transfer-Encoding: chunked
@@ -89,7 +89,7 @@ Host: localhost:4545
 
 <pre><code data-test-id='http is example'
            data-test-verify-step='3'
-           data-test-ignore-lines='["^Date", "^Etag"]'>
+           data-test-ignore-lines='["^Date"]'>
 HTTP/1.1 <strong class='highlight2'>406</strong> Not Acceptable
 Connection: close
 Transfer-Encoding: chunked
@@ -109,7 +109,7 @@ Accept: application/json
 
 <pre><code data-test-id='http is example'
            data-test-verify-step='4'
-           data-test-ignore-lines='["^Date", "^Etag"]'>
+           data-test-ignore-lines='["^Date"]'>
 HTTP/1.1 <strong class='highlight3'>405</strong> Method Not Allowed
 Connection: close
 Transfer-Encoding: chunked
@@ -131,12 +131,11 @@ Accept: application/json
 <code class='hidden' data-test-id='http is example'
                      data-test-verify-step='5'
                      data-test-type='http'
-                     data-test-ignore-lines='["^Date", "^Etag", "requestFrom", "timestamp"]'>
+                     data-test-ignore-lines='["^Date", "requestFrom", "timestamp"]'>
 HTTP/1.1 200 OK
 Vary: Accept
 Content-Type: application/json
 Content-Length: 5070
-Etag: "609541298"
 Date: Wed, 08 Jan 2014 03:06:55 GMT
 Connection: keep-alive
 

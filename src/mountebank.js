@@ -38,6 +38,7 @@ function create (options) {
     app.use(express.static(path.join(__dirname, 'public')));
     app.use(express.errorHandler());
 
+    app.disable('etag');
     app.disable('x-powered-by');
     app.set('views', path.join(__dirname, 'views'));
     app.set('view engine', 'ejs');

@@ -131,7 +131,7 @@ Content-Type: application/xml
 
 <pre><code data-test-id='example'
            data-test-verify-step='2'
-           data-test-ignore-lines='["^Date", "^Etag"]'>
+           data-test-ignore-lines='["^Date"]'>
 HTTP/1.1 201 Created
 Location: http://localhost:4545/customers/123
 Content-Type: application/xml
@@ -158,7 +158,7 @@ Content-Type: application/xml
 
 <pre><code data-test-id='example'
            data-test-verify-step='3'
-           data-test-ignore-lines='["^Date", "^Etag"]'>
+           data-test-ignore-lines='["^Date"]'>
 HTTP/1.1 400 Bad Request
 Content-Type: application/xml
 Connection: close
@@ -180,7 +180,7 @@ Accept: application/json
 
 <pre><code data-test-id='example'
            data-test-verify-step='4'
-           data-test-ignore-lines='["^Date", "^Etag", "timestamp", "requestFrom"]'>
+           data-test-ignore-lines='["^Date", "timestamp", "requestFrom"]'>
 HTTP/1.1 200 OK
 Vary: Accept
 Content-Type: application/json
