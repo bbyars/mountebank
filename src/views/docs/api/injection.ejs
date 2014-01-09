@@ -2,5 +2,59 @@
 
 <h1>Injection</h1>
 
+<p>Asynchronous injection is supported through a third <code>callback</code> parameter.
+If your function returns a value, the imposter will consider it as synchronous.  If
+it does not return a value, it must call the <code>callback</code> parameter with the
+response object.  The following injection takes advantage of the node.js environment
+it will run in to proxy most of the request to www.google.com:</p>
+
+<pre><code>
+function (request, state, callback) {
+    var http = require('http'),
+        options = {
+            method: request.method,
+            hostname: 'www.google.com',
+            port: 80,
+            path: request.path,
+            headers: request.headers
+        },
+        httpRequest = http.request(options, function (response) {
+            response.body = '';
+            response.setEncoding('utf8');
+            response.on('data', function (chunk) {
+                response.body += chunk;
+            });
+            response.on('end', function () {
+                callback({
+                    statusCode: response.statusCode,
+                    headers: response.headers,
+                    body: response.body
+                });
+            });
+        });
+    httpRequest.end();
+    // No return value!!!
+}
+</code></pre>
+
+<p>Though mountebank has gone to some trouble to make injections as hassle-free as
+possible, there are a couple of gotchas.  First, when validating stub creation,
+mountebank actually dry runs a sample request in a sandbox.  Normally, this is
+side-effect free, as mountebank fakes out proxy calls and uses different state objects,
+but he can make no guarantees with injections.  The <code>state</code> variable will
+be untouched, but any environmental changes you make may persist to the actual stub
+calls.</p>
+
+<p>Second, injections may crash mountebank.  He's tried to protect himself, but
+mountebank is not as clever as you are.  mountebank asks you to use other operators
+when possible.  The example above would be both more robust and more powerful using
+the <code>proxy</code> operator.  If you find yourself coding injections frequently
+because of missing functionality that you believe would make a useful resolver,
+mountebank humbly requests you to add a <a href='https://github.com/bbyars/mountebank/issues'>
+feature request.</a></p>
+
+<p>Finally, injections have access to mountebank's standard out and standard error streams.
+<code>console.log</code> statements may prove invaluable to help troubleshoot misbehaving
+injections.</p>
 
 <% include ../../_footer %>

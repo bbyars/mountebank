@@ -4,272 +4,67 @@
 
 <h2>Request</h2>
 
-<p>Predicates define whether a stub matches a request or not.  In the absence of a predicate,
-the stub always matches.  When multiple stubs are created on an imposter, the first stub that
-matches is selected.  All predicates are based on the following request fields:</p>
-
 <table>
     <tr>
         <th>Field</th>
         <th>Description</th>
         <th>Type</th>
-        <th>Example</th>
     </tr>
     <tr>
         <td><code>path</code></td>
         <td>The path of the request, without the querystring</td>
         <td>string</td>
-        <td>/resource</td>
     </tr>
     <tr>
         <td><code>query</code></td>
         <td>The querystring of the request</td>
         <td>object</td>
-        <td>{ "q": "value" }</td>
     </tr>
     <tr>
         <td><code>method</code></td>
         <td>The request method</td>
         <td>string</td>
-        <td>GET</td>
     </tr>
     <tr>
         <td><code>headers</code></td>
         <td>The HTTP headers</td>
         <td>object</td>
-        <td><code>{ "Accept": "application/json" }</code></td>
     </tr>
     <tr>
         <td><code>body</code></td>
         <td>The request body</td>
         <td>string</td>
-        <td>'{ "port": 2526 }'</td>
     </tr>
 </table>
 
 <h2>Responses</h2>
 
-<p>Every HTTP and HTTPS response from an imposter consists of the following fields:</p>
-
 <table>
   <tr>
     <th>Field</th>
     <th>Type</th>
-    <th>Example</th>
     <th>Default</th>
   </tr>
   <tr>
     <td><code>statusCode</code></td>
-    <td>int, corresponding to a valid <a href='http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html'>
-      status code</a></td>
-    <td>400</td>
-    <td>200</td>
+    <td>int</td>
+    <td><code>200</code></td>
   </tr>
   <tr>
     <td><code>headers</code></td>
     <td>object</td>
-    <td><pre><code>
-      {
-        "Location": "http://localhost:2526/resource",
-        "Content-Type": "application/json"
-      }
-    </code></pre></td>
     <td><code>{ "Connection": "close" }</code></td>
   </tr>
   <tr>
     <td><code>body</code></td>
     <td>string</td>
-    <td><code>{"errors": []}</code></td>
-    <td>''</td>
+    <td><code>""</code></td>
   </tr>
 </table>
 
-<h3>Proxies</h3>
-
-<p>mountebank recommends that you only use the <code>proxy</code> as the last stub
-in the <code>stubs</code> array.  This would allow you to set up specific stubs
-for the endpoints you are interested in faking out, and rely on a <code>proxy</code>
-response to delegate all other endpoints to the real dependency.  This takes advantage
-of the imposter's <em>first match</em> policy on stubs, which is based on the order you
-set the stubs up in the <code>stubs</code> array.</p>
-
-<p>The <code>proxyOnce</code> resolver is a great way to seed tests.  After setting an imposter
-up with a <code>proxyOnce</code> stub and exercising the system under test, you can
-<code>GET</code> the imposter.  On subsequent test runs, simply load the same representation
-you received during the <code>GET</code> when you <code>POST /imposters</code>, and it will
-automatically fall back to the saved <code>is</code> response. If you don't want to send some
-of the saved state of the last imposter, you can delete elements like <code>matches</code>
-and <code>_links</code>.</p>
-
-<p>For example, let's say we create the <code>proxyOnce</code> resolver listed above and
-want to reuse the saved state for subsequent test runs:</p>
-
-<pre><code>
-    GET /imposters/2526 HTTP/1.1
-    Host: localhost:2525
-    Accept: application/json
-
-
-    HTTP/1.1 200 OK
-    Content-Type: application/json
-
-    {
-      "protocol": "http",
-      "port": 2526,
-      "requests": [
-        {
-          "path": "/",
-          "method": "GET",
-          "headers": {
-            "accept": "application/json",
-            "host": "localhost:2526",
-            "connection": "close"
-          },
-          "body": ""
-        }
-      ],
-      "stubs": [
-        {
-          "responses": [
-            {
-              "proxyOnce": "http://real.api.com/",
-              "is": {
-                "statusCode": 200,
-                "headers": {
-                  "connection": "close",
-                  "date": "Sat, 07 Dec 2013 20:19:51 GMT",
-                  "transfer-encoding": "chunked"
-                },
-                "body": "PROXIED"
-              }
-            }
-          ],
-          "matches": [
-            {
-              "timestamp": "2013-12-07T19:39:43.527Z",
-              "request": {
-                "path": "/",
-                "method": "GET",
-                "headers": {
-                  "accept": "application/json",
-                  "host": "localhost:2526",
-                  "connection": "close"
-                },
-                "body": ""
-              },
-              "response": {
-                "statusCode": 200,
-                "headers": {
-                  "connection": "close"
-                },
-                "body": "PROXIED"
-              }
-            }
-          ]
-        }
-      ],
-      "_links": {
-        "self": {
-          "href": "http://localhost:2525/imposters/2526"
-        }
-      }
-    }
-</code></pre>
-
-<p>Save off the response body.  The next time you need to set up the test, you can simply
-reload it.  If you want to clean up the JSON and only send the relevant attributes,
-remove the <code>requests</code>, <code>matches</code>, and <code>_links</code>:</p>
-
-<pre><code>
-    POST /imposters HTTP/1.1
-    Host: localhost:2525
-    Accept: application/json
-    Content-Type: application/json
-
-    {
-      "protocol": "http",
-      "port": 2526,
-      "stubs": [
-        {
-          "responses": [
-            {
-              "proxyOnce": "http://real.api.com/",
-              "is": {
-                "statusCode": 200,
-                "headers": {
-                  "connection": "close",
-                  "date": "Sat, 07 Dec 2013 20:19:51 GMT",
-                  "transfer-encoding": "chunked"
-                },
-                "body": "PROXIED"
-              }
-            }
-          ]
-        }
-      ]
-    }
-</code></pre>
-
-<p>If you had predicates in your stub, they will also be present.</p>
-
-<h3>Injections</h3>
-
-<p>Asynchronous injection is supported through a third <code>callback</code> parameter.
-If your function returns a value, the imposter will consider it as synchronous.  If
-it does not return a value, it must call the <code>callback</code> parameter with the
-response object.  The following injection takes advantage of the node.js environment
-it will run in to proxy most of the request to www.google.com:</p>
-
-<pre><code>
-function (request, state, callback) {
-    var http = require('http'),
-        options = {
-            method: request.method,
-            hostname: 'www.google.com',
-            port: 80,
-            path: request.path,
-            headers: request.headers
-        },
-        httpRequest = http.request(options, function (response) {
-            response.body = '';
-            response.setEncoding('utf8');
-            response.on('data', function (chunk) {
-                response.body += chunk;
-            });
-            response.on('end', function () {
-                callback({
-                    statusCode: response.statusCode,
-                    headers: response.headers,
-                    body: response.body
-                });
-            });
-        });
-    httpRequest.end();
-    // No return value!!!
-}
-</code></pre>
-
-<p>Though mountebank has gone to some trouble to make injections as hassle-free as
-possible, there are a couple of gotchas.  First, when validating stub creation,
-mountebank actually dry runs a sample request in a sandbox.  Normally, this is
-side-effect free, as mountebank fakes out proxy calls and uses different state objects,
-but he can make no guarantees with injections.  The <code>state</code> variable will
-be untouched, but any environmental changes you make may persist to the actual stub
-calls.</p>
-
-<p>Second, injections may crash mountebank.  He's tried to protect himself, but
-mountebank is not as clever as you are.  mountebank asks you to use other operators
-when possible.  The example above would be both more robust and more powerful using
-the <code>proxy</code> operator.  If you find yourself coding injections frequently
-because of missing functionality that you believe would make a useful resolver,
-mountebank humbly requests you to add a <a href='https://github.com/bbyars/mountebank/issues'>
-feature request.</a></p>
-
-<p>Finally, injections have access to mountebank's standard out and standard error streams.
-<code>console.log</code> statements may prove invaluable to help troubleshoot misbehaving
-injections.</p>
-
 <h2>Examples</h2>
+
+<h3>Predicates</h3>
 
 <section class="accordion">
   <div>
@@ -331,6 +126,13 @@ injections.</p>
   <div>
     <input id="and" name="and" type="checkbox" />
     <label for="and">and</label>
+    <section>
+      <p>Some content... </p>
+    </section>
+  </div>
+  <div>
+    <input id="inject" name="inject" type="checkbox" />
+    <label for="inject">inject</label>
     <section>
       <p>Some content... </p>
     </section>

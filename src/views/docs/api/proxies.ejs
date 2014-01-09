@@ -2,5 +2,130 @@
 
 <h1>Proxies</h1>
 
+<p>mountebank recommends that you only use the <code>proxy</code> as the last stub
+in the <code>stubs</code> array.  This would allow you to set up specific stubs
+for the endpoints you are interested in faking out, and rely on a <code>proxy</code>
+response to delegate all other endpoints to the real dependency.  This takes advantage
+of the imposter's <em>first match</em> policy on stubs, which is based on the order you
+set the stubs up in the <code>stubs</code> array.</p>
+
+<p>The <code>proxyOnce</code> resolver is a great way to seed tests.  After setting an imposter
+up with a <code>proxyOnce</code> stub and exercising the system under test, you can
+<code>GET</code> the imposter.  On subsequent test runs, simply load the same representation
+you received during the <code>GET</code> when you <code>POST /imposters</code>, and it will
+automatically fall back to the saved <code>is</code> response. If you don't want to send some
+of the saved state of the last imposter, you can delete elements like <code>matches</code>
+and <code>_links</code>.</p>
+
+<p>For example, let's say we create the <code>proxyOnce</code> resolver listed above and
+want to reuse the saved state for subsequent test runs:</p>
+
+<pre><code>
+    GET /imposters/2526 HTTP/1.1
+    Host: localhost:2525
+    Accept: application/json
+
+
+    HTTP/1.1 200 OK
+    Content-Type: application/json
+
+    {
+      "protocol": "http",
+      "port": 2526,
+      "requests": [
+        {
+          "path": "/",
+          "method": "GET",
+          "headers": {
+            "accept": "application/json",
+            "host": "localhost:2526",
+            "connection": "close"
+          },
+          "body": ""
+        }
+      ],
+      "stubs": [
+        {
+          "responses": [
+            {
+              "proxyOnce": "http://real.api.com/",
+              "is": {
+                "statusCode": 200,
+                "headers": {
+                  "connection": "close",
+                  "date": "Sat, 07 Dec 2013 20:19:51 GMT",
+                  "transfer-encoding": "chunked"
+                },
+                "body": "PROXIED"
+              }
+            }
+          ],
+          "matches": [
+            {
+              "timestamp": "2013-12-07T19:39:43.527Z",
+              "request": {
+                "path": "/",
+                "method": "GET",
+                "headers": {
+                  "accept": "application/json",
+                  "host": "localhost:2526",
+                  "connection": "close"
+                },
+                "body": ""
+              },
+              "response": {
+                "statusCode": 200,
+                "headers": {
+                  "connection": "close"
+                },
+                "body": "PROXIED"
+              }
+            }
+          ]
+        }
+      ],
+      "_links": {
+        "self": {
+          "href": "http://localhost:2525/imposters/2526"
+        }
+      }
+    }
+</code></pre>
+
+<p>Save off the response body.  The next time you need to set up the test, you can simply
+reload it.  If you want to clean up the JSON and only send the relevant attributes,
+remove the <code>requests</code>, <code>matches</code>, and <code>_links</code>:</p>
+
+<pre><code>
+    POST /imposters HTTP/1.1
+    Host: localhost:2525
+    Accept: application/json
+    Content-Type: application/json
+
+    {
+      "protocol": "http",
+      "port": 2526,
+      "stubs": [
+        {
+          "responses": [
+            {
+              "proxyOnce": "http://real.api.com/",
+              "is": {
+                "statusCode": 200,
+                "headers": {
+                  "connection": "close",
+                  "date": "Sat, 07 Dec 2013 20:19:51 GMT",
+                  "transfer-encoding": "chunked"
+                },
+                "body": "PROXIED"
+              }
+            }
+          ]
+        }
+      ]
+    }
+</code></pre>
+
+<p>If you had predicates in your stub, they will also be present.</p>
 
 <% include ../../_footer %>
