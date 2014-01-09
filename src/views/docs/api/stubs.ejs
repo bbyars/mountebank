@@ -134,6 +134,7 @@ HTTP/1.1 201 Created
 Location: http://localhost:4545/customers/123
 Content-Type: application/xml
 Connection: close
+Date: Thu, 09 Jan 2014 02:30:31 GMT
 Transfer-Encoding: chunked
 
 &lt;customer&gt;&lt;email&gt;customer@test.com&lt;/name&gt;&lt;/customer&gt;
@@ -160,6 +161,7 @@ Content-Type: application/xml
 HTTP/1.1 400 Bad Request
 Content-Type: application/xml
 Connection: close
+Date: Thu, 09 Jan 2014 02:30:31 GMT
 Transfer-Encoding: chunked
 
 &lt;error&gt;email already exists&lt;/error&gt;
@@ -183,6 +185,7 @@ HTTP/1.1 200 OK
 Vary: Accept
 Content-Type: application/json
 Content-Length: 3433
+Date: Thu, 09 Jan 2014 02:30:31 GMT
 Connection: keep-alive
 
 {

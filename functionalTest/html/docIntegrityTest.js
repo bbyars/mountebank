@@ -49,7 +49,8 @@ describe('docs', function () {
         '/docs/api/overview',
         '/docs/api/mocks',
         '/docs/api/stubs',
-        '/docs/protocols/http'
+        '/docs/protocols/http',
+        '/docs/protocols/tcp'
     ];
 
     pages.forEach(function (page) {

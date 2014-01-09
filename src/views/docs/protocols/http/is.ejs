@@ -70,6 +70,7 @@ Host: localhost:4545
            data-test-ignore-lines='["^Date"]'>
 HTTP/1.1 <strong class='highlight1'>400</strong> Bad Request
 Connection: close
+Date: Thu, 09 Jan 2014 02:30:31 GMT
 Transfer-Encoding: chunked
 </code></pre>
 
@@ -90,6 +91,7 @@ Host: localhost:4545
            data-test-ignore-lines='["^Date"]'>
 HTTP/1.1 <strong class='highlight2'>406</strong> Not Acceptable
 Connection: close
+Date: Thu, 09 Jan 2014 02:30:31 GMT
 Transfer-Encoding: chunked
 </code></pre>
 
@@ -110,6 +112,7 @@ Accept: application/json
            data-test-ignore-lines='["^Date"]'>
 HTTP/1.1 <strong class='highlight3'>405</strong> Method Not Allowed
 Connection: close
+Date: Thu, 09 Jan 2014 02:30:31 GMT
 Transfer-Encoding: chunked
 </code></pre>
 
@@ -134,7 +137,7 @@ HTTP/1.1 200 OK
 Vary: Accept
 Content-Type: application/json
 Content-Length: 5070
-Date: Wed, 08 Jan 2014 03:06:55 GMT
+Date: Thu, 09 Jan 2014 02:29:36 GMT
 Connection: keep-alive
 
 {
@@ -142,12 +145,12 @@ Connection: keep-alive
   "port": 4545,
   "_links": {
     "self": {
-      "href": "http://localhost:<%= port %>/imposters/4545"
+      "href": "http://localhost:2525/imposters/4545"
     }
   },
   "requests": [
     {
-      "requestFrom": "127.0.0.1:60080",
+      "requestFrom": "127.0.0.1:58535",
       "method": "POST",
       "path": "/test",
       "query": {
@@ -164,7 +167,7 @@ Connection: keep-alive
       "body": "\"hello, world!\""
     },
     {
-      "requestFrom": "127.0.0.1:60081",
+      "requestFrom": "127.0.0.1:58536",
       "method": "POST",
       "path": "/test",
       "query": {
@@ -181,7 +184,7 @@ Connection: keep-alive
       "body": "\"hello, world!\""
     },
     {
-      "requestFrom": "127.0.0.1:60082",
+      "requestFrom": "127.0.0.1:58537",
       "method": "PUT",
       "path": "/test",
       "query": {
@@ -233,9 +236,9 @@ Connection: keep-alive
       },
       "matches": [
         {
-          "timestamp": "2014-01-08T03:06:55.314Z",
+          "timestamp": "2014-01-09T02:29:36.711Z",
           "request": {
-            "requestFrom": "127.0.0.1:60080",
+            "requestFrom": "127.0.0.1:58535",
             "method": "POST",
             "path": "/test",
             "query": {
@@ -278,9 +281,9 @@ Connection: keep-alive
       },
       "matches": [
         {
-          "timestamp": "2014-01-08T03:06:55.317Z",
+          "timestamp": "2014-01-09T02:29:36.714Z",
           "request": {
-            "requestFrom": "127.0.0.1:60081",
+            "requestFrom": "127.0.0.1:58536",
             "method": "POST",
             "path": "/test",
             "query": {
@@ -321,9 +324,9 @@ Connection: keep-alive
       },
       "matches": [
         {
-          "timestamp": "2014-01-08T03:06:55.319Z",
+          "timestamp": "2014-01-09T02:29:36.719Z",
           "request": {
-            "requestFrom": "127.0.0.1:60082",
+            "requestFrom": "127.0.0.1:58537",
             "method": "PUT",
             "path": "/test",
             "query": {

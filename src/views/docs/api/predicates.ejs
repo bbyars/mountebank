@@ -67,10 +67,12 @@ see the protocol pages linked to from the sidebar to see the request fields.
 entire request.  See the <a href='/docs/api/injection'>injection</a> page for details.</p>
 
 <p>The predicates work intuitively for base64-encoded binary data as well by internally
-converting the string to a JSON string representing the byte array.  For example, sending
-base64 "AQIDBA==", will get translated to "[1,2,3,4]", and predicates expecting "AgM=" will
+converting the base64-encoded string to a JSON string representing the byte array.  For example,
+sending "AQIDBA==" will get translated to "[1,2,3,4]", and predicates expecting "AgM=" will
 get translated to "[2,3]".  Even though "AQIDBA==" does not contain "AgM=", a <code>contains</code>
-predicate will match, because "[1,2,3,4]" does contain "[2,3]".</p>
+predicate will match, because "[1,2,3,4]" does contain "[2,3]".  This works well for everything
+but <code>matches</code>, because any regular expression operators get encoded as binary.
+mountebank recommends that you stay away from <code>matches</code> if you're dealing in binary.</p>
 
 <p>See the protocol pages linked to from the sidebar for examples.</p>
 

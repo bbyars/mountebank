@@ -8,9 +8,9 @@ var exec = require('child_process').exec,
 function execute (command) {
     var deferred = Q.defer();
 
-    exec(command, function (error, stdout) {
+    exec(command, function (error, stdout, stderr) {
         if (error) {
-            error.message += '\n\nwhen executing: ' + command;
+            error.message += '\n\nwhen executing: ' + command + '\nstderr: ' + stderr;
             deferred.reject(error);
         }
         else {

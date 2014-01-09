@@ -7,7 +7,7 @@ Stories
 8. Use cluster module to isolate imposters from each other?
 1. Add latency to stub response
 1. Add http attachment support
-1. Allow regex tokens from request params in response
+1. Allow regex tokens from request params in response (different resolver)
 21. Prettier /imposters HTML page
 22. Ability to create imposter from UI (with karma testing?)
 23. Prettier /imposter/{port} HTML page
@@ -35,6 +35,11 @@ Known Bugs
 Cleanup Needed
 ==============
 - can random port be grabbed by passing in 0?
+        var server  = http.createServer()
+        server.listen(0)
+        server.on('listening', function() {
+          var port = server.address().port
+        })
 - add warn logging for injection dry run calls
 
 docs:
@@ -45,12 +50,24 @@ docs:
 smtp:
 - stub smtp with accept/reject
 
+tcp:
+- allow multiple respond events?
+    - TCP response should be an array of data elements?
+
 Pre-release review
 ==================
 API:
 - are predicates OK or do I need another layer of indirection to add case-insensitivity, etc?
 - come up with better name than 'remember' for proxyAll
 - proxy and proxyAll are confusing - proxyAll doesn't always proxy, but proxy does
+- separating behavior from data in responses (e.g. behaviours = 'wait', SMTP 'accept', 'reject', TCP: 'fin')
+   - standard attribute, eg.:
+   {
+     statusCode: 400,
+     body: 'bad',
+     behaviors: {
+       wait: 1000
+     }
 
 Auxiliary Projects
 ==================
