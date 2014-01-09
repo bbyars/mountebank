@@ -83,18 +83,12 @@ Connection: keep-alive
 {
   "protocol": "tcp",
   "port": 4546,
-  "_links": {
-    "self": {
-      "href": "http://localhost:<%= port %>/imposters/4546"
-    }
-  },
+  "mode": "text",
   "requests": [
     {
-      "requestFrom": "127.0.0.1:58508",
       "data": "FIRST REQUEST\n"
     },
     {
-      "requestFrom": "127.0.0.1:58510",
       "data": "Second Request\n"
     }
   ],
@@ -166,7 +160,11 @@ Connection: keep-alive
       }
     }
   ],
-  "mode": "text"
+  "_links": {
+    "self": {
+      "href": "http://localhost:<%= port %>/imposters/4546"
+    }
+  }
 }
 </code>
 

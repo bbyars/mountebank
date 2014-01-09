@@ -75,11 +75,6 @@ curl http://localhost:2525/imposters/4545
 {
   "protocol": "http",
   "port": 4545,
-  "_links": {
-    "self": {
-      "href": "http://localhost:2525/imposters/4545"
-    }
-  },
   "requests": [
     {
       "requestFrom": "127.0.0.1:53856",
@@ -150,7 +145,12 @@ curl http://localhost:2525/imposters/4545
         }
       ]
     }
-  ]
+  ],
+  "_links": {
+    "self": {
+      "href": "http://localhost:<%= port %>/imposters/4545"
+    }
+  }
 }
 </code></pre>
 

@@ -191,14 +191,8 @@ Connection: keep-alive
 {
   "protocol": "http",
   "port": 4545,
-  "_links": {
-    "self": {
-      "href": "http://localhost:<%= port %>/imposters/4545"
-    }
-  },
   "requests": [
     {
-      "requestFrom": "127.0.0.1:50641",
       "method": "POST",
       "path": "/imposters",
       "query": {},
@@ -305,7 +299,12 @@ Connection: keep-alive
         }
       ]
     }
-  ]
+  ],
+  "_links": {
+    "self": {
+      "href": "http://localhost:<%= port %>/imposters/4545"
+    }
+  }
 }
 </code></pre>
 

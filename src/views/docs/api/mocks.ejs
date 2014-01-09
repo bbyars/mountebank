@@ -43,13 +43,13 @@ Connection: keep-alive
 {
   "protocol": "smtp",
   "port": 4545,
+  "requests": [],
+  "stubs": [],
   "_links": {
     "self": {
       "href": "http://localhost:<%= port %>/imposters/4545"
     }
-  },
-  "requests": [],
-  "stubs": []
+  }
 }
 </code></pre>
 
@@ -95,11 +95,6 @@ Connection: keep-alive
 {
   "protocol": "smtp",
   "port": 4545,
-  "_links": {
-    "self": {
-      "href": "http://localhost:<%= port %>/imposters/4545"
-    }
-  },
   "requests": [
     {
       "requestFrom": "127.0.0.1",
@@ -128,7 +123,12 @@ Connection: keep-alive
       "attachments": []
     }
   ],
-  "stubs": []
+  "stubs": [],
+  "_links": {
+    "self": {
+      "href": "http://localhost:<%= port %>/imposters/4545"
+    }
+  }
 }
 </code></pre>
 

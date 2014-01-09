@@ -47,13 +47,17 @@ function create (Protocol, port, request) {
             }
 
             function toJSON () {
-                var result = toListJSON();
-                result.requests = server.requests;
-                result.stubs = stubs;
-
+                var result = {
+                    protocol: Protocol.name,
+                    port: port
+                };
                 Object.keys(server.metadata).forEach(function (key) {
                     result[key] = server.metadata[key];
                 });
+                result.requests = server.requests;
+                result.stubs = stubs;
+                result._links = { self: { href: url } };
+
                 return result;
             }
 
