@@ -49,7 +49,7 @@ function details (error) {
 
 module.exports = {
     ValidationError: create('bad data'),
-    InjectionError: createWithMessage('invalid operation', 'inject is not allowed unless mb is run with the --allowInjection flag'),
+    InjectionError: create('invalid injection'),
     ResourceConflictError: create('resource conflict'),
     InsufficientAccessError: createWithMessage('insufficient access', 'Run mb in superuser mode if you want access'),
     InvalidProxyError: create('invalid proxy'),

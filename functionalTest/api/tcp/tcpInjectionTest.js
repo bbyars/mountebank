@@ -101,7 +101,7 @@ describe('tcp imposter', function () {
                 return mbApi.post('/imposters', request, mbPort);
             }).then(function (response) {
                 assert.strictEqual(response.statusCode, 400);
-                assert.strictEqual(response.body.errors[0].code, 'invalid operation');
+                assert.strictEqual(response.body.errors[0].code, 'invalid injection');
             }).finally(function () {
                 return nonInjectableServer('stop', mbPort);
             });

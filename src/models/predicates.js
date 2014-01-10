@@ -1,6 +1,7 @@
 'use strict';
 
-var errors = require('../util/errors');
+var errors = require('../util/errors'),
+    helpers = require('../util/helpers');
 
 function getCaseInsensitive (obj, fieldName) {
     var keys = Object.keys(obj);
@@ -75,11 +76,21 @@ module.exports = {
             });
         });
     },
-    inject: function (fieldName, predicate, request) {
+
+    /* jshint maxparams: 5 */
+    inject: function (fieldName, predicate, request, encoding, logger) {
         /* jshint evil: true, unused: false */
         var arg = fieldName === 'request' ? request : request[fieldName],
-            scope = JSON.parse(JSON.stringify(arg)), // prevent state-changing operations
-            injected = '(' + predicate + ')(scope);';
-        return eval(injected);
+            scope = helpers.clone(arg), // prevent state-changing operations
+            injected =  '(' + predicate + ')(scope);';
+        try {
+            return eval(injected);
+        }
+        catch (error) {
+            logger.error('injection X=> ' + error);
+            logger.error('    source: ' + JSON.stringify(injected));
+            logger.error('    scope: ' + JSON.stringify(scope));
+            throw errors.InjectionError('invalid predicate injection', { source: injected, data: error.message });
+        }
     }
 };

@@ -14,14 +14,14 @@ function create (resolver, encoding) {
         return Object.keys(obj).map(predicate).every(function (result) { return result; });
     }
 
-    function matchesPredicate (fieldName, predicate, request) {
+    function matchesPredicate (fieldName, predicate, request, logger) {
         if (typeof predicate !== 'object' || util.isArray(predicate)) {
             throw errors.ValidationError('predicate must be an object', { source: predicate });
         }
 
         return trueForAll(predicate, function (key) {
             if (predicates[key]) {
-                return predicates[key](fieldName, predicate[key], request, encoding);
+                return predicates[key](fieldName, predicate[key], request, encoding, logger);
             }
             else if (typeof predicate[key] === 'object') {
                 return matchesPredicate(fieldName + '.' + key, predicate[key], request);
@@ -39,7 +39,7 @@ function create (resolver, encoding) {
         var matches = stubs.filter(function (stub) {
             var predicates = stub.predicates || {};
             return trueForAll(predicates, function (fieldName) {
-                return matchesPredicate(fieldName, predicates[fieldName], request);
+                return matchesPredicate(fieldName, predicates[fieldName], request, logger);
             });
         });
         if (matches.length === 0) {

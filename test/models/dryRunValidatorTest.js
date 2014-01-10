@@ -164,7 +164,7 @@ describe('dryRunValidator', function () {
                 assert.deepEqual(result, {
                     isValid: false,
                     errors: [{
-                        code: 'invalid operation',
+                        code: 'invalid injection',
                         message: 'inject is not allowed unless mb is run with the --allowInjection flag',
                         source: request.stubs[0]
                     }]
@@ -189,7 +189,7 @@ describe('dryRunValidator', function () {
                 assert.deepEqual(result, {
                     isValid: false,
                     errors: [{
-                        code: 'invalid operation',
+                        code: 'invalid injection',
                         message: 'inject is not allowed unless mb is run with the --allowInjection flag',
                         source: request.stubs[0]
                     }]
@@ -341,7 +341,7 @@ describe('dryRunValidator', function () {
                     testRequest: testRequest,
                     allowInjection: true
                 }),
-                logger = { warn: mock() };
+                logger = { warn: mock(), error: mock() };
 
             return validator.validate(request, logger).then(function (result) {
                 assert.deepEqual(result, {
@@ -349,8 +349,8 @@ describe('dryRunValidator', function () {
                     errors: [{
                         code: 'bad data',
                         message: 'malformed stub request',
-                        data: 'Unexpected token return',
-                        source: request.stubs[0]
+                        data: 'invalid predicate injection',
+                        source: '(return true;)(scope);'
                     }]
                 });
             });

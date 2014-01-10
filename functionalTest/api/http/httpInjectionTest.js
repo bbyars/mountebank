@@ -69,6 +69,23 @@ function nonInjectableServer (command, port) {
                 });
             });
 
+            promiseIt('should give a 400 on a bad predicate injection', function () {
+                var stub = {
+                        predicates: {
+                            request: { inject: "return true;" }
+                        },
+                        responses: [{ is: { body: 'MATCHED' } }]
+                    },
+                    request = { protocol: protocol, port: port, stubs: [stub], name: this.name };
+
+                return api.post('/imposters', request).then(function (response) {
+                    assert.strictEqual(response.statusCode, 400, JSON.stringify(response.body));
+                    assert.strictEqual(response.body.errors[0].data, 'invalid predicate injection');
+                }).finally(function () {
+                    return api.del('/imposters/' + port);
+                });
+            });
+
             promiseIt('should allow synchronous javascript injection for responses', function () {
                 var fn = "function (request) { return { body: request.method + ' INJECTED' }; }",
                     stub = { responses: [{ inject: fn }] },
@@ -80,6 +97,19 @@ function nonInjectableServer (command, port) {
                     assert.strictEqual(response.body, 'GET INJECTED');
                     assert.strictEqual(response.statusCode, 200);
                     assert.strictEqual(response.headers.connection, 'close');
+                }).finally(function () {
+                    return api.del('/imposters/' + port);
+                });
+            });
+
+            promiseIt('should give a 400 on a bad response injection', function () {
+                var fn = "function () { throw('BOOM'); }",
+                    stub = { responses: [{ inject: fn }] },
+                    request = { protocol: protocol, port: port, stubs: [stub], name: this.name };
+
+                return api.post('/imposters', request).then(function (response) {
+                    assert.strictEqual(response.statusCode, 400, JSON.stringify(response.body));
+                    assert.strictEqual(response.body.errors[0].message, 'invalid response injection');
                 }).finally(function () {
                     return api.del('/imposters/' + port);
                 });
@@ -120,7 +150,7 @@ function nonInjectableServer (command, port) {
                     return mbApi.post('/imposters', request, mbPort);
                 }).then(function (response) {
                     assert.strictEqual(response.statusCode, 400);
-                    assert.strictEqual(response.body.errors[0].code, 'invalid operation');
+                    assert.strictEqual(response.body.errors[0].code, 'invalid injection');
                 }).finally(function () {
                     return nonInjectableServer('stop', mbPort);
                 });

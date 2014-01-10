@@ -143,7 +143,7 @@ describe('stubResolver', function () {
             return resolver.resolve(stub, {}, logger, []).then(function () {
                 assert.fail('should not have resolved');
             }, function (error) {
-                assert.strictEqual(error.message, 'BOOM!!!');
+                assert.strictEqual(error.message, 'invalid response injection');
                 assert.ok(errorsLogged.indexOf('injection X=> Error: BOOM!!!') >= 0);
             });
         });

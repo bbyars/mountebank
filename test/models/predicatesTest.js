@@ -1,7 +1,8 @@
 'use strict';
 
 var assert = require('assert'),
-    predicates = require('../../src/models/predicates');
+    predicates = require('../../src/models/predicates'),
+    util = require('util');
 
 describe('predicates', function () {
     describe('#is', function () {
@@ -323,6 +324,26 @@ describe('predicates', function () {
         it('should return true if injected function matches path', function () {
             var fn = "function (path) { return path === '/'; }";
             assert.ok(predicates.inject('path', fn, { path: '/' }));
+        });
+
+        it('should log injection exceptions', function () {
+            var errorsLogged = [],
+                logger = {
+                    error: function () {
+                        var message = util.format.apply(this, Array.prototype.slice.call(arguments));
+                        errorsLogged.push(message);
+                    }
+                },
+                fn = 'function () { throw Error("BOOM!!!"); }';
+
+            try {
+                predicates.inject('path', fn, { path: '/' }, 'utf8', logger);
+                assert.fail({ message: 'did not throw exception' });
+            }
+            catch (error) {
+                assert.strictEqual(error.message, 'invalid predicate injection');
+                assert.ok(errorsLogged.indexOf('injection X=> Error: BOOM!!!') >= 0);
+            }
         });
     });
 });

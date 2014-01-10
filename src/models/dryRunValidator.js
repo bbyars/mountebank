@@ -61,7 +61,8 @@ function create (options) {
 
     function addInjectionErrors (stub, errors) {
         if (!options.allowInjection && hasInjection(stub)) {
-            errors.push(exceptions.InjectionError({ source: stub }));
+            errors.push(exceptions.InjectionError(
+                'inject is not allowed unless mb is run with the --allowInjection flag', { source: stub }));
         }
     }
 
