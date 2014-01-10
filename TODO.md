@@ -35,10 +35,8 @@ Known Bugs
 
 Cleanup Needed
 ==============
-- add warn logging for injection dry run calls
-
 docs:
-  - injection has access to logger, but only error logs during dry runs
+  - injection has access to logger, but only error/warn logs during dry runs
   - predicates for tcp are text only
   - predicate injection - can return truthy or falsy, but mountebank doesn't know what those words mean, so he suggests you return true or false
   - can name imposters

@@ -9,23 +9,30 @@ var utils = require('util'),
 
 function create (options) {
 
-    function dryRun (stub, logger) {
+    function dryRun (stub, encoding, logger) {
         var dryRunProxy = { to: function () { return Q({}); } },
-            errorLogger = logger ? logger.error : combinators.noop,
-            dryRunLogger = { debug: combinators.noop, info: combinators.noop, warn: combinators.noop, error: errorLogger },
+            dryRunLogger = {
+                debug: combinators.noop,
+                info: combinators.noop,
+                warn: combinators.noop,
+                error: logger.error
+            },
             resolver = StubResolver.create(dryRunProxy, combinators.identity),
-            stubRepository = options.StubRepository.create(resolver),
+            stubRepository = options.StubRepository.create(resolver, encoding),
             clone = helpers.clone(stub); // proxyOnce changes state
 
+        if (hasInjection(stub)) {
+            logger.warn('dry running injections...');
+        }
         stubRepository.addStub(clone);
         return stubRepository.resolve(options.testRequest, dryRunLogger);
     }
 
-    function addDryRunErrors (stub, errors, logger) {
+    function addDryRunErrors (stub, encoding, errors, logger) {
         var deferred = Q.defer();
 
         try {
-            dryRun(stub, logger).done(deferred.resolve, function (reason) {
+            dryRun(stub, encoding, logger).done(deferred.resolve, function (reason) {
                 reason.source = reason.source || JSON.stringify(stub);
                 errors.push(reason);
                 deferred.resolve();
@@ -58,7 +65,7 @@ function create (options) {
         }
     }
 
-    function errorsFor (stub, logger) {
+    function errorsFor (stub, encoding, logger) {
         var errors = [],
             deferred = Q.defer();
 
@@ -75,7 +82,7 @@ function create (options) {
             deferred.resolve(errors);
         }
         else {
-            addDryRunErrors(stub, errors, logger).done(function () {
+            addDryRunErrors(stub, encoding, errors, logger).done(function () {
                 deferred.resolve(errors);
             });
         }
@@ -85,7 +92,8 @@ function create (options) {
 
     function validate (request, logger) {
         var stubs = request.stubs || [],
-            validationPromises = stubs.map(function (stub) { return errorsFor(stub, logger); }),
+            encoding = request.mode === 'binary' ? 'base64' : 'utf8',
+            validationPromises = stubs.map(function (stub) { return errorsFor(stub, encoding, logger); }),
             deferred = Q.defer();
 
         if (options.additionalValidation) {

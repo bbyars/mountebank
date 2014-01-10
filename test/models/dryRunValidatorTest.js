@@ -3,6 +3,7 @@
 var assert = require('assert'),
     Validator = require('../../src/models/dryRunValidator'),
     promiseIt = require('../testHelpers').promiseIt,
+    mock = require('../mock').mock,
     BaseRepository = require('../../src/models/stubRepository'),
     testRequest = { requestFrom: '', path: '/', query: {}, method: 'GET', headers: {}, body: '' },
     StubRepository = {
@@ -70,9 +71,10 @@ describe('dryRunValidator', function () {
 
         promiseIt('should be valid for valid stub', function () {
             var request =  { stubs: [{ responses: [{ is: { statusCode: 400 }  }] }] },
-                validator = Validator.create({ StubRepository: StubRepository, testRequest: testRequest });
+                validator = Validator.create({ StubRepository: StubRepository, testRequest: testRequest }),
+                logger = { error: mock() };
 
-            return validator.validate(request).then(function (result) {
+            return validator.validate(request, logger).then(function (result) {
                 assert.deepEqual(result, {
                     isValid: true,
                     errors: []
@@ -92,9 +94,10 @@ describe('dryRunValidator', function () {
                         }
                     }]
                 },
-                validator = Validator.create({ StubRepository: StubRepository, testRequest: testRequest });
+                validator = Validator.create({ StubRepository: StubRepository, testRequest: testRequest }),
+                logger = { error: mock() };
 
-            return validator.validate(request).then(function (result) {
+            return validator.validate(request, logger).then(function (result) {
                 assert.deepEqual(result, {
                     isValid: true,
                     errors: []
@@ -113,9 +116,10 @@ describe('dryRunValidator', function () {
                     StubRepository: StubRepository,
                     testRequest: testRequest,
                     allowInjection: true
-                });
+                }),
+                logger = { warn: mock() };
 
-            return validator.validate(request).then(function (result) {
+            return validator.validate(request, logger).then(function (result) {
                 assert.deepEqual(result, {
                     isValid: true,
                     errors: []
@@ -133,9 +137,10 @@ describe('dryRunValidator', function () {
                     StubRepository: StubRepository,
                     testRequest: testRequest,
                     allowInjection: true
-                });
+                }),
+                logger = { warn: mock() };
 
-            return validator.validate(request).then(function (result) {
+            return validator.validate(request, logger).then(function (result) {
                 assert.deepEqual(result, {
                     isValid: true,
                     errors: []
@@ -198,9 +203,10 @@ describe('dryRunValidator', function () {
                         responses: [{ proxy: 'http://google.com' }]
                     }]
                 },
-                validator = Validator.create({ StubRepository: StubRepository, testRequest: testRequest });
+                validator = Validator.create({ StubRepository: StubRepository, testRequest: testRequest }),
+                logger = { error: mock() };
 
-            return validator.validate(request).then(function (result) {
+            return validator.validate(request, logger).then(function (result) {
                 assert.deepEqual(result, {
                     isValid: true,
                     errors: []
@@ -214,9 +220,10 @@ describe('dryRunValidator', function () {
                         responses: [{ proxyOnce: 'http://google.com' }]
                     }]
                 },
-                validator = Validator.create({ StubRepository: StubRepository, testRequest: testRequest });
+                validator = Validator.create({ StubRepository: StubRepository, testRequest: testRequest }),
+                logger = { error: mock() };
 
-            return validator.validate(request).then(function (result) {
+            return validator.validate(request, logger).then(function (result) {
                 assert.deepEqual(result, {
                     isValid: true,
                     errors: []
@@ -231,9 +238,10 @@ describe('dryRunValidator', function () {
                         {}
                     ]
                 },
-                validator = Validator.create({ StubRepository: StubRepository, testRequest: testRequest });
+                validator = Validator.create({ StubRepository: StubRepository, testRequest: testRequest }),
+                logger = { error: mock() };
 
-            return validator.validate(request).then(function (result) {
+            return validator.validate(request, logger).then(function (result) {
                 assert.deepEqual(result, {
                     isValid: false,
                     errors: [{
@@ -254,9 +262,10 @@ describe('dryRunValidator', function () {
                         }
                     }]
                 },
-                validator = Validator.create({ StubRepository: StubRepository, testRequest: testRequest });
+                validator = Validator.create({ StubRepository: StubRepository, testRequest: testRequest }),
+                logger = { error: mock() };
 
-            return validator.validate(request).then(function (result) {
+            return validator.validate(request, logger).then(function (result) {
                 assert.deepEqual(result, {
                     isValid: false,
                     errors: [{
@@ -279,9 +288,10 @@ describe('dryRunValidator', function () {
                         }
                     }]
                 },
-                validator = Validator.create({ StubRepository: StubRepository, testRequest: testRequest });
+                validator = Validator.create({ StubRepository: StubRepository, testRequest: testRequest }),
+                logger = { error: mock() };
 
-            return validator.validate(request).then(function (result) {
+            return validator.validate(request, logger).then(function (result) {
                 assert.deepEqual(result, {
                     isValid: false,
                     errors: [{
@@ -303,9 +313,10 @@ describe('dryRunValidator', function () {
                         }
                     }]
                 },
-                validator = Validator.create({ StubRepository: StubRepository, testRequest: testRequest });
+                validator = Validator.create({ StubRepository: StubRepository, testRequest: testRequest }),
+                logger = { error: mock() };
 
-            return validator.validate(request).then(function (result) {
+            return validator.validate(request, logger).then(function (result) {
                 assert.deepEqual(result, {
                     isValid: false,
                     errors: [{
@@ -329,9 +340,10 @@ describe('dryRunValidator', function () {
                     StubRepository: StubRepository,
                     testRequest: testRequest,
                     allowInjection: true
-                });
+                }),
+                logger = { warn: mock() };
 
-            return validator.validate(request).then(function (result) {
+            return validator.validate(request, logger).then(function (result) {
                 assert.deepEqual(result, {
                     isValid: false,
                     errors: [{
@@ -350,9 +362,10 @@ describe('dryRunValidator', function () {
                         responses: [{ invalid: 'INVALID' }]
                     }]
                 },
-                validator = Validator.create({ StubRepository: StubRepository, testRequest: testRequest });
+                validator = Validator.create({ StubRepository: StubRepository, testRequest: testRequest }),
+                logger = { error: mock() };
 
-            return validator.validate(request).then(function (result) {
+            return validator.validate(request, logger).then(function (result) {
                 assert.deepEqual(result, {
                     isValid: false,
                     errors: [{

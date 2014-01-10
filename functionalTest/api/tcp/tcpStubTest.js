@@ -98,6 +98,23 @@ describe('tcp imposter', function () {
             });
         });
 
+        promiseIt('should return 400 if uses matches predicate with binary mode', function () {
+            var stub = {
+                    responses: [{ is: { data: 'dGVzdA==' }}],
+                    predicates: {
+                        data: { matches: 'dGVzdA==' }
+                    }
+                },
+                request = { protocol: 'tcp', port: port, mode: 'binary', stubs: [stub] };
+
+            return api.post('/imposters', request).then(function (response) {
+                assert.strictEqual(response.statusCode, 400);
+                assert.strictEqual(response.body.errors[0].data, 'the matches predicate is not allowed in binary mode');
+            }).finally(function () {
+                return api.del('/imposters/' + port);
+            });
+        });
+
         promiseIt('should allow proxy stubs', function () {
             var proxyPort = port + 1,
                 proxyStub = { responses: [{ is: { data: 'PROXIED' } }] },

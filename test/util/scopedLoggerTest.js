@@ -34,6 +34,6 @@ describe('scopedLogger', function () {
             scopedLogger.debug('log');
 
             assert.ok(logger.debug.wasCalledWith('[changed] log'), logger.debug.message());
-        })
+        });
     });
 });
