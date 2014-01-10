@@ -219,6 +219,17 @@ describe('predicates', function () {
         it('should return false for types other than strings and objects', function () {
             assert.ok(!predicates.matches('field', 1, { field: 1 }));
         });
+
+        it('should throw an error if encoding is base64', function () {
+            try {
+                predicates.matches('field', 'dGVzdA==', { field: 'dGVzdA=='}, 'base64');
+                throw({ code: 'did not throw error' });
+            }
+            catch (error) {
+                assert.strictEqual(error.code, 'bad data');
+                assert.strictEqual(error.message, 'the matches predicate is not allowed in binary mode');
+            }
+        });
     });
 
     describe('#exists', function () {

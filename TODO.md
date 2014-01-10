@@ -1,5 +1,6 @@
 Stories
 =======
+1. add behaviors: { wait: 5000 } to responses
 6. Add brew package
 6. add pkg installer like vagrant
 7. Add rpm package
@@ -60,14 +61,6 @@ API:
 - are predicates OK or do I need another layer of indirection to add case-insensitivity, etc?
 - come up with better name than 'remember' for proxyAll
 - proxy and proxyAll are confusing - proxyAll doesn't always proxy, but proxy does
-- separating behavior from data in responses (e.g. behaviours = 'wait', SMTP 'accept', 'reject', TCP: 'fin')
-   - standard attribute, eg.:
-   {
-     statusCode: 400,
-     body: 'bad',
-     behaviors: {
-       wait: 1000
-     }
 
 Auxiliary Projects
 ==================
