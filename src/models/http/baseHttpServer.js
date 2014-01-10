@@ -70,7 +70,7 @@ function setup (protocolName, createNodeServer) {
 
         result.listen = function (port) {
             var deferred = Q.defer();
-            server.listen(port, function () { deferred.resolve(); });
+            server.listen(port, function () { deferred.resolve(server.address().port); });
             return deferred.promise;
         };
 

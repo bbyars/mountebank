@@ -35,9 +35,7 @@ function createServer () {
 
     result.listen = function (port) {
         var deferred = Q.defer();
-        server.listen(port, function () {
-            deferred.resolve();
-        });
+        server.listen(port, function () { deferred.resolve(server.server.SMTPServer._server.address().port); });
         return deferred.promise;
     };
 

@@ -95,7 +95,9 @@ fulfill your orders.  Because your needs are varied and sundry, his imposters
 are all different, and all are identified by a port number and associated with
 a protocol.  mountebank expects that you will be responsible for providing the
 port, since you'll need to configure the application under test with the same
-port.</p>
+port.  However, the port is not required, and if you do not include it in the
+request, mountebank will randomly assign one for you and return the port number
+in the response.</p>
 
 <p>The value you get out of mountebank always starts by creating an imposter.  If
 you don't need stubbing, then the port and protocol are all you need.</p>

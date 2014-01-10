@@ -70,24 +70,11 @@ describe('ImpostersController', function () {
         });
 
         promiseIt('should add new imposter to list of all imposters', function () {
-            request.body = { port: 3535, protocol: 'http' };
-
-            return controller.post(request, response).then(function () {
-                assert.deepEqual(imposters, { 3535: imposter });
-            });
-        });
-
-        promiseIt('should return a 400 for a missing port', function () {
+            imposter.port = 3535;
             request.body = { protocol: 'http' };
 
             return controller.post(request, response).then(function () {
-                assert.strictEqual(response.statusCode, 400);
-                assert.deepEqual(response.body, {
-                    errors: [{
-                        code: 'bad data',
-                        message: "'port' is a required field"
-                    }]
-                });
+                assert.deepEqual(imposters, { 3535: imposter });
             });
         });
 
@@ -130,6 +117,8 @@ describe('ImpostersController', function () {
         });
 
         promiseIt('should aggregate multiple errors', function () {
+            request.body = { port: -1, protocol: 'invalid' };
+
             return controller.post(request, response).then(function () {
                 assert.strictEqual(response.body.errors.length, 2, response.body.errors);
             });
@@ -165,7 +154,7 @@ describe('ImpostersController', function () {
 
         promiseIt('should not call protocol validation if there are common validation failures', function () {
             Protocol.Validator = { create: mock() };
-            request.body = { protocol: 'http' };
+            request.body = { protocol: 'invalid' };
 
             return controller.post(request, response).then(function () {
                 assert.ok(!Protocol.Validator.create.wasCalled());

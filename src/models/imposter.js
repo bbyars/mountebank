@@ -18,16 +18,17 @@ function createErrorHandler (deferred) {
     };
 }
 
-function create (Protocol, port, request) {
+function create (Protocol, request) {
     var stubs = [],
-        url = '/imposters/' + port,
         deferred = Q.defer(),
         domain = Domain.create(),
         errorHandler = createErrorHandler(deferred);
 
     domain.on('error', errorHandler);
     domain.run(function () {
-        Protocol.create(port, request).done(function (server) {
+        Protocol.create(request).done(function (server) {
+
+            var url = '/imposters/' + server.port;
 
             function addStub (stub) {
                 server.addStub(stub);
@@ -41,7 +42,7 @@ function create (Protocol, port, request) {
             function toListJSON () {
                 return {
                     protocol: Protocol.name,
-                    port: port,
+                    port: server.port,
                     _links: { self: { href: url } }
                 };
             }
@@ -49,7 +50,7 @@ function create (Protocol, port, request) {
             function toJSON () {
                 var result = {
                     protocol: Protocol.name,
-                    port: port
+                    port: server.port
                 };
                 Object.keys(server.metadata).forEach(function (key) {
                     result[key] = server.metadata[key];
@@ -62,6 +63,7 @@ function create (Protocol, port, request) {
             }
 
             deferred.resolve({
+                port: server.port,
                 url: url,
                 toJSON: toJSON,
                 toListJSON: toListJSON,

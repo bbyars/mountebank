@@ -9,18 +9,18 @@ var Q = require('q'),
 
 function implement (implementation, baseLogger) {
 
-    function create (port, options) {
-        function createScopedLogger () {
+    function create (options) {
+        function scopeFor (port) {
             var scope = util.format('%s:%s', implementation.protocolName, port);
             if (options.name) {
                 scope += ' ' + options.name;
             }
-            return ScopedLogger.create(baseLogger, scope);
+            return scope;
         }
 
         var deferred = Q.defer(),
-            logger = createScopedLogger(),
             requests = [],
+            logger = ScopedLogger.create(baseLogger, scopeFor(options.port)),
             server = implementation.createServer(logger, options);
 
         server.on('connection', function (socket) {
@@ -66,10 +66,14 @@ function implement (implementation, baseLogger) {
             });
         });
 
-        server.listen(port).done(function () {
+        server.listen(options.port || 0).done(function (actualPort) {
             var metadata = server.metadata(options);
             if (options.name) {
                 metadata.name = options.name;
+            }
+
+            if (options.port !== actualPort) {
+                logger.changeScope(scopeFor(actualPort));
             }
 
             logger.info('Open for business...');
@@ -78,6 +82,7 @@ function implement (implementation, baseLogger) {
                 requests: requests,
                 addStub: server.addStub,
                 metadata: metadata,
+                port: actualPort,
                 close: function () {
                     server.close(function () { logger.info ('Ciao for now'); });
                 }

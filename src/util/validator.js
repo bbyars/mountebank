@@ -17,7 +17,7 @@ function createDefaultValidator () {
 
     function requiredFields (spec) {
         addAllErrorsIf(spec, "'$NAME$' is a required field", function (value) {
-            return !value;
+            return typeof value === 'undefined';
         });
     }
 

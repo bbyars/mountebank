@@ -26,14 +26,14 @@ describe('AbstractServer', function () {
                 error: function () { this.calls.error.push(util.format.apply(this, arguments)); }
             };
             baseServer = inherit.from(events.EventEmitter, {
-                listen: mock().returns(Q(true)),
+                listen: mock().returns(Q(3000)),
                 metadata: mock(),
                 close: mock(),
                 formatRequestShort: mock(),
                 formatRequest: mock(),
                 formatResponse: mock(),
                 errorHandler: mock(),
-                respond: mock().returns(Q(true))
+                respond: mock().returns(Q(true)),
             });
             implementation = {
                 protocolName: '',
@@ -45,7 +45,15 @@ describe('AbstractServer', function () {
 
         promiseIt('should log when the server binds to the port', function () {
             implementation.protocolName = 'test';
-            return Server.create(3000, {}).then(function () {
+            return Server.create({ port: 3000 }).then(function () {
+                assertLogged('info', '[test:3000] Open for business...');
+            });
+        });
+
+        promiseIt('should auto-assign port if none passed in', function () {
+            baseServer.listen = mock().returns(Q(3000));
+            implementation.protocolName = 'test';
+            return Server.create({}).then(function () {
                 assertLogged('info', '[test:3000] Open for business...');
             });
         });
@@ -54,7 +62,7 @@ describe('AbstractServer', function () {
             implementation.protocolName = 'test';
             baseServer.close = function (callback) { callback(); };
 
-            return Server.create(3000, {}).then(function (server) {
+            return Server.create({ port: 3000 }).then(function (server) {
                 server.close();
                 assertLogged('info', '[test:3000] Ciao for now');
             });
@@ -63,7 +71,7 @@ describe('AbstractServer', function () {
         promiseIt('should delegate addStub to baseServer', function () {
             baseServer.addStub = mock();
 
-            return Server.create(3000, {}).then(function (server) {
+            return Server.create({ port: 3000 }).then(function (server) {
                 server.addStub();
                 assert.ok(baseServer.addStub.wasCalled());
             });
@@ -72,7 +80,7 @@ describe('AbstractServer', function () {
         promiseIt('should delegate to server metadata', function () {
             baseServer.metadata.returns('metadata');
 
-            return Server.create(3000, {}).then(function (server) {
+            return Server.create({ port: 3000 }).then(function (server) {
                 assert.strictEqual(server.metadata, 'metadata');
             });
         });
@@ -80,7 +88,7 @@ describe('AbstractServer', function () {
         promiseIt('should add options.name to server metadata', function () {
             baseServer.metadata.returns({ key: 'value' });
 
-            return Server.create(3000, { name: 'name' }).then(function (server) {
+            return Server.create({ port: 3000, name: 'name' }).then(function (server) {
                 assert.deepEqual(server.metadata, {
                     key: 'value',
                     name: 'name'
@@ -92,7 +100,7 @@ describe('AbstractServer', function () {
             var socket = inherit.from(events.EventEmitter, { remoteAddress: 'host', remotePort: 'port' });
             implementation.protocolName = 'test';
 
-            return Server.create(3000, {}).then(function () {
+            return Server.create({ port: 3000 }).then(function () {
                 baseServer.listeners('connection')[0](socket);
                 assertLogged('debug', '[test:3000] host:port ESTABLISHED');
             });
@@ -102,7 +110,7 @@ describe('AbstractServer', function () {
             var socket = inherit.from(events.EventEmitter, { remoteAddress: 'host', remotePort: 'port' });
             implementation.protocolName = 'test';
 
-            return Server.create(3000, {}).then(function () {
+            return Server.create({ port: 3000 }).then(function () {
                 baseServer.listeners('connection')[0](socket);
                 socket.listeners('error')[0]('ERROR');
                 assertLogged('error', '[test:3000] host:port transmission error X=> "ERROR"');
@@ -113,7 +121,7 @@ describe('AbstractServer', function () {
             var socket = inherit.from(events.EventEmitter, { remoteAddress: 'host', remotePort: 'port' });
             implementation.protocolName = 'test';
 
-            return Server.create(3000, {}).then(function () {
+            return Server.create({ port: 3000 }).then(function () {
                 baseServer.listeners('connection')[0](socket);
                 socket.listeners('end')[0]();
                 socket.listeners('close')[0]();
@@ -127,7 +135,7 @@ describe('AbstractServer', function () {
             implementation.protocolName = 'test';
             baseServer.formatRequestShort.returns('request');
 
-            return Server.create(3000, {}).then(function () {
+            return Server.create({ port: 3000 }).then(function () {
                 baseServer.listeners('request')[0](socket, {});
                 assertLogged('info', '[test:3000] host:port => request');
             });
@@ -138,7 +146,7 @@ describe('AbstractServer', function () {
             implementation.protocolName = 'test';
             baseServer.formatRequest.returns('full request');
 
-            return Server.create(3000, {}).then(function () {
+            return Server.create({ port: 3000 }).then(function () {
                 baseServer.listeners('request')[0](socket, {}, function () {
                     assertLogged('debug', '[test:3000] host:port => "full request"');
                 });
@@ -148,7 +156,7 @@ describe('AbstractServer', function () {
         promiseIt('should record simplified requests', function () {
             implementation.Request.createFrom.returns(Q('simple request'));
 
-            return Server.create(3000, {}).then(function (server) {
+            return Server.create({ port: 3000 }).then(function (server) {
                 baseServer.listeners('request')[0]({}, {}, function () {
                     assert.deepEqual(server.requests, ['simple request']);
                 });
@@ -158,7 +166,7 @@ describe('AbstractServer', function () {
         promiseIt('should call the base server to respond', function () {
             implementation.Request.createFrom.returns(Q('simple request'));
 
-            return Server.create(3000, {}).then(function () {
+            return Server.create({ port: 3000 }).then(function () {
                 baseServer.listeners('request')[0]({}, 'original request', function () {
                     assert.ok(baseServer.respond.wasCalledWith('simple request', 'original request'));
                 });
@@ -170,7 +178,7 @@ describe('AbstractServer', function () {
             implementation.protocolName = 'test';
             baseServer.formatResponse.returns('response');
 
-            return Server.create(3000, {}).then(function () {
+            return Server.create({ port: 3000 }).then(function () {
                 baseServer.listeners('request')[0](socket, {}, function () {
                     assertLogged('debug', '[test:3000] host:port <= "response"');
                 });
@@ -182,7 +190,7 @@ describe('AbstractServer', function () {
             implementation.protocolName = 'test';
             baseServer.respond = function () { throw 'BOOM'; };
 
-            return Server.create(3000, {}).then(function () {
+            return Server.create({ port: 3000 }).then(function () {
                 baseServer.listeners('request')[0](socket, 'originalRequest', function () {
                     assertLogged('error', '[test:3000] host:port X=> "BOOM"');
                     assert.ok(baseServer.errorHandler.wasCalledWith('BOOM', 'originalRequest'), baseServer.errorHandler.message());

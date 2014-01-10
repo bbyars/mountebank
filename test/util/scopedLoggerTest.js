@@ -25,5 +25,15 @@ describe('scopedLogger', function () {
 
             assert.ok(logger.debug.wasCalledWith('[prefix] nested log'), logger.debug.message());
         });
+
+        it('should allow changing scope', function () {
+            var logger = { debug: mock() },
+                scopedLogger = Logger.create(logger, 'original');
+
+            scopedLogger.changeScope('changed');
+            scopedLogger.debug('log');
+
+            assert.ok(logger.debug.wasCalledWith('[changed] log'), logger.debug.message());
+        })
     });
 });

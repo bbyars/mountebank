@@ -22,7 +22,7 @@ describe('Validator', function () {
 
         it('should be valid if required field present', function () {
             var validator = Validator.create({
-                requiredFields: { key: 'value' }
+                requiredFields: { key: '' }
             });
 
             assert.ok(validator.isValid());

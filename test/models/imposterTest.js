@@ -8,29 +8,34 @@ var assert = require('assert'),
 
 describe('imposter', function () {
     describe('#create', function () {
-        var Protocol, metadata;
+        var Protocol, metadata, server;
 
         beforeEach(function () {
             metadata = {};
+            server = {
+                requests: [],
+                addStub: mock(),
+                metadata: metadata
+            };
             Protocol = {
                 name: 'http',
-                create: mock().returns(Q({
-                    requests: [],
-                    addStub: mock(),
-                    metadata: metadata
-                })),
+                create: mock().returns(Q(server)),
                 close: mock()
             };
         });
 
         promiseIt('should return url', function () {
-            return Imposter.create(Protocol, 3535).then(function (imposter) {
+            server.port = 3535;
+
+            return Imposter.create(Protocol, {}).then(function (imposter) {
                 assert.strictEqual(imposter.url, '/imposters/3535');
             });
         });
 
         promiseIt('should return trimmed down JSON for lists', function () {
-            return Imposter.create(Protocol, 3535).then(function (imposter) {
+            server.port = 3535;
+
+            return Imposter.create(Protocol, {}).then(function (imposter) {
                 assert.deepEqual(imposter.toListJSON(), {
                     protocol: 'http',
                     port: 3535,
@@ -40,7 +45,9 @@ describe('imposter', function () {
         });
 
         promiseIt('should return default JSON representation', function () {
-            return Imposter.create(Protocol, 3535).then(function (imposter) {
+            server.port = 3535;
+
+            return Imposter.create(Protocol, {}).then(function (imposter) {
                 assert.deepEqual(imposter.toJSON(), {
                     protocol: 'http',
                     port: 3535,
@@ -52,9 +59,10 @@ describe('imposter', function () {
         });
 
         promiseIt('should add protocol metadata to JSON representation', function () {
+            server.port = 3535;
             metadata.key = 'value';
 
-            return Imposter.create(Protocol, 3535).then(function (imposter) {
+            return Imposter.create(Protocol, {}).then(function (imposter) {
                 assert.deepEqual(imposter.toJSON(), {
                     protocol: 'http',
                     port: 3535,
@@ -67,13 +75,15 @@ describe('imposter', function () {
         });
 
         promiseIt('should create protocol server on provided port with options', function () {
-            return Imposter.create(Protocol, 3535, { key: 'value' }).then(function () {
-                assert(Protocol.create.wasCalledWith(3535, { key: 'value' }));
+            server.port = 3535;
+
+            return Imposter.create(Protocol, { key: 'value' }).then(function () {
+                assert(Protocol.create.wasCalledWith({ key: 'value' }));
             });
         });
 
         promiseIt('should return list of stubs', function () {
-            return Imposter.create(Protocol, 3535).then(function (imposter) {
+            return Imposter.create(Protocol, {}).then(function (imposter) {
                 imposter.addStub('ONE');
                 imposter.addStub('TWO');
 
@@ -84,7 +94,7 @@ describe('imposter', function () {
         promiseIt('should add stubs during creation', function () {
             var request = { stubs: ['ONE', 'TWO'] };
 
-            return Imposter.create(Protocol, 3535, request).then(function (imposter) {
+            return Imposter.create(Protocol, request).then(function (imposter) {
                 assert.deepEqual(imposter.toJSON().stubs, ['ONE', 'TWO']);
             });
         });
