@@ -1,12 +1,12 @@
 Stories
 =======
+0. stub smtp with accept/reject
 1. add behaviors: { wait: 5000 } to responses
 6. Add brew package
 6. add pkg installer like vagrant
 7. Add rpm package
 8. Add MSI & Windows support
 8. Use cluster module to isolate imposters from each other?
-1. Add latency to stub response
 1. Add http attachment support
 1. Allow regex tokens from request params in response (different resolver)
 21. Prettier /imposters HTML page
@@ -20,11 +20,10 @@ Stories
 32. Change logs page to tail -f the logs file?
 33. Change logs page to link the [http:2526] to the imposter page
 34. Pretty print JSON log messages on /logs page
-35. Have matches be returned only with a query param on GET and DELETE?  Allows for slimmer replays on proxies
-36. Reorder the JSON to have the most important info at top (e.g. _links at bottom; tcp mode above stubs and requests)
+35. Have query param on GET /imposters/{port} that returns slimmest possible payload to replay the imposter
+        - exclude matches and requests
 37. Add button next to code blocks on docs site that allows user to directly execute and compare the results
 38. Add atom feed that only displays when --heroku is set that people can subscribe to for updates
-39. Add twitter handle that ppl can listen to for updates?
 
 Known Bugs
 ==========
@@ -41,10 +40,7 @@ docs:
   - predicate injection - can return truthy or falsy, but mountebank doesn't know what those words mean, so he suggests you return true or false
   - can name imposters
   - at the moment, predicate injection must be synchronous
-  - errors page
-
-smtp:
-- stub smtp with accept/reject
+  - errors page to describe error codes, etc
 
 tcp:
 - allow multiple respond events?
