@@ -8,8 +8,11 @@ and test like you would with traditional stubs and mocks.
 At the moment, the following protocols are supported:
 * http
 * https
-* tcp
+* tcp (text and binary)
 * smtp
+
+mountebank supports mock verification, stubbing with advanced predicates, JavaScript injection,
+and record-playback through proxying.
 
 ## Getting Started
 
@@ -49,8 +52,8 @@ Create a test double:
 
 ## Learn More
 
-After installing, open your browser to http://localhost:2525, or visit the
-[public site](http://mountebank.herokuapp.com/).
+After installing and running, view the docs in your browser at http://localhost:2525, or visit the
+[public site](http://www.mbtest.org/).
 
 ## Support
 

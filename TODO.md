@@ -1,7 +1,7 @@
 Stories
 =======
-0. stub smtp with accept/reject
 1. add behaviors: { wait: 5000 } to responses
+0. stub smtp with accept/reject
 6. Add brew package
 6. add pkg installer like vagrant
 7. Add rpm package

@@ -12,12 +12,13 @@ dry runs all predicates looking for validation errors.  This means that your Jav
 will run once before the imposter is even created.  Lastly, predicate injection must be
 strictly synchronous.</p>
 
-<p>The execution will have access to a node.js environment.  The example below uses node's
-<code>util</code> module to format a log message and send to the logger (technically
-redundant since the logger already does that).  The logger has four methods corresponding
-to the log levels: <code>debug</code>, <code>info</code>, <code>warn</code>, and
-<code>error</code>.  During the dry run, only the <code>error</code> level will
-write to the log.</p>
+<p>The execution will have access to a node.js environment.  The following example uses
+node's <code>Buffer</code> object to decode base64 to a byte array.  The logger has four
+methods corresponding to the log levels: <code>debug</code>, <code>info</code>,
+<code>warn</code>, and <code>error</code>.  During the dry run, only the <code>error</code>
+level will write to the log.  Notice in the example how the predicate can bind to the
+<code>data</code> request element, like all the other examples, but can also bind to the
+full <code>request</code> object (the second stub does this).</p>
 
 <pre><code data-test-id='tcp inject example'
            data-test-step='1'
@@ -30,21 +31,21 @@ Content-Type: application/json
 {
   "port": 4555,
   "protocol": "tcp",
-  "mode": "text",
+  "mode": "binary",
   "stubs": [<strong class='highlight1'>
     {
-      "responses": [{ "is": { "data": "first response" } }],
+      "responses": [{ "is": { "data": "Zmlyc3QgcmVzcG9uc2U=" } }],
       "predicates": {
         "data": {
-          "inject": "function (data, logger) { var util = require('util'); logger.info(util.format('data is %s', data)); return data === 'first\n'; }"
+          "inject": "function (data) { logger.info('Inside injection'); return new Buffer(data, 'base64')[2] &gt; 100; }"
         }
       }
     }</strong>,<strong class='highlight2'>
     {
-      "responses": [{ "is": { "data": "second response" } }],
+      "responses": [{ "is": { "data": "c2Vjb25kIHJlc3BvbnNl" } }],
       "predicates": {
         "request": {
-          "inject": "function (request) { return request.requestFrom.indexOf('localhost') === 0 && request.data === 'second\n'; }"
+          "inject": "function (request) { return request.requestFrom.indexOf('127.0.0.1') === 0 && new Buffer(request.data, 'base64')[2] &lt;= 100; }"
         }
       }
     }</strong>
@@ -52,13 +53,13 @@ Content-Type: application/json
 }
 </code></pre>
 
-<p>The first request matches on the data.  Note that, because our injected JavaScript
-is case-sensitive, so is the predicate, unlike a typical text-mode <code>is</code> predicate.</p>
+<p>The first stub matches if the third byte is greater than 100.  The request we're
+sending is an encoding <code>[99, 100, 101]:</code></p>
 
 <pre><code data-test-id='tcp inject example'
            data-test-step='2'
            data-test-type='exec'>
-echo '<strong class='highlight1'>first</strong>' | nc localhost 4555
+echo '<strong class='highlight1'>Y2Rl</strong>' | base64 --decode | nc localhost 4555
 </code></pre>
 
 <pre><code data-test-id='tcp inject example'
@@ -67,12 +68,13 @@ echo '<strong class='highlight1'>first</strong>' | nc localhost 4555
 </code></pre>
 
 <p>The logs will also show the injected log output.  The second predicate has to
-match a request originating from localhost with the case-sensitive data match:</p>
+match a request originating from localhost with the third byte less than or equal
+to 100.  We're sending <code>[98, 99, 100]</code>:</p>
 
 <pre><code data-test-id='tcp inject example'
            data-test-step='3'
            data-test-type='exec'>
-echo '<strong class='highlight1'>second</strong>' | nc localhost 4555
+echo '<strong class='highlight1'>YmNk</strong>' | base64 --decode | nc localhost 4555
 </code></pre>
 
 <p>...giving the response:</p>
