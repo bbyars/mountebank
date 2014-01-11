@@ -76,6 +76,7 @@ function create (options) {
         '/contributing',
         '/license',
         '/faqs',
+        '/thoughtworks',
         '/docs/gettingStarted',
         '/docs/commandLine',
         '/docs/api/overview',

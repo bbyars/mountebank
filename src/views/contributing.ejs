@@ -33,7 +33,7 @@ of JavaScript contexts.  This helps keep mountebank's simple brain from explodin
 distinguish between those purposes.  First, it is used to request a module from node's package management system.
 Second, it is used to include a dependency in a module.</p>
 
-<p>mountebank humbly requests that you consider whether the design would best be served by using constructor
+<p>mountebank humbly requests that you consider whether the second goal would best be served by using constructor
 dependency injection.  mountebank finds that it keeps the code clean, and makes the code more testable.
 He did initially play with <a href='https://github.com/mfncooper/mockery'>mockery</a> to avoid dependency injection,
 and despite the excellence of the library, he found both the code and tests harder to understand.</p>
@@ -42,37 +42,5 @@ and despite the excellence of the library, he found both the code and tests hard
 
 <p>mountebank asks that you use promises.  He has included <a href='https://github.com/kriskowal/q'>Q</a> in the
 codebase.</p>
-
-<h2>Testing</h2>
-
-<p>mountebank provides a testing tool, and as such, strongly desires that his own code does a good job of testing.
-He is a believer in the <a href='http://martinfowler.com/bliki/TestPyramid.html'>testing pyramid</a>, and has two
-levels in his own code.  The unit tests do not block, and the functional tests generally rely on a running instance
-of <code>mb</code>.</p>
-
-<p>mountebank learned how to unit test asynchronous JavaScript code from
-<a href='http://martinfowler.com/articles/asyncJS.html'>Pete Hodgson</a>, who took the time to show how to unit test
-the <code>impostersController</code> code in this very codebase.  mountebank asks that you unit test the asynchronous
-bits as best as you are able.  Perhaps the
-<a href='https://github.com/bbyars/mountebank/blob/master/test/controllers/impostersControllerTest.js'>impostersControllerTest.js</a>
-would provide some good examples?</p>
-
-<p>For contributors eager to fill in gaps in test coverage, mountebank provides coverage results to
-<a href='https://coveralls.io/r/bbyars/mountebank'>coveralls.io</a>.</p>
-
-<h2>Appearances</h2>
-
-<p>mountebank is deeply concerned with superficial appearances, and has take some pains to ensure that the code
-remains pleasing to gaze upon.  He knows this is silly, and does not wish to discourage submissions because
-of his obsession.</p>
-
-<p>mountebank has two hooks baked into the build script to help enforce surface integrity.  First, he calls
-<code>bin/wsCheck</code>, which fails the build on inconsistent whitespace patterns.  Additionally, mountebank
-has taken Douglas Crockford's suggestion of using a space between the <code>function</code> keyword
-and its argument list for function declarations, and no space between them for function calls.  <code>bin/jscheck</code>
-validates that convention, and will fail the build if it is not obeyed.</p>
-
-<p>A few other static analysis rules are configured through jshint in the <code>Gruntfile.js</code>.  If they impede your
-ability to commit a good change, mountebank is happy for you to reconfigure them, or add an exclusion.</p>
 
 <% include _footer %>

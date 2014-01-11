@@ -2,42 +2,88 @@
 
 <h1>http</h1>
 
-<h2>Request</h2>
+<h2>Imposter Creation Parameters</h2>
 
 <table>
-    <tr>
-        <th>Field</th>
-        <th>Description</th>
-        <th>Type</th>
-    </tr>
-    <tr>
-        <td><code>path</code></td>
-        <td>The path of the request, without the querystring</td>
-        <td>string</td>
-    </tr>
-    <tr>
-        <td><code>query</code></td>
-        <td>The querystring of the request</td>
-        <td>object</td>
-    </tr>
-    <tr>
-        <td><code>method</code></td>
-        <td>The request method</td>
-        <td>string</td>
-    </tr>
-    <tr>
-        <td><code>headers</code></td>
-        <td>The HTTP headers</td>
-        <td>object</td>
-    </tr>
-    <tr>
-        <td><code>body</code></td>
-        <td>The request body</td>
-        <td>string</td>
-    </tr>
+  <tr>
+    <th>Parameter</th>
+    <th>Options</th>
+    <th>Required?</th>
+    <th>Default</th>
+    <th>Description</th>
+  </tr>
+  <tr>
+    <td><code>protocol</code></td>
+    <td><code>http</code></td>
+    <td>Yes</td>
+    <td>N/A</td>
+    <td>&nbsp;</td>
+  </tr>
+  <tr>
+    <td><code>port</code></td>
+    <td>Any valid port number</td>
+    <td>No</td>
+    <td>A randomly assigned port.  mountebank will return the actual value
+    in the <code>POST</code> response.</td>
+    <td>The port to run the imposter on.</td>
+  </tr>
+  <tr>
+    <td><code>stubs</code></td>
+    <td>A stub request.</td>
+    <td>No</td>
+    <td><code>{
+      "is": {
+        "statusCode": 200,
+        "headers": { "connection": "close"},
+        "body": ""
+      }
+    }</code></td>
+    <td>Defines the response to send when certain conditions are met.  See examples
+    below.</td>
+  </tr>
 </table>
 
-<h2>Responses</h2>
+<h2>HTTP Requests</h2>
+
+<table>
+  <tr>
+      <th>Field</th>
+      <th>Description</th>
+      <th>Type</th>
+  </tr>
+  <tr>
+    <td><code>requestFrom</code></td>
+    <td>The client socket, primarily used for logging and debugging.</td>
+    <td>string</td>
+  </tr>
+  <tr>
+      <td><code>path</code></td>
+      <td>The path of the request, without the querystring</td>
+      <td>string</td>
+  </tr>
+  <tr>
+      <td><code>query</code></td>
+      <td>The querystring of the request</td>
+      <td>object</td>
+  </tr>
+  <tr>
+      <td><code>method</code></td>
+      <td>The request method</td>
+      <td>string</td>
+  </tr>
+  <tr>
+      <td><code>headers</code></td>
+      <td>The HTTP headers</td>
+      <td>object</td>
+  </tr>
+  <tr>
+      <td><code>body</code></td>
+      <td>The request body</td>
+      <td>string</td>
+  </tr>
+</table>
+
+<h2>HTTP Responses</h2>
 
 <table>
   <tr>

@@ -2,83 +2,175 @@
 
 <h1>tcp</h1>
 
-<p>The examples below use netcat (<code>nc</code>) to send TCP data over a socket,
-which like <code>telnet</code>, but makes the output easier to get.</p>
+<h2>Imposter Creation Parameters</h2>
+
+<table>
+  <tr>
+    <th>Parameter</th>
+    <th>Options</th>
+    <th>Required?</th>
+    <th>Default</th>
+    <th>Description</th>
+  </tr>
+  <tr>
+    <td><code>protocol</code></td>
+    <td><code>tcp</code></td>
+    <td>Yes</td>
+    <td>N/A</td>
+    <td>&nbsp;</td>
+  </tr>
+  <tr>
+    <td><code>port</code></td>
+    <td>Any valid port number</td>
+    <td>No</td>
+    <td>A randomly assigned port.  mountebank will return the actual value
+    in the <code>POST</code> response.</td>
+    <td>The port to run the imposter on.</td>
+  </tr>
+  <tr>
+    <td><code>mode</code></td>
+    <td><code>text</code> or <code>binary</code>.</td>
+    <td>No</td>
+    <td><code>text</code></td>
+    <td>Defines the encoding used for request and response stings.  <code>text</code>
+    strings will use utf8 encoding, and <code>binary</code> strings will use
+    base64 encoding.  See examples below.</td>
+  </tr>
+  <tr>
+    <td><code>stubs</code></td>
+    <td>A stub request.</td>
+    <td>No</td>
+    <td><code>{ "is": { "data": "" } }</code>, which does not respond.</td>
+    <td>Defines the response to send when certain conditions are met.  See examples
+    below.</td>
+  </tr>
+</table>
+
+<h2>TCP Requests</h2>
+
+<table>
+  <tr>
+    <th>Field</th>
+    <th>Descripion</th>
+    <th>Type</th>
+  </tr>
+  <tr>
+    <td><code>requestFrom</code></td>
+    <td>The client socket, primarily used for logging and debugging.</td>
+    <td>string</td>
+  </tr>
+  <tr>
+    <td><code>data</code></td>
+    <td>The request data.</td>
+    <td>string - the imposter <code>mode</code> defines how the string
+    is encoded.</td>
+  </tr>
+</table>
+
+<h2>TCP Responses</h2>
+
+<table>
+  <tr>
+    <th>Field</th>
+    <th>Type</th>
+    <th>Default</th>
+  </tr>
+  <tr>
+    <td><code>data</code></td>
+    <td>string</td>
+    <td>an empty string, which does not respond</td>
+  </tr>
+</table>
 
 <h2>Examples</h2>
 
+<p>The examples below use netcat (<code>nc</code>) to send TCP data over a socket,
+  which is like <code>telnet</code>, but makes the output easier to get.</p>
+
 <h3>Predicates</h3>
+
+<section class="accordion">
+  <div>
+    <input id="predicates-is" name="predicates-is" type="checkbox" />
+      <label for="predicates-is">is</label>
+      <section>
+        <% include tcp/predicates/is %>
+      </section>
+  </div>
+  <div>
+    <input id="predicates-contains" name="predicates-contains" type="checkbox" />
+      <label for="predicates-contains">contains</label>
+      <section>
+        <% include tcp/predicates/contains %>
+      </section>
+  </div>
+  <div>
+    <input id="predicates-startsWith" name="predicates-startsWith" type="checkbox" />
+    <label for="predicates-startsWith">startsWith</label>
+    <section>
+      <% include tcp/predicates/startsWith %>
+    </section>
+  </div>
+  <div>
+    <input id="predicates-endsWith" name="predicates-endsWith" type="checkbox" />
+    <label for="predicates-endsWith">endsWith</label>
+    <section>
+      <% include tcp/predicates/endsWith %>
+    </section>
+  </div>
+  <div>
+    <input id="predicates-matches" name="predicates-matches" type="checkbox" />
+    <label for="predicates-matches">matches</label>
+    <section>
+      <% include tcp/predicates/matches %>
+    </section>
+  </div>
+  <div>
+    <input id="predicates-exists" name="predicates-exists" type="checkbox" />
+    <label for="predicates-exists">exists</label>
+    <section>
+      <% include tcp/predicates/exists %>
+    </section>
+  </div>
+  <div>
+    <input id="predicates-not" name="predicates-not" type="checkbox" />
+    <label for="predicates-not">not</label>
+    <section>
+      <% include tcp/predicates/not %>
+    </section>
+  </div>
+  <div>
+    <input id="predicates-or" name="predicates-or" type="checkbox" />
+    <label for="predicates-or">or</label>
+    <section>
+      <% include tcp/predicates/or %>
+    </section>
+  </div>
+  <div>
+    <input id="predicates-and" name="predicates-and" type="checkbox" />
+    <label for="predicates-and">and</label>
+    <section>
+      <% include tcp/predicates/and %>
+    </section>
+  </div>
+  <div>
+    <input id="predicates-inject" name="predicates-inject" type="checkbox" />
+    <label for="predicates-inject">inject</label>
+    <section>
+      <% include tcp/predicates/inject.ejs %>
+    </section>
+  </div>
+</section>
+
+<h3>Stub resolvers</h3>
 
 <section class="accordion">
   <div>
     <input id="is" name="is" type="checkbox" />
       <label for="is">is</label>
       <section>
-        <% include tcp/predicates/is %>
+        <p>See all the predicate examples above.</p>
       </section>
-  </div>
-  <div>
-    <input id="contains" name="contains" type="checkbox" />
-      <label for="contains">contains</label>
-      <section>
-        <% include tcp/predicates/contains %>
-      </section>
-  </div>
-  <div>
-    <input id="startsWith" name="startsWith" type="checkbox" />
-    <label for="startsWith">startsWith</label>
-    <section>
-      <% include tcp/predicates/startsWith %>
-    </section>
-  </div>
-  <div>
-    <input id="endsWith" name="endsWith" type="checkbox" />
-    <label for="endsWith">endsWith</label>
-    <section>
-      <% include tcp/predicates/endsWith %>
-    </section>
-  </div>
-  <div>
-    <input id="matches" name="matches" type="checkbox" />
-    <label for="matches">matches</label>
-    <section>
-      <% include tcp/predicates/matches %>
-    </section>
-  </div>
-  <div>
-    <input id="exists" name="exists" type="checkbox" />
-    <label for="exists">exists</label>
-    <section>
-      <% include tcp/predicates/exists %>
-    </section>
-  </div>
-  <div>
-    <input id="not" name="not" type="checkbox" />
-    <label for="not">not</label>
-    <section>
-      <% include tcp/predicates/not %>
-    </section>
-  </div>
-  <div>
-    <input id="or" name="or" type="checkbox" />
-    <label for="or">or</label>
-    <section>
-      <% include tcp/predicates/or %>
-    </section>
-  </div>
-  <div>
-    <input id="and" name="and" type="checkbox" />
-    <label for="and">and</label>
-    <section>
-      <% include tcp/predicates/and %>
-    </section>
-  </div>
-  <div>
-    <input id="inject" name="inject" type="checkbox" />
-    <label for="inject">inject</label>
-    <section>
-      <% include tcp/predicates/inject.ejs %>
-    </section>
   </div>
 </section>
 

@@ -2,5 +2,120 @@
 
 <h1>smtp</h1>
 
+<p>At the moment, the smtp imposters only support <a href='/docs/api/mocks'>mock verification</a>.
+Stubbing support is coming soon.  mountebank expects stub responses will be acceptance or rejection
+of the message.</p>
+
+<h2>Imposter Creation Parameters</h2>
+
+<table>
+  <tr>
+    <th>Parameter</th>
+    <th>Options</th>
+    <th>Required?</th>
+    <th>Default</th>
+    <th>Description</th>
+  </tr>
+  <tr>
+    <td><code>protocol</code></td>
+    <td><code>smtp</code></td>
+    <td>Yes</td>
+    <td>N/A</td>
+    <td>&nbsp;</td>
+  </tr>
+  <tr>
+    <td><code>port</code></td>
+    <td>Any valid port number</td>
+    <td>No</td>
+    <td>A randomly assigned port.  mountebank will return the actual value
+    in the <code>POST</code> response.</td>
+    <td>The port to run the imposter on.</td>
+  </tr>
+</table>
+
+<h2>SMTP Requests</h2>
+
+<table>
+  <tr>
+      <th>Field</th>
+      <th>Description</th>
+      <th>Type</th>
+  </tr>
+  <tr>
+    <td><code>requestFrom</code></td>
+    <td>The client socket, primarily used for logging and debugging.  mountebank
+    currently is unable to get the client port, but may fix that in the near future.</td>
+    <td>string</td>
+  </tr>
+  <tr>
+      <td><code>envelopeFrom</code></td>
+      <td>The from address sent in the <code>MAIL</code> command, used as the return
+      address for bounces.  Many client SMTP APIs do not expose this field, and keep it the
+      same as the <code>from</code> field.</td>
+      <td>string</td>
+  </tr>
+  <tr>
+      <td><code>envelopeTo</code></td>
+      <td>The address sent using the <code>RCPT</code> command.  Many client SMTP APIs
+      hide this field, deriving it from the <code>to</code>, <code>cc</code>, and
+      <code>bcc</code> fields.</td>
+      <td>string</td>
+  </tr>
+  <tr>
+      <td><code>from</code></td>
+      <td>The sender of the message (sent in the <code>DATA</code> command).</td>
+      <td>string</td>
+  </tr>
+  <tr>
+      <td><code>to</code></td>
+      <td>The recipients of the message (sent in the <code>DATA</code> command).</td>
+      <td>array</td>
+  </tr>
+  <tr>
+      <td><code>cc</code></td>
+      <td>The CC recipients of the message</td>
+      <td>array</td>
+  </tr>
+  <tr>
+    <td><code>bcc</code></td>
+    <td>The BCC recipients of the message</td>
+    <td>array</td>
+  </tr>
+  <tr>
+    <td><code>subject</code></td>
+    <td>The subject of the message</td>
+    <td>array</td>
+  </tr>
+  <tr>
+    <td><code>priority</code></td>
+    <td>The priority of the message</td>
+    <td>string</td>
+  </tr>
+  <tr>
+    <td><code>references</code></td>
+    <td>The references of the message</td>
+    <td>array</td>
+  </tr>
+  <tr>
+    <td><code>inReplyTo</code></td>
+    <td>The in reply to of the message</td>
+    <td>array</td>
+  </tr>
+  <tr>
+    <td><code>text</code></td>
+    <td>The text-only message</td>
+    <td>string</td>
+  </tr>
+  <tr>
+    <td><code>html</code></td>
+    <td>The html message</td>
+    <td>string</td>
+  </tr>
+  <tr>
+    <td><code>attachments</code></td>
+    <td>The message attachments</td>
+    <td>array</td>
+  </tr>
+</table>
 
 <% include ../../_footer %>
