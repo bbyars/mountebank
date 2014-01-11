@@ -1,0 +1,64 @@
+<p>The <code>or</code> predicate matches if all of its sub-predicates match.</p>
+
+<pre><code data-test-id='tcp and example'
+           data-test-step='1'
+           data-test-type='http'>
+POST /imposters HTTP/1.1
+Host: localhost:<%= port %>
+Accept: application/json
+Content-Type: application/json
+
+{
+  "port": 4554,
+  "protocol": "tcp",
+  "mode": "text",
+  "stubs": [<strong class='highlight1'>
+    {
+      "responses": [{ "is": { "data": "matches" } }],
+      "predicates": { "data": { "and": [
+        { "startsWith": "start" },
+        { "endsWith": "end\n" },
+        { "contains": "middle" }
+      ] } }
+    }</strong>
+  ]
+}
+</code></pre>
+
+<p>The first request matches all sub-predicates, triggering the stub response:</p>
+
+<pre><code data-test-id='tcp and example'
+           data-test-step='2'
+           data-test-type='exec'>
+echo '<strong class='highlight1'>start middle end</strong>' | nc localhost 4554
+</code></pre>
+
+<pre><code data-test-id='tcp and example'
+           data-test-verify-step='2'>
+<strong class='highlight1'>matches</strong>
+</code></pre>
+
+<p>The stub matches two of the three sub-predicates, which is not enough to match
+the <code>and</code> predicate.</p>
+
+<p>The stub does not match none of the sub-predicates match...</p>
+
+<pre><code data-test-id='tcp and example'
+           data-test-step='5'
+           data-test-type='exec'>
+echo '<strong class='highlight1'>start end</strong>' | nc localhost 4554
+</code></pre>
+
+<p>No response is sent.</p>
+
+<pre><code data-test-id='tcp and example'
+           data-test-verify-step='5'>
+</code></pre>
+
+<code class='hidden' data-test-id='tcp and example'
+                     data-test-step='6'
+                     data-test-type='http'>
+DELETE /imposters/4554 HTTP/1.1
+Host: localhost:<%= port %>
+Accept: application/json
+</code>

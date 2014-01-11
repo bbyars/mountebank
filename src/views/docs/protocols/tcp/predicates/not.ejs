@@ -1,0 +1,60 @@
+<p>The <code>not</code> predicate negates its child predicate.</p>
+
+<pre><code data-test-id='tcp not example'
+           data-test-step='1'
+           data-test-type='http'>
+POST /imposters HTTP/1.1
+Host: localhost:<%= port %>
+Accept: application/json
+Content-Type: application/json
+
+{
+  "port": 4552,
+  "protocol": "tcp",
+  "mode": "text",
+  "stubs": [<strong class='highlight1'>
+    {
+      "responses": [{ "is": { "data": "not test" } }],
+      "predicates": { "data": { "not": { "is": "test\n" } } }
+    }</strong>,<strong class='highlight2'>
+    {
+      "responses": [{ "is": { "data": "test" } }],
+      "predicates": { "data": { "is": "test\n" } }
+    }</strong>
+  ]
+}
+</code></pre>
+
+<p>The first stub matches if the <code>is</code> sub-predicate does not match:</p>
+
+<pre><code data-test-id='tcp not example'
+           data-test-step='2'
+           data-test-type='exec'>
+echo '<strong class='highlight1'>production</strong>' | nc localhost 4552
+</code></pre>
+
+<pre><code data-test-id='tcp not example'
+           data-test-verify-step='2'>
+<strong class='highlight1'>not test</strong>
+</code></pre>
+
+<p>As expected, the second stub matches if the <code>is</code> sub-predicate does match:</p>
+
+<pre><code data-test-id='tcp not example'
+           data-test-step='3'
+           data-test-type='exec'>
+echo '<strong class='highlight1'>test</strong>' | nc localhost 4552
+</code></pre>
+
+<pre><code data-test-id='tcp not example'
+           data-test-verify-step='3'>
+<strong class='highlight1'>test</strong>
+</code></pre>
+
+<code class='hidden' data-test-id='tcp not example'
+                     data-test-step='4'
+                     data-test-type='http'>
+DELETE /imposters/4552 HTTP/1.1
+Host: localhost:<%= port %>
+Accept: application/json
+</code>

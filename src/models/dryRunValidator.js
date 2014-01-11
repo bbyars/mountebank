@@ -22,7 +22,7 @@ function create (options) {
             clone = helpers.clone(stub); // proxyOnce changes state
 
         if (hasInjection(stub)) {
-            logger.warn('dry running injections...');
+            logger.warn('dry running injection...');
         }
         stubRepository.addStub(clone);
         return stubRepository.resolve(options.testRequest, dryRunLogger);

@@ -1,0 +1,87 @@
+<p>The <code>or</code> predicate matches if any of its sub-predicates match.</p>
+
+<pre><code data-test-id='tcp or example'
+           data-test-step='1'
+           data-test-type='http'>
+POST /imposters HTTP/1.1
+Host: localhost:<%= port %>
+Accept: application/json
+Content-Type: application/json
+
+{
+  "port": 4553,
+  "protocol": "tcp",
+  "mode": "text",
+  "stubs": [<strong class='highlight1'>
+    {
+      "responses": [{ "is": { "data": "matches" } }],
+      "predicates": { "data": { "or": [
+        { "startsWith": "start" },
+        { "endsWith": "end\n" },
+        { "contains": "middle" }
+      ] } }
+    }</strong>
+  ]
+}
+</code></pre>
+
+<p>The stub matches if the first sub-predicate matches:</p>
+
+<pre><code data-test-id='tcp or example'
+           data-test-step='2'
+           data-test-type='exec'>
+echo '<strong class='highlight1'>start data transmission</strong>' | nc localhost 4553
+</code></pre>
+
+<pre><code data-test-id='tcp or example'
+           data-test-verify-step='2'>
+<strong class='highlight1'>matches</strong>
+</code></pre>
+
+<p>The stub matches if the second sub-predicate matches:</p>
+
+<pre><code data-test-id='tcp or example'
+           data-test-step='3'
+           data-test-type='exec'>
+echo '<strong class='highlight1'>data transmission end</strong>' | nc localhost 4553
+</code></pre>
+
+<pre><code data-test-id='tcp or example'
+           data-test-verify-step='3'>
+<strong class='highlight1'>matches</strong>
+</code></pre>
+
+<p>The stub matches if the last sub-predicate matches:</p>
+
+<pre><code data-test-id='tcp or example'
+           data-test-step='4'
+           data-test-type='exec'>
+echo '<strong class='highlight1'>data middle transmission</strong>' | nc localhost 4553
+</code></pre>
+
+<pre><code data-test-id='tcp or example'
+           data-test-verify-step='4'>
+<strong class='highlight1'>matches</strong>
+</code></pre>
+
+<p>The stub does not match none of the sub-predicates match...</p>
+
+<pre><code data-test-id='tcp or example'
+           data-test-step='5'
+           data-test-type='exec'>
+echo '<strong class='highlight1'>data transmission</strong>' | nc localhost 4553
+</code></pre>
+
+<p>...which yields an empty response:</p>
+
+<pre><code data-test-id='tcp or example'
+           data-test-verify-step='5'>
+</code></pre>
+
+<code class='hidden' data-test-id='tcp or example'
+                     data-test-step='6'
+                     data-test-type='http'>
+DELETE /imposters/4553 HTTP/1.1
+Host: localhost:<%= port %>
+Accept: application/json
+</code>
