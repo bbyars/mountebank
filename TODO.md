@@ -6,7 +6,6 @@ Stories
 6. add pkg installer like vagrant
 7. Add rpm package
 8. Add MSI & Windows support
-8. Use cluster module to isolate imposters from each other?
 1. Add http attachment support
 1. Allow regex tokens from request params in response (different resolver)
 21. Prettier /imposters HTML page
@@ -14,15 +13,12 @@ Stories
 23. Prettier /imposter/{port} HTML page
 26. Add support for case-sensitive predicates (as objects instead of strings?)
 27. paging and q= filtering for imposters on GET /imposters
-28. UDP and TCP syslog support (see http://en.wikipedia.org/wiki/Syslog for packet format)
 30. javadoc style documentation? (look at simplesmtp code)
 31. Package npm without tests and files not needed for runtime
-32. Change logs page to tail -f the logs file?
 33. Change logs page to link the [http:2526] to the imposter page
 34. Pretty print JSON log messages on /logs page
 35. Have query param on GET /imposters/{port} that returns slimmest possible payload to replay the imposter
         - exclude matches and requests
-37. Add button next to code blocks on docs site that allows user to directly execute and compare the results
 38. Add atom feed that only displays when --heroku is set that people can subscribe to for updates
 
 Known Bugs
@@ -30,7 +26,6 @@ Known Bugs
 1. grunt does not kill mb if functional tests fail
 2. TCP proxying doesn't work if proxied server doesn't send a response
    - add a timeout parameter, and always resolve if no response by that time?
-3. TCP proxying only returns first data event (need callback instead of promise to callback multiple times?)
 
 Cleanup Needed
 ==============
@@ -41,18 +36,16 @@ docs:
   - at the moment, predicate injection must be synchronous
   - errors page to describe error codes, etc
 
-tcp:
-- allow multiple respond events?
-    - TCP response should be an array of data elements?
-
-Pre-release review
-==================
 API:
 - are predicates OK or do I need another layer of indirection to add case-insensitivity, etc?
 - come up with better name than 'remember' for proxyAll
 - proxy and proxyAll are confusing - proxyAll doesn't always proxy, but proxy does
 
-Auxiliary Projects
-==================
-1. Java binding
-2. C# binding
+Rainy day ideas to try out
+=================================
+The ideas below aren't guaranteed to be good ;>
+
+1. Use cluster module to isolate imposters from each other?
+2. UDP and TCP syslog support (see http://en.wikipedia.org/wiki/Syslog for packet format)
+3. Change logs page to tail -f the logs file?
+4. Add button next to code blocks on docs site that allows user to directly execute and compare the results

@@ -16,14 +16,20 @@ function create (logger, encoding) {
 
     function setupProxy (options, originalRequest) {
         var socket = net.connect(options, function () {
-            socket.end(originalRequest.data);
+            socket.end(new Buffer(originalRequest.data, encoding));
         });
         return socket;
     }
 
     function proxy (socket) {
+        var packets = [];
         var deferred = Q.defer();
-        socket.once('data', function (data) { deferred.resolve({ data: data.toString(encoding) }); });
+        socket.on('data', function (data) {
+            packets.push(data);
+        });
+        socket.on('end', function () {
+            deferred.resolve({ data: Buffer.concat(packets).toString(encoding) });
+        });
         return deferred.promise;
     }
 

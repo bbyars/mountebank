@@ -5,6 +5,7 @@ var assert = require('assert'),
     api = require('../api'),
     promiseIt = require('../../testHelpers').promiseIt,
     port = api.port + 1,
+    net = require('net'),
     timeout = parseInt(process.env.SLOW_TEST_TIMEOUT_MS || 3000);
 
 describe('tcp proxy', function () {
@@ -40,6 +41,24 @@ describe('tcp proxy', function () {
                 assert.deepEqual(new Buffer(response.data, 'base64').toJSON(), [0, 1, 2, 3]);
             }).finally(function () {
                 return api.del('/imposters/' + port);
+            });
+        });
+
+        promiseIt('should wait for remote socket to end before returning', function () {
+            var server = net.createServer(function (client) {
+                client.on('data', function () {
+                    // force multiple data packets
+                    client.write((new Array(10*1024*1024)).join("x"));
+                });
+            });
+            server.listen(port);
+
+            var proxy = Proxy.create(logger, 'utf8');
+
+            return proxy.to({ host: 'localhost', port: port }, { data: 'hello, world!' }).then(function (response) {
+                assert.strictEqual(response.data.length, 10*1024*1024 - 1);
+            }).finally(function () {
+                server.close();
             });
         });
 
