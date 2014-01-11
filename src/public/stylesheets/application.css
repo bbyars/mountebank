@@ -40,10 +40,7 @@ header nav {
 
 footer nav {
     position: relative;
-}
-
-nav.horizontal {
-    left: 8em;
+    left: 10em;
 }
 
 ul {
@@ -90,6 +87,7 @@ nav.vertical p {
     width: 10em;
     float: left;
     border-right: 1px solid #aaa;
+    margin-bottom: 2em;
 }
 
 #content {
@@ -156,6 +154,10 @@ blockquote p {
     margin: 0 0 15px 0;
     font-style: italic;
     color: #666;
+}
+
+blockquote p em {
+    font-style: normal;
 }
 
 p.cite {
