@@ -4,7 +4,7 @@ node_js:
 
 env:
   global:
-    - SLOW_TEST_TIMEOUT_MS=3000
+    - SLOW_TEST_TIMEOUT_MS=4000
 
 script: ./build
 

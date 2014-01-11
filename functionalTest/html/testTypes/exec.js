@@ -8,9 +8,8 @@ var exec = require('child_process').exec,
 function execute (command) {
     var deferred = Q.defer();
 
-    exec(command, function (error, stdout, stderr) {
+    exec(command, function (error, stdout) {
         if (error) {
-            error.message += '\n\nwhen executing: ' + command + '\nstderr: ' + stderr;
             deferred.reject(error);
         }
         else {
@@ -31,7 +30,10 @@ function runStep (step) {
         step.result = stdout;
         fs.unlinkSync(filename);
         deferred.resolve(step);
-    }, deferred.reject);
+    }, function (reason) {
+        console.log('Error executing following command: ' + step.execute);
+        deferred.reject(reason);
+    });
 
     return deferred.promise;
 }

@@ -1,0 +1,177 @@
+<p>Let's create a text-based imposter with multiple stubs.  Binary imposters won't
+see any interesting behavior difference with only <code>startsWith</code> predicates:</p>
+
+<pre><code data-test-id='tcp startsWith example'
+           data-test-step='1'
+           data-test-type='http'>
+POST /imposters HTTP/1.1
+Host: localhost:<%= port %>
+Accept: application/json
+Content-Type: application/json
+
+{
+  "port": 4548,
+  "protocol": "tcp",
+  "mode": "text",
+  "stubs": [<strong class='highlight1'>
+    {
+      "responses": [{ "is": { "data": "first response" } }],
+      "predicates": { "data": { "startsWith": "first" } }
+    }</strong>,<strong class='highlight2'>
+    {
+      "responses": [{ "is": { "data": "second response" } }],
+      "predicates": { "data": { "startsWith": "second" } }
+    }</strong>,<strong class='highlight3'>
+    {
+      "responses": [{ "is": { "data": "third response" } }],
+      "predicates": { "data": { "startsWith": "second" } }
+    }</strong>
+  ]
+}
+</code></pre>
+
+<p>The match is not case-sensitive:</p>
+
+<pre><code data-test-id='tcp startsWith example'
+           data-test-step='2'
+           data-test-type='exec'>
+echo '<strong class='highlight1'>FIRST REQUEST</strong>' | nc localhost 4548
+</code></pre>
+
+<pre><code data-test-id='tcp startsWith example'
+           data-test-verify-step='2'>
+<strong class='highlight1'>first response</strong>
+</code></pre>
+
+<p>The same is true for the second stub.</p>
+
+<pre><code data-test-id='tcp startsWith example'
+           data-test-step='3'
+           data-test-type='exec'>
+echo '<strong class='highlight2'>Second Request</strong>' | nc localhost 4548
+</code></pre>
+
+<pre><code data-test-id='tcp startsWith example'
+           data-test-verify-step='3'>
+<strong class='highlight2'>second response</strong>
+</code></pre>
+
+<p>The third stub will never run, since it matches the same requests as the
+second stub.  mountebank always chooses the first stub that matches based on
+the order you add them to the <code>stubs</code> array when creating the
+imposter.</p>
+
+<code class='hidden' data-test-id='tcp startsWith example'
+                     data-test-step='4'
+                     data-test-type='http'>
+GET /imposters/4548 HTTP/1.1
+Host: localhost:<%= port %>
+Accept: application/json
+</code>
+
+<code class='hidden' data-test-id='tcp startsWith example'
+                     data-test-verify-step='4'
+                     data-test-type='http'
+                     data-test-ignore-lines='["^Date", "requestFrom", "timestamp"]'>
+HTTP/1.1 200 OK
+Vary: Accept
+Content-Type: application/json
+Content-Length: 1606
+Date: Thu, 09 Jan 2014 02:27:21 GMT
+Connection: keep-alive
+
+{
+  "protocol": "tcp",
+  "port": 4548,
+  "mode": "text",
+  "requests": [
+    {
+      "data": "FIRST REQUEST\n"
+    },
+    {
+      "data": "Second Request\n"
+    }
+  ],
+  "stubs": [
+    {
+      "responses": [
+        {
+          "is": {
+            "data": "first response"
+          }
+        }
+      ],
+      "predicates": {
+        "data": {
+          "startsWith": "first"
+        }
+      },
+      "matches": [
+        {
+          "timestamp": "2014-01-09T02:27:21.859Z",
+          "request": {
+            "requestFrom": "127.0.0.1:58508",
+            "data": "FIRST REQUEST\n"
+          },
+          "response": {
+            "data": "first response"
+          }
+        }
+      ]
+    },
+    {
+      "responses": [
+        {
+          "is": {
+            "data": "second response"
+          }
+        }
+      ],
+      "predicates": {
+        "data": {
+          "startsWith": "second"
+        }
+      },
+      "matches": [
+        {
+          "timestamp": "2014-01-09T02:27:21.872Z",
+          "request": {
+            "requestFrom": "127.0.0.1:58510",
+            "data": "Second Request\n"
+          },
+          "response": {
+            "data": "second response"
+          }
+        }
+      ]
+    },
+    {
+      "responses": [
+        {
+          "is": {
+            "data": "third response"
+          }
+        }
+      ],
+      "predicates": {
+        "data": {
+          "startsWith": "second"
+        }
+      }
+    }
+  ],
+  "_links": {
+    "self": {
+      "href": "http://localhost:<%= port %>/imposters/4548"
+    }
+  }
+}
+</code>
+
+<code class='hidden' data-test-id='tcp startsWith example'
+                     data-test-step='5'
+                     data-test-type='http'>
+DELETE /imposters/4548 HTTP/1.1
+Host: localhost:<%= port %>
+Accept: application/json
+</code>
