@@ -84,6 +84,7 @@ function create (options) {
         '/docs/api/predicates',
         '/docs/api/proxies',
         '/docs/api/injection',
+        '/docs/api/errors',
         '/docs/protocols/http',
         '/docs/protocols/https',
         '/docs/protocols/tcp',

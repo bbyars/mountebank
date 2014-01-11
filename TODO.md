@@ -34,7 +34,6 @@ docs:
   - predicate injection - can return truthy or falsy, but mountebank doesn't know what those words mean, so he suggests you return true or false
   - can name imposters
   - at the moment, predicate injection must be synchronous
-  - errors page to describe error codes, etc
 
 API:
 - are predicates OK or do I need another layer of indirection to add case-insensitivity, etc?

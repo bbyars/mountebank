@@ -1,0 +1,55 @@
+<% include ../../_header %>
+
+<h1>Errors</h1>
+
+<p>mountebank is sorry you are running into errors.  To help you diagnose
+the problem, he has listed the API error codes below.  Feel free to
+<a href='/support'>ask for help</a> if you get stuck.</p>
+
+<table>
+  <tr>
+    <th>Error code</th>
+    <th>Description</th>
+  </tr>
+  <tr>
+    <td><code>bad data</code></td>
+    <td>A general validation error.  Something in the input is invalid.</td>
+  </tr>
+  <tr>
+    <td><code>invalid injection</code></td>
+    <td>You are using the <code>inject</code> operator, either as a predicate
+    or stub resolver.  Perhaps you have not run <code>mb</code> with the
+    <code>--allowInjection</code> flag, or perhaps there is an error in the
+    JavaScript you are injecting.  Consider using the node.js
+    <code>console</code> or mountebank <code>logger</code> objects to help
+    debug the problem.</td>
+  </tr>
+  <tr>
+    <td><code>resource conflict</code></td>
+    <td>You have specified a port already in use by another application.
+    Try killing the other application, or use a different port for the
+    imposter.</td>
+  </tr>
+  <tr>
+    <td><code>insufficient access</code></td>
+    <td>You have requested an imposter port that the user running
+    <code>mb</code> is not authorized to provide.  Either request a
+    different port, or run <code>mb</code> as <code>sudo</code>.</td>
+  </tr>
+  <tr>
+    <td><code>invalid proxy</code></td>
+    <td>You have configured a proxy stub resolver with an invalid address,
+    or the server has refused the connection.  Double check the DNS name or
+    IP address, and double check the port.  If <code>mb</code> is running
+    on a different network than you are, does he have the same connectivity
+    to the proxy that you do?</td>
+  </tr>
+  <tr>
+    <td><code>no such resource</code></td>
+    <td>A 404 error code.  Probably, you are attempting to access an
+    imposter that has not been created yet.  Try POSTing to /imposters
+    first?</td>
+  </tr>
+</table>
+
+<% include ../../_footer %>

@@ -11,8 +11,6 @@ describe('html validation', function () {
     this.timeout(timeout);
 
     [
-        '/about',
-        /*'/support',*/
         '/contributing',
         '/license',
         '/faqs',
@@ -24,6 +22,7 @@ describe('html validation', function () {
         '/docs/api/predicates',
         '/docs/api/proxies',
         '/docs/api/injection',
+        '/docs/api/errors',
         '/docs/protocols/http',
         '/docs/protocols/https',
         '/docs/protocols/tcp',
