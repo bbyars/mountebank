@@ -170,7 +170,7 @@ describe('stubResolver', function () {
         promiseIt('should allow asynchronous injection', function () {
             var resolver = StubResolver.create({}, combinators.identity),
                 logger = { debug: mock() },
-                fn = 'function (request, state, callback) {\n' +
+                fn = 'function (request, state, logger, callback) {\n' +
                      '    setTimeout(function () { callback("value"); }, 1);\n' +
                     '}',
                 stub = { inject: fn },

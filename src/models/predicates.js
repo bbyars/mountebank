@@ -82,7 +82,7 @@ module.exports = {
         /* jshint evil: true, unused: false */
         var arg = fieldName === 'request' ? request : request[fieldName],
             scope = helpers.clone(arg), // prevent state-changing operations
-            injected =  '(' + predicate + ')(scope);';
+            injected =  '(' + predicate + ')(scope, logger);';
         try {
             return eval(injected);
         }

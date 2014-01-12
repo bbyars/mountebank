@@ -37,7 +37,7 @@ Content-Type: application/json
       "responses": [{ "is": { "data": "Zmlyc3QgcmVzcG9uc2U=" } }],
       "predicates": {
         "data": {
-          "inject": "function (data) { logger.info('Inside injection'); return new Buffer(data, 'base64')[2] &gt; 100; }"
+          "inject": "function (data, logger) { logger.info('Inside injection'); return new Buffer(data, 'base64')[2] &gt; 100; }"
         }
       }
     }</strong>,<strong class='highlight2'>

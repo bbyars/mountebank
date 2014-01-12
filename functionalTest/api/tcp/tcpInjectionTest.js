@@ -108,7 +108,7 @@ describe('tcp imposter', function () {
         });
 
         promiseIt('should allow asynchronous injection', function () {
-            var fn = "function (request, state, callback) {\n" +
+            var fn = "function (request, state, logger, callback) {\n" +
                     "    var net = require('net'),\n" +
                     "        options = {\n" +
                     "            host: 'www.google.com',\n" +

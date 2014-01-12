@@ -157,7 +157,7 @@ function nonInjectableServer (command, port) {
             });
 
             promiseIt('should allow asynchronous injection', function () {
-                var fn = "function (request, state, callback) {\n" +
+                var fn = "function (request, state, logger, callback) {\n" +
                         "    var http = require('http'),\n" +
                         "        options = {\n" +
                         "            method: request.method,\n" +

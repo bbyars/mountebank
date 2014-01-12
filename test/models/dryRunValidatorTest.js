@@ -332,7 +332,7 @@ describe('dryRunValidator', function () {
         promiseIt('should reject inject with no wrapper function', function () {
             var request = {
                     stubs: [{
-                        predicates: { request: { inject: "return true;" } },
+                        predicates: { request: { inject: 'return true;' } },
                         responses: [{ is: { body: 'Matched' }}]
                     }]
                 },
@@ -350,7 +350,7 @@ describe('dryRunValidator', function () {
                         code: 'bad data',
                         message: 'malformed stub request',
                         data: 'invalid predicate injection',
-                        source: '(return true;)(scope);'
+                        source: '(return true;)(scope, logger);'
                     }]
                 });
             });

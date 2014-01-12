@@ -12,7 +12,7 @@ function create (proxy, postProcess) {
         /* jshint evil: true */
         var deferred = Q.defer(),
             scope = helpers.clone(request),
-            injected = '(' + fn + ')(scope, injectState, deferred.resolve);';
+            injected = '(' + fn + ')(scope, injectState, logger, deferred.resolve);';
 
         try {
             var response = eval(injected);

@@ -2,59 +2,425 @@
 
 <h1>Injection</h1>
 
-<p>Asynchronous injection is supported through a third <code>callback</code> parameter.
-If your function returns a value, the imposter will consider it as synchronous.  If
-it does not return a value, it must call the <code>callback</code> parameter with the
-response object.  The following injection takes advantage of the node.js environment
-it will run in to proxy most of the request to www.google.com:</p>
+<p>mountebank allows JavaScript injection for predicates and stub resolvers for situations
+where the built-in ones are not sufficient.  Injection only works if <code>mb</code> is
+run with the <code>--allowInjection</code> flag.</p>
+
+<p>Though mountebank has gone to some trouble to make injections as hassle-free as
+possible, there are a couple of things to be aware of.  First, when validating stub creation,
+mountebank actually dry runs a sample request in a sandbox.  Normally, this is
+side-effect free, as mountebank fakes out proxy calls and uses different state objects,
+but he can make no guarantees with injections.  The <code>state</code> variable described
+in the stub resolver section below will be untouched, but any environmental changes you
+make may persist to the actual stub calls.  The stub resolver example below shows an
+example of where this can trip you up.  If you need to work around the dry run, the
+test request passed in as the first parameter of the injected function will always
+have <code>isDryRun</code> set to <code>true</code> during the dry run.</p>
+
+<p>Second, all injections have full access to a node.js runtime environment, including the ability
+to <code>require</code> in different modules.  Of course, such power comes with its own
+challenges.  Though mountebank has gone to some effort to be robust in the face of errors,
+he is not as clever as you are.  With injections, you can crash mountebank.
+If you find yourself coding injections frequently because of missing functionality that you
+believe would make a useful resolver, mountebank humbly requests you to add a
+<a href='https://github.com/bbyars/mountebank/issues'>feature request.</a></p>
+
+<h2>Predicate injection</h2>
+
+<p>Predicate injection allows you to pass a JavaScript function to decide whether the
+stub should match or not.  Predicate injections can either be bound to a standard
+request field, like other predicates, or the entire <code>request</code> object, which
+allows you to base the result on multiple fields.</p>
+
+<p>The injected function should take a parameter representing the field it is bound to,
+and, optionally, a <code>logger</code>.  Predicate injection must be strictly synchronous.</p>
+
+<p>The following example uses injection to satisfy a complicated multi-field predicate for HTTP:</p>
+
+<pre><code data-test-id='predicate injection example'
+           data-test-step='1'
+           data-test-type='http'>
+POST /imposters HTTP/1.1
+Host: localhost:<%= port %>
+Accept: application/json
+Content-Type: application/json
+
+{
+  "port": 4545,
+  "protocol": "http",
+  "stubs": [
+    {
+      "responses": [{ "is": { "statusCode": 400 } }],
+      "predicates": {
+        "request": {
+          "inject": "function (request, logger) {\n\n    function hasXMLProlog () {\n        return request.body.indexOf('&lt;?xml') === 0;\n    }\n\n    if (request.headers['content-type'] === 'application/xml') {\n        return !hasXMLProlog();\n    }\n    else {\n        return hasXMLProlog();\n    }\n}"
+        }
+      }
+    }
+  ]
+}
+</code></pre>
+
+<p>Injections certainly don't help the readability of the JSON.  Let's look at the injected function
+appropriately formatted:</p>
 
 <pre><code>
-function (request, state, callback) {
+function (request, logger) {
+
+    function hasXMLProlog () {
+        return request.body.indexOf('&lt;?xml') === 0;
+    }
+
+    if (request.headers['content-type'] === 'application/xml') {
+        return !hasXMLProlog();
+    }
+    else {
+        return hasXMLProlog();
+    }
+}
+</code></pre>
+
+<p>It matches on XML content missing a prolog, or a prolog added to non-XML content.  First we'll
+send a request that matches the first condition:</p>
+
+<pre><code data-test-id='predicate injection example'
+           data-test-step='2'
+           data-test-type='http'>
+POST /test HTTP/1.1
+Host: localhost:4545
+Content-Type: <strong class='highlight1'>application/xml</strong>
+
+&lt;customer&gt;
+  &lt;name&gt;Test&lt;/name&gt;
+&lt;/customer&gt;
+</code></pre>
+
+<pre><code data-test-id='predicate injection example'
+           data-test-verify-step='2'
+           data-test-ignore-lines='["^Date"]'>
+HTTP/1.1 <strong class='highlight1'>400</strong> Bad Request
+Connection: close
+Date: Thu, 09 Jan 2014 02:30:31 GMT
+Transfer-Encoding: chunked
+</code></pre>
+
+<p>Now we'll match on the second condition:</p>
+
+<pre><code data-test-id='predicate injection example'
+           data-test-step='3'
+           data-test-type='http'>
+POST /test HTTP/1.1
+Host: localhost:4545
+Content-Type: <strong class='highlight1'>application/json</strong>
+
+<strong class='highlight1'>&lt;?xml&gt;</strong>
+&lt;customer&gt;
+  &lt;name&gt;Test&lt;/name&gt;
+&lt;/customer&gt;
+</code></pre>
+
+<pre><code data-test-id='predicate injection example'
+           data-test-verify-step='3'
+           data-test-ignore-lines='["^Date"]'>
+HTTP/1.1 <strong class='highlight1'>400</strong> Bad Request
+Connection: close
+Date: Thu, 09 Jan 2014 02:30:31 GMT
+Transfer-Encoding: chunked
+</code></pre>
+
+<code class='hidden' data-test-id='predicate injection example'
+                     data-test-step='4  '
+                     data-test-type='http'>
+DELETE /imposters/4545 HTTP/1.1
+Host: localhost:<%= port %>
+Accept: application/json
+</code>
+
+<h2>Stub resolver injection</h2>
+
+<p>Stub resolver injection allows you to dynamically construct the response based on the
+request and previous requests.  The response object should match the structure defined in
+the appropriate protocol page linked to on the sidebar.  mountebank will use the default
+value documented on the protocol page for any response fields you leave empty.</p>
+
+<p>mountebank maintains a <code>state</code> variable for you
+that will be empty on the first injection.  The same variable will be passed into
+every stub <code>inject</code> function, allowing you to remember state between calls,
+even between stubs.</p>
+
+<p>Asynchronous injection is supported through a <code>callback</code> parameter.
+If your function returns a value, the imposter will consider it to be synchronous.  If
+it does not return a value, it must call the <code>callback</code> parameter with the
+response object.  The following injection takes advantage of the node.js environment
+it will run in to proxy most of the request to localhost:5555.  It records the request
+and response to the <code>state</code> variable, and only proxies if certain request
+parameters have not already been sent.</p>
+
+<p>The example below will use two imposters, an origin server and a server that proxies
+to the the origin server.  It would be better implemented using
+<a href='/docs/api/proxies'>a proxy resolver</a>, but has sufficient complexity to
+demonstrate many nuances of injection.</p>
+
+<p>First we'll create the origin server at port 5555.  To help us keep track of the
+two imposters, we'll set the <code>name</code> parameter, which will show up in the logs.</p>
+
+<pre><code data-test-id='predicate resolver example'
+           data-test-step='1'
+           data-test-type='http'>
+POST /imposters HTTP/1.1
+Host: localhost:<%= port %>
+Accept: application/json
+Content-Type: application/json
+
+{
+  "port": 5555,
+  "protocol": "http",
+  "name": "origin",
+  "stubs": [
+    {
+      "responses": [{ "inject": "function (request, state, logger) {\n    logger.info('origin called');\n    state.requests = state.requests || 0;\n    state.requests += 1;\n    return {\n      headers: {\n        'Content-Type': 'application/json'\n      },\n      body: JSON.stringify({ count: state.requests })\n    };\n}" }]
+    }
+  ]
+}
+</code></pre>
+
+<p>The injected function for the origin server imposter is formatted below.  This
+uses the <code>state</code> parameter, and sets the <code>requests</code>
+field on it to return how many times it's been called:</p>
+
+<pre><code>
+function (request, state, logger) {
+    logger.info('origin called');
+    state.requests = state.requests || 0;
+    state.requests += 1;
+    return {
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ count: state.requests })
+    };
+}
+</code></pre>
+
+<p>Now let's create the proxy imposter to try it out:</p>
+
+<pre><code data-test-id='predicate resolver example'
+           data-test-step='2'
+           data-test-type='http'>
+POST /imposters HTTP/1.1
+Host: localhost:<%= port %>
+Accept: application/json
+Content-Type: application/json
+
+{
+  "port": 4546,
+  "protocol": "http",
+  "name": "proxy",
+  "stubs": [
+    {
+      "responses": [{ "inject": "function (request, state) {\n    var count = state.requests ? Object.keys(state.requests).length : 0,\n        util = require('util');\n\n    return {\n        body: util.format('There have been %s proxied calls', count)\n    };\n}" }],
+      "predicates": {
+        "method": { "is": "GET" },
+        "path": { "is": "/counter" }
+      }
+    },
+    {
+      "responses": [{ "inject": "function (request, state, logger, callback) {\n    var cacheKey = request.method + ' ' + request.path;\n\n    if (typeof state.requests === 'undefined') {\n        state.requests = {};\n    }\n\n    if (state.requests[cacheKey]) {\n        logger.info('Using previous response');\n        callback(state.requests[cacheKey]);\n    }\n\n    var http = require('http'),\n        options = {\n            method: request.method,\n            hostname: 'localhost',\n            port: 5555,\n            path: request.path,\n            headers: request.headers\n        },\n        httpRequest = http.request(options, function (response) {\n            var body = '';\n            response.setEncoding('utf8');\n            response.on('data', function (chunk) {\n                body += chunk;\n            });\n            response.on('end', function () {\n                var stubResponse = {\n                        statusCode: response.statusCode,\n                        headers: response.headers,\n                        body: body\n                    };\n                logger.info('Successfully proxied: ' + JSON.stringify(stubResponse));\n                state.requests[cacheKey] = stubResponse;\n                callback(stubResponse);\n            });\n        });\n    httpRequest.end();\n}" }]
+    }
+  ]
+}
+</code></pre>
+
+<p>The first stub uses the following function.  It depends on the second stub to
+set a variable on the <code>state</code> parameter each time it proxies, and returns
+a count of proxied calls.  Note that it uses the exact same <code>requests</code>
+field that the origin server injection uses on the <code>state</code> parameter,
+but for a different purpose.  This is OK - <code>state</code> is shared between
+stubs on one imposter, but not shared between imposters.  This function
+<code>require</code>s in node's <code>util</code> module, showing an example
+that takes advantage of the runtime environment.</p>
+
+<pre><code>
+function (request, state) {
+    var count = state.requests ? Object.keys(state.requests).length : 0,
+        util = require('util');
+
+    return {
+        body: util.format('There have been %s proxied calls', count)
+    };
+}
+</code></pre>
+
+<p>The second stub uses an asynchronous proxy with a cache:</p>
+
+<pre><code>
+function (request, state, logger, callback) {
+    var cacheKey = request.method + ' ' + request.path;
+
+    if (typeof state.requests === 'undefined') {
+        state.requests = {};
+    }
+
+    if (state.requests[cacheKey]) {
+        logger.info('Using previous response');
+        callback(state.requests[cacheKey]);
+    }
+
     var http = require('http'),
         options = {
             method: request.method,
-            hostname: 'www.google.com',
-            port: 80,
+            hostname: 'localhost',
+            port: 5555,
             path: request.path,
             headers: request.headers
         },
         httpRequest = http.request(options, function (response) {
-            response.body = '';
+            var body = '';
             response.setEncoding('utf8');
             response.on('data', function (chunk) {
-                response.body += chunk;
+                body += chunk;
             });
             response.on('end', function () {
-                callback({
-                    statusCode: response.statusCode,
-                    headers: response.headers,
-                    body: response.body
-                });
+                var stubResponse = {
+                        statusCode: response.statusCode,
+                        headers: response.headers,
+                        body: body
+                    };
+                logger.info('Successfully proxied: ' + JSON.stringify(stubResponse));
+                state.requests[cacheKey] = stubResponse;
+                callback(stubResponse);
             });
         });
     httpRequest.end();
-    // No return value!!!
 }
 </code></pre>
 
-<p>Though mountebank has gone to some trouble to make injections as hassle-free as
-possible, there are a couple of gotchas.  First, when validating stub creation,
-mountebank actually dry runs a sample request in a sandbox.  Normally, this is
-side-effect free, as mountebank fakes out proxy calls and uses different state objects,
-but he can make no guarantees with injections.  The <code>state</code> variable will
-be untouched, but any environmental changes you make may persist to the actual stub
-calls.</p>
+<p>This is an example of where mountebank's dry run validation can trip you
+up.  If we had created the imposters in reverse order, this function would
+have failed, because it would not have been able to connect.</p>
 
-<p>Second, injections may crash mountebank.  He's tried to protect himself, but
-mountebank is not as clever as you are.  mountebank asks you to use other operators
-when possible.  The example above would be both more robust and more powerful using
-the <code>proxy</code> operator.  If you find yourself coding injections frequently
-because of missing functionality that you believe would make a useful resolver,
-mountebank humbly requests you to add a <a href='https://github.com/bbyars/mountebank/issues'>
-feature request.</a></p>
+<p>Our first request should trigger a proxy call:</p>
 
-<p>Finally, injections have access to mountebank's standard out and standard error streams.
-<code>console.log</code> statements may prove invaluable to help troubleshoot misbehaving
-injections.</p>
+<pre><code data-test-id='predicate resolver example'
+           data-test-step='3'
+           data-test-type='http'>
+GET /first HTTP/1.1
+Host: localhost:4546
+</code></pre>
+
+<pre><code data-test-id='predicate resolver example'
+           data-test-verify-step='3'
+           data-test-ignore-lines='["^Date"]'>
+HTTP/1.1 200 OK
+Content-Type: application/json
+Connection: close
+Date: Thu, 09 Jan 2014 02:30:31 GMT
+Transfer-Encoding: chunked
+
+{
+  "count": <strong class='highlight1'>2</strong>
+}
+</code></pre>
+
+<p>The origin unexpectedly returns 2.  This is an example where the dry
+run validation left behind some state in the environment.  If we had wanted
+to avoid this situation, we could have used the <code>isDryRun</code> field
+on the <code>request</code> parameter to avoid the proxy call during validation.</p>
+
+<p>A second call also proxies because the path is different.</p>
+
+<pre><code data-test-id='predicate resolver example'
+           data-test-step='4'
+           data-test-type='http'>
+GET /second HTTP/1.1
+Host: localhost:4546
+</code></pre>
+
+<pre><code data-test-id='predicate resolver example'
+           data-test-verify-step='4'
+           data-test-ignore-lines='["^Date"]'>
+HTTP/1.1 200 OK
+Content-Type: application/json
+Connection: close
+Date: Thu, 09 Jan 2014 02:30:31 GMT
+Transfer-Encoding: chunked
+
+{
+  "count": 3
+}
+</code></pre>
+
+<p>The third request should be served from the cache of the proxy imposter:</p>
+
+<pre><code data-test-id='predicate resolver example'
+           data-test-step='5'
+           data-test-type='http'>
+GET /first HTTP/1.1
+Host: localhost:4546
+</code></pre>
+
+<pre><code data-test-id='predicate resolver example'
+           data-test-verify-step='5'
+           data-test-ignore-lines='["^Date"]'>
+HTTP/1.1 200 OK
+Content-Type: application/json
+Connection: close
+Date: Thu, 09 Jan 2014 02:30:31 GMT
+Transfer-Encoding: chunked
+
+{
+  "count": 2
+}
+</code></pre>
+
+<p>Finally, let's query the other stub on the proxy imposter:</p>
+
+<pre><code data-test-id='predicate resolver example'
+           data-test-step='6'
+           data-test-type='http'>
+GET /counter HTTP/1.1
+Host: localhost:4546
+</code></pre>
+
+<pre><code data-test-id='predicate resolver example'
+           data-test-verify-step='6'
+           data-test-ignore-lines='["^Date"]'>
+HTTP/1.1 200 OK
+Connection: close
+Date: Thu, 09 Jan 2014 02:30:31 GMT
+Transfer-Encoding: chunked
+
+There have been 2 proxied calls
+</code></pre>
+
+<p>Since this was in the same imposter, the dry run validation did not
+cause unexpected results.</p>
+
+<p>This is the most complicated example in the documentation, and took
+mountebank some time to get working (these examples in the docs are executed
+as part of the test suite).  This is appropriate since injection is the most
+complicated thing you can do in the tool.  When injection errors are detected,
+mountebank logs the full <code>eval</code>'d code, including the bits he's added
+on top of your code.  He also logs JSON representation of both the request (or request
+field) and the <code>state</code> parameters to the function.  mountebank
+made heavy use of the <code>debug</code> logs while developing this example.</p>
+
+<p>As always, if you get stuck, <a href='/support'>ask for help.</a></p>
+
+<code class='hidden' data-test-id='predicate resolver example'
+      data-test-step='7'
+      data-test-type='http'>
+DELETE /imposters/5555 HTTP/1.1
+Host: localhost:<%= port %>
+Accept: application/json
+</code>
+
+<code class='hidden' data-test-id='predicate resolver example'
+      data-test-step='8'
+      data-test-type='http'>
+DELETE /imposters/4546 HTTP/1.1
+Host: localhost:<%= port %>
+Accept: application/json
+</code>
 
 <% include ../../_footer %>

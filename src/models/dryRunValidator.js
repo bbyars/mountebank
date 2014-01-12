@@ -19,13 +19,15 @@ function create (options) {
             },
             resolver = StubResolver.create(dryRunProxy, combinators.identity),
             stubRepository = options.StubRepository.create(resolver, encoding),
-            clone = helpers.clone(stub); // proxyOnce changes state
+            clone = helpers.clone(stub), // proxyOnce changes state
+            testRequest = options.testRequest;
 
         if (hasInjection(stub)) {
             logger.warn('dry running injection...');
         }
         stubRepository.addStub(clone);
-        return stubRepository.resolve(options.testRequest, dryRunLogger);
+        testRequest.isDryRun = true;
+        return stubRepository.resolve(testRequest, dryRunLogger);
     }
 
     function addDryRunErrors (stub, encoding, errors, logger) {
