@@ -1,5 +1,6 @@
 Stories
 =======
+1. Configure proxyAll resolver to always proxy, and add responses to same predicate match
 1. add behaviors: { wait: 5000 } to responses
 0. stub smtp with accept/reject
 6. Add brew package
@@ -7,7 +8,7 @@ Stories
 7. Add rpm package
 8. Add MSI & Windows support
 1. Add http attachment support
-1. Allow regex tokens from request params in response (different resolver)
+1. Allow regex tokens from request params in response (different resolver?)
 21. Prettier /imposters HTML page
 22. Ability to create imposter from UI (with karma testing?)
 23. Prettier /imposter/{port} HTML page
