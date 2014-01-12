@@ -2,130 +2,166 @@
 
 <h1>Proxies</h1>
 
-<p>mountebank recommends that you only use the <code>proxy</code> as the last stub
-in the <code>stubs</code> array.  This would allow you to set up specific stubs
-for the endpoints you are interested in faking out, and rely on a <code>proxy</code>
-response to delegate all other endpoints to the real dependency.  This takes advantage
-of the imposter's <em>first match</em> policy on stubs, which is based on the order you
-set the stubs up in the <code>stubs</code> array.</p>
+<p>Proxies are one of the most powerful features of mountebank, surpassed only by the
+mighty <a href='/docs/ap/injection'>injection.</a>  mountebank provides three different
+kinds of behavior with proxies:</p>
 
-<p>The <code>proxyOnce</code> resolver is a great way to seed tests.  After setting an imposter
-up with a <code>proxyOnce</code> stub and exercising the system under test, you can
-<code>GET</code> the imposter.  On subsequent test runs, simply load the same representation
-you received during the <code>GET</code> when you <code>POST /imposters</code>, and it will
-automatically fall back to the saved <code>is</code> response. If you don't want to send some
-of the saved state of the last imposter, you can delete elements like <code>matches</code>
-and <code>_links</code>.</p>
+<table>
+  <tr>
+    <th>Behavior</th>
+    <th>Description</th>
+  </tr>
+  <tr>
+    <td>standard</td>
+    <td>Always proxies, which can be useful as the last stub in an imposter.  You
+    can use <a href='/docs/api/predicates'>predicates</a> in a list of stubs, and
+    add a standard proxy at the end of the list with no predicates as a fallback,
+    taking advantage of the imposter's <em>first match</em> policy on stubs.  This
+    is a bit like using a partial mock in a mocking library.</td>
+  </tr>
+  <tr>
+    <td>record and playback</td>
+    <td>Proxies the first time the resolver triggers, and remembers the response.
+    Subsequent calls to the same stub will replay the recorded response.  You can
+    save off the imposter's JSON representation and play it back on future test runs
+    to avoid the proxy call entirely.</td>
+  </tr>
+  <tr>
+    <td>vary</td>
+    <td>The <code>Vary</code> HTTP header allows intermediate proxies to conditionally
+    serve a response from the cache based on another HTTP header.  Similarly, vary
+    proxies allow a powerful form of record and playback, where the playback only
+    happens if certain conditions are met.  Vary proxies allow you, for example, to
+    create an imposter with a single stub containing the proxy, run a test suite,
+    and save off the stub responses varying by <code>path</code>.  The next test
+    run can use the saved imposter JSON representation without the remote service.
+    Unlike every other stub resolver, vary proxies actually create new stubs.</td>
+  </tr>
+</table>
 
-<p>For example, let's say we create the <code>proxyOnce</code> resolver listed above and
-want to reuse the saved state for subsequent test runs:</p>
+All proxies take a <code>to</code> parameter.  For http and https imposters, that's
+simply a URL.  For tcp imposters, it's an object containing a <code>host</code>
+and <code>port</code>.  See the record and playback example below.
 
-<pre><code>
-    GET /imposters/2526 HTTP/1.1
-    Host: localhost:2525
-    Accept: application/json
+<h2>Examples</h2>
 
+<p>All of the examples below will proxy to the following origin server.  To help
+us keep track of the imposters in the logs, we'll set the <code>name</code>
+field.</p>
 
-    HTTP/1.1 200 OK
-    Content-Type: application/json
+<pre><code data-test-id='proxy example'
+           data-test-step='1'
+           data-test-type='http'>
+POST /imposters HTTP/1.1
+Host: localhost:<%= port %>
+Accept: application/json
+Content-Type: application/json
 
+{
+  "port": 5555,
+  "protocol": "http",
+  "name": "origin",
+  "stubs": [
     {
-      "protocol": "http",
-      "port": 2526,
-      "requests": [
-        {
-          "path": "/",
-          "method": "GET",
-          "headers": {
-            "accept": "application/json",
-            "host": "localhost:2526",
-            "connection": "close"
-          },
-          "body": ""
-        }
-      ],
-      "stubs": [
-        {
-          "responses": [
-            {
-              "proxyOnce": "http://real.api.com/",
-              "is": {
-                "statusCode": 200,
-                "headers": {
-                  "connection": "close",
-                  "date": "Sat, 07 Dec 2013 20:19:51 GMT",
-                  "transfer-encoding": "chunked"
-                },
-                "body": "PROXIED"
-              }
-            }
-          ],
-          "matches": [
-            {
-              "timestamp": "2013-12-07T19:39:43.527Z",
-              "request": {
-                "path": "/",
-                "method": "GET",
-                "headers": {
-                  "accept": "application/json",
-                  "host": "localhost:2526",
-                  "connection": "close"
-                },
-                "body": ""
-              },
-              "response": {
-                "statusCode": 200,
-                "headers": {
-                  "connection": "close"
-                },
-                "body": "PROXIED"
-              }
-            }
-          ]
-        }
-      ],
-      "_links": {
-        "self": {
-          "href": "http://localhost:2525/imposters/2526"
-        }
-      }
+      "responses": [{ "is": { "body": "hello from the origin" } }]
     }
+  ]
+}
 </code></pre>
 
-<p>Save off the response body.  The next time you need to set up the test, you can simply
-reload it.  If you want to clean up the JSON and only send the relevant attributes,
-remove the <code>requests</code>, <code>matches</code>, and <code>_links</code>:</p>
+<h3>Standard proxy</h3>
 
-<pre><code>
-    POST /imposters HTTP/1.1
-    Host: localhost:2525
-    Accept: application/json
-    Content-Type: application/json
+<p>We'll create an HTTP imposter that returns a stubbed response if the <code>path</code>
+is <code>/test</code>, but proxy to the origin server in all other cases:</p>
 
+<pre><code data-test-id='proxy example'
+           data-test-step='2'
+           data-test-type='http'>
+POST /imposters HTTP/1.1
+Host: localhost:<%= port %>
+Accept: application/json
+Content-Type: application/json
+
+{
+  "port": 4545,
+  "protocol": "http",
+  "name": "standard proxy",
+  "stubs": [
+    <strong class='highlight1'>{
+      "predicates": {
+        "path": { "is": "/test" }
+      },
+      "responses": [{ "is": { "body": "hello from the standard proxy" } }]
+    }</strong>,<strong class='highlight2'>
     {
-      "protocol": "http",
-      "port": 2526,
-      "stubs": [
-        {
-          "responses": [
-            {
-              "proxyOnce": "http://real.api.com/",
-              "is": {
-                "statusCode": 200,
-                "headers": {
-                  "connection": "close",
-                  "date": "Sat, 07 Dec 2013 20:19:51 GMT",
-                  "transfer-encoding": "chunked"
-                },
-                "body": "PROXIED"
-              }
-            }
-          ]
-        }
-      ]
-    }
+      "responses": [{ "proxy": { "to": "http://localhost:5555" }}]
+    }</strong>
+  ]
+}
 </code></pre>
 
-<p>If you had predicates in your stub, they will also be present.</p>
+<p>First let's test the stubbed response.</p>
+
+<pre><code data-test-id='proxy example'
+           data-test-step='3'
+           data-test-type='http'>
+GET <strong class='highlight1'>/test</strong> HTTP/1.1
+Host: localhost:4545
+</code></pre>
+
+<pre><code data-test-id='proxy example'
+           data-test-verify-step='3'
+           data-test-ignore-lines='["^Date"]'>
+HTTP/1.1 200 OK
+Connection: close
+Date: Thu, 09 Jan 2014 02:30:31 GMT
+Transfer-Encoding: chunked
+
+<strong class='highlight1'>hello from the standard proxy</strong>
+</code></pre>
+
+<p>And now the proxy:</p>
+
+<pre><code data-test-id='proxy example'
+           data-test-step='4'
+           data-test-type='http'>
+GET <strong class='highlight2'>/</strong> HTTP/1.1
+Host: localhost:4545
+</code></pre>
+
+<pre><code data-test-id='proxy example'
+           data-test-verify-step='4'
+           data-test-ignore-lines='["^Date"]'>
+HTTP/1.1 200 OK
+Connection: close
+Date: Thu, 09 Jan 2014 02:30:31 GMT
+Transfer-Encoding: chunked
+
+<strong class='highlight2'>hello from the origin</strong>
+</code></pre>
+
+<code class='hidden' data-test-id='proxy example'
+      data-test-step='5'
+      data-test-type='http'>
+DELETE /imposters/4545 HTTP/1.1
+Host: localhost:<%= port %>
+Accept: application/json
+</code>
+
+<h3>Record and playback proxy</h3>
+
+<p>To mix things up, we'll create a TCP imposter that will proxy to
+our HTTP origin imposter and playback the response on subsequent calls.</p>
+
+
+<h3>Vary proxy</h3>
+
+<code class='hidden' data-test-id='proxy example'
+      data-test-step='6'
+      data-test-type='http'>
+DELETE /imposters/5555 HTTP/1.1
+Host: localhost:<%= port %>
+Accept: application/json
+</code>
 
 <% include ../../_footer %>

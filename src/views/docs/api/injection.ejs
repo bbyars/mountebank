@@ -30,7 +30,9 @@ believe would make a useful resolver, mountebank humbly requests you to add a
 <p>Predicate injection allows you to pass a JavaScript function to decide whether the
 stub should match or not.  Predicate injections can either be bound to a standard
 request field, like other predicates, or the entire <code>request</code> object, which
-allows you to base the result on multiple fields.</p>
+allows you to base the result on multiple fields.  They can return truthy or falsy to
+decide whether the predicate matches.  mountebank doesn't know what that means, so he
+always returns <code>true</code> or <code>false</code>.</p>
 
 <p>The injected function should take a parameter representing the field it is bound to,
 and, optionally, a <code>logger</code>.  Predicate injection must be strictly synchronous.</p>

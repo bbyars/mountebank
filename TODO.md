@@ -16,6 +16,7 @@ Stories
 30. javadoc style documentation? (look at simplesmtp code)
 31. Package npm without tests and files not needed for runtime
 33. Change logs page to link the [http:2526] to the imposter page
+  - would need to add createdAt field to imposter, and only link to imposters created after the timestamp
 34. Pretty print JSON log messages on /logs page
 35. Have query param on GET /imposters/{port} that returns slimmest possible payload to replay the imposter
         - exclude matches and requests
@@ -26,14 +27,11 @@ Known Bugs
 1. grunt does not kill mb if functional tests fail
 2. TCP proxying doesn't work if proxied server doesn't send a response
    - add a timeout parameter, and always resolve if no response by that time?
+3. Tests must have some race conditions; getting intermittent failures
 
 Cleanup Needed
 ==============
-docs:
-  - injection has access to logger, but only error logs during dry runs
-  - predicate injection - can return truthy or falsy, but mountebank doesn't know what those words mean, so he suggests you return true or false
-  - can name imposters
-  - at the moment, predicate injection must be synchronous
+check all links
 
 API:
 - are predicates OK or do I need another layer of indirection to add case-insensitivity, etc?

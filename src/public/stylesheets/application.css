@@ -119,6 +119,7 @@ h1, h2, h3 {
 table {
     border-collapse: collapse;
     border: 1px solid black;
+    margin-bottom: 1em;
 }
 
 table.logs th, table.logs td {
