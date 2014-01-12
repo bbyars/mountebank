@@ -1,8 +1,10 @@
-<p>The <code>exists</code> predicate isn't particularly useful for the TCP
-protocol, as it's mainly meant for list elements like HTTP headers.  Let's
-test it out with a binary imposter:</p>
+<p>The <code>exists</code> predicate is primarily for object data types, like
+HTTP headers and query parameters.  It works on string fields by simply returning
+<code>true</code> if the <code>exists</code> value is <code>true</code> and the
+string if non-empty.  Setting the <code>exists</code> value to <code>false</code>
+inverts the meaning.</p>
 
-<pre><code data-test-id='tcp exists example'
+<pre><code data-test-id='http exists example'
            data-test-step='1'
            data-test-type='http'>
 POST /imposters HTTP/1.1
@@ -12,117 +14,107 @@ Content-Type: application/json
 
 {
   "port": 4551,
-  "protocol": "tcp",
-  "mode": "binary",
+  "protocol": "http",
   "stubs": [<strong class='highlight1'>
     {
-      "responses": [{ "is": { "data": "Zmlyc3QgcmVzcG9uc2U=" } }],
-      "predicates": { "data": { "exists": true } }
+      "responses": [{ "is": { "body": "first response" } }],
+      "predicates": {
+        "query": {
+          "q": { "exists": true },
+          "search": { "exists": false }
+        },
+        "headers": {
+          "Accept": { "exists": true },
+          "X-Rate-Limit": { "exists": false }
+        }
+      }
     }</strong>,<strong class='highlight2'>
     {
-      "responses": [{ "is": { "data": "c2Vjb25kIHJlc3BvbnNl" } }],
-      "predicates": { "data": { "exists": false } }
+      "responses": [{ "is": { "body": "second response" } }],
+      "predicates": {
+        "method": { "exists": true },
+        "body": { "exists": false }
+      }
+    }</strong>,<strong class='highlight3'>
+    {
+      "responses": [{ "is": { "body": "third response" } }],
+      "predicates": {
+        "body": { "exists": true }
+      }
     }</strong>
   ]
 }
 </code></pre>
 
-<p>The first stub always matches if any data was sent:</p>
+<p>The first stub matches if the querystring includes <code>q</code>, but not if it
+includes <code>search</code>, and if the headers include <code>Accept</code>,
+but not if they include <code>X-Rate-Limit</code>.</p>
 
-<pre><code data-test-id='tcp exists example'
+<pre><code data-test-id='http exists example'
            data-test-step='2'
-           data-test-type='exec'>
-echo '<strong class='highlight1'>AQIDBA==</strong>' | base64 --decode | nc localhost 4551
+           data-test-type='http'>
+GET /?<strong class='highlight1'>q</strong>=mountebank HTTP/1.1
+Host: localhost:4551
+<strong class='highlight1'>Accept</strong>: text/plain
 </code></pre>
 
-<pre><code data-test-id='tcp exists example'
-           data-test-verify-step='2'>
+<pre><code data-test-id='http exists example'
+           data-test-verify-step='2'
+           data-test-ignore-lines='["^Date"]'>
+HTTP/1.1 200 OK
+Connection: close
+Date: Thu, 09 Jan 2014 02:30:31 GMT
+Transfer-Encoding: chunked
+
 <strong class='highlight1'>first response</strong>
 </code></pre>
 
-<p>There isn't really a way <em>not</em> to send data, so the second stub never matches.</p>
+<p>The second stub matches if the request <code>method</code> is a
+non-empty string (always <code>true</code>), and if the <code>body</code>
+is empty.</p>
 
-<code class='hidden' data-test-id='tcp exists example'
-                     data-test-step='3'
-                     data-test-type='http'>
-GET /imposters/4551 HTTP/1.1
-Host: localhost:<%= port %>
-Accept: application/json
-</code>
+<pre><code data-test-id='http exists example'
+           data-test-step='3'
+           data-test-type='http'>
+GET / HTTP/1.1
+Host: localhost:4551
+</code></pre>
 
-<code class='hidden' data-test-id='tcp exists example'
-                     data-test-verify-step='3'
-                     data-test-type='http'
-                     data-test-ignore-lines='["^Date", "requestFrom", "timestamp"]'>
+<pre><code data-test-id='http exists example'
+           data-test-verify-step='3'
+           data-test-ignore-lines='["^Date"]'>
 HTTP/1.1 200 OK
-Vary: Accept
-Content-Type: application/json
-Content-Length: 996
-Date: Sat, 11 Jan 2014 01:22:32 GMT
-Connection: keep-alive
+Connection: close
+Date: Thu, 09 Jan 2014 02:30:31 GMT
+Transfer-Encoding: chunked
 
-{
-  "protocol": "tcp",
-  "port": 4551,
-  "mode": "binary",
-  "requests": [
-    {
-      "requestFrom": "127.0.0.1:53330",
-      "data": "AQIDBA=="
-    }
-  ],
-  "stubs": [
-    {
-      "responses": [
-        {
-          "is": {
-            "data": "Zmlyc3QgcmVzcG9uc2U="
-          }
-        }
-      ],
-      "predicates": {
-        "data": {
-          "exists": true
-        }
-      },
-      "matches": [
-        {
-          "timestamp": "2014-01-11T01:22:32.617Z",
-          "request": {
-            "requestFrom": "127.0.0.1:53330",
-            "data": "AQIDBA=="
-          },
-          "response": {
-            "data": "Zmlyc3QgcmVzcG9uc2U="
-          }
-        }
-      ]
-    },
-    {
-      "responses": [
-        {
-          "is": {
-            "data": "c2Vjb25kIHJlc3BvbnNl"
-          }
-        }
-      ],
-      "predicates": {
-        "data": {
-          "exists": false
-        }
-      }
-    }
-  ],
-  "_links": {
-    "self": {
-      "href": "http://localhost:<%= port %>/imposters/4551"
-    }
-  }
-}
-</code>
+<strong class='highlight2'>second response</strong>
+</code></pre>
 
-<code class='hidden' data-test-id='tcp exists example'
-                     data-test-step='4'
+<p>The last stub matches if the <code>body</code> is non-empty:</p>
+
+<pre><code data-test-id='http exists example'
+           data-test-step='4'
+           data-test-type='http'>
+POST / HTTP/1.1
+Host: localhost:4551
+
+<strong class='highlight3'>non-empty body</strong>
+</code></pre>
+
+<pre><code data-test-id='http exists example'
+           data-test-verify-step='4'
+           data-test-ignore-lines='["^Date"]'>
+HTTP/1.1 200 OK
+Connection: close
+Date: Thu, 09 Jan 2014 02:30:31 GMT
+Transfer-Encoding: chunked
+
+<strong class='highlight1'>third response</strong>
+</code></pre>
+
+<code class='hidden' data-test-id='http exists example'
+                     data-test-step='5'
                      data-test-type='http'>
 DELETE /imposters/4551 HTTP/1.1
 Host: localhost:<%= port %>
