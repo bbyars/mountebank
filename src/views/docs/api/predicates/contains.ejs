@@ -1,7 +1,6 @@
-<p>Let's create a text-based imposter with multiple stubs.  Binary imposters won't
-see any interesting behavior difference with only <code>is</code> predicates:</p>
+<p>Let's create a binary TCP imposter with multiple stubs:</p>
 
-<pre><code data-test-id='tcp is example'
+<pre><code data-test-id='tcp contains example'
            data-test-step='1'
            data-test-type='http'>
 POST /imposters HTTP/1.1
@@ -10,48 +9,51 @@ Accept: application/json
 Content-Type: application/json
 
 {
-  "port": 4546,
+  "port": 4547,
   "protocol": "tcp",
-  "mode": "text",
+  "mode": "binary",
   "stubs": [<strong class='highlight1'>
     {
-      "responses": [{ "is": { "data": "first response" } }],
-      "predicates": { "data": { "is": "first request\n" } }
+      "responses": [{ "is": { "data": "Zmlyc3QgcmVzcG9uc2U=" } }],
+      "predicates": { "data": { "contains": "AgM=" } }
     }</strong>,<strong class='highlight2'>
     {
-      "responses": [{ "is": { "data": "second response" } }],
-      "predicates": { "data": { "is": "second request\n" } }
+      "responses": [{ "is": { "data": "c2Vjb25kIHJlc3BvbnNl" } }],
+      "predicates": { "data": { "contains": "Bwg=" } }
     }</strong>,<strong class='highlight3'>
     {
-      "responses": [{ "is": { "data": "third response" } }],
-      "predicates": { "data": { "is": "second request\n" } }
+      "responses": [{ "is": { "data": "dGhpcmQgcmVzcG9uc2U=" } }],
+      "predicates": { "data": { "contains": "Bwg=" } }
     }</strong>
   ]
 }
 </code></pre>
 
-<p>The match is not case-sensitive:</p>
+<p>We're sending a base64-encoded version of four bytes: 0x1, 0x2, 0x3,
+and 0x4.  Our first predicate is a base64 encoded version of 0x2 and 0x3.
+The response is a base64-encoded version of the string "first response":</p>
 
-<pre><code data-test-id='tcp is example'
+<pre><code data-test-id='tcp contains example'
            data-test-step='2'
            data-test-type='exec'>
-echo '<strong class='highlight1'>FIRST REQUEST</strong>' | nc localhost 4546
+echo '<strong class='highlight1'>AQIDBA==</strong>' | base64 --decode | nc localhost 4547
 </code></pre>
 
-<pre><code data-test-id='tcp is example'
+<pre><code data-test-id='tcp contains example'
            data-test-verify-step='2'>
 <strong class='highlight1'>first response</strong>
 </code></pre>
 
-<p>The same is true for the second stub.</p>
+<p>Next we'll send 0x5, 0x6, 0x7, and 0x8, matching on a predicate
+encoding 0x7 and 0x8:</p>
 
-<pre><code data-test-id='tcp is example'
+<pre><code data-test-id='tcp contains example'
            data-test-step='3'
            data-test-type='exec'>
-echo '<strong class='highlight2'>Second Request</strong>' | nc localhost 4546
+echo '<strong class='highlight2'>BQYHCA==</strong>' | base64 --decode | nc localhost 4547
 </code></pre>
 
-<pre><code data-test-id='tcp is example'
+<pre><code data-test-id='tcp contains example'
            data-test-verify-step='3'>
 <strong class='highlight2'>second response</strong>
 </code></pre>
@@ -61,35 +63,37 @@ second stub.  mountebank always chooses the first stub that matches based on
 the order you add them to the <code>stubs</code> array when creating the
 imposter.</p>
 
-<code class='hidden' data-test-id='tcp is example'
+<code class='hidden' data-test-id='tcp contains example'
                      data-test-step='4'
                      data-test-type='http'>
-GET /imposters/4546 HTTP/1.1
+GET /imposters/4547 HTTP/1.1
 Host: localhost:<%= port %>
 Accept: application/json
 </code>
 
-<code class='hidden' data-test-id='tcp is example'
+<code class='hidden' data-test-id='tcp contains example'
                      data-test-verify-step='4'
                      data-test-type='http'
                      data-test-ignore-lines='["^Date", "requestFrom", "timestamp"]'>
 HTTP/1.1 200 OK
 Vary: Accept
 Content-Type: application/json
-Content-Length: 1612
-Date: Thu, 09 Jan 2014 02:27:21 GMT
+Content-Length: 1595
+Date: Fri, 10 Jan 2014 14:30:49 GMT
 Connection: keep-alive
 
 {
   "protocol": "tcp",
-  "port": 4546,
-  "mode": "text",
+  "port": 4547,
+  "mode": "binary",
   "requests": [
     {
-      "data": "FIRST REQUEST\n"
+      "requestFrom": "127.0.0.1:57050",
+      "data": "AQIDBA=="
     },
     {
-      "data": "Second Request\n"
+      "requestFrom": "127.0.0.1:57057",
+      "data": "BQYHCA=="
     }
   ],
   "stubs": [
@@ -97,24 +101,24 @@ Connection: keep-alive
       "responses": [
         {
           "is": {
-            "data": "first response"
+            "data": "Zmlyc3QgcmVzcG9uc2U="
           }
         }
       ],
       "predicates": {
         "data": {
-          "is": "first request\n"
+          "contains": "AgM="
         }
       },
       "matches": [
         {
-          "timestamp": "2014-01-09T02:27:21.859Z",
+          "timestamp": "2014-01-10T14:30:49.776Z",
           "request": {
-            "requestFrom": "127.0.0.1:58508",
-            "data": "FIRST REQUEST\n"
+            "requestFrom": "127.0.0.1:57050",
+            "data": "AQIDBA=="
           },
           "response": {
-            "data": "first response"
+            "data": "Zmlyc3QgcmVzcG9uc2U="
           }
         }
       ]
@@ -123,24 +127,24 @@ Connection: keep-alive
       "responses": [
         {
           "is": {
-            "data": "second response"
+            "data": "c2Vjb25kIHJlc3BvbnNl"
           }
         }
       ],
       "predicates": {
         "data": {
-          "is": "second request\n"
+          "contains": "Bwg="
         }
       },
       "matches": [
         {
-          "timestamp": "2014-01-09T02:27:21.872Z",
+          "timestamp": "2014-01-10T14:30:49.794Z",
           "request": {
-            "requestFrom": "127.0.0.1:58510",
-            "data": "Second Request\n"
+            "requestFrom": "127.0.0.1:57057",
+            "data": "BQYHCA=="
           },
           "response": {
-            "data": "second response"
+            "data": "c2Vjb25kIHJlc3BvbnNl"
           }
         }
       ]
@@ -149,29 +153,29 @@ Connection: keep-alive
       "responses": [
         {
           "is": {
-            "data": "third response"
+            "data": "dGhpcmQgcmVzcG9uc2U="
           }
         }
       ],
       "predicates": {
         "data": {
-          "is": "second request\n"
+          "contains": "Bwg="
         }
       }
     }
   ],
   "_links": {
     "self": {
-      "href": "http://localhost:<%= port %>/imposters/4546"
+      "href": "http://localhost:<%= port %>/imposters/4547"
     }
   }
 }
 </code>
 
-<code class='hidden' data-test-id='tcp is example'
+<code class='hidden' data-test-id='tcp contains example'
                      data-test-step='5'
                      data-test-type='http'>
-DELETE /imposters/4546 HTTP/1.1
+DELETE /imposters/4547 HTTP/1.1
 Host: localhost:<%= port %>
 Accept: application/json
 </code>

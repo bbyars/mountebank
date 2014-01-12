@@ -60,7 +60,7 @@ AND'd together.  The following predicate operators are allowed:</p>
   </tr>
 </table>
 
-<p>All the string operations are case-insensitive (this keys for JSON objects, like
+<p>All the string operations are case-insensitive (this includes keys for JSON objects, like
 HTTP header and query parameters).  All predicates are scoped to a request field;
 see the protocol pages linked to from the sidebar to see the request fields.
 <code>inject</code> also adds a <code>request</code> field, which represents the
@@ -74,6 +74,84 @@ predicate will match, because "[1,2,3,4]" does contain "[2,3]".  This works well
 but <code>matches</code>, because any regular expression operators get encoded as binary.
 mountebank recommends that you stay away from <code>matches</code> if you're dealing in binary.</p>
 
-<p>See the protocol pages linked to from the sidebar for examples.</p>
+<h2>Examples</h2>
+
+<p>The TCP examples below use netcat (<code>nc</code>) to send TCP data over a socket,
+which is like <code>telnet</code>, but makes the output easier to get.  The examples
+for binary imposters use the <code>base64</code> command line tool to decode base64
+to binary before sending to the socket.</p>
+
+<section class="accordion">
+  <div>
+    <input id="predicates-is" name="predicates-is" type="checkbox" />
+      <label for="predicates-is">is</label>
+      <section>
+        <% include predicates/is %>
+      </section>
+  </div>
+  <div>
+    <input id="predicates-contains" name="predicates-contains" type="checkbox" />
+      <label for="predicates-contains">contains</label>
+      <section>
+        <% include predicates/contains %>
+      </section>
+  </div>
+  <div>
+    <input id="predicates-startsWith" name="predicates-startsWith" type="checkbox" />
+    <label for="predicates-startsWith">startsWith</label>
+    <section>
+      <% include predicates/startsWith %>
+    </section>
+  </div>
+  <div>
+    <input id="predicates-endsWith" name="predicates-endsWith" type="checkbox" />
+    <label for="predicates-endsWith">endsWith</label>
+    <section>
+      <% include predicates/endsWith %>
+    </section>
+  </div>
+  <div>
+    <input id="predicates-matches" name="predicates-matches" type="checkbox" />
+    <label for="predicates-matches">matches</label>
+    <section>
+      <% include predicates/matches %>
+    </section>
+  </div>
+  <div>
+    <input id="predicates-exists" name="predicates-exists" type="checkbox" />
+    <label for="predicates-exists">exists</label>
+    <section>
+      <% include predicates/exists %>
+    </section>
+  </div>
+  <div>
+    <input id="predicates-not" name="predicates-not" type="checkbox" />
+    <label for="predicates-not">not</label>
+    <section>
+      <% include predicates/not %>
+    </section>
+  </div>
+  <div>
+    <input id="predicates-or" name="predicates-or" type="checkbox" />
+    <label for="predicates-or">or</label>
+    <section>
+      <% include predicates/or %>
+    </section>
+  </div>
+  <div>
+    <input id="predicates-and" name="predicates-and" type="checkbox" />
+    <label for="predicates-and">and</label>
+    <section>
+      <% include predicates/and %>
+    </section>
+  </div>
+  <div>
+    <input id="predicates-inject" name="predicates-inject" type="checkbox" />
+    <label for="predicates-inject">inject</label>
+    <section>
+      <% include predicates/inject %>
+    </section>
+  </div>
+</section>
 
 <% include ../../_footer %>

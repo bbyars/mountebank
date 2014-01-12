@@ -49,9 +49,8 @@ describe('docs', function () {
         '/docs/api/overview',
         '/docs/api/mocks',
         '/docs/api/stubs',
-        '/docs/api/injection',
-        '/docs/protocols/http',
-        '/docs/protocols/tcp'
+        '/docs/api/predicates',
+        '/docs/api/injection'
     ];
 
     pages.forEach(function (page) {
