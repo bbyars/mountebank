@@ -96,7 +96,7 @@ function create (proxy, postProcess) {
                 // else
                 var predicates = predicatesFor(request, stubResolver.proxyX.replayWhen),
                     newStub = { predicates: predicates, responses: [{ is: response }] },
-                    index = stubIndexFor(stubResolver, stubs);
+                    index = stubResolver.proxyX.mode === 'proxyAlways' ? stubs.length : stubIndexFor(stubResolver, stubs);
 
                 logger.debug('inserting new stub at index %s: %s', index, JSON.stringify(newStub));
                 stubs.splice(index, 0, newStub);
