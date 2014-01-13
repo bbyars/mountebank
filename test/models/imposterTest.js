@@ -15,6 +15,7 @@ describe('imposter', function () {
             server = {
                 requests: [],
                 addStub: mock(),
+                stubs: [],
                 metadata: metadata
             };
             Protocol = {
@@ -83,18 +84,8 @@ describe('imposter', function () {
         });
 
         promiseIt('should return list of stubs', function () {
+            server.stubs = ['ONE', 'TWO'];
             return Imposter.create(Protocol, {}).then(function (imposter) {
-                imposter.addStub('ONE');
-                imposter.addStub('TWO');
-
-                assert.deepEqual(imposter.toJSON().stubs, ['ONE', 'TWO']);
-            });
-        });
-
-        promiseIt('should add stubs during creation', function () {
-            var request = { stubs: ['ONE', 'TWO'] };
-
-            return Imposter.create(Protocol, request).then(function (imposter) {
                 assert.deepEqual(imposter.toJSON().stubs, ['ONE', 'TWO']);
             });
         });

@@ -60,7 +60,8 @@ function createServer (logger, options) {
                 });
             },
             metadata: function () { return { mode: mode }; },
-            addStub: stubs.addStub
+            addStub: stubs.addStub,
+            stubs: stubs.stubs
         }),
         server = net.createServer();
 

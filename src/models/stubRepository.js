@@ -80,6 +80,7 @@ function create (resolver, encoding) {
     }
 
     return {
+        stubs: stubs,
         addStub: addStub,
         resolve: resolve
     };

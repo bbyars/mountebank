@@ -19,8 +19,7 @@ function createErrorHandler (deferred) {
 }
 
 function create (Protocol, request) {
-    var stubs = [],
-        deferred = Q.defer(),
+    var deferred = Q.defer(),
         domain = Domain.create(),
         errorHandler = createErrorHandler(deferred);
 
@@ -30,13 +29,8 @@ function create (Protocol, request) {
 
             var url = '/imposters/' + server.port;
 
-            function addStub (stub) {
-                server.addStub(stub);
-                stubs.push(stub);
-            }
-
-            if (request && request.stubs) {
-                request.stubs.forEach(addStub);
+            if (request.stubs) {
+                request.stubs.forEach(server.addStub);
             }
 
             function toListJSON () {
@@ -56,7 +50,7 @@ function create (Protocol, request) {
                     result[key] = server.metadata[key];
                 });
                 result.requests = server.requests;
-                result.stubs = stubs;
+                result.stubs = server.stubs;
                 result._links = { self: { href: url } };
 
                 return result;
@@ -67,7 +61,7 @@ function create (Protocol, request) {
                 url: url,
                 toJSON: toJSON,
                 toListJSON: toListJSON,
-                addStub: addStub,
+                addStub: server.addStub,
                 stop: server.close
             });
         });

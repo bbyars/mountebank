@@ -1,8 +1,24 @@
 Stories
 =======
-1. Configure proxyAll resolver to always proxy, and add responses to same predicate match
+1. Fix proxies:
+     proxyRecordPlayback
+        - file: ''
+        - mode:
+            - proxyOnce (add stub up front with predicates) (default)
+            - proxyAlways (writes stubs behind proxy resolver)
+        - replayWhen:
+            {
+                "method": { "matches": true }, // GET == GET
+                "path": { "matchesExcept": ["/\d+/"] }, // /customers/123/about and /customers/234/about
+                "query": { "matches": true },
+                "headers": { matchesExcept": ["vary"] }
+                "body": { "inject": "function (body) { return true; }" }
+            } (defaults vary by protocol)
+        * should add multiple responses if multiple responses seen for same matches
+        * imposter stubs no longer mirrors protocols' when proxy adds stubs
+1 Validation messages broken?  Test thoroughly
 1. add behaviors: { wait: 5000 } to responses
-0. stub smtp with accept/reject
+0. stub smtp with accept/reject behaviors
 6. Add brew package
 6. add pkg installer like vagrant
 7. Add rpm package
@@ -36,8 +52,6 @@ check all links
 
 API:
 - are predicates OK or do I need another layer of indirection to add case-insensitivity, etc?
-- come up with better name than 'remember' for proxyAll
-- proxy and proxyAll are confusing - proxyAll doesn't always proxy, but proxy does
 
 Rainy day ideas to try out
 =================================

@@ -276,6 +276,61 @@ var assert = require('assert'),
                     return api.del('/imposters/' + port);
                 });
             });
+
+            promiseIt('should record new stubs in order in front of proxy resolver in proxyOnce mode', function () {
+                var originServerPort = port + 1,
+                    originServerFn = 'function (request, state) {\n' +
+                                     '    state.count = state.count || 0;\n' +
+                                     '    state.count += 1;\n' +
+                                     '    return {\n' +
+                                     '        body: state.count + ". " + request.method + " " + request.path\n' +
+                                     '    };\n' +
+                                     '}',
+                    originServerStub = { responses: [{ inject: originServerFn }] },
+                    originServerRequest = {
+                        protocol: 'http',
+                        port: originServerPort,
+                        stubs: [originServerStub],
+                        name: this.name + ' origin server'
+                    },
+                    proxyDefinition = {
+                        to: 'http://localhost:' + originServerPort,
+                        mode: 'proxyOnce',
+                        replayWhen: {
+                            method: { matches: true },
+                            path: { matches: true }
+                        }
+                    },
+                    proxyStub = { responses: [{ proxyX: proxyDefinition }] },
+                    proxyRequest = { protocol: protocol, port: port, stubs: [proxyStub], name: this.name + ' proxy' };
+
+                return api.post('/imposters', originServerRequest).then(function () {
+                    return api.post('/imposters', proxyRequest);
+                }).then(function (response) {
+                    assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body));
+                    return client.get('/first', port);
+                }).then(function (response) {
+                    assert.strictEqual(response.body, '1. GET /first');
+                    return client.del('/first', port);
+                }).then(function (response) {
+                    assert.strictEqual(response.body, '2. DELETE /first');
+                    return client.get('/second', port);
+                }).then(function (response) {
+                    assert.strictEqual(response.body, '3. GET /second');
+                    return client.get('/first', port);
+                }).then(function (response) {
+                    assert.strictEqual(response.body, '1. GET /first');
+                    return client.del('/first', port);
+                }).then(function (response) {
+                    assert.strictEqual(response.body, '2. DELETE /first');
+                    return client.get('/second', port);
+                }).then(function (response) {
+                    assert.strictEqual(response.body, '3. GET /second');
+                    return api.del('/imposters/' + originServerPort);
+                }).finally(function () {
+                    return api.del('/imposters/' + port);
+                });
+            });
         });
     });
 });

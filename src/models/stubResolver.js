@@ -49,8 +49,26 @@ function create (proxy, postProcess) {
         });
     }
 
+    function predicatesFor (request, rememberWhen) {
+        var result = {};
+        Object.keys(rememberWhen).forEach(function (key) {
+            result[key] = { is: request[key] };
+        });
+        return result;
+    }
+
+    function stubIndexFor (stubResolver, stubs) {
+        for (var i = 0; i < stubs.length; i++) {
+            var stub = stubs[i];
+            if (stub.responses.indexOf(stubResolver) >= 0) {
+                break;
+            }
+        }
+        return i;
+    }
+
     function getResolvePromise (stubResolver, request, logger, stubs) {
-        /* jshint maxcomplexity: 6 */
+        /* jshint maxcomplexity: 7 */
         if (stubResolver.is) {
             return Q(stubResolver.is);
         }
@@ -68,6 +86,20 @@ function create (proxy, postProcess) {
                 var stub = { predicates: {}, responses: [{ is: response }] };
                 addPredicatesTo(stub.predicates, request, stubResolver.proxyAll.remember);
                 stubs.unshift(stub);
+                return Q(response);
+            });
+        }
+        else if (stubResolver.proxyX) {
+            return proxy.to(stubResolver.proxyX.to, request).then(function (response) {
+                // if stub exists, add response to end of array
+                // search only in direction specified by mode
+                // else
+                var predicates = predicatesFor(request, stubResolver.proxyX.replayWhen),
+                    newStub = { predicates: predicates, responses: [{ is: response }] },
+                    index = stubIndexFor(stubResolver, stubs);
+
+                logger.debug('inserting new stub at index %s: %s', index, JSON.stringify(newStub));
+                stubs.splice(index, 0, newStub);
                 return Q(response);
             });
         }

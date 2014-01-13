@@ -20,7 +20,8 @@ function createServer () {
             formatResponse: combinators.noop,
             respond: function (smtpRequest, originalRequest) { originalRequest.accept(); },
             metadata: combinators.constant({}),
-            addStub: combinators.noop
+            addStub: combinators.noop,
+            stubs: []
         }),
         requestHandler = function (request) {
             result.emit('request', { remoteAddress: request.remoteAddress }, request);

@@ -55,7 +55,8 @@ function setup (protocolName, createNodeServer) {
                     });
                 },
                 metadata: combinators.constant({}),
-                addStub: stubs.addStub
+                addStub: stubs.addStub,
+                stubs: stubs.stubs
             }),
             server = createNodeServer();
 

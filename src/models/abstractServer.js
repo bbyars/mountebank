@@ -81,6 +81,7 @@ function implement (implementation, baseLogger) {
             deferred.resolve({
                 requests: requests,
                 addStub: server.addStub,
+                stubs: server.stubs,
                 metadata: metadata,
                 port: actualPort,
                 close: function () {
