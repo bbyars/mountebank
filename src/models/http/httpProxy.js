@@ -5,7 +5,8 @@ var http = require('http'),
     url = require('url'),
     Q = require('q'),
     AbstractProxy = require('../abstractProxy'),
-    combinators = require('../../util/combinators');
+    combinators = require('../../util/combinators'),
+    querystring = require('querystring');
 
 function create (logger) {
 
@@ -17,7 +18,7 @@ function create (logger) {
                 hostname: parts.hostname,
                 port: parts.port,
                 auth: parts.auth,
-                path: originalRequest.path,
+                path: originalRequest.path + '?' + querystring.stringify(originalRequest.query),
                 headers: originalRequest.headers
             };
         options.headers.connection = 'close';

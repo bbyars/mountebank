@@ -3,6 +3,8 @@
 var Q = require('q'),
     helpers = require('../../../src/util/helpers');
 
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+
 function create (protocol) {
     function optionsFor (spec) {
         var defaults = {

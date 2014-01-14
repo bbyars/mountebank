@@ -49,10 +49,19 @@ function create (proxy, postProcess) {
         });
     }
 
-    function predicatesFor (request, rememberWhen) {
+    function predicatesFor (request, fieldsToMatch) {
         var result = {};
-        Object.keys(rememberWhen).forEach(function (key) {
-            result[key] = { is: request[key] };
+        Object.keys(fieldsToMatch).forEach(function (key) {
+            if (typeof request[key] === 'object') {
+                var subMatchers = {};
+                Object.keys(request[key]).forEach(function (key) {
+                    subMatchers[key] = { matches: true };
+                });
+                result[key] = predicatesFor(request[key], subMatchers);
+            }
+            else {
+                result[key] = { is: request[key] };
+            }
         });
         return result;
     }

@@ -53,6 +53,22 @@ describe('http proxy', function () {
             });
         });
 
+        promiseIt('should proxy to https', function () {
+            var stub = { responses: [{ is: { statusCode: 400, body: 'ERROR' }}]},
+                request = { protocol: 'https', port: port, stubs: [stub], name: this.name };
+
+            return api.post('/imposters', request).then(function (response) {
+                assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body));
+
+                return proxy.to('https://localhost:' + port, { path: '/', method: 'GET', headers: {} });
+            }).then(function (response) {
+                assert.strictEqual(response.statusCode, 400);
+                assert.strictEqual(response.body, 'ERROR');
+            }).finally(function () {
+                return api.del('/imposters/' + port);
+            });
+        });
+
         promiseIt('should gracefully deal with DNS errors', function () {
             return proxy.to('http://no.such.domain', { path: '/', method: 'GET', headers: {} }).then(function () {
                 assert.fail('should not have resolved promise');
@@ -72,14 +88,6 @@ describe('http proxy', function () {
                     code: 'invalid proxy',
                     message: 'Unable to connect to "1 + 2"'
                 });
-            });
-        });
-
-        promiseIt('should proxy to https', function () {
-            var request = { method: 'GET', path: '/?q=mountebank', body: '', headers: {} };
-            return proxy.to('https://google.com', request).then(function (response) {
-                assert.strictEqual(response.statusCode, 301);
-                assert.strictEqual(response.headers.location, 'https://www.google.com/?q=mountebank');
             });
         });
     });

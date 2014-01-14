@@ -16,6 +16,7 @@ Stories
             } (defaults vary by protocol)
         * should add multiple responses if multiple responses seen for same matches
         * set default mode so it shows in the JSON representation?
+        * case-sensitivity?
 1 Validation messages broken?  Test thoroughly
 1. add behaviors: { wait: 5000 } to responses
 0. stub smtp with accept/reject behaviors
