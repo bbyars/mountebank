@@ -17,7 +17,29 @@ Stories
         * should add multiple responses if multiple responses seen for same matches
         * set default mode so it shows in the JSON representation?
         * case-sensitivity?
+
+        replayWhen: {
+            query: { matches: true }
+        }
+
+        vs.
+
+        replayWhen: {
+            query: {
+                matches: { matches: true }
+            }
+        }
 1 Validation messages broken?  Test thoroughly
+1. predicates: don't allow multiple predicates on one field, but do allow config
+
+    {
+        body: {
+            is: 'This is a test'
+            except: ['^This']
+            caseSensitive: true
+        }
+    }
+
 1. add behaviors: { wait: 5000 } to responses
 0. stub smtp with accept/reject behaviors
 6. Add brew package

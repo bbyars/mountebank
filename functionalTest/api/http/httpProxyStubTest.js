@@ -171,7 +171,7 @@ describe('http proxy stubs', function () {
         return api.post('/imposters', originServerRequest).then(function () {
             return api.post('/imposters', proxyRequest);
         }).then(function (response) {
-            assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body));
+            assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body, null, 2));
             return client.get('/first', port);
         }).then(function (response) {
             assert.strictEqual(response.body, '1. GET /first');
@@ -190,19 +190,21 @@ describe('http proxy stubs', function () {
             return client.get('/second', port);
         }).then(function (response) {
             assert.strictEqual(response.body, '3. GET /second');
-            return api.del('/imposters/' + originServerPort);
-        }).finally(function () {
             return api.del('/imposters/' + port);
+        }).then(function (response) {
+            assert.strictEqual(response.body.stubs.length, 4);
+        }).finally(function () {
+            return api.del('/imposters/' + originServerPort);
         });
     });
 
-    promiseIt('should record new stubs behind proxy resolver in proxyAlways mode', function () {
+    promiseIt('should record new stubs with multiple responses behind proxy resolver in proxyAlways mode', function () {
         var originServerPort = port + 1,
             originServerFn = 'function (request, state) {\n' +
                              '    state.count = state.count || 0;\n' +
                              '    state.count += 1;\n' +
                              '    return {\n' +
-                             '        body: state.count + ". " + request.method + " " + request.path\n' +
+                             '        body: state.count + ". " + request.path\n' +
                              '    };\n' +
                              '}',
             originServerStub = { responses: [{ inject: originServerFn }] },
@@ -227,20 +229,23 @@ describe('http proxy stubs', function () {
         }).then(function (response) {
             assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body));
             return client.get('/first', port);
-        }).then(function (response) {
-            assert.strictEqual(response.body, '1. GET /first');
+        }).then(function () {
             return client.get('/second', port);
-        }).then(function (response) {
-            assert.strictEqual(response.body, '2. GET /second');
+        }).then(function () {
             return client.get('/first', port);
-        }).then(function (response) {
-            assert.strictEqual(response.body, '3. GET /first');
-            return client.get('/second', port);
-        }).then(function (response) {
-            assert.strictEqual(response.body, '4. GET /second');
-            return api.del('/imposters/' + originServerPort);
-        }).finally(function () {
+        }).then(function () {
             return api.del('/imposters/' + port);
+        }).then(function (response) {
+            assert.strictEqual(response.body.stubs.length, 3);
+
+            var stubs = response.body.stubs,
+                responses = stubs.splice(1).map(function (stub) {
+                    return stub.responses.map(function (response) { return response.is.body; });
+                });
+
+            assert.deepEqual(responses, [['1. /first', '3. /first'], ['2. /second']]);
+        }).finally(function () {
+            return api.del('/imposters/' + originServerPort);
         });
     });
 
@@ -249,7 +254,6 @@ describe('http proxy stubs', function () {
             originServerFn = 'function (request, state) {\n' +
                              '    state.count = state.count || 0;\n' +
                              '    state.count += 1;\n' +
-                             ' console.log(JSON.stringify(request));\n' +
                              '    return {\n' +
                              '        body: state.count + ". " + JSON.stringify(request.query)\n' +
                              '    };\n' +
@@ -285,6 +289,56 @@ describe('http proxy stubs', function () {
         }).then(function (response) {
             assert.strictEqual(response.body, '3. {"first":"2","second":"2"}');
             return client.get('/?first=1&second=2', port);
+        }).then(function (response) {
+            assert.strictEqual(response.body, '1. {"first":"1","second":"2"}');
+            return api.del('/imposters/' + originServerPort);
+        }).finally(function () {
+            return api.del('/imposters/' + port);
+        });
+    });
+
+    promiseIt('should match sub-objects', function () {
+        var originServerPort = port + 1,
+            originServerFn = 'function (request, state) {\n' +
+                             '    state.count = state.count || 0;\n' +
+                             '    state.count += 1;\n' +
+                             '    return {\n' +
+                             '        body: state.count + ". " + JSON.stringify(request.query)\n' +
+                             '    };\n' +
+                             '}',
+            originServerStub = { responses: [{ inject: originServerFn }] },
+            originServerRequest = {
+                protocol: 'http',
+                port: originServerPort,
+                stubs: [originServerStub],
+                name: this.name + ' origin server'
+            },
+            proxyDefinition = {
+                to: 'http://localhost:' + originServerPort,
+                mode: 'proxyOnce',
+                replayWhen: {
+                    query: {
+                        first: { matches: true }
+                    }
+                }
+            },
+            proxyStub = { responses: [{ proxyX: proxyDefinition }] },
+            proxyRequest = { protocol: 'http', port: port, stubs: [proxyStub], name: this.name + ' proxy' };
+
+        return api.post('/imposters', originServerRequest).then(function () {
+            return api.post('/imposters', proxyRequest);
+        }).then(function (response) {
+            assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body));
+            return client.get('/?first=1&second=2', port);
+        }).then(function (response) {
+            assert.strictEqual(response.body, '1. {"first":"1","second":"2"}');
+            return client.get('/?second=2', port);
+        }).then(function (response) {
+            assert.strictEqual(response.body, '2. {"second":"2"}');
+            return client.get('/?first=2&second=2', port);
+        }).then(function (response) {
+            assert.strictEqual(response.body, '3. {"first":"2","second":"2"}');
+            return client.get('/?first=1&second=2&third=3', port);
         }).then(function (response) {
             assert.strictEqual(response.body, '1. {"first":"1","second":"2"}');
             return api.del('/imposters/' + originServerPort);

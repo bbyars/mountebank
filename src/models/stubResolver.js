@@ -53,8 +53,10 @@ function create (proxy, postProcess) {
         var result = {};
         Object.keys(fieldsToMatch).forEach(function (key) {
             if (typeof request[key] === 'object') {
-                var subMatchers = {};
-                Object.keys(request[key]).forEach(function (key) {
+                var subMatchers = {},
+                    keysSource = fieldsToMatch[key].matches === true ? request : fieldsToMatch;
+
+                Object.keys(keysSource[key]).forEach(function (key) {
                     subMatchers[key] = { matches: true };
                 });
                 result[key] = predicatesFor(request[key], subMatchers);
@@ -104,11 +106,22 @@ function create (proxy, postProcess) {
                 // search only in direction specified by mode
                 // else
                 var predicates = predicatesFor(request, stubResolver.proxyX.replayWhen),
-                    newStub = { predicates: predicates, responses: [{ is: response }] },
-                    index = stubResolver.proxyX.mode === 'proxyAlways' ? stubs.length : stubIndexFor(stubResolver, stubs);
+                    stubResponse = { is: response },
+                    newStub = { predicates: predicates, responses: [stubResponse] },
+                    index = stubIndexFor(stubResolver, stubs);
+
+                if (stubResolver.proxyX.mode === 'proxyAlways') {
+                    for (index = index + 1; index < stubs.length; index++) {
+                        if (JSON.stringify(predicates) === JSON.stringify(stubs[index].predicates)) {
+                            stubs[index].responses.push(stubResponse);
+                            return Q(response);
+                        }
+                    }
+                }
 
                 logger.debug('inserting new stub at index %s: %s', index, JSON.stringify(newStub));
                 stubs.splice(index, 0, newStub);
+
                 return Q(response);
             });
         }
