@@ -19,7 +19,7 @@ function create (options) {
             },
             resolver = StubResolver.create(dryRunProxy, combinators.identity),
             stubRepository = options.StubRepository.create(resolver, encoding),
-            clone = helpers.clone(stub), // proxyOnce changes state
+            clone = helpers.clone(stub),
             testRequest = options.testRequest;
 
         if (hasInjection(stub)) {

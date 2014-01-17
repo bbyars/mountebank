@@ -31,9 +31,6 @@ function create (proxy, postProcess) {
     }
 
     function predicatesFor (request, fieldsToMatch) {
-//        console.log('predicatesFor:');
-//        console.log('request: ' + JSON.stringify(request));
-//        console.log('fieldsToMatch: ' + JSON.stringify(fieldsToMatch));
         var result = {};
         Object.keys(fieldsToMatch || {}).forEach(function (key) {
             if (typeof request[key] === 'object') {
@@ -91,7 +88,6 @@ function create (proxy, postProcess) {
                 }
 
                 stubs.splice(index, 0, newStub);
-
                 return Q(response);
             });
         }

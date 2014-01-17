@@ -10,7 +10,7 @@ var assert = require('assert'),
 
 describe('stubResolver', function () {
     describe('#resolve', function () {
-        it('should resolve "is" without transformation', function () {
+        promiseIt('should resolve "is" without transformation', function () {
             var resolver = StubResolver.create({}, combinators.identity),
                 logger = { debug: mock() },
                 stub = { is: 'value' };
