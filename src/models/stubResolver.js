@@ -30,36 +30,24 @@ function create (proxy, postProcess) {
         return deferred.promise;
     }
 
-    function addPredicatesTo (predicates, request, predicatesToRemember) {
-        predicatesToRemember.forEach(function (key) {
-            if (key.indexOf('.') > 0) {
-                var parts = key.split('.'),
-                    next = parts[0],
-                    rest = parts.slice(1).join('.');
-                predicates[next] = {};
-                addPredicatesTo(predicates[next], request[next], [rest]);
-            }
-            else if (typeof request[key] === 'object') {
-                predicates[key] = {};
-                addPredicatesTo(predicates[key], request[key], Object.keys(request[key]));
-            }
-            else {
-                predicates[key] = { is: request[key] };
-            }
-        });
-    }
-
     function predicatesFor (request, fieldsToMatch) {
+//        console.log('predicatesFor:');
+//        console.log('request: ' + JSON.stringify(request));
+//        console.log('fieldsToMatch: ' + JSON.stringify(fieldsToMatch));
         var result = {};
-        Object.keys(fieldsToMatch).forEach(function (key) {
+        Object.keys(fieldsToMatch || {}).forEach(function (key) {
             if (typeof request[key] === 'object') {
-                var subMatchers = {},
-                    keysSource = fieldsToMatch[key].matches === true ? request : fieldsToMatch;
+                var subMatchers = {};
 
-                Object.keys(keysSource[key]).forEach(function (key) {
-                    subMatchers[key] = { matches: true };
-                });
-                result[key] = predicatesFor(request[key], subMatchers);
+                if (fieldsToMatch[key].matches === true) {
+                    Object.keys(request[key]).forEach(function (key) {
+                        subMatchers[key] = { matches: true };
+                    });
+                    result[key] = predicatesFor(request[key], subMatchers);
+                }
+                else {
+                    result[key] = predicatesFor(request[key], fieldsToMatch[key]);
+                }
             }
             else {
                 result[key] = { is: request[key] };
@@ -79,38 +67,21 @@ function create (proxy, postProcess) {
     }
 
     function getResolvePromise (stubResolver, request, logger, stubs) {
-        /* jshint maxcomplexity: 7 */
         if (stubResolver.is) {
             return Q(stubResolver.is);
         }
         else if (stubResolver.proxy) {
-            return proxy.to(stubResolver.proxy.to, request);
-        }
-        else if (stubResolver.proxyOnce) {
-            return proxy.to(stubResolver.proxyOnce.to, request).then(function (response) {
-                stubResolver.is = response;
-                return Q(response);
-            });
-        }
-        else if (stubResolver.proxyAll) {
-            return proxy.to(stubResolver.proxyAll.to, request).then(function (response) {
-                var stub = { predicates: {}, responses: [{ is: response }] };
-                addPredicatesTo(stub.predicates, request, stubResolver.proxyAll.remember);
-                stubs.unshift(stub);
-                return Q(response);
-            });
-        }
-        else if (stubResolver.proxyX) {
-            return proxy.to(stubResolver.proxyX.to, request).then(function (response) {
-                // if stub exists, add response to end of array
-                // search only in direction specified by mode
-                // else
-                var predicates = predicatesFor(request, stubResolver.proxyX.replayWhen),
+            return proxy.to(stubResolver.proxy.to, request).then(function (response) {
+                var predicates = predicatesFor(request, stubResolver.proxy.replayWhen),
                     stubResponse = { is: response },
                     newStub = { predicates: predicates, responses: [stubResponse] },
                     index = stubIndexFor(stubResolver, stubs);
 
-                if (stubResolver.proxyX.mode === 'proxyAlways') {
+                if (['proxyOnce', 'proxyAlways'].indexOf(stubResolver.proxy.mode) < 0) {
+                    stubResolver.proxy.mode = 'proxyOnce';
+                }
+
+                if (stubResolver.proxy.mode === 'proxyAlways') {
                     for (index = index + 1; index < stubs.length; index++) {
                         if (JSON.stringify(predicates) === JSON.stringify(stubs[index].predicates)) {
                             stubs[index].responses.push(stubResponse);
@@ -119,7 +90,6 @@ function create (proxy, postProcess) {
                     }
                 }
 
-                logger.debug('inserting new stub at index %s: %s', index, JSON.stringify(newStub));
                 stubs.splice(index, 0, newStub);
 
                 return Q(response);

@@ -214,23 +214,6 @@ describe('dryRunValidator', function () {
             });
         });
 
-        promiseIt('should be valid with a valid proxyOnce response', function () {
-            var request = {
-                    stubs: [{
-                        responses: [{ proxyOnce: 'http://google.com' }]
-                    }]
-                },
-                validator = Validator.create({ StubRepository: StubRepository, testRequest: testRequest }),
-                logger = { error: mock() };
-
-            return validator.validate(request, logger).then(function (result) {
-                assert.deepEqual(result, {
-                    isValid: true,
-                    errors: []
-                });
-            });
-        });
-
         promiseIt('should not be valid if any stub is invalid', function () {
             var request = {
                     stubs: [

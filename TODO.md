@@ -8,7 +8,7 @@ Stories
             - proxyAlways (writes stubs behind proxy resolver)
         - replayWhen:
             {
-                "method": { "matches": true }, // GET == GET
+                "method": { "matches": true, caseSensitive: true }, // GET == GET
                 "path": { "matchesExcept": ["/\d+/"] }, // /customers/123/about and /customers/234/about
                 "query": { "matches": true },
                 "headers": { matchesExcept": ["vary"] }
@@ -16,7 +16,6 @@ Stories
             } (defaults vary by protocol)
         * should add multiple responses if multiple responses seen for same matches
         * set default mode so it shows in the JSON representation?
-        * case-sensitivity?
 
         replayWhen: {
             query: { matches: true }
@@ -41,6 +40,7 @@ Stories
     }
 
 1. add behaviors: { wait: 5000 } to responses
+2, release on branch
 0. stub smtp with accept/reject behaviors
 6. Add brew package
 6. add pkg installer like vagrant
@@ -51,7 +51,6 @@ Stories
 21. Prettier /imposters HTML page
 22. Ability to create imposter from UI (with karma testing?)
 23. Prettier /imposter/{port} HTML page
-26. Add support for case-sensitive predicates (as objects instead of strings?)
 27. paging and q= filtering for imposters on GET /imposters
 30. javadoc style documentation? (look at simplesmtp code)
 31. Package npm without tests and files not needed for runtime
@@ -72,9 +71,9 @@ Known Bugs
 Cleanup Needed
 ==============
 check all links
+refactor and unit test new stubResolver code
 
-API:
-- are predicates OK or do I need another layer of indirection to add case-insensitivity, etc?
+dryRunValidator - remove cloning once getting rid of proxyOnce, and no need to set default
 
 Rainy day ideas to try out
 =================================

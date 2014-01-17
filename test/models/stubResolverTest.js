@@ -43,76 +43,116 @@ describe('stubResolver', function () {
             });
         });
 
-        promiseIt('should resolve "proxyOnce" by saving the proxy results', function () {
+        promiseIt('should default to "proxyOnce" mode', function () {
             var proxy = { to: mock().returns(Q('value')) },
                 resolver = StubResolver.create(proxy, combinators.identity),
                 logger = { debug: mock() },
-                stub = { proxyOnce: { to: 'where' } };
+                stub = { proxy: { to: 'where' } };
 
-            return resolver.resolve(stub, 'request', logger, []).then(function (response) {
-                assert.strictEqual(response, 'value');
-                assert.strictEqual(stub.is, 'value');
+            return resolver.resolve(stub, 'request', logger, []).then(function () {
+                assert.strictEqual(stub.proxy.mode, 'proxyOnce');
             });
         });
 
-        promiseIt('should resolve "proxyAll" by adding a new "is" stub to the front of the list', function () {
+        promiseIt('should change unrecognized mode to "proxyOnce" mode', function () {
             var proxy = { to: mock().returns(Q('value')) },
                 resolver = StubResolver.create(proxy, combinators.identity),
                 logger = { debug: mock() },
-                stub = { proxyAll: { to: 'where', remember: ['first', 'second'] } },
-                request = { first: 'one', second: 'two', three: 'three' },
-                stubs = [1, 2, 3];
+                stub = { proxy: { to: 'where', mode: 'unrecognized' } };
 
-            return resolver.resolve(stub, request, logger, stubs).then(function (response) {
-                assert.strictEqual(response, 'value');
-                assert.deepEqual(stubs, [{
-                    predicates: { first: { is: 'one' }, second: { is: 'two' } },
-                    responses: [{ is: 'value' }]
-                }, 1, 2, 3]);
+            return resolver.resolve(stub, 'request', logger, []).then(function () {
+                assert.strictEqual(stub.proxy.mode, 'proxyOnce');
             });
         });
 
-        promiseIt('should resolve "proxyAll" and remember full object predicates', function () {
+        promiseIt('should resolve "proxy" in "proxyOnce" mode by adding a new "is" stub to the front of the list', function () {
             var proxy = { to: mock().returns(Q('value')) },
                 resolver = StubResolver.create(proxy, combinators.identity),
                 logger = { debug: mock() },
-                stub = { proxyAll: { to: 'where', remember: ['key'] } },
-                request = { key: { nested: { first: 'one', second: 'two' }, third: 'three' } },
-                stubs = [1, 2, 3];
+                stub = { proxy: { to: 'where' } },
+                request = { },
+                stubs = [{ responses: [] }, { responses: [stub] }];
 
             return resolver.resolve(stub, request, logger, stubs).then(function (response) {
                 assert.strictEqual(response, 'value');
-                assert.deepEqual(stubs, [{
-                    predicates: { key: {
-                        nested: {
-                            first: { is: 'one' },
-                            second: { is: 'two' }
-                        },
-                        third: { is: 'three' }
-                    }},
-                    responses: [{ is: 'value' }]
-                }, 1, 2, 3]);
+                assert.deepEqual(stubs, [
+                    { responses: [] },
+                    { responses: [{ is: 'value' }], predicates: {} },
+                    { responses: [stub] }
+                ]);
             });
         });
 
-        promiseIt('should resolve "proxyAll" and remember nested keys', function () {
+        promiseIt('should resolve "proxy" and remember full object predicates', function () {
             var proxy = { to: mock().returns(Q('value')) },
                 resolver = StubResolver.create(proxy, combinators.identity),
                 logger = { debug: mock() },
-                stub = { proxyAll: { to: 'where', remember: ['key.nested.first'] } },
-                request = { key: { nested: { first: 'one', second: 'two' }, third: 'three' } },
-                stubs = [1, 2, 3];
-
-            return resolver.resolve(stub, request, logger, stubs).then(function (response) {
-                assert.strictEqual(response, 'value');
-                assert.deepEqual(stubs, [{
-                    predicates: { key: {
-                        nested: {
-                            first: { is: 'one' },
+                stub = {
+                    proxy: {
+                        to: 'where',
+                        replayWhen: {
+                            key: { matches: true }
                         }
-                    }},
-                    responses: [{ is: 'value' }]
-                }, 1, 2, 3]);
+                    }
+                },
+                request = { key: { nested: { first: 'one', second: 'two' }, third: 'three' } },
+                stubs = [{ responses: [stub] }];
+
+            return resolver.resolve(stub, request, logger, stubs).then(function () {
+                assert.deepEqual(stubs, [
+                    {
+                        predicates: { key: {
+                            nested: {
+                                first: { is: 'one' },
+                                second: { is: 'two' }
+                            },
+                            third: { is: 'three' }
+                        }},
+                        responses: [{ is: 'value' }]
+                    },
+                    {
+                        responses: [stub]
+                    }
+                ]);
+            });
+        });
+
+        promiseIt('should resolve "proxy" and remember nested keys', function () {
+            var proxy = { to: mock().returns(Q('value')) },
+                resolver = StubResolver.create(proxy, combinators.identity),
+                logger = { debug: mock() },
+                stub = {
+                    proxy: {
+                        to: 'where',
+                        mode: 'proxyOnce',
+                        replayWhen: {
+                            key: {
+                                nested: {
+                                    first: { matches: true }
+                                }
+                            }
+                        }
+                    }
+                },
+                request = { key: { nested: { first: 'one', second: 'two' }, third: 'three' } },
+                stubs = [{ responses: [stub] }];
+
+            return resolver.resolve(stub, request, logger, stubs).then(function () {
+                assert.deepEqual(stubs, [
+                    {
+                        predicates: {
+                            key: {
+                                nested: {
+                                    first: { is: 'one' }
+                                }
+                            }
+                        },
+                        responses: [{ is: 'value' }]
+                    },
+                    {
+                        responses: [stub]
+                    }
+                ]);
             });
         });
 

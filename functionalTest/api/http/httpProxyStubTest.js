@@ -10,26 +10,6 @@ var assert = require('assert'),
 describe('http proxy stubs', function () {
     this.timeout(timeout);
 
-    promiseIt('should allow proxy stubs', function () {
-        var proxyPort = port + 1,
-            proxyStub = { responses: [{ is: { body: 'PROXIED' } }] },
-            proxyRequest = { protocol: 'http', port: proxyPort, stubs: [proxyStub], name: this.name + ' PROXY' },
-            stub = { responses: [{ proxy: { to: 'http://localhost:' + proxyPort } }] },
-            request = { protocol: 'http', port: port, stubs: [stub], name: this.name + ' MAIN' };
-
-        return api.post('/imposters', proxyRequest).then(function () {
-            return api.post('/imposters', request);
-        }).then(function () {
-            return client.get('/', port);
-        }).then(function (response) {
-            assert.strictEqual(response.body, 'PROXIED');
-        }).finally(function () {
-            return api.del('/imposters/' + proxyPort);
-        }).finally(function () {
-            return api.del('/imposters/' + port);
-        });
-    });
-
     promiseIt('should allow proxy stubs to invalid domains', function () {
         var stub = { responses: [{ proxy: { to: 'http://invalid.domain' } }] },
             request = { protocol: 'http', port: port, stubs: [stub], name: this.name };
@@ -45,103 +25,7 @@ describe('http proxy stubs', function () {
         });
     });
 
-    promiseIt('should allow proxyOnce behavior', function () {
-        var proxyPort = port + 1,
-            proxyStub = { responses: [{ is: { body: 'PROXIED' } }] },
-            proxyRequest = { protocol: 'http', port: proxyPort, stubs: [proxyStub], name: this.name + ' PROXY' },
-            stub = { responses: [{ proxyOnce: { to: 'http://localhost:' + proxyPort } }] },
-            request = { protocol: 'http', port: port, stubs: [stub], name: this.name + ' MAIN' };
-
-        return api.post('/imposters', proxyRequest).then(function () {
-            return api.post('/imposters', request);
-        }).then(function () {
-            return client.get('/', port);
-        }).then(function (response) {
-            assert.strictEqual(response.body, 'PROXIED');
-
-            return client.get('/', port);
-        }).then(function (response) {
-            assert.strictEqual(response.body, 'PROXIED');
-
-            return api.get('/imposters/' + proxyPort);
-        }).then(function (response) {
-            assert.strictEqual(response.body.requests.length, 1);
-        }).finally(function () {
-            return api.del('/imposters/' + proxyPort);
-        }).finally(function () {
-            return api.del('/imposters/' + port);
-        });
-    });
-
-    promiseIt('should save proxyOnce state between stub creations', function () {
-        var proxyPort = port + 1,
-            proxyStub = { responses: [{ is: { body: 'PROXIED' } }] },
-            proxyRequest = { protocol: 'http', port: proxyPort, stubs: [proxyStub], name: this.name + ' PROXY' },
-            stub = { responses: [{ proxyOnce: { to: 'http://localhost:' + proxyPort } }] },
-            request = { protocol: 'http', port: port, stubs: [stub], name: this.name + ' MAIN' };
-
-        return api.post('/imposters', proxyRequest).then(function () {
-            return api.post('/imposters', request);
-        }).then(function () {
-            return client.get('/', port);
-        }).then(function () {
-            return api.del('/imposters/' + proxyPort);
-        }).then(function () {
-            return api.del('/imposters/' + port);
-        }).then(function (response) {
-            // replay the imposter body without change, and with the proxy shut down
-            return api.post('/imposters', response.body);
-        }).then(function (response) {
-            assert.strictEqual(201, response.statusCode, JSON.stringify(response.body));
-
-            return client.get('/', port);
-        }).then(function (response) {
-            assert.strictEqual('PROXIED', response.body);
-        }).finally(function () {
-            return api.del('/imposters/' + port);
-        });
-    });
-
-    promiseIt('should set predicates automatically when using proxyAll', function () {
-        var proxyPort = port + 1,
-            proxyStubs = [
-                {
-                    predicates: { path: { is: '/first' } },
-                    responses: [{ is: { body: 'first' }}]
-                },
-                {
-                    predicates: { path: { is: '/second' } },
-                    responses: [{ is: { body: 'second' }}]
-                }
-            ],
-            proxyRequest = { protocol: 'http', port: proxyPort, stubs: proxyStubs, name: this.name + ' PROXY' },
-            stub = { responses: [{ proxyAll: { to: 'http://localhost:' + proxyPort, remember: ['path'] } }] },
-            request = { protocol: 'http', port: port, stubs: [stub], name: this.name + ' MAIN' };
-
-        return api.post('/imposters', proxyRequest).then(function () {
-            return api.post('/imposters', request);
-        }).then(function (response) {
-            assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body));
-            return client.get('/first', port);
-        }).then(function (response) {
-            assert.strictEqual(response.body, 'first');
-            return client.get('/second', port);
-        }).then(function (response) {
-            assert.strictEqual(response.body, 'second');
-            return api.del('/imposters/' + proxyPort);
-        }).then(function () {
-            return client.get('/first', port);
-        }).then(function (response) {
-            assert.strictEqual(response.body, 'first');
-            return client.get('/second', port);
-        }).then(function (response) {
-            assert.strictEqual(response.body, 'second');
-        }).finally(function () {
-            return api.del('/imposters/' + port);
-        });
-    });
-
-    promiseIt('should record new stubs in order in front of proxy resolver in proxyOnce mode', function () {
+    promiseIt('should record new stubs in order in front of proxy resolver using proxyOnce mode', function () {
         var originServerPort = port + 1,
             originServerFn = 'function (request, state) {\n' +
                              '    state.count = state.count || 0;\n' +
@@ -165,7 +49,7 @@ describe('http proxy stubs', function () {
                     path: { matches: true }
                 }
             },
-            proxyStub = { responses: [{ proxyX: proxyDefinition }] },
+            proxyStub = { responses: [{ proxy: proxyDefinition }] },
             proxyRequest = { protocol: 'http', port: port, stubs: [proxyStub], name: this.name + ' proxy' };
 
         return api.post('/imposters', originServerRequest).then(function () {
@@ -221,7 +105,7 @@ describe('http proxy stubs', function () {
                     path: { matches: true }
                 }
             },
-            proxyStub = { responses: [{ proxyX: proxyDefinition }] },
+            proxyStub = { responses: [{ proxy: proxyDefinition }] },
             proxyRequest = { protocol: 'http', port: port, stubs: [proxyStub], name: this.name + ' proxy' };
 
         return api.post('/imposters', originServerRequest).then(function () {
@@ -272,7 +156,7 @@ describe('http proxy stubs', function () {
                     query: { matches: true }
                 }
             },
-            proxyStub = { responses: [{ proxyX: proxyDefinition }] },
+            proxyStub = { responses: [{ proxy: proxyDefinition }] },
             proxyRequest = { protocol: 'http', port: port, stubs: [proxyStub], name: this.name + ' proxy' };
 
         return api.post('/imposters', originServerRequest).then(function () {
@@ -322,7 +206,7 @@ describe('http proxy stubs', function () {
                     }
                 }
             },
-            proxyStub = { responses: [{ proxyX: proxyDefinition }] },
+            proxyStub = { responses: [{ proxy: proxyDefinition }] },
             proxyRequest = { protocol: 'http', port: port, stubs: [proxyStub], name: this.name + ' proxy' };
 
         return api.post('/imposters', originServerRequest).then(function () {
