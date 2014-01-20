@@ -1,8 +1,10 @@
 'use strict';
 
 var helpers = require('../util/helpers'),
+    combinators = require('../util/combinators'),
     errors = require('../util/errors'),
-    Q = require('q');
+    Q = require('q'),
+    stringify = require('json-stable-stringify');
 
 function create (proxy, postProcess) {
     /* jshint unused: false */
@@ -30,26 +32,54 @@ function create (proxy, postProcess) {
         return deferred.promise;
     }
 
-    function predicatesFor (request, fieldsToMatch) {
+    function buildEquals (request, fieldsToRemember) {
         var result = {};
-        Object.keys(fieldsToMatch || {}).forEach(function (key) {
+        Object.keys(fieldsToRemember).forEach(function (key) {
             if (typeof request[key] === 'object') {
                 var subMatchers = {};
 
-                if (fieldsToMatch[key].matches === true) {
+                if (fieldsToRemember[key].matches === true) {
                     Object.keys(request[key]).forEach(function (key) {
                         subMatchers[key] = { matches: true };
                     });
-                    result[key] = predicatesFor(request[key], subMatchers);
+                    result[key] = buildEquals(request[key], subMatchers);
                 }
                 else {
-                    result[key] = predicatesFor(request[key], fieldsToMatch[key]);
+                    result[key] = buildEquals(request[key], fieldsToRemember[key]);
                 }
             }
             else {
-                result[key] = { is: request[key] };
+                result[key] = request[key];
             }
         });
+        return result;
+    }
+
+    function predicatesFor (request, fieldsToRemember) {
+        var deepEquals = {},
+            equals = {},
+            result = [],
+            isEmpty = function (obj) { return JSON.stringify(obj) === '{}'; };
+
+        if (isEmpty(fieldsToRemember)) {
+            return [];
+        }
+
+        Object.keys(fieldsToRemember || {}).forEach(function (key) {
+            if (fieldsToRemember[key].matches) {
+                deepEquals[key] = request[key];
+            }
+            else {
+                equals[key] = buildEquals(request[key], fieldsToRemember[key]);
+            }
+        });
+
+        if (!isEmpty(deepEquals)) {
+            result.push({ deepEquals: deepEquals });
+        }
+        if (!isEmpty(equals)) {
+            result.push({ equals: equals });
+        }
         return result;
     }
 
@@ -63,38 +93,41 @@ function create (proxy, postProcess) {
         return i;
     }
 
-    function getResolvePromise (stubResolver, request, logger, stubs) {
+    function proxyAndRecord (stubResolver, request, stubs) {
+        /* jshint maxcomplexity: 6 */
+        return proxy.to(stubResolver.proxy.to, request).then(function (response) {
+            var predicates = predicatesFor(request, stubResolver.proxy.replayWhen || {}),
+                stubResponse = { is: response },
+                newStub = { predicates: predicates, responses: [stubResponse] },
+                index = stubIndexFor(stubResolver, stubs);
+
+            if (['proxyOnce', 'proxyAlways'].indexOf(stubResolver.proxy.mode) < 0) {
+                stubResolver.proxy.mode = 'proxyOnce';
+            }
+
+            if (stubResolver.proxy.mode === 'proxyAlways') {
+                for (index = index + 1; index < stubs.length; index++) {
+                    if (stringify(predicates) === stringify(stubs[index].predicates)) {
+                        stubs[index].responses.push(stubResponse);
+                        return Q(response);
+                    }
+                }
+            }
+
+            stubs.splice(index, 0, newStub);
+            return Q(response);
+        });
+    }
+
+    function process (stubResolver, request, logger, stubs) {
         if (stubResolver.is) {
             return Q(stubResolver.is);
         }
         else if (stubResolver.proxy) {
-            return proxy.to(stubResolver.proxy.to, request).then(function (response) {
-                var predicates = predicatesFor(request, stubResolver.proxy.replayWhen),
-                    stubResponse = { is: response },
-                    newStub = { predicates: predicates, responses: [stubResponse] },
-                    index = stubIndexFor(stubResolver, stubs);
-
-                if (['proxyOnce', 'proxyAlways'].indexOf(stubResolver.proxy.mode) < 0) {
-                    stubResolver.proxy.mode = 'proxyOnce';
-                }
-
-                if (stubResolver.proxy.mode === 'proxyAlways') {
-                    for (index = index + 1; index < stubs.length; index++) {
-                        if (JSON.stringify(predicates) === JSON.stringify(stubs[index].predicates)) {
-                            stubs[index].responses.push(stubResponse);
-                            return Q(response);
-                        }
-                    }
-                }
-
-                stubs.splice(index, 0, newStub);
-                return Q(response);
-            });
+            return proxyAndRecord(stubResolver, request, stubs);
         }
         else if (stubResolver.inject) {
-            return inject(request, stubResolver.inject, logger).then(function (response) {
-                return Q(response);
-            });
+            return inject(request, stubResolver.inject, logger).then(Q);
         }
         else {
             return Q.reject(errors.ValidationError('unrecognized stub resolver', { source: stubResolver }));
@@ -102,9 +135,8 @@ function create (proxy, postProcess) {
     }
 
     function resolve (stubResolver, request, logger, stubs) {
-        return getResolvePromise(stubResolver, request, logger, stubs).then(function (response) {
-            return Q(postProcess(response));
-        });
+        var postProcessAndReturnPromise = combinators.compose(Q, postProcess);
+        return process(stubResolver, request, logger, stubs).then(postProcessAndReturnPromise);
     }
 
     return {

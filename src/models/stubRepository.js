@@ -1,35 +1,15 @@
 'use strict';
 
 var predicates = require('./predicates'),
-    Q = require('q'),
-    util = require('util'),
-    errors = require('../util/errors');
+    Q = require('q');
 
 function create (resolver, encoding) {
     var stubs = [];
 
-    function trueForAll (obj, predicate) {
+    function trueForAll (list, predicate) {
         // we call map before calling every so we make sure to call every
         // predicate during dry run validation rather than short-circuiting
-        return Object.keys(obj).map(predicate).every(function (result) { return result; });
-    }
-
-    function matchesPredicate (fieldName, predicate, request, logger) {
-        if (typeof predicate !== 'object' || util.isArray(predicate)) {
-            throw errors.ValidationError('predicate must be an object', { source: predicate });
-        }
-
-        return trueForAll(predicate, function (key) {
-            if (predicates[key]) {
-                return predicates[key](fieldName, predicate[key], request, encoding, logger);
-            }
-            else if (typeof predicate[key] === 'object') {
-                return matchesPredicate(fieldName + '.' + key, predicate[key], request);
-            }
-            else {
-                throw errors.ValidationError("no predicate '" + key + "'", { source: predicate });
-            }
-        });
+        return list.map(predicate).every(function (result) { return result; });
     }
 
     function findFirstMatch (request, logger) {
@@ -37,9 +17,9 @@ function create (resolver, encoding) {
             return undefined;
         }
         var matches = stubs.filter(function (stub) {
-            var predicates = stub.predicates || {};
-            return trueForAll(predicates, function (fieldName) {
-                return matchesPredicate(fieldName, predicates[fieldName], request, logger);
+            var stubPredicates = stub.predicates || [];
+            return trueForAll(stubPredicates, function (predicate) {
+                return predicates.resolve(predicate, request, encoding, logger);
             });
         });
         if (matches.length === 0) {

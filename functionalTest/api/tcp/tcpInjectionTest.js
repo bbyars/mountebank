@@ -34,10 +34,7 @@ describe('tcp imposter', function () {
     describe('POST /imposters with injections', function () {
         promiseIt('should allow javascript predicate for matching', function () {
             var stub = {
-                predicates: {
-                    data: { inject: "function (data) { return data.toString() === 'test'; }" },
-                    request: { inject: "function (request) { return request.data.toString() === 'test'; }" }
-                },
+                predicates: [{ inject: "function (request) { return request.data.toString() === 'test'; }" }],
                 responses: [{ is: { data: 'MATCHED' } }]
             };
 

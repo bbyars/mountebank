@@ -4,159 +4,90 @@ var assert = require('assert'),
     StubRepository = require('../../src/models/stubRepository'),
     mock = require('../mock').mock,
     promiseIt = require('../testHelpers').promiseIt,
-    combinators = require('../../src/util/combinators'),
-    StubResolver = require('../../src/models/stubResolver');
+    Q = require('q');
 
 describe('stubRepository', function () {
-    var stubs, proxy, logger, resolver;
+    describe('#resolve', function () {
 
-    beforeEach(function () {
-        proxy = {};
-        logger = { debug: mock(), info: mock(), warn: mock(), error: mock() };
-        resolver = StubResolver.create(proxy, combinators.identity);
-        stubs = StubRepository.create(resolver);
-    });
+        promiseIt('should call resolve with default response if no match', function () {
+            var resolver = mock().returns(Q()),
+                stubs = StubRepository.create({ resolve: resolver }),
+                logger = { debug: mock() },
+                request = { field: 'value' };
 
-    promiseIt('should return default response if no match', function () {
-        var request = { path: '/test', headers: {}, body: '' };
-
-        return stubs.resolve(request, logger).then(function (response) {
-            assert.deepEqual(response, {});
-        });
-    });
-
-    promiseIt('should return stub if no predicate', function () {
-        var request = { path: '/test', headers: {}, body: '' };
-        stubs.addStub({
-            responses: [{ is: { statusCode: 400 }}]
-        });
-
-        return stubs.resolve(request, logger).then(function (response) {
-            assert.strictEqual(response.statusCode, 400);
-        });
-    });
-
-    promiseIt('should return match on path', function () {
-        var request = { path: '/test', headers: {}, body: '' };
-        stubs.addStub({
-            predicates: { path: { is: '/test' }},
-            responses: [{ is: { statusCode: 400, headers: { 'X-Test': 'Test' }, body: 'Test successful' }}]
-        });
-
-        return stubs.resolve(request, logger).then(function (response) {
-            assert.deepEqual(response, {
-                statusCode: 400,
-                headers: { 'X-Test': 'Test' },
-                body: 'Test successful'
+            return stubs.resolve(request, logger).then(function () {
+                assert.ok(resolver.wasCalledWith({ is: {} }, request, logger, []), resolver.message());
             });
         });
-    });
 
-    promiseIt('should merge default values with stub response', function () {
-        var request = { path: '/test', headers: {}, body: '' };
-        stubs.addStub({
-            responses: [{ is: { body: 'Test successful' }}]
+        promiseIt('should always match if no predicate', function () {
+            var resolver = mock().returns(Q()),
+                stubs = StubRepository.create({ resolve: resolver }),
+                logger = { debug: mock() },
+                request = { field: 'value' },
+                stub = { responses: ['first stub'] };
+
+            stubs.addStub(stub);
+
+            return stubs.resolve(request, logger).then(function () {
+                assert.ok(resolver.wasCalledWith('first stub', request, logger, [stub]), resolver.message());
+            });
         });
 
-        return stubs.resolve(request, logger).then(function (response) {
-            assert.deepEqual(response, { body: 'Test successful' });
-        });
-    });
+        promiseIt('should return first match', function () {
+            var resolver = mock().returns(Q()),
+                stubs = StubRepository.create({ resolve: resolver }),
+                logger = { debug: mock() },
+                request = { field: '2' },
+                firstStub = { predicates: [{ equals: { field: '1' }}], responses: ['first stub'] },
+                secondStub = { predicates: [{ equals: { field: '2' }}], responses: ['second stub'] },
+                thirdStub = { predicates: [{ equals: { field: '2' }}], responses: ['third stub'] };
 
-    promiseIt('should return stubs in order, looping around', function () {
-        var request = { path: '/test', headers: {}, body: '' },
-            bodies = [];
-        stubs.addStub({
-            responses: [{ is: { body: 'First' }}, { is: { body: 'Second' }}]
-        });
+            stubs.addStub(firstStub);
+            stubs.addStub(secondStub);
+            stubs.addStub(thirdStub);
 
-        return stubs.resolve(request, logger).then(function (response) {
-            bodies.push(response.body);
-            return stubs.resolve(request, logger);
-        }).then(function (response) {
-            bodies.push(response.body);
-            return stubs.resolve(request, logger);
-        }).then(function (response) {
-            bodies.push(response.body);
-
-            assert.deepEqual(bodies, ['First', 'Second', 'First']);
-        });
-    });
-
-    promiseIt('should not return stub if does not match predicate method', function () {
-        var request = { path: '/test', headers: {}, body: '', method: 'GET' };
-        stubs.addStub({
-            predicates: { path: { is: '/test' }, method: { is: 'POST' }},
-            responses: [{ is: { body: 'Matched' }}]
+            return stubs.resolve(request, logger).then(function () {
+                assert.ok(resolver.wasCalledWith('second stub', request, logger, [firstStub, secondStub, thirdStub]), resolver.message());
+            });
         });
 
-        return stubs.resolve(request, logger).then(function (response) {
-            assert.deepEqual(response, {});
-        });
-    });
+        promiseIt('should return responses in order, looping around', function () {
+            var resolver = mock().returns(Q()),
+                stubs = StubRepository.create({ resolve: resolver }),
+                logger = { debug: mock() },
+                request = { field: 'value' },
+                stub = { responses: ['first response', 'second response'] };
 
-    promiseIt('should return default stub if header predicates fails', function () {
-        var request = { path: '/test', headers: { first: 'value' }, body: '', method: 'GET' };
-        stubs.addStub({
-            predicates: { headers: { exists: { first: true, second: true } }},
-            responses: [{ is: { body: 'Matched' }}]
-        });
+            stubs.addStub(stub);
 
-        return stubs.resolve(request, logger).then(function (response) {
-            assert.deepEqual(response, {});
-        });
-    });
-
-    promiseIt('should return stub if header predicate passes', function () {
-        var request = { path: '/test', headers: {}, body: '', method: 'GET' };
-        stubs.addStub({
-            predicates: { headers: { first: { exists: false }, second: { exists: false } } },
-            responses: [{ is: { body: 'Matched' }}]
+            return stubs.resolve(request, logger).then(function () {
+                assert.ok(resolver.wasCalledWith('first response', request, logger, [stub]), resolver.message());
+                return stubs.resolve(request, logger);
+            }).then(function () {
+                assert.ok(resolver.wasCalledWith('second response', request, logger, [stub]), resolver.message());
+                return stubs.resolve(request, logger);
+            }).then(function () {
+                assert.ok(resolver.wasCalledWith('first response', request, logger, [stub]), resolver.message());
+            });
         });
 
-        return stubs.resolve(request, logger).then(function (response) {
-            assert.strictEqual(response.body, 'Matched');
-        });
-    });
+        promiseIt('should record matches', function () {
+            var resolver = mock().returns(Q()),
+                stubs = StubRepository.create({ resolve: resolver }),
+                logger = { debug: mock() },
+                matchingRequest = { field: 'value' },
+                mismatchingRequest = { field: 'other' },
+                stub = { predicates: [{ equals: { field: 'value' }}], responses: ['first response'] };
 
-    promiseIt('should return default stub if not predicates fails', function () {
-        var request = { path: '/test', headers: {}, body: '', method: 'GET' };
-        stubs.addStub({
-            predicates: { method: { not: { is: 'GET' } }},
-            responses: [{ is: { body: 'Matched' }}]
-        });
+            stubs.addStub(stub);
 
-        return stubs.resolve(request, logger).then(function (response) {
-            assert.deepEqual(response, {});
-        });
-    });
-
-    promiseIt('should return stub if not predicate passes', function () {
-        var request = { path: '/test', headers: {}, body: '', method: 'GET' };
-        stubs.addStub({
-            predicates: { method: { not: { is: 'POST' } }},
-            responses: [{ is: { body: 'Matched' }}]
-        });
-
-        return stubs.resolve(request, logger).then(function (response) {
-            assert.strictEqual(response.body, 'Matched');
-        });
-    });
-
-    promiseIt('should record matches', function () {
-        var matchingRequest = { path: '/test', headers: {}, body: '' },
-            mismatchingRequest = { path: '/', headers: {}, body: '' },
-            stub = {
-                predicates: { path: { is: '/test' }},
-                responses: [{ is: { body: 'MATCHED' } }]
-            };
-        stubs.addStub(stub);
-
-        return stubs.resolve(matchingRequest, logger).then(function () {
-            return stubs.resolve(mismatchingRequest, logger);
-        }).then(function () {
-            assert.strictEqual(stub.matches.length, 1);
-            assert.deepEqual(stub.matches[0].request, matchingRequest);
+            return stubs.resolve(matchingRequest, logger).then(function () {
+                return stubs.resolve(mismatchingRequest, logger);
+            }).then(function () {
+                assert.strictEqual(stub.matches.length, 1);
+                assert.deepEqual(stub.matches[0].request, matchingRequest);
+            });
         });
     });
 });

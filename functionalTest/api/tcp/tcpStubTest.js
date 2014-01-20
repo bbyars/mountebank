@@ -13,7 +13,7 @@ describe('tcp imposter', function () {
     describe('POST /imposters with stubs', function () {
         promiseIt('should return stubbed response', function () {
             var stub = {
-                    predicates: { data: { is: 'client' }},
+                    predicates: [{ equals: { data: 'client' } }],
                     responses: [{ is: { data: 'server' } }]
                 },
                 request = { protocol: 'tcp', port: port, stubs: [stub], mode: 'text', name: this.name };
@@ -48,7 +48,7 @@ describe('tcp imposter', function () {
 
         promiseIt('should allow a sequence of stubs as a circular buffer', function () {
             var stub = {
-                    predicates: { data: { is: 'request' }},
+                    predicates: [{ equals: { data: 'request' } }],
                     responses: [{ is: { data: 'first' }}, { is: { data: 'second' }}]
                 },
                 request = { protocol: 'tcp', port: port, stubs: [stub], name: this.name };
@@ -77,10 +77,10 @@ describe('tcp imposter', function () {
         promiseIt('should only return stubbed response if matches complex predicate', function () {
             var stub = {
                     responses: [{ is: { data: 'MATCH' }}],
-                    predicates: {
-                        data: { is: 'test' },
-                        requestFrom: { startsWith: '127.0.0.1' }
-                    }
+                    predicates: [
+                        { equals: { data: 'test' } },
+                        { startsWith: { requestFrom: '127.0.0.1' } }
+                    ]
                 },
                 request = { protocol: 'tcp', port: port, stubs: [stub] };
 
@@ -101,9 +101,7 @@ describe('tcp imposter', function () {
         promiseIt('should return 400 if uses matches predicate with binary mode', function () {
             var stub = {
                     responses: [{ is: { data: 'dGVzdA==' }}],
-                    predicates: {
-                        data: { matches: 'dGVzdA==' }
-                    }
+                    predicates: [{ matches: { data: 'dGVzdA==' } }]
                 },
                 request = { protocol: 'tcp', port: port, mode: 'binary', stubs: [stub] };
 

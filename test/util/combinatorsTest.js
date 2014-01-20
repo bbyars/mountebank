@@ -27,6 +27,21 @@ describe('combinators', function () {
         });
     });
 
+    describe('#compose', function () {
+        it('should compose functions', function () {
+            var increment = function (i) { return i + 1;},
+                double = function (j) { return j * 2; };
+            assert.strictEqual(combinators.compose(increment, double)(1), 3);
+        });
+
+        it('should compose multiple functions', function () {
+            var increment = function (i) { return i + 1; },
+                double = function (j) { return j * 2; },
+                triple = function (i) { return i * 3; };
+            assert.strictEqual(combinators.compose(increment, double, triple)(1), 7);
+        });
+    });
+
     describe('#curry', function () {
         it('should pass curried parameter', function () {
             var fn = function (param) { return param;},

@@ -12,7 +12,6 @@ describe('HttpRequest', function () {
         var request, container;
 
         beforeEach(function () {
-            /* jshint proto: true */
             request = inherit.from(events.EventEmitter, {
                 socket: { remoteAddress: '', remotePort: '' },
                 setEncoding: mock(),

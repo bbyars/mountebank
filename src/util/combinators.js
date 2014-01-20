@@ -10,9 +10,15 @@ function curry (fn) {
     };
 }
 
+function compose () {
+    var args = Array.prototype.slice.call(arguments).reverse();
+    return function (obj) { return args.reduce(function (result, F) { return F(result); }, obj); };
+}
+
 module.exports = {
     identity: function (i) { return i; },
     constant: function (k) { return function () { return k; }; },
     noop: function () {},
+    compose: compose,
     curry: curry
 };

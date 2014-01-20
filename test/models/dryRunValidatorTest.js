@@ -15,12 +15,6 @@ var assert = require('assert'),
                     body: stub.body || ''
                 };
 
-                // We don't want to use keepalive connections, because a test case
-                // may shutdown the stub, which prevents new connections for
-                // the port, but that won't prevent the system under test
-                // from reusing an existing TCP connection after the stub
-                // has shutdown, causing difficult to track down bugs when
-                // multiple tests are run.
                 response.headers.connection = 'close';
                 return response;
             });
@@ -86,12 +80,12 @@ describe('dryRunValidator', function () {
             var request = {
                     stubs: [{
                         responses: [{}],
-                        predicates: {
-                            path: { is: '/test' },
-                            method: { is: 'GET' },
-                            body: { is: 'BODY' },
-                            headers: { exists: { 'TEST': true } }
-                        }
+                        predicates: [
+                            { equals: { path: '/test' } },
+                            { equals: { method: 'GET' } },
+                            { equals: { body: 'BODY' } },
+                            { exists: { headers: { TEST: true } } }
+                        ]
                     }]
                 },
                 validator = Validator.create({ StubRepository: StubRepository, testRequest: testRequest }),
@@ -108,7 +102,7 @@ describe('dryRunValidator', function () {
         promiseIt('should be valid for a well formed predicate inject if injections are allowed', function () {
             var request = {
                     stubs: [{
-                        predicates: { request: { inject: "function () { return true; }" } },
+                        predicates: [{ inject: 'function () { return true; }' }],
                         responses: [{ is: { body: 'Matched' }}]
                     }]
                 },
@@ -175,7 +169,7 @@ describe('dryRunValidator', function () {
         promiseIt('should not be valid for predicate injections if allowInjection is false', function () {
             var request = {
                     stubs: [{
-                        predicates: { request: { inject: "function () { return true; }" } },
+                        predicates: [{ inject: 'function () { return true; }' }],
                         responses: [{ is: { body: 'Matched' }}]
                     }]
                 },
@@ -240,9 +234,7 @@ describe('dryRunValidator', function () {
             var request = {
                     stubs: [{
                         responses: [{}],
-                        predicates: {
-                            path: { invalidPredicate: '/test' }
-                        }
+                        predicates: [{ invalidPredicate: { path: '/test' } }]
                     }]
                 },
                 validator = Validator.create({ StubRepository: StubRepository, testRequest: testRequest }),
@@ -254,8 +246,8 @@ describe('dryRunValidator', function () {
                     errors: [{
                         code: 'bad data',
                         message: 'malformed stub request',
-                        data: "no predicate 'invalidPredicate'",
-                        source: { invalidPredicate: '/test' }
+                        data: 'missing predicate: ["invalidPredicate"]',
+                        source: { invalidPredicate: { path: '/test' } }
                     }]
                 });
             });
@@ -265,10 +257,10 @@ describe('dryRunValidator', function () {
             var request = {
                     stubs: [{
                         responses: [{}],
-                        predicates: {
-                            path: { is: '/test' },
-                            body: { invalidPredicate: 'value' }
-                        }
+                        predicates: [
+                            { equals: { path: '/test' } },
+                            { invalidPredicate: { body: 'value' } }
+                        ]
                     }]
                 },
                 validator = Validator.create({ StubRepository: StubRepository, testRequest: testRequest }),
@@ -280,8 +272,8 @@ describe('dryRunValidator', function () {
                     errors: [{
                         code: 'bad data',
                         message: 'malformed stub request',
-                        data: "no predicate 'invalidPredicate'",
-                        source: { invalidPredicate: 'value' }
+                        data: 'missing predicate: ["invalidPredicate"]',
+                        source: { invalidPredicate: { body: 'value' } }
                     }]
                 });
             });
@@ -291,9 +283,7 @@ describe('dryRunValidator', function () {
             var request = {
                     stubs: [{
                         responses: [{}],
-                        predicates: {
-                            headers: [{ exists: 'Test' }]
-                        }
+                        predicates: [{ headers: [{ exists: 'Test' }] }]
                     }]
                 },
                 validator = Validator.create({ StubRepository: StubRepository, testRequest: testRequest }),
@@ -305,8 +295,8 @@ describe('dryRunValidator', function () {
                     errors: [{
                         code: 'bad data',
                         message: 'malformed stub request',
-                        data: 'predicate must be an object',
-                        source: [{ exists: 'Test' }]
+                        data: 'missing predicate: ["headers"]',
+                        source: { headers: [{ exists: 'Test' }] }
                     }]
                 });
             });
@@ -315,7 +305,7 @@ describe('dryRunValidator', function () {
         promiseIt('should reject inject with no wrapper function', function () {
             var request = {
                     stubs: [{
-                        predicates: { request: { inject: 'return true;' } },
+                        predicates: [{ inject: 'return true;' }],
                         responses: [{ is: { body: 'Matched' }}]
                     }]
                 },

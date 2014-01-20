@@ -37,14 +37,7 @@ function nonInjectableServer (command, port) {
             promiseIt('should allow javascript predicate for matching', function () {
                 // note the lower-case keys for headers!!!
                 var stub = {
-                        predicates: {
-                            path: { inject: "function (path) { return path === '/test'; }" },
-                            method: { inject: "function (method) { return method === 'POST'; }" },
-                            query: { inject: "function (query) { return query.key = 'value'; }"},
-                            headers: { inject: "function (headers) { return headers['x-test'] === 'test header'; }" },
-                            body: { inject: "function (body) { return body === 'BODY'; }" },
-                            request: { inject: "function (request) { return request.path === '/test'; }" }
-                        },
+                        predicates: [{ inject: "function (request) { return request.path === '/test'; }" }],
                         responses: [{ is: { body: 'MATCHED' } }]
                     },
                     request = { protocol: protocol, port: port, stubs: [stub], name: this.name };
@@ -71,9 +64,7 @@ function nonInjectableServer (command, port) {
 
             promiseIt('should give a 400 on a bad predicate injection', function () {
                 var stub = {
-                        predicates: {
-                            request: { inject: "return true;" }
-                        },
+                        predicates: [{ inject: 'return true;' }],
                         responses: [{ is: { body: 'MATCHED' } }]
                     },
                     request = { protocol: protocol, port: port, stubs: [stub], name: this.name };

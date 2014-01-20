@@ -1,96 +1,134 @@
 'use strict';
 
 var errors = require('../util/errors'),
-    helpers = require('../util/helpers');
+    helpers = require('../util/helpers'),
+    combinators = require('../util/combinators'),
+    stringify = require('json-stable-stringify');
 
-function getCaseInsensitive (obj, fieldName) {
-    var keys = Object.keys(obj);
-    for (var i = 0; i < keys.length; i++) {
-        if (fieldName.toLowerCase() === keys[i].toLowerCase()) {
-            return obj[keys[i]];
-        }
-    }
-    return '';
+function normalize (obj, config, encoding) {
+    var lowerCase = function (text) { return text.toLowerCase(); },
+        caseTransform = config.caseSensitive ? combinators.identity : lowerCase,
+        exceptionRemover = function (text) { return text.replace(new RegExp(config.except, 'g'), ''); },
+        exceptTransform = config.except ? exceptionRemover : combinators.identity,
+        encode = function (text) { return new Buffer(text, 'base64').toJSON().toString(); },
+        encodeTransform = encoding === 'base64' ? encode : combinators.identity,
+        transform = combinators.compose(exceptTransform, caseTransform, encodeTransform),
+        transformAll = function (o) {
+            return Object.keys(o).reduce(function (result, key) {
+                var value = o[key];
+                if (typeof o[key] === 'object') {
+                    value = transformAll(value);
+                }
+                else if (typeof o[key] === 'string') {
+                    value = transform(value);
+                }
+                result[caseTransform(key)] = value;
+                return result;
+            }, {});
+        };
+
+        return transformAll(obj);
 }
 
-function getNested (obj, fieldName) {
-    return fieldName.split('.').reduce(getCaseInsensitive, obj);
-}
-
-function normalize (text, encoding) {
-    if (encoding === 'base64') {
-        return new Buffer(text, 'base64').toJSON().toString();
-    }
-    else {
-        return text.toLowerCase();
-    }
-}
-
-function create (predicate) {
-    return function (fieldName, expected, request, encoding) {
-        var actual = getNested(request, fieldName);
-
-        if (typeof expected === 'string') {
-            actual = normalize(actual, encoding);
-            expected = normalize(expected, encoding);
-        }
-        if (['string', 'boolean'].indexOf(typeof expected) >= 0) {
-            return predicate(actual, expected, encoding);
+function predicateSatisfied (expected, actual, predicate) {
+    return Object.keys(expected).every(function (fieldName) {
+        if (typeof expected[fieldName] === 'object') {
+            return predicateSatisfied(expected[fieldName], actual[fieldName], predicate);
         }
         else {
-            return false;
+            return predicate(expected[fieldName], actual[fieldName] || '');
         }
+    });
+}
+
+function create (operator, predicateFn) {
+    return function (predicate, request, encoding) {
+        var expected = normalize(predicate[operator], predicate, encoding),
+            actual = normalize(request, predicate, encoding);
+
+        return predicateSatisfied(expected, actual, predicateFn);
     };
 }
 
-module.exports = {
-    is: create(function (actual, expected) { return actual === expected; }),
-    contains: create(function (actual, expected) { return actual.indexOf(expected) >= 0; }),
-    startsWith: create(function (actual, expected) { return actual.indexOf(expected) === 0; }),
-    endsWith: create(function (actual, expected) { return actual.indexOf(expected, actual.length - expected.length) >= 0; }),
-    matches: create(function (actual, expected, encoding) {
-        if (encoding === 'base64') {
-            throw errors.ValidationError('the matches predicate is not allowed in binary mode');
-        }
-        else {
-            return new RegExp(expected).test(actual);
-        }
-    }),
-    exists: create(function (actual, expected) { return expected ? actual.length > 0 : actual.length === 0; }),
-    not: function (fieldName, expected, request) {
-        return !Object.keys(expected).some(function (predicate) {
-            return module.exports[predicate](fieldName, expected[predicate], request);
-        });
-    },
-    or: function (fieldName, expected, request) {
-        return expected.some(function (predicate) {
-            return Object.keys(predicate).every(function (subPredicate) {
-                return module.exports[subPredicate](fieldName, predicate[subPredicate], request);
-            });
-        });
-    },
-    and: function (fieldName, expected, request) {
-        return expected.every(function (predicate) {
-            return Object.keys(predicate).every(function (subPredicate) {
-                return module.exports[subPredicate](fieldName, predicate[subPredicate], request);
-            });
-        });
-    },
+function deepEquals (predicate, request, encoding) {
+    var expected = normalize(predicate.deepEquals, predicate, encoding),
+        actual = normalize(request, predicate, encoding);
 
-    /* jshint maxparams: 5 */
-    inject: function (fieldName, predicate, request, encoding, logger) {
-        /* jshint evil: true, unused: false */
-        var arg = fieldName === 'request' ? request : request[fieldName],
-            scope = helpers.clone(arg), // prevent state-changing operations
-            injected =  '(' + predicate + ')(scope, logger);';
-        try {
-            return eval(injected);
-        }
-        catch (error) {
-            logger.error('injection X=> ' + error);
-            logger.error('    source: ' + JSON.stringify(injected));
-            logger.error('    scope: ' + JSON.stringify(scope));
-            throw errors.InjectionError('invalid predicate injection', { source: injected, data: error.message });
+    return Object.keys(expected).every(function (fieldName) {
+        return stringify(expected[fieldName]) === stringify(actual[fieldName]);
+    });
+}
+
+function matches (predicate, request, encoding) {
+    // We want to avoid the lowerCase transform so we don't accidentally butcher
+    // a regular expression with upper case metacharacters like \W and \S
+    var clone = helpers.merge(predicate, { caseSensitive: true }),
+        expected = normalize(predicate.matches, clone, encoding),
+        actual = normalize(request, clone, encoding),
+        options = predicate.caseSensitive ? '' : 'i';
+
+    if (encoding === 'base64') {
+        throw errors.ValidationError('the matches predicate is not allowed in binary mode');
+    }
+
+    return predicateSatisfied(expected, actual, function (a, b) { return new RegExp(a, options).test(b); });
+}
+
+function resolve (predicate, request, encoding, logger) {
+    var keys = Object.keys(predicate);
+    for (var i = 0; i < keys.length; i++) {
+        var key = keys[i],
+            predicateFn = module.exports[key];
+        if (predicateFn) {
+            return predicateFn(predicate, request, encoding, logger);
         }
     }
+    throw errors.ValidationError('missing predicate: ' + JSON.stringify(keys), { source: predicate });
+}
+
+function not (predicate, request, encoding, logger) {
+    return !resolve(predicate.not, request, encoding, logger);
+}
+
+function or (predicate, request, encoding, logger) {
+    return predicate.or.some(function (subPredicate) {
+        return resolve(subPredicate, request, encoding, logger);
+    });
+}
+
+function and (predicate, request, encoding, logger) {
+    return predicate.and.every(function (subPredicate) {
+        return resolve(subPredicate, request, encoding, logger);
+    });
+}
+
+function inject (predicate, request, encoding, logger) {
+    /* jshint evil: true, unused: false */
+    var scope = helpers.clone(request),
+        injected =  '(' + predicate.inject + ')(scope, logger);';
+
+    try {
+        return eval(injected);
+    }
+    catch (error) {
+        logger.error('injection X=> ' + error);
+        logger.error('    source: ' + JSON.stringify(injected));
+        logger.error('    scope: ' + JSON.stringify(scope));
+        throw errors.InjectionError('invalid predicate injection', { source: injected, data: error.message });
+    }
+}
+
+module.exports = {
+    equals: create('equals', function (expected, actual) { return expected === actual; }),
+    deepEquals: deepEquals,
+    contains: create('contains', function (expected, actual) { return actual.indexOf(expected) >= 0; }),
+    startsWith: create('startsWith', function (expected, actual) { return actual.indexOf(expected) === 0; }),
+    endsWith: create('endsWith', function (expected, actual) { return actual.indexOf(expected, actual.length - expected.length) >= 0; }),
+    matches: matches,
+    exists: create('exists', function (expected, actual) { return expected ? actual.length > 0 : actual.length === 0; }),
+    not: not,
+    or: or,
+    and: and,
+    inject: inject,
+    resolve: resolve
 };

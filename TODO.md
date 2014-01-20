@@ -1,44 +1,18 @@
 Stories
 =======
-1. Fix proxies:
-     proxyRecordPlayback
-        - file: ''
-        - mode:
-            - proxyOnce (add stub up front with predicates) (default)
-            - proxyAlways (writes stubs behind proxy resolver)
-        - replayWhen:
-            {
-                "method": { "matches": true, caseSensitive: true }, // GET == GET
-                "path": { "matchesExcept": ["/\d+/"] }, // /customers/123/about and /customers/234/about
-                "query": { "matches": true },
-                "headers": { matchesExcept": ["vary"] }
-                "body": { "inject": "function (body) { return true; }" }
-            } (defaults vary by protocol)
-        * should add multiple responses if multiple responses seen for same matches
-        * set default mode so it shows in the JSON representation?
 
-        replayWhen: {
-            query: { matches: true }
-        }
+1. Move predicates to top level, add deepEquals
+1. Add except and casesensitive to predicates
 
-        vs.
+    Doc updates:
+     predicates = array
+     caseSensitive
+     except
 
-        replayWhen: {
-            query: {
-                matches: { matches: true }
-            }
-        }
+1. Document proxies
+1. Fix proxies - add mathesExcept
 1 Validation messages broken?  Test thoroughly
-1. predicates: don't allow multiple predicates on one field, but do allow config
-
-    {
-        body: {
-            is: 'This is a test'
-            except: ['^This']
-            caseSensitive: true
-        }
-    }
-
+1. table of contents to interesting doc pages like proxy, predicates, injection
 1. add behaviors: { wait: 5000 } to responses
 2, release on branch
 0. stub smtp with accept/reject behaviors
@@ -49,10 +23,10 @@ Stories
 1. Add http attachment support
 1. Allow regex tokens from request params in response (different resolver?)
 21. Prettier /imposters HTML page
-22. Ability to create imposter from UI (with karma testing?)
+22. Ability to create imposter from UI for manual testers
 23. Prettier /imposter/{port} HTML page
 27. paging and q= filtering for imposters on GET /imposters
-30. javadoc style documentation? (look at simplesmtp code)
+30. javadoc style documentation? (jsdoc3, or http://jashkenas.github.io/docco/)
 31. Package npm without tests and files not needed for runtime
 33. Change logs page to link the [http:2526] to the imposter page
   - would need to add createdAt field to imposter, and only link to imposters created after the timestamp
@@ -60,6 +34,7 @@ Stories
 35. Have query param on GET /imposters/{port} that returns slimmest possible payload to replay the imposter
         - exclude matches and requests
 38. Add atom feed that only displays when --heroku is set that people can subscribe to for updates
+39. dry run all stub resolvers, even if predicates fail or is second in the responses array
 
 Known Bugs
 ==========
@@ -67,13 +42,12 @@ Known Bugs
 2. TCP proxying doesn't work if proxied server doesn't send a response
    - add a timeout parameter, and always resolve if no response by that time?
 3. Tests must have some race conditions; getting intermittent failures
+4. stubRepository 'no predicate match' log statement never shows because of defaulting
 
 Cleanup Needed
 ==============
 check all links
 refactor and unit test new stubResolver code
-
-dryRunValidator - remove cloning once getting rid of proxyOnce, and no need to set default
 
 Rainy day ideas to try out
 =================================

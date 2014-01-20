@@ -11,7 +11,9 @@ var assert = require('assert'),
 describe('stubResolver', function () {
     describe('#resolve', function () {
         promiseIt('should resolve "is" without transformation', function () {
-            var resolver = StubResolver.create({}, combinators.identity),
+            var proxy = {},
+                postProcess = combinators.identity,
+                resolver = StubResolver.create(proxy, postProcess),
                 logger = { debug: mock() },
                 stub = { is: 'value' };
 
@@ -83,16 +85,14 @@ describe('stubResolver', function () {
             });
         });
 
-        promiseIt('should resolve "proxy" and remember full object predicates', function () {
+        promiseIt('should resolve "proxy" and remember full objects as "deepEquals" predicates', function () {
             var proxy = { to: mock().returns(Q('value')) },
                 resolver = StubResolver.create(proxy, combinators.identity),
                 logger = { debug: mock() },
                 stub = {
                     proxy: {
                         to: 'where',
-                        replayWhen: {
-                            key: { matches: true }
-                        }
+                        replayWhen: { key: { matches: true } }
                     }
                 },
                 request = { key: { nested: { first: 'one', second: 'two' }, third: 'three' } },
@@ -101,13 +101,7 @@ describe('stubResolver', function () {
             return resolver.resolve(stub, request, logger, stubs).then(function () {
                 assert.deepEqual(stubs, [
                     {
-                        predicates: { key: {
-                            nested: {
-                                first: { is: 'one' },
-                                second: { is: 'two' }
-                            },
-                            third: { is: 'three' }
-                        }},
+                        predicates: [{ deepEquals: { key: { nested: { first: 'one', second: 'two' }, third: 'three' } } }],
                         responses: [{ is: 'value' }]
                     },
                     {
@@ -117,7 +111,7 @@ describe('stubResolver', function () {
             });
         });
 
-        promiseIt('should resolve "proxy" and remember nested keys', function () {
+        promiseIt('should resolve "proxy" and remember nested keys as "equals" predicates', function () {
             var proxy = { to: mock().returns(Q('value')) },
                 resolver = StubResolver.create(proxy, combinators.identity),
                 logger = { debug: mock() },
@@ -125,13 +119,7 @@ describe('stubResolver', function () {
                     proxy: {
                         to: 'where',
                         mode: 'proxyOnce',
-                        replayWhen: {
-                            key: {
-                                nested: {
-                                    first: { matches: true }
-                                }
-                            }
-                        }
+                        replayWhen: { key: { nested: { first: { matches: true } } } }
                     }
                 },
                 request = { key: { nested: { first: 'one', second: 'two' }, third: 'three' } },
@@ -140,13 +128,7 @@ describe('stubResolver', function () {
             return resolver.resolve(stub, request, logger, stubs).then(function () {
                 assert.deepEqual(stubs, [
                     {
-                        predicates: {
-                            key: {
-                                nested: {
-                                    first: { is: 'one' }
-                                }
-                            }
-                        },
+                        predicates: [{ equals: { key: { nested: { first: 'one' } } } }],
                         responses: [{ is: 'value' }]
                     },
                     {
