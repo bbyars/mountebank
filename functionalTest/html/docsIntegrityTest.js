@@ -45,13 +45,13 @@ describe('docs', function () {
     this.timeout(timeout);
 
     var pages = [
-//        '/docs/gettingStarted',
-//        '/docs/api/overview',
-//        '/docs/api/mocks',
-//        '/docs/api/stubs',
+        '/docs/gettingStarted',
+        '/docs/api/overview',
+        '/docs/api/mocks',
+        '/docs/api/stubs',
 //        '/docs/api/predicates',
-////        '/docs/api/proxies',
-//        '/docs/api/injection'
+//        '/docs/api/proxies',
+        '/docs/api/injection'
     ];
 
     pages.forEach(function (page) {

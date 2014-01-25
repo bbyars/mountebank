@@ -7,8 +7,9 @@ add more than one stub to an imposter.  Predicates allow imposter to have much r
 behavior by defining whether or not a stub matches a request.  When multiple stubs are
 created on an imposter, the first stub that matches is selected.</p>
 
-<p>Each predicate object contains one or more of the request fields as keys.  All keys are
-AND'd together.  The following predicate operators are allowed:</p>
+<p>Each predicate object contains one or more of the request fields as keys.  Predicates
+are added to a stub in an array, and all predicates are AND'd together.  The following
+predicate operators are allowed:</p>
 
 <table>
   <tr>
@@ -16,8 +17,12 @@ AND'd together.  The following predicate operators are allowed:</p>
     <th>Description</th>
   </tr>
   <tr>
-    <td><code>is</code></td>
+    <td><code>equals</code></td>
     <td>The request field matches the predicate</td>
+  </tr>
+  <tr>
+    <td><code>deepEquals</code></td>
+    <td>The request field object exactly matches the predicate object</td>
   </tr>
   <tr>
     <td><code>contains</code></td>
@@ -60,11 +65,33 @@ AND'd together.  The following predicate operators are allowed:</p>
   </tr>
 </table>
 
-<p>All the string operations are case-insensitive (this includes keys for JSON objects, like
-HTTP header and query parameters).  All predicates are scoped to a request field;
-see the protocol pages linked to from the sidebar to see the request fields.
-<code>inject</code> also adds a <code>request</code> field, which represents the
-entire request.  See the <a href='/docs/api/injection'>injection</a> page for details.</p>
+<p>Predicates can be parameterized.  At the moment, mountebank accepts the following
+predicate parameters:</p>
+
+<table>
+  <tr>
+    <th>Parameter</th>
+    <th>Default</th>
+    <th>Description</th>
+  </tr>
+  <tr>
+    <td><code>caseSensitive</code></td>
+    <td><code>false</code></td>
+    <td>Determines if the match is case sensitive or not.  This includes keys
+    for objects such as query parameters.</td>
+  </tr>
+  <tr>
+    <td><code>except</code></td>
+    <td><code>""</code></td>
+    <td>Defines a regular expression that is stripped out of the request field
+    before matching.</td>
+  </tr>
+</table>
+
+<p>Almost all predicates are scoped to a request field; see the protocol pages linked to from
+the sidebar to see the request fields.  <code>inject</code> is the sole exception.  It takes
+a string function that accepts the entire request.  See the
+<a href='/docs/api/injection'>injection</a> page for details.</p>
 
 <p>The predicates work intuitively for base64-encoded binary data as well by internally
 converting the base64-encoded string to a JSON string representing the byte array.  For example,
@@ -77,17 +104,24 @@ mountebank recommends that you stay away from <code>matches</code> if you're dea
 <h2>Examples</h2>
 
 <p>The examples below use both HTTP and TCP imposters.  The TCP examples use netcat (<code>nc</code>)
-to send TCP data over a socket, which is like <code>telnet</code>, but makes the output easier to get.
+to send TCP data over a socket, which is like <code>telnet</code>, but makes the output easier to script.
 The examples for binary imposters use the <code>base64</code> command line tool to decode base64
 to binary before sending to the socket.</p>
 
 <section class="accordion">
   <div>
-    <input id="predicates-is" name="predicates-is" type="checkbox" />
-      <label for="predicates-is">is</label>
+    <input id="predicates-equals" name="predicates-equals" type="checkbox" />
+      <label for="predicates-equals">equals</label>
       <section>
-        <% include predicates/is %>
+        <% include predicates/equals %>
       </section>
+  </div>
+  <div>
+    <input id="predicates-deepEquals" name="predicates-deepEquals" type="checkbox" />
+    <label for="predicates-deepEquals">deepEquals</label>
+    <section>
+      <% include predicates/deepEquals %>
+    </section>
   </div>
   <div>
     <input id="predicates-contains" name="predicates-contains" type="checkbox" />

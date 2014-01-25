@@ -27,16 +27,28 @@ cat &lt;&lt; EOF &gt; imposter.json
   "protocol": "http",
   "stubs": [{
     "responses": [
-      { "is": { "statusCode": 400 }}
+      { "is": { <strong class='highlight1'>"statusCode": 400</strong> }}
     ],
-    "predicates": {
-      "path": { "is": "/test" },
-      "method": { "is": "POST" },
-      "body": { "not": { "contains": "requiredField" } },
-      "headers": {
-        "Content-Type": { "is": "application/json" }
-      }
-    }
+    "predicates": [{
+      "and": [
+        {
+          "equals": {
+            "path": "/test",
+            "method": "POST",
+            "headers": {
+              "Content-Type": "application/json"
+            }
+          }
+        },
+        {
+          "not": {
+            "contains": {
+              "body": "requiredField"
+            }
+          }
+        }
+      ]
+    }]
   }]
 }
 EOF
@@ -55,7 +67,7 @@ curl -i -X POST -H 'Content-Type: application/json' -d'{"optionalField": true}' 
 <pre><code data-test-id='example'
            data-test-verify-step='2'
            data-test-ignore-lines='["^Date"]'>
-HTTP/1.1 400 Bad Request
+HTTP/1.1 <strong class='highlight1'>400</strong> Bad Request
 connection: close
 Date: Sat, 04 Jan 2014 02:48:16 GMT
 Transfer-Encoding: chunked
@@ -77,7 +89,7 @@ curl http://localhost:2525/imposters/4545
   "port": 4545,
   "requests": [
     {
-      "requestFrom": "127.0.0.1:53856",
+      "requestFrom": "127.0.0.1:61617",
       "method": "POST",
       "path": "/test",
       "query": {},
@@ -100,29 +112,33 @@ curl http://localhost:2525/imposters/4545
           }
         }
       ],
-      "predicates": {
-        "path": {
-          "is": "/test"
-        },
-        "method": {
-          "is": "POST"
-        },
-        "body": {
-          "not": {
-            "contains": "requiredField"
-          }
-        },
-        "headers": {
-          "Content-Type": {
-            "is": "application/json"
-          }
+      "predicates": [
+        {
+          "and": [
+            {
+              "equals": {
+                "path": "/test",
+                "method": "POST",
+                "headers": {
+                  "Content-Type": "application/json"
+                }
+              }
+            },
+            {
+              "not": {
+                "contains": {
+                  "body": "requiredField"
+                }
+              }
+            }
+          ]
         }
-      },
+      ],
       "matches": [
         {
-          "timestamp": "2014-01-04T02:48:16.426Z",
+          "timestamp": "2014-01-25T02:27:13.063Z",
           "request": {
-            "requestFrom": "127.0.0.1:53856",
+            "requestFrom": "127.0.0.1:61617",
             "method": "POST",
             "path": "/test",
             "query": {},
@@ -148,7 +164,7 @@ curl http://localhost:2525/imposters/4545
   ],
   "_links": {
     "self": {
-      "href": "http://localhost:<%= port %>/imposters/4545"
+      "href": "http://localhost:2525/imposters/4545"
     }
   }
 }

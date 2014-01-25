@@ -41,20 +41,8 @@ response.  The stub resolvers currently supported are:</p>
   </tr>
   <tr>
     <td><code>proxy</code></td>
-    <td>Proxies the request to the specified destination and returns the response.</td>
-  </tr>
-  <tr>
-    <td><code>proxyOnce</code></td>
-    <td>The first time the response is used, it will proxy to the specified
-      destination and return the response, just like <code>proxy</code>, but it will
-      also save the response as an <code>is</code> response for all future
-      matches.</td>
-  </tr>
-  <tr>
-    <td><code>proxyAll</code></td>
-    <td>Every time this resolver is used, it will proxy to the specified
-      destination, and create a new stub with an <code>is</code> response
-      and a specified set of predicates culled from the request.</td>
+    <td>Proxies the request to the specified destination and returns the response.  The
+    response is saved and can be replayed on subsequent calls.</td>
   </tr>
   <tr>
     <td><code>inject</code></td>

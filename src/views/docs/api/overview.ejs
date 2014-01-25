@@ -2,20 +2,6 @@
 
 <h1>API Overview</h1>
 
-<p>mountebank happily accepts your orders and delegates to his team of imposters.
-While you are free to parlay with mountebank through his RESTful API, his goal is
-to make you as comfortable as possible.  As you read this, his team of open source
-engineers are busy at work translating his API into your native language, and soon
-you will be able to converse with the imposters using a library that has adopted
-the idioms of mocking frameworks in your language.</p>
-
-<p>The API is Esperanto, designed to create an easy-to-learn, neutral language that
-transcends national borders and fosters peace and harmony.  mountebank loves your
-native language, but if you really want to understand mountebank, the API is
-described for your viewing pleasure.</p>
-
-<h2>Introduction</h2>
-
 <p>mountebank, being a man of the people, prefers the simple words of the vernacular over
 the silvery speech of the priesthood.  As if to prove the point, he speaks in a RESTful
 <code>application/json</code> rather than <code>application\vnd.mountebank+json</code>.
@@ -28,12 +14,12 @@ make you happiest, but unfortunately he cannot guarantee that you will always re
 one of those codes.  In the cases where the input you provide is malformed in some
 fashion, he will offer a humble apology for not being clear about what he needs, and
 respond with a 400.  In situations where you ask for a port that mountebank
-is unable to reserve, he will return you a 403.  Every effort has gone into providing response
-bodies to help you diagnose the problems.  Each error response returned will have a
-<code>code</code> and <code>message</code> at a minimum.  If extra information is available,
-mountebank will happily pass it to you.  If you get stuck, email the group on the
-<a href='/support'>support page</a>, along with your logs, and mountebank will happily
-assist you.</p>
+is unable to reserve, he will return you a 403.  Every effort has gone into providing
+<a href='/docs/api/errors'>response bodies</a> to help you diagnose the problems.  Each
+error response returned will have a <code>code</code> and <code>message</code> at a minimum.
+If extra information is available, mountebank will happily pass it to you.  If you get stuck,
+email the group on the <a href='/support'>support page</a>, along with your logs, and mountebank
+will happily assist you.</p>
 
 <p>mountebank has made every effort to spare you from 5xx HTTP codes.  If you are
 unfortunate enough to receive one, first you should know that mountebank is most embarrassed.

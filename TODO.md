@@ -1,16 +1,13 @@
 Stories
 =======
 
-1. Move predicates to top level, add deepEquals
-1. Add except and casesensitive to predicates
-
     Doc updates:
      predicates = array
      caseSensitive
      except
 
 1. Document proxies
-1. Fix proxies - add mathesExcept
+1. Fix proxies - add matchesExcept
 1 Validation messages broken?  Test thoroughly
 1. table of contents to interesting doc pages like proxy, predicates, injection
 1. add behaviors: { wait: 5000 } to responses
@@ -42,12 +39,10 @@ Known Bugs
 2. TCP proxying doesn't work if proxied server doesn't send a response
    - add a timeout parameter, and always resolve if no response by that time?
 3. Tests must have some race conditions; getting intermittent failures
-4. stubRepository 'no predicate match' log statement never shows because of defaulting
 
 Cleanup Needed
 ==============
 check all links
-refactor and unit test new stubResolver code
 
 Rainy day ideas to try out
 =================================
