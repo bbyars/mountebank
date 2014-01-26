@@ -18,29 +18,39 @@ Content-Type: application/json
   "stubs": [<strong class='highlight1'>
     {
       "responses": [{ "is": { "body": "first response" } }],
-      "predicates": {
-        "query": {
-          "q": { "exists": true },
-          "search": { "exists": false }
-        },
-        "headers": {
-          "Accept": { "exists": true },
-          "X-Rate-Limit": { "exists": false }
+      "predicates": [
+        {
+          "exists": {
+            "query": {
+              "q": true,
+              "search": false
+            },
+            "headers": {
+              "Accept": true,
+              "X-Rate-Limit": false
+            }
+          }
         }
-      }
+      ]
     }</strong>,<strong class='highlight2'>
     {
       "responses": [{ "is": { "body": "second response" } }],
-      "predicates": {
-        "method": { "exists": true },
-        "body": { "exists": false }
-      }
+      "predicates": [
+        {
+          "exists": {
+            "method": true,
+            "body": false
+          }
+        }
+      ]
     }</strong>,<strong class='highlight3'>
     {
       "responses": [{ "is": { "body": "third response" } }],
-      "predicates": {
-        "body": { "exists": true }
-      }
+      "predicates": [
+        {
+          "exists": { "body": true }
+        }
+      ]
     }</strong>
   ]
 }

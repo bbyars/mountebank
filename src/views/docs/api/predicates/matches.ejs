@@ -16,26 +16,30 @@ Content-Type: application/json
   "stubs": [<strong class='highlight1'>
     {
       "responses": [{ "is": { "data": "first response" } }],
-      "predicates": { "data": { "matches": "^first" } }
+      "predicates": [{
+        "matches": { "data": "^first\\Wsecond" },
+        "caseSensitive": true
+      }]
     }</strong>,<strong class='highlight2'>
     {
       "responses": [{ "is": { "data": "second response" } }],
-      "predicates": { "data": { "matches": "second\\s+request" } }
+      "predicates": [{ "matches": { "data": "second\\s+request" } }]
     }</strong>,<strong class='highlight3'>
     {
       "responses": [{ "is": { "data": "third response" } }],
-      "predicates": { "data": { "matches": "second\\s+request" } }
+      "predicates": [{ "matches": { "data": "second\\s+request" } }]
     }</strong>
   ]
 }
 </code></pre>
 
-<p>The match is not case-sensitive:</p>
+<p>The first stub requires a case-sensitive match on a string starting with
+"first", followed by a non-word character, followed by "second":</p>
 
 <pre><code data-test-id='tcp matches example'
            data-test-step='2'
            data-test-type='exec'>
-echo '<strong class='highlight1'>FIRST REQUEST</strong>' | nc localhost 4550
+echo '<strong class='highlight1'>first second</strong>' | nc localhost 4550
 </code></pre>
 
 <pre><code data-test-id='tcp matches example'
@@ -43,7 +47,7 @@ echo '<strong class='highlight1'>FIRST REQUEST</strong>' | nc localhost 4550
 <strong class='highlight1'>first response</strong>
 </code></pre>
 
-<p>The same is true for the second stub.</p>
+<p>The second stub is not case-sensitive.</p>
 
 <pre><code data-test-id='tcp matches example'
            data-test-step='3'
@@ -76,8 +80,8 @@ Accept: application/json
 HTTP/1.1 200 OK
 Vary: Accept
 Content-Type: application/json
-Content-Length: 1620
-Date: Sat, 11 Jan 2014 00:57:19 GMT
+Content-Length: 1738
+Date: Sun, 26 Jan 2014 17:20:10 GMT
 Connection: keep-alive
 
 {
@@ -86,11 +90,11 @@ Connection: keep-alive
   "mode": "text",
   "requests": [
     {
-      "requestFrom": "127.0.0.1:51567",
-      "data": "FIRST REQUEST\n"
+      "requestFrom": "127.0.0.1:52862",
+      "data": "first second\n"
     },
     {
-      "requestFrom": "127.0.0.1:51577",
+      "requestFrom": "127.0.0.1:52864",
       "data": "Second Request\n"
     }
   ],
@@ -103,17 +107,20 @@ Connection: keep-alive
           }
         }
       ],
-      "predicates": {
-        "data": {
-          "matches": "^first"
+      "predicates": [
+        {
+          "matches": {
+            "data": "^first\\Wsecond"
+          },
+          "caseSensitive": true
         }
-      },
+      ],
       "matches": [
         {
-          "timestamp": "2014-01-11T00:57:19.643Z",
+          "timestamp": "2014-01-26T17:20:10.102Z",
           "request": {
-            "requestFrom": "127.0.0.1:51567",
-            "data": "FIRST REQUEST\n"
+            "requestFrom": "127.0.0.1:52862",
+            "data": "first second\n"
           },
           "response": {
             "data": "first response"
@@ -129,16 +136,18 @@ Connection: keep-alive
           }
         }
       ],
-      "predicates": {
-        "data": {
-          "matches": "second\\s+request"
+      "predicates": [
+        {
+          "matches": {
+            "data": "second\\s+request"
+          }
         }
-      },
+      ],
       "matches": [
         {
-          "timestamp": "2014-01-11T00:57:19.660Z",
+          "timestamp": "2014-01-26T17:20:10.117Z",
           "request": {
-            "requestFrom": "127.0.0.1:51577",
+            "requestFrom": "127.0.0.1:52864",
             "data": "Second Request\n"
           },
           "response": {
@@ -155,11 +164,13 @@ Connection: keep-alive
           }
         }
       ],
-      "predicates": {
-        "data": {
-          "matches": "second\\s+request"
+      "predicates": [
+        {
+          "matches": {
+            "data": "second\\s+request"
+          }
         }
-      }
+      ]
     }
   ],
   "_links": {

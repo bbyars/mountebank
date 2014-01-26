@@ -2,7 +2,7 @@ Stories
 =======
 
     Doc updates:
-     predicates = array
+     predicates = array (key not necessarily predicate; can be parameter)
      caseSensitive
      except
 

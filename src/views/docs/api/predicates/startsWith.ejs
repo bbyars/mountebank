@@ -16,15 +16,15 @@ Content-Type: application/json
   "stubs": [<strong class='highlight1'>
     {
       "responses": [{ "is": { "data": "first response" } }],
-      "predicates": { "data": { "startsWith": "first" } }
+      "predicates": [{ "startsWith": { "data": "first" } }]
     }</strong>,<strong class='highlight2'>
     {
       "responses": [{ "is": { "data": "second response" } }],
-      "predicates": { "data": { "startsWith": "second" } }
+      "predicates": [{ "startsWith": { "data": "second" } }]
     }</strong>,<strong class='highlight3'>
     {
       "responses": [{ "is": { "data": "third response" } }],
-      "predicates": { "data": { "startsWith": "second" } }
+      "predicates": [{ "startsWith": { "data": "second" } }]
     }</strong>
   ]
 }
@@ -76,8 +76,8 @@ Accept: application/json
 HTTP/1.1 200 OK
 Vary: Accept
 Content-Type: application/json
-Content-Length: 1606
-Date: Thu, 09 Jan 2014 02:27:21 GMT
+Content-Length: 1684
+Date: Sun, 26 Jan 2014 16:43:27 GMT
 Connection: keep-alive
 
 {
@@ -86,9 +86,11 @@ Connection: keep-alive
   "mode": "text",
   "requests": [
     {
+      "requestFrom": "127.0.0.1:52651",
       "data": "FIRST REQUEST\n"
     },
     {
+      "requestFrom": "127.0.0.1:52653",
       "data": "Second Request\n"
     }
   ],
@@ -101,16 +103,18 @@ Connection: keep-alive
           }
         }
       ],
-      "predicates": {
-        "data": {
-          "startsWith": "first"
+      "predicates": [
+        {
+          "startsWith": {
+            "data": "first"
+          }
         }
-      },
+      ],
       "matches": [
         {
-          "timestamp": "2014-01-09T02:27:21.859Z",
+          "timestamp": "2014-01-26T16:43:27.624Z",
           "request": {
-            "requestFrom": "127.0.0.1:58508",
+            "requestFrom": "127.0.0.1:52651",
             "data": "FIRST REQUEST\n"
           },
           "response": {
@@ -127,16 +131,18 @@ Connection: keep-alive
           }
         }
       ],
-      "predicates": {
-        "data": {
-          "startsWith": "second"
+      "predicates": [
+        {
+          "startsWith": {
+            "data": "second"
+          }
         }
-      },
+      ],
       "matches": [
         {
-          "timestamp": "2014-01-09T02:27:21.872Z",
+          "timestamp": "2014-01-26T16:43:27.637Z",
           "request": {
-            "requestFrom": "127.0.0.1:58510",
+            "requestFrom": "127.0.0.1:52653",
             "data": "Second Request\n"
           },
           "response": {
@@ -153,11 +159,13 @@ Connection: keep-alive
           }
         }
       ],
-      "predicates": {
-        "data": {
-          "startsWith": "second"
+      "predicates": [
+        {
+          "startsWith": {
+            "data": "second"
+          }
         }
-      }
+      ]
     }
   ],
   "_links": {

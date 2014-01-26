@@ -15,11 +15,11 @@ Content-Type: application/json
   "stubs": [<strong class='highlight1'>
     {
       "responses": [{ "is": { "data": "not test" } }],
-      "predicates": { "data": { "not": { "is": "test\n" } } }
+      "predicates": [{ "not": { "equals": { "data": "test\n" } } }]
     }</strong>,<strong class='highlight2'>
     {
       "responses": [{ "is": { "data": "test" } }],
-      "predicates": { "data": { "is": "test\n" } }
+      "predicates": [{ "equals": { "data": "test\n" } }]
     }</strong>
   ]
 }

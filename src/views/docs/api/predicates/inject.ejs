@@ -1,12 +1,10 @@
 <p>The <code>inject</code> predicate allows you to inject JavaScript to determine if
 the predicate should match or not.  The JavaScript should be a function that accepts
-the request parameter (and optionally a logger)  and returns true or false.
+the request object (and optionally a logger)  and returns true or false.
 See the <a href='/docs/api/injection'>injection page</a> for details.</p>
 
 <p>The execution will have access to a node.js environment.  The following example uses
-node's <code>Buffer</code> object to decode base64 to a byte array.  Notice in the example
-how the predicate can bind to the <code>data</code> request element, like all the other
-examples, but can also bind to the full <code>request</code> object (the second stub does this).</p>
+node's <code>Buffer</code> object to decode base64 to a byte array.</p>
 
 <pre><code data-test-id='tcp inject example'
            data-test-step='1'
@@ -23,19 +21,15 @@ Content-Type: application/json
   "stubs": [<strong class='highlight1'>
     {
       "responses": [{ "is": { "data": "Zmlyc3QgcmVzcG9uc2U=" } }],
-      "predicates": {
-        "data": {
-          "inject": "function (data, logger) { logger.info('Inside injection'); return new Buffer(data, 'base64')[2] &gt; 100; }"
-        }
-      }
+      "predicates": [{
+        "inject": "function (request, logger) { logger.info('Inside injection'); return new Buffer(request.data, 'base64')[2] &gt; 100; }"
+      }]
     }</strong>,<strong class='highlight2'>
     {
       "responses": [{ "is": { "data": "c2Vjb25kIHJlc3BvbnNl" } }],
-      "predicates": {
-        "request": {
-          "inject": "function (request) { return request.requestFrom.indexOf('127.0.0.1') === 0 && new Buffer(request.data, 'base64')[2] &lt;= 100; }"
-        }
-      }
+      "predicates": [{
+        "inject": "function (request) { return request.requestFrom.indexOf('127.0.0.1') === 0 && new Buffer(request.data, 'base64')[2] &lt;= 100; }"
+      }]
     }</strong>
   ]
 }

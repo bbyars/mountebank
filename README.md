@@ -36,14 +36,24 @@ Create a test double:
           "responses": [
             { "is": { "statusCode": 400 }}
           ],
-          "predicates": {
-            "path": { "is": "/test" },
-            "method": { "is": "POST" },
-            "body": { "not": { "contains": "requiredField" } },
-            "headers": {
-              "Content-Type": { "is": "application/json" }
+          "predicates": [
+            {
+              "equals": {
+                "path": "/test",
+                "method": "POST",
+                "headers": {
+                  "Content-Type": "application/json"
+                }
+              }
+            },
+            {
+              "not": {
+                "contains": {
+                  "body": "requiredField"
+                }
+              },
             }
-          }
+          ]
         }]
       }
     EOF

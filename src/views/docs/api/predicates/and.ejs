@@ -15,11 +15,15 @@ Content-Type: application/json
   "stubs": [<strong class='highlight1'>
     {
       "responses": [{ "is": { "data": "matches" } }],
-      "predicates": { "data": { "and": [
-        { "startsWith": "start" },
-        { "endsWith": "end\n" },
-        { "contains": "middle" }
-      ] } }
+      "predicates": [
+        {
+          "and": [
+            { "startsWith": { "data": "start" } },
+            { "endsWith": { "data": "end\n" } },
+            { "contains": { "data": "middle" } }
+          ]
+        }
+      ]
     }</strong>
   ]
 }

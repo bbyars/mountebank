@@ -49,7 +49,7 @@ describe('docs', function () {
         '/docs/api/overview',
         '/docs/api/mocks',
         '/docs/api/stubs',
-//        '/docs/api/predicates',
+        '/docs/api/predicates',
 //        '/docs/api/proxies',
         '/docs/api/injection'
     ];

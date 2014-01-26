@@ -15,15 +15,15 @@ Content-Type: application/json
   "stubs": [<strong class='highlight1'>
     {
       "responses": [{ "is": { "data": "Zmlyc3QgcmVzcG9uc2U=" } }],
-      "predicates": { "data": { "endsWith": "AwQ=" } }
+      "predicates": [{ "endsWith": { "data": "AwQ=" } }]
     }</strong>,<strong class='highlight2'>
     {
       "responses": [{ "is": { "data": "c2Vjb25kIHJlc3BvbnNl" } }],
-      "predicates": { "data": { "endsWith": "BQY=" } }
+      "predicates": [{ "endsWith": { "data": "BQY=" } }]
     }</strong>,<strong class='highlight3'>
     {
       "responses": [{ "is": { "data": "dGhpcmQgcmVzcG9uc2U=" } }],
-      "predicates": { "data": { "endsWith": "BQY=" } }
+      "predicates": [{ "endsWith": { "data": "BQY=" } }]
     }</strong>
   ]
 }
@@ -80,7 +80,7 @@ Accept: application/json
 HTTP/1.1 200 OK
 Vary: Accept
 Content-Type: application/json
-Content-Length: 1595
+Content-Length: 1673
 Date: Fri, 10 Jan 2014 14:30:49 GMT
 Connection: keep-alive
 
@@ -107,11 +107,13 @@ Connection: keep-alive
           }
         }
       ],
-      "predicates": {
-        "data": {
-          "endsWith": "AwQ="
+      "predicates": [
+        {
+          "endsWith": {
+            "data": "AwQ="
+          }
         }
-      },
+      ],
       "matches": [
         {
           "timestamp": "2014-01-10T14:30:49.776Z",
@@ -133,11 +135,13 @@ Connection: keep-alive
           }
         }
       ],
-      "predicates": {
-        "data": {
-          "endsWith": "BQY="
+      "predicates": [
+        {
+          "endsWith": {
+            "data": "BQY="
+          }
         }
-      },
+      ],
       "matches": [
         {
           "timestamp": "2014-01-10T14:30:49.794Z",
@@ -159,11 +163,13 @@ Connection: keep-alive
           }
         }
       ],
-      "predicates": {
-        "data": {
-          "endsWith": "BQY="
+      "predicates": [
+        {
+          "endsWith": {
+            "data": "BQY="
+          }
         }
-      }
+      ]
     }
   ],
   "_links": {
