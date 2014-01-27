@@ -1,7 +1,6 @@
 Stories/Tasks
 =============
 
-1, release on branch
 2. add behaviors: { wait: 5000 } to responses
 3. Add brew package
 4. add pkg installer like vagrant
