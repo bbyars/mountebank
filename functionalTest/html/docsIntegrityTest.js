@@ -50,7 +50,7 @@ describe('docs', function () {
         '/docs/api/mocks',
         '/docs/api/stubs',
         '/docs/api/predicates',
-//        '/docs/api/proxies',
+        '/docs/api/proxies',
         '/docs/api/injection'
     ];
 

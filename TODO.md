@@ -1,14 +1,10 @@
-Stories
-=======
+Stories/Tasks
+=============
 
-    Doc updates:
-     predicates = array (key not necessarily predicate; can be parameter)
-     caseSensitive
-     except
-
-1. Document proxies
-1. Fix proxies - add matchesExcept
-1 Validation messages broken?  Test thoroughly
+1. Check all links
+1. Validate proxy matches syntax (array?)
+1. Add matchesExcept for proxies
+1. Validation messages broken?  Test thoroughly
 1. table of contents to interesting doc pages like proxy, predicates, injection
 1. add behaviors: { wait: 5000 } to responses
 2, release on branch
@@ -39,10 +35,6 @@ Known Bugs
 2. TCP proxying doesn't work if proxied server doesn't send a response
    - add a timeout parameter, and always resolve if no response by that time?
 3. Tests must have some race conditions; getting intermittent failures
-
-Cleanup Needed
-==============
-check all links
 
 Rainy day ideas to try out
 =================================
