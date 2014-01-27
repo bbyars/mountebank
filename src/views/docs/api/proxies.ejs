@@ -62,11 +62,15 @@ we create the imposter:</p>
         "proxy": {
           "to": "http://origin-server.com",
           "mode": "proxyOnce",
-          "replayWhen": {
-            "method": { "matches": true },
-            "path": { "matches": true },
-            "query": { "matches": true }
-          }
+          "replayWhen": [
+            {
+              "matches": {
+                "method": true,
+                "path": true,
+                "query": true
+              }
+            }
+          ]
         }
       }
     ]
@@ -98,11 +102,15 @@ off the response in a new stub in front of the <code>proxy</code> response:</p>
         "proxy": {
           "to": "http://origin-server.com",
           "mode": "proxyOnce",
-          "replayWhen": {
-            "method": { "matches": true },
-            "path": { "matches": true },
-            "query": { "matches": true }
-          }
+          "replayWhen": [
+            {
+              "matches": {
+                "method": true,
+                "path": true,
+                "query": true
+              }
+            }
+          ]
         }
       }
     ]
@@ -131,9 +139,9 @@ but requires you to save off the imposter representation and remove or reorder t
         "proxy": {
           "to": "http://origin-server.com",
           "mode": "proxyAlways",
-          "replayWhen": {
-            "path": { "matches": true }
-          }
+          "replayWhen": [
+            { "matches": { "path": true } }
+          ]
         }
       }
     ]
@@ -162,9 +170,9 @@ response instead gets added to an existing stub's <code>responses</code> array.<
         "proxy": {
           "to": "http://origin-server.com",
           "mode": "proxyAlways",
-          "replayWhen": {
-            "path": { "matches": true }
-          }
+          "replayWhen": [
+            { "matches": { "path": true } }
+          ]
         }
       }
     ]
@@ -234,11 +242,15 @@ Content-Type: application/json
           "proxy": {
             "to": "http://localhost:7575",
             "mode": "proxyOnce",
-            "replayWhen": {
-              "method": { "matches": true },
-              "path": { "matches": true },
-              "query": { "matches": true }
-            }
+            "replayWhen": [
+              {
+                "matches": {
+                  "method": true,
+                  "path": true,
+                  "query": true
+                }
+              }
+            ]
           }
         }
       ]
@@ -343,7 +355,7 @@ Accept: application/json
                      data-test-ignore-lines='["[Dd]ate", "timestamp", "requestFrom"]'>
 HTTP/1.1 200 OK
 Content-Type: application/json; charset=utf-8
-Content-Length: 6544
+Content-Length: 6500
 Connection: keep-alive
 
 {
@@ -525,17 +537,15 @@ Connection: keep-alive
           "proxy": {
             "to": "http://localhost:7575",
             "mode": "proxyOnce",
-            "replayWhen": {
-              "method": {
-                "matches": true
-              },
-              "path": {
-                "matches": true
-              },
-              "query": {
-                "matches": true
+            "replayWhen": [
+              {
+                "matches": {
+                  "method": true,
+                  "path": true,
+                  "query": true
+                }
               }
-            }
+            ]
           }
         }
       ],
@@ -653,11 +663,15 @@ Content-Type: application/json
           "proxy": {
             "to": "http://localhost:7575",
             "mode": "proxyAlways",
-            "replayWhen": {
-              "method": { "matches": true },
-              "path": { "matches": true },
-              "query": { "matches": true }
-            }
+            "replayWhen": [
+              {
+                "matches": {
+                  "method": true,
+                  "path": true,
+                  "query": true
+                }
+              }
+            ]
           }
         }
       ]
@@ -752,7 +766,7 @@ Accept: application/json
                      data-test-ignore-lines='["[Dd]ate", "timestamp", "requestFrom"]'>
 HTTP/1.1 200 OK
 Content-Type: application/json; charset=utf-8
-Content-Length: 5100
+Content-Length: 5056
 Connection: keep-alive
 
 {
@@ -807,17 +821,15 @@ Connection: keep-alive
           "proxy": {
             "to": "http://localhost:7575",
             "mode": "proxyAlways",
-            "replayWhen": {
-              "method": {
-                "matches": true
-              },
-              "path": {
-                "matches": true
-              },
-              "query": {
-                "matches": true
+            "replayWhen": [
+              {
+                "matches": {
+                  "method": true,
+                  "path": true,
+                  "query": true
+                }
               }
-            }
+            ]
           }
         }
       ],

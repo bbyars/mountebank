@@ -1,10 +1,7 @@
 Stories/Tasks
 =============
 
-1. Validate proxy matches syntax (array?)
-1. Add matchesExcept for proxies
-1. Validation messages broken?  Test thoroughly
-1. table of contents to interesting doc pages like proxy, predicates, injection
+1. Add caseSensitive, except to matchers
 1. add behaviors: { wait: 5000 } to responses
 2, release on branch
 0. stub smtp with accept/reject behaviors

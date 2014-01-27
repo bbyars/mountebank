@@ -32,21 +32,11 @@ function create (proxy, postProcess) {
         return deferred.promise;
     }
 
-    function buildEquals (request, fieldsToRemember) {
+    function buildEquals (request, matchers) {
         var result = {};
-        Object.keys(fieldsToRemember).forEach(function (key) {
+        Object.keys(matchers).forEach(function (key) {
             if (typeof request[key] === 'object') {
-                var subMatchers = {};
-
-                if (fieldsToRemember[key].matches === true) {
-                    Object.keys(request[key]).forEach(function (key) {
-                        subMatchers[key] = { matches: true };
-                    });
-                    result[key] = buildEquals(request[key], subMatchers);
-                }
-                else {
-                    result[key] = buildEquals(request[key], fieldsToRemember[key]);
-                }
+                result[key] = buildEquals(request[key], matchers[key]);
             }
             else {
                 result[key] = request[key];
@@ -55,23 +45,27 @@ function create (proxy, postProcess) {
         return result;
     }
 
-    function predicatesFor (request, fieldsToRemember) {
+    function predicatesFor (request, matchers) {
         var deepEquals = {},
             equals = {},
             result = [],
             isEmpty = function (obj) { return JSON.stringify(obj) === '{}'; };
 
-        if (isEmpty(fieldsToRemember)) {
+        if (matchers.length === 0) {
             return [];
         }
 
-        Object.keys(fieldsToRemember || {}).forEach(function (key) {
-            if (fieldsToRemember[key].matches) {
-                deepEquals[key] = request[key];
-            }
-            else {
-                equals[key] = buildEquals(request[key], fieldsToRemember[key]);
-            }
+        matchers.forEach(function (matcher) {
+            Object.keys(matcher.matches).forEach(function (fieldName) {
+                var value = matcher.matches[fieldName];
+
+                if (value === true) {
+                    deepEquals[fieldName] = request[fieldName];
+                }
+                else {
+                    equals[fieldName] = buildEquals(request[fieldName], value);
+                }
+            });
         });
 
         if (!isEmpty(deepEquals)) {
@@ -96,7 +90,7 @@ function create (proxy, postProcess) {
     function proxyAndRecord (stubResolver, request, stubs) {
         /* jshint maxcomplexity: 6 */
         return proxy.to(stubResolver.proxy.to, request).then(function (response) {
-            var predicates = predicatesFor(request, stubResolver.proxy.replayWhen || {}),
+            var predicates = predicatesFor(request, stubResolver.proxy.replayWhen || []),
                 stubResponse = { is: response },
                 newStub = { predicates: predicates, responses: [stubResponse] },
                 index = stubIndexFor(stubResolver, stubs);

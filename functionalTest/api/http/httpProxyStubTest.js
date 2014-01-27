@@ -67,10 +67,14 @@ describe('http proxy stubs', function () {
             proxyDefinition = {
                 to: 'http://localhost:' + originServerPort,
                 mode: 'proxyOnce',
-                replayWhen: {
-                    method: { matches: true },
-                    path: { matches: true }
-                }
+                replayWhen: [
+                    {
+                        matches: {
+                            method: true,
+                            path: true
+                        }
+                    }
+                ]
             },
             proxyStub = { responses: [{ proxy: proxyDefinition }] },
             proxyRequest = { protocol: 'http', port: port, stubs: [proxyStub], name: this.name + ' proxy' };
@@ -124,9 +128,7 @@ describe('http proxy stubs', function () {
             proxyDefinition = {
                 to: 'http://localhost:' + originServerPort,
                 mode: 'proxyAlways',
-                replayWhen: {
-                    path: { matches: true }
-                }
+                replayWhen: [{ matches: { path: true } }]
             },
             proxyStub = { responses: [{ proxy: proxyDefinition }] },
             proxyRequest = { protocol: 'http', port: port, stubs: [proxyStub], name: this.name + ' proxy' };
@@ -175,9 +177,7 @@ describe('http proxy stubs', function () {
             proxyDefinition = {
                 to: 'http://localhost:' + originServerPort,
                 mode: 'proxyOnce',
-                replayWhen: {
-                    query: { matches: true }
-                }
+                replayWhen: [{ matches: { query: true } }]
             },
             proxyStub = { responses: [{ proxy: proxyDefinition }] },
             proxyRequest = { protocol: 'http', port: port, stubs: [proxyStub], name: this.name + ' proxy' };
@@ -223,11 +223,7 @@ describe('http proxy stubs', function () {
             proxyDefinition = {
                 to: 'http://localhost:' + originServerPort,
                 mode: 'proxyOnce',
-                replayWhen: {
-                    query: {
-                        first: { matches: true }
-                    }
-                }
+                replayWhen: [{ matches: { query: { first: true } } }]
             },
             proxyStub = { responses: [{ proxy: proxyDefinition }] },
             proxyRequest = { protocol: 'http', port: port, stubs: [proxyStub], name: this.name + ' proxy' };
