@@ -138,6 +138,32 @@ describe('stubResolver', function () {
             });
         });
 
+        promiseIt('should add predicate parameters from predicateGenerators', function () {
+            var proxy = { to: mock().returns(Q('value')) },
+                resolver = StubResolver.create(proxy, combinators.identity),
+                logger = { debug: mock() },
+                stub = {
+                    proxy: {
+                        to: 'where',
+                        predicateGenerators: [{ matches: { key: true }, caseSensitive: true, except: 'xxx' }]
+                    }
+                },
+                request = { key: 'Test' },
+                stubs = [{ responses: [stub] }];
+
+            return resolver.resolve(stub, request, logger, stubs).then(function () {
+                assert.deepEqual(stubs, [
+                    {
+                        predicates: [{ deepEquals: { key: 'Test' }, caseSensitive: true, except: 'xxx' }],
+                        responses: [{ is: 'value' }]
+                    },
+                    {
+                        responses: [stub]
+                    }
+                ]);
+            });
+        });
+
         promiseIt('should allow "inject" response', function () {
             var resolver = StubResolver.create({}, combinators.identity),
                 logger = { debug: mock() },

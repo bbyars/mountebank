@@ -1,7 +1,6 @@
 Stories/Tasks
 =============
 
-1. Add caseSensitive, except to matchers
 1. add behaviors: { wait: 5000 } to responses
 2, release on branch
 0. stub smtp with accept/reject behaviors

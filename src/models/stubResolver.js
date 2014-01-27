@@ -46,35 +46,36 @@ function create (proxy, postProcess) {
     }
 
     function predicatesFor (request, matchers) {
-        var deepEquals = {},
-            equals = {},
-            result = [],
-            isEmpty = function (obj) { return JSON.stringify(obj) === '{}'; };
-
-        if (matchers.length === 0) {
-            return [];
-        }
+        var predicates = [];
 
         matchers.forEach(function (matcher) {
+            var basePredicate = {};
+
+            // Add parameters
+            Object.keys(matcher).forEach(function (key) {
+                if (key !== 'matches') {
+                    basePredicate[key] = matcher[key];
+                }
+            });
+
             Object.keys(matcher.matches).forEach(function (fieldName) {
-                var value = matcher.matches[fieldName];
+                var value = matcher.matches[fieldName],
+                    predicate = helpers.clone(basePredicate);
 
                 if (value === true) {
-                    deepEquals[fieldName] = request[fieldName];
+                    predicate.deepEquals = {};
+                    predicate.deepEquals[fieldName] = request[fieldName];
                 }
                 else {
-                    equals[fieldName] = buildEquals(request[fieldName], value);
+                    predicate.equals = {};
+                    predicate.equals[fieldName] = buildEquals(request[fieldName], value);
                 }
+
+                predicates.push(predicate);
             });
         });
 
-        if (!isEmpty(deepEquals)) {
-            result.push({ deepEquals: deepEquals });
-        }
-        if (!isEmpty(equals)) {
-            result.push({ equals: equals });
-        }
-        return result;
+        return predicates;
     }
 
     function stubIndexFor (stubResolver, stubs) {

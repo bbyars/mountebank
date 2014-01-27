@@ -189,6 +189,9 @@ response instead gets added to an existing stub's <code>responses</code> array.<
 ]
 </code></pre>
 
+<p><code>predicateGenerators</code> accept the same predicate parameters as
+<a href='/docs/api/predicates'>predicates</a>: <code>caseSensitive</code> and
+<code>except</code>.</p>
 <h2>Examples</h2>
 
 <p>Our examples will proxy to the following origin server.  To help
@@ -355,7 +358,8 @@ Accept: application/json
                      data-test-ignore-lines='["[Dd]ate", "timestamp", "requestFrom", "Content-Length"]'>
 HTTP/1.1 200 OK
 Content-Type: application/json; charset=utf-8
-Content-Length: 6500
+Content-Length: 6857
+Date: Mon, 27 Jan 2014 04:35:55 GMT
 Connection: keep-alive
 
 {
@@ -364,7 +368,7 @@ Connection: keep-alive
   "name": "proxyOnce",
   "requests": [
     {
-      "requestFrom": "127.0.0.1:56198",
+      "requestFrom": "127.0.0.1:61728",
       "method": "GET",
       "path": "/test",
       "query": {
@@ -378,7 +382,7 @@ Connection: keep-alive
       "body": ""
     },
     {
-      "requestFrom": "127.0.0.1:56200",
+      "requestFrom": "127.0.0.1:61730",
       "method": "GET",
       "path": "/dir",
       "query": {
@@ -392,7 +396,7 @@ Connection: keep-alive
       "body": ""
     },
     {
-      "requestFrom": "127.0.0.1:56202",
+      "requestFrom": "127.0.0.1:61732",
       "method": "GET",
       "path": "/test",
       "query": {
@@ -407,7 +411,7 @@ Connection: keep-alive
       "body": ""
     },
     {
-      "requestFrom": "127.0.0.1:56204",
+      "requestFrom": "127.0.0.1:61734",
       "method": "GET",
       "path": "/test",
       "query": {
@@ -427,8 +431,16 @@ Connection: keep-alive
       "predicates": [
         {
           "deepEquals": {
-            "method": "GET",
-            "path": "/test",
+            "method": "GET"
+          }
+        },
+        {
+          "deepEquals": {
+            "path": "/test"
+          }
+        },
+        {
+          "deepEquals": {
             "query": {
               "first": "1"
             }
@@ -441,7 +453,7 @@ Connection: keep-alive
             "statusCode": 200,
             "headers": {
               "connection": "close",
-              "date": "Mon, 27 Jan 2014 01:03:40 GMT",
+              "date": "Mon, 27 Jan 2014 04:35:55 GMT",
               "transfer-encoding": "chunked"
             },
             "body": "call 1"
@@ -453,8 +465,16 @@ Connection: keep-alive
       "predicates": [
         {
           "deepEquals": {
-            "method": "GET",
-            "path": "/dir",
+            "method": "GET"
+          }
+        },
+        {
+          "deepEquals": {
+            "path": "/dir"
+          }
+        },
+        {
+          "deepEquals": {
             "query": {
               "first": "1"
             }
@@ -467,7 +487,7 @@ Connection: keep-alive
             "statusCode": 200,
             "headers": {
               "connection": "close",
-              "date": "Mon, 27 Jan 2014 01:03:40 GMT",
+              "date": "Mon, 27 Jan 2014 04:35:55 GMT",
               "transfer-encoding": "chunked"
             },
             "body": "call 2"
@@ -479,8 +499,16 @@ Connection: keep-alive
       "predicates": [
         {
           "deepEquals": {
-            "method": "GET",
-            "path": "/test",
+            "method": "GET"
+          }
+        },
+        {
+          "deepEquals": {
+            "path": "/test"
+          }
+        },
+        {
+          "deepEquals": {
             "query": {
               "first": "1",
               "second": "2"
@@ -494,7 +522,7 @@ Connection: keep-alive
             "statusCode": 200,
             "headers": {
               "connection": "close",
-              "date": "Mon, 27 Jan 2014 01:03:40 GMT",
+              "date": "Mon, 27 Jan 2014 04:35:55 GMT",
               "transfer-encoding": "chunked"
             },
             "body": "call 3"
@@ -503,9 +531,9 @@ Connection: keep-alive
       ],
       "matches": [
         {
-          "timestamp": "2014-01-27T01:03:40.760Z",
+          "timestamp": "2014-01-27T04:35:55.298Z",
           "request": {
-            "requestFrom": "127.0.0.1:56204",
+            "requestFrom": "127.0.0.1:61734",
             "method": "GET",
             "path": "/test",
             "query": {
@@ -523,7 +551,7 @@ Connection: keep-alive
             "statusCode": 200,
             "headers": {
               "connection": "close",
-              "date": "Mon, 27 Jan 2014 01:03:40 GMT",
+              "date": "Mon, 27 Jan 2014 04:35:55 GMT",
               "transfer-encoding": "chunked"
             },
             "body": "call 3"
@@ -551,9 +579,9 @@ Connection: keep-alive
       ],
       "matches": [
         {
-          "timestamp": "2014-01-27T01:03:40.729Z",
+          "timestamp": "2014-01-27T04:35:55.273Z",
           "request": {
-            "requestFrom": "127.0.0.1:56198",
+            "requestFrom": "127.0.0.1:61728",
             "method": "GET",
             "path": "/test",
             "query": {
@@ -570,16 +598,16 @@ Connection: keep-alive
             "statusCode": 200,
             "headers": {
               "connection": "close",
-              "date": "Mon, 27 Jan 2014 01:03:40 GMT",
+              "date": "Mon, 27 Jan 2014 04:35:55 GMT",
               "transfer-encoding": "chunked"
             },
             "body": "call 1"
           }
         },
         {
-          "timestamp": "2014-01-27T01:03:40.737Z",
+          "timestamp": "2014-01-27T04:35:55.282Z",
           "request": {
-            "requestFrom": "127.0.0.1:56200",
+            "requestFrom": "127.0.0.1:61730",
             "method": "GET",
             "path": "/dir",
             "query": {
@@ -596,16 +624,16 @@ Connection: keep-alive
             "statusCode": 200,
             "headers": {
               "connection": "close",
-              "date": "Mon, 27 Jan 2014 01:03:40 GMT",
+              "date": "Mon, 27 Jan 2014 04:35:55 GMT",
               "transfer-encoding": "chunked"
             },
             "body": "call 2"
           }
         },
         {
-          "timestamp": "2014-01-27T01:03:40.755Z",
+          "timestamp": "2014-01-27T04:35:55.290Z",
           "request": {
-            "requestFrom": "127.0.0.1:56202",
+            "requestFrom": "127.0.0.1:61732",
             "method": "GET",
             "path": "/test",
             "query": {
@@ -623,7 +651,7 @@ Connection: keep-alive
             "statusCode": 200,
             "headers": {
               "connection": "close",
-              "date": "Mon, 27 Jan 2014 01:03:40 GMT",
+              "date": "Mon, 27 Jan 2014 04:35:55 GMT",
               "transfer-encoding": "chunked"
             },
             "body": "call 3"
@@ -766,7 +794,8 @@ Accept: application/json
                      data-test-ignore-lines='["[Dd]ate", "timestamp", "requestFrom", "Content-Length"]'>
 HTTP/1.1 200 OK
 Content-Type: application/json; charset=utf-8
-Content-Length: 5056
+Content-Length: 5297
+Date: Mon, 27 Jan 2014 04:38:44 GMT
 Connection: keep-alive
 
 {
@@ -775,6 +804,7 @@ Connection: keep-alive
   "name": "proxyAlways",
   "requests": [
     {
+      "requestFrom": "127.0.0.1:61762",
       "method": "GET",
       "path": "/test",
       "query": {
@@ -788,6 +818,7 @@ Connection: keep-alive
       "body": ""
     },
     {
+      "requestFrom": "127.0.0.1:61764",
       "method": "GET",
       "path": "/test",
       "query": {
@@ -801,6 +832,7 @@ Connection: keep-alive
       "body": ""
     },
     {
+      "requestFrom": "127.0.0.1:61766",
       "method": "GET",
       "path": "/dir",
       "query": {
@@ -835,7 +867,9 @@ Connection: keep-alive
       ],
       "matches": [
         {
+          "timestamp": "2014-01-27T04:38:44.636Z",
           "request": {
+            "requestFrom": "127.0.0.1:61762",
             "method": "GET",
             "path": "/test",
             "query": {
@@ -852,14 +886,16 @@ Connection: keep-alive
             "statusCode": 200,
             "headers": {
               "connection": "close",
-              "date": "Mon, 27 Jan 2014 02:04:15 GMT",
+              "date": "Mon, 27 Jan 2014 04:38:44 GMT",
               "transfer-encoding": "chunked"
             },
             "body": "call 4"
           }
         },
         {
+          "timestamp": "2014-01-27T04:38:44.642Z",
           "request": {
+            "requestFrom": "127.0.0.1:61764",
             "method": "GET",
             "path": "/test",
             "query": {
@@ -876,14 +912,16 @@ Connection: keep-alive
             "statusCode": 200,
             "headers": {
               "connection": "close",
-              "date": "Mon, 27 Jan 2014 02:04:15 GMT",
+              "date": "Mon, 27 Jan 2014 04:38:44 GMT",
               "transfer-encoding": "chunked"
             },
             "body": "call 5"
           }
         },
         {
+          "timestamp": "2014-01-27T04:38:44.647Z",
           "request": {
+            "requestFrom": "127.0.0.1:61766",
             "method": "GET",
             "path": "/dir",
             "query": {
@@ -900,7 +938,7 @@ Connection: keep-alive
             "statusCode": 200,
             "headers": {
               "connection": "close",
-              "date": "Mon, 27 Jan 2014 02:04:15 GMT",
+              "date": "Mon, 27 Jan 2014 04:38:44 GMT",
               "transfer-encoding": "chunked"
             },
             "body": "call 6"
@@ -912,8 +950,16 @@ Connection: keep-alive
       "predicates": [
         {
           "deepEquals": {
-            "method": "GET",
-            "path": "/test",
+            "method": "GET"
+          }
+        },
+        {
+          "deepEquals": {
+            "path": "/test"
+          }
+        },
+        {
+          "deepEquals": {
             "query": {
               "first": "1"
             }
@@ -926,7 +972,7 @@ Connection: keep-alive
             "statusCode": 200,
             "headers": {
               "connection": "close",
-              "date": "Mon, 27 Jan 2014 02:04:15 GMT",
+              "date": "Mon, 27 Jan 2014 04:38:44 GMT",
               "transfer-encoding": "chunked"
             },
             "body": "call 4"
@@ -937,7 +983,7 @@ Connection: keep-alive
             "statusCode": 200,
             "headers": {
               "connection": "close",
-              "date": "Mon, 27 Jan 2014 02:04:15 GMT",
+              "date": "Mon, 27 Jan 2014 04:38:44 GMT",
               "transfer-encoding": "chunked"
             },
             "body": "call 5"
@@ -949,8 +995,16 @@ Connection: keep-alive
       "predicates": [
         {
           "deepEquals": {
-            "method": "GET",
-            "path": "/dir",
+            "method": "GET"
+          }
+        },
+        {
+          "deepEquals": {
+            "path": "/dir"
+          }
+        },
+        {
+          "deepEquals": {
             "query": {
               "first": "1"
             }
@@ -963,7 +1017,7 @@ Connection: keep-alive
             "statusCode": 200,
             "headers": {
               "connection": "close",
-              "date": "Mon, 27 Jan 2014 02:04:15 GMT",
+              "date": "Mon, 27 Jan 2014 04:38:44 GMT",
               "transfer-encoding": "chunked"
             },
             "body": "call 6"
@@ -1001,6 +1055,7 @@ Content-Type: application/json
   "name": "proxyAlways",
   "requests": [
     {
+      "requestFrom": "127.0.0.1:61762",
       "method": "GET",
       "path": "/test",
       "query": {
@@ -1014,6 +1069,7 @@ Content-Type: application/json
       "body": ""
     },
     {
+      "requestFrom": "127.0.0.1:61764",
       "method": "GET",
       "path": "/test",
       "query": {
@@ -1027,6 +1083,7 @@ Content-Type: application/json
       "body": ""
     },
     {
+      "requestFrom": "127.0.0.1:61766",
       "method": "GET",
       "path": "/dir",
       "query": {
@@ -1045,8 +1102,16 @@ Content-Type: application/json
       "predicates": [
         {
           "deepEquals": {
-            "method": "GET",
-            "path": "/test",
+            "method": "GET"
+          }
+        },
+        {
+          "deepEquals": {
+            "path": "/test"
+          }
+        },
+        {
+          "deepEquals": {
             "query": {
               "first": "1"
             }
@@ -1059,7 +1124,7 @@ Content-Type: application/json
             "statusCode": 200,
             "headers": {
               "connection": "close",
-              "date": "Mon, 27 Jan 2014 02:04:15 GMT",
+              "date": "Mon, 27 Jan 2014 04:38:44 GMT",
               "transfer-encoding": "chunked"
             },
             "body": "call 4"
@@ -1070,7 +1135,7 @@ Content-Type: application/json
             "statusCode": 200,
             "headers": {
               "connection": "close",
-              "date": "Mon, 27 Jan 2014 02:04:15 GMT",
+              "date": "Mon, 27 Jan 2014 04:38:44 GMT",
               "transfer-encoding": "chunked"
             },
             "body": "call 5"
@@ -1082,8 +1147,16 @@ Content-Type: application/json
       "predicates": [
         {
           "deepEquals": {
-            "method": "GET",
-            "path": "/dir",
+            "method": "GET"
+          }
+        },
+        {
+          "deepEquals": {
+            "path": "/dir"
+          }
+        },
+        {
+          "deepEquals": {
             "query": {
               "first": "1"
             }
@@ -1096,7 +1169,7 @@ Content-Type: application/json
             "statusCode": 200,
             "headers": {
               "connection": "close",
-              "date": "Mon, 27 Jan 2014 02:04:15 GMT",
+              "date": "Mon, 27 Jan 2014 04:38:44 GMT",
               "transfer-encoding": "chunked"
             },
             "body": "call 6"
