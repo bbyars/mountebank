@@ -1,7 +1,6 @@
 Stories/Tasks
 =============
 
-1. Check all links
 1. Validate proxy matches syntax (array?)
 1. Add matchesExcept for proxies
 1. Validation messages broken?  Test thoroughly
