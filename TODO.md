@@ -1,28 +1,28 @@
 Stories/Tasks
 =============
 
-1. add behaviors: { wait: 5000 } to responses
-2, release on branch
-0. stub smtp with accept/reject behaviors
-6. Add brew package
-6. add pkg installer like vagrant
-7. Add rpm package
-8. Add MSI & Windows support
-1. Add http attachment support
-1. Allow regex tokens from request params in response (different resolver?)
-21. Prettier /imposters HTML page
-22. Ability to create imposter from UI for manual testers
-23. Prettier /imposter/{port} HTML page
-27. paging and q= filtering for imposters on GET /imposters
-30. javadoc style documentation? (jsdoc3, or http://jashkenas.github.io/docco/)
-31. Package npm without tests and files not needed for runtime
-33. Change logs page to link the [http:2526] to the imposter page
+1, release on branch
+2. add behaviors: { wait: 5000 } to responses
+3. Add brew package
+4. add pkg installer like vagrant
+5. Add rpm package
+6. Add MSI and Windows support
+7. Add SMTP stubbing behavior (_behaviors: { accept: true })
+8. Add http attachment support
+9. Allow regex tokens from request params in response (different resolver?)
+10. Prettier /imposters HTML page
+11. Ability to create imposter from UI for manual testers
+12. Prettier /imposter/{port} HTML page
+13. paging and q= filtering for imposters on GET /imposters
+14. javadoc style documentation? (jsdoc3, or http://jashkenas.github.io/docco/)
+15. Package npm without tests and files not needed for runtime
+16. Change logs page to link the [http:2526] to the imposter page
   - would need to add createdAt field to imposter, and only link to imposters created after the timestamp
-34. Pretty print JSON log messages on /logs page
-35. Have query param on GET /imposters/{port} that returns slimmest possible payload to replay the imposter
+17. Pretty print JSON log messages on /logs page
+18. Have query param on GET /imposters/{port} that returns slimmest possible payload to replay the imposter
         - exclude matches and requests
-38. Add atom feed that only displays when --heroku is set that people can subscribe to for updates
-39. dry run all stub resolvers, even if predicates fail or is second in the responses array
+19. Add atom feed that only displays when --heroku is set that people can subscribe to for updates
+20. dry run all stub resolvers, even if predicates fail or is second in the responses array
 
 Known Bugs
 ==========
