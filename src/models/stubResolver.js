@@ -90,7 +90,7 @@ function create (proxy, postProcess) {
     function proxyAndRecord (stubResolver, request, stubs) {
         /* jshint maxcomplexity: 6 */
         return proxy.to(stubResolver.proxy.to, request).then(function (response) {
-            var predicates = predicatesFor(request, stubResolver.proxy.replayWhen || []),
+            var predicates = predicatesFor(request, stubResolver.proxy.predicateGenerators || []),
                 stubResponse = { is: response },
                 newStub = { predicates: predicates, responses: [stubResponse] },
                 index = stubIndexFor(stubResolver, stubs);

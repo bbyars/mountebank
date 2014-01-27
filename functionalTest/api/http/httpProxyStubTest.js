@@ -67,7 +67,7 @@ describe('http proxy stubs', function () {
             proxyDefinition = {
                 to: 'http://localhost:' + originServerPort,
                 mode: 'proxyOnce',
-                replayWhen: [
+                predicateGenerators: [
                     {
                         matches: {
                             method: true,
@@ -128,7 +128,7 @@ describe('http proxy stubs', function () {
             proxyDefinition = {
                 to: 'http://localhost:' + originServerPort,
                 mode: 'proxyAlways',
-                replayWhen: [{ matches: { path: true } }]
+                predicateGenerators: [{ matches: { path: true } }]
             },
             proxyStub = { responses: [{ proxy: proxyDefinition }] },
             proxyRequest = { protocol: 'http', port: port, stubs: [proxyStub], name: this.name + ' proxy' };
@@ -177,7 +177,7 @@ describe('http proxy stubs', function () {
             proxyDefinition = {
                 to: 'http://localhost:' + originServerPort,
                 mode: 'proxyOnce',
-                replayWhen: [{ matches: { query: true } }]
+                predicateGenerators: [{ matches: { query: true } }]
             },
             proxyStub = { responses: [{ proxy: proxyDefinition }] },
             proxyRequest = { protocol: 'http', port: port, stubs: [proxyStub], name: this.name + ' proxy' };
@@ -223,7 +223,7 @@ describe('http proxy stubs', function () {
             proxyDefinition = {
                 to: 'http://localhost:' + originServerPort,
                 mode: 'proxyOnce',
-                replayWhen: [{ matches: { query: { first: true } } }]
+                predicateGenerators: [{ matches: { query: { first: true } } }]
             },
             proxyStub = { responses: [{ proxy: proxyDefinition }] },
             proxyRequest = { protocol: 'http', port: port, stubs: [proxyStub], name: this.name + ' proxy' };

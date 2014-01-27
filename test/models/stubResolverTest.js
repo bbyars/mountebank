@@ -92,7 +92,7 @@ describe('stubResolver', function () {
                 stub = {
                     proxy: {
                         to: 'where',
-                        replayWhen: [{ matches: { key: true } }]
+                        predicateGenerators: [{ matches: { key: true } }]
                     }
                 },
                 request = { key: { nested: { first: 'one', second: 'two' }, third: 'three' } },
@@ -119,7 +119,7 @@ describe('stubResolver', function () {
                     proxy: {
                         to: 'where',
                         mode: 'proxyOnce',
-                        replayWhen: [{ matches: { key: { nested: { first: true } } } }]
+                        predicateGenerators: [{ matches: { key: { nested: { first: true } } } }]
                     }
                 },
                 request = { key: { nested: { first: 'one', second: 'two' }, third: 'three' } },
