@@ -1,10 +1,10 @@
 Stories/Tasks
 =============
 
-2. add behaviors: { _behaviors: { wait: 5000 } } to responses
 3. Add brew package
 4. add pkg installer like vagrant
 5. Add rpm package
+5. add behaviors: { _behaviors: { wait: 5000 } } to responses
 6. Add MSI and Windows support
 7. Add SMTP stubbing behavior (_behaviors: { accept: true })
 8. Add http attachment support
