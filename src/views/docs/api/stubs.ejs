@@ -16,7 +16,7 @@ element each time the stub is used, which you can see by issuing a <code>GET</co
 obligation to override the defaults (every protocol defines a default for every response field;
 see the protocol-specific documentation pages linked to from the sidebar for more details).
 The responses array defines a circular buffer - every time the stub is used for the request,
-the first response is pulled from the front of the responses array, evaluated, and pushed
+the first response is pulled from the front of the <code>responses</code> array, evaluated, and pushed
 to the back of the array.  This elegantly does what you want.  In the common case, when you
 always want to return the same response, you just add one response to the array.
 More complex scenarios will require that the same endpoint returns a sequence of

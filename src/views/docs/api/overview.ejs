@@ -126,8 +126,8 @@ Connection: keep-alive
 </code></pre>
 
 <p>You would also create any <a href='/docs/api/stubs'>stubs</a> in the <code>POST</code> call.
-Imposters are immutable once created.  The expected use case is that they are setup for a single
-test run and destroyed at the completion of the test.</p>
+Imposters are not mutable through the api once created.  The expected use case is that they are
+setup for a single test run and destroyed at the completion of the test.</p>
 
 <p>mountebank expects you to configure your application under test to point to the imposter.  In
 the case above, that would mean that your application has an http dependency configured to

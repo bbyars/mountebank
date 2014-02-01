@@ -22,7 +22,8 @@ predicate operators are allowed:</p>
   </tr>
   <tr>
     <td><code>deepEquals</code></td>
-    <td>The request field object exactly matches the predicate object</td>
+    <td>Performs nested set equality on the request field, useful when
+    the request field is an object (e.g. the <code>query</code> field in http)</td>
   </tr>
   <tr>
     <td><code>contains</code></td>
@@ -101,7 +102,9 @@ sending "AQIDBA==" will get translated to "[1,2,3,4]", and predicates expecting 
 get translated to "[2,3]".  Even though "AQIDBA==" does not contain "AgM=", a <code>contains</code>
 predicate will match, because "[1,2,3,4]" does contain "[2,3]".  This works well for everything
 but <code>matches</code>, because any regular expression operators get encoded as binary.
-mountebank recommends that you stay away from <code>matches</code> if you're dealing in binary.</p>
+mountebank recommends that you stay away from <code>matches</code> if you're dealing in binary.
+In mountebank's experience, <code>contains</code> is the most useful predicate for binary
+imposters, as even binary RPC data generally contains strings representing method names.</p>
 
 <h2>Examples</h2>
 

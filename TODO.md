@@ -1,8 +1,6 @@
 Stories/Tasks
 =============
 
-1. Document actual usage
-2. Document contains predicate probably only useful one for binary (e.g. RMI method name)
 2. add behaviors: { _behaviors: { wait: 5000 } } to responses
 3. Add brew package
 4. add pkg installer like vagrant
