@@ -14,7 +14,11 @@ At the moment, the following protocols are supported:
 mountebank supports mock verification, stubbing with advanced predicates, JavaScript injection,
 and record-playback through proxying.
 
-## Getting Started
+[![how it works](https://github.com/bbyars/mountebank/blob/master/src/public/images/overview.gif?raw=true)
+
+See [getting started](http://www.mbtest.org/docs/gettingStarted) guide for more information.
+
+## Installing
 
 [![NPM version](https://badge.fury.io/js/mountebank.png)](http://badge.fury.io/js/mountebank)
 
@@ -25,40 +29,6 @@ Install:
 Run:
 
     mb
-
-Create a test double:
-
-    cat << EOF > imposter.json
-      {
-        "port": 2526,
-        "protocol": "http",
-        "stubs": [{
-          "responses": [
-            { "is": { "statusCode": 400 }}
-          ],
-          "predicates": [
-            {
-              "equals": {
-                "path": "/test",
-                "method": "POST",
-                "headers": {
-                  "Content-Type": "application/json"
-                }
-              }
-            },
-            {
-              "not": {
-                "contains": {
-                  "body": "requiredField"
-                }
-              },
-            }
-          ]
-        }]
-      }
-    EOF
-
-    curl -i -H 'Content-Type: application/json' -d@imposter.json http://localhost:2525/imposters
 
 ## Learn More
 
