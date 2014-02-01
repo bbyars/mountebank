@@ -14,7 +14,7 @@ At the moment, the following protocols are supported:
 mountebank supports mock verification, stubbing with advanced predicates, JavaScript injection,
 and record-playback through proxying.
 
-[![how it works](https://github.com/bbyars/mountebank/blob/master/src/public/images/overview.gif?raw=true)
+[![how it works](https://github.com/bbyars/mountebank/blob/master/src/public/images/overview.gif?raw=true)](https://github.com/bbyars/mountebank/blob/master/src/public/images/overview.gif?raw=true)
 
 See [getting started](http://www.mbtest.org/docs/gettingStarted) guide for more information.
 
