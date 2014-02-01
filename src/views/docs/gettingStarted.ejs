@@ -14,7 +14,16 @@ npm install -g mountebank
 mb
 </code></pre>
 
-<p>Create an http test double:</p>
+<p>By default, mountebank listens on port 2525, but that's not the port that your
+imposters (test doubles) will listen on.  To show a couple different kinds of
+imposters, let's create both an http imposter and a tcp one.  We'll use the
+<code>curl</code> command line tool to call mountebank's
+<a href='/docs/api/overview'>api</a>.  The following command creates the
+http imposter, listening on port 4545, by <code>POST</code>ing to
+http://localhost:2525/imposters with the body that we dump into imposter.json.
+The <code>predicates</code> are optional - if you don't include any, the stub
+always matches, and the response is always sent.  See the
+<a href='/docs/api/predicates'>predicates</a> page for more detail.</p>
 
 <pre><code data-test-id='example'
            data-test-step='1'
@@ -44,7 +53,8 @@ cat &lt;&lt; EOF &gt; imposter.json
           "not": {
             "contains": {
               "body": "requiredField"
-            }
+            },
+            "caseSensitive": true
           }
         }
       ]
@@ -56,7 +66,7 @@ EOF
 curl -i -X POST -H 'Content-Type: application/json' -d@imposter.json http://localhost:2525/imposters
 </code></pre>
 
-<p>Test your imposter:</p>
+<p>Let's test it out:</p>
 
 <pre><code data-test-id='example'
            data-test-step='2'
@@ -73,112 +83,67 @@ Date: Sat, 04 Jan 2014 02:48:16 GMT
 Transfer-Encoding: chunked
 </code></pre>
 
-<p>Validate the call was made:</p>
+<p>mountebank can stub binary tcp equally well, which is convenient when your application integrates
+with a downstream system using RMI, CORBA, .NET remoting, DCOM, or one of the myriad RPC
+protocols.  Those protocols tend to rely on language-specific serialization to return an object
+graph.  Your test can use the same serialization code to create a binary stream of the object you want
+the imposter to return during an RPC call, and encode it as a base64 string.  That string is what you
+send to the imposter.  In the example below, we're telling the imposter to respond with a base64-encoded
+string of "hello, world!" when a tcp request containing the string "sayHello" is sent to port 5555, which
+could correspond to the method name serialized in the RPC call:</p>
 
 <pre><code data-test-id='example'
            data-test-step='3'
+           data-test-type='exec'
+           data-test-replace-pattern='localhost:2525'
+           data-test-replace-with='localhost:${port}'>
+cat &lt;&lt; EOF &gt; imposter.json
+{
+  "port": 5555,
+  "protocol": "tcp",
+  "mode": "binary",
+  "stubs": [{
+    "responses": [
+      { "is": { <strong class='highlight1'>"data": "aGVsbG8sIHdvcmxkIQ=="</strong> }}
+    ],
+    "predicates": [{ "contains": { "data": "c2F5SGVsbG8=" } }]
+  }]
+}
+EOF
+
+curl -i -X POST -H 'Content-Type: application/json' -d@imposter.json http://localhost:2525/imposters
+</code></pre>
+
+<p>We'll use <code>nc</code> (netcat) to make the tcp request, which is like <code>telnet</code>
+but easier to script.</p>
+
+<pre><code data-test-id='example'
+           data-test-step='4'
            data-test-type='exec'>
-curl http://localhost:2525/imposters/4545
+echo "Calling sayHello over binary protocol" | nc localhost 5555
 </code></pre>
 
 <pre><code data-test-id='example'
-           data-test-verify-step='3'
-           data-test-ignore-lines='["requestFrom", "user-agent", "timestamp"]'>
-{
-  "protocol": "http",
-  "port": 4545,
-  "requests": [
-    {
-      "requestFrom": "127.0.0.1:61617",
-      "method": "POST",
-      "path": "/test",
-      "query": {},
-      "headers": {
-        "user-agent": "curl/7.24.0 (x86_64-apple-darwin12.0) libcurl/7.24.0 OpenSSL/0.9.8y zlib/1.2.5",
-        "host": "localhost:4545",
-        "accept": "*/*",
-        "content-type": "application/json",
-        "content-length": "23"
-      },
-      "body": "{\"optionalField\": true}"
-    }
-  ],
-  "stubs": [
-    {
-      "responses": [
-        {
-          "is": {
-            "statusCode": 400
-          }
-        }
-      ],
-      "predicates": [
-        {
-          "and": [
-            {
-              "equals": {
-                "path": "/test",
-                "method": "POST",
-                "headers": {
-                  "Content-Type": "application/json"
-                }
-              }
-            },
-            {
-              "not": {
-                "contains": {
-                  "body": "requiredField"
-                }
-              }
-            }
-          ]
-        }
-      ],
-      "matches": [
-        {
-          "timestamp": "2014-01-25T02:27:13.063Z",
-          "request": {
-            "requestFrom": "127.0.0.1:61617",
-            "method": "POST",
-            "path": "/test",
-            "query": {},
-            "headers": {
-              "user-agent": "curl/7.24.0 (x86_64-apple-darwin12.0) libcurl/7.24.0 OpenSSL/0.9.8y zlib/1.2.5",
-              "host": "localhost:4545",
-              "accept": "*/*",
-              "content-type": "application/json",
-              "content-length": "23"
-            },
-            "body": "{\"optionalField\": true}"
-          },
-          "response": {
-            "statusCode": 400,
-            "headers": {
-              "connection": "close"
-            },
-            "body": ""
-          }
-        }
-      ]
-    }
-  ],
-  "_links": {
-    "self": {
-      "href": "http://localhost:2525/imposters/4545"
-    }
-  }
-}
+           data-test-verify-step='4'>
+<strong class='highlight1'>hello, world!</strong>
+</code></pre>
+
+<p>Finally, we can shut down both imposters by issuing an HTTP <code>DELETE</code> to
+both imposters, which are identified by the port number on the URL:</p>
+
+<pre><code data-test-id='example'
+           data-test-step='5'
+           data-test-type='exec'>
+curl -X DELETE http://localhost:2525/imposters/4545
+curl -X DELETE http://localhost:2525/imposters/5555
 </code></pre>
 
 <code class='hidden' data-test-id='example'
-                     data-test-step='4'
+                     data-test-step='6'
                      data-test-type='exec'>
 rm imposter.json
-curl -X DELETE http://localhost:2525/imposters/4545
 </code>
 
-<p>Learn more:</p>
-
-<p>Check out the links on the left.  Don't hesitate to <a href='/support'>ask</a> for help!</p>
+<p>Explore more in the links on the left.  Don't hesitate to <a href='/support'>ask</a> for help!</p>
 
 <% include ../_footer %>

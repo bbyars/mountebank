@@ -1,7 +1,9 @@
 Stories/Tasks
 =============
 
-2. add behaviors: { wait: 5000 } to responses
+1. Document actual usage
+2. Document contains predicate probably only useful one for binary (e.g. RMI method name)
+2. add behaviors: { _behaviors: { wait: 5000 } } to responses
 3. Add brew package
 4. add pkg installer like vagrant
 5. Add rpm package
@@ -35,6 +37,8 @@ Rainy day ideas to try out
 The ideas below aren't guaranteed to be good ;>
 
 1. Use cluster module to isolate imposters from each other?
+  - the process start up time on Windows may make this too painful
 2. UDP and TCP syslog support (see http://en.wikipedia.org/wiki/Syslog for packet format)
 3. Change logs page to tail -f the logs file?
 4. Add button next to code blocks on docs site that allows user to directly execute and compare the results
+5. SOAP-specific support as a separate protocol

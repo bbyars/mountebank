@@ -196,7 +196,7 @@ code {
     font-size: 12px;
 }
 
-code.hidden {
+.hidden {
     display: none;
 }
 
