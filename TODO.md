@@ -4,7 +4,6 @@ Stories/Tasks
 0. Fix for node 0.8
 1. Set up bare domain (mbtest.org, instead of www.mbtest.org) for heroku
   - I don't think godaddy lets me do this; may have to transfer DNS
-2. Store downloads on heroku app
 3. Add brew package
 5. add behaviors: { _behaviors: { wait: 5000 } } to responses
 6. Add MSI and Windows support
