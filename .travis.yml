@@ -41,4 +41,4 @@ deploy:
     on:
       repo: bbyars/mountebank
       branch: master
-      condition: 'node -v | grep v0.10'
+      node: 0.10
