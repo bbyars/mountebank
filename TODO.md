@@ -1,15 +1,11 @@
 Stories/Tasks
 =============
 
-- can i remove node_modules from package?
-- update dependencies
-
+0. Fix for node 0.8
 1. Set up bare domain (mbtest.org, instead of www.mbtest.org) for heroku
   - I don't think godaddy lets me do this; may have to transfer DNS
 2. Store downloads on heroku app
 3. Add brew package
-4. add pkg installer like vagrant
-5. Add rpm package
 5. add behaviors: { _behaviors: { wait: 5000 } } to responses
 6. Add MSI and Windows support
 7. Add SMTP stubbing behavior (_behaviors: { accept: true })
@@ -20,7 +16,6 @@ Stories/Tasks
 12. Prettier /imposter/{port} HTML page
 13. paging and q= filtering for imposters on GET /imposters
 14. javadoc style documentation? (jsdoc3, or http://jashkenas.github.io/docco/)
-15. Package npm without tests and files not needed for runtime
 16. Change logs page to link the [http:2526] to the imposter page
   - would need to add createdAt field to imposter, and only link to imposters created after the timestamp
 17. Pretty print JSON log messages on /logs page
