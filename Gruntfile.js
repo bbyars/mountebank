@@ -4,7 +4,7 @@ var spawn = require('child_process').spawn,
     exec = require('child_process').exec,
     os = require('os'),
     port = process.env.MB_PORT || 2525,
-    revision = process.env.REVISION || 0;
+    version = process.env.VERSION || '1.0.0';
 
 function shell (command, done) {
     exec(command, function (error) {
@@ -102,11 +102,11 @@ module.exports = function (grunt) {
 
     grunt.registerTask('version', 'Set the version number', function () {
         var done = this.async(),
-            pattern = '"version": "([0-9]+)\\.([0-9]+)\\.([0-9]+)"',
-            replacement = '"version": "\\1.\\2.' + revision + '"',
+            pattern = '"version": "[0-9.]+"',
+            replacement = '"version": "' + version + '"',
             sed = "sed -E -e 's/" + pattern + "/" + replacement + "/' ";
 
-        console.log("Using " + revision);
+        console.log("Using " + version);
 
         if (os.platform() === 'darwin') {
             sed += "-i '' package.json";
@@ -136,10 +136,25 @@ module.exports = function (grunt) {
         });
     });
 
+    grunt.registerTask('dist', 'Create trimmed down distribution directory', function () {
+        var sourceFiles = ['bin', 'src', 'package.json', 'README.md', 'LICENSE'],
+            baseCommand = 'for FILE in $SOURCES$; do cp -R $FILE dist; done',
+            command = baseCommand.replace('$SOURCES$', sourceFiles.join(' ')),
+            done = this.async();
+
+        exec('[ -e dist ] && rm -rf dist', function () {
+            exec('mkdir dist', function () {
+                exec(command, function () {
+                    exec('rm -rf dist/src/public/images/sources', done);
+                });
+            });
+        });
+    });
+
     grunt.registerTask('test:unit', 'Run the unit tests', ['mochaTest:unit']);
     grunt.registerTask('test:functional', 'Run the functional tests', ['mb:restart', 'mochaTest:functional', 'mb:stop']);
     grunt.registerTask('test', 'Run all tests', ['test:unit', 'test:functional']);
     grunt.registerTask('coverage', 'Generate code coverage', ['mochaTest:coverage']);
     grunt.registerTask('lint', 'Run all JavaScript lint checks', ['wsCheck', 'jsCheck', 'jshint']);
-    grunt.registerTask('default', ['version', 'test', 'lint']);
+    grunt.registerTask('default', ['version', 'test', 'lint', 'dist']);
 };
