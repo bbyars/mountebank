@@ -4,7 +4,7 @@ var spawn = require('child_process').spawn,
     exec = require('child_process').exec,
     os = require('os'),
     port = process.env.MB_PORT || 2525,
-    version = process.env.VERSION || '1.0.0';
+    revision = process.env.REVISION || 0;
 
 function shell (command, done) {
     exec(command, function (error) {
@@ -102,11 +102,11 @@ module.exports = function (grunt) {
 
     grunt.registerTask('version', 'Set the version number', function () {
         var done = this.async(),
-            pattern = '"version": "[0-9.]+"',
-            replacement = '"version": "' + version + '"',
+            pattern = '"version": "([0-9]+)\\.([0-9]+)\\.([0-9]+)"',
+            replacement = '"version": "\\1.\\2.' + revision + '"',
             sed = "sed -E -e 's/" + pattern + "/" + replacement + "/' ";
 
-        console.log("Using " + version);
+        console.log("Using " + revision);
 
         if (os.platform() === 'darwin') {
             sed += "-i '' package.json";

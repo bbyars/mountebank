@@ -42,5 +42,5 @@ deploy:
     upload-dir: v1.0
     on:
       repo: bbyars/mountebank
-      branch: v1.0.0
+      branch: master
       node: 0.10
