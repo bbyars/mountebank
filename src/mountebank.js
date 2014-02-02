@@ -33,7 +33,7 @@ function create (options) {
 
     app.use(middleware.useAbsoluteUrls(options.port));
     app.use(middleware.logger(logger, ':method :url'));
-    app.use(middleware.globals({ heroku: options.heroku, port: options.port }));
+    app.use(middleware.globals({ heroku: options.heroku, port: options.port, version: thisPackage.version }));
     app.use(express.json());
     app.use(express.static(path.join(__dirname, 'public')));
     app.use(express.errorHandler());
@@ -61,7 +61,6 @@ function create (options) {
 
     app.get('/config', function (request, response) {
         response.render('config', {
-            version: thisPackage.version,
             logfile: options.logfile,
             loglevel: options.loglevel,
             pidfile: options.pidfile,

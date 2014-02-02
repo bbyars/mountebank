@@ -2,12 +2,20 @@
 
 <h1>Getting Started</h1>
 
-<p>Install: (requires <a href='http://nodejs.org/api/'>node.js</a> 0.8 or 0.10)</p>
+<p>Install: (requires <a href='http://nodejs.org/api/'>node.js</a> 0.10)</p>
 
 <pre><code>
 npm install -g mountebank
 </code></pre>
 
+<p>mountebank does not believe that you should have to know or care that he runs on
+node.js.  There is experimental support for installing using OS-specific packages:</p>
+
+<ul>
+  <li><a href='http://mountebank.s3.amazonaws.com/v1.0/mountebank-<%= version %>-1x86_64.rpm'>Red Hat rpm package</a></li>
+  <li><a href='http://mountebank.s3.amazonaws.com/v1.0/mountebank_<%= version %>_amd64.deb'>Debian deb package</a></li>
+  <li><a href='http://mountebank.s3.amazonaws.com/v1.0/mountebank-<%= version %>.pkg'>OS X pkg package</a></li>
+</ul>
 <p>Run:</p>
 
 <pre><code>
