@@ -137,7 +137,7 @@ module.exports = function (grunt) {
     });
 
     grunt.registerTask('dist', 'Create trimmed down distribution directory', function () {
-        var sourceFiles = ['bin', 'src', 'package.json', 'README.md', 'LICENSE'],
+        var sourceFiles = ['bin', 'src', 'package.json', 'README.md', 'LICENSE', '.npmignore'],
             baseCommand = 'for FILE in $SOURCES$; do cp -R $FILE dist; done',
             command = baseCommand.replace('$SOURCES$', sourceFiles.join(' ')),
             done = this.async();

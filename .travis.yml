@@ -16,13 +16,19 @@ env:
 script: ./build
 
 before_deploy:
+  - echo creating distributables
   - for FILE in `ls`; do [ $FILE != dist ] && rm -rf $FILE; done
   - mv dist/* .
   - rm -rf dist
+  - mkdir packages
   - gem install fpm
   - fpm -s npm -t deb -n mountebank .
-  - mkdir packages
   - mv *.deb packages
+  - sudo apt-get install rpm
+  - fpm -s npm -t rpm -n mountebank .
+  - mv *.rpm packages
+  - ls -al
+  - ls -al packages
 
 deploy:
   - provider: npm
