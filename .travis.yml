@@ -32,7 +32,7 @@ deploy:
       secure: AFCSL5AzR+toPEzXpI5JpvYUX3c0NFEXbU36gT+5CWUJaWn4YA+fXBcwRD2cLf1OAXkMK+zVyJa2IqTA2lMWl4c4HBEC71lkoFLGXiPXKUFwt6sGGeiSPOMUbWZ3+qp8TY+r0T6DKmlF2qglBkgLy3JMnan4hW1n6VMBIqazNKw=
     on:
       repo: bbyars/mountebank
-      branch: master
+      branch: v1.0.0
       node: '0.10'
   - provider: heroku
     skip_cleanup: true
