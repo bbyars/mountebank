@@ -1,6 +1,12 @@
 Stories/Tasks
 =============
 
+- can i remove node_modules from package?
+- update dependencies
+
+1. Set up bare domain (mbtest.org, instead of www.mbtest.org) for heroku
+  - I don't think godaddy lets me do this; may have to transfer DNS
+2. Store downloads on heroku app
 3. Add brew package
 4. add pkg installer like vagrant
 5. Add rpm package
@@ -18,6 +24,7 @@ Stories/Tasks
 16. Change logs page to link the [http:2526] to the imposter page
   - would need to add createdAt field to imposter, and only link to imposters created after the timestamp
 17. Pretty print JSON log messages on /logs page
+17. Add paging for the logs page
 18. Have query param on GET /imposters/{port} that returns slimmest possible payload to replay the imposter
         - exclude matches and requests
 19. Add atom feed that only displays when --heroku is set that people can subscribe to for updates
@@ -37,6 +44,5 @@ The ideas below aren't guaranteed to be good ;>
 1. Use cluster module to isolate imposters from each other?
   - the process start up time on Windows may make this too painful
 2. UDP and TCP syslog support (see http://en.wikipedia.org/wiki/Syslog for packet format)
-3. Change logs page to tail -f the logs file?
-4. Add button next to code blocks on docs site that allows user to directly execute and compare the results
-5. SOAP-specific support as a separate protocol
+3. Add button next to code blocks on docs site that allows user to directly execute and compare the results
+4. SOAP-specific support as a separate protocol
