@@ -80,7 +80,7 @@ module.exports = function (grunt) {
 
         var done = this.async(),
             calledDone = false,
-            mb = spawn('bin/mb', [command, '--port', port, '--pidfile', 'mb-grunt.pid', '--allowInjection']);
+            mb = spawn('dist/bin/mb', [command, '--port', port, '--pidfile', 'mb-grunt.pid', '--allowInjection']);
 
         ['stdout', 'stderr'].forEach(function (stream) {
             mb[stream].on('data', function () {
@@ -156,5 +156,5 @@ module.exports = function (grunt) {
     grunt.registerTask('test', 'Run all tests', ['test:unit', 'test:functional']);
     grunt.registerTask('coverage', 'Generate code coverage', ['mochaTest:coverage']);
     grunt.registerTask('lint', 'Run all JavaScript lint checks', ['wsCheck', 'jsCheck', 'jshint']);
-    grunt.registerTask('default', ['version', 'test', 'lint', 'dist']);
+    grunt.registerTask('default', ['version', 'dist', 'test', 'lint']);
 };
