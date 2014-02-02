@@ -16,7 +16,7 @@ script: ./build
 
 before_deploy:
   - echo creating distributables
-  - for FILE in `ls -A`; do [ $FILE != dist ] && rm -rf $FILE; done
+  - for FILE in `ls`; do [ $FILE != dist ] && rm -rf $FILE; done
   - mv dist/* .
   - rm -rf dist
   - mkdir packages
