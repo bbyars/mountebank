@@ -2,7 +2,6 @@ language: node_js
 node_js:
 - '0.8'
 - '0.10'
-- '0.11'
 rvm: '1.9.3'
 
 matrix:
@@ -21,7 +20,7 @@ before_deploy:
   - mv dist/* .
   - rm -rf dist
   - gem install fpm
-  - fpm -s npm -t rpm -n mountebank .
+  - fpm -s npm -t deb -n mountebank .
   - mkdir packages
   - mv *.pkg packages
 
