@@ -22,7 +22,7 @@ before_deploy:
   - gem install fpm
   - fpm -s npm -t deb -n mountebank .
   - mkdir packages
-  - mv *.pkg packages
+  - mv *.deb packages
 
 deploy:
   - provider: npm
