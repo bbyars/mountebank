@@ -22,7 +22,7 @@ deploy:
     on:
       repo: bbyars/mountebank
       branch: v1.0.0
-      node: 0.10
+      condition: [ `node --version | sed -E -e 's/v[0-9]+\.([0-9]+)\.[0-9]+/\1/'` -eq 10 ]
   - provider: heroku
     skip_cleanup: true
     api_key:
@@ -31,7 +31,7 @@ deploy:
     on:
       repo: bbyars/mountebank
       branch: v1.0.0
-      node: 0.10
+      condition: [ `node --version | sed -E -e 's/v[0-9]+\.([0-9]+)\.[0-9]+/\1/'` -eq 10 ]
   - provider: s3
     skip_cleanup: true
     access_key_id: AKIAIE2GUJRUIHGE2PWA
@@ -42,3 +42,5 @@ deploy:
     upload-dir: v1.0
     on:
       repo: bbyars/mountebank
+      branch: master
+      condition: [ `node --version | sed -E -e 's/v[0-9]+\.([0-9]+)\.[0-9]+/\1/'` -eq 10 ]
