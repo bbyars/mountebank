@@ -1,6 +1,8 @@
 language: node_js
 node_js:
+- '0.8'
 - '0.10'
+rvm: '1.9.3'
 
 env:
   global:
@@ -22,6 +24,7 @@ deploy:
     on:
       repo: bbyars/mountebank
       branch: v1.0.0
+      node: '0.10'
   - provider: heroku
     skip_cleanup: true
     api_key:
@@ -30,6 +33,7 @@ deploy:
     on:
       repo: bbyars/mountebank
       branch: v1.0.0
+      node: '0.10'
   - provider: s3
     skip_cleanup: true
     access_key_id: AKIAIE2GUJRUIHGE2PWA
@@ -41,4 +45,4 @@ deploy:
     on:
       repo: bbyars/mountebank
       branch: master
-      node: "0.10"
+      node: '0.10'
