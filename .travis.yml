@@ -42,4 +42,3 @@ deploy:
     upload-dir: v1.0
     on:
       repo: bbyars/mountebank
-      node: 0.10
