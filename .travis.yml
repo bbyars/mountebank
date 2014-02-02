@@ -30,18 +30,6 @@ before_deploy:
   - ls -al packages
 
 deploy:
-  - provider: s3
-    skip_cleanup: true
-    access_key_id: AKIAIE2GUJRUIHGE2PWA
-    secret_access_key:
-      secure: SsdssebrTZo07ZS5yOOBKBzBKlQK7SUqqHI/FTlXXxf15zBPW3/dtosjrf70ysKXwRbSCqji0lEuRA5opuUS32pzoy4tMOVGbLKCzcPoiVib1DpjT4E/EXMeShLiSiHSJYgf7gA5KsfBBZrT8em6T4Gymzr2S+wGi3ZyHRjPwUw=
-    bucket: mountebank
-    local-dir: packages
-    upload-dir: v1.0
-    on:
-      repo: bbyars/mountebank
-      branch: v1.0.0
-      node: '0.10'
   - provider: heroku
     skip_cleanup: true
     api_key:
@@ -56,6 +44,18 @@ deploy:
     email: brandon.byars@gmail.com
     api_key:
       secure: AFCSL5AzR+toPEzXpI5JpvYUX3c0NFEXbU36gT+5CWUJaWn4YA+fXBcwRD2cLf1OAXkMK+zVyJa2IqTA2lMWl4c4HBEC71lkoFLGXiPXKUFwt6sGGeiSPOMUbWZ3+qp8TY+r0T6DKmlF2qglBkgLy3JMnan4hW1n6VMBIqazNKw=
+    on:
+      repo: bbyars/mountebank
+      branch: v1.0.0
+      node: '0.10'
+  - provider: s3
+    skip_cleanup: true
+    access_key_id: AKIAIE2GUJRUIHGE2PWA
+    secret_access_key:
+      secure: SsdssebrTZo07ZS5yOOBKBzBKlQK7SUqqHI/FTlXXxf15zBPW3/dtosjrf70ysKXwRbSCqji0lEuRA5opuUS32pzoy4tMOVGbLKCzcPoiVib1DpjT4E/EXMeShLiSiHSJYgf7gA5KsfBBZrT8em6T4Gymzr2S+wGi3ZyHRjPwUw=
+    bucket: mountebank
+    local-dir: packages
+    upload-dir: v1.0
     on:
       repo: bbyars/mountebank
       branch: v1.0.0
