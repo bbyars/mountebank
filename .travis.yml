@@ -28,15 +28,6 @@ before_deploy:
   - ls -al dist
 
 deploy:
-  - provider: heroku
-    skip_cleanup: true
-    api_key:
-      secure: jxAbZJqLE+mkhNJMlqQRRNqGsSkygb+Z0/AB3JghTZ1iDHfZYNTrFaGHCwOanW05MWAbrO7ntzaYQMHFlLQrqCuQfajQARUDiQWNfCpFtBszBYSrnsIoF1M7LNw00dRpQocwbGKX8Z+yaeaDS88ax6gTevKuF32Qlk9PcIyQTZw=
-    app: mountebank-dev
-    on:
-      repo: bbyars/mountebank
-      branch: master
-      node: '0.10'
   - provider: s3
     skip_cleanup: true
     access_key_id: AKIAIE2GUJRUIHGE2PWA
@@ -47,7 +38,7 @@ deploy:
     upload-dir: v1.0
     on:
       repo: bbyars/mountebank
-      branch: master
+      branch: why-does-this-causes-the-next-deploy-to-hang
       node: '0.10'
   - provider: npm
     skip_cleanup: true
@@ -66,4 +57,13 @@ deploy:
     on:
       repo: bbyars/mountebank
       branch: v1.0.0
+      node: '0.10'
+  - provider: heroku
+    skip_cleanup: true
+    api_key:
+      secure: jxAbZJqLE+mkhNJMlqQRRNqGsSkygb+Z0/AB3JghTZ1iDHfZYNTrFaGHCwOanW05MWAbrO7ntzaYQMHFlLQrqCuQfajQARUDiQWNfCpFtBszBYSrnsIoF1M7LNw00dRpQocwbGKX8Z+yaeaDS88ax6gTevKuF32Qlk9PcIyQTZw=
+    app: mountebank-dev
+    on:
+      repo: bbyars/mountebank
+      branch: master
       node: '0.10'
