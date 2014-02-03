@@ -28,6 +28,18 @@ before_deploy:
   - ls -al dist
 
 deploy:
+  - provider: s3
+    skip_cleanup: true
+    access_key_id: AKIAIE2GUJRUIHGE2PWA
+    secret_access_key:
+      secure: SsdssebrTZo07ZS5yOOBKBzBKlQK7SUqqHI/FTlXXxf15zBPW3/dtosjrf70ysKXwRbSCqji0lEuRA5opuUS32pzoy4tMOVGbLKCzcPoiVib1DpjT4E/EXMeShLiSiHSJYgf7gA5KsfBBZrT8em6T4Gymzr2S+wGi3ZyHRjPwUw=
+    bucket: mountebank
+    local-dir: packages
+    upload-dir: v1.0
+    on:
+      repo: bbyars/mountebank
+      branch: master
+      node: '0.10'
   - provider: npm
     skip_cleanup: true
     email: brandon.byars@gmail.com
@@ -45,13 +57,4 @@ deploy:
     on:
       repo: bbyars/mountebank
       branch: v1.0.0
-      node: '0.10'
-  - provider: heroku
-    skip_cleanup: true
-    api_key:
-      secure: jxAbZJqLE+mkhNJMlqQRRNqGsSkygb+Z0/AB3JghTZ1iDHfZYNTrFaGHCwOanW05MWAbrO7ntzaYQMHFlLQrqCuQfajQARUDiQWNfCpFtBszBYSrnsIoF1M7LNw00dRpQocwbGKX8Z+yaeaDS88ax6gTevKuF32Qlk9PcIyQTZw=
-    app: mountebank-dev
-    on:
-      repo: bbyars/mountebank
-      branch: master
       node: '0.10'
