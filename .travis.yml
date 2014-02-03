@@ -14,21 +14,6 @@ env:
 
 script: ./build
 
-before_deploy:
-  - echo creating distributables
-  - for FILE in `ls`; do [ $FILE != dist ] && rm -rf $FILE; done
-  - mv dist/* .
-  - rm -rf dist
-  - mkdir packages
-  - gem install fpm
-  - fpm -s npm -t deb -n mountebank -x packages .
-  - mv *.deb packages
-  - sudo apt-get install rpm
-  - fpm -s npm -t rpm -n mountebank -x packages .
-  - mv *.rpm packages
-  - ls -al
-  - ls -al packages
-
 deploy:
   - provider: npm
     skip_cleanup: true
@@ -63,7 +48,7 @@ deploy:
     secret_access_key:
       secure: SsdssebrTZo07ZS5yOOBKBzBKlQK7SUqqHI/FTlXXxf15zBPW3/dtosjrf70ysKXwRbSCqji0lEuRA5opuUS32pzoy4tMOVGbLKCzcPoiVib1DpjT4E/EXMeShLiSiHSJYgf7gA5KsfBBZrT8em6T4Gymzr2S+wGi3ZyHRjPwUw=
     bucket: mountebank
-    local-dir: packages
+    local-dir: bin
     upload-dir: v1.0
     on:
       repo: bbyars/mountebank
