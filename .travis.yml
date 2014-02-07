@@ -15,17 +15,17 @@ env:
 script: ./build
 
 before_deploy:
-  - echo creating distributables
-  - mkdir packages
-  - gem install fpm
-  - sudo apt-get install rpm
-  - fpm -s npm -t deb -n mountebank dist
-  - fpm -s npm -t rpm -n mountebank dist
-  - mv *.deb packages
-  - mv *.rpm packages
-  - ls -al
-  - ls -al packages
-  - ls -al dist
+  - #echo creating distributables
+  - #mkdir packages
+  - #gem install fpm
+  - #sudo apt-get install rpm
+  - #fpm -s npm -t deb -n mountebank dist
+  - #fpm -s npm -t rpm -n mountebank dist
+  - #mv *.deb packages
+  - #mv *.rpm packages
+  - #ls -al
+  - #ls -al packages
+  - #ls -al dist
 
 deploy:
   - provider: s3
