@@ -1,6 +1,9 @@
 Stories/Tasks
 =============
 
+- gettingStarted - show curl command not matching predicate
+- explain /mocks DELETE or switch to GET
+
 0. Fix for node 0.8
 1. Set up bare domain (mbtest.org, instead of www.mbtest.org) for heroku
   - I don't think godaddy lets me do this; may have to transfer DNS
@@ -23,6 +26,7 @@ Stories/Tasks
         - exclude matches and requests
 19. Add atom feed that only displays when --heroku is set that people can subscribe to for updates
 20. dry run all stub resolvers, even if predicates fail or is second in the responses array
+21. Allow accessing imposter by name on URL
 
 Known Bugs
 ==========
