@@ -86,8 +86,26 @@ Date: Sat, 04 Jan 2014 02:48:16 GMT
 Transfer-Encoding: chunked
 </code></pre>
 
+<p>Had we not tailored the request to matche the predicates, we would have instead received
+the default response.  For instance, let's send a request that leaves off the Content-Type:</p>
+
+<pre><code data-test-id='example'
+           data-test-step='3'
+           data-test-type='exec'>
+curl -i -X POST -d'{"optionalField": true}' http://localhost:4545/test
+</code></pre>
+
+<pre><code data-test-id='example'
+           data-test-verify-step='3'
+           data-test-ignore-lines='["^Date"]'>
+HTTP/1.1 200 OK
+connection: close
+Date: Sat, 04 Jan 2014 02:48:16 GMT
+Transfer-Encoding: chunked
+</code></pre>
+
 <p>mountebank can stub binary tcp equally well, which is convenient when your application integrates
-with a downstream system using RMI, CORBA, .NET remoting, DCOM, or one of the myriad RPC
+with a downstream system using one of the myriad binary RPC
 protocols.  Those protocols tend to rely on language-specific serialization to return an object
 graph.  Your test can use the same serialization code to create a binary stream of the object you want
 the imposter to return during an RPC call, and encode it as a base64 string.  That string is what you
@@ -96,7 +114,7 @@ string of "hello, world!" when a tcp request containing the string "sayHello" is
 could correspond to the method name serialized in the RPC call:</p>
 
 <pre><code data-test-id='example'
-           data-test-step='3'
+           data-test-step='4'
            data-test-type='exec'
            data-test-replace-pattern='localhost:2525'
            data-test-replace-with='localhost:${port}'>
@@ -121,13 +139,13 @@ curl -i -X POST -H 'Content-Type: application/json' -d@imposter.json http://loca
 but easier to script.</p>
 
 <pre><code data-test-id='example'
-           data-test-step='4'
+           data-test-step='5'
            data-test-type='exec'>
 echo "Calling sayHello over binary protocol" | nc localhost 5555
 </code></pre>
 
 <pre><code data-test-id='example'
-           data-test-verify-step='4'>
+           data-test-verify-step='5'>
 <strong class='highlight1'>hello, world!</strong>
 </code></pre>
 
@@ -135,14 +153,14 @@ echo "Calling sayHello over binary protocol" | nc localhost 5555
 both imposters, which are identified by the port number on the URL:</p>
 
 <pre><code data-test-id='example'
-           data-test-step='5'
+           data-test-step='6'
            data-test-type='exec'>
 curl -X DELETE http://localhost:2525/imposters/4545
 curl -X DELETE http://localhost:2525/imposters/5555
 </code></pre>
 
 <code class='hidden' data-test-id='example'
-                     data-test-step='6'
+                     data-test-step='7'
                      data-test-type='exec'>
 rm imposter.json
 </code>

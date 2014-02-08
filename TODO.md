@@ -1,9 +1,6 @@
 Stories/Tasks
 =============
 
-- gettingStarted - show curl command not matching predicate
-- explain /mocks DELETE or switch to GET
-
 0. Fix for node 0.8
 1. Set up bare domain (mbtest.org, instead of www.mbtest.org) for heroku
   - I don't think godaddy lets me do this; may have to transfer DNS

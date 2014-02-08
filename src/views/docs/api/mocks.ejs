@@ -71,14 +71,12 @@ Your friendly customer service department.
 </code></pre>
 
 <p>You can verify the call by making either a <code>GET</code> or
-<code>DELETE</code> call to the imposter.  The <code>DELETE</code> call is
-useful if you are done exercising the system under test, and want to shut down
-the imposter and get the requests to verify all in one step:</p>
+<code>DELETE</code> call to the imposter:</p>
 
 <pre><code data-test-id='example'
            data-test-step='3'
            data-test-type='http'>
-DELETE /imposters/4545 HTTP/1.1
+GET /imposters/4545 HTTP/1.1
 Host: localhost:<%= port %>
 Accept: application/json
 </code></pre>
@@ -87,7 +85,8 @@ Accept: application/json
            data-test-verify-step='3'
            data-test-ignore-lines='["^Date"]'>
 HTTP/1.1 200 OK
-Content-Type: application/json; charset=utf-8
+Vary: Accept
+Content-Type: application/json
 Content-Length: 912
 Date: Thu, 09 Jan 2014 02:30:31 GMT
 Connection: keep-alive
@@ -134,5 +133,13 @@ Connection: keep-alive
 
 <p>Now you can use the <code>requests</code> element in your test code to validate
 the application sent the correct information.</p>
+
+<code class='hidden' data-test-id='example'
+                     data-test-step='4'
+                     data-test-type='http'>
+DELETE /imposters/4545 HTTP/1.1
+Host: localhost:<%= port %>
+Accept: application/json
+</code>
 
 <% include ../../_footer %>
