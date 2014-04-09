@@ -44,7 +44,7 @@
     "simplesmtp": "~0.3.16",
     "mailparser": "~0.4.1",
     "json-stable-stringify": "~0.1.1",
-    "npm": "~1.3.24",
+    "npm": "~1.4.6",
     "install": "~0.1.7"
   },
   "devDependencies": {
