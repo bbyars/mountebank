@@ -37,9 +37,9 @@
     "net"
   ],
   "dependencies": {
-    "express": "~3.4.4",
+    "express": "~3.5.1",
     "q": "~1.0.0",
-    "ejs": "~0.8.5",
+    "ejs": "~1.0.0",
     "winston": "~0.7.2",
     "simplesmtp": "~0.3.16",
     "mailparser": "~0.4.1",
@@ -49,20 +49,16 @@
   },
   "devDependencies": {
     "grunt": "~0.4.1",
-    "grunt-contrib-jshint": "~0.8.0",
-    "mocha": "~1.17.1",
-    "grunt-mocha-test": "~0.9.0",
+    "grunt-contrib-jshint": "~0.10.0",
+    "mocha": "~1.18.2",
+    "grunt-mocha-test": "~0.10.0",
     "blanket": "~1.1.5",
-    "coveralls": "~2.7.0",
+    "coveralls": "~2.10.0",
     "mocha-lcov-reporter": "0.0.1",
     "w3cjs": "~0.1.21",
-    "jsdom": "~0.9.0"
+    "jsdom": "~0.10.5"
   },
   "engines": {
-    "node": ">=0.8"
-  },
-  "os": [
-    "darwin",
-    "linux"
-  ]
+    "node": "=0.10"
+  }
 }
