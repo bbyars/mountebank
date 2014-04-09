@@ -1,6 +1,7 @@
 Stories/Tasks
 =============
 
+2. coveralls.io integration broken in travis.io
 4. Have self-contained tarball for install like Andrew did, without relying on system node install
 5. add behaviors: { _behaviors: { wait: 5000 } } to responses
 6. Add MSI and Windows support
