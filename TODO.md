@@ -1,15 +1,13 @@
 Stories/Tasks
 =============
 
-0. Fix for node 0.8
-1. Set up bare domain (mbtest.org, instead of www.mbtest.org) for heroku
-  - I don't think godaddy lets me do this; may have to transfer DNS
-3. Add brew package
+4. Have self-contained tarball for install like Andrew did, without relying on system node install
 5. add behaviors: { _behaviors: { wait: 5000 } } to responses
 6. Add MSI and Windows support
 7. Add SMTP stubbing behavior (_behaviors: { accept: true })
 8. Add http attachment support
 9. Allow regex tokens from request params in response (different resolver?)
+3. Add brew package
 10. Prettier /imposters HTML page
 11. Ability to create imposter from UI for manual testers
 12. Prettier /imposter/{port} HTML page
@@ -24,6 +22,21 @@ Stories/Tasks
 19. Add atom feed that only displays when --heroku is set that people can subscribe to for updates
 20. dry run all stub resolvers, even if predicates fail or is second in the responses array
 21. Allow accessing imposter by name on URL
+22. Set up bare domain (mbtest.org, instead of www.mbtest.org) for heroku
+      - I don't think godaddy lets me do this; may have to transfer DNS
+22. Fix for node 0.8
+  - replace Buffer.toJSON with Buffer.toString('hex')
+  - but a few other unexplained errors remain
+
+
+Examples Needed
+===============
+1. REST
+2. SOAP
+3. RMI
+4. CORBA
+5. .NET Remoting
+6. DCOM
 
 Known Bugs
 ==========
