@@ -1,0 +1,44 @@
+#!/usr/bin/env sh
+
+# Build self-contained executable for mb (e.g. no node.js requirement)
+
+if [ $(uname) = 'Darwin' ]; then
+    PLATFORM=darwin
+elif [ $(uname) = 'Linux' ]; then
+    PLATFORM=linux
+else
+    echo "Unsupported platform: $(uname)"
+    exit 1
+fi
+
+MB_VERSION=$(cat dist/npm/package.json | grep '"version"' | sed -E -e 's/.*"version": "([^"]*)",/\1/')
+MB_FILENAME=mb-$MB_VERSION-$PLATFORM-x64
+
+NODE_VERSION=v0.10.26
+NODE_FILENAME=node-$NODE_VERSION-$PLATFORM-x64
+URL=http://nodejs.org/dist/$NODE_VERSION/$NODE_FILENAME.tar.gz
+
+[ -e dist/$PLATFORM ] && rm -rf dist/$PLATFORM
+mkdir dist/$MB_FILENAME
+
+(
+cd dist/$MB_FILENAME
+
+wget $URL
+tar xvf $NODE_FILENAME.tar.gz
+rm $NODE_FILENAME.tar.gz
+
+mkdir mountebank
+cp -r ../npm/ mountebank
+
+# no need to npm install since we did it already for this platform
+cp -r ../../node_modules mountebank
+
+echo "#!/usr/bin/env sh" > ./mb
+echo "$NODE_FILENAME/bin/node mountebank/bin/mb" >> ./mb
+chmod +x ./mb
+
+cd ..
+tar cvf $MB_FILENAME.tar.gz $MB_FILENAME
+)
+

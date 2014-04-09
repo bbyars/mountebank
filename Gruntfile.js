@@ -80,7 +80,7 @@ module.exports = function (grunt) {
 
         var done = this.async(),
             calledDone = false,
-            mb = spawn('dist/bin/mb', [command, '--port', port, '--pidfile', 'mb-grunt.pid', '--allowInjection']);
+            mb = spawn('dist/npm/bin/mb', [command, '--port', port, '--pidfile', 'mb-grunt.pid', '--allowInjection']);
 
         ['stdout', 'stderr'].forEach(function (stream) {
             mb[stream].on('data', function () {
@@ -138,21 +138,21 @@ module.exports = function (grunt) {
 
     grunt.registerTask('dist', 'Create trimmed down distribution directory', function () {
         var sourceFiles = ['bin', 'src', 'package.json', 'README.md', 'LICENSE', '.npmignore'],
-            baseCommand = 'for FILE in $SOURCES$; do cp -R $FILE dist; done',
+            baseCommand = 'for FILE in $SOURCES$; do cp -R $FILE dist/npm; done',
             command = baseCommand.replace('$SOURCES$', sourceFiles.join(' ')),
             done = this.async();
 
         exec('[ -e dist ] && rm -rf dist', function () {
-            exec('mkdir dist', function () {
+            exec('mkdir -p dist/npm', function () {
                 exec(command, function () {
-                    exec('rm -rf dist/src/public/images/sources', done);
+                    exec('rm -rf dist/npm/src/public/images/sources', done);
                 });
             });
         });
     });
 
     grunt.registerTask('test:unit', 'Run the unit tests', ['mochaTest:unit']);
-    grunt.registerTask('test:functional', 'Run the functional tests', ['mb:restart', 'mochaTest:functional', 'mb:stop']);
+    grunt.registerTask('test:functional', 'Run the functional tests', ['dist', 'mb:restart', 'mochaTest:functional', 'mb:stop']);
     grunt.registerTask('test', 'Run all tests', ['test:unit', 'test:functional']);
     grunt.registerTask('coverage', 'Generate code coverage', ['mochaTest:coverage']);
     grunt.registerTask('lint', 'Run all JavaScript lint checks', ['wsCheck', 'jsCheck', 'jshint']);
