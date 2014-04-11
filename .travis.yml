@@ -11,7 +11,7 @@ matrix:
 env:
   global:
   - SLOW_TEST_TIMEOUT_MS=4000
-  - secure: jksJfebMMBuyqVS5GMpZOoE+0Cg3ugwpNRB//he64wHYmKMVRdsTF+Jdizita2iDe+BhDOzazOS5afhGI4RNCNkZN+ape5RT7LutUTjNl33jxrjfxi4QpSI7COxcfWSvX/2lDyEuLQkw/0sm5kz2ga3Uxvl32kLpSSFwYmjHgyU=
+  - secure: "UR5IBCPIyydDbaiXG0YwyxMbY0riN5iSMrWQZLoTPgaAGPNBYCY56QF3BAe9ZGRxzgApmZIkZVdAQ04bhkAq7Iw8kZYP+ngy3gK0qejlyOZrjl9uPeuArkqAOrPZyUdrI31i/Q41gBjiEg3xfg/iGjtDON8L3U6+B9LYaXiJlDk="
 
 script: ./build
 after_success: bin/deploy
