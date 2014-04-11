@@ -1,0 +1,12 @@
+#!/bin/sh
+
+gem install dpl
+
+[ -e dist/heroku ] && rm -rf dist/heroku
+cp -R dist/npm dist/heroku
+cp Procfile dist/heroku
+
+(
+cd dist/heroku
+dpl --provider=heroku --api-key=$HEROKU_API_KEY --app=mountebank-dev --skip-cleanup
+)

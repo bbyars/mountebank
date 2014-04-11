@@ -11,8 +11,11 @@ matrix:
 env:
   global:
     - SLOW_TEST_TIMEOUT_MS=4000
+    - HEROKU_API_KEY:
+        secure: jxAbZJqLE+mkhNJMlqQRRNqGsSkygb+Z0/AB3JghTZ1iDHfZYNTrFaGHCwOanW05MWAbrO7ntzaYQMHFlLQrqCuQfajQARUDiQWNfCpFtBszBYSrnsIoF1M7LNw00dRpQocwbGKX8Z+yaeaDS88ax6gTevKuF32Qlk9PcIyQTZw=
 
 script: ./build
+after_success: bin/deploy
 
 before_deploy:
   - #echo creating distributables
@@ -66,5 +69,5 @@ deploy:
     app: mountebank-dev
     on:
       repo: bbyars/mountebank
-      branch: master
+      branch: ignore
       node: '0.10'
