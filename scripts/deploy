@@ -1,6 +1,8 @@
 #!/bin/sh
 
+echo "Creating distributables..."
 scripts/createDistributables
+echo "Done!"
 
 gem install dpl
 
