@@ -13,8 +13,9 @@ env:
   - SLOW_TEST_TIMEOUT_MS=4000
   - secure: "UR5IBCPIyydDbaiXG0YwyxMbY0riN5iSMrWQZLoTPgaAGPNBYCY56QF3BAe9ZGRxzgApmZIkZVdAQ04bhkAq7Iw8kZYP+ngy3gK0qejlyOZrjl9uPeuArkqAOrPZyUdrI31i/Q41gBjiEg3xfg/iGjtDON8L3U6+B9LYaXiJlDk="
 
-script: ./build
-after_success: bin/deploy
+script:
+  - ./build
+  - bin/deploy
 
 before_deploy:
   - #echo creating distributables
