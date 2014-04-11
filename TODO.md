@@ -33,6 +33,11 @@ Stories/Tasks
   - replace Buffer.toJSON with Buffer.toString('hex')
   - but a few other unexplained errors remain
 
+Docs
+====
+Diagram/glossary
+install packages
+
 
 Examples Needed
 ===============

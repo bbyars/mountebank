@@ -3,6 +3,7 @@
 set -e
 
 export REVISION=${TRAVIS_BUILD_NUMBER:-0}
+echo "TEST_KEY: $TEST_KEY"
 
 npm install
 npm install grunt-cli
