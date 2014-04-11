@@ -1,8 +1,8 @@
 #!/bin/sh
 
-${BASH_SOURCE%/*}/createDistributables
+scripts/createDistributables
 
 gem install dpl
 
-${BASH_SOURCE%/*}/deployS3
-${BASH_SOURCE%/*}/deployHeroku
+scripts/deployS3
+scripts/deployHeroku

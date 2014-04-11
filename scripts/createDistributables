@@ -7,4 +7,4 @@ cd dist
 tar cvf mountebank-v$MB_VERSION-npm.tar.gz mountebank
 )
 
-${BASH_SOURCE%/*}/createSelfContainedDistributable
+scripts/createSelfContainedDistributable
