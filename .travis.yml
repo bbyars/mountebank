@@ -10,9 +10,9 @@ matrix:
 
 env:
   global:
-    - SLOW_TEST_TIMEOUT_MS=4000
     - HEROKU_API_KEY:
         secure: jxAbZJqLE+mkhNJMlqQRRNqGsSkygb+Z0/AB3JghTZ1iDHfZYNTrFaGHCwOanW05MWAbrO7ntzaYQMHFlLQrqCuQfajQARUDiQWNfCpFtBszBYSrnsIoF1M7LNw00dRpQocwbGKX8Z+yaeaDS88ax6gTevKuF32Qlk9PcIyQTZw=
+    - SLOW_TEST_TIMEOUT_MS=4000
 
 script: ./build
 after_success: bin/deploy
