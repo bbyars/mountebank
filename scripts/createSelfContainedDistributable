@@ -12,7 +12,7 @@ else
 fi
 
 MB_VERSION=$(cat dist/mountebank/package.json | grep '"version"' | sed -E -e 's/.*"version": "([^"]*)",/\1/')
-MB_FILENAME=mb-$MB_VERSION-$PLATFORM-x64
+MB_FILENAME=mountebank-v$MB_VERSION-$PLATFORM-x64
 
 NODE_VERSION=v0.10.26
 NODE_FILENAME=node-$NODE_VERSION-$PLATFORM-x64
@@ -29,7 +29,7 @@ tar xvf $NODE_FILENAME.tar.gz
 rm $NODE_FILENAME.tar.gz
 
 mkdir mountebank
-cp -r ../npm/ mountebank
+cp -r ../mountebank/ mountebank
 
 # no need to npm install since we did it already for this platform
 cp -r ../../node_modules mountebank

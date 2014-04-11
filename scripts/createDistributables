@@ -1,0 +1,10 @@
+#!/bin/sh
+
+MB_VERSION=$(cat dist/mountebank/package.json | grep '"version"' | sed -E -e 's/.*"version": "([^"]*)",/\1/')
+
+(
+cd dist
+tar cvf mountebank-v$MB_VERSION-npm.tar.gz mountebank
+)
+
+${BASH_SOURCE%/*}/createSelfContainedDistributable
