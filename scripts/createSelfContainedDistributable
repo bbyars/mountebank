@@ -36,7 +36,7 @@ npm install --production
 cd ..
 
 echo "#!/usr/bin/env sh" > ./mb
-echo "$NODE_FILENAME/bin/node mountebank/bin/mb" >> ./mb
+echo "\$(dirname \$0)/$NODE_FILENAME/bin/node \$(dirname \$0)/mountebank/bin/mb" >> ./mb
 chmod +x ./mb
 
 cd ..
