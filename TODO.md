@@ -1,8 +1,12 @@
 Stories/Tasks
 =============
 
-2. coveralls.io integration broken in travis.io
 4. Have self-contained tarball for install like Andrew did, without relying on system node install
+1. use dpl gem in custom script instead of travis hooks (ability to run locally or in Snap)
+1. Evaluate Snap CI for manual deployment, x-platform stuff
+2. coveralls.io integration broken in travis.io
+3. get deploy stuff in scripts using dpl instead of travis hooks
+4. add ssh
 5. add behaviors: { _behaviors: { wait: 5000 } } to responses
 6. Add MSI and Windows support
 7. Add SMTP stubbing behavior (_behaviors: { accept: true })

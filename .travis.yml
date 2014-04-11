@@ -59,6 +59,7 @@ deploy:
       branch: v1.0.0
       node: '0.10'
   - provider: heroku
+    strategy: git
     skip_cleanup: true
     api_key:
       secure: jxAbZJqLE+mkhNJMlqQRRNqGsSkygb+Z0/AB3JghTZ1iDHfZYNTrFaGHCwOanW05MWAbrO7ntzaYQMHFlLQrqCuQfajQARUDiQWNfCpFtBszBYSrnsIoF1M7LNw00dRpQocwbGKX8Z+yaeaDS88ax6gTevKuF32Qlk9PcIyQTZw=
