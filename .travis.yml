@@ -11,8 +11,7 @@ matrix:
 env:
   global:
   - SLOW_TEST_TIMEOUT_MS=4000
-  - secure: YyAr5OZ2dIuWMls6AGBQnOG3bKC6hxIQrcQdSoUMbozNtBLmNlStFMvqecpdr7IF01US/vYsRqzN/yPIrb1Gqwj2q7/D7OaO3j/paLHH9kmmBvw6YQtKW9fpm7pSwDw906zpxjhM8E74W5J44HFimYi/Ej5SlLCKuKOzmbBgPHI=
-  - secure: t1ygk4PMLLAvtD/054K9ror3qsAR2/pau5lCUIe4uc+EkYVwZk7AnMJwBTVYkL4FVQUpz97WoYf7dRhLtK5KWooHkicqo+3NofoRc0yu3SC4aLXh7gfQwMYnvkoORdbdM1gpeNSGgEPDMOufpwhw0NDUa2MAo9O7/ccvFyj7CDo=
+  - secure: "BQunTTpCSGjhIYiBAXKxuuOluJIhKXdW/94GCsPlK1N8Ln20/nj/0U4qnSH7yASWQWssVG4ttm/cAbjfi+3DS4KDLtBGK1i3IoM+cJ2ADCeG7BHsqJDB0f9JyAkULjIRdkqilzR/tyD+w78pPHd7QbfplLvqUcnt7HVxw9lp4PY="
 
 script:
   - ./build
