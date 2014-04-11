@@ -2,6 +2,7 @@ Stories/Tasks
 =============
 
 4. Have self-contained tarball for install like Andrew did, without relying on system node install
+5. Optimize size of tarballs - delete node/node_modules? files in node_modules?
 1. use dpl gem in custom script instead of travis hooks (ability to run locally or in Snap)
 1. Evaluate Snap CI for manual deployment, x-platform stuff
 2. coveralls.io integration broken in travis.io

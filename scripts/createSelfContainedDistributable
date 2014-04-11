@@ -29,22 +29,17 @@ tar xvf $NODE_FILENAME.tar.gz
 rm $NODE_FILENAME.tar.gz
 
 mkdir mountebank
-echo "DEBUG: Copying mountebank dir"
-df -h
 cp -r ../mountebank/ mountebank
 
-# no need to npm install since we did it already for this platform
-echo "DEBUG: Copying node_modules"
-df -h
-cp -r ../../node_modules mountebank
+cd mountebank
+npm install --production
+cd ..
 
 echo "#!/usr/bin/env sh" > ./mb
 echo "$NODE_FILENAME/bin/node mountebank/bin/mb" >> ./mb
 chmod +x ./mb
 
 cd ..
-echo "DEBUG: tarring"
-df -h
 tar cvf $MB_FILENAME.tar.gz $MB_FILENAME
 )
 
