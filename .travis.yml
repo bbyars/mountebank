@@ -11,7 +11,10 @@ matrix:
 env:
   global:
   - SLOW_TEST_TIMEOUT_MS=4000
+  # HEROKU_API_KEY
   - secure: "BQunTTpCSGjhIYiBAXKxuuOluJIhKXdW/94GCsPlK1N8Ln20/nj/0U4qnSH7yASWQWssVG4ttm/cAbjfi+3DS4KDLtBGK1i3IoM+cJ2ADCeG7BHsqJDB0f9JyAkULjIRdkqilzR/tyD+w78pPHd7QbfplLvqUcnt7HVxw9lp4PY="
+  # AWS_ACCESS_KEY
+  - secure: "H0iUwBPOwRf3+5HGqAXWU65dJIA+4SUltehM3+jiTXsqkxeHux3WqVOouaLlw2n8WaG9y1KMXEZzed6L8p8A3I6V2M+Y1n8qNYT8y/HjCTw4d3U0tiG6ef1ysIChdBOdlwXJT5GPLlLT0y+R4IgPfHd3DMx/aiEgT3O4gGZEchs="
 
 script:
   - ./build
@@ -31,18 +34,6 @@ before_deploy:
   - #ls -al dist
 
 deploy:
-  - provider: s3
-    skip_cleanup: true
-    access_key_id: AKIAIE2GUJRUIHGE2PWA
-    secret_access_key:
-      secure: SsdssebrTZo07ZS5yOOBKBzBKlQK7SUqqHI/FTlXXxf15zBPW3/dtosjrf70ysKXwRbSCqji0lEuRA5opuUS32pzoy4tMOVGbLKCzcPoiVib1DpjT4E/EXMeShLiSiHSJYgf7gA5KsfBBZrT8em6T4Gymzr2S+wGi3ZyHRjPwUw=
-    bucket: mountebank
-    local-dir: packages
-    upload-dir: v1.0
-    on:
-      repo: bbyars/mountebank
-      branch: why-does-this-causes-the-next-deploy-to-hang
-      node: '0.10'
   - provider: npm
     skip_cleanup: true
     email: brandon.byars@gmail.com

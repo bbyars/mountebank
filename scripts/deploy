@@ -1,20 +1,8 @@
 #!/bin/sh
 
+${BASH_SOURCE%/*}/createDistributables
+
 gem install dpl
 
-if [ "`echo $TRAVIS_BRANCH | head -c1`" = "v" ]; then
-    APP=mountebank
-else
-    APP=mountebank-dev
-fi
-
-echo "Deploying to $APP..."
-
-[ -e dist/heroku ] && rm -rf dist/heroku
-cp -R dist/mountebank dist/heroku
-cp Procfile dist/heroku
-
-(
-cd dist/heroku
-dpl --provider=heroku --api-key=$HEROKU_API_KEY --app=$APP --skip-cleanup
-)
+${BASH_SOURCE%/*}/deployS3
+${BASH_SOURCE%/*}/deployHeroku
