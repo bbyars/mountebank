@@ -15,6 +15,8 @@ env:
   - secure: "BQunTTpCSGjhIYiBAXKxuuOluJIhKXdW/94GCsPlK1N8Ln20/nj/0U4qnSH7yASWQWssVG4ttm/cAbjfi+3DS4KDLtBGK1i3IoM+cJ2ADCeG7BHsqJDB0f9JyAkULjIRdkqilzR/tyD+w78pPHd7QbfplLvqUcnt7HVxw9lp4PY="
   # AWS_ACCESS_KEY
   - secure: "H0iUwBPOwRf3+5HGqAXWU65dJIA+4SUltehM3+jiTXsqkxeHux3WqVOouaLlw2n8WaG9y1KMXEZzed6L8p8A3I6V2M+Y1n8qNYT8y/HjCTw4d3U0tiG6ef1ysIChdBOdlwXJT5GPLlLT0y+R4IgPfHd3DMx/aiEgT3O4gGZEchs="
+  # NPM_API_KEY
+  - secure: "DQK4BOavLaTAEleQwj/f7tsKZmFWUItq/Az5RvGTNMpJPNrQyCp1VX3+4nAk9wDorsbdHHE9dbhUdfkzovtbyMwOtv1q0+/ULpDT7eOOxH7jZ/2LoBMEaY5EqbzWFWbLUIsirQGHFTvgFItwb84on2qjPi5pCnKTLJalgmOsk4Y="
 
 script:
   - ./build
@@ -32,14 +34,3 @@ before_deploy:
   - #ls -al
   - #ls -al packages
   - #ls -al dist
-
-deploy:
-  - provider: npm
-    skip_cleanup: true
-    email: brandon.byars@gmail.com
-    api_key:
-      secure: AFCSL5AzR+toPEzXpI5JpvYUX3c0NFEXbU36gT+5CWUJaWn4YA+fXBcwRD2cLf1OAXkMK+zVyJa2IqTA2lMWl4c4HBEC71lkoFLGXiPXKUFwt6sGGeiSPOMUbWZ3+qp8TY+r0T6DKmlF2qglBkgLy3JMnan4hW1n6VMBIqazNKw=
-    on:
-      repo: bbyars/mountebank
-      branch: v1.0.0
-      node: '0.10'
