@@ -80,7 +80,7 @@ module.exports = function (grunt) {
 
         var done = this.async(),
             calledDone = false,
-            mb = spawn('dist/npm/bin/mb', [command, '--port', port, '--pidfile', 'mb-grunt.pid', '--allowInjection']);
+            mb = spawn('dist/mountebank/bin/mb', [command, '--port', port, '--pidfile', 'mb-grunt.pid', '--allowInjection']);
 
         ['stdout', 'stderr'].forEach(function (stream) {
             mb[stream].on('data', function () {
@@ -93,11 +93,11 @@ module.exports = function (grunt) {
     });
 
     grunt.registerTask('jsCheck', 'Run JavaScript checks not covered by jshint', function () {
-        shell('bin/jsCheck', this.async());
+        shell('scripts/jsCheck', this.async());
     });
 
     grunt.registerTask('wsCheck', 'Check for inconsistent whitespace', function () {
-        shell('bin/wsCheck', this.async());
+        shell('scripts/wsCheck', this.async());
     });
 
     grunt.registerTask('version', 'Set the version number', function () {
@@ -138,14 +138,14 @@ module.exports = function (grunt) {
 
     grunt.registerTask('dist', 'Create trimmed down distribution directory', function () {
         var sourceFiles = ['bin', 'src', 'package.json', 'README.md', 'LICENSE', '.npmignore'],
-            baseCommand = 'for FILE in $SOURCES$; do cp -R $FILE dist/npm; done',
+            baseCommand = 'for FILE in $SOURCES$; do cp -R $FILE dist/mountebank; done',
             command = baseCommand.replace('$SOURCES$', sourceFiles.join(' ')),
             done = this.async();
 
         exec('[ -e dist ] && rm -rf dist', function () {
-            exec('mkdir -p dist/npm', function () {
+            exec('mkdir -p dist/mountebank', function () {
                 exec(command, function () {
-                    exec('rm -rf dist/npm/src/public/images/sources', done);
+                    exec('rm -rf dist/mountebank/src/public/images/sources', done);
                 });
             });
         });

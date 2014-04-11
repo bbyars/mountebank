@@ -11,7 +11,7 @@ else
     exit 1
 fi
 
-MB_VERSION=$(cat dist/npm/package.json | grep '"version"' | sed -E -e 's/.*"version": "([^"]*)",/\1/')
+MB_VERSION=$(cat dist/mountebank/package.json | grep '"version"' | sed -E -e 's/.*"version": "([^"]*)",/\1/')
 MB_FILENAME=mb-$MB_VERSION-$PLATFORM-x64
 
 NODE_VERSION=v0.10.26
