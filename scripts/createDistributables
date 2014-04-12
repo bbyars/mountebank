@@ -14,7 +14,7 @@ fi
 MB_VERSION=$(cat dist/mountebank/package.json | grep '"version"' | sed -E -e 's/.*"version": "([^"]*)",/\1/')
 MB_FILENAME=mountebank-v$MB_VERSION-$PLATFORM-x64
 
-function createPackage () {
+function createPackage {
     echo "#!/usr/bin/env sh" > ./postInstall
     echo "[ -e /usr/local/bin/mb ] && rm /usr/local/bin/mb" >> ./postInstall
     echo "ln -s /usr/local/$MB_FILENAME/mb /usr/local/bin/mb" >> ./postInstall
