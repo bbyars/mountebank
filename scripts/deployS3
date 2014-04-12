@@ -2,7 +2,7 @@
 
 [ -e dist/s3 ] && rm -rf dist/s3
 mkdir dist/s3
-cp dist/*.tar.gz dist/s3
+cp dist/*.{tar.gz,pkg,deb,rpm} dist/s3
 
 echo "Deploying to S3..."
 dpl --provider=s3 --access-key-id=AKIAIE2GUJRUIHGE2PWA --secret-access-key=$AWS_ACCESS_KEY \
