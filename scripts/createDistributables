@@ -52,9 +52,6 @@ cd dist/$MB_FILENAME
 
 wget $URL
 tar xvf $NODE_FILENAME.tar.gz
-cd $NODE_FILENAME/lib
-find node_modules -type d -a \( -name "test*" -o -name "doc*" -o -name "example*" -o -name "support" -o -name "html" -o -name "man" \) | xargs rm -rf
-cd ../..
 rm $NODE_FILENAME.tar.gz
 
 mkdir mountebank
@@ -62,7 +59,6 @@ cp -r ../mountebank/ mountebank
 
 cd mountebank
 npm install --production
-find node_modules -type d -a \( -name "test*" -o -name "doc*" -o -name "example*" -o -name "support" -o -name "html" -o -name "man" \) | xargs rm -rf
 cd ..
 
 echo "#!/usr/bin/env sh" > ./mb
