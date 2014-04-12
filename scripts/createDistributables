@@ -1,5 +1,7 @@
 #!/bin/sh
 
+set -e
+
 # Build self-contained executables for mb (e.g. no node.js requirement)
 
 if [ $(uname) = 'Darwin' ]; then
@@ -32,6 +34,7 @@ function createPackage {
 
     FILE_EXT=$TYPE
     [ "$TYPE" = "osxpkg" ] && FILE_EXT="pkg"
+    ls -al
     mv mountebank-$MB_VERSION.$FILE_EXT mountebank-v$MB_VERSION.$FILE_EXT
 }
 
