@@ -10,7 +10,6 @@ MB_PORT=3535 node_modules/grunt-cli/bin/grunt
 
 NODE_MINOR_VERSION=`node --version | sed -E -e 's/v[0-9]+\.([0-9]+)\.[0-9]+/\1/'`
 
-#if [ $REVISION -gt 0 -a $NODE_MINOR_VERSION -eq 10 ]; then
-    # Stuff to run only on the node 0.10 run in Travis CI
-    #node_modules/grunt-cli/bin/grunt coveralls
-#fi
+if [ $REVISION -gt 0 ]; then
+    node_modules/grunt-cli/bin/grunt coveralls
+fi
