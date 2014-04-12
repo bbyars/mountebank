@@ -20,4 +20,5 @@ env:
 
 script:
   - ./build
+  - scripts/createDistributables
   - scripts/deploy
