@@ -4,7 +4,8 @@
 var mountebank = require('../src/mountebank'),
     cli = require('../src/util/cli'),
     fs = require('fs'),
-    exec = require('child_process').exec;
+    exec = require('child_process').exec,
+    thisPackage = require('../package.json');
 
 function usage () {
     console.log('Usage: mb [command] [options...]');
@@ -15,6 +16,7 @@ function usage () {
     console.log('    --logfile FILE    file used for all debug logs (default mb.log)');
     console.log('    --loglevel LEVEL  level for terminal logs (default info)');
     console.log('    --allowInjection  set to allow JavaScript injection');
+    console.log('    --version         show the mountebank version and exit');
 }
 
 function error (message) {
@@ -61,25 +63,30 @@ var serverAt = function (options) {
 
 try {
     var defaultOptions = { port: 2525, pidfile: 'mb.pid', logfile: 'mb.log', loglevel: 'info' },
-        commandLine = cli.parse(process.argv.slice(2), defaultOptions, ['allowInjection', 'heroku']),
+        commandLine = cli.parse(process.argv.slice(2), defaultOptions, ['allowInjection', 'heroku', 'version']),
         server = serverAt(commandLine.options);
 
-    switch (commandLine.command) {
-    case 'start':
-        server.start();
-        break;
-    case 'stop':
-        server.stop();
-        break;
-    case 'restart':
-        server.restart();
-        break;
-    case 'help':
-        usage();
-        break;
-    default:
-        error("Invalid command '" + commandLine.command + "'.");
-        break;
+    if (commandLine.options.version) {
+        console.log(thisPackage.version);
+    }
+    else {
+        switch (commandLine.command) {
+        case 'start':
+            server.start();
+            break;
+        case 'stop':
+            server.stop();
+            break;
+        case 'restart':
+            server.restart();
+            break;
+        case 'help':
+            usage();
+            break;
+        default:
+            error("Invalid command '" + commandLine.command + "'.");
+            break;
+        }
     }
 }
 catch (err) {
