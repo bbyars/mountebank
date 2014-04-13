@@ -7,4 +7,5 @@ echo "Done!"
 gem install dpl
 
 scripts/deployS3
+scripts/deployNpm
 scripts/deployHeroku
