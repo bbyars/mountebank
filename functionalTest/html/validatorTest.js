@@ -16,6 +16,7 @@ describe('html validation', function () {
         '/faqs',
         '/thoughtworks',
         '/docs/gettingStarted',
+        '/docs/glossary',
         '/docs/commandLine',
         '/docs/api/overview',
         '/docs/api/mocks',

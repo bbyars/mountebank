@@ -1,7 +1,6 @@
 Stories/Tasks
 =============
 
-0. add downloads for installers
 1. Evaluate Snap CI for manual deployment, x-platform stuff
 4. add ssh
 5. add behaviors: { _behaviors: { wait: 5000 } } to responses
@@ -29,12 +28,6 @@ Stories/Tasks
 22. Fix for node 0.8
   - replace Buffer.toJSON with Buffer.toString('hex')
   - but a few other unexplained errors remain
-
-Docs
-====
-Diagram/glossary
-install packages
-
 
 Examples Needed
 ===============
