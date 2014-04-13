@@ -18,7 +18,7 @@ and record-playback through proxying.
 
 See [getting started](http://www.mbtest.org/docs/gettingStarted) guide for more information.
 
-## Installing
+## Install and Run
 
 [![NPM version](https://badge.fury.io/js/mountebank.png)](http://badge.fury.io/js/mountebank)
 
@@ -34,6 +34,19 @@ Run:
 
 After installing and running, view the docs in your browser at http://localhost:2525, or visit the
 [public site](http://www.mbtest.org/).
+
+## Goals
+
+mountebank has the following goals:
+
+* Trivial to get started
+    * mountebank is easy to install, without any platform dependencies.  mountebank aims for fun and comprehensive documentation with lots of examples, and a nice UI that lets you explore the API interactively.
+* A platform, not just a tool
+    * mountebank aims to be fully cross-platform, with native language bindings.  Servers are extensible through scripting.
+* Powerful
+    * mountebank is the only stubbing tool that is non-modal and multi-protocol.  mountebank does not just pretend to be a server; he spins up real servers.
+
+Not all of mountebank's goals are currently implemented, but fear not, for he has a team of top-notch open source developers, and they are legion.
 
 ## Support
 
