@@ -5,7 +5,7 @@
 <p><b>Install:</b></p>
 
 <pre><code>
-npm install -g mountebank
+npm install -g mountebank --production
 </code></pre>
 
 <p>The option above requires <a href='http://nodejs.org/api/'>node.js</a> 0.10 to already be
@@ -60,6 +60,10 @@ happy, and therefore he has additional installation options, with more coming so
     <td>source tarball if you just want to run from source.</td>
   </tr>
 </table>
+
+<p>Better support for Windows is coming soon.  Right now, using <code>npm</code> is your best bet.  Make
+sure to install using the <code>--production</code> flag, as some test dependencies fail to install on
+Windows.</p>
 
 <p><b>Run:</b></p>
 

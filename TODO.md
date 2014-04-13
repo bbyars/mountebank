@@ -1,6 +1,7 @@
 Stories/Tasks
 =============
 
+0. Windows
 1. Evaluate Snap CI for manual deployment, x-platform stuff
 4. add ssh
 5. add behaviors: { _behaviors: { wait: 5000 } } to responses
@@ -25,9 +26,6 @@ Stories/Tasks
 21. Allow accessing imposter by name on URL
 22. Set up bare domain (mbtest.org, instead of www.mbtest.org) for heroku
       - I don't think godaddy lets me do this; may have to transfer DNS
-22. Fix for node 0.8
-  - replace Buffer.toJSON with Buffer.toString('hex')
-  - but a few other unexplained errors remain
 
 Examples Needed
 ===============
