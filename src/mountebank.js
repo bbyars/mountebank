@@ -1,6 +1,8 @@
 'use strict';
 
 var express = require('express'),
+    errorHandler = require('errorhandler'),
+    bodyParser = require('body-parser'),
     path = require('path'),
     middleware = require('./util/middleware'),
     homeController = require('./controllers/homeController'),
@@ -34,9 +36,9 @@ function create (options) {
     app.use(middleware.useAbsoluteUrls(options.port));
     app.use(middleware.logger(logger, ':method :url'));
     app.use(middleware.globals({ heroku: options.heroku, port: options.port, version: thisPackage.version }));
-    app.use(express.json());
+    app.use(bodyParser());
     app.use(express.static(path.join(__dirname, 'public')));
-    app.use(express.errorHandler());
+    app.use(errorHandler());
 
     app.disable('etag');
     app.disable('x-powered-by');
