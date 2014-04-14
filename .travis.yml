@@ -19,4 +19,4 @@ env:
   - secure: "J2+0+UPxfKqCCPU+jq/gGdTSfVUiRzG4ywi+Obhu/7Pvwmor4uCQCd6DwrJFiowFg79cOJHpozZG1ZpNpVBJEys7EDD6qPrilqg1u8xcK0mIvmTMJi77psfaERnXy/LybZy3svTtXwBmyOq5ms7mh/fLhMNplGAuBQ8PpFJ20k8="
 
 script:
-  - ./build && /bin/bash scripts/createDistributables && scripts/deploy
+  - ./build && scripts/createDistributables && scripts/deploy
