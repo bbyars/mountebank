@@ -44,7 +44,7 @@ NODE_VERSION=`node -v`
 NODE_FILENAME=node-$NODE_VERSION-$PLATFORM-x64
 URL=http://nodejs.org/dist/$NODE_VERSION/$NODE_FILENAME.tar.gz
 
-[ -e dist/$PLATFORM ] && rm -rf dist/$PLATFORM
+[ -e dist/$MB_FILENAME ] && rm -rf dist/$MB_FILENAME
 mkdir dist/$MB_FILENAME
 
 (
@@ -86,5 +86,3 @@ else
     createPackage rpm
 fi
 )
-
-
