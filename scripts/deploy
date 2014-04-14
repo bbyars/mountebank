@@ -1,5 +1,7 @@
 #!/bin/sh
 
+set -e
+
 echo "Creating distributables..."
 scripts/createDistributables
 echo "Done!"
