@@ -1,14 +1,6 @@
 #!/bin/sh
 
-gem install dpl
-
-if [ "`echo $TRAVIS_BRANCH | head -c1`" = "v" ]; then
-    APP=mountebank
-else
-    APP=mountebank-dev
-fi
-
-echo "Deploying to $APP..."
+echo "Deploying to heroku..."
 
 [ -e dist/heroku ] && rm -rf dist/heroku
 cp -R dist/mountebank dist/heroku
@@ -16,5 +8,6 @@ cp Procfile dist/heroku
 
 (
 cd dist/heroku
-dpl --provider=heroku --api-key=$HEROKU_API_KEY --app=$APP --skip-cleanup
+dpl --provider=heroku --api-key=$HEROKU_API_KEY --app=mountebank-dev --skip-cleanup
+dpl --provider=heroku --api-key=$HEROKU_API_KEY --app=mountebank --skip-cleanup --tags
 )

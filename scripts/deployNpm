@@ -1,9 +1,7 @@
 #!/bin/sh
 
-if [ "`echo $TRAVIS_BRANCH | head -c1`" = "v" ]; then
-    echo "Deploying to npm..."
-    (
-    cd dist/mountebank
-    dpl --provider=npm --email=brandon.byars@gmail.com --api-key=$NPM_API_KEY --skip-cleanup
-    )
-fi
+echo "Deploying to npm..."
+(
+cd dist/mountebank
+dpl --provider=npm --email=brandon.byars@gmail.com --api-key=$NPM_API_KEY --skip-cleanup --tags
+)
