@@ -26,6 +26,7 @@ createPackage () {
     echo "rm /usr/local/bin/mb" >> ./postUninstall
     chmod +x ./postUninstall
 
+    ls -al dist
     TYPE=$1
     fpm -s dir -t $TYPE -n mountebank -v $MB_VERSION --license MIT --category test \
         --description "over the wire test doubles" --url "http://www.mbtest.org" \
@@ -44,6 +45,7 @@ NODE_VERSION=`node -v`
 NODE_FILENAME=node-$NODE_VERSION-$PLATFORM-x64
 URL=http://nodejs.org/dist/$NODE_VERSION/$NODE_FILENAME.tar.gz
 
+ls -al dist
 [ -e dist/$MB_FILENAME ] && rm -rf dist/$MB_FILENAME
 mkdir dist/$MB_FILENAME
 
