@@ -9,5 +9,9 @@ cp Procfile dist/heroku
 (
 cd dist/heroku
 dpl --provider=heroku --api-key=$HEROKU_API_KEY --app=mountebank-dev --skip-cleanup
-dpl --provider=heroku --api-key=$HEROKU_API_KEY --app=mountebank --skip-cleanup --tags
+
+if [ -n "`git describe --tags --exact-match 2>/dev/null`" ]; then
+    dpl --provider=heroku --api-key=$HEROKU_API_KEY --app=mountebank --skip-cleanup
+fi
+cd ..
 )

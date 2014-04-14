@@ -3,5 +3,8 @@
 echo "Deploying to npm..."
 (
 cd dist/mountebank
-dpl --provider=npm --email=brandon.byars@gmail.com --api-key=$NPM_API_KEY --skip-cleanup --tags
+if [ -n "`git describe --tags --exact-match 2>/dev/null`" ]; then
+    dpl --provider=npm --email=brandon.byars@gmail.com --api-key=$NPM_API_KEY --skip-cleanup
+fi
+cd ..
 )

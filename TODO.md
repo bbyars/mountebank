@@ -1,6 +1,10 @@
 Stories/Tasks
 =============
 
+npm deploy failing
+ - running when it shouldn't (not on a tag)
+ - failing login
+0. add github releases
 0. Windows
 1. Evaluate Snap CI for manual deployment, x-platform stuff
 4. add ssh
