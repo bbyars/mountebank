@@ -36,21 +36,18 @@ createPackage () {
 }
 
 # base npm tarball
-(
 cd dist
 tar cvf mountebank-v$MB_VERSION-npm.tar.gz mountebank
-)
 
 NODE_VERSION=`node -v`
 NODE_FILENAME=node-$NODE_VERSION-$PLATFORM-x64
 URL=http://nodejs.org/dist/$NODE_VERSION/$NODE_FILENAME.tar.gz
 
 ls -al dist
-[ -e dist/$MB_FILENAME ] && rm -rf dist/$MB_FILENAME
-mkdir dist/$MB_FILENAME
+[ -e $MB_FILENAME ] && rm -rf $MB_FILENAME
+mkdir $MB_FILENAME
 
-(
-cd dist/$MB_FILENAME
+cd $MB_FILENAME
 
 wget $URL
 tar xvf $NODE_FILENAME.tar.gz
@@ -87,4 +84,3 @@ else
     createPackage deb
     createPackage rpm
 fi
-)
