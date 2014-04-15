@@ -1,0 +1,63 @@
+<% include ../_header %>
+
+<h1>Installation Options</h1>
+
+<p>mountebank knows first-hand how frustrating it is to be working in .NET and have to
+  fiddle with a JDK just to get a testing library working, and the hassle of setting up
+  ruby in your build pipeline to compile CSS even though you're on a Java project.  mountebank
+  wants you to be happy, and therefore he has experimental support for additional installation
+  options, with more coming soon.</p>
+
+<table>
+  <tr>
+    <th>Option</th>
+    <th>node.js required?</th>
+    <th>sudo required?</th>
+    <th>links</th>
+    <th>Description</th>
+  </tr>
+  <tr>
+    <td>Self-contained tarball</td>
+    <td>No</td>
+    <td>No</td>
+    <td>
+      <ul>
+        <li><a href="https://s3.amazonaws.com/mountebank/v1.0/mountebank-v<%= version %>-darwin-x64.tar.gz">osx</a></li>
+        <li><a href="https://s3.amazonaws.com/mountebank/v1.0/mountebank-v<%= version %>-linux-x64.tar.gz">linux</a></li>
+      </ul>
+    </td>
+    <td>Simply unpack and run <code>mb</code> from inside</td>
+  </tr>
+  <tr>
+    <td>OS-specific packages</td>
+    <td>No</td>
+    <td>Yes</td>
+    <td>
+      <ul>
+        <li><a href="https://s3.amazonaws.com/mountebank/v1.0/mountebank-v<%= version %>.pkg">pkg</a></li>
+        <li><a href="https://s3.amazonaws.com/mountebank/v1.0/mountebank-<%= version %>-1.x86_64.rpm">rpm</a></li>
+        <li><a href="https://s3.amazonaws.com/mountebank/v1.0/mountebank_<%= version %>_amd64.deb">deb</a></li>
+      </ul>
+    </td>
+    <td>Puts <code>mb</code> at <code>/usr/local/bin</code>, which is generally in the <code>PATH</code>.</td>
+  </tr>
+  <tr>
+    <td>source tarball</td>
+    <td>Yes</td>
+    <td>No</td>
+    <td>
+      <ul>
+        <li><a href="https://s3.amazonaws.com/mountebank/v1.0/mountebank-v<%= version %>-npm.tar.gz">mb</a></li>
+      </ul>
+    </td>
+    <td>source tarball if you roll that way.</td>
+  </tr>
+</table>
+
+<h2>Windows</h2>
+
+<p>Better support for Windows is coming soon.  Right now, using <code>npm</code> is your best bet.  Make
+  sure to install using the <code>--production</code> flag, as some test dependencies fail to install on
+  Windows.</p>
+
+<% include ../_footer %>

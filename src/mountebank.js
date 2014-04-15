@@ -79,6 +79,7 @@ function create (options) {
         '/faqs',
         '/thoughtworks',
         '/docs/gettingStarted',
+        '/docs/install',
         '/docs/glossary',
         '/docs/commandLine',
         '/docs/api/overview',

@@ -24,7 +24,7 @@ See [getting started](http://www.mbtest.org/docs/gettingStarted) guide for more 
 
 Install:
 
-    npm install -g mountebank
+    npm install -g mountebank --production
 
 Run:
 
