@@ -1,5 +1,7 @@
 #!/bin/sh
 
+set -e
+
 echo "Deploying to heroku..."
 
 [ -e dist/heroku ] && rm -rf dist/heroku
