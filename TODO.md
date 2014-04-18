@@ -1,6 +1,7 @@
 Stories/Tasks
 =============
 
+0. get buildpack for heroku mountebank working; remove --stategy=git (breaks versioning on site)
 0. add behaviors: { _behaviors: { wait: 5000 } } to responses
 0. add command line flag to not record requests and matches
     - someone wants to use mb for perf testing, don't want the memory leak
