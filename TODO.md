@@ -1,14 +1,13 @@
 Stories/Tasks
 =============
 
-npm deploy failing
- - running when it shouldn't (not on a tag)
- - failing login
+0. add behaviors: { _behaviors: { wait: 5000 } } to responses
+0. add command line flag to not record requests and matches
+    - someone wants to use mb for perf testing, don't want the memory leak
 0. add github releases
 0. Windows
 1. Evaluate Snap CI for manual deployment, x-platform stuff
 4. add ssh
-5. add behaviors: { _behaviors: { wait: 5000 } } to responses
 6. Add MSI and Windows support
 7. Add SMTP stubbing behavior (_behaviors: { accept: true })
 8. Add http attachment support
