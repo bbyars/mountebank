@@ -13,7 +13,10 @@ cd dist/heroku
 dpl --provider=heroku --api-key=$HEROKU_API_KEY --app=mountebank-dev --skip-cleanup
 
 if [ -n "`git describe --tags --exact-match 2>/dev/null`" ]; then
-    dpl --provider=heroku --api-key=$HEROKU_API_KEY --app=mountebank --skip-cleanup --strategy=git
+    # I've occasionally had to temporarily switch to --strategy=git to fix an unknown
+    # problem with the buildpack.  This breaks the versioning, so it's important to
+    # switch back after the problem is fixed.
+    dpl --provider=heroku --api-key=$HEROKU_API_KEY --app=mountebank --skip-cleanup
 fi
 cd ..
 )
