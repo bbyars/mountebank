@@ -16,7 +16,7 @@ env:
   # AWS_ACCESS_KEY
   - secure: "H0iUwBPOwRf3+5HGqAXWU65dJIA+4SUltehM3+jiTXsqkxeHux3WqVOouaLlw2n8WaG9y1KMXEZzed6L8p8A3I6V2M+Y1n8qNYT8y/HjCTw4d3U0tiG6ef1ysIChdBOdlwXJT5GPLlLT0y+R4IgPfHd3DMx/aiEgT3O4gGZEchs="
   # NPM_API_KEY
-  - secure: "J2+0+UPxfKqCCPU+jq/gGdTSfVUiRzG4ywi+Obhu/7Pvwmor4uCQCd6DwrJFiowFg79cOJHpozZG1ZpNpVBJEys7EDD6qPrilqg1u8xcK0mIvmTMJi77psfaERnXy/LybZy3svTtXwBmyOq5ms7mh/fLhMNplGAuBQ8PpFJ20k8="
+  - secure: "pbVyYwERkTpwkpFTqXjwsMkNpulV0ZV1HbBZeEBhpWY7MjIjjASd/kDwDBr4ONuiicOQ3ToL4MeKxgI2bxjQdhDhfBvMt5XZV6V8X8xktwZQsnkc9klD0qr5raQ6MZdWQzx4nlsgFLHO9k0w8D/EzQbz25E4KAicpaYYwejyig8="
 
 script:
   - ./build && scripts/createDistributables && scripts/deploy

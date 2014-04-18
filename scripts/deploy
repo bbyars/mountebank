@@ -5,5 +5,5 @@ set -e
 gem install dpl
 
 scripts/deployS3
-#scripts/deployNpm  # login failure after multiple travis encrypt NPM_API_KEY=... calls
+scripts/deployNpm
 scripts/deployHeroku
