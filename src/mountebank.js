@@ -19,10 +19,10 @@ function create (options) {
     var app = express(),
         imposters = {},
         protocols = {
-            'tcp': require('./models/tcp/tcpServer').initialize(options.allowInjection),
-            'http': require('./models/http/httpServer').initialize(options.allowInjection),
-            'https': require('./models/https/httpsServer').initialize(options.allowInjection),
-            'smtp': require('./models/smtp/smtpServer').initialize()
+            'tcp': require('./models/tcp/tcpServer').initialize(options.allowInjection, options.mock),
+            'http': require('./models/http/httpServer').initialize(options.allowInjection, options.mock),
+            'https': require('./models/https/httpsServer').initialize(options.allowInjection, options.mock),
+            'smtp': require('./models/smtp/smtpServer').initialize(options.mock)
         },
         logger = ScopedLogger.create(winston, util.format('[mb:%s] ', options.port)),
         impostersController = ImpostersController.create(protocols, imposters, Imposter, logger),

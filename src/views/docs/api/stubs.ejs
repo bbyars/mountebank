@@ -9,7 +9,8 @@ currently support changing stubs once the imposter has been created.</p>
 <p>mountebank associates both a list of <em>responses</em> and a list of
 <a href='/docs/api/predicates'><em>predicates</em></a> with each stub.  Since mountebank
 knows that setting up stubs can sometimes be difficult, he adds a <em>matches</em>
-element each time the stub is used, which you can see by issuing a <code>GET</code> or
+element each time the stub is used if you start <code>mb</code> with the <code>--mock</code>
+command line flag.  You can retrieve the <em>matches</em> by issuing a <code>GET</code> or
 <code>DELETE</code> to the imposter.</p>
 
 <p>It doesn't make sense to create an empty array of responses, but each response is under no
@@ -156,7 +157,9 @@ Transfer-Encoding: chunked
 </code></pre>
 
 <p>Now let's see the <code>matches</code> elements that mountebank
-has saved for you:</p>
+has saved for you (remember you have to run <code>mb</code> with the
+<code>--mock</code> command line flag to see the <code>matches</code>
+array):</p>
 
 <pre><code data-test-id='example'
            data-test-step='4'

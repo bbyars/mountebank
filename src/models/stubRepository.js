@@ -3,9 +3,8 @@
 var predicates = require('./predicates'),
     Q = require('q');
 
-function create (resolver, encoding) {
+function create (resolver, recordMatches, encoding) {
     var stubs = [];
-
     function trueForAll (list, predicate) {
         // we call map before calling every so we make sure to call every
         // predicate during dry run validation rather than short-circuiting
@@ -51,8 +50,10 @@ function create (resolver, encoding) {
                     request: request,
                     response: response
                 };
-            stub.matches = stub.matches || [];
-            stub.matches.push(match);
+            if (recordMatches) {
+                stub.matches = stub.matches || [];
+                stub.matches.push(match);
+            }
             deferred.resolve(response);
         }, deferred.reject);
 

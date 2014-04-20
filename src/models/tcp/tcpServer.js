@@ -28,7 +28,7 @@ function createServer (logger, options) {
         },
         proxy = Proxy.create(logger, encoding),
         resolver = StubResolver.create(proxy, postProcess),
-        stubs = StubRepository.create(resolver, encoding),
+        stubs = StubRepository.create(resolver, options.recordRequests, encoding),
         result = inherit.from(events.EventEmitter, {
             errorHandler: function (error, container) {
                 container.socket.write(JSON.stringify({ errors: [error] }), 'utf8');
@@ -85,7 +85,7 @@ function createServer (logger, options) {
     return result;
 }
 
-function initialize (allowInjection) {
+function initialize (allowInjection, recordRequests) {
     var implementation = {
             protocolName: 'tcp',
             createServer: createServer,
@@ -94,7 +94,7 @@ function initialize (allowInjection) {
 
     return {
         name: implementation.protocolName,
-        create: AbstractServer.implement(implementation, logger).create,
+        create: AbstractServer.implement(implementation, recordRequests, logger).create,
         Validator: { create: combinators.curry(TcpValidator.create, allowInjection) }
     };
 }

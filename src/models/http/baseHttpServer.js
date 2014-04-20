@@ -31,10 +31,10 @@ function setup (protocolName, createNodeServer) {
         return response;
     }
 
-    function createServer (logger) {
+    function createServer (logger, options) {
         var proxy = Proxy.create(logger),
             resolver = StubResolver.create(proxy, postProcess),
-            stubs = StubRepository.create(resolver),
+            stubs = StubRepository.create(resolver, options.recordRequests, 'utf8'),
             result = inherit.from(events.EventEmitter, {
                 errorHandler: function (error, container) {
                     container.response.writeHead(500, { 'content-type': 'application/json' });
@@ -78,7 +78,7 @@ function setup (protocolName, createNodeServer) {
         return result;
     }
 
-    function initialize (allowInjection) {
+    function initialize (allowInjection, recordRequests) {
         var implementation = {
                 protocolName: protocolName,
                 createServer: createServer,
@@ -87,7 +87,7 @@ function setup (protocolName, createNodeServer) {
 
         return {
             name: protocolName,
-            create: AbstractServer.implement(implementation, logger).create,
+            create: AbstractServer.implement(implementation, recordRequests, logger).create,
             Validator: {
                 create: function () {
                     return DryRunValidator.create({

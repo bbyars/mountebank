@@ -11,7 +11,7 @@ var assert = require('assert'),
 
 describe('AbstractServer', function () {
     describe('#create', function () {
-        var logger, implementation, Server, baseServer;
+        var logger, implementation, baseServer;
 
         function assertLogged (level, message) {
             assert.ok(logger.calls[level].indexOf(message) >= 0, JSON.stringify(logger.calls));
@@ -33,32 +33,36 @@ describe('AbstractServer', function () {
                 formatRequest: mock(),
                 formatResponse: mock(),
                 errorHandler: mock(),
-                respond: mock().returns(Q(true)),
+                respond: mock().returns(Q(true))
             });
             implementation = {
                 protocolName: '',
                 createServer: mock().returns(baseServer),
                 Request: { createFrom: mock().returns(Q(true)) }
             };
-            Server = AbstractServer.implement(implementation, logger);
         });
 
         promiseIt('should log when the server binds to the port', function () {
+            var Server = AbstractServer.implement(implementation, true, logger);
             implementation.protocolName = 'test';
+
             return Server.create({ port: 3000 }).then(function () {
                 assertLogged('info', '[test:3000] Open for business...');
             });
         });
 
         promiseIt('should auto-assign port if none passed in', function () {
+            var Server = AbstractServer.implement(implementation, true, logger);
             baseServer.listen = mock().returns(Q(3000));
             implementation.protocolName = 'test';
+
             return Server.create({}).then(function () {
                 assertLogged('info', '[test:3000] Open for business...');
             });
         });
 
         promiseIt('should log when the server is closed', function () {
+            var Server = AbstractServer.implement(implementation, true, logger);
             implementation.protocolName = 'test';
             baseServer.close = function (callback) { callback(); };
 
@@ -69,6 +73,7 @@ describe('AbstractServer', function () {
         });
 
         promiseIt('should delegate addStub to baseServer', function () {
+            var Server = AbstractServer.implement(implementation, true, logger);
             baseServer.addStub = mock();
 
             return Server.create({ port: 3000 }).then(function (server) {
@@ -78,6 +83,7 @@ describe('AbstractServer', function () {
         });
 
         promiseIt('should delegate to server metadata', function () {
+            var Server = AbstractServer.implement(implementation, true, logger);
             baseServer.metadata.returns('metadata');
 
             return Server.create({ port: 3000 }).then(function (server) {
@@ -86,6 +92,7 @@ describe('AbstractServer', function () {
         });
 
         promiseIt('should add options.name to server metadata', function () {
+            var Server = AbstractServer.implement(implementation, true, logger);
             baseServer.metadata.returns({ key: 'value' });
 
             return Server.create({ port: 3000, name: 'name' }).then(function (server) {
@@ -97,7 +104,8 @@ describe('AbstractServer', function () {
         });
 
         promiseIt('should log when connection established', function () {
-            var socket = inherit.from(events.EventEmitter, { remoteAddress: 'host', remotePort: 'port' });
+            var Server = AbstractServer.implement(implementation, true, logger),
+                socket = inherit.from(events.EventEmitter, { remoteAddress: 'host', remotePort: 'port' });
             implementation.protocolName = 'test';
 
             return Server.create({ port: 3000 }).then(function () {
@@ -107,7 +115,8 @@ describe('AbstractServer', function () {
         });
 
         promiseIt('should log socket errors', function () {
-            var socket = inherit.from(events.EventEmitter, { remoteAddress: 'host', remotePort: 'port' });
+            var Server = AbstractServer.implement(implementation, true, logger),
+                socket = inherit.from(events.EventEmitter, { remoteAddress: 'host', remotePort: 'port' });
             implementation.protocolName = 'test';
 
             return Server.create({ port: 3000 }).then(function () {
@@ -118,7 +127,8 @@ describe('AbstractServer', function () {
         });
 
         promiseIt('should log socket end and close', function () {
-            var socket = inherit.from(events.EventEmitter, { remoteAddress: 'host', remotePort: 'port' });
+            var Server = AbstractServer.implement(implementation, true, logger),
+                socket = inherit.from(events.EventEmitter, { remoteAddress: 'host', remotePort: 'port' });
             implementation.protocolName = 'test';
 
             return Server.create({ port: 3000 }).then(function () {
@@ -131,7 +141,8 @@ describe('AbstractServer', function () {
         });
 
         promiseIt('should log short request', function () {
-            var socket = inherit.from(events.EventEmitter, { remoteAddress: 'host', remotePort: 'port' });
+            var Server = AbstractServer.implement(implementation, true, logger),
+                socket = inherit.from(events.EventEmitter, { remoteAddress: 'host', remotePort: 'port' });
             implementation.protocolName = 'test';
             baseServer.formatRequestShort.returns('request');
 
@@ -142,7 +153,8 @@ describe('AbstractServer', function () {
         });
 
         promiseIt('should log full request', function () {
-            var socket = inherit.from(events.EventEmitter, { remoteAddress: 'host', remotePort: 'port' });
+            var Server = AbstractServer.implement(implementation, true, logger),
+                socket = inherit.from(events.EventEmitter, { remoteAddress: 'host', remotePort: 'port' });
             implementation.protocolName = 'test';
             baseServer.formatRequest.returns('full request');
 
@@ -153,7 +165,8 @@ describe('AbstractServer', function () {
             });
         });
 
-        promiseIt('should record simplified requests', function () {
+        promiseIt('should record simplified requests if recordRequests is true', function () {
+            var Server = AbstractServer.implement(implementation, true, logger);
             implementation.Request.createFrom.returns(Q('simple request'));
 
             return Server.create({ port: 3000 }).then(function (server) {
@@ -163,7 +176,19 @@ describe('AbstractServer', function () {
             });
         });
 
+        promiseIt('should not record simplified requests if recordRequests is false', function () {
+            var Server = AbstractServer.implement(implementation, false, logger);
+            implementation.Request.createFrom.returns(Q('simple request'));
+
+            return Server.create({ port: 3000 }).then(function (server) {
+                baseServer.listeners('request')[0]({}, {}, function () {
+                    assert.deepEqual(server.requests, []);
+                });
+            });
+        });
+
         promiseIt('should call the base server to respond', function () {
+            var Server = AbstractServer.implement(implementation, true, logger);
             implementation.Request.createFrom.returns(Q('simple request'));
 
             return Server.create({ port: 3000 }).then(function () {
@@ -174,7 +199,8 @@ describe('AbstractServer', function () {
         });
 
         promiseIt('should log response', function () {
-            var socket = inherit.from(events.EventEmitter, { remoteAddress: 'host', remotePort: 'port' });
+            var Server = AbstractServer.implement(implementation, true, logger),
+                socket = inherit.from(events.EventEmitter, { remoteAddress: 'host', remotePort: 'port' });
             implementation.protocolName = 'test';
             baseServer.formatResponse.returns('response');
 
@@ -186,7 +212,8 @@ describe('AbstractServer', function () {
         });
 
         promiseIt('should log error and call server error handler if respond fails', function () {
-            var socket = inherit.from(events.EventEmitter, { remoteAddress: 'host', remotePort: 'port' });
+            var Server = AbstractServer.implement(implementation, true, logger),
+                socket = inherit.from(events.EventEmitter, { remoteAddress: 'host', remotePort: 'port' });
             implementation.protocolName = 'test';
             baseServer.respond = function () { throw 'BOOM'; };
 

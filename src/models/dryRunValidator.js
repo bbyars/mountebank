@@ -18,7 +18,7 @@ function create (options) {
                 error: logger.error
             },
             resolver = StubResolver.create(dryRunProxy, combinators.identity),
-            stubRepository = options.StubRepository.create(resolver, encoding),
+            stubRepository = options.StubRepository.create(resolver, false, encoding),
             clone = helpers.clone(stub),
             testRequest = options.testRequest;
 

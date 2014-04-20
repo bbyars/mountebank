@@ -74,7 +74,7 @@ describe('stubRepository', function () {
 
         promiseIt('should record matches', function () {
             var resolver = mock().returns(Q()),
-                stubs = StubRepository.create({ resolve: resolver }),
+                stubs = StubRepository.create({ resolve: resolver }, true),
                 logger = { debug: mock() },
                 matchingRequest = { field: 'value' },
                 mismatchingRequest = { field: 'other' },
@@ -87,6 +87,23 @@ describe('stubRepository', function () {
             }).then(function () {
                 assert.strictEqual(stub.matches.length, 1);
                 assert.deepEqual(stub.matches[0].request, matchingRequest);
+            });
+        });
+
+        promiseIt('should not record matches if recordMatches is false', function () {
+            var resolver = mock().returns(Q()),
+                stubs = StubRepository.create({ resolve: resolver }, false),
+                logger = { debug: mock() },
+                matchingRequest = { field: 'value' },
+                mismatchingRequest = { field: 'other' },
+                stub = { predicates: [{ equals: { field: 'value' }}], responses: ['first response'] };
+
+            stubs.addStub(stub);
+
+            return stubs.resolve(matchingRequest, logger).then(function () {
+                return stubs.resolve(mismatchingRequest, logger);
+            }).then(function () {
+                assert.ok(!stub.hasOwnProperty('matches'));
             });
         });
     });

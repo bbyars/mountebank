@@ -27,7 +27,8 @@
     <td>mountebank stores the process id (PID) in a file, which is used by the
       <code>stop</code> and <code>restart</code> commands.  You would only specify
       this if you run two instances of <code>mb</code> from the same working directory,
-      which is a niche requirement, but the mountebank build needs that capability.</td>
+      or if you want to be able to stop <code>mb</code> from a different directory
+      than you started it in.</td>
     <td><code>mb.pid</code></td>
   </tr>
   <tr>
@@ -51,6 +52,14 @@
       but they are disabled by default.  Including this parameter will enable them,
       which are <code>eval</code>'d in.  See the <a href='/docs/api/injection'>injection</a>
       page for more details.</td>
+    <td><code>false</code></td>
+  </tr>
+  <tr>
+    <td><code>--mock</code></td>
+    <td>mountebank supports mock verification and stub debugging by remembering the requests
+      made against each stub.  By default, this functionality is turned off because it is
+      a memory leak for any long running <code>mb</code> process, as requests are never
+      forgotten. See the <a href='/docs/api/mocks'>mocks</a> page for more details.</td>
     <td><code>false</code></td>
   </tr>
   <tr>

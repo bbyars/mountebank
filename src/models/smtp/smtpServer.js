@@ -43,7 +43,7 @@ function createServer () {
     return result;
 }
 
-function initialize () {
+function initialize (recordRequests) {
     var implementation = {
             protocolName: 'smtp',
             createServer: createServer,
@@ -52,7 +52,7 @@ function initialize () {
 
     return {
         name: implementation.protocolName,
-        create: AbstractServer.implement(implementation, logger).create
+        create: AbstractServer.implement(implementation, recordRequests, logger).create
     };
 }
 

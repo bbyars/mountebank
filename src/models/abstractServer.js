@@ -7,9 +7,11 @@ var Q = require('q'),
     Domain = require('domain'),
     errors = require('../util/errors');
 
-function implement (implementation, baseLogger) {
+function implement (implementation, recordRequests, baseLogger) {
 
     function create (options) {
+        options.recordRequests = recordRequests;
+
         function scopeFor (port) {
             var scope = util.format('%s:%s', implementation.protocolName, port);
             if (options.name) {
@@ -53,7 +55,9 @@ function implement (implementation, baseLogger) {
             domain.run(function () {
                 implementation.Request.createFrom(request).then(function (simpleRequest) {
                     logger.debug('%s => %s', clientName, JSON.stringify(server.formatRequest(simpleRequest)));
-                    requests.push(simpleRequest);
+                    if (recordRequests) {
+                        requests.push(simpleRequest);
+                    }
                     return server.respond(simpleRequest, request);
                 }).done(function (response) {
                     if (response) {

@@ -16,6 +16,7 @@ function usage () {
     console.log('    --logfile FILE    file used for all debug logs (default mb.log)');
     console.log('    --loglevel LEVEL  level for terminal logs (default info)');
     console.log('    --allowInjection  set to allow JavaScript injection');
+    console.log('    --mock            remember requests for mock verification and stub debugging');
     console.log('    --version         show the mountebank version and exit');
 }
 
@@ -63,7 +64,7 @@ var serverAt = function (options) {
 
 try {
     var defaultOptions = { port: 2525, pidfile: 'mb.pid', logfile: 'mb.log', loglevel: 'info' },
-        commandLine = cli.parse(process.argv.slice(2), defaultOptions, ['allowInjection', 'heroku', 'version']),
+        commandLine = cli.parse(process.argv.slice(2), defaultOptions, ['allowInjection', 'mock', 'heroku', 'version']),
         server = serverAt(commandLine.options);
 
     if (commandLine.options.version) {
