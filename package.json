@@ -1,10 +1,10 @@
 {
   "name": "mountebank",
   "preferGlobal": true,
-  "version": "1.0.373",
+  "version": "1.0.0",
   "author": "Brandon Byars <brandon.byars@gmail.com>",
   "description": "Over the wire test doubles",
-  "homepage": "http://mountebank.herokuapp.com",
+  "homepage": "http://www.mbtest.org",
   "license": "MIT",
   "repository": {
     "type": "git",
