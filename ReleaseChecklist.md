@@ -5,6 +5,7 @@ Travis.ci does most of the work, but not all.  I'd like to experiment with Snap 
 can satisfy the cross-platform pipeline requirements, and give a manual deploy.
 
 # Make sure the previous build passes in https://travis-ci.org/bbyars/mountebank
+# (until I fix the heroku buildpack for www.mbtest.org) change package.json to the next version
 # commit
 # tag: git tag -a v1.0.xxx -m 'releasing'
 # git push --tags && git push
