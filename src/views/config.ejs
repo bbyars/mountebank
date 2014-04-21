@@ -9,19 +9,23 @@
   </tr>
   <tr>
     <td>allowInjection</td>
-    <td><%= allowInjection %></td>
+    <td><%= options.allowInjection %></td>
+  </tr>
+  <tr>
+    <td>mock</td>
+    <td><%= options.mock %></td>
   </tr>
   <tr>
     <td>logfile</td>
-    <td><%= logfile %></td>
+    <td><%= options.logfile %></td>
   </tr>
   <tr>
     <td>loglevel</td>
-    <td><%= loglevel %></td>
+    <td><%= options.loglevel %></td>
   </tr>
   <tr>
     <td>pidfile</td>
-    <td><%= pidfile %></td>
+    <td><%= options.pidfile %></td>
   </tr>
 </table>
 
@@ -30,11 +34,11 @@
 <table>
   <tr>
     <td>node version</td>
-    <td><%= process.version %></td>
+    <td><%= process.nodeVersion %></td>
   </tr>
   <tr>
     <td>architecture</td>
-    <td><%= process.arch %></td>
+    <td><%= process.architecture %></td>
   </tr>
   <tr>
     <td>platform</td>
@@ -42,33 +46,33 @@
   </tr>
   <tr>
     <td>rss</td>
-    <td><%= process.memoryUsage().rss %></td>
+    <td><%= process.rss %></td>
   </tr>
   <tr>
     <td>heapTotal</td>
-    <td><%= process.memoryUsage().heapTotal %></td>
+    <td><%= process.heapTotal %></td>
   </tr>
   <tr>
     <td>heapUsed</td>
-    <td><%= process.memoryUsage().heapUsed %></td>
+    <td><%= process.heapUsed %></td>
   </tr>
   <tr>
     <td>uptime</td>
-    <td><%= process.uptime() %></td>
+    <td><%= process.uptime %></td>
   </tr>
   <tr>
     <td>cwd</td>
-    <td><%= process.cwd() %></td>
+    <td><%= process.cwd %></td>
   </tr>
 </table>
 
 <h2>Environment</h2>
 
 <table>
-<% Object.keys(process.env).forEach(function (key) { %>
+<% Object.keys(environment).forEach(function (key) { %>
   <tr>
     <td><%= key %></td>
-    <td><%= process.env[key] %></td>
+    <td><%= environment[key] %></td>
   </tr>
 <% }); %>
 </table>

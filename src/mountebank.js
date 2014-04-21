@@ -63,12 +63,25 @@ function create (options) {
     });
 
     app.get('/config', function (request, response) {
-        response.render('config', {
-            logfile: options.logfile,
-            loglevel: options.loglevel,
-            pidfile: options.pidfile,
-            allowInjection: options.allowInjection,
-            process: process
+        var config = {
+            version: thisPackage.version,
+            options: options,
+            process: {
+                nodeVersion: process.version,
+                architecture: process.arch,
+                platform: process.platform,
+                rss: process.memoryUsage().rss,
+                heapTotal: process.memoryUsage().heapTotal,
+                heapUsed: process.memoryUsage().heapUsed,
+                uptime: process.uptime(),
+                cwd: process.cwd()
+            },
+            environment: process.env
+        };
+
+        response.format({
+            json: function () { response.send(config); },
+            html: function () { response.render('config', config); }
         });
     });
 
