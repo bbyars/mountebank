@@ -36,7 +36,7 @@ function create (options) {
     app.use(middleware.useAbsoluteUrls(options.port));
     app.use(middleware.logger(logger, ':method :url'));
     app.use(middleware.globals({ heroku: options.heroku, port: options.port, version: thisPackage.version }));
-    app.use(bodyParser());
+    app.use(bodyParser.json());
     app.use(express.static(path.join(__dirname, 'public')));
     app.use(errorHandler());
 
@@ -44,6 +44,7 @@ function create (options) {
     app.disable('x-powered-by');
     app.set('views', path.join(__dirname, 'views'));
     app.set('view engine', 'ejs');
+    app.set('json spaces', 2);
 
     app.listen(options.port);
     logger.info(util.format('mountebank v%s now taking orders - point your browser to http://localhost:%s for help',
