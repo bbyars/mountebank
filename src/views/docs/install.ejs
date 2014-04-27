@@ -8,6 +8,9 @@
   wants you to be happy, and therefore he has experimental support for additional installation
   options, with more coming soon.</p>
 
+<p>If you use the npm installer on Windows, make sure to use the <code>--production</code> flag,
+  as some test dependencies fail to install on that platform.</p>
+
 <table>
   <tr>
     <th>Option</th>
@@ -17,13 +20,15 @@
     <th>Description</th>
   </tr>
   <tr>
-    <td>Self-contained tarball</td>
+    <td>Self-contained archives</td>
     <td>No</td>
     <td>No</td>
-    <td>
+    <td style="min-width: 5em;">
       <ul>
         <li><a href="https://s3.amazonaws.com/mountebank/v1.0/mountebank-v<%= version %>-darwin-x64.tar.gz">osx</a></li>
         <li><a href="https://s3.amazonaws.com/mountebank/v1.0/mountebank-v<%= version %>-linux-x64.tar.gz">linux</a></li>
+        <li><a href="https://s3.amazonaws.com/mountebank/v1.0/mountebank-v<%= version %>-win-x86.zip">win32</a></li>
+        <li><a href="https://s3.amazonaws.com/mountebank/v1.0/mountebank-v<%= version %>-win-x64.zip">win64</a></li>
       </ul>
     </td>
     <td>Simply unpack and run <code>mb</code> from inside</td>
@@ -53,11 +58,5 @@
     <td>source tarball if you roll that way.</td>
   </tr>
 </table>
-
-<h2>Windows</h2>
-
-<p>Better support for Windows is coming soon.  Right now, using <code>npm</code> is your best bet.  Make
-  sure to install using the <code>--production</code> flag, as some test dependencies fail to install on
-  Windows.</p>
 
 <% include ../_footer %>
