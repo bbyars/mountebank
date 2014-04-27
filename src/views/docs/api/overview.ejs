@@ -209,4 +209,50 @@ Connection: keep-alive
 }
 </code></pre>
 
+<h3>Config</h3>
+
+<ul>
+  <li>URL template: <code>/config</code></li>
+  <li>HTTP verbs: <code>GET</code></li>
+</ul>
+
+<p>If you want to know about the environment mountebank is running it, this resource will give you
+what you need.  It describes the version, command line flags, process information, and environment
+variables.</p>
+
+<pre><code>
+GET /config HTTP/1.1
+Host: localhost:<%= port %>
+Accept: application/json
+</code></pre>
+
+<pre><code>
+{
+  "version": "<%= version %>",
+  "options": {
+    "port": <%= port %>,
+    "pidfile": "mb.pid",
+    "logfile": "mb.log",
+    "loglevel": "info",
+    "allowInjection": false,
+    "nomock": true,
+    "heroku": true,
+    "version": false
+  },
+  "process": {
+    "nodeVersion": "v0.10.21",
+    "architecture": "x64",
+    "platform": "darwin",
+    "rss": 29822976,
+    "heapTotal": 18635008,
+    "heapUsed": 9294352,
+    "uptime": 16,
+    "cwd": "/Users/bbyars/src/mountebank"
+  },
+  "environment": {
+    ...
+  }
+}
+</code></pre>
+
 <% include ../../_footer %>
