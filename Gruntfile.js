@@ -23,7 +23,7 @@ module.exports = function (grunt) {
     grunt.initConfig({
         pkg: grunt.file.readJSON('package.json'),
         jshint: {
-            all: ['Gruntfile.js', 'src/**/*.js', 'test/**/*.js', 'functionalTest/**/*.js', 'bin/mb'],
+            all: ['Gruntfile.js', 'src/**/*.js', 'test/**/*.js', 'functionalTest/**/*.js', 'performanceTest/**/*.js', 'bin/mb'],
             options: {
                 node: true,
                 globals: {
@@ -59,6 +59,12 @@ module.exports = function (grunt) {
                     reporter: 'spec'
                 },
                 src: ['functionalTest/**/*.js']
+            },
+            performance: {
+                options: {
+                    reporter: 'spec'
+                },
+                src: ['performanceTest/**/*.js']
             },
             coverage: {
                 options: {
@@ -153,7 +159,8 @@ module.exports = function (grunt) {
 
     grunt.registerTask('test:unit', 'Run the unit tests', ['mochaTest:unit']);
     grunt.registerTask('test:functional', 'Run the functional tests', ['dist', 'mb:restart', 'mochaTest:functional', 'mb:stop']);
-    grunt.registerTask('test', 'Run all tests', ['test:unit', 'test:functional']);
+    grunt.registerTask('test:performance', 'Run the performance tests', ['mochaTest:performance']);
+    grunt.registerTask('test', 'Run all non-performance tests', ['test:unit', 'test:functional']);
     grunt.registerTask('coverage', 'Generate code coverage', ['mochaTest:coverage']);
     grunt.registerTask('lint', 'Run all JavaScript lint checks', ['wsCheck', 'jsCheck', 'jshint']);
     grunt.registerTask('default', ['version', 'dist', 'test', 'lint']);
