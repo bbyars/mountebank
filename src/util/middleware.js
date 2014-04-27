@@ -31,7 +31,7 @@ function useAbsoluteUrls (port) {
                 traverse = function (obj, fn) {
                     fn(obj);
                     Object.keys(obj).forEach(function (key) {
-                        if (typeof obj[key] === 'object') {
+                        if (obj[key] && typeof obj[key] === 'object') {
                             traverse(obj[key], fn);
                         }
                     });

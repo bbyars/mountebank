@@ -90,6 +90,15 @@ describe('middleware', function () {
             assert.ok(send.wasCalledWith({ key: { _links: { rel: { href: 'http://localhost:9000/' } } } }));
         });
 
+        it('should ignore null and undefined values', function () {
+            var middlewareFn = middleware.useAbsoluteUrls(9000);
+
+            middlewareFn(request, response, next);
+            response.send({ first: null, second: undefined });
+
+            assert.ok(send.wasCalledWith({ first: null }));
+        });
+
         it('should not change html responses', function () {
             var middlewareFn = middleware.useAbsoluteUrls(9000);
 
