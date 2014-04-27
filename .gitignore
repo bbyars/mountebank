@@ -2,6 +2,7 @@
 node_modules/
 .DS_Store
 coverage.html
-mb.log
+mb*.log
 mb.pid
 dist
+mountebank.iml

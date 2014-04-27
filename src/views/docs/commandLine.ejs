@@ -33,17 +33,14 @@
   </tr>
   <tr>
     <td><code>--logfile mb.log</code></td>
-    <td>The file for mountebank to store the debug logs in.  You can view the contents
+    <td>The file for mountebank to store the logs in.  You can view the contents
       on the <a href='/logs'>logs</a> page.  Please include this with any support
-      requests.</td>
+      requests after running with <code>--loglevel debug</code>.</td>
     <td><code>mb.log</code></td>
   </tr>
   <tr>
     <td><code>--loglevel debug</code></td>
-    <td>The logging level for the console, one of <code>debug, info, warn, error</code>.
-      The logfile is always logged at <code>debug</code> level, to facilitate support
-      requests.  This site reads from the logfile, so all logs are visible from the
-      <a href='/logs'>logs</a> page.</td>
+    <td>The logging level for the console, one of <code>debug, info, warn, error</code></td>
     <td><code>info</code></td>
   </tr>
   <tr>
@@ -55,11 +52,11 @@
     <td><code>false</code></td>
   </tr>
   <tr>
-    <td><code>--mock</code></td>
+    <td><code>--nomock</code></td>
     <td>mountebank supports mock verification and stub debugging by remembering the requests
-      made against each stub.  By default, this functionality is turned off because it is
-      a memory leak for any long running <code>mb</code> process, as requests are never
-      forgotten. See the <a href='/docs/api/mocks'>mocks</a> page for more details.</td>
+      made against each stub.  See the <a href='/docs/api/mocks'>mocks</a> page for more details.
+      This represents a memory leak for any long running <code>mb</code> process, as requests are
+      never forgotten.  The <code>--nomock</code> flag turns this behavior off.</td>
     <td><code>false</code></td>
   </tr>
   <tr>

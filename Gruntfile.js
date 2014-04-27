@@ -80,7 +80,7 @@ module.exports = function (grunt) {
 
         var done = this.async(),
             calledDone = false,
-            mb = spawn('dist/mountebank/bin/mb', [command, '--port', port, '--pidfile', 'mb-grunt.pid', '--allowInjection', '--mock']);
+            mb = spawn('dist/mountebank/bin/mb', [command, '--port', port, '--pidfile', 'mb-grunt.pid', '--allowInjection']);
 
         ['stdout', 'stderr'].forEach(function (stream) {
             mb[stream].on('data', function () {
