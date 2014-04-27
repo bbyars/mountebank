@@ -1,6 +1,8 @@
 Stories/Tasks
 =============
 
+- What will need to change with HTTP 2.0 and duplex?
+
 0. add behaviors: { _behaviors: { wait: { min: 5000, max: 5000 } } to responses
 0. get buildpack for heroku mountebank working; remove --stategy=git (breaks versioning on site)
 0. convert ints, floats, bools to string for query string predicate matching

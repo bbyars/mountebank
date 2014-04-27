@@ -51,8 +51,7 @@ wget $URL
 tar xvf $NODE_FILENAME.tar.gz
 rm $NODE_FILENAME.tar.gz
 
-mkdir mountebank
-cp -r ../mountebank/ mountebank
+cp -r ../mountebank .
 
 cd mountebank
 npm install --production
