@@ -31,7 +31,13 @@ function create (options) {
 
     logger.remove(logger.transports.Console);
     logger.add(logger.transports.Console, { colorize: true, level: options.loglevel });
-    logger.add(logger.transports.File, { filename: options.logfile, timestamp: true, level: 'debug' });
+    logger.add(logger.transports.File, {
+        filename: options.logfile,
+        timestamp: true,
+        level: options.loglevel,
+        maxsize: 10000000,
+        maxFiles: 2
+    });
 
     app.use(middleware.useAbsoluteUrls(options.port));
     app.use(middleware.logger(logger, ':method :url'));
