@@ -8,7 +8,7 @@ NODE_VERSION=`node -v`
 cd dist
 
 for PLATFORM in x86 x64; do
-    MB_FILENAME=mountebank-v$MB_VERSION-win$PLATFORM
+    MB_FILENAME=mountebank-v$MB_VERSION-win-$PLATFORM
 
     if [ "$PLATFORM" = 'x86' ]; then
         URL=http://nodejs.org/dist/$NODE_VERSION/node.exe
