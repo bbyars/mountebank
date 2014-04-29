@@ -30,6 +30,8 @@ cp -r ../mountebank .
 echo "node.exe mountebank/bin/mb" > ./mb.cmd
 
 cd ..
-zip -r $MB_FILENAME.zip $MB_FILENAME
+echo "zipping..."
+zip -r $MB_FILENAME.zip $MB_FILENAME > /dev/null
+echo "Done"
 
 cd ..

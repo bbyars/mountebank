@@ -21,7 +21,9 @@ mkdir $MB_FILENAME
 cd $MB_FILENAME
 
 wget $URL
-tar xvf $NODE_FILENAME.tar.gz
+echo "Extracting..."
+tar xvf $NODE_FILENAME.tar.gz > /dev/null
+echo "Done"
 rm $NODE_FILENAME.tar.gz
 
 cp -r ../mountebank .
@@ -36,6 +38,8 @@ echo "\$DIR/node-v0.10.21-darwin-x64/bin/node \$DIR/mountebank/bin/mb" >> ./mb
 chmod +x ./mb
 
 cd ..
-tar cvf $MB_FILENAME.tar.gz $MB_FILENAME
+echo "tarring..."
+tar cvf $MB_FILENAME.tar.gz $MB_FILENAME > /dev/null
+echo "Done"
 
 cd ..
