@@ -2,82 +2,26 @@
 
 set -e
 
-# Build self-contained executables for mb (e.g. no node.js requirement)
-
-if [ $(uname) = 'Darwin' ]; then
-    PLATFORM=darwin
-elif [ $(uname) = 'Linux' ]; then
-    PLATFORM=linux
-else
-    echo "Unsupported platform: $(uname)"
-    exit 1
-fi
-
-MB_VERSION=$(cat dist/mountebank/package.json | grep '"version"' | sed -E -e 's/.*"version": "([^"]*)",/\1/')
-MB_FILENAME=mountebank-v$MB_VERSION-$PLATFORM-x64
-
-createPackage () {
-    echo "#!/usr/bin/env sh" > ./postInstall
-    echo "[ -e /usr/local/bin/mb ] && rm /usr/local/bin/mb" >> ./postInstall
-    echo "ln -s /usr/local/$MB_FILENAME/mb /usr/local/bin/mb" >> ./postInstall
-    chmod +x ./postInstall
-
-    echo "#!/usr/bin/env sh" > ./postUninstall
-    echo "rm /usr/local/bin/mb" >> ./postUninstall
-    chmod +x ./postUninstall
-
-    TYPE=$1
-    fpm -s dir -t $TYPE -n mountebank -v $MB_VERSION --license MIT --category test \
-        --description "over the wire test doubles" --url "http://www.mbtest.org" \
-        --maintainer "<brandon.byars@gmail.com>" \
-        --post-install ./postInstall --post-uninstall ./postUninstall \
-        $MB_FILENAME=/usr/local
-}
-
 # base npm tarball
 cd dist
+MB_VERSION=$(cat mountebank/package.json | grep '"version"' | sed -E -e 's/.*"version": "([^"]*)",/\1/')
+
 tar cvf mountebank-v$MB_VERSION-npm.tar.gz mountebank
-
-NODE_VERSION=`node -v`
-NODE_FILENAME=node-$NODE_VERSION-$PLATFORM-x64
-URL=http://nodejs.org/dist/$NODE_VERSION/$NODE_FILENAME.tar.gz
-
-[ -e $MB_FILENAME ] && rm -rf $MB_FILENAME
-mkdir $MB_FILENAME
-
-cd $MB_FILENAME
-
-wget $URL
-tar xvf $NODE_FILENAME.tar.gz
-rm $NODE_FILENAME.tar.gz
-
-cp -r ../mountebank .
-
-cd mountebank
-npm install --production
 cd ..
 
-echo "#!/usr/bin/env sh" > ./mb
-echo "# allow running from any directory, including symlinks" >> ./mb
-echo "# portable but incomplete readlink -f behavior" >> ./mb
-echo "FILE=\$0" >> ./mb
-echo "[ -L \$FILE ] && FILE=\`readlink \$FILE\`" >> ./mb
-echo "DIR=\`dirname \$FILE\`" >> ./mb
-echo "\$DIR/node-v0.10.21-darwin-x64/bin/node \$DIR/mountebank/bin/mb" >> ./mb
-chmod +x ./mb
+scripts/dist/createSelfContainedTarball linux x86
+scripts/dist/createSelfContainedTarball linux x64
+scripts/dist/createSelfContainedTarball darwin x86
+scripts/dist/createSelfContainedTarball darwin x64
 
-cd ..
-tar cvf $MB_FILENAME.tar.gz $MB_FILENAME
+scripts/dist/createWindowsZip x86
+scripts/dist/createWindowsZip x64
 
-# OS-specific packages
-echo Creating packages...
-gem install fpm
-
-if [ "$PLATFORM" = "darwin" ]; then
-    createPackage osxpkg
-    mv mountebank-$MB_VERSION.pkg mountebank-v$MB_VERSION.pkg
-else
+if [ $(uname) = 'Darwin' ]; then
+    scripts/dist/createPackages darwin osxpkg
+    mv dist/mountebank-$MB_VERSION.pkg dist/mountebank-v$MB_VERSION.pkg
+elif [ $(uname) = 'Linux' ]; then
     sudo apt-get install rpm
-    createPackage deb
-    createPackage rpm
+    scripts/dist/createPackages linux deb
+    scripts/dist/createPackages linux rpm
 fi

@@ -151,7 +151,9 @@ module.exports = function (grunt) {
         exec('[ -e dist ] && rm -rf dist', function () {
             exec('mkdir -p dist/mountebank', function () {
                 exec(command, function () {
-                    exec('rm -rf dist/mountebank/src/public/images/sources', done);
+                    exec('rm -rf dist/mountebank/src/public/images/sources', function () {
+                        exec('cd dist/mountebank && npm install --production', done);
+                    });
                 });
             });
         });

@@ -1,0 +1,41 @@
+#!/bin/sh
+
+set -e
+
+PLATFORM=$1
+ARCH=$2
+
+cd dist
+
+echo Creating tarball for $PLATFORM-$ARCH...
+
+NODE_VERSION=`node -v`
+NODE_FILENAME=node-$NODE_VERSION-$PLATFORM-$ARCH
+URL=http://nodejs.org/dist/$NODE_VERSION/$NODE_FILENAME.tar.gz
+MB_VERSION=$(cat mountebank/package.json | grep '"version"' | sed -E -e 's/.*"version": "([^"]*)",/\1/')
+MB_FILENAME=mountebank-v$MB_VERSION-$PLATFORM-$ARCH
+
+[ -e $MB_FILENAME ] && rm -rf $MB_FILENAME
+mkdir $MB_FILENAME
+
+cd $MB_FILENAME
+
+wget $URL
+tar xvf $NODE_FILENAME.tar.gz
+rm $NODE_FILENAME.tar.gz
+
+cp -r ../mountebank .
+
+echo "#!/usr/bin/env sh" > ./mb
+echo "# allow running from any directory, including symlinks" >> ./mb
+echo "# portable but incomplete readlink -f behavior" >> ./mb
+echo "FILE=\$0" >> ./mb
+echo "[ -L \$FILE ] && FILE=\`readlink \$FILE\`" >> ./mb
+echo "DIR=\`dirname \$FILE\`" >> ./mb
+echo "\$DIR/node-v0.10.21-darwin-x64/bin/node \$DIR/mountebank/bin/mb" >> ./mb
+chmod +x ./mb
+
+cd ..
+tar cvf $MB_FILENAME.tar.gz $MB_FILENAME
+
+cd ..
