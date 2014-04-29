@@ -1,6 +1,15 @@
 Stories/Tasks
 =============
 
+GET /imposters?replayable to save file
+PUT /imposters to overwrite
+config file
+give stubs names
+
+UI, walk you through the steps (port, name optional, etc) + defining terms
+config file saving, loading
+change multi-language to cross-platform
+
 - What will need to change with HTTP 2.0 and duplex?
 
 0. add behaviors: { _behaviors: { wait: { min: 5000, max: 5000 } } to responses
@@ -43,7 +52,6 @@ Examples Needed
 
 Known Bugs
 ==========
-1. grunt does not kill mb if functional tests fail
 2. TCP proxying doesn't work if proxied server doesn't send a response
    - add a timeout parameter, and always resolve if no response by that time?
 3. Tests must have some race conditions; getting intermittent failures
