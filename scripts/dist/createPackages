@@ -1,7 +1,5 @@
 #!/bin/sh
 
-set -e
-
 PLATFORM=$1
 TYPE=$2
 
@@ -9,6 +7,8 @@ echo Creating $TYPE...
 
 gem list | grep fpm
 [ $? -eq 1 ] && gem install fpm
+
+set -e
 
 cd dist
 
