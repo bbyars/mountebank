@@ -83,7 +83,7 @@ Content-Type: application/json
               "Location": "http://localhost:4545/customers/123",
               "Content-Type": "application/xml"
             },
-            "body": "&lt;customer&gt;&lt;email&gt;customer@test.com&lt;/name&gt;&lt;/customer&gt;"
+            "body": "&lt;customer&gt;&lt;email&gt;customer@test.com&lt;/email&gt;&lt;/customer&gt;"
           }
         },
         {
@@ -126,7 +126,7 @@ Connection: close
 Date: Thu, 09 Jan 2014 02:30:31 GMT
 Transfer-Encoding: chunked
 
-&lt;customer&gt;&lt;email&gt;customer@test.com&lt;/name&gt;&lt;/customer&gt;
+&lt;customer&gt;&lt;email&gt;customer@test.com&lt;/email&gt;&lt;/customer&gt;
 </code></pre>
 
 <p>...and the second call:</p>
@@ -220,7 +220,7 @@ Connection: keep-alive
               "Content-Type": "application/xml",
               "connection": "close"
             },
-            "body": "&lt;customer&gt;&lt;email&gt;customer@test.com&lt;/name&gt;&lt;/customer&gt;"
+            "body": "&lt;customer&gt;&lt;email&gt;customer@test.com&lt;/email&gt;&lt;/customer&gt;"
           }
         },
         {
@@ -258,7 +258,7 @@ Connection: keep-alive
               "Content-Type": "application/xml",
               "connection": "close"
             },
-            "body": "&lt;customer&gt;&lt;email&gt;customer@test.com&lt;/name&gt;&lt;/customer&gt;"
+            "body": "&lt;customer&gt;&lt;email&gt;customer@test.com&lt;/email&gt;&lt;/customer&gt;"
           }
         },
         {
