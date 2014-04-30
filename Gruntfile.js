@@ -165,5 +165,5 @@ module.exports = function (grunt) {
     grunt.registerTask('test', 'Run all non-performance tests', ['test:unit', 'test:functional']);
     grunt.registerTask('coverage', 'Generate code coverage', ['mochaTest:coverage']);
     grunt.registerTask('lint', 'Run all JavaScript lint checks', ['wsCheck', 'jsCheck', 'jshint']);
-    grunt.registerTask('default', ['version', 'dist', 'test', 'lint']);
+    grunt.registerTask('default', ['version', 'test', 'lint']);
 };
