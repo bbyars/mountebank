@@ -3,7 +3,8 @@
 var Validator = require('../util/validator'),
     Q = require('q'),
     helpers = require('../util/helpers'),
-    errors = require('../util/errors');
+    errors = require('../util/errors'),
+    url = require('url');
 
 function create (protocols, imposters, Imposter, logger) {
 
@@ -37,8 +38,11 @@ function create (protocols, imposters, Imposter, logger) {
     }
 
     function get (request, response) {
+        var query = url.parse(request.url, true).query,
+            functionName = query.replayable ? 'toReplayableJSON' : 'toListJSON';
+
         var result = Object.keys(imposters).reduce(function (accumulator, id) {
-            return accumulator.concat(imposters[id].toListJSON());
+            return accumulator.concat(imposters[id][functionName]());
         }, []);
 
         response.format({

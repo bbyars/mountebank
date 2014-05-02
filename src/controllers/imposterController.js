@@ -1,9 +1,13 @@
 'use strict';
 
+var url = require('url');
+
 function create (imposters) {
 
     function get (request, response) {
-        var imposter = imposters[request.params.id].toJSON();
+        var query = url.parse(request.url, true).query,
+            functionName = query.replayable ? 'toReplayableJSON' : 'toJSON',
+            imposter = imposters[request.params.id][functionName]();
 
         response.format({
             json: function () { response.send(imposter); },

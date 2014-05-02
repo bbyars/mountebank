@@ -18,17 +18,27 @@ describe('ImpostersController', function () {
         it('should send an empty array if no imposters', function () {
             var controller = Controller.create({}, {});
 
-            controller.get({}, response);
+            controller.get({ url: '/imposters' }, response);
 
             assert.deepEqual(response.body, {imposters: []});
         });
 
-        it('should send JSON for all imposters', function () {
+        it('should send list JSON for all imposters', function () {
             var firstImposter = { toListJSON: mock().returns('firstJSON') },
                 secondImposter = { toListJSON: mock().returns('secondJSON') },
                 controller = Controller.create({}, { 1: firstImposter, 2: secondImposter });
 
-            controller.get({}, response);
+            controller.get({ url: '/imposters' }, response);
+
+            assert.deepEqual(response.body, {imposters: ['firstJSON', 'secondJSON']});
+        });
+
+        it('should send replayable JSON for all imposters if querystring present', function () {
+            var firstImposter = { toReplayableJSON: mock().returns('firstJSON') },
+                secondImposter = { toReplayableJSON: mock().returns('secondJSON') },
+                controller = Controller.create({}, { 1: firstImposter, 2: secondImposter });
+
+            controller.get({ url: '/imposters?replayable=true' }, response);
 
             assert.deepEqual(response.body, {imposters: ['firstJSON', 'secondJSON']});
         });
