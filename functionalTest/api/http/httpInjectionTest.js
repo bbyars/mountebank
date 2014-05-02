@@ -58,7 +58,7 @@ function nonInjectableServer (command, port) {
                 }).then(function (response) {
                     assert.strictEqual(response.body, 'MATCHED');
                 }).finally(function () {
-                    return api.del('/imposters/' + port);
+                    return api.del('/imposters');
                 });
             });
 
@@ -73,7 +73,7 @@ function nonInjectableServer (command, port) {
                     assert.strictEqual(response.statusCode, 400, JSON.stringify(response.body));
                     assert.strictEqual(response.body.errors[0].data, 'invalid predicate injection');
                 }).finally(function () {
-                    return api.del('/imposters/' + port);
+                    return api.del('/imposters');
                 });
             });
 
@@ -89,7 +89,7 @@ function nonInjectableServer (command, port) {
                     assert.strictEqual(response.statusCode, 200);
                     assert.strictEqual(response.headers.connection, 'close');
                 }).finally(function () {
-                    return api.del('/imposters/' + port);
+                    return api.del('/imposters');
                 });
             });
 
@@ -102,7 +102,7 @@ function nonInjectableServer (command, port) {
                     assert.strictEqual(response.statusCode, 400, JSON.stringify(response.body));
                     assert.strictEqual(response.body.errors[0].message, 'invalid response injection');
                 }).finally(function () {
-                    return api.del('/imposters/' + port);
+                    return api.del('/imposters');
                 });
             });
 
@@ -126,7 +126,7 @@ function nonInjectableServer (command, port) {
                 }).then(function (response) {
                     assert.deepEqual(response.body, '2');
                 }).finally(function () {
-                    return api.del('/imposters/' + port);
+                    return api.del('/imposters');
                 });
             });
 
@@ -185,7 +185,7 @@ function nonInjectableServer (command, port) {
                     assert.strictEqual(response.statusCode, 302);
                     assert.strictEqual(response.headers.location, 'http://www.google.com/');
                 }).finally(function () {
-                    return api.del('/imposters/' + port);
+                    return api.del('/imposters');
                 });
             });
         });

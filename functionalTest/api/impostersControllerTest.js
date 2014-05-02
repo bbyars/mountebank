@@ -64,7 +64,7 @@ describe('DELETE /imposters', function () {
         });
     });
 
-    it('deletes all imposters and returns body', function (done) {
+    it('deletes all imposters and returns replayable body', function (done) {
         var firstImposter = { protocol: 'http', port: port, name: this.name + '1' },
             secondImposter = { protocol: 'http', port: port + 1, name: this.name + '2' };
 

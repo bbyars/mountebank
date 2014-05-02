@@ -25,7 +25,7 @@ describe('tcp imposter', function () {
             }).then(function (response) {
                 assert.strictEqual(response.toString(), 'server');
             }).finally(function () {
-                return api.del('/imposters/' + port);
+                return api.del('/imposters');
             });
         });
 
@@ -42,7 +42,7 @@ describe('tcp imposter', function () {
                 assert.ok(Buffer.isBuffer(response));
                 assert.deepEqual(response.toJSON(), [0, 1, 2, 3]);
             }).finally(function () {
-                return api.del('/imposters/' + port);
+                return api.del('/imposters');
             });
         });
 
@@ -70,7 +70,7 @@ describe('tcp imposter', function () {
             }).then(function (response) {
                 assert.strictEqual(response.toString(), 'second');
             }).finally(function () {
-                return api.del('/imposters/' + port);
+                return api.del('/imposters');
             });
         });
 
@@ -94,7 +94,7 @@ describe('tcp imposter', function () {
             }).then(function (response) {
                 assert.strictEqual(response.toString(), 'MATCH');
             }).finally(function () {
-                return api.del('/imposters/' + port);
+                return api.del('/imposters');
             });
         });
 
@@ -109,7 +109,7 @@ describe('tcp imposter', function () {
                 assert.strictEqual(response.statusCode, 400);
                 assert.strictEqual(response.body.errors[0].data, 'the matches predicate is not allowed in binary mode');
             }).finally(function () {
-                return api.del('/imposters/' + port);
+                return api.del('/imposters');
             });
         });
 
@@ -127,9 +127,7 @@ describe('tcp imposter', function () {
             }).then(function (response) {
                 assert.strictEqual(response.toString(), 'PROXIED');
             }).finally(function () {
-                return api.del('/imposters/' + proxyPort);
-            }).finally(function () {
-                return api.del('/imposters/' + port);
+                return api.del('/imposters');
             });
         });
 
@@ -144,7 +142,7 @@ describe('tcp imposter', function () {
                 assert.strictEqual(error.code, 'invalid proxy');
                 assert.strictEqual(error.message, 'Cannot resolve {"host":"remotehost","port":8000}');
             }).finally(function () {
-                return api.del('/imposters/' + port);
+                return api.del('/imposters');
             });
         });
     });

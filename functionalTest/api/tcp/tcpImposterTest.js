@@ -12,15 +12,13 @@ describe('tcp imposter', function () {
 
     describe('POST /imposters/:id', function () {
         promiseIt('should auto-assign port if port not provided', function () {
-            var request = { protocol: 'tcp', name: this.name },
-                autoAssignedPort;
+            var request = { protocol: 'tcp', name: this.name };
 
             return api.post('/imposters', request).then(function (response) {
                 assert.strictEqual(response.statusCode, 201);
-                autoAssignedPort = response.body.port;
-                assert.ok(autoAssignedPort > 0);
+                assert.ok(response.body.port > 0);
             }).finally(function () {
-                return api.del('/imposters/' + autoAssignedPort);
+                return api.del('/imposters');
             });
         });
     });
@@ -41,7 +39,7 @@ describe('tcp imposter', function () {
                 });
                 assert.deepEqual(requests, ['first', 'second']);
             }).finally(function () {
-                return api.del('/imposters/' + port);
+                return api.del('/imposters');
             });
         });
 
@@ -59,7 +57,7 @@ describe('tcp imposter', function () {
                     { responses: [{ is: { data: '2' } }] }
                 ]);
             }).finally(function () {
-                return api.del('/imposters/' + port);
+                return api.del('/imposters');
             });
         });
 
@@ -82,7 +80,7 @@ describe('tcp imposter', function () {
                     }
                 });
             }).finally(function () {
-                return api.del('/imposters/' + port);
+                return api.del('/imposters');
             });
         });
 
@@ -118,7 +116,7 @@ describe('tcp imposter', function () {
                     ]
                 }]);
             }).finally(function () {
-                return api.del('/imposters/' + port);
+                return api.del('/imposters');
             });
         });
     });
