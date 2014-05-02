@@ -2,6 +2,7 @@
 
 var Q = require('q'),
     Domain = require('domain'),
+    helpers = require('../util/helpers'),
     errors = require('../util/errors');
 
 function createErrorHandler (deferred) {
@@ -56,11 +57,24 @@ function create (Protocol, request) {
                 return result;
             }
 
+            function toReplayableJSON () {
+                var result = helpers.clone(toJSON());
+                delete result.requests;
+                result.stubs.forEach(function (stub) {
+                    if (stub.matches) {
+                        delete stub.matches;
+                    }
+                });
+
+                return result;
+            }
+
             deferred.resolve({
                 port: server.port,
                 url: url,
                 toJSON: toJSON,
                 toListJSON: toListJSON,
+                toReplayableJSON: toReplayableJSON,
                 addStub: server.addStub,
                 stop: server.close
             });
