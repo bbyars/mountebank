@@ -16,7 +16,20 @@ describe('ImposterController', function () {
                 },
                 controller = Controller.create(imposters);
 
-            controller.get({ params: { id: 2 }}, response);
+            controller.get({ url: '/imposters/2', params: { id: 2 }}, response);
+
+            assert.strictEqual(response.body, 'secondJSON');
+        });
+
+        it('should return replayable JSON for imposter at given id if replayable querystring set', function () {
+            var response = FakeResponse.create(),
+                imposters = {
+                    1: { toReplayableJSON: mock().returns('firstJSON') },
+                    2: { toReplayableJSON: mock().returns('secondJSON') }
+                },
+                controller = Controller.create(imposters);
+
+            controller.get({ url: '/imposters/2?replayable=true', params: { id: 2 }}, response);
 
             assert.strictEqual(response.body, 'secondJSON');
         });
