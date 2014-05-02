@@ -7,6 +7,13 @@ var Validator = require('../util/validator'),
 
 function create (protocols, imposters, Imposter, logger) {
 
+    function deleteAllImposters () {
+        Object.keys(imposters).forEach(function (id) {
+            imposters[id].stop();
+            delete imposters[id];
+        });
+    }
+
     function createValidator (request) {
         var protocol = request.protocol,
             port = request.port,
@@ -68,9 +75,18 @@ function create (protocols, imposters, Imposter, logger) {
         });
     }
 
+    function del (request, response) {
+        var json = Object.keys(imposters).reduce(function (accumulator, id) {
+            return accumulator.concat(imposters[id].toReplayableJSON());
+        }, []);
+        deleteAllImposters();
+        response.send({ imposters: json });
+    }
+
     return {
         get: get,
-        post: post
+        post: post,
+        del: del
     };
 }
 

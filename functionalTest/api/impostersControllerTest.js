@@ -3,7 +3,8 @@
 var assert = require('assert'),
     api = require('./api'),
     promiseIt = require('../testHelpers').promiseIt,
-    port = api.port + 1;
+    port = api.port + 1,
+    client = require('./http/baseHttpClient').create('http');
 
 describe('POST /imposters', function () {
 
@@ -54,10 +55,59 @@ describe('POST /imposters', function () {
     });
 });
 
-describe('GET /imposters/:id', function () {
-    promiseIt('should return 404 if imposter has not been created', function () {
-        return api.get('/imposters/3535').then(function (response) {
-            assert.strictEqual(response.statusCode, 404);
+
+describe('DELETE /imposters', function () {
+    promiseIt('returns 200 with empty array if no imposters had been created', function () {
+        return api.del('/imposters').then(function (response) {
+            assert.strictEqual(response.statusCode, 200);
+            assert.deepEqual(response.body, { imposters: [] });
+        });
+    });
+
+    it('deletes all imposters and returns body', function (done) {
+        var firstImposter = { protocol: 'http', port: port, name: this.name + '1' },
+            secondImposter = { protocol: 'http', port: port + 1, name: this.name + '2' };
+
+        return api.post('/imposters', firstImposter).then(function (response) {
+            assert.strictEqual(response.statusCode, 201);
+            return api.post('/imposters', secondImposter);
+        }).then(function (response) {
+            assert.strictEqual(response.statusCode, 201);
+            return client.get('/', firstImposter.port);
+        }).then(function () {
+            return api.del('/imposters');
+        }).then(function (response) {
+            assert.strictEqual(response.statusCode, 200);
+            assert.deepEqual(response.body, {
+                imposters: [
+                    {
+                        protocol: 'http',
+                        port: firstImposter.port,
+                        name: firstImposter.name,
+                        stubs: [],
+                        _links: {
+                            self: { href: 'http://localhost:' + api.port + '/imposters/' + firstImposter.port }
+                        }
+                    },
+                    {
+                        protocol: 'http',
+                        port: secondImposter.port,
+                        name: secondImposter.name,
+                        stubs: [],
+                        _links: {
+                            self: { href: 'http://localhost:' + api.port + '/imposters/' + secondImposter.port }
+                        }
+                    }
+                ]
+            });
+
+            return client.get('/', firstImposter.port);
+        }).done(function () {
+            assert.fail('did not close socket');
+            done();
+        }, function (error) {
+            assert.strictEqual(error.code, 'ECONNREFUSED');
+            done();
         });
     });
 });
