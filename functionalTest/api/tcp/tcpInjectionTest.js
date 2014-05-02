@@ -45,7 +45,7 @@ describe('tcp imposter', function () {
             }).then(function (response) {
                 assert.strictEqual(response.toString(), 'MATCHED');
             }).finally(function () {
-                return api.del('/imposters/' + port);
+                return api.del('/imposters');
             });
         });
 
@@ -59,7 +59,7 @@ describe('tcp imposter', function () {
             }).then(function (response) {
                 assert.strictEqual(response.toString(), 'request INJECTED');
             }).finally(function () {
-                return api.del('/imposters/' + port);
+                return api.del('/imposters');
             });
         });
 
@@ -83,7 +83,7 @@ describe('tcp imposter', function () {
             }).then(function (response) {
                 assert.deepEqual(response.toString(), '2');
             }).finally(function () {
-                return api.del('/imposters/' + port);
+                return api.del('/imposters');
             });
         });
 
@@ -128,7 +128,7 @@ describe('tcp imposter', function () {
             }).then(function (response) {
                 assert.strictEqual(response.toString().indexOf('HTTP/1.0 200'), 0);
             }).finally(function () {
-                return api.del('/imposters/' + port);
+                return api.del('/imposters');
             });
         });
     });

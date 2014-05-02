@@ -36,7 +36,7 @@ var assert = require('assert'),
                     assert.strictEqual(response.body, 'test body');
                     assert.strictEqual(response.headers['x-test'], 'test header');
                 }).finally(function () {
-                    return api.del('/imposters/' + port);
+                    return api.del('/imposters');
                 });
             });
 
@@ -61,7 +61,7 @@ var assert = require('assert'),
                 }).then(function (response) {
                     assert.strictEqual(response.statusCode, 405);
                 }).finally(function () {
-                    return api.del('/imposters/' + port);
+                    return api.del('/imposters');
                 });
             });
 
@@ -131,7 +131,7 @@ var assert = require('assert'),
                 }).then(function (response) {
                     assert.strictEqual(response.statusCode, 400, 'should have matched');
                 }).finally(function () {
-                    return api.del('/imposters/' + port);
+                    return api.del('/imposters');
                 });
             });
 
@@ -169,7 +169,7 @@ var assert = require('assert'),
                 }).then(function (response) {
                     assert.strictEqual(response.body, '');
                 }).finally(function () {
-                    return api.del('/imposters/' + port);
+                    return api.del('/imposters');
                 });
             });
         });

@@ -15,17 +15,15 @@ var assert = require('assert'),
 
         describe('POST /imposters/:id', function () {
             promiseIt('should auto-assign port if port not provided', function () {
-                var request = { protocol: protocol, name: this.name },
-                    autoAssignedPort;
+                var request = { protocol: protocol, name: this.name };
 
                 return api.post('/imposters', request).then(function (response) {
                     assert.strictEqual(response.statusCode, 201);
-                    autoAssignedPort = response.body.port;
-                    return client.get('/first', autoAssignedPort);
+                    return client.get('/first', response.body.port);
                 }).then(function (response) {
                     assert.strictEqual(response.statusCode, 200);
                 }).finally(function () {
-                    return api.del('/imposters/' + autoAssignedPort);
+                    return api.del('/imposters');
                 });
             });
         });
@@ -44,7 +42,7 @@ var assert = require('assert'),
                     var requests = response.body.requests.map(function (request) { return request.path; });
                     assert.deepEqual(requests, ['/first', '/second']);
                 }).finally(function () {
-                    return api.del('/imposters/' + port);
+                    return api.del('/imposters');
                 });
             });
 
@@ -62,7 +60,7 @@ var assert = require('assert'),
                         { responses: [{ is: { body: '2' } }] }
                     ]);
                 }).finally(function () {
-                    return api.del('/imposters/' + port);
+                    return api.del('/imposters');
                 });
             });
 
@@ -121,7 +119,7 @@ var assert = require('assert'),
                         ]
                     }]);
                 }).finally(function () {
-                    return api.del('/imposters/' + port);
+                    return api.del('/imposters');
                 });
             });
 

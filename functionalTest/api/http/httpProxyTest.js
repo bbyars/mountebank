@@ -33,7 +33,7 @@ describe('http proxy', function () {
                 assert.strictEqual(requests[0].body, 'BODY');
                 assert.strictEqual(requests[0].headers['x-key'], 'TRUE');
             }).finally(function () {
-                return api.del('/imposters/' + port);
+                return api.del('/imposters');
             });
         });
 
@@ -49,7 +49,7 @@ describe('http proxy', function () {
                 assert.strictEqual(response.statusCode, 400);
                 assert.strictEqual(response.body, 'ERROR');
             }).finally(function () {
-                return api.del('/imposters/' + port);
+                return api.del('/imposters');
             });
         });
 
@@ -65,7 +65,7 @@ describe('http proxy', function () {
                 assert.strictEqual(response.statusCode, 400);
                 assert.strictEqual(response.body, 'ERROR');
             }).finally(function () {
-                return api.del('/imposters/' + port);
+                return api.del('/imposters');
             });
         });
 

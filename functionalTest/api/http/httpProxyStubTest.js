@@ -21,7 +21,7 @@ describe('http proxy stubs', function () {
             assert.strictEqual(response.body.errors[0].code, 'invalid proxy');
             assert.strictEqual(response.body.errors[0].message, 'Cannot resolve "http://invalid.domain"');
         }).finally(function () {
-            return api.del('/imposters/' + port);
+            return api.del('/imposters');
         });
     });
 
@@ -42,9 +42,8 @@ describe('http proxy stubs', function () {
             return api.get('/imposters/' + port);
         }).then(function (response) {
             assert.strictEqual(response.body.stubs[1].responses[0].proxy.mode, 'proxyOnce');
-            return api.del('/imposters/' + originServerPort);
         }).finally(function () {
-            return api.del('/imposters/' + port );
+            return api.del('/imposters' );
         });
     });
 
@@ -105,7 +104,7 @@ describe('http proxy stubs', function () {
         }).then(function (response) {
             assert.strictEqual(response.body.stubs.length, 4);
         }).finally(function () {
-            return api.del('/imposters/' + originServerPort);
+            return api.del('/imposters');
         });
     });
 
@@ -154,7 +153,7 @@ describe('http proxy stubs', function () {
 
             assert.deepEqual(responses, [['1. /first', '3. /first'], ['2. /second']]);
         }).finally(function () {
-            return api.del('/imposters/' + originServerPort);
+            return api.del('/imposters');
         });
     });
 
@@ -200,7 +199,7 @@ describe('http proxy stubs', function () {
             assert.strictEqual(response.body, '1. {"first":"1","second":"2"}');
             return api.del('/imposters/' + originServerPort);
         }).finally(function () {
-            return api.del('/imposters/' + port);
+            return api.del('/imposters');
         });
     });
 
@@ -246,7 +245,7 @@ describe('http proxy stubs', function () {
             assert.strictEqual(response.body, '1. {"first":"1","second":"2"}');
             return api.del('/imposters/' + originServerPort);
         }).finally(function () {
-            return api.del('/imposters/' + port);
+            return api.del('/imposters');
         });
     });
 });

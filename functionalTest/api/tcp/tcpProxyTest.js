@@ -25,7 +25,7 @@ describe('tcp proxy', function () {
             }).then(function (response) {
                 assert.deepEqual(response.data.toString(), 'howdy!');
             }).finally(function () {
-                return api.del('/imposters/' + port);
+                return api.del('/imposters');
             });
         });
 
@@ -40,7 +40,7 @@ describe('tcp proxy', function () {
             }).then(function (response) {
                 assert.deepEqual(new Buffer(response.data, 'base64').toJSON(), [0, 1, 2, 3]);
             }).finally(function () {
-                return api.del('/imposters/' + port);
+                return api.del('/imposters');
             });
         });
 
