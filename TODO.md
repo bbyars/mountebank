@@ -3,13 +3,11 @@ Stories/Tasks
 
 19. Add atom feed that only displays when --heroku is set that people can subscribe to for updates
 
-GET /imposters?replayable to save file
 PUT /imposters to overwrite
 config file
 give stubs names
 
 UI, walk you through the steps (port, name optional, etc) + defining terms
-config file saving, loading
 
 - What will need to change with HTTP 2.0 and duplex?
 
