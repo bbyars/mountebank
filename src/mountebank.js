@@ -93,12 +93,12 @@ function create (options) {
     });
 
     [
-        '/about',
         '/support',
         '/contributing',
         '/license',
         '/faqs',
         '/thoughtworks',
+        '/examples',
         '/docs/gettingStarted',
         '/docs/install',
         '/docs/glossary',
