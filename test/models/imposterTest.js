@@ -75,6 +75,20 @@ describe('imposter', function () {
             });
         });
 
+        promiseIt('should provide replayable JSON representation', function () {
+            server.port = 3535;
+            metadata.key = 'value';
+
+            return Imposter.create(Protocol, {}).then(function (imposter) {
+                assert.deepEqual(imposter.toReplayableJSON(), {
+                    protocol: 'http',
+                    port: 3535,
+                    stubs: [],
+                    key: 'value'
+                });
+            });
+        });
+
         promiseIt('should create protocol server on provided port with options', function () {
             server.port = 3535;
 

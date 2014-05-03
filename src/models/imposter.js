@@ -60,6 +60,7 @@ function create (Protocol, request) {
             function toReplayableJSON () {
                 var result = helpers.clone(toJSON());
                 delete result.requests;
+                delete result._links;
                 result.stubs.forEach(function (stub) {
                     if (stub.matches) {
                         delete stub.matches;

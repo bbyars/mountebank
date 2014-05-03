@@ -84,19 +84,13 @@ describe('DELETE /imposters', function () {
                         protocol: 'http',
                         port: firstImposter.port,
                         name: firstImposter.name,
-                        stubs: [],
-                        _links: {
-                            self: { href: 'http://localhost:' + api.port + '/imposters/' + firstImposter.port }
-                        }
+                        stubs: []
                     },
                     {
                         protocol: 'http',
                         port: secondImposter.port,
                         name: secondImposter.name,
-                        stubs: [],
-                        _links: {
-                            self: { href: 'http://localhost:' + api.port + '/imposters/' + secondImposter.port }
-                        }
+                        stubs: []
                     }
                 ]
             });
