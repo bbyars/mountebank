@@ -1,0 +1,38 @@
+<?xml version='1.0' encoding='utf-8'?>
+
+<feed xmlns='http://www.w3.org/2005/Atom'>
+
+  <title>mountebank releases</title>
+  <subtitle>Release notes for mountebank</subtitle>
+  <link href='http://www.mbtest.org/feed' rel='self' />
+  <link href='http://www.mbtest.org/' />
+  <id>/feed</id>
+  <updated>2014-05-02</updated>
+  <author>
+    <name>Brandon Byars</name>
+    <email>brandon.byars@gmail.com</email>
+    <uri>http://www.mbtest.org</uri>
+  </author>
+  <entry>
+    <title>mountebank v1.1 release</title>
+    <id>v1.1</id>
+    <updated>2014-05-02</updated>
+    <content type='html'>
+      <p>v1.1 includes the following updates:</p>
+      <ul>
+        <li>Self-contained packages.  See the <a href='/install'>install</a> page for details.</li>
+        <li>A new <a href='/docs/overview'><code>?replayable=true</code></a> query parameter to retrieve
+          all imposters or a single imposter without the <code>requests</code> and <code>matches</code>
+          arrays.  This supports runtime downloads of a configuration to replay later.</li>
+        <li>Mass update and delete capability.  mountebank now supports PUT and DELETE verbs
+        on /imposters.  This is designed to support loading a configuration file of imposters at
+        runtime.  See the <a href='/docs/overview'>API overview</a> page.</li>
+        <li><a href='/examples'>Example usages</a> in multiple languages and multiple protocols.</li>
+        <li>A new <a href='/docs/commandLine'><code>--nomock</code></a> command line option to prevent
+        mountebank from recording requests.  This supports long-running processes from leaking memory
+        where mocking is not important.</li>
+      </ul>
+    </content>
+  </entry>
+
+</feed>

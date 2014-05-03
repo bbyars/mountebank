@@ -118,6 +118,11 @@ function create (options) {
         app.get(endpoint, function (request, response) { response.render(endpoint.substring(1)); });
     });
 
+    app.get('/feed', function (request, response) {
+        response.type('application/atom+xml');
+        response.render('feed');
+    });
+
     return {
         close: function () { logger.info('Adios - see you soon?'); }
     };

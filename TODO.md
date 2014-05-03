@@ -1,6 +1,8 @@
 Stories/Tasks
 =============
 
+19. Add atom feed that only displays when --heroku is set that people can subscribe to for updates
+
 GET /imposters?replayable to save file
 PUT /imposters to overwrite
 config file
@@ -8,7 +10,6 @@ give stubs names
 
 UI, walk you through the steps (port, name optional, etc) + defining terms
 config file saving, loading
-change multi-language to cross-platform
 
 - What will need to change with HTTP 2.0 and duplex?
 
@@ -20,7 +21,7 @@ change multi-language to cross-platform
 1. Evaluate Snap CI for manual deployment, x-platform stuff
 4. add ssh
 6. Add MSI and Windows support
-7. Add SMTP stubbing behavior (_behaviors: { accept: true })
+7. Add SMTP stubbing behavior { accept: true }
 8. Add http attachment support
 9. Allow regex tokens from request params in response (different resolver?)
 3. Add brew package
@@ -33,9 +34,6 @@ change multi-language to cross-platform
   - would need to add createdAt field to imposter, and only link to imposters created after the timestamp
 17. Pretty print JSON log messages on /logs page
 17. Add paging for the logs page
-18. Have query param on GET /imposters/{port} that returns slimmest possible payload to replay the imposter
-        - exclude matches and requests
-19. Add atom feed that only displays when --heroku is set that people can subscribe to for updates
 20. dry run all stub resolvers, even if predicates fail or is second in the responses array
 21. Allow accessing imposter by name on URL
 22. Set up bare domain (mbtest.org, instead of www.mbtest.org) for heroku
