@@ -2,7 +2,8 @@
 
 set -e
 
-export REVISION=${TRAVIS_BUILD_NUMBER:-0}
+export LAST_PATCH_OF_PRIOR_VERSION=398
+export REVISION=`expr ${TRAVIS_BUILD_NUMBER:-$LAST_PATCH_OF_PRIOR_VERSION} - $LAST_PATCH_OF_PRIOR_VERSION`
 
 npm install
 npm install grunt-cli
