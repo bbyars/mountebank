@@ -4,13 +4,15 @@
 
 <p>mountebank has ambitious goals, and welcomes anyone willing to join his army of open source developers.
 For his own open loops, visit the <a href='https://github.com/bbyars/mountebank/blob/master/TODO.md'>TODO
-file</a>, which he endeavors to keep up-to-date as he works.  However, he welcomes other ideas.</p>
+file</a> and the <a href='https://github.com/bbyars/mountebank/issues?state=open'>issues</a> page.
+However, he welcomes other ideas.</p>
 
 <p>mountebank wants to keep the bar for contribution quite low and make it as pleasant an experience for developers
-as it is for users.  The only requirement is that the
-<a href='https://github.com/bbyars/mountebank/blob/master/build'>build script</a> passes (just run <code>./build</code>
-from the command line), and mountebank is more than happy to help you make it pass via email.
-Below are a few other tips for those who wish to dig deeper.</p>
+as it is for users.  He suggests that you run the
+<a href='https://github.com/bbyars/mountebank/blob/master/build'>build script</a> before committing (just run <code>./build</code>
+from the command line).  mountebank is more than happy to help you make it pass via email or the
+<a href='/support'>support</a> page.  He will even try to accept pull requests that fail the build script by
+fixing the error on his end.  Below are a few other tips for those who wish to dig deeper.</p>
 
 <h2>JavaScript OO</h2>
 
@@ -41,6 +43,9 @@ and despite the excellence of the library, he found both the code and tests hard
 <h2>Asynchronous Code</h2>
 
 <p>mountebank asks that you use promises.  He has included <a href='https://github.com/kriskowal/q'>Q</a> in the
-codebase.</p>
+codebase.  The inimitable <a href='http://blog.thepete.net/'>Pete Hodgson</a> taught mountebank how to
+<a href='http://martinfowler.com/articles/asyncJS.html'>test asynchronous JavaScript</a> using promises.  Despite the
+mind-warping ramp-up needed to comprehend promises, mountebank has found that they pay off many times over
+in both testability and structuring difficult combinations of parallelism and sequence.</p>
 
 <% include _footer %>
