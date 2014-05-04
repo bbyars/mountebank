@@ -2,7 +2,6 @@ Stories/Tasks
 =============
 
 Make replayable JSON gracefully deal with proxies
-config file
 give stubs names
 
 UI, walk you through the steps (port, name optional, etc) + defining terms
