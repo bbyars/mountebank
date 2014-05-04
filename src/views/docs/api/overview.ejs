@@ -26,23 +26,31 @@ unfortunate enough to receive one, first you should know that mountebank is most
 Please <a href='/support'>report</a> the issue with the log details, and mountebank will
 help make it right for you.</p>
 
-<h2>Resources</h2>
+<h2>Capabilities</h2>
 
-<h3>Home</h3>
+<p>mountebank supports the following capabilities:</p>
 
-<ul>
-  <li>URL template: <code>/</code></li>
-  <li>HTTP verbs: <code>GET</code></li>
+<ul class='bullet-list'>
+  <li><a href='#get-home'>Get entry hypermedia</a></li>
+  <li><a href='#get-imposters'>Get a list of all imposters</a></li>
+  <li><a href='#post-imposters'>Create a single imposter</a></li>
+  <li><a href='#delete-imposters'>Delete all imposters</a></li>
+  <li><a href='#put-imposters'>Overwrite all imposters with a new set of imposters</a></li>
+  <li><a href='#get-imposter'>Get a single imposter</a></li>
+  <li><a href='#delete-imposter'>Delete a single imposter</a></li>
+  <li><a href='#get-config'>Get mountebank configuration and process information</a></li>
 </ul>
+
+<h3 id='get-home'>Get entry hypermedia</h3>
 
 <p>Unpretentious and welcoming, mirroring mountebank's simple good nature.  This endpoint
 exists for those who aspire to the RESTful
 <a href='http://martinfowler.com/articles/richardsonMaturityModel.html'>priesthood</a>,
 though they may be disappointed to find such a lowly language as <code>application/json</code>
 and the lack of URLs for relationships.  mountebank has no intention of forcing anybody to use
-this endpoint, and does not intend to use it for his implemenation of native language bindings.</p>
+this endpoint, and does not intend to use it for his implementation of native language bindings.</p>
 
-<pre><code data-test-id='home'
+<pre><code data-test-id='get-home'
            data-test-step='1'
            data-test-type='http'>
 GET / HTTP/1.1
@@ -50,20 +58,26 @@ Host: localhost:<%= port %>
 Accept: application/json
 </code></pre>
 
-<pre><code data-test-id='home'
+<pre><code data-test-id='get-home'
            data-test-verify-step='1'
            data-test-ignore-lines='["^Date"]'>
 HTTP/1.1 200 OK
 Vary: Accept
 Content-Type: application/json
-Content-Length: 94
+Content-Length: 226
 Date: Sun, 05 Jan 2014 16:16:08 GMT
 Connection: keep-alive
 
 {
   "_links": {
     "imposters": {
-      "href": "http://localhost:<%= port %>/imposters"
+      "href": "http://localhost:2525/imposters"
+    },
+    "config": {
+      "href": "http://localhost:2525/config"
+    },
+    "logs": {
+      "href": "http://localhost:2525/logs"
     }
   }
 }
@@ -73,7 +87,7 @@ Connection: keep-alive
 
 <ul>
   <li>URL template: <code>/imposters</code></li>
-  <li>HTTP verbs: <code>GET, POST</code></li>
+  <li>HTTP verbs: <code>GET, POST, PUT, DELETE</code></li>
 </ul>
 
 <p>Though he's not proud to admit it, mountebank employs an army of imposters to
