@@ -41,7 +41,10 @@ describe('html validation', function () {
             };
 
             httpClient.responseFor(spec).then(function (response) {
-                fs.writeFileSync('validation-test.html', response.body);
+                // ignore errors for webkit attributes on search box
+                var body = response.body.replace("results='5' autosave='mb' ", '');
+                fs.writeFileSync('validation-test.html', body);
+
                 validator.validate({
                     file: 'validation-test.html',
                     callback: function (response) {
