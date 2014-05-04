@@ -8,9 +8,11 @@ var express = require('express'),
     homeController = require('./controllers/homeController'),
     ImpostersController = require('./controllers/impostersController'),
     ImposterController = require('./controllers/imposterController'),
+    LogsController = require('./controllers/logsController'),
+    ConfigController = require('./controllers/configController'),
+    FeedController = require('./controllers/feedController'),
     Imposter = require('./models/imposter'),
     winston = require('winston'),
-    fs = require('fs'),
     thisPackage = require('../package.json'),
     ScopedLogger = require('./util/scopedLogger'),
     util = require('util');
@@ -27,6 +29,9 @@ function create (options) {
         logger = ScopedLogger.create(winston, util.format('[mb:%s] ', options.port)),
         impostersController = ImpostersController.create(protocols, imposters, Imposter, logger),
         imposterController = ImposterController.create(imposters),
+        logsController = LogsController.create(options.logfile),
+        configController = ConfigController.create(thisPackage.version, options),
+        feedController = FeedController.create(thisPackage.version, options),
         validateImposterExists = middleware.createImposterValidator(imposters);
 
     logger.remove(logger.transports.Console);
@@ -62,35 +67,10 @@ function create (options) {
     app.del('/imposters', impostersController.del);
     app.get('/imposters/:id', validateImposterExists, imposterController.get);
     app.del('/imposters/:id', imposterController.del);
-
-    app.get('/logs', function (request, response) {
-        var json = ('[' + fs.readFileSync(options.logfile).toString().split('\n').join(',').replace(/,$/, '') + ']'),
-            logs = JSON.parse(json);
-        response.render('logs', { logs: logs });
-    });
-
-    app.get('/config', function (request, response) {
-        var config = {
-            version: thisPackage.version,
-            options: options,
-            process: {
-                nodeVersion: process.version,
-                architecture: process.arch,
-                platform: process.platform,
-                rss: process.memoryUsage().rss,
-                heapTotal: process.memoryUsage().heapTotal,
-                heapUsed: process.memoryUsage().heapUsed,
-                uptime: process.uptime(),
-                cwd: process.cwd()
-            },
-            environment: process.env
-        };
-
-        response.format({
-            json: function () { response.send(config); },
-            html: function () { response.render('config', config); }
-        });
-    });
+    app.get('/logs', logsController.get);
+    app.get('/config', configController.get);
+    app.get('/feed', feedController.getFeed);
+    app.get('/releases/:version', feedController.getRelease);
 
     [
         '/support',
@@ -116,30 +96,6 @@ function create (options) {
         '/docs/protocols/smtp'
     ].forEach(function (endpoint) {
         app.get(endpoint, function (request, response) { response.render(endpoint.substring(1)); });
-    });
-
-    app.get('/feed', function (request, response) {
-        var config = { host: request.headers.host };
-        response.type('application/atom+xml');
-        response.render('feed', config);
-    });
-
-    app.get('/releases/:version', function (request, response) {
-        var config = { host: request.headers.host, heroku: options.heroku, version: thisPackage.version },
-            releaseFilename = 'releases/' + request.params.version + '.ejs';
-
-        if (fs.existsSync(__dirname + '/views/' + releaseFilename)) {
-            response.render('_header', config, function (error, header) {
-                response.render(releaseFilename, config, function (error, body) {
-                    response.render('_footer', config, function (error, footer) {
-                        response.send(header + body + footer);
-                    });
-                });
-            });
-        }
-        else {
-            response.send(404, 'No such release');
-        }
     });
 
     return {
