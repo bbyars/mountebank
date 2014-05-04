@@ -11,7 +11,7 @@ var parse = function (argv, defaultOptions, booleanOptions) {
             throw Error("Invalid option '" + key + "'.");
         }
 
-        if (!defaultOptions[optionName] && !isBoolean(optionName)) {
+        if (typeof defaultOptions[optionName] === 'undefined' && !isBoolean(optionName)) {
             throw Error("Option '" + optionName + "' not recognized.");
         }
 

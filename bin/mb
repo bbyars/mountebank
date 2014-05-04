@@ -4,8 +4,10 @@
 var mountebank = require('../src/mountebank'),
     cli = require('../src/util/cli'),
     fs = require('fs'),
+    http = require('http'),
     exec = require('child_process').exec,
-    thisPackage = require('../package.json');
+    thisPackage = require('../package.json'),
+    Q = require('q');
 
 function usage () {
     console.log('Usage: mb [command] [options...]');
@@ -17,6 +19,7 @@ function usage () {
     console.log('    --loglevel LEVEL  level for terminal logs (default info)');
     console.log('    --allowInjection  set to allow JavaScript injection');
     console.log('    --nomock          do not remember requests for mock verification and stub debugging (avoid leaking memory for long running instances)');
+    console.log('    --configfile      file to load imposters from');
     console.log('    --version         show the mountebank version and exit');
 }
 
@@ -62,10 +65,41 @@ var serverAt = function (options) {
     };
 };
 
+function shouldLoadConfigFile (commandLine) {
+    return commandLine.options.configfile !== '' && commandLine.command.indexOf('start') >= 0;
+}
+
+function putConfigFile (options, body) {
+    var deferred = Q.defer(),
+        requestOptions = {
+            method: 'PUT',
+            path: '/imposters',
+            port: options.port,
+            hostname: 'localhost',
+            headers: { 'Content-Type': 'application/json' }
+        },
+        request = http.request(requestOptions, function (response) {
+            response.body = '';
+            response.setEncoding('utf8');
+            response.on('data', function (chunk) { response.body += chunk; });
+            response.on('end', function () {
+                response.body = JSON.parse(response.body);
+                deferred.resolve(response);
+            });
+        });
+
+    request.on('error', deferred.reject);
+
+    request.write(body);
+    request.end();
+    return deferred.promise;
+}
+
 try {
-    var defaultOptions = { port: 2525, pidfile: 'mb.pid', logfile: 'mb.log', loglevel: 'info' },
+    var defaultOptions = { port: 2525, pidfile: 'mb.pid', logfile: 'mb.log', loglevel: 'info', configfile: '' },
         commandLine = cli.parse(process.argv.slice(2), defaultOptions, ['allowInjection', 'nomock', 'heroku', 'version']),
-        server = serverAt(commandLine.options);
+        server = serverAt(commandLine.options),
+        configContents;
 
     if (commandLine.options.version) {
         console.log(thisPackage.version);
@@ -87,6 +121,14 @@ try {
         default:
             error("Invalid command '" + commandLine.command + "'.");
             break;
+        }
+
+        if (shouldLoadConfigFile(commandLine)) {
+            configContents = fs.readFileSync(commandLine.options.configfile, 'utf8');
+            putConfigFile(commandLine.options, configContents).done(function () {}, function (error) {
+                console.log(error);
+                process.exit(2);
+            });
         }
     }
 }
