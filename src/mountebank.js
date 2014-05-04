@@ -41,7 +41,7 @@ function create (options) {
         timestamp: true,
         level: options.loglevel,
         maxsize: 10000000,
-        maxFiles: 2
+        maxFiles: 1
     });
 
     app.use(middleware.useAbsoluteUrls(options.port));
