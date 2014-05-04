@@ -87,10 +87,57 @@ function create (protocols, imposters, Imposter, logger) {
         response.send({ imposters: json });
     }
 
+    function put (request, response) {
+        var requestImposters = request.body.imposters || [],
+            validationPromises = requestImposters.map(function (imposter) {
+                var validator = createValidator(imposter);
+                return validator.validate(imposter, logger);
+            });
+
+        logger.debug(helpers.socketName(request.socket) + ' => ' + JSON.stringify(request.body));
+
+        return Q.all(validationPromises).then(function (validations) {
+            var isValid =  validations.every(function (validation) {
+                    return validation.isValid;
+                });
+
+            if (isValid) {
+                deleteAllImposters();
+                var creationPromises = request.body.imposters.map(function (imposter) {
+                        return Imposter.create(protocols[imposter.protocol], imposter);
+                    });
+
+                return Q.all(creationPromises).then(function (allImposters) {
+                    var json = allImposters.map(function (imposter) {
+                        return imposter.toListJSON();
+                    });
+                    allImposters.forEach(function (imposter) {
+                        imposters[imposter.port] = imposter;
+                    });
+                    response.send({ imposters: json });
+                }, function (error) {
+                    logger.warn('error creating imposter: ' + JSON.stringify(errors.details(error)));
+                    response.statusCode = (error.code === 'insufficient access') ? 403 : 400;
+                    response.send({ errors: [error] });
+                });
+            }
+            else {
+                var validationErrors = validations.reduce(function (accumulator, validation) {
+                        return accumulator.concat(validation.errors);
+                    }, []);
+
+                logger.warn('error creating imposter: ' + JSON.stringify(errors.details(validationErrors)));
+                response.statusCode = 400;
+                response.send({ errors: validationErrors });
+            }
+        });
+    }
+
     return {
         get: get,
         post: post,
-        del: del
+        del: del,
+        put: put
     };
 }
 
