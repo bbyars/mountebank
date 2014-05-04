@@ -58,6 +58,11 @@ ul {
     overflow: hidden;
 }
 
+ul.bullet-list {
+    list-style-type: disc;
+    padding: 1em;
+}
+
 nav.vertical ul {
     margin-left: 1em;
 }
