@@ -15,7 +15,7 @@ describe('html validation', function () {
         '/license',
         '/faqs',
         '/thoughtworks',
-        '/examples',
+        '/docs/examples',
         '/docs/gettingStarted',
         '/docs/install',
         '/docs/glossary',

@@ -98,7 +98,7 @@ function create (options) {
         '/license',
         '/faqs',
         '/thoughtworks',
-        '/examples',
+        '/docs/examples',
         '/docs/gettingStarted',
         '/docs/install',
         '/docs/glossary',
@@ -119,8 +119,27 @@ function create (options) {
     });
 
     app.get('/feed', function (request, response) {
+        var config = { host: request.headers.host };
         response.type('application/atom+xml');
-        response.render('feed');
+        response.render('feed', config);
+    });
+
+    app.get('/releases/:version', function (request, response) {
+        var config = { host: request.headers.host, heroku: options.heroku, version: thisPackage.version },
+            releaseFilename = 'releases/' + request.params.version + '.ejs';
+
+        if (fs.existsSync(__dirname + '/views/' + releaseFilename)) {
+            response.render('_header', config, function (error, header) {
+                response.render(releaseFilename, config, function (error, body) {
+                    response.render('_footer', config, function (error, footer) {
+                        response.send(header + body + footer);
+                    });
+                });
+            });
+        }
+        else {
+            response.send(404, 'No such release');
+        }
     });
 
     return {

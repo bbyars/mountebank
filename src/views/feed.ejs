@@ -4,64 +4,24 @@
 
   <title>mountebank releases</title>
   <subtitle>Release notes for mountebank</subtitle>
-  <link href='http://www.mbtest.org/feed' rel='self' />
-  <link href='http://www.mbtest.org/' />
-  <id>/feed</id>
-  <updated>2014-05-02</updated>
+  <link href='http://<%= host %>/feed' rel='self' />
+  <link href='http://<%= host %>/' />
+  <id>http://<%= host %>/feed</id>
+  <updated>2014-05-02T00:00:00Z</updated>
   <author>
     <name>Brandon Byars</name>
     <email>brandon.byars@gmail.com</email>
-    <uri>http://www.mbtest.org</uri>
+    <uri>http://<%= host %></uri>
   </author>
+
   <entry>
-    <title>mountebank v1.1 release</title>
-    <id><%= version %></id>
-    <updated>2014-05-02</updated>
+    <title>mountebank <%= version %> release</title>
+    <id>http://<%= host %>/releases/<%= version %></id>
+    <updated>2014-05-02T00:00:00Z</updated>
     <content type='html'>
-      <p>mountebank is happy to provide you with the following changes in v1.1</p>
-
-      <h2>More Install Options</h2>
-      <ul>
-        <li>v1.0 only supported installing through npm.  mountebank now supports self-contained
-        packages on all supported platforms, which do not require node.js installed on the target
-        platform.  See the <a href='http://www.mbtest.org/install'>install</a> page for details.</li>
-      </ul>
-
-      <h2>New Features</h2>
-      <ul>
-        <li>A new <a href='http://www.mbtest.org/docs/overview'><code>?replayable=true</code></a> query parameter to retrieve
-        all imposters or a single imposter without the <code>requests</code> and <code>matches</code>
-        arrays.  This supports runtime downloads of a configuration to replay later.</li>
-        <li>Mass update and delete capability.  mountebank now supports PUT and DELETE verbs
-        on /imposters.  This is designed to support loading a configuration file of imposters at
-        runtime.  See the <a href='http://www.mbtest.org/docs/overview'>API overview</a> page.</li>
-        <li>A new <a href='http://www.mbtest.org/docs/api/stubs'><code>_behaviors</code></a> field available for stubs.
-        <code>_behaviors</code> currently supports adding latency to each response.</li>
-        <li>A new <a href='http://www.mbtest.org/docs/commandLine'><code>--nomock</code></a> command line option to prevent
-        mountebank from recording requests.  This supports long-running processes from leaking memory
-        where mocking is not important.</li>
-        <li>A new <a href='http://www.mbtest.org/docs/commandLine'><code>--file</code></a> command line option to
-        load a configuration file at startup for creating imposters.</li>
-      </ul>
-
-      <h2>Documentation Improvements</h2>
-      <ul>
-        <li><a href='http://www.mbtest.org/examples'>Example usages</a> in multiple languages and multiple protocols.</li>
-        <li>This ATOM feed, which will be updated with release notes on every release.  Subscribe in
-          <a href='http://feedly.com/index.html#discover'>feedly</a> or your favorite RSS reader.</li>
-        <li>A new <a href='http://www.mbtest.org/glossary'>glossary</a> to help explain mountebank concepts.</li>
-      </ul>
-
-      <h2>Bug Fixes</h2>
-      <ul>
-        <li>Fixed <a href='https://github.com/bbyars/mountebank/issues/3'>incorrect handling of JSON null values</a></li>
-        <li>Fixed <a href='https://github.com/bbyars/mountebank/pull/9'>inconsistent end tags</a> on the stubs
-        documentation.</li>
-        <li>mountebank now support <a href='https://github.com/bbyars/mountebank/issues/4'>ints, floats, and
-        booleans</a> for predicates.</li>
-      </ul>
-
-      <p>Many thanks to <a href='http://nikosbaxevanis.com/'>Nikos Baxevanis</a> for help with this release.</p>
+      <![CDATA[
+      <% include releases/v1.1.ejs %>
+      ]]>
     </content>
   </entry>
 
