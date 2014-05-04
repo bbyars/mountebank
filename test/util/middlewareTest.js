@@ -217,4 +217,24 @@ describe('middleware', function () {
             assert(render.wasCalledWith('view', { key: 'global' }));
         });
     });
+
+    describe('#defaultIEtoHTML', function () {
+        it('should not change accept header for non-IE user agents', function () {
+            request.headers['user-agent'] = 'blah Chrome blah';
+            request.headers.accept = 'original accept';
+
+            middleware.defaultIEtoHTML(request, {}, mock());
+
+            assert.strictEqual(request.headers.accept, 'original accept');
+        });
+
+        it('should change accept header for IE user agents', function () {
+            request.headers['user-agent'] = 'blah MSIE blah';
+            request.headers.accept = '*/*';
+
+            middleware.defaultIEtoHTML(request, response, next);
+
+            assert.strictEqual(request.headers.accept, 'text/html');
+        });
+    });
 });

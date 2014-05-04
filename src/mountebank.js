@@ -47,6 +47,7 @@ function create (options) {
     app.use(middleware.useAbsoluteUrls(options.port));
     app.use(middleware.logger(logger, ':method :url'));
     app.use(middleware.globals({ heroku: options.heroku, port: options.port, version: thisPackage.version }));
+    app.use(middleware.defaultIEtoHTML);
     app.use(bodyParser.json());
     app.use(express.static(path.join(__dirname, 'public')));
     app.use(errorHandler());
