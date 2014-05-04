@@ -67,10 +67,15 @@ function create (protocol) {
         return responseFor({ method: 'DELETE', path: path, port: port });
     }
 
+    function put (path, body, port) {
+        return responseFor({ method: 'PUT', path: path, port: port }, body);
+    }
+
     return {
         get: get,
         post: post,
         del: del,
+        put: put,
         responseFor: responseFor
     };
 }

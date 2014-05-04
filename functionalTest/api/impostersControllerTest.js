@@ -55,7 +55,6 @@ describe('POST /imposters', function () {
     });
 });
 
-
 describe('DELETE /imposters', function () {
     promiseIt('returns 200 with empty array if no imposters had been created', function () {
         return api.del('/imposters').then(function (response) {
@@ -102,6 +101,62 @@ describe('DELETE /imposters', function () {
         }, function (error) {
             assert.strictEqual(error.code, 'ECONNREFUSED');
             done();
+        });
+    });
+});
+
+describe('PUT /imposters', function () {
+    promiseIt('creates all imposters provided when no imposters previously exist', function () {
+        var request = {
+                imposters: [
+                    { protocol: 'http', port: port, name: this.name + '1' },
+                    { protocol: 'http', port: port + 1, name: this.name + '2' },
+                    { protocol: 'http', port: port + 2, name: this.name + '3' }
+                ]
+            };
+
+        return api.put('/imposters', request).then(function (response) {
+            assert.strictEqual(response.statusCode, 200);
+            return client.get('/', port);
+        }).then(function (response) {
+            assert.strictEqual(response.statusCode, 200);
+            return client.get('/', port + 1);
+        }).then(function (response) {
+            assert.strictEqual(response.statusCode, 200);
+            return client.get('/', port + 2);
+        }).then(function (response) {
+            assert.strictEqual(response.statusCode, 200);
+        }).finally(function () {
+            return api.del('/imposters');
+        });
+    });
+
+    promiseIt('overwrites previous imposters', function () {
+        var postRequest = { protocol: 'smtp', port: port },
+            putRequest = {
+                imposters: [
+                    { protocol: 'http', port: port, name: this.name + '1' },
+                    { protocol: 'http', port: port + 1, name: this.name + '2' },
+                    { protocol: 'http', port: port + 2, name: this.name + '3' }
+                ]
+            };
+
+        return api.post('/imposters', postRequest).then(function (response) {
+            assert.strictEqual(response.statusCode, 201);
+            return api.put('/imposters', putRequest);
+        }).then(function (response) {
+            assert.strictEqual(response.statusCode, 200);
+            return client.get('/', port);
+        }).then(function (response) {
+            assert.strictEqual(response.statusCode, 200);
+            return client.get('/', port + 1);
+        }).then(function (response) {
+            assert.strictEqual(response.statusCode, 200);
+            return client.get('/', port + 2);
+        }).then(function (response) {
+            assert.strictEqual(response.statusCode, 200);
+        }).finally(function () {
+            return api.del('/imposters');
         });
     });
 });

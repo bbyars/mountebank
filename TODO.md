@@ -1,8 +1,7 @@
 Stories/Tasks
 =============
 
-19. Add atom feed that only displays when --heroku is set that people can subscribe to for updates
-
+Make replayable JSON gracefully deal with proxies
 PUT /imposters to overwrite
 config file
 give stubs names

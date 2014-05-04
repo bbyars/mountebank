@@ -65,6 +65,7 @@ function create (options) {
     app.get('/imposters', impostersController.get);
     app.post('/imposters', impostersController.post);
     app.del('/imposters', impostersController.del);
+    app.put('/imposters', impostersController.put);
     app.get('/imposters/:id', validateImposterExists, imposterController.get);
     app.del('/imposters/:id', imposterController.del);
     app.get('/logs', logsController.get);
