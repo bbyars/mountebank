@@ -1,11 +1,6 @@
 Stories/Tasks
 =============
 
-Add /config link to home
-Add /feed link to home
-Add /releases links to home
-Add JSON /logs and link from home
-
 Make replayable JSON gracefully deal with proxies
 give stubs names
 
