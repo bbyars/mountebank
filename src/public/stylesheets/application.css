@@ -329,3 +329,7 @@ strong.highlight4 {
     -webkit-font-smoothing: antialiased;
     *margin-right: .3em;
 }
+
+input[type=search] {
+    width: 15em;
+}
