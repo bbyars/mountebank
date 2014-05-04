@@ -37,6 +37,18 @@ function create (protocols, imposters, Imposter, logger) {
         }
     }
 
+    function respondWithValidationErrors (response, validationErrors) {
+        logger.warn('error creating imposter: ' + JSON.stringify(errors.details(validationErrors)));
+        response.statusCode = 400;
+        response.send({ errors: validationErrors });
+    }
+
+    function respondWithCreationError (response, error) {
+        logger.warn('error creating imposter: ' + JSON.stringify(errors.details(error)));
+        response.statusCode = (error.code === 'insufficient access') ? 403 : 400;
+        response.send({ errors: [error] });
+    }
+
     function get (request, response) {
         var query = url.parse(request.url, true).query,
             functionName = query.replayable ? 'toReplayableJSON' : 'toListJSON';
@@ -65,16 +77,11 @@ function create (protocols, imposters, Imposter, logger) {
                     response.statusCode = 201;
                     response.send(imposter.toJSON());
                 }, function (error) {
-                    logger.warn('error creating imposter: ' + JSON.stringify(errors.details(error)));
-                    response.statusCode = (error.code === 'insufficient access') ? 403 : 400;
-                    response.send({ errors: [error] });
+                    respondWithCreationError(response, error);
                 });
             }
             else {
-                logger.warn('error creating imposter: ' + JSON.stringify(errors.details(validation.errors)));
-                response.statusCode = 400;
-                response.send({ errors: validation.errors });
-                return Q(true);
+                respondWithValidationErrors(response, validation.errors);
             }
         });
     }
@@ -116,9 +123,7 @@ function create (protocols, imposters, Imposter, logger) {
                     });
                     response.send({ imposters: json });
                 }, function (error) {
-                    logger.warn('error creating imposter: ' + JSON.stringify(errors.details(error)));
-                    response.statusCode = (error.code === 'insufficient access') ? 403 : 400;
-                    response.send({ errors: [error] });
+                    respondWithCreationError(response, error);
                 });
             }
             else {
@@ -126,9 +131,7 @@ function create (protocols, imposters, Imposter, logger) {
                         return accumulator.concat(validation.errors);
                     }, []);
 
-                logger.warn('error creating imposter: ' + JSON.stringify(errors.details(validationErrors)));
-                response.statusCode = 400;
-                response.send({ errors: validationErrors });
+                respondWithValidationErrors(response, validationErrors);
             }
         });
     }
