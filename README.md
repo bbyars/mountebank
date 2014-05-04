@@ -1,7 +1,7 @@
 mountebank
 ==========
 
-mountebank is the first tool to provide multi-protocol, multi-language test doubles over the wire.
+mountebank is the first tool to provide cross-platform, multi-protocol test doubles over the wire.
 Just point your application to mountebank instead of the real dependency,
 and test like you would with traditional stubs and mocks.
 
@@ -60,8 +60,7 @@ for any support questions.  Don't be shy!
 [![Dependency Status](https://gemnasium.com/bbyars/mountebank.png)](https://gemnasium.com/bbyars/mountebank.png)
 
 `./build` should do the trick.  If not, yell at me.  At the moment I've tested on OS X and Linux.
-I test on node 0.10 (I used to test on node 0.8 as well, but struggled getting my Travis deployments
-working with both in the build matrix).
+I test on node 0.10.
 
 ## Contributing
 
