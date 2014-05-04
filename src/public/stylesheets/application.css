@@ -333,3 +333,7 @@ strong.highlight4 {
 input[type=search] {
     width: 15em;
 }
+
+#searchButton {
+    display: none;
+}
