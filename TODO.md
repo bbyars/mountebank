@@ -2,7 +2,6 @@ Stories/Tasks
 =============
 
 Make replayable JSON gracefully deal with proxies
-PUT /imposters to overwrite
 config file
 give stubs names
 
