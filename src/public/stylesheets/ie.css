@@ -1,0 +1,14 @@
+input[type=search] {
+    position: absolute;
+    left: 30em;
+    top: -5em;
+    background-color: #fffff0;
+}
+
+#searchButton {
+    display: inline;
+    position: absolute;
+    left: 45.5em;
+    top: -5em;
+
+}

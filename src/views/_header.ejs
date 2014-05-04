@@ -2,7 +2,10 @@
 <html>
   <head>
     <title>mountebank</title>
-    <link rel='stylesheet' href='/stylesheets/application.css' />
+    <link rel='stylesheet' type='text/css' href='/stylesheets/application.css' />
+    <!--[if IE]>
+    <link rel='stylesheet' type='text/css' href='/stylesheets/ie.css' />
+    <![endif]-->
     <link rel='shortcut icon' href='/images/favicon.ico' type='image/x-icon' />
   </head>
   <body>
@@ -23,6 +26,7 @@
                 <input type='hidden' name='domains' value='www.mbtest.org' />
                 <input type='hidden' name='sitesearch' value='www.mbtest.org' />
                 <input type='search' name='q' results='5' autosave='mb' placeholder='Search...' />
+                <input type='submit' value='Search...' id='searchButton' />
               </form>
             </li>
           </ul>
