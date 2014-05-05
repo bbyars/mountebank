@@ -59,7 +59,6 @@ describe('docs', function () {
             return docs.get(page).then(function (docs) {
                 var tests = Object.keys(docs).map(function (testName) {
                     return executeTest(docs[testName]);
-
                 });
                 return Q.all(tests);
             });
