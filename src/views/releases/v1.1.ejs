@@ -11,12 +11,16 @@
 
 <h2>New Features</h2>
 <ul class='bullet-list'>
-  <li>A new <a href='http://<%= host %>/docs/api/overview'><code>?replayable=true</code></a> query parameter to retrieve
-    all imposters or a single imposter without the <code>requests</code> and <code>matches</code>
-    arrays.  This supports runtime downloads of a configuration to replay later.</li>
-  <li>Mass update and delete capability.  mountebank now supports PUT and DELETE verbs
+  <li>A new <a href='http://<%= host %>/docs/api/overview#get-imposters'><code>?replayable=true</code></a>
+    query parameter to retrieve all imposters or a
+    <a href='http://<%= host %>/docs/api/overview#get-imposter'>single imposter</a> without the
+    <code>requests</code> array, <code>matches</code> array, and hypermedia.
+    This supports runtime downloads of a configuration to replay later.</li>
+  <li>Mass update and delete capability.  mountebank now supports
+    <a href='http://<%= host %>/docs/api/overview#put-imposters'><code>PUT</code></a> and
+    <a href='http://<%= host %>/docs/api/overview#delete-imposters'><code>DELETE</code></a> verbs
     on /imposters.  This is designed to support loading a configuration file of imposters at
-    runtime.  See the <a href='http://<%= host %>/docs/api/overview'>API overview</a> page.</li>
+    runtime.</li>
   <li>A new <a href='http://<%= host %>/docs/api/stubs'><code>_behaviors</code></a> field available for stubs.
     <code>_behaviors</code> currently supports adding latency to each response.</li>
   <li>A new <a href='http://<%= host %>/docs/commandLine'><code>--nomock</code></a> command line option to prevent
@@ -24,8 +28,8 @@
     where mocking is not important.</li>
   <li>A new <a href='http://<%= host %>/docs/commandLine'><code>--configfile</code></a> command line option to
     load a configuration file at startup for creating imposters.</li>
-  <li>The <a href='http://<%= host %>/docs/api/overview'><code>config</code></a> and
-    <a href=''>logs</a> resources are now exposed oer JSON.</li>
+  <li>The <a href='http://<%= host %>/docs/api/overview#get-config'><code>config</code></a> and
+    <a href='http://<%= host %>/docs/api/overview#get-logs'>logs</a> resources are now exposed oer JSON.</li>
 </ul>
 
 <h2>Documentation Improvements</h2>
