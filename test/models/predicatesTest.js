@@ -259,6 +259,12 @@ describe('predicates', function () {
                 request = { field: '1This is 3a 2test' };
             assert.ok(predicates.deepEquals(predicate, request));
         });
+
+        it('should be true for ints, bools, and floats when actual is strings', function () {
+            var predicate = { deepEquals: { query: { int: 1, float: 1.1, bool: true } } },
+                request = { query: { int: '1', float: '1.1', bool: 'true' } };
+            assert.ok(predicates.deepEquals(predicate, request));
+        });
     });
 
     describe('#contains', function () {

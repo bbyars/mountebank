@@ -5,6 +5,24 @@ var errors = require('../util/errors'),
     combinators = require('../util/combinators'),
     stringify = require('json-stable-stringify');
 
+function forceStrings (obj) {
+    if (typeof obj !== 'object') {
+        return obj;
+    }
+    return Object.keys(obj).reduce(function (result, key) {
+        if (typeof obj[key] === 'object') {
+            result[key] = forceStrings(obj[key]);
+        }
+        else if (['boolean', 'number'].indexOf(typeof obj[key]) >= 0) {
+            result[key] = obj[key].toString();
+        }
+        else {
+            result[key] = obj[key];
+        }
+        return result;
+    }, {});
+}
+
 function normalize (obj, config, encoding) {
     var lowerCase = function (text) { return text.toLowerCase(); },
         caseTransform = config.caseSensitive ? combinators.identity : lowerCase,
@@ -51,8 +69,8 @@ function create (operator, predicateFn) {
 }
 
 function deepEquals (predicate, request, encoding) {
-    var expected = normalize(predicate.deepEquals, predicate, encoding),
-        actual = normalize(request, predicate, encoding);
+    var expected = normalize(forceStrings(predicate.deepEquals), predicate, encoding),
+        actual = normalize(forceStrings(request), predicate, encoding);
 
     return Object.keys(expected).every(function (fieldName) {
         return stringify(expected[fieldName]) === stringify(actual[fieldName]);
