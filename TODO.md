@@ -1,7 +1,7 @@
 Stories/Tasks
 =============
 
-Make replayable JSON gracefully deal with proxies
+Add ?removeProxies=true to gracefully deal with proxies
 give stubs names
 
 UI, walk you through the steps (port, name optional, etc) + defining terms
