@@ -21,7 +21,10 @@ var assert = require('assert'),
                             is: {
                                 statusCode: 400,
                                 headers: { 'X-Test': 'test header' },
-                                body: 'test body'
+                                body: 'test body',
+                                query: {
+                                    key: true
+                                }
                             }
                         }]
                     },
@@ -30,7 +33,7 @@ var assert = require('assert'),
                 return api.post('/imposters', request).then(function (response) {
                     assert.strictEqual(response.statusCode, 201);
 
-                    return client.get('/test', port);
+                    return client.get('/test?key=true', port);
                 }).then(function (response) {
                     assert.strictEqual(response.statusCode, 400);
                     assert.strictEqual(response.body, 'test body');
