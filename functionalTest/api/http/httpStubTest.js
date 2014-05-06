@@ -145,11 +145,11 @@ var assert = require('assert'),
                     },
                     stubWithPredicateKeywordInObject = {
                         responses: [{ is: { body: 'second stub'} }],
-                        predicates: [{ deepEquals: { query: { equals: 'value' } } }]
+                        predicates: [{ deepEquals: { query: { equals: 1 } } }]
                     },
                     stubWithTwoKeywordsInObject = {
                         responses: [{ is: { body: 'third stub'} }],
-                        predicates: [{ deepEquals: { query: { equals: 'true', contains: 'false' } } }]
+                        predicates: [{ deepEquals: { query: { equals: 'true', contains: false } } }]
                     },
                     stubs = [stubWithEmptyObjectPredicate, stubWithPredicateKeywordInObject, stubWithTwoKeywordsInObject],
                     request = { protocol: protocol, port: port, stubs: stubs, name: this.name };
@@ -162,7 +162,7 @@ var assert = require('assert'),
                     return client.get('/?equals=something', port);
                 }).then(function (response) {
                     assert.strictEqual(response.body, '');
-                    return client.get('/?equals=value', port);
+                    return client.get('/?equals=1', port);
                 }).then(function (response) {
                     assert.strictEqual(response.body, 'second stub');
                     return client.get('/?contains=false&equals=true', port);
