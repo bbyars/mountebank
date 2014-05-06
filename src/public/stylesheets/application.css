@@ -337,3 +337,13 @@ input[type=search] {
 #searchButton {
     display: none;
 }
+
+#notice {
+    float: right;
+    padding: 0.4em;
+    background-color: rgb(255,255,200);
+}
+
+#notice a {
+    color: blue;
+}
