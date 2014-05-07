@@ -172,6 +172,28 @@ var assert = require('assert'),
                     return api.del('/imposters/' + port);
                 });
             });
+
+            promiseIt('should add latency when using behaviors.wait', function () {
+                var stub = {
+                        responses: [{ is: { body: 'stub'},  _behaviors: { wait: 1000 } }]
+
+                    },
+                    stubs = [stub],
+                    request = { protocol: protocol, port: port, stubs: stubs, name: this.name },
+                    timer;
+
+                return api.post('/imposters', request).then(function (response) {
+                    assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body, null, 2));
+                    timer = new Date();
+                    return client.get('/', port);
+                }).then(function (response) {
+                    assert.strictEqual(response.body, 'stub');
+                    var time = new Date() - timer;
+                    assert.ok(time > 1000);
+                }).finally(function () {
+                    return api.del('/imposters/' + port);
+                });
+            });
         });
     });
 });
