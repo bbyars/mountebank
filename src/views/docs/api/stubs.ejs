@@ -56,6 +56,27 @@ injection</a> page for detailed examples of those resolvers, and the
 <a href='/docs/api/predicates'>predicates</a> page for examples of stubs with predicates.
 Multiple stubs only make sense with predicates.</p>
 
+<p>Stubs can be decorated by adding a <code>_behaviors</code> object.  At the moment, mountebank accepts
+the following behaviors</p>
+
+<table id='behaviors'>
+  <tr>
+    <th>Behavior</th>
+    <th>Description</th>
+    <th>Example</th>
+  </tr>
+  <tr>
+    <td><code>wait</code></td>
+    <td>A number of milliseconds to wait</td>
+    <td><pre><code>
+      {
+        "is": "...",
+        "_behaviors": { "wait": 3000 }
+      }
+    </code></pre></td>
+  </tr>
+</table>
+
 <h2>Example</h2>
 
 <p>Let's create an http imposter with a couple of <code>is</code> resolvers.  It will simulate

@@ -21,7 +21,7 @@
     <a href='http://<%= host %>/docs/api/overview#delete-imposters'><code>DELETE</code></a> verbs
     on /imposters.  This is designed to support loading a configuration file of imposters at
     runtime.</li>
-  <li>A new <a href='http://<%= host %>/docs/api/stubs'><code>_behaviors</code></a> field available for stubs.
+  <li>A new <a href='http://<%= host %>/docs/api/stubs#behaviors'><code>_behaviors</code></a> field available for stubs.
     <code>_behaviors</code> currently supports adding latency to each response.</li>
   <li>A new <a href='http://<%= host %>/docs/commandLine'><code>--nomock</code></a> command line option to prevent
     mountebank from recording requests.  This supports long-running processes from leaking memory
@@ -35,7 +35,7 @@
 <h2>Documentation Improvements</h2>
 <ul class='bullet-list'>
   <li><a href='http://<%= host %>/docs/examples'>Example usages</a> in multiple languages and multiple protocols.</li>
-  <li>This ATOM feed, which will be updated with release notes on every release.  Subscribe in
+  <li>An <a href='http://<%= host %>/feed'>ATOM feed</a>, which will be updated with release notes on every release.  Subscribe in
     <a href='http://feedly.com/index.html#discover'>feedly</a> or your favorite RSS reader.</li>
   <li>A new <a href='http://<%= host %>/docs/glossary'>glossary</a> to help explain mountebank concepts.</li>
   <li>Embedded site search, accessible through the search box in the header.</li>
@@ -46,9 +46,10 @@
   <li>Fixed <a href='https://github.com/bbyars/mountebank/issues/3'>incorrect handling of JSON null values</a></li>
   <li>Fixed <a href='https://github.com/bbyars/mountebank/pull/9'>inconsistent end tags</a> on the stubs
     documentation.</li>
-  <li>mountebank now support <a href='https://github.com/bbyars/mountebank/issues/4'>ints, floats, and
-    booleans</a> for predicates.</li>
+  <li>mountebank now support <a href='https://github.com/bbyars/mountebank/issues/4'>numbers and
+    booleans</a> for <code>deepEquals</code> predicates.</li>
   <li>Fixed <a href='https://github.com/bbyars/mountebank/issues/10'>rendering of several pages in Internet Explorer</a>.</li>
 </ul>
 
-<p>Many thanks to <a href='http://nikosbaxevanis.com/'>Nikos Baxevanis</a> for help with this release.</p>
+<p>Many thanks to <a href='http://nikosbaxevanis.com/'>Nikos Baxevanis</a> and
+  <a href='https://github.com/Andhadley'>Andrew Hadley</a> for help with this release.</p>
