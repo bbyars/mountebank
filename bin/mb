@@ -7,7 +7,8 @@ var mountebank = require('../src/mountebank'),
     http = require('http'),
     exec = require('child_process').exec,
     thisPackage = require('../package.json'),
-    Q = require('q');
+    Q = require('q'),
+    os = require('os');
 
 function usage () {
     console.log('Usage: mb [command] [options...]');
@@ -29,6 +30,15 @@ function error (message) {
     process.exit(1);
 }
 
+function getStopCommand (pid) {
+    if (os.platform().indexOf('win') === 0) {
+        return 'taskkill /F /PID ' + pid;
+    }
+    else {
+        return 'kill ' + pid;
+    }
+}
+
 var serverAt = function (options) {
     return {
         start: function () {
@@ -45,10 +55,12 @@ var serverAt = function (options) {
         },
 
         stop: function () {
-            var kill = 'if [ -e PIDFILE ]; then\n' +
-                       '    kill `cat PIDFILE`\n' +
-                       'fi',
-                command = kill.replace(/PIDFILE/g, options.pidfile);
+            if (!fs.existsSync(options.pidfile)) {
+                return;
+            }
+
+            var pid = fs.readFileSync(options.pidfile),
+                command = getStopCommand(pid);
 
             exec(command, function (error, stdout, stderr) {
                 console.log(stdout);

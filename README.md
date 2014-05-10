@@ -62,6 +62,10 @@ for any support questions.  Don't be shy!
 `./build` should do the trick.  If not, yell at me.  At the moment I've tested on OS X and Linux.
 I test on node 0.10.
 
+`jsdom`, used for testing, does not install correctly on Windows without some workarounds.  I had to install python 2.7 (not
+ the latest).  The entire build will not run on Windows, as it uses `netcat`, but I'm working on making some Windows develpment
+ possible.
+
 ## Contributing
 
 Contributions are welcome (see TODO.md for my own open loops, although I welcome other ideas).
