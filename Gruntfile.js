@@ -3,6 +3,7 @@
 var spawn = require('child_process').spawn,
     exec = require('child_process').exec,
     os = require('os'),
+    fs = require('fs'),
     port = process.env.MB_PORT || 2525,
     revision = process.env.REVISION || 0;
 
@@ -107,26 +108,13 @@ module.exports = function (grunt) {
     });
 
     grunt.registerTask('version', 'Set the version number', function () {
-        var done = this.async(),
-            pattern = '"version": "([0-9]+)\\.([0-9]+)\\.([0-9]+)"',
-            replacement = '"version": "\\1.\\2.' + revision + '"',
-            sed = "sed -E -e 's/" + pattern + "/" + replacement + "/' ";
+        var oldPackageJson = fs.readFileSync('package.json', { encoding: 'utf8' }),
+            pattern = /"version": "(\d+)\.(\d+)\.(\d+)"/,
+            newPackageJson = oldPackageJson.replace(pattern, '"version": "$1.$2.' + revision + '"');
 
-        console.log("Using " + revision);
+        console.log("Using revision " + revision);
 
-        if (os.platform() === 'darwin') {
-            sed += "-i '' package.json";
-        }
-        else {
-            sed += "-i'' package.json";
-        }
-
-        exec(sed, function (error) {
-            if (error) {
-                throw error;
-            }
-            done();
-        });
+        fs.writeFileSync('package.json', newPackageJson);
     });
 
     grunt.registerTask('coveralls', 'Send coverage output to coveralls.io', function () {
