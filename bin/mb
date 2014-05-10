@@ -30,8 +30,12 @@ function error (message) {
     process.exit(1);
 }
 
+function isWindows () {
+    return os.platform().indexOf('win') === 0;
+}
+
 function getStopCommand (pid) {
-    if (os.platform().indexOf('win') === 0) {
+    if (isWindows()) {
         return 'taskkill /F /PID ' + pid;
     }
     else {
@@ -56,7 +60,7 @@ var serverAt = function (options) {
 
         stop: function () {
             if (!fs.existsSync(options.pidfile)) {
-                return;
+                return false;
             }
 
             var pid = fs.readFileSync(options.pidfile),
@@ -68,11 +72,18 @@ var serverAt = function (options) {
                     console.log(stderr);
                 }
             });
+            return true;
         },
 
         restart: function () {
-            this.stop();
-            this.start();
+            var stopped = this.stop();
+            if (stopped && isWindows()) {
+                // Need a delay or get an address in use error
+                setTimeout(this.start, 1000);
+            }
+            else {
+                this.start();
+            }
         }
     };
 };
