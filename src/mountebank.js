@@ -22,7 +22,8 @@ function create (options) {
         protocols = {
             'tcp': require('./models/tcp/tcpServer').initialize(options.allowInjection, !options.nomock),
             'http': require('./models/http/httpServer').initialize(options.allowInjection, !options.nomock),
-            'https': require('./models/https/httpsServer').initialize(options.allowInjection, !options.nomock),
+            'https': require('./models/https/httpsServer').initialize(options.allowInjection, !options.nomock,
+                                                                      options.keyfile, options.certfile),
             'smtp': require('./models/smtp/smtpServer').initialize(!options.nomock)
         },
         logger = ScopedLogger.create(winston, util.format('[mb:%s] ', options.port)),

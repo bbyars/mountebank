@@ -15,12 +15,14 @@ function usage () {
     console.log('Commands: start, stop, restart, help (defaults to start)');
     console.log('Options:');
     console.log('    --port PORT       the port to run the mountebank server on (default 2525)');
+    console.log('    --configfile      file to load imposters from');
     console.log('    --pidfile FILE    where the pid is stored for the stop command (default mb.pid)');
     console.log('    --logfile FILE    file used for all log (default mb.log)');
     console.log('    --loglevel LEVEL  level for terminal logs (default info)');
     console.log('    --allowInjection  set to allow JavaScript injection');
     console.log('    --nomock          do not remember requests for mock verification and stub debugging (avoid leaking memory for long running instances)');
-    console.log('    --configfile      file to load imposters from');
+    console.log('    --keyfile         file to read for https key (defaults to internal key)');
+    console.log('    --certfile        file to read for https cert (defaults to self-signed cert)');
     console.log('    --version         show the mountebank version and exit');
 }
 
@@ -119,7 +121,15 @@ function putConfigFile (options, body) {
 }
 
 try {
-    var defaultOptions = { port: 2525, pidfile: 'mb.pid', logfile: 'mb.log', loglevel: 'info', configfile: '' },
+    var defaultOptions = {
+            port: 2525,
+            pidfile: 'mb.pid',
+            logfile: 'mb.log',
+            loglevel: 'info',
+            configfile: '',
+            keyfile: '',
+            certfile: ''
+        },
         commandLine = cli.parse(process.argv.slice(2), defaultOptions, ['allowInjection', 'nomock', 'heroku', 'version']),
         server = serverAt(commandLine.options),
         configContents;

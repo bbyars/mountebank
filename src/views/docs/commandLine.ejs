@@ -23,13 +23,14 @@
     <td><code>2525</code></td>
   </tr>
   <tr>
-    <td><code>--pidfile mb.pid</code></td>
-    <td>mountebank stores the process id (PID) in a file, which is used by the
-      <code>stop</code> and <code>restart</code> commands.  You would only specify
-      this if you run two instances of <code>mb</code> from the same working directory,
-      or if you want to be able to stop <code>mb</code> from a different directory
-      than you started it in.</td>
-    <td><code>mb.pid</code></td>
+    <td><code>--configfile imposters.json</code></td>
+    <td>If present, mountebank will load the contents of the file passed by sending
+    a <a href='/docs/api/overview#put-imposters'><code>PUT</code> command</a>
+    to <code>/imposters</code>.  See the <a href='/docs/api/overview#put-imposters'>
+    API docs</a> for what the content should look like.  This is the same content you get
+    from a <a href='/docs/api/overview#get-imposters'>
+    <code>GET /imposters?replayable=true</code></a> call.</td>
+    <td><code>N/A</code></td>
   </tr>
   <tr>
     <td><code>--logfile mb.log</code></td>
@@ -58,6 +59,16 @@
       This represents a memory leak for any long running <code>mb</code> process, as requests are
       never forgotten.  The <code>--nomock</code> flag turns this behavior off.</td>
     <td><code>false</code></td>
+  </tr>
+  <tr>
+    <td><code>--keyfile key.pem</code></td>
+    <td>Determines the key to use for https certificates.</td>
+    <td>An internal key</td>
+  </tr>
+  <tr>
+    <td><code>--certfile cert.pem</code></td>
+    <td>Determines the cert to use for https certificates.</td>
+    <td>An internal self-signed certificate</td>
   </tr>
   <tr>
     <td><code>--version</code></td>

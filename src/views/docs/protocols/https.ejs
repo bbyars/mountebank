@@ -3,8 +3,10 @@
 <h1>https</h1>
 
 <p>The https is identical to the http protocol, except for the fact that it uses
-a self-signed certificate.  You may have to configure your code to disable
-certificate validation (e.g. use the <code>-k</code> switch in <code>curl</code>).</p>
+a certificate.  If you use the built-in self-signed certificate, you may have to
+configure your code to disable certificate validation (e.g. use the <code>-k</code>
+switch in <code>curl</code>).  Alternatively, you may pass in the certificate
+using the <a href='/docs/commandLine'>command line parameters</a>.</p>
 
 <p>See the <a href='/docs/protocols/http'>http</a> page for examples.  Just be sure
 to change the <code>protocol</code> parameter to <code>https</code> during imposter
