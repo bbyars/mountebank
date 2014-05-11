@@ -108,10 +108,34 @@ function defaultIEtoHTML (request, response, next) {
     next();
 }
 
+function json (logger) {
+    return function (request, response, next) {
+        // Accept requests even if no content type passed in to make command line testing easier
+        request.body = '';
+        request.setEncoding('utf8');
+        request.on('data', function (chunk) {
+            request.body += chunk;
+        });
+        request.on('end', function () {
+            if (request.body !== '') {
+                try {
+                    request.body = JSON.parse(request.body);
+                    request.headers['content-type'] = 'application/json';
+                }
+                catch (e) {
+                    logger.error('Invalid JSON: ' + request.body);
+                }
+            }
+            next();
+        });
+    };
+}
+
 module.exports = {
     useAbsoluteUrls: useAbsoluteUrls,
     createImposterValidator: createImposterValidator,
     logger: logger,
     globals: globals,
-    defaultIEtoHTML: defaultIEtoHTML
+    defaultIEtoHTML: defaultIEtoHTML,
+    json: json
 };

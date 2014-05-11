@@ -2,7 +2,6 @@
 
 var express = require('express'),
     errorHandler = require('errorhandler'),
-    bodyParser = require('body-parser'),
     path = require('path'),
     middleware = require('./util/middleware'),
     homeController = require('./controllers/homeController'),
@@ -48,7 +47,7 @@ function create (options) {
     app.use(middleware.logger(logger, ':method :url'));
     app.use(middleware.globals({ heroku: options.heroku, port: options.port, version: thisPackage.version }));
     app.use(middleware.defaultIEtoHTML);
-    app.use(bodyParser.json());
+    app.use(middleware.json(logger));
     app.use(express.static(path.join(__dirname, 'public')));
     app.use(errorHandler());
 

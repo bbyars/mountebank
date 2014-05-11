@@ -16,7 +16,7 @@ function create (protocol) {
         return helpers.merge(defaults, spec);
     }
 
-    function responseFor (spec, body) {
+    function responseFor (spec, body, ignoreContentType) {
         var deferred = Q.defer(),
             options = optionsFor(spec);
 
@@ -24,7 +24,7 @@ function create (protocol) {
             throw Error('silly rabbit, you forgot to pass the port again');
         }
 
-        if (body && !options.headers['Content-Type']) {
+        if (body && !options.headers['Content-Type'] && !ignoreContentType) {
             options.headers['Content-Type'] = 'application/json';
         }
 
@@ -44,7 +44,7 @@ function create (protocol) {
         request.on('error', deferred.reject);
 
         if (body) {
-            if (options.headers['Content-Type'] === 'application/json' && typeof(body) === 'object') {
+            if (typeof(body) === 'object') {
                 request.write(JSON.stringify(body));
             }
             else {
@@ -59,8 +59,8 @@ function create (protocol) {
         return responseFor({ method: 'GET', path: path, port: port });
     }
 
-    function post (path, body, port) {
-        return responseFor({ method: 'POST', path: path, port: port }, body);
+    function post (path, body, port, ignoreContentType) {
+        return responseFor({ method: 'POST', path: path, port: port }, body, ignoreContentType);
     }
 
     function del (path, port) {

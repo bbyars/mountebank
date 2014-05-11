@@ -26,6 +26,19 @@ var assert = require('assert'),
                     return api.del('/imposters');
                 });
             });
+
+            promiseIt('should default content type to json if not provided', function () {
+                var request = { port: port, protocol: protocol, name: this.name };
+
+                return api.post('/imposters', request, true).then(function (response) {
+                    assert.strictEqual(response.statusCode, 201);
+                    return client.get('/first', port);
+                }).then(function (response) {
+                    assert.strictEqual(response.statusCode, 200);
+                }).finally(function () {
+                    return api.del('/imposters');
+                });
+            });
         });
 
         describe('GET /imposters/:id', function () {
