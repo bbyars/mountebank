@@ -1,17 +1,53 @@
 <% include _header %>
 
+<script src='/scripts/imposters.js'></script>
+
 <h1>Imposters</h1>
 
-<p>See the docs on the left for creating an imposter.  At this time, mountebank does not support
-creating imposters through this UI.  <% if (heroku) { %> This page is hosted on heroku, and while it
-will accept imposter creation requests, the imposters are not actually able to bind to a different port
-in heroku. <% } %></p>
-<p>The following imposters have been created:</p>
+<p>mountebank is a man of few words, preferring demonstrations to oration.  For those who wish to
+learn the <a href='/docs/api/overview'>API</a> by example, you've come to the right place.  Create
+an imposter below, and let mountebank build the API call for you.  It all starts with the green
+plus sign.</p>
 
-<ul>
-<% imposters.forEach(function (imposter) { %>
-  <li><a href="<%= imposter._links.self.href %>"><%= imposter.protocol %> on port <%= imposter.port %></a></li>
-<% }); %>
-</ul>
+<% if (heroku) { -%>
+<p>This page is hosted on heroku, and while it will accept imposter creation requests, the imposters
+are not actually able to bind to a different port.</p>
+<% } -%>
+
+<p>&nbsp;</p>
+<table style='table-layout: fixed;'>
+  <tr>
+    <th style='width: 3em'>&nbsp;</th>
+    <th style='width: 15em;'>name</th>
+    <th style='width: 6em;'>protocol</th>
+    <th style='width: 5em;'>port</th>
+    <th style='width: 6em;'># requests</th>
+  </tr>
+
+  <% imposters.forEach(function (imposter) { %>
+  <tr id='imposter-<%= imposter.port %>'>
+    <td style='width: 3em'>
+      <a href='#' class='inspect-icon' title='inspect'></a>
+      <a href='#' class='delete-icon' title='delete'></a>
+    </td>
+    <td style='width: 15em;'><a href='<%= imposter._links.self.href %>'>
+      <%= imposter.name || imposter.protocol + ':' + imposter.port %>
+    </a></td>
+    <td style='width: 6em;'><%= imposter.protocol %></td>
+    <td style='width: 5em;'><%= imposter.port %></td>
+    <td style='width: 6em;'><%= (imposter.requests || []).length %></td>
+  </tr>
+  <% }); -%>
+
+  <tr>
+    <td colspan='5'><a href='#' class='add-icon' title='add'></a></td>
+  </tr>
+</table>
+
+<p>Request:</p>
+<pre><code id='api-request'></code></pre>
+
+<p>Response:</p>
+<pre><code id='api-response'></code></pre>
 
 <% include _footer %>

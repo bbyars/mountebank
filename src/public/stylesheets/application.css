@@ -347,3 +347,26 @@ input[type=search] {
 #notice a {
     color: blue;
 }
+
+.inspect-icon:before {
+    content: "\f002";
+    font-family: FontAwesome;
+    font-weight: bold;
+    font-style: normal;
+}
+
+.delete-icon:before {
+    content: "\f057";
+    font-family: FontAwesome;
+    font-weight: bold;
+    font-style: normal;
+    color: red;
+}
+
+.add-icon:before {
+    content: "\f055";
+    font-family: FontAwesome;
+    font-weight: bold;
+    font-style: normal;
+    color: green;
+}

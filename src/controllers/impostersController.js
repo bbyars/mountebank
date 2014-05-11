@@ -50,16 +50,23 @@ function create (protocols, imposters, Imposter, logger) {
     }
 
     function get (request, response) {
-        var query = url.parse(request.url, true).query,
-            functionName = query.replayable ? 'toReplayableJSON' : 'toListJSON';
-
-        var result = Object.keys(imposters).reduce(function (accumulator, id) {
-            return accumulator.concat(imposters[id][functionName]());
-        }, []);
-
         response.format({
-            json: function () { response.send({ imposters: result }); },
-            html: function () { response.render('imposters', { imposters: result }); }
+            json: function () {
+                var query = url.parse(request.url, true).query,
+                    functionName = query.replayable ? 'toReplayableJSON' : 'toListJSON',
+                    result = Object.keys(imposters).reduce(function (accumulator, id) {
+                        return accumulator.concat(imposters[id][functionName]());
+                    }, []);
+
+                response.send({ imposters: result });
+            },
+            html: function () {
+                var result = Object.keys(imposters).reduce(function (accumulator, id) {
+                    return accumulator.concat(imposters[id].toJSON());
+                }, []);
+
+                response.render('imposters', { imposters: result });
+            }
         });
     }
 
