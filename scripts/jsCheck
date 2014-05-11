@@ -2,7 +2,7 @@
 
 STATUS=0
 
-for FILE in `find . -type f -name '*.js' -not \( -path "*/node_modules/*" \)`; do
+for FILE in `find . -type f -name '*.js' -not \( -path "*/node_modules/*" -o -path "*/dist/*" \)`; do
     # Check for 'use strict'
     head -n1 "$FILE" | grep 'use strict' > /dev/null
     if [ $? -ne 0 ]; then
@@ -15,6 +15,7 @@ for FILE in `find . -type f -name '*.js' -not \( -path "*/node_modules/*" \)`; d
         egrep "(describe|[Ii]t)\.only\(" "$FILE" > /dev/null
         if [ $? -eq 0 ]; then
             STATUS=1
+            egrep "(describe|[Ii]t)\.only\(" "$FILE"
             echo "$FILE appears to have been left with a mocha .only() call" >&2
         fi
     fi
@@ -23,6 +24,7 @@ for FILE in `find . -type f -name '*.js' -not \( -path "*/node_modules/*" \)`; d
     grep 'function [A-Za-z]\+(\|function(' "$FILE" > /dev/null
     if [ $? -eq 0 ]; then
         STATUS=1
+        grep 'function [A-Za-z]\+(\|function(' "$FILE"
         echo "$FILE uses function xyz() instead of function xyz () style for function definitions" >&2
     fi
 done

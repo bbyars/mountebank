@@ -1,17 +1,23 @@
 'use strict';
+/*global $:false */
+/*global document:false */
+/*global _gaq:false */
+/*global location:false */
 
 // Adapted from http://www.blastam.com/blog/index.php/2013/03/how-to-track-downloads-in-google-analytics-v2/
 
-jQuery(document).ready(function () {
+$(document).ready(function () {
     var filetypes = /\.(zip|gz|pkg|rpm|deb)$/i,
         baseHref = '';
 
-    if (jQuery('base').attr('href') !== undefined) {
-        baseHref = jQuery('base').attr('href');
+    if ($('base').attr('href') !== undefined) {
+        baseHref = $('base').attr('href');
     }
 
-    jQuery('a').on('click', function () {
-        var element = jQuery(this),
+    $('a').on('click', function () {
+        /*jshint maxcomplexity:7 */
+
+        var element = $(this),
             track = false,
             href = element.attr('href'),
             domains = document.domain.split('.').reverse(),
@@ -41,7 +47,7 @@ jQuery(document).ready(function () {
         if (track) {
             _gaq.push(['_trackEvent', events.category, events.action, events.label, events.value, events.nonInteraction]);
             if (element.attr('target') === undefined || element.attr('target').toLowerCase() !== '_blank') {
-                setTimeout(function() { location.href = events.location; }, 400);
+                setTimeout(function () { location.href = events.location; }, 400);
                 return false;
             }
         }
