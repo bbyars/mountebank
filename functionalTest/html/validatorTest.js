@@ -5,7 +5,7 @@ var assert = require('assert'),
     api = require('../api/api'),
     httpClient = require('../api/http/baseHttpClient').create('http'),
     fs = require('fs'),
-    timeout = parseInt(process.env.SLOW_TEST_TIMEOUT_MS || 5000);
+    timeout = 10000;
 
 describe('html validation', function () {
     this.timeout(timeout);
