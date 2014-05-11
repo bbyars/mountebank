@@ -2,8 +2,9 @@
 
 var spawn = require('child_process').spawn,
     exec = require('child_process').exec,
-    os = require('os'),
     fs = require('fs'),
+    os = require('os'),
+    path = require('path'),
     port = process.env.MB_PORT || 2525,
     revision = process.env.REVISION || 0;
 
@@ -14,6 +15,40 @@ function shell (command, done) {
         }
         done();
     });
+}
+
+function isWindows () {
+    return os.platform().indexOf('win') === 0;
+}
+
+function rmdirRecursiveSync (dir) {
+    if (!fs.existsSync(dir)) {
+        return;
+    }
+
+    fs.readdirSync(dir).forEach(function (file) {
+        var filePath = path.join(dir, file);
+        if (fs.lstatSync(filePath).isDirectory()) {
+            rmdirRecursiveSync(filePath);
+        } else {
+            fs.unlinkSync(filePath);
+        }
+    });
+    fs.rmdirSync(dir);
+}
+
+function cpdirRecursiveSync (src, dst) {
+    var isDirectory = fs.statSync(src).isDirectory(),
+        destination = path.join(dst, path.basename(src));
+
+    if (isDirectory) {
+        fs.mkdirSync(destination);
+        fs.readdirSync(src).forEach(function (file) {
+            cpdirRecursiveSync(path.join(src, file),destination);
+        });
+    } else {
+        fs.linkSync(src, destination);
+    }
 }
 
 module.exports = function (grunt) {
@@ -87,7 +122,16 @@ module.exports = function (grunt) {
 
         var done = this.async(),
             calledDone = false,
-            mb = spawn('dist/mountebank/bin/mb', [command, '--port', port, '--pidfile', 'mb-grunt.pid', '--allowInjection']);
+            options = [command, '--port', port, '--pidfile', 'mb-grunt.pid', '--allowInjection'],
+            mb;
+
+        if (isWindows()) {
+            options.unshift('dist\\mountebank\\bin\\mb');
+            mb = spawn('node', options);
+        }
+        else {
+            mb = spawn('dist/mountebank/bin/mb', options);
+        }
 
         ['stdout', 'stderr'].forEach(function (stream) {
             mb[stream].on('data', function () {
@@ -131,20 +175,14 @@ module.exports = function (grunt) {
     });
 
     grunt.registerTask('dist', 'Create trimmed down distribution directory', function () {
-        var sourceFiles = ['bin', 'src', 'package.json', 'README.md', 'LICENSE', '.npmignore'],
-            baseCommand = 'for FILE in $SOURCES$; do cp -R $FILE dist/mountebank; done',
-            command = baseCommand.replace('$SOURCES$', sourceFiles.join(' ')),
-            done = this.async();
-
-        exec('[ -e dist ] && rm -rf dist', function () {
-            exec('mkdir -p dist/mountebank', function () {
-                exec(command, function () {
-                    exec('rm -rf dist/mountebank/src/public/images/sources', function () {
-                        exec('cd dist/mountebank && npm install --production', done);
-                    });
-                });
-            });
+        rmdirRecursiveSync('dist');
+        fs.mkdirSync('dist');
+        fs.mkdirSync('dist/mountebank');
+        ['bin', 'src', 'package.json', 'README.md', 'LICENSE'].forEach(function (source) {
+            cpdirRecursiveSync(source, 'dist/mountebank');
         });
+        rmdirRecursiveSync('dist/mountebank/src/public/images/sources');
+        exec('cd dist/mountebank && npm install --production', this.async());
     });
 
     grunt.registerTask('test:unit', 'Run the unit tests', ['mochaTest:unit']);
