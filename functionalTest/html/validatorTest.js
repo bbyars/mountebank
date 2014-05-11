@@ -50,12 +50,6 @@ describe('html validation', function () {
                     file: 'validation-test.html',
                     callback: function (response) {
                         fs.unlinkSync('validation-test.html');
-                        if (!response.messages) {
-                            console.log('NO RESPONSE MESSAGE');
-                            console.log('-------------------');
-                            console.log(JSON.stringify(response, null, 4));
-                            console.log('-------------------');
-                        }
                         assert.strictEqual(0, response.messages.length, JSON.stringify(response.messages));
                         done();
                     }
