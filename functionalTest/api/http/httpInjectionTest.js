@@ -4,6 +4,7 @@ var assert = require('assert'),
     spawn = require('child_process').spawn,
     path = require('path'),
     api = require('../api'),
+    isWindows = require('os').platform().indexOf('win') === 0,
     BaseHttpClient = require('./baseHttpClient'),
     Q = require('q'),
     promiseIt = require('../../testHelpers').promiseIt,
@@ -14,7 +15,16 @@ function nonInjectableServer (command, port) {
     var deferred = Q.defer(),
         calledDone = false,
         mbPath = path.normalize(__dirname + '/../../../bin/mb'),
-        mb = spawn(mbPath, [command, '--port', port, '--pidfile', 'imposter-test.pid']);
+        options = [command, '--port', port, '--pidfile', 'imposter-test.pid'],
+        mb;
+
+    if (isWindows) {
+        options.unshift(mbPath);;
+        mb = spawn('node', options);
+    }
+    else {
+        mb = spawn(mbPath, options);
+    }
 
     ['stdout', 'stderr'].forEach(function (stream) {
         mb[stream].on('data', function () {

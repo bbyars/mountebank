@@ -4,6 +4,8 @@ var assert = require('assert'),
     api = require('./api'),
     promiseIt = require('../testHelpers').promiseIt,
     port = api.port + 1,
+    Q = require('q'),
+    isWindows = require('os').platform().indexOf('win') === 0,
     client = require('./http/baseHttpClient').create('http');
 
 describe('POST /imposters', function () {
@@ -49,6 +51,9 @@ describe('POST /imposters', function () {
     });
 
     promiseIt('should return 403 when does not have permission to bind to port', function () {
+        if (isWindows) {
+            return Q(true); // no sudo required
+        }
         return api.post('/imposters', { protocol: 'http', port: 90, name: this.name }).then(function (response) {
             assert.strictEqual(response.statusCode, 403);
         });

@@ -5,10 +5,17 @@ var assert = require('assert'),
     client = require('./baseHttpClient').create('http'),
     promiseIt = require('../../testHelpers').promiseIt,
     port = api.port + 1,
+    isWindows = require('os').platform().indexOf('win') === 0,
     timeout = parseInt(process.env.SLOW_TEST_TIMEOUT_MS || 2000);
 
 describe('http proxy stubs', function () {
-    this.timeout(timeout);
+    if (isWindows) {
+        // the DNS resolver errors take a lot longer on Windows
+        this.timeout(10000);
+    }
+    else {
+        this.timeout(timeout);
+    }
 
     promiseIt('should allow proxy stubs to invalid domains', function () {
         var stub = { responses: [{ proxy: { to: 'http://invalid.domain' } }] },

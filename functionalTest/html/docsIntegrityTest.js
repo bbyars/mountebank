@@ -4,6 +4,7 @@ var assert = require('assert'),
     Q = require('q'),
     promiseIt = require('../testHelpers').promiseIt,
     docs = require('./docs'),
+    isWindows = require('os').platform().indexOf('win') === 0,
     timeout = parseInt(process.env.SLOW_TEST_TIMEOUT_MS || 3000);
 
 function normalize (text, linesToIgnore) {
@@ -56,6 +57,10 @@ describe('docs', function () {
 
     pages.forEach(function (page) {
         promiseIt(page + ' should be up-to-date', function () {
+            if (isWindows) {
+                // the tests require netcat and don't run on Windows
+                return Q(true);
+            }
             return docs.get(page).then(function (docs) {
                 var tests = Object.keys(docs).map(function (testName) {
                     return executeTest(docs[testName]);

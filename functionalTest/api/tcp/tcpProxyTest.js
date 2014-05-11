@@ -5,11 +5,18 @@ var assert = require('assert'),
     api = require('../api'),
     promiseIt = require('../../testHelpers').promiseIt,
     port = api.port + 1,
+    isWindows = require('os').platform().indexOf('win') === 0,
     net = require('net'),
     timeout = parseInt(process.env.SLOW_TEST_TIMEOUT_MS || 3000);
 
 describe('tcp proxy', function () {
-    this.timeout(timeout);
+    if (isWindows) {
+        // the DNS resolver errors take a lot longer on Windows
+        this.timeout(10000);
+    }
+    else {
+        this.timeout(timeout);
+    }
 
     var noOp = function () {},
         logger = { debug: noOp, info: noOp, warn: noOp, error: noOp };
