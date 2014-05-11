@@ -59,12 +59,14 @@ for any support questions.  Don't be shy!
 [![Coverage Status](https://coveralls.io/repos/bbyars/mountebank/badge.png?branch=master)](https://coveralls.io/r/bbyars/mountebank?branch=master)
 [![Dependency Status](https://gemnasium.com/bbyars/mountebank.png)](https://gemnasium.com/bbyars/mountebank.png)
 
-`./build` should do the trick.  If not, yell at me.  At the moment I've tested on OS X and Linux.
-I test on node 0.10.
+`./build` should do the trick on Mac and Linux, assuming you have node 0.10.  If not, yell at me.
 
-`jsdom`, used for testing, does not install correctly on Windows without some workarounds.  I had to install python 2.7 (not
- the latest).  The entire build will not run on Windows, as it uses `netcat`, but I'm working on making some Windows develpment
- possible.
+`build.bat` is your friend on Windows.  It's not as complete - linting is left out because those use bash
+shell scripts.  Also, the tests that verify documentation integrity are also excluded because they depend
+on netcat.
+
+If the `npm install` fails on Windows, it's probably `jsdom`.  I had to install python 2.7 (not
+the latest) to get it to work.
 
 ## Contributing
 

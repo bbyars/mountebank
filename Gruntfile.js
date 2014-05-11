@@ -192,4 +192,5 @@ module.exports = function (grunt) {
     grunt.registerTask('coverage', 'Generate code coverage', ['mochaTest:coverage']);
     grunt.registerTask('lint', 'Run all JavaScript lint checks', ['wsCheck', 'jsCheck', 'jshint']);
     grunt.registerTask('default', ['version', 'test', 'lint']);
+    grunt.registerTask('windows', ['version', 'test']);
 };
