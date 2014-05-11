@@ -42,31 +42,36 @@ function executeTest (doc) {
     });
 }
 
+function validateDocs (page) {
+    promiseIt(page + ' should be up-to-date', function () {
+        return docs.get(page).then(function (docs) {
+            var tests = Object.keys(docs).map(function (testName) {
+                return executeTest(docs[testName]);
+            });
+            return Q.all(tests);
+        });
+    })
+}
+
 describe('docs', function () {
     this.timeout(timeout);
 
-    var pages = [
-        '/docs/gettingStarted',
+    [
         '/docs/api/overview',
         '/docs/api/mocks',
-        '/docs/api/stubs',
-        '/docs/api/predicates',
         '/docs/api/proxies',
         '/docs/api/injection'
-    ];
-
-    pages.forEach(function (page) {
-        promiseIt(page + ' should be up-to-date', function () {
-            if (isWindows) {
-                // the tests require netcat and don't run on Windows
-                return Q(true);
-            }
-            return docs.get(page).then(function (docs) {
-                var tests = Object.keys(docs).map(function (testName) {
-                    return executeTest(docs[testName]);
-                });
-                return Q.all(tests);
-            });
-        });
+    ].forEach(function (page) {
+        validateDocs(page);
     });
+
+    if (!isWindows) {
+        [
+            '/docs/gettingStarted',
+            '/docs/api/predicates',
+            '/docs/api/stubs'
+        ].forEach(function (page) {
+            validateDocs(page);
+        });
+    }
 });

@@ -62,7 +62,7 @@ for any support questions.  Don't be shy!
 `./build` should do the trick on Mac and Linux, assuming you have node 0.10.  If not, yell at me.
 
 `build.bat` is your friend on Windows.  It's not as complete - linting is left out because those use bash
-shell scripts.  Also, the tests that verify documentation integrity are also excluded because they depend
+shell scripts.  Also, some tests that verify documentation integrity are also excluded because they depend
 on netcat.
 
 If the `npm install` fails on Windows, it's probably `jsdom`.  I had to install python 2.7 (not
