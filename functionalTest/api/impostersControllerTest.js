@@ -50,6 +50,19 @@ describe('POST /imposters', function () {
         });
     });
 
+    promiseIt('should return 400 on invalid JSON', function () {
+        return api.post('/imposters', 'invalid', true).then(function (response) {
+            assert.strictEqual(response.statusCode, 400);
+            assert.deepEqual(response.body, {
+                errors: [{
+                    code: 'invalid JSON',
+                    message: 'Unable to parse body as JSON',
+                    source: 'invalid'
+                }]
+            });
+        });
+    });
+
     promiseIt('should return 403 when does not have permission to bind to port', function () {
         if (isWindows) {
             return Q(true); // no sudo required

@@ -117,16 +117,23 @@ function json (logger) {
             request.body += chunk;
         });
         request.on('end', function () {
-            if (request.body !== '') {
+            if (request.body === '') {
+                next();
+            }
+            else {
                 try {
                     request.body = JSON.parse(request.body);
                     request.headers['content-type'] = 'application/json';
+                    next();
                 }
                 catch (e) {
                     logger.error('Invalid JSON: ' + request.body);
+                    response.statusCode = 400;
+                    response.send({
+                        errors: [errors.InvalidJSONError({ source: request.body })]
+                    });
                 }
             }
-            next();
         });
     };
 }
