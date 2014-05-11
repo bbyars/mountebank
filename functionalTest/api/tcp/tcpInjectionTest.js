@@ -20,7 +20,7 @@ function nonInjectableServer (command, port) {
         mb;
 
     if (isWindows) {
-        options.unshift(mbPath);;
+        options.unshift(mbPath);
         mb = spawn('node', options);
     }
     else {

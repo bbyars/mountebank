@@ -50,7 +50,7 @@ function validateDocs (page) {
             });
             return Q.all(tests);
         });
-    })
+    });
 }
 
 describe('docs', function () {
