@@ -27,7 +27,7 @@ wget $URL
 
 cp -r ../mountebank .
 
-echo "node.exe mountebank/bin/mb" > ./mb.cmd
+echo "node.exe mountebank/bin/mb %*" > ./mb.cmd
 
 cd ..
 echo "zipping..."
