@@ -50,4 +50,34 @@ are not actually able to bind to a different port.</p>
 <p>Response:</p>
 <pre><code id='api-response'></code></pre>
 
+<div id='add-dialog'>
+  <h2>Add imposter</h2>
+  <form name='addImposter'>
+    <fieldset>
+      <legend>The basics...</legend>
+      <div>
+        <label for='protocol'>Protocol</label>
+        <select name='protocol' id='protocol' required='required'>
+          <option value='http'>http</option>
+          <option value='https'>https</option>
+          <option value='tcp'>tcp</option>
+          <option value='smtp'>smtp</option>
+        </select>
+      </div>
+
+      <div>
+        <label for='port'>Port</label>
+        <input type='text' name='port' id='port' maxlength='6' pattern='\d+' placeholder='3000' class='optional' />
+        <span>mountebank will choose one for you if you leave it blank</span>
+      </div>
+
+      <div>
+        <label for='name'>Name</label>
+        <input type='text' name='name' id='name' maxlength='50' placeholder='product service' class='optional' />
+        <span>shows up in the logs and table on this page</span>
+      </div>
+    </fieldset>
+  </form>
+</div>
+
 <% include _footer %>

@@ -370,3 +370,55 @@ input[type=search] {
     font-style: normal;
     color: green;
 }
+
+.ui-dialog-titlebar, .ui-dialog-titlebar-close {
+    display: none;
+}
+
+.ui-widget {
+    font-family: inherit;
+    font-size: inherit;
+    background-color: wheat;
+}
+
+.ui-widget-content {
+    background: inherit;
+    background-color: wheat;
+}
+
+.ui-dialog button {
+    margin: 0;
+    font-family: inherit;
+}
+
+input:focus {
+    background-color: #ffffff;
+    border: solid 1px #33677F;
+}
+
+label {
+    display: inline-block;
+    float: left;
+    clear: left;
+    width: 5em;
+    margin: 0;
+    text-align: right;
+}
+
+label:after {
+    content: ":";
+}
+
+input, select {
+    display: inline-block;
+    float: left;
+    margin-left: 1em;
+}
+
+input + span {
+    display: block;
+    clear: both;
+    color: #808080;
+    font-size: smaller;
+    margin-left: 7.4em;
+}

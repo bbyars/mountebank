@@ -46,8 +46,33 @@ $(document).ready(function () {
                 row.fadeOut(500, row.remove);
                 break;
             case 'add':
+                $('#add-dialog').dialog('open');
                 break;
         }
         return false;
+    });
+
+    $('#add-dialog').dialog({
+        autoOpen: false,
+        height: 500,
+        width: '60%',
+        modal: true,
+        buttons: [
+            {
+                text: 'Create imposter',
+                click: function () {
+                    var json = { protocol: $('#protocol').val() };
+                    if ($('#port').val()) {
+                        json.port = $('#port').val();
+                    }
+                    if ($('#name').val()) {
+                        json.name = $('#name').val();
+                    }
+                    console.log(JSON.stringify(json, null, 4));
+                    $(this).dialog('close');
+                    request('POST', '/imposters', json);
+                }
+            }
+        ]
     });
 });
