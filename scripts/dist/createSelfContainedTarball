@@ -34,7 +34,7 @@ echo "# portable but incomplete readlink -f behavior" >> ./mb
 echo "FILE=\$0" >> ./mb
 echo "[ -L \$FILE ] && FILE=\`readlink \$FILE\`" >> ./mb
 echo "DIR=\`dirname \$FILE\`" >> ./mb
-echo "\$DIR/$NODE_FILENAME/bin/node \$DIR/mountebank/bin/mb" >> ./mb
+echo "\$DIR/$NODE_FILENAME/bin/node \$DIR/mountebank/bin/mb \"\$@\"" >> ./mb
 chmod +x ./mb
 
 cd ..
