@@ -8,15 +8,6 @@ var spawn = require('child_process').spawn,
     port = process.env.MB_PORT || 2525,
     revision = process.env.REVISION || 0;
 
-function shell (command, done) {
-    exec(command, function (error) {
-        if (error) {
-            throw error;
-        }
-        done();
-    });
-}
-
 function isWindows () {
     return os.platform().indexOf('win') === 0;
 }
@@ -27,6 +18,10 @@ function exclude (exclusions, file) {
     });
 }
 
+function include (filetype, file) {
+    return !filetype || file.indexOf(filetype, file.length - filetype.length) >= 0;
+}
+
 function forEachFileIn (dir, fileCallback, options) {
     fs.readdirSync(dir).forEach(function (file) {
         var filePath = path.join(dir, file);
@@ -35,7 +30,9 @@ function forEachFileIn (dir, fileCallback, options) {
             if (fs.lstatSync(filePath).isDirectory()) {
                 forEachFileIn(filePath, fileCallback, options);
             } else {
-                fileCallback(filePath);
+                if (include(options.filetype, filePath)) {
+                    fileCallback(filePath);
+                }
             }
         }
     });
@@ -158,10 +155,6 @@ module.exports = function (grunt) {
         });
     });
 
-    grunt.registerTask('jsCheck', 'Run JavaScript checks not covered by jshint', function () {
-        shell('scripts/jsCheck', this.async());
-    });
-
     grunt.registerTask('version', 'Set the version number', function () {
         var oldPackageJson = fs.readFileSync('package.json', { encoding: 'utf8' }),
             pattern = /"version": "(\d+)\.(\d+)\.(\d+)"/,
@@ -230,6 +223,36 @@ module.exports = function (grunt) {
         }
     });
 
+    grunt.registerTask('jsCheck', 'Run JavaScript checks not covered by jshint', function () {
+        var errors = [],
+            wsCheck = function (file) {
+                var contents = fs.readFileSync(file, 'utf8'),
+                    lines = contents.split('\n');
+
+                if (contents.indexOf("'use strict'") < 0) {
+                    errors = errors.concat(file + " does not start with 'use strict';");
+                }
+                lines.forEach(function (line) {
+                    var accidentalOnlyErrors = line.match(/(describe|[Ii]t)\.only\(/) || [],
+                        functionDeclarationErrors = line.match(/(function [A-Za-z]+\(|function\()/) || [];
+
+                    errors = errors.concat(accidentalOnlyErrors.map(function () {
+                        return file + ' appears to have been left with a mocha .only() call\n\t' + line;
+                    })).concat(functionDeclarationErrors.map(function () {
+                        return file + ' uses function xyz() instead of function xyz () style for function definitions\n\t' + line;
+                    }));
+                });
+            },
+            exclusions = ['node_modules', 'dist', 'Gruntfile.js', 'testHelpers.js'];
+
+        forEachFileIn('.', wsCheck, { exclude: exclusions, filetype: '.js' });
+
+        if (errors.length > 0) {
+            console.error(errors.join('\n'));
+            process.exit(1);
+        }
+    });
+
     grunt.registerTask('test:unit', 'Run the unit tests', ['mochaTest:unit']);
     grunt.registerTask('test:functional', 'Run the functional tests', ['dist', 'mb:restart', 'mochaTest:functional', 'mb:stop']);
     grunt.registerTask('test:performance', 'Run the performance tests', ['mochaTest:performance']);
@@ -237,5 +260,4 @@ module.exports = function (grunt) {
     grunt.registerTask('coverage', 'Generate code coverage', ['mochaTest:coverage']);
     grunt.registerTask('lint', 'Run all JavaScript lint checks', ['wsCheck', 'jsCheck', 'jshint']);
     grunt.registerTask('default', ['version', 'test', 'lint']);
-    grunt.registerTask('windows', ['version', 'test']);
 };
