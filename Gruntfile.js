@@ -21,30 +21,45 @@ function isWindows () {
     return os.platform().indexOf('win') === 0;
 }
 
+function exclude (exclusions, file) {
+    return (exclusions || []).some(function (exclusion) {
+        return path.basename(file) === exclusion;
+    });
+}
+
+function forEachFileIn (dir, fileCallback, options) {
+    fs.readdirSync(dir).forEach(function (file) {
+        var filePath = path.join(dir, file);
+
+        if (!exclude(options.exclude, filePath)) {
+            if (fs.lstatSync(filePath).isDirectory()) {
+                forEachFileIn(filePath, fileCallback, options);
+            } else {
+                fileCallback(filePath);
+            }
+        }
+    });
+    if (options.after) {
+        options.after(dir);
+    }
+}
+
 function rmdirRecursiveSync (dir) {
     if (!fs.existsSync(dir)) {
         return;
     }
 
-    fs.readdirSync(dir).forEach(function (file) {
-        var filePath = path.join(dir, file);
-        if (fs.lstatSync(filePath).isDirectory()) {
-            rmdirRecursiveSync(filePath);
-        } else {
-            fs.unlinkSync(filePath);
-        }
-    });
-    fs.rmdirSync(dir);
+    forEachFileIn(dir, fs.unlinkSync, { after: fs.rmdirSync } );
 }
 
-function cpdirRecursiveSync (src, dst) {
+function cpRecursiveSync (src, dst) {
     var isDirectory = fs.statSync(src).isDirectory(),
         destination = path.join(dst, path.basename(src));
 
     if (isDirectory) {
         fs.mkdirSync(destination);
         fs.readdirSync(src).forEach(function (file) {
-            cpdirRecursiveSync(path.join(src, file),destination);
+            cpRecursiveSync(path.join(src, file),destination);
         });
     } else {
         fs.linkSync(src, destination);
@@ -147,10 +162,6 @@ module.exports = function (grunt) {
         shell('scripts/jsCheck', this.async());
     });
 
-    grunt.registerTask('wsCheck', 'Check for inconsistent whitespace', function () {
-        shell('scripts/wsCheck', this.async());
-    });
-
     grunt.registerTask('version', 'Set the version number', function () {
         var oldPackageJson = fs.readFileSync('package.json', { encoding: 'utf8' }),
             pattern = /"version": "(\d+)\.(\d+)\.(\d+)"/,
@@ -179,10 +190,44 @@ module.exports = function (grunt) {
         fs.mkdirSync('dist');
         fs.mkdirSync('dist/mountebank');
         ['bin', 'src', 'package.json', 'README.md', 'LICENSE'].forEach(function (source) {
-            cpdirRecursiveSync(source, 'dist/mountebank');
+            cpRecursiveSync(source, 'dist/mountebank');
         });
         rmdirRecursiveSync('dist/mountebank/src/public/images/sources');
         exec('cd dist/mountebank && npm install --production', this.async());
+    });
+
+    grunt.registerTask('wsCheck', 'Check for whitespace problems that make diffing harder', function () {
+        var errors = [],
+            wsCheck = function (file) {
+                var contents = fs.readFileSync(file, 'utf8'),
+                    lines = contents.split('\n');
+
+                lines.forEach(function (line) {
+                    var trailingWhitespaceErrors = line.match(/\s$/) || [],
+                        tabErrors = line.match(/^.*\t.*$/) || [];
+
+                    errors = errors.concat(trailingWhitespaceErrors.map(function () {
+                        return file + ' has trailing whitespace\n\t' + line;
+                    })).concat(tabErrors.map(function () {
+                        return file + ' has tabs instead of spaces\n\t' + line;
+                    }));
+                });
+
+                if (contents[contents.length-1] !== '\n') {
+                    errors = errors.concat(file + ' has no trailing newline');
+                }
+                else if (contents[contents.length-2] === '\n') {
+                    errors = errors.concat(file + ' has more than one trailing newline');
+                }
+            },
+            exclusions = ['node_modules', '.git', '.DS_Store', '.idea', 'images', 'dist', 'mountebank.iml'];
+
+        forEachFileIn('.', wsCheck, { exclude: exclusions });
+
+        if (errors.length > 0) {
+            console.error(errors.join('\n'));
+            process.exit(1);
+        }
     });
 
     grunt.registerTask('test:unit', 'Run the unit tests', ['mochaTest:unit']);
