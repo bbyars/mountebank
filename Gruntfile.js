@@ -193,7 +193,7 @@ module.exports = function (grunt) {
         var errors = [],
             wsCheck = function (file) {
                 var contents = fs.readFileSync(file, 'utf8'),
-                    lines = contents.split('\n');
+                    lines = contents.split(os.EOL);
 
                 lines.forEach(function (line) {
                     var trailingWhitespaceErrors = line.match(/\s$/) || [],
@@ -209,16 +209,16 @@ module.exports = function (grunt) {
                 if (contents[contents.length-1] !== '\n') {
                     errors = errors.concat(file + ' has no trailing newline');
                 }
-                else if (contents[contents.length-2] === '\n') {
+                else if (contents[contents.length-2] === os.EOL) {
                     errors = errors.concat(file + ' has more than one trailing newline');
                 }
             },
-            exclusions = ['node_modules', '.git', '.DS_Store', '.idea', 'images', 'dist', 'mountebank.iml'];
+            exclusions = ['node_modules', '.git', '.DS_Store', '.idea', 'images', 'dist', 'mountebank.iml', 'mb.log'];
 
         forEachFileIn('.', wsCheck, { exclude: exclusions });
 
         if (errors.length > 0) {
-            console.error(errors.join('\n'));
+            console.error(errors.join(os.EOL));
             process.exit(1);
         }
     });
@@ -227,7 +227,7 @@ module.exports = function (grunt) {
         var errors = [],
             wsCheck = function (file) {
                 var contents = fs.readFileSync(file, 'utf8'),
-                    lines = contents.split('\n');
+                    lines = contents.split(os.EOL);
 
                 if (contents.indexOf("'use strict'") < 0) {
                     errors = errors.concat(file + " does not start with 'use strict';");
@@ -248,7 +248,7 @@ module.exports = function (grunt) {
         forEachFileIn('.', wsCheck, { exclude: exclusions, filetype: '.js' });
 
         if (errors.length > 0) {
-            console.error(errors.join('\n'));
+            console.error(errors.join(os.EOL));
             process.exit(1);
         }
     });
