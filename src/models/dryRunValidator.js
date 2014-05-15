@@ -9,13 +9,6 @@ var utils = require('util'),
 
 function create (options) {
 
-    function getFirstResponse (stub) {
-        if (stub.responses && stub.responses.length > 0) {
-            return stub.responses[0];
-        }
-        return {};
-    }
-
     function dryRun (stub, encoding, logger) {
         var dryRunProxy = { to: function () { return Q({}); } },
             dryRunLogger = {
@@ -31,9 +24,6 @@ function create (options) {
 
         if (hasInjection(stub)) {
             logger.warn('dry running injection...');
-        }
-        if (getFirstResponse(clone)._behaviors && getFirstResponse(clone)._behaviors.wait) {
-            getFirstResponse(clone)._behaviors.wait = 0;
         }
 
         stubRepository.addStub(clone);
