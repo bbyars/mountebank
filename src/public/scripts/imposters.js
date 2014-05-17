@@ -69,8 +69,8 @@ $(document).ready(function () {
                         json.name = $('#name').val();
                     }
                     console.log(JSON.stringify(json, null, 4));
+                    request('POST', '/imposters', JSON.stringify(json, null, 4));
                     $(this).dialog('close');
-                    request('POST', '/imposters', json);
                 }
             }
         ]
