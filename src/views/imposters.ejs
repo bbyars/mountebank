@@ -10,8 +10,9 @@ an imposter below, and let mountebank build the API call for you.  It all starts
 plus sign.</p>
 
 <% if (heroku) { -%>
-<p>This page is hosted on heroku, and while it will accept imposter creation requests, the imposters
-are not actually able to bind to a different port.</p>
+<p>This page is hosted on heroku, and while it will accept imposter creation requests, the ports that the
+imposters bind to are not exposed to the outside world.  However, running <code>mb</code> will spin up
+this website locally, and you should feel free to learn the API through the UI.</p>
 <% } -%>
 
 <p>&nbsp;</p>
