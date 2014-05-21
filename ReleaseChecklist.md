@@ -14,10 +14,11 @@ can satisfy the cross-platform pipeline requirements, and give a manual deploy.
   to allow me to test on the test site through feedly.
 # Change the views/releases/vx.x.x filename
 # Change the updated date of both the last entry and the feed
-# (until I fix the heroku buildpack for www.mbtest.org) change package.json to the next patch version.
 # commit
+# push
+# wait for the build to pass
 # tag: git tag -a v1.0.xxx -m 'releasing'
-# git push --tags && git push
+# git push --tags
 # Change the package.json version to the next build number in dist
 # scripts/createDeployables
 # upload the .pkg to S3
