@@ -50,7 +50,21 @@ describe('html validation', function () {
                     file: 'validation-test.html',
                     callback: function (response) {
                         fs.unlinkSync('validation-test.html');
-                        assert.strictEqual(0, response.messages.length, JSON.stringify(response.messages));
+
+                        if (response.messages) {
+                            var errors = response.messages.filter(function (message) {
+                                return message.type === 'error';
+                            }).map(function (message) {
+                                return {
+                                    line: message.lastLine,
+                                    message: message.message
+                                };
+                            });
+                            assert.strictEqual(0, errors.length, JSON.stringify(errors, null, 2));
+                        }
+                        else {
+                            console.warn('HTML validation skipped for ' + endpoint);
+                        }
                         done();
                     }
                 });
