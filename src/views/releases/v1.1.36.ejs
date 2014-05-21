@@ -1,0 +1,28 @@
+<h1>v1.1.36</h1>
+
+<p>mountebank is happy to provide you with the following changes in v1.1.36</p>
+
+<h2>Better Windows Support</h2>
+
+<p>The mountebank build is now fully Windows compatible, and with a couple of minor exceptions
+that require the use of Unix tools, the same set of tests that run on Mac and Linux now run on
+Windows as well.  The <code>mb stop</code> and <code>mb restart</code> commands now work on
+Windows as well as other platforms.  Additionally, the <code>Content-Type</code> header is
+now defaulted to <code>application/json</code> on Windows as it previously was on other platforms.</p>
+
+<h2>New Features</h2>
+<ul class='bullet-list'>
+  <li>Support for a custom keystore for http using the <a href='http://<%= host %>/docs/commandLine'>
+    command line.</a></li>
+  <li>The start of a <a href='http://<%= host %>/imposters'>UI</a> to help explore the API and to
+    support manual testing (more to come soon).</li>
+</ul>
+
+<h2>Bug Fixes</h2>
+<ul class='bullet-list'>
+  <li>Fixed <a href='http://<%= host %>/docs/install'>packaged install <code>mb</code> scripts</a> to accept
+    command line parameters</li>
+  <li>Fixed <a href='https://github.com/bbyars/mountebank/issues/38'>error handling for invalid JSON</a></li>
+</ul>
+
+<p>Many thanks to <a href='https://github.com/manojlds'>Manoj Mahalingam</a> for help with this release.</p>
