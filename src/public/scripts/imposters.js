@@ -2,6 +2,7 @@
 /*global $:false */
 /*global document:false */
 /*global window:false */
+/*jshint latedef:false */
 
 function setResponse (xhr) {
     var response = 'HTTP/1.1 ' + xhr.status + ' ' + xhr.statusText + '\n' +
@@ -24,12 +25,20 @@ function request (verb, path, json) {
         url: path,
         type: verb,
         data: json,
-        success: function (data, textStatus, xhr) { setResponse(xhr); },
+        success: function (data, textStatus, xhr) {
+            setResponse(xhr);
+            if (json) {
+                $.get('/imposters/' + data.port, function (html) {
+                    $('#imposters tr:last').before(html);
+                    updateLinks();
+                }, 'html');
+            }
+        },
         error: function (xhr) { setResponse(xhr); }
     });
 }
 
-$(document).ready(function () {
+function updateLinks () {
     $('a').on('click', function () {
         var link = $(this),
             row = link.closest('tr'),
@@ -51,6 +60,21 @@ $(document).ready(function () {
         }
         return false;
     });
+}
+
+$(document).ready(function () {
+    updateLinks();
+
+    $('#protocol').on('change', function () {
+        if ($('#protocol').val() === 'tcp') {
+            $('#mode-block').show();
+        }
+        else {
+            $('#mode-block').hide();
+        }
+    });
+
+
 
     $('#add-dialog').dialog({
         autoOpen: false,
@@ -70,7 +94,9 @@ $(document).ready(function () {
                     if ($('#name').val()) {
                         json.name = $('#name').val();
                     }
-                    console.log(JSON.stringify(json, null, 4));
+                    if ($('#protocol').val() === 'tcp') {
+                        json.mode = $('#mode').val();
+                    }
                     request('POST', '/imposters', JSON.stringify(json, null, 4));
                     $(this).dialog('close');
                 }

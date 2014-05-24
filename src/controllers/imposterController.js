@@ -11,7 +11,14 @@ function create (imposters) {
 
         response.format({
             json: function () { response.send(imposter); },
-            html: function () { response.render('imposter', imposter); }
+            html: function () {
+                if (request.headers['x-requested-with']) {
+                    response.render('_imposter', { imposter: imposter });
+                }
+                else {
+                    response.render('imposter', imposter);
+                }
+            }
         });
     }
 

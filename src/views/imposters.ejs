@@ -1,5 +1,7 @@
 <% include _header %>
 
+<script src="//ajax.googleapis.com/ajax/libs/jqueryui/1.10.4/jquery-ui.min.js"></script>
+<script src="/q/q.js"></script>
 <script src='/scripts/imposters.js'></script>
 
 <h1>Imposters</h1>
@@ -15,8 +17,7 @@ imposters bind to are not exposed to the outside world.  However, running <code>
 this website locally, and you should feel free to learn the API through the UI.</p>
 <% } -%>
 
-<p>&nbsp;</p>
-<table style='table-layout: fixed;'>
+<table id='imposters'>
   <tr>
     <th style='width: 3em'>&nbsp;</th>
     <th style='width: 15em;'>name</th>
@@ -26,18 +27,7 @@ this website locally, and you should feel free to learn the API through the UI.<
   </tr>
 
   <% imposters.forEach(function (imposter) { %>
-  <tr id='imposter-<%= imposter.port %>'>
-    <td style='width: 3em'>
-      <a href='#' class='inspect-icon' title='inspect'></a>
-      <a href='#' class='delete-icon' title='delete'></a>
-    </td>
-    <td style='width: 15em;'><a href='<%= imposter._links.self.href %>'>
-      <%= imposter.name || imposter.protocol + ':' + imposter.port %>
-    </a></td>
-    <td style='width: 6em;'><%= imposter.protocol %></td>
-    <td style='width: 5em;'><%= imposter.port %></td>
-    <td style='width: 6em;'><%= (imposter.requests || []).length %></td>
-  </tr>
+  <% include _imposter %>
   <% }); -%>
 
   <tr>
@@ -75,6 +65,15 @@ this website locally, and you should feel free to learn the API through the UI.<
         <label for='name'>Name</label>
         <input type='text' name='name' id='name' maxlength='50' placeholder='product service' class='optional' />
         <span>optional - shows up in the logs and table on this page</span>
+      </div>
+
+      <div id='mode-block' style='display: none;'>
+        <label for='mode'>Mode</label>
+        <select name='mode' id='mode'>
+          <option value='text'>text</option>
+          <option value='binary'>binary</option>
+        </select>
+        <span>defaults to text - determines the encoding mountebank uses</span>
       </div>
     </fieldset>
 

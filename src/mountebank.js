@@ -50,6 +50,7 @@ function create (options) {
     app.use(middleware.defaultIEtoHTML);
     app.use(middleware.json(logger));
     app.use(express.static(path.join(__dirname, 'public')));
+    app.use(express.static(path.join(__dirname, '../node_modules')));
     app.use(errorHandler());
 
     app.disable('etag');

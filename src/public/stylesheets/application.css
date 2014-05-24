@@ -348,6 +348,10 @@ input[type=search] {
     color: blue;
 }
 
+#imposters {
+    table-layout: fixed;
+}
+
 .inspect-icon:before {
     content: "\f002";
     font-family: FontAwesome;
@@ -449,7 +453,7 @@ input, select {
     margin-left: 1em;
 }
 
-input + span {
+input + span, select + span {
     display: block;
     clear: both;
     color: #808080;

@@ -1,0 +1,12 @@
+<tr id='imposter-<%= imposter.port %>'>
+  <td>
+    <a href='#' class='inspect-icon' title='inspect'></a>
+    <a href='#' class='delete-icon' title='delete'></a>
+  </td>
+  <td><a href='<%= imposter._links.self.href %>'>
+    <%= imposter.name || imposter.protocol + ':' + imposter.port %>
+  </a></td>
+  <td><%= imposter.protocol %></td>
+  <td><%= imposter.port %></td>
+  <td><%= (imposter.requests || []).length %></td>
+</tr>
