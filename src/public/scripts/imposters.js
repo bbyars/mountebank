@@ -113,6 +113,7 @@ $(document).ready(function () {
                 click: function () {
                     request('POST', '/imposters', buildJSON()).done(function (xhr) {
                         if (xhr.status === 201) {
+                            $('form').trigger('reset');
                             var port = JSON.parse(xhr.responseText).port;
                             addRow(port);
                         }
