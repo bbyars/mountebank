@@ -17,6 +17,10 @@
     color: red;
 }
 
+.add-icon {
+    float: left;
+}
+
 .add-icon:before {
     content: "\f055";
     font-family: FontAwesome;
@@ -74,6 +78,11 @@ button.ui-button {
     font-family: inherit;
 }
 
+.ui-widget input, .ui-widget select, .ui-widget textarea, .ui-widget button {
+    font-family: inherit;
+    font-size: inherit;
+}
+
 select:focus, input:focus {
     background-color: #fff5ee;
 }
@@ -105,6 +114,10 @@ input + span, select + span {
     margin-left: 7.4em;
 }
 
-legend {
-    font-weight: bold;
+#stubs input + span, #stubs select + span {
+    margin-left: 0;
+}
+
+.template {
+    display: none;
 }

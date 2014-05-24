@@ -4,6 +4,26 @@
 /*global window:false */
 /*global Q:false */
 
+var predicateExplanations = {
+    equals: 'a request field must match exactly',
+    deepEquals: 'a request object graph must match exactly',
+    contains: 'a request field must contain a substring',
+    startsWith: 'a request field must start with a substring',
+    endsWith: 'a request field must end with a substring',
+    matches: 'a request field must match a regular expression',
+    exists: 'a request field must exist or not exist depending on the value',
+    not: 'inverts the sub-predicates',
+    or: 'logically ORs the sub-predicates',
+    and: 'logically ANDs the sub-predicates',
+    inject: 'passes the entire request to an injected JavaScript function'
+};
+
+var responsesExplanations = {
+    is: 'a canned response that you provide',
+    proxy: 'a response that comes from a downstream system',
+    inject: 'determines the response from a JavaScript function'
+};
+
 function ajax (settings) {
     // Convert jQuery's broken promises to Q's and return xhr regardless of success or failure
     return Q.promise(function (resolve) {
@@ -42,23 +62,33 @@ function request (verb, path, json) {
     return ajax({ url: path, type: verb, data: json}).then(setResponse);
 }
 
-function stubCell (type) {
-    return "<td><a href='#' class='add-icon " + type + "' title='add'></a></td>";
+function explain (row, cellIndex, explanations) {
+    var cell = $(row.children('td')[cellIndex]),
+        select = $(cell.children('select')[0]),
+        explanation = $(cell.children('span')[0]);
+
+    select.on('change', function () {
+        console.log(select.val());
+        explanation.text(explanations[select.val()]);
+    });
+    select.trigger('change');
 }
 
 function addStubRow () {
-    var index = $('#stubs tr').length - 2,
-        indexCell = '<td style="width: 1em;">' + index + '</td>',
-        predicatesCell = stubCell('predicate'),
-        responsesCell = stubCell('stub'),
-        row = '<tr>' + indexCell + predicatesCell + responsesCell + '</tr>';
+    var index = $('#stubs tr').length - 3,
+        row = $('#stubs tr.template').clone();
 
+    row.removeClass('template');
+    row.children('select').id += index;
+    $(row.children('td')[0]).text(index);
+    explain(row, 1, predicateExplanations);
+    explain(row, 2, responsesExplanations);
     $('#stubs tr:last').before(row);
 }
 
 function resetStubsTable () {
     var rows = $('#stubs tr');
-    for (var i = 1; i < rows.length - 1; i++) {
+    for (var i = 2; i < rows.length - 1; i++) {
         rows[i].remove();
     }
 }
