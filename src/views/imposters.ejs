@@ -1,5 +1,6 @@
 <% include _header %>
 
+<link rel='stylesheet' type='text/css' href='/stylesheets/imposters.css' />
 <script src="//ajax.googleapis.com/ajax/libs/jqueryui/1.10.4/jquery-ui.min.js"></script>
 <script src="/q/q.js"></script>
 <script src='/scripts/imposters.js'></script>
@@ -43,46 +44,55 @@ this website locally, and you should feel free to learn the API through the UI.<
 
 <div id='add-dialog'>
   <form name='addImposter'>
-    <fieldset>
-      <legend>The basics...</legend>
-      <div>
-        <label for='protocol'>Protocol</label>
-        <select name='protocol' id='protocol' required='required'>
-          <option value='http'>http</option>
-          <option value='https'>https</option>
-          <option value='tcp'>tcp</option>
-          <option value='smtp'>smtp</option>
-        </select>
-      </div>
+    <p>An <em>imposter</em> represents a test double listening to a specific protocol on a specific port.  By default,
+      imposters will record all requests to them, allowing you to verify certain calls were made.</p>
 
-      <div>
-        <label for='port'>Port</label>
-        <input type='text' name='port' id='port' maxlength='6' pattern='\d+' placeholder='3000' class='optional' />
-        <span>mountebank will choose one for you if you leave it blank</span>
-      </div>
+    <div>
+      <label for='protocol'>Protocol</label>
+      <select name='protocol' id='protocol' required='required'>
+        <option value='http'>http</option>
+        <option value='https'>https</option>
+        <option value='tcp'>tcp</option>
+        <option value='smtp'>smtp</option>
+      </select>
+      <span>defines how mountebank responds to requests</span>
+    </div>
 
-      <div>
-        <label for='name'>Name</label>
-        <input type='text' name='name' id='name' maxlength='50' placeholder='product service' class='optional' />
-        <span>optional - shows up in the logs and table on this page</span>
-      </div>
+    <div>
+      <label for='port'>Port</label>
+      <input type='text' name='port' id='port' maxlength='6' pattern='\d+' placeholder='3000' class='optional' />
+      <span>mountebank will choose one for you if you leave it blank</span>
+    </div>
 
-      <div id='mode-block' style='display: none;'>
-        <label for='mode'>Mode</label>
-        <select name='mode' id='mode'>
-          <option value='text'>text</option>
-          <option value='binary'>binary</option>
-        </select>
-        <span>defaults to text - determines the encoding mountebank uses</span>
-      </div>
-    </fieldset>
+    <div>
+      <label for='name'>Name</label>
+      <input type='text' name='name' id='name' maxlength='50' placeholder='product service' class='optional' />
+      <span>optional - shows up in the logs and table on this page</span>
+    </div>
 
-    <fieldset>
-      <legend>Stubs...</legend>
-      <div>
-        <p>Coming soon - ability to create various stubs through the API</p>
-      </div>
-    </fieldset>
+    <div id='mode-block' style='display: none;'>
+      <label for='mode'>Mode</label>
+      <select name='mode' id='mode'>
+        <option value='text'>text</option>
+        <option value='binary'>binary</option>
+      </select>
+      <span>defaults to text - determines the encoding mountebank uses</span>
+    </div>
+
+    <h3>Stubs</h3>
+    <p>A <em>stub</em> tells the imposter how to respond when the request meets certain conditions.</p>
+
+    <table id='stubs'>
+      <tr>
+        <th style='width: 1em'>&nbsp;</th>
+        <th style='width: 20em;'>predicates</th>
+        <th style='width: 20em;'>responses</th>
+      </tr>
+
+      <tr>
+        <td colspan='3'><a href='#' class='add-icon' title='add'></a></td>
+      </tr>
+    </table>
   </form>
 </div>
 
