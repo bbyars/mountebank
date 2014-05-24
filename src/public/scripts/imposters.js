@@ -2,40 +2,44 @@
 /*global $:false */
 /*global document:false */
 /*global window:false */
-/*jshint latedef:false */
+/*global Q:false */
 
-function setResponse (xhr) {
-    var response = 'HTTP/1.1 ' + xhr.status + ' ' + xhr.statusText + '\n' +
-                    xhr.getAllResponseHeaders() + '\n' +
-                    xhr.responseText;
-    $('#api-response').text(response);
+function ajax (settings) {
+    // Convert jQuery's broken promises to Q's and return xhr regardless of success or failure
+    return Q.promise(function (resolve) {
+        $.ajax(settings).then(function (data, textStatus, xhr) {
+            delete xhr.then;
+            resolve(xhr);
+        }, function (xhr) {
+            delete xhr.then;
+            resolve(xhr);
+        });
+    });
 }
 
-function request (verb, path, json) {
+function setRequest (verb, path, json) {
     var domain = window.location.href.replace('http://', '').split('/')[0],
         requestText = verb + ' ' + path + '\n' +
-                      'Host: ' + domain + '\n' +
-                      'Accept: application/json';
+            'Host: ' + domain + '\n' +
+            'Accept: application/json';
     if (json) {
         requestText += '\nContent-Type: application/json\n\n' + json;
     }
 
     $('#api-request').text(requestText);
-    $.ajax({
-        url: path,
-        type: verb,
-        data: json,
-        success: function (data, textStatus, xhr) {
-            setResponse(xhr);
-            if (json) {
-                $.get('/imposters/' + data.port, function (html) {
-                    $('#imposters tr:last').before(html);
-                    updateLinks();
-                }, 'html');
-            }
-        },
-        error: function (xhr) { setResponse(xhr); }
-    });
+}
+
+function setResponse (xhr) {
+    var response = 'HTTP/1.1 ' + xhr.status + ' ' + xhr.statusText + '\n' +
+        xhr.getAllResponseHeaders() + '\n' +
+        xhr.responseText;
+    $('#api-response').text(response);
+    return Q(xhr);
+}
+
+function request (verb, path, json) {
+    setRequest(verb, path, json);
+    return ajax({ url: path, type: verb, data: json}).then(setResponse);
 }
 
 function updateLinks () {
@@ -51,14 +55,36 @@ function updateLinks () {
                 request('GET', url);
                 break;
             case 'delete':
-                request('DELETE', url);
-                row.fadeOut(500, row.remove);
+                request('DELETE', url).done(function () {
+                    row.fadeOut(500, row.remove);
+                });
                 break;
             case 'add':
                 $('#add-dialog').dialog('open');
                 break;
         }
         return false;
+    });
+}
+
+function buildJSON () {
+    var json = { protocol: $('#protocol').val() };
+    if ($('#port').val()) {
+        json.port = parseInt($('#port').val());
+    }
+    if ($('#name').val()) {
+        json.name = $('#name').val();
+    }
+    if ($('#protocol').val() === 'tcp') {
+        json.mode = $('#mode').val();
+    }
+    return JSON.stringify(json, null, 4);
+}
+
+function addRow (port) {
+    ajax({ url: '/imposters/' + port, type: 'GET', dataType: 'html'}).done(function (xhr) {
+        $('#imposters tr:last').before(xhr.responseText);
+        updateLinks();
     });
 }
 
@@ -74,8 +100,6 @@ $(document).ready(function () {
         }
     });
 
-
-
     $('#add-dialog').dialog({
         autoOpen: false,
         height: 500,
@@ -87,17 +111,12 @@ $(document).ready(function () {
             {
                 text: 'Create imposter',
                 click: function () {
-                    var json = { protocol: $('#protocol').val() };
-                    if ($('#port').val()) {
-                        json.port = $('#port').val();
-                    }
-                    if ($('#name').val()) {
-                        json.name = $('#name').val();
-                    }
-                    if ($('#protocol').val() === 'tcp') {
-                        json.mode = $('#mode').val();
-                    }
-                    request('POST', '/imposters', JSON.stringify(json, null, 4));
+                    request('POST', '/imposters', buildJSON()).done(function (xhr) {
+                        if (xhr.status === 201) {
+                            var port = JSON.parse(xhr.responseText).port;
+                            addRow(port);
+                        }
+                    });
                     $(this).dialog('close');
                 }
             }
