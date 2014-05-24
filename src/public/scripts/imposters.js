@@ -57,6 +57,8 @@ $(document).ready(function () {
         height: 500,
         width: '60%',
         modal: true,
+        title: 'Add imposters...',
+        position: { my: 'center center' },
         buttons: [
             {
                 text: 'Create imposter',

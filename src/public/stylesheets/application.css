@@ -371,19 +371,53 @@ input[type=search] {
     color: green;
 }
 
-.ui-dialog-titlebar, .ui-dialog-titlebar-close {
-    display: none;
+.ui-widget-overlay {
+    background: inherit;
+    background-color: #111111;
+}
+
+.ui-dialog-titlebar {
+    padding: 0;
+    margin: 0;
+    border: 0;
+}
+
+.ui-widget-header {
+    background: inherit;
+    border: 1px solid #aaaaaa;
+}
+
+.ui-dialog-title {
+    font-family: 'Berkshire Swash';
+}
+
+legend {
+    font-family: 'Helvetica';
+    font-style: italic;
+}
+
+ui-dialog {
+    padding-top: 0;
+}
+
+button.ui-button {
+    background: inherit;
+    background-color: inherit;
+}
+
+.ui-button-icon-only {
+    margin-left: inherit;
 }
 
 .ui-widget {
     font-family: inherit;
     font-size: inherit;
-    background-color: wheat;
+    background-color: #f3f2ee;
 }
 
 .ui-widget-content {
     background: inherit;
-    background-color: wheat;
+    background-color: #f3f2ee;
 }
 
 .ui-dialog button {
