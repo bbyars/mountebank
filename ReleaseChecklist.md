@@ -20,5 +20,5 @@ can satisfy the cross-platform pipeline requirements, and give a manual deploy.
 # tag: git tag -a v1.0.xxx -m 'releasing'
 # git push --tags
 # Change the package.json version to the next build number in dist
-# scripts/createDeployables
+# scripts/createDistributables
 # upload the .pkg to S3
