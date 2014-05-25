@@ -42,6 +42,20 @@ var predicateGenerator = {
     }
 };
 
+function explain (cell, explanations) {
+    var select = $('select', cell),
+        explanation = $('span', cell);
+
+    select.on('change', function () {
+        // In Mac Chrome, it seems the selection doesn't change sometimes unless the select
+        // loses focus.  This next line seems to reduce the frequency of that, but it may
+        // just be a combination of superstition and ignorance...
+        console.log($(this).val());
+        explanation.text(explanations[$(this).val()]);
+    });
+    select.trigger('change');
+}
+
 var StubList = {
     create: function () {
         function forEachRow (fn) {
@@ -77,7 +91,7 @@ var StubList = {
         function reset () {
             forEachRow(function (row) {
                 row.remove();
-            })
+            });
         }
 
         function toJSON () {
@@ -150,20 +164,6 @@ function request (verb, path, json) {
     return ajax({ url: path, type: verb, data: json}).then(setResponse);
 }
 
-function explain (cell, explanations) {
-    var select = $('select', cell),
-        explanation = $('span', cell);
-
-    select.on('change', function () {
-        // In Mac Chrome, it seems the selection doesn't change sometimes unless the select
-        // loses focus.  This next line seems to reduce the frequency of that, but it may
-        // just be a combination of superstition and ignorance...
-        console.log($(this).val());
-        explanation.text(explanations[$(this).val()]);
-    });
-    select.trigger('change');
-}
-
 function updateLinks () {
     $('a').off('click');
 
@@ -197,8 +197,7 @@ function updateLinks () {
 
 function buildJSON () {
     /*jshint maxcomplexity: 7 */
-    var json = { protocol: $('#protocol').val() },
-        stubRows = $('#stubs tr');
+    var json = { protocol: $('#protocol').val() };
 
     if ($('#port').val()) {
         json.port = parseInt($('#port').val());
