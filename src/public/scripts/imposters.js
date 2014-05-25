@@ -42,6 +42,76 @@ var predicateGenerator = {
     }
 };
 
+var StubList = {
+    create: function () {
+        function forEachRow (fn) {
+            var rows = $('#stubs tr');
+            for (var i = 2; i < rows.length - 1; i++) {
+                fn(rows[i]);
+            }
+        }
+
+        function add () {
+            var index = $('#stubs tr').length - 3,
+                row = $('#stubs tr.template').clone(),
+                predicatesCell = $('td', row)[1],
+                responsesCell = $('td', row)[2];
+
+            row.removeClass('template');
+            $(row.children('td')[0]).text(index);
+            explain(predicatesCell, predicateExplanations);
+            explain(responsesCell, responsesExplanations);
+
+            var link = $('a', predicatesCell);
+            link.click(function () {
+                var protocol = $('#protocol').val();
+                if (protocol === 'https') {
+                    protocol = 'http';
+                }
+                predicateGenerator.context = predicatesCell;
+                $('#add-' + protocol + '-predicate-dialog').dialog('open');
+            });
+            $('#stubs tr:last').before(row);
+        }
+
+        function reset () {
+            forEachRow(function (row) {
+                row.remove();
+            })
+        }
+
+        function toJSON () {
+            var json = [];
+
+            forEachRow(function (row) {
+                var stub = {},
+                    predicatesCell = $('td', row)[1],
+                    predicates = JSON.parse($('code', predicatesCell).text()),
+                    responsesCell = $('td', row)[2],
+                    responses = JSON.parse($('code', responsesCell).text());
+
+                if (predicates.length > 0) {
+                    stub.predicates = predicates;
+                }
+                if (responses.length > 0) {
+                    stub.responses = responses;
+                }
+
+                json.push(stub);
+            });
+            return json;
+        }
+
+        return {
+            add: add,
+            reset: reset,
+            toJSON: toJSON
+        };
+    }
+};
+
+var stubs = StubList.create();
+
 function ajax (settings) {
     // Convert jQuery's broken promises to Q's and return xhr regardless of success or failure
     return Q.promise(function (resolve) {
@@ -94,36 +164,6 @@ function explain (cell, explanations) {
     select.trigger('change');
 }
 
-function addStubRow () {
-    var index = $('#stubs tr').length - 3,
-        row = $('#stubs tr.template').clone(),
-        predicatesCell = $('td', row)[1],
-        responsesCell = $('td', row)[2];
-
-    row.removeClass('template');
-    $(row.children('td')[0]).text(index);
-    explain(predicatesCell, predicateExplanations);
-    explain(responsesCell, responsesExplanations);
-
-    var link = $('a', predicatesCell);
-    link.click(function () {
-        var protocol = $('#protocol').val();
-        if (protocol === 'https') {
-            protocol = 'http';
-        }
-        predicateGenerator.context = predicatesCell;
-        $('#add-' + protocol + '-predicate-dialog').dialog('open');
-    });
-    $('#stubs tr:last').before(row);
-}
-
-function resetStubsTable () {
-    var rows = $('#stubs tr');
-    for (var i = 2; i < rows.length - 1; i++) {
-        rows[i].remove();
-    }
-}
-
 function updateLinks () {
     $('a').off('click');
 
@@ -151,24 +191,8 @@ function updateLinks () {
     });
 
     $('#stubs a').on('click', function () {
-        addStubRow();
+        stubs.add();
     });
-}
-
-function buildStubJSON (stubRow) {
-    var stub = {},
-        predicatesCell = $('td', stubRow)[1],
-        predicates = JSON.parse($('code', predicatesCell).text()),
-        responsesCell = $('td', stubRow)[2],
-        responses = JSON.parse($('code', responsesCell).text());
-
-    if (predicates.length > 0) {
-        stub.predicates = predicates;
-    }
-    if (responses.length > 0) {
-        stub.responses = responses;
-    }
-    return stub;
 }
 
 function buildJSON () {
@@ -186,11 +210,8 @@ function buildJSON () {
         json.mode = $('#mode').val();
     }
 
-    if (stubRows.length > 3) {
-        json.stubs = [];
-        for (var i = 2; i < stubRows.length - 1; i++) {
-            json.stubs.push(buildStubJSON(stubRows[i]));
-        }
+    if (stubs.toJSON().length > 0) {
+        json.stubs = stubs.toJSON();
     }
 
     return JSON.stringify(json, null, 4);
@@ -207,7 +228,7 @@ function createImposter () {
     request('POST', '/imposters', buildJSON()).done(function (xhr) {
         if (xhr.status === 201) {
             $('form').trigger('reset');
-            resetStubsTable();
+            stubs.reset();
             var port = JSON.parse(xhr.responseText).port;
             addImposterRow(port);
         }
