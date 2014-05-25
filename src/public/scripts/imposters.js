@@ -24,6 +24,24 @@ var responsesExplanations = {
     inject: 'determines the response from a JavaScript function'
 };
 
+var predicateGenerator = {
+    // Quite ugly - context is expected to be set when the predicate dialog opens
+    context: null,
+    generateTcp: function () {
+        var type = $('select', predicateGenerator.context).val(),
+            field = $('#tcpRequestField').val(),
+            value = $('#tcpRequestValue').val(),
+            predicate = {},
+            json = JSON.parse($('code', predicateGenerator.context).text());
+
+        $('#addTcpPredicate').trigger('reset');
+        predicate[type] = {};
+        predicate[type][field] = value;
+        json.push(predicate);
+        $('code', predicateGenerator.context).text(JSON.stringify(json));
+    }
+};
+
 function ajax (settings) {
     // Convert jQuery's broken promises to Q's and return xhr regardless of success or failure
     return Q.promise(function (resolve) {
@@ -62,27 +80,40 @@ function request (verb, path, json) {
     return ajax({ url: path, type: verb, data: json}).then(setResponse);
 }
 
-function explain (row, cellIndex, explanations) {
-    var cell = $(row.children('td')[cellIndex]),
-        select = $(cell.children('select')[0]),
-        explanation = $(cell.children('span')[0]);
+function explain (cell, explanations) {
+    var select = $('select', cell),
+        explanation = $('span', cell);
 
     select.on('change', function () {
-        console.log(select.val());
-        explanation.text(explanations[select.val()]);
+        // In Mac Chrome, it seems the selection doesn't change sometimes unless the select
+        // loses focus.  This next line seems to reduce the frequency of that, but it may
+        // just be a combination of superstition and ignorance...
+        console.log($(this).val());
+        explanation.text(explanations[$(this).val()]);
     });
     select.trigger('change');
 }
 
 function addStubRow () {
     var index = $('#stubs tr').length - 3,
-        row = $('#stubs tr.template').clone();
+        row = $('#stubs tr.template').clone(),
+        predicatesCell = $('td', row)[1],
+        responsesCell = $('td', row)[2];
 
     row.removeClass('template');
-    row.children('select').id += index;
     $(row.children('td')[0]).text(index);
-    explain(row, 1, predicateExplanations);
-    explain(row, 2, responsesExplanations);
+    explain(predicatesCell, predicateExplanations);
+    explain(responsesCell, responsesExplanations);
+
+    var link = $('a', predicatesCell);
+    link.click(function () {
+        var protocol = $('#protocol').val();
+        if (protocol === 'https') {
+            protocol = 'http';
+        }
+        predicateGenerator.context = predicatesCell;
+        $('#add-' + protocol + '-predicate-dialog').dialog('open');
+    });
     $('#stubs tr:last').before(row);
 }
 
@@ -124,8 +155,27 @@ function updateLinks () {
     });
 }
 
+function buildStubJSON (stubRow) {
+    var stub = {},
+        predicatesCell = $('td', stubRow)[1],
+        predicates = JSON.parse($('code', predicatesCell).text()),
+        responsesCell = $('td', stubRow)[2],
+        responses = JSON.parse($('code', responsesCell).text());
+
+    if (predicates.length > 0) {
+        stub.predicates = predicates;
+    }
+    if (responses.length > 0) {
+        stub.responses = responses;
+    }
+    return stub;
+}
+
 function buildJSON () {
-    var json = { protocol: $('#protocol').val() };
+    /*jshint maxcomplexity: 7 */
+    var json = { protocol: $('#protocol').val() },
+        stubRows = $('#stubs tr');
+
     if ($('#port').val()) {
         json.port = parseInt($('#port').val());
     }
@@ -135,6 +185,14 @@ function buildJSON () {
     if ($('#protocol').val() === 'tcp') {
         json.mode = $('#mode').val();
     }
+
+    if (stubRows.length > 3) {
+        json.stubs = [];
+        for (var i = 2; i < stubRows.length - 1; i++) {
+            json.stubs.push(buildStubJSON(stubRows[i]));
+        }
+    }
+
     return JSON.stringify(json, null, 4);
 }
 
@@ -156,6 +214,26 @@ function createImposter () {
     });
 }
 
+function createDialog (selector, title, clickCallback) {
+    $(selector).dialog({
+        autoOpen: false,
+        height: 600,
+        width: '60%',
+        modal: true,
+        title: title,
+        position: { my: 'center center' },
+        buttons: [
+            {
+                text: 'Create',
+                click: function () {
+                    clickCallback();
+                    $(this).dialog('close');
+                }
+            }
+        ]
+    });
+}
+
 $(document).ready(function () {
     updateLinks();
 
@@ -168,21 +246,7 @@ $(document).ready(function () {
         }
     });
 
-    $('#add-dialog').dialog({
-        autoOpen: false,
-        height: 600,
-        width: '60%',
-        modal: true,
-        title: 'Add imposter...',
-        position: { my: 'center center' },
-        buttons: [
-            {
-                text: 'Create',
-                click: function () {
-                    $(this).dialog('close');
-                    createImposter();
-                }
-            }
-        ]
-    });
+    createDialog('#add-dialog', 'Add imposter...', createImposter);
+    createDialog('#add-http-predicate-dialog', 'Add predicate...', function () {});
+    createDialog('#add-tcp-predicate-dialog', 'Add predicate...', predicateGenerator.generateTcp);
 });

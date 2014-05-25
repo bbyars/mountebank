@@ -84,16 +84,17 @@ this website locally, and you should feel free to learn the API through the UI.<
 
     <table id='stubs'>
       <tr>
-        <th style='width: 1em'>&nbsp;</th>
-        <th style='width: 20em;'>predicates</th>
-        <th style='width: 20em;'>responses</th>
+        <th style='width: 1em'>index</th>
+        <th style='width: 49%;'>predicates</th>
+        <th style='width: 49%;'>responses</th>
       </tr>
 
       <tr class='template'>
         <td style='width: 1em;'></td>
         <td>
+          <pre><code>[ ]</code></pre>
           <a href='#' class='add-icon' title='add'></a>
-          <select name='predicateType' id='predicate-type-'>
+          <select>
             <option value='equals'>equals</option>
             <option value='deepEquals'>deepEquals</option>
             <option value='contains'>contains</option>
@@ -109,8 +110,9 @@ this website locally, and you should feel free to learn the API through the UI.<
           <span></span>
         </td>
         <td>
+          <pre><code>[ ]</code></pre>
           <a href='#' class='add-icon' title='add'></a>
-          <select name='responseType' id='response-type-'>
+          <select>
             <option value='is'>is</option>
             <option value='proxy'>proxy</option>
             <option value='inject'>inject</option>
@@ -123,6 +125,44 @@ this website locally, and you should feel free to learn the API through the UI.<
         <td colspan='3'><a href='#' class='add-icon' title='add'></a></td>
       </tr>
     </table>
+  </form>
+</div>
+
+<div id='add-http-predicate-dialog'>
+  <form id='addHttpPredicate'>
+    <div>
+      <label for='httpRequestField'>Request Field</label>
+      <select name='httpRequestField' id='httpRequestField' required='required'>
+        <option value='data'>data</option>
+        <option value='requestFrom'>requestFrom</option>
+      </select>
+      <span>the request field - see the <a href='/docs/protocols/http'>protocol docs</a></span>
+    </div>
+
+    <div>
+      <label for='httpRequestValue'>Request Value</label>
+      <input type='text' name='httpRequestValue' id='httpRequestValue' placeholder='/path' required='required' />
+      <span>the predicate value</span>
+    </div>
+  </form>
+</div>
+
+<div id='add-tcp-predicate-dialog'>
+  <form id='addTcpPredicate'>
+    <div>
+      <label for='tcpRequestField'>Request Field</label>
+      <select name='tcpRequestField' id='tcpRequestField' required='required'>
+        <option value='data'>data</option>
+        <option value='requestFrom'>requestFrom</option>
+      </select>
+      <span>the request field - see the <a href='/docs/protocols/tcp'>protocol docs</a></span>
+    </div>
+
+    <div>
+      <label for='tcpRequestValue'>Request Value</label>
+      <input type='text' name='tcpRequestValue' id='tcpRequestValue' placeholder='base64 encoded method name' required='required' />
+      <span>the predicate value, base64 encoded if the mode is binary</span>
+    </div>
   </form>
 </div>
 
