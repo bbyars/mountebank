@@ -43,13 +43,16 @@ describe('html validation', function () {
 
             httpClient.responseFor(spec).then(function (response) {
                 // ignore errors for webkit attributes on search box
-                var body = response.body.replace("results='5' autosave='mb' ", '');
-                fs.writeFileSync('validation-test.html', body);
+                // use unique filename each time because otherwise a timed out test
+                // causes the next test(s) to fail
+                var body = response.body.replace("results='5' autosave='mb' ", ''),
+                    filename = endpoint.replace(/\//g, '') + '-validation-test.html';
+                fs.writeFileSync(filename, body);
 
                 validator.validate({
-                    file: 'validation-test.html',
+                    file: filename,
                     callback: function (response) {
-                        fs.unlinkSync('validation-test.html');
+                        fs.unlinkSync(filename);
 
                         if (response.messages) {
                             var errors = response.messages.filter(function (message) {

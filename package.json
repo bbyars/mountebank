@@ -51,13 +51,13 @@
   "devDependencies": {
     "grunt": "~0.4.1",
     "grunt-contrib-jshint": "~0.10.0",
-    "mocha": "~1.18.2",
-    "grunt-mocha-test": "~0.10.0",
+    "mocha": "~1.20.1",
+    "grunt-mocha-test": "~0.11.0",
     "blanket": "~1.1.5",
     "coveralls": "~2.10.0",
     "mocha-lcov-reporter": "0.0.1",
     "w3cjs": "~0.1.21",
-    "jsdom": "~0.10.5"
+    "jsdom": "~0.11.0"
   },
   "engines": {
     "node": "=0.10"
