@@ -41,7 +41,7 @@
     "errorhandler": "^1.0.0",
     "express": "~4.0.0",
     "install": "~0.1.7",
-    "json-stable-stringify": "~0.1.1",
+    "json-stable-stringify": "~1.0.0",
     "mailparser": "~0.4.1",
     "npm": "~1.4.6",
     "q": "~1.0.0",
@@ -51,10 +51,10 @@
   "devDependencies": {
     "grunt": "~0.4.1",
     "grunt-contrib-jshint": "~0.10.0",
-    "mocha": "~1.20.1",
+    "mocha": "~1.21.4",
     "grunt-mocha-test": "~0.11.0",
     "blanket": "~1.1.5",
-    "coveralls": "~2.10.0",
+    "coveralls": "~2.11.1",
     "mocha-lcov-reporter": "0.0.1",
     "w3cjs": "~0.1.21",
     "jsdom": "~0.11.0"
