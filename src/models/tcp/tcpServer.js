@@ -7,6 +7,7 @@ var AbstractServer = require('../abstractServer'),
     inherit = require('../../util/inherit'),
     combinators = require('../../util/combinators'),
     helpers = require('../../util/helpers'),
+/*jshint -W079 */
     Proxy = require('./tcpProxy'),
     TcpValidator = require('./tcpValidator'),
     StubResolver = require('../stubResolver'),

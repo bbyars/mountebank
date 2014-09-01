@@ -1,6 +1,7 @@
 'use strict';
 
 var assert = require('assert'),
+/*jshint -W079 */
     Proxy = require('../../../src/models/http/httpProxy'),
     api = require('../api'),
     promiseIt = require('../../testHelpers').promiseIt,

@@ -8,6 +8,7 @@ var AbstractServer = require('../abstractServer'),
     combinators = require('../../util/combinators'),
     StubRepository = require('../stubRepository'),
     StubResolver = require('../stubResolver'),
+/*jshint -W079 */
     Proxy = require('./httpProxy'),
     DryRunValidator = require('../dryRunValidator'),
     events = require('events'),
