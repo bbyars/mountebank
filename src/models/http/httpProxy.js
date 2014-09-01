@@ -8,6 +8,8 @@ var http = require('http'),
     combinators = require('../../util/combinators'),
     querystring = require('querystring');
 
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+
 function create (logger) {
 
     function setupProxy (baseUrl, originalRequest) {
