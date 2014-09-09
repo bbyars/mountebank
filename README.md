@@ -50,7 +50,7 @@ Not all of mountebank's goals are currently implemented, but fear not, for he ha
 
 ## Support
 
-Visit the [Google group](https://groups.google.com/forum/#!forum/mountebank-discusshttps://groups.google.com/forum/#!forum/mountebank-discuss)
+Visit the [Google group](https://groups.google.com/forum/#!forum/mountebank-discuss)
 for any support questions.  Don't be shy!
 
 ## Building
