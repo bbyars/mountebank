@@ -43,16 +43,16 @@
     "install": "~0.1.7",
     "json-stable-stringify": "~1.0.0",
     "mailparser": "~0.4.1",
-    "npm": "~1.4.6",
+    "npm": "~2.1.3",
     "q": "~1.0.0",
     "simplesmtp": "~0.3.16",
-    "winston": "~0.7.2"
+    "winston": "~0.8.0"
   },
   "devDependencies": {
     "grunt": "~0.4.1",
     "grunt-contrib-jshint": "~0.10.0",
     "mocha": "~1.21.4",
-    "grunt-mocha-test": "~0.11.0",
+    "grunt-mocha-test": "~0.12.1",
     "blanket": "~1.1.5",
     "coveralls": "~2.11.1",
     "mocha-lcov-reporter": "0.0.1",
