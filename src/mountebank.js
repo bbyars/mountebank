@@ -24,7 +24,8 @@ function create (options) {
             'http': require('./models/http/httpServer').initialize(options.allowInjection, !options.nomock),
             'https': require('./models/https/httpsServer').initialize(options.allowInjection, !options.nomock,
                                                                       options.keyfile, options.certfile),
-            'smtp': require('./models/smtp/smtpServer').initialize(!options.nomock)
+            'smtp': require('./models/smtp/smtpServer').initialize(!options.nomock),
+            'foo': require('./models/foo/fooServer').initialize(options.allowInjection, !options.nomock)
         },
         logger = ScopedLogger.create(winston, util.format('[mb:%s] ', options.port)),
         impostersController = ImpostersController.create(protocols, imposters, Imposter, logger),

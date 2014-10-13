@@ -61,15 +61,16 @@ for any support questions.  Don't be shy!
 
 `./build` should do the trick on Mac and Linux, assuming you have node 0.10.  If not, yell at me.
 
-`build.bat` is your friend on Windows.  It's not as complete - linting is left out because those use bash
-shell scripts.  Also, some tests that verify documentation integrity are also excluded because they depend
-on netcat.
+`build.bat` is your friend on Windows.  It's not as complete - some tests that verify documentation integrity
+are excluded because they depend on netcat.
 
 If the `npm install` fails on Windows, it's probably `jsdom`.  I had to install python 2.7 (not
 the latest) to get it to work.
 
 ## Contributing
 
-Contributions are welcome (see TODO.md for my own open loops, although I welcome other ideas).
+Contributions are welcome!
 Some tips for contributing are in the contributing link that spins up when you run mb.
-You can reach me at brandon.byars@gmail.com.
+I have a liberal policy accepting pull requests - I'd rather you sent them even if you can't figure out
+how to get the build working, etc.  I'm also available via Skype or something similar to help you get started.
+Feel free to reach me at brandon.byars@gmail.com.
