@@ -57,7 +57,7 @@
     "coveralls": "~2.11.1",
     "mocha-lcov-reporter": "0.0.1",
     "w3cjs": "~0.1.21",
-    "jsdom": "~0.11.0"
+    "jsdom": "~1.0.1"
   },
   "engines": {
     "node": "=0.10"
