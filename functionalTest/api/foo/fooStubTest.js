@@ -71,7 +71,7 @@ describe('foo imposter', function () {
                 assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body));
                 return tcp.send('not test', port, 100);
             }).then(function (response) {
-                assert.strictEqual(response.toString(), '');
+                assert.strictEqual(response.toString(), 'foo');
 
                 return tcp.send('test', port, 100);
             }).then(function (response) {
