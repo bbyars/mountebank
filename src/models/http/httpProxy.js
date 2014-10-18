@@ -12,6 +12,14 @@ process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 
 function create (logger) {
 
+    function toUrl (path, query) {
+        var tail = querystring.stringify(query);
+        if (tail === '') {
+            return path;
+        }
+        return path + '?' + tail;
+    }
+
     function setupProxy (baseUrl, originalRequest) {
         var parts = url.parse(baseUrl),
             protocol = parts.protocol === 'https:' ? https : http,
@@ -20,7 +28,7 @@ function create (logger) {
                 hostname: parts.hostname,
                 port: parts.port,
                 auth: parts.auth,
-                path: originalRequest.path + '?' + querystring.stringify(originalRequest.query),
+                path: toUrl(originalRequest.path, originalRequest.query),
                 headers: originalRequest.headers
             };
         options.headers.connection = 'close';
