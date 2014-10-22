@@ -36,7 +36,9 @@ function create (options) {
         validateImposterExists = middleware.createImposterValidator(imposters);
 
     logger.remove(logger.transports.Console);
-    logger.add(logger.transports.Console, { colorize: true, level: options.loglevel });
+    if (process.stdout.isTTY) {
+      logger.add(logger.transports.Console, { colorize: true, level: options.loglevel });
+    }
     logger.add(logger.transports.File, {
         filename: options.logfile,
         timestamp: true,
