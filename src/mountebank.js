@@ -63,7 +63,7 @@ function create (options) {
     app.set('json spaces', 2);
 
     app.listen(options.port);
-    logger.info(util.format('mountebank v%s now taking orders - point your browser to http://localhost:%s for help',
+    console.log(util.format('mountebank v%s now taking orders - point your browser to http://localhost:%s for help',
         thisPackage.version, options.port));
 
     app.get('/', homeController.get);
