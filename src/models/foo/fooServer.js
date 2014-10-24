@@ -44,7 +44,7 @@ function createServer (options, recordRequests) {
             // set up a logger with the correct log prefix
         logger = ScopedLogger.create(baseLogger, scopeFor(options.port)),
             // create the protocol-specific proxy (here we're reusing tcp's proxy)
-        proxy = TcpProxy.create(logger, 'utf8'),
+        proxy = TcpProxy.create(0, logger, 'utf8'),
             // create the stub resolver, which contains the strategies for resolving is, proxy, and inject stubs
             // the postProcess parameter is used to fill in defaults for the response that were not passed by the user
         resolver = StubResolver.create(proxy, postProcess),

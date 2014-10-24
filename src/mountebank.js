@@ -20,7 +20,7 @@ function create (options) {
     var app = express(),
         imposters = {},
         protocols = {
-            'tcp': require('./models/tcp/tcpServer').initialize(options.allowInjection, !options.nomock),
+            'tcp': require('./models/tcp/tcpServer').initialize(options.allowInjection, !options.nomock, options.tcpProxyWait),
             'http': require('./models/http/httpServer').initialize(options.allowInjection, !options.nomock),
             'https': require('./models/https/httpsServer').initialize(options.allowInjection, !options.nomock,
                                                                       options.keyfile, options.certfile),
@@ -63,7 +63,7 @@ function create (options) {
     app.set('json spaces', 2);
 
     app.listen(options.port);
-    logger.info(util.format('mountebank v%s now taking orders - point your browser to http://localhost:%s for help',
+    console.log(util.format('mountebank v%s now taking orders - point your browser to http://localhost:%s for help',
         thisPackage.version, options.port));
 
     app.get('/', homeController.get);

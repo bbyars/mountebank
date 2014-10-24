@@ -26,7 +26,7 @@ describe('tcp proxy', function () {
         promiseIt('should send same request information to proxied socket', function () {
             var stub = { responses: [{ is: { data: 'howdy!' } }] },
                 request = { protocol: 'tcp', port: port, stubs: [stub], name: this.name },
-                proxy = Proxy.create(logger, 'utf8');
+                proxy = Proxy.create(0, logger, 'utf8');
 
             return api.post('/imposters', request).then(function () {
                 return proxy.to({ host: 'localhost', port: port }, { data: 'hello, world!' });
@@ -41,7 +41,7 @@ describe('tcp proxy', function () {
             var buffer = new Buffer([0, 1, 2, 3]),
                 stub = { responses: [{ is: { data: buffer.toString('base64') } }] },
                 request = { protocol: 'tcp', port: port, stubs: [stub], mode: 'binary', name: this.name },
-                proxy = Proxy.create(logger, 'base64');
+                proxy = Proxy.create(0, logger, 'base64');
 
             return api.post('/imposters', request).then(function () {
                 return proxy.to({ host: 'localhost', port: port }, { data: buffer });
@@ -61,7 +61,7 @@ describe('tcp proxy', function () {
             });
             server.listen(port);
 
-            var proxy = Proxy.create(logger, 'utf8');
+            var proxy = Proxy.create(0, logger, 'utf8');
 
             return proxy.to({ host: 'localhost', port: port }, { data: 'hello, world!' }).then(function (response) {
                 assert.strictEqual(response.data.length, 10*1024*1024 - 1);
@@ -71,7 +71,7 @@ describe('tcp proxy', function () {
         });
 
         promiseIt('should gracefully deal with DNS errors', function () {
-            var proxy = Proxy.create(logger, 'utf8');
+            var proxy = Proxy.create(0, logger, 'utf8');
 
             return proxy.to({ host: 'no.such.domain', port: 80 }, { data: 'hello, world!' }).then(function () {
                 assert.fail('should not have resolved promise');
@@ -84,7 +84,7 @@ describe('tcp proxy', function () {
         });
 
         promiseIt('should gracefully deal with non listening ports', function () {
-            var proxy = Proxy.create(logger, 'utf8');
+            var proxy = Proxy.create(0, logger, 'utf8');
 
             return proxy.to({ host: 'localhost', port: 18000 }, { data: 'hello, world!' }).then(function () {
                 assert.fail('should not have resolved promise');
@@ -93,6 +93,27 @@ describe('tcp proxy', function () {
                     code: 'invalid proxy',
                     message: 'Unable to connect to {"host":"localhost","port":18000}'
                 });
+            });
+        });
+
+        promiseIt('should not immediately close connection on proxy', function () {
+            var events = {},
+                server = net.createServer(function (client) {
+                    ['data', 'end'].forEach(function (event) {
+                        client.on(event, function () {
+                            events[event] = new Date();
+                        });
+                    });
+                }),
+                proxy = Proxy.create(110, logger, 'utf8');
+
+            server.listen(port);
+
+            return proxy.to({ host: 'localhost', port: port }, { data: 'hello, world!' }).then(function () {
+                var duration = events.end.getTime() - events.data.getTime();
+                assert.ok(duration > 100, 'expected duration greater than 100; got ' + duration);
+            }).finally(function () {
+                server.close();
             });
         });
     });
