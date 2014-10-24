@@ -20,7 +20,7 @@ function create (options) {
     var app = express(),
         imposters = {},
         protocols = {
-            'tcp': require('./models/tcp/tcpServer').initialize(options.allowInjection, !options.nomock),
+            'tcp': require('./models/tcp/tcpServer').initialize(options.allowInjection, !options.nomock, options.tcpProxyWait),
             'http': require('./models/http/httpServer').initialize(options.allowInjection, !options.nomock),
             'https': require('./models/https/httpsServer').initialize(options.allowInjection, !options.nomock,
                                                                       options.keyfile, options.certfile),

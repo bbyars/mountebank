@@ -21,13 +21,13 @@ function postProcess (stub) {
     };
 }
 
-function createServer (logger, options) {
+function createServer (tcpProxyWait, logger, options) {
     var mode = options.mode ? options.mode : 'text',
         encoding = mode === 'binary' ? 'base64' : 'utf8',
         ensureBuffer = function (data) {
             return Buffer.isBuffer(data) ? data : new Buffer(data, encoding);
         },
-        proxy = Proxy.create(logger, encoding),
+        proxy = Proxy.create(tcpProxyWait, logger, encoding),
         resolver = StubResolver.create(proxy, postProcess),
         stubs = StubRepository.create(resolver, options.recordRequests, encoding),
         result = inherit.from(events.EventEmitter, {
@@ -86,10 +86,10 @@ function createServer (logger, options) {
     return result;
 }
 
-function initialize (allowInjection, recordRequests) {
+function initialize (allowInjection, recordRequests, tcpProxyWait) {
     var implementation = {
             protocolName: 'tcp',
-            createServer: createServer,
+            createServer: combinators.curry(createServer, tcpProxyWait),
             Request: TcpRequest
         };
 
