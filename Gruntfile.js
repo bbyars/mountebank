@@ -2,7 +2,7 @@
 
 var spawn = require('child_process').spawn,
     exec = require('child_process').exec,
-    fs = require('fs'),
+    fs = require('fs-extra'),
     os = require('os'),
     path = require('path'),
     port = process.env.MB_PORT || 2525,
@@ -38,28 +38,6 @@ function forEachFileIn (dir, fileCallback, options) {
     });
     if (options.after) {
         options.after(dir);
-    }
-}
-
-function rmdirRecursiveSync (dir) {
-    if (!fs.existsSync(dir)) {
-        return;
-    }
-
-    forEachFileIn(dir, fs.unlinkSync, { after: fs.rmdirSync } );
-}
-
-function cpRecursiveSync (src, dst) {
-    var isDirectory = fs.statSync(src).isDirectory(),
-        destination = path.join(dst, path.basename(src));
-
-    if (isDirectory) {
-        fs.mkdirSync(destination);
-        fs.readdirSync(src).forEach(function (file) {
-            cpRecursiveSync(path.join(src, file),destination);
-        });
-    } else {
-        fs.linkSync(src, destination);
     }
 }
 
@@ -179,13 +157,13 @@ module.exports = function (grunt) {
     });
 
     grunt.registerTask('dist', 'Create trimmed down distribution directory', function () {
-        rmdirRecursiveSync('dist');
+        fs.removeSync('dist');
         fs.mkdirSync('dist');
         fs.mkdirSync('dist/mountebank');
         ['bin', 'src', 'package.json', 'README.md', 'LICENSE'].forEach(function (source) {
-            cpRecursiveSync(source, 'dist/mountebank');
+            fs.copySync(source, 'dist/mountebank/' + source);
         });
-        rmdirRecursiveSync('dist/mountebank/src/public/images/sources');
+        fs.removeSync('dist/mountebank/src/public/images/sources');
         exec('cd dist/mountebank && npm install --production', this.async());
     });
 
