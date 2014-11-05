@@ -32,6 +32,9 @@ function normalize (obj, config, encoding) {
         encodeTransform = encoding === 'base64' ? encode : combinators.identity,
         transform = combinators.compose(exceptTransform, caseTransform, encodeTransform),
         transformAll = function (o) {
+            if (!o) {
+              return o;
+            }
             return Object.keys(o).reduce(function (result, key) {
                 var value = o[key];
                 if (typeof o[key] === 'object') {
@@ -49,6 +52,9 @@ function normalize (obj, config, encoding) {
 }
 
 function predicateSatisfied (expected, actual, predicate) {
+    if (!actual) {
+      return false;
+    }
     return Object.keys(expected).every(function (fieldName) {
         if (typeof expected[fieldName] === 'object') {
             return predicateSatisfied(expected[fieldName], actual[fieldName], predicate);
