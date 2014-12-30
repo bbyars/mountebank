@@ -89,6 +89,7 @@ function create (options) {
         '/docs/install',
         '/docs/glossary',
         '/docs/commandLine',
+        '/docs/clientLibraries',
         '/docs/api/overview',
         '/docs/api/mocks',
         '/docs/api/stubs',
