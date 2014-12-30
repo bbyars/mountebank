@@ -29,7 +29,11 @@
     to <code>/imposters</code>.  See the <a href='/docs/api/overview#put-imposters'>
     API docs</a> for what the content should look like.  This is the same content you get
     from a <a href='/docs/api/overview#get-imposters'>
-    <code>GET /imposters?replayable=true</code></a> call.</td>
+    <code>GET /imposters?replayable=true</code></a> call.  Alternatively, if you prefer
+    keeping each imposter in a separate file, you may do so and pass a file glob pattern.
+    For Windows, use only forward slashes as the <a href='https://github.com/isaacs/node-glob#glob-primer'>
+    globbing implementation</a> always interprets backslashes as escape characters.
+    Make sure to quote your glob pattern to avoid the shell interpreting it.</td>
     <td><code>N/A</code></td>
   </tr>
   <tr>
