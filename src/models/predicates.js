@@ -37,7 +37,10 @@ function normalize (obj, config, encoding) {
             }
             return Object.keys(o).reduce(function (result, key) {
                 var value = o[key];
-                if (typeof o[key] === 'object') {
+                if (Array.isArray(o[key])) {
+                    value = transform(JSON.stringify(o[key]));
+                }
+                else if (typeof o[key] === 'object') {
                     value = transformAll(value);
                 }
                 else if (typeof o[key] === 'string') {

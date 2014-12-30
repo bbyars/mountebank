@@ -333,6 +333,12 @@ describe('predicates', function () {
                 request = { field: new Buffer([1, 2, 3, 4]).toString('base64') };
             assert.ok(!predicates.contains(predicate, request, 'base64'));
         });
+
+        it('should return true if repeating query key contains value', function () {
+            var predicate = { contains: { query: { key: '123' } }},
+                request = { query: { key: ['123', '234'] } };
+            assert.ok(predicates.contains(predicate, request));
+        });
     });
 
     describe('#startsWith', function () {
