@@ -69,10 +69,10 @@ function create (options) {
     app.get('/', homeController.get);
     app.get('/imposters', impostersController.get);
     app.post('/imposters', impostersController.post);
-    app.del('/imposters', impostersController.del);
+    app.delete('/imposters', impostersController.del);
     app.put('/imposters', impostersController.put);
     app.get('/imposters/:id', validateImposterExists, imposterController.get);
-    app.del('/imposters/:id', imposterController.del);
+    app.delete('/imposters/:id', imposterController.del);
     app.get('/logs', logsController.get);
     app.get('/config', configController.get);
     app.get('/feed', feedController.getFeed);
