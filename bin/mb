@@ -8,14 +8,15 @@ var mountebank = require('../src/mountebank'),
     exec = require('child_process').exec,
     thisPackage = require('../package.json'),
     Q = require('q'),
-    os = require('os');
+    os = require('os'),
+    glob = require('glob');
 
 function usage () {
     console.log('Usage: mb [command] [options...]');
     console.log('Commands: start, stop, restart, help (defaults to start)');
     console.log('Options:');
     console.log('    --port PORT       the port to run the mountebank server on (default 2525)');
-    console.log('    --configfile      file to load imposters from');
+    console.log('    --configfile      file to load imposters from, can be a glob pattern for multiple files');
     console.log('    --pidfile FILE    where the pid is stored for the stop command (default mb.pid)');
     console.log('    --logfile FILE    file used for all log (default mb.log)');
     console.log('    --loglevel LEVEL  level for terminal logs (default info)');
@@ -95,7 +96,7 @@ function shouldLoadConfigFile (commandLine) {
     return commandLine.options.configfile !== '' && commandLine.command.indexOf('start') >= 0;
 }
 
-function putConfigFile (options, body) {
+function putConfig (options, body) {
     var deferred = Q.defer(),
         requestOptions = {
             method: 'PUT',
@@ -121,6 +122,33 @@ function putConfigFile (options, body) {
     return deferred.promise;
 }
 
+function loadConfig (commandLine) {
+    glob(commandLine.options.configfile, {}, function (error, files) {
+        var imposters = [];
+
+        if (error) {
+            console.log(error);
+            process.exit(2);
+        }
+
+        // Allow supporting multiple config files through a globbing pattern
+        files.map(function (file) {
+            var configContents = fs.readFileSync(file, 'utf8'),
+                json = JSON.parse(configContents),
+                newImposters = json.imposters;
+
+            if (!newImposters) {
+                // Assume they keep each imposter in a separate file with no outer imposters array
+                newImposters = [json];
+            }
+            Array.prototype.push.apply(imposters, newImposters);
+        });
+
+        console.log(JSON.stringify({ imposters: imposters} ));
+        return putConfig(commandLine.options, JSON.stringify({ imposters: imposters }));
+    });
+}
+
 try {
     var defaultOptions = {
             port: 2525,
@@ -133,8 +161,7 @@ try {
             tcpProxyWait: 0
         },
         commandLine = cli.parse(process.argv.slice(2), defaultOptions, ['allowInjection', 'nomock', 'heroku', 'version']),
-        server = serverAt(commandLine.options),
-        configContents;
+        server = serverAt(commandLine.options);
 
     if (commandLine.options.version) {
         console.log(thisPackage.version);
@@ -159,11 +186,7 @@ try {
         }
 
         if (shouldLoadConfigFile(commandLine)) {
-            configContents = fs.readFileSync(commandLine.options.configfile, 'utf8');
-            putConfigFile(commandLine.options, configContents).done(function () {}, function (error) {
-                console.log(error);
-                process.exit(2);
-            });
+            loadConfig(commandLine);
         }
     }
 }
