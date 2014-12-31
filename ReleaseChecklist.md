@@ -5,6 +5,7 @@ Travis.ci does most of the work, but not all.  I'd like to experiment with Snap 
 can satisfy the cross-platform pipeline requirements, and give a manual deploy.
 
 # Make sure the previous build passes in https://travis-ci.org/bbyars/mountebank
+# Make sure the Windows build passes with the latest
 # Review major / minor version.  If an increment is needed:
   * change the LAST_PATCH_OF_PRIOR_VERSION variable of the build script to the latest build in travis to reset the patch.
   * change the links in install.ejs
