@@ -10,7 +10,10 @@ function forceStrings (obj) {
         return obj;
     }
     return Object.keys(obj).reduce(function (result, key) {
-        if (typeof obj[key] === 'object') {
+        if (Array.isArray(obj[key])) {
+            result[key] = obj[key].map(forceStrings);
+        }
+        else if (typeof obj[key] === 'object') {
             result[key] = forceStrings(obj[key]);
         }
         else if (['boolean', 'number'].indexOf(typeof obj[key]) >= 0) {
@@ -38,7 +41,7 @@ function normalize (obj, config, encoding) {
             return Object.keys(o).reduce(function (result, key) {
                 var value = o[key];
                 if (Array.isArray(o[key])) {
-                    value = transform(JSON.stringify(o[key]));
+                    value = o[key].map(transform);
                 }
                 else if (typeof o[key] === 'object') {
                     value = transformAll(value);
@@ -59,11 +62,18 @@ function predicateSatisfied (expected, actual, predicate) {
       return false;
     }
     return Object.keys(expected).every(function (fieldName) {
-        if (typeof expected[fieldName] === 'object') {
+        var test = function (value) {
+            return predicate(expected[fieldName], value || '');
+        };
+
+        if (Array.isArray(actual[fieldName])) {
+            return actual[fieldName].some(test);
+        }
+        else if (typeof expected[fieldName] === 'object') {
             return predicateSatisfied(expected[fieldName], actual[fieldName], predicate);
         }
         else {
-            return predicate(expected[fieldName], actual[fieldName] || '');
+            return test(actual[fieldName]);
         }
     });
 }
