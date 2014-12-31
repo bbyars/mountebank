@@ -106,6 +106,12 @@ mountebank recommends that you stay away from <code>matches</code> if you're dea
 In mountebank's experience, <code>contains</code> is the most useful predicate for binary
 imposters, as even binary RPC data generally contains strings representing method names.</p>
 
+<p>On occasion you may encounter multi-valued keys.  This can be the case with querystrings
+that have repeating keys, for example <code>?key=first&amp;key=second</code>.  In those cases,
+<code>deepEquals</code> will require all the values in the same order to match.  All other
+predicates will match if any value matches, so an <code>equals</code> predicate
+will match with the value of <code>second</code> in the example above.</p>
+
 <h2>Examples</h2>
 
 <p>The examples below use both HTTP and TCP imposters.  The TCP examples use netcat (<code>nc</code>)

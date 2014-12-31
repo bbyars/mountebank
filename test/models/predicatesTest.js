@@ -122,6 +122,18 @@ describe('predicates', function () {
                 request = { field: 'This is a test' };
             assert.ok(!predicates.equals(predicate, request));
         });
+
+        it('should return true if any value in a multi-value key is equal', function () {
+            var predicate = { equals: { query: { key: '234' } }},
+                request = { query: { key: ['123', '234'] } };
+            assert.ok(predicates.equals(predicate, request));
+        });
+
+        it('should return false if no value in a multi-value key is equal', function () {
+            var predicate = { equals: { query: { key: '23' } }},
+                request = { query: { key: ['123', '234'] } };
+            assert.ok(!predicates.equals(predicate, request));
+        });
     });
 
     describe('#deepEquals', function () {
@@ -265,6 +277,24 @@ describe('predicates', function () {
                 request = { query: { int: '1', float: '1.1', bool: 'true' } };
             assert.ok(predicates.deepEquals(predicate, request));
         });
+
+        it('should be true if all values in a multi-value key are present', function () {
+            var predicate = { deepEquals: { query: { key: ['first', 'second'] } } },
+                request = { query: { key: ['first', 'second'] }, field: 'true' };
+            assert.ok(predicates.deepEquals(predicate, request));
+        });
+
+        it('should be false if some values in a multi-value key are missing', function () {
+            var predicate = { deepEquals: { query: { key: ['first', 'second', 'third'] } } },
+                request = { query: { key: ['first', 'second'] }, field: 'true' };
+            assert.ok(!predicates.deepEquals(predicate, request));
+        });
+
+        it('should be false if values in a multi-value key are out of order', function () {
+            var predicate = { deepEquals: { query: { key: ['first', 'second'] } } },
+                request = { query: { key: ['second', 'first'] }, field: 'true' };
+            assert.ok(!predicates.deepEquals(predicate, request));
+        });
     });
 
     describe('#contains', function () {
@@ -339,6 +369,18 @@ describe('predicates', function () {
                 request = { query: { key: ['123', '234'] } };
             assert.ok(predicates.contains(predicate, request));
         });
+
+        it('should return true if repeating query key contains value with the right substring', function () {
+            var predicate = { contains: { query: { key: 'mid' } }},
+                request = { query: { key: ['begin', 'middle', 'end'] } };
+            assert.ok(predicates.contains(predicate, request));
+        });
+
+        it('should return false if repeating query key does not contain value', function () {
+            var predicate = { contains: { query: { key: 'bid' } }},
+                request = { query: { key: ['begin', 'middle', 'end'] } };
+            assert.ok(!predicates.contains(predicate, request));
+        });
     });
 
     describe('#startsWith', function () {
@@ -395,6 +437,18 @@ describe('predicates', function () {
                 request = { field: new Buffer([1, 2, 3, 4]).toString('base64') };
             assert.ok(!predicates.startsWith(predicate, request, 'base64'));
         });
+
+        it('should return true if repeating query key has value starting with string', function () {
+            var predicate = { startsWith: { query: { key: 'mid' } }},
+                request = { query: { key: ['begin', 'middle', 'end'] } };
+            assert.ok(predicates.startsWith(predicate, request));
+        });
+
+        it('should return false if repeating query key does not have value starting with string', function () {
+            var predicate = { startsWith: { query: { key: 'egin' } }},
+                request = { query: { key: ['begin', 'middle', 'end'] } };
+            assert.ok(!predicates.startsWith(predicate, request));
+        });
     });
 
     describe('#endsWith', function () {
@@ -450,6 +504,18 @@ describe('predicates', function () {
             var predicate = { endsWith: {  field: new Buffer([1, 2, 3]).toString('base64') } },
                 request = { field: new Buffer([1, 2, 3, 4]).toString('base64') };
             assert.ok(!predicates.endsWith(predicate, request, 'base64'));
+        });
+
+        it('should return true if repeating query key has value ending with string', function () {
+            var predicate = { endsWith: { query: { key: 'gin' } }},
+                request = { query: { key: ['begin', 'middle', 'end'] } };
+            assert.ok(predicates.endsWith(predicate, request));
+        });
+
+        it('should return false if repeating query key does not have value ending with string', function () {
+            var predicate = { endsWith: { query: { key: 'begi' } }},
+                request = { query: { key: ['begin', 'middle', 'end'] } };
+            assert.ok(!predicates.endsWith(predicate, request));
         });
     });
 
@@ -513,6 +579,18 @@ describe('predicates', function () {
                 assert.strictEqual(error.code, 'bad data');
                 assert.strictEqual(error.message, 'the matches predicate is not allowed in binary mode');
             }
+        });
+
+        it('should return true if repeating query key has value matching string', function () {
+            var predicate = { matches: { query: { key: 'iddle$' } }},
+                request = { query: { key: ['begin', 'middle', 'end'] } };
+            assert.ok(predicates.matches(predicate, request));
+        });
+
+        it('should return false if repeating query key does not have value matching string', function () {
+            var predicate = { matches: { query: { key: '^iddle' } }},
+                request = { query: { key: ['begin', 'middle', 'end'] } };
+            assert.ok(!predicates.matches(predicate, request));
         });
     });
 
