@@ -32,7 +32,7 @@ describe('html validation', function () {
         '/docs/protocols/https',
         '/docs/protocols/tcp',
         '/docs/protocols/smtp',
-        '/releases/v1.1.0'
+        '/releases/v1.1.72'
     ].forEach(function (endpoint) {
         it(endpoint + ' should have no html errors', function (done) {
             var spec = {

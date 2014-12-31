@@ -1,0 +1,36 @@
+<h1>v1.1.72</h1>
+
+<p>This is a minor release, containing some bug fixes and minor enhancements</p>
+
+<h2>New Features</h2>
+<ul class='bullet-list'>
+  <li>A new page documenting <a href='http://<%= host %>/docs/clientLibraries'>client libraries</a> to make
+    using mountebank in your native language easier.</li>
+  <li>Added ability for the <a href='http://<%= host %>/docs/commandLine'>--configfile option</a> to accept a file glob
+    to support storing imposters in multiple files</li>
+  <li>Added a <a href='https://github.com/bbyars/mountebank/blob/master/src/models/foo/fooServer.js'>fake protocol</a>
+    to show how to add new protocols</li>
+</ul>
+
+<h2>Bug Fixes</h2>
+<ul class='bullet-list'>
+  <li>Fixed <a href='https://github.com/bbyars/mountebank/issues/44'>proxying to https with invalid certs</a></li>
+  <li>Removed <a href='https://github.com/bbyars/mountebank/issues/46'>unnecessary ? from proxy URLs</a> without query params</li>
+  <li>Attach logger to Console only when in terminal mode</li>
+  <li>Delaying closing tcp proxy connection immediately to support CORBA proxying</li>
+  <li>Fix Internal Server Error while null predicates</li>
+  <li>Fixed bug with predicates not working intuitively for multi-valued query string keys</li>
+</ul>
+
+<p>Many thanks to the following kind folk for help with this release, both for pull requests and bug reports:</p>
+
+<ul class='bullet-list'>
+  <li><a href='https://github.com/quad'>Scott Robinson</a></li>
+  <li><a href='https://github.com/zedar'>Robert Zakrzewski</a></li>
+  <li><a href='https://github.com/ndrwdn'>Andrew Dean</a></li>
+  <li><a href='https://github.com/vocatan'>Bill Mitchell</a></li>
+  <li><a href='https://github.com/CoderKungfu'>Michael Cheng</a></li>
+  <li>Lee Meador</li>
+  <li>Michael Wongwaisayawan</li>
+  <li>Rohit Goyal</li>
+</ul>
