@@ -8,28 +8,32 @@ function wait (responsePromise, milliseconds) {
     return responsePromise.delay(milliseconds);
 }
 
-function decorate (request, responsePromise, fn, logger) {
+function decorate (originalRequest, responsePromise, fn, logger) {
     return responsePromise.then(function (response) {
         /* jshint evil: true */
-        var scope = helpers.clone(request),
-            injected = '(' + fn + ')(scope, response, logger);';
+        var request = helpers.clone(originalRequest),
+            injected = '(' + fn + ')(request, response, logger);';
 
         try {
-            // support returning a value
-            eval(injected);
-            return Q(response);
+            // Support functions that mutate response in place and those
+            // that return a new response
+            var result = eval(injected);
+            if (!result) {
+                result = response;
+            }
+            return Q(result);
         }
         catch (error) {
             logger.error("injection X=> " + error);
             logger.error("    full source: " + JSON.stringify(injected));
-            logger.error("    request: " + JSON.stringify(scope));
+            logger.error("    request: " + JSON.stringify(request));
             logger.error("    response: " + JSON.stringify(response));
-            return Q.reject(errors.InjectionError('invalid response injection', { source: injected, data: error.message }));
+            return Q.reject(errors.InjectionError('invalid decorator injection', { source: injected, data: error.message }));
         }
     });
 }
 
-function execute (response, behaviors, logger) {
+function execute (request, response, behaviors, logger) {
     var result = Q(response);
 
     if (!behaviors) {
@@ -42,7 +46,7 @@ function execute (response, behaviors, logger) {
         result = wait(result, behaviors.wait);
     }
     if (behaviors.decorate) {
-        result = decorate({}, result, behaviors.decorate, logger);
+        result = decorate(request, result, behaviors.decorate, logger);
     }
 
     return result;

@@ -216,6 +216,63 @@ var assert = require('assert'),
                     return api.del('/imposters');
                 });
             });
+
+            promiseIt('should support using request parameters during decorating', function () {
+                var decorator = function (request, response) {
+                        response.body = response.body.replace('${PATH}', request.path);
+                    },
+                    stub = {
+                        responses: [{ is: { body: 'the path is ${PATH}' }, _behaviors: { decorate:  decorator.toString() } }]
+                    },
+                    stubs = [stub],
+                    request = { protocol: protocol, port: port, stubs: stubs, name: this.name };
+
+                return api.post('/imposters', request).then(function (response) {
+                    assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body, null, 2));
+                    return client.get('/test', port);
+                }).then(function (response) {
+                    assert.strictEqual(response.body, 'the path is /test');
+                }).finally(function () {
+                    return api.del('/imposters');
+                });
+            });
+
+            promiseIt('should support decorate functions that return a value by making that value the response', function () {
+                var decorator = function (request, response) {
+                        var clonedResponse = JSON.parse(JSON.stringify(response));
+                        clonedResponse.body = 'This is a clone';
+                        return clonedResponse;
+                    },
+                    stub = {
+                        responses: [{ is: { body: 'This is the original' }, _behaviors: { decorate:  decorator.toString() } }]
+                    },
+                    stubs = [stub],
+                    request = { protocol: protocol, port: port, stubs: stubs, name: this.name };
+
+                return api.post('/imposters', request).then(function (response) {
+                    assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body, null, 2));
+                    return client.get('/', port);
+                }).then(function (response) {
+                    assert.strictEqual(response.body, 'This is a clone');
+                }).finally(function () {
+                    return api.del('/imposters');
+                });
+            });
+
+            promiseIt('should return an error if the decorate JavaScript is not well formed', function () {
+                var decorator = "response.body = 'This should not work';",
+                    stub = {
+                        responses: [{ is: { body: 'This is the original' }, _behaviors: { decorate:  decorator } }]
+                    },
+                    stubs = [stub],
+                    request = { protocol: protocol, port: port, stubs: stubs, name: this.name };
+
+                return api.post('/imposters', request).then(function (response) {
+                    assert.strictEqual(response.statusCode, 400, JSON.stringify(response.body, null, 2));
+                }).finally(function () {
+                    return api.del('/imposters');
+                });
+            });
         });
     });
 });
