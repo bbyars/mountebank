@@ -193,7 +193,27 @@ var assert = require('assert'),
                     var time = new Date() - timer;
                     assert.ok(time > 1000);
                 }).finally(function () {
-                    return api.del('/imposters/' + port);
+                    return api.del('/imposters');
+                });
+            });
+
+            promiseIt('should support post-processing when using behaviors.decorate', function () {
+                var decorator = function (request, response) {
+                        response.body = response.body.replace('${YEAR}', new Date().getFullYear());
+                    },
+                    stub = {
+                        responses: [{ is: { body: 'the year is ${YEAR}' }, _behaviors: { decorate:  decorator.toString() } }]
+                    },
+                    stubs = [stub],
+                    request = { protocol: protocol, port: port, stubs: stubs, name: this.name };
+
+                return api.post('/imposters', request).then(function (response) {
+                    assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body, null, 2));
+                    return client.get('/', port);
+                }).then(function (response) {
+                    assert.strictEqual(response.body, 'the year is ' + new Date().getFullYear());
+                }).finally(function () {
+                    return api.del('/imposters');
                 });
             });
         });
