@@ -725,7 +725,8 @@ describe('predicates', function () {
         });
 
         it('should return true if injected function matches request', function () {
-            var predicate = { inject: "function (obj) { return obj.path === '/' && obj.method === 'GET'; }" },
+            var fn = function (obj) { return obj.path === '/' && obj.method === 'GET'; },
+                predicate = { inject: fn.toString() },
                 request = { path: '/', method: 'GET' };
             assert.ok(predicates.inject(predicate, request));
         });

@@ -4,8 +4,8 @@ var helpers = require('../util/helpers'),
     errors = require('../util/errors'),
     Q = require('q');
 
-function wait (response, milliseconds) {
-    return response.delay(milliseconds);
+function wait (responsePromise, milliseconds) {
+    return responsePromise.delay(milliseconds);
 }
 
 function decorate (request, responsePromise, fn, logger) {
