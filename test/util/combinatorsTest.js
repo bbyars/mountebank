@@ -31,7 +31,7 @@ describe('combinators', function () {
         it('should compose functions', function () {
             var increment = function (i) { return i + 1;},
                 double = function (j) { return j * 2; };
-            assert.strictEqual(combinators.compose(increment, double)(1), 3);
+            assert.strictEqual(combinators.compose(increment, double)(2), 5);
         });
 
         it('should compose multiple functions', function () {
