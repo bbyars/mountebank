@@ -3,6 +3,7 @@
 var helpers = require('../util/helpers'),
     combinators = require('../util/combinators'),
     errors = require('../util/errors'),
+    behaviors = require('./behaviors'),
     Q = require('q'),
     stringify = require('json-stable-stringify');
 
@@ -130,7 +131,10 @@ function create (proxy, postProcess) {
     }
 
     function resolve (stubResolver, request, logger, stubs) {
-        var postProcessAndReturnPromise = combinators.compose(Q, postProcess);
+        var addBehaviors = function (response) {
+                return behaviors.execute(response, stubResolver._behaviors, logger);
+            },
+            postProcessAndReturnPromise = combinators.compose(Q, addBehaviors, postProcess);
         return process(stubResolver, request, logger, stubs).then(postProcessAndReturnPromise);
     }
 

@@ -44,15 +44,7 @@ function create (resolver, recordMatches, encoding) {
 
         stub.responses.push(stubResolver);
 
-        resolver.resolve(stubResolver, request, logger, stubs).then(function (response) {
-            var result = Q(response);
-
-            if (stubResolver._behaviors && stubResolver._behaviors.wait) {
-                logger.debug('using stub response behavior ' + JSON.stringify(stubResolver._behaviors));
-                result = result.delay(stubResolver._behaviors.wait);
-            }
-            return result;
-        }).done(function (response) {
+        resolver.resolve(stubResolver, request, logger, stubs).done(function (response) {
             var match = {
                     timestamp: new Date().toJSON(),
                     request: request,
