@@ -64,7 +64,8 @@ function create (options) {
 
     function hasInjection (stub) {
         var hasResponseInjections = utils.isArray(stub.responses) && stub.responses.some(function (response) {
-                return response.inject;
+                var hasDecorator = response._behaviors && response._behaviors.decorate;
+                return response.inject || hasDecorator;
             }),
             hasPredicateInjections = Object.keys(stub.predicates || {}).some(function (predicate) {
                 return stub.predicates[predicate].inject;
@@ -75,7 +76,7 @@ function create (options) {
     function addInjectionErrors (stub, errors) {
         if (!options.allowInjection && hasInjection(stub)) {
             errors.push(exceptions.InjectionError(
-                'inject is not allowed unless mb is run with the --allowInjection flag', { source: stub }));
+                'JavaScript injection is not allowed unless mb is run with the --allowInjection flag', { source: stub }));
         }
     }
 

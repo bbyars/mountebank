@@ -142,6 +142,30 @@ describe('dryRunValidator', function () {
             });
         });
 
+        promiseIt('should be true for a well formed decorator behavior if injections are allowed', function () {
+            var decorator = function (request, response) {
+                    response.body = 'Hello';
+                },
+                request = {
+                    stubs: [{
+                        responses: [{ is: { statusCode: 400 }, _behaviors: { decorate: decorator.toString() }  }]
+                    }]
+                },
+                validator = Validator.create({
+                    StubRepository: StubRepository,
+                    testRequest: testRequest,
+                    allowInjection: true
+                }),
+                logger = { warn: mock() };
+
+            return validator.validate(request, logger).then(function (result) {
+                assert.deepEqual(result, {
+                    isValid: true,
+                    errors: []
+                });
+            });
+        });
+
         promiseIt('should not be valid for response injection if injections are disallowed', function () {
             var request = {
                     stubs: [{
@@ -159,7 +183,7 @@ describe('dryRunValidator', function () {
                     isValid: false,
                     errors: [{
                         code: 'invalid injection',
-                        message: 'inject is not allowed unless mb is run with the --allowInjection flag',
+                        message: 'JavaScript injection is not allowed unless mb is run with the --allowInjection flag',
                         source: request.stubs[0]
                     }]
                 });
@@ -184,7 +208,35 @@ describe('dryRunValidator', function () {
                     isValid: false,
                     errors: [{
                         code: 'invalid injection',
-                        message: 'inject is not allowed unless mb is run with the --allowInjection flag',
+                        message: 'JavaScript injection is not allowed unless mb is run with the --allowInjection flag',
+                        source: request.stubs[0]
+                    }]
+                });
+            });
+        });
+
+        promiseIt('should be false for a well formed decorator behavior if injections are not allowed', function () {
+            var decorator = function (request, response) {
+                    response.body = 'Hello';
+                },
+                request = {
+                    stubs: [{
+                        responses: [{ is: { statusCode: 400 }, _behaviors: { decorate: decorator.toString() }  }]
+                    }]
+                },
+                validator = Validator.create({
+                    StubRepository: StubRepository,
+                    testRequest: testRequest,
+                    allowInjection: false
+                }),
+                logger = { warn: mock() };
+
+            return validator.validate(request, logger).then(function (result) {
+                assert.deepEqual(result, {
+                    isValid: false,
+                    errors: [{
+                        code: 'invalid injection',
+                        message: 'JavaScript injection is not allowed unless mb is run with the --allowInjection flag',
                         source: request.stubs[0]
                     }]
                 });
