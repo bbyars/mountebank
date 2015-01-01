@@ -94,6 +94,11 @@ function setup (protocolName, createNodeServer) {
                     return DryRunValidator.create({
                         StubRepository: StubRepository,
                         testRequest: HttpRequest.createTestRequest(),
+                        testProxyResponse: {
+                            statusCode: 200,
+                            headers: {},
+                            body: ''
+                        },
                         allowInjection: allowInjection
                     });
                 }
