@@ -43,10 +43,11 @@ describe('tcp imposter', function () {
 
     describe('POST /imposters with injections', function () {
         promiseIt('should allow javascript predicate for matching', function () {
-            var stub = {
-                predicates: [{ inject: "function (request) { return request.data.toString() === 'test'; }" }],
-                responses: [{ is: { data: 'MATCHED' } }]
-            };
+            var fn = function (request) { return request.data.toString() === 'test';},
+                stub = {
+                    predicates: [{ inject: fn.toString() }],
+                    responses: [{ is: { data: 'MATCHED' } }]
+                };
 
             return api.post('/imposters', { protocol: 'tcp', port: port, stubs: [stub] }).then(function (response) {
                 assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body));
@@ -60,8 +61,8 @@ describe('tcp imposter', function () {
         });
 
         promiseIt('should allow synchronous javascript injection for responses', function () {
-            var fn = "function (request) { return { data: request.data + ' INJECTED' }; }",
-                stub = { responses: [{ inject: fn }] },
+            var fn = function (request) { return { data: request.data + ' INJECTED' }; },
+                stub = { responses: [{ inject: fn.toString() }] },
                 request = { protocol: 'tcp', port: port, stubs: [stub], name: this.name };
 
             return api.post('/imposters', request).then(function () {
@@ -74,12 +75,12 @@ describe('tcp imposter', function () {
         });
 
         promiseIt('should allow javascript injection to keep state between requests', function () {
-            var fn = "function (request, state) {\n" +
-                    "    if (!state.calls) { state.calls = 0; }\n" +
-                    "    state.calls += 1;\n" +
-                    "    return { data: state.calls.toString() };\n" +
-                    "}",
-                stub = { responses: [{ inject: fn }] },
+            var fn = function (request, state) {
+                        if (!state.calls) { state.calls = 0; }
+                        state.calls += 1;
+                        return { data: state.calls.toString() };
+                    },
+                stub = { responses: [{ inject: fn.toString() }] },
                 request = { protocol: 'tcp', port: port, stubs: [stub], name: this.name };
 
             return api.post('/imposters', request).then(function (response) {
@@ -99,8 +100,8 @@ describe('tcp imposter', function () {
 
         promiseIt('should return a 400 if injection is disallowed and inject is used', function () {
             var mbPort = port + 1,
-                fn = "function (request) { return { data: 'INJECTED' }; }",
-                stub = { responses: [{ inject: fn }] },
+                fn = function () { return { data: 'INJECTED' }; },
+                stub = { responses: [{ inject: fn.toString() }] },
                 request = { protocol: 'tcp', port: port, stubs: [stub], name: this.name },
                 mbApi = BaseHttpClient.create('http');
 
@@ -115,21 +116,21 @@ describe('tcp imposter', function () {
         });
 
         promiseIt('should allow asynchronous injection', function () {
-            var fn = "function (request, state, logger, callback) {\n" +
-                    "    var net = require('net'),\n" +
-                    "        options = {\n" +
-                    "            host: 'www.google.com',\n" +
-                    "            port: 80\n" +
-                    "        },\n" +
-                    "        socket = net.connect(options, function () {\n" +
-                    "            socket.end(request.data + '\\n');\n" +
-                    "        });\n" +
-                    "    socket.once('data', function (data) {\n" +
-                    "        callback({ data: data });\n" +
-                    "    });\n" +
-                    "    // No return value!!!\n" +
-                    "}",
-                stub = { responses: [{ inject: fn }] };
+            var fn = function (request, state, logger, callback) {
+                        var net = require('net'),
+                            options = {
+                                host: 'www.google.com',
+                                port: 80
+                            },
+                            socket = net.connect(options, function () {
+                                socket.end(request.data + '\n');
+                            });
+                        socket.once('data', function (data) {
+                            callback({ data: data });
+                        });
+                        // No return value!!!
+                    },
+                stub = { responses: [{ inject: fn.toString() }] };
 
             return api.post('/imposters', { protocol: 'tcp', port: port, stubs: [stub] }).then(function (response) {
                 assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body));

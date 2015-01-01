@@ -46,8 +46,9 @@ function nonInjectableServer (command, port) {
         describe('POST /imposters with injections', function () {
             promiseIt('should allow javascript predicate for matching', function () {
                 // note the lower-case keys for headers!!!
-                var stub = {
-                        predicates: [{ inject: "function (request) { return request.path === '/test'; }" }],
+                var fn = function (request) { return request.path === '/test';},
+                    stub = {
+                        predicates: [{ inject: fn.toString() }],
                         responses: [{ is: { body: 'MATCHED' } }]
                     },
                     request = { protocol: protocol, port: port, stubs: [stub], name: this.name };
@@ -88,8 +89,8 @@ function nonInjectableServer (command, port) {
             });
 
             promiseIt('should allow synchronous javascript injection for responses', function () {
-                var fn = "function (request) { return { body: request.method + ' INJECTED' }; }",
-                    stub = { responses: [{ inject: fn }] },
+                var fn = function (request) { return { body: request.method + ' INJECTED' }; },
+                    stub = { responses: [{ inject: fn.toString() }] },
                     request = { protocol: protocol, port: port, stubs: [stub], name: this.name };
 
                 return api.post('/imposters', request).then(function () {
@@ -104,8 +105,8 @@ function nonInjectableServer (command, port) {
             });
 
             promiseIt('should give a 400 on a bad response injection', function () {
-                var fn = "function () { throw('BOOM'); }",
-                    stub = { responses: [{ inject: fn }] },
+                var fn = function () { throw('BOOM'); },
+                    stub = { responses: [{ inject: fn.toString() }] },
                     request = { protocol: protocol, port: port, stubs: [stub], name: this.name };
 
                 return api.post('/imposters', request).then(function (response) {
@@ -117,12 +118,12 @@ function nonInjectableServer (command, port) {
             });
 
             promiseIt('should allow javascript injection to keep state between requests', function () {
-                var fn = "function (request, state) {\n" +
-                        "    if (!state.calls) { state.calls = 0; }\n" +
-                        "    state.calls += 1;\n" +
-                        "    return { body: state.calls.toString() };\n" +
-                        "}",
-                    stub = { responses: [{ inject: fn }] },
+                var fn = function (request, state) {
+                            if (!state.calls) { state.calls = 0; }
+                            state.calls += 1;
+                            return { body: state.calls.toString() };
+                        },
+                    stub = { responses: [{ inject: fn.toString() }] },
                     request = { protocol: protocol, port: port, stubs: [stub], name: this.name };
 
                 return api.post('/imposters', request).then(function (response) {
@@ -142,8 +143,8 @@ function nonInjectableServer (command, port) {
 
             promiseIt('should return a 400 if injection is disallowed and inject is used', function () {
                 var mbPort = port + 1,
-                    fn = "function (request) { return { body: request.method + ' INJECTED' }; }",
-                    stub = { responses: [{ inject: fn }] },
+                    fn = function (request) { return { body: request.method + ' INJECTED' }; },
+                    stub = { responses: [{ inject: fn.toString() }] },
                     request = { protocol: protocol, port: port, stubs: [stub], name: this.name },
                     mbApi = BaseHttpClient.create('http');
 
@@ -158,33 +159,33 @@ function nonInjectableServer (command, port) {
             });
 
             promiseIt('should allow asynchronous injection', function () {
-                var fn = "function (request, state, logger, callback) {\n" +
-                        "    var http = require('http'),\n" +
-                        "        options = {\n" +
-                        "            method: request.method,\n" +
-                        "            hostname: 'www.google.com',\n" +
-                        "            port: 80,\n" +
-                        "            path: request.path,\n" +
-                        "            headers: request.headers\n" +
-                        "        },\n" +
-                        "        httpRequest = http.request(options, function (response) {\n" +
-                        "            response.body = '';\n" +
-                        "            response.setEncoding('utf8');\n" +
-                        "            response.on('data', function (chunk) {\n" +
-                        "                response.body += chunk;\n" +
-                        "            });\n" +
-                        "            response.on('end', function () {\n" +
-                        "                callback({\n" +
-                        "                    statusCode: response.statusCode,\n" +
-                        "                    headers: response.headers,\n" +
-                        "                    body: response.body\n" +
-                        "                });\n" +
-                        "            });\n" +
-                        "        });\n" +
-                        "    httpRequest.end();\n" +
-                        "    // No return value!!!\n" +
-                        "}",
-                    stub = { responses: [{ inject: fn }] },
+                var fn = function (request, state, logger, callback) {
+                            var http = require('http'),
+                                options = {
+                                    method: request.method,
+                                    hostname: 'www.google.com',
+                                    port: 80,
+                                    path: request.path,
+                                    headers: request.headers
+                                },
+                                httpRequest = http.request(options, function (response) {
+                                    response.body = '';
+                                    response.setEncoding('utf8');
+                                    response.on('data', function (chunk) {
+                                        response.body += chunk;
+                                    });
+                                    response.on('end', function () {
+                                        callback({
+                                            statusCode: response.statusCode,
+                                            headers: response.headers,
+                                            body: response.body
+                                        });
+                                    });
+                                });
+                            httpRequest.end();
+                            // No return value!!!
+                        },
+                    stub = { responses: [{ inject: fn.toString() }] },
                     request = { protocol: protocol, port: port, stubs: [stub], name: this.name };
 
                 return api.post('/imposters', request).then(function (response) {
