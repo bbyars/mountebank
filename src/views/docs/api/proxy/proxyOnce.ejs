@@ -1,0 +1,444 @@
+<p>Let's create another imposter, this time using the <code>proxyOnce</code> mode
+to give us on-the-fly record and playback functionality.</p>
+
+<pre><code data-test-id='proxy example'
+           data-test-step='2'
+           data-test-type='http'>
+POST /imposters HTTP/1.1
+Host: localhost:<%= port %>
+Accept: application/json
+Content-Type: application/json
+
+{
+  "port": 6566,
+  "protocol": "http",
+  "name": "proxyOnce",
+  "stubs": [
+    {
+      "responses": [
+        {
+          "proxy": {
+            "to": "http://localhost:7575",
+            "mode": "proxyOnce",
+            "predicateGenerators": [
+              {
+                "matches": {
+                  "method": true,
+                  "path": true,
+                  "query": true
+                }
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}
+</code></pre>
+
+<p>The first call will trigger a call to the origin server:</p>
+
+<pre><code data-test-id='proxy example'
+           data-test-step='3'
+           data-test-type='http'>
+GET /test?first=1 HTTP/1.1
+Host: localhost:6566
+</code></pre>
+
+<pre><code data-test-id='proxy example'
+           data-test-verify-step='3'
+           data-test-ignore-lines='["^Date"]'>
+HTTP/1.1 200 OK
+Connection: close
+Date: Thu, 09 Jan 2014 02:30:31 GMT
+Transfer-Encoding: chunked
+
+call 1
+</code></pre>
+
+<p>The second call also triggers a call to the origin server, since
+it's on a different <code>path</code>:</p>
+
+<pre><code data-test-id='proxy example'
+           data-test-step='4'
+           data-test-type='http'>
+GET /dir?first=1 HTTP/1.1
+Host: localhost:6566
+</code></pre>
+
+<pre><code data-test-id='proxy example'
+           data-test-verify-step='4'
+           data-test-ignore-lines='["^Date"]'>
+HTTP/1.1 200 OK
+Connection: close
+Date: Thu, 09 Jan 2014 02:30:31 GMT
+Transfer-Encoding: chunked
+
+call 2
+</code></pre>
+
+<p>The third call triggers a call to the origin server because it
+has a different querystring:</p>
+
+<pre><code data-test-id='proxy example'
+           data-test-step='5'
+           data-test-type='http'>
+GET /test?first=1&amp;second=2 HTTP/1.1
+Host: localhost:6566
+</code></pre>
+
+<pre><code data-test-id='proxy example'
+           data-test-verify-step='5'
+           data-test-ignore-lines='["^Date"]'>
+HTTP/1.1 200 OK
+Connection: close
+Date: Thu, 09 Jan 2014 02:30:31 GMT
+Transfer-Encoding: chunked
+
+call 3
+</code></pre>
+
+<p>If we send one of the requests already sent, the response
+will be replayed:</p>
+
+<pre><code data-test-id='proxy example'
+           data-test-step='6'
+           data-test-type='http'>
+GET /test?first=1&amp;second=2 HTTP/1.1
+Host: localhost:6566
+</code></pre>
+
+<pre><code data-test-id='proxy example'
+           data-test-verify-step='6'
+           data-test-ignore-lines='["^Date"]'>
+HTTP/1.1 200 OK
+Connection: close
+Date: Thu, 09 Jan 2014 02:30:31 GMT
+Transfer-Encoding: chunked
+
+call 3
+</code></pre>
+
+<code class='hidden' data-test-id='proxy example'
+                     data-test-step='7'
+                     data-test-type='http'>
+DELETE /imposters/6566 HTTP/1.1
+Host: localhost:<%= port %>
+Accept: application/json
+</code>
+
+<code class='hidden' data-test-id='proxy example'
+                     data-test-verify-step='7'
+                     data-test-ignore-lines='["[Dd]ate", "timestamp", "requestFrom", "Content-Length"]'>
+HTTP/1.1 200 OK
+Content-Type: application/json; charset=utf-8
+Content-Length: 6857
+Date: Mon, 27 Jan 2014 04:35:55 GMT
+Connection: keep-alive
+
+{
+  "protocol": "http",
+  "port": 6566,
+  "name": "proxyOnce",
+  "requests": [
+    {
+      "requestFrom": "127.0.0.1:61728",
+      "method": "GET",
+      "path": "/test",
+      "query": {
+        "first": "1"
+      },
+      "headers": {
+        "accept": "application/json",
+        "host": "localhost:6566",
+        "connection": "close"
+      },
+      "body": ""
+    },
+    {
+      "requestFrom": "127.0.0.1:61730",
+      "method": "GET",
+      "path": "/dir",
+      "query": {
+        "first": "1"
+      },
+      "headers": {
+        "accept": "application/json",
+        "host": "localhost:6566",
+        "connection": "close"
+      },
+      "body": ""
+    },
+    {
+      "requestFrom": "127.0.0.1:61732",
+      "method": "GET",
+      "path": "/test",
+      "query": {
+        "first": "1",
+        "second": "2"
+      },
+      "headers": {
+        "accept": "application/json",
+        "host": "localhost:6566",
+        "connection": "close"
+      },
+      "body": ""
+    },
+    {
+      "requestFrom": "127.0.0.1:61734",
+      "method": "GET",
+      "path": "/test",
+      "query": {
+        "first": "1",
+        "second": "2"
+      },
+      "headers": {
+        "accept": "application/json",
+        "host": "localhost:6566",
+        "connection": "keep-alive"
+      },
+      "body": ""
+    }
+  ],
+  "stubs": [
+    {
+      "predicates": [
+        {
+          "deepEquals": {
+            "method": "GET"
+          }
+        },
+        {
+          "deepEquals": {
+            "path": "/test"
+          }
+        },
+        {
+          "deepEquals": {
+            "query": {
+              "first": "1"
+            }
+          }
+        }
+      ],
+      "responses": [
+        {
+          "is": {
+            "statusCode": 200,
+            "headers": {
+              "connection": "close",
+              "date": "Mon, 27 Jan 2014 04:35:55 GMT",
+              "transfer-encoding": "chunked"
+            },
+            "body": "call 1"
+          }
+        }
+      ]
+    },
+    {
+      "predicates": [
+        {
+          "deepEquals": {
+            "method": "GET"
+          }
+        },
+        {
+          "deepEquals": {
+            "path": "/dir"
+          }
+        },
+        {
+          "deepEquals": {
+            "query": {
+              "first": "1"
+            }
+          }
+        }
+      ],
+      "responses": [
+        {
+          "is": {
+            "statusCode": 200,
+            "headers": {
+              "connection": "close",
+              "date": "Mon, 27 Jan 2014 04:35:55 GMT",
+              "transfer-encoding": "chunked"
+            },
+            "body": "call 2"
+          }
+        }
+      ]
+    },
+    {
+      "predicates": [
+        {
+          "deepEquals": {
+            "method": "GET"
+          }
+        },
+        {
+          "deepEquals": {
+            "path": "/test"
+          }
+        },
+        {
+          "deepEquals": {
+            "query": {
+              "first": "1",
+              "second": "2"
+            }
+          }
+        }
+      ],
+      "responses": [
+        {
+          "is": {
+            "statusCode": 200,
+            "headers": {
+              "connection": "close",
+              "date": "Mon, 27 Jan 2014 04:35:55 GMT",
+              "transfer-encoding": "chunked"
+            },
+            "body": "call 3"
+          }
+        }
+      ],
+      "matches": [
+        {
+          "timestamp": "2014-01-27T04:35:55.298Z",
+          "request": {
+            "requestFrom": "127.0.0.1:61734",
+            "method": "GET",
+            "path": "/test",
+            "query": {
+              "first": "1",
+              "second": "2"
+            },
+            "headers": {
+              "accept": "application/json",
+              "host": "localhost:6566",
+              "connection": "keep-alive"
+            },
+            "body": ""
+          },
+          "response": {
+            "statusCode": 200,
+            "headers": {
+              "connection": "close",
+              "date": "Mon, 27 Jan 2014 04:35:55 GMT",
+              "transfer-encoding": "chunked"
+            },
+            "body": "call 3"
+          }
+        }
+      ]
+    },
+    {
+      "responses": [
+        {
+          "proxy": {
+            "to": "http://localhost:7575",
+            "mode": "proxyOnce",
+            "predicateGenerators": [
+              {
+                "matches": {
+                  "method": true,
+                  "path": true,
+                  "query": true
+                }
+              }
+            ]
+          }
+        }
+      ],
+      "matches": [
+        {
+          "timestamp": "2014-01-27T04:35:55.273Z",
+          "request": {
+            "requestFrom": "127.0.0.1:61728",
+            "method": "GET",
+            "path": "/test",
+            "query": {
+              "first": "1"
+            },
+            "headers": {
+              "accept": "application/json",
+              "host": "localhost:6566",
+              "connection": "close"
+            },
+            "body": ""
+          },
+          "response": {
+            "statusCode": 200,
+            "headers": {
+              "connection": "close",
+              "date": "Mon, 27 Jan 2014 04:35:55 GMT",
+              "transfer-encoding": "chunked"
+            },
+            "body": "call 1"
+          }
+        },
+        {
+          "timestamp": "2014-01-27T04:35:55.282Z",
+          "request": {
+            "requestFrom": "127.0.0.1:61730",
+            "method": "GET",
+            "path": "/dir",
+            "query": {
+              "first": "1"
+            },
+            "headers": {
+              "accept": "application/json",
+              "host": "localhost:6566",
+              "connection": "close"
+            },
+            "body": ""
+          },
+          "response": {
+            "statusCode": 200,
+            "headers": {
+              "connection": "close",
+              "date": "Mon, 27 Jan 2014 04:35:55 GMT",
+              "transfer-encoding": "chunked"
+            },
+            "body": "call 2"
+          }
+        },
+        {
+          "timestamp": "2014-01-27T04:35:55.290Z",
+          "request": {
+            "requestFrom": "127.0.0.1:61732",
+            "method": "GET",
+            "path": "/test",
+            "query": {
+              "first": "1",
+              "second": "2"
+            },
+            "headers": {
+              "accept": "application/json",
+              "host": "localhost:6566",
+              "connection": "close"
+            },
+            "body": ""
+          },
+          "response": {
+            "statusCode": 200,
+            "headers": {
+              "connection": "close",
+              "date": "Mon, 27 Jan 2014 04:35:55 GMT",
+              "transfer-encoding": "chunked"
+            },
+            "body": "call 3"
+          }
+        }
+      ]
+    }
+  ],
+  "_links": {
+    "self": {
+      "href": "http://localhost:<%= port %>/imposters/6566"
+    }
+  }
+}
+</code>

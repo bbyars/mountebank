@@ -27,6 +27,7 @@ describe('html validation', function () {
         '/docs/api/predicates',
         '/docs/api/proxies',
         '/docs/api/injection',
+        '/docs/api/behaviors',
         '/docs/api/errors',
         '/docs/protocols/http',
         '/docs/protocols/https',

@@ -1,0 +1,58 @@
+<p>The <code>wait</code> behavior is conceptually quite simple.  Just pass in a number of milliseconds
+to wait into the behavior:</p>
+
+<pre><code data-test-id='wait'
+           data-test-step='1'
+           data-test-type='http'>
+POST /imposters HTTP/1.1
+Host: localhost:<%= port %>
+Accept: application/json
+Content-Type: application/json
+
+{
+  "port": 4545,
+  "protocol": "http",
+  "stubs": [
+    {
+      "responses": [
+        {
+          "is": {
+            "body": "This took at least half a second to send"
+          },
+          "_behaviors": {
+            "wait": 500
+          }
+        }
+      ]
+    }
+  ]
+}
+</code></pre>
+
+<p>Now we can call the imposter.  But have some patience, it'll take the better portion of a second
+before you'll get your response...</p>
+
+<pre><code data-test-id='wait'
+           data-test-step='2'
+           data-test-type='http'>
+GET / HTTP/1.1
+Host: localhost:4545
+</code></pre>
+
+<pre><code data-test-id='wait'
+           data-test-verify-step='2'
+           data-test-ignore-lines='["^Date"]'>
+HTTP/1.1 200 OK
+Date: Thu, 01 Jan 2015 02:30:31 GMT
+Connection: close
+Transfer-Encoding: chunked
+
+This took at least half a second to send
+</code></pre>
+
+<code class='hidden' data-test-id='wait'
+                     data-test-step='3'
+                     data-test-type='http'>
+DELETE /imposters/4545 HTTP/1.1
+Host: localhost:<%= port %>
+</code>

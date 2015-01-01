@@ -1,0 +1,563 @@
+<p>First let's create the proxy:</p>
+
+<pre><code data-test-id='proxy example'
+           data-test-step='8'
+           data-test-type='http'>
+POST /imposters HTTP/1.1
+Host: localhost:<%= port %>
+Accept: application/json
+Content-Type: application/json
+
+{
+  "port": 6568,
+  "protocol": "http",
+  "name": "proxyAlways",
+  "stubs": [
+    {
+      "responses": [
+        {
+          "proxy": {
+            "to": "http://localhost:7575",
+            "mode": "proxyAlways",
+            "predicateGenerators": [
+              {
+                "matches": {
+                  "method": true,
+                  "path": true,
+                  "query": true
+                }
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}
+</code></pre>
+
+<p>Let's record a response:</p>
+
+<pre><code data-test-id='proxy example'
+           data-test-step='9'
+           data-test-type='http'>
+GET /test?first=1 HTTP/1.1
+Host: localhost:6568
+</code></pre>
+
+<pre><code data-test-id='proxy example'
+           data-test-verify-step='9'
+           data-test-ignore-lines='["^Date"]'>
+HTTP/1.1 200 OK
+Connection: close
+Date: Thu, 09 Jan 2014 02:30:31 GMT
+Transfer-Encoding: chunked
+
+call 4
+</code></pre>
+
+<p>We'll make the same request.  Unlike a <code>proxyOnce</code> resolver,
+this request will still be proxied:</p>
+
+<pre><code data-test-id='proxy example'
+           data-test-step='10'
+           data-test-type='http'>
+GET /test?first=1 HTTP/1.1
+Host: localhost:6568
+</code></pre>
+
+<pre><code data-test-id='proxy example'
+           data-test-verify-step='10'
+           data-test-ignore-lines='["^Date"]'>
+HTTP/1.1 200 OK
+Connection: close
+Date: Thu, 09 Jan 2014 02:30:31 GMT
+Transfer-Encoding: chunked
+
+call 5
+</code></pre>
+
+<p>Now let's make on request to a different <code>path</code>:</p>
+
+<pre><code data-test-id='proxy example'
+           data-test-step='11'
+           data-test-type='http'>
+GET /dir?first=1 HTTP/1.1
+Host: localhost:6568
+</code></pre>
+
+<pre><code data-test-id='proxy example'
+           data-test-verify-step='11'
+           data-test-ignore-lines='["^Date"]'>
+HTTP/1.1 200 OK
+Connection: close
+Date: Thu, 09 Jan 2014 02:30:31 GMT
+Transfer-Encoding: chunked
+
+call 6
+</code></pre>
+
+<p>Now we'll stop the origin server.</p>
+
+<pre><code data-test-id='proxy example'
+           data-test-step='12'
+           data-test-type='http'>
+DELETE /imposters/7575 HTTP/1.1
+Host: localhost:<%= port %>
+Accept: application/json
+</code></pre>
+
+<p>And now we'll stop the proxy imposter.</p>
+
+<pre><code data-test-id='proxy example'
+           data-test-step='13'
+           data-test-type='http'>
+DELETE /imposters/6568 HTTP/1.1
+Host: localhost:<%= port %>
+Accept: application/json
+</code></pre>
+
+<code class='hidden' data-test-id='proxy example'
+                     data-test-verify-step='13'
+                     data-test-ignore-lines='["[Dd]ate", "timestamp", "requestFrom", "Content-Length"]'>
+HTTP/1.1 200 OK
+Content-Type: application/json; charset=utf-8
+Content-Length: 5297
+Date: Mon, 27 Jan 2014 04:38:44 GMT
+Connection: keep-alive
+
+{
+  "protocol": "http",
+  "port": 6568,
+  "name": "proxyAlways",
+  "requests": [
+    {
+      "requestFrom": "127.0.0.1:61762",
+      "method": "GET",
+      "path": "/test",
+      "query": {
+        "first": "1"
+      },
+      "headers": {
+        "accept": "application/json",
+        "host": "localhost:6568",
+        "connection": "close"
+      },
+      "body": ""
+    },
+    {
+      "requestFrom": "127.0.0.1:61764",
+      "method": "GET",
+      "path": "/test",
+      "query": {
+        "first": "1"
+      },
+      "headers": {
+        "accept": "application/json",
+        "host": "localhost:6568",
+        "connection": "close"
+      },
+      "body": ""
+    },
+    {
+      "requestFrom": "127.0.0.1:61766",
+      "method": "GET",
+      "path": "/dir",
+      "query": {
+        "first": "1"
+      },
+      "headers": {
+        "accept": "application/json",
+        "host": "localhost:6568",
+        "connection": "close"
+      },
+      "body": ""
+    }
+  ],
+  "stubs": [
+    {
+      "responses": [
+        {
+          "proxy": {
+            "to": "http://localhost:7575",
+            "mode": "proxyAlways",
+            "predicateGenerators": [
+              {
+                "matches": {
+                  "method": true,
+                  "path": true,
+                  "query": true
+                }
+              }
+            ]
+          }
+        }
+      ],
+      "matches": [
+        {
+          "timestamp": "2014-01-27T04:38:44.636Z",
+          "request": {
+            "requestFrom": "127.0.0.1:61762",
+            "method": "GET",
+            "path": "/test",
+            "query": {
+              "first": "1"
+            },
+            "headers": {
+              "accept": "application/json",
+              "host": "localhost:6568",
+              "connection": "close"
+            },
+            "body": ""
+          },
+          "response": {
+            "statusCode": 200,
+            "headers": {
+              "connection": "close",
+              "date": "Mon, 27 Jan 2014 04:38:44 GMT",
+              "transfer-encoding": "chunked"
+            },
+            "body": "call 4"
+          }
+        },
+        {
+          "timestamp": "2014-01-27T04:38:44.642Z",
+          "request": {
+            "requestFrom": "127.0.0.1:61764",
+            "method": "GET",
+            "path": "/test",
+            "query": {
+              "first": "1"
+            },
+            "headers": {
+              "accept": "application/json",
+              "host": "localhost:6568",
+              "connection": "close"
+            },
+            "body": ""
+          },
+          "response": {
+            "statusCode": 200,
+            "headers": {
+              "connection": "close",
+              "date": "Mon, 27 Jan 2014 04:38:44 GMT",
+              "transfer-encoding": "chunked"
+            },
+            "body": "call 5"
+          }
+        },
+        {
+          "timestamp": "2014-01-27T04:38:44.647Z",
+          "request": {
+            "requestFrom": "127.0.0.1:61766",
+            "method": "GET",
+            "path": "/dir",
+            "query": {
+              "first": "1"
+            },
+            "headers": {
+              "accept": "application/json",
+              "host": "localhost:6568",
+              "connection": "close"
+            },
+            "body": ""
+          },
+          "response": {
+            "statusCode": 200,
+            "headers": {
+              "connection": "close",
+              "date": "Mon, 27 Jan 2014 04:38:44 GMT",
+              "transfer-encoding": "chunked"
+            },
+            "body": "call 6"
+          }
+        }
+      ]
+    },
+    {
+      "predicates": [
+        {
+          "deepEquals": {
+            "method": "GET"
+          }
+        },
+        {
+          "deepEquals": {
+            "path": "/test"
+          }
+        },
+        {
+          "deepEquals": {
+            "query": {
+              "first": "1"
+            }
+          }
+        }
+      ],
+      "responses": [
+        {
+          "is": {
+            "statusCode": 200,
+            "headers": {
+              "connection": "close",
+              "date": "Mon, 27 Jan 2014 04:38:44 GMT",
+              "transfer-encoding": "chunked"
+            },
+            "body": "call 4"
+          }
+        },
+        {
+          "is": {
+            "statusCode": 200,
+            "headers": {
+              "connection": "close",
+              "date": "Mon, 27 Jan 2014 04:38:44 GMT",
+              "transfer-encoding": "chunked"
+            },
+            "body": "call 5"
+          }
+        }
+      ]
+    },
+    {
+      "predicates": [
+        {
+          "deepEquals": {
+            "method": "GET"
+          }
+        },
+        {
+          "deepEquals": {
+            "path": "/dir"
+          }
+        },
+        {
+          "deepEquals": {
+            "query": {
+              "first": "1"
+            }
+          }
+        }
+      ],
+      "responses": [
+        {
+          "is": {
+            "statusCode": 200,
+            "headers": {
+              "connection": "close",
+              "date": "Mon, 27 Jan 2014 04:38:44 GMT",
+              "transfer-encoding": "chunked"
+            },
+            "body": "call 6"
+          }
+        }
+      ]
+    }
+  ],
+  "_links": {
+    "self": {
+      "href": "http://localhost:<%= port %>/imposters/6568"
+    }
+  }
+}
+</code>
+
+<p>Now for the <em>coup de gr&acirc;ce</em>.  We saved off the
+response we received from the <code>DELETE</code> call, removed
+the <code>proxy</code> stub, and are re-<code>POST</code>ing it.  Just
+to show it works, we're leaving all the additional metadata in, like
+<code>requests</code> and <code>matches</code>, but to keep the JSON
+clean you'll probably want to delete them as well:</p>
+
+<pre><code data-test-id='proxy example'
+           data-test-step='14'
+           data-test-type='http'>
+POST /imposters HTTP/1.1
+Host: localhost:<%= port %>
+Accept: application/json
+Content-Type: application/json
+
+{
+  "protocol": "http",
+  "port": 6568,
+  "name": "proxyAlways",
+  "requests": [
+    {
+      "requestFrom": "127.0.0.1:61762",
+      "method": "GET",
+      "path": "/test",
+      "query": {
+        "first": "1"
+      },
+      "headers": {
+        "accept": "application/json",
+        "host": "localhost:6568",
+        "connection": "close"
+      },
+      "body": ""
+    },
+    {
+      "requestFrom": "127.0.0.1:61764",
+      "method": "GET",
+      "path": "/test",
+      "query": {
+        "first": "1"
+      },
+      "headers": {
+        "accept": "application/json",
+        "host": "localhost:6568",
+        "connection": "close"
+      },
+      "body": ""
+    },
+    {
+      "requestFrom": "127.0.0.1:61766",
+      "method": "GET",
+      "path": "/dir",
+      "query": {
+        "first": "1"
+      },
+      "headers": {
+        "accept": "application/json",
+        "host": "localhost:6568",
+        "connection": "close"
+      },
+      "body": ""
+    }
+  ],
+  "stubs": [
+    {
+      "predicates": [
+        {
+          "deepEquals": {
+            "method": "GET"
+          }
+        },
+        {
+          "deepEquals": {
+            "path": "/test"
+          }
+        },
+        {
+          "deepEquals": {
+            "query": {
+              "first": "1"
+            }
+          }
+        }
+      ],
+      "responses": [
+        {
+          "is": {
+            "statusCode": 200,
+            "headers": {
+              "connection": "close",
+              "date": "Mon, 27 Jan 2014 04:38:44 GMT",
+              "transfer-encoding": "chunked"
+            },
+            "body": "call 4"
+          }
+        },
+        {
+          "is": {
+            "statusCode": 200,
+            "headers": {
+              "connection": "close",
+              "date": "Mon, 27 Jan 2014 04:38:44 GMT",
+              "transfer-encoding": "chunked"
+            },
+            "body": "call 5"
+          }
+        }
+      ]
+    },
+    {
+      "predicates": [
+        {
+          "deepEquals": {
+            "method": "GET"
+          }
+        },
+        {
+          "deepEquals": {
+            "path": "/dir"
+          }
+        },
+        {
+          "deepEquals": {
+            "query": {
+              "first": "1"
+            }
+          }
+        }
+      ],
+      "responses": [
+        {
+          "is": {
+            "statusCode": 200,
+            "headers": {
+              "connection": "close",
+              "date": "Mon, 27 Jan 2014 04:38:44 GMT",
+              "transfer-encoding": "chunked"
+            },
+            "body": "call 6"
+          }
+        }
+      ]
+    }
+  ],
+  "_links": {
+    "self": {
+      "href": "http://localhost:<%= port %>/imposters/6568"
+    }
+  }
+}
+</code></pre>
+
+<p>Notice the two responses on the first stub.  Let's trigger the first one:</p>
+
+<pre><code data-test-id='proxy example'
+           data-test-step='15'
+           data-test-type='http'>
+GET /test?first=1 HTTP/1.1
+Host: localhost:6568
+</code></pre>
+
+<pre><code data-test-id='proxy example'
+           data-test-verify-step='15'
+           data-test-ignore-lines='["^Date"]'>
+HTTP/1.1 200 OK
+Connection: close
+Date: Thu, 09 Jan 2014 02:30:31 GMT
+Transfer-Encoding: chunked
+
+call 4
+</code></pre>
+
+<p>Since the <code>responses</code> array represents a circular buffer, the second call
+triggers the next response in order:</p>
+
+<pre><code data-test-id='proxy example'
+           data-test-step='16'
+           data-test-type='http'>
+GET /test?first=1 HTTP/1.1
+Host: localhost:6568
+</code></pre>
+
+<pre><code data-test-id='proxy example'
+           data-test-verify-step='16'
+           data-test-ignore-lines='["^Date"]'>
+HTTP/1.1 200 OK
+Connection: close
+Date: Thu, 09 Jan 2014 02:30:31 GMT
+Transfer-Encoding: chunked
+
+call 5
+</code></pre>
+
+<code class='hidden' data-test-id='proxy example'
+                     data-test-step='17'
+                     data-test-type='http'>
+DELETE /imposters/6568
+Host: localhost:<%= port %>
+</code>
