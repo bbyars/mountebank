@@ -60,7 +60,8 @@ describe('docs', function () {
         '/docs/api/overview',
         '/docs/api/mocks',
         '/docs/api/proxies',
-        '/docs/api/injection'
+        '/docs/api/injection',
+        '/docs/api/behaviors'
     ].forEach(function (page) {
         validateDocs(page);
     });

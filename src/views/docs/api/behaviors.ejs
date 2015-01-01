@@ -1,0 +1,54 @@
+<% include ../../_header %>
+
+<h1>Stub Behaviors</h1>
+
+<p>Stubs can be decorated by adding a <code>_behaviors</code> object.  At the moment, mountebank accepts
+the following behaviors</p>
+
+<table id='behaviors'>
+  <tr>
+    <th>Behavior</th>
+    <th>Description</th>
+  </tr>
+  <tr>
+    <td><code>wait</code></td>
+    <td>Adds latency to a response by waiting a specified number of milliseconds before sending
+      the response.</td>
+  </tr>
+    <tr>
+    <td><code>decorate</code></td>
+    <td>Post-processes the response before sending it.  Since post-processing requires JavaScript
+      injection, the <code><a href='/docs/commandLine'>--allowInjection</a></code> flag must be passed.
+      Post-processing opens up a world of opportunities - you can use a <code>decorate</code> behavior
+      to add data to a proxied response or substitute data from the request into the response, for
+      example.  The value passed into the <code>decorate</code> behavior is a JavaScript function that
+      can take up to three values: the request, the response, and a logger.  You can either mutate the
+      response passed in (and return nothing), or return an altogether new response.</td>
+  </tr>
+</table>
+
+<p>Multiple behaviors can be added to a response.  However, only one of each type of behavior
+can exist on a single response.</p>
+
+<h2>Examples</h2>
+
+<p>Select the behavior below for relevant examples:</p>
+
+<section class="accordion">
+  <div>
+    <input id='behavior-wait' name='behavior-wait' type="checkbox" />
+    <label for='behavior-wait'>wait</label>
+    <section>
+      <% include behaviors/wait %>
+    </section>
+  </div>
+  <div>
+    <input id='behavior-decorate' name='behavior-decorate' type="checkbox" />
+    <label for='behavior-decorate'>decorate</label>
+    <section>
+      <% include behaviors/decorate %>
+    </section>
+  </div>
+</section>
+
+<% include ../../_footer %>

@@ -1,0 +1,226 @@
+<p>The <code>decorate</code> behavior is quite powerful, allowing nearly unlimited (synchronous) post-processing
+of the response.  Since it relies on JavaScript injection, the <a href='/docs/commandLine'>--allowInjection</a>
+flag must be passed in to <code>mb</code> on startup.</p>
+
+<p>Here are a few ideas of what to do with post-processing:</p>
+
+<ul class='bullet-list'>
+  <li><a href='#add-timestamp'>Add the current time to a response</a></li>
+  <li><a href='#add-request-values'>Add something from the request to the response</a></li>
+  <li><a href='#add-custom-header'>Add a custom header to a proxied response</a></li>
+</ul>
+
+<h3 id='add-timestamp'>Add the current time to a response</h3>
+
+<p>Many people store static imposter files and load them via the <a href='/docs/commandLine'>--configfile</a>
+command line switch.  The <code>decorate</code> behavior supports an elegant way of adding dynamic data
+to the responses.  Let's add the current timestamp to each response.  We'll pass in a stringified version
+of the following JavaScript function:</p>
+
+<pre><code>
+function (request, response) {
+    var pad = function (number) {
+            return (number &lt; 10) ? '0' + number : number.toString();
+        },
+        now = new Date(),
+        time = pad(now.getHours()) + ':' + pad(now.getMinutes()) + ':' + pad(now.getSeconds());
+
+    response.body = response.body.replace('${TIME}', time);
+}
+</code></pre>
+
+<pre><code data-test-id='decorate'
+           data-test-step='1'
+           data-test-type='http'>
+POST /imposters HTTP/1.1
+Host: localhost:<%= port %>
+Accept: application/json
+Content-Type: application/json
+
+{
+  "port": 5545,
+  "protocol": "http",
+  "stubs": [
+    {
+      "responses": [
+        {
+          "is": {
+            "body": "The time is ${TIME}"
+          },
+          "_behaviors": {
+            "decorate": "function (request, response) { var pad = function (number) { return (number &lt; 10) ? '0' + number : number.toString(); }, now = new Date(), time = pad(now.getHours()) + ':' + pad(now.getMinutes()) + ':' + pad(now.getSeconds()); response.body = response.body.replace('${TIME}', time); }"
+          }
+        }
+      ]
+    }
+  ]
+}
+</code></pre>
+
+<p>Now we can call the imposter to get the current time.</p>
+
+<pre><code data-test-id='decorate'
+           data-test-step='2'
+           data-test-type='http'>
+GET / HTTP/1.1
+Host: localhost:5545
+</code></pre>
+
+<pre><code data-test-id='decorate'
+           data-test-verify-step='2'
+           data-test-ignore-lines='["^Date", "^The time"]'>
+HTTP/1.1 200 OK
+Date: Thu, 01 Jan 2015 02:30:31 GMT
+Connection: close
+Transfer-Encoding: chunked
+
+The time is 16:43:02
+</code></pre>
+
+<code class='hidden' data-test-id='decorate'
+                     data-test-step='3'
+                     data-test-type='http'>
+DELETE /imposters/5545 HTTP/1.1
+Host: localhost:<%= port %>
+</code>
+
+
+<h3 id='add-request-values'>Add something from the request to the response</h3>
+
+<p>It is occasionally useful to add something to the response that came from the request.
+Using a static response, we can add the dynamic values through decoration.  In this example,
+we'll add a token in the static response body and replace it with the request path.  Here's
+the decorator function, passed in as a string to the behavior below:</p>
+
+<pre><code>
+function (request, response) {
+    response.body = response.body.replace('${PATH}', request.path);
+}
+</code></pre>
+
+<pre><code data-test-id='decorate'
+           data-test-step='4'
+           data-test-type='http'>
+POST /imposters HTTP/1.1
+Host: localhost:<%= port %>
+Accept: application/json
+Content-Type: application/json
+
+{
+  "port": 6545,
+  "protocol": "http",
+  "stubs": [
+    {
+      "responses": [
+        {
+          "is": {
+            "body": "The path was ${PATH}"
+          },
+          "_behaviors": {
+            "decorate": "function (request, response) { response.body = response.body.replace('${PATH}', request.path); }"
+          }
+        }
+      ]
+    }
+  ]
+}
+</code></pre>
+
+<p>Now we can call the imposter to get the current time.</p>
+
+<pre><code data-test-id='decorate'
+           data-test-step='5'
+           data-test-type='http'>
+GET /test HTTP/1.1
+Host: localhost:6545
+</code></pre>
+
+<pre><code data-test-id='decorate'
+           data-test-verify-step='5'
+           data-test-ignore-lines='["^Date"]'>
+HTTP/1.1 200 OK
+Date: Thu, 01 Jan 2015 02:30:31 GMT
+Connection: close
+Transfer-Encoding: chunked
+
+The path was /test
+</code></pre>
+
+
+<h3 id='add-custom-header'>Add a custom header to a proxied response</h3>
+
+<p><a href='/docs/api/proxies'>Proxying</a> provides considerable power out of the box.  However,
+there are times where you need to augment the proxied response with something else to properly
+simulate your testing scenario.  In this example, we'll proxy to the
+<a href='#add-request-values'>example above</a> (port 6545) that adds the request path to the response body.
+We'll augment the proxied response with a custom header.  Here's the decorator function, passed
+into the imposter creation as a string:</p>
+
+<pre><code>
+function (request, response) {
+    response.headers['X-Test'] = 'True';
+}
+</code></pre>
+
+<pre><code data-test-id='decorate'
+           data-test-step='6'
+           data-test-type='http'>
+POST /imposters HTTP/1.1
+Host: localhost:<%= port %>
+Accept: application/json
+Content-Type: application/json
+
+{
+  "port": 7545,
+  "protocol": "http",
+  "stubs": [
+    {
+      "responses": [
+        {
+          "proxy": {
+            "to": "http://localhost:6545"
+          },
+          "_behaviors": {
+            "decorate": "function (request, response) { response.headers['X-Test'] = 'True'; }"
+          }
+        }
+      ]
+    }
+  ]
+}
+</code></pre>
+
+<p>Now we should get the custom header back:</p>
+
+<pre><code data-test-id='decorate'
+           data-test-step='7'
+           data-test-type='http'>
+GET /test HTTP/1.1
+Host: localhost:7545
+</code></pre>
+
+<pre><code data-test-id='decorate'
+           data-test-verify-step='7'
+           data-test-ignore-lines='["^Date"]'>
+HTTP/1.1 200 OK
+Date: Thu, 01 Jan 2015 02:30:31 GMT
+Connection: close
+Transfer-Encoding: chunked
+X-Test: True
+
+The path was /test
+</code></pre>
+
+<code class='hidden' data-test-id='decorate'
+                     data-test-step='8'
+                     data-test-type='http'>
+DELETE /imposters/6545 HTTP/1.1
+Host: localhost:<%= port %>
+</code>
+
+<code class='hidden' data-test-id='decorate'
+                     data-test-step='9'
+                     data-test-type='http'>
+DELETE /imposters/7545 HTTP/1.1
+Host: localhost:<%= port %>
+</code>
