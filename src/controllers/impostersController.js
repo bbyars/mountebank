@@ -8,6 +8,13 @@ var Validator = require('../util/validator'),
 
 function create (protocols, imposters, Imposter, logger) {
 
+    function queryBoolean (query, key) {
+        if (!query.hasOwnProperty(key)) {
+            return false;
+        }
+        return query[key].toLowerCase() === 'true';
+    }
+
     function deleteAllImposters () {
         Object.keys(imposters).forEach(function (id) {
             imposters[id].stop();
@@ -53,9 +60,12 @@ function create (protocols, imposters, Imposter, logger) {
         response.format({
             json: function () {
                 var query = url.parse(request.url, true).query,
-                    functionName = query.replayable ? 'toReplayableJSON' : 'toListJSON',
+                    options = {
+                        replayable: queryBoolean(query, 'replayable'),
+                        list: !queryBoolean(query, 'replayable')        // provide list JSON if not replayable
+                    },
                     result = Object.keys(imposters).reduce(function (accumulator, id) {
-                        return accumulator.concat(imposters[id][functionName]());
+                        return accumulator.concat(imposters[id].toJSON(options));
                     }, []);
 
                 response.send({ imposters: result });
@@ -95,7 +105,7 @@ function create (protocols, imposters, Imposter, logger) {
 
     function del (request, response) {
         var json = Object.keys(imposters).reduce(function (accumulator, id) {
-            return accumulator.concat(imposters[id].toReplayableJSON());
+            return accumulator.concat(imposters[id].toJSON({ replayable: true }));
         }, []);
         deleteAllImposters();
         response.send({ imposters: json });
@@ -123,7 +133,7 @@ function create (protocols, imposters, Imposter, logger) {
 
                 return Q.all(creationPromises).then(function (allImposters) {
                     var json = allImposters.map(function (imposter) {
-                        return imposter.toListJSON();
+                        return imposter.toJSON({ list: true });
                     });
                     allImposters.forEach(function (imposter) {
                         imposters[imposter.port] = imposter;

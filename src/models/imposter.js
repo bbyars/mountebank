@@ -2,7 +2,6 @@
 
 var Q = require('q'),
     Domain = require('domain'),
-    helpers = require('../util/helpers'),
     errors = require('../util/errors');
 
 function createErrorHandler (deferred) {
@@ -34,38 +33,35 @@ function create (Protocol, request) {
                 request.stubs.forEach(server.addStub);
             }
 
-            function toListJSON () {
-                return {
-                    protocol: Protocol.name,
-                    port: server.port,
-                    _links: { self: { href: url } }
-                };
-            }
-
-            function toJSON () {
+            function toJSON (options) {
                 var result = {
-                    protocol: Protocol.name,
-                    port: server.port
-                };
-                Object.keys(server.metadata).forEach(function (key) {
-                    result[key] = server.metadata[key];
-                });
-                result.requests = server.requests;
-                result.stubs = server.stubs;
-                result._links = { self: { href: url } };
+                        protocol: Protocol.name,
+                        port: server.port
+                    };
 
-                return result;
-            }
+                options = options || {};
 
-            function toReplayableJSON () {
-                var result = helpers.clone(toJSON());
-                delete result.requests;
-                delete result._links;
-                result.stubs.forEach(function (stub) {
-                    if (stub.matches) {
-                        delete stub.matches;
+                if (!options.list) {
+                    Object.keys(server.metadata).forEach(function (key) {
+                        result[key] = server.metadata[key];
+                    });
+
+                    if (!options.replayable) {
+                        result.requests = server.requests;
                     }
-                });
+                    result.stubs = server.stubs;
+                }
+
+                if (options.replayable) {
+                    result.stubs.forEach(function (stub) {
+                        if (stub.matches) {
+                            delete stub.matches;
+                        }
+                    });
+                }
+                else {
+                    result._links = {self: {href: url}};
+                }
 
                 return result;
             }
@@ -74,8 +70,6 @@ function create (Protocol, request) {
                 port: server.port,
                 url: url,
                 toJSON: toJSON,
-                toListJSON: toListJSON,
-                toReplayableJSON: toReplayableJSON,
                 addStub: server.addStub,
                 stop: server.close
             });

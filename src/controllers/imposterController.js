@@ -4,10 +4,17 @@ var url = require('url');
 
 function create (imposters) {
 
+    function queryBoolean (query, key) {
+        if (!query.hasOwnProperty(key)) {
+            return false;
+        }
+        return query[key].toLowerCase() === 'true';
+    }
+
     function get (request, response) {
         var query = url.parse(request.url, true).query,
-            functionName = query.replayable ? 'toReplayableJSON' : 'toJSON',
-            imposter = imposters[request.params.id][functionName]();
+            options = { replayable: queryBoolean(query, 'replayable') },
+            imposter = imposters[request.params.id].toJSON(options);
 
         response.format({
             json: function () { response.send(imposter); },
