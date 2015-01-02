@@ -172,7 +172,7 @@ http://localhost:3535.  To retrieve a list of all imposters, simply issue a <cod
     saved responses in a subsequent disconnected test run.</li>
 </ul>
 
-<p><strong>Parameters:</strong></p>
+<p><strong>Query Parameters:</strong></p>
 
 <table>
   <tr>
@@ -186,6 +186,14 @@ http://localhost:3535.  To retrieve a list of all imposters, simply issue a <cod
     <td>Set to <code>true</code> to retrieve the minimum amount of information for
       <a href='#post-imposters'>creating the imposter</a> in the future.  This leaves
       out the <code>requests</code> array, the <code>matches</code> array, and any hypermedia.</td>
+  </tr>
+  <tr>
+    <td><code>removeProxies</code></td>
+    <td>boolean</td>
+    <td>Set to <code>true</code> to remove all proxy responses (and stubs) from the response.
+      This is useful in record-playback scenarios where you want to seed the imposters with
+      proxy information but leave it out on subsequent test runs.  You can
+      <a href='#post-imposters'>recreate the imposter</a> in the future by using the response.</td>
   </tr>
 </table>
 
@@ -260,6 +268,31 @@ frees up the socket and removes the resource.  As a convenience, the <code>DELET
 also returns the imposter representation just like a <a href='#get-imposter'><code>GET</code> imposter</a>
 would.  This allows you to optimize the number of REST calls made during a test run when looking
 at the <code>requests</code> array for <a href='/docs/api/mocks'>mock verification.</a><p>
+
+<p><strong>Query Parameters:</strong></p>
+
+<table>
+  <tr>
+    <th>Name</th>
+    <th>Type</th>
+    <th>Description</th>
+  </tr>
+  <tr>
+    <td><code>replayable</code></td>
+    <td>boolean</td>
+    <td>Set to <code>true</code> to retrieve the minimum amount of information for
+      <a href='#post-imposters'>creating the imposter</a> in the future.  This leaves
+      out the <code>requests</code> array, the <code>matches</code> array, and any hypermedia.</td>
+  </tr>
+  <tr>
+    <td><code>removeProxies</code></td>
+    <td>boolean</td>
+    <td>Set to <code>true</code> to remove all proxy responses (and stubs) from the response.
+      This is useful in record-playback scenarios where you want to seed the imposters with
+      proxy information but leave it out on subsequent test runs.  You can
+      <a href='#post-imposters'>recreate the imposter</a> in the future by using the response.</td>
+  </tr>
+</table>
 
 <pre><code data-test-id='imposters'
            data-test-step='4'
@@ -387,7 +420,7 @@ mountebank returns some basic information and hypermedia.  If you want more info
 either <a href='#get-imposter'>get the single imposter</a> or use the
 <code>replayable</code> flag.</p>
 
-<p><strong>Parameters:</strong></p>
+<p><strong>Query Parameters:</strong></p>
 
 <table>
   <tr>
@@ -402,6 +435,14 @@ either <a href='#get-imposter'>get the single imposter</a> or use the
       the set of imposters in the future through a <a href='#put-imposters'>mass create</a>
       call.  This leaves out the <code>requests</code> array, the <code>matches</code> array,
       and any hypermedia.</td>
+  </tr>
+  <tr>
+    <td><code>removeProxies</code></td>
+    <td>boolean</td>
+    <td>Set to <code>true</code> to remove all proxy responses (and stubs) from the response.
+      This is useful in record-playback scenarios where you want to seed the imposters with
+      proxy information but leave it out on subsequent test runs.  You can
+      <a href='#put-imposters'>recreate the imposter</a> in the future by using the response.</td>
   </tr>
 </table>
 
@@ -464,6 +505,31 @@ Connection: keep-alive
 <p>The surest way to reset to a clean slate is to delete all imposters.  Any imposter sockets
 mountebank has open will be closed, and the response body will contain exactly what you need
 to <a href='#put-imposters'>mass create</a> the same imposters in the future.</p>
+
+<p><strong>Query Parameters:</strong></p>
+
+<table>
+  <tr>
+    <th>Name</th>
+    <th>Type</th>
+    <th>Description</th>
+  </tr>
+  <tr>
+    <td><code>replayable</code></td>
+    <td>boolean</td>
+    <td>Defaults to true.  Set to <code>false</code> to retrieve the <code>matches</code>
+      and <code>requests</code> arrays with the response.  You can still
+      <a href='#put-imposters'>mass create</a> using this JSON; it just has extraneous information.</td>
+  </tr>
+  <tr>
+    <td><code>removeProxies</code></td>
+    <td>boolean</td>
+    <td>Set to <code>true</code> to remove all proxy responses (and stubs) from the response.
+      This is useful in record-playback scenarios where you want to seed the imposters with
+      proxy information but leave it out on subsequent test runs.  You can
+      <a href='#put-imposters'>recreate the imposters</a> in the future by using the response.</td>
+  </tr>
+</table>
 
 <pre><code data-test-id='imposters'
            data-test-step='7'

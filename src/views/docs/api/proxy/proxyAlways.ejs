@@ -107,22 +107,24 @@ Host: localhost:<%= port %>
 Accept: application/json
 </code></pre>
 
-<p>And now we'll stop the proxy imposter.</p>
+<p>And now we'll stop the proxy imposter.  We'll use the <code>removeProxies</code> query
+parameter to remove the proxy responses and stubs, and the <code>replayable</code> query
+parameter to remove information not needed to recreate the imposter.</p>
 
 <pre><code data-test-id='proxy example'
            data-test-step='13'
            data-test-type='http'>
-DELETE /imposters/6568 HTTP/1.1
+DELETE /imposters/6568?removeProxies=true&amp;replayable=true HTTP/1.1
 Host: localhost:<%= port %>
 Accept: application/json
 </code></pre>
 
 <code class='hidden' data-test-id='proxy example'
                      data-test-verify-step='13'
-                     data-test-ignore-lines='["[Dd]ate", "timestamp", "requestFrom", "Content-Length"]'>
+                     data-test-ignore-lines='["[Dd]ate"]'>
 HTTP/1.1 200 OK
 Content-Type: application/json; charset=utf-8
-Content-Length: 5297
+Content-Length: 1681
 Date: Mon, 27 Jan 2014 04:38:44 GMT
 Connection: keep-alive
 
@@ -130,150 +132,7 @@ Connection: keep-alive
   "protocol": "http",
   "port": 6568,
   "name": "proxyAlways",
-  "requests": [
-    {
-      "requestFrom": "127.0.0.1:61762",
-      "method": "GET",
-      "path": "/test",
-      "query": {
-        "first": "1"
-      },
-      "headers": {
-        "accept": "application/json",
-        "host": "localhost:6568",
-        "connection": "close"
-      },
-      "body": ""
-    },
-    {
-      "requestFrom": "127.0.0.1:61764",
-      "method": "GET",
-      "path": "/test",
-      "query": {
-        "first": "1"
-      },
-      "headers": {
-        "accept": "application/json",
-        "host": "localhost:6568",
-        "connection": "close"
-      },
-      "body": ""
-    },
-    {
-      "requestFrom": "127.0.0.1:61766",
-      "method": "GET",
-      "path": "/dir",
-      "query": {
-        "first": "1"
-      },
-      "headers": {
-        "accept": "application/json",
-        "host": "localhost:6568",
-        "connection": "close"
-      },
-      "body": ""
-    }
-  ],
   "stubs": [
-    {
-      "responses": [
-        {
-          "proxy": {
-            "to": "http://localhost:7575",
-            "mode": "proxyAlways",
-            "predicateGenerators": [
-              {
-                "matches": {
-                  "method": true,
-                  "path": true,
-                  "query": true
-                }
-              }
-            ]
-          }
-        }
-      ],
-      "matches": [
-        {
-          "timestamp": "2014-01-27T04:38:44.636Z",
-          "request": {
-            "requestFrom": "127.0.0.1:61762",
-            "method": "GET",
-            "path": "/test",
-            "query": {
-              "first": "1"
-            },
-            "headers": {
-              "accept": "application/json",
-              "host": "localhost:6568",
-              "connection": "close"
-            },
-            "body": ""
-          },
-          "response": {
-            "statusCode": 200,
-            "headers": {
-              "connection": "close",
-              "date": "Mon, 27 Jan 2014 04:38:44 GMT",
-              "transfer-encoding": "chunked"
-            },
-            "body": "call 4"
-          }
-        },
-        {
-          "timestamp": "2014-01-27T04:38:44.642Z",
-          "request": {
-            "requestFrom": "127.0.0.1:61764",
-            "method": "GET",
-            "path": "/test",
-            "query": {
-              "first": "1"
-            },
-            "headers": {
-              "accept": "application/json",
-              "host": "localhost:6568",
-              "connection": "close"
-            },
-            "body": ""
-          },
-          "response": {
-            "statusCode": 200,
-            "headers": {
-              "connection": "close",
-              "date": "Mon, 27 Jan 2014 04:38:44 GMT",
-              "transfer-encoding": "chunked"
-            },
-            "body": "call 5"
-          }
-        },
-        {
-          "timestamp": "2014-01-27T04:38:44.647Z",
-          "request": {
-            "requestFrom": "127.0.0.1:61766",
-            "method": "GET",
-            "path": "/dir",
-            "query": {
-              "first": "1"
-            },
-            "headers": {
-              "accept": "application/json",
-              "host": "localhost:6568",
-              "connection": "close"
-            },
-            "body": ""
-          },
-          "response": {
-            "statusCode": 200,
-            "headers": {
-              "connection": "close",
-              "date": "Mon, 27 Jan 2014 04:38:44 GMT",
-              "transfer-encoding": "chunked"
-            },
-            "body": "call 6"
-          }
-        }
-      ]
-    },
     {
       "predicates": [
         {
@@ -353,21 +212,13 @@ Connection: keep-alive
         }
       ]
     }
-  ],
-  "_links": {
-    "self": {
-      "href": "http://localhost:<%= port %>/imposters/6568"
-    }
-  }
+  ]
 }
 </code>
 
 <p>Now for the <em>coup de gr&acirc;ce</em>.  We saved off the
-response we received from the <code>DELETE</code> call, removed
-the <code>proxy</code> stub, and are re-<code>POST</code>ing it.  Just
-to show it works, we're leaving all the additional metadata in, like
-<code>requests</code> and <code>matches</code>, but to keep the JSON
-clean you'll probably want to delete them as well:</p>
+response we received from the <code>DELETE</code> call and are
+re-<code>POST</code>ing it.</p>
 
 <pre><code data-test-id='proxy example'
            data-test-step='14'
@@ -381,50 +232,6 @@ Content-Type: application/json
   "protocol": "http",
   "port": 6568,
   "name": "proxyAlways",
-  "requests": [
-    {
-      "requestFrom": "127.0.0.1:61762",
-      "method": "GET",
-      "path": "/test",
-      "query": {
-        "first": "1"
-      },
-      "headers": {
-        "accept": "application/json",
-        "host": "localhost:6568",
-        "connection": "close"
-      },
-      "body": ""
-    },
-    {
-      "requestFrom": "127.0.0.1:61764",
-      "method": "GET",
-      "path": "/test",
-      "query": {
-        "first": "1"
-      },
-      "headers": {
-        "accept": "application/json",
-        "host": "localhost:6568",
-        "connection": "close"
-      },
-      "body": ""
-    },
-    {
-      "requestFrom": "127.0.0.1:61766",
-      "method": "GET",
-      "path": "/dir",
-      "query": {
-        "first": "1"
-      },
-      "headers": {
-        "accept": "application/json",
-        "host": "localhost:6568",
-        "connection": "close"
-      },
-      "body": ""
-    }
-  ],
   "stubs": [
     {
       "predicates": [
@@ -505,12 +312,7 @@ Content-Type: application/json
         }
       ]
     }
-  ],
-  "_links": {
-    "self": {
-      "href": "http://localhost:<%= port %>/imposters/6568"
-    }
-  }
+  ]
 }
 </code></pre>
 
