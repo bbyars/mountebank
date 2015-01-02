@@ -31,8 +31,8 @@ describe('ImpostersController', function () {
             controller.get({ url: '/imposters' }, response);
 
             assert.deepEqual(response.body, {imposters: ['firstJSON', 'secondJSON']});
-            assert.ok(firstImposter.toJSON.wasCalledWith({ replayable: false, list: true }), firstImposter.toJSON.message());
-            assert.ok(secondImposter.toJSON.wasCalledWith({ replayable: false, list: true }), secondImposter.toJSON.message());
+            assert.ok(firstImposter.toJSON.wasCalledWith({ replayable: false, removeProxies: false, list: true }), firstImposter.toJSON.message());
+            assert.ok(secondImposter.toJSON.wasCalledWith({ replayable: false, removeProxies: false, list: true }), secondImposter.toJSON.message());
         });
 
         it('should send replayable JSON for all imposters if querystring present', function () {
@@ -43,8 +43,20 @@ describe('ImpostersController', function () {
             controller.get({ url: '/imposters?replayable=true' }, response);
 
             assert.deepEqual(response.body, {imposters: ['firstJSON', 'secondJSON']});
-            assert.ok(firstImposter.toJSON.wasCalledWith({ replayable: true, list: false }), firstImposter.toJSON.message());
-            assert.ok(secondImposter.toJSON.wasCalledWith({ replayable: true, list: false }), secondImposter.toJSON.message());
+            assert.ok(firstImposter.toJSON.wasCalledWith({ replayable: true, removeProxies: false, list: false }), firstImposter.toJSON.message());
+            assert.ok(secondImposter.toJSON.wasCalledWith({ replayable: true, removeProxies: false, list: false }), secondImposter.toJSON.message());
+        });
+
+        it('should send replayable and removeProxies JSON for all imposters if querystring present', function () {
+            var firstImposter = { toJSON: mock().returns('firstJSON') },
+                secondImposter = { toJSON: mock().returns('secondJSON') },
+                controller = Controller.create({}, { 1: firstImposter, 2: secondImposter });
+
+            controller.get({ url: '/imposters?replayable=true&removeProxies=true' }, response);
+
+            assert.deepEqual(response.body, {imposters: ['firstJSON', 'secondJSON']});
+            assert.ok(firstImposter.toJSON.wasCalledWith({ replayable: true, removeProxies: true, list: false }), firstImposter.toJSON.message());
+            assert.ok(secondImposter.toJSON.wasCalledWith({ replayable: true, removeProxies: true, list: false }), secondImposter.toJSON.message());
         });
     });
 

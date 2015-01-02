@@ -56,14 +56,14 @@ describe('http proxy stubs', function () {
 
     promiseIt('should record new stubs in order in front of proxy resolver using proxyOnce mode', function () {
         var originServerPort = port + 1,
-            originServerFn = 'function (request, state) {\n' +
-                             '    state.count = state.count || 0;\n' +
-                             '    state.count += 1;\n' +
-                             '    return {\n' +
-                             '        body: state.count + ". " + request.method + " " + request.path\n' +
-                             '    };\n' +
-                             '}',
-            originServerStub = { responses: [{ inject: originServerFn }] },
+            originServerFn = function (request, state) {
+                 state.count = state.count || 0;
+                 state.count += 1;
+                 return {
+                     body: state.count + '. ' + request.method + ' ' + request.path
+                 };
+             },
+            originServerStub = { responses: [{ inject: originServerFn.toString() }] },
             originServerRequest = {
                 protocol: 'http',
                 port: originServerPort,
@@ -117,14 +117,14 @@ describe('http proxy stubs', function () {
 
     promiseIt('should record new stubs with multiple responses behind proxy resolver in proxyAlways mode', function () {
         var originServerPort = port + 1,
-            originServerFn = 'function (request, state) {\n' +
-                             '    state.count = state.count || 0;\n' +
-                             '    state.count += 1;\n' +
-                             '    return {\n' +
-                             '        body: state.count + ". " + request.path\n' +
-                             '    };\n' +
-                             '}',
-            originServerStub = { responses: [{ inject: originServerFn }] },
+            originServerFn = function (request, state) {
+                 state.count = state.count || 0;
+                 state.count += 1;
+                 return {
+                     body: state.count + '. ' + request.path
+                 };
+             },
+            originServerStub = { responses: [{ inject: originServerFn.toString() }] },
             originServerRequest = {
                 protocol: 'http',
                 port: originServerPort,
@@ -166,14 +166,14 @@ describe('http proxy stubs', function () {
 
     promiseIt('should match entire object graphs', function () {
         var originServerPort = port + 1,
-            originServerFn = 'function (request, state) {\n' +
-                             '    state.count = state.count || 0;\n' +
-                             '    state.count += 1;\n' +
-                             '    return {\n' +
-                             '        body: state.count + ". " + JSON.stringify(request.query)\n' +
-                             '    };\n' +
-                             '}',
-            originServerStub = { responses: [{ inject: originServerFn }] },
+            originServerFn = function (request, state) {
+                 state.count = state.count || 0;
+                 state.count += 1;
+                 return {
+                     body: state.count + '. ' + JSON.stringify(request.query)
+                 };
+             },
+            originServerStub = { responses: [{ inject: originServerFn.toString() }] },
             originServerRequest = {
                 protocol: 'http',
                 port: originServerPort,
@@ -212,14 +212,14 @@ describe('http proxy stubs', function () {
 
     promiseIt('should match sub-objects', function () {
         var originServerPort = port + 1,
-            originServerFn = 'function (request, state) {\n' +
-                             '    state.count = state.count || 0;\n' +
-                             '    state.count += 1;\n' +
-                             '    return {\n' +
-                             '        body: state.count + ". " + JSON.stringify(request.query)\n' +
-                             '    };\n' +
-                             '}',
-            originServerStub = { responses: [{ inject: originServerFn }] },
+            originServerFn = function (request, state) {
+                 state.count = state.count || 0;
+                 state.count += 1;
+                 return {
+                     body: state.count + ". " + JSON.stringify(request.query)
+                 };
+             },
+            originServerStub = { responses: [{ inject: originServerFn.toString() }] },
             originServerRequest = {
                 protocol: 'http',
                 port: originServerPort,
@@ -280,6 +280,119 @@ describe('http proxy stubs', function () {
             assert.strictEqual(response.headers['x-test'], 'decorated', JSON.stringify(response.headers, null, 2));
         }).finally(function () {
             return api.del('/imposters' );
+        });
+    });
+
+    promiseIt('should support retrieving replayable JSON with proxies removed for later playback', function () {
+        var originServerPort = port + 1,
+            originServerFn = function (request, state) {
+                state.count = state.count || 0;
+                state.count += 1;
+                return {
+                    body: state.count + '. ' + request.path
+                };
+            },
+            originServerStub = { responses: [{ inject: originServerFn.toString() }] },
+            originServerRequest = {
+                protocol: 'http',
+                port: originServerPort,
+                stubs: [originServerStub],
+                name: this.name + ' origin server'
+            },
+            proxyDefinition = {
+                to: 'http://localhost:' + originServerPort,
+                mode: 'proxyAlways',
+                predicateGenerators: [{ matches: { path: true } }]
+            },
+            proxyStub = { responses: [{ proxy: proxyDefinition }] },
+            proxyRequest = { protocol: 'http', port: port, stubs: [proxyStub], name: this.name + ' proxy' };
+
+        return api.post('/imposters', originServerRequest).then(function () {
+            return api.post('/imposters', proxyRequest);
+        }).then(function (response) {
+            assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body));
+            return client.get('/first', port);
+        }).then(function () {
+            return client.get('/second', port);
+        }).then(function () {
+            return client.get('/first', port);
+        }).then(function () {
+            return api.del('/imposters/' + originServerPort);
+        }).then(function () {
+            return api.get('/imposters?replayable=true&removeProxies=true');
+        }).then(function (response) {
+            var actual = JSON.stringify(response.body),
+                withDateRemoved = actual.replace(/"date":"[^"]+"/g, '"date":"NOW"'),
+                actualWithoutEphemeralData = JSON.parse(withDateRemoved);
+
+            assert.deepEqual(actualWithoutEphemeralData, {
+                "imposters": [
+                    {
+                        "protocol": "http",
+                        "port": 2526,
+                        "name": proxyRequest.name,
+                        "stubs": [
+                            {
+                                "predicates": [
+                                    {
+                                        "deepEquals": {
+                                            "path": "/first"
+                                        }
+                                    }
+                                ],
+                                "responses": [
+                                    {
+                                        "is": {
+                                            "statusCode": 200,
+                                            "headers": {
+                                                "connection": "close",
+                                                "date": "NOW",
+                                                "transfer-encoding": "chunked"
+                                            },
+                                            "body": "1. /first"
+                                        }
+                                    },
+                                    {
+                                        "is": {
+                                            "statusCode": 200,
+                                            "headers": {
+                                                "connection": "close",
+                                                "date": "NOW",
+                                                "transfer-encoding": "chunked"
+                                            },
+                                            "body": "3. /first"
+                                        }
+                                    }
+                                ]
+                            },
+                            {
+                                "predicates": [
+                                    {
+                                        "deepEquals": {
+                                            "path": "/second"
+                                        }
+                                    }
+                                ],
+                                "responses": [
+                                    {
+                                        "is": {
+                                            "statusCode": 200,
+                                            "headers": {
+                                                "connection": "close",
+                                                "date": "NOW",
+                                                "transfer-encoding": "chunked"
+                                            },
+                                            "body": "2. /second"
+                                        }
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            });
+        }).finally(function () {
+            return api.del('/imposters');
         });
     });
 });

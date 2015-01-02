@@ -62,7 +62,8 @@ function create (protocols, imposters, Imposter, logger) {
                 var query = url.parse(request.url, true).query,
                     options = {
                         replayable: queryBoolean(query, 'replayable'),
-                        list: !queryBoolean(query, 'replayable')        // provide list JSON if not replayable
+                        removeProxies: queryBoolean(query, 'removeProxies'),
+                        list: !(queryBoolean(query, 'replayable') || queryBoolean(query, 'removeProxies'))
                     },
                     result = Object.keys(imposters).reduce(function (accumulator, id) {
                         return accumulator.concat(imposters[id].toJSON(options));

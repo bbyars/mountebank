@@ -126,18 +126,13 @@ describe('imposter', function () {
             });
         });
 
-        promiseIt('should remove proxies from stubs if asked', function () {
+        promiseIt('should remove proxies from responses if asked', function () {
             server.stubs = [
                 {
                     responses: [
                         { proxy: { to: 'http://localhost:3000' } },
                         { is: { body: 'first' } },
                         { inject: 'inject' }
-                    ]
-                },
-                {
-                    responses: [
-                        { proxy: { to: 'http://localhost:3001' } }
                     ]
                 },
                 {
@@ -155,11 +150,35 @@ describe('imposter', function () {
                         ]
                     },
                     {
-                        responses: []
-                    },
-                    {
                         responses: [
                             { is: { body: 'second' } }
+                        ]
+                    }
+                ]);
+            });
+        });
+
+        promiseIt('should remove empty stubs after proxy removal', function () {
+            server.stubs = [
+                {
+                    responses: [
+                        { proxy: { to: 'http://localhost:3000' } },
+                        { is: { body: 'first' } },
+                        { inject: 'inject' }
+                    ]
+                },
+                {
+                    responses: [
+                        { proxy: { to: 'http://localhost:3001' } }
+                    ]
+                }
+            ];
+            return Imposter.create(Protocol, {}).then(function (imposter) {
+                assert.deepEqual(imposter.toJSON({ removeProxies: true }).stubs, [
+                    {
+                        responses: [
+                            { is: { body: 'first' } },
+                            { inject: 'inject' }
                         ]
                     }
                 ]);

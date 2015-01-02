@@ -32,10 +32,10 @@ describe('ImposterController', function () {
             controller.get({ url: '/imposters/2?replayable=true', params: { id: 2 }}, response);
 
             assert.strictEqual(response.body, 'secondJSON');
-            assert.ok(imposters['2'].toJSON.wasCalledWith({ replayable: true }));
+            assert.ok(imposters['2'].toJSON.wasCalledWith({ replayable: true, removeProxies: false }), imposters['2'].toJSON.message());
         });
 
-        it('should return normal JSON for imposter at given id replayable querystring is false', function () {
+        it('should return removeProxies JSON for imposter at given id if removeProxies querystring set', function () {
             var response = FakeResponse.create(),
                 imposters = {
                     1: { toJSON: mock().returns('firstJSON') },
@@ -43,10 +43,38 @@ describe('ImposterController', function () {
                 },
                 controller = Controller.create(imposters);
 
-            controller.get({ url: '/imposters/2?replayable=false', params: { id: 2 }}, response);
+            controller.get({ url: '/imposters/2?removeProxies=true', params: { id: 2 }}, response);
 
             assert.strictEqual(response.body, 'secondJSON');
-            assert.ok(imposters['2'].toJSON.wasCalledWith({ replayable: false }));
+            assert.ok(imposters['2'].toJSON.wasCalledWith({ replayable: false, removeProxies: true }), imposters['2'].toJSON.message());
+        });
+
+        it('should return replayable and removeProxies JSON for imposter at given id if both querystring values set', function () {
+            var response = FakeResponse.create(),
+                imposters = {
+                    1: { toJSON: mock().returns('firstJSON') },
+                    2: { toJSON: mock().returns('secondJSON') }
+                },
+                controller = Controller.create(imposters);
+
+            controller.get({ url: '/imposters/2?removeProxies=true&replayable=true', params: { id: 2 }}, response);
+
+            assert.strictEqual(response.body, 'secondJSON');
+            assert.ok(imposters['2'].toJSON.wasCalledWith({ replayable: true, removeProxies: true }), imposters['2'].toJSON.message());
+        });
+
+        it('should return normal JSON for imposter at given id if both replayable and removeProxies querystrings are false', function () {
+            var response = FakeResponse.create(),
+                imposters = {
+                    1: { toJSON: mock().returns('firstJSON') },
+                    2: { toJSON: mock().returns('secondJSON') }
+                },
+                controller = Controller.create(imposters);
+
+            controller.get({ url: '/imposters/2?replayable=false&removeProxies=false', params: { id: 2 }}, response);
+
+            assert.strictEqual(response.body, 'secondJSON');
+            assert.ok(imposters['2'].toJSON.wasCalledWith({ replayable: false, removeProxies: false }), imposters['2'].toJSON.message());
         });
     });
 
