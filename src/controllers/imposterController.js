@@ -13,7 +13,7 @@ function create (imposters) {
 
     function get (request, response) {
         var query = url.parse(request.url, true).query,
-            options = { replayable: queryBoolean(query, 'replayable') },
+            options = { replayable: queryBoolean(query, 'replayable'), removeProxies: queryBoolean(query, 'removeProxies') },
             imposter = imposters[request.params.id].toJSON(options);
 
         response.format({

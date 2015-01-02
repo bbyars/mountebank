@@ -59,6 +59,9 @@ function create (Protocol, request) {
                         return !response.hasOwnProperty('proxy');
                     });
                 });
+                result.stubs = result.stubs.filter(function (stub) {
+                    return stub.responses.length > 0;
+                });
             }
 
             function toJSON (options) {
