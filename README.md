@@ -44,7 +44,7 @@ mountebank has the following goals:
 * A platform, not just a tool
     * mountebank aims to be fully cross-platform, with native language bindings.  Servers are extensible through scripting.
 * Powerful
-    * mountebank is the only stubbing tool that is non-modal and multi-protocol.  mountebank does not just pretend to be a server; he spins up real servers.
+    * mountebank is the only open source stubbing tool that is non-modal and multi-protocol.  Commercial "service virtualization" solutions exist, but their licensed platforms make it hard to move the tests closer to development and can even require a specialized IDE.  mountebank provides service virtualization free of charge without any platform constraints.
 
 Not all of mountebank's goals are currently implemented, but fear not, for he has a team of top-notch open source developers, and they are legion.
 
