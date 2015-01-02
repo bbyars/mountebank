@@ -7,12 +7,35 @@
         <dd>mountebank pronounces it with a plain and unpretentious accent,
         reflecting his humble roots as a man of the people.</dd>
 
-        <dt>Why is the command line application simply called <code>mb</code>?</dt>
-        <dd>Because <code>mb</code> is the soul of wit.</dd>
+        <dt>How can I post-process a response, for example, to add a custom header to
+          a proxied response or add a current timestamp into the response</dt>
+        <dd>See the <a href='/docs/api/behaviors'><code>decorate</code> behavior</a>.</dd>
 
         <dt>Why did you misspell impostor?</dt>
         <dd>mountebank is not an educated man, having spent the waking hours of his
-        youth caring for the poor and the sick.</dd>
+          youth caring for the poor and the sick.</dd>
+
+        <dt>How can I split my imposters into multiple files and have them automatically
+        loaded when <code>mb</code> restarts?</dt>
+        <dd>See the <a href='/docs/commandLine'><code>--configfile</code> command line option</a>
+        It can either be a single file containing the JSON that you get back when you call
+        <a href='/docs/api/overview#get-imposters'><code>GET /imposters?replayable=true</code></a>
+        or multiple files that will be collected via a file globbing pattern.</dd>
+
+        <dt>Why is the command line application simply called <code>mb</code>?</dt>
+        <dd>Because <code>mb</code> is the soul of wit.</dd>
+
+        <dt>Does mountebank proved service virtualization?</dt>
+        <dd>Yes!  Service virtualization is the term that commercial vendors use that
+        came out of the SOA tools, and essentially just means over the wire test doubles, which
+        is something mountebank knows a thing or two about.  The claimed difference is that a virtualized
+        environment is persistent rather than context-specific.  mountebank questions
+        the advantage that claim provides, but supports persistent virtualization by storing the
+        configuration in the <a href='/docs/commandLine'><code>--configfile</code> command line option</a>.
+        And, unlike service virtualization packages, he offers this free of charge,
+        so there are no licensing concerns preventing you from pushing the tests to the left
+        of the project lifecycle.</dd>
+
       </dl>
 
 <% include _footer %>
