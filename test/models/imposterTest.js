@@ -37,7 +37,7 @@ describe('imposter', function () {
             server.port = 3535;
 
             return Imposter.create(Protocol, {}).then(function (imposter) {
-                assert.deepEqual(imposter.toListJSON(), {
+                assert.deepEqual(imposter.toJSON({ list: true }), {
                     protocol: 'http',
                     port: 3535,
                     _links: { self: { href: '/imposters/3535' } }
@@ -80,7 +80,7 @@ describe('imposter', function () {
             metadata.key = 'value';
 
             return Imposter.create(Protocol, {}).then(function (imposter) {
-                assert.deepEqual(imposter.toReplayableJSON(), {
+                assert.deepEqual(imposter.toJSON({ replayable: true }), {
                     protocol: 'http',
                     port: 3535,
                     stubs: [],

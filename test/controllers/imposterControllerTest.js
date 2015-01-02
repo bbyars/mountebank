@@ -24,14 +24,29 @@ describe('ImposterController', function () {
         it('should return replayable JSON for imposter at given id if replayable querystring set', function () {
             var response = FakeResponse.create(),
                 imposters = {
-                    1: { toReplayableJSON: mock().returns('firstJSON') },
-                    2: { toReplayableJSON: mock().returns('secondJSON') }
+                    1: { toJSON: mock().returns('firstJSON') },
+                    2: { toJSON: mock().returns('secondJSON') }
                 },
                 controller = Controller.create(imposters);
 
             controller.get({ url: '/imposters/2?replayable=true', params: { id: 2 }}, response);
 
             assert.strictEqual(response.body, 'secondJSON');
+            assert.ok(imposters['2'].toJSON.wasCalledWith({ replayable: true }));
+        });
+
+        it('should return normal JSON for imposter at given id replayable querystring is false', function () {
+            var response = FakeResponse.create(),
+                imposters = {
+                    1: { toJSON: mock().returns('firstJSON') },
+                    2: { toJSON: mock().returns('secondJSON') }
+                },
+                controller = Controller.create(imposters);
+
+            controller.get({ url: '/imposters/2?replayable=false', params: { id: 2 }}, response);
+
+            assert.strictEqual(response.body, 'secondJSON');
+            assert.ok(imposters['2'].toJSON.wasCalledWith({ replayable: false }));
         });
     });
 

@@ -23,24 +23,28 @@ describe('ImpostersController', function () {
             assert.deepEqual(response.body, {imposters: []});
         });
 
-        it('should send list JSON for all imposters', function () {
-            var firstImposter = { toListJSON: mock().returns('firstJSON') },
-                secondImposter = { toListJSON: mock().returns('secondJSON') },
+        it('should send list JSON for all imposters by default', function () {
+            var firstImposter = { toJSON: mock().returns('firstJSON') },
+                secondImposter = { toJSON: mock().returns('secondJSON') },
                 controller = Controller.create({}, { 1: firstImposter, 2: secondImposter });
 
             controller.get({ url: '/imposters' }, response);
 
             assert.deepEqual(response.body, {imposters: ['firstJSON', 'secondJSON']});
+            assert.ok(firstImposter.toJSON.wasCalledWith({ replayable: false, list: true }), firstImposter.toJSON.message());
+            assert.ok(secondImposter.toJSON.wasCalledWith({ replayable: false, list: true }), secondImposter.toJSON.message());
         });
 
         it('should send replayable JSON for all imposters if querystring present', function () {
-            var firstImposter = { toReplayableJSON: mock().returns('firstJSON') },
-                secondImposter = { toReplayableJSON: mock().returns('secondJSON') },
+            var firstImposter = { toJSON: mock().returns('firstJSON') },
+                secondImposter = { toJSON: mock().returns('secondJSON') },
                 controller = Controller.create({}, { 1: firstImposter, 2: secondImposter });
 
             controller.get({ url: '/imposters?replayable=true' }, response);
 
             assert.deepEqual(response.body, {imposters: ['firstJSON', 'secondJSON']});
+            assert.ok(firstImposter.toJSON.wasCalledWith({ replayable: true, list: false }), firstImposter.toJSON.message());
+            assert.ok(secondImposter.toJSON.wasCalledWith({ replayable: true, list: false }), secondImposter.toJSON.message());
         });
     });
 
@@ -188,8 +192,8 @@ describe('ImpostersController', function () {
 
     describe('#del', function () {
         it('should delete all imposters', function () {
-            var firstImposter = { stop: mock(), toReplayableJSON: mock().returns({ 1: true }) },
-                secondImposter = { stop: mock(), toReplayableJSON: mock().returns({ 2: true }) },
+            var firstImposter = { stop: mock(), toJSON: mock().returns({ 1: true }) },
+                secondImposter = { stop: mock(), toJSON: mock().returns({ 2: true }) },
                 imposters = { 1: firstImposter, 2: secondImposter },
                 controller = Controller.create({}, imposters, {}, {});
 
@@ -199,8 +203,8 @@ describe('ImpostersController', function () {
         });
 
         it('should call stop on all imposters', function () {
-            var firstImposter = { stop: mock(), toReplayableJSON: mock().returns({ 1: true }) },
-                secondImposter = { stop: mock(), toReplayableJSON: mock().returns({ 2: true }) },
+            var firstImposter = { stop: mock(), toJSON: mock().returns({ 1: true }) },
+                secondImposter = { stop: mock(), toJSON: mock().returns({ 2: true }) },
                 imposters = { 1: firstImposter, 2: secondImposter },
                 controller = Controller.create({}, imposters, {}, {});
 
@@ -211,14 +215,16 @@ describe('ImpostersController', function () {
         });
 
         it('should return replayable JSON', function () {
-            var firstImposter = { stop: mock(), toReplayableJSON: mock().returns({ 1: true }) },
-                secondImposter = { stop: mock(), toReplayableJSON: mock().returns({ 2: true }) },
+            var firstImposter = { stop: mock(), toJSON: mock().returns({ 1: true }) },
+                secondImposter = { stop: mock(), toJSON: mock().returns({ 2: true }) },
                 imposters = { 1: firstImposter, 2: secondImposter },
                 controller = Controller.create({}, imposters, {}, {});
 
             controller.del({}, response);
 
             assert.deepEqual(response.body, { imposters: [ { 1: true }, { 2: true } ] });
+            assert.ok(firstImposter.toJSON.wasCalledWith({ replayable: true }), firstImposter.toJSON.message());
+            assert.ok(secondImposter.toJSON.wasCalledWith({ replayable: true }), secondImposter.toJSON.message());
         });
     });
 
@@ -241,8 +247,8 @@ describe('ImpostersController', function () {
 
         promiseIt('should return imposter list JSON for all imposters', function () {
             var Protocol = { name: 'http' },
-                firstImposter = { toListJSON: mock().returns({ first: true }) },
-                secondImposter = { toListJSON: mock().returns({ second: true }) },
+                firstImposter = { toJSON: mock().returns({ first: true }) },
+                secondImposter = { toJSON: mock().returns({ second: true }) },
                 imposters = [firstImposter, secondImposter],
                 creates = 0,
                 Imposter = {
@@ -258,6 +264,8 @@ describe('ImpostersController', function () {
 
             return controller.put(request, response).then(function () {
                 assert.deepEqual(response.body, { imposters: [ { first: true }, { second: true }]});
+                assert.ok(firstImposter.toJSON.wasCalledWith({ list: true }), firstImposter.toJSON.message());
+                assert.ok(secondImposter.toJSON.wasCalledWith({ list: true }), secondImposter.toJSON.message());
             });
         });
 
@@ -265,8 +273,8 @@ describe('ImpostersController', function () {
             var Protocol = { name: 'http' },
                 oldImposter = { stop: mock() },
                 imposters = { 0: oldImposter },
-                firstImposter = { toListJSON: mock().returns({ first: true }), port: 1 },
-                secondImposter = { toListJSON: mock().returns({ second: true }), port: 2 },
+                firstImposter = { toJSON: mock().returns({ first: true }), port: 1 },
+                secondImposter = { toJSON: mock().returns({ second: true }), port: 2 },
                 impostersToCreate = [firstImposter, secondImposter],
                 creates = 0,
                 Imposter = {
@@ -282,6 +290,8 @@ describe('ImpostersController', function () {
 
             return controller.put(request, response).then(function () {
                 assert.deepEqual(imposters, { 1: firstImposter, 2: secondImposter });
+                assert.ok(firstImposter.toJSON.wasCalledWith({ list: true }), firstImposter.toJSON.message());
+                assert.ok(secondImposter.toJSON.wasCalledWith({ list: true }), secondImposter.toJSON.message());
             });
         });
 
