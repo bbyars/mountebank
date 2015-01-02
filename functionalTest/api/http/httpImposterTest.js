@@ -165,6 +165,31 @@ var assert = require('assert'),
                     assert.strictEqual(response.statusCode, 200);
                 });
             });
+
+            promiseIt('supports returning a replayable body with proxies removed', function () {
+                var imposter = {
+                        protocol: 'http',
+                        port: port + 1,
+                        name: this.name,
+                        stubs: [{ responses: [
+                            { proxy: { to: 'http://www.google.com' } },
+                            { is: { body: 'Hello, World!' } }
+                        ] }]
+                    };
+
+                return api.post('/imposters', imposter).then(function (response) {
+                    assert.strictEqual(response.statusCode, 201);
+                    return api.del('/imposters/' + imposter.port + '?removeProxies=true&replayable=true');
+                }).then(function (response) {
+                    assert.strictEqual(response.statusCode, 200);
+                    assert.deepEqual(response.body, {
+                        protocol: 'http',
+                        port: port + 1,
+                        name: imposter.name,
+                        stubs: [{ responses: [{ is: { body: 'Hello, World!' } }] }]
+                    });
+                });
+            });
         });
     });
 });

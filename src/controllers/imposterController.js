@@ -31,10 +31,12 @@ function create (imposters) {
 
     function del (request, response) {
         var imposter = imposters[request.params.id],
-            json = {};
+            json = {},
+            query = url.parse(request.url, true).query,
+            options = { replayable: queryBoolean(query, 'replayable'), removeProxies: queryBoolean(query, 'removeProxies') };
 
         if (imposter) {
-            json = imposter.toJSON();
+            json = imposter.toJSON(options);
             imposter.stop();
             delete imposters[request.params.id];
         }

@@ -121,6 +121,51 @@ describe('DELETE /imposters', function () {
             done();
         });
     });
+
+    promiseIt('supports returning a non-replayable body with proxies removed', function () {
+        var isImposter = {
+                protocol: 'http',
+                port: port, name:
+                this.name + '-is',
+                stubs: [{ responses: [{ is: { body: 'Hello, World!' } }] }]
+            },
+            proxyImposter = {
+                protocol: 'http',
+                port: port + 1,
+                name: this.name + '-proxy',
+                stubs: [{ responses: [{ proxy: { to: 'http://www.google.com' } }] }]
+            };
+
+        return api.post('/imposters', isImposter).then(function (response) {
+            assert.strictEqual(response.statusCode, 201);
+            return api.post('/imposters', proxyImposter);
+        }).then(function (response) {
+            assert.strictEqual(response.statusCode, 201);
+            return api.del('/imposters?removeProxies=true&replayable=false');
+        }).then(function (response) {
+            assert.strictEqual(response.statusCode, 200);
+            assert.deepEqual(response.body, {
+                imposters: [
+                    {
+                        protocol: 'http',
+                        port: isImposter.port,
+                        name: isImposter.name,
+                        requests: [],
+                        stubs: isImposter.stubs,
+                        _links: { self: { href: 'http://localhost:' + api.port + '/imposters/' + isImposter.port } }
+                    },
+                    {
+                        protocol: 'http',
+                        port: proxyImposter.port,
+                        name: proxyImposter.name,
+                        requests: [],
+                        stubs: [],
+                        _links: { self: { href: 'http://localhost:' + api.port + '/imposters/' + proxyImposter.port } }
+                    }
+                ]
+            });
+        });
+    });
 });
 
 describe('PUT /imposters', function () {
