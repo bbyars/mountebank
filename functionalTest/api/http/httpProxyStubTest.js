@@ -329,7 +329,7 @@ describe('http proxy stubs', function () {
                 "imposters": [
                     {
                         "protocol": "http",
-                        "port": 2526,
+                        "port": port,
                         "name": proxyRequest.name,
                         "stubs": [
                             {
