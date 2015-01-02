@@ -33,7 +33,24 @@
     keeping each imposter in a separate file, you may do so and pass a file glob pattern.
     For Windows, use only forward slashes as the <a href='https://github.com/isaacs/node-glob#glob-primer'>
     globbing implementation</a> always interprets backslashes as escape characters.
-    Make sure to quote your glob pattern to avoid the shell interpreting it.</td>
+    For example, if you have a directory called <code>imposters</code> and you store all imposter
+    configuration in <code>.js</code> files, you can load them all by passing
+    <code>--configfile 'imposters/*.js'</code> (note the single quotes to prevent the shell
+    from interpreting the asterisk).  If you decide to use multiple files, you can optionally
+    skip the top level JSON object containing the <code>imposters</code> array in the
+    config file.  In other words, either of the two formats will work:
+
+      <pre><code>
+        {
+          "imposters": [{ "protocol": "http", "port": 3000 }]
+        }
+      </code></pre>
+
+      or
+
+      <pre><code>
+        { "protocol": "http", "port" 3000 }
+      </code></pre></td>
     <td><code>N/A</code></td>
   </tr>
   <tr>
