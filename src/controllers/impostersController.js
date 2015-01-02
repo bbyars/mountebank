@@ -8,6 +8,13 @@ var Validator = require('../util/validator'),
 
 function create (protocols, imposters, Imposter, logger) {
 
+    function queryIsFalse (query, key) {
+        if (!query.hasOwnProperty(key)) {
+            return true;
+        }
+        return query[key].toLowerCase() !== 'false';
+    }
+
     function queryBoolean (query, key) {
         if (!query.hasOwnProperty(key)) {
             return false;
@@ -105,9 +112,15 @@ function create (protocols, imposters, Imposter, logger) {
     }
 
     function del (request, response) {
-        var json = Object.keys(imposters).reduce(function (accumulator, id) {
-            return accumulator.concat(imposters[id].toJSON({ replayable: true }));
-        }, []);
+        var query = url.parse(request.url, true).query,
+            options = {
+                // default to replayable for backwards compatibility
+                replayable: queryIsFalse(query, 'replayable'),
+                removeProxies: queryBoolean(query, 'removeProxies')
+            },
+            json = Object.keys(imposters).reduce(function (accumulator, id) {
+                return accumulator.concat(imposters[id].toJSON(options));
+             }, []);
         deleteAllImposters();
         response.send({ imposters: json });
     }

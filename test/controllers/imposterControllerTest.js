@@ -84,7 +84,7 @@ describe('ImposterController', function () {
                 imposter = { stop: mock(), toJSON: mock().returns('JSON') },
                 controller = Controller.create({ 1: imposter });
 
-            controller.del({ params: { id: 1 }}, response);
+            controller.del({ url: '/imposters/1', params: { id: 1 }}, response);
 
             assert(imposter.stop.wasCalled());
         });
@@ -94,7 +94,7 @@ describe('ImposterController', function () {
                 imposters = { 1: { stop: mock(), toJSON: mock().returns('JSON') }},
                 controller = Controller.create(imposters);
 
-            controller.del({ params: { id: 1 }}, response);
+            controller.del({ url: '/imposters/1', params: { id: 1 }}, response);
 
             assert.deepEqual(imposters, {});
         });
@@ -104,19 +104,49 @@ describe('ImposterController', function () {
                 imposters = {},
                 controller = Controller.create(imposters);
 
-            controller.del({ params: { id: 1 }}, response);
+            controller.del({ url: '/imposters/1', params: { id: 1 }}, response);
 
             assert.deepEqual(response.body, {});
         });
 
-        it('should send JSON for the deleted the imposter', function () {
+        it('should return replayable JSON for imposter at given id if replayable querystring set', function () {
             var response = FakeResponse.create(),
                 imposter = { stop: mock(), toJSON: mock().returns('JSON') },
                 controller = Controller.create({ 1: imposter });
 
-            controller.del({ params: { id: 1 }}, response);
+            controller.del({ url: '/imposters/1?replayable=true', params: { id: 1 }}, response);
 
-            assert.strictEqual(response.body, 'JSON');
+            assert.ok(imposter.toJSON.wasCalledWith({ replayable: true, removeProxies: false }), imposter.toJSON.message());
+        });
+
+        it('should return removeProxies JSON for imposter at given id if removeProxies querystring set', function () {
+            var response = FakeResponse.create(),
+                imposter = { stop: mock(), toJSON: mock().returns('JSON') },
+                controller = Controller.create({ 1: imposter });
+
+            controller.del({ url: '/imposters/1?removeProxies=true', params: { id: 1 }}, response);
+
+            assert.ok(imposter.toJSON.wasCalledWith({ replayable: false, removeProxies: true }), imposter.toJSON.message());
+        });
+
+        it('should return replayable and removeProxies JSON for imposter at given id if both querystring values set', function () {
+            var response = FakeResponse.create(),
+                imposter = { stop: mock(), toJSON: mock().returns('JSON') },
+                controller = Controller.create({ 1: imposter });
+
+            controller.del({ url: '/imposters/1?removeProxies=true&replayable=true', params: { id: 1 }}, response);
+
+            assert.ok(imposter.toJSON.wasCalledWith({ replayable: true, removeProxies: true }), imposter.toJSON.message());
+        });
+
+        it('should send default JSON for the deleted the imposter if both replayable and removeProxies querystrings are missing', function () {
+            var response = FakeResponse.create(),
+                imposter = { stop: mock(), toJSON: mock().returns('JSON') },
+                controller = Controller.create({ 1: imposter });
+
+            controller.del({ url: '/imposters/1', params: { id: 1 }}, response);
+
+            assert.ok(imposter.toJSON.wasCalledWith({ replayable: false, removeProxies: false }), imposter.toJSON.message());
         });
     });
 });
