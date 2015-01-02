@@ -36,8 +36,8 @@ filled in.</p>
     saves the proxied call <em>after</em> itself in the <code>stubs</code>
     array.  This allows you to capture different responses for the same call.
     You can later replay <code>proxyAlways</code> stubs by issuing a <code>GET</code>
-    or <code>DELETE</code> to the imposter, deleting the <code>proxy</code> stub,
-    and re-<code>POST</code>ing the imposter.</td>
+    or <code>DELETE</code> to the imposter with the <code>removeProxies</code> and
+    <code>replayable</code> query params, and re-<code>POST</code>ing the imposter.</td>
   </tr>
   <tr>
     <td><code>predicateGenerators</code></td>
