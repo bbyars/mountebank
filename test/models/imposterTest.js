@@ -45,7 +45,7 @@ describe('imposter', function () {
             });
         });
 
-        promiseIt('should return default JSON representation', function () {
+        promiseIt('should return full JSON representation by default', function () {
             server.port = 3535;
 
             return Imposter.create(Protocol, {}).then(function (imposter) {
@@ -101,6 +101,101 @@ describe('imposter', function () {
             server.stubs = ['ONE', 'TWO'];
             return Imposter.create(Protocol, {}).then(function (imposter) {
                 assert.deepEqual(imposter.toJSON().stubs, ['ONE', 'TWO']);
+            });
+        });
+
+        promiseIt('replayable JSON should remove stub matches', function () {
+            server.stubs = [
+                {
+                    responses: ['FIRST'],
+                    matches: ['MATCH']
+                },
+                {
+                    responses: ['SECOND'],
+                    matches: ['MATCH']
+                }
+            ];
+            server.port = 3535;
+
+            return Imposter.create(Protocol, {}).then(function (imposter) {
+                assert.deepEqual(imposter.toJSON({ replayable: true }), {
+                    protocol: 'http',
+                    port: 3535,
+                    stubs: [{ responses: ['FIRST'] }, { responses: ['SECOND'] }],
+                });
+            });
+        });
+
+        promiseIt('should remove proxies from stubs if asked', function () {
+            server.stubs = [
+                {
+                    responses: [
+                        { proxy: { to: 'http://localhost:3000' } },
+                        { is: { body: 'first' } },
+                        { inject: 'inject' }
+                    ]
+                },
+                {
+                    responses: [
+                        { proxy: { to: 'http://localhost:3001' } }
+                    ]
+                },
+                {
+                    responses: [
+                        { is: { body: 'second' } }
+                    ]
+                }
+            ];
+            return Imposter.create(Protocol, {}).then(function (imposter) {
+                assert.deepEqual(imposter.toJSON({ removeProxies: true }).stubs, [
+                    {
+                        responses: [
+                            { is: { body: 'first' } },
+                            { inject: 'inject' }
+                        ]
+                    },
+                    {
+                        responses: []
+                    },
+                    {
+                        responses: [
+                            { is: { body: 'second' } }
+                        ]
+                    }
+                ]);
+            });
+        });
+
+        promiseIt('does not mutate servers stub representation for replayable removeProxies requests', function () {
+            server.stubs = [
+                {
+                    responses: [
+                        { proxy: { to: 'http://localhost:3000' } },
+                        { is: { body: 'first' } },
+                        { inject: 'inject' }
+                    ],
+                    matches: ['MATCH']
+                }
+            ];
+            return Imposter.create(Protocol, {}).then(function (imposter) {
+                assert.deepEqual(imposter.toJSON({ removeProxies: true, replayable: true }).stubs, [
+                    {
+                        responses: [
+                            { is: { body: 'first' } },
+                            { inject: 'inject' }
+                        ]
+                    }
+                ]);
+                assert.deepEqual(server.stubs, [
+                    {
+                        responses: [
+                            { proxy: { to: 'http://localhost:3000' } },
+                            { is: { body: 'first' } },
+                            { inject: 'inject' }
+                        ],
+                        matches: ['MATCH']
+                    }
+                ]);
             });
         });
     });
