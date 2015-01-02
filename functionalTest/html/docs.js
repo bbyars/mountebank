@@ -8,12 +8,15 @@ function getDOM (endpoint) {
     var deferred = Q.defer(),
         url = api.url + endpoint;
 
-    jsdom.env(url, function (errors, window) {
-        if (errors) {
-            deferred.reject(errors);
-        }
-        else {
-            deferred.resolve(window);
+    jsdom.env({
+        url: url,
+        done: function (errors, window) {
+            if (errors) {
+                deferred.reject(errors);
+            }
+            else {
+                deferred.resolve(window);
+            }
         }
     });
     return deferred.promise;
