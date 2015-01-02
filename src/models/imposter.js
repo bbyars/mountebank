@@ -2,7 +2,8 @@
 
 var Q = require('q'),
     Domain = require('domain'),
-    errors = require('../util/errors');
+    errors = require('../util/errors'),
+    helpers = require('../util/helpers');
 
 function createErrorHandler (deferred) {
     return function errorHandler (error) {
@@ -33,7 +34,37 @@ function create (Protocol, request) {
                 request.stubs.forEach(server.addStub);
             }
 
+            function addDetailsTo (result) {
+                Object.keys(server.metadata).forEach(function (key) {
+                    result[key] = server.metadata[key];
+                });
+
+                result.requests = server.requests;
+                result.stubs = helpers.clone(server.stubs);
+            }
+
+            function removeNonEssentialInformationFrom (result) {
+                result.stubs.forEach(function (stub) {
+                    if (stub.matches) {
+                        delete stub.matches;
+                    }
+                });
+                delete result.requests;
+                delete result._links;
+            }
+
+            function removeProxiesFrom (result) {
+                result.stubs.forEach(function (stub) {
+                    stub.responses = stub.responses.filter(function (response) {
+                        return !response.hasOwnProperty('proxy');
+                    });
+                });
+            }
+
             function toJSON (options) {
+                // I consider the order of fields represented important.  They won't matter for parsing,
+                // but it makes a nicer user experience for developers viewing the JSON to keep the most
+                // relevant information at the top
                 var result = {
                         protocol: Protocol.name,
                         port: server.port
@@ -42,25 +73,16 @@ function create (Protocol, request) {
                 options = options || {};
 
                 if (!options.list) {
-                    Object.keys(server.metadata).forEach(function (key) {
-                        result[key] = server.metadata[key];
-                    });
-
-                    if (!options.replayable) {
-                        result.requests = server.requests;
-                    }
-                    result.stubs = server.stubs;
+                    addDetailsTo(result);
                 }
+
+                result._links = {self: {href: url}};
 
                 if (options.replayable) {
-                    result.stubs.forEach(function (stub) {
-                        if (stub.matches) {
-                            delete stub.matches;
-                        }
-                    });
+                    removeNonEssentialInformationFrom(result);
                 }
-                else {
-                    result._links = {self: {href: url}};
+                if (options.removeProxies) {
+                    removeProxiesFrom(result);
                 }
 
                 return result;
