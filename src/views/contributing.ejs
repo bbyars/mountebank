@@ -17,7 +17,9 @@ fixing the error on his end.  Below are a few other tips for those who wish to d
 
 <p>mountebank loves JavaScript, but he is not a learn&egrave;d man, and parts of the language confuse him.
 In particular, the <code>new</code> and <code>this</code> keywords are prone to cause problems with someone
-of mountebank's limited understanding.</p>
+of mountebank's limited understanding.  mountebank paired with <a href='http://blog.thepete.net/'>Pete Hodgson</a>
+to do a talk on programming without those keywords <a href='http://usergroup.tv/videos/keeping-up-with-javascript'>here</a>
+(thanks to Pete for allowing the use of his deck and material).</p>
 
 <p>Many of mountebank's modules have constructors of sorts, although the priesthood of JavaScript developers may
 scorn them.  He calls the creation method <code>create</code>, and often exposes that as the only method from a
@@ -46,5 +48,14 @@ codebase.  The inimitable <a href='http://blog.thepete.net/'>Pete Hodgson</a> ta
 <a href='http://martinfowler.com/articles/asyncJS.html'>test asynchronous JavaScript</a> using promises.  Despite the
 mind-warping ramp-up needed to comprehend promises, mountebank has found that they pay off many times over
 in both testability and structuring difficult combinations of parallelism and sequence.</p>
+
+<h2>Backwards Compatibility</h2>
+
+<p>mountebank has gone on record as recommending avoiding the need for API versioning if at all possible
+(<a href='http://martinfowler.com/articles/enterpriseREST.html#versioning'>essay</a>
+<a href='http://www.infoq.com/presentations/constraints-api-rest-integration'>presentation</a>).
+mountebank may make some suggestions to any API changes you make in an effort to make them more
+future-compatible.  You can help by thinking through any breaking changes you make and explaining the
+reasons in the commit messages.</p>
 
 <% include _footer %>
