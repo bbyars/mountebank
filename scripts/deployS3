@@ -8,4 +8,4 @@ set -e
 
 echo "Deploying to S3..."
 dpl --provider=s3 --access-key-id=AKIAIE2GUJRUIHGE2PWA --secret-access-key=$AWS_ACCESS_KEY \
-    --bucket=mountebank --local-dir=dist/s3 --upload-dir=v1.1 --skip-cleanup
+    --bucket=mountebank --local-dir=dist/s3 --upload-dir=v1.2 --skip-cleanup
