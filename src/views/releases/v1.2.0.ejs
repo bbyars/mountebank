@@ -14,4 +14,8 @@ release notes as well.</p>
   <a href='/docs/api/overview#delete-imposters'>delete all imposters</a> API calls
   now both accept the <code>replayable</code> and <code>removeProxies</code> query
   params.</li>
+  <li>Improved validation during imposter creation to make using the API easier.
+    Previously, mountebank would only validate (at best) the first response of each stub
+    during creation due to the complexity of validating all scenarios.
+    Now, all responses always get validated.</li>
 </ul>
