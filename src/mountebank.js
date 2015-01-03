@@ -14,7 +14,8 @@ var express = require('express'),
     winston = require('winston'),
     thisPackage = require('../package.json'),
     ScopedLogger = require('./util/scopedLogger'),
-    util = require('util');
+    util = require('util'),
+    fs = require('fs');
 
 function create (options) {
     var app = express(),
@@ -104,6 +105,29 @@ function create (options) {
         '/docs/protocols/smtp'
     ].forEach(function (endpoint) {
         app.get(endpoint, function (request, response) { response.render(endpoint.substring(1)); });
+    });
+
+    app.get('/releases', function (request, response) {
+        fs.readdir(path.join(__dirname, 'views/releases'), function (error, files) {
+            var pattern = /v\d+\.\d+\.\d+/,
+                versions = files.filter(function (filename) {
+                    return pattern.test(filename);
+                }).map(function (filename) {
+                    return pattern.exec(filename).toString();
+                }).sort(function (first, second) {
+                    var firstParts = first.match(/\d+/g).map(function (i) { return parseInt(i); }),
+                        secondParts = second.match(/\d+/g).map(function (i) { return parseInt(i); });
+
+                    for (var i = 0; i < 3; i++) {
+                        if (secondParts[i] - firstParts[i] !== 0) {
+                            return secondParts[i] - firstParts[i];
+                        }
+                    }
+                    return 0;
+                });
+
+            response.render('releases', { versions: versions });
+        });
     });
 
     return {
