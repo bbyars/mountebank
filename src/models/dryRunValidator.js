@@ -17,7 +17,7 @@ function create (options) {
     }
 
     function dryRun (stub, encoding, logger) {
-        // Need a well-formed proxy response in case a behavior decorator expcets certain fields to exist
+        // Need a well-formed proxy response in case a behavior decorator expects certain fields to exist
         var dryRunProxy = { to: function () { return Q(options.testProxyResponse); } },
             dryRunLogger = {
                 debug: combinators.noop,
