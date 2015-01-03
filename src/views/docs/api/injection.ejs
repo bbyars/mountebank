@@ -324,11 +324,11 @@ Date: Thu, 09 Jan 2014 02:30:31 GMT
 Transfer-Encoding: chunked
 
 {
-  "count": <strong class='highlight1'>2</strong>
+  "count": <strong class='highlight1'>3</strong>
 }
 </code></pre>
 
-<p>The origin unexpectedly returns 2.  This is an example where the dry
+<p>The origin unexpectedly returns 3.  This is an example where the dry
 run validation left behind some state in the environment.  If we had wanted
 to avoid this situation, we could have used the <code>isDryRun</code> field
 on the <code>request</code> parameter to avoid the proxy call during validation.</p>
@@ -352,7 +352,7 @@ Date: Thu, 09 Jan 2014 02:30:31 GMT
 Transfer-Encoding: chunked
 
 {
-  "count": 3
+  "count": 4
 }
 </code></pre>
 
@@ -375,7 +375,7 @@ Date: Thu, 09 Jan 2014 02:30:31 GMT
 Transfer-Encoding: chunked
 
 {
-  "count": 2
+  "count": 3
 }
 </code></pre>
 

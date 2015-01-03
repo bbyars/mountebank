@@ -9,11 +9,25 @@ var utils = require('util'),
 
 function create (options) {
 
-    function getFirstResponse (stub) {
-        if (stub.responses && stub.responses.length > 0) {
-            return stub.responses[0];
+    function stubForResponse (originalStub, response, withPredicates) {
+        // Each dry run only validates the first response, so we
+        // explode the number of stubs to dry run each response separately
+        var clonedStub = helpers.clone(originalStub),
+            clonedResponse = helpers.clone(response);
+        clonedStub.responses = [clonedResponse];
+
+        // If the predicates don't match the test request, we won't dry run
+        // the response (although the predicates will be dry run).  We remove
+        // the predicates to account for this scenario.
+        if (!withPredicates) {
+            delete clonedStub.predicates;
         }
-        return {};
+
+        // we've already validated waits and don't want to add latency to validation
+        if (clonedResponse._behaviors && clonedResponse._behaviors.wait) {
+            delete clonedResponse._behaviors.wait;
+        }
+        return clonedStub;
     }
 
     function dryRun (stub, encoding, logger) {
@@ -26,20 +40,28 @@ function create (options) {
                 error: logger.error
             },
             resolver = StubResolver.create(dryRunProxy, combinators.identity),
-            stubRepository = options.StubRepository.create(resolver, false, encoding),
-            clone = helpers.clone(stub),
-            testRequest = options.testRequest;
+            stubsToValidateWithPredicates = stub.responses.map(function (response) {
+                return stubForResponse(stub, response, true);
+            }),
+            stubsToValidateWithoutPredicates = stub.responses.map(function (response) {
+                return stubForResponse(stub, response, false);
+            }),
+            stubsToValidate = stubsToValidateWithPredicates.concat(stubsToValidateWithoutPredicates),
+            dryRunRepositories = stubsToValidate.map(function (stubToValidate) {
+                var stubRepository = options.StubRepository.create(resolver, false, encoding);
+                stubRepository.addStub(stubToValidate);
+                return stubRepository;
+            });
 
         if (hasInjection(stub)) {
             logger.warn('dry running injection...');
         }
-        if (getFirstResponse(clone)._behaviors && getFirstResponse(clone)._behaviors.wait) {
-            getFirstResponse(clone)._behaviors.wait = 0;
-        }
 
-        stubRepository.addStub(clone);
-        testRequest.isDryRun = true;
-        return stubRepository.resolve(testRequest, dryRunLogger);
+        return Q.all(dryRunRepositories.map(function (stubRepository) {
+            var testRequest = options.testRequest;
+            testRequest.isDryRun = true;
+            return stubRepository.resolve(testRequest, dryRunLogger);
+        }));
     }
 
     function addDryRunErrors (stub, encoding, errors, logger) {
@@ -61,6 +83,19 @@ function create (options) {
         }
 
         return deferred.promise;
+    }
+
+    function addInvalidWaitErrors (stub, errors) {
+        var hasInvalidWait = stub.responses.some(function (response) {
+            return response._behaviors && response._behaviors.wait &&
+                (typeof response._behaviors.wait !== 'number' || response._behaviors.wait < 0);
+        });
+
+        if (hasInvalidWait) {
+            errors.push(exceptions.ValidationError("'wait' value must be an integer greater than or equal to 0", {
+                source: stub
+            }));
+        }
     }
 
     function hasInjection (stub) {
@@ -89,6 +124,9 @@ function create (options) {
             errors.push(exceptions.ValidationError("'responses' must be a non-empty array", {
                 source: stub
             }));
+        }
+        else {
+            addInvalidWaitErrors(stub, errors);
         }
         addInjectionErrors(stub, errors);
 

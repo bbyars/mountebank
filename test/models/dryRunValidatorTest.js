@@ -79,7 +79,7 @@ describe('dryRunValidator', function () {
         promiseIt('should be valid for a valid predicate', function () {
             var request = {
                     stubs: [{
-                        responses: [{}],
+                        responses: [{ is: { body: 'test' }}],
                         predicates: [
                             { equals: { path: '/test' } },
                             { equals: { method: 'GET' } },
@@ -358,7 +358,7 @@ describe('dryRunValidator', function () {
             var request = {
                     stubs: [{
                         predicates: [{ inject: 'return true;' }],
-                        responses: [{ is: { body: 'Matched' }}]
+                        responses: [{ is: { body: 'Matched' } }]
                     }]
                 },
                 validator = Validator.create({
@@ -381,6 +381,36 @@ describe('dryRunValidator', function () {
             });
         });
 
+        promiseIt('should reject decorate with no wrapper function', function () {
+            var request = {
+                    stubs: [{
+                        responses: [{
+                            is: { body: 'Matched' },
+                            _behaviors: { decorate: 'response.body = "";' }
+                        }]
+                    }]
+                },
+                validator = Validator.create({
+                    StubRepository: StubRepository,
+                    testRequest: testRequest,
+                    allowInjection: true
+                }),
+                logger = { warn: mock(), error: mock() };
+
+            return validator.validate(request, logger).then(function (result) {
+                console.log(JSON.stringify(result, null, 4));
+                assert.deepEqual(result, {
+                    isValid: false,
+                    errors: [{
+                        code: 'invalid injection',
+                        message: 'invalid decorator injection',
+                        data: 'Unexpected token ;',
+                        source: '(response.body = "";)(request, response, logger);'
+                    }]
+                });
+            });
+        });
+
         promiseIt('should reject unrecognized response resolver', function () {
             var request = {
                     stubs: [{
@@ -397,6 +427,69 @@ describe('dryRunValidator', function () {
                         code: 'bad data',
                         message: 'unrecognized stub resolver',
                         source: request.stubs[0].responses[0]
+                    }]
+                });
+            });
+        });
+
+        promiseIt('should not be valid if any response is invalid', function () {
+            var request = {
+                    stubs: [{
+                        responses: [
+                            { is: { statusCode: 400 }  },
+                            { invalid: true }
+                        ]
+                    }]
+                },
+                validator = Validator.create({ StubRepository: StubRepository, testRequest: testRequest }),
+                logger = { error: mock() };
+
+            return validator.validate(request, logger).then(function (result) {
+                assert.deepEqual(result, {
+                    isValid: false,
+                    errors: [{
+                        code: 'bad data',
+                        message: 'unrecognized stub resolver',
+                        source: request.stubs[0].responses[1]
+                    }]
+                });
+            });
+        });
+
+        promiseIt('should not be valid if any response is invalid even if the predicates are false during dry run', function () {
+            var request = {
+                    stubs: [{
+                        responses: [{ invalid: true }],
+                        predicates: [{ equals: { path: '/does-not-match' } }]
+                    }]
+                },
+                validator = Validator.create({ StubRepository: StubRepository, testRequest: testRequest }),
+                logger = { error: mock() };
+
+            return validator.validate(request, logger).then(function (result) {
+                assert.deepEqual(result, {
+                    isValid: false,
+                    errors: [{
+                        code: 'bad data',
+                        message: 'unrecognized stub resolver',
+                        source: request.stubs[0].responses[0]
+                    }]
+                });
+            });
+        });
+
+        promiseIt('should detect invalid wait behavior value', function () {
+            var request = { stubs: [{ responses: [{ is: { statusCode: 400 }, _behaviors: { wait: 'INVALID' }  }] }] },
+                validator = Validator.create({ StubRepository: StubRepository, testRequest: testRequest }),
+                logger = { error: mock() };
+
+            return validator.validate(request, logger).then(function (result) {
+                assert.deepEqual(result, {
+                    isValid: false,
+                    errors: [{
+                        code: 'bad data',
+                        message: "'wait' value must be an integer greater than or equal to 0",
+                        source: request.stubs[0]
                     }]
                 });
             });
