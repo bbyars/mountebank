@@ -23,4 +23,4 @@ can satisfy the cross-platform pipeline requirements, and give a manual deploy.
 # git push --tags
 # Change the package.json version to the next build number in dist
 # scripts/createDistributables
-# upload the .pkg to S3
+# upload the .pkg AND the -darwin.tar.gz to S3
