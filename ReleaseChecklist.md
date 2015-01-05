@@ -7,10 +7,8 @@ can satisfy the cross-platform pipeline requirements, and give a manual deploy.
 # Make sure the previous build passes in https://travis-ci.org/bbyars/mountebank
 # Make sure the Windows build passes with the latest
 # Review major / minor version.  If an increment is needed:
-  * change the LAST_PATCH_OF_PRIOR_VERSION variable of the build script to reset the patch.
+  * change the FIRST_TRAVIS_BUILD_NUMBER_FOR_NEW_VERSION variable of the build script to reset the patch.
     * make it 2 more than the current Travis build to support the prep commit and the tag commit
-  * change the links in install.ejs
-  * change the upload path in deployS3
   * update package.json
 # Update the ATOM feed with release notes
 # Change the version id of the latest ATOM entry to the static version number.  It may be dynamic only to allow me to test on the test site through feedly.
