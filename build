@@ -2,15 +2,18 @@
 
 set -e
 
-export LAST_PATCH_OF_PRIOR_VERSION=515
-export REVISION=`expr ${TRAVIS_BUILD_NUMBER:-$LAST_PATCH_OF_PRIOR_VERSION} - $LAST_PATCH_OF_PRIOR_VERSION`
+export FIRST_TRAVIS_BUILD_NUMBER_FOR_NEW_VERSION=515
+
+BUILD_NUMBER=${TRAVIS_BUILD_NUMBER:-0}
+export REVISION=`expr $BUILD_NUMBER - $FIRST_TRAVIS_BUILD_NUMBER_FOR_NEW_VERSION`
+if [ $REVISION -lt 0 ]; then
+    export REVISION=0
+fi
 
 npm install
 npm install grunt-cli
 MB_PORT=3535 node_modules/grunt-cli/bin/grunt
 
-NODE_MINOR_VERSION=`node --version | sed -E -e 's/v[0-9]+\.([0-9]+)\.[0-9]+/\1/'`
-
-if [ $REVISION -gt 0 ]; then
+if [ $BUILD_NUMBER -gt 0 ]; then
     node_modules/grunt-cli/bin/grunt coveralls
 fi
