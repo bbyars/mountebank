@@ -104,7 +104,9 @@ function create (options) {
         '/docs/protocols/tcp',
         '/docs/protocols/smtp'
     ].forEach(function (endpoint) {
-        app.get(endpoint, function (request, response) { response.render(endpoint.substring(1)); });
+        app.get(endpoint, function (request, response) {
+            response.render(endpoint.substring(1), { version: thisPackage.version });
+        });
     });
 
     app.get('/releases', function (request, response) {
