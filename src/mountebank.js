@@ -13,6 +13,7 @@ var express = require('express'),
     Imposter = require('./models/imposter'),
     winston = require('winston'),
     thisPackage = require('../package.json'),
+    releases = require('../releases.json'),
     ScopedLogger = require('./util/scopedLogger'),
     util = require('util'),
     fs = require('fs');
@@ -33,7 +34,7 @@ function create (options) {
         imposterController = ImposterController.create(imposters),
         logsController = LogsController.create(options.logfile),
         configController = ConfigController.create(thisPackage.version, options),
-        feedController = FeedController.create(thisPackage.version, options),
+        feedController = FeedController.create(thisPackage.version, releases, options),
         validateImposterExists = middleware.createImposterValidator(imposters);
 
     logger.remove(logger.transports.Console);

@@ -160,7 +160,7 @@ module.exports = function (grunt) {
         fs.removeSync('dist');
         fs.mkdirSync('dist');
         fs.mkdirSync('dist/mountebank');
-        ['bin', 'src', 'package.json', 'README.md', 'LICENSE'].forEach(function (source) {
+        ['bin', 'src', 'package.json', 'releases.json', 'README.md', 'LICENSE'].forEach(function (source) {
             fs.copySync(source, 'dist/mountebank/' + source);
         });
         fs.removeSync('dist/mountebank/src/public/images/sources');

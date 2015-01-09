@@ -7,55 +7,24 @@
   <link href='http://<%= host %>/feed' rel='self' />
   <link href='http://<%= host %>/' />
   <id>http://<%= host %>/feed</id>
-  <updated>2015-01-03T00:00:00Z</updated>
+  <updated><%= releases[0].date %></updated>
   <author>
     <name>Brandon Byars</name>
     <email>brandon.byars@gmail.com</email>
     <uri>http://<%= host %></uri>
   </author>
 
+<% releases.forEach(function (release) { %>
   <entry>
-    <title>mountebank v1.2.0 release</title>
-    <id>http://<%= host %>/releases/v1.2.0</id>
-    <updated>2015-01-03T00:00:00Z</updated>
+    <title>mountebank <%= release.version %> release</title>
+    <id>http://<%= host %>/releases/<%= release.version %></id>
+    <updated><%= release.date %></updated>
     <content type='html'>
       <![CDATA[
-      <% include releases/v1.2.0.ejs %>
+      <%- release.view %>
       ]]>
     </content>
   </entry>
-
-  <entry>
-    <title>mountebank v1.1.72 release</title>
-    <id>http://<%= host %>/releases/v1.1.72</id>
-    <updated>2014-12-31T00:00:00Z</updated>
-    <content type='html'>
-      <![CDATA[
-      <% include releases/v1.1.72.ejs %>
-      ]]>
-    </content>
-  </entry>
-
-  <entry>
-    <title>mountebank v1.1.36 release</title>
-    <id>http://<%= host %>/releases/v1.1.36</id>
-    <updated>2014-05-20T00:00:00Z</updated>
-    <content type='html'>
-      <![CDATA[
-      <% include releases/v1.1.36.ejs %>
-      ]]>
-    </content>
-  </entry>
-
-  <entry>
-    <title>mountebank v1.1.0 release</title>
-    <id>http://<%= host %>/releases/v1.1.0</id>
-    <updated>2014-05-09T00:00:00Z</updated>
-    <content type='html'>
-      <![CDATA[
-      <% include releases/v1.1.0.ejs %>
-      ]]>
-    </content>
-  </entry>
+<% }); %>
 
 </feed>
