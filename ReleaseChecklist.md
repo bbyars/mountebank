@@ -17,7 +17,7 @@ can satisfy the cross-platform pipeline requirements, and give a manual deploy.
 # commit
 # push
 # wait for the build to pass
-# tag: git tag -a v1.0.xxx -m 'releasing'
+# tag: git tag -a vXX.YY.ZZ -m 'vXX.YY.ZZ release'
 # git push --tags
 # Change the package.json version to the next build number in dist
 # scripts/createDistributables
