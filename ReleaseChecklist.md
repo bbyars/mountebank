@@ -10,10 +10,9 @@ can satisfy the cross-platform pipeline requirements, and give a manual deploy.
   * change the FIRST_TRAVIS_BUILD_NUMBER_FOR_NEW_VERSION variable of the build script to reset the patch.
     * make it 2 more than the current Travis build to support the prep commit and the tag commit
   * update package.json
-# Update the ATOM feed with release notes
-# Change the version id of the latest ATOM entry to the static version number.  It may be dynamic only to allow me to test on the test site through feedly.
+# Update the releases.json
 # Change the views/releases/vx.x.x filename
-# Change the updated date of both the last entry and the feed
+# Make sure to use absolute URLs in views/releases so they work in aggregators, etc
 # commit
 # push
 # wait for the build to pass

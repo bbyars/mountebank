@@ -1,15 +1,20 @@
 'use strict';
 
 var fs = require('fs'),
-    ejs = require('ejs');
+    ejs = require('ejs'),
+    helpers = require('../util/helpers');
 
 function create (version, releases, options) {
 
-    function getFeed (request, response) {
-        var config = { host: request.headers.host, releases: releases };
+    // Init once since we hope many consumers poll the heroku feed and we don't have monitoring
+    var feedReleases = helpers.clone(releases);
+    feedReleases.reverse();
 
-        if (!releases[0].view) {
-            releases.forEach(function (release) {
+    function getFeed (request, response) {
+        var config = { host: request.headers.host, releases: feedReleases };
+
+        if (!feedReleases[0].view) {
+            feedReleases.forEach(function (release) {
                 var contents = fs.readFileSync(__dirname + '/../views/releases/' + release.version + '.ejs', { encoding: 'utf8' });
                 release.view = ejs.render(contents, { host: request.headers.host });
             });
