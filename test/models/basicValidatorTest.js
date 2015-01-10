@@ -1,9 +1,9 @@
 'use strict';
 
-var Validator = require('../../src/util/validator'),
+var Validator = require('../../src/models/basicValidator'),
     assert = require('assert');
 
-describe('Validator', function () {
+describe('BasicValidator', function () {
 
     describe('#isValid', function () {
         it('should be valid if no validations passed in', function () {

@@ -1,6 +1,6 @@
 'use strict';
 
-var Validator = require('../util/validator'),
+var Validator = require('../models/basicValidator'),
     Q = require('q'),
     helpers = require('../util/helpers'),
     errors = require('../util/errors'),
