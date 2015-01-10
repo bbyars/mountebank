@@ -1,7 +1,9 @@
 <% include _header %>
 
 <div id='notice'>
-  <div><a href='/releases/v1.2.0'>v1.2.0</a> is now released!</div>
+<% notices.forEach(function (notice) { %>
+  <div><a href='/releases/<%= notice.version %>'><%= notice.version %></a> was released <%= notice.when %></div>
+<% }); %>
 </div>
 
 <h1>Welcome, friend</h1>
