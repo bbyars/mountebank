@@ -1,10 +1,12 @@
 <% include _header %>
 
+<% if (notices.length > 0) { %>
 <div id='notice'>
 <% notices.forEach(function (notice) { %>
   <div><a href='/releases/<%= notice.version %>'><%= notice.version %></a> was released <%= notice.when %></div>
 <% }); %>
 </div>
+<% } %>
 
 <h1>Welcome, friend</h1>
 
