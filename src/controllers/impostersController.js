@@ -1,9 +1,8 @@
 'use strict';
 
-var Validator = require('../models/basicValidator'),
-    Q = require('q'),
+var Q = require('q'),
     helpers = require('../util/helpers'),
-    errors = require('../util/errors'),
+    exceptions = require('../util/errors'),
     url = require('url');
 
 function create (protocols, imposters, Imposter, logger) {
@@ -29,36 +28,49 @@ function create (protocols, imposters, Imposter, logger) {
         });
     }
 
-    function createValidator (request) {
-        var protocol = request.protocol,
-            port = request.port,
-            Protocol = protocols[protocol],
-            protocolSupport = {},
-            validator;
+    function validatePort (port, errors) {
+        var portIsValid = (port === undefined) ||
+            (port.toString().indexOf('.') === -1 && port > 0 && port < 65536);
 
-        protocolSupport[protocol] = Protocol;
-        validator = Validator.create({
-            requiredFields: { protocol: protocol },
-            requireValidPorts: { port: port },
-            requireProtocolSupport: protocolSupport
-        });
+        if (!portIsValid) {
+            errors.push(exceptions.ValidationError("invalid value for 'port'"));
+        }
+    }
 
-        if (validator.isValid() && Protocol.Validator) {
-            return Protocol.Validator.create();
+    function validateProtocol (protocol, errors) {
+        var Protocol = protocols[protocol];
+
+        if (typeof protocol === 'undefined') {
+            errors.push(exceptions.ValidationError("'protocol' is a required field"));
+        }
+        else if (!Protocol) {
+            errors.push(exceptions.ValidationError('the ' + protocol + ' protocol is not yet supported'));
+        }
+    }
+
+    function validate (request, logger) {
+        var errors = [],
+            valid = Q({ isValid: false, errors: errors });
+
+        validatePort(request.port, errors);
+        validateProtocol(request.protocol, errors);
+
+        if (errors.length > 0) {
+            return valid;
         }
         else {
-            return validator;
+            return protocols[request.protocol].Validator.create().validate(request, logger);
         }
     }
 
     function respondWithValidationErrors (response, validationErrors) {
-        logger.warn('error creating imposter: ' + JSON.stringify(errors.details(validationErrors)));
+        logger.warn('error creating imposter: ' + JSON.stringify(exceptions.details(validationErrors)));
         response.statusCode = 400;
         response.send({ errors: validationErrors });
     }
 
     function respondWithCreationError (response, error) {
-        logger.warn('error creating imposter: ' + JSON.stringify(errors.details(error)));
+        logger.warn('error creating imposter: ' + JSON.stringify(exceptions.details(error)));
         response.statusCode = (error.code === 'insufficient access') ? 403 : 400;
         response.send({ errors: [error] });
     }
@@ -90,11 +102,11 @@ function create (protocols, imposters, Imposter, logger) {
 
     function post (request, response) {
         var protocol = request.body.protocol,
-            validator = createValidator(request.body);
+            validationPromise = validate(request.body, logger);
 
         logger.debug(helpers.socketName(request.socket) + ' => ' + JSON.stringify(request.body));
 
-        return validator.validate(request.body, logger).then(function (validation) {
+        return validationPromise.then(function (validation) {
             if (validation.isValid) {
                 return Imposter.create(protocols[protocol], request.body).then(function (imposter) {
                     imposters[imposter.port] = imposter;
@@ -128,8 +140,7 @@ function create (protocols, imposters, Imposter, logger) {
     function put (request, response) {
         var requestImposters = request.body.imposters || [],
             validationPromises = requestImposters.map(function (imposter) {
-                var validator = createValidator(imposter);
-                return validator.validate(imposter, logger);
+                return validate(imposter, logger);
             });
 
         logger.debug(helpers.socketName(request.socket) + ' => ' + JSON.stringify(request.body));

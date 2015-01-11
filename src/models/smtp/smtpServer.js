@@ -48,11 +48,24 @@ function initialize (recordRequests) {
             protocolName: 'smtp',
             createServer: createServer,
             Request: SmtpRequest
+        },
+        noOpValidator = {
+            create: function () {
+                return {
+                    validate: function () {
+                        return Q({
+                            isValid: true,
+                            errors: []
+                        });
+                    }
+                };
+            }
         };
 
     return {
         name: implementation.protocolName,
-        create: AbstractServer.implement(implementation, recordRequests, logger).create
+        create: AbstractServer.implement(implementation, recordRequests, logger).create,
+        Validator: noOpValidator
     };
 }
 
