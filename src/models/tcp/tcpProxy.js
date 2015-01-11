@@ -14,7 +14,7 @@ function create (tcpProxyWait, logger, encoding) {
         return request.data.toString(encoding);
     }
 
-    function setupProxy (proxyDestination, originalRequest) {
+    function getProxyRequest (proxyDestination, originalRequest) {
         var socket = net.connect(proxyDestination, function () {
             socket.write(new Buffer(originalRequest.data, encoding));
             setTimeout(function () { socket.end(); }, tcpProxyWait);
@@ -34,11 +34,12 @@ function create (tcpProxyWait, logger, encoding) {
         return deferred.promise;
     }
 
-    return AbstractProxy.implement(logger, {
+    return AbstractProxy.create({
+        logger: logger,
         formatRequest: format,
         formatResponse: format,
         formatDestination: socketName,
-        setupProxy: setupProxy,
+        getProxyRequest: getProxyRequest,
         proxy: proxy
     });
 }

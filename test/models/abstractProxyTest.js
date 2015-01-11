@@ -24,13 +24,14 @@ describe('abstractProxy', function () {
             };
             proxiedRequest = inherit.from(events.EventEmitter);
             implementation = {
+                logger: logger,
                 formatRequest: mock(),
                 formatResponse: mock(),
                 formatDestination: mock(),
-                setupProxy: mock().returns(proxiedRequest),
+                getProxyRequest: mock().returns(proxiedRequest),
                 proxy: mock().returns(Q(true))
             };
-            proxy = AbstractProxy.implement(logger, implementation);
+            proxy = AbstractProxy.create(implementation);
         });
 
         promiseIt('should pass result of setupProxy to proxy', function () {
