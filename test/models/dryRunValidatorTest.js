@@ -494,5 +494,50 @@ describe('dryRunValidator', function () {
                 });
             });
         });
+
+        promiseIt('should be false for a well formed endOfRequestResolver if injections are not allowed', function () {
+            var endOfRequestResolver = function () { return true; },
+                request = {
+                    protocol: 'tcp',
+                    stubs: [{ responses: [{ is: { data: 'test' } }] }],
+                    endOfRequestResolver: { inject: endOfRequestResolver.toString() }
+                },
+                validator = Validator.create({
+                    StubRepository: StubRepository,
+                    testRequest: testRequest,
+                    allowInjection: false
+                }),
+                logger = { warn: mock() };
+
+            return validator.validate(request, logger).then(function (result) {
+                assert.deepEqual(result, {
+                    isValid: false,
+                    errors: [{
+                        code: 'invalid injection',
+                        message: 'JavaScript injection is not allowed unless mb is run with the --allowInjection flag',
+                        source: request.endOfRequestResolver
+                    }]
+                });
+            });
+        });
+
+        promiseIt('should be true for a well formed endOfRequestResolver if injections are allowed', function () {
+            var endOfRequestResolver = function () { return true; },
+                request = {
+                    protocol: 'tcp',
+                    stubs: [{ responses: [{ is: { data: 'test' } }] }],
+                    endOfRequestResolver: { inject: endOfRequestResolver.toString() }
+                },
+                validator = Validator.create({
+                    StubRepository: StubRepository,
+                    testRequest: testRequest,
+                    allowInjection: true
+                }),
+                logger = { warn: mock() };
+
+            return validator.validate(request, logger).then(function (result) {
+                assert.ok(result.isValid);
+            });
+        });
     });
 });
