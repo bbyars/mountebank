@@ -66,12 +66,38 @@ function createServer (tcpProxyWait, logger, options) {
         }),
         server = net.createServer();
 
+    function isEndOfRequest (requestData) {
+        /* jshint evil: true */
+        if (!options.endOfRequestResolver || !options.endOfRequestResolver.inject) {
+            return true;
+        }
+
+        var injected = '(' + options.endOfRequestResolver.inject + ')(requestData, logger)';
+
+        try {
+            return eval(injected);
+        }
+        catch (error) {
+            logger.error("injection X=> " + error);
+            logger.error("    full source: " + JSON.stringify(injected));
+            logger.error("    requestData: " + JSON.stringify(requestData));
+            return false;
+        }
+    }
+
     server.on('connection', function (socket) {
+        var packets = [];
         result.emit('connection', socket);
 
         socket.on('data', function (data) {
-            var container = { socket: socket, data: data.toString(encoding) };
-            result.emit('request', socket, container);
+            packets.push(data);
+
+            var requestData = Buffer.concat(packets),
+                container = { socket: socket, data: requestData.toString(encoding) };
+
+            if (isEndOfRequest(requestData)) {
+                result.emit('request', socket, container);
+            }
         });
     });
 
