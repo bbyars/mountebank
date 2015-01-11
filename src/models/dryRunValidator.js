@@ -53,7 +53,7 @@ function create (options) {
                 return stubRepository;
             });
 
-        if (hasInjection(stub)) {
+        if (hasStubInjection(stub)) {
             logger.warn('dry running injection...');
         }
 
@@ -98,7 +98,7 @@ function create (options) {
         }
     }
 
-    function hasInjection (stub) {
+    function hasStubInjection (stub) {
         var hasResponseInjections = utils.isArray(stub.responses) && stub.responses.some(function (response) {
                 var hasDecorator = response._behaviors && response._behaviors.decorate;
                 return response.inject || hasDecorator;
@@ -109,14 +109,14 @@ function create (options) {
         return hasResponseInjections || hasPredicateInjections;
     }
 
-    function addInjectionErrors (stub, errors) {
-        if (!options.allowInjection && hasInjection(stub)) {
+    function addStubInjectionErrors (stub, errors) {
+        if (!options.allowInjection && hasStubInjection(stub)) {
             errors.push(exceptions.InjectionError(
                 'JavaScript injection is not allowed unless mb is run with the --allowInjection flag', { source: stub }));
         }
     }
 
-    function errorsFor (stub, encoding, logger) {
+    function errorsForStub (stub, encoding, logger) {
         var errors = [],
             deferred = Q.defer();
 
@@ -128,7 +128,7 @@ function create (options) {
         else {
             addInvalidWaitErrors(stub, errors);
         }
-        addInjectionErrors(stub, errors);
+        addStubInjectionErrors(stub, errors);
 
         if (errors.length > 0) {
             // no sense in dry-running if there are already problems;
@@ -144,12 +144,25 @@ function create (options) {
         return deferred.promise;
     }
 
+    function errorsForRequest (request) {
+        var errors = [],
+            hasRequestInjection = request.endOfRequestResolver && request.endOfRequestResolver.inject;
+
+        if (!options.allowInjection && hasRequestInjection) {
+            errors.push(exceptions.InjectionError(
+                'JavaScript injection is not allowed unless mb is run with the --allowInjection flag',
+                { source: request.endOfRequestResolver }));
+        }
+        return errors;
+    }
+
     function validate (request, logger) {
         var stubs = request.stubs || [],
             encoding = request.mode === 'binary' ? 'base64' : 'utf8',
-            validationPromises = stubs.map(function (stub) { return errorsFor(stub, encoding, logger); }),
+            validationPromises = stubs.map(function (stub) { return errorsForStub(stub, encoding, logger); }),
             deferred = Q.defer();
 
+        validationPromises.push(Q(errorsForRequest(request)));
         if (options.additionalValidation) {
             validationPromises.push(Q(options.additionalValidation(request)));
         }
