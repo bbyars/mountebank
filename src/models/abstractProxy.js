@@ -3,19 +3,19 @@
 var Q = require('q'),
     errors = require('../util/errors');
 
-function implement (logger, implementation) {
+function create (implementation) {
     function to (proxyDestination, originalRequest) {
 
         function log (direction, what) {
             var format = direction === '=>' ? implementation.formatRequest : implementation.formatResponse;
 
-            logger.debug('Proxy %s %s %s %s %s',
+            implementation.logger.debug('Proxy %s %s %s %s %s',
                 originalRequest.requestFrom, direction, JSON.stringify(format(what)),
                 direction, implementation.formatDestination(proxyDestination));
         }
 
         var deferred = Q.defer(),
-            proxiedRequest = implementation.setupProxy(proxyDestination, originalRequest);
+            proxiedRequest = implementation.getProxyRequest(proxyDestination, originalRequest);
 
         log('=>', originalRequest);
 
@@ -45,5 +45,5 @@ function implement (logger, implementation) {
 }
 
 module.exports = {
-    implement: implement
+    create: create
 };

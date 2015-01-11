@@ -20,7 +20,7 @@ function create (logger) {
         return path + '?' + tail;
     }
 
-    function setupProxy (baseUrl, originalRequest) {
+    function getProxyRequest (baseUrl, originalRequest) {
         var parts = url.parse(baseUrl),
             protocol = parts.protocol === 'https:' ? https : http,
             options = {
@@ -62,11 +62,12 @@ function create (logger) {
         return deferred.promise;
     }
 
-    return AbstractProxy.implement(logger, {
+    return AbstractProxy.create({
+        logger: logger,
         formatRequest: combinators.identity,
         formatResponse: combinators.identity,
         formatDestination: combinators.identity,
-        setupProxy: setupProxy,
+        getProxyRequest: getProxyRequest,
         proxy: proxy
     });
 }
