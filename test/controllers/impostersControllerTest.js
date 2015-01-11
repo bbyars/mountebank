@@ -73,7 +73,12 @@ describe('ImpostersController', function () {
                 create: mock().returns(Q(imposter))
             };
             imposters = {};
-            Protocol = { name: 'http' };
+            Protocol = {
+                name: 'http',
+                Validator: {
+                    create: mock().returns({ validate: mock().returns(Q({ isValid: true })) })
+                }
+            };
             logger = { debug: mock(), warn: mock() };
             controller = Controller.create({ 'http': Protocol }, imposters, Imposter, logger);
         });
@@ -263,15 +268,21 @@ describe('ImpostersController', function () {
     });
 
     describe('#put', function () {
-        var request, logger;
+        var request, logger, Protocol;
 
         beforeEach(function () {
             request = { body: {}, socket: { remoteAddress: 'host', remotePort: 'port' } };
             logger = { debug: mock(), warn: mock() };
+            Protocol = {
+                name: 'http',
+                Validator: {
+                    create: mock().returns({ validate: mock().returns(Q({ isValid: true, errors: [] })) })
+                }
+            };
         });
 
         promiseIt('should return an empty array if no imposters provided', function () {
-            var controller = Controller.create({}, {}, {}, logger);
+            var controller = Controller.create({ 'http': Protocol }, {}, {}, logger);
             request.body = { imposters: [] };
 
             return controller.put(request, response).then(function () {
@@ -280,8 +291,7 @@ describe('ImpostersController', function () {
         });
 
         promiseIt('should return imposter list JSON for all imposters', function () {
-            var Protocol = { name: 'http' },
-                firstImposter = { toJSON: mock().returns({ first: true }) },
+            var firstImposter = { toJSON: mock().returns({ first: true }) },
                 secondImposter = { toJSON: mock().returns({ second: true }) },
                 imposters = [firstImposter, secondImposter],
                 creates = 0,
@@ -304,8 +314,7 @@ describe('ImpostersController', function () {
         });
 
         promiseIt('should replace imposters list', function () {
-            var Protocol = { name: 'http' },
-                oldImposter = { stop: mock() },
+            var oldImposter = { stop: mock() },
                 imposters = { 0: oldImposter },
                 firstImposter = { toJSON: mock().returns({ first: true }), port: 1 },
                 secondImposter = { toJSON: mock().returns({ second: true }), port: 2 },
@@ -330,8 +339,7 @@ describe('ImpostersController', function () {
         });
 
         promiseIt('should return a 400 for any invalid imposter', function () {
-            var Protocol = { name: 'http' },
-                controller = Controller.create({ 'http': Protocol }, {}, {}, logger);
+            var controller = Controller.create({ 'http': Protocol }, {}, {}, logger);
 
             request.body = { imposters: [{ protocol: 'http' }, {}]};
 
@@ -347,8 +355,7 @@ describe('ImpostersController', function () {
         });
 
         promiseIt('should return a 403 for insufficient access on any imposter', function () {
-            var Protocol = { name: 'http' },
-                creates = 0,
+            var creates = 0,
                 Imposter = {
                     create: function () {
                         creates += 1;
