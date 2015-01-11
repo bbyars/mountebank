@@ -11,6 +11,11 @@
           a proxied response or add a current timestamp into the response</dt>
         <dd>See the <a href='/docs/api/behaviors'><code>decorate</code> behavior</a>.</dd>
 
+        <dt>How can I optimize the number of API calls during test setup and teardown?</dt>
+        <dd>You can use the <a href='/docs/api/overview#put-imposters'>PUT /imposters</a> API
+        call to combine cleanup of the previous test run's imposters and setup of the new
+        test run.</dd>
+
         <dt>Why did you misspell impostor?</dt>
         <dd>mountebank is not an educated man, having spent the waking hours of his
           youth caring for the poor and the sick.</dd>
@@ -21,6 +26,13 @@
         It can either be a single file containing the JSON that you get back when you call
         <a href='/docs/api/overview#get-imposters'><code>GET /imposters?replayable=true</code></a>
         or multiple files that will be collected via a file globbing pattern.</dd>
+
+        <dt>How can I change imposters once I've created them?</dt>
+        <dd>You can't - imposters are immutable through the API once created.  The expected workflow
+        is that you recreate the imposters rather than mutate them, which is a lightweight operation.
+        mountebank is reluctant to support imposter changes through the API because it adds a significant
+        amount of complexity, but if you have a use case that would benefit from mutable imposters, please do
+        <a href='/support'>let him know!</a></dd>
 
         <dt>Why is the command line application simply called <code>mb</code>?</dt>
         <dd>Because <code>mb</code> is the soul of wit.</dd>
