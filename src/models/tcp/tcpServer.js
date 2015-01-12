@@ -74,6 +74,10 @@ function createServer (tcpProxyWait, logger, options) {
 
         var injected = '(' + options.endOfRequestResolver.inject + ')(requestData, logger)';
 
+        if (mode === 'text') {
+            requestData = requestData.toString('utf8');
+        }
+
         try {
             return eval(injected);
         }

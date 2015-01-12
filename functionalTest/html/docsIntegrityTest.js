@@ -70,7 +70,8 @@ describe('docs', function () {
         [
             '/docs/gettingStarted',
             '/docs/api/predicates',
-            '/docs/api/stubs'
+            '/docs/api/stubs',
+            '/docs/protocols/tcp'
         ].forEach(function (page) {
             validateDocs(page);
         });

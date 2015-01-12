@@ -56,7 +56,7 @@ describe('tcp proxy', function () {
             var server = net.createServer(function (client) {
                 client.on('data', function () {
                     // force multiple data packets
-                    client.write((new Array(10*1024*1024)).join("x"));
+                    client.write((new Array(10*1024*1024)).join('x'));
                 });
             });
             server.listen(port);

@@ -142,5 +142,80 @@ describe('tcp imposter', function () {
                 return api.del('/imposters');
             });
         });
+
+        promiseIt('should allow binary requests extending beyond a single packet using endOfRequestResolver', function () {
+            // We'll simulate a protocol that has a 4 byte message length at byte 0 indicating how many bytes follow
+            var getRequest = function (length) {
+                    var buffer = new Buffer(length + 4);
+                    buffer.writeUInt32LE(length, 0);
+
+                    for (var i = 0; i < length; i++) {
+                        buffer.writeInt8(0, i + 4);
+                    }
+                    return buffer;
+                },
+                largeRequest = getRequest(100000),
+                responseBuffer = new Buffer([0, 1, 2, 3]),
+                stub = { responses: [{ is: { data: responseBuffer.toString('base64') } }] },
+                resolver = function (requestData) {
+                    var messageLength = requestData.readUInt32LE(0);
+                    return requestData.length === messageLength + 4;
+                },
+                request = {
+                    protocol: 'tcp',
+                    port: port,
+                    stubs: [stub],
+                    mode: 'binary',
+                    name: this.name,
+                    endOfRequestResolver: { inject: resolver.toString() }
+                };
+
+            return api.post('/imposters', request).then(function (response) {
+                assert.strictEqual(response.statusCode, 201);
+
+                return tcp.send(largeRequest, port);
+            }).then(function () {
+                return api.get('/imposters/' + port);
+            }).then(function (response) {
+                assert.strictEqual(response.body.requests.length, 1);
+                assert.strictEqual(response.body.requests[0].data, largeRequest.toString('base64'));
+            }).finally(function () {
+                return api.del('/imposters');
+            });
+        });
+
+        promiseIt('should allow text requests extending beyond a single packet using endOfRequestResolver', function () {
+            // We'll simulate HTTP
+            // The last 'x' is added because new Array(5).join('x') creates 'xxxx' in JavaScript...
+            var largeRequest = 'Content-Length: 100000\n\n' + new Array(100000).join('x') + 'x',
+                stub = { responses: [{ is: { data: 'success' } }] },
+                resolver = function (requestData) {
+                    var bodyLength = parseInt(/Content-Length: (\d+)/.exec(requestData)[1]),
+                        body = /\n\n(.*)/.exec(requestData)[1];
+
+                    return body.length === bodyLength;
+                },
+                request = {
+                    protocol: 'tcp',
+                    port: port,
+                    stubs: [stub],
+                    mode: 'text',
+                    name: this.name,
+                    endOfRequestResolver: { inject: resolver.toString() }
+                };
+
+            return api.post('/imposters', request).then(function (response) {
+                assert.strictEqual(response.statusCode, 201);
+
+                return tcp.send(largeRequest, port);
+            }).then(function () {
+                return api.get('/imposters/' + port);
+            }).then(function (response) {
+                assert.strictEqual(response.body.requests.length, 1);
+                assert.strictEqual(response.body.requests[0].data, largeRequest);
+            }).finally(function () {
+                return api.del('/imposters');
+            });
+        });
     });
 });
