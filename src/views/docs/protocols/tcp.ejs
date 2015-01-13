@@ -58,8 +58,7 @@
     <td><code>endOfRequestResolver</code></td>
     <td><a href='#endOfRequestResolver'>See below</a></td>
     <td>No</td>
-    <td>Effectively <pre><code>function () { return true; }</code></pre>...which assumes
-      the request is in a single packet.</td>
+    <td>Assumes each packet received represents a separate request.</td>
     <td>Determines if the request has finished or not, since this depends on the
       specific TCP protocol being used.  <a href='endOfRequestResolver'>See below</a>
       for further explanation.</td>
@@ -457,7 +456,7 @@ Connection: keep-alive
   ],
   "_links": {
     "self": {
-      "href": "http://localhost:2525/imposters/4545"
+      "href": "http://localhost:<%= port %>/imposters/4545"
     }
   }
 }
@@ -784,7 +783,7 @@ Connection: keep-alive
   ],
   "_links": {
     "self": {
-      "href": "http://localhost:2525/imposters/4545"
+      "href": "http://localhost:<%= port %>/imposters/4545"
     }
   }
 }
