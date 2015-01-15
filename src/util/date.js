@@ -10,8 +10,6 @@ function sameMonth (firstEpoch, secondEpoch) {
     var first = new Date(firstEpoch),
         second = new Date(secondEpoch);
 
-    console.log(first.getFullYear() + '=' + second.getFullYear());
-    console.log(first.getMonth() + '=' + second.getMonth());
     return first.getFullYear() === second.getFullYear() && first.getMonth() === second.getMonth();
 }
 

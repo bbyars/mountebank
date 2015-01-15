@@ -79,6 +79,7 @@ function create (options) {
     app.get('/logs', logsController.get);
     app.get('/config', configController.get);
     app.get('/feed', feedController.getFeed);
+    app.get('/releases', feedController.getReleases);
     app.get('/releases/:version', feedController.getRelease);
 
     [
@@ -108,29 +109,6 @@ function create (options) {
     ].forEach(function (endpoint) {
         app.get(endpoint, function (request, response) {
             response.render(endpoint.substring(1), { version: thisPackage.version });
-        });
-    });
-
-    app.get('/releases', function (request, response) {
-        fs.readdir(path.join(__dirname, 'views/releases'), function (error, files) {
-            var pattern = /v\d+\.\d+\.\d+/,
-                versions = files.filter(function (filename) {
-                    return pattern.test(filename);
-                }).map(function (filename) {
-                    return pattern.exec(filename).toString();
-                }).sort(function (first, second) {
-                    var firstParts = first.match(/\d+/g).map(function (i) { return parseInt(i); }),
-                        secondParts = second.match(/\d+/g).map(function (i) { return parseInt(i); });
-
-                    for (var i = 0; i < 3; i++) {
-                        if (secondParts[i] - firstParts[i] !== 0) {
-                            return secondParts[i] - firstParts[i];
-                        }
-                    }
-                    return 0;
-                });
-
-            response.render('releases', { versions: versions });
         });
     });
 
