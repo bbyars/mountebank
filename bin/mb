@@ -144,7 +144,6 @@ function loadConfig (commandLine) {
             Array.prototype.push.apply(imposters, newImposters);
         });
 
-        console.log(JSON.stringify({ imposters: imposters} ));
         return putConfig(commandLine.options, JSON.stringify({ imposters: imposters }));
     });
 }
@@ -160,7 +159,8 @@ try {
             certfile: '',
             tcpProxyWait: 0
         },
-        commandLine = cli.parse(process.argv.slice(2), defaultOptions, ['allowInjection', 'nomock', 'heroku', 'version']),
+        booleanOptions = ['allowInjection', 'nomock', 'heroku', 'version'],
+        commandLine = cli.parse(process.argv.slice(2), defaultOptions, booleanOptions),
         server = serverAt(commandLine.options);
 
     if (commandLine.options.version) {
