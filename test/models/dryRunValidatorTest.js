@@ -398,7 +398,6 @@ describe('dryRunValidator', function () {
                 logger = { warn: mock(), error: mock() };
 
             return validator.validate(request, logger).then(function (result) {
-                console.log(JSON.stringify(result, null, 4));
                 assert.deepEqual(result, {
                     isValid: false,
                     errors: [{
