@@ -108,8 +108,10 @@
 protocols give some way of determining this, such as the <code>Content-Length</code> header in
 HTTP or by embedding the message length in binary protocols.  By default, mountebank assumes
 each packet represents a separate request, which typically limits the size of each request
-to somewhere between 1500 and 65,000 bytes.  This works for many scenarios as simple serialized
-requests tend to fall below this size, but breaks down with large requests.</p>
+to somewhere between 1500 and 64k bytes (you'll get a larger payload using the loopback interface
+on localhost, but protocols like Ethernet will force a smaller payload over the network).
+This strategy works for many scenarios as simple serialized requests tend to fall below this size,
+but breaks down with large requests.</p>
 
 <p>mountebank allows you the flexibility to determine when a request ends using the
 <code>endOfRequestResolver</code> at the imposter level.  Like all JavaScript injection,
@@ -125,7 +127,10 @@ Let <a href='/support'>mountebank</a> know what you're trying to do, and he will
 you set up your <code>endOfRequestResolver</code> and consider adding your protocol to the
 built-in protocols.</p>
 
-<p>Let's look at both a text and binary example:</p>
+<p>Let's look at both a binary and a text:</p>
+
+<h3>Supporting large binary requests</h3>
+
 
 <h3>Supporting large text requests</h3>
 
