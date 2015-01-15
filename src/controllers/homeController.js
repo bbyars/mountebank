@@ -4,6 +4,17 @@ var date = require('../util/date');
 
 function create (releases) {
 
+    function createNotice (release) {
+        return {
+            version: release.version,
+            when: date.howLongAgo(release.date)
+        };
+    }
+
+    function isRecent (notice) {
+        return notice.when !== '';
+    }
+
     function get (request, response) {
         var hypermedia = {
                 _links: {
@@ -12,14 +23,7 @@ function create (releases) {
                     logs: { href: '/logs' }
                 }
             },
-            notices = releases.map(function (release) {
-                return {
-                    version: release.version,
-                    when: date.howLongAgo(release.date)
-                };
-            }).filter(function (notice) {
-                return notice.when !== '';
-            });
+            notices = releases.map(createNotice).filter(isRecent);
 
         notices.reverse();
 
