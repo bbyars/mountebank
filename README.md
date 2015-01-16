@@ -1,7 +1,7 @@
 mountebank
 ==========
 
-mountebank is the first tool to provide cross-platform, multi-protocol test doubles over the wire.
+mountebank is the first open source tool to provide cross-platform, multi-protocol test doubles over the wire.
 Just point your application to mountebank instead of the real dependency,
 and test like you would with traditional stubs and mocks.
 
