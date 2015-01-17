@@ -177,5 +177,32 @@ describe('tcp imposter', function () {
                 return api.del('/imposters');
             });
         });
+
+        promiseIt('should split each packet into a separate request by default', function () {
+            // 64k will be one packet on the loopback interface
+            var largeRequest = new Array(65537).join('1') + new Array(65537).join('2'),
+                stub = { responses: [{ is: { data: 'success' } }] },
+                request = {
+                    protocol: 'tcp',
+                    port: port,
+                    stubs: [stub],
+                    mode: 'text',
+                    name: this.name
+                };
+
+            return api.post('/imposters', request).then(function (response) {
+                assert.strictEqual(response.statusCode, 201);
+
+                return tcp.send(largeRequest, port);
+            }).then(function () {
+                return api.get('/imposters/' + port);
+            }).then(function (response) {
+                assert.strictEqual(response.body.requests.length, 2);
+                assert.strictEqual(response.body.requests[0].data, new Array(65537).join('1'));
+                assert.strictEqual(response.body.requests[1].data, new Array(65537).join('2'));
+            }).finally(function () {
+                return api.del('/imposters');
+            });
+        });
     });
 });

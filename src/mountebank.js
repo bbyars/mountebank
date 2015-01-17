@@ -15,8 +15,7 @@ var express = require('express'),
     thisPackage = require('../package.json'),
     releases = require('../releases.json'),
     ScopedLogger = require('./util/scopedLogger'),
-    util = require('util'),
-    fs = require('fs');
+    util = require('util');
 
 function create (options) {
     var app = express(),
