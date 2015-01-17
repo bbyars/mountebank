@@ -179,8 +179,8 @@ describe('tcp imposter', function () {
         });
 
         promiseIt('should split each packet into a separate request by default', function () {
-            // 64k will be one packet on the loopback interface
-            var largeRequest = new Array(65537).join('1') + new Array(65537).join('2'),
+            // max 64k packet size, likely to hit max on the loopback interface
+            var largeRequest = new Array(65537).join('1') + '2',
                 stub = { responses: [{ is: { data: 'success' } }] },
                 request = {
                     protocol: 'tcp',
@@ -197,9 +197,9 @@ describe('tcp imposter', function () {
             }).then(function () {
                 return api.get('/imposters/' + port);
             }).then(function (response) {
-                assert.strictEqual(response.body.requests.length, 2);
-                assert.strictEqual(response.body.requests[0].data, new Array(65537).join('1'));
-                assert.strictEqual(response.body.requests[1].data, new Array(65537).join('2'));
+                var requests = response.body.requests;
+                assert.strictEqual(requests.length, 2);
+                assert.ok(requests[0].data.length > requests[1].data.length);
             }).finally(function () {
                 return api.del('/imposters');
             });
