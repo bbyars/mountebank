@@ -100,6 +100,7 @@ function createServer (tcpProxyWait, logger, options) {
                 container = { socket: socket, data: requestData.toString(encoding) };
 
             if (isEndOfRequest(requestData)) {
+                packets = [];
                 result.emit('request', socket, container);
             }
         });
