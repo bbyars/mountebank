@@ -180,7 +180,7 @@ describe('tcp imposter', function () {
 
         promiseIt('should split each packet into a separate request by default', function () {
             // max 64k packet size, likely to hit max on the loopback interface
-            var largeRequest = new Array(65537).join('1') + '2',
+            var largeRequest = new Array(65537).join('1') + '2222222222',
                 stub = { responses: [{ is: { data: 'success' } }] },
                 request = {
                     protocol: 'tcp',
