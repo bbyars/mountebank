@@ -1,0 +1,69 @@
+{
+  "port": 4545,
+  "protocol": "http",
+  "name": "order service",
+  "stubs": [
+    {
+      "responses": [
+        {
+          "is": {
+            "statusCode": 201,
+            "headers": {
+              "location": "http://localhost:4545/orders/123"
+            }
+          }
+        },
+        {
+          "is": {
+            "statusCode": 201,
+            "headers": {
+              "location": "http://localhost:4545/orders/234"
+            }
+          }
+        }
+      ],
+      "predicates": [
+        {
+          "equals": {
+            "path": "/orders",
+            "method": "POST"
+          }
+        }
+      ]
+    },
+    {
+      "responses": [
+        {
+          "is": {
+            "body": "Order 123"
+          }
+        }
+      ],
+      "predicates": [
+        {
+          "equals": {
+            "path": "/orders/123",
+            "method": "GET"
+          }
+        }
+      ]
+    },
+    {
+      "responses": [
+        {
+          "is": {
+            "body": "Order 234"
+          }
+        }
+      ],
+      "predicates": [
+        {
+          "equals": {
+            "path": "/orders/234",
+            "method": "GET"
+          }
+        }
+      ]
+    }
+  ]
+}
