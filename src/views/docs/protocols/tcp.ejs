@@ -58,7 +58,7 @@
     <td><code>endOfRequestResolver</code></td>
     <td><a href='#endOfRequestResolver'>See below</a></td>
     <td>No</td>
-    <td>Assumes each packet received represents a separate request.</td>
+    <td>Assumes each packet represents a separate request.</td>
     <td>Determines if the request has finished or not, since this depends on the
       specific TCP protocol being used.  <a href='#endOfRequestResolver'>See below</a>
       for further explanation.</td>
@@ -120,7 +120,7 @@ imposter is in <code>text</code> mode, the parameter will be a string; in binary
 <a href='http://nodejs.org/api/buffer.html'>node.js Buffer object</a>.
 mountebank's <code>logger</code> object is also passed as an optional second parameter to
 assist in troubleshooting.  Like all JavaScript injection, it requires the
-<a href='/commandLine'>--allowInjection command line flag</a> to execute.</p>
+<a href='/docs/commandLine'>--allowInjection command line flag</a> to execute.</p>
 
 <p>Of course, the best option is to have native support for the protocol you're trying to use.
 Let <a href='/support'>mountebank know</a> what you're trying to do, and he will try and help
@@ -359,8 +359,8 @@ Accept: application/json
 <h3>Supporting large text requests</h3>
 
 <p>HTTP is an application protocol built on TCP that typically specifies the end of request using
-the <code>Content-Length</code> header.  Of course, you would use mountebank's native
-<a href='/docs/protocols/http'>http</a> protocol, but since it makes a reasonably complex example.
+the <code>Content-Length</code> header.  Of course, you would normally use mountebank's native
+<a href='/docs/protocols/http'>http protocol</a>, but it makes a reasonably complex example.
 We start by creating the <code>endOfRequestResolver</code> function, which looks like the
 function below.  This is overly simplistic for parsing HTTP, but illustrates the point.</p>
 
@@ -759,5 +759,8 @@ DELETE /imposters/4545 HTTP/1.1
 Host: localhost:<%= port %>
 Accept: application/json
 </code>
+
+<p>The tcp protocol is a wonderful general purpose protocol, but can get tricky to map the application protocol
+message length to make it work.  As always, let <a href='/support'>mountebank know if he can help</a>.</p>
 
 <% include ../../_footer %>
