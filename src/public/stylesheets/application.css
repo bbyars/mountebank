@@ -150,7 +150,6 @@ td {
     padding: 0.5em;
     border: 1px solid black;
     max-width: 30em;
-    word-break: break-word;
 }
 
 td:first-child {
