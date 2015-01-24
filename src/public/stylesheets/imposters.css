@@ -53,7 +53,7 @@ ui-dialog {
     padding-top: 0;
 }
 
-button.ui-button {
+.ui-button {
     background: inherit;
     background-color: inherit;
 }
@@ -89,7 +89,6 @@ select:focus, input:focus {
 
 label {
     display: inline-block;
-    float: left;
     clear: left;
     width: 5em;
     margin: 0;
@@ -102,7 +101,6 @@ label:after {
 
 input, select {
     display: inline-block;
-    float: left;
     margin-left: 1em;
 }
 

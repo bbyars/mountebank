@@ -58,7 +58,7 @@ ul {
     overflow: hidden;
 }
 
-ul.bullet-list {
+.bullet-list {
     list-style-type: disc;
     padding: 1em;
 }
@@ -126,7 +126,7 @@ hr {
 h1, h2, h3 {
     font-family: 'Berkshire Swash', Helvetica, sans-serif;
     color: #2b2b2b;
-    text-shadow: 1px 1px 0px #ededed, 2px 2px 0px rgba(0,0,0,0.15);
+    text-shadow: 1px 1px 0 #ededed, 2px 2px 0 rgba(0,0,0,0.15);
 }
 
 table {
@@ -217,19 +217,19 @@ strong {
     font-weight: bold;
 }
 
-strong.highlight1 {
+.highlight1 {
     color: brown;
 }
 
-strong.highlight2 {
+.highlight2 {
     color: seagreen;
 }
 
-strong.highlight3 {
+.highlight3 {
     color: royalblue;
 }
 
-strong.highlight4 {
+.highlight4 {
     color: orangered;
 }
 /*
@@ -244,7 +244,7 @@ strong.highlight4 {
     height: 30px;
     cursor: pointer;
     color: #2b2b2b;
-    text-shadow: 1px 1px 0px #ededed, 2px 2px 0px rgba(0,0,0,0.15);
+    text-shadow: 1px 1px 0 #ededed, 2px 2px 0 rgba(0,0,0,0.15);
     line-height: 33px;
     font-size: 19px;
     background: #ffffff;
@@ -256,9 +256,9 @@ strong.highlight4 {
     background: linear-gradient(top, #ffffff 1%,#eaeaea 100%);
     filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#ffffff', endColorstr='#eaeaea',GradientType=0 );
     box-shadow:
-        0px 0px 0px 1px rgba(155,155,155,0.3),
-        1px 0px 0px 0px rgba(255,255,255,0.9) inset,
-        0px 2px 2px rgba(0,0,0,0.1);
+        0 0 0 1px rgba(155,155,155,0.3),
+        1px 0 0 0 rgba(255,255,255,0.9) inset,
+        0 2px 2px rgba(0,0,0,0.1);
 }
 
 .accordion label:hover{
@@ -269,10 +269,10 @@ strong.highlight4 {
 .accordion input:checked + label:hover {
     background: #c6e1ec;
     color: #3d7489;
-    text-shadow: 0px 1px 1px rgba(255,255,255, 0.6);
+    text-shadow: 0 1px 1px rgba(255,255,255, 0.6);
     box-shadow:
-        0px 0px 0px 1px rgba(155,155,155,0.3),
-        0px 2px 2px rgba(0,0,0,0.1);
+        0 0 0 1px rgba(155,155,155,0.3),
+        0 2px 2px rgba(0,0,0,0.1);
 }
 
 .accordion label:hover:after,
@@ -297,7 +297,7 @@ strong.highlight4 {
 .accordion section {
     margin-top: -1px;
     overflow: hidden;
-    height: 0px;
+    height: 0;
     position: relative;
     z-index: 10;
     -webkit-transition: height 0.3s ease-in-out, box-shadow 0.6s linear;
@@ -313,7 +313,7 @@ strong.highlight4 {
     -o-transition: height 0.5s ease-in-out, box-shadow 0.1s linear;
     -ms-transition: height 0.5s ease-in-out, box-shadow 0.1s linear;
     transition: height 0.5s ease-in-out, box-shadow 0.1s linear;
-    box-shadow: 0px 0px 0px 1px rgba(155,155,155,0.3);
+    box-shadow: 0 0 0 1px rgba(155,155,155,0.3);
 }
 
 .accordion input:checked ~ section {
