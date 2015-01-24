@@ -12,6 +12,7 @@ can satisfy the cross-platform pipeline requirements, and give a manual deploy.
   * update package.json
 # Update the releases.json
 # Change the views/releases/vx.x.x filename
+  * Update validatorTest
 # Make sure to use absolute URLs in views/releases so they work in aggregators, etc
 # commit
 # push

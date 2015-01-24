@@ -34,7 +34,7 @@ describe('html validation', function () {
         '/docs/protocols/tcp',
         '/docs/protocols/smtp',
         '/releases',
-        '/releases/v1.2.0' // save time by only checking latest releases, others should be immutable
+        '/releases/v1.2.30' // save time by only checking latest releases, others should be immutable
     ].forEach(function (endpoint) {
         it(endpoint + ' should have no html errors', function (done) {
             var spec = {
