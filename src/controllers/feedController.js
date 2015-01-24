@@ -51,7 +51,7 @@ function create (currentVersion, releases, options) {
             });
         }
         else {
-            response.send(404, 'No such release');
+            response.status(404).send('No such release');
         }
     }
 
