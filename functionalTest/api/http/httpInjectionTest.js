@@ -11,11 +11,11 @@ var assert = require('assert'),
     port = api.port + 1,
     timeout = parseInt(process.env.SLOW_TEST_TIMEOUT_MS || 3000);
 
-function nonInjectableServer (command, port) {
+function nonInjectableServer (command, mbPort) {
     var deferred = Q.defer(),
         calledDone = false,
         mbPath = path.normalize(__dirname + '/../../../bin/mb'),
-        options = [command, '--port', port, '--pidfile', 'imposter-test.pid'],
+        options = [command, '--port', mbPort, '--pidfile', 'imposter-test.pid'],
         mb;
 
     if (isWindows) {

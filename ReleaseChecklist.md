@@ -21,4 +21,5 @@ can satisfy the cross-platform pipeline requirements, and give a manual deploy.
 # git push --tags
 # Change the package.json version to the next build number in dist
 # scripts/createDistributables
+  * Fix the random ruby versioning / rvm issues.  Last time I upgraded rvm and use ruby-2.1.0 to fix it
 # upload the .pkg AND the -darwin.tar.gz to S3
