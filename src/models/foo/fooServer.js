@@ -126,7 +126,7 @@ function initialize (allowInjection, recordRequests) {
             return createServer(request, recordRequests);
         },
 
-        // Optional - the validator used when creating imposters
+        // The validator used when creating imposters
         // If you don't have any protocol-specific validation, the DryRunValidator will suffice
         Validator: {
             create: function () {

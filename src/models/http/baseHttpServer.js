@@ -8,8 +8,7 @@ var AbstractServer = require('../abstractServer'),
     combinators = require('../../util/combinators'),
     StubRepository = require('../stubRepository'),
     StubResolver = require('../stubResolver'),
-/*jshint -W079 */
-    Proxy = require('./httpProxy'),
+    HttpProxy = require('./httpProxy'),
     DryRunValidator = require('../dryRunValidator'),
     events = require('events'),
     HttpRequest = require('./httpRequest');
@@ -17,10 +16,10 @@ var AbstractServer = require('../abstractServer'),
 function setup (protocolName, createNodeServer) {
     function postProcess (stub) {
         var response = {
-            statusCode: stub.statusCode || 200,
-            headers: stub.headers || {},
-            body: stub.body || ''
-        };
+                statusCode: stub.statusCode || 200,
+                headers: stub.headers || {},
+                body: stub.body || ''
+            };
 
         // We don't want to use keepalive connections, because a test case
         // may shutdown the stub, which prevents new connections for
@@ -33,7 +32,7 @@ function setup (protocolName, createNodeServer) {
     }
 
     function createServer (logger, options) {
-        var proxy = Proxy.create(logger),
+        var proxy = HttpProxy.create(logger),
             resolver = StubResolver.create(proxy, postProcess),
             stubs = StubRepository.create(resolver, options.recordRequests, 'utf8'),
             result = inherit.from(events.EventEmitter, {

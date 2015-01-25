@@ -7,8 +7,7 @@ var AbstractServer = require('../abstractServer'),
     inherit = require('../../util/inherit'),
     combinators = require('../../util/combinators'),
     helpers = require('../../util/helpers'),
-/*jshint -W079 */
-    Proxy = require('./tcpProxy'),
+    TcpProxy = require('./tcpProxy'),
     TcpValidator = require('./tcpValidator'),
     StubResolver = require('../stubResolver'),
     StubRepository = require('../stubRepository'),
@@ -27,7 +26,7 @@ function createServer (tcpProxyWait, logger, options) {
         ensureBuffer = function (data) {
             return Buffer.isBuffer(data) ? data : new Buffer(data, encoding);
         },
-        proxy = Proxy.create(tcpProxyWait, logger, encoding),
+        proxy = TcpProxy.create(tcpProxyWait, logger, encoding),
         resolver = StubResolver.create(proxy, postProcess),
         stubs = StubRepository.create(resolver, options.recordRequests, encoding),
         result = inherit.from(events.EventEmitter, {
