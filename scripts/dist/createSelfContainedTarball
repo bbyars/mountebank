@@ -22,7 +22,7 @@ cd $MB_FILENAME
 
 wget $URL
 echo "Extracting..."
-tar xvf $NODE_FILENAME.tar.gz > /dev/null
+tar xzvf $NODE_FILENAME.tar.gz > /dev/null
 echo "Done"
 rm $NODE_FILENAME.tar.gz
 
@@ -39,7 +39,7 @@ chmod +x ./mb
 
 cd ..
 echo "tarring..."
-tar cvf $MB_FILENAME.tar.gz $MB_FILENAME > /dev/null
+tar czvf $MB_FILENAME.tar.gz $MB_FILENAME > /dev/null
 echo "Done"
 
 cd ..
