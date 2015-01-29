@@ -4,7 +4,7 @@ var net = require('net'),
     Q = require('q'),
     AbstractProxy = require('../abstractProxy');
 
-function create (tcpProxyWait, logger, encoding) {
+function create (logger, encoding) {
 
     function socketName (socket) {
         return socket.host + ':' + socket.port;
@@ -15,10 +15,10 @@ function create (tcpProxyWait, logger, encoding) {
     }
 
     function getProxyRequest (proxyDestination, originalRequest) {
-        var socket = net.connect(proxyDestination, function () {
-            socket.write(new Buffer(originalRequest.data, encoding));
-            setTimeout(function () { socket.end(); }, tcpProxyWait);
-        });
+        var buffer = new Buffer(originalRequest.data, encoding),
+            socket = net.connect(proxyDestination, function () {
+                socket.write(buffer, function () { socket.end(); });
+            });
         return socket;
     }
 

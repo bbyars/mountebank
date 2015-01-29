@@ -24,7 +24,6 @@ function usage () {
     console.log('    --nomock          do not remember requests for mock verification and stub debugging');
     console.log('    --keyfile         file to read for https key (defaults to internal key)');
     console.log('    --certfile        file to read for https cert (defaults to self-signed cert)');
-    console.log('    --tcpProxyWait    time to wait (in ms) before closing tcp proxy connection to origin');
     console.log('    --version         show the mountebank version and exit');
 }
 
@@ -156,8 +155,7 @@ try {
             loglevel: 'info',
             configfile: '',
             keyfile: '',
-            certfile: '',
-            tcpProxyWait: 0
+            certfile: ''
         },
         booleanOptions = ['allowInjection', 'nomock', 'heroku', 'version'],
         commandLine = cli.parse(process.argv.slice(2), defaultOptions, booleanOptions),
