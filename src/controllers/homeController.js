@@ -29,7 +29,7 @@ function create (releases) {
 
         response.format({
             json: function () { response.send(hypermedia); },
-            html: function () { response.render('index', { notices: notices }); }
+            html: function () { response.render('index', { notices: [notices[0]] }); }
         });
     }
 
