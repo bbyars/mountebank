@@ -39,7 +39,7 @@ describe('http proxy', function () {
         });
 
         promiseIt('should return proxied result', function () {
-            var stub = { responses: [{ is: { statusCode: 400, body: 'ERROR' }}]},
+            var stub = { responses: [{ is: { statusCode: 400, body: 'ERROR' } }] },
                 request = { protocol: 'http', port: port, stubs: [stub], name: this.name };
 
             return api.post('/imposters', request).then(function (response) {
@@ -55,13 +55,32 @@ describe('http proxy', function () {
         });
 
         promiseIt('should proxy to https', function () {
-            var stub = { responses: [{ is: { statusCode: 400, body: 'ERROR' }}]},
+            var stub = { responses: [{ is: { statusCode: 400, body: 'ERROR' } }]},
                 request = { protocol: 'https', port: port, stubs: [stub], name: this.name };
 
             return api.post('/imposters', request).then(function (response) {
                 assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body));
 
                 return proxy.to('https://localhost:' + port, { path: '/', method: 'GET', headers: {} });
+            }).then(function (response) {
+                assert.strictEqual(response.statusCode, 400);
+                assert.strictEqual(response.body, 'ERROR');
+            }).finally(function () {
+                return api.del('/imposters');
+            });
+        });
+
+        promiseIt('should update the host header to the origin server', function () {
+            var stub = {
+                    responses: [{ is: { statusCode: 400, body: 'ERROR' } }],
+                    predicates: [{ equals: { headers: { host: 'localhost:' + port } } }]
+                },
+                request = { protocol: 'http', port: port, stubs: [stub], name: this.name };
+
+            return api.post('/imposters', request).then(function (response) {
+                assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body));
+
+                return proxy.to('http://localhost:' + port, { path: '/', method: 'GET', headers: { host: 'www.mbtest.org' } });
             }).then(function (response) {
                 assert.strictEqual(response.statusCode, 400);
                 assert.strictEqual(response.body, 'ERROR');
