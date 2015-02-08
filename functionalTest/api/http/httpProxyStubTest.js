@@ -326,63 +326,66 @@ describe('http proxy stubs', function () {
                 actualWithoutEphemeralData = JSON.parse(withDateRemoved);
 
             assert.deepEqual(actualWithoutEphemeralData, {
-                "imposters": [
+                imposters: [
                     {
-                        "protocol": "http",
-                        "port": port,
-                        "name": proxyRequest.name,
-                        "stubs": [
+                        protocol: 'http',
+                        port: port,
+                        name: proxyRequest.name,
+                        stubs: [
                             {
-                                "predicates": [
+                                predicates: [
                                     {
-                                        "deepEquals": {
-                                            "path": "/first"
+                                        deepEquals: {
+                                            path: '/first'
                                         }
                                     }
                                 ],
-                                "responses": [
+                                responses: [
                                     {
-                                        "is": {
-                                            "statusCode": 200,
-                                            "headers": {
-                                                "connection": "close",
-                                                "date": "NOW",
-                                                "transfer-encoding": "chunked"
+                                        is: {
+                                            statusCode: 200,
+                                            headers: {
+                                                connection: 'close',
+                                                date: 'NOW',
+                                                'transfer-encoding': 'chunked'
                                             },
-                                            "body": "1. /first"
+                                            body: '1. /first',
+                                            mode: 'text'
                                         }
                                     },
                                     {
-                                        "is": {
-                                            "statusCode": 200,
-                                            "headers": {
-                                                "connection": "close",
-                                                "date": "NOW",
-                                                "transfer-encoding": "chunked"
+                                        is: {
+                                            statusCode: 200,
+                                            headers: {
+                                                connection: 'close',
+                                                date: 'NOW',
+                                                'transfer-encoding': 'chunked'
                                             },
-                                            "body": "3. /first"
+                                            body: '3. /first',
+                                            mode: 'text'
                                         }
                                     }
                                 ]
                             },
                             {
-                                "predicates": [
+                                predicates: [
                                     {
-                                        "deepEquals": {
-                                            "path": "/second"
+                                        deepEquals: {
+                                            path: '/second'
                                         }
                                     }
                                 ],
-                                "responses": [
+                                responses: [
                                     {
-                                        "is": {
-                                            "statusCode": 200,
-                                            "headers": {
-                                                "connection": "close",
-                                                "date": "NOW",
-                                                "transfer-encoding": "chunked"
+                                        is: {
+                                            statusCode: 200,
+                                            headers: {
+                                                connection: 'close',
+                                                date: 'NOW',
+                                                'transfer-encoding': 'chunked'
                                             },
-                                            "body": "2. /second"
+                                            body: '2. /second',
+                                            mode: 'text'
                                         }
                                     }
                                 ]

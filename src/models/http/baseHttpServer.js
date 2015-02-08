@@ -18,7 +18,8 @@ function setup (protocolName, createNodeServer) {
         var response = {
                 statusCode: stub.statusCode || 200,
                 headers: stub.headers || {},
-                body: stub.body || ''
+                body: stub.body || '',
+                mode: stub.mode || 'text'
             };
 
         // We don't want to use keepalive connections, because a test case
@@ -49,8 +50,11 @@ function setup (protocolName, createNodeServer) {
                     var scopedLogger = logger.withScope(helpers.socketName(container.request.socket));
 
                     return stubs.resolve(httpRequest, scopedLogger).then(function (stubResponse) {
+                        var mode = stubResponse.mode ? stubResponse.mode : 'text',
+                            encoding = mode === 'binary' ? 'base64' : 'utf8';
+
                         container.response.writeHead(stubResponse.statusCode, stubResponse.headers);
-                        container.response.end(stubResponse.body.toString(), 'utf8');
+                        container.response.end(stubResponse.body.toString(), encoding);
                         return stubResponse;
                     });
                 },
