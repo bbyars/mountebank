@@ -23,13 +23,17 @@ function create (releases) {
                     logs: { href: '/logs' }
                 }
             },
-            notices = releases.map(createNotice).filter(isRecent);
+            notices = releases.map(createNotice).filter(isRecent),
+            viewNotices = [];
 
-        notices.reverse();
+        if (notices.length > 0) {
+            notices.reverse();
+            viewNotices.push(notices[0]);
+        }
 
         response.format({
             json: function () { response.send(hypermedia); },
-            html: function () { response.render('index', { notices: [notices[0]] }); }
+            html: function () { response.render('index', { notices: viewNotices }); }
         });
     }
 
