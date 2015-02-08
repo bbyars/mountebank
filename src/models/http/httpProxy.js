@@ -56,15 +56,23 @@ function create (logger) {
         proxiedRequest.end();
 
         proxiedRequest.once('response', function (response) {
-            response.body = '';
-            response.setEncoding('utf8');
-            response.on('data', function (chunk) { response.body += chunk; });
+            var packets = [];
+
+            response.on('data', function (chunk) {
+                packets.push(chunk);
+            });
+
             response.on('end', function () {
-                var stubResponse = {
-                    statusCode: response.statusCode,
-                    headers: response.headers,
-                    body: response.body
-                };
+                var body = Buffer.concat(packets),
+                    contentEncoding = response.headers['content-encoding'] || '',
+                    mode = contentEncoding.indexOf('gzip') >= 0 ? 'binary' : 'text',
+                    encoding = mode === 'binary' ? 'base64' : 'utf8',
+                    stubResponse = {
+                        statusCode: response.statusCode,
+                        headers: response.headers,
+                        body: body.toString(encoding),
+                        mode: mode
+                    };
                 deferred.resolve(stubResponse);
             });
         });

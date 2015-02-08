@@ -110,7 +110,8 @@ var assert = require('assert'),
                                 response: {
                                     statusCode: 200,
                                     headers: { connection: 'close' },
-                                    body: '1'
+                                    body: '1',
+                                    mode: 'text'
                                 }
                             },
                             {
@@ -126,7 +127,8 @@ var assert = require('assert'),
                                 response: {
                                     statusCode: 200,
                                     headers: { connection: 'close' },
-                                    body: '2'
+                                    body: '2',
+                                    mode: 'text'
                                 }
                             }
                         ]

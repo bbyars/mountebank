@@ -246,7 +246,7 @@ describe('dryRunValidator', function () {
         promiseIt('should be valid with a valid proxy response', function () {
             var request = {
                     stubs: [{
-                        responses: [{ proxy: 'http://google.com' }]
+                        responses: [{ proxy: { to: 'http://google.com' } }]
                     }]
                 },
                 validator = Validator.create({ StubRepository: StubRepository, testRequest: testRequest }),
