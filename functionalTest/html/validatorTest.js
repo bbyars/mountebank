@@ -38,11 +38,11 @@ describe('html validation', function () {
     ].forEach(function (endpoint) {
         it(endpoint + ' should have no html errors', function (done) {
             var spec = {
-                port: api.port,
-                method: 'GET',
-                path: endpoint,
-                headers: { accept: 'text/html' }
-            };
+                    port: api.port,
+                    method: 'GET',
+                    path: endpoint,
+                    headers: { accept: 'text/html' }
+                };
 
             httpClient.responseFor(spec).then(function (response) {
                 // ignore errors for webkit attributes on search box

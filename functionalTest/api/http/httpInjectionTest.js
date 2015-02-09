@@ -57,15 +57,16 @@ function nonInjectableServer (command, mbPort) {
                     assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body));
 
                     var spec = {
-                        path: '/test?key=value',
-                        port: port,
-                        method: 'POST',
-                        headers: {
-                            'X-Test': 'test header',
-                            'Content-Type': 'text/plain'
-                        }
-                    };
-                    return client.responseFor(spec, 'BODY');
+                            path: '/test?key=value',
+                            port: port,
+                            method: 'POST',
+                            headers: {
+                                'X-Test': 'test header',
+                                'Content-Type': 'text/plain'
+                            },
+                            body: 'BODY'
+                        };
+                    return client.responseFor(spec);
                 }).then(function (response) {
                     assert.strictEqual(response.body, 'MATCHED');
                 }).finally(function () {
