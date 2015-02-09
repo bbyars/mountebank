@@ -100,37 +100,37 @@ var assert = require('assert'),
                     request = { protocol: protocol, port: port, stubs: [stub], name: this.name };
 
                 return api.post('/imposters', request).then(function () {
-                    var options = helpers.merge(spec, { path: '/' });
-                    return client.responseFor(options, 'TEST');
+                    var options = helpers.merge(spec, { path: '/', body: 'TEST' });
+                    return client.responseFor(options);
                 }).then(function (response) {
                     assert.strictEqual(response.statusCode, 200, 'should not have matched; wrong path');
 
-                    var options = helpers.merge(spec, { path: '/test?key=different' });
-                    return client.responseFor(options, 'TEST');
+                    var options = helpers.merge(spec, { path: '/test?key=different', body: 'TEST' });
+                    return client.responseFor(options);
                 }).then(function (response) {
                     assert.strictEqual(response.statusCode, 200, 'should not have matched; wrong query');
 
-                    var options = helpers.merge(spec, { method: 'PUT' });
-                    return client.responseFor(options, 'TEST');
+                    var options = helpers.merge(spec, { method: 'PUT', body: 'TEST' });
+                    return client.responseFor(options);
                 }).then(function (response) {
                     assert.strictEqual(response.statusCode, 200, 'should not have matched; wrong method');
 
-                    var options = helpers.merge(spec, {});
+                    var options = helpers.merge(spec, { body: 'TEST' });
                     delete options.headers['X-One'];
-                    return client.responseFor(options, 'TEST');
+                    return client.responseFor(options);
                 }).then(function (response) {
                     assert.strictEqual(response.statusCode, 200, 'should not have matched; missing header');
 
-                    var options = helpers.merge(spec, { headers: { 'X-Two': 'Testing' }});
-                    return client.responseFor(options, 'TEST');
+                    var options = helpers.merge(spec, { headers: { 'X-Two': 'Testing', body: 'TEST' }});
+                    return client.responseFor(options);
                 }).then(function (response) {
                     assert.strictEqual(response.statusCode, 200, 'should not have matched; wrong value for header');
 
-                    return client.responseFor(helpers.merge(spec, {}), 'TESTing');
+                    return client.responseFor(helpers.merge(spec, { body: 'TESTing' }));
                 }).then(function (response) {
                     assert.strictEqual(response.statusCode, 200, 'should not have matched; wrong value for body');
 
-                    return client.responseFor(helpers.merge(spec, {}), 'TEST');
+                    return client.responseFor(helpers.merge(spec, { body: 'TEST' }));
                 }).then(function (response) {
                     assert.strictEqual(response.statusCode, 400, 'should have matched');
                 }).finally(function () {

@@ -8,15 +8,15 @@ process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 function create (protocol) {
     function optionsFor (spec) {
         var defaults = {
-            hostname: 'localhost',
-            headers: { accept: 'application/json' },
-            rejectUnauthorized: false
-        };
+                hostname: 'localhost',
+                headers: { accept: 'application/json' },
+                rejectUnauthorized: false
+            };
 
         return helpers.merge(defaults, spec);
     }
 
-    function responseFor (spec, body, ignoreContentType) {
+    function responseFor (spec) {
         var deferred = Q.defer(),
             options = optionsFor(spec);
 
@@ -24,7 +24,7 @@ function create (protocol) {
             throw Error('silly rabbit, you forgot to pass the port again');
         }
 
-        if (body && !options.headers['Content-Type'] && !ignoreContentType) {
+        if (spec.body && !options.headers['Content-Type'] && !spec.ignoreContentType) {
             options.headers['Content-Type'] = 'application/json';
         }
 
@@ -43,12 +43,12 @@ function create (protocol) {
 
         request.on('error', deferred.reject);
 
-        if (body) {
-            if (typeof(body) === 'object') {
-                request.write(JSON.stringify(body));
+        if (spec.body) {
+            if (typeof(spec.body) === 'object') {
+                request.write(JSON.stringify(spec.body));
             }
             else {
-                request.write(body);
+                request.write(spec.body);
             }
         }
         request.end();
@@ -60,7 +60,7 @@ function create (protocol) {
     }
 
     function post (path, body, port, ignoreContentType) {
-        return responseFor({ method: 'POST', path: path, port: port }, body, ignoreContentType);
+        return responseFor({ method: 'POST', path: path, port: port, body: body, ignoreContentType: ignoreContentType });
     }
 
     function del (path, port) {
@@ -68,7 +68,7 @@ function create (protocol) {
     }
 
     function put (path, body, port) {
-        return responseFor({ method: 'PUT', path: path, port: port }, body);
+        return responseFor({ method: 'PUT', path: path, port: port, body: body });
     }
 
     return {

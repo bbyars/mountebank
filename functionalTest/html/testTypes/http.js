@@ -15,31 +15,28 @@ function parseHeader (line) {
 function parse (text) {
     var lines = text.split('\n'),
         firstLineParts = lines[0].split(' '),
-        options = {
+        spec = {
             method: firstLineParts[0],
             path: firstLineParts[1],
-            headers: {}
-        },
-        body;
+            headers: {},
+            body: ''
+        };
 
     for (var i = 1; i < lines.length; i++) {
         if (lines[i].trim() === '') {
             break;
         }
         var header = parseHeader(lines[i]);
-        options.headers[header.key] = header.value;
+        spec.headers[header.key] = header.value;
         if (header.key.toLowerCase() === 'host') {
             var parts = header.value.split(':');
-            options.hostname = parts[0];
-            options.port = parseInt(header.value.split(':')[1].trim());
+            spec.hostname = parts[0];
+            spec.port = parseInt(header.value.split(':')[1].trim());
         }
     }
 
-    body = lines.slice(i).join('\n').trim();
-    return {
-        options: options,
-        body: body
-    };
+    spec.body = lines.slice(i).join('\n').trim();
+    return spec;
 }
 
 function messageFor (statusCode) {
@@ -88,9 +85,9 @@ function format (response) {
 
 function runStep (step) {
     var deferred = Q.defer(),
-        parsed = parse(step.execute);
+        spec = parse(step.execute);
 
-    httpClient.responseFor(parsed.options, parsed.body).done(function (response) {
+    httpClient.responseFor(spec).done(function (response) {
         step.result = format(response);
         deferred.resolve(step);
     });

@@ -45,8 +45,9 @@ describe('soap imposter', function () {
                     headers: {
                         'content-type': 'text/xml; charset="utf-8"',
                         SOAPAction: '"Some-URI"'
-                    }
-                }, body);
+                    },
+                    body: body
+                });
             }).then(function (response) {
                 assert.strictEqual(response.statusCode, 200);
                 assert.strictEqual(response.body,
