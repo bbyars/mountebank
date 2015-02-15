@@ -350,7 +350,7 @@ describe('http proxy stubs', function () {
                                                 'transfer-encoding': 'chunked'
                                             },
                                             body: '1. /first',
-                                            mode: 'text'
+                                            _mode: 'text'
                                         }
                                     },
                                     {
@@ -362,7 +362,7 @@ describe('http proxy stubs', function () {
                                                 'transfer-encoding': 'chunked'
                                             },
                                             body: '3. /first',
-                                            mode: 'text'
+                                            _mode: 'text'
                                         }
                                     }
                                 ]
@@ -385,7 +385,7 @@ describe('http proxy stubs', function () {
                                                 'transfer-encoding': 'chunked'
                                             },
                                             body: '2. /second',
-                                            mode: 'text'
+                                            _mode: 'text'
                                         }
                                     }
                                 ]

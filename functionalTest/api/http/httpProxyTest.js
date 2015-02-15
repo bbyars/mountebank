@@ -1,8 +1,7 @@
 'use strict';
 
 var assert = require('assert'),
-/*jshint -W079 */
-    Proxy = require('../../../src/models/http/httpProxy'),
+    HttpProxy = require('../../../src/models/http/httpProxy'),
     api = require('../api'),
     promiseIt = require('../../testHelpers').promiseIt,
     port = api.port + 1,
@@ -13,7 +12,7 @@ describe('http proxy', function () {
 
     var noOp = function () {},
         logger = { debug: noOp, info: noOp, warn: noOp, error: noOp },
-        proxy = Proxy.create(logger);
+        proxy = HttpProxy.create(logger);
 
     describe('#to', function () {
         promiseIt('should send same request information to proxied url', function () {

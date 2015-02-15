@@ -71,7 +71,7 @@ function create (logger) {
                         statusCode: response.statusCode,
                         headers: response.headers,
                         body: body.toString(encoding),
-                        mode: mode
+                        _mode: mode
                     };
                 deferred.resolve(stubResponse);
             });

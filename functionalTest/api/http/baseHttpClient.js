@@ -29,11 +29,18 @@ function create (protocol) {
         }
 
         var request = require(protocol).request(options, function (response) {
-            response.body = '';
-            response.setEncoding('utf8');
-            response.on('data', function (chunk) { response.body += chunk; });
+            var packets = [];
+
+            response.on('data', function (chunk) {
+                packets.push(chunk);
+            });
+
             response.on('end', function () {
-                var contentType = response.headers['content-type'] || '';
+                var buffer = Buffer.concat(packets),
+                    contentType = response.headers['content-type'] || '';
+
+                response.body = spec.mode === 'binary' ? buffer : buffer.toString('utf8');
+
                 if (contentType.indexOf('application/json') === 0) {
                     response.body = JSON.parse(response.body);
                 }
