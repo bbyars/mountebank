@@ -24,7 +24,7 @@ function create (protocol) {
             throw Error('silly rabbit, you forgot to pass the port again');
         }
 
-        if (spec.body && !options.headers['Content-Type'] && !spec.ignoreContentType) {
+        if (spec.body && !options.headers['Content-Type']) {
             options.headers['Content-Type'] = 'application/json';
         }
 
@@ -59,8 +59,8 @@ function create (protocol) {
         return responseFor({ method: 'GET', path: path, port: port });
     }
 
-    function post (path, body, port, ignoreContentType) {
-        return responseFor({ method: 'POST', path: path, port: port, body: body, ignoreContentType: ignoreContentType });
+    function post (path, body, port) {
+        return responseFor({ method: 'POST', path: path, port: port, body: body });
     }
 
     function del (path, port) {

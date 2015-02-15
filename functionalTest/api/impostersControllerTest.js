@@ -51,7 +51,7 @@ describe('POST /imposters', function () {
     });
 
     promiseIt('should return 400 on invalid JSON', function () {
-        return api.post('/imposters', 'invalid', true).then(function (response) {
+        return api.post('/imposters', 'invalid').then(function (response) {
             assert.strictEqual(response.statusCode, 400);
             assert.deepEqual(response.body, {
                 errors: [{
