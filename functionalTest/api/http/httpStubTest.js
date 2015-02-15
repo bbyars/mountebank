@@ -178,7 +178,10 @@ var assert = require('assert'),
 
             promiseIt('should add latency when using behaviors.wait', function () {
                 var stub = {
-                        responses: [{ is: { body: 'stub' },  _behaviors: { wait: 1000 } }]
+                        responses: [{
+                            is: { body: 'stub' },
+                            _behaviors: { wait: 1000 }
+                        }]
                     },
                     stubs = [stub],
                     request = { protocol: protocol, port: port, stubs: stubs, name: this.name },
@@ -202,7 +205,10 @@ var assert = require('assert'),
                         response.body = response.body.replace('${YEAR}', new Date().getFullYear());
                     },
                     stub = {
-                        responses: [{ is: { body: 'the year is ${YEAR}' }, _behaviors: { decorate:  decorator.toString() } }]
+                        responses: [{
+                            is: { body: 'the year is ${YEAR}' },
+                            _behaviors: { decorate:  decorator.toString() }
+                        }]
                     },
                     stubs = [stub],
                     request = { protocol: protocol, port: port, stubs: stubs, name: this.name };
@@ -222,7 +228,10 @@ var assert = require('assert'),
                         response.body = response.body.replace('${PATH}', request.path);
                     },
                     stub = {
-                        responses: [{ is: { body: 'the path is ${PATH}' }, _behaviors: { decorate:  decorator.toString() } }]
+                        responses: [{
+                            is: { body: 'the path is ${PATH}' },
+                            _behaviors: { decorate:  decorator.toString() }
+                        }]
                     },
                     stubs = [stub],
                     request = { protocol: protocol, port: port, stubs: stubs, name: this.name };
@@ -244,7 +253,10 @@ var assert = require('assert'),
                         return clonedResponse;
                     },
                     stub = {
-                        responses: [{ is: { body: 'This is the original' }, _behaviors: { decorate:  decorator.toString() } }]
+                        responses: [{
+                            is: { body: 'This is the original' },
+                            _behaviors: { decorate:  decorator.toString() }
+                        }]
                     },
                     stubs = [stub],
                     request = { protocol: protocol, port: port, stubs: stubs, name: this.name };
@@ -262,13 +274,31 @@ var assert = require('assert'),
             promiseIt('should return an error if the decorate JavaScript is not well formed', function () {
                 var decorator = "response.body = 'This should not work';",
                     stub = {
-                        responses: [{ is: { body: 'This is the original' }, _behaviors: { decorate:  decorator } }]
+                        responses: [{
+                            is: { body: 'This is the original' },
+                            _behaviors: { decorate:  decorator }
+                        }]
                     },
                     stubs = [stub],
                     request = { protocol: protocol, port: port, stubs: stubs, name: this.name };
 
                 return api.post('/imposters', request).then(function (response) {
                     assert.strictEqual(response.statusCode, 400, JSON.stringify(response.body, null, 2));
+                }).finally(function () {
+                    return api.del('/imposters');
+                });
+            });
+
+            promiseIt('should support sending binary response', function () {
+                var buffer = new Buffer([0, 1, 2, 3]),
+                    stub = { responses: [{ is: { body: buffer.toString('base64'), _mode: 'binary' } }] },
+                    request = { protocol: protocol, port: port, stubs: [stub], name: this.name };
+
+                return api.post('/imposters', request).then(function (response) {
+                    assert.strictEqual(response.statusCode, 201);
+                    return client.responseFor({ method: 'GET', port: port, path: '/', mode: 'binary' });
+                }).then(function (response) {
+                    assert.deepEqual(response.body.toJSON(), [0, 1, 2, 3]);
                 }).finally(function () {
                     return api.del('/imposters');
                 });

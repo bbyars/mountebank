@@ -19,7 +19,7 @@ function setup (protocolName, createNodeServer) {
                 statusCode: stub.statusCode || 200,
                 headers: stub.headers || {},
                 body: stub.body || '',
-                mode: stub.mode || 'text'
+                _mode: stub._mode || 'text'
             };
 
         // We don't want to use keepalive connections, because a test case
@@ -50,7 +50,7 @@ function setup (protocolName, createNodeServer) {
                     var scopedLogger = logger.withScope(helpers.socketName(container.request.socket));
 
                     return stubs.resolve(httpRequest, scopedLogger).then(function (stubResponse) {
-                        var mode = stubResponse.mode ? stubResponse.mode : 'text',
+                        var mode = stubResponse._mode ? stubResponse._mode : 'text',
                             encoding = mode === 'binary' ? 'base64' : 'utf8';
 
                         container.response.writeHead(stubResponse.statusCode, stubResponse.headers);
