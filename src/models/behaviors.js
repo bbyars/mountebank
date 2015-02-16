@@ -24,10 +24,10 @@ function decorate (originalRequest, responsePromise, fn, logger) {
             return Q(result);
         }
         catch (error) {
-            logger.error("injection X=> " + error);
-            logger.error("    full source: " + JSON.stringify(injected));
-            logger.error("    request: " + JSON.stringify(request));
-            logger.error("    response: " + JSON.stringify(response));
+            logger.error('injection X=> ' + error);
+            logger.error('    full source: ' + JSON.stringify(injected));
+            logger.error('    request: ' + JSON.stringify(request));
+            logger.error('    response: ' + JSON.stringify(response));
             return Q.reject(errors.InjectionError('invalid decorator injection', { source: injected, data: error.message }));
         }
     });

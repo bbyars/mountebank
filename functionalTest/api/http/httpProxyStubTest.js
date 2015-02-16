@@ -50,7 +50,7 @@ describe('http proxy stubs', function () {
         }).then(function (response) {
             assert.strictEqual(response.body.stubs[1].responses[0].proxy.mode, 'proxyOnce');
         }).finally(function () {
-            return api.del('/imposters' );
+            return api.del('/imposters');
         });
     });
 
@@ -279,7 +279,7 @@ describe('http proxy stubs', function () {
             assert.strictEqual(response.body, 'origin server');
             assert.strictEqual(response.headers['x-test'], 'decorated', JSON.stringify(response.headers, null, 2));
         }).finally(function () {
-            return api.del('/imposters' );
+            return api.del('/imposters');
         });
     });
 
