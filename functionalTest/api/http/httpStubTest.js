@@ -207,7 +207,7 @@ var assert = require('assert'),
                     stub = {
                         responses: [{
                             is: { body: 'the year is ${YEAR}' },
-                            _behaviors: { decorate:  decorator.toString() }
+                            _behaviors: { decorate: decorator.toString() }
                         }]
                     },
                     stubs = [stub],
@@ -230,7 +230,7 @@ var assert = require('assert'),
                     stub = {
                         responses: [{
                             is: { body: 'the path is ${PATH}' },
-                            _behaviors: { decorate:  decorator.toString() }
+                            _behaviors: { decorate: decorator.toString() }
                         }]
                     },
                     stubs = [stub],
@@ -255,7 +255,7 @@ var assert = require('assert'),
                     stub = {
                         responses: [{
                             is: { body: 'This is the original' },
-                            _behaviors: { decorate:  decorator.toString() }
+                            _behaviors: { decorate: decorator.toString() }
                         }]
                     },
                     stubs = [stub],
@@ -276,7 +276,7 @@ var assert = require('assert'),
                     stub = {
                         responses: [{
                             is: { body: 'This is the original' },
-                            _behaviors: { decorate:  decorator }
+                            _behaviors: { decorate: decorator }
                         }]
                     },
                     stubs = [stub],
