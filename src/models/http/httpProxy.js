@@ -50,6 +50,23 @@ function create (logger) {
         return proxiedRequest;
     }
 
+    function isBinaryResponse (headers) {
+        var contentEncoding = headers['content-encoding'] || '',
+            contentType = headers['content-type'] || '';
+
+        if (contentEncoding.indexOf('gzip') >= 0) {
+            return true;
+        }
+
+        if (contentType === 'application/octet-stream') {
+            return true;
+        }
+
+        return ['audio', 'image', 'video'].some(function (typeName) {
+            return contentType.indexOf(typeName) === 0;
+        });
+    }
+
     function proxy (proxiedRequest) {
         var deferred = Q.defer();
 
@@ -64,8 +81,7 @@ function create (logger) {
 
             response.on('end', function () {
                 var body = Buffer.concat(packets),
-                    contentEncoding = response.headers['content-encoding'] || '',
-                    mode = contentEncoding.indexOf('gzip') >= 0 ? 'binary' : 'text',
+                    mode = isBinaryResponse(response.headers) ? 'binary' : 'text',
                     encoding = mode === 'binary' ? 'base64' : 'utf8',
                     stubResponse = {
                         statusCode: response.statusCode,

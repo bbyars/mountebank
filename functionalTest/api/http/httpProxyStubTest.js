@@ -398,4 +398,32 @@ describe('http proxy stubs', function () {
             return api.del('/imposters');
         });
     });
+
+    promiseIt('should support returning binary data from origin server based on content encoding', function () {
+        var buffer = new Buffer([0, 1, 2, 3]),
+            originServerPort = port + 1,
+            originServerResponse = {
+                is: {
+                    body: buffer.toString('base64'),
+                    headers: { 'content-encoding': 'gzip' },
+                    _mode: 'binary'
+                }
+            },
+            originServerStub = { responses: [originServerResponse] },
+            originServerRequest = { protocol: 'http', port: originServerPort, stubs: [originServerStub], name: this.name + ' origin' },
+            proxyResponse = { proxy: { to: 'http://localhost:' + originServerPort } },
+            proxyStub = { responses: [proxyResponse] },
+            proxyRequest = { protocol: 'http', port: port, stubs: [proxyStub], name: this.name + ' proxy' };
+
+        return api.post('/imposters', originServerRequest).then(function () {
+            return api.post('/imposters', proxyRequest);
+        }).then(function (response) {
+            assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body, null, 2));
+            return client.responseFor({ method: 'GET', port: port, path: '/', mode: 'binary' });
+        }).then(function (response) {
+            assert.deepEqual(response.body.toJSON(), [0, 1, 2, 3]);
+        }).finally(function () {
+            return api.del('/imposters');
+        });
+    });
 });

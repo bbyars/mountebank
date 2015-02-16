@@ -109,5 +109,33 @@ describe('http proxy', function () {
                 });
             });
         });
+
+        ['application/octet-stream', 'audio/mpeg', 'audio/mp4', 'image/gif', 'image/jpeg',
+         'video/avi', 'video/mpeg'].forEach(function (mimeType) {
+            promiseIt('should base64 encode '  + mimeType + ' responses', function () {
+                var buffer = new Buffer([0, 1, 2, 3]),
+                    stub = {
+                        responses: [{
+                            is: {
+                                body: buffer.toString('base64'),
+                                headers: { 'content-type': mimeType },
+                                _mode: 'binary'
+                            }
+                        }]
+                    },
+                    request = { protocol: 'http', port: port, stubs: [stub], name: this.name };
+
+                return api.post('/imposters', request).then(function (response) {
+                    assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body));
+
+                    return proxy.to('http://localhost:' + port, { path: '/', method: 'GET', headers: {} });
+                }).then(function (response) {
+                    assert.strictEqual(response.body, buffer.toString('base64'));
+                    assert.strictEqual(response._mode, 'binary');
+                }).finally(function () {
+                    return api.del('/imposters');
+                });
+            });
+        });
     });
 });
