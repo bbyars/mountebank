@@ -123,6 +123,17 @@ keepalive socket.</p>
     <td>string</td>
     <td><code>""</code></td>
   </tr>
+  <tr>
+    <td><code>_mode</code></td>
+    <td>string - <code>binary</code> or <code>text</code></td>
+    <td><code>text</code></td>
+  </tr>
 </table>
+
+<p>HTTP bodies will always be recorded as text, but mountebank does have the ability
+to respond in binary.  If you want to set up a canned binary response, set the <code>_mode</code>
+to <code>binary</code> and base64 encode the <code>body</code>.  mountebank will also try
+to preserve binary responses in proxies by looking at the <code>Content-Encoding</code> and
+<code>Content-Type</code> headers.</p>
 
 <% include ../../_footer %>
