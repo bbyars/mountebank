@@ -5,6 +5,7 @@ var spawn = require('child_process').spawn,
     fs = require('fs-extra'),
     os = require('os'),
     path = require('path'),
+    thisPackage = require('./package.json'),
     port = process.env.MB_PORT || 2525,
     revision = process.env.REVISION || 0;
 
@@ -231,6 +232,43 @@ module.exports = function (grunt) {
         }
     });
 
+    grunt.registerTask('deadCheck', 'Check for unused dependencies in package.json', function () {
+        var dependencies = Object.keys(thisPackage.dependencies).concat(Object.keys(thisPackage.devDependencies)),
+            usedCount = {},
+            dependencyCheck = function (file) {
+                var contents = fs.readFileSync(file, 'utf8');
+
+                dependencies.forEach(function (dependency) {
+                    if (contents.indexOf("require('" + dependency + "')") >= 0 ||
+                        contents.indexOf("loadNpmTasks('" + dependency + "')") >= 0) {
+                        usedCount[dependency] += 1;
+                    }
+                });
+            },
+            exclusions = ['node_modules', '.git', '.DS_Store', '.idea', 'images', 'dist', 'mountebank.iml', 'mb.log'],
+            errors = [];
+
+        dependencies.forEach(function (dependency) {
+            usedCount[dependency] = 0;
+        });
+        ['npm', 'grunt', 'mocha', 'mocha-lcov-reporter', 'coveralls'].forEach(function (dependency) {
+            usedCount[dependency] += 1;
+        });
+
+        forEachFileIn('.', dependencyCheck, { exclude: exclusions });
+
+        dependencies.forEach(function (dependency) {
+            if (usedCount[dependency] === 0) {
+                errors.push(dependency + ' is depended on in package.json but is never required');
+            }
+        });
+
+        if (errors.length > 0) {
+            console.error(errors.join(os.EOL));
+            process.exit(1);
+        }
+    });
+
     var defaultWarnHandler = grunt.fail.warn;
 
     grunt.registerTask('try', 'Support continuing beyond failure while still capturing failures', function () {
@@ -258,6 +296,6 @@ module.exports = function (grunt) {
     grunt.registerTask('test:performance', 'Run the performance tests', ['mochaTest:performance']);
     grunt.registerTask('test', 'Run all non-performance tests', ['test:unit', 'test:functional']);
     grunt.registerTask('coverage', 'Generate code coverage', ['mochaTest:coverage']);
-    grunt.registerTask('lint', 'Run all JavaScript lint checks', ['wsCheck', 'jsCheck', 'jshint']);
+    grunt.registerTask('lint', 'Run all JavaScript lint checks', ['wsCheck', 'jsCheck', 'deadCheck', 'jshint']);
     grunt.registerTask('default', ['version', 'test', 'lint']);
 };
