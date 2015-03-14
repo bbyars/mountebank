@@ -1,0 +1,79 @@
+<h1>v1.2.56</h1>
+
+<p>The following changes are part of this release.</p>
+
+<h2>New Features</h2>
+<ul class='bullet-list'>
+  <li>Richer ways of loading <a href='http://<%= host %>/docs/commandLine#config-file'><code>config files</code></a>,
+  including using templating and loading easily read JavaScript for injection.</li>
+</ul>
+
+<h2>Bug Fixes</h2>
+<ul class='bullet-list'>
+  <li>Minor documentation fixes</li>
+</ul>
+
+<p>Many thanks to the following kind folk for help with this release, for reporting issues
+  and helping to diagnose the problem using the tcp protocol for large requests:</p>
+
+<ul class='bullet-list'>
+  <li>James Thomas</li>
+  <li>Prasanna Kumar</li>
+</ul>
+
+<h2>Install</h2>
+
+<pre><code>
+  npm install -g mountebank@1.2.56 --production
+</code></pre>
+
+<p>or:</p>
+
+<table>
+  <tr>
+    <th>Option</th>
+    <th>node.js required?</th>
+    <th>sudo required?</th>
+    <th>links</th>
+    <th>Description</th>
+  </tr>
+  <tr>
+    <td>Self-contained archives</td>
+    <td>No</td>
+    <td>No</td>
+    <td style="min-width: 5em;">
+      <ul>
+        <li><a href="https://s3.amazonaws.com/mountebank/v1.2/mountebank-v1.2.56-darwin-x64.tar.gz">osx</a></li>
+        <li><a href="https://s3.amazonaws.com/mountebank/v1.2/mountebank-v1.2.56-linux-x86.tar.gz">linux x86</a></li>
+        <li><a href="https://s3.amazonaws.com/mountebank/v1.2/mountebank-v1.2.56-linux-x64.tar.gz">linux x64</a></li>
+        <li><a href="https://s3.amazonaws.com/mountebank/v1.2/mountebank-v1.2.56-win-x86.zip">win x86</a></li>
+        <li><a href="https://s3.amazonaws.com/mountebank/v1.2/mountebank-v1.2.56-win-x64.zip">win x64</a></li>
+      </ul>
+    </td>
+    <td>Simply unpack and run <code>mb</code> from inside</td>
+  </tr>
+  <tr>
+    <td>OS-specific packages</td>
+    <td>No</td>
+    <td>Yes</td>
+    <td>
+      <ul>
+        <li><a href="https://s3.amazonaws.com/mountebank/v1.2/mountebank-v1.2.56.pkg">pkg</a></li>
+        <li><a href="https://s3.amazonaws.com/mountebank/v1.2/mountebank-1.2.56-1.x86_64.rpm">rpm</a></li>
+        <li><a href="https://s3.amazonaws.com/mountebank/v1.2/mountebank_1.2.56_amd64.deb">deb</a></li>
+      </ul>
+    </td>
+    <td>Puts <code>mb</code> at <code>/usr/local/bin</code>, which is generally in the <code>PATH</code>.</td>
+  </tr>
+  <tr>
+    <td>source tarball</td>
+    <td>Yes</td>
+    <td>No</td>
+    <td>
+      <ul>
+        <li><a href="https://s3.amazonaws.com/mountebank/v1.2/mountebank-v1.2.56-npm.tar.gz">mb</a></li>
+      </ul>
+    </td>
+    <td>source tarball if you roll that way.</td>
+  </tr>
+</table>
