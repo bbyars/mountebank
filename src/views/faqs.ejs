@@ -22,10 +22,10 @@
 
         <dt>How can I split my imposters into multiple files and have them automatically
         loaded when <code>mb</code> restarts?</dt>
-        <dd>See the <a href='/docs/commandLine'><code>--configfile</code> command line option</a>
+        <dd>See the <a href='/docs/commandLine#config-file'><code>--configfile</code> command line option</a>
         It can either be a single file containing the JSON that you get back when you call
         <a href='/docs/api/overview#get-imposters'><code>GET /imposters?replayable=true</code></a>
-        or multiple files that will be collected via a file globbing pattern.</dd>
+        or multiple files that will be collected via either templating or a file globbing pattern.</dd>
 
         <dt>How can I change imposters once I've created them?</dt>
         <dd>You can't - imposters are immutable through the API once created.  The expected workflow
@@ -40,13 +40,10 @@
         <dt>Does mountebank proved service virtualization?</dt>
         <dd>Yes!  Service virtualization is the term that commercial vendors use that
         came out of the SOA tools, and essentially just means over the wire test doubles, which
-        is something mountebank knows a thing or two about.  The claimed difference is that a virtualized
-        environment is persistent rather than context-specific.  mountebank questions
-        the advantage that claim provides, but supports persistent virtualization by storing the
-        configuration in the <a href='/docs/commandLine'><code>--configfile</code> command line option</a>.
-        And, unlike service virtualization packages, he offers this free of charge,
-        so there are no licensing concerns preventing you from pushing the tests to the left
-        of the project lifecycle.</dd>
+        is something mountebank knows a thing or two about.  And, unlike service virtualization packages,
+        he offers this free of charge, so there are no licensing concerns preventing you from pushing the
+        tests to the left of the project lifecycle.  mountebank is also far more friendly of continuous
+        integration and continuous delivery than commercial software.</dd>
 
       </dl>
 

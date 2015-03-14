@@ -24,33 +24,8 @@
   </tr>
   <tr>
     <td><code>--configfile imposters.json</code></td>
-    <td>If present, mountebank will load the contents of the file passed by sending
-    a <a href='/docs/api/overview#put-imposters'><code>PUT</code> command</a>
-    to <code>/imposters</code>.  See the <a href='/docs/api/overview#put-imposters'>
-    API docs</a> for what the content should look like.  This is the same content you get
-    from a <a href='/docs/api/overview#get-imposters'>
-    <code>GET /imposters?replayable=true</code></a> call.  Alternatively, if you prefer
-    keeping each imposter in a separate file, you may do so and pass a file glob pattern.
-    For Windows, use only forward slashes as the <a href='https://github.com/isaacs/node-glob#glob-primer'>
-    globbing implementation</a> always interprets backslashes as escape characters.
-    For example, if you have a directory called <code>imposters</code> and you store all imposter
-    configuration in <code>.js</code> files, you can load them all by passing
-    <code>--configfile 'imposters/*.js'</code> (note the single quotes to prevent the shell
-    from interpreting the asterisk).  If you decide to use multiple files, you can optionally
-    skip the top level JSON object containing the <code>imposters</code> array in the
-    config file.  In other words, either of the two formats will work:
-
-      <pre><code>
-        {
-          "imposters": [{ "protocol": "http", "port": 3000 }]
-        }
-      </code></pre>
-
-      or
-
-      <pre><code>
-        { "protocol": "http", "port" 3000 }
-      </code></pre></td>
+    <td>If present, mountebank will load the contents of the file.  See
+    <a href='#config-file'>below</a> for details.</td>
     <td><code>N/A</code></td>
   </tr>
   <tr>
@@ -105,5 +80,183 @@
 
 <p>Note that <code>mb</code> is not persistent.  Stopping and restarting <code>mb</code>
 will lose all stubs and all requests.</p>
+
+<h2 id='config-file'>Config Files</h2>
+
+<p>Some people prefer to load imposters via a config file rather than loading them on
+a per-test basis through the API.  The <code>--configfile</code> option supports that
+by sending a <a href='/docs/api/overview#put-imposters'><code>PUT</code> command</a>
+to <code>/imposters</code>.  See the <a href='/docs/api/overview#put-imposters'>API docs</a>
+for what the contents should look like.</p>
+
+<p>Creating one file containing a set of complex configurations for multiple imposters
+can be unwieldy.  Fortunately, <code>mb</code> supports a few options to make life easier.</p>
+
+<h3 id='templating'>Templating</h3>
+
+<p><code>mb</code> supports using <a href='https://github.com/tj/ejs'>EJS</a>
+templates, which allow you to put contents into separate files and use an
+<a href='https://github.com/tj/ejs#user-content-includes'>EJS include</a> directive to merge the
+contents into one file.  This is particularly useful for JavaScript injection because you have
+to make the function JSON-friendly, which involves converting it to a single line string.</p>
+
+<p>mountebank will pass an <code>inject</code> function into your templates that allow you to put
+multi-line JavaScript functions in separate files.  The example below is based on the
+<a href='/docs/api/injection#response-injection'>response injection</a> example described on
+the Injection page, and shows the use of the <code>inject</code> function.  The <code>filename</code>
+parameter is required.  The variable is passed in by <code>mb</code> and used to resolve relative
+paths.</p>
+
+<p>Assuming the files below are in a relative directory called <code>templates</code>, you can
+initialize <code>mb</code> with the following command:</p>
+
+<pre><code>
+mb --configfile templates/imposters.ejs --allowInjection
+</code></pre>
+
+<p>templates/imposters.ejs</p>
+<pre><code>
+{
+  "imposters": [
+    &lt;% include originServer.ejs %&gt;,
+    &lt;% include proxyServer.ejs %&gt;
+  ]
+}
+</code></pre>
+
+<p>templates/originServer.ejs</p>
+<pre><code>
+{
+  "port": 5555,
+  "protocol": "http",
+  "name": "origin",
+  "stubs": [
+    {
+      "responses": [{ "inject": "&lt;%- inject(filename, 'originServerResponse.ejs') %&gt;" }]
+    }
+  ]
+}
+</code></pre>
+
+<p>templates/originServerResponse.ejs</p>
+<pre><code>
+function (request, state, logger) {
+    logger.info('origin called');
+    state.requests = state.requests || 0;
+    state.requests += 1;
+    return {
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ count: state.requests })
+    };
+}
+</code></pre>
+
+<p>templates/proxyServer.ejs</p>
+<pre><code>
+{
+  "port": 4546,
+  "protocol": "http",
+  "name": "proxy",
+  "stubs": [
+    {
+      "responses": [{ "inject": "&lt;%- inject(filename, 'counter.ejs') %&gt;" }],
+      "predicates": [{
+        "equals": {
+          "method": "GET",
+          "path": "/counter"
+        }
+      }]
+    },
+    {
+      "responses": [{ "inject": "&lt;%- inject(filename, 'proxy.ejs') %&gt;" }]
+    }
+  ]
+}
+</code></pre>
+
+<p>templates/counter.ejs</p>
+<pre><code>
+function (request, state) {
+    var count = state.requests ? Object.keys(state.requests).length : 0,
+        util = require('util');
+
+    return {
+        body: util.format('There have been %s proxied calls', count)
+    };
+}
+</code></pre>
+
+<p>templates/proxy.ejs</p>
+<pre><code>
+function (request, state, logger, callback) {
+    var cacheKey = request.method + ' ' + request.path;
+
+    if (request.isDryRun) {
+        callback({});;
+    }
+
+    if (typeof state.requests === 'undefined') {
+        state.requests = {};
+    }
+
+    if (state.requests[cacheKey]) {
+        logger.info('Using previous response');
+        callback(state.requests[cacheKey]);
+    }
+
+    var http = require('http'),
+        options = {
+            method: request.method,
+            hostname: 'localhost',
+            port: 5555,
+            path: request.path,
+            headers: request.headers
+        },
+        httpRequest = http.request(options, function (response) {
+            var body = '';
+            response.setEncoding('utf8');
+            response.on('data', function (chunk) {
+                body += chunk;
+            });
+            response.on('end', function () {
+                var stubResponse = {
+                        statusCode: response.statusCode,
+                        headers: response.headers,
+                        body: body
+                    };
+                logger.info('Successfully proxied: ' + JSON.stringify(stubResponse));
+                state.requests[cacheKey] = stubResponse;
+                callback(stubResponse);
+            });
+        });
+    httpRequest.end();
+}
+</code></pre>
+
+<h3 id='file-globbing'>File Globbing</h3>
+
+<p><code>mb</code> allows you to combine multiple files using a file glob pattern.  For Windows, use
+only forward slashes as the <a href='https://github.com/isaacs/node-glob#glob-primer'>
+globbing implementation</a> always interprets backslashes as escape characters.
+For example, if you have a directory called <code>imposters</code> and you store all imposter
+configuration in <code>.js</code> files, you can load them all by passing
+<code>--configfile 'imposters/*.js'</code> (note the single quotes to prevent the shell
+from interpreting the asterisk).  If you decide to use multiple files, you can optionally
+skip the top level JSON object containing the <code>imposters</code> array in the
+config file.  In other words, either of the two formats will work:</p>
+
+<pre><code>
+{
+    "imposters": [{ "protocol": "http", "port": 3000 }]
+}
+</code></pre>
+
+<p>or</p>
+
+<pre><code>
+{ "protocol": "http", "port" 3000 }
+</code></pre>
 
 <% include ../_footer %>
