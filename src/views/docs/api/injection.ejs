@@ -31,7 +31,7 @@ post-processing responses through the <code>decorate</code> behavior, is describ
 on the <a href='/docs/api/behaviors'>behaviors</a> page.  Finally, determining the end
 of a TCP request is described on the <a href='/docs/protocols/tcp'>tcp</a> protocol page.</p>
 
-<h2>Predicate injection</h2>
+<h2 id='predicate-injection'>Predicate injection</h2>
 
 <p>Predicate injection allows you to pass a JavaScript function to decide whether the
 stub should match or not.  Unlike other predicates, predicate injections bind to the entire
@@ -66,8 +66,10 @@ Content-Type: application/json
 }
 </code></pre>
 
-<p>Injections certainly don't help the readability of the JSON.  Let's look at the injected function
-appropriately formatted:</p>
+<p>Injections certainly don't help the readability of the JSON.  If you're loading imposters through a config file,
+look at the <code>inject</code> function supported in file templating with the <a href='/docs/commandLine#templating'>
+<code>--configfile</code></a> command line option to support storing the functions in a readable format.
+Let's look at our injected function appropriately formatted:</p>
 
 <pre><code>
 function (request, logger) {
@@ -141,9 +143,9 @@ Host: localhost:<%= port %>
 Accept: application/json
 </code>
 
-<h2>Stub resolver injection</h2>
+<h2 id='response-injection'>Response injection</h2>
 
-<p>Stub resolver injection allows you to dynamically construct the response based on the
+<p>Response injection allows you to dynamically construct the response based on the
 request and previous requests.  The response object should match the structure defined in
 the appropriate protocol page linked to on the sidebar.  mountebank will use the default
 value documented on the protocol page for any response fields you leave empty.</p>
