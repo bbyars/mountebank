@@ -1,0 +1,8 @@
+function (request, state) {
+    var count = state.requests ? Object.keys(state.requests).length : 0,
+        util = require('util');
+
+    return {
+        body: util.format('There have been %s proxied calls', count)
+    };
+}

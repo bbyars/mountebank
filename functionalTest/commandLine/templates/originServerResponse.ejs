@@ -1,0 +1,11 @@
+function (request, state, logger) {
+    logger.info('origin called');
+    state.requests = state.requests || 0;
+    state.requests += 1;
+    return {
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ count: state.requests })
+    };
+}

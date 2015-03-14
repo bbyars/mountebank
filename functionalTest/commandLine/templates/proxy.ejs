@@ -1,0 +1,43 @@
+function (request, state, logger, callback) {
+    var cacheKey = request.method + ' ' + request.path;
+
+    if (request.isDryRun) {
+        callback({});;
+    }
+
+    if (typeof state.requests === 'undefined') {
+        state.requests = {};
+    }
+
+    if (state.requests[cacheKey]) {
+        logger.info('Using previous response');
+        callback(state.requests[cacheKey]);
+    }
+
+    var http = require('http'),
+        options = {
+            method: request.method,
+            hostname: 'localhost',
+            port: 5555,
+            path: request.path,
+            headers: request.headers
+        },
+        httpRequest = http.request(options, function (response) {
+            var body = '';
+            response.setEncoding('utf8');
+            response.on('data', function (chunk) {
+                body += chunk;
+            });
+            response.on('end', function () {
+                var stubResponse = {
+                        statusCode: response.statusCode,
+                        headers: response.headers,
+                        body: body
+                    };
+                logger.info('Successfully proxied: ' + JSON.stringify(stubResponse));
+                state.requests[cacheKey] = stubResponse;
+                callback(stubResponse);
+            });
+        });
+    httpRequest.end();
+}

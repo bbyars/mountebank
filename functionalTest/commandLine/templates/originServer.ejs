@@ -1,0 +1,10 @@
+{
+  "port": 5555,
+  "protocol": "http",
+  "name": "origin",
+  "stubs": [
+    {
+      "responses": [{ "inject": "<%- inject(filename, 'originServerResponse.ejs') %>" }]
+    }
+  ]
+}
