@@ -1,0 +1,19 @@
+{
+  "port": 4546,
+  "protocol": "http",
+  "name": "proxy",
+  "stubs": [
+    {
+      "responses": [{ "inject": "<%- inject(filename, 'counter.ejs') %>" }],
+      "predicates": [{
+        "equals": {
+          "method": "GET",
+          "path": "/counter"
+        }
+      }]
+    },
+    {
+      "responses": [{ "inject": "<%- inject(filename, 'proxy.ejs') %>" }]
+    }
+  ]
+}

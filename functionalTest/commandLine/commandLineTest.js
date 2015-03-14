@@ -92,4 +92,24 @@ describe('mb command line', function () {
             return mb('stop');
         });
     });
+
+    // This is the stub resolver injection example on /docs/api/injection
+    promiseIt('should evaluate ejs templates when loading configuration files', function () {
+        return mb('start --configfile templates/imposters.ejs --allowInjection').then(function () {
+            return http.get('/first', 4546);
+        }).then(function (response) {
+            assert.deepEqual(response.body, { count: 3 });
+            return http.get('/second', 4546);
+        }).then(function (response) {
+            assert.deepEqual(response.body, { count: 4 });
+            return http.get('/first', 4546);
+        }).then(function (response) {
+            assert.deepEqual(response.body, { count: 3 });
+            return http.get('/counter', 4546);
+        }).then(function (response) {
+            assert.strictEqual(response.body, 'There have been 2 proxied calls');
+        }).finally(function () {
+            return mb('stop');
+        });
+    });
 });

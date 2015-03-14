@@ -4,12 +4,14 @@
 var mountebank = require('../src/mountebank'),
     cli = require('../src/util/cli'),
     fs = require('fs'),
+    path = require('path'),
     http = require('http'),
     exec = require('child_process').exec,
     thisPackage = require('../package.json'),
     Q = require('q'),
     os = require('os'),
-    glob = require('glob');
+    glob = require('glob'),
+    ejs = require('ejs');
 
 function usage () {
     console.log('Usage: mb [command] [options...]');
@@ -121,6 +123,30 @@ function putConfig (options, body) {
     return deferred.promise;
 }
 
+function parseFunction (filename, text) {
+    // parsed with assistance from an answer on http://stackoverflow.com/questions/7650071/is-there-a-way-to-create-a-function-from-a-string-with-javascript
+    var pattern = /function\s*\w*\s*\(([^)]*)\)[ \r\n\t]*\{(.*)\}/gmi,
+        match = pattern.exec(text.replace(/\n/g, ' '));
+
+    if (match) {
+        /* jshint evil: true */
+        return new Function(match[1].split(','), match[2]);
+    }
+    else {
+        error('Trying to inject ' + filename + ', but it does not appear to be a JavaScript function');
+    }
+}
+
+function inject (filename, includeFile) {
+    var resolvedPath = path.join(path.dirname(filename), includeFile),
+        contents = fs.readFileSync(resolvedPath, 'utf8'),
+        fn = parseFunction(resolvedPath, contents),
+        jsonString = JSON.stringify(fn.toString());
+
+    // get rid of the surrounding quotes because it makes the templates more natural to quote them there
+    return jsonString.substring(1, jsonString.length - 1);
+}
+
 function loadConfig (commandLine) {
     glob(commandLine.options.configfile, {}, function (error, files) {
         var imposters = [];
@@ -133,7 +159,8 @@ function loadConfig (commandLine) {
         // Allow supporting multiple config files through a globbing pattern
         files.map(function (file) {
             var configContents = fs.readFileSync(file, 'utf8'),
-                json = JSON.parse(configContents),
+                parsedContents = ejs.render(configContents, { filename: file, inject: inject }),
+                json = JSON.parse(parsedContents),
                 newImposters = json.imposters;
 
             if (!newImposters) {
