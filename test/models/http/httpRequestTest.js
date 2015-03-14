@@ -24,8 +24,8 @@ describe('HttpRequest', function () {
             request.socket = { remoteAddress: 'HOST', remotePort: 'PORT' };
 
             var promise = httpRequest.createFrom(container).then(function (httpRequest) {
-                assert.strictEqual(httpRequest.requestFrom, 'HOST:PORT');
-            });
+                    assert.strictEqual(httpRequest.requestFrom, 'HOST:PORT');
+                });
 
             request.emit('end');
 
@@ -37,9 +37,9 @@ describe('HttpRequest', function () {
             request.headers = 'HEADERS';
 
             var promise = httpRequest.createFrom(container).then(function (httpRequest) {
-                assert.strictEqual(httpRequest.method, 'METHOD');
-                assert.strictEqual(httpRequest.headers, 'HEADERS');
-            });
+                    assert.strictEqual(httpRequest.method, 'METHOD');
+                    assert.strictEqual(httpRequest.headers, 'HEADERS');
+                });
 
             request.emit('end');
 
@@ -50,9 +50,9 @@ describe('HttpRequest', function () {
             request.url = 'http://localhost/path?key=value';
 
             var promise = httpRequest.createFrom(container).then(function (httpRequest) {
-                assert.strictEqual(httpRequest.path, '/path');
-                assert.deepEqual(httpRequest.query, { key: 'value' });
-            });
+                    assert.strictEqual(httpRequest.path, '/path');
+                    assert.deepEqual(httpRequest.query, { key: 'value' });
+                });
 
             request.emit('end');
 
@@ -61,8 +61,8 @@ describe('HttpRequest', function () {
 
         promiseIt('should set body from data events', function () {
             var promise = httpRequest.createFrom(container).then(function (httpRequest) {
-                assert.strictEqual(httpRequest.body, '12');
-            });
+                    assert.strictEqual(httpRequest.body, '12');
+                });
 
             request.emit('data', '1');
             request.emit('data', '2');
