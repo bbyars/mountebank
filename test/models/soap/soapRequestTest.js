@@ -33,7 +33,7 @@ describe('SoapRequest', function () {
             httpRequest.socket = { remoteAddress: 'HOST', remotePort: 'PORT' };
 
             var promise = SoapRequest.createFrom(httpRequest).then(function (soapRequest) {
-                    assert.strictEqual(soapRequest.requestFrom, 'HOST:PORT');
+                    assert.strictEqual(soapRequest.http.requestFrom, 'HOST:PORT');
                 });
 
             httpRequest.emit('data', defaultBody);
@@ -47,8 +47,8 @@ describe('SoapRequest', function () {
             httpRequest.headers = 'HEADERS';
 
             var promise = SoapRequest.createFrom(httpRequest).then(function (soapRequest) {
-                    assert.strictEqual(soapRequest.method, 'METHOD');
-                    assert.strictEqual(soapRequest.headers, 'HEADERS');
+                    assert.strictEqual(soapRequest.http.method, 'METHOD');
+                    assert.strictEqual(soapRequest.http.headers, 'HEADERS');
                 });
 
             httpRequest.emit('data', defaultBody);
@@ -61,8 +61,8 @@ describe('SoapRequest', function () {
             httpRequest.url = 'http://localhost/path?key=value';
 
             var promise = SoapRequest.createFrom(httpRequest).then(function (soapRequest) {
-                    assert.strictEqual(soapRequest.path, '/path');
-                    assert.deepEqual(soapRequest.query, { key: 'value' });
+                    assert.strictEqual(soapRequest.http.path, '/path');
+                    assert.deepEqual(soapRequest.http.query, { key: 'value' });
                 });
 
             httpRequest.emit('data', defaultBody);
@@ -73,7 +73,7 @@ describe('SoapRequest', function () {
 
         promiseIt('should set body from data events', function () {
             var promise = SoapRequest.createFrom(httpRequest).then(function (soapRequest) {
-                    assert.strictEqual(soapRequest.body, defaultBody);
+                    assert.strictEqual(soapRequest.http.body, defaultBody);
                 });
 
             httpRequest.emit('data', defaultBody);
@@ -82,7 +82,7 @@ describe('SoapRequest', function () {
             return promise;
         });
 
-        promiseIt('should set operation from xml', function () {
+        promiseIt('should set method from xml', function () {
             var body = '<?xml version="1.0"?>\n' +
                         '<soap-env:Envelope\n' +
                         ' xmlns:soap-env="http://schemas.xmlsoap.org/soap/envelope/"\n' +
@@ -94,7 +94,7 @@ describe('SoapRequest', function () {
                         '   </soap-env:Body>\n' +
                         '</soap-env:Envelope>',
                 promise = SoapRequest.createFrom(httpRequest).then(function (soapRequest) {
-                        assert.strictEqual(soapRequest.operation, 'GetLastTradePrice');
+                        assert.strictEqual(soapRequest.methodName, 'GetLastTradePrice');
                     });
 
             httpRequest.emit('data', body);
@@ -103,20 +103,93 @@ describe('SoapRequest', function () {
             return promise;
         });
 
-        promiseIt('should set operation from xml with different namespace prefix', function () {
+        promiseIt('should set method from xml with different namespace prefix', function () {
             var body = '<?xml version="1.0"?>\n' +
                         '<soap:Envelope\n' +
                         ' xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"\n' +
                         ' soap:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">\n' +
                         '   <soap:Body>\n' +
-                        '       <m:GetLastTradePrice xmlns:m="Some-URI">\n' +
+                        '       <k:GetLastTradePrice xmlns:k="Some-URI">\n' +
                         '           <symbol>DIS</symbol>\n' +
-                        '       </m:GetLastTradePrice>\n' +
+                        '       </k:GetLastTradePrice>\n' +
                         '   </soap:Body>\n' +
                         '</soap:Envelope>',
                 promise = SoapRequest.createFrom(httpRequest).then(function (soapRequest) {
-                        assert.strictEqual(soapRequest.operation, 'GetLastTradePrice');
+                        assert.strictEqual(soapRequest.methodName, 'GetLastTradePrice');
                     });
+
+            httpRequest.emit('data', body);
+            httpRequest.emit('end');
+
+            return promise;
+        });
+
+        promiseIt('should set method from xml with no namespace prefix', function () {
+            var body = '<?xml version="1.0"?>\n' +
+                    '<soap:Envelope\n' +
+                    ' xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"\n' +
+                    ' soap:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">\n' +
+                    '   <soap:Body>\n' +
+                    '       <GetLastTradePrice xmlns="Some-URI">\n' +
+                    '           <symbol>DIS</symbol>\n' +
+                    '       </GetLastTradePrice>\n' +
+                    '   </soap:Body>\n' +
+                    '</soap:Envelope>',
+                promise = SoapRequest.createFrom(httpRequest).then(function (soapRequest) {
+                    assert.strictEqual(soapRequest.methodName, 'GetLastTradePrice');
+                });
+
+            httpRequest.emit('data', body);
+            httpRequest.emit('end');
+
+            return promise;
+        });
+
+        promiseIt('should set parameters from xml', function () {
+            var body = '<?xml version="1.0"?>\n' +
+                    '<soap:Envelope\n' +
+                    ' xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"\n' +
+                    ' soap:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">\n' +
+                    '   <soap:Body>\n' +
+                    '       <m:GetLastTradePrice xmlns:m="Some-URI">\n' +
+                    '           <symbol>DIS</symbol>\n' +
+                    '           <currency>USD</currency>\n' +
+                    '       </m:GetLastTradePrice>\n' +
+                    '   </soap:Body>\n' +
+                    '</soap:Envelope>',
+                promise = SoapRequest.createFrom(httpRequest).then(function (soapRequest) {
+                    assert.deepEqual(soapRequest.parameters, {
+                        symbol: 'DIS',
+                        currency: 'USD'
+                    });
+                });
+
+            httpRequest.emit('data', body);
+            httpRequest.emit('end');
+
+            return promise;
+        });
+
+        promiseIt('should set object parameters from xml', function () {
+            var body = '<?xml version="1.0"?>\n' +
+                    '<soap:Envelope\n' +
+                    ' xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"\n' +
+                    ' soap:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">\n' +
+                    '   <soap:Body>\n' +
+                    '       <getAdUnitsByStatement xmlns="https://www.google.com/apis/ads/publisher/v201403">\n' +
+                    '           <filterStatement>\n' +
+                    '               <query>WHERE parentId IS NULL LIMIT 500</query>\n' +
+                    '           </filterStatement>\n' +
+                    '       </getAdUnitsByStatement>\n' +
+                    '   </soap:Body>\n' +
+                    '</soap:Envelope>',
+                promise = SoapRequest.createFrom(httpRequest).then(function (soapRequest) {
+                    assert.deepEqual(soapRequest.parameters, {
+                        filterStatement: {
+                            query: 'WHERE parentId IS NULL LIMIT 500'
+                        }
+                    });
+                });
 
             httpRequest.emit('data', body);
             httpRequest.emit('end');
