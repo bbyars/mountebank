@@ -1,8 +1,7 @@
 'use strict';
 
 var Q = require('q'),
-    url = require('url'),
-    helpers = require('../../util/helpers'),
+    httpRequest = require('../http/httpRequest'),
     xml2js = require('xml2js');
 
 function getSoapBody (body) {
@@ -52,34 +51,22 @@ function getParameters (body) {
     return getParametersFrom(operationNode);
 }
 
-function transform (httpRequest, body) {
-    var parts = url.parse(httpRequest.url, true);
-
+function transform (request, body) {
     return {
-        http: {
-            requestFrom: helpers.socketName(httpRequest.socket),
-            method: httpRequest.method,
-            path: parts.pathname,
-            query: parts.query,
-            headers: httpRequest.headers,
-            body: httpRequest.body
-        },
+        http: request,
         methodName: getMethodName(body),
         parameters: getParameters(body)
     };
 }
 
-function createFrom (httpRequest) {
+function createFrom (request) {
     var deferred = Q.defer();
-    httpRequest.body = '';
-    httpRequest.setEncoding('utf8');
-    httpRequest.on('data', function (chunk) { httpRequest.body += chunk; });
-    httpRequest.on('end', function () {
-        xml2js.parseString(httpRequest.body, function (error, body) {
+    httpRequest.createFrom({ request: request }).done(function (parsedRequest) {
+        xml2js.parseString(parsedRequest.body, function (error, body) {
             if (error) {
                 throw error;
             }
-            deferred.resolve(transform(httpRequest, body));
+            deferred.resolve(transform(parsedRequest, body));
         });
     });
     return deferred.promise;
