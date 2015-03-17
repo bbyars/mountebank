@@ -36,22 +36,24 @@ function normalize (obj, config, encoding) {
         transform = combinators.compose(exceptTransform, caseTransform, encodeTransform),
         transformAll = function (o) {
             if (!o) {
-              return o;
+                return o;
             }
-            return Object.keys(o).reduce(function (result, key) {
-                var value = o[key];
-                if (Array.isArray(o[key])) {
-                    value = o[key].map(transform);
-                }
-                else if (typeof o[key] === 'object') {
-                    value = transformAll(value);
-                }
-                else if (typeof o[key] === 'string') {
-                    value = transform(value);
-                }
-                result[caseTransform(key)] = value;
-                return result;
-            }, {});
+            
+            if (typeof o === 'object') {
+                return Object.keys(o).reduce(function (result, key) {
+                    var value = transformAll(o[key]);
+                    result[caseTransform(key)] = value;
+                    return result;
+                }, {});
+            }
+            else if (Array.isArray(o)) {
+                return o.map(transformAll);
+            }
+            else if (typeof o === 'string') {
+                return transform(o);
+            }
+            
+            return o;
         };
 
         return transformAll(obj);
