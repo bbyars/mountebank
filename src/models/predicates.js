@@ -38,21 +38,21 @@ function normalize (obj, config, encoding) {
             if (!o) {
                 return o;
             }
-            
-            if (typeof o === 'object') {
+
+            if (Array.isArray(o)) {
+                return o.map(transformAll);
+            }
+            else if (typeof o === 'object') {
                 return Object.keys(o).reduce(function (result, key) {
                     var value = transformAll(o[key]);
                     result[caseTransform(key)] = value;
                     return result;
                 }, {});
             }
-            else if (Array.isArray(o)) {
-                return o.map(transformAll);
-            }
             else if (typeof o === 'string') {
                 return transform(o);
             }
-            
+
             return o;
         };
 
