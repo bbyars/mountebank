@@ -137,5 +137,12 @@ describe('http proxy', function () {
                 });
             });
         });
+
+        promiseIt('should proxy to different host', function () {
+            return proxy.to('https://google.com', { path: '/', method: 'GET', headers: {} }, function (response) {
+                assert.strictEqual(response.statusCode, 301);
+                assert.strictEqual(response.headers.location, 'https://www.google.com/');
+            });
+        });
     });
 });

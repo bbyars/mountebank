@@ -32,16 +32,17 @@ function create (logger) {
     function getProxyRequest (baseUrl, originalRequest) {
         var parts = url.parse(baseUrl),
             protocol = parts.protocol === 'https:' ? https : http,
+            defaultPort = parts.protocol === 'https:' ? 443 : 80,
             options = {
                 method: originalRequest.method,
                 hostname: parts.hostname,
-                port: parts.port,
+                port: parts.port || defaultPort,
                 auth: parts.auth,
                 path: toUrl(originalRequest.path, originalRequest.query),
                 headers: helpers.clone(originalRequest.headers)
             };
         options.headers.connection = 'close';
-        options.headers.host = hostnameFor(parts.protocol, parts.hostname, parts.port);
+        options.headers.host = hostnameFor(parts.protocol, parts.hostname, options.port);
 
         var proxiedRequest = protocol.request(options);
         if (originalRequest.body) {
