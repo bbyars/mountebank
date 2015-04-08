@@ -15,7 +15,12 @@ function isWindows () {
 
 function exclude (exclusions, file) {
     return (exclusions || []).some(function (exclusion) {
-        return path.basename(file) === exclusion;
+        if (exclusion[0] === '*') {
+            return path.extname(file) === exclusion.substring(1);
+        }
+        else {
+            return path.basename(file) === exclusion;
+        }
     });
 }
 
@@ -192,7 +197,7 @@ module.exports = function (grunt) {
                     errors = errors.concat(file + ' has more than one trailing newline');
                 }
             },
-            exclusions = ['node_modules', '.git', '.DS_Store', '.idea', 'images', 'dist', 'mountebank.iml', 'mb.log'];
+            exclusions = ['node_modules', '.git', '.DS_Store', '.idea', 'images', 'dist', 'mountebank.iml', 'mb.log', '*.pid'];
 
         forEachFileIn('.', wsCheck, { exclude: exclusions });
 

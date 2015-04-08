@@ -43,12 +43,18 @@ function mb (args) {
 }
 
 describe('mb command line', function () {
-    this.timeout(timeout);
+    if (isWindows) {
+        // slower process startup time because Windows
+        this.timeout(timeout*2);
+    }
+    else {
+        this.timeout(timeout);
+    }
 
     // I normally separating the data needed for the assertions from the test setup,
     // but I wanted this to be a reasonably complex regression test
-    promiseIt('should load multiple files with --configfile glob', function () {
-        return mb("start --configfile 'imposters/*.json'").then(function () {
+    promiseIt('should support complex configuration with --configfile in multiple files', function () {
+        return mb("start --configfile imposters/imposters.ejs").then(function () {
             return http.post('/orders', '', 4545);
         }).then(function (response) {
             assert.strictEqual(response.statusCode, 201);
@@ -73,7 +79,7 @@ describe('mb command line', function () {
                 headers: { authorization: 'Basic blah===' }
             });
         }).then(function (response) {
-            assert.strictEqual(response.body, 'Account 123');
+            assert.ok(response.body.indexOf('<id>123</id>') > 0);
             return https.responseFor({
                 method: 'GET',
                 path: '/accounts/234',
@@ -94,7 +100,7 @@ describe('mb command line', function () {
     });
 
     // This is the stub resolver injection example on /docs/api/injection
-    promiseIt('should evaluate ejs templates when loading configuration files', function () {
+    promiseIt('should evaluate stringify function in templates when loading configuration files', function () {
         return mb('start --configfile templates/imposters.ejs --allowInjection').then(function () {
             return http.get('/first', 4546);
         }).then(function (response) {

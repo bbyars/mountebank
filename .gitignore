@@ -3,7 +3,7 @@ node_modules/
 .DS_Store
 coverage.html
 mb*.log
-mb.pid
+*.pid
 dist
 mountebank.iml
 REFERENCES
