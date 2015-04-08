@@ -11,7 +11,7 @@ install:
 build_script:
   - node --version
   - npm --version
-  - grunt -v lint
+  - grunt help
 
 test: off
 
