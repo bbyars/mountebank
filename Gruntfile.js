@@ -121,28 +121,22 @@ module.exports = function (grunt) {
             options = [command, '--port', port, '--pidfile', 'mb-grunt.pid', '--allowInjection'],
             mb;
 
-        if (isWindows() && command === 'stop') {
-            console.log('Not shutting down mb on Windows due to unexplained AppVeyor build failures');
-            done();
+        if (isWindows()) {
+            options.unshift('dist\\mountebank\\bin\\mb');
+            mb = spawn('node', options);
         }
         else {
-            if (isWindows()) {
-                options.unshift('dist\\mountebank\\bin\\mb');
-                mb = spawn('node', options);
-            }
-            else {
-                mb = spawn('dist/mountebank/bin/mb', options);
-            }
-
-            ['stdout', 'stderr'].forEach(function (stream) {
-                mb[stream].on('data', function () {
-                    if (!calledDone) {
-                        calledDone = true;
-                        done();
-                    }
-                });
-            });
+            mb = spawn('dist/mountebank/bin/mb', options);
         }
+
+        ['stdout', 'stderr'].forEach(function (stream) {
+            mb[stream].on('data', function () {
+                if (!calledDone) {
+                    calledDone = true;
+                    done();
+                }
+            });
+        });
     });
 
     grunt.registerTask('version', 'Set the version number', function () {
@@ -309,4 +303,6 @@ module.exports = function (grunt) {
     grunt.registerTask('coverage', 'Generate code coverage', ['mochaTest:coverage']);
     grunt.registerTask('lint', 'Run all JavaScript lint checks', ['wsCheck', 'jsCheck', 'deadCheck', 'jshint']);
     grunt.registerTask('default', ['version', 'test', 'lint']);
+    grunt.registerTask('appveyor', 'mb:stop causes unexplained build failures on AppVeyor',
+        ['version', 'test:unit', 'dist', 'mb:restart', 'mochaTest:functional', 'lint']);
 };
