@@ -41,7 +41,13 @@ function nonInjectableServer (command, mbPort) {
     var client = BaseHttpClient.create(protocol);
 
     describe(protocol + ' imposter', function () {
-        this.timeout(timeout);
+        if (isWindows) {
+            // slower process startup time because Windows
+            this.timeout(timeout*2);
+        }
+        else {
+            this.timeout(timeout);
+        }
 
         describe('POST /imposters with injections', function () {
             promiseIt('should allow javascript predicate for matching', function () {
