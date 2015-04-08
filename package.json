@@ -37,15 +37,15 @@
     "net"
   ],
   "dependencies": {
-    "ejs": "~2.2.4",
+    "ejs": "~2.3.1",
     "errorhandler": "^1.0.0",
     "express": "~4.12.0",
     "json-stable-stringify": "~1.0.0",
     "mailparser": "~0.4.1",
-    "npm": "~2.5.1",
-    "q": "~1.0.0",
+    "npm": "~2.7.4",
+    "q": "~1.2.0",
     "simplesmtp": "~0.3.16",
-    "winston": "~0.9.0",
+    "winston": "~1.0.0",
     "xml2js": "^0.4.4"
   },
   "devDependencies": {
