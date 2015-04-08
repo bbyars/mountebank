@@ -4,8 +4,6 @@ environment:
       - nodejs_version: 0.10
 
 test_script:
-  - cmd: echo Starting
   - cmd: build.bat
-  - cmd: echo Finishing
 
 build: off
