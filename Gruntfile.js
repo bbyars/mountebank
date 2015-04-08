@@ -122,8 +122,7 @@ module.exports = function (grunt) {
             mb;
 
         if (isWindows() && command === 'stop') {
-            // Avoid build failures in AppVeyor
-            // This means we're not stopping mb!!
+            console.log('Not shutting down mb on Windows due to unexplained AppVeyor build failures');
             done();
         }
         else {
