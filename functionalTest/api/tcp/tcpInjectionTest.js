@@ -10,7 +10,7 @@ var assert = require('assert'),
     Q = require('q'),
     promiseIt = require('../../testHelpers').promiseIt,
     port = api.port + 1,
-    timeout = parseInt(process.env.SLOW_TEST_TIMEOUT_MS || 3000);
+    timeout = parseInt(process.env.SLOW_TEST_TIMEOUT_MS || 4000);
 
 function nonInjectableServer (command, port) {
     var deferred = Q.defer(),
