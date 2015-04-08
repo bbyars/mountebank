@@ -113,7 +113,7 @@ module.exports = function (grunt) {
     grunt.registerTask('mb', 'start or stop mountebank', function (command) {
         command = command || 'start';
         if (['start', 'stop', 'restart'].indexOf(command) === -1) {
-            throw 'mb: the only targets are start and stop';
+            throw 'mb: the only targets are start, restart and stop';
         }
 
         var done = this.async(),
@@ -122,6 +122,10 @@ module.exports = function (grunt) {
             mb;
 
         if (isWindows()) {
+            if (command === 'stop') {
+                // Avoid build failures in AppVeyor
+                grunt.option('force', true);
+            }
             options.unshift('dist\\mountebank\\bin\\mb');
             mb = spawn('node', options);
         }
@@ -132,6 +136,9 @@ module.exports = function (grunt) {
         ['stdout', 'stderr'].forEach(function (stream) {
             mb[stream].on('data', function () {
                 if (!calledDone) {
+                    if (isWindows() && command === 'stop') {
+                        grunt.option('force', false);
+                    }
                     calledDone = true;
                     done();
                 }
