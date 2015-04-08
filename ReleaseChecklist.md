@@ -10,6 +10,7 @@ can satisfy the cross-platform pipeline requirements, and give a manual deploy.
   * change the FIRST_TRAVIS_BUILD_NUMBER_FOR_NEW_VERSION variable of the build script to reset the patch.
     * make it 2 more than the current Travis build to support the prep commit and the tag commit
   * update package.json
+  * update appveyor.yml
 # Update the releases.json
 # Change the views/releases/vx.x.x filename
   * Update validatorTest
