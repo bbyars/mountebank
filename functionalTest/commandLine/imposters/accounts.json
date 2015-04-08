@@ -28,7 +28,7 @@
       "responses": [
         {
           "is": {
-            "body": "Account 123"
+            "body": "<%- stringify(filename, 'account.xml') %>"
           }
         }
       ],

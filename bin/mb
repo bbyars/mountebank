@@ -10,7 +10,6 @@ var mountebank = require('../src/mountebank'),
     thisPackage = require('../package.json'),
     Q = require('q'),
     os = require('os'),
-    glob = require('glob'),
     ejs = require('ejs');
 
 function usage () {
@@ -18,7 +17,7 @@ function usage () {
     console.log('Commands: start, stop, restart, help (defaults to start)');
     console.log('Options:');
     console.log('    --port PORT       the port to run the mountebank server on (default 2525)');
-    console.log('    --configfile      file to load imposters from, can be a glob pattern for multiple files');
+    console.log('    --configfile      file to load imposters from, can be an EJS template');
     console.log('    --pidfile FILE    where the pid is stored for the stop command (default mb.pid)');
     console.log('    --logfile FILE    file used for all log (default mb.log)');
     console.log('    --loglevel LEVEL  level for terminal logs (default info)');
@@ -123,55 +122,31 @@ function putConfig (options, body) {
     return deferred.promise;
 }
 
-function parseFunction (filename, text) {
-    // parsed with assistance from an answer on http://stackoverflow.com/questions/7650071/is-there-a-way-to-create-a-function-from-a-string-with-javascript
-    var pattern = /function\s*\w*\s*\(([^)]*)\)[ \r\n\t]*\{(.*)\}/gmi,
-        match = pattern.exec(text.replace(/\n/g, ' '));
-
-    if (match) {
-        /* jshint evil: true */
-        return new Function(match[1].split(','), match[2]);
-    }
-    else {
-        error('Trying to inject ' + filename + ', but it does not appear to be a JavaScript function');
-    }
-}
-
-function inject (filename, includeFile) {
+function stringify (filename, includeFile) {
     var resolvedPath = path.join(path.dirname(filename), includeFile),
         contents = fs.readFileSync(resolvedPath, 'utf8'),
-        fn = parseFunction(resolvedPath, contents),
-        jsonString = JSON.stringify(fn.toString());
+        jsonString = JSON.stringify(contents);
 
     // get rid of the surrounding quotes because it makes the templates more natural to quote them there
     return jsonString.substring(1, jsonString.length - 1);
 }
 
 function loadConfig (commandLine) {
-    glob(commandLine.options.configfile, {}, function (error, files) {
-        var imposters = [];
+    var configContents = fs.readFileSync(commandLine.options.configfile, 'utf8'),
+        parsedContents = ejs.render(configContents, {
+            filename: commandLine.options.configfile,
+            stringify: stringify,
+            inject: stringify       // backwards compatibility
+        }),
+        json = JSON.parse(parsedContents),
+        imposters = json.imposters;
 
-        if (error) {
-            console.log(error);
-            process.exit(2);
-        }
+    if (!imposters) {
+        // Assume they left off the outer imposters array
+        imposters = [json];
+    }
 
-        // Allow supporting multiple config files through a globbing pattern
-        files.map(function (file) {
-            var configContents = fs.readFileSync(file, 'utf8'),
-                parsedContents = ejs.render(configContents, { filename: file, inject: inject }),
-                json = JSON.parse(parsedContents),
-                newImposters = json.imposters;
-
-            if (!newImposters) {
-                // Assume they keep each imposter in a separate file with no outer imposters array
-                newImposters = [json];
-            }
-            Array.prototype.push.apply(imposters, newImposters);
-        });
-
-        return putConfig(commandLine.options, JSON.stringify({ imposters: imposters }));
-    });
+    return putConfig(commandLine.options, JSON.stringify({ imposters: imposters }));
 }
 
 try {

@@ -36,11 +36,13 @@ function create (options) {
         logsController = LogsController.create(options.logfile),
         configController = ConfigController.create(thisPackage.version, options),
         feedController = FeedController.create(thisPackage.version, releases, options),
-        validateImposterExists = middleware.createImposterValidator(imposters);
+        validateImposterExists = middleware.createImposterValidator(imposters),
+        welcome = util.format('mountebank v%s now taking orders - point your browser to http://localhost:%s for help',
+            thisPackage.version, options.port);
 
     logger.remove(logger.transports.Console);
     if (process.stdout.isTTY) {
-      logger.add(logger.transports.Console, { colorize: true, level: options.loglevel });
+        logger.add(logger.transports.Console, { colorize: true, level: options.loglevel });
     }
     logger.add(logger.transports.File, {
         filename: options.logfile,
@@ -64,10 +66,6 @@ function create (options) {
     app.set('views', path.join(__dirname, 'views'));
     app.set('view engine', 'ejs');
     app.set('json spaces', 2);
-
-    app.listen(options.port);
-    console.log(util.format('mountebank v%s now taking orders - point your browser to http://localhost:%s for help',
-        thisPackage.version, options.port));
 
     app.get('/', homeController.get);
     app.get('/imposters', impostersController.get);
@@ -111,6 +109,15 @@ function create (options) {
             response.render(endpoint.substring(1), { version: thisPackage.version });
         });
     });
+
+    app.listen(options.port);
+
+    logger.info(welcome);
+    if (!process.stdout.isTTY) {
+        // needed for a number of functional tests (e.g. httpInjectionTest.js)
+        // that need to wait for a new mb process to start without a TTY
+        console.log(welcome);
+    }
 
     return {
         close: function () { logger.info('Adios - see you soon?'); }

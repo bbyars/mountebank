@@ -46,7 +46,6 @@
     "q": "~1.0.0",
     "simplesmtp": "~0.3.16",
     "winston": "~0.9.0",
-    "glob": "~4.4.0",
     "xml2js": "^0.4.4"
   },
   "devDependencies": {

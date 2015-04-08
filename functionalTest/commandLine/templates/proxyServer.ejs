@@ -4,7 +4,7 @@
   "name": "proxy",
   "stubs": [
     {
-      "responses": [{ "inject": "<%- inject(filename, 'counter.ejs') %>" }],
+      "responses": [{ "inject": "<%- stringify(filename, 'counter.ejs') %>" }],
       "predicates": [{
         "equals": {
           "method": "GET",
