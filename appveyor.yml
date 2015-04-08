@@ -3,7 +3,10 @@ environment:
   matrix:
       - nodejs_version: 0.10
 
-test_script:
-  - cmd: build.bat appveyor
+build_script:
+  - node --version
+  - npm --version
+  - build.bat appveyor
 
-build: off
+test: off
+
