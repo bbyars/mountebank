@@ -304,5 +304,5 @@ module.exports = function (grunt) {
     grunt.registerTask('lint', 'Run all JavaScript lint checks', ['wsCheck', 'jsCheck', 'deadCheck', 'jshint']);
     grunt.registerTask('default', ['version', 'test', 'lint']);
     grunt.registerTask('appveyor', 'mb:stop causes unexplained build failures on AppVeyor',
-        ['version', 'test:unit', 'dist', 'mb:restart', 'lint']);
+        [ 'lint']);
 };
