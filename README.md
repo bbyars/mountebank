@@ -26,7 +26,8 @@ Install:
 
     npm install -g mountebank --production
 
-Billions of other install options are [also available](http://www.mbtest.org/docs/install) with no platform dependencies.
+The npm install requires node 0.10.  Billions of other install options are
+[also available](http://www.mbtest.org/docs/install) with no platform dependencies.
 
 Run:
 
@@ -64,7 +65,8 @@ for any support questions.  Don't be shy!
 | Coveralls          | [![Coverage Status](https://coveralls.io/repos/bbyars/mountebank/badge.png?branch=master)](https://coveralls.io/r/bbyars/mountebank?branch=master) |
 | Static Analysis    | [![Codacy Badge](https://www.codacy.com/project/badge/c030a6aebe274e21b4ce11a74e01fa12)](https://www.codacy.com/public/brandonbyars/mountebank) |
 
-`./build` should do the trick on Mac and Linux, assuming you have node 0.10.  If not, yell at me.
+`./build` should do the trick on Mac and Linux, assuming you have node 0.10.  If not, yell at me.  mountebank
+does not yet work on node 0.12 or io.js (you are more than welcome to help fix that ;>).
 
 `build.bat` is your friend on Windows.  It's not as complete - some tests that verify documentation integrity
 are excluded because they depend on netcat.
