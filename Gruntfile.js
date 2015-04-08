@@ -303,6 +303,4 @@ module.exports = function (grunt) {
     grunt.registerTask('coverage', 'Generate code coverage', ['mochaTest:coverage']);
     grunt.registerTask('lint', 'Run all JavaScript lint checks', ['wsCheck', 'jsCheck', 'deadCheck', 'jshint']);
     grunt.registerTask('default', ['version', 'test', 'lint']);
-    grunt.registerTask('appveyor', 'mb:stop causes unexplained build failures on AppVeyor',
-        [ 'lint']);
 };
