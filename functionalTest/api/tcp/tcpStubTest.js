@@ -197,9 +197,12 @@ describe('tcp imposter', function () {
             }).then(function () {
                 return api.get('/imposters/' + port);
             }).then(function (response) {
-                var requests = response.body.requests;
-                assert.strictEqual(requests.length, 2);
-                assert.strictEqual(65537, requests[0].data.length + requests[1].data.length);
+                var requests = response.body.requests,
+                    dataLength = requests.reduce(function (sum, request) {
+                        return sum + request.data.length;
+                    }, 0);
+                assert.ok(requests.length > 1);
+                assert.strictEqual(65537, dataLength);
             }).finally(function () {
                 return api.del('/imposters');
             });
