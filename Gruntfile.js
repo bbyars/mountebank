@@ -121,29 +121,29 @@ module.exports = function (grunt) {
             options = [command, '--port', port, '--pidfile', 'mb-grunt.pid', '--allowInjection'],
             mb;
 
-        if (isWindows()) {
-            if (command === 'stop') {
-                // Avoid build failures in AppVeyor
-                grunt.option('force', true);
-            }
-            options.unshift('dist\\mountebank\\bin\\mb');
-            mb = spawn('node', options);
+        if (isWindows() && command === 'stop') {
+            // Avoid build failures in AppVeyor
+            // This means we're not stopping mb!!
+            done();
         }
         else {
-            mb = spawn('dist/mountebank/bin/mb', options);
-        }
+            if (isWindows()) {
+                options.unshift('dist\\mountebank\\bin\\mb');
+                mb = spawn('node', options);
+            }
+            else {
+                mb = spawn('dist/mountebank/bin/mb', options);
+            }
 
-        ['stdout', 'stderr'].forEach(function (stream) {
-            mb[stream].on('data', function () {
-                if (!calledDone) {
-                    if (isWindows() && command === 'stop') {
-                        grunt.option('force', false);
+            ['stdout', 'stderr'].forEach(function (stream) {
+                mb[stream].on('data', function () {
+                    if (!calledDone) {
+                        calledDone = true;
+                        done();
                     }
-                    calledDone = true;
-                    done();
-                }
+                });
             });
-        });
+        }
     });
 
     grunt.registerTask('version', 'Set the version number', function () {
