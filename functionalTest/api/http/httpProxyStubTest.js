@@ -426,4 +426,19 @@ describe('http proxy stubs', function () {
             return api.del('/imposters');
         });
     });
+
+    promiseIt('should support http proxy to https server', function () {
+        var proxyStub = { responses: [{ proxy: { to: 'https://google.com' } }] },
+            proxyRequest = { protocol: 'http', port: port, stubs: [proxyStub], name: this.name + ' proxy' };
+
+        return api.post('/imposters', proxyRequest).then(function (response) {
+            assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body, null, 2));
+            return client.get('/', port);
+        }).then(function (response) {
+            assert.strictEqual(response.statusCode, 301);
+            assert.strictEqual(response.headers.location, 'https://www.google.com/');
+        }).finally(function () {
+            return api.del('/imposters');
+        });
+    });
 });

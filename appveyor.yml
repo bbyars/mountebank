@@ -12,10 +12,7 @@ install:
   - ps: Update-NodeJsInstallation (Get-NodeJsLatestBuild $env:nodejs_version)
 
 build_script:
-  # Output useful info for debugging.
   - node --version && npm --version
-  # Test multiple Windows shells
-  - ps: "./build.bat # PowerShell" # Pass comment to PS for easier debugging
-  - cmd: build.bat
+  - build.bat
 
 test: off
