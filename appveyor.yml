@@ -4,6 +4,6 @@ environment:
       - nodejs_version: 0.10
 
 test_script:
-  - cmd: build.bat
+  - cmd: build.bat appveyor
 
 build: off
