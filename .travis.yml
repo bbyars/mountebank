@@ -1,11 +1,13 @@
 language: node_js
 node_js:
-- '0.10'
+  - '0.10'
+  - '0.12'
+  - 'iojs'
 rvm: '1.9.3'
 
 env:
   global:
-  - SLOW_TEST_TIMEOUT_MS=4000
+  - SLOW_TEST_TIMEOUT_MS=5000
   # HEROKU_API_KEY
   - secure: "BQunTTpCSGjhIYiBAXKxuuOluJIhKXdW/94GCsPlK1N8Ln20/nj/0U4qnSH7yASWQWssVG4ttm/cAbjfi+3DS4KDLtBGK1i3IoM+cJ2ADCeG7BHsqJDB0f9JyAkULjIRdkqilzR/tyD+w78pPHd7QbfplLvqUcnt7HVxw9lp4PY="
   # AWS_ACCESS_KEY
