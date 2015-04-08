@@ -57,10 +57,12 @@ for any support questions.  Don't be shy!
 
 ## Building
 
-* Travis CI (Linux) [![Build Status](https://travis-ci.org/bbyars/mountebank.png)](https://travis-ci.org/bbyars/mountebank)
-* AppVeyor (Windows) [![Build status](https://ci.appveyor.com/api/projects/status/acfhg44px95s4pk5?svg=true)](https://ci.appveyor.com/project/bbyars/mountebank)
-* Coveralls [![Coverage Status](https://coveralls.io/repos/bbyars/mountebank/badge.png?branch=master)](https://coveralls.io/r/bbyars/mountebank?branch=master)
-* Static Analysis [![Codacy Badge](https://www.codacy.com/project/badge/c030a6aebe274e21b4ce11a74e01fa12)](https://www.codacy.com/public/brandonbyars/mountebank)
+| Name               | Status |
+| ------------------ | ------ |
+| Travis CI (Linux)  | [![Build Status](https://travis-ci.org/bbyars/mountebank.png)](https://travis-ci.org/bbyars/mountebank) |
+| AppVeyor (Windows) | [![Build status](https://ci.appveyor.com/api/projects/status/acfhg44px95s4pk5?svg=true)](https://ci.appveyor.com/project/bbyars/mountebank) |
+| Coveralls          | [![Coverage Status](https://coveralls.io/repos/bbyars/mountebank/badge.png?branch=master)](https://coveralls.io/r/bbyars/mountebank?branch=master) |
+| Static Analysis    | [![Codacy Badge](https://www.codacy.com/project/badge/c030a6aebe274e21b4ce11a74e01fa12)](https://www.codacy.com/public/brandonbyars/mountebank) |
 
 `./build` should do the trick on Mac and Linux, assuming you have node 0.10.  If not, yell at me.
 
