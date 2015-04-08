@@ -1,3 +1,5 @@
+version: 1.2.{build}
+
 init:
   - git config --global core.autocrlf true
 
@@ -5,14 +7,18 @@ environment:
   SLOW_TEST_TIMEOUT_MS: 5000
   matrix:
       - nodejs_version: 0.10
+      - nodejs_version: 0.12
+      - nodejs_version: 1
 
 install:
   - ps: Update-NodeJsInstallation (Get-NodeJsLatestBuild $env:nodejs_version)
 
 build_script:
-  - node --version
-  - npm --version
-  - build.bat
+  # Output useful info for debugging.
+  - node --version && npm --version
+  # Test multiple Windows shells
+  - ps: "./build.bat # PowerShell" # Pass comment to PS for easier debugging
+  - cmd: build.bat
 
 test: off
 
