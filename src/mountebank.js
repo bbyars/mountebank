@@ -80,6 +80,11 @@ function create (options) {
     app.get('/releases', feedController.getReleases);
     app.get('/releases/:version', feedController.getRelease);
 
+    app.get('/sitemap', function (request, response) {
+        response.type('text/plain');
+        response.render('sitemap', { releases: releases });
+    });
+
     [
         '/support',
         '/contributing',
