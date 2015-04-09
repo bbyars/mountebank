@@ -30,7 +30,10 @@ imposters, let's create both an http imposter and a tcp one.  We'll use the
 <code>curl</code> command line tool to call mountebank's
 <a href='/docs/api/overview'>api</a>.  The following command creates the
 http imposter, listening on port 4545, by <code>POST</code>ing to
-http://localhost:2525/imposters with the body that we dump into imposter.json.
+http://localhost:2525/imposters with the body that we dump into imposter.json
+(for those of you unfamiliar with the bash shell commands below, the
+<code>cat &lt;&lt; EOF &gt; imposter.json</code> command is simply writing
+the JSON that follows to a file to be sent to the <code>curl</code> command).
 The <code>predicates</code> are optional - if you don't include any, the stub
 always matches, and the response is always sent.  See the
 <a href='/docs/api/predicates'>predicates</a> page for more detail.</p>
