@@ -94,7 +94,7 @@ describe('SoapRequest', function () {
                         '   </soap-env:Body>\n' +
                         '</soap-env:Envelope>',
                 promise = SoapRequest.createFrom(httpRequest).then(function (soapRequest) {
-                        assert.strictEqual(soapRequest.methodName, 'GetLastTradePrice');
+                        assert.strictEqual(soapRequest.method, 'GetLastTradePrice');
                     });
 
             httpRequest.emit('data', body);
@@ -115,7 +115,7 @@ describe('SoapRequest', function () {
                         '   </soap:Body>\n' +
                         '</soap:Envelope>',
                 promise = SoapRequest.createFrom(httpRequest).then(function (soapRequest) {
-                        assert.strictEqual(soapRequest.methodName, 'GetLastTradePrice');
+                        assert.strictEqual(soapRequest.method, 'GetLastTradePrice');
                     });
 
             httpRequest.emit('data', body);
@@ -136,7 +136,7 @@ describe('SoapRequest', function () {
                     '   </soap:Body>\n' +
                     '</soap:Envelope>',
                 promise = SoapRequest.createFrom(httpRequest).then(function (soapRequest) {
-                    assert.strictEqual(soapRequest.methodName, 'GetLastTradePrice');
+                    assert.strictEqual(soapRequest.method, 'GetLastTradePrice');
                 });
 
             httpRequest.emit('data', body);
