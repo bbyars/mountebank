@@ -1,8 +1,7 @@
 'use strict';
 
 var assert = require('assert'),
-    WSDL = require('../../../src/models/soap/wsdl'),
-    promiseIt = require('../../testHelpers').promiseIt;
+    WSDL = require('../../../src/models/soap/wsdl');
 
 describe('WSDL', function () {
     describe('#parse', function () {

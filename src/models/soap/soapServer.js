@@ -48,7 +48,8 @@ function createServer (options, recordRequests) {
         logger = ScopedLogger.create(baseLogger, scopeFor(options.port)),
         proxy = HttpProxy.create(logger),
         wsdl = WSDL.parse(options.wsdl),
-        postProcess = function (stub, request) {
+        postProcess = function (stub) {
+            /* jshint maxcomplexity: 6 */
             var response = {
                 http: { headers: stub.headers || {} },
                 response: stub.response || {}
