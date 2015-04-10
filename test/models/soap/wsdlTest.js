@@ -11,6 +11,6 @@ describe('WSDL', function () {
 
         it('is not empty when something is passed in', function () {
             assert.ok(!WSDL.parse('wsdl').isEmpty());
-        })
+        });
     });
 });

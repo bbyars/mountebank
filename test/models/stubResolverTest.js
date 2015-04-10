@@ -23,13 +23,13 @@ describe('stubResolver', function () {
         });
 
         promiseIt('should post process the result', function () {
-            var postProcess = function (response) { return response.toUpperCase();},
+            var postProcess = function (response, request) { return response.toUpperCase() + '-' + request.value;},
                 resolver = StubResolver.create({}, postProcess),
                 logger = { debug: mock() },
                 stub = { is: 'value' };
 
-            return resolver.resolve(stub, {}, logger, []).then(function (response) {
-                assert.strictEqual(response, 'VALUE');
+            return resolver.resolve(stub, { value: 'REQUEST' }, logger, []).then(function (response) {
+                assert.strictEqual(response, 'VALUE-REQUEST');
             });
         });
 

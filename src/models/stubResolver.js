@@ -134,7 +134,10 @@ function create (proxy, postProcess) {
         var addBehaviors = function (response) {
                 return behaviors.execute(request, response, stubResolver._behaviors, logger);
             },
-            postProcessAndReturnPromise = combinators.compose(Q, addBehaviors, postProcess);
+            postProcessWithRequest = function (stub) {
+                return postProcess(stub, request);
+            },
+            postProcessAndReturnPromise = combinators.compose(Q, addBehaviors, postProcessWithRequest);
         return process(stubResolver, request, logger, stubs).then(postProcessAndReturnPromise);
     }
 
