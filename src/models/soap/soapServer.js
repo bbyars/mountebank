@@ -13,24 +13,8 @@ var http = require('http'),
     DryRunValidator = require('../dryRunValidator'),
     Domain = require('domain'),
     errors = require('../../util/errors'),
-    soapRequest = require('./soapRequest');
-
-function postProcess (stub) {
-    var response = {
-            statusCode: stub.statusCode || 202,
-            headers: stub.headers || {},
-            body: stub.body || ''
-        };
-
-    // We don't want to use keepalive connections, because a test case
-    // may shutdown the stub, which prevents new connections for
-    // the port, but that won't prevent the system under test
-    // from reusing an existing TCP connection after the stub
-    // has shutdown, causing difficult to track down bugs when
-    // multiple tests are run.
-    response.headers.connection = 'close';
-    return response;
-}
+    soapRequest = require('./soapRequest'),
+    WSDL = require('./wsdl');
 
 function scopeFor (port, name) {
     var scope = util.format('soap:%s', port);
@@ -63,6 +47,39 @@ function createServer (options, recordRequests) {
         requests = [],
         logger = ScopedLogger.create(baseLogger, scopeFor(options.port)),
         proxy = HttpProxy.create(logger),
+        wsdl = WSDL.parse(options.wsdl),
+        postProcess = function (stub, request) {
+            var response = {
+                http: { headers: stub.headers || {} },
+                response: stub.response || {}
+            };
+
+            if (wsdl.isEmpty()) {
+                // Default to one way message exchange pattern
+                response.http.statusCode = stub.statusCode || 202;
+                response.http.body = '';
+            }
+            else {
+                response.http.statusCode = stub.statusCode || 200;
+                response.http.body = '<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:sam="http://www.soapui.org/sample/">\n' +
+                    '   <soapenv:Header/>\n' +
+                    '   <soapenv:Body>\n' +
+                    '       <sam:loginResponse>\n' +
+                    '           <sessionid>SUCCESS</sessionid>\n' +
+                    '       </sam:loginResponse>\n' +
+                    '   </soapenv:Body>\n' +
+                    '</soapenv:Envelope>';
+                    //util.format(
+                    //'<soapenv:Envelope xmlns:%s xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/">\n' +
+                    //'   <soapenv:Header/>\n' +
+                    //'   <soapenv:Body>%s</soapenv:Body>\n' +
+                    //'</soapenv:Envelope>', wsdl.namespaceFor(request), wsdl.bodyFor(stub, request));
+                //TODO: Need to change postProcess so that it accepts the request
+            }
+
+            response.http.headers.connection = 'close';
+            return response;
+        },
         resolver = StubResolver.create(proxy, postProcess),
         stubs = StubRepository.create(resolver, recordRequests, 'utf8'),
         server = http.createServer(),
@@ -83,6 +100,7 @@ function createServer (options, recordRequests) {
         domain.on('error', errorHandler);
         domain.run(function () {
             soapRequest.createFrom(request).then(function (simpleRequest) {
+                logger.info('%s => %s', clientName, simpleRequest.method);
                 logger.debug('%s => %s', clientName, JSON.stringify(simpleRequest));
                 if (recordRequests) {
                     requests.push(simpleRequest);
@@ -90,8 +108,8 @@ function createServer (options, recordRequests) {
 
                 return stubs.resolve(simpleRequest, logger.withScope(helpers.socketName(request.socket)));
             }).then(function (stubResponse) {
-                response.writeHead(stubResponse.statusCode, stubResponse.headers);
-                response.end(stubResponse.body, 'utf8');
+                response.writeHead(stubResponse.http.statusCode, stubResponse.http.headers);
+                response.end(stubResponse.http.body, 'utf8');
                 return stubResponse;
             }).done(function (response) {
                 logger.debug('%s <= %s', clientName, JSON.stringify(response));

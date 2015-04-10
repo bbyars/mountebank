@@ -1,0 +1,154 @@
+<!-- SOAP-UI's sample WSDL project -->
+<wsdl:definitions name="sample" targetNamespace="http://www.soapui.org/sample/"
+                  xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:tns="http://www.soapui.org/sample/"
+                  xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/">
+    <wsdl:types>
+        <xsd:schema targetNamespace="http://www.soapui.org/sample/">
+            <xsd:element name="searchResponseContent">
+                <xsd:complexType>
+                    <xsd:sequence>
+                        <xsd:element name="item" type="tns:ItemType" maxOccurs="unbounded"/>
+                    </xsd:sequence>
+                </xsd:complexType>
+            </xsd:element>
+            <xsd:complexType name="ItemType">
+                <xsd:sequence>
+                    <xsd:element name="id" type="xsd:string"/>
+                    <xsd:element name="description" type="xsd:string"/>
+                    <xsd:element name="price" type="xsd:string"/>
+                </xsd:sequence>
+            </xsd:complexType>
+            <xsd:element name="buyResponseContent">
+                <xsd:complexType>
+                    <xsd:sequence>
+                        <xsd:element name="purchasestatus" type="tns:PurchaseStatusType" maxOccurs="unbounded"/>
+                    </xsd:sequence>
+                </xsd:complexType>
+            </xsd:element>
+            <xsd:complexType name="PurchaseStatusType">
+                <xsd:sequence>
+                    <xsd:element name="id" type="xsd:string"/>
+                    <xsd:element name="stockStatus" type="xsd:string"/>
+                    <xsd:element name="expectedDelivery" type="xsd:string"/>
+                </xsd:sequence>
+            </xsd:complexType>
+        </xsd:schema>
+    </wsdl:types>
+    <wsdl:message name="loginRequest">
+        <wsdl:part name="username" type="xsd:string"/>
+        <wsdl:part name="password" type="xsd:string"/>
+    </wsdl:message>
+    <wsdl:message name="loginResponse">
+        <wsdl:part name="sessionid" type="xsd:string"/>
+    </wsdl:message>
+    <wsdl:message name="logoutResponse">
+        <wsdl:part name="sessioninfo" type="xsd:string"/>
+    </wsdl:message>
+    <wsdl:message name="logoutRequest">
+        <wsdl:part name="sessionid" type="xsd:string"/>
+    </wsdl:message>
+    <wsdl:message name="searchRequest">
+        <wsdl:part name="sessionid" type="xsd:string"/>
+        <wsdl:part name="searchstring" type="xsd:string"/>
+    </wsdl:message>
+    <wsdl:message name="searchResponse">
+        <wsdl:part name="searchresult" element="tns:searchResponseContent"/>
+    </wsdl:message>
+    <wsdl:message name="buyRequest">
+        <wsdl:part name="sessionid" type="xsd:string"/>
+        <wsdl:part name="buystring" type="xsd:string"/>
+    </wsdl:message>
+    <wsdl:message name="buyResponse">
+        <wsdl:part name="buyresult" element="tns:buyResponseContent"/>
+    </wsdl:message>
+    <wsdl:message name="login_faultMsg">
+        <wsdl:part name="loginFault" type="xsd:string"/>
+    </wsdl:message>
+    <wsdl:message name="logout_faultMsg">
+        <wsdl:part name="logoutFault" type="xsd:string"/>
+    </wsdl:message>
+    <wsdl:message name="search_faultMsg">
+        <wsdl:part name="searchFault" type="xsd:string"/>
+    </wsdl:message>
+    <wsdl:message name="buy_faultMsg">
+        <wsdl:part name="buyFault" type="xsd:string"/>
+    </wsdl:message>
+    <wsdl:portType name="ISampleService">
+        <wsdl:operation name="login">
+            <wsdl:input message="tns:loginRequest"/>
+            <wsdl:output message="tns:loginResponse"/>
+            <wsdl:fault name="fault" message="tns:login_faultMsg"/>
+        </wsdl:operation>
+        <wsdl:operation name="logout">
+            <wsdl:input message="tns:logoutRequest"/>
+            <wsdl:output message="tns:logoutResponse"/>
+            <wsdl:fault name="fault" message="tns:logout_faultMsg"/>
+        </wsdl:operation>
+        <wsdl:operation name="search">
+            <wsdl:input message="tns:searchRequest"/>
+            <wsdl:output message="tns:searchResponse"/>
+            <wsdl:fault name="fault" message="tns:search_faultMsg"/>
+        </wsdl:operation>
+        <wsdl:operation name="buy">
+            <wsdl:input message="tns:buyRequest"/>
+            <wsdl:output message="tns:buyResponse"/>
+            <wsdl:fault name="fault" message="tns:buy_faultMsg"/>
+        </wsdl:operation>
+    </wsdl:portType>
+    <wsdl:binding name="SampleServiceSoapBinding" type="tns:ISampleService">
+        <soap:binding style="rpc" transport="http://schemas.xmlsoap.org/soap/http"/>
+        <wsdl:operation name="login">
+            <soap:operation soapAction="http://www.soapui.org/sample/login"/>
+            <wsdl:input>
+                <soap:body use="literal" namespace="http://www.soapui.org/sample/"/>
+            </wsdl:input>
+            <wsdl:output>
+                <soap:body use="literal" namespace="http://www.soapui.org/sample/"/>
+            </wsdl:output>
+            <wsdl:fault name="fault">
+                <soap:fault use="literal" name="fault"/>
+            </wsdl:fault>
+        </wsdl:operation>
+        <wsdl:operation name="logout">
+            <soap:operation soapAction="http://www.soapui.org/sample/logout"/>
+            <wsdl:input>
+                <soap:body use="literal" namespace="http://www.soapui.org/sample/"/>
+            </wsdl:input>
+            <wsdl:output>
+                <soap:body use="literal" namespace="http://www.soapui.org/sample/"/>
+            </wsdl:output>
+            <wsdl:fault name="fault">
+                <soap:fault use="literal" name="fault"/>
+            </wsdl:fault>
+        </wsdl:operation>
+        <wsdl:operation name="search">
+            <soap:operation soapAction="http://www.soapui.org/sample/search"/>
+            <wsdl:input>
+                <soap:body use="literal" namespace="http://www.soapui.org/sample/"/>
+            </wsdl:input>
+            <wsdl:output>
+                <soap:body use="literal" namespace="http://www.soapui.org/sample/"/>
+            </wsdl:output>
+            <wsdl:fault name="fault">
+                <soap:fault use="literal" name="fault"/>
+            </wsdl:fault>
+        </wsdl:operation>
+        <wsdl:operation name="buy">
+            <soap:operation soapAction="http://www.soapui.org/sample/buy"/>
+            <wsdl:input>
+                <soap:body use="literal" namespace="http://www.soapui.org/sample/"/>
+            </wsdl:input>
+            <wsdl:output>
+                <soap:body use="literal" namespace="http://www.soapui.org/sample/"/>
+            </wsdl:output>
+            <wsdl:fault name="fault">
+                <soap:fault use="literal" name="fault"/>
+            </wsdl:fault>
+        </wsdl:operation>
+    </wsdl:binding>
+    <wsdl:service name="SampleService">
+        <wsdl:port name="SamplePort" binding="tns:SampleServiceSoapBinding">
+            <soap:address location="http://localhost:$PORT/SoapStubTest"/>
+        </wsdl:port>
+    </wsdl:service>
+</wsdl:definitions>
