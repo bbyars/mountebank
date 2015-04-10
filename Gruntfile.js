@@ -184,9 +184,9 @@ module.exports = function (grunt) {
                         tabErrors = line.match(/^.*\t.*$/) || [];
 
                     errors = errors.concat(trailingWhitespaceErrors.map(function () {
-                        return file + ' has trailing whitespace\n\t' + line;
+                        return file + ' has trailing whitespace\n\t<<' + line + '>>';
                     })).concat(tabErrors.map(function () {
-                        return file + ' has tabs instead of spaces\n\t' + line;
+                        return file + ' has tabs instead of spaces\n\t<<' + line + '>>';
                     }));
                 });
 
