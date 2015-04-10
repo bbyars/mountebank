@@ -209,7 +209,7 @@ module.exports = function (grunt) {
 
     grunt.registerTask('jsCheck', 'Run JavaScript checks not covered by jshint', function () {
         var errors = [],
-            wsCheck = function (file) {
+            jsCheck = function (file) {
                 var contents = fs.readFileSync(file, 'utf8'),
                     lines = contents.split(os.EOL);
 
@@ -229,7 +229,7 @@ module.exports = function (grunt) {
             },
             exclusions = ['node_modules', 'dist', 'Gruntfile.js', 'testHelpers.js'];
 
-        forEachFileIn('.', wsCheck, { exclude: exclusions, filetype: '.js' });
+        forEachFileIn('.', jsCheck, { exclude: exclusions, filetype: '.js' });
 
         if (errors.length > 0) {
             console.error(errors.join(os.EOL));
