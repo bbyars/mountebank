@@ -5,7 +5,8 @@ var assert = require('assert'),
     promiseIt = require('../../testHelpers').promiseIt,
     port = api.port + 1,
     timeout = parseInt(process.env.SLOW_TEST_TIMEOUT_MS || 2000),
-    http = require('../http/baseHttpClient').create('http');
+    http = require('../http/baseHttpClient').create('http'),
+    fs = require('fs');
 
 describe('soap imposter', function () {
     this.timeout(timeout);
@@ -50,6 +51,65 @@ describe('soap imposter', function () {
                 assert.deepEqual({ symbol: 'DIS' }, request.parameters);
                 assert.strictEqual('POST', request.http.method);
                 assert.strictEqual('/StockQuote', request.http.path);
+            }).finally(function () {
+                return api.del('/imposters');
+            });
+        });
+
+        promiseIt('should return stubbed response', function () {
+            // example borrowed from the sample that ships with SOAP UI
+            var wsdl = fs.readFileSync(__dirname + '/wsdl/sample-service.wsdl', 'utf8').replace('$PORT', port),
+                stub = {
+                    predicates: [{
+                        equals: {
+                            http: {
+                                method: 'POST',
+                                path: '/SoapStubTest'
+                            },
+                            method: 'login',
+                            parameters: {
+                                username: 'user',
+                                password: 'letmein'
+                            }
+                        }
+                    }],
+                    responses: [{ is: { response: { sessionid: 'SUCCESS' } } }]
+                },
+                request = { protocol: 'soap', wsdl: wsdl, port: port, stubs: [stub], name: this.name };
+
+            return api.post('/imposters', request).then(function (response) {
+                assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body));
+
+                var body = '<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:sam="http://www.soapui.org/sample/">\n' +
+                    '    <soapenv:Header/>\n' +
+                    '    <soapenv:Body>\n' +
+                    '        <sam:login>\n' +
+                    '            <username>user</username>\n' +
+                    '            <password>letmein</password>\n' +
+                    '        </sam:login>\n' +
+                    '    </soapenv:Body>\n' +
+                    '</soapenv:Envelope>';
+                return http.responseFor({
+                    method: 'POST',
+                    path: '/SoapStubTest',
+                    port: port,
+                    headers: {
+                        'content-type': 'text/xml; charset="utf-8"',
+                        SOAPAction: '""'
+                    },
+                    body: body
+                });
+            }).then(function (response) {
+                assert.strictEqual(response.statusCode, 200);
+                assert.strictEqual(response.body,
+                    '<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:sam="http://www.soapui.org/sample/">\n' +
+                    '   <soapenv:Header/>\n' +
+                    '   <soapenv:Body>\n' +
+                    '       <sam:loginResponse>\n' +
+                    '           <sessionid>SUCCESS</sessionid>\n' +
+                    '       </sam:loginResponse>\n' +
+                    '   </soapenv:Body>\n' +
+                    '</soapenv:Envelope>');
             }).finally(function () {
                 return api.del('/imposters');
             });
