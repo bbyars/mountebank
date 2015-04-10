@@ -4,6 +4,35 @@ var Q = require('q'),
     httpRequest = require('../http/httpRequest'),
     xml2js = require('xml2js');
 
+function isArrayOfObjects (obj) {
+    return Array.isArray(obj) && obj.length > 0 && typeof obj[0] === 'object';
+}
+
+function getNamespaces (body) {
+    var map = {},
+        collectNamespaces = function (obj) {
+            Object.keys(obj).forEach(function (key) {
+                if (key === '$') {
+                    // xml2js key name for XML attributes
+                    Object.keys(obj[key]).forEach(function (attributeName) {
+                        if (attributeName.toLowerCase().indexOf('xmlns:') === 0) {
+                            map[attributeName.replace('xmlns:', '')] = obj[key][attributeName];
+                        }
+                    });
+                }
+                else if (isArrayOfObjects(obj[key])) {
+                    obj[key].forEach(collectNamespaces);
+                }
+                else if (typeof obj[key] === 'object' && !Array.isArray(obj[key])) {
+                    collectNamespaces(obj[key]);
+                }
+            });
+        };
+
+    collectNamespaces(body);
+    return map;
+}
+
 function getSoapBody (body) {
     var traverse = function (doc, key) {
             var namespacedKey = Object.keys(doc).filter(function (tagName) {
@@ -16,11 +45,21 @@ function getSoapBody (body) {
     return traverse(envelope, 'body')[0];
 }
 
-function getMethodName (body) {
+function getMethod (body, namespaces) {
     var soapBody = getSoapBody(body),
-        operation = Object.keys(soapBody)[0];
+        operation = Object.keys(soapBody)[0],
+        namespacePrefix = operation.substring(0, operation.indexOf(':')),
+        namespaceURI = namespaces[namespacePrefix];
 
-    return operation.substring(operation.indexOf(':') + 1);
+    if (!namespaceURI) {
+        // assume an xmlns attribute on this node
+        namespaceURI = soapBody[operation][0].$.xmlns;
+    }
+
+    return {
+        name: operation.substring(operation.indexOf(':') + 1),
+        URI: namespaceURI
+    };
 }
 
 function getParametersFrom (rootNode) {
@@ -52,9 +91,11 @@ function getParameters (body) {
 }
 
 function transform (request, body) {
+    var namespaces = getNamespaces(body);
+
     return {
         http: request,
-        method: getMethodName(body),
+        method: getMethod(body, namespaces),
         parameters: getParameters(body)
     };
 }

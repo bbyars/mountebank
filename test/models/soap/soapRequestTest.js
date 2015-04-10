@@ -82,20 +82,21 @@ describe('SoapRequest', function () {
             return promise;
         });
 
-        promiseIt('should set method from xml', function () {
+        promiseIt('should set method from xml with namespace defined in the soap-env element', function () {
             var body = '<?xml version="1.0"?>\n' +
                         '<soap-env:Envelope\n' +
                         ' xmlns:soap-env="http://schemas.xmlsoap.org/soap/envelope/"\n' +
-                        ' soap-env:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">\n' +
+                        ' soap-env:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"\n' +
+                        ' xmlns:m="Some-URI">\n' +
                         '   <soap-env:Body>\n' +
-                        '       <m:GetLastTradePrice xmlns:m="Some-URI">\n' +
+                        '       <m:GetLastTradePrice>\n' +
                         '           <symbol>DIS</symbol>\n' +
                         '       </m:GetLastTradePrice>\n' +
                         '   </soap-env:Body>\n' +
                         '</soap-env:Envelope>',
                 promise = SoapRequest.createFrom(httpRequest).then(function (soapRequest) {
-                        assert.strictEqual(soapRequest.method, 'GetLastTradePrice');
-                    });
+                    assert.deepEqual(soapRequest.method, { name: 'GetLastTradePrice', URI: 'Some-URI' });
+                });
 
             httpRequest.emit('data', body);
             httpRequest.emit('end');
@@ -103,20 +104,20 @@ describe('SoapRequest', function () {
             return promise;
         });
 
-        promiseIt('should set method from xml with different namespace prefix', function () {
+        promiseIt('should set method from xml with namespace defined on method element', function () {
             var body = '<?xml version="1.0"?>\n' +
                         '<soap:Envelope\n' +
                         ' xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"\n' +
                         ' soap:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">\n' +
                         '   <soap:Body>\n' +
-                        '       <k:GetLastTradePrice xmlns:k="Some-URI">\n' +
+                        '       <GetLastTradePrice xmlns="Some-URI">\n' +
                         '           <symbol>DIS</symbol>\n' +
-                        '       </k:GetLastTradePrice>\n' +
+                        '       </GetLastTradePrice>\n' +
                         '   </soap:Body>\n' +
                         '</soap:Envelope>',
                 promise = SoapRequest.createFrom(httpRequest).then(function (soapRequest) {
-                        assert.strictEqual(soapRequest.method, 'GetLastTradePrice');
-                    });
+                    assert.deepEqual(soapRequest.method, { name: 'GetLastTradePrice', URI: 'Some-URI' });
+                });
 
             httpRequest.emit('data', body);
             httpRequest.emit('end');
@@ -136,7 +137,7 @@ describe('SoapRequest', function () {
                     '   </soap:Body>\n' +
                     '</soap:Envelope>',
                 promise = SoapRequest.createFrom(httpRequest).then(function (soapRequest) {
-                    assert.strictEqual(soapRequest.method, 'GetLastTradePrice');
+                    assert.deepEqual(soapRequest.method, { name: 'GetLastTradePrice', URI: 'Some-URI' });
                 });
 
             httpRequest.emit('data', body);

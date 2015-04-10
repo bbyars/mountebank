@@ -47,10 +47,10 @@ describe('soap imposter', function () {
                 assert.strictEqual(1, response.body.requests.length);
 
                 var request = response.body.requests[0];
-                assert.strictEqual('GetLastTradePrice', request.method);
-                assert.deepEqual({ symbol: 'DIS' }, request.parameters);
-                assert.strictEqual('POST', request.http.method);
-                assert.strictEqual('/StockQuote', request.http.path);
+                assert.deepEqual(request.method, { name: 'GetLastTradePrice', URI: 'Some-URI' });
+                assert.deepEqual(request.parameters, { symbol: 'DIS' });
+                assert.strictEqual(request.http.method, 'POST');
+                assert.strictEqual(request.http.path, '/StockQuote');
             }).finally(function () {
                 return api.del('/imposters');
             });
@@ -66,7 +66,9 @@ describe('soap imposter', function () {
                                 method: 'POST',
                                 path: '/SoapStubTest'
                             },
-                            method: 'login',
+                            method: {
+                                name: 'login'
+                            },
                             parameters: {
                                 username: 'user',
                                 password: 'letmein'

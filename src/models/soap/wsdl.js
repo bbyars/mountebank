@@ -1,10 +1,22 @@
 'use strict';
 
 function parse (wsdl) {
+    function isEmpty () {
+        return !wsdl;
+    }
+
+    function namespaceFor () {
+
+    }
+
+    function bodyFor () {
+
+    }
+
     return {
-        isEmpty: function () {
-            return !wsdl;
-        }
+        isEmpty: isEmpty,
+        namespaceFor: namespaceFor,
+        bodyFor: bodyFor
     };
 }
 
