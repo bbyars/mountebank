@@ -119,7 +119,7 @@ function createServer (logger, options) {
 function initialize (allowInjection, recordRequests) {
     var implementation = {
             protocolName: 'tcp',
-            createServer: combinators.curry(createServer),
+            createServer: createServer,
             Request: TcpRequest
         };
 
