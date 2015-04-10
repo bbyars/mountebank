@@ -12,12 +12,12 @@ var http = require('http'),
     HttpProxy = require('../http/httpProxy'),
     DryRunValidator = require('../dryRunValidator'),
     Domain = require('domain'),
-    url = require('url'),
-    errors = require('../../util/errors');
+    errors = require('../../util/errors'),
+    soapRequest = require('./soapRequest');
 
 function postProcess (stub) {
     var response = {
-            statusCode: stub.statusCode || 200,
+            statusCode: stub.statusCode || 202,
             headers: stub.headers || {},
             body: stub.body || ''
         };
@@ -53,27 +53,6 @@ function logConnection (logger, socket) {
     socket.on('close', function () { logger.debug('%s CLOSED', name); });
 }
 
-function transform (request) {
-    var parts = url.parse(request.url, true);
-    return {
-        requestFrom: helpers.socketName(request.socket),
-        method: request.method,
-        path: parts.pathname,
-        query: parts.query,
-        headers: request.headers,
-        body: request.body
-    };
-}
-
-function createSimplifiedRequestFrom (request) {
-    var deferred = Q.defer();
-    request.body = '';
-    request.setEncoding('utf8');
-    request.on('data', function (chunk) { request.body += chunk; });
-    request.on('end', function () { deferred.resolve(transform(request)); });
-    return deferred.promise;
-}
-
 /**
  * Spins up a server listening on a socket
  * @param options - the JSON request body for the imposter create request
@@ -103,7 +82,7 @@ function createServer (options, recordRequests) {
 
         domain.on('error', errorHandler);
         domain.run(function () {
-            createSimplifiedRequestFrom(request).then(function (simpleRequest) {
+            soapRequest.createFrom(request).then(function (simpleRequest) {
                 logger.debug('%s => %s', clientName, JSON.stringify(simpleRequest));
                 if (recordRequests) {
                     requests.push(simpleRequest);
@@ -111,18 +90,8 @@ function createServer (options, recordRequests) {
 
                 return stubs.resolve(simpleRequest, logger.withScope(helpers.socketName(request.socket)));
             }).then(function (stubResponse) {
-                var body = '<?xml version="1.0"?>\n' +
-                            '<soap-env:Envelope ' +
-                            'xmlns:soap-env="http://schemas.xmlsoap.org/soap/envelope/" ' +
-                            'soap-env:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>\n' +
-                            '   <soap-env:Body>\n' +
-                            '       <m:GetLastTradePriceResponse xmlns:m="Some-URI">\n' +
-                            '           <Price>34.5</Price>\n' +
-                            '       </m:GetLastTradePriceResponse>\n' +
-                            '   </soap-env:Body>\n' +
-                            '</soap-env:Envelope>';
                 response.writeHead(stubResponse.statusCode, stubResponse.headers);
-                response.end(body, 'utf8');
+                response.end(stubResponse.body, 'utf8');
                 return stubResponse;
             }).done(function (response) {
                 logger.debug('%s <= %s', clientName, JSON.stringify(response));

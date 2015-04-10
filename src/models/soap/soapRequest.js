@@ -54,7 +54,7 @@ function getParameters (body) {
 function transform (request, body) {
     return {
         http: request,
-        methodName: getMethodName(body),
+        method: getMethodName(body),
         parameters: getParameters(body)
     };
 }
