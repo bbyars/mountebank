@@ -13,7 +13,7 @@ function parse (xml) {
         var wsdl = new WSDL(xml, null, {}),
             deferred = Q.defer();
 
-        wsdl.onReady(function (err) {
+        wsdl.onReady(function () {
             //console.log(JSON.stringify(wsdl, null, 4));
             deferred.resolve(util.format('<%s:loginResponse><sessionid>SUCCESS</sessionid></%s:loginResponse>',
                 options.namespacePrefix, options.namespacePrefix));
