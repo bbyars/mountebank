@@ -17,27 +17,35 @@ var http = require('http'),
     WSDL = require('./wsdl');
 
 function createResponse (wsdl, stub, request) {
-    var response = {
-        http: {
-            // Default to one way message exchange pattern
-            statusCode: 202,
-            body: '',
-            headers: stub.headers || {}
-        },
-        response: stub.response || {}
-    };
-
-    if (!wsdl.isEmpty()) {
-        response.http.statusCode = 200;
-        response.http.body = util.format(
-            '<soapenv:Envelope xmlns:mb="%s" xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/">\n' +
-            '   <soapenv:Header/>\n' +
-            '   <soapenv:Body>%s</soapenv:Body>\n' +
-            '</soapenv:Envelope>', request.method.URI, wsdl.bodyFor({ stub: stub, request: request, namespacePrefix: 'mb' }));
-    }
+    var deferred = Q.defer(),
+        response = {
+            http: {
+                // Default to one way message exchange pattern
+                statusCode: 202,
+                body: '',
+                headers: stub.headers || {}
+            },
+            response: stub.response || {}
+        };
 
     response.http.headers.connection = 'close';
-    return response;
+
+    if (wsdl.isEmpty()) {
+        deferred.resolve(response);
+    }
+    else {
+        wsdl.createBodyFor({ stub: stub, request: request, namespacePrefix: 'mb' }).then(function (body) {
+            response.http.statusCode = 200;
+            response.http.body = util.format(
+                '<soapenv:Envelope xmlns:mb="%s" xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/">\n' +
+                '   <soapenv:Header/>\n' +
+                '   <soapenv:Body>%s</soapenv:Body>\n' +
+                '</soapenv:Envelope>', request.method.URI, body);
+            console.log('resolving');
+            deferred.resolve(response);
+        });
+    }
+    return deferred.promise;
 }
 
 function scopeFor (port, name) {

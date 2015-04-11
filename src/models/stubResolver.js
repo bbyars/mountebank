@@ -1,7 +1,6 @@
 'use strict';
 
 var helpers = require('../util/helpers'),
-    combinators = require('../util/combinators'),
     errors = require('../util/errors'),
     behaviors = require('./behaviors'),
     Q = require('q'),
@@ -131,14 +130,11 @@ function create (proxy, postProcess) {
     }
 
     function resolve (stubResolver, request, logger, stubs) {
-        var addBehaviors = function (response) {
-                return behaviors.execute(request, response, stubResolver._behaviors, logger);
-            },
-            postProcessWithRequest = function (stub) {
-                return postProcess(stub, request);
-            },
-            postProcessAndReturnPromise = combinators.compose(Q, addBehaviors, postProcessWithRequest);
-        return process(stubResolver, request, logger, stubs).then(postProcessAndReturnPromise);
+        return process(stubResolver, request, logger, stubs).then(function (response) {
+            return Q(postProcess(response, request));
+        }).then(function (response) {
+            return Q(behaviors.execute(request, response, stubResolver._behaviors, logger))
+        });
     }
 
     return {
