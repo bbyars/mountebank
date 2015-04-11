@@ -14,9 +14,21 @@ function parse (xml) {
             deferred = Q.defer();
 
         wsdl.onReady(function () {
-            //console.log(JSON.stringify(wsdl, null, 4));
-            deferred.resolve(util.format('<%s:loginResponse><sessionid>SUCCESS</sessionid></%s:loginResponse>',
-                options.namespacePrefix, options.namespacePrefix));
+            var service = wsdl.services[Object.keys(wsdl.services)[0]],
+                port = service.ports[Object.keys(service.ports)[0]],
+                method = port.binding.methods[options.request.method.name],
+                output = method.output,
+                responseName = options.namespacePrefix + ':' + output.$name,
+                responseFields = output.parts,
+                body = util.format('<%s>', responseName);
+
+            Object.keys(responseFields).forEach(function (fieldName) {
+                body += util.format('<%s>%s</%s>', fieldName, options.stub.response[fieldName], fieldName);
+            });
+
+            body += util.format('</%s>', responseName);
+
+            deferred.resolve(body);
         });
         return deferred.promise;
     }

@@ -41,7 +41,6 @@ function createResponse (wsdl, stub, request) {
                 '   <soapenv:Header/>\n' +
                 '   <soapenv:Body>%s</soapenv:Body>\n' +
                 '</soapenv:Envelope>', request.method.URI, body);
-            console.log('resolving');
             deferred.resolve(response);
         });
     }

@@ -112,5 +112,10 @@ describe('soap imposter', function () {
                 return api.del('/imposters');
             });
         });
+
+        it('should add default response answers');
+        it('should handle multiple services in the WSDL');
+        it('should handle multiple ports in the WSDL');
+        it('should handle complex types');
     });
 });
