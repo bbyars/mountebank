@@ -133,7 +133,7 @@ function create (proxy, postProcess) {
         return process(stubResolver, request, logger, stubs).then(function (response) {
             return Q(postProcess(response, request));
         }).then(function (response) {
-            return Q(behaviors.execute(request, response, stubResolver._behaviors, logger))
+            return Q(behaviors.execute(request, response, stubResolver._behaviors, logger));
         });
     }
 
