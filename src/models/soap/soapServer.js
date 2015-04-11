@@ -16,6 +16,30 @@ var http = require('http'),
     soapRequest = require('./soapRequest'),
     WSDL = require('./wsdl');
 
+function createResponse (wsdl, stub, request) {
+    var response = {
+        http: {
+            // Default to one way message exchange pattern
+            statusCode: 202,
+            body: '',
+            headers: stub.headers || {}
+        },
+        response: stub.response || {}
+    };
+
+    if (!wsdl.isEmpty()) {
+        response.http.statusCode = 200;
+        response.http.body = util.format(
+            '<soapenv:Envelope xmlns:mb="%s" xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/">\n' +
+            '   <soapenv:Header/>\n' +
+            '   <soapenv:Body>%s</soapenv:Body>\n' +
+            '</soapenv:Envelope>', request.method.URI, wsdl.bodyFor({ stub: stub, request: request, namespacePrefix: 'mb' }));
+    }
+
+    response.http.headers.connection = 'close';
+    return response;
+}
+
 function scopeFor (port, name) {
     var scope = util.format('soap:%s', port);
     if (name) {
@@ -48,39 +72,7 @@ function createServer (options, recordRequests) {
         logger = ScopedLogger.create(baseLogger, scopeFor(options.port)),
         proxy = HttpProxy.create(logger),
         wsdl = WSDL.parse(options.wsdl),
-        postProcess = function (stub) {
-            /* jshint maxcomplexity: 6 */
-            var response = {
-                http: { headers: stub.headers || {} },
-                response: stub.response || {}
-            };
-
-            if (wsdl.isEmpty()) {
-                // Default to one way message exchange pattern
-                response.http.statusCode = stub.statusCode || 202;
-                response.http.body = '';
-            }
-            else {
-                response.http.statusCode = stub.statusCode || 200;
-                response.http.body = '<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:sam="http://www.soapui.org/sample/">\n' +
-                    '   <soapenv:Header/>\n' +
-                    '   <soapenv:Body>\n' +
-                    '       <sam:loginResponse>\n' +
-                    '           <sessionid>SUCCESS</sessionid>\n' +
-                    '       </sam:loginResponse>\n' +
-                    '   </soapenv:Body>\n' +
-                    '</soapenv:Envelope>';
-                    //util.format(
-                    //'<soapenv:Envelope xmlns:%s xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/">\n' +
-                    //'   <soapenv:Header/>\n' +
-                    //'   <soapenv:Body>%s</soapenv:Body>\n' +
-                    //'</soapenv:Envelope>', wsdl.namespaceFor(request), wsdl.bodyFor(stub, request));
-                //TODO: Need to change postProcess so that it accepts the request
-            }
-
-            response.http.headers.connection = 'close';
-            return response;
-        },
+        postProcess = combinators.curry(createResponse, wsdl),
         resolver = StubResolver.create(proxy, postProcess),
         stubs = StubRepository.create(resolver, recordRequests, 'utf8'),
         server = http.createServer(),

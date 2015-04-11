@@ -104,13 +104,9 @@ describe('soap imposter', function () {
             }).then(function (response) {
                 assert.strictEqual(response.statusCode, 200);
                 assert.strictEqual(response.body,
-                    '<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:sam="http://www.soapui.org/sample/">\n' +
+                    '<soapenv:Envelope xmlns:mb="http://www.soapui.org/sample/" xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/">\n' +
                     '   <soapenv:Header/>\n' +
-                    '   <soapenv:Body>\n' +
-                    '       <sam:loginResponse>\n' +
-                    '           <sessionid>SUCCESS</sessionid>\n' +
-                    '       </sam:loginResponse>\n' +
-                    '   </soapenv:Body>\n' +
+                    '   <soapenv:Body><mb:loginResponse><sessionid>SUCCESS</sessionid></mb:loginResponse></soapenv:Body>\n' +
                     '</soapenv:Envelope>');
             }).finally(function () {
                 return api.del('/imposters');
