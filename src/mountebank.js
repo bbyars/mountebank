@@ -61,7 +61,9 @@ function create (options) {
     app.use(express.static(path.join(__dirname, 'public')));
     app.use(express.static(path.join(__dirname, '../node_modules')));
     app.use(errorHandler());
-    app.use(cors());
+    if(options.allowCORS) {
+        app.use(cors());
+    }
 
     app.disable('etag');
     app.disable('x-powered-by');
