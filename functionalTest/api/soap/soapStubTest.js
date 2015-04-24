@@ -113,7 +113,46 @@ describe('soap imposter', function () {
             });
         });
 
-        it('should add default response answers');
+        promiseIt('should add default response answers', function () {
+            var wsdl = fs.readFileSync(__dirname + '/wsdl/sample-service.wsdl', 'utf8').replace('$PORT', port),
+                stub = {
+                    responses: [{ is: {} }]
+                },
+                request = { protocol: 'soap', wsdl: wsdl, port: port, stubs: [stub], name: this.name };
+
+            return api.post('/imposters', request).then(function (response) {
+                assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body));
+
+                var body = '<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:sam="http://www.soapui.org/sample/">\n' +
+                    '    <soapenv:Header/>\n' +
+                    '    <soapenv:Body>\n' +
+                    '        <sam:login>\n' +
+                    '            <username>user</username>\n' +
+                    '            <password>letmein</password>\n' +
+                    '        </sam:login>\n' +
+                    '    </soapenv:Body>\n' +
+                    '</soapenv:Envelope>';
+                return http.responseFor({
+                    method: 'POST',
+                    path: '/SoapStubTest',
+                    port: port,
+                    headers: {
+                        'content-type': 'text/xml; charset="utf-8"',
+                        SOAPAction: '""'
+                    },
+                    body: body
+                });
+            }).then(function (response) {
+                assert.strictEqual(response.statusCode, 200);
+                assert.strictEqual(response.body,
+                    '<soapenv:Envelope xmlns:mb="http://www.soapui.org/sample/" xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/">\n' +
+                    '   <soapenv:Header/>\n' +
+                    '   <soapenv:Body><mb:loginResponse><sessionid></sessionid></mb:loginResponse></soapenv:Body>\n' +
+                    '</soapenv:Envelope>');
+            }).finally(function () {
+                return api.del('/imposters');
+            });
+        });
         it('should handle multiple services in the WSDL');
         it('should handle multiple ports in the WSDL');
         it('should handle complex types');
