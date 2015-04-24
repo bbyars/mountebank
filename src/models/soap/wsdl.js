@@ -20,10 +20,12 @@ function parse (xml) {
                 output = method.output,
                 responseName = options.namespacePrefix + ':' + output.$name,
                 responseFields = output.parts,
-                body = util.format('<%s>', responseName);
+                body = util.format('<%s>', responseName),
+                response = options.stub.response || {};
 
             Object.keys(responseFields).forEach(function (fieldName) {
-                body += util.format('<%s>%s</%s>', fieldName, options.stub.response[fieldName], fieldName);
+                var fieldValue = response[fieldName] || '';
+                body += util.format('<%s>%s</%s>', fieldName, fieldValue, fieldName);
             });
 
             body += util.format('</%s>', responseName);
