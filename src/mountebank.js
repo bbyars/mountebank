@@ -1,6 +1,7 @@
 'use strict';
 
 var express = require('express'),
+    cors = require('cors'),
     errorHandler = require('errorhandler'),
     path = require('path'),
     middleware = require('./util/middleware'),
@@ -60,6 +61,9 @@ function create (options) {
     app.use(express.static(path.join(__dirname, 'public')));
     app.use(express.static(path.join(__dirname, '../node_modules')));
     app.use(errorHandler());
+    if(options.allowCORS) {
+        app.use(cors());
+    }
 
     app.disable('etag');
     app.disable('x-powered-by');
