@@ -14,4 +14,4 @@ env:
   - secure: "pbVyYwERkTpwkpFTqXjwsMkNpulV0ZV1HbBZeEBhpWY7MjIjjASd/kDwDBr4ONuiicOQ3ToL4MeKxgI2bxjQdhDhfBvMt5XZV6V8X8xktwZQsnkc9klD0qr5raQ6MZdWQzx4nlsgFLHO9k0w8D/EzQbz25E4KAicpaYYwejyig8="
 
 script:
-  - ./build && scripts/createDistributables && scripts/deploy
+  - ./build && if [ "$TRAVIS_PULL_REQUEST" = "false" ]; then scripts/createDistributables && scripts/deploy; fi
