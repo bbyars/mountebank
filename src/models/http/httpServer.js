@@ -1,8 +1,15 @@
 'use strict';
 
-var createServer = function () { return require('http').createServer(); },
-    baseHttpServer = require('./baseHttpServer');
+var baseHttpServer = require('./baseHttpServer'),
+    combinators = require('../../util/combinators'),
+    http = require('http'),
+    createBaseServer = function () {
+        return {
+            metadata: combinators.constant({}),
+            createNodeServer: http.createServer
+        };
+    };
 
 module.exports = {
-    initialize: baseHttpServer.setup('http', createServer).initialize
+    initialize: baseHttpServer.setup('http', createBaseServer).initialize
 };

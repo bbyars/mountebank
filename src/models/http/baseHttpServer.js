@@ -13,7 +13,7 @@ var AbstractServer = require('../abstractServer'),
     events = require('events'),
     HttpRequest = require('./httpRequest');
 
-function setup (protocolName, createNodeServer) {
+function setup (protocolName, createBaseServer) {
     function postProcess (stub) {
         var response = {
                 statusCode: stub.statusCode || 200,
@@ -36,6 +36,7 @@ function setup (protocolName, createNodeServer) {
         var proxy = HttpProxy.create(logger),
             resolver = StubResolver.create(proxy, postProcess),
             stubs = StubRepository.create(resolver, options.recordRequests, 'utf8'),
+            baseServer = createBaseServer(options),
             result = inherit.from(events.EventEmitter, {
                 errorHandler: function (error, container) {
                     container.response.writeHead(500, { 'content-type': 'application/json' });
@@ -58,11 +59,11 @@ function setup (protocolName, createNodeServer) {
                         return stubResponse;
                     });
                 },
-                metadata: combinators.constant({}),
+                metadata: baseServer.metadata,
                 addStub: stubs.addStub,
                 stubs: stubs.stubs
             }),
-            server = createNodeServer(options);
+            server = baseServer.createNodeServer();
 
         server.on('connection', function (socket) { result.emit('connection', socket); });
 
