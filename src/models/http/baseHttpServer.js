@@ -62,7 +62,7 @@ function setup (protocolName, createNodeServer) {
                 addStub: stubs.addStub,
                 stubs: stubs.stubs
             }),
-            server = createNodeServer();
+            server = createNodeServer(options);
 
         server.on('connection', function (socket) { result.emit('connection', socket); });
 
