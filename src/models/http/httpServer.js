@@ -1,6 +1,6 @@
 'use strict';
 
-var createServer = require('http').createServer,
+var createServer = function () { return require('http').createServer(); },
     baseHttpServer = require('./baseHttpServer');
 
 module.exports = {
