@@ -7,18 +7,30 @@ var fs = require('fs'),
     defaultCert = fs.readFileSync(__dirname + '/cert/mb-cert.pem', 'utf8');
 
 function initialize (allowInjection, recordRequests) {
-    var createServer = function (options) {
-        // client certs will not reject the request.  It does set the request.client.authorized variable
-        // to false for all self-signed certs; use rejectUnauthorized: true and a ca: field set to an array
-        // containing the client cert to see request.client.authorized = true
-        return https.createServer({
-                key: options.key || defaultKey,
-                cert: options.cert || defaultCert,
-                requestCert: !!options.mutualAuth,
-                rejectUnauthorized: false
-            });
+    var createBaseServer = function (options) {
+            var metadata = {
+                    key: options.key || defaultKey,
+                    cert: options.cert || defaultCert,
+                    mutualAuth: !!options.mutualAuth
+                },
+                createNodeServer = function () {
+                    // client certs will not reject the request.  It does set the request.client.authorized variable
+                    // to false for all self-signed certs; use rejectUnauthorized: true and a ca: field set to an array
+                    // containing the client cert to see request.client.authorized = true
+                    return https.createServer({
+                        key: metadata.key,
+                        cert: metadata.cert,
+                        requestCert: metadata.mutualAuth,
+                        rejectUnauthorized: false
+                    });
+                };
+
+            return {
+                metadata: function () { return metadata; },
+                createNodeServer: createNodeServer
+            };
         };
-    return baseHttpServer.setup('https', createServer).initialize(allowInjection, recordRequests);
+    return baseHttpServer.setup('https', createBaseServer).initialize(allowInjection, recordRequests);
 }
 
 module.exports = {

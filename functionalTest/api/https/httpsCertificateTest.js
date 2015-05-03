@@ -8,7 +8,9 @@ var assert = require('assert'),
     fs = require('fs'),
     client = require('../http/baseHttpClient').create('https'),
     key = fs.readFileSync(__dirname + '/cert/key.pem', 'utf8'),
-    cert = fs.readFileSync(__dirname + '/cert/cert.pem', 'utf8');
+    cert = fs.readFileSync(__dirname + '/cert/cert.pem', 'utf8'),
+    defaultKey = fs.readFileSync(__dirname + '/../../../src/models/https/cert/mb-key.pem', 'utf8'),
+    defaultCert = fs.readFileSync(__dirname + '/../../../src/models/https/cert/mb-cert.pem', 'utf8');
 
 describe('https imposter', function () {
     this.timeout(timeout);
@@ -24,6 +26,23 @@ describe('https imposter', function () {
 
         return api.post('/imposters', request).then(function (response) {
             assert.strictEqual(response.statusCode, 201);
+            assert.strictEqual(response.body.key, key);
+            assert.strictEqual(response.body.cert, cert);
+            return client.get('/', port);
+        }).then(function (response) {
+            assert.strictEqual(response.statusCode, 200);
+        }).finally(function () {
+            return api.del('/imposters');
+        });
+    });
+
+    promiseIt('should default key/cert pair during imposter creation if not provided', function () {
+        var request = { protocol: 'https', port: port, name: this.name };
+
+        return api.post('/imposters', request).then(function (response) {
+            assert.strictEqual(response.statusCode, 201);
+            assert.strictEqual(response.body.key, defaultKey);
+            assert.strictEqual(response.body.cert, defaultCert);
             return client.get('/', port);
         }).then(function (response) {
             assert.strictEqual(response.statusCode, 200);
@@ -37,6 +56,7 @@ describe('https imposter', function () {
 
         return api.post('/imposters', request).then(function (response) {
             assert.strictEqual(response.statusCode, 201);
+            assert.strictEqual(response.body.mutualAuth, true);
             return client.responseFor({
                 method: 'GET',
                 path: '/',
