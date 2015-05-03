@@ -7,14 +7,88 @@ description = 'The HTTPS protocol support provided by mountebank'
 
 <h1>https</h1>
 
-<p>The https is identical to the http protocol, except for the fact that it uses
-a certificate.  If you use the built-in self-signed certificate, you may have to
+<p>The https is very similar to the http protocol, except for the fact that it uses
+a certificate key pair.  If you use the built-in self-signed certificate, you may have to
 configure your code to disable certificate validation (e.g. use the <code>-k</code>
-switch in <code>curl</code>).  Alternatively, you may pass in the certificate
-using the <a href='/docs/commandLine'>command line parameters</a>.</p>
+switch in <code>curl</code>).  Alternatively, you may pass in the key pair yourself.</p>
+
+<h2>Imposter Creation Parameters</h2>
+
+<table>
+  <tr>
+    <th>Parameter</th>
+    <th>Options</th>
+    <th>Required?</th>
+    <th>Default</th>
+    <th>Description</th>
+  </tr>
+  <tr>
+    <td><code>protocol</code></td>
+    <td><code>https</code></td>
+    <td>Yes</td>
+    <td>N/A</td>
+    <td>&nbsp;</td>
+  </tr>
+  <tr>
+    <td><code>port</code></td>
+    <td>Any valid port number</td>
+    <td>No</td>
+    <td>A randomly assigned port.  mountebank will return the actual value
+    in the <code>POST</code> response.</td>
+    <td>The port to run the imposter on.</td>
+  </tr>
+  <tr>
+    <td><code>key</code></td>
+    <td>A PEM-formatted string</td>
+    <td>No</td>
+    <td>A built in private key</td>
+    <td>The SSL server private key</td>
+  </tr>
+  <tr>
+    <td><code>cert</code></td>
+    <td>A PEM-formatted string</td>
+    <td>No</td>
+    <td>A built in self-signed certificate</td>
+    <td>The SSL server certificate</td>
+  </tr>
+  <tr>
+    <td><code>mutualAuth</code></td>
+    <td><code>true</code> or <code>false</code></td>
+    <td>No</td>
+    <td><code>false</code></td>
+    <td>If <code>true</code>, the server will request a client certificate.
+    Since the goal is simply to virtualize a server requiring mutual auth,
+    invalid certificates will not be rejected.</td>
+  </tr>
+  <tr>
+    <td><code>name</code></td>
+    <td>Any string</td>
+    <td>No</td>
+    <td>empty string</td>
+    <td>Included in the logs, useful when multiple imposters are set up.</td>
+  </tr>
+  <tr>
+    <td><code>stubs</code></td>
+    <td>A stub request.</td>
+    <td>No</td>
+    <td><pre><code>
+{
+  "is": {
+    "statusCode": 200,
+    "headers": {
+      "connection": "close"
+     },
+    "body": ""
+  }
+}
+    </code></pre></td>
+    <td>Defines the response to send when certain conditions are met.  See examples
+    below.</td>
+  </tr>
+</table>
 
 <p>See the <a href='/docs/protocols/http'>http</a> page for examples.  Just be sure
-to change the <code>protocol</code> parameter to <code>https</code> during imposter
-creation!</p>
+  to change the <code>protocol</code> parameter to <code>https</code> during imposter
+  creation!</p>
 
 <% include ../../_footer %>
