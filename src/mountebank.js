@@ -24,8 +24,7 @@ function create (options) {
         protocols = {
             tcp: require('./models/tcp/tcpServer').initialize(options.allowInjection, !options.nomock),
             http: require('./models/http/httpServer').initialize(options.allowInjection, !options.nomock),
-            https: require('./models/https/httpsServer').initialize(options.allowInjection, !options.nomock,
-                                                                      options.keyfile, options.certfile),
+            https: require('./models/https/httpsServer').initialize(options.allowInjection, !options.nomock),
             soap: require('./models/soap/soapServer').initialize(options.allowInjection, !options.nomock),
             smtp: require('./models/smtp/smtpServer').initialize(!options.nomock),
             foo: require('./models/foo/fooServer').initialize(options.allowInjection, !options.nomock)

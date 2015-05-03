@@ -23,8 +23,6 @@ function usage () {
     console.log('    --loglevel LEVEL  level for terminal logs (default info)');
     console.log('    --allowInjection  set to allow JavaScript injection');
     console.log('    --nomock          do not remember requests for mock verification and stub debugging');
-    console.log('    --keyfile         file to read for https key (defaults to internal key)');
-    console.log('    --certfile        file to read for https cert (defaults to self-signed cert)');
     console.log('    --version         show the mountebank version and exit');
     console.log('    --allowCORS       allow Cross-Origin Site Requests to mountebank server');
 }
