@@ -1,0 +1,86 @@
+<h1>v1.2.122</h1>
+
+<p>The following changes are part of this release.</p>
+
+<h2>New Features</h2>
+<ul class='bullet-list'>
+  <li>Support for <a href='http://<%= host %>/docs/protocols/https'>mutual authentication</a> in
+    https imposters</li>
+  <li>Support for <a href='http://<%= host %>/docs/api/proxies'>https proxies</a> requiring
+    mutual authentication</li>
+  <li>Support for a different <a href='http://<%= host %>/docs/protocols/https'>certificate / key pair</a> for
+    every https imposters.  The <code>--</code> command line parameter is no longer supported, as this is now
+    a first class member of the API.</li>
+  <li>Exposing the certificate / key pair metadata when you <code>GET</code> an https imposter.</li>
+  <li>Support cross-origin requests via a new <a href='http://<%= host %>/docs/commandLine'>command line parameter</a>.</li>
+</ul>
+
+<h2>Bug Fixes</h2>
+<ul class='bullet-list'>
+  <li>Fixed build problems that guaranteed every pull request would fail CI (sorry!!!)</li>
+</ul>
+
+<p>Many thanks to the following kind folk for help with this release:</p>
+
+<ul class='bullet-list'>
+  <li>James Thomas</li>
+  <li>Nils Janson</li>
+  <li>Jason Reid</li>
+</ul>
+
+<h2>Install</h2>
+
+<pre><code>
+  npm install -g mountebank@1.2.122 --production
+</code></pre>
+
+<p>or:</p>
+
+<table>
+  <tr>
+    <th>Option</th>
+    <th>node.js required?</th>
+    <th>sudo required?</th>
+    <th>links</th>
+    <th>Description</th>
+  </tr>
+  <tr>
+    <td>Self-contained archives</td>
+    <td>No</td>
+    <td>No</td>
+    <td style="min-width: 5em;">
+      <ul>
+        <li><a href="https://s3.amazonaws.com/mountebank/v1.2/mountebank-v1.2.122-darwin-x64.tar.gz">osx</a></li>
+        <li><a href="https://s3.amazonaws.com/mountebank/v1.2/mountebank-v1.2.122-linux-x86.tar.gz">linux x86</a></li>
+        <li><a href="https://s3.amazonaws.com/mountebank/v1.2/mountebank-v1.2.122-linux-x64.tar.gz">linux x64</a></li>
+        <li><a href="https://s3.amazonaws.com/mountebank/v1.2/mountebank-v1.2.122-win-x86.zip">win x86</a></li>
+        <li><a href="https://s3.amazonaws.com/mountebank/v1.2/mountebank-v1.2.122-win-x64.zip">win x64</a></li>
+      </ul>
+    </td>
+    <td>Simply unpack and run <code>mb</code> from inside</td>
+  </tr>
+  <tr>
+    <td>OS-specific packages</td>
+    <td>No</td>
+    <td>Yes</td>
+    <td>
+      <ul>
+        <li><a href="https://s3.amazonaws.com/mountebank/v1.2/mountebank-v1.2.122.pkg">pkg</a></li>
+        <li><a href="https://s3.amazonaws.com/mountebank/v1.2/mountebank-1.2.122-1.x86_64.rpm">rpm</a></li>
+        <li><a href="https://s3.amazonaws.com/mountebank/v1.2/mountebank_1.2.122_amd64.deb">deb</a></li>
+      </ul>
+    </td>
+    <td>Puts <code>mb</code> at <code>/usr/local/bin</code>, which is generally in the <code>PATH</code>.</td>
+  </tr>
+  <tr>
+    <td>source tarball</td>
+    <td>Yes</td>
+    <td>No</td>
+    <td>
+      <ul>
+        <li><a href="https://s3.amazonaws.com/mountebank/v1.2/mountebank-v1.2.122-npm.tar.gz">mb</a></li>
+      </ul>
+    </td>
+    <td>source tarball if you roll that way.</td>
+  </tr>
+</table>
