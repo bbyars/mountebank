@@ -28,7 +28,7 @@ function create (logger) {
         return result;
     }
 
-    function getProxyRequest (baseUrl, originalRequest) {
+    function getProxyRequest (baseUrl, originalRequest, proxyOptions) {
         var parts = url.parse(baseUrl),
             protocol = parts.protocol === 'https:' ? https : http,
             defaultPort = parts.protocol === 'https:' ? 443 : 80,
@@ -38,7 +38,9 @@ function create (logger) {
                 port: parts.port || defaultPort,
                 auth: parts.auth,
                 path: toUrl(originalRequest.path, originalRequest.query),
-                headers: helpers.clone(originalRequest.headers)
+                headers: helpers.clone(originalRequest.headers),
+                cert: proxyOptions.cert,
+                key: proxyOptions.key
             };
         options.headers.connection = 'close';
         options.headers.host = hostnameFor(parts.protocol, parts.hostname, options.port);
@@ -96,7 +98,7 @@ function create (logger) {
         return deferred.promise;
     }
 
-    function to (proxyDestination, originalRequest) {
+    function to (proxyDestination, originalRequest, options) {
 
         function log (direction, what) {
             logger.debug('Proxy %s %s %s %s %s',
@@ -104,7 +106,7 @@ function create (logger) {
         }
 
         var deferred = Q.defer(),
-            proxiedRequest = getProxyRequest(proxyDestination, originalRequest);
+            proxiedRequest = getProxyRequest(proxyDestination, originalRequest, options);
 
         log('=>', originalRequest);
 

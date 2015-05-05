@@ -17,12 +17,12 @@ describe('https imposter', function () {
 
     promiseIt('should support sending key/cert pair during imposter creation', function () {
         var request = {
-            protocol: 'https',
-            port: port,
-            key: key,
-            cert: cert,
-            name: this.name
-        };
+                protocol: 'https',
+                port: port,
+                key: key,
+                cert: cert,
+                name: this.name
+            };
 
         return api.post('/imposters', request).then(function (response) {
             assert.strictEqual(response.statusCode, 201);
@@ -67,6 +67,40 @@ describe('https imposter', function () {
             });
         }).then(function (response) {
             assert.strictEqual(response.statusCode, 200);
+        }).finally(function () {
+            return api.del('/imposters');
+        });
+    });
+
+    promiseIt('should support proxying to origin server requiring mutual auth', function () {
+        var originServerPort = port + 1,
+            originServerRequest = {
+                protocol: 'https',
+                port: originServerPort,
+                stubs: [{ responses: [{ is: { body: 'origin server' } }] }],
+                name: this.name + ' origin',
+                mutualAuth: true
+            },
+            proxy = {
+                to: 'https://localhost:' + originServerPort,
+                key: key,
+                cert: cert
+            },
+            proxyRequest = {
+                protocol: 'https',
+                port: port,
+                stubs: [{ responses: [{ proxy: proxy }] }],
+                name: this.name + ' proxy'
+            };
+
+        return api.post('/imposters', originServerRequest).then(function (response) {
+            assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body, null, 2));
+            return api.post('/imposters', proxyRequest);
+        }).then(function (response) {
+            assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body, null, 2));
+            return client.get('/', port);
+        }).then(function (response) {
+            assert.strictEqual(response.body, 'origin server');
         }).finally(function () {
             return api.del('/imposters');
         });

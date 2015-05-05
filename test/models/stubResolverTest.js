@@ -41,7 +41,7 @@ describe('stubResolver', function () {
 
             return resolver.resolve(stub, 'request', logger, []).then(function (response) {
                 assert.strictEqual(response, 'value');
-                assert.ok(proxy.to.wasCalledWith('where', 'request'));
+                assert.ok(proxy.to.wasCalledWith('where', 'request', { to: 'where', mode: 'proxyOnce' }), proxy.to.message());
             });
         });
 
