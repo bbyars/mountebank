@@ -52,6 +52,30 @@ filled in.</p>
   </tr>
 </table>
 
+<p>http and https proxies add two additional optional parameters for situations where the
+origin server expects to use mutual authentication and will request a client certificate:</p>
+
+<table>
+  <tr>
+    <th>Parameter</th>
+    <th style='min-width: 4em;'>Default</th>
+    <th>Type</th>
+    <th>Description</th>
+  </tr>
+  <tr>
+    <td><code>cert</code></td>
+    <td><code>null</code></td>
+    <td>A PEM-formatted string</td>
+    <td>The SSL client certificate</td>
+  </tr>
+  <tr>
+    <td><code>key</code></td>
+    <td><code>null</code></td>
+    <td>A PEM-formatted string</td>
+    <td>The SSL client private key</td>
+  </tr>
+</table>
+
 <h2>Understanding proxy behavior</h2>
 
 <p>The <code>mode</code> and <code>predicateGenerators</code> parameters define the behavior of
