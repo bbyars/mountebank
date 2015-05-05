@@ -2,7 +2,7 @@
 
 var net = require('net'),
     Q = require('q'),
-    AbstractProxy = require('../abstractProxy');
+    errors = require('../../util/errors');
 
 function create (logger, encoding) {
 
@@ -34,14 +34,41 @@ function create (logger, encoding) {
         return deferred.promise;
     }
 
-    return AbstractProxy.create({
-        logger: logger,
-        formatRequest: format,
-        formatResponse: format,
-        formatDestination: socketName,
-        getProxyRequest: getProxyRequest,
-        proxy: proxy
-    });
+    function to (proxyDestination, originalRequest) {
+
+        function log (direction, what) {
+            logger.debug('Proxy %s %s %s %s %s',
+                originalRequest.requestFrom, direction, JSON.stringify(format(what)), direction, socketName(proxyDestination));
+        }
+
+        var deferred = Q.defer(),
+            proxiedRequest = getProxyRequest(proxyDestination, originalRequest);
+
+        log('=>', originalRequest);
+
+        proxy(proxiedRequest).done(function (response) {
+            log('<=', response);
+            deferred.resolve(response);
+        });
+
+        proxiedRequest.once('error', function (error) {
+            if (error.code === 'ENOTFOUND') {
+                deferred.reject(errors.InvalidProxyError('Cannot resolve ' + JSON.stringify(proxyDestination)));
+            }
+            else if (error.code === 'ECONNREFUSED') {
+                deferred.reject(errors.InvalidProxyError('Unable to connect to ' + JSON.stringify(proxyDestination)));
+            }
+            else {
+                deferred.reject(error);
+            }
+        });
+
+        return deferred.promise;
+    }
+
+    return {
+        to: to
+    };
 }
 
 module.exports = {
