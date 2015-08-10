@@ -31,7 +31,7 @@ function normalize (obj, config, encoding) {
         caseTransform = config.caseSensitive ? combinators.identity : lowerCase,
         exceptionRemover = function (text) { return text.replace(new RegExp(config.except, 'g'), ''); },
         exceptTransform = config.except ? exceptionRemover : combinators.identity,
-        encode = function (text) { return new Buffer(text, 'base64').toJSON().toString(); },
+        encode = function (text) { return new Buffer(text, 'base64').toString(); },
         encodeTransform = encoding === 'base64' ? encode : combinators.identity,
         transform = combinators.compose(exceptTransform, caseTransform, encodeTransform),
         transformAll = function (o) {
