@@ -11,12 +11,12 @@ sudo: true
 
 os:
   - linux
-  - osx
+#  - osx
 
 node_js:
   - '0.10'
-  - 'node'
-  - 'iojs'
+#  - 'node'
+#  - 'iojs'
 
 rvm: '1.9.3'
 
