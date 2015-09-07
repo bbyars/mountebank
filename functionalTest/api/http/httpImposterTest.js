@@ -90,7 +90,7 @@ var assert = require('assert'),
                 }).then(function (response) {
                     var stubs = JSON.stringify(response.body.stubs),
                         withTimeRemoved = stubs.replace(/"timestamp":"[^"]+"/g, '"timestamp":"NOW"'),
-                        withClientPortRemoved = withTimeRemoved.replace(/"requestFrom":"[:\.\d]+"/g, '"requestFrom":"HERE"'),
+                        withClientPortRemoved = withTimeRemoved.replace(/"requestFrom":"[a-f:\.\d]+"/g, '"requestFrom":"HERE"'),
                         actualWithoutEphemeralData = JSON.parse(withClientPortRemoved),
                         requestHeaders = { accept: 'application/json', host: 'localhost:' + port, connection: 'keep-alive' };
 
