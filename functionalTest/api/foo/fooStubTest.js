@@ -62,7 +62,7 @@ describe('foo imposter', function () {
                     responses: [{ is: { data: 'MATCH' }}],
                     predicates: [
                         { equals: { data: 'test' } },
-                        { startsWith: { requestFrom: '127.0.0.1' } }
+                        { startsWith: { data: 'te' } }
                     ]
                 },
                 request = { protocol: 'foo', port: port, stubs: [stub] };

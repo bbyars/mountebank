@@ -4,6 +4,7 @@ var assert = require('assert'),
     api = require('../api'),
     client = require('./baseHttpClient').create('http'),
     promiseIt = require('../../testHelpers').promiseIt,
+    compatibility = require('../../compatibility'),
     port = api.port + 1,
     isWindows = require('os').platform().indexOf('win') === 0,
     timeout = parseInt(process.env.SLOW_TEST_TIMEOUT_MS || 2000);
@@ -421,7 +422,7 @@ describe('http proxy stubs', function () {
             assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body, null, 2));
             return client.responseFor({ method: 'GET', port: port, path: '/', mode: 'binary' });
         }).then(function (response) {
-            assert.deepEqual(response.body.toJSON(), [0, 1, 2, 3]);
+            assert.deepEqual(compatibility.bufferJSON(response.body), [0, 1, 2, 3]);
         }).finally(function () {
             return api.del('/imposters');
         });

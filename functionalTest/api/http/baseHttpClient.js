@@ -6,6 +6,9 @@ var Q = require('q'),
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 
 function create (protocol) {
+    var driver = require(protocol),
+        agent = new driver.Agent({ keepAlive: true });
+
     function optionsFor (spec) {
         var defaults = {
                 hostname: 'localhost',
@@ -28,7 +31,8 @@ function create (protocol) {
             options.headers['Content-Type'] = 'application/json';
         }
 
-        var request = require(protocol).request(options, function (response) {
+        options.agent = agent;
+        var request = driver.request(options, function (response) {
             var packets = [];
 
             response.on('data', function (chunk) {
