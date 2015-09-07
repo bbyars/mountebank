@@ -2,13 +2,22 @@ language: node_js
 
 sudo: true
 
-addons:
-  apt:
-    packages:
-      -rpm
+# Add in for Docker infrastructure
+# ...but failed with 'could not find executable rpmbuild' when I tried it
+#addons:
+#  apt:
+#    packages:
+#      -rpm
+
+os:
+  - linux
+  - osx
 
 node_js:
   - '0.10'
+  - 'node'
+  - 'iojs'
+
 rvm: '1.9.3'
 
 env:
@@ -22,4 +31,4 @@ env:
   - secure: "pbVyYwERkTpwkpFTqXjwsMkNpulV0ZV1HbBZeEBhpWY7MjIjjASd/kDwDBr4ONuiicOQ3ToL4MeKxgI2bxjQdhDhfBvMt5XZV6V8X8xktwZQsnkc9klD0qr5raQ6MZdWQzx4nlsgFLHO9k0w8D/EzQbz25E4KAicpaYYwejyig8="
 
 script:
-  - ./build && if [ "$TRAVIS_PULL_REQUEST" = "false" ]; then scripts/createDistributables && scripts/deploy; fi
+  - ./build && if [ "$TRAVIS_PULL_REQUEST" = "ignore-for-now" ]; then scripts/createDistributables && scripts/deploy; fi
