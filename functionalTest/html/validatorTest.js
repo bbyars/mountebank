@@ -1,7 +1,7 @@
 'use strict';
 
 var assert = require('assert'),
-    validator = require('w3cjs'),
+    w3cjs = require('w3cjs'),
     api = require('../api/api'),
     httpClient = require('../api/http/baseHttpClient').create('http'),
     fs = require('fs'),
@@ -52,7 +52,7 @@ describe('html validation', function () {
                     filename = endpoint.replace(/\//g, '') + '-validation-test.html';
                 fs.writeFileSync(filename, body);
 
-                validator.validate({
+                w3cjs.validate({
                     file: filename,
                     callback: function (response) {
                         fs.unlinkSync(filename);
