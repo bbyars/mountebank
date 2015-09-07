@@ -20,6 +20,8 @@ if [ $(uname) = 'Darwin' ]; then
     scripts/dist/createPackages darwin osxpkg
     mv dist/mountebank-$MB_VERSION.pkg dist/mountebank-v$MB_VERSION.pkg
 elif [ $(uname) = 'Linux' ]; then
+    sudo apt-get update
+    sudo apt-get install rpm
     scripts/dist/createPackages linux deb
     scripts/dist/createPackages linux rpm
 fi
