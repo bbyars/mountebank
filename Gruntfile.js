@@ -251,12 +251,13 @@ module.exports = function (grunt) {
                 });
             },
             exclusions = ['node_modules', '.git', '.DS_Store', '.idea', 'images', 'dist', 'mountebank.iml', 'mb.log'],
-            errors = [];
+            errors = [],
+            whitelist = ['npm', 'grunt', 'mocha', 'mocha-lcov-reporter', 'coveralls', 'grunt-cli'];
 
         dependencies.forEach(function (dependency) {
             usedCount[dependency] = 0;
         });
-        ['npm', 'grunt', 'mocha', 'mocha-lcov-reporter', 'coveralls'].forEach(function (dependency) {
+        whitelist.forEach(function (dependency) {
             usedCount[dependency] += 1;
         });
 
