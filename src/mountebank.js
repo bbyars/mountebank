@@ -37,8 +37,8 @@ function create (options) {
         configController = ConfigController.create(thisPackage.version, options),
         feedController = FeedController.create(thisPackage.version, releases, options),
         validateImposterExists = middleware.createImposterValidator(imposters),
-        welcome = util.format('mountebank v%s now taking orders - point your browser to http://localhost:%s for help',
-            thisPackage.version, options.port);
+        welcome = util.format('mountebank v%s (node %s) now taking orders - point your browser to http://localhost:%s for help',
+            thisPackage.version, process.version, options.port);
 
     logger.remove(logger.transports.Console);
     if (process.stdout.isTTY) {

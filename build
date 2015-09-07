@@ -11,7 +11,6 @@ if [ $REVISION -lt 0 ]; then
 fi
 
 npm install
-npm install grunt-cli
 MB_PORT=3535 node_modules/grunt-cli/bin/grunt
 
 if [ $BUILD_NUMBER -gt 0 ]; then
