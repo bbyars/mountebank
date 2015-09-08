@@ -1,4 +1,6 @@
-language: node_js
+# Change back to node_js when OSX agents have nvm pre-installed
+language: objective-c
+#language: node_js
 
 sudo: true
 
@@ -11,16 +13,17 @@ sudo: true
 
 os:
   - linux
-#  - osx
+  - osx
 
-node_js:
-  - '0.10'
-  - 'node'
-  - 'iojs'
+#node_js:
+#  - '0.10'
+#  - 'node'
 
 rvm: '1.9.3'
 
 env:
+  - NODE_VERSION="0.10"
+  - NODE_VERSION="0.12"
   global:
   - SLOW_TEST_TIMEOUT_MS=5000
   # HEROKU_API_KEY
@@ -29,6 +32,13 @@ env:
   - secure: "H0iUwBPOwRf3+5HGqAXWU65dJIA+4SUltehM3+jiTXsqkxeHux3WqVOouaLlw2n8WaG9y1KMXEZzed6L8p8A3I6V2M+Y1n8qNYT8y/HjCTw4d3U0tiG6ef1ysIChdBOdlwXJT5GPLlLT0y+R4IgPfHd3DMx/aiEgT3O4gGZEchs="
   # NPM_API_KEY
   - secure: "pbVyYwERkTpwkpFTqXjwsMkNpulV0ZV1HbBZeEBhpWY7MjIjjASd/kDwDBr4ONuiicOQ3ToL4MeKxgI2bxjQdhDhfBvMt5XZV6V8X8xktwZQsnkc9klD0qr5raQ6MZdWQzx4nlsgFLHO9k0w8D/EzQbz25E4KAicpaYYwejyig8="
+
+install:
+  - rm -rf ~/.nvm
+  - git clone https://github.com/creationix/nvm.git ~/.nvm
+  - source ~/.nvm/nvm.sh
+  - nvm install $NODE_VERSION
+  - node --version
 
 script:
   - ./build && if [ "$TRAVIS_PULL_REQUEST" = "false" - a `node -v | sed -E -e 's/v0.12.*/v0.12/'` = "v0.12" ]; then scripts/createDistributables && scripts/deploy; fi
