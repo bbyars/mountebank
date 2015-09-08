@@ -22,10 +22,11 @@ function create (protocols, imposters, Imposter, logger) {
     }
 
     function deleteAllImposters () {
-        Object.keys(imposters).forEach(function (id) {
-            imposters[id].stop();
-            delete imposters[id];
-        });
+        var ids = Object.keys(imposters),
+            promises = ids.map(function (id) { return imposters[id].stop(); });
+
+        ids.forEach(function (id) { delete imposters[id]; });
+        return Q.all(promises);
     }
 
     function validatePort (port, errors) {
@@ -133,8 +134,9 @@ function create (protocols, imposters, Imposter, logger) {
             json = Object.keys(imposters).reduce(function (accumulator, id) {
                 return accumulator.concat(imposters[id].toJSON(options));
              }, []);
-        deleteAllImposters();
-        response.send({ imposters: json });
+        return deleteAllImposters().then(function () {
+            response.send({ imposters: json });
+        });
     }
 
     function put (request, response) {
@@ -151,12 +153,13 @@ function create (protocols, imposters, Imposter, logger) {
                 });
 
             if (isValid) {
-                deleteAllImposters();
-                var creationPromises = request.body.imposters.map(function (imposter) {
+                return deleteAllImposters().then(function () {
+                    var creationPromises = request.body.imposters.map(function (imposter) {
                         return Imposter.create(protocols[imposter.protocol], imposter);
                     });
 
-                return Q.all(creationPromises).then(function (allImposters) {
+                    return Q.all(creationPromises);
+                }).then(function (allImposters) {
                     var json = allImposters.map(function (imposter) {
                         return imposter.toJSON({ list: true });
                     });

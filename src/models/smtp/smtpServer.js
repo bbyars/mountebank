@@ -32,7 +32,10 @@ function createServer () {
         result.emit('connection', raiSocket.socket);
     });
 
-    result.close = function () { server.server.end(combinators.noop); };
+    result.close = function (callback) {
+        server.server.end(combinators.noop);
+        callback();
+    };
 
     result.listen = function (port) {
         var deferred = Q.defer();

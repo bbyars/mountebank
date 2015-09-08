@@ -1,6 +1,7 @@
 'use strict';
 
-var url = require('url');
+var url = require('url'),
+    Q = require('q');
 
 function create (imposters) {
 
@@ -37,10 +38,15 @@ function create (imposters) {
 
         if (imposter) {
             json = imposter.toJSON(options);
-            imposter.stop();
-            delete imposters[request.params.id];
+            return imposter.stop().then(function () {
+                delete imposters[request.params.id];
+                response.send(json);
+            });
         }
-        response.send(json);
+        else {
+            response.send(json);
+            return Q(true);
+        }
     }
 
     return {

@@ -105,7 +105,7 @@ function createServer (logger, options) {
         });
     });
 
-    result.close = function () { server.close(); };
+    result.close = function (callback) { server.close(callback); };
 
     result.listen = function (port) {
         var deferred = Q.defer();

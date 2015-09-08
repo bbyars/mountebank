@@ -23,11 +23,13 @@ function implement (implementation, recordRequests, baseLogger) {
         var deferred = Q.defer(),
             requests = [],
             logger = ScopedLogger.create(baseLogger, scopeFor(options.port)),
-            server = implementation.createServer(logger, options);
+            server = implementation.createServer(logger, options),
+            connections = {};
 
         server.on('connection', function (socket) {
             var name = helpers.socketName(socket);
 
+            connections[name] = socket;
             logger.debug('%s ESTABLISHED', name);
 
             socket.on('error', function (error) {
@@ -35,7 +37,11 @@ function implement (implementation, recordRequests, baseLogger) {
             });
 
             socket.on('end', function () { logger.debug('%s LAST-ACK', name); });
-            socket.on('close', function () { logger.debug('%s CLOSED', name); });
+
+            socket.on('close', function () {
+                logger.debug('%s CLOSED', name);
+                delete connections[name];
+            });
         });
 
         server.on('request', function (socket, request, testCallback) {
@@ -89,7 +95,15 @@ function implement (implementation, recordRequests, baseLogger) {
                 metadata: metadata,
                 port: actualPort,
                 close: function () {
-                    server.close(function () { logger.info ('Ciao for now'); });
+                    var closeDeferred = Q.defer();
+                    server.close(function () {
+                        logger.info('Ciao for now');
+                        closeDeferred.resolve();
+                    });
+                    for (var socket in connections) {
+                        connections[socket].destroy();
+                    }
+                    return closeDeferred.promise;
                 }
             });
         });

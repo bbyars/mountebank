@@ -3,7 +3,9 @@
 var assert = require('assert'),
     mock = require('../mock').mock,
     Controller = require('../../src/controllers/imposterController'),
-    FakeResponse = require('../fakes/fakeResponse');
+    FakeResponse = require('../fakes/fakeResponse'),
+    Q = require('q'),
+    promiseIt = require('../testHelpers').promiseIt;
 
 describe('ImposterController', function () {
 
@@ -79,74 +81,94 @@ describe('ImposterController', function () {
     });
 
     describe('#del', function () {
-        it('should stop the imposter', function () {
+        promiseIt('should stop the imposter', function () {
             var response = FakeResponse.create(),
-                imposter = { stop: mock(), toJSON: mock().returns('JSON') },
+                imposter = {
+                    stop: mock().returns(Q(true)),
+                    toJSON: mock().returns('JSON')
+                },
                 controller = Controller.create({ 1: imposter });
 
-            controller.del({ url: '/imposters/1', params: { id: 1 }}, response);
-
-            assert(imposter.stop.wasCalled());
+            return controller.del({ url: '/imposters/1', params: { id: 1 }}, response).then(function () {
+                assert(imposter.stop.wasCalled());
+            });
         });
 
-        it('should remove the imposter from the list', function () {
+        promiseIt('should remove the imposter from the list', function () {
             var response = FakeResponse.create(),
-                imposters = { 1: { stop: mock(), toJSON: mock().returns('JSON') }},
+                imposters = {
+                    1: {
+                        stop: mock().returns(Q(true)),
+                        toJSON: mock().returns('JSON')
+                    }
+                },
                 controller = Controller.create(imposters);
 
-            controller.del({ url: '/imposters/1', params: { id: 1 }}, response);
-
-            assert.deepEqual(imposters, {});
+            return controller.del({ url: '/imposters/1', params: { id: 1 }}, response).then(function () {
+                assert.deepEqual(imposters, {});
+            });
         });
 
-        it('should send request even if no imposter exists', function () {
+        promiseIt('should send request even if no imposter exists', function () {
             var response = FakeResponse.create(),
                 imposters = {},
                 controller = Controller.create(imposters);
 
-            controller.del({ url: '/imposters/1', params: { id: 1 }}, response);
-
-            assert.deepEqual(response.body, {});
+            return controller.del({ url: '/imposters/1', params: { id: 1 }}, response).then(function () {
+                assert.deepEqual(response.body, {});
+            });
         });
 
-        it('should return replayable JSON for imposter at given id if replayable querystring set', function () {
+        promiseIt('should return replayable JSON for imposter at given id if replayable querystring set', function () {
             var response = FakeResponse.create(),
-                imposter = { stop: mock(), toJSON: mock().returns('JSON') },
+                imposter = {
+                    stop: mock().returns(Q(true)),
+                    toJSON: mock().returns('JSON')
+                },
                 controller = Controller.create({ 1: imposter });
 
-            controller.del({ url: '/imposters/1?replayable=true', params: { id: 1 }}, response);
-
-            assert.ok(imposter.toJSON.wasCalledWith({ replayable: true, removeProxies: false }), imposter.toJSON.message());
+            return controller.del({ url: '/imposters/1?replayable=true', params: { id: 1 }}, response).then(function () {
+                assert.ok(imposter.toJSON.wasCalledWith({ replayable: true, removeProxies: false }), imposter.toJSON.message());
+            });
         });
 
-        it('should return removeProxies JSON for imposter at given id if removeProxies querystring set', function () {
+        promiseIt('should return removeProxies JSON for imposter at given id if removeProxies querystring set', function () {
             var response = FakeResponse.create(),
-                imposter = { stop: mock(), toJSON: mock().returns('JSON') },
+                imposter = {
+                    stop: mock().returns(Q(true)),
+                    toJSON: mock().returns('JSON')
+                },
                 controller = Controller.create({ 1: imposter });
 
-            controller.del({ url: '/imposters/1?removeProxies=true', params: { id: 1 }}, response);
-
-            assert.ok(imposter.toJSON.wasCalledWith({ replayable: false, removeProxies: true }), imposter.toJSON.message());
+            return controller.del({ url: '/imposters/1?removeProxies=true', params: { id: 1 }}, response).then(function () {
+                assert.ok(imposter.toJSON.wasCalledWith({ replayable: false, removeProxies: true }), imposter.toJSON.message());
+            });
         });
 
-        it('should return replayable and removeProxies JSON for imposter at given id if both querystring values set', function () {
+        promiseIt('should return replayable and removeProxies JSON for imposter at given id if both querystring values set', function () {
             var response = FakeResponse.create(),
-                imposter = { stop: mock(), toJSON: mock().returns('JSON') },
+                imposter = {
+                    stop: mock().returns(Q(true)),
+                    toJSON: mock().returns('JSON')
+                },
                 controller = Controller.create({ 1: imposter });
 
-            controller.del({ url: '/imposters/1?removeProxies=true&replayable=true', params: { id: 1 }}, response);
-
-            assert.ok(imposter.toJSON.wasCalledWith({ replayable: true, removeProxies: true }), imposter.toJSON.message());
+            return controller.del({ url: '/imposters/1?removeProxies=true&replayable=true', params: { id: 1 }}, response).then(function () {
+                assert.ok(imposter.toJSON.wasCalledWith({ replayable: true, removeProxies: true }), imposter.toJSON.message());
+            });
         });
 
-        it('should send default JSON for the deleted the imposter if both replayable and removeProxies querystrings are missing', function () {
+        promiseIt('should send default JSON for the deleted the imposter if both replayable and removeProxies querystrings are missing', function () {
             var response = FakeResponse.create(),
-                imposter = { stop: mock(), toJSON: mock().returns('JSON') },
+                imposter = {
+                    stop: mock().returns(Q(true)),
+                    toJSON: mock().returns('JSON')
+                },
                 controller = Controller.create({ 1: imposter });
 
-            controller.del({ url: '/imposters/1', params: { id: 1 }}, response);
-
-            assert.ok(imposter.toJSON.wasCalledWith({ replayable: false, removeProxies: false }), imposter.toJSON.message());
+            return controller.del({ url: '/imposters/1', params: { id: 1 }}, response).then(function () {
+                assert.ok(imposter.toJSON.wasCalledWith({ replayable: false, removeProxies: false }), imposter.toJSON.message());
+            });
         });
     });
 });

@@ -208,62 +208,66 @@ describe('ImpostersController', function () {
     });
 
     describe('#del', function () {
-        it('should delete all imposters', function () {
-            var firstImposter = { stop: mock(), toJSON: mock().returns('firstJSON') },
-                secondImposter = { stop: mock(), toJSON: mock().returns('secondJSON')},
+        function stopMock () {
+            return mock().returns(Q(true));
+        }
+
+        promiseIt('should delete all imposters', function () {
+            var firstImposter = { stop: stopMock(), toJSON: mock().returns('firstJSON') },
+                secondImposter = { stop: stopMock(), toJSON: mock().returns('secondJSON')},
                 imposters = { 1: firstImposter, 2: secondImposter },
                 controller = Controller.create({}, imposters, {}, {});
 
-            controller.del({ url: '/imposters' }, response);
-
-            assert.deepEqual(imposters, {});
+            return controller.del({ url: '/imposters' }, response).then(function () {
+                assert.deepEqual(imposters, {});
+            });
         });
 
-        it('should call stop on all imposters', function () {
-            var firstImposter = { stop: mock(), toJSON: mock().returns('firstJSON') },
-                secondImposter = { stop: mock(), toJSON: mock().returns('secondJSON')},
+        promiseIt('should call stop on all imposters', function () {
+            var firstImposter = { stop: stopMock(), toJSON: mock().returns('firstJSON') },
+                secondImposter = { stop: stopMock(), toJSON: mock().returns('secondJSON')},
                 imposters = { 1: firstImposter, 2: secondImposter },
                 controller = Controller.create({}, imposters, {}, {});
 
-            controller.del({ url: '/imposters' }, response);
-
-            assert(firstImposter.stop.wasCalled());
-            assert(secondImposter.stop.wasCalled());
+            return controller.del({ url: '/imposters' }, response).then(function () {
+                assert(firstImposter.stop.wasCalled());
+                assert(secondImposter.stop.wasCalled());
+            });
         });
 
-        it('should send replayable JSON for all imposters by default', function () {
-            var firstImposter = { stop: mock(), toJSON: mock().returns('firstJSON') },
-                secondImposter = { stop: mock(), toJSON: mock().returns('secondJSON')},
+        promiseIt('should send replayable JSON for all imposters by default', function () {
+            var firstImposter = { stop: stopMock(), toJSON: mock().returns('firstJSON') },
+                secondImposter = { stop: stopMock(), toJSON: mock().returns('secondJSON')},
                 imposters = { 1: firstImposter, 2: secondImposter },
                 controller = Controller.create({}, imposters, {}, {});
 
-            controller.del({ url: '/imposters' }, response);
-
-            assert.deepEqual(response.body, { imposters: ['firstJSON', 'secondJSON'] });
-            assert.ok(firstImposter.toJSON.wasCalledWith({ replayable: true, removeProxies: false }), firstImposter.toJSON.message());
-            assert.ok(secondImposter.toJSON.wasCalledWith({ replayable: true, removeProxies: false }), secondImposter.toJSON.message());
+            return controller.del({ url: '/imposters' }, response).then(function () {
+                assert.deepEqual(response.body, { imposters: ['firstJSON', 'secondJSON'] });
+                assert.ok(firstImposter.toJSON.wasCalledWith({ replayable: true, removeProxies: false }), firstImposter.toJSON.message());
+                assert.ok(secondImposter.toJSON.wasCalledWith({ replayable: true, removeProxies: false }), secondImposter.toJSON.message());
+            });
         });
 
-        it('should send default JSON for all imposters if replayable is false on querystring', function () {
-            var firstImposter = { stop: mock(), toJSON: mock().returns('firstJSON') },
-                secondImposter = { stop: mock(), toJSON: mock().returns('secondJSON')},
+        promiseIt('should send default JSON for all imposters if replayable is false on querystring', function () {
+            var firstImposter = { stop: stopMock(), toJSON: mock().returns('firstJSON') },
+                secondImposter = { stop: stopMock(), toJSON: mock().returns('secondJSON')},
                 controller = Controller.create({}, { 1: firstImposter, 2: secondImposter });
 
-            controller.del({ url: '/imposters?replayable=false' }, response);
-
-            assert.ok(firstImposter.toJSON.wasCalledWith({ replayable: false, removeProxies: false }), firstImposter.toJSON.message());
-            assert.ok(secondImposter.toJSON.wasCalledWith({ replayable: false, removeProxies: false }), secondImposter.toJSON.message());
+            return controller.del({ url: '/imposters?replayable=false' }, response).then(function () {
+                assert.ok(firstImposter.toJSON.wasCalledWith({ replayable: false, removeProxies: false }), firstImposter.toJSON.message());
+                assert.ok(secondImposter.toJSON.wasCalledWith({ replayable: false, removeProxies: false }), secondImposter.toJSON.message());
+            });
         });
 
-        it('should send removeProxies JSON for all imposters if querystring present', function () {
-            var firstImposter = { stop: mock(), toJSON: mock().returns('firstJSON') },
-                secondImposter = { stop: mock(), toJSON: mock().returns('secondJSON')},
+        promiseIt('should send removeProxies JSON for all imposters if querystring present', function () {
+            var firstImposter = { stop: stopMock(), toJSON: mock().returns('firstJSON') },
+                secondImposter = { stop: stopMock(), toJSON: mock().returns('secondJSON')},
                 controller = Controller.create({}, { 1: firstImposter, 2: secondImposter });
 
-            controller.del({ url: '/imposters?removeProxies=true' }, response);
-
-            assert.ok(firstImposter.toJSON.wasCalledWith({ replayable: true, removeProxies: true }), firstImposter.toJSON.message());
-            assert.ok(secondImposter.toJSON.wasCalledWith({ replayable: true, removeProxies: true }), secondImposter.toJSON.message());
+            return controller.del({ url: '/imposters?removeProxies=true' }, response).then(function () {
+                assert.ok(firstImposter.toJSON.wasCalledWith({ replayable: true, removeProxies: true }), firstImposter.toJSON.message());
+                assert.ok(secondImposter.toJSON.wasCalledWith({ replayable: true, removeProxies: true }), secondImposter.toJSON.message());
+            });
         });
     });
 

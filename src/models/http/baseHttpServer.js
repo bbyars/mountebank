@@ -72,7 +72,7 @@ function setup (protocolName, createBaseServer) {
             result.emit('request', request.socket, container);
         });
 
-        result.close = function () { server.close(); };
+        result.close = function (callback) { server.close(callback); };
 
         result.listen = function (port) {
             var deferred = Q.defer();
