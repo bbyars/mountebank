@@ -1,0 +1,8 @@
+#!/bin/sh
+
+set -e
+
+. ~/.nvm/nvm.sh
+nvm use $1
+rm -rf node_modules
+npm install
