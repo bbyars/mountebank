@@ -1,5 +1,5 @@
 # Change back to node_js when OSX agents have nvm pre-installed
-language: objective-c
+language: ruby
 #language: node_js
 
 sudo: true
@@ -22,16 +22,17 @@ os:
 rvm: '1.9.3'
 
 env:
-  - NODE_VERSION="0.10"
-  - NODE_VERSION="0.12"
+  matrix:
+    - NODE_VERSION="0.10"
+    - NODE_VERSION="0.12"
   global:
-  - SLOW_TEST_TIMEOUT_MS=5000
-  # HEROKU_API_KEY
-  - secure: "BQunTTpCSGjhIYiBAXKxuuOluJIhKXdW/94GCsPlK1N8Ln20/nj/0U4qnSH7yASWQWssVG4ttm/cAbjfi+3DS4KDLtBGK1i3IoM+cJ2ADCeG7BHsqJDB0f9JyAkULjIRdkqilzR/tyD+w78pPHd7QbfplLvqUcnt7HVxw9lp4PY="
-  # AWS_ACCESS_KEY
-  - secure: "H0iUwBPOwRf3+5HGqAXWU65dJIA+4SUltehM3+jiTXsqkxeHux3WqVOouaLlw2n8WaG9y1KMXEZzed6L8p8A3I6V2M+Y1n8qNYT8y/HjCTw4d3U0tiG6ef1ysIChdBOdlwXJT5GPLlLT0y+R4IgPfHd3DMx/aiEgT3O4gGZEchs="
-  # NPM_API_KEY
-  - secure: "pbVyYwERkTpwkpFTqXjwsMkNpulV0ZV1HbBZeEBhpWY7MjIjjASd/kDwDBr4ONuiicOQ3ToL4MeKxgI2bxjQdhDhfBvMt5XZV6V8X8xktwZQsnkc9klD0qr5raQ6MZdWQzx4nlsgFLHO9k0w8D/EzQbz25E4KAicpaYYwejyig8="
+    - SLOW_TEST_TIMEOUT_MS=5000
+    # HEROKU_API_KEY
+    - secure: "BQunTTpCSGjhIYiBAXKxuuOluJIhKXdW/94GCsPlK1N8Ln20/nj/0U4qnSH7yASWQWssVG4ttm/cAbjfi+3DS4KDLtBGK1i3IoM+cJ2ADCeG7BHsqJDB0f9JyAkULjIRdkqilzR/tyD+w78pPHd7QbfplLvqUcnt7HVxw9lp4PY="
+    # AWS_ACCESS_KEY
+    - secure: "H0iUwBPOwRf3+5HGqAXWU65dJIA+4SUltehM3+jiTXsqkxeHux3WqVOouaLlw2n8WaG9y1KMXEZzed6L8p8A3I6V2M+Y1n8qNYT8y/HjCTw4d3U0tiG6ef1ysIChdBOdlwXJT5GPLlLT0y+R4IgPfHd3DMx/aiEgT3O4gGZEchs="
+    # NPM_API_KEY
+    - secure: "pbVyYwERkTpwkpFTqXjwsMkNpulV0ZV1HbBZeEBhpWY7MjIjjASd/kDwDBr4ONuiicOQ3ToL4MeKxgI2bxjQdhDhfBvMt5XZV6V8X8xktwZQsnkc9klD0qr5raQ6MZdWQzx4nlsgFLHO9k0w8D/EzQbz25E4KAicpaYYwejyig8="
 
 install:
   - rm -rf ~/.nvm
