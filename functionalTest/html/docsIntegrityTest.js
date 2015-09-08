@@ -59,27 +59,24 @@ describe('docs', function () {
     // The behavior changes in minor and annoying ways between node versions
     // (e.g. using IPv6 remoteAddress or changing the order of headers), making
     // these tests not easy to reuse between them.
+    [
+        '/docs/api/overview',
+        '/docs/api/mocks',
+        '/docs/api/proxies',
+        '/docs/api/injection',
+        '/docs/api/behaviors'
+    ].forEach(function (page) {
+            validateDocs(page);
+        });
 
-    if (process.version.match(/v0.12/)) {
+    if (!isWindows) {
         [
-            '/docs/api/overview',
-            '/docs/api/mocks',
-            '/docs/api/proxies',
-            '/docs/api/injection',
-            '/docs/api/behaviors'
+            '/docs/gettingStarted',
+            '/docs/api/predicates',
+            '/docs/api/stubs',
+            '/docs/protocols/tcp'
         ].forEach(function (page) {
-                validateDocs(page);
-            });
-
-        if (!isWindows) {
-            [
-                '/docs/gettingStarted',
-                '/docs/api/predicates',
-                '/docs/api/stubs',
-                '/docs/protocols/tcp'
-            ].forEach(function (page) {
-                validateDocs(page);
-            });
-        }
+            validateDocs(page);
+        });
     }
 });
