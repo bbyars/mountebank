@@ -6,15 +6,20 @@ set -e
 cd dist
 MB_VERSION=$(cat mountebank/package.json | grep '"version"' | sed -E -e 's/.*"version": "([^"]*)",/\1/')
 
+# We don't set the version suffix on tagged (published) builds
+if [ -n "$TRAVIS_BUILD_NUMBER" -a -n "`git describe --tags --exact-match 2>/dev/null`" ]; then
+    MB_VERSION="$MB_VERSION+$TRAVIS_BUILD_NUMBER"
+fi
+
 tar cvf mountebank-v$MB_VERSION-npm.tar.gz mountebank
 cd ..
 
-scripts/dist/createSelfContainedTarball linux x86
-scripts/dist/createSelfContainedTarball linux x64
-scripts/dist/createSelfContainedTarball darwin x64
+scripts/dist/createSelfContainedTarball linux x86 $MB_VERSION
+scripts/dist/createSelfContainedTarball linux x64 $MB_VERSION
+scripts/dist/createSelfContainedTarball darwin x64 $MB_VERSION
 
-scripts/dist/createWindowsZip x86
-scripts/dist/createWindowsZip x64
+scripts/dist/createWindowsZip x86 $MB_VERSION
+scripts/dist/createWindowsZip x64 $MB_VERSION
 
 if [ $(uname) = 'Darwin' ]; then
     scripts/dist/createPackages darwin osxpkg
@@ -22,6 +27,6 @@ if [ $(uname) = 'Darwin' ]; then
 elif [ $(uname) = 'Linux' ]; then
     sudo apt-get update
     sudo apt-get install rpm
-    scripts/dist/createPackages linux deb
-    scripts/dist/createPackages linux rpm
+    scripts/dist/createPackages linux deb $MB_VERSION
+    scripts/dist/createPackages linux rpm $MB_VERSION
 fi

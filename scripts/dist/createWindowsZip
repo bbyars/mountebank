@@ -3,13 +3,13 @@
 set -e
 
 ARCH=$1
+MB_VERSION=$2
 
 cd dist
 
 echo Creating zip for win-$ARCH...
 
 NODE_VERSION=`node -v`
-MB_VERSION=$(cat mountebank/package.json | grep '"version"' | sed -E -e 's/.*"version": "([^"]*)",/\1/')
 MB_FILENAME=mountebank-v$MB_VERSION-win-$ARCH
 
 if [ "$ARCH" = 'x86' ]; then

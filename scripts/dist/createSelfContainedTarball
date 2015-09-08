@@ -4,6 +4,7 @@ set -e
 
 PLATFORM=$1
 ARCH=$2
+MB_VERSION=$3
 
 cd dist
 
@@ -12,7 +13,6 @@ echo Creating tarball for $PLATFORM-$ARCH...
 NODE_VERSION=`node -v`
 NODE_FILENAME=node-$NODE_VERSION-$PLATFORM-$ARCH
 URL=http://nodejs.org/dist/$NODE_VERSION/$NODE_FILENAME.tar.gz
-MB_VERSION=$(cat mountebank/package.json | grep '"version"' | sed -E -e 's/.*"version": "([^"]*)",/\1/')
 MB_FILENAME=mountebank-v$MB_VERSION-$PLATFORM-$ARCH
 
 [ -e $MB_FILENAME ] && rm -rf $MB_FILENAME

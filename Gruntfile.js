@@ -6,8 +6,7 @@ var spawn = require('child_process').spawn,
     os = require('os'),
     path = require('path'),
     thisPackage = require('./package.json'),
-    port = process.env.MB_PORT || 2525,
-    revision = process.env.REVISION || 0;
+    port = process.env.MB_PORT || 2525;
 
 function isWindows () {
     return os.platform().indexOf('win') === 0;
@@ -137,16 +136,6 @@ module.exports = function (grunt) {
                 }
             });
         });
-    });
-
-    grunt.registerTask('version', 'Set the version number', function () {
-        var oldPackageJson = fs.readFileSync('package.json', { encoding: 'utf8' }),
-            pattern = /"version": "(\d+)\.(\d+)\.(\d+)"/,
-            newPackageJson = oldPackageJson.replace(pattern, '"version": "$1.$2.' + revision + '"');
-
-        console.log("Using revision " + revision);
-
-        fs.writeFileSync('package.json', newPackageJson);
     });
 
     grunt.registerTask('coveralls', 'Send coverage output to coveralls.io', function () {
@@ -303,5 +292,5 @@ module.exports = function (grunt) {
     grunt.registerTask('test', 'Run all non-performance tests', ['test:unit', 'test:functional']);
     grunt.registerTask('coverage', 'Generate code coverage', ['mochaTest:coverage']);
     grunt.registerTask('lint', 'Run all JavaScript lint checks', ['wsCheck', 'jsCheck', 'deadCheck', 'jshint']);
-    grunt.registerTask('default', ['version', 'test', 'lint']);
+    grunt.registerTask('default', ['test', 'lint']);
 };

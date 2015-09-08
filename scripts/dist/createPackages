@@ -2,6 +2,7 @@
 
 PLATFORM=$1
 TYPE=$2
+MB_VERSION=$3
 
 echo Creating $TYPE...
 
@@ -12,7 +13,6 @@ set -e
 
 cd dist
 
-MB_VERSION=$(cat mountebank/package.json | grep '"version"' | sed -E -e 's/.*"version": "([^"]*)",/\1/')
 MB_FILENAME=mountebank-v$MB_VERSION-$PLATFORM-x64
 
 echo "#!/usr/bin/env sh" > ./postInstall
