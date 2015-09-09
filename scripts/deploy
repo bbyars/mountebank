@@ -1,9 +1,0 @@
-#!/bin/sh
-
-set -e
-
-gem install dpl
-
-scripts/deployS3
-scripts/deployNpm
-scripts/deployHeroku

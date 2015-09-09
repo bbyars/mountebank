@@ -42,4 +42,4 @@ install:
   - node --version
 
 script:
-  - ./build && if [ "$TRAVIS_PULL_REQUEST" = "false" - a `node -v | sed -E -e 's/v0.12.*/v0.12/'` = "v0.12" ]; then scripts/createDistributables && scripts/deploy; fi
+  - ./build && scripts/travisDeploy
