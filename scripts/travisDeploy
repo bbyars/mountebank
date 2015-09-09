@@ -1,19 +1,18 @@
 #!/bin/sh
 
-set -e
 
-NODE_VERSION=$(node -v | sed -E -e 's/(v[0-9]+\.[0-9]+)\.[0-9]+/\1/')
-MB_VERSION=$(cat dist/mountebank/package.json | grep '"version"' | sed -E -e 's/.*"version": "([^"]*)",/\1/')
-IS_PUBLISHED_VERSION=$(git describe --tags --exact-match 2>/dev/null)
+NODE_VERSION=`node -v | sed -E -e 's/(v[0-9]+\.[0-9]+)\.[0-9]+/\1/'`
+MB_VERSION=`cat dist/mountebank/package.json | grep '"version"' | sed -E -e 's/.*"version": "([^"]*)",/\1/'`
+IS_PUBLISHED_VERSION=`git describe --tags --exact-match 2>/dev/null`
 
 # We don't set the version suffix on tagged (published) builds
 if [ -n "$TRAVIS_BUILD_NUMBER" -a -z "$IS_PUBLISHED_VERSION" ]; then
     MB_VERSION="$MB_VERSION+$TRAVIS_BUILD_NUMBER"
 fi
 
-echo "MB_VERSION: $MB_VERSION"
+set -e
 
-if [ "$TRAVIS_PULL_REQUEST" = "false" - a "$NODE_VERSION" = "v0.12" ]; then
+if [ "$TRAVIS_PULL_REQUEST" = "false" -a "$NODE_VERSION" = "v0.12" ]; then
     echo "INSTALLING GEM"
     gem install dpl
 
