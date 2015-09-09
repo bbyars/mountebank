@@ -7,7 +7,7 @@ var spawn = require('child_process').spawn,
     path = require('path'),
     thisPackage = require('./package.json'),
     port = process.env.MB_PORT || 2525,
-    version = process.env.MB_VERSION|| thisPackage.version;
+    version = process.env.MB_VERSION || thisPackage.version;
 
 function isWindows () {
     return os.platform().indexOf('win') === 0;
@@ -164,13 +164,13 @@ module.exports = function (grunt) {
     });
 
     grunt.registerTask('version', 'Set the version number', function () {
-        var oldPackageJson = fs.readFileSync('dist/mountebank/package.json', { encoding: 'utf8' }),
-            pattern = /"version": "(\d+)\.(\d+)\.(\d+)"/,
+        var oldPackageJson = fs.readFileSync('package.json', { encoding: 'utf8' }),
+            pattern = /"version": "[^"]+"/,
             newPackageJson = oldPackageJson.replace(pattern, '"version": "' + version + '"');
 
-        console.log("Using revision " + version);
+        console.log('Using version ' + version);
 
-        fs.writeFileSync('dist/mountebank/package.json', newPackageJson);
+        fs.writeFileSync('package.json', newPackageJson);
     });
 
     grunt.registerTask('wsCheck', 'Check for whitespace problems that make diffing harder', function () {
@@ -303,5 +303,5 @@ module.exports = function (grunt) {
     grunt.registerTask('test', 'Run all non-performance tests', ['test:unit', 'test:functional']);
     grunt.registerTask('coverage', 'Generate code coverage', ['mochaTest:coverage']);
     grunt.registerTask('lint', 'Run all JavaScript lint checks', ['wsCheck', 'jsCheck', 'deadCheck', 'jshint']);
-    grunt.registerTask('default', ['dist', 'version', 'test', 'lint']);
+    grunt.registerTask('default', ['version', 'dist', 'test', 'lint']);
 };

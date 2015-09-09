@@ -1,6 +1,6 @@
 #!/usr/bin/env sh
 
-MB_VERSION=`cat mountebank/package.json | grep '"version"' | sed -E -e 's/.*"version": "([^"]*)",/\1/'`
+MB_VERSION=`cat package.json | grep '"version"' | sed -E -e 's/.*"version": "([^"]*)",/\1/'`
 IS_PUBLISHED_VERSION=`git describe --tags --exact-match 2>/dev/null`
 
 # We don't set the version suffix on tagged (published) builds
