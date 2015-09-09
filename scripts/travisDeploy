@@ -9,6 +9,8 @@ if [ "$TRAVIS_PULL_REQUEST" = "false" -a "$NODE_VERSION" = "v0.12" ]; then
     gem install dpl
 
     if [ $(uname) = 'Darwin' ]; then
+        scripts/dist/createSelfContainedTarball darwin x64 $MB_VERSION
+
         scripts/dist/createPackages darwin osxpkg $MB_VERSION
         mv dist/mountebank-$MB_VERSION.pkg dist/mountebank-v$MB_VERSION.pkg
 
@@ -23,7 +25,6 @@ if [ "$TRAVIS_PULL_REQUEST" = "false" -a "$NODE_VERSION" = "v0.12" ]; then
 
         scripts/dist/createSelfContainedTarball linux x86 $MB_VERSION
         scripts/dist/createSelfContainedTarball linux x64 $MB_VERSION
-        scripts/dist/createSelfContainedTarball darwin x64 $MB_VERSION
 
         scripts/dist/createWindowsZip x86 $MB_VERSION
         scripts/dist/createWindowsZip x64 $MB_VERSION

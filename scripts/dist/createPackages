@@ -24,6 +24,7 @@ echo "#!/usr/bin/env sh" > ./postUninstall
 echo "rm /usr/local/bin/mb" >> ./postUninstall
 chmod +x ./postUninstall
 
+# A little hacky -this requires you to have run createSelfContainedTarball first...
 fpm -s dir -t $TYPE -n mountebank -v $MB_VERSION --license MIT --category test \
     --description "over the wire test doubles" --url "http://www.mbtest.org" \
     --maintainer "Brandon Byars <brandon.byars@gmail.com>" \
