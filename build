@@ -4,7 +4,3 @@ set -e
 
 npm install
 MB_PORT=3535 node_modules/grunt-cli/bin/grunt
-
-if [ -n "$TRAVIS_BUILD_NUMBER" ]; then
-    node_modules/grunt-cli/bin/grunt coveralls
-fi

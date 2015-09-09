@@ -11,15 +11,22 @@ if [ -n "$TRAVIS_BUILD_NUMBER" -a -z "$IS_PUBLISHED_VERSION" ]; then
     MB_VERSION="$MB_VERSION+$TRAVIS_BUILD_NUMBER"
 fi
 
+echo "MB_VERSION: $MB_VERSION"
+
 if [ "$TRAVIS_PULL_REQUEST" = "false" - a "$NODE_VERSION" = "v0.12" ]; then
+    echo "INSTALLING GEM"
     gem install dpl
 
     if [ $(uname) = 'Darwin' ]; then
+        echo "EXEC DARWIN"
         scripts/dist/createPackages darwin osxpkg
         mv dist/mountebank-$MB_VERSION.pkg dist/mountebank-v$MB_VERSION.pkg
 
         scripts/deployS3
     elif [ $(uname) = 'Linux' ]; then
+        echo "EXEC LINUX"
+        node_modules/grunt-cli/bin/grunt coveralls
+
         # base npm tarball
         cd dist
         tar cvf mountebank-v$MB_VERSION-npm.tar.gz mountebank
