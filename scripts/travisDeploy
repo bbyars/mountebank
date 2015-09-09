@@ -1,14 +1,7 @@
 #!/bin/sh
 
-
 NODE_VERSION=`node -v | sed -E -e 's/(v[0-9]+\.[0-9]+)\.[0-9]+/\1/'`
 MB_VERSION=`cat dist/mountebank/package.json | grep '"version"' | sed -E -e 's/.*"version": "([^"]*)",/\1/'`
-IS_PUBLISHED_VERSION=`git describe --tags --exact-match 2>/dev/null`
-
-# We don't set the version suffix on tagged (published) builds
-if [ -n "$TRAVIS_BUILD_NUMBER" -a -z "$IS_PUBLISHED_VERSION" ]; then
-    MB_VERSION="$MB_VERSION+$TRAVIS_BUILD_NUMBER"
-fi
 
 set -e
 
@@ -16,7 +9,7 @@ if [ "$TRAVIS_PULL_REQUEST" = "false" -a "$NODE_VERSION" = "v0.12" ]; then
     gem install dpl
 
     if [ $(uname) = 'Darwin' ]; then
-        scripts/dist/createPackages darwin osxpkg
+        scripts/dist/createPackages darwin osxpkg $MB_VERSION
         mv dist/mountebank-$MB_VERSION.pkg dist/mountebank-v$MB_VERSION.pkg
 
         scripts/deploy/deployS3
