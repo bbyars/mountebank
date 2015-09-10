@@ -12,7 +12,7 @@ echo Creating tarball for $PLATFORM-$ARCH...
 
 NODE_VERSION=`node -v`
 NODE_FILENAME=node-$NODE_VERSION-$PLATFORM-$ARCH
-URL=http://nodejs.org/dist/$NODE_VERSION/$NODE_FILENAME.tar.gz
+URL=https://nodejs.org/dist/$NODE_VERSION/$NODE_FILENAME.tar.gz
 MB_FILENAME=mountebank-v$MB_VERSION-$PLATFORM-$ARCH
 
 [ -e $MB_FILENAME ] && rm -rf $MB_FILENAME
