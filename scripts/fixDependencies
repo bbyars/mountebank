@@ -7,8 +7,8 @@ var thisPackage = require('../package.json'),
 var nodeMajorMinor = process.version.replace(/(v\d+\.\d+)\..*/, '$1'),
     devDependenciesToReplace = thisPackage.devDependenciesBasedOnNodeVersion[nodeMajorMinor] || {};
 
-
 Object.keys(devDependenciesToReplace).forEach(function (dep) {
+    console.log('Switching ' + dep + ' to ' + devDependenciesToReplace[dep]);
     thisPackage.devDependencies[dep] = devDependenciesToReplace[dep];
 });
 
