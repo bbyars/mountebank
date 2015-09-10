@@ -12,4 +12,4 @@ Object.keys(devDependenciesToReplace).forEach(function (dep) {
     thisPackage.devDependencies[dep] = devDependenciesToReplace[dep];
 });
 
-fs.writeFileSync('package.json', JSON.stringify(thisPackage, null, 2));
+fs.writeFileSync('package.json', JSON.stringify(thisPackage, null, 2) + '\n');
