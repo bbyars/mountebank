@@ -13,9 +13,9 @@ NODE_VERSION=`node -v`
 MB_FILENAME=mountebank-v$MB_VERSION-win-$ARCH
 
 if [ "$ARCH" = 'x86' ]; then
-    URL=http://nodejs.org/dist/$NODE_VERSION/node.exe
+    URL=https://nodejs.org/dist/$NODE_VERSION/node.exe
 else
-    URL=http://nodejs.org/dist/$NODE_VERSION/x64/node.exe
+    URL=https://nodejs.org/dist/$NODE_VERSION/x64/node.exe
 fi
 
 [ -e $MB_FILENAME ] && rm -rf $MB_FILENAME
