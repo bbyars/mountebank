@@ -196,8 +196,7 @@ Accept: application/json
 
 <pre><code data-test-id='tcp-binary'
            data-test-verify-step='3'
-           data-test-ignore-lines='["^Date", "requestFrom", "timestamp"]'
-           data-test-ignore-lines-v0.10='["Content-Length"]'>
+           data-test-ignore-lines='["^Date", "requestFrom", "timestamp", "Content-Length"]'>
 HTTP/1.1 200 OK
 Vary: Accept
 Content-Type: application/json; charset=utf-8
@@ -712,8 +711,7 @@ Accept: application/json
 
 <pre><code data-test-id='tcp-text'
            data-test-verify-step='3'
-           data-test-ignore-lines='["^Date", "requestFrom", "timestamp"]'
-           data-test-ignore-lines-v0.10='["Content-Length"]'>
+           data-test-ignore-lines='["^Date", "requestFrom", "timestamp", "Content-Length"]'>
 HTTP/1.1 200 OK
 Vary: Accept
 Date: Sun, 11 Jan 2015 16:59:33 GMT

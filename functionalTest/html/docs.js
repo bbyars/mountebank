@@ -50,11 +50,6 @@ function addStep (test, stepSpec) {
         if (stepSpec.ignoreLines) {
             test.steps[stepIndex].ignoreLines = JSON.parse(stepSpec.ignoreLines);
         }
-        if (stepSpec.ignoreLinesv10 && /v0.10/.test(process.version)) {
-            // Accommodate differences between node v0.10 and v0.12:
-            // - requestFrom uses IPv6 syntax
-            test.steps[stepIndex].ignoreLines = test.steps[stepIndex].ignoreLines.concat(JSON.parse(stepSpec.ignoreLinesv10));
-        }
     }
 }
 
@@ -101,7 +96,6 @@ function get (endpoint) {
                     testType: getAttribute(element, 'data-test-type'),
                     verifyStepId: getAttribute(element, 'data-test-verify-step'),
                     ignoreLines: getAttribute(element, 'data-test-ignore-lines'),
-                    ignoreLinesv10: getAttribute(element, 'data-test-ignore-lines-v0.10'),
                     text: element.textContent.trim(),
                     port: getAttribute(element, 'data-test-port')
                 };
