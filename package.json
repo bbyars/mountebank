@@ -59,12 +59,23 @@
     "grunt-cli": "^0.1.13",
     "grunt-contrib-jshint": "~0.11.0",
     "grunt-mocha-test": "~0.12.1",
-    "jsdom": "~3.1.0",
+    "jsdom": "~6.3.0",
     "mocha": "~2.3.1",
     "mocha-lcov-reporter": "0.0.2",
     "w3cjs": "~0.3.0"
   },
+  "devDependenciesBasedOnNodeVersion": {
+    "0.10": {
+      "jsdom": "~3.1.0"
+    },
+    "0.12": {
+      "jsdom": "~3.1.0"
+    },
+    "4.0": {
+      "jsdom": "~6.3.0"
+    }
+  },
   "engines": {
-    "node": ">=0.10 <0.13"
+    "node": ">=0.10"
   }
 }

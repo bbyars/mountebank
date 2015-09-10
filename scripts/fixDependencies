@@ -1,0 +1,15 @@
+#!/usr/bin/env node
+'use strict';
+
+var thisPackage = require('../package.json'),
+    fs = require('fs');
+
+var nodeMajorMinor = process.version.replace(/(v\d+\.\d+)\..*/, '$1'),
+    devDependenciesToReplace = thisPackage.devDependenciesBasedOnNodeVersion[nodeMajorMinor] || {};
+
+
+Object.keys(devDependenciesToReplace).forEach(function (dep) {
+    thisPackage.devDependencies[dep] = devDependenciesToReplace[dep];
+});
+
+fs.writeFileSync('package.json', JSON.stringify(thisPackage, null, 2));
