@@ -5,7 +5,7 @@ MB_VERSION=`cat dist/mountebank/package.json | grep '"version"' | sed -E -e 's/.
 
 set -e
 
-if [ "$TRAVIS_PULL_REQUEST" = "false" -a "$NODE_VERSION" = "v0.12" ]; then
+if [ "$TRAVIS_PULL_REQUEST" = "false" -a "$NODE_VERSION" = "v4.0" ]; then
     gem install dpl
 
     if [ $(uname) = 'Darwin' ]; then
