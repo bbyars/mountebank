@@ -32,7 +32,7 @@ env:
     - secure: "pbVyYwERkTpwkpFTqXjwsMkNpulV0ZV1HbBZeEBhpWY7MjIjjASd/kDwDBr4ONuiicOQ3ToL4MeKxgI2bxjQdhDhfBvMt5XZV6V8X8xktwZQsnkc9klD0qr5raQ6MZdWQzx4nlsgFLHO9k0w8D/EzQbz25E4KAicpaYYwejyig8="
 
 install:
-  - echo $MB_TEST_SPECS | tr '|' '\n' > .mbrc
+  - echo $MB_TEST_SPECS | tr '|' '\n' | sed -e 's/^/export /' > .mbrc
   - echo "NODE_VERSION: $NODE_VERSION"
   - echo "MB_TEST_PARAM: $MB_TEST_PARAM"
   - cat ./.mbrc
