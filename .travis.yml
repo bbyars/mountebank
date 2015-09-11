@@ -33,7 +33,11 @@ env:
 
 install:
   - echo $MB_TEST_SPECS | tr '|' '\n' > .mbrc
+  - echo "NODE_VERSION: $NODE_VERSION"
+  - echo "MB_TEST_PARAM: $MB_TEST_PARAM"
   - cat ./.mbrc
+  - echo "NODE_VERSION: $NODE_VERSION"
+  - echo "MB_TEST_PARAM: $MB_TEST_PARAM"
   - . ./.mbrc
   - rm -rf ~/.nvm
   - git clone https://github.com/creationix/nvm.git ~/.nvm
