@@ -4,6 +4,7 @@ set -e
 
 ARCH=$1
 MB_VERSION=$2
+NODE_MAJOR_VERSION=`node -v | sed -E -e 's/(v[0-9]+)\.[0-9]+\.[0-9]+/\1/'`
 
 cd dist
 
@@ -13,9 +14,17 @@ NODE_VERSION=`node -v`
 MB_FILENAME=mountebank-v$MB_VERSION-win-$ARCH
 
 if [ "$ARCH" = 'x86' ]; then
-    URL=https://nodejs.org/dist/$NODE_VERSION/node.exe
+    if [ "$NODE_MAJOR_VERSION" = 'v0' ]; then
+        URL=https://nodejs.org/dist/$NODE_VERSION/node.exe
+    else
+        URL=https://nodejs.org/dist/$NODE_VERSION/win-x86/node.exe
+    fi
 else
-    URL=https://nodejs.org/dist/$NODE_VERSION/x64/node.exe
+    if [ "$NODE_MAJOR_VERSION" = 'v0' ]; then
+        URL=https://nodejs.org/dist/$NODE_VERSION/x64/node.exe
+    else
+        URL=https://nodejs.org/dist/$NODE_VERSION/win-x64/node.exe
+    fi
 fi
 
 [ -e $MB_FILENAME ] && rm -rf $MB_FILENAME
