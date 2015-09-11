@@ -19,9 +19,9 @@ rvm: '1.9.3'
 
 env:
   matrix:
-    - MB_TEST_SPECS="NODE_VERSION=0.10\nMB_TEST_PARAM=0.10"
-    - MB_TEST_SPECS="NODE_VERSION=0.12\nMB_TEST_PARAM=0.12"
-    - MB_TEST_SPECS="NODE_VERSION=4.0\nMB_TEST_PARAM=4.0"
+    - MB_TEST_SPECS="NODE_VERSION=0.10\\nMB_TEST_PARAM=0.10"
+    - MB_TEST_SPECS="NODE_VERSION=0.12\\nMB_TEST_PARAM=0.12"
+    - MB_TEST_SPECS="NODE_VERSION=4.0\\nMB_TEST_PARAM=4.0"
   global:
     - SLOW_TEST_TIMEOUT_MS=5000
     # HEROKU_API_KEY
@@ -33,6 +33,7 @@ env:
 
 install:
   - echo "$MB_TEST_SPECS" > .mbrc
+  - cat ./.mbrc
   - . ./.mbrc
   - rm -rf ~/.nvm
   - git clone https://github.com/creationix/nvm.git ~/.nvm
