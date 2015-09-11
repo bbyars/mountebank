@@ -19,9 +19,9 @@ rvm: '1.9.3'
 
 env:
   matrix:
-    - MB_TEST_SPECS="NODE_VERSION=0.10\\nMB_TEST_PARAM=0.10"
-    - MB_TEST_SPECS="NODE_VERSION=0.12\\nMB_TEST_PARAM=0.12"
-    - MB_TEST_SPECS="NODE_VERSION=4.0\\nMB_TEST_PARAM=4.0"
+    - MB_TEST_SPECS="NODE_VERSION=0.10|MB_TEST_PARAM=0.10"
+    - MB_TEST_SPECS="NODE_VERSION=0.12|MB_TEST_PARAM=0.12"
+    - MB_TEST_SPECS="NODE_VERSION=4.0|MB_TEST_PARAM=4.0"
   global:
     - SLOW_TEST_TIMEOUT_MS=5000
     # HEROKU_API_KEY
@@ -32,7 +32,7 @@ env:
     - secure: "pbVyYwERkTpwkpFTqXjwsMkNpulV0ZV1HbBZeEBhpWY7MjIjjASd/kDwDBr4ONuiicOQ3ToL4MeKxgI2bxjQdhDhfBvMt5XZV6V8X8xktwZQsnkc9klD0qr5raQ6MZdWQzx4nlsgFLHO9k0w8D/EzQbz25E4KAicpaYYwejyig8="
 
 install:
-  - echo "$MB_TEST_SPECS" > .mbrc
+  - echo $MB_TEST_SPECS | tr '|' '\n' > .mbrc
   - cat ./.mbrc
   - . ./.mbrc
   - rm -rf ~/.nvm
