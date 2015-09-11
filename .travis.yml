@@ -1,6 +1,6 @@
-# Change back to node_js when OSX agents have nvm pre-installed
+# OSX agents don't have nvm pre-installed, and installing it manually
+# gives me a lot more control over testing packaging options
 language: ruby
-#language: node_js
 
 sudo: true
 
@@ -15,17 +15,13 @@ os:
   - linux
   - osx
 
-#node_js:
-#  - '0.10'
-#  - 'node'
-
 rvm: '1.9.3'
 
 env:
   matrix:
-    - NODE_VERSION="0.10"
-    - NODE_VERSION="0.12"
-    - NODE_VERSION="4.0"
+    - MB_TEST_SPECS="NODE_VERSION=0.10\nMB_TEST_PARAM=0.10"
+    - MB_TEST_SPECS="NODE_VERSION=0.12\nMB_TEST_PARAM=0.12"
+    - MB_TEST_SPECS="NODE_VERSION=4.0\nMB_TEST_PARAM=4.0"
   global:
     - SLOW_TEST_TIMEOUT_MS=5000
     # HEROKU_API_KEY
@@ -36,6 +32,8 @@ env:
     - secure: "pbVyYwERkTpwkpFTqXjwsMkNpulV0ZV1HbBZeEBhpWY7MjIjjASd/kDwDBr4ONuiicOQ3ToL4MeKxgI2bxjQdhDhfBvMt5XZV6V8X8xktwZQsnkc9klD0qr5raQ6MZdWQzx4nlsgFLHO9k0w8D/EzQbz25E4KAicpaYYwejyig8="
 
 install:
+  - echo "$MB_TEST_SPECS" > .mbrc
+  - . ./.mbrc
   - rm -rf ~/.nvm
   - git clone https://github.com/creationix/nvm.git ~/.nvm
   - source ~/.nvm/nvm.sh
@@ -43,4 +41,5 @@ install:
   - node --version
 
 script:
-  - ./build && scripts/travisDeploy
+  - echo "MB_TEST_PARAM: $MB_TEST_PARAM"
+  #- ./build && scripts/travisDeploy
