@@ -33,11 +33,7 @@ env:
 
 install:
   - echo $MB_TEST_SPECS | tr '|' '\n' | sed -e 's/^/export /' > .mbrc
-  - echo "NODE_VERSION: $NODE_VERSION"
-  - echo "MB_TEST_PARAM: $MB_TEST_PARAM"
   - cat ./.mbrc
-  - echo "NODE_VERSION: $NODE_VERSION"
-  - echo "MB_TEST_PARAM: $MB_TEST_PARAM"
   - . ./.mbrc
   - rm -rf ~/.nvm
   - git clone https://github.com/creationix/nvm.git ~/.nvm
@@ -46,5 +42,5 @@ install:
   - node --version
 
 script:
-  - echo "MB_TEST_PARAM: $MB_TEST_PARAM"
+  - echo $MB_TEST_PARAM
   #- ./build && scripts/travisDeploy
