@@ -2,6 +2,7 @@
 
 var fs = require('fs-extra'),
     exec = require('child_process').exec,
+    spawn = require('child_process').spawn,
     os = require('os'),
     thisPackage = require('../package.json'),
     version = process.env.MB_VERSION || thisPackage.version;
@@ -26,9 +27,14 @@ module.exports = function (grunt) {
 
     grunt.registerTask('dist:tarball', 'Create OS-specific tarballs', function () {
         var done = this.async(),
-            command = 'scripts/dist/createSelfContainedTarball ' + os.platform() + ' x64 ' + version;
+            tar = spawn('scripts/dist/createSelfContainedTarball', [os.platform(), 'x64', version]);
 
-        exec(command, { maxBuffer: 2048*2048 }, function () {
+        tar.stdout.on('data', function (data) { console.log(data.toString('utf8').trim()); });
+        tar.stderr.on('data', function (data) { console.error(data.toString('utf8').trim()); });
+        tar.on('close', function (exitCode) {
+            if (exitCode !== 0) {
+                process.exit(exitCode);
+            }
             fs.removeSync('dist-test');
             fs.mkdirSync('dist-test');
 
@@ -38,7 +44,13 @@ module.exports = function (grunt) {
                 }
 
                 fs.copySync('dist/' + filename, 'dist-test/' + filename);
-                exec('cd dist-test && tar xzvf ' + filename, function () {
+                var untar = spawn('tar', ['xzf', filename], { cwd: 'dist-test' });
+                untar.stdout.on('data', function (data) { console.log(data.toString('utf8').trim()); });
+                untar.stderr.on('data', function (data) { console.error(data.toString('utf8').trim()); });
+                untar.on('close', function (exitCode) {
+                    if (exitCode !== 0) {
+                        process.exit(exitCode);
+                    }
                     fs.unlinkSync('dist-test/' + filename);
 
                     // Switch tests to use the mb from the tarball to test what actually gets published
