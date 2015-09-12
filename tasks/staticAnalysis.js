@@ -2,6 +2,7 @@
 
 var fs = require('fs-extra'),
     path = require('path'),
+    exec = require('child_process').exec,
     os = require('os'),
     thisPackage = require('../package.json');
 
