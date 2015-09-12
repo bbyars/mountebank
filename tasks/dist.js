@@ -25,9 +25,9 @@ module.exports = function (grunt) {
         });
     });
 
-    grunt.registerTask('dist:tarball', 'Create OS-specific tarballs', function () {
+    grunt.registerTask('dist:tarball', 'Create OS-specific tarballs', function (arch) {
         var done = this.async(),
-            tar = spawn('scripts/dist/createSelfContainedTarball', [os.platform(), 'x64', version]);
+            tar = spawn('scripts/dist/createSelfContainedTarball', [os.platform(), arch || os.arch(), version]);
 
         tar.stdout.on('data', function (data) { console.log(data.toString('utf8').trim()); });
         tar.stderr.on('data', function (data) { console.error(data.toString('utf8').trim()); });

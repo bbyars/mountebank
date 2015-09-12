@@ -18,11 +18,6 @@ os:
 rvm: '1.9.3'
 
 env:
-  matrix:
-    - MB_TEST_SPECS="NODE_VERSION=0.10"
-    - MB_TEST_SPECS="NODE_VERSION=0.12"
-    - MB_TEST_SPECS="NODE_VERSION=4.0"
-    - MB_TEST_SPECS="NODE_VERSION=4.0|MB_GRUNT_TASK=test:tarball"
   global:
     - SLOW_TEST_TIMEOUT_MS=5000
     # HEROKU_API_KEY
@@ -31,6 +26,17 @@ env:
     - secure: "H0iUwBPOwRf3+5HGqAXWU65dJIA+4SUltehM3+jiTXsqkxeHux3WqVOouaLlw2n8WaG9y1KMXEZzed6L8p8A3I6V2M+Y1n8qNYT8y/HjCTw4d3U0tiG6ef1ysIChdBOdlwXJT5GPLlLT0y+R4IgPfHd3DMx/aiEgT3O4gGZEchs="
     # NPM_API_KEY
     - secure: "pbVyYwERkTpwkpFTqXjwsMkNpulV0ZV1HbBZeEBhpWY7MjIjjASd/kDwDBr4ONuiicOQ3ToL4MeKxgI2bxjQdhDhfBvMt5XZV6V8X8xktwZQsnkc9klD0qr5raQ6MZdWQzx4nlsgFLHO9k0w8D/EzQbz25E4KAicpaYYwejyig8="
+  matrix:
+    - MB_TEST_SPECS="NODE_VERSION=0.10"
+    - MB_TEST_SPECS="NODE_VERSION=0.12"
+    - MB_TEST_SPECS="NODE_VERSION=4.0"
+    - MB_TEST_SPECS="NODE_VERSION=4.0|MB_GRUNT_TASK=test:tarball:x86"
+    - MB_TEST_SPECS="NODE_VERSION=4.0|MB_GRUNT_TASK=test:tarball:x64"
+
+matrix:
+  exclude:
+    - os: osx
+      env: MB_TEST_SPECS="NODE_VERSION=4.0|MB_GRUNT_TASK=test:tarball:x86"
 
 install:
   - echo $MB_TEST_SPECS | tr '|' '\n' | sed -e 's/^/export /' > .mbrc
@@ -42,4 +48,7 @@ install:
   - node --version
 
 script:
-  - ./build $MB_GRUNT_TASK && scripts/travisDeploy
+  - ./build $MB_GRUNT_TASK
+
+after_success:
+  - echo $TRAVIS_TEST_RESULT
