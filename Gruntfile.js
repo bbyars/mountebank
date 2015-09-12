@@ -24,6 +24,10 @@ function exclude (exclusions, file) {
     });
 }
 
+function include (filetype, file) {
+    return !filetype || file.indexOf(filetype, file.length - filetype.length) >= 0;
+}
+
 function forEachFileIn (dir, fileCallback, options) {
     fs.readdirSync(dir).forEach(function (file) {
         var filePath = path.join(dir, file);
@@ -32,7 +36,9 @@ function forEachFileIn (dir, fileCallback, options) {
             if (fs.lstatSync(filePath).isDirectory()) {
                 forEachFileIn(filePath, fileCallback, options);
             } else {
-                fileCallback(filePath);
+                if (include(options.filetype, filePath)) {
+                    fileCallback(filePath);
+                }
             }
         }
     });
