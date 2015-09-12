@@ -2,29 +2,11 @@
 
 var assert = require('assert'),
     Q = require('q'),
-    path = require('path'),
-    spawn = require('child_process').spawn,
     api = require('./../functionalTest/api/api'),
     client = require('./../functionalTest/api/http/baseHttpClient').create('http'),
     promiseIt = require('./../functionalTest/testHelpers').promiseIt,
-    port = api.port + 1;
-
-function mbServer (command, options, mbPort) {
-    var deferred = Q.defer(),
-        calledDone = false,
-        mbPath = path.normalize(__dirname + '/../bin/mb'),
-        mb = spawn(mbPath, [command, '--port', mbPort, '--pidfile', 'memory-test.pid'].concat(options));
-
-    ['stdout', 'stderr'].forEach(function (stream) {
-        mb[stream].on('data', function () {
-            if (!calledDone) {
-                calledDone = true;
-                deferred.resolve();
-            }
-        });
-    });
-    return deferred.promise;
-}
+    port = api.port + 1,
+    mb = require('../functionalTest/mb').create(port + 1);
 
 function getMemoryUsedForOneHundredThousandRequests (mbPort) {
     var stub = { responses: [{ is: { statusCode: 400 } }] },
@@ -60,30 +42,26 @@ describe('mb', function () {
 
     describe('when remembering requests', function () {
         promiseIt('should increase memory usage with number of requests', function () {
-            var mbPort = port + 1;
-
-            return mbServer('restart', [], mbPort).then(function () {
-                return getMemoryUsedForOneHundredThousandRequests(mbPort);
+            return mb.start().then(function () {
+                return getMemoryUsedForOneHundredThousandRequests(mb.port);
             }).then(function (memoryUsed) {
                 console.log('default memory usage for 100,000 requests: ' + memoryUsed);
                 assert.ok(memoryUsed > 300, 'Memory used: ' + memoryUsed);
             }).finally(function () {
-                return mbServer('stop', [], mbPort);
+                return mb.stop();
             });
         });
     });
 
     describe('when not remembering requests', function () {
         promiseIt('should not leak memory', function () {
-            var mbPort = port + 1;
-
-            return mbServer('restart', ['--nomock'], mbPort).then(function () {
-                return getMemoryUsedForOneHundredThousandRequests(mbPort);
+            return mb.start(['--nomock']).then(function () {
+                return getMemoryUsedForOneHundredThousandRequests(mb.port);
             }).then(function (memoryUsed) {
                 console.log('memory with --nomock for 100,000 requests: ' + memoryUsed);
                 assert.ok(memoryUsed < 50, 'Memory used: ' + memoryUsed);
             }).finally(function () {
-                return mbServer('stop', [], mbPort);
+                return mb.stop();
             });
         });
     });

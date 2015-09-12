@@ -8,18 +8,18 @@ var Q = require('q'),
 
 function create (port) {
 
-    function mbServer (command, options) {
+    function mbServer (command, args) {
         var deferred = Q.defer(),
             calledDone = false,
-            mbOptions = [command, '--port', port, '--pidfile', 'test.pid'].concat(options || []),
+            mbArgs = [command, '--port', port, '--pidfile', 'test.pid'].concat(args || []),
             mb;
 
         if (isWindows) {
-            mbOptions.unshift(mbPath);
-            mb = spawn('node', mbOptions);
+            mbArgs.unshift(mbPath);
+            mb = spawn('node', mbArgs);
         }
         else {
-            mb = spawn(mbPath, mbOptions);
+            mb = spawn(mbPath, mbArgs);
         }
 
         ['stdout', 'stderr'].forEach(function (stream) {
@@ -35,8 +35,8 @@ function create (port) {
 
     return {
         port: port,
-        start: function (options) { return mbServer('restart', options); },
-        stop: function () { return mbServer('stop'); }
+        start: function (args) { return mbServer('restart', args); },
+        stop: function () { return mbServer('stop', []); }
     };
 }
 

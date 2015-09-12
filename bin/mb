@@ -28,7 +28,7 @@ function usage () {
 }
 
 function error (message) {
-    console.log(message + "\n");
+    console.error(message + '\n');
     usage();
     process.exit(1);
 }

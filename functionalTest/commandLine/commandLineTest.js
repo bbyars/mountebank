@@ -3,44 +3,15 @@
 var assert = require('assert'),
     api = require('../api/api'),
     port = api.port + 1,
-    Q = require('q'),
+    mb = require('../mb').create(port),
     path = require('path'),
     isWindows = require('os').platform().indexOf('win') === 0,
-    exec = require('child_process').exec,
     BaseHttpClient = require('../api/http/baseHttpClient'),
     promiseIt = require('../testHelpers').promiseIt,
     timeout = parseInt(process.env.SLOW_TEST_TIMEOUT_MS || 3000),
     smtp = require('../api/smtp/smtpClient'),
     http = BaseHttpClient.create('http'),
     https = BaseHttpClient.create('https');
-
-function mb (args) {
-    var deferred = Q.defer(),
-        calledDone = false,
-        mbPath = path.normalize(__dirname + '/../../bin/mb'),
-        command = mbPath + ' ' + args + ' --port ' + port + ' --pidfile mb-test.pid',
-        process;
-
-    if (isWindows) {
-        command = 'node ' + command;
-    }
-
-    process = exec(command, { cwd: __dirname, encoding: 'utf8' });
-
-    ['stdout', 'stderr'].forEach(function (stream) {
-        process[stream].on('data', function () {
-            if (!calledDone) {
-                // We don't connect a TTY to stdout, so the child process mb isn't logging to the console
-                // Use a sleep as a crutch to wait for any pending imposter creation logging
-                setTimeout(function () {
-                    calledDone = true;
-                    deferred.resolve();
-                }, 250);
-            }
-        });
-    });
-    return deferred.promise;
-}
 
 describe('mb command line', function () {
     if (isWindows) {
@@ -54,7 +25,8 @@ describe('mb command line', function () {
     // I normally separating the data needed for the assertions from the test setup,
     // but I wanted this to be a reasonably complex regression test
     promiseIt('should support complex configuration with --configfile in multiple files', function () {
-        return mb("start --configfile imposters/imposters.ejs").then(function () {
+        // Delay because we need to wait long enough for the imposters to be created
+        return mb.start(['--configfile', path.join(__dirname, 'imposters/imposters.ejs')]).delay(250).then(function () {
             return http.post('/orders', '', 4545);
         }).then(function (response) {
             assert.strictEqual(response.statusCode, 201);
@@ -95,13 +67,14 @@ describe('mb command line', function () {
                 text: 'text 1'
             }, 6565);
         }).finally(function () {
-            return mb('stop');
+            return mb.stop();
         });
     });
 
     // This is the stub resolver injection example on /docs/api/injection
     promiseIt('should evaluate stringify function in templates when loading configuration files', function () {
-        return mb('start --configfile templates/imposters.ejs --allowInjection').then(function () {
+        // Delay because we need to wait long enough for the imposters to be created
+        return mb.start(['--configfile', path.join(__dirname, 'templates/imposters.ejs'), '--allowInjection']).delay(250).then(function () {
             return http.get('/first', 4546);
         }).then(function (response) {
             assert.deepEqual(response.body, { count: 3 });
@@ -115,7 +88,7 @@ describe('mb command line', function () {
         }).then(function (response) {
             assert.strictEqual(response.body, 'There have been 2 proxied calls');
         }).finally(function () {
-            return mb('stop');
+            return mb.stop();
         });
     });
 });
