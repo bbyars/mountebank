@@ -15,7 +15,7 @@ os:
   - linux
   - osx
 
-rvm: '1.9.3'
+rvm: '2.1.0'
 
 env:
   global:
@@ -49,6 +49,7 @@ install:
 
 script:
   - ./build $MB_GRUNT_TASK
+  - env
+  - [ "$TRAVIS_PULL_REQUEST" = "false" ] && scripts/deploy/deployS3
 
-after_success:
-  - echo $TRAVIS_TEST_RESULT
+
