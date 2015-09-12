@@ -50,6 +50,4 @@ install:
 script:
   - ./build $MB_GRUNT_TASK
   - env
-  - [ "$TRAVIS_PULL_REQUEST" = "false" ] && scripts/deploy/deployS3
-
-
+  - if [ "$TRAVIS_PULL_REQUEST" = "false" ]; then scripts/deploy/deployS3; fi
