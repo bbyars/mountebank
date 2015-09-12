@@ -45,6 +45,7 @@ install:
   - source ~/.nvm/nvm.sh
   - nvm install $NODE_VERSION
   - node --version
+  - bundle install
 
 script:
   - ./build $MB_GRUNT_TASK
