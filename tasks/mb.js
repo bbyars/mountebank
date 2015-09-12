@@ -10,7 +10,7 @@ function isWindows () {
 }
 
 module.exports = function (grunt) {
-    grunt.registerTask('mb', 'start or stop mountebank', function (command, executable) {
+    grunt.registerTask('mb', 'start or stop mountebank', function (command) {
         command = command || 'start';
         if (['start', 'stop', 'restart'].indexOf(command) === -1) {
             throw 'mb: the only targets are start, restart and stop';
@@ -19,14 +19,14 @@ module.exports = function (grunt) {
         var done = this.async(),
             calledDone = false,
             options = [command, '--port', port, '--pidfile', 'mb-grunt.pid', '--allowInjection'],
+            executable = process.env.MB_EXECUTABLE || 'dist/mountebank/bin/mb',
             mb;
 
         if (isWindows()) {
-            options.unshift('dist\\mountebank\\bin\\mb');
+            options.unshift(executable);
             mb = spawn('node', options);
         }
         else {
-            executable = executable || 'dist/mountebank/bin/mb';
             console.log('Using ' + executable);
             mb = spawn(executable, options);
         }

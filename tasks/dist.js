@@ -8,6 +8,8 @@ var fs = require('fs-extra'),
 
 module.exports = function (grunt) {
     grunt.registerTask('dist', 'Create trimmed down distribution directory', function () {
+        var done = this.async();
+
         fs.removeSync('dist');
         fs.mkdirSync('dist');
         fs.mkdirSync('dist/mountebank');
@@ -15,7 +17,11 @@ module.exports = function (grunt) {
             fs.copySync(source, 'dist/mountebank/' + source);
         });
         fs.removeSync('dist/mountebank/src/public/images/sources');
-        exec('cd dist/mountebank && npm install --production', this.async());
+        exec('cd dist/mountebank && npm install --production', function () {
+            // Switch tests to use the mb from the dist directory to test what actually gets published
+            process.env.MB_EXECUTABLE = 'dist/mountebank/bin/mb';
+            done();
+        });
     });
 
     grunt.registerTask('dist:tarball', 'Create OS-specific tarballs', function () {
@@ -34,6 +40,9 @@ module.exports = function (grunt) {
                 fs.copySync('dist/' + filename, 'dist-test/' + filename);
                 exec('cd dist-test && tar xzvf ' + filename, function () {
                     fs.unlinkSync('dist-test/' + filename);
+
+                    // Switch tests to use the mb from the tarball to test what actually gets published
+                    process.env.MB_EXECUTABLE = 'dist-test/' + filename.replace('.tar.gz', '') + '/mb';
                     done();
                 });
             });

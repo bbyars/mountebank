@@ -1,41 +1,13 @@
 'use strict';
 
 var assert = require('assert'),
-    spawn = require('child_process').spawn,
-    path = require('path'),
     api = require('../api'),
     isWindows = require('os').platform().indexOf('win') === 0,
     BaseHttpClient = require('./baseHttpClient'),
-    Q = require('q'),
     promiseIt = require('../../testHelpers').promiseIt,
     port = api.port + 1,
+    mb = require('../../mb').create(port + 1),
     timeout = parseInt(process.env.SLOW_TEST_TIMEOUT_MS || 4000);
-
-function nonInjectableServer (command, mbPort) {
-    var deferred = Q.defer(),
-        calledDone = false,
-        mbPath = path.normalize(__dirname + '/../../../bin/mb'),
-        options = [command, '--port', mbPort, '--pidfile', 'imposter-test.pid'],
-        mb;
-
-    if (isWindows) {
-        options.unshift(mbPath);
-        mb = spawn('node', options);
-    }
-    else {
-        mb = spawn(mbPath, options);
-    }
-
-    ['stdout', 'stderr'].forEach(function (stream) {
-        mb[stream].on('data', function () {
-            if (!calledDone) {
-                calledDone = true;
-                deferred.resolve();
-            }
-        });
-    });
-    return deferred.promise;
-}
 
 ['http', 'https'].forEach(function (protocol) {
     var client = BaseHttpClient.create(protocol);
@@ -149,19 +121,18 @@ function nonInjectableServer (command, mbPort) {
             });
 
             promiseIt('should return a 400 if injection is disallowed and inject is used', function () {
-                var mbPort = port + 1,
-                    fn = function (request) { return { body: request.method + ' INJECTED' }; },
+                var fn = function (request) { return { body: request.method + ' INJECTED' }; },
                     stub = { responses: [{ inject: fn.toString() }] },
                     request = { protocol: protocol, port: port, stubs: [stub], name: this.name },
                     mbApi = BaseHttpClient.create('http');
 
-                return nonInjectableServer('start', mbPort).then(function () {
-                    return mbApi.post('/imposters', request, mbPort);
+                return mb.start().then(function () {
+                    return mbApi.post('/imposters', request, mb.port);
                 }).then(function (response) {
                     assert.strictEqual(response.statusCode, 400);
                     assert.strictEqual(response.body.errors[0].code, 'invalid injection');
                 }).finally(function () {
-                    return nonInjectableServer('stop', mbPort);
+                    return mb.stop();
                 });
             });
 
