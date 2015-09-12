@@ -24,10 +24,6 @@ function exclude (exclusions, file) {
     });
 }
 
-function include (filetype, file) {
-    return !filetype || file.indexOf(filetype, file.length - filetype.length) >= 0;
-}
-
 function forEachFileIn (dir, fileCallback, options) {
     fs.readdirSync(dir).forEach(function (file) {
         var filePath = path.join(dir, file);
@@ -36,9 +32,7 @@ function forEachFileIn (dir, fileCallback, options) {
             if (fs.lstatSync(filePath).isDirectory()) {
                 forEachFileIn(filePath, fileCallback, options);
             } else {
-                if (include(options.filetype, filePath)) {
-                    fileCallback(filePath);
-                }
+                fileCallback(filePath);
             }
         }
     });
@@ -110,7 +104,7 @@ module.exports = function (grunt) {
         }
     });
 
-    grunt.registerTask('mb', 'start or stop mountebank', function (command) {
+    grunt.registerTask('mb', 'start or stop mountebank', function (command, executable) {
         command = command || 'start';
         if (['start', 'stop', 'restart'].indexOf(command) === -1) {
             throw 'mb: the only targets are start, restart and stop';
@@ -126,7 +120,9 @@ module.exports = function (grunt) {
             mb = spawn('node', options);
         }
         else {
-            mb = spawn('dist/mountebank/bin/mb', options);
+            executable = executable || 'dist/mountebank/bin/mb';
+            console.log('Using ' + executable);
+            mb = spawn(executable, options);
         }
 
         ['stdout', 'stderr'].forEach(function (stream) {
@@ -161,6 +157,39 @@ module.exports = function (grunt) {
         });
         fs.removeSync('dist/mountebank/src/public/images/sources');
         exec('cd dist/mountebank && npm install --production', this.async());
+    });
+
+    grunt.registerTask('dist:tarball', 'Create OS-specific tarballs', function () {
+        var done = this.async(),
+            command = 'scripts/dist/createSelfContainedTarball ' + os.platform() + ' x64 ' + version;
+
+        exec(command, { maxBuffer: 2048*2048 }, function () {
+            fs.removeSync('dist-test');
+            fs.mkdirSync('dist-test');
+
+            fs.readdirSync('dist').forEach(function (filename) {
+                if (filename.indexOf('.tar.gz') < 0) {
+                    return;
+                }
+
+                fs.copySync('dist/' + filename, 'dist-test/' + filename);
+                exec('cd dist-test && tar xzvf ' + filename, function () {
+                    fs.unlinkSync('dist-test/' + filename);
+                    done();
+                });
+            });
+        });
+    });
+
+    grunt.registerTask('mbTarball', 'Run mb from extracted OS-specific tarball', function (command) {
+        fs.readdirSync('dist').forEach(function (filename) {
+            if (filename.indexOf('.tar.gz') < 0) {
+                return;
+            }
+
+            var mbPath = 'dist-test/' + filename.replace('.tar.gz', '') + '/mb';
+            grunt.task.run('mb:' + command + ':' + mbPath);
+        });
     });
 
     grunt.registerTask('version', 'Set the version number', function () {
@@ -298,10 +327,14 @@ module.exports = function (grunt) {
 
     grunt.registerTask('test:unit', 'Run the unit tests', ['mochaTest:unit']);
     grunt.registerTask('test:functional', 'Run the functional tests',
-        ['dist', 'mb:restart', 'try', 'mochaTest:functional', 'finally', 'mb:stop', 'checkForErrors']);
+        ['mb:restart', 'try', 'mochaTest:functional', 'finally', 'mb:stop', 'checkForErrors']);
     grunt.registerTask('test:performance', 'Run the performance tests', ['mochaTest:performance']);
     grunt.registerTask('test', 'Run all non-performance tests', ['test:unit', 'test:functional']);
     grunt.registerTask('coverage', 'Generate code coverage', ['mochaTest:coverage']);
     grunt.registerTask('lint', 'Run all JavaScript lint checks', ['wsCheck', 'jsCheck', 'deadCheck', 'jshint']);
     grunt.registerTask('default', ['version', 'dist', 'test', 'lint']);
+
+    // Package-specific testing
+    grunt.registerTask('test:tarball', 'Run tests against packaged tarball',
+        ['version', 'dist', 'dist:tarball', 'mbTarball:restart', 'try', 'mochaTest:functional', 'finally', 'mbTarball:stop', 'checkForErrors']);
 };

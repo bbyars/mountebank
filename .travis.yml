@@ -19,9 +19,10 @@ rvm: '1.9.3'
 
 env:
   matrix:
-    - MB_TEST_SPECS="NODE_VERSION=0.10|MB_TEST_PARAM=0.10"
-    - MB_TEST_SPECS="NODE_VERSION=0.12|MB_TEST_PARAM=0.12"
-    - MB_TEST_SPECS="NODE_VERSION=4.0|MB_TEST_PARAM=4.0"
+    - MB_TEST_SPECS="NODE_VERSION=0.10"
+    - MB_TEST_SPECS="NODE_VERSION=0.12"
+    - MB_TEST_SPECS="NODE_VERSION=4.0"
+    - MB_TEST_SPECS="NODE_VERSION=4.0|MB_GRUNT_TASK=test:tarball"
   global:
     - SLOW_TEST_TIMEOUT_MS=5000
     # HEROKU_API_KEY
@@ -33,7 +34,6 @@ env:
 
 install:
   - echo $MB_TEST_SPECS | tr '|' '\n' | sed -e 's/^/export /' > .mbrc
-  - cat ./.mbrc
   - . ./.mbrc
   - rm -rf ~/.nvm
   - git clone https://github.com/creationix/nvm.git ~/.nvm
@@ -42,5 +42,4 @@ install:
   - node --version
 
 script:
-  - echo $MB_TEST_PARAM
-  #- ./build && scripts/travisDeploy
+  - ./build $MB_GRUNT_TASK && scripts/travisDeploy
