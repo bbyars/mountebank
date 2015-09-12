@@ -15,7 +15,7 @@ os:
   - linux
   - osx
 
-rvm: '2.1.0'
+rvm: '2.2.0'
 
 env:
   global:
@@ -29,7 +29,6 @@ env:
   matrix:
     - MB_TEST_SPECS="NODE_VERSION=0.10"
     - MB_TEST_SPECS="NODE_VERSION=0.12"
-    - MB_TEST_SPECS="NODE_VERSION=4.0"
     - MB_TEST_SPECS="NODE_VERSION=4.0|MB_GRUNT_TASK=test:tarball:x86"
     - MB_TEST_SPECS="NODE_VERSION=4.0|MB_GRUNT_TASK=test:tarball:x64"
 
@@ -49,5 +48,4 @@ install:
 
 script:
   - ./build $MB_GRUNT_TASK
-  - env
   - if [ "$TRAVIS_PULL_REQUEST" = "false" ]; then scripts/deploy/deployS3; fi
