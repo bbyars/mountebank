@@ -58,7 +58,7 @@ module.exports = function (grunt) {
 
     grunt.registerTask('install:deb', 'Set test executable to mb installed in Debian file', function () {
         var done = this.async(),
-            deb = util.format('mountebank-v%s_amd64.deb', version);
+            deb = util.format('mountebank_v%s_amd64.deb', version);
 
         fs.removeSync(testDir);
         fs.mkdirSync(testDir);
@@ -72,7 +72,7 @@ module.exports = function (grunt) {
 
     grunt.registerTask('uninstall:deb', 'Verify uninstallation of Debian file', function () {
         var done = this.async(),
-            deb = util.format('mountebank-v%s_amd64.deb', version);
+            deb = util.format('mountebank_v%s_amd64.deb', version);
 
         run('sudo', ['dpkg', '-r', deb], { cwd: testDir }).done(function () {
             if (fs.existsSync('/usr/local/bin/mb')) {
