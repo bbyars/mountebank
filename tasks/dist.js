@@ -8,7 +8,7 @@ var fs = require('fs-extra'),
     thisPackage = require('../package.json'),
     version = process.env.MB_VERSION || thisPackage.version;
 
-function run (command, args, options, fn) {
+function run (command, args, options) {
     var deferred = Q.defer(),
         proc = spawn(command, args, options);
 
@@ -29,8 +29,7 @@ function run (command, args, options, fn) {
 module.exports = function (grunt) {
 
     grunt.registerTask('dist', 'Create trimmed down distribution directory', function () {
-        var done = this.async(),
-            npm;
+        var done = this.async();
 
         fs.removeSync('dist');
         fs.mkdirSync('dist');
