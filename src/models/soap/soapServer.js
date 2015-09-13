@@ -71,7 +71,7 @@ function logConnection (logger, socket) {
 /**
  * Spins up a server listening on a socket
  * @param options - the JSON request body for the imposter create request
- * @param recordRequests - the inverse of the --nomock command line parameter
+ * @param recordRequests - the --mock command line parameter
  */
 function createServer (options, recordRequests, debug) {
     var deferred = Q.defer(),

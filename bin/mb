@@ -22,7 +22,7 @@ function usage () {
     console.log('    --logfile FILE    file used for all log (default mb.log)');
     console.log('    --loglevel LEVEL  level for terminal logs (default info)');
     console.log('    --allowInjection  set to allow JavaScript injection');
-    console.log('    --nomock          do not remember requests for mock verification and stub debugging');
+    console.log('    --mock            remember requests for mock verification');
     console.log('    --version         show the mountebank version and exit');
     console.log('    --allowCORS       allow Cross-Origin Site Requests to mountebank server');
     console.log('    --debug           include stub match information in imposter retrievals for debugging purposes');
@@ -159,7 +159,7 @@ try {
             keyfile: '',
             certfile: ''
         },
-        booleanOptions = ['allowInjection', 'nomock', 'heroku', 'version', 'allowCORS', 'debug'],
+        booleanOptions = ['allowInjection', 'mock', 'heroku', 'version', 'allowCORS', 'debug'],
         commandLine = cli.parse(process.argv.slice(2), defaultOptions, booleanOptions),
         server = serverAt(commandLine.options);
 

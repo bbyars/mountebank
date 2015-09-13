@@ -62,11 +62,11 @@ description = 'Command line parameters for starting mountebank'
     <td><code>false</code></td>
   </tr>
   <tr>
-    <td><code>--nomock</code></td>
-    <td>mountebank supports mock verification and stub debugging by remembering the requests
+    <td><code>--mock</code></td>
+    <td>mountebank supports mock verification by remembering the requests
       made against each stub.  See the <a href='/docs/api/mocks'>mocks</a> page for more details.
-      This represents a memory leak for any long running <code>mb</code> process, as requests are
-      never forgotten.  The <code>--nomock</code> flag turns this behavior off.</td>
+      Note that this represents a memory leak for any long running <code>mb</code> process, as
+      requests are never forgotten.</td>
     <td><code>false</code></td>
   </tr>
   <tr>

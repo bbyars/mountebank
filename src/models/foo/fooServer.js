@@ -34,7 +34,7 @@ function scopeFor (port, name) {
 /**
  * Spins up a server listening on a socket
  * @param options - the JSON request body for the imposter create request
- * @param recordRequests - the inverse of the --nomock command line parameter
+ * @param recordRequests - the --mock command line parameter
  */
 function createServer (options, recordRequests, debug) {
             // This is an async operation, so we use a deferred
@@ -116,7 +116,7 @@ function createServer (options, recordRequests, debug) {
 /**
  * Creates the core protocol interface - all protocols must implement
  * @param allowInjection - represents the command line --allowInjection parameter
- * @param recordRequests - represents the inverse of the command line --nomock parameter
+ * @param recordRequests - represents the command line --mock parameter
  */
 function initialize (allowInjection, recordRequests, debug) {
     return {

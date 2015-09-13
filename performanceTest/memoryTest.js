@@ -42,10 +42,10 @@ describe('mb', function () {
 
     describe('when remembering requests', function () {
         promiseIt('should increase memory usage with number of requests', function () {
-            return mb.start().then(function () {
+            return mb.start(['--mock']).then(function () {
                 return getMemoryUsedForOneHundredThousandRequests(mb.port);
             }).then(function (memoryUsed) {
-                console.log('default memory usage for 100,000 requests: ' + memoryUsed);
+                console.log('memory usage for 100,000 requests with --mock: ' + memoryUsed);
                 assert.ok(memoryUsed > 300, 'Memory used: ' + memoryUsed);
             }).finally(function () {
                 return mb.stop();
@@ -55,10 +55,10 @@ describe('mb', function () {
 
     describe('when not remembering requests', function () {
         promiseIt('should not leak memory', function () {
-            return mb.start(['--nomock']).then(function () {
+            return mb.start().then(function () {
                 return getMemoryUsedForOneHundredThousandRequests(mb.port);
             }).then(function (memoryUsed) {
-                console.log('memory with --nomock for 100,000 requests: ' + memoryUsed);
+                console.log('default memory usage with for 100,000 requests: ' + memoryUsed);
                 assert.ok(memoryUsed < 50, 'Memory used: ' + memoryUsed);
             }).finally(function () {
                 return mb.stop();
