@@ -74,7 +74,7 @@ module.exports = function (grunt) {
     grunt.registerTask('default', ['version', 'dist', 'test', 'lint']);
 
     // Package-specific testing
-    grunt.registerTask('test:tarball:x86', 'Run tests against packaged tarball', ['version', 'dist:tarball:x86', 'test', 'lint']);
-    grunt.registerTask('test:tarball:x64', 'Run tests against packaged tarball', ['version', 'dist:tarball:x64', 'test', 'lint']);
-    grunt.registerTask('test:npm', 'Run tests against npm package', ['version', 'dist:npm', 'test', 'lint']);
+    grunt.registerTask('test:tarball:x86', 'Run tests against packaged tarball', ['version', 'dist', 'dist:tarball:x86', 'test', 'lint']);
+    grunt.registerTask('test:tarball:x64', 'Run tests against packaged tarball', ['version', 'dist', 'dist:tarball:x64', 'test', 'lint']);
+    grunt.registerTask('test:npm', 'Run tests against npm package', ['version', 'dist', 'dist:npm', 'test', 'lint']);
 };
