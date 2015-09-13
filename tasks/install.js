@@ -60,13 +60,16 @@ module.exports = function (grunt) {
         var done = this.async(),
             deb = util.format('mountebank_v%s_amd64.deb', version);
 
-        fs.removeSync(testDir);
-        fs.mkdirSync(testDir);
-        fs.copySync('dist/' + deb, path.join(testDir, deb));
+        run('ls', ['-l', 'dist'], {}).done(function () {
 
-        run('sudo', ['dpkg', '-i', deb], { cwd: testDir }).done(function () {
-            process.env.MB_EXECUTABLE = 'mb';
-            done();
+            fs.removeSync(testDir);
+            fs.mkdirSync(testDir);
+            fs.copySync('dist/' + deb, path.join(testDir, deb));
+
+            run('sudo', ['dpkg', '-i', deb], { cwd: testDir }).done(function () {
+                process.env.MB_EXECUTABLE = 'mb';
+                done();
+            });
         });
     });
 
