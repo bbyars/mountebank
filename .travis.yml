@@ -19,6 +19,10 @@ matrix:
     - os: osx
       env:
         - NODE_VERSION=4.0
+        - MB_GRUNT_TASK=test:pkg
+    - os: osx
+      env:
+        - NODE_VERSION=4.0
         - MB_GRUNT_TASK=test:tarball:x64
     - os: osx
       env:

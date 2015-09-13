@@ -47,26 +47,8 @@ module.exports = function (grunt) {
     });
 
     grunt.registerTask('dist:tarball', 'Create OS-specific tarballs', function (arch) {
-        var done = this.async(),
-            tarball;
-
-        arch = arch || os.arch();
-        run('scripts/dist/createSelfContainedTarball', [os.platform(), arch, version]).then(function () {
-            fs.removeSync('dist-test');
-            fs.mkdirSync('dist-test');
-
-            tarball = fs.readdirSync('dist').filter(function (file) {
-                return file === util.format('mountebank-v%s-%s-%s.tar.gz', version, os.platform(), arch);
-            })[0];
-
-            fs.copySync('dist/' + tarball, 'dist-test/' + tarball);
-
-            return run('tar', ['xzf', tarball], { cwd: 'dist-test' });
-        }).done(function () {
-            fs.unlinkSync('dist-test/' + tarball);
-
-            // Switch tests to use the mb from the tarball to test what actually gets published
-            process.env.MB_EXECUTABLE = 'dist-test/' + tarball.replace('.tar.gz', '') + '/mb';
+        var done = this.async();
+        run('scripts/dist/createSelfContainedTarball', [os.platform(), arch || os.arch(), version]).done(function () {
             done();
         });
     });
@@ -80,19 +62,13 @@ module.exports = function (grunt) {
         var done = this.async(),
             filename = 'mountebank-v' + version + '-npm.tar.gz';
 
-        run('tar', ['czf', filename, 'mountebank'], { cwd: 'dist' }).then(function () {
-            // Use a parent directory to avoid installing in project node_modules
-            // Makes for a cleaner test; no interaction with our npm install
-            fs.removeSync('../mb-dist-test');
-            fs.mkdirSync('../mb-dist-test');
-            fs.copySync('dist/' + filename, '../mb-dist-test/' + filename);
-
-            return run('npm', ['install', './' + filename], { cwd: '../mb-dist-test' });
-        }).done(function () {
-
-            // Switch tests to use the mb from npm to test what actually gets published
-            process.env.MB_EXECUTABLE = '../mb-dist-test/node_modules/.bin/mb';
+        run('tar', ['czf', filename, 'mountebank'], { cwd: 'dist' }).done(function () {
             done();
         });
+    });
+
+    grunt.registerTask('dist:package', 'Create OS-specific package', function (type) {
+        var done = this.async();
+        run('scripts/dist/createPackage', [os.platform(), type, version]).done(function () { done(); });
     });
 };

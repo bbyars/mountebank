@@ -26,8 +26,8 @@ set -e
 #        scripts/dist/createSelfContainedTarball linux x86 $MB_VERSION
 #        scripts/dist/createSelfContainedTarball linux x64 $MB_VERSION
 
-        scripts/dist/createWindowsZip x86 $MB_VERSION
-        scripts/dist/createWindowsZip x64 $MB_VERSION
+#        scripts/dist/createWindowsZip x86 $MB_VERSION
+#        scripts/dist/createWindowsZip x64 $MB_VERSION
 
         sudo apt-get update
         sudo apt-get install rpm
