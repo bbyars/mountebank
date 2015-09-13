@@ -58,18 +58,15 @@ module.exports = function (grunt) {
 
     grunt.registerTask('install:deb', 'Set test executable to mb installed in Debian file', function () {
         var done = this.async(),
-            deb = util.format('mountebank_v%s_amd64.deb', version);
+            deb = util.format('mountebank_%s_amd64.deb', version);
 
-        run('ls', ['-l', 'dist'], {}).done(function () {
+        fs.removeSync(testDir);
+        fs.mkdirSync(testDir);
+        fs.copySync('dist/' + deb, path.join(testDir, deb));
 
-            fs.removeSync(testDir);
-            fs.mkdirSync(testDir);
-            fs.copySync('dist/' + deb, path.join(testDir, deb));
-
-            run('sudo', ['dpkg', '-i', deb], { cwd: testDir }).done(function () {
-                process.env.MB_EXECUTABLE = 'mb';
-                done();
-            });
+        run('sudo', ['dpkg', '-i', deb], { cwd: testDir }).done(function () {
+            process.env.MB_EXECUTABLE = 'mb';
+            done();
         });
     });
 
