@@ -2,10 +2,12 @@
 
 set -e
 
-echo "Deploying to npm..."
+PUBLISH=$1
+
+echo "Deploying to npm (PUBLISH=$PUBLISH)..."
 (
 cd dist/mountebank
-if [ -n "`git describe --tags --exact-match 2>/dev/null`" ]; then
+if [ "$PUBLISH" = "true" ]; then
     dpl --provider=npm --email=brandon.byars@gmail.com --api-key=$NPM_API_KEY --skip-cleanup
 fi
 cd ..
