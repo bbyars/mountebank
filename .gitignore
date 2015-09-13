@@ -4,7 +4,8 @@ node_modules/
 coverage.html
 mb*.log
 *.pid
-dist
+dist/
+!scripts/dist/
 mountebank.iml
 REFERENCES
 TODO

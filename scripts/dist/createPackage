@@ -1,0 +1,48 @@
+#!/bin/sh
+
+PLATFORM=$1
+TYPE=$2
+MB_VERSION=$3
+MB_DIRNAME=mountebank-v$MB_VERSION-$PLATFORM-x64
+
+set -e
+
+if [ ! -d "dist/$MB_DIRNAME" ]; then
+    scripts/dist/createSelfContainedDir $PLATFORM x64 $MB_VERSION
+fi
+
+echo Creating $TYPE...
+
+cd dist
+
+echo "#!/usr/bin/env sh" > ./postInstall
+echo "[ -e /usr/local/bin/mb ] && rm /usr/local/bin/mb" >> ./postInstall
+echo "ln -s /usr/local/$MB_DIRNAME/mb /usr/local/bin/mb" >> ./postInstall
+chmod +x ./postInstall
+
+echo "#!/usr/bin/env sh" > ./postUninstall
+echo "rm /usr/local/bin/mb" >> ./postUninstall
+chmod +x ./postUninstall
+
+fpm -s dir \
+    -t $TYPE \
+    -n mountebank \
+    -v $MB_VERSION \
+    --license MIT \
+    --category test \
+    --description "over the wire test doubles" \
+    --url "http://www.mbtest.org" \
+    --maintainer "Brandon Byars <brandon.byars@gmail.com>" \
+    --post-install ./postInstall \
+    --post-uninstall ./postUninstall \
+    $MB_DIRNAME=/usr/local
+
+rm ./postInstall
+rm ./postUninstall
+
+if [ "$TYPE" = "osxpkg" ]; then
+    # fpm strips the v out; add back in for consistency with other packages
+    mv mountebank-$MB_VERSION.pkg mountebank-v$MB_VERSION.pkg
+fi
+
+cd ..

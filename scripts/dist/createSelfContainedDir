@@ -1,0 +1,40 @@
+#!/bin/sh
+
+set -e
+
+PLATFORM=$1
+ARCH=$2
+MB_VERSION=$3
+
+cd dist
+
+echo Creating directory for $PLATFORM-$ARCH...
+
+NODE_VERSION=`node -v`
+NODE_FILENAME=node-$NODE_VERSION-$PLATFORM-$ARCH
+URL=https://nodejs.org/dist/$NODE_VERSION/$NODE_FILENAME.tar.gz
+MB_DIRNAME=mountebank-v$MB_VERSION-$PLATFORM-$ARCH
+
+[ -e $MB_DIRNAME ] && rm -rf $MB_DIRNAME
+mkdir $MB_DIRNAME
+
+cd $MB_DIRNAME
+
+wget -q $URL
+echo "Extracting..."
+tar xzf $NODE_FILENAME.tar.gz > /dev/null
+echo "Done"
+rm $NODE_FILENAME.tar.gz
+
+cp -r ../mountebank .
+
+echo "#!/usr/bin/env sh" > ./mb
+echo "# allow running from any directory, including symlinks" >> ./mb
+echo "# portable but incomplete readlink -f behavior" >> ./mb
+echo "FILE=\$0" >> ./mb
+echo "[ -L \$FILE ] && FILE=\`readlink \$FILE\`" >> ./mb
+echo "DIR=\`dirname \$FILE\`" >> ./mb
+echo "\$DIR/$NODE_FILENAME/bin/node \$DIR/mountebank/bin/mb \"\$@\"" >> ./mb
+chmod +x ./mb
+
+cd ../..
