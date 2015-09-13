@@ -6,7 +6,7 @@ var fs = require('fs'),
     defaultKey = fs.readFileSync(__dirname + '/cert/mb-key.pem', 'utf8'),
     defaultCert = fs.readFileSync(__dirname + '/cert/mb-cert.pem', 'utf8');
 
-function initialize (allowInjection, recordRequests) {
+function initialize (allowInjection, recordRequests, debug) {
     var createBaseServer = function (options) {
             var metadata = {
                     key: options.key || defaultKey,
@@ -30,7 +30,7 @@ function initialize (allowInjection, recordRequests) {
                 createNodeServer: createNodeServer
             };
         };
-    return baseHttpServer.setup('https', createBaseServer).initialize(allowInjection, recordRequests);
+    return baseHttpServer.setup('https', createBaseServer).initialize(allowInjection, recordRequests, debug);
 }
 
 module.exports = {

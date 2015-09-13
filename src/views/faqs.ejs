@@ -19,7 +19,8 @@ description = 'Frequently asked questions about using mountebank'
         <dt>How can I optimize the number of API calls during test setup and teardown?</dt>
         <dd>You can use the <a href='/docs/api/overview#put-imposters'>PUT /imposters</a> API
         call to combine cleanup of the previous test run's imposters and setup of the new
-        test run.</dd>
+        test run.  If you need to do mock verification, the <a href='docs/api/overview#delete-imposter'>
+        DELETE /imposter</a> call will return the <code>requests</code> array.</dd>
 
         <dt>Why is the command line application simply called <code>mb</code>?</dt>
         <dd>Because <code>mb</code> is easier to pronounce than mountebank.</dd>
@@ -45,7 +46,7 @@ description = 'Frequently asked questions about using mountebank'
         <dt>Does mountebank proved service virtualization?</dt>
         <dd>Yes!  Service virtualization is the term that commercial vendors use that
         came out of the SOA tools, and essentially just means over the wire test doubles, which
-        is something mountebank knows a thing or two about.  And, unlike service virtualization packages,
+        is something mountebank knows a thing or two about.  And, unlike commercial service virtualization packages,
         he offers this free of charge, so there are no licensing concerns preventing you from pushing the
         tests to the left of the project lifecycle.  mountebank is also far more friendly of continuous
         integration and continuous delivery than commercial software.  A key goal of mountebank's approach

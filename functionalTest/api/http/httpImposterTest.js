@@ -4,6 +4,7 @@ var assert = require('assert'),
     api = require('../api'),
     promiseIt = require('../../testHelpers').promiseIt,
     port = api.port + 1,
+    mb = require('../../mb').create(port + 1),
     timeout = parseInt(process.env.SLOW_TEST_TIMEOUT_MS || 4000),
     BaseHttpClient = require('./baseHttpClient');
 
@@ -135,6 +136,26 @@ var assert = require('assert'),
                     }]);
                 }).finally(function () {
                     return api.del('/imposters');
+                });
+            });
+
+            promiseIt('should not record matches against stubs if --debug flag is missing', function () {
+                var stub = { responses: [{ is: { body: '1' } }, { is: { body: '2' } }] },
+                    request = { protocol: protocol, port: port, stubs: [stub], name: this.name},
+                    mbApi = BaseHttpClient.create('http');
+
+                return mb.start().then(function () {
+                    return mbApi.post('/imposters', request, mb.port);
+                }).then(function () {
+                    return client.get('/first?q=1', port);
+                }).then(function () {
+                    return client.get('/second?q=2', port);
+                }).then(function () {
+                    return mbApi.get('/imposters/' + port, mb.port);
+                }).then(function (response) {
+                    assert.deepEqual(response.body.stubs, [ { responses: [{ is: { body: '1' } }, { is: { body: '2' } }] } ]);
+                }).finally(function () {
+                    return mb.stop();
                 });
             });
 

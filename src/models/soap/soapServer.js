@@ -73,7 +73,7 @@ function logConnection (logger, socket) {
  * @param options - the JSON request body for the imposter create request
  * @param recordRequests - the inverse of the --nomock command line parameter
  */
-function createServer (options, recordRequests) {
+function createServer (options, recordRequests, debug) {
     var deferred = Q.defer(),
         requests = [],
         logger = ScopedLogger.create(baseLogger, scopeFor(options.port)),
@@ -81,7 +81,7 @@ function createServer (options, recordRequests) {
         wsdl = WSDL.parse(options.wsdl),
         postProcess = combinators.curry(createResponse, wsdl),
         resolver = StubResolver.create(proxy, postProcess),
-        stubs = StubRepository.create(resolver, recordRequests, 'utf8'),
+        stubs = StubRepository.create(resolver, debug, 'utf8'),
         server = http.createServer(),
         connectionLogger = combinators.curry(logConnection, logger);
 
@@ -149,11 +149,11 @@ function createServer (options, recordRequests) {
     return deferred.promise;
 }
 
-function initialize (allowInjection, recordRequests) {
+function initialize (allowInjection, recordRequests, debug) {
     return {
         name: 'soap',
         create: function (request) {
-            return createServer(request, recordRequests);
+            return createServer(request, recordRequests, debug);
         },
         Validator: {
             create: function () {

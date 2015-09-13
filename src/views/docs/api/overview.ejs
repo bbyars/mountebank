@@ -172,7 +172,9 @@ http://localhost:3535.  To retrieve a list of all imposters, simply issue a <cod
   <li>You want to perform <a href='/docs/api/mocks'>mock verifications</a> by inspecting the
     <code>requests</code> array.</li>
   <li>You want to debug <a href='/docs/api/predicates'>stub predicates</a> by inspecting the
-    <code>matches</code> array.</li>
+    <a href='/docs/api/stubs#matches-array'><code>matches</code> array</a> (you must run
+    <code>mb</code> with the <a href='/docs/commandLine'> <code>--debug</code> command line
+      parameter</a> for this to work)</li>
   <li>You <a href='/docs/api/proxies'>proxied</a> a real service, and want to be save off the
     saved responses in a subsequent disconnected test run.</li>
 </ul>
@@ -190,7 +192,8 @@ http://localhost:3535.  To retrieve a list of all imposters, simply issue a <cod
     <td>boolean</td>
     <td>Set to <code>true</code> to retrieve the minimum amount of information for
       <a href='#post-imposters'>creating the imposter</a> in the future.  This leaves
-      out the <code>requests</code> array, the <code>matches</code> array, and any hypermedia.</td>
+      out the <code>requests</code> array, the <a href='/docs/api/stubs#matches-array'>
+      <code>matches</code> array</a>, and any hypermedia.</td>
   </tr>
   <tr>
     <td><code>removeProxies</code></td>
@@ -235,8 +238,9 @@ Connection: keep-alive
 
 <p>Had we set the <code>replayable</code> query parameter, the <code>requests</code> and
 <code>_links</code> elements would not be there.  If we had any <a href='/docs/api/stubs'>stubs</a>,
-the <code>matches</code> array would also not be present.  None of those fields are used during
-the creation of an imposter.</p>
+the <a href='/docs/api/stubs#matches-array'><code>matches</code> array</a> would also not be present
+regardless of whether we ran <code>mb</code> with the <code>--debug</code> command line parameter or
+not.  None of those fields are used during the creation of an imposter.</p>
 
 <pre><code data-test-id='imposters'
            data-test-step='3'
@@ -287,7 +291,8 @@ at the <code>requests</code> array for <a href='/docs/api/mocks'>mock verificati
     <td>boolean</td>
     <td>Set to <code>true</code> to retrieve the minimum amount of information for
       <a href='#post-imposters'>creating the imposter</a> in the future.  This leaves
-      out the <code>requests</code> array, the <code>matches</code> array, and any hypermedia.</td>
+      out the <code>requests</code> array, the <a href='/docs/api/stubs#matches-array'>
+      <code>matches</code> array</a>, and any hypermedia.</td>
   </tr>
   <tr>
     <td><code>removeProxies</code></td>
@@ -438,7 +443,8 @@ either <a href='#get-imposter'>get the single imposter</a> or use the
     <td>boolean</td>
     <td>Set to <code>true</code> to retrieve the minimum amount of information for replaying
       the set of imposters in the future through a <a href='#put-imposters'>mass create</a>
-      call.  This leaves out the <code>requests</code> array, the <code>matches</code> array,
+      call.  This leaves out the <code>requests</code> array, the
+      <a href='/docs/api/stubs#matches-array'><code>matches</code> array</a>,
       and any hypermedia.</td>
   </tr>
   <tr>
@@ -522,7 +528,8 @@ to <a href='#put-imposters'>mass create</a> the same imposters in the future.</p
   <tr>
     <td><code>replayable</code></td>
     <td>boolean</td>
-    <td>Defaults to true.  Set to <code>false</code> to retrieve the <code>matches</code>
+    <td>Defaults to true.  Set to <code>false</code> to retrieve the
+      <a href='/docs/api/stubs#matches-array'><code>matches</code> array</a>
       and <code>requests</code> arrays with the response.  You can still
       <a href='#put-imposters'>mass create</a> using this JSON; it just has extraneous information.</td>
   </tr>

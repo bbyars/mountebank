@@ -79,6 +79,13 @@ description = 'Command line parameters for starting mountebank'
     <td>Print the version out to the console and exit.</td>
     <td><code>N/A</code></td>
   </tr>
+  <tr>
+    <td><code>--debug</code></td>
+    <td>Include a <code>matches</code> array with each stub in the body of a
+      <a href='/docs/api/overview#get-imposter'>GET imposter</a> response
+      for debugging why a particular stub did or did not match a request</td>
+    <td><code>false</code></td>
+  </tr>
 </table>
 
 <p>Note that <code>mb</code> is not persistent.  Stopping and restarting <code>mb</code>

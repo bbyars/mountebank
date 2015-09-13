@@ -17,7 +17,7 @@ module.exports = function (grunt) {
 
         var done = this.async(),
             calledDone = false,
-            options = [command, '--port', port, '--pidfile', 'mb-grunt.pid', '--allowInjection'],
+            options = [command, '--port', port, '--pidfile', 'mb-grunt.pid', '--allowInjection', '--debug'],
             executable = process.env.MB_EXECUTABLE || 'dist/mountebank/bin/mb',
             mb;
 

@@ -7,10 +7,11 @@ var Q = require('q'),
     Domain = require('domain'),
     errors = require('../util/errors');
 
-function implement (implementation, recordRequests, baseLogger) {
+function implement (implementation, recordRequests, debug, baseLogger) {
 
     function create (options) {
         options.recordRequests = recordRequests;
+        options.debug = debug;
 
         function scopeFor (port) {
             var scope = util.format('%s:%s', implementation.protocolName, port);

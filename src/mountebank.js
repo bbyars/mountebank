@@ -22,12 +22,12 @@ function create (options) {
     var app = express(),
         imposters = {},
         protocols = {
-            tcp: require('./models/tcp/tcpServer').initialize(options.allowInjection, !options.nomock),
-            http: require('./models/http/httpServer').initialize(options.allowInjection, !options.nomock),
-            https: require('./models/https/httpsServer').initialize(options.allowInjection, !options.nomock),
-            soap: require('./models/soap/soapServer').initialize(options.allowInjection, !options.nomock),
-            smtp: require('./models/smtp/smtpServer').initialize(!options.nomock),
-            foo: require('./models/foo/fooServer').initialize(options.allowInjection, !options.nomock)
+            tcp: require('./models/tcp/tcpServer').initialize(options.allowInjection, !options.nomock, options.debug),
+            http: require('./models/http/httpServer').initialize(options.allowInjection, !options.nomock, options.debug),
+            https: require('./models/https/httpsServer').initialize(options.allowInjection, !options.nomock, options.debug),
+            soap: require('./models/soap/soapServer').initialize(options.allowInjection, !options.nomock, options.debug),
+            smtp: require('./models/smtp/smtpServer').initialize(!options.nomock, options.debug),
+            foo: require('./models/foo/fooServer').initialize(options.allowInjection, !options.nomock, options.debug)
         },
         logger = ScopedLogger.create(winston, util.format('[mb:%s] ', options.port)),
         homeController = HomeController.create(releases),

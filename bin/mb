@@ -25,6 +25,7 @@ function usage () {
     console.log('    --nomock          do not remember requests for mock verification and stub debugging');
     console.log('    --version         show the mountebank version and exit');
     console.log('    --allowCORS       allow Cross-Origin Site Requests to mountebank server');
+    console.log('    --debug           include stub match information in imposter retrievals for debugging purposes');
 }
 
 function error (message) {
@@ -158,7 +159,7 @@ try {
             keyfile: '',
             certfile: ''
         },
-        booleanOptions = ['allowInjection', 'nomock', 'heroku', 'version', 'allowCORS'],
+        booleanOptions = ['allowInjection', 'nomock', 'heroku', 'version', 'allowCORS', 'debug'],
         commandLine = cli.parse(process.argv.slice(2), defaultOptions, booleanOptions),
         server = serverAt(commandLine.options);
 

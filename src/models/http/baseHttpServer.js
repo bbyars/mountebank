@@ -35,7 +35,7 @@ function setup (protocolName, createBaseServer) {
     function createServer (logger, options) {
         var proxy = HttpProxy.create(logger),
             resolver = StubResolver.create(proxy, postProcess),
-            stubs = StubRepository.create(resolver, options.recordRequests, 'utf8'),
+            stubs = StubRepository.create(resolver, options.debug, 'utf8'),
             baseServer = createBaseServer(options),
             result = inherit.from(events.EventEmitter, {
                 errorHandler: function (error, container) {
@@ -83,7 +83,7 @@ function setup (protocolName, createBaseServer) {
         return result;
     }
 
-    function initialize (allowInjection, recordRequests) {
+    function initialize (allowInjection, recordRequests, debug) {
         var implementation = {
                 protocolName: protocolName,
                 createServer: createServer,
@@ -92,7 +92,7 @@ function setup (protocolName, createBaseServer) {
 
         return {
             name: protocolName,
-            create: AbstractServer.implement(implementation, recordRequests, logger).create,
+            create: AbstractServer.implement(implementation, recordRequests, debug, logger).create,
             Validator: {
                 create: function () {
                     return DryRunValidator.create({
