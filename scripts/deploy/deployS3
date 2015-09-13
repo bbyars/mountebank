@@ -2,7 +2,7 @@
 
 [ -e dist/s3 ] && rm -rf dist/s3
 mkdir dist/s3
-cp dist/*.{gz,zip,rpm,dep,pkg} dist/s3
+cp dist/*.* dist/s3
 
 set -e
 

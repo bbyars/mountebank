@@ -35,15 +35,11 @@ matrix:
     - os: linux
       env:
         - NODE_VERSION=4.0
-        - MB_GRUNT_TASK='test:tarball:x86 coveralls'
+        - MB_GRUNT_TASK='test:tarball:x64 dist:tarball:x86'
     - os: linux
       env:
         - NODE_VERSION=4.0
-        - MB_GRUNT_TASK=test:tarball:x64
-    - os: linux
-      env:
-        - NODE_VERSION=4.0
-        - MB_GRUNT_TASK=test:npm
+        - MB_GRUNT_TASK='test:npm coveralls'
 
 install:
   - rm -rf ~/.nvm

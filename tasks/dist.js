@@ -4,6 +4,7 @@ var fs = require('fs-extra'),
     spawn = require('child_process').spawn,
     os = require('os'),
     Q = require('q'),
+    util = require('util'),
     thisPackage = require('../package.json'),
     version = process.env.MB_VERSION || thisPackage.version;
 
@@ -50,12 +51,13 @@ module.exports = function (grunt) {
         var done = this.async(),
             tarball;
 
-        run('scripts/dist/createSelfContainedTarball', [os.platform(), arch || os.arch(), version]).then(function () {
+        arch = arch || os.arch();
+        run('scripts/dist/createSelfContainedTarball', [os.platform(), arch, version]).then(function () {
             fs.removeSync('dist-test');
             fs.mkdirSync('dist-test');
 
             tarball = fs.readdirSync('dist').filter(function (file) {
-                return file.indexOf('.tar.gz') > 0;
+                return file === util.format('mountebank-v%s-%s-%s.tar.gz', version, os.platform(), arch);
             })[0];
 
             fs.copySync('dist/' + tarball, 'dist-test/' + tarball);
