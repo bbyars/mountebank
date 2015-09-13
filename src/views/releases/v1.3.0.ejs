@@ -9,11 +9,17 @@ releaseVersion = 1.3.0
 
 <h2>New Features</h2>
 <ul class='bullet-list'>
+  <li>Thanks to Paul Phillips, mountebank now works with node v0.12 and v4.0.</li>
   <li>A <code>timestamp</code> has been added to each element in the <code>requests</code> array
     to allow for richer verification testing.</li>
   <li>The <code>matches</code> array is only included if you use the <code>--debug</code> command
     line parameter.  In practice, this array is not needed and confused people.  It is still supported,
     but only for debugging purposes to determine when a stub matches or doesn't.</li>
+  <li>The <code>requests</code> array is only included if you use the <code>--mock</code> command
+    line parameter, and the <code>--nomock</code> parameter no longer matters.  <b>This is the inverse
+    of prior behavior</b> and represents learning that the default use case for most people is to turn
+    off recording requests by default (which represents a memory leak), as many people prefer long
+    running <code>mb</code> instances set up with config files or used for performance testing.</li>
 </ul>
 
 <p>Many thanks to the following kind folk for help with this release:</p>
