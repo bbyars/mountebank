@@ -19,9 +19,9 @@ set -e
 #        node_modules/grunt-cli/bin/grunt coveralls
 
         # base npm tarball
-        cd dist
-        tar cvf mountebank-v$MB_VERSION-npm.tar.gz mountebank
-        cd ..
+#        cd dist
+#        tar cvf mountebank-v$MB_VERSION-npm.tar.gz mountebank
+#        cd ..
 
 #        scripts/dist/createSelfContainedTarball linux x86 $MB_VERSION
 #        scripts/dist/createSelfContainedTarball linux x64 $MB_VERSION

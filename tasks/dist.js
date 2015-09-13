@@ -71,6 +71,11 @@ module.exports = function (grunt) {
         });
     });
 
+    grunt.registerTask('dist:zip', 'Create OS-specific zips', function (arch) {
+        var done = this.async();
+        run('scripts/dist/createWindowsZip', [arch, version]).done(function () { done(); });
+    });
+
     grunt.registerTask('dist:npm', 'Create npm tarball', function () {
         var done = this.async(),
             filename = 'mountebank-v' + version + '-npm.tar.gz';

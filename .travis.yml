@@ -18,28 +18,28 @@ matrix:
   include:
     - os: osx
       env:
-        - NODE_VERSION=0.10
-    - os: osx
-      env:
-        - NODE_VERSION=0.12
-    - os: osx
-      env:
         - NODE_VERSION=4.0
         - MB_GRUNT_TASK=test:tarball:x64
-    - os: linux
+    - os: osx
+      env:
+        - NODE_VERSION=0.12
+    - os: osx
       env:
         - NODE_VERSION=0.10
+    - os: linux
+      env:
+        - NODE_VERSION=4.0
+        - MB_GRUNT_TASK='test:npm dist:zip:x64 dist:zip:x86'
+    - os: linux
+      env:
+        - NODE_VERSION=4.0
+        - MB_GRUNT_TASK='test:tarball:x64 dist:tarball:x86 coveralls'
     - os: linux
       env:
         - NODE_VERSION=0.12
     - os: linux
       env:
-        - NODE_VERSION=4.0
-        - MB_GRUNT_TASK='test:tarball:x64 dist:tarball:x86'
-    - os: linux
-      env:
-        - NODE_VERSION=4.0
-        - MB_GRUNT_TASK='test:npm coveralls'
+        - NODE_VERSION=0.10
 
 install:
   - rm -rf ~/.nvm
