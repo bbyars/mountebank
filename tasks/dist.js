@@ -2,9 +2,33 @@
 
 var fs = require('fs-extra'),
     os = require('os'),
+    path = require('path'),
     thisPackage = require('../package.json'),
     version = process.env.MB_VERSION || thisPackage.version,
     run = require('./run').run;
+
+function forEachFileIn (dir, fileCallback, options) {
+    fs.readdirSync(dir).forEach(function (file) {
+        var filePath = path.join(dir, file);
+
+        if (fs.lstatSync(filePath).isDirectory()) {
+            forEachFileIn(filePath, fileCallback, options);
+        } else {
+            fileCallback(filePath);
+        }
+    });
+    if (options.after) {
+        options.after(dir);
+    }
+}
+
+function rmdirRecursiveSync (dir) {
+    if (!fs.existsSync(dir)) {
+        return;
+    }
+
+    forEachFileIn(dir, fs.unlinkSync, { after: fs.rmdirSync } );
+}
 
 module.exports = function (grunt) {
 
@@ -12,13 +36,16 @@ module.exports = function (grunt) {
         var done = this.async(),
             newPackage = JSON.parse(JSON.stringify(thisPackage));
 
-        fs.removeSync('dist');
+        // This doesn't work on Windows
+        //fs.removeSync('dist');
+        rmdirRecursiveSync('dist');
         fs.mkdirSync('dist');
         fs.mkdirSync('dist/mountebank');
         ['bin', 'src', 'package.json', 'releases.json', 'README.md', 'LICENSE'].forEach(function (source) {
             fs.copySync(source, 'dist/mountebank/' + source);
         });
-        fs.removeSync('dist/mountebank/src/public/images/sources');
+        //fs.removeSync('dist/mountebank/src/public/images/sources');
+        rmdirRecursiveSync('dist/mountebank/src/public/images/sources');
 
         // removing devDependencies so the standard npm install (without --production) is smooth
         // in all cases.  The jsdom dependency gets tricky otherwise, since we need different versions
