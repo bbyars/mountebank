@@ -75,7 +75,7 @@ module.exports = function (grunt) {
 
     // Package-specific testing
     grunt.registerTask('test:tarball:x86', 'Run tests against packaged tarball',
-        ['version', 'dist', 'dist:tarball:x86', 'mbTarball:restart', 'try', 'mochaTest:functional', 'finally', 'mbTarball:stop', 'checkForErrors']);
+        ['version', 'dist', 'dist:tarball:x86', 'mb:restart', 'try', 'mochaTest:functional', 'finally', 'mb:stop', 'checkForErrors']);
     grunt.registerTask('test:tarball:x64', 'Run tests against packaged tarball',
-        ['version', 'dist', 'dist:tarball:x64', 'mbTarball:restart', 'try', 'mochaTest:functional', 'finally', 'mbTarball:stop', 'checkForErrors']);
+        ['version', 'dist', 'dist:tarball:x64', 'mb:restart', 'try', 'mochaTest:functional', 'finally', 'mb:stop', 'checkForErrors']);
 };

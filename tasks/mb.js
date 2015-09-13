@@ -40,15 +40,4 @@ module.exports = function (grunt) {
             });
         });
     });
-
-    grunt.registerTask('mbTarball', 'Run mb from extracted OS-specific tarball', function (command) {
-        fs.readdirSync('dist').forEach(function (filename) {
-            if (filename.indexOf('.tar.gz') < 0) {
-                return;
-            }
-
-            var mbPath = 'dist-test/' + filename.replace('.tar.gz', '') + '/mb';
-            grunt.task.run('mb:' + command + ':' + mbPath);
-        });
-    });
 };
