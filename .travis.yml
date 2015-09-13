@@ -4,8 +4,6 @@ language: ruby
 
 sudo: true
 
-rvm: '2.2.0'
-
 env:
   global:
     - SLOW_TEST_TIMEOUT_MS=5000
