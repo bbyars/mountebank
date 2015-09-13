@@ -2,8 +2,6 @@
 # gives a lot more control over testing packaging options
 language: ruby
 
-sudo: true
-
 env:
   global:
     - SLOW_TEST_TIMEOUT_MS=5000
@@ -17,36 +15,45 @@ env:
 matrix:
   include:
     - os: osx
+      sudo: true
       env:
         - NODE_VERSION=4.0
         - MB_GRUNT_TASK='test:pkg deployS3'
     - os: osx
+      sudo: false
       env:
         - NODE_VERSION=4.0
         - MB_GRUNT_TASK='test:tarball:x64 deployS3'
     - os: osx
+      sudo: false
       env:
         - NODE_VERSION=0.12
     - os: osx
+      sudo: false
       env:
         - NODE_VERSION=0.10
     - os: linux
+      sudo: true
       env:
         - NODE_VERSION=4.0
         - MB_INSTALL_RPM=true
         - MB_GRUNT_TASK='test:deb dist:package:rpm deployS3 deployHeroku deployNpm'
     - os: linux
+      sudo: false
       env:
         - NODE_VERSION=4.0
         - MB_GRUNT_TASK='test:npm dist:zip:x64 dist:zip:x86 deployS3'
     - os: linux
+      sudo: false
       env:
         - NODE_VERSION=4.0
         - MB_GRUNT_TASK='test:tarball:x64 dist:tarball:x86 deployS3 coveralls'
     - os: linux
+      sudo: false
       env:
         - NODE_VERSION=0.12
     - os: linux
+      sudo: false
       env:
         - NODE_VERSION=0.10
 
