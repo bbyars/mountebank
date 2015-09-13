@@ -92,11 +92,11 @@ Accept: application/json
 
 <pre><code data-test-id='example'
            data-test-verify-step='3'
-           data-test-ignore-lines='["^Date", "Content-Length", "requestFrom", "timestamp"]'>
+           data-test-ignore-lines='["^Date", "Content-Length", "requestFrom"]'>
 HTTP/1.1 200 OK
 Vary: Accept
 Content-Type: application/json; charset=utf-8
-Content-Length: 976
+Content-Length: 919
 Date: Thu, 09 Jan 2014 02:30:31 GMT
 Connection: keep-alive
 
@@ -105,7 +105,6 @@ Connection: keep-alive
   "port": 4545,
   "requests": [
     {
-      "timestamp": "2015-01-09T02:30:31.850Z",
       "requestFrom": "::ffff:127.0.0.1",
       "envelopeFrom": "customer-service@company.com",
       "envelopeTo": [

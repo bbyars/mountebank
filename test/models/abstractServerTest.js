@@ -162,37 +162,28 @@ describe('AbstractServer', function () {
                 baseServer.listeners('request')[0](socket, {}, function () {
                     assertLogged('debug', '[test:3000] host:port => "full request"');
                 });
-                // The delay is not needed in node v0.10; evidently it came on a later process tick in subsequent versions
-                return Q.delay(1);
             });
         });
 
         promiseIt('should record simplified requests if recordRequests is true', function () {
             var Server = AbstractServer.implement(implementation, true, logger);
-            implementation.Request.createFrom.returns(Q({ id: 'simple request' }));
+            implementation.Request.createFrom.returns(Q('simple request'));
 
             return Server.create({ port: 3000 }).then(function (server) {
                 baseServer.listeners('request')[0]({}, {}, function () {
-                    server.requests.forEach(function (request) {
-                        if (request.timestamp) {
-                            request.timestamp = 'NOW';
-                        }
-                    });
-                    assert.deepEqual(server.requests, [{ id: 'simple request', timestamp: 'NOW' }]);
+                    assert.deepEqual(server.requests, ['simple request']);
                 });
-                return Q.delay(1);
             });
         });
 
         promiseIt('should not record simplified requests if recordRequests is false', function () {
             var Server = AbstractServer.implement(implementation, false, logger);
-            implementation.Request.createFrom.returns(Q({ id: 'simple request' }));
+            implementation.Request.createFrom.returns(Q('simple request'));
 
             return Server.create({ port: 3000 }).then(function (server) {
                 baseServer.listeners('request')[0]({}, {}, function () {
                     assert.deepEqual(server.requests, []);
                 });
-                return Q.delay(1);
             });
         });
 
@@ -204,7 +195,6 @@ describe('AbstractServer', function () {
                 baseServer.listeners('request')[0]({}, 'original request', function () {
                     assert.ok(baseServer.respond.wasCalledWith('simple request', 'original request'));
                 });
-                return Q.delay(1);
             });
         });
 
@@ -218,7 +208,6 @@ describe('AbstractServer', function () {
                 baseServer.listeners('request')[0](socket, {}, function () {
                     assertLogged('debug', '[test:3000] host:port <= "response"');
                 });
-                return Q.delay(1);
             });
         });
 
@@ -233,7 +222,6 @@ describe('AbstractServer', function () {
                     assertLogged('error', '[test:3000] host:port X=> "BOOM"');
                     assert.ok(baseServer.errorHandler.wasCalledWith('BOOM', 'originalRequest'), baseServer.errorHandler.message());
                 });
-                return Q.delay(1);
             });
         });
     });
