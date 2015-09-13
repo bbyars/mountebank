@@ -103,7 +103,9 @@ function createServer (options, recordRequests) {
                 logger.info('%s => %s', clientName, simpleRequest.method);
                 logger.debug('%s => %s', clientName, JSON.stringify(simpleRequest));
                 if (recordRequests) {
-                    requests.push(simpleRequest);
+                    var recordedRequest = helpers.clone(simpleRequest);
+                    recordedRequest.timestamp = new Date().toJSON();
+                    requests.push(recordedRequest);
                 }
 
                 return stubs.resolve(simpleRequest, logger.withScope(helpers.socketName(request.socket)));

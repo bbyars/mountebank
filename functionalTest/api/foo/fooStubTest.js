@@ -82,14 +82,14 @@ describe('foo imposter', function () {
         });
 
         promiseIt('should allow proxy stubs', function () {
-            var proxyPort = port + 1,
-                proxyStub = { responses: [{ is: { data: 'PROXIED' } }] },
-                proxyRequest = { protocol: 'foo', port: proxyPort, stubs: [proxyStub], name: this.name + ' PROXY' },
-                stub = { responses: [{ proxy: { to: { host: 'localhost', port:  proxyPort } } }] },
-                request = { protocol: 'foo', port: port, stubs: [stub], name: this.name + ' MAIN' };
+            var originServerPort = port + 1,
+                originServerStub = { responses: [{ is: { data: 'PROXIED' } }] },
+                originServerRequest = { protocol: 'foo', port: originServerPort, stubs: [originServerStub], name: this.name + ' ORIGIN' },
+                proxyStub = { responses: [{ proxy: { to: { host: 'localhost', port:  originServerPort } } }] },
+                proxyRequest = { protocol: 'foo', port: port, stubs: [proxyStub], name: this.name + ' PROXY' };
 
-            return api.post('/imposters', proxyRequest).then(function () {
-                return api.post('/imposters', request);
+            return api.post('/imposters', originServerRequest).then(function () {
+                return api.post('/imposters', proxyRequest);
             }).then(function () {
                 return tcp.send('request', port);
             }).then(function (response) {

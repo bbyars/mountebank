@@ -64,7 +64,9 @@ function createServer (options, recordRequests) {
 
             // remember the request for mock verification, unless told not to
             if (recordRequests) {
-                requests.push(request);
+                var recordedRequest = helpers.clone(request);
+                recordedRequest.timestamp = new Date().toJSON();
+                requests.push(recordedRequest);
             }
 
             // let's resolve any stubs (don't worry - there are defaults if no stubs are defined)

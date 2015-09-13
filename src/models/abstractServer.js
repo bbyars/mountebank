@@ -62,7 +62,9 @@ function implement (implementation, recordRequests, baseLogger) {
                 implementation.Request.createFrom(request).then(function (simpleRequest) {
                     logger.debug('%s => %s', clientName, JSON.stringify(server.formatRequest(simpleRequest)));
                     if (recordRequests) {
-                        requests.push(simpleRequest);
+                        var recordedRequest = helpers.clone(simpleRequest);
+                        recordedRequest.timestamp = new Date().toJSON();
+                        requests.push(recordedRequest);
                     }
                     return server.respond(simpleRequest, request);
                 }).done(function (response) {
