@@ -100,9 +100,9 @@ function implement (implementation, recordRequests, baseLogger) {
                         logger.info('Ciao for now');
                         closeDeferred.resolve();
                     });
-                    for (var socket in connections) {
+                    Object.keys(connections).forEach(function (socket) {
                         connections[socket].destroy();
-                    }
+                    });
                     return closeDeferred.promise;
                 }
             });
