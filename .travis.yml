@@ -33,6 +33,7 @@ matrix:
     - os: linux
       env:
         - NODE_VERSION=4.0
+        - MB_INSTALL_RPM=true
         - MB_GRUNT_TASK='test:deb dist:package:rpm deployS3 deployHeroku deployNpm'
     - os: linux
       env:
@@ -56,7 +57,7 @@ install:
   - nvm install $NODE_VERSION
   - node --version
   - bundle install
-  - if [[ "$MB_GRUNT_TASK" = "*rpm*" ]]; then sudo apt-get update && sudo apt-get install rpm; fi
+  - if [ "$MB_INSTALL_RPM" = "true" ]; then sudo apt-get update && sudo apt-get install rpm; fi
   - if [ "$TRAVIS_PULL_REQUEST" = "false" ]; then export MB_DEPLOY=true; else export MB_DEPLOY=false; fi
   - if [ "$TRAVIS_PULL_REQUEST" = "false" -a -n "`git describe --tags --exact-match 2>/dev/null`" ]; then export MB_PUBLISH=true; else export MB_PUBLISH=false; fi
 
