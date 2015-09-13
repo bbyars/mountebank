@@ -8,11 +8,11 @@ set -e
 #if [ "$TRAVIS_PULL_REQUEST" = "false" -a "$NODE_VERSION" = "v4.0" ]; then
 #    gem install dpl
 
-    if [ $(uname) = 'Darwin' ]; then
+#    if [ $(uname) = 'Darwin' ]; then
 #        scripts/dist/createSelfContainedTarball darwin x64 $MB_VERSION
 
-        scripts/dist/createPackages darwin osxpkg $MB_VERSION
-        mv dist/mountebank-$MB_VERSION.pkg dist/mountebank-v$MB_VERSION.pkg
+#        scripts/dist/createPackages darwin osxpkg $MB_VERSION
+#        mv dist/mountebank-$MB_VERSION.pkg dist/mountebank-v$MB_VERSION.pkg
 
 #        scripts/deploy/deployS3
     elif [ $(uname) = 'Linux' ]; then

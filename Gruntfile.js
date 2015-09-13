@@ -77,7 +77,9 @@ module.exports = function (grunt) {
     grunt.registerTask('test:tarball:x64', 'Run tests against packaged tarball',
         ['version', 'dist', 'dist:tarball:x64', 'install:tarball:x64', 'test', 'lint']);
     grunt.registerTask('test:npm', 'Run tests against npm package',
-        ['version', 'dist', 'dist:npm', 'install:npm', 'test', 'lint']);
+        ['version', 'dist', 'dist:npm', 'install:npm', 'test']);
     grunt.registerTask('test:pkg', 'Run tests against OSX pkg file',
-        ['version', 'dist', 'dist:tarball:x64', 'dist:package:osxpkg', 'install:pkg', 'test', 'lint']);
+        ['version', 'dist', 'dist:package:osxpkg', 'install:pkg', 'test']);
+    grunt.registerTask('test:deb', 'Run tests against Debian package',
+        ['version', 'dist', 'dist:package:deb', 'install:deb', 'test', 'uninstall:deb']);
 };

@@ -33,6 +33,10 @@ matrix:
     - os: linux
       env:
         - NODE_VERSION=4.0
+        - MB_GRUNT_TASK='test:deb dist:package:rpm'
+    - os: linux
+      env:
+        - NODE_VERSION=4.0
         - MB_GRUNT_TASK='test:npm dist:zip:x64 dist:zip:x86'
     - os: linux
       env:
@@ -52,6 +56,7 @@ install:
   - nvm install $NODE_VERSION
   - node --version
   - bundle install
+  - if [[ "$MB_GRUNT_TASK" = "*rpm*" ]]; then sudo apt-get update && sudo apt-get install rpm; fi
 
 script:
   - ./build $MB_GRUNT_TASK

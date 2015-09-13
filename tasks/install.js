@@ -55,4 +55,30 @@ module.exports = function (grunt) {
             done();
         });
     });
+
+    grunt.registerTask('install:deb', 'Set test executable to mb installed in Debian file', function () {
+        var done = this.async(),
+            deb = util.format('mountebank-v%s.deb', version);
+
+        fs.removeSync(testDir);
+        fs.mkdirSync(testDir);
+        fs.copySync('dist/' + deb, path.join(testDir, deb));
+
+        run('sudo', ['dpkg', '-i', deb], { cwd: testDir }).done(function () {
+            process.env.MB_EXECUTABLE = 'mb';
+            done();
+        });
+    });
+
+    grunt.registerTask('uninstall:deb', 'Verify uninstallation of Debian file', function () {
+        var done = this.async(),
+            deb = util.format('mountebank-v%s.deb', version);
+
+        run('sudo', ['dpkg', '-r', deb], { cwd: testDir }).done(function () {
+            if (fs.existsSync('/usr/local/bin/mb')) {
+                throw 'Uninstalling debian package did not remove /usr/local/bin/mb';
+            }
+            done();
+        });
+    });
 };
