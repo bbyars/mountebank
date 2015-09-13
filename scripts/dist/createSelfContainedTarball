@@ -8,6 +8,8 @@ MB_VERSION=$3
 MB_DIRNAME=mountebank-v$MB_VERSION-$PLATFORM-$ARCH
 
 if [ ! -d "dist/$MB_DIRNAME" ]; then
+    pwd
+    ls -l scripts/dist
     scripts/dist/createSelfContainedDir $PLATFORM $ARCH $MB_VERSION
 fi
 
