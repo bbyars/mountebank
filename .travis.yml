@@ -35,30 +35,38 @@ env:
 matrix:
   include:
     - os: osx
-      env: MB_TEST_SPECS="NODE_VERSION=0.10"
+      env: NODE_VERSION=0.10
     - os: osx
-      env: MB_TEST_SPECS="NODE_VERSION=0.12"
+      env: NODE_VERSION=0.12
     - os: osx
-      env: MB_TEST_SPECS="NODE_VERSION=4.0|MB_GRUNT_TASK=test:tarball:x64"
+      env:
+        - NODE_VERSION=4.0
+        - MB_GRUNT_TASK=test:tarball:x64
     - os: linux
-      env: MB_TEST_SPECS="NODE_VERSION=0.10"
+      env: NODE_VERSION=0.10
     - os: linux
-      env: MB_TEST_SPECS="NODE_VERSION=0.12"
+      env: NODE_VERSION=0.12
     - os: linux
-      env: MB_TEST_SPECS="NODE_VERSION=4.0|MB_GRUNT_TASK='test:tarball:x86 coveralls'"
+      env:
+        - NODE_VERSION=4.0
+        - MB_GRUNT_TASK='test:tarball:x86 coveralls'
     - os: linux
-      env: MB_TEST_SPECS="NODE_VERSION=4.0|MB_GRUNT_TASK=test:tarball:x64"
+      env:
+        - NODE_VERSION=4.0
+        - MB_GRUNT_TASK=test:tarball:x64
     - os: linux
-      env: MB_TEST_SPECS="NODE_VERSION=4.0|MB_GRUNT_TASK=test:npm"
-
-  #exclude:
-  #  - os: osx
-  #    env: MB_TEST_SPECS="NODE_VERSION=4.0|MB_GRUNT_TASK='test:tarball:x86 coveralls'"
+      env:
+        - NODE_VERSION=4.0
+        - MB_GRUNT_TASK=test:npm
+  exclude:
+    # Travis adds this one; not sure why
+    - os: linux
+      env:
 
 
 install:
-  - echo $MB_TEST_SPECS | tr '|' '\n' | sed -e 's/^/export /' > .mbrc
-  - . ./.mbrc
+#  - echo $MB_TEST_SPECS | tr '|' '\n' | sed -e 's/^/export /' > .mbrc
+#  - . ./.mbrc
   - rm -rf ~/.nvm
   - git clone https://github.com/creationix/nvm.git ~/.nvm
   - source ~/.nvm/nvm.sh
