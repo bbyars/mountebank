@@ -4,7 +4,6 @@ var fs = require('fs-extra'),
     spawn = require('child_process').spawn,
     os = require('os'),
     Q = require('q'),
-    util = require('util'),
     thisPackage = require('../package.json'),
     version = process.env.MB_VERSION || thisPackage.version;
 
