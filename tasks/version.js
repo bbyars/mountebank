@@ -6,12 +6,10 @@ var fs = require('fs-extra'),
 
 module.exports = function (grunt) {
     grunt.registerTask('version', 'Set the version number', function () {
-        var oldPackageJson = fs.readFileSync('package.json', { encoding: 'utf8' }),
-            pattern = /"version": "[^"]+"/,
-            newPackageJson = oldPackageJson.replace(pattern, '"version": "' + version + '"');
+        var newPackage = JSON.parse(JSON.stringify(thisPackage));
 
+        newPackage.version = version;
         console.log('Using version ' + version);
-
-        fs.writeFileSync('package.json', newPackageJson);
+        fs.writeFileSync('package.json', JSON.stringify(newPackage, null, 2) + '\n');
     });
 };

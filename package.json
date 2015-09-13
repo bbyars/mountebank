@@ -22,8 +22,7 @@
   "scripts": {
     "start": "bin/mb",
     "restart": "bin/mb restart",
-    "stop": "bin/mb stop",
-    "test": "node_modules/grunt-cli/bin/grunt test"
+    "stop": "bin/mb stop"
   },
   "keywords": [
     "test",

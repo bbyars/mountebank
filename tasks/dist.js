@@ -9,7 +9,8 @@ var fs = require('fs-extra'),
 module.exports = function (grunt) {
 
     grunt.registerTask('dist', 'Create trimmed down distribution directory', function () {
-        var done = this.async();
+        var done = this.async(),
+            newPackage = JSON.parse(JSON.stringify(thisPackage));
 
         fs.removeSync('dist');
         fs.mkdirSync('dist');
@@ -18,6 +19,13 @@ module.exports = function (grunt) {
             fs.copySync(source, 'dist/mountebank/' + source);
         });
         fs.removeSync('dist/mountebank/src/public/images/sources');
+
+        // removing devDependencies so the standard npm install (without --production) is smooth
+        // in all cases.  The jsdom dependency gets tricky otherwise, since we need different versions
+        // based on different versions of node
+        delete newPackage.devDependencies;
+        delete newPackage.devDependenciesBasedOnNodeVersion;
+        fs.writeFileSync('dist/mountebank/package.json', JSON.stringify(newPackage, null, 2));
 
         run('npm', ['install', '--production'], { cwd: 'dist/mountebank' }).done(function () {
             // Switch tests to use the mb from the dist directory to test what actually gets published
