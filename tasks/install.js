@@ -71,10 +71,9 @@ module.exports = function (grunt) {
     });
 
     grunt.registerTask('uninstall:deb', 'Verify uninstallation of Debian file', function () {
-        var done = this.async(),
-            deb = util.format('mountebank_v%s_amd64.deb', version);
+        var done = this.async();
 
-        run('sudo', ['dpkg', '-r', deb], { cwd: testDir }).done(function () {
+        run('sudo', ['dpkg', '-r', 'mountebank'], { cwd: testDir }).done(function () {
             if (fs.existsSync('/usr/local/bin/mb')) {
                 throw 'Uninstalling debian package did not remove /usr/local/bin/mb';
             }
