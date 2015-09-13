@@ -11,9 +11,9 @@ sudo: true
 #    packages:
 #      -rpm
 
-os:
-  - linux
-  - osx
+#os:
+#  - linux
+#  - osx
 
 rvm: '2.2.0'
 
@@ -26,16 +26,35 @@ env:
     - secure: "H0iUwBPOwRf3+5HGqAXWU65dJIA+4SUltehM3+jiTXsqkxeHux3WqVOouaLlw2n8WaG9y1KMXEZzed6L8p8A3I6V2M+Y1n8qNYT8y/HjCTw4d3U0tiG6ef1ysIChdBOdlwXJT5GPLlLT0y+R4IgPfHd3DMx/aiEgT3O4gGZEchs="
     # NPM_API_KEY
     - secure: "pbVyYwERkTpwkpFTqXjwsMkNpulV0ZV1HbBZeEBhpWY7MjIjjASd/kDwDBr4ONuiicOQ3ToL4MeKxgI2bxjQdhDhfBvMt5XZV6V8X8xktwZQsnkc9klD0qr5raQ6MZdWQzx4nlsgFLHO9k0w8D/EzQbz25E4KAicpaYYwejyig8="
-  matrix:
-    - MB_TEST_SPECS="NODE_VERSION=0.10"
-    - MB_TEST_SPECS="NODE_VERSION=0.12"
-    - MB_TEST_SPECS="NODE_VERSION=4.0|MB_GRUNT_TASK='test:tarball:x86 coveralls'"
-    - MB_TEST_SPECS="NODE_VERSION=4.0|MB_GRUNT_TASK=test:tarball:x64"
+  #matrix:
+#    - MB_TEST_SPECS="NODE_VERSION=0.10"
+#    - MB_TEST_SPECS="NODE_VERSION=0.12"
+#    - MB_TEST_SPECS="NODE_VERSION=4.0|MB_GRUNT_TASK='test:tarball:x86 coveralls'"
+#    - MB_TEST_SPECS="NODE_VERSION=4.0|MB_GRUNT_TASK=test:tarball:x64"
 
 matrix:
-  exclude:
+  include:
     - os: osx
+      env: MB_TEST_SPECS="NODE_VERSION=0.10"
+    - os: osx
+      env: MB_TEST_SPECS="NODE_VERSION=0.12"
+    - os: osx
+      env: MB_TEST_SPECS="NODE_VERSION=4.0|MB_GRUNT_TASK=test:tarball:x64"
+    - os: linux
+      env: MB_TEST_SPECS="NODE_VERSION=0.10"
+    - os: linux
+      env: MB_TEST_SPECS="NODE_VERSION=0.12"
+    - os: linux
       env: MB_TEST_SPECS="NODE_VERSION=4.0|MB_GRUNT_TASK='test:tarball:x86 coveralls'"
+    - os: linux
+      env: MB_TEST_SPECS="NODE_VERSION=4.0|MB_GRUNT_TASK=test:tarball:x64"
+    - os: linux
+      env: MB_TEST_SPECS="NODE_VERSION=4.0|MB_GRUNT_TASK=test:npm"
+
+  #exclude:
+  #  - os: osx
+  #    env: MB_TEST_SPECS="NODE_VERSION=4.0|MB_GRUNT_TASK='test:tarball:x86 coveralls'"
+
 
 install:
   - echo $MB_TEST_SPECS | tr '|' '\n' | sed -e 's/^/export /' > .mbrc

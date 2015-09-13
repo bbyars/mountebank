@@ -2,7 +2,6 @@
 
 var spawn = require('child_process').spawn,
     os = require('os'),
-    fs = require('fs-extra'),
     port = process.env.MB_PORT || 2525;
 
 function isWindows () {
