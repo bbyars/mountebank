@@ -47,7 +47,7 @@ function getStopCommand (pid) {
     }
 }
 
-var serverAt = function (options) {
+function serverAt (options) {
     return {
         start: function () {
             var server = mountebank.create(options);
@@ -70,11 +70,8 @@ var serverAt = function (options) {
             var pid = fs.readFileSync(options.pidfile),
                 command = getStopCommand(pid);
 
-            exec(command, function (error, stdout, stderr) {
+            exec(command, function (error, stdout) {
                 console.log(stdout);
-                if (error) {
-                    console.log(stderr);
-                }
             });
             return true;
         },
@@ -90,7 +87,7 @@ var serverAt = function (options) {
             }
         }
     };
-};
+}
 
 function shouldLoadConfigFile (commandLine) {
     return commandLine.options.configfile !== '' && commandLine.command.indexOf('start') >= 0;
