@@ -7,18 +7,12 @@ var Q = require('q'),
     mbPath = process.env.MB_EXECUTABLE || path.normalize(__dirname + '/../bin/mb');
 
 function create (port) {
-    var mb;
 
     function mbServer (command, args) {
         var deferred = Q.defer(),
             calledDone = false,
-            mbArgs = [command, '--port', port, '--pidfile', 'test.pid'].concat(args || []);
-
-        if (command == 'stop') {
-            // Need to troubleshoot more; spawning 'mb stop' on Windows failed
-            mb.kill();
-            return Q(true);
-        }
+            mbArgs = [command, '--port', port, '--pidfile', 'test.pid'].concat(args || []),
+            mb;
 
         if (isWindows) {
             mbArgs.unshift(mbPath);
@@ -29,9 +23,8 @@ function create (port) {
         }
 
         ['stdout', 'stderr'].forEach(function (stream) {
-            mb[stream].on('data', function (data) {
-                var finished = command === 'stop' || data.toString('utf8').indexOf('now taking orders') >= 0;
-                if (finished && !calledDone) {
+            mb[stream].on('data', function () {
+                if (!calledDone) {
                     calledDone = true;
                     deferred.resolve();
                 }
