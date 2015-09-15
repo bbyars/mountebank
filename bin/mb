@@ -6,11 +6,11 @@ var mountebank = require('../src/mountebank'),
     fs = require('fs'),
     path = require('path'),
     http = require('http'),
-    exec = require('child_process').exec,
     thisPackage = require('../package.json'),
     Q = require('q'),
-    os = require('os'),
-    ejs = require('ejs');
+    ejs = require('ejs'),
+    isWindows = require('os').platform().indexOf('win') === 0,
+    killWait = isWindows ? 1000 : 250;
 
 function usage () {
     console.log('Usage: mb [command] [options...]');
@@ -34,19 +34,17 @@ function error (message) {
     process.exit(1);
 }
 
-function isWindows () {
-    return os.platform().indexOf('win') === 0;
-}
-
-function getStopCommand (pid) {
-    if (isWindows()) {
-        return 'taskkill /F /PID ' + pid;
+function processExists(pid) {
+    try {
+        // "As a special case, signal 0 can be used to test existence of process"
+        // https://nodejs.org/api/process.html#process_process_kill_pid_signal
+        process.kill(pid, 0);
+        return true;
     }
-    else {
-        return 'kill ' + pid;
+    catch (e) {
+        return false;
     }
 }
-
 function serverAt (options) {
     return {
         start: function () {
@@ -54,7 +52,9 @@ function serverAt (options) {
 
             fs.writeFileSync(options.pidfile, process.pid.toString());
             var shutdown = function shutdown () {
-                fs.unlinkSync(options.pidfile);
+                if (fs.existsSync(options.pidfile)) {
+                    fs.unlinkSync(options.pidfile);
+                }
                 server.close();
                 process.exit();
             };
@@ -64,27 +64,24 @@ function serverAt (options) {
 
         stop: function () {
             if (!fs.existsSync(options.pidfile)) {
-                return false;
+                return;
             }
 
-            var pid = fs.readFileSync(options.pidfile),
-                command = getStopCommand(pid);
+            var pid = fs.readFileSync(options.pidfile);
+            fs.unlinkSync(options.pidfile);
 
-            exec(command, function (error, stdout) {
-                console.log(stdout);
-            });
-            return true;
+            if (processExists(pid)) {
+                process.kill(pid);
+                setTimeout(function () {
+                    // Need a delay or get an address in use error
+                    return 0;
+                }, killWait);
+            }
         },
 
         restart: function () {
-            var stopped = this.stop();
-            if (stopped && isWindows()) {
-                // Need a delay or get an address in use error
-                setTimeout(this.start, 1000);
-            }
-            else {
-                this.start();
-            }
+            this.stop();
+            this.start();
         }
     };
 }
@@ -165,21 +162,21 @@ try {
     }
     else {
         switch (commandLine.command) {
-        case 'start':
-            server.start();
-            break;
-        case 'stop':
-            server.stop();
-            break;
-        case 'restart':
-            server.restart();
-            break;
-        case 'help':
-            usage();
-            break;
-        default:
-            error("Invalid command '" + commandLine.command + "'.");
-            break;
+            case 'start':
+                server.start();
+                break;
+            case 'stop':
+                server.stop();
+                break;
+            case 'restart':
+                server.restart();
+                break;
+            case 'help':
+                usage();
+                break;
+            default:
+                error("Invalid command '" + commandLine.command + "'.");
+                break;
         }
 
         if (shouldLoadConfigFile(commandLine)) {

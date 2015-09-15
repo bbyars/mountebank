@@ -3,15 +3,15 @@
 var Q = require('q'),
     path = require('path'),
     spawn = require('child_process').spawn,
+    exec = require('child_process').exec,
     isWindows = require('os').platform().indexOf('win') === 0,
-    mbPath = process.env.MB_EXECUTABLE || path.normalize(__dirname + '/../bin/mb');
+    mbPath = process.env.MB_EXECUTABLE || path.normalize(__dirname + '/../bin/mb'),
+    pidfile = 'test.pid';
 
 function create (port) {
-
-    function mbServer (command, args) {
+    function start (args) {
         var deferred = Q.defer(),
-            calledDone = false,
-            mbArgs = [command, '--port', port, '--pidfile', 'test.pid'].concat(args || []),
+            mbArgs = ['restart', '--port', port, '--pidfile', pidfile].concat(args || []),
             mb;
 
         if (isWindows) {
@@ -22,21 +22,33 @@ function create (port) {
             mb = spawn(mbPath, mbArgs);
         }
 
-        ['stdout', 'stderr'].forEach(function (stream) {
-            mb[stream].on('data', function () {
-                if (!calledDone) {
-                    calledDone = true;
-                    deferred.resolve();
-                }
-            });
+        mb.on('error', deferred.reject);
+        mb.stderr.on('data', function (data) {
+            console.error(data.toString('utf8'));
+            deferred.resolve();
+        });
+        mb.stdout.on('data', function (data) {
+            // Looking for "mountebank va.b.c (node vx.y.z) now taking orders..."
+            if (data.toString('utf8').indexOf('now taking orders') > 0) {
+                deferred.resolve();
+            }
+        });
+
+        return deferred.promise;
+    }
+
+    function stop () {
+        var deferred = Q.defer();
+        exec(mbPath + ' stop --pidfile ' + pidfile, function () {
+            return deferred.resolve();
         });
         return deferred.promise;
     }
 
     return {
         port: port,
-        start: function (args) { return mbServer('restart', args); },
-        stop: function () { return mbServer('stop', []); }
+        start: start,
+        stop: stop
     };
 }
 

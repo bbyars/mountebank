@@ -35,9 +35,6 @@ function forEachFileIn (dir, fileCallback, options) {
             }
         }
     });
-    if (options.after) {
-        options.after(dir);
-    }
 }
 
 module.exports = function (grunt) {
@@ -66,7 +63,7 @@ module.exports = function (grunt) {
                     errors = errors.concat(file + ' has more than one trailing newline');
                 }
             },
-            exclusions = ['node_modules', '.git', '.DS_Store', '.idea', 'images', 'dist', 'dist-test', 'mountebank.iml', 'mb.log', '*.pid'];
+            exclusions = ['node_modules', '.git', '.DS_Store', '.idea', 'images', 'dist', 'mountebank.iml', 'mb.log', '*.pid'];
 
         forEachFileIn('.', wsCheck, { exclude: exclusions });
 
@@ -96,7 +93,7 @@ module.exports = function (grunt) {
                     }));
                 });
             },
-            exclusions = ['node_modules', 'dist', 'dist-test', 'staticAnalysis.js', 'testHelpers.js'];
+            exclusions = ['node_modules', 'dist', 'staticAnalysis.js', 'testHelpers.js'];
 
         forEachFileIn('.', jsCheck, { exclude: exclusions, filetype: '.js' });
 
@@ -119,7 +116,7 @@ module.exports = function (grunt) {
                     }
                 });
             },
-            exclusions = ['node_modules', '.git', '.DS_Store', '.idea', 'images', 'dist', 'dist-test', 'mountebank.iml', 'mb.log'],
+            exclusions = ['node_modules', '.git', '.DS_Store', '.idea', 'images', 'dist', 'mountebank.iml', 'mb.log', '*.pid'],
             errors = [],
             whitelist = ['npm', 'grunt', 'mocha', 'mocha-lcov-reporter', 'coveralls', 'grunt-cli'];
 
