@@ -10,7 +10,7 @@ var mountebank = require('../src/mountebank'),
     Q = require('q'),
     ejs = require('ejs'),
     isWindows = require('os').platform().indexOf('win') === 0,
-    killWait = isWindows ? 1000 : 250;
+    killWait = isWindows ? 1000 : 0;
 
 function usage () {
     console.log('Usage: mb [command] [options...]');
@@ -47,6 +47,16 @@ function processExists(pid) {
 }
 
 function serverAt (options) {
+
+    function willKill () {
+        if (!fs.existsSync(options.pidfile)) {
+            return false;
+        }
+
+        var pid = fs.readFileSync(options.pidfile);
+        return processExists(pid);
+    }
+
     return {
         start: function () {
             var server = mountebank.create(options);
@@ -72,10 +82,6 @@ function serverAt (options) {
 
             if (processExists(pid)) {
                 process.kill(pid);
-                setTimeout(function () {
-                    // Need a delay or get an address in use error
-                    return 0;
-                }, killWait);
             }
             else {
                 fs.unlinkSync(options.pidfile);
@@ -83,8 +89,11 @@ function serverAt (options) {
         },
 
         restart: function () {
+            var timeToWait = willKill() ? killWait : 0;
             this.stop();
-            this.start();
+
+            // Need a delay or get an address in use error
+            setTimeout(this.start, timeToWait);
         }
     };
 }

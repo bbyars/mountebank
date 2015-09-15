@@ -6,7 +6,8 @@ var Q = require('q'),
     exec = require('child_process').exec,
     isWindows = require('os').platform().indexOf('win') === 0,
     mbPath = process.env.MB_EXECUTABLE || path.normalize(__dirname + '/../bin/mb'),
-    pidfile = 'test.pid';
+    pidfile = 'test.pid',
+    killWait = isWindows ? 1000 : 0;
 
 function create (port) {
     function start (args) {
@@ -40,7 +41,8 @@ function create (port) {
     function stop () {
         var deferred = Q.defer();
         exec(mbPath + ' stop --pidfile ' + pidfile, function () {
-            return deferred.resolve();
+            // Need a delay or get an address in use error
+            return Q.delay(killWait).then(deferred.resolve);
         });
         return deferred.promise;
     }
