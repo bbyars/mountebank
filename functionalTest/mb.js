@@ -42,7 +42,7 @@ function create (port) {
         var deferred = Q.defer();
         exec(mbPath + ' stop --pidfile ' + pidfile, function () {
             // Need a delay or get an address in use error
-            return Q.delay(killWait).then(deferred.resolve);
+            setTimeout(deferred.resolve, killWait);
         });
         return deferred.promise;
     }
