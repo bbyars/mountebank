@@ -136,8 +136,9 @@ var assert = require('assert'),
                 });
             });
 
-            promiseIt('should allow asynchronous injection', function () {
-                var fn = function (request, state, logger, callback) {
+            if (process.env.MB_AIRPLANE_MODE !== 'true') {
+                promiseIt('should allow asynchronous injection', function () {
+                    var fn = function (request, state, logger, callback) {
                             var http = require('http'),
                                 options = {
                                     method: request.method,
@@ -163,20 +164,21 @@ var assert = require('assert'),
                             httpRequest.end();
                             // No return value!!!
                         },
-                    stub = { responses: [{ inject: fn.toString() }] },
-                    request = { protocol: protocol, port: port, stubs: [stub], name: this.name };
+                        stub = {responses: [{inject: fn.toString()}]},
+                        request = {protocol: protocol, port: port, stubs: [stub], name: this.name};
 
-                return api.post('/imposters', request).then(function (response) {
-                    assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body));
+                    return api.post('/imposters', request).then(function (response) {
+                        assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body));
 
-                    return client.get('', port);
-                }).then(function (response) {
-                    assert.strictEqual(response.statusCode, 302);
-                    assert.strictEqual(response.headers.location, 'http://www.google.com/');
-                }).finally(function () {
-                    return api.del('/imposters');
+                        return client.get('', port);
+                    }).then(function (response) {
+                        assert.strictEqual(response.statusCode, 302);
+                        assert.strictEqual(response.headers.location, 'http://www.google.com/');
+                    }).finally(function () {
+                        return api.del('/imposters');
+                    });
                 });
-            });
+            }
         });
     });
 });

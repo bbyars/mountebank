@@ -138,11 +138,13 @@ describe('http proxy', function () {
             });
         });
 
-        promiseIt('should proxy to different host', function () {
-            return proxy.to('https://google.com', { path: '/', method: 'GET', headers: {} }, {}).then(function (response) {
-                assert.strictEqual(response.statusCode, 301);
-                assert.strictEqual(response.headers.location, 'https://www.google.com/');
+        if (process.env.MB_AIRPLANE_MODE !== 'true') {
+            promiseIt('should proxy to different host', function () {
+                return proxy.to('https://google.com', { path: '/', method: 'GET', headers: {} }, {}).then(function (response) {
+                    assert.strictEqual(response.statusCode, 301);
+                    assert.strictEqual(response.headers.location, 'https://www.google.com/');
+                });
             });
-        });
+        }
     });
 });

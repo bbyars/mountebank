@@ -4,7 +4,7 @@ var spawn = require('child_process').spawn,
     exec = require('child_process').exec,
     os = require('os'),
     port = process.env.MB_PORT || 2525,
-    mbPath = process.env.MB_EXECUTABLE || 'dist/mountebank/bin/mb',
+    mbPath = process.env.MB_EXECUTABLE || 'bin/mb',
     pidfile = 'mb-grunt.pid';
 
 function isWindows () {
@@ -12,7 +12,7 @@ function isWindows () {
 }
 
 function start (done) {
-    var mbArgs = ['restart', '--port', port, '--pidfile', 'mb-grunt.pid', '--allowInjection', '--mock', '--debug'],
+    var mbArgs = ['restart', '--port', port, '--pidfile', pidfile, '--allowInjection', '--mock', '--debug'],
         mb;
 
     if (isWindows) {

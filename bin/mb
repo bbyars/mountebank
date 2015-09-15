@@ -45,6 +45,7 @@ function processExists(pid) {
         return false;
     }
 }
+
 function serverAt (options) {
     return {
         start: function () {
@@ -68,7 +69,6 @@ function serverAt (options) {
             }
 
             var pid = fs.readFileSync(options.pidfile);
-            fs.unlinkSync(options.pidfile);
 
             if (processExists(pid)) {
                 process.kill(pid);
@@ -76,6 +76,9 @@ function serverAt (options) {
                     // Need a delay or get an address in use error
                     return 0;
                 }, killWait);
+            }
+            else {
+                fs.unlinkSync(options.pidfile);
             }
         },
 

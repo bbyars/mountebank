@@ -85,8 +85,9 @@ describe('tcp imposter', function () {
             });
         });
 
-        promiseIt('should allow asynchronous injection', function () {
-            var fn = function (request, state, logger, callback) {
+        if (process.env.MB_AIRPLANE_MODE !== 'true') {
+            promiseIt('should allow asynchronous injection', function () {
+                var fn = function (request, state, logger, callback) {
                         var net = require('net'),
                             options = {
                                 host: 'www.google.com',
@@ -96,22 +97,23 @@ describe('tcp imposter', function () {
                                 socket.end(request.data + '\n');
                             });
                         socket.once('data', function (data) {
-                            callback({ data: data });
+                            callback({data: data});
                         });
                         // No return value!!!
                     },
-                stub = { responses: [{ inject: fn.toString() }] };
+                    stub = {responses: [{inject: fn.toString()}]};
 
-            return api.post('/imposters', { protocol: 'tcp', port: port, stubs: [stub] }).then(function (response) {
-                assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body));
+                return api.post('/imposters', {protocol: 'tcp', port: port, stubs: [stub]}).then(function (response) {
+                    assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body));
 
-                return tcp.send('GET /', port);
-            }).then(function (response) {
-                assert.strictEqual(response.toString().indexOf('HTTP/1.0 200'), 0);
-            }).finally(function () {
-                return api.del('/imposters');
+                    return tcp.send('GET /', port);
+                }).then(function (response) {
+                    assert.strictEqual(response.toString().indexOf('HTTP/1.0 200'), 0);
+                }).finally(function () {
+                    return api.del('/imposters');
+                });
             });
-        });
+        }
 
         promiseIt('should allow binary requests extending beyond a single packet using endOfRequestResolver', function () {
             // We'll simulate a protocol that has a 4 byte message length at byte 0 indicating how many bytes follow

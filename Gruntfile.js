@@ -64,6 +64,10 @@ module.exports = function (grunt) {
         }
     });
 
+    grunt.registerTask('setAirplaneMode', function () {
+        process.env.MB_AIRPLANE_MODE = 'true';
+    });
+
     grunt.registerTask('test:unit', 'Run the unit tests', ['mochaTest:unit']);
     grunt.registerTask('test:functional', 'Run the functional tests',
         ['mb:start', 'try', 'mochaTest:functional', 'finally', 'mb:stop', 'checkForErrors']);
@@ -72,6 +76,9 @@ module.exports = function (grunt) {
     grunt.registerTask('coverage', 'Generate code coverage', ['mochaTest:coverage']);
     grunt.registerTask('lint', 'Run all JavaScript lint checks', ['wsCheck', 'jsCheck', 'deadCheck', 'jshint']);
     grunt.registerTask('default', ['version', 'dist', 'test', 'lint']);
+
+    grunt.registerTask('local', 'Fast build for local development (avoids distribution)', ['version', 'test', 'lint']);
+    grunt.registerTask('airplane', 'Build that avoids tests requiring network access', ['setAirplaneMode', 'local']);
 
     // Package-specific testing
     grunt.registerTask('test:tarball:x64', 'Run tests against packaged tarball',
