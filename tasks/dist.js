@@ -10,6 +10,10 @@ var fs = require('fs-extra'),
 
 function rmdirRecursiveSync (dir) {
     if (isWindows) {
+        if (!fs.existsSync(dir)) {
+            return;
+        }
+
         fs.readdirSync(dir).forEach(function (file) {
             var filePath = path.join(dir, file);
 
