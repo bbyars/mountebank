@@ -44,16 +44,18 @@ function stop (done) {
 
 module.exports = function (grunt) {
     grunt.registerTask('mb', 'start or stop mountebank', function (command) {
+        var done = this.async();
+
         command = command || 'start';
         if (['start', 'stop'].indexOf(command) === -1) {
             throw 'mb: the only targets are start and stop';
         }
 
         if (command === 'start') {
-            start();
+            start(done);
         }
         else {
-            stop();
+            stop(done);
         }
     });
 };
