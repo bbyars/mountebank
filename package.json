@@ -42,7 +42,7 @@
     "express": "~4.13.3",
     "json-stable-stringify": "~1.0.0",
     "mailparser": "~0.5.2",
-    "npm": "~2.14.2",
+    "npm": "~2.14.3",
     "q": "~1.4.1",
     "simplesmtp": "~0.3.16",
     "soap": "^0.9.1",
@@ -58,7 +58,7 @@
     "grunt-cli": "^0.1.13",
     "grunt-contrib-jshint": "~0.11.0",
     "grunt-mocha-test": "~0.12.1",
-    "jsdom": "~6.3.0",
+    "jsdom": "~6.5.0",
     "mocha": "~2.3.1",
     "mocha-lcov-reporter": "0.0.2",
     "w3cjs": "~0.3.0"
@@ -71,7 +71,7 @@
       "jsdom": "~3.1.0"
     },
     "v4.0": {
-      "jsdom": "~6.3.0"
+      "jsdom": "~6.5.0"
     }
   },
   "engines": {
