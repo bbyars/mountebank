@@ -32,5 +32,3 @@ build_script:
   - build.bat
 
 test: off
-assemblyInfo:
-  patch: false
