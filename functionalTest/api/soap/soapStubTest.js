@@ -4,7 +4,7 @@ var assert = require('assert'),
     api = require('../api'),
     promiseIt = require('../../testHelpers').promiseIt,
     port = api.port + 1,
-    timeout = parseInt(process.env.SLOW_TEST_TIMEOUT_MS || 2000),
+    timeout = parseInt(process.env.MB_SLOW_TEST_TIMEOUT || 2000),
     http = require('../http/baseHttpClient').create('http'),
     fs = require('fs');
 

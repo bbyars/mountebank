@@ -7,7 +7,7 @@ var assert = require('assert'),
     compatibility = require('../../compatibility'),
     port = api.port + 1,
     isWindows = require('os').platform().indexOf('win') === 0,
-    timeout = parseInt(process.env.SLOW_TEST_TIMEOUT_MS || 2000);
+    timeout = parseInt(process.env.MB_SLOW_TEST_TIMEOUT || 2000);
 
 describe('http proxy stubs', function () {
     if (isWindows) {

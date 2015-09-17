@@ -8,7 +8,7 @@ var assert = require('assert'),
     isWindows = require('os').platform().indexOf('win') === 0,
     BaseHttpClient = require('../api/http/baseHttpClient'),
     promiseIt = require('../testHelpers').promiseIt,
-    timeout = parseInt(process.env.SLOW_TEST_TIMEOUT_MS || 3000),
+    timeout = parseInt(process.env.MB_SLOW_TEST_TIMEOUT || 3000),
     smtp = require('../api/smtp/smtpClient'),
     http = BaseHttpClient.create('http'),
     https = BaseHttpClient.create('https');

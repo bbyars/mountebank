@@ -6,7 +6,7 @@ var assert = require('assert'),
     promiseIt = require('../../testHelpers').promiseIt,
     compatibility = require('../../compatibility'),
     port = api.port + 1,
-    timeout = parseInt(process.env.SLOW_TEST_TIMEOUT_MS || 2000),
+    timeout = parseInt(process.env.MB_SLOW_TEST_TIMEOUT || 2000),
     helpers = require('../../../src/util/helpers');
 
 ['http', 'https'].forEach(function (protocol) {

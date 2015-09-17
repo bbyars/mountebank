@@ -8,7 +8,7 @@ var assert = require('assert'),
     port = api.port + 1,
     isWindows = require('os').platform().indexOf('win') === 0,
     net = require('net'),
-    timeout = parseInt(process.env.SLOW_TEST_TIMEOUT_MS || 3000);
+    timeout = parseInt(process.env.MB_SLOW_TEST_TIMEOUT || 3000);
 
 describe('tcp proxy', function () {
     if (isWindows) {

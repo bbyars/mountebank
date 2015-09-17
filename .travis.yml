@@ -4,7 +4,7 @@ language: ruby
 
 env:
   global:
-    - SLOW_TEST_TIMEOUT_MS=5000
+    - MB_SLOW_TEST_TIMEOUT=5000
     # HEROKU_API_KEY
     - secure: "BQunTTpCSGjhIYiBAXKxuuOluJIhKXdW/94GCsPlK1N8Ln20/nj/0U4qnSH7yASWQWssVG4ttm/cAbjfi+3DS4KDLtBGK1i3IoM+cJ2ADCeG7BHsqJDB0f9JyAkULjIRdkqilzR/tyD+w78pPHd7QbfplLvqUcnt7HVxw9lp4PY="
     # AWS_ACCESS_KEY
