@@ -2,7 +2,6 @@
 
 var assert = require('assert'),
     api = require('../api'),
-    BaseHttpClient = require('../http/baseHttpClient'),
     tcp = require('./tcpClient'),
     promiseIt = require('../../testHelpers').promiseIt,
     port = api.port + 1,
@@ -72,11 +71,10 @@ describe('tcp imposter', function () {
         promiseIt('should return a 400 if injection is disallowed and inject is used', function () {
             var fn = function () { return { data: 'INJECTED' }; },
                 stub = { responses: [{ inject: fn.toString() }] },
-                request = { protocol: 'tcp', port: port, stubs: [stub], name: this.name },
-                mbApi = BaseHttpClient.create('http');
+                request = { protocol: 'tcp', port: port, stubs: [stub], name: this.name };
 
             return mb.start().then(function () {
-                return mbApi.post('/imposters', request, mb.port);
+                return mb.post('/imposters', request);
             }).then(function (response) {
                 assert.strictEqual(response.statusCode, 400);
                 assert.strictEqual(response.body.errors[0].code, 'invalid injection');

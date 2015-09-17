@@ -39,7 +39,11 @@ function start (done) {
 }
 
 function stop (done) {
-    exec(mbPath + ' stop --pidfile ' + pidfile, function () { done(); });
+    var command = mbPath + ' stop --pidfile ' + pidfile;
+    if (isWindows) {
+        command = 'node ' + command;
+    }
+    exec(command, done);
 }
 
 module.exports = function (grunt) {

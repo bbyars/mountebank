@@ -141,17 +141,16 @@ var assert = require('assert'),
 
             promiseIt('should not record matches against stubs if --debug flag is missing', function () {
                 var stub = { responses: [{ is: { body: '1' } }, { is: { body: '2' } }] },
-                    request = { protocol: protocol, port: port, stubs: [stub], name: this.name},
-                    mbApi = BaseHttpClient.create('http');
+                    request = { protocol: protocol, port: port, stubs: [stub], name: this.name};
 
                 return mb.start().then(function () {
-                    return mbApi.post('/imposters', request, mb.port);
+                    return mb.post('/imposters', request);
                 }).then(function () {
                     return client.get('/first?q=1', port);
                 }).then(function () {
                     return client.get('/second?q=2', port);
                 }).then(function () {
-                    return mbApi.get('/imposters/' + port, mb.port);
+                    return mb.get('/imposters/' + port);
                 }).then(function (response) {
                     assert.deepEqual(response.body.stubs, [ { responses: [{ is: { body: '1' } }, { is: { body: '2' } }] } ]);
                 }).finally(function () {
