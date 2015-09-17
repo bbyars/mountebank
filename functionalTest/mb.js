@@ -28,7 +28,6 @@ function create (port) {
         mb.on('error', deferred.reject);
         mb.stderr.on('data', function (data) {
             console.error(data.toString('utf8'));
-            deferred.resolve();
         });
         mb.stdout.on('data', function (data) {
             // Looking for "mountebank va.b.c (node vx.y.z) now taking orders..."

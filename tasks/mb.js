@@ -28,7 +28,6 @@ function start (done) {
     });
     mb.stderr.on('data', function (data) {
         console.error(data.toString('utf8'));
-        done();
     });
     mb.stdout.on('data', function (data) {
         // Looking for "mountebank va.b.c (node vx.y.z) now taking orders..."
