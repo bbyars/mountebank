@@ -109,7 +109,10 @@ function putConfig (options, body) {
             path: '/imposters',
             port: options.port,
             hostname: 'localhost',
-            headers: { 'Content-Type': 'application/json' }
+            headers: {
+                'Content-Type': 'application/json',
+                Connection: 'close'
+            }
         },
         request = http.request(requestOptions, function (response) {
             response.body = '';
