@@ -46,7 +46,10 @@ function create (port) {
         if (isWindows) {
             command = 'node ' + command;
         }
-        exec(command, deferred.resolve);
+        exec(command, function () {
+            // Prevent address in use errors on the next start
+            setTimeout(deferred.resolve, isWindows ? 1000 : 250);
+        });
 
         return deferred.promise;
     }
