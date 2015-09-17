@@ -38,8 +38,13 @@ function create (currentVersion, releases, options) {
     }
 
     function getRelease (request, response) {
-        var config = { host: request.headers.host, heroku: options.heroku, version: currentVersion},
-            version = request.params.version;
+        var version = request.params.version,
+            config = {
+                host: request.headers.host,
+                heroku: options.heroku,
+                releaseMajorMinor: version.replace(/^v(\d+\.\d+).*/, '$1'),
+                version: version.replace('v', '')
+            };
 
         if (fs.existsSync(releaseFilenameFor(version))) {
             response.render('_header', config, function (error, header) {

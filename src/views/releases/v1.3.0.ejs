@@ -1,11 +1,10 @@
-<%
-releaseMajorMinor = 1.3
-releaseVersion = 1.3.0
-%>
+<h1>v<%= version %></h1>
 
-<h1>v<%= releaseVersion %></h1>
-
-<p>The following changes are part of this release.</p>
+<p><b>Note that this release changes some default command line behavior.</b>  It's not a breaking change -
+  all previous functionality is still supported, but it means you may need to pass in some additional
+  command line flags (specifically <code>--mock</code> and <code>--debug</code>) to get the same behavior
+  as before, if you depended on either the <code>requests</code> or <code>matches</code> arrays recorded
+  with imposters and stubs previously.The following changes are part of this release.</p>
 
 <h2>New Features</h2>
 <ul class='bullet-list'>
@@ -13,8 +12,8 @@ releaseVersion = 1.3.0
   <li>A <code>timestamp</code> has been added to each element in the <code>requests</code> array
     to allow for richer verification testing.</li>
   <li>The <code>matches</code> array is only included if you use the <code>--debug</code> command
-    line parameter.  In practice, this array is not needed and confused people.  It is still supported,
-    but only for debugging purposes to determine when a stub matches or doesn't.</li>
+    line parameter.  In practice, this array confused people.  It is still supported,
+    but is only intended for debugging purposes to determine when a stub matches or doesn't.</li>
   <li>The <code>requests</code> array is only included if you use the <code>--mock</code> command
     line parameter, and the <code>--nomock</code> parameter no longer matters.  <b>This is the inverse
     of prior behavior</b> and represents learning that the default use case for most people is to turn
@@ -32,7 +31,7 @@ releaseVersion = 1.3.0
 <h2>Install</h2>
 
 <pre><code>
-  npm install -g mountebank@<%= releaseVersion %> --production
+  npm install -g mountebank@<%= version %> --production
 </code></pre>
 
 <p>or:</p>
@@ -51,11 +50,11 @@ releaseVersion = 1.3.0
     <td>No</td>
     <td style="min-width: 5em;">
       <ul>
-        <li><a href="https://s3.amazonaws.com/mountebank/v<%= releaseMajorMinor %>/mountebank-v<%= releaseVersion %>-darwin-x64.tar.gz">osx</a></li>
-        <li><a href="https://s3.amazonaws.com/mountebank/v<%= releaseMajorMinor %>/mountebank-v<%= releaseVersion %>-linux-x86.tar.gz">linux x86</a></li>
-        <li><a href="https://s3.amazonaws.com/mountebank/v<%= releaseMajorMinor %>/mountebank-v<%= releaseVersion %>-linux-x64.tar.gz">linux x64</a></li>
-        <li><a href="https://s3.amazonaws.com/mountebank/v<%= releaseMajorMinor %>/mountebank-v<%= releaseVersion %>-win-x86.zip">win x86</a></li>
-        <li><a href="https://s3.amazonaws.com/mountebank/v<%= releaseMajorMinor %>/mountebank-v<%= releaseVersion %>-win-x64.zip">win x64</a></li>
+        <li><a href="https://s3.amazonaws.com/mountebank/v<%= releaseMajorMinor %>/mountebank-v<%= version %>-darwin-x64.tar.gz">osx</a></li>
+        <li><a href="https://s3.amazonaws.com/mountebank/v<%= releaseMajorMinor %>/mountebank-v<%= version %>-linux-x86.tar.gz">linux x86</a></li>
+        <li><a href="https://s3.amazonaws.com/mountebank/v<%= releaseMajorMinor %>/mountebank-v<%= version %>-linux-x64.tar.gz">linux x64</a></li>
+        <li><a href="https://s3.amazonaws.com/mountebank/v<%= releaseMajorMinor %>/mountebank-v<%= version %>-win-x86.zip">win x86</a></li>
+        <li><a href="https://s3.amazonaws.com/mountebank/v<%= releaseMajorMinor %>/mountebank-v<%= version %>-win-x64.zip">win x64</a></li>
       </ul>
     </td>
     <td>Simply unpack and run <code>mb</code> from inside</td>
@@ -66,9 +65,9 @@ releaseVersion = 1.3.0
     <td>Yes</td>
     <td>
       <ul>
-        <li><a href="https://s3.amazonaws.com/mountebank/v<%= releaseMajorMinor %>/mountebank-v<%= releaseVersion %>.pkg">pkg</a></li>
-        <li><a href="https://s3.amazonaws.com/mountebank/v<%= releaseMajorMinor %>/mountebank-<%= releaseVersion %>-1.x86_64.rpm">rpm</a></li>
-        <li><a href="https://s3.amazonaws.com/mountebank/v<%= releaseMajorMinor %>/mountebank_<%= releaseVersion %>_amd64.deb">deb</a></li>
+        <li><a href="https://s3.amazonaws.com/mountebank/v<%= releaseMajorMinor %>/mountebank-v<%= version %>.pkg">pkg</a></li>
+        <li><a href="https://s3.amazonaws.com/mountebank/v<%= releaseMajorMinor %>/mountebank-<%= version %>-1.x86_64.rpm">rpm</a></li>
+        <li><a href="https://s3.amazonaws.com/mountebank/v<%= releaseMajorMinor %>/mountebank_<%= version %>_amd64.deb">deb</a></li>
       </ul>
     </td>
     <td>Puts <code>mb</code> at <code>/usr/local/bin</code>, which is generally in the <code>PATH</code>.</td>
@@ -79,7 +78,7 @@ releaseVersion = 1.3.0
     <td>No</td>
     <td>
       <ul>
-        <li><a href="https://s3.amazonaws.com/mountebank/v<%= releaseMajorMinor %>/mountebank-v<%= releaseVersion %>-npm.tar.gz">mb</a></li>
+        <li><a href="https://s3.amazonaws.com/mountebank/v<%= releaseMajorMinor %>/mountebank-v<%= version %>-npm.tar.gz">mb</a></li>
       </ul>
     </td>
     <td>source tarball if you roll that way.</td>
