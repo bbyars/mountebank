@@ -165,7 +165,7 @@ var assert = require('assert'),
             });
         });
 
-        describe('DELETE /imposters/:id should shutdown server at that port', function () {
+        describe('DELETE /imposters/:id', function () {
             promiseIt('should shutdown server at that port', function () {
                 var request = { protocol: protocol, port: port, name: this.name };
 
