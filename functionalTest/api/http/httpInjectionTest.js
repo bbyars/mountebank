@@ -171,8 +171,11 @@ var assert = require('assert'),
 
                         return client.get('', port);
                     }).then(function (response) {
-                        assert.strictEqual(response.statusCode, 302);
-                        assert.strictEqual(response.headers.location, 'http://www.google.com/');
+                        // sometimes 301, sometimes 302
+                        assert.strictEqual(response.statusCode.toString().substring(0, 2), '30');
+
+                        // https://www.google.com.br in Brasil, etc
+                        assert.ok(response.headers.location.indexOf('google.com') >= 0, response.headers.location);
                     }).finally(function () {
                         return api.del('/imposters');
                     });

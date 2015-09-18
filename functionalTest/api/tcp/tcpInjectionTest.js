@@ -106,7 +106,7 @@ describe('tcp imposter', function () {
 
                     return tcp.send('GET /', port);
                 }).then(function (response) {
-                    assert.strictEqual(response.toString().indexOf('HTTP/1.0 200'), 0);
+                    assert.strictEqual(response.toString().indexOf('HTTP/1.0'), 0);
                 }).finally(function () {
                     return api.del('/imposters');
                 });

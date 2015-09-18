@@ -437,8 +437,11 @@ describe('http proxy stubs', function () {
                 assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body, null, 2));
                 return client.get('/', port);
             }).then(function (response) {
-                assert.strictEqual(response.statusCode, 301);
-                assert.strictEqual(response.headers.location, 'https://www.google.com/');
+                // Sometimes 301, sometimes 302
+                assert.strictEqual(response.statusCode.toString().substring(0, 2), '30');
+
+                // https://www.google.com.br in Brasil, etc
+                assert.ok(response.headers.location.indexOf('google.com') >= 0, response.headers.location);
             }).finally(function () {
                 return api.del('/imposters');
             });

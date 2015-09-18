@@ -141,8 +141,11 @@ describe('http proxy', function () {
         if (process.env.MB_AIRPLANE_MODE !== 'true') {
             promiseIt('should proxy to different host', function () {
                 return proxy.to('https://google.com', { path: '/', method: 'GET', headers: {} }, {}).then(function (response) {
-                    assert.strictEqual(response.statusCode, 301);
-                    assert.strictEqual(response.headers.location, 'https://www.google.com/');
+                    // sometimes 301, sometimes 302
+                    assert.strictEqual(response.statusCode.toString().substring(0, 2), '30');
+
+                    // https://www.google.com.br in Brasil, etc
+                    assert.ok(response.headers.location.indexOf('google.com') >= 0, response.headers.location);
                 });
             });
         }
