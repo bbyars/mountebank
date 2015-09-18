@@ -46,7 +46,7 @@ module.exports = function (grunt) {
                     lines = contents.split(os.EOL);
 
                 lines.forEach(function (line) {
-                    var trailingWhitespaceErrors = line.match(/\s$/) || [],
+                    var trailingWhitespaceErrors = line.match(/ $/) || [],
                         tabErrors = line.match(/^.*\t.*$/) || [];
 
                     errors = errors.concat(trailingWhitespaceErrors.map(function () {
