@@ -1,4 +1,4 @@
-<h1>v<%= version %></h1>
+<h1>v<%= releaseVersion %></h1>
 
 <p><b>Note that this release changes some default command line behavior.</b>  It's not a breaking change -
   all previous functionality is still supported, but it means you may need to pass in some additional
@@ -31,7 +31,7 @@
 <h2>Install</h2>
 
 <pre><code>
-  npm install -g mountebank@<%= version %> --production
+  npm install -g mountebank@<%= releaseVersion %> --production
 </code></pre>
 
 <p>or:</p>
@@ -50,11 +50,11 @@
     <td>No</td>
     <td style="min-width: 5em;">
       <ul>
-        <li><a href="https://s3.amazonaws.com/mountebank/v<%= releaseMajorMinor %>/mountebank-v<%= version %>-darwin-x64.tar.gz">osx</a></li>
-        <li><a href="https://s3.amazonaws.com/mountebank/v<%= releaseMajorMinor %>/mountebank-v<%= version %>-linux-x86.tar.gz">linux x86</a></li>
-        <li><a href="https://s3.amazonaws.com/mountebank/v<%= releaseMajorMinor %>/mountebank-v<%= version %>-linux-x64.tar.gz">linux x64</a></li>
-        <li><a href="https://s3.amazonaws.com/mountebank/v<%= releaseMajorMinor %>/mountebank-v<%= version %>-win-x86.zip">win x86</a></li>
-        <li><a href="https://s3.amazonaws.com/mountebank/v<%= releaseMajorMinor %>/mountebank-v<%= version %>-win-x64.zip">win x64</a></li>
+        <li><a href="https://s3.amazonaws.com/mountebank/v<%= releaseMajorMinor %>/mountebank-v<%= releaseVersion %>-darwin-x64.tar.gz">osx</a></li>
+        <li><a href="https://s3.amazonaws.com/mountebank/v<%= releaseMajorMinor %>/mountebank-v<%= releaseVersion %>-linux-x86.tar.gz">linux x86</a></li>
+        <li><a href="https://s3.amazonaws.com/mountebank/v<%= releaseMajorMinor %>/mountebank-v<%= releaseVersion %>-linux-x64.tar.gz">linux x64</a></li>
+        <li><a href="https://s3.amazonaws.com/mountebank/v<%= releaseMajorMinor %>/mountebank-v<%= releaseVersion %>-win-x86.zip">win x86</a></li>
+        <li><a href="https://s3.amazonaws.com/mountebank/v<%= releaseMajorMinor %>/mountebank-v<%= releaseVersion %>-win-x64.zip">win x64</a></li>
       </ul>
     </td>
     <td>Simply unpack and run <code>mb</code> from inside</td>
@@ -65,9 +65,9 @@
     <td>Yes</td>
     <td>
       <ul>
-        <li><a href="https://s3.amazonaws.com/mountebank/v<%= releaseMajorMinor %>/mountebank-v<%= version %>.pkg">pkg</a></li>
-        <li><a href="https://s3.amazonaws.com/mountebank/v<%= releaseMajorMinor %>/mountebank-<%= version %>-1.x86_64.rpm">rpm</a></li>
-        <li><a href="https://s3.amazonaws.com/mountebank/v<%= releaseMajorMinor %>/mountebank_<%= version %>_amd64.deb">deb</a></li>
+        <li><a href="https://s3.amazonaws.com/mountebank/v<%= releaseMajorMinor %>/mountebank-v<%= releaseVersion %>.pkg">pkg</a></li>
+        <li><a href="https://s3.amazonaws.com/mountebank/v<%= releaseMajorMinor %>/mountebank-<%= releaseVersion %>-1.x86_64.rpm">rpm</a></li>
+        <li><a href="https://s3.amazonaws.com/mountebank/v<%= releaseMajorMinor %>/mountebank_<%= releaseVersion %>_amd64.deb">deb</a></li>
       </ul>
     </td>
     <td>Puts <code>mb</code> at <code>/usr/local/bin</code>, which is generally in the <code>PATH</code>.</td>
@@ -78,7 +78,7 @@
     <td>No</td>
     <td>
       <ul>
-        <li><a href="https://s3.amazonaws.com/mountebank/v<%= releaseMajorMinor %>/mountebank-v<%= version %>-npm.tar.gz">mb</a></li>
+        <li><a href="https://s3.amazonaws.com/mountebank/v<%= releaseMajorMinor %>/mountebank-v<%= releaseVersion %>-npm.tar.gz">mb</a></li>
       </ul>
     </td>
     <td>source tarball if you roll that way.</td>

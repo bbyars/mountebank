@@ -35,7 +35,7 @@ function create (options) {
         imposterController = ImposterController.create(imposters),
         logsController = LogsController.create(options.logfile),
         configController = ConfigController.create(thisPackage.version, options),
-        feedController = FeedController.create(thisPackage.version, releases, options),
+        feedController = FeedController.create(releases, options),
         validateImposterExists = middleware.createImposterValidator(imposters),
         welcome = util.format('mountebank v%s (node %s) now taking orders - point your browser to http://localhost:%s for help',
             thisPackage.version, process.version, options.port);
@@ -114,7 +114,7 @@ function create (options) {
         '/docs/protocols/smtp'
     ].forEach(function (endpoint) {
         app.get(endpoint, function (request, response) {
-            response.render(endpoint.substring(1), { version: thisPackage.version });
+            response.render(endpoint.substring(1));
         });
     });
 

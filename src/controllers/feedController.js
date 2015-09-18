@@ -4,7 +4,7 @@ var fs = require('fs'),
     ejs = require('ejs'),
     helpers = require('../util/helpers');
 
-function create (currentVersion, releases, options) {
+function create (releases, options) {
 
     // Init once since we hope many consumers poll the heroku feed and we don't have monitoring
     var feedReleases = helpers.clone(releases);
@@ -43,7 +43,7 @@ function create (currentVersion, releases, options) {
                 host: request.headers.host,
                 heroku: options.heroku,
                 releaseMajorMinor: version.replace(/^v(\d+\.\d+).*/, '$1'),
-                version: version.replace('v', '')
+                releaseVersion: version.replace('v', '')
             };
 
         if (fs.existsSync(releaseFilenameFor(version))) {
