@@ -42,7 +42,7 @@
     "express": "~4.13.3",
     "json-stable-stringify": "~1.0.0",
     "mailparser": "~0.5.2",
-    "npm": "~2.14.3",
+    "npm": "~3.3.3",
     "q": "~1.4.1",
     "simplesmtp": "~0.3.16",
     "soap": "^0.9.1",
