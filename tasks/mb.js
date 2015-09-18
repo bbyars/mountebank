@@ -32,6 +32,7 @@ function start (done) {
     mb.stdout.on('data', function (data) {
         // Looking for "mountebank va.b.c (node vx.y.z) now taking orders..."
         if (data.toString('utf8').indexOf('now taking orders') > 0) {
+            console.log(data.toString('utf8'));
             done();
         }
     });
