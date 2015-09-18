@@ -75,18 +75,18 @@ module.exports = function (grunt) {
     grunt.registerTask('test', 'Run all non-performance tests', ['test:unit', 'test:functional']);
     grunt.registerTask('coverage', 'Generate code coverage', ['mochaTest:coverage']);
     grunt.registerTask('lint', 'Run all JavaScript lint checks', ['wsCheck', 'jsCheck', 'deadCheck', 'jshint']);
-    grunt.registerTask('default', ['version', 'dist', 'test', 'lint']);
+    grunt.registerTask('default', ['dist', 'version', 'test', 'lint']);
 
-    grunt.registerTask('local', 'Fast build for local development (avoids distribution)', ['version', 'test', 'lint']);
+    grunt.registerTask('local', 'Fast build for local development (avoids distribution)', ['test', 'lint']);
     grunt.registerTask('airplane', 'Build that avoids tests requiring network access', ['setAirplaneMode', 'local']);
 
     // Package-specific testing
     grunt.registerTask('test:tarball:x64', 'Run tests against packaged tarball',
-        ['version', 'dist', 'dist:tarball:x64', 'install:tarball:x64', 'test', 'lint']);
+        ['dist', 'version', 'dist:tarball:x64', 'install:tarball:x64', 'test', 'lint']);
     grunt.registerTask('test:npm', 'Run tests against npm package',
-        ['version', 'dist', 'dist:npm', 'install:npm', 'test']);
+        ['dist', 'version', 'dist:npm', 'install:npm', 'test']);
     grunt.registerTask('test:pkg', 'Run tests against OSX pkg file',
-        ['version', 'dist', 'dist:package:osxpkg', 'install:pkg', 'test']);
+        ['dist', 'version', 'dist:package:osxpkg', 'install:pkg', 'test']);
     grunt.registerTask('test:deb', 'Run tests against Debian package',
-        ['version', 'dist', 'dist:package:deb', 'install:deb', 'test', 'uninstall:deb']);
+        ['dist', 'version', 'dist:package:deb', 'install:deb', 'test', 'uninstall:deb']);
 };

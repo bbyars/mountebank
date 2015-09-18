@@ -63,7 +63,7 @@ module.exports = function (grunt) {
                     errors = errors.concat(file + ' has more than one trailing newline');
                 }
             },
-            exclusions = ['node_modules', '.git', '.DS_Store', '.idea', 'images', 'dist', 'mountebank.iml', 'mb.log', '*.pid', 'package.json'];
+            exclusions = ['node_modules', '.git', '.DS_Store', '.idea', 'images', 'dist', 'mountebank.iml', 'mb.log', '*.pid'];
 
         forEachFileIn('.', wsCheck, { exclude: exclusions });
 

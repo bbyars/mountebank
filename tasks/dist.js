@@ -61,6 +61,14 @@ module.exports = function (grunt) {
         });
     });
 
+    grunt.registerTask('version', 'Set the version number', function () {
+        var newPackage = require('./dist/mountebank/package.json');
+
+        newPackage.version = version;
+        console.log('Using version ' + version);
+        fs.writeFileSync('./dist/mountebank/package.json', JSON.stringify(newPackage, null, 2) + '\n');
+    });
+
     grunt.registerTask('dist:tarball', 'Create OS-specific tarballs', function (arch) {
         var done = this.async();
         run('scripts/dist/createSelfContainedTarball', [os.platform(), arch || os.arch(), version]).done(function () {
