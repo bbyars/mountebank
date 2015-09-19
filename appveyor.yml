@@ -2,8 +2,8 @@ version: 1.3.0+win{build}
 
 shallow_clone: true
 
-os:
-  - Windows Server 2012
+#os:
+#  - Windows Server 2012
 
 platform:
   #- Win32
@@ -11,7 +11,7 @@ platform:
 
 environment:
   global:
-    MB_SLOW_TEST_TIMEOUT: 10000
+    MB_SLOW_TEST_TIMEOUT: 30000
 
   matrix:
       - NODE_VERSION: 0.10
