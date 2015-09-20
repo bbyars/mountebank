@@ -13,7 +13,7 @@ module.exports = function (grunt) {
         }
 
         var done = this.async();
-        run('scripts/deploy/deployS3', []).done(function () { done(); });
+        run('scripts/deploy/deployS3', []).done(function () { done(); }, process.exit);
     });
 
     grunt.registerTask('deployHeroku', 'Deploy artifacts to Heroku', function () {
@@ -22,7 +22,7 @@ module.exports = function (grunt) {
         }
 
         var done = this.async();
-        run('scripts/deploy/deployHeroku', [publish]).done(function () { done(); });
+        run('scripts/deploy/deployHeroku', [publish]).done(function () { done(); }, process.exit);
     });
 
     grunt.registerTask('deployNpm', 'Deploy artifacts to npm', function () {
@@ -31,6 +31,6 @@ module.exports = function (grunt) {
         }
 
         var done = this.async();
-        run('scripts/deploy/deployNpm', [publish, buildNumber]).done(function () { done(); });
+        run('scripts/deploy/deployNpm', [publish, buildNumber]).done(function () { done(); }, process.exit);
     });
 };

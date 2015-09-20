@@ -25,7 +25,7 @@ module.exports = function (grunt) {
             fs.unlinkSync(tarballPath);
             process.env.MB_EXECUTABLE = tarballPath.replace('.tar.gz', '') + '/mb';
             done();
-        });
+        }, process.exit);
     });
 
     grunt.registerTask('install:npm', 'Set test executable to mb installed through local npm from tarball', function () {
@@ -39,7 +39,7 @@ module.exports = function (grunt) {
         run('npm', ['install', './' + tarball], { cwd: testDir }).done(function () {
             process.env.MB_EXECUTABLE = testDir + '/node_modules/.bin/mb';
             done();
-        });
+        }, process.exit);
     });
 
     grunt.registerTask('install:pkg', 'Set test executable to mb installed in OSX pkg file', function () {
@@ -53,7 +53,7 @@ module.exports = function (grunt) {
         run('sudo', ['installer', '-pkg', pkg, '-target', '/'], { cwd: testDir }).done(function () {
             process.env.MB_EXECUTABLE = 'mb';
             done();
-        });
+        }, process.exit);
     });
 
     grunt.registerTask('install:deb', 'Set test executable to mb installed in Debian file', function () {
@@ -67,7 +67,7 @@ module.exports = function (grunt) {
         run('sudo', ['dpkg', '-i', deb], { cwd: testDir }).done(function () {
             process.env.MB_EXECUTABLE = 'mb';
             done();
-        });
+        }, process.exit);
     });
 
     grunt.registerTask('uninstall:deb', 'Verify uninstallation of Debian file', function () {
@@ -78,6 +78,6 @@ module.exports = function (grunt) {
                 throw 'Uninstalling debian package did not remove /usr/local/bin/mb';
             }
             done();
-        });
+        }, process.exit);
     });
 };

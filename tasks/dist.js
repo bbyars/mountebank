@@ -58,7 +58,7 @@ module.exports = function (grunt) {
             // Switch tests to use the mb from the dist directory to test what actually gets published
             process.env.MB_EXECUTABLE = 'dist/mountebank/bin/mb';
             done();
-        });
+        }, process.exit);
     });
 
     grunt.registerTask('version', 'Set the version number', function () {
@@ -73,12 +73,12 @@ module.exports = function (grunt) {
         var done = this.async();
         run('scripts/dist/createSelfContainedTarball', [os.platform(), arch || os.arch(), version]).done(function () {
             done();
-        });
+        }, process.exit);
     });
 
     grunt.registerTask('dist:zip', 'Create OS-specific zips', function (arch) {
         var done = this.async();
-        run('scripts/dist/createWindowsZip', [arch, version]).done(function () { done(); });
+        run('scripts/dist/createWindowsZip', [arch, version]).done(function () { done(); }, process.exit);
     });
 
     grunt.registerTask('dist:npm', 'Create npm tarball', function () {
@@ -87,11 +87,11 @@ module.exports = function (grunt) {
 
         run('tar', ['czf', filename, 'mountebank'], { cwd: 'dist' }).done(function () {
             done();
-        });
+        }, process.exit);
     });
 
     grunt.registerTask('dist:package', 'Create OS-specific package', function (type) {
         var done = this.async();
-        run('scripts/dist/createPackage', [os.platform(), type, version]).done(function () { done(); });
+        run('scripts/dist/createPackage', [os.platform(), type, version]).done(function () { done(); }, process.exit);
     });
 };

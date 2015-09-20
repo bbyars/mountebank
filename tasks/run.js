@@ -25,11 +25,12 @@ function run (command, args, options) {
     proc.stderr.on('data', function (data) { console.error(data.toString('utf8').trim()); });
 
     proc.on('close', function (exitCode) {
-        if (exitCode !== 0) {
-            process.exit(exitCode);
+        if (exitCode === 0) {
+            deferred.resolve();
         }
-
-        deferred.resolve();
+        else {
+            deferred.reject(exitCode);
+        }
     });
 
     return deferred.promise;
