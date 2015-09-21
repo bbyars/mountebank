@@ -24,7 +24,7 @@ See [getting started](http://www.mbtest.org/docs/gettingStarted) guide for more 
 
 Install:
 
-    npm install -g mountebank --production
+    npm install -g mountebank
 
 The npm install requires at least node 0.10.  Billions of other install options are
 [also available](http://www.mbtest.org/docs/install) with no platform dependencies.
