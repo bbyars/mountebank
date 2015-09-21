@@ -236,5 +236,14 @@ describe('middleware', function () {
 
             assert.strictEqual(request.headers.accept, 'text/html');
         });
+
+        it('should not change accept header for IE user agents if application/json explicitly included', function () {
+            request.headers['user-agent'] = 'blah MSIE blah';
+            request.headers.accept = 'accept/any, application/json';
+
+            middleware.defaultIEtoHTML(request, response, next);
+
+            assert.strictEqual(request.headers.accept, 'accept/any, application/json');
+        });
     });
 });
