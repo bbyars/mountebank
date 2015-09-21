@@ -10,7 +10,7 @@ env:
     # AWS_ACCESS_KEY
     - secure: "H0iUwBPOwRf3+5HGqAXWU65dJIA+4SUltehM3+jiTXsqkxeHux3WqVOouaLlw2n8WaG9y1KMXEZzed6L8p8A3I6V2M+Y1n8qNYT8y/HjCTw4d3U0tiG6ef1ysIChdBOdlwXJT5GPLlLT0y+R4IgPfHd3DMx/aiEgT3O4gGZEchs="
     # NPM_API_KEY
-    - secure: "pbVyYwERkTpwkpFTqXjwsMkNpulV0ZV1HbBZeEBhpWY7MjIjjASd/kDwDBr4ONuiicOQ3ToL4MeKxgI2bxjQdhDhfBvMt5XZV6V8X8xktwZQsnkc9klD0qr5raQ6MZdWQzx4nlsgFLHO9k0w8D/EzQbz25E4KAicpaYYwejyig8="
+    - secure: "IEfctrje4QulHyavIMZYnxljU4XvpMnLR8TzCU8ozeQbdoIOq3/WqBl53Mou2Ie65YAbcMNfLmAvXWgNiKR2jE+K9tOyXsIj+Wbrr4b6X1FHqjkTLw8OCcLFD7kO/aptEOzsTZWbpJKao3mtcshHWWiFeeRDANYK6QMSYwoVNLc="
 
 matrix:
   include:
@@ -63,7 +63,7 @@ install:
   - source ~/.nvm/nvm.sh
   - nvm install $NODE_VERSION
   - node --version
-  - bundle install
+- bundle install --without development
   - if [ "$MB_INSTALL_RPM" = "true" ]; then sudo apt-get update && sudo apt-get install rpm; fi
   - if [ "$TRAVIS_PULL_REQUEST" = "false" ]; then export MB_DEPLOY=true; else export MB_DEPLOY=false; fi
   - if [ "$TRAVIS_PULL_REQUEST" = "false" -a -n "`git describe --tags --exact-match 2>/dev/null`" ]; then export MB_PUBLISH=true; else export MB_PUBLISH=false; fi

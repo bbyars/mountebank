@@ -35,7 +35,6 @@ function run (command, args, options) {
     });
 
     proc.on('close', function (exitCode) {
-        console.log('EXIT CODE: ' + exitCode);
         if (exitCode === 0 && !npmFailure) {
             deferred.resolve();
         }
