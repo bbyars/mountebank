@@ -103,7 +103,7 @@ function defaultIEtoHTML (request, response, next) {
     // IE has inconsistent Accept headers, often defaulting to */*
     // Our default is JSON, which fails to render in the browser on content-negotiated pages
     if (request.headers['user-agent'] && request.headers['user-agent'].indexOf('MSIE') >= 0) {
-        if ( !(request.headers['accept'] && request.headers.accept.match(/application\/json/)) ) {
+        if ( !(request.headers.accept && request.headers.accept.match(/application\/json/)) ) {
             request.headers.accept = 'text/html';
         }
     }
