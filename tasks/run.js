@@ -10,6 +10,7 @@ function isWindows () {
 
 function run (command, args, options) {
     var deferred = Q.defer(),
+        npmFailure = false,
         proc;
 
     if (isWindows()) {
@@ -21,15 +22,25 @@ function run (command, args, options) {
 
     proc = spawn(command, args, options);
 
-    proc.stdout.on('data', function (data) { console.log(data.toString('utf8').trim()); });
-    proc.stderr.on('data', function (data) { console.error(data.toString('utf8').trim()); });
+    proc.stdout.on('data', function (data) {
+        console.log(data.toString('utf8').trim());
+    });
+
+    proc.stderr.on('data', function (data) {
+        console.error(data.toString('utf8').trim());
+        if (data.toString('utf8').indexOf('npm ERR!') >= 0) {
+            // Hack; dpl returns 0 exit code on npm publish failure
+            npmFailure = true;
+        }
+    });
 
     proc.on('close', function (exitCode) {
-        if (exitCode === 0) {
+        console.log('EXIT CODE: ' + exitCode);
+        if (exitCode === 0 && !npmFailure) {
             deferred.resolve();
         }
         else {
-            deferred.reject(exitCode);
+            deferred.reject(npmFailure ? 1 : exitCode);
         }
     });
 
