@@ -68,8 +68,7 @@ module.exports = function (grunt) {
         forEachFileIn('.', wsCheck, { exclude: exclusions });
 
         if (errors.length > 0) {
-            console.error(errors.join(os.EOL));
-            process.exit(1);
+            grunt.warn(errors.join(os.EOL));
         }
     });
 
@@ -98,8 +97,7 @@ module.exports = function (grunt) {
         forEachFileIn('.', jsCheck, { exclude: exclusions, filetype: '.js' });
 
         if (errors.length > 0) {
-            console.error(errors.join(os.EOL));
-            process.exit(1);
+            grunt.warn(errors.join(os.EOL));
         }
     });
 
@@ -136,8 +134,7 @@ module.exports = function (grunt) {
         });
 
         if (errors.length > 0) {
-            console.error(errors.join(os.EOL));
-            process.exit(1);
+            grunt.warn(errors.join(os.EOL));
         }
     });
 

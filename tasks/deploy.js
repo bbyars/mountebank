@@ -7,13 +7,18 @@ var run = require('./run').run,
 
 module.exports = function (grunt) {
 
+    function failTask (task) {
+        return function (exitCode) {
+            grunt.warn(task + ' failed', exitCode);
+        };
+    }
+
     grunt.registerTask('deployS3', 'Deploy artifacts to S3', function () {
         if (!deploy) {
             return;
         }
 
-        var done = this.async();
-        run('scripts/deploy/deployS3', []).done(function () { done(); }, process.exit);
+        run('scripts/deploy/deployS3', []).done(this.async(), failTask('deployS3'));
     });
 
     grunt.registerTask('deployHeroku', 'Deploy artifacts to Heroku', function () {
@@ -21,8 +26,7 @@ module.exports = function (grunt) {
             return;
         }
 
-        var done = this.async();
-        run('scripts/deploy/deployHeroku', [publish]).done(function () { done(); }, process.exit);
+        run('scripts/deploy/deployHeroku', [publish]).done(this.async(), failTask('deployHeroku'));
     });
 
     grunt.registerTask('deployNpm', 'Deploy artifacts to npm', function () {
@@ -30,7 +34,6 @@ module.exports = function (grunt) {
             return;
         }
 
-        var done = this.async();
-        run('scripts/deploy/deployNpm', [publish, buildNumber]).done(function () { done(); }, process.exit);
+        run('scripts/deploy/deployNpm', [publish, buildNumber]).done(this.async(), failTask('deployNpm'));
     });
 };

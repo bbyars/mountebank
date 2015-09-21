@@ -34,9 +34,16 @@ function rmdirRecursiveSync (dir) {
 
 module.exports = function (grunt) {
 
+    function failTask (task) {
+        return function (exitCode) {
+            grunt.warn(task + ' failed', exitCode);
+        };
+    }
+
     grunt.registerTask('dist', 'Create trimmed down distribution directory', function () {
         var done = this.async(),
-            newPackage = JSON.parse(JSON.stringify(thisPackage));
+            newPackage = JSON.parse(JSON.stringify(thisPackage)),
+            failed = failTask('dist');
 
         // This doesn't work on Windows
         rmdirRecursiveSync('dist');
@@ -58,7 +65,7 @@ module.exports = function (grunt) {
             // Switch tests to use the mb from the dist directory to test what actually gets published
             process.env.MB_EXECUTABLE = 'dist/mountebank/bin/mb';
             done();
-        }, process.exit);
+        }, failed);
     });
 
     grunt.registerTask('version', 'Set the version number', function () {
@@ -70,28 +77,21 @@ module.exports = function (grunt) {
     });
 
     grunt.registerTask('dist:tarball', 'Create OS-specific tarballs', function (arch) {
-        var done = this.async();
-        run('scripts/dist/createSelfContainedTarball', [os.platform(), arch || os.arch(), version]).done(function () {
-            done();
-        }, process.exit);
+        run('scripts/dist/createSelfContainedTarball', [os.platform(), arch || os.arch(), version]).done(
+            this.async(), failTask('dist:tarball'));
     });
 
     grunt.registerTask('dist:zip', 'Create OS-specific zips', function (arch) {
-        var done = this.async();
-        run('scripts/dist/createWindowsZip', [arch, version]).done(function () { done(); }, process.exit);
+        run('scripts/dist/createWindowsZip', [arch, version]).done(this.async(), failTask('dist:zip'));
     });
 
     grunt.registerTask('dist:npm', 'Create npm tarball', function () {
-        var done = this.async(),
-            filename = 'mountebank-v' + version + '-npm.tar.gz';
+        var filename = 'mountebank-v' + version + '-npm.tar.gz';
 
-        run('tar', ['czf', filename, 'mountebank'], { cwd: 'dist' }).done(function () {
-            done();
-        }, process.exit);
+        run('tar', ['czf', filename, 'mountebank'], { cwd: 'dist' }).done(this.async(), failTask('dist:npm'));
     });
 
     grunt.registerTask('dist:package', 'Create OS-specific package', function (type) {
-        var done = this.async();
-        run('scripts/dist/createPackage', [os.platform(), type, version]).done(function () { done(); }, process.exit);
+        run('scripts/dist/createPackage', [os.platform(), type, version]).done(this.async(), failTask('dist:package'));
     });
 };

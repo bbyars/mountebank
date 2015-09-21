@@ -12,6 +12,12 @@ var fs = require('fs-extra'),
 
 module.exports = function (grunt) {
 
+    function failTask (task) {
+        return function (exitCode) {
+            grunt.warn(task + ' failed', exitCode);
+        };
+    }
+
     grunt.registerTask('install:tarball', 'Set test executable to mb inside OS-specific tarball', function (arch) {
         var done = this.async(),
             tarball = util.format('mountebank-v%s-%s-%s.tar.gz', version, os.platform(), arch || os.arch()),
@@ -25,7 +31,7 @@ module.exports = function (grunt) {
             fs.unlinkSync(tarballPath);
             process.env.MB_EXECUTABLE = tarballPath.replace('.tar.gz', '') + '/mb';
             done();
-        }, process.exit);
+        }, failTask('install:tarball'));
     });
 
     grunt.registerTask('install:npm', 'Set test executable to mb installed through local npm from tarball', function () {
@@ -39,7 +45,7 @@ module.exports = function (grunt) {
         run('npm', ['install', './' + tarball], { cwd: testDir }).done(function () {
             process.env.MB_EXECUTABLE = testDir + '/node_modules/.bin/mb';
             done();
-        }, process.exit);
+        }, failTask('install:npm'));
     });
 
     grunt.registerTask('install:pkg', 'Set test executable to mb installed in OSX pkg file', function () {
@@ -53,7 +59,7 @@ module.exports = function (grunt) {
         run('sudo', ['installer', '-pkg', pkg, '-target', '/'], { cwd: testDir }).done(function () {
             process.env.MB_EXECUTABLE = 'mb';
             done();
-        }, process.exit);
+        }, failTask('install:pkg'));
     });
 
     grunt.registerTask('install:deb', 'Set test executable to mb installed in Debian file', function () {
@@ -67,7 +73,7 @@ module.exports = function (grunt) {
         run('sudo', ['dpkg', '-i', deb], { cwd: testDir }).done(function () {
             process.env.MB_EXECUTABLE = 'mb';
             done();
-        }, process.exit);
+        }, failTask('install:deb'));
     });
 
     grunt.registerTask('uninstall:deb', 'Verify uninstallation of Debian file', function () {
@@ -78,6 +84,6 @@ module.exports = function (grunt) {
                 throw 'Uninstalling debian package did not remove /usr/local/bin/mb';
             }
             done();
-        }, process.exit);
+        }, failTask('uninstall:deb'));
     });
 };
