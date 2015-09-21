@@ -13,27 +13,27 @@ module.exports = function (grunt) {
         };
     }
 
-    grunt.registerTask('deployS3', 'Deploy artifacts to S3', function () {
+    grunt.registerTask('deploy:s3', 'Deploy artifacts to S3', function () {
         if (!deploy) {
             return;
         }
 
-        run('scripts/deploy/deployS3', []).done(this.async(), failTask('deployS3'));
+        run('scripts/deploy/deployS3', []).done(this.async(), failTask('deploy:s3'));
     });
 
-    grunt.registerTask('deployHeroku', 'Deploy artifacts to Heroku', function () {
+    grunt.registerTask('deploy:heroku', 'Deploy artifacts to Heroku', function () {
         if (!deploy) {
             return;
         }
 
-        run('scripts/deploy/deployHeroku', [publish]).done(this.async(), failTask('deployHeroku'));
+        run('scripts/deploy/deployHeroku', [publish]).done(this.async(), failTask('deploy:heroku'));
     });
 
-    grunt.registerTask('deployNpm', 'Deploy artifacts to npm', function () {
+    grunt.registerTask('deploy:npm', 'Deploy artifacts to npm', function () {
         if (!deploy) {
             return;
         }
 
-        run('scripts/deploy/deployNpm', [publish, buildNumber]).done(this.async(), failTask('deployNpm'));
+        run('scripts/deploy/deployNpm', [publish, buildNumber]).done(this.async(), failTask('deploy:npm'));
     });
 };
