@@ -3,7 +3,7 @@
 var run = require('./run').run,
     deploy = process.env.MB_DEPLOY || false,
     publish = process.env.MB_PUBLISH || false,
-    buildNumber = process.env.TRAVIS_BUILD_NUMBER || 0;
+    buildNumber = process.env.MB_BUILD_NUMBER || 0;
 
 module.exports = function (grunt) {
 

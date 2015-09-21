@@ -10,4 +10,4 @@ fi
 
 scripts/fixDependencies
 npm install
-MB_PORT=3535 MB_VERSION=$MB_VERSION node_modules/grunt-cli/bin/grunt "$@"
+MB_PORT=3535 MB_VERSION=$MB_VERSION MB_BUILD_NUMBER=$TRAVIS_BUILD_NUMBER node_modules/grunt-cli/bin/grunt "$@"
