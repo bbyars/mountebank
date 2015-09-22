@@ -2,8 +2,7 @@
 
 var run = require('./run').run,
     deploy = process.env.MB_DEPLOY || false,
-    publish = process.env.MB_PUBLISH || false,
-    buildNumber = process.env.MB_BUILD_NUMBER || 0;
+    publish = process.env.MB_PUBLISH || false;
 
 module.exports = function (grunt) {
 
@@ -34,6 +33,6 @@ module.exports = function (grunt) {
             return;
         }
 
-        run('scripts/deploy/deployNpm', [publish, buildNumber]).done(this.async(), failTask('deploy:npm'));
+        run('scripts/deploy/deployNpm', [publish]).done(this.async(), failTask('deploy:npm'));
     });
 };
