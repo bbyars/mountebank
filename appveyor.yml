@@ -12,7 +12,7 @@ platform:
 environment:
   global:
     - MB_SLOW_TEST_TIMEOUT: 30000
-    - MB_SKIP_W3C_TESTS=true
+    - MB_SKIP_W3C_TESTS: true
 
   matrix:
       - NODE_VERSION: 0.10
