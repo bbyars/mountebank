@@ -6,6 +6,7 @@ PUBLISH=$1
 BUILD_NUMBER=$2
 
 echo "Deploying to npm (PUBLISH=$PUBLISH)..."
+echo "BUILD_NUMBER=$BUILD_NUMBER"
 
 if [ "$PUBLISH" = "true" ]; then
     cd dist/mountebank
