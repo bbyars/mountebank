@@ -12,6 +12,7 @@ env:
     # NPM_API_KEY
     - secure: "IEfctrje4QulHyavIMZYnxljU4XvpMnLR8TzCU8ozeQbdoIOq3/WqBl53Mou2Ie65YAbcMNfLmAvXWgNiKR2jE+K9tOyXsIj+Wbrr4b6X1FHqjkTLw8OCcLFD7kO/aptEOzsTZWbpJKao3mtcshHWWiFeeRDANYK6QMSYwoVNLc="
 
+# Roughly ordered slowest to fastest to kick off the slow jobs first
 matrix:
   include:
     - os: osx
@@ -19,39 +20,47 @@ matrix:
       env:
         - NODE_VERSION=4.0
         - MB_GRUNT_TASK='test:pkg deploy:s3'
+        - MB_SKIP_W3C_TESTS=true
     - os: osx
       sudo: false
       env:
         - NODE_VERSION=4.0
         - MB_GRUNT_TASK='test:tarball:x64 deploy:s3'
+        - MB_SKIP_W3C_TESTS=true
     - os: osx
       sudo: false
       env:
         - NODE_VERSION=0.12
+        - MB_SKIP_W3C_TESTS=true
     - os: osx
       sudo: false
       env:
         - NODE_VERSION=0.10
+        - MB_SKIP_W3C_TESTS=true
     - os: linux
       sudo: true
       env:
         - NODE_VERSION=4.0
         - MB_INSTALL_RPM=true
         - MB_GRUNT_TASK='test:deb dist:package:rpm deploy:s3 deploy:heroku deploy:npm'
+        - MB_SKIP_W3C_TESTS=true
     - os: linux
       sudo: false
       env:
         - NODE_VERSION=4.0
         - MB_GRUNT_TASK='test:npm dist:zip:x64 dist:zip:x86 deploy:s3'
+        - MB_SKIP_W3C_TESTS=true
     - os: linux
       sudo: false
       env:
         - NODE_VERSION=4.0
         - MB_GRUNT_TASK='test:tarball:x64 dist:tarball:x86 deploy:s3 coveralls'
+        - MB_SKIP_W3C_TESTS=true
     - os: linux
       sudo: false
       env:
         - NODE_VERSION=0.12
+        - MB_SKIP_W3C_TESTS=true
     - os: linux
       sudo: false
       env:
