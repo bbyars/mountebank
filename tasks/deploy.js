@@ -34,7 +34,6 @@ module.exports = function (grunt) {
             return;
         }
 
-        console.log('*******buildNumber: ' + buildNumber);
         run('scripts/deploy/deployNpm', [publish, buildNumber]).done(this.async(), failTask('deploy:npm'));
     });
 };

@@ -6,7 +6,6 @@ PUBLISH=$1
 BUILD_NUMBER=$2
 
 echo "Deploying to npm (PUBLISH=$PUBLISH)..."
-echo "BUILD_NUMBER=$BUILD_NUMBER"
 
 if [ "$PUBLISH" = "true" ]; then
     cd dist/mountebank
@@ -17,7 +16,7 @@ else
     cd dist/mountebank-test
     mv package.json package.json.orig
     sed -E -e 's/"name": "mountebank"/"name": "mountebank-test"/' package.json.orig | \
-        sed -E -e "s/\"version\": \"([0-9]+)\.([0-9]+)\.([0-9]+)\"/\"version\": \"\1.\2.$BUILD_NUMBER\"/" > package.json
+        sed -E -e "s/\"version\": \"([0-9]+)\.([0-9]+)\.([0-9]+)\"/\"version\": \"\1.\2.${BUILD_NUMBER}\"/" > package.json
 fi
 
 dpl --provider=npm --email=brandon.byars@gmail.com --api-key=$NPM_API_KEY --skip-cleanup
