@@ -11,6 +11,8 @@ env:
     - secure: "H0iUwBPOwRf3+5HGqAXWU65dJIA+4SUltehM3+jiTXsqkxeHux3WqVOouaLlw2n8WaG9y1KMXEZzed6L8p8A3I6V2M+Y1n8qNYT8y/HjCTw4d3U0tiG6ef1ysIChdBOdlwXJT5GPLlLT0y+R4IgPfHd3DMx/aiEgT3O4gGZEchs="
     # NPM_API_KEY
     - secure: "IEfctrje4QulHyavIMZYnxljU4XvpMnLR8TzCU8ozeQbdoIOq3/WqBl53Mou2Ie65YAbcMNfLmAvXWgNiKR2jE+K9tOyXsIj+Wbrr4b6X1FHqjkTLw8OCcLFD7kO/aptEOzsTZWbpJKao3mtcshHWWiFeeRDANYK6QMSYwoVNLc="
+    # APPVEYOR_API_TOKEN
+    - secure: "A4hhAF4npjjpiV+X6u1dt4sHYUDLyB+0mIdovXSbR/eh1jTn1ZnaCwZD8G248N+yf5Kj1jTsUUzT4mxkWSO9uzxA93W7CimLH7iBjPVyOEemuXBlBqxPJAAweB6BhiGpiuPZk2SeC0SVa+gwC+KL3oy/PW4dz8Q5ytL/IE9b3/o="
 
 # Roughly ordered slowest to fastest to kick off the slow jobs first
 matrix:
@@ -48,7 +50,7 @@ matrix:
       sudo: false
       env:
         - NODE_VERSION=4.0
-        - MB_GRUNT_TASK='test:npm dist:zip:x64 dist:zip:x86 deploy:s3'
+        - MB_GRUNT_TASK='test:npm dist:zip:x64 dist:zip:x86 deploy:s3 trigger:appveyor'
         - MB_SKIP_W3C_TESTS=true
     - os: linux
       sudo: false

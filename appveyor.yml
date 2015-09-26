@@ -1,4 +1,4 @@
-version: 1.3.0+win{build}
+version: {build}
 
 shallow_clone: true
 
