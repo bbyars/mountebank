@@ -34,6 +34,22 @@ module.exports = function (grunt) {
         }, failTask('install:tarball'));
     });
 
+    grunt.registerTask('install:zip', 'Set test executable to mb inside Windows zip file', function (arch) {
+        var done = this.async(),
+            zipFile = util.format('mountebank-v%s-win-%s.zip', version, arch || os.arch()),
+            command = '"Add-Type -assembly \"system.io.compression.filesystem\";' +
+                      ' [io.compression.zipfile]::ExtractToDirectory(\"dist\\' + zipFile + '\", \"' + testDir + '\")"';
+
+        console.log(command);
+        fs.removeSync(testDir);
+        fs.mkdirSync(testDir);
+
+        run('powershell', [command]).done(function () {
+            process.env.MB_EXECUTABLE = testDir + '/' + zipFile.replace('.zip', '') + '/mb';
+            done();
+        }, failTask('install:zip'));
+    });
+
     grunt.registerTask('install:npm', 'Set test executable to mb installed through local npm from tarball', function () {
         var done = this.async(),
             tarball = util.format('mountebank-v%s-npm.tar.gz', version);
