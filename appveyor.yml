@@ -14,10 +14,12 @@ environment:
     MB_SLOW_TEST_TIMEOUT: 30000
     MB_SKIP_W3C_TESTS: true
 
+  # Appveyor doesn't give us a way of explicitly defining each node in the matrix like Travis does,
+  # so we'll encode the information in a single environment variable and decode it in the install section
   matrix:
-      - NODE_VERSION: 0.10
-      - NODE_VERSION: 0.12
-      - NODE_VERSION: 4.0
+      - MB_APPVEYOR_CONFIG: "NODE_VERSION=0.10|MB_SKIP_W3C_TESTS=true|MB_GRUNT_TASK=default"
+      - MB_APPVEYOR_CONFIG: "NODE_VERSION=0.12|MB_SKIP_W3C_TESTS=true|MB_GRUNT_TASK=default"
+      - MB_APPVEYOR_CONFIG: "NODE_VERSION=4.0|MB_SKIP_W3C_TESTS=true|MB_GRUNT_TASK=default"
 
 cache:
   - node_modules -> package.json
@@ -26,10 +28,18 @@ init:
   - git config --global core.autocrlf true
 
 install:
+  - ps: |
+          ForEach ($var in (Get-ChildItem env:MB_APPVEYOR_CONFIG).Value.Split("|")) {
+              $key = $var.Split("=")[0]
+              $value = $var.Split("=")[1];
+              Set-Item env:$key $value
+          }
   - ps: Install-Product node $env:NODE_VERSION
 
 build_script:
+  - echo %MB_GRUNT_TASK%
+  - echo %MB_SKIP_W3C_TESTS%
   - node --version && npm --version
-  - build.bat
+  - build.bat %MB_GRUNT_TASK%
 
 test: off
