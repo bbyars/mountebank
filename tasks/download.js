@@ -1,6 +1,6 @@
 'use strict';
 
-var fs = require('fs'),
+var fs = require('fs-extra'),
     Q = require('q'),
     https = require('https'),
     os = require('os'),
@@ -34,6 +34,9 @@ module.exports = function (grunt) {
             versionMajorMinor = version.replace(/\.\d+(\+\d+)?$/, ''),
             url = util.format('https://s3.amazonaws.com/mountebank/v%s/%s', versionMajorMinor, encodeURIComponent(zipFile));
 
+        if (!fs.existsSync('dist')) {
+            fs.mkdirSync('dist');
+        }
         download(url, 'dist/' + zipFile).done(this.async(), grunt.warn);
     });
 };
