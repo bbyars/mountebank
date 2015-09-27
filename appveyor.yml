@@ -39,6 +39,8 @@ install:
 
 build_script:
   - node --version && npm --version
+  - ps: Add-Type -assembly system.io.compression.filesystem
+  - powershell "Add-Type -assembly system.io.compression.filesystem"
   - build.bat %MB_GRUNT_TASK%
 
 test: off
