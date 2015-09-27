@@ -46,7 +46,7 @@ module.exports = function (grunt) {
         fs.mkdirSync(testDir);
 
         run('powershell', ['-command', 'Add-Type', '-assembly', 'System.IO.Compression.FileSystem;', command]).done(function () {
-            process.env.MB_EXECUTABLE = testDir + '/' + zipFile.replace('.zip', '') + '/mb.cmd';
+            process.env.MB_EXECUTABLE = path.resolve(testDir, zipFile.replace('.zip', ''), 'mb.cmd');
             done();
         }, failTask('install:zip'));
     });
