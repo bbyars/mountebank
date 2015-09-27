@@ -15,9 +15,16 @@ function start (done) {
     var mbArgs = ['restart', '--port', port, '--pidfile', pidfile, '--allowInjection', '--mock', '--debug'],
         mb;
 
-    if (isWindows && mbPath.indexOf('.cmd') < 0) {
+    if (isWindows) {
         mbArgs.unshift(mbPath);
-        mb = spawn('node', mbArgs);
+
+        if (mbPath.indexOf('.cmd') >= 0) {
+            mbArgs.unshift('/c');
+            mb = spawn('cmd', mbArgs);
+        }
+        else {
+            mb = spawn('node', mbArgs);
+        }
     }
     else {
         mb = spawn(mbPath, mbArgs);
