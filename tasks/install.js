@@ -37,13 +37,15 @@ module.exports = function (grunt) {
     grunt.registerTask('install:zip', 'Set test executable to mb inside Windows zip file', function (arch) {
         var done = this.async(),
             zipFile = util.format('mountebank-v%s-win-%s.zip', version, arch || os.arch()),
-            command = '"Add-Type -assembly system.io.compression.filesystem;' +
-                      ' [io.compression.zipfile]::ExtractToDirectory(\"dist/' + zipFile + '\", \"' + testDir + '\")"';
+            zipFilePath = path.resolve('dist', zipFile),
+            testDirPath = path.resolve(testDir),
+            command = util.format('[io.compression.zipfile]::ExtractToDirectory("%s","%s")',
+                zipFilePath.replace(/\\/g, '\\\\'), testDirPath.replace(/\\/g, '\\\\'));
 
         fs.removeSync(testDir);
         fs.mkdirSync(testDir);
 
-        run('powershell', [command]).done(function () {
+        run('powershell', ['-command', 'Add-Type', '-assembly', 'System.IO.Compression.FileSystem;', command]).done(function () {
             process.env.MB_EXECUTABLE = testDir + '/' + zipFile.replace('.zip', '') + '/mb';
             done();
         }, failTask('install:zip'));
