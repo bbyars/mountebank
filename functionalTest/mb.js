@@ -17,7 +17,7 @@ function create (port) {
             mbArgs = ['restart', '--port', port, '--pidfile', pidfile].concat(args || []),
             mb;
 
-        if (isWindows) {
+        if (isWindows && mbPath.indexOf('.cmd') < 0) {
             mbArgs.unshift(mbPath);
             mb = spawn('node', mbArgs);
         }
