@@ -12,13 +12,17 @@ function download (url, destination) {
     var deferred = Q.defer(),
         stream = fs.createWriteStream(destination);
 
+    console.log(url + ' => ' + destination);
     stream.on('open', function () {
+        console.log('opened');
         https.get(url, function (response) {
+            console.log('socket open');
             response.pipe(stream);
             response.on('error', deferred.reject);
         });
     });
     stream.on('finish', function () {
+        console.log('finished');
         stream.close(deferred.resolve);
     });
     stream.on('error', deferred.reject);
