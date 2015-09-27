@@ -195,7 +195,7 @@ var assert = require('assert'),
                 }).then(function (response) {
                     assert.strictEqual(response.body, 'stub');
                     var time = new Date() - timer;
-                    assert.ok(time > 1000);
+                    assert.ok(time >= 1000);
                 }).finally(function () {
                     return api.del('/imposters');
                 });
