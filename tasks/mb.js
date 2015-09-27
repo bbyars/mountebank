@@ -46,7 +46,7 @@ function start (done) {
 
 function stop (done) {
     var command = mbPath + ' stop --pidfile ' + pidfile;
-    if (isWindows) {
+    if (isWindows && mbPath.indexOf('.cmd') < 0) {
         command = 'node ' + command;
     }
     exec(command, done);

@@ -50,7 +50,7 @@ function create (port) {
         var deferred = Q.defer(),
             command = mbPath + ' stop --pidfile ' + pidfile;
 
-        if (isWindows) {
+        if (isWindows && mbPath.indexOf('.cmd') < 0) {
             command = 'node ' + command;
         }
         exec(command, function () {
