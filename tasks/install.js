@@ -38,9 +38,8 @@ module.exports = function (grunt) {
         var done = this.async(),
             zipFile = util.format('mountebank-v%s-win-%s.zip', version, arch || os.arch()),
             command = '"Add-Type -assembly system.io.compression.filesystem;' +
-                      ' [io.compression.zipfile]::ExtractToDirectory(\"dist\\' + zipFile + '\", \"' + testDir + '\")"';
+                      ' [io.compression.zipfile]::ExtractToDirectory(\"dist/' + zipFile + '\", \"' + testDir + '\")"';
 
-        console.log(command);
         fs.removeSync(testDir);
         fs.mkdirSync(testDir);
 
