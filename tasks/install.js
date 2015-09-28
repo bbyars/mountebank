@@ -18,9 +18,9 @@ module.exports = function (grunt) {
         };
     }
 
-    function setExecutableTo (path) {
-        process.env.MB_EXECUTABLE = tarballPath.replace('.tar.gz', '') + '/mb';
-        console.log('Setting MB_EXECUTABLE to ' + path);
+    function setExecutableTo (mbPath) {
+        process.env.MB_EXECUTABLE = mbPath;
+        console.log('Setting MB_EXECUTABLE to ' + mbPath);
     }
 
     grunt.registerTask('install:tarball', 'Set test executable to mb inside OS-specific tarball', function (arch) {
