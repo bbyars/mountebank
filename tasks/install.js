@@ -18,6 +18,11 @@ module.exports = function (grunt) {
         };
     }
 
+    function setExecutableTo (path) {
+        process.env.MB_EXECUTABLE = tarballPath.replace('.tar.gz', '') + '/mb';
+        console.log('Setting MB_EXECUTABLE to ' + path);
+    }
+
     grunt.registerTask('install:tarball', 'Set test executable to mb inside OS-specific tarball', function (arch) {
         var done = this.async(),
             tarball = util.format('mountebank-v%s-%s-%s.tar.gz', version, os.platform(), arch || os.arch()),
@@ -29,7 +34,7 @@ module.exports = function (grunt) {
 
         run('tar', ['xzf', tarball], { cwd: testDir }).done(function () {
             fs.unlinkSync(tarballPath);
-            process.env.MB_EXECUTABLE = tarballPath.replace('.tar.gz', '') + '/mb';
+            setExecutableTo(tarballPath.replace('.tar.gz', '') + '/mb');
             done();
         }, failTask('install:tarball'));
     });
@@ -46,7 +51,7 @@ module.exports = function (grunt) {
         fs.mkdirSync(testDir);
 
         run('powershell', ['-command', 'Add-Type', '-assembly', 'System.IO.Compression.FileSystem;', command]).done(function () {
-            process.env.MB_EXECUTABLE = path.resolve(testDir, zipFile.replace('.zip', ''), 'mb.cmd');
+            setExecutableTo(path.resolve(testDir, zipFile.replace('.zip', ''), 'mb.cmd'));
             done();
         }, failTask('install:zip'));
     });
@@ -60,7 +65,7 @@ module.exports = function (grunt) {
         fs.copySync('dist/' + tarball, path.join(testDir, tarball));
 
         run('npm', ['install', './' + tarball], { cwd: testDir }).done(function () {
-            process.env.MB_EXECUTABLE = testDir + '/node_modules/.bin/mb';
+            setExecutableTo(testDir + '/node_modules/.bin/mb');
             done();
         }, failTask('install:npm'));
     });
@@ -74,7 +79,7 @@ module.exports = function (grunt) {
         fs.copySync('dist/' + pkg, path.join(testDir, pkg));
 
         run('sudo', ['installer', '-pkg', pkg, '-target', '/'], { cwd: testDir }).done(function () {
-            process.env.MB_EXECUTABLE = 'mb';
+            setExecutableTo('mb');
             done();
         }, failTask('install:pkg'));
     });
@@ -88,7 +93,7 @@ module.exports = function (grunt) {
         fs.copySync('dist/' + deb, path.join(testDir, deb));
 
         run('sudo', ['dpkg', '-i', deb], { cwd: testDir }).done(function () {
-            process.env.MB_EXECUTABLE = 'mb';
+            setExecutableTo('mb');
             done();
         }, failTask('install:deb'));
     });
