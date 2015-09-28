@@ -127,7 +127,7 @@ module.exports = function (grunt) {
         fs.mkdirSync(testDir);
         fs.copySync('dist/' + rpm, path.join(testDir, rpm));
 
-        run('yum', ['--nogpgcheck', 'localinstall', rpm], { cwd: testDir }).done(function () {
+        run('sudo', ['yum', '--nogpgcheck', 'localinstall', rpm], { cwd: testDir }).done(function () {
             setExecutableTo('mb');
             done();
         }, failTask('install:rpm'));
@@ -136,7 +136,7 @@ module.exports = function (grunt) {
     grunt.registerTask('uninstall:rpm', 'Verify uninstallation of Red Hat package', function () {
         var done = this.async();
 
-        run('yum', ['remove', 'mountebank'], { cwd: testDir }).done(function () {
+        run('sudo', ['yum', 'remove', 'mountebank'], { cwd: testDir }).done(function () {
             if (fs.existsSync('/usr/local/bin/mb')) {
                 throw 'Uninstalling Red Hat package did not remove /usr/local/bin/mb';
             }
