@@ -6,7 +6,8 @@ os:
   - Windows Server 2012
 
 platform:
-  - Win32
+  # As far as I can tell, Win32 is actually 64-bit!!!
+  #- Win32
   - x64
 
 environment:
