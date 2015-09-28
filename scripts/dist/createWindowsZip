@@ -36,7 +36,8 @@ wget -q $URL
 
 cp -r ../mountebank .
 
-echo "%~dp0\\\\node.exe %~dp0\\\\mountebank\\\\bin\\\\mb %*" > ./mb.cmd
+echo "@echo off" > ./mb.cmd
+echo "%~dp0\\\\node.exe %~dp0\\\\mountebank\\\\bin\\\\mb %*" >> ./mb.cmd
 
 cd ..
 echo "zipping..."
