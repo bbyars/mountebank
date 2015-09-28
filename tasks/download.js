@@ -27,10 +27,20 @@ function download (url, destination) {
     return deferred.promise;
 }
 
+function bitness () {
+    if (os.arch() === 'x64') {
+        return 'x64';
+    }
+    else {
+        // avoid "ia32" result on windows
+        return 'x86';
+    }
+}
+
 module.exports = function (grunt) {
 
     grunt.registerTask('download:zip', 'Download this version of the Windows zip file', function (arch) {
-        var zipFile = util.format('mountebank-v%s-win-%s.zip', version, arch || os.arch()),
+        var zipFile = util.format('mountebank-v%s-win-%s.zip', version, arch || bitness()),
             versionMajorMinor = version.replace(/\.\d+(\+\d+)?$/, ''),
             url = util.format('https://s3.amazonaws.com/mountebank/v%s/%s', versionMajorMinor, encodeURIComponent(zipFile));
 

@@ -10,6 +10,16 @@ var fs = require('fs-extra'),
 // parent directory to avoid interaction with project node_modules
     testDir = '../.mb-test-dir';
 
+function bitness () {
+    if (os.arch() === 'x64') {
+        return 'x64';
+    }
+    else {
+        // avoid "ia32" result on windows
+        return 'x86';
+    }
+}
+
 module.exports = function (grunt) {
 
     function failTask (task) {
@@ -25,7 +35,7 @@ module.exports = function (grunt) {
 
     grunt.registerTask('install:tarball', 'Set test executable to mb inside OS-specific tarball', function (arch) {
         var done = this.async(),
-            tarball = util.format('mountebank-v%s-%s-%s.tar.gz', version, os.platform(), arch || os.arch()),
+            tarball = util.format('mountebank-v%s-%s-%s.tar.gz', version, os.platform(), arch || bitness()),
             tarballPath = path.join(testDir, tarball);
 
         fs.removeSync(testDir);
@@ -41,7 +51,7 @@ module.exports = function (grunt) {
 
     grunt.registerTask('install:zip', 'Set test executable to mb inside Windows zip file', function (arch) {
         var done = this.async(),
-            zipFile = util.format('mountebank-v%s-win-%s.zip', version, arch || os.arch()),
+            zipFile = util.format('mountebank-v%s-win-%s.zip', version, arch || bitness()),
             zipFilePath = path.resolve('dist', zipFile),
             testDirPath = path.resolve(testDir),
             command = util.format('[io.compression.zipfile]::ExtractToDirectory("%s","%s")',
