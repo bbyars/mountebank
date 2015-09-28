@@ -125,7 +125,7 @@ module.exports = function (grunt) {
 
         fs.removeSync(testDir);
         fs.mkdirSync(testDir);
-        fs.copySync('dist/' + deb, path.join(testDir, deb));
+        fs.copySync('dist/' + rpm, path.join(testDir, rpm));
 
         run('yum', ['--nogpgcheck', 'localinstall', rpm], { cwd: testDir }).done(function () {
             setExecutableTo('mb');
