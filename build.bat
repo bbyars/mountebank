@@ -9,11 +9,17 @@ REM on x86.  Appveyor doesn't give me an elegant way to explicitly define the ma
 REM so we'll just shortcut those nodes in the matrix
 reg Query "HKLM\Hardware\Description\System\CentralProcessor\0" | find /i "x86" > NUL && set ARCH=x86|| set ARCH=x64
 if "%MB_SKIP_x86%"=="true" (
+    echo "1st base"
     if "%ARCH%"=="x86" (
+        echo "2nd base"
         goto :eof
     )
 )
 
+echo MB_SKIP_x86
+echo "%MB_SKIP_x86"
+echo ARCH
+echo "%ARCH%"
 call node scripts/fixDependencies
 call npm install
 set MB_PORT=3535
