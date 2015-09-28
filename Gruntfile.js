@@ -91,4 +91,6 @@ module.exports = function (grunt) {
         ['dist', 'version', 'dist:package:osxpkg', 'install:pkg', 'test']);
     grunt.registerTask('test:deb', 'Run tests against Debian package',
         ['dist', 'version', 'dist:package:deb', 'install:deb', 'test', 'uninstall:deb']);
+    grunt.registerTask('test:rpm', 'Run tests against Red Hat package',
+        ['download:rpm', 'install:rpm', 'test', 'uninstall:rpm']);
 };

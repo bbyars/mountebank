@@ -118,4 +118,29 @@ module.exports = function (grunt) {
             done();
         }, failTask('uninstall:deb'));
     });
+
+    grunt.registerTask('install:rpm', 'Set test executable to mb installed in Red Hat package', function () {
+        var done = this.async(),
+            rpm = util.format('mountebank-%s-1.x86_64.rpm', version);
+
+        fs.removeSync(testDir);
+        fs.mkdirSync(testDir);
+        fs.copySync('dist/' + deb, path.join(testDir, deb));
+
+        run('yum', ['--nogpgcheck', 'localinstall', rpm], { cwd: testDir }).done(function () {
+            setExecutableTo('mb');
+            done();
+        }, failTask('install:rpm'));
+    });
+
+    grunt.registerTask('uninstall:rpm', 'Verify uninstallation of Red Hat package', function () {
+        var done = this.async();
+
+        run('yum', ['remove', 'mountebank'], { cwd: testDir }).done(function () {
+            if (fs.existsSync('/usr/local/bin/mb')) {
+                throw 'Uninstalling Red Hat package did not remove /usr/local/bin/mb';
+            }
+            done();
+        }, failTask('uninstall:rpm'));
+    });
 };

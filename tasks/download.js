@@ -6,11 +6,15 @@ var fs = require('fs-extra'),
     os = require('os'),
     util = require('util'),
     thisPackage = require('../package.json'),
-    version = process.env.MB_VERSION || thisPackage.version;
+    version = process.env.MB_VERSION || thisPackage.version,
+    versionMajorMinor = version.replace(/\.\d+(\+\d+)?$/, ''),
+    urlPrefix = 'https://s3.amazonaws.com/mountebank/v' + versionMajorMinor;
+;
 
-function download (url, destination) {
+function download (file, destination) {
     var deferred = Q.defer(),
-        stream = fs.createWriteStream(destination);
+        stream = fs.createWriteStream(destination),
+        url = urlPrefix + '/' + encodeURIComponent(file);
 
     console.log(url + ' => ' + destination);
     stream.on('open', function () {
@@ -40,13 +44,20 @@ function bitness () {
 module.exports = function (grunt) {
 
     grunt.registerTask('download:zip', 'Download this version of the Windows zip file', function (arch) {
-        var zipFile = util.format('mountebank-v%s-win-%s.zip', version, arch || bitness()),
-            versionMajorMinor = version.replace(/\.\d+(\+\d+)?$/, ''),
-            url = util.format('https://s3.amazonaws.com/mountebank/v%s/%s', versionMajorMinor, encodeURIComponent(zipFile));
+        var zipFile = util.format('mountebank-v%s-win-%s.zip', version, arch || bitness());
 
         if (!fs.existsSync('dist')) {
             fs.mkdirSync('dist');
         }
-        download(url, 'dist/' + zipFile).done(this.async(), grunt.warn);
+        download(zipFile, 'dist/' + zipFile).done(this.async(), grunt.warn);
+    });
+
+    grunt.registerTask('download:rpm', 'Download this version of the rpm', function () {
+        var rpmFile = util.format('mountebank-%s-1.x86_64.rpm', version);
+
+        if (!fs.existsSync('dist')) {
+            fs.mkdirSync('dist');
+        }
+        download(rpmFile, 'dist/' + rpmFile).done(this.async(), grunt.warn);
     });
 };
