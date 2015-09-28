@@ -58,20 +58,17 @@ for any support questions.  Don't be shy!
 
 ## Building
 
-| Name               | Status |
-| ------------------ | ------ |
-| Travis CI (Linux)  | [![Build Status](https://travis-ci.org/bbyars/mountebank.png)](https://travis-ci.org/bbyars/mountebank) |
-| AppVeyor (Windows) | [![Build status](https://ci.appveyor.com/api/projects/status/acfhg44px95s4pk5?svg=true)](https://ci.appveyor.com/project/bbyars/mountebank) |
-| Coveralls          | [![Coverage Status](https://coveralls.io/repos/bbyars/mountebank/badge.png?branch=master)](https://coveralls.io/r/bbyars/mountebank?branch=master) |
-| Static Analysis    | [![Codacy Badge](https://www.codacy.com/project/badge/c030a6aebe274e21b4ce11a74e01fa12)](https://www.codacy.com/public/brandonbyars/mountebank) |
+[![Coverage Status](https://coveralls.io/repos/bbyars/mountebank/badge.png?branch=master)](https://coveralls.io/r/bbyars/mountebank?branch=master)
+[![Codacy Badge](https://www.codacy.com/project/badge/c030a6aebe274e21b4ce11a74e01fa12)](https://www.codacy.com/public/brandonbyars/mountebank)
 
-`./build` should do the trick on Mac and Linux, assuming you have at least node 0.10.  If not, yell at me.
+| OS      | CI        | Status |
+| ------- | --------- | ------ |
+| Debian  | Travis CI | [![Build Status](https://travis-ci.org/bbyars/mountebank.png)](https://travis-ci.org/bbyars/mountebank) |
+| CentOS  | Snap CI   | [![Build Status](https://img.shields.io/snap-ci/bbyars/mountebank/master.svg)](https://img.shields.io/snap-ci/bbyars/mountebank/master.svg) |
+| Windows | Appveyor  | [![Build status](https://ci.appveyor.com/api/projects/status/acfhg44px95s4pk5?svg=true)](https://ci.appveyor.com/project/bbyars/mountebank) |
+| OSX     | Travis CI | [![Build Status](https://travis-ci.org/bbyars/mountebank.png)](https://travis-ci.org/bbyars/mountebank) |
 
-`build.bat` is your friend on Windows.  It's not as complete - some tests that verify documentation integrity
-are excluded because they depend on netcat.
-
-If the `npm install` fails on Windows, it's probably `jsdom`.  I had to install python 2.7 (not
-the latest) to get it to work.
+`./build` should do the trick on Mac and Linux, and `build.bat` on Windows, assuming you have at least node 0.10.  If not, yell at me.
 
 ## Contributing
 
