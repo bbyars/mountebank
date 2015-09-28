@@ -64,7 +64,7 @@ for any support questions.  Don't be shy!
 | OS      | CI        | Status |
 | ------- | --------- | ------ |
 | Debian  | Travis CI | [![Build Status](https://travis-ci.org/bbyars/mountebank.png)](https://travis-ci.org/bbyars/mountebank) |
-| CentOS  | Snap CI   | [![Build Status](https://img.shields.io/snap-ci/bbyars/mountebank/master.svg)](https://img.shields.io/snap-ci/bbyars/mountebank/master.svg) |
+| CentOS  | Snap CI   | [![Build Status](https://img.shields.io/snap-ci/bbyars/mountebank/master.svg)](https://snap-ci.com/bbyars/mountebank/branch/master) |
 | Windows | Appveyor  | [![Build status](https://ci.appveyor.com/api/projects/status/acfhg44px95s4pk5?svg=true)](https://ci.appveyor.com/project/bbyars/mountebank) |
 | OSX     | Travis CI | [![Build Status](https://travis-ci.org/bbyars/mountebank.png)](https://travis-ci.org/bbyars/mountebank) |
 
