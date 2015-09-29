@@ -34,7 +34,8 @@
     "http",
     "https",
     "tcp",
-    "net"
+    "net",
+    "service virtualization"
   ],
   "dependencies": {
     "ejs": "~2.3.1",
