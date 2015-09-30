@@ -197,7 +197,7 @@ var assert = require('assert'),
                     var time = new Date() - timer;
 
                     // Occasionally there's some small inaccuracies
-                    assert.ok(time >= 995, 'actual time: ' + time);
+                    assert.ok(time >= 990, 'actual time: ' + time);
                 }).finally(function () {
                     return api.del('/imposters');
                 });
