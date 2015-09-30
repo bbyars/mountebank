@@ -24,7 +24,11 @@ function create (releases, options) {
         if (!feedReleases[0].view) {
             feedReleases.forEach(function (release) {
                 var contents = fs.readFileSync(releaseFilenameFor(release.version), { encoding: 'utf8' });
-                release.view = ejs.render(contents, { host: request.headers.host });
+                release.view = ejs.render(contents, {
+                    host: request.headers.host,
+                    releaseMajorMinor: release.version.replace(/^v(\d+\.\d+).*/, '$1'),
+                    releaseVersion: release.version.replace('v', '')
+                });
             });
         }
 
