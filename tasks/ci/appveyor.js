@@ -13,7 +13,7 @@ function responseFor (options) {
 
     options.hostname = 'ci.appveyor.com';
     options.headers = {
-        Authorization: 'Bearer dwr0481y4kxcgyerdxiy'
+        Authorization: 'Bearer ' + apiToken
     };
 
     var request = https.request(options, function (response) {
@@ -78,6 +78,21 @@ function triggerBuild (commitId, version) {
     });
 }
 
+function getBuildStatus (buildNumber) {
+    return responseFor({
+        method: 'GET',
+        path: '/api/projects/bbyars/mountebank/build/' + buildNumber
+    }).then(function (response) {
+        if (response.statusCode !== 200) {
+            console.error('Status code of GET /api/projects/mountebank/build/' + buildNumber + ': ' + resopnse.statusCode);
+            throw response.body;
+        }
+
+        return response.body.build.status;
+    });
+}
+
 module.exports = {
-    triggerBuild: triggerBuild
+    triggerBuild: triggerBuild,
+    getBuildStatus: getBuildStatus
 };
