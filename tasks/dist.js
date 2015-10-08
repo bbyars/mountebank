@@ -61,7 +61,12 @@ module.exports = function (grunt) {
         delete newPackage.devDependenciesBasedOnNodeVersion;
         fs.writeFileSync('dist/mountebank/package.json', JSON.stringify(newPackage, null, 2));
 
-        run('npm', ['install', '--production'], { cwd: 'dist/mountebank' }).done(function () {
+        run('npm', ['install', '--production'], { cwd: 'dist/mountebank' }).then(function () {
+            // This helps trim the package size, but more importantly it reduces the longest path
+            // (from 176 -> 109 when I wrote this), which is critical to getting this to run on Windows
+            // with its MAX_PATH of 260 characters.  It's unusable as a zip file without this.
+            return run('npm', ['dedupe'], {cwd: 'dist/mountebank'});
+        }).done(function () {
             // Switch tests to use the mb from the dist directory to test what actually gets published
             process.env.MB_EXECUTABLE = 'dist/mountebank/bin/mb';
             done();
