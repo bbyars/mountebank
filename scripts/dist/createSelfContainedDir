@@ -26,7 +26,12 @@ tar xzf $NODE_FILENAME.tar.gz > /dev/null
 echo "Done"
 rm $NODE_FILENAME.tar.gz
 
+# The cp -r command in scripts/dist/createSelfContainedDir fails after deduping on Mac
+# with a bunch of file not found errors from symlinks that haven't been correctly cleaned up
+# No big deal, those phantom symlinks don't break anything
+set +e
 cp -r ../mountebank .
+set -e
 
 echo "#!/usr/bin/env sh" > ./mb
 echo "# allow running from any directory, including symlinks" >> ./mb
