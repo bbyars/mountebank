@@ -119,7 +119,7 @@ function create (logger) {
             if (error.code === 'ENOTFOUND') {
                 deferred.reject(errors.InvalidProxyError('Cannot resolve ' + JSON.stringify(proxyDestination)));
             }
-            else if (error.code === 'ECONNREFUSED') {
+            else if (error.code === 'ECONNREFUSED' || error.code === 'ECONNRESET') {
                 deferred.reject(errors.InvalidProxyError('Unable to connect to ' + JSON.stringify(proxyDestination)));
             }
             else {
