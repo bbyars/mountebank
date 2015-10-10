@@ -1,8 +1,8 @@
 'use strict';
 
 var run = require('./run').run,
-    deploy = process.env.MB_DEPLOY || false,
-    publish = process.env.MB_PUBLISH || false;
+    deploy = process.env.MB_DEPLOY === 'true',
+    publish = process.env.MB_PUBLISH === 'true';
 
 module.exports = function (grunt) {
 
