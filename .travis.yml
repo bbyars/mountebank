@@ -79,8 +79,9 @@ install:
   - node --version
   - bundle install --without development
   - if [ "$MB_INSTALL_RPM" = "true" ]; then sudo apt-get update && sudo apt-get install rpm; fi
-  - if [ "$TRAVIS_PULL_REQUEST" = "false" ]; then export MB_DEPLOY=true; else export MB_DEPLOY=false; fi
-  - if [ "$TRAVIS_PULL_REQUEST" = "false" -a -n "`git describe --tags --exact-match 2>/dev/null`" ]; then export MB_PUBLISH=true; else export MB_PUBLISH=false; fi
+  # AWS_ACCESS_KEY will not be set on pull requests or improperly configured runs triggered through the API
+  - if [ -n "$AWS_ACCESS_KEY" ]; then export MB_DEPLOY=true; else export MB_DEPLOY=false; fi
+  - if [ -n "$AWS_ACCESS_KEY" -a -n "`git describe --tags --exact-match 2>/dev/null`" ]; then export MB_PUBLISH=true; else export MB_PUBLISH=false; fi
 
 script:
   - echo "MB_DEPLOY - $MB_DEPLOY"
