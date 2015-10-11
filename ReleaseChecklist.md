@@ -15,3 +15,4 @@ Travis.ci does most of the heavy lifting.
 # wait for the build to pass
 # tag: git tag -a vXX.YY.ZZ -m 'vXX.YY.ZZ release'
 # git push --tags
+# update version in package.json to avoid accidental version overwrite
