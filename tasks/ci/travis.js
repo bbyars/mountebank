@@ -12,11 +12,9 @@ function responseFor (options) {
     var deferred = Q.defer();
 
     options.hostname = 'api.travis-ci.org';
-    options.headers = {
-        Authorization: 'token ' + apiToken,
-        Accept: 'application/json',
-        'Travis-API-Version': 3
-    };
+    options.headers = options.headers || {};
+    options.headers.Authorization = 'token ' + apiToken;
+    options.headers.Accept = 'application/vnd.travis-ci.2+json';
 
     var request = https.request(options, function (response) {
         var packets = [];
@@ -59,6 +57,9 @@ function triggerBuild (version) {
     return responseFor({
         method: 'POST',
         path: '/repo/bbyars%2Fmountebank/requests',
+        headers: {
+            'Travis-API-Version': 3
+        },
         body: {
             request: {
                 branch: 'master',
@@ -72,16 +73,44 @@ function triggerBuild (version) {
             }
         }
     }).then(function (response) {
-        if (response.statusCode !== 201) {
+        if (response.statusCode !== 201 && response.statusCode !== 202) {
             console.error('Status code of POST /repo/bbyars%2Fmountebank/requests: ' + response.statusCode);
             throw response.body;
         }
 
-        console.log(response.body);
-        return response.body;
+        return responseFor({
+            method: 'GET',
+            path: '/repos/bbyars/mountebank/builds'
+        });
+    }).then(function (response) {
+        if (response.statusCode !== 200) {
+            console.error('Status code of GET /repos/bbyars/mountebank/builds: ' + response.statusCode);
+            throw response.body;
+        }
+
+        // Total hack.  As far as I can tell, Travis doesn't give us a way to get the number of the
+        // build we just triggered, and calling /repos/bbyars/mountebank/builds immediately after
+        // does not yet show it.  I'm assuming it will be the next number, and in a few seconds it
+        // will start to show up in the /repos/bbyars/mountebank/builds call
+        return parseInt(response.body.builds[0].number) + 1;
     });
 }
 
+function getBuildStatus (buildNumber) {
+    return responseFor({
+        method: 'GET',
+        path: '/repos/bbyars/mountebank/builds?number=' + buildNumber
+    }).then(function (response) {
+        if (response.statusCode !== 200) {
+            console.error('Status code of GET /repos/bbyars/mountebank/builds?number=' + buildNumber + ': ' + response.statusCode);
+            throw response.body;
+        }
+
+        return (response.body.builds.length === 0) ? 'pending' : response.body.builds[0].state;
+    })
+}
+
 module.exports = {
-    triggerBuild: triggerBuild
+    triggerBuild: triggerBuild,
+    getBuildStatus: getBuildStatus
 };
