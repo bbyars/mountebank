@@ -104,9 +104,9 @@ describe('tcp imposter', function () {
                 return api.post('/imposters', {protocol: 'tcp', port: port, stubs: [stub]}).then(function (response) {
                     assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body));
 
-                    return tcp.send('GET /', port);
+                    return tcp.send('GET / HTTP/1.1\r\nHost: www.google.com\r\n\r', port);
                 }).then(function (response) {
-                    assert.strictEqual(response.toString().indexOf('HTTP/1.0'), 0);
+                    assert.strictEqual(response.toString().indexOf('HTTP/1.1'), 0);
                 }).finally(function () {
                     return api.del('/imposters');
                 });
