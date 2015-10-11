@@ -134,6 +134,12 @@ describe('predicates', function () {
                 request = { query: { key: ['123', '234'] } };
             assert.ok(!predicates.equals(predicate, request));
         });
+
+        it('should equal value in provided xpath expression', function () {
+            var predicate = { equals: { field: 'VALUE' }, xpath: '//title'},
+                request = { field: '<doc><title>value</title></doc>' };
+            assert.ok(predicates.equals(predicate, request));
+        });
     });
 
     describe('#deepEquals', function () {

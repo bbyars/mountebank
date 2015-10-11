@@ -3,7 +3,9 @@
 var errors = require('../util/errors'),
     helpers = require('../util/helpers'),
     combinators = require('../util/combinators'),
-    stringify = require('json-stable-stringify');
+    stringify = require('json-stable-stringify'),
+    xpath = require('xpath'),
+    DOMParser = require('xmldom').DOMParser;
 
 function forceStrings (obj) {
     if (typeof obj !== 'object') {
@@ -59,6 +61,45 @@ function normalize (obj, config, encoding) {
         return transformAll(obj);
 }
 
+function normalizeWithSelectors (obj, config, encoding) {
+    var lowerCase = function (text) { return text.toLowerCase(); },
+        caseTransform = config.caseSensitive ? combinators.identity : lowerCase,
+        exceptionRemover = function (text) { return text.replace(new RegExp(config.except, 'g'), ''); },
+        exceptTransform = config.except ? exceptionRemover : combinators.identity,
+        encode = function (text) { return new Buffer(text, 'base64').toString(); },
+        encodeTransform = encoding === 'base64' ? encode : combinators.identity,
+        xpathSelection = function (text) {
+            var doc = new DOMParser().parseFromString(text),
+                nodes = xpath.select(config.xpath, doc);
+            return nodes.length === 0 ? undefined : nodes[0].firstChild.data;
+        },
+        xpathSelectionTransform = config.xpath ? xpathSelection : combinators.identity,
+        transform = combinators.compose(xpathSelectionTransform, exceptTransform, caseTransform, encodeTransform),
+        transformAll = function (o) {
+            if (!o) {
+                return o;
+            }
+
+            if (Array.isArray(o)) {
+                return o.map(transformAll);
+            }
+            else if (typeof o === 'object') {
+                return Object.keys(o).reduce(function (result, key) {
+                    var value = transformAll(o[key]);
+                    result[caseTransform(key)] = value;
+                    return result;
+                }, {});
+            }
+            else if (typeof o === 'string') {
+                return transform(o);
+            }
+
+            return o;
+        };
+
+    return transformAll(obj);
+}
+
 function predicateSatisfied (expected, actual, predicate) {
     if (!actual) {
       return false;
@@ -83,7 +124,7 @@ function predicateSatisfied (expected, actual, predicate) {
 function create (operator, predicateFn) {
     return function (predicate, request, encoding) {
         var expected = normalize(predicate[operator], predicate, encoding),
-            actual = normalize(request, predicate, encoding);
+            actual = normalizeWithSelectors(request, predicate, encoding);
 
         return predicateSatisfied(expected, actual, predicateFn);
     };
