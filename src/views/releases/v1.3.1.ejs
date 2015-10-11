@@ -1,0 +1,100 @@
+<h1>v<%= releaseVersion %></h1>
+
+<h2>Bug Fixes</h2>
+<ul class='bullet-list'>
+  <li>Thanks to Snehal Maniar and Sebastian Radloff, the mb.cmd file in the self-contained
+    Windows zip is now portable across any directory you run it from.</li>
+  <li>I've made attempts at reducing the 'path too long' errors unzipping the Windows zip
+    file in Windows Explorer, but it's a pretty fundamental constraint of Explorer.  I provide
+    suggestions on the <a href='http://<%= host %>/docs/install#windows-path-limitations'>install page</a>.</li>
+  <li>Prevent spurious build failures from pull requests (trying to deploy without the correct environment
+    variables)</li>
+  <li>Some work on making the build more robust against OS-level networking differences, with the help of
+    Avalon McRae and Carson Ramsden</li>
+  <li>Jason Reid fixed a bug preventing AJAX calls to mb from IE</li>
+  <li>Fixed the <a href='http://<%= host %>/feed'>ATOM feed</a></li>
+</ul>
+
+<p>Many thanks to the following kind folk for help with this release:</p>
+
+<ul class='bullet-list'>
+  <li>Snehal Maniar</li>
+  <li>Sebastian Radloff</li>
+  <li>Avalon McRae</li>
+  <li>Carson Ramsden</li>
+  <li>Jason Reid</li>
+</ul>
+
+<h2>Install</h2>
+
+<pre><code>
+  npm install -g mountebank@<%= releaseVersion %> --production
+</code></pre>
+
+<p>or:</p>
+
+<table>
+  <tr>
+    <th>Option</th>
+    <th>node.js required?</th>
+    <th>sudo required?</th>
+    <th>links</th>
+    <th>Description</th>
+  </tr>
+  <tr>
+    <td>Self-contained archives</td>
+    <td>No</td>
+    <td>No</td>
+    <td style="min-width: 5em;">
+      <ul>
+        <li><a href="https://s3.amazonaws.com/mountebank/v<%= releaseMajorMinor %>/mountebank-v<%= releaseVersion %>-darwin-x64.tar.gz">osx</a></li>
+        <li><a href="https://s3.amazonaws.com/mountebank/v<%= releaseMajorMinor %>/mountebank-v<%= releaseVersion %>-linux-x86.tar.gz">linux x86</a></li>
+        <li><a href="https://s3.amazonaws.com/mountebank/v<%= releaseMajorMinor %>/mountebank-v<%= releaseVersion %>-linux-x64.tar.gz">linux x64</a></li>
+        <li><a href="https://s3.amazonaws.com/mountebank/v<%= releaseMajorMinor %>/mountebank-v<%= releaseVersion %>-win-x86.zip">win x86<sup>*</sup></a></li>
+        <li><a href="https://s3.amazonaws.com/mountebank/v<%= releaseMajorMinor %>/mountebank-v<%= releaseVersion %>-win-x64.zip">win x64<sup>*</sup></a></li>
+      </ul>
+    </td>
+    <td>Simply unpack and run <code>mb</code> from inside</td>
+  </tr>
+  <tr>
+    <td>OS-specific packages</td>
+    <td>No</td>
+    <td>Yes</td>
+    <td>
+      <ul>
+        <li><a href="https://s3.amazonaws.com/mountebank/v<%= releaseMajorMinor %>/mountebank-v<%= releaseVersion %>.pkg">pkg</a></li>
+        <li><a href="https://s3.amazonaws.com/mountebank/v<%= releaseMajorMinor %>/mountebank-<%= releaseVersion %>-1.x86_64.rpm">rpm</a></li>
+        <li><a href="https://s3.amazonaws.com/mountebank/v<%= releaseMajorMinor %>/mountebank_<%= releaseVersion %>_amd64.deb">deb</a></li>
+      </ul>
+    </td>
+    <td>Puts <code>mb</code> at <code>/usr/local/bin</code>, which is generally in the <code>PATH</code>.</td>
+  </tr>
+  <tr>
+    <td>source tarball</td>
+    <td>Yes</td>
+    <td>No</td>
+    <td>
+      <ul>
+        <li><a href="https://s3.amazonaws.com/mountebank/v<%= releaseMajorMinor %>/mountebank-v<%= releaseVersion %>-npm.tar.gz">mb</a></li>
+      </ul>
+    </td>
+    <td>source tarball if you roll that way.</td>
+  </tr>
+</table>
+
+<h2 id='windows-path-limitations'>Windows path limitations</h2>
+
+<p><sup>*</sup>mountebank wishes very much for your Windows experience to be hassle-free, but he is simply not qualified to address
+  a particular constraint of Windows Explorer.  For legacy reasons, some Windows applications, including most notably Windows Explorer,
+  have a maximum number of characters allowed in a path of 260 characters.  As mountebank writes these words, the longest path he
+  includes in the zip files is around 175 characters.  The zip file name, which is likely to represent itself as <i>two</i>
+  nested directories if you use the defaults to unzip it, will be around 25 characters.  That gives you very little wiggle room.
+  If you unzip the file in your users directory, you may very likely get an error because of this constraint.</p>
+
+<p>The following solutions will all work:</p>
+
+<ul class='bullet-list'>
+  <li>Unzip to the root of your C: drive (or a similar small path)</li>
+  <li>Use <a href='http://www.7-zip.org/'>7zip</a> to unzip the file instead of Windows Explorer</li>
+  <li>Use <code>npm</code> to install mountebank instead of the zip file</li>
+</ul>
