@@ -23,13 +23,13 @@ describe('combinators', function () {
             var state = { key: 'value' };
             var result = combinators.noop.call(state);
             assert.strictEqual(result, undefined);
-            assert.deepEqual(state, { key: 'value'});
+            assert.deepEqual(state, { key: 'value' });
         });
     });
 
     describe('#compose', function () {
         it('should compose functions', function () {
-            var increment = function (i) { return i + 1;},
+            var increment = function (i) { return i + 1; },
                 double = function (j) { return j * 2; };
             assert.strictEqual(combinators.compose(increment, double)(2), 5);
         });
@@ -51,14 +51,14 @@ describe('combinators', function () {
         });
 
         it('should curry multiple parameters', function () {
-            var fn = function (param1, param2) { return param1 + param2;},
+            var fn = function (param1, param2) { return param1 + param2; },
                 curriedFn = combinators.curry(fn, 1, 2);
 
             assert.strictEqual(curriedFn(), 3);
         });
 
         it('should support partial currying', function () {
-            var fn = function (param1, param2) { return param1 + param2;},
+            var fn = function (param1, param2) { return param1 + param2; },
                 curriedFn = combinators.curry(fn, 1);
 
             assert.strictEqual(curriedFn(2), 3);
