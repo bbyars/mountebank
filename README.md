@@ -43,13 +43,18 @@ After installing and running, view the docs in your browser at http://localhost:
 mountebank has the following goals:
 
 * Trivial to get started
-    * mountebank is easy to install, without any platform dependencies.  mountebank aims for fun and comprehensive documentation with lots of examples, and a nice UI that lets you explore the API interactively.
+    * mountebank is easy to install, without any platform dependencies.  mountebank aims for fun and comprehensive
+     documentation with lots of examples, and a nice UI that lets you explore the API interactively.
 * A platform, not just a tool
     * mountebank aims to be fully cross-platform, with native language bindings.  Servers are extensible through scripting.
 * Powerful
-    * mountebank is the only open source stubbing tool that is non-modal and multi-protocol.  Commercial "service virtualization" solutions exist, but their licensed platforms make it hard to move the tests closer to development and can even require a specialized IDE.  mountebank provides service virtualization free of charge without any platform constraints.
+    * mountebank is the only open source stubbing tool that is non-modal and multi-protocol.  Commercial
+    "service virtualization" solutions exist, but their licensed platforms make it hard to move the tests
+    closer to development and can even require a specialized IDE.  mountebank provides service virtualization free
+    of charge without any platform constraints.
 
-Not all of mountebank's goals are currently implemented, but fear not, for he has a team of top-notch open source developers, and they are legion.
+Not all of mountebank's goals are currently implemented, but fear not, for he has a team of top-notch open
+source developers, and they are legion.
 
 ## Support
 
@@ -68,9 +73,14 @@ for any support questions.  Don't be shy!
 | Windows | Appveyor  | [![Build status](https://ci.appveyor.com/api/projects/status/acfhg44px95s4pk5?svg=true)](https://ci.appveyor.com/project/bbyars/mountebank) |
 | OSX     | Travis CI | [![Build Status](https://travis-ci.org/bbyars/mountebank.png)](https://travis-ci.org/bbyars/mountebank) |
 
-`./build` should do the trick on Mac and Linux, and `build.bat` on Windows, assuming you have at least node 0.10.  If not, yell at me.
+`./build` should do the trick on Mac and Linux, and `build.bat` on Windows, assuming you have at least node 0.10.
+If not, yell at me.
 
-There are some tests that require network access (`grunt airplane` ignores them).  A few of these tests verify the correct behavior under DNS failures.  If your ISP is kind enough to hijack the NXDOMAIN DNS response in an attempt to allow you to conveniently peruse their advertising page, those tests will fail.  I suggest that, under such circumstances, you talk to your ISP and let them know that their policies are causing mountebank tests to fail.
+There are some tests that require network access (`grunt airplane` ignores them in case that offends your
+moral sensibilities).  A few of these tests verify the correct behavior under DNS failures.  If your ISP
+is kind enough to hijack the NXDOMAIN DNS response in an attempt to allow you to conveniently peruse their
+advertising page, those tests will fail.  I suggest that, under such circumstances, you talk to your ISP
+and let them know that their policies are causing mountebank tests to fail.
 
 ## Contributing
 
