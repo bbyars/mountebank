@@ -29,22 +29,10 @@ function forceStrings (obj) {
 }
 
 function selectXPath (config, caseTransform, text) {
-    /* jshint maxcomplexity: 6 */
-
     var doc = new DOMParser().parseFromString(text),
-        select,
-        selector,
-        nodes;
-
-    if (typeof config === 'object') {
-        select = xpath.useNamespaces(config.ns || {});
-        selector = caseTransform(config.value);
-    }
-    else {
-        select = xpath.useNamespaces({});
-        selector = caseTransform(config);
-    }
-    nodes = select(selector, doc);
+        select = xpath.useNamespaces(config.ns || {}),
+        selector = caseTransform(config.value),
+        nodes = select(selector, doc);
 
     if (nodes.length === 0) {
         return '';
