@@ -31,7 +31,7 @@ function forceStrings (obj) {
 function selectXPath (config, caseTransform, text) {
     var doc = new DOMParser().parseFromString(text),
         select = xpath.useNamespaces(config.ns || {}),
-        selector = caseTransform(config.value),
+        selector = caseTransform(config.selector),
         nodes = select(selector, doc);
 
     if (nodes.length === 0) {
