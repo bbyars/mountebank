@@ -135,10 +135,52 @@ describe('predicates', function () {
             assert.ok(!predicates.equals(predicate, request));
         });
 
+        it('should be false if field is not XML and xpath selector used', function () {
+            var predicate = { equals: { field: 'VALUE' }, xpath: '//title' },
+                request = { field: 'VALUE' };
+            assert.ok(!predicates.equals(predicate, request));
+        });
+
         it('should equal value in provided xpath expression', function () {
-            var predicate = { equals: { field: 'VALUE' }, xpath: '//title'},
+            var predicate = { equals: { field: 'VALUE' }, xpath: '//title' },
                 request = { field: '<doc><title>value</title></doc>' };
             assert.ok(predicates.equals(predicate, request));
+        });
+
+        it('should be false if value provided xpath expression does not equal', function () {
+            var predicate = { equals: { field: 'NOT VALUE' }, xpath: '//title' },
+                request = { field: '<doc><title>value</title></doc>' };
+            assert.ok(!predicates.equals(predicate, request));
+        });
+
+        it('should use case-insensitive xpath selector by default', function () {
+            var predicate = { equals: { field: 'VALUE' }, xpath: '//Title' },
+                request = { field: '<DOC><TITLE>value</TITLE></DOC>' };
+            assert.ok(predicates.equals(predicate, request));
+        });
+
+        it('should not equal if case-sensitive xpath selector does not match', function () {
+            var predicate = { equals: { field: 'value' }, xpath: '//Title', caseSensitive: true },
+                request = { field: '<DOC><TITLE>value</TITLE></DOC>' };
+            assert.ok(!predicates.equals(predicate, request));
+        });
+
+        it('should equal if case-sensitive xpath selector matches', function () {
+            var predicate = { equals: { field: 'value' }, xpath: '//Title', caseSensitive: true },
+                request = { field: '<Doc><Title>value</Title></Doc>' };
+            assert.ok(predicates.equals(predicate, request));
+        });
+
+        it('should equal if case-sensitive xpath selector matches, stripping out the exception', function () {
+            var predicate = { equals: { field: 've' }, xpath: '//Title', caseSensitive: true, except: 'alu' },
+                request = { field: '<Doc><Title>value</Title></Doc>' };
+            assert.ok(predicates.equals(predicate, request));
+        });
+
+        it('should not equal if case-sensitive xpath selector matches, but stripped values differ', function () {
+            var predicate = { equals: { field: 'v' }, xpath: '//Title', caseSensitive: true, except: 'alu' },
+                request = { field: '<Doc><Title>value</Title></Doc>' };
+            assert.ok(!predicates.equals(predicate, request));
         });
     });
 
@@ -301,6 +343,24 @@ describe('predicates', function () {
                 request = { query: { key: ['second', 'first'] }, field: 'true' };
             assert.ok(!predicates.deepEquals(predicate, request));
         });
+
+        it('should be false if field is not XML and xpath selector used', function () {
+            var predicate = { deepEquals: { field: 'VALUE' }, xpath: '//title' },
+                request = { field: 'VALUE' };
+            assert.ok(!predicates.deepEquals(predicate, request));
+        });
+
+        //it('should equal value in provided xpath expression', function () {
+        //    var predicate = { equals: { field: 'VALUE' }, xpath: '//title' },
+        //        request = { field: '<doc><title>value</title></doc>' };
+        //    assert.ok(predicates.equals(predicate, request));
+        //});
+        //
+        //it('should be false if value provided xpath expression does not equal', function () {
+        //    var predicate = { equals: { field: 'NOT VALUE' }, xpath: '//title' },
+        //        request = { field: '<doc><title>value</title></doc>' };
+        //    assert.ok(!predicates.equals(predicate, request));
+        //});
     });
 
     describe('#contains', function () {

@@ -28,53 +28,23 @@ function forceStrings (obj) {
     }, {});
 }
 
-function normalize (obj, config, encoding) {
-    var lowerCase = function (text) { return text.toLowerCase(); },
-        caseTransform = config.caseSensitive ? combinators.identity : lowerCase,
-        exceptionRemover = function (text) { return text.replace(new RegExp(config.except, 'g'), ''); },
-        exceptTransform = config.except ? exceptionRemover : combinators.identity,
-        encode = function (text) { return new Buffer(text, 'base64').toString(); },
-        encodeTransform = encoding === 'base64' ? encode : combinators.identity,
-        transform = combinators.compose(exceptTransform, caseTransform, encodeTransform),
-        transformAll = function (o) {
-            if (!o) {
-                return o;
-            }
-
-            if (Array.isArray(o)) {
-                return o.map(transformAll);
-            }
-            else if (typeof o === 'object') {
-                return Object.keys(o).reduce(function (result, key) {
-                    var value = transformAll(o[key]);
-                    result[caseTransform(key)] = value;
-                    return result;
-                }, {});
-            }
-            else if (typeof o === 'string') {
-                return transform(o);
-            }
-
-            return o;
-        };
-
-        return transformAll(obj);
+function selectXPath (selector, text) {
+    var doc = new DOMParser().parseFromString(text),
+        nodes = xpath.select(selector, doc);
+    return nodes.length === 0 ? undefined : nodes[0].firstChild.data;
 }
 
-function normalizeWithSelectors (obj, config, encoding) {
-    var lowerCase = function (text) { return text.toLowerCase(); },
-        caseTransform = config.caseSensitive ? combinators.identity : lowerCase,
+function normalize (obj, config, encoding, withSelectors) {
+    /* jshint maxcomplexity: 6 */
+    var lowerCaser = function (text) { return text.toLowerCase(); },
+        caseTransform = config.caseSensitive ? combinators.identity : lowerCaser,
         exceptionRemover = function (text) { return text.replace(new RegExp(config.except, 'g'), ''); },
         exceptTransform = config.except ? exceptionRemover : combinators.identity,
-        encode = function (text) { return new Buffer(text, 'base64').toString(); },
-        encodeTransform = encoding === 'base64' ? encode : combinators.identity,
-        xpathSelection = function (text) {
-            var doc = new DOMParser().parseFromString(text),
-                nodes = xpath.select(config.xpath, doc);
-            return nodes.length === 0 ? undefined : nodes[0].firstChild.data;
-        },
-        xpathSelectionTransform = config.xpath ? xpathSelection : combinators.identity,
-        transform = combinators.compose(xpathSelectionTransform, exceptTransform, caseTransform, encodeTransform),
+        encoder = function (text) { return new Buffer(text, 'base64').toString(); },
+        encodeTransform = encoding === 'base64' ? encoder : combinators.identity,
+        xpathSelector = combinators.curry(selectXPath, caseTransform(config.xpath || '')),
+        xpathTransform = withSelectors && config.xpath ? xpathSelector : combinators.identity,
+        transform = combinators.compose(xpathTransform, exceptTransform, caseTransform, encodeTransform),
         transformAll = function (o) {
             if (!o) {
                 return o;
@@ -123,16 +93,16 @@ function predicateSatisfied (expected, actual, predicate) {
 
 function create (operator, predicateFn) {
     return function (predicate, request, encoding) {
-        var expected = normalize(predicate[operator], predicate, encoding),
-            actual = normalizeWithSelectors(request, predicate, encoding);
+        var expected = normalize(predicate[operator], predicate, encoding, false),
+            actual = normalize(request, predicate, encoding, true);
 
         return predicateSatisfied(expected, actual, predicateFn);
     };
 }
 
 function deepEquals (predicate, request, encoding) {
-    var expected = normalize(forceStrings(predicate.deepEquals), predicate, encoding),
-        actual = normalize(forceStrings(request), predicate, encoding);
+    var expected = normalize(forceStrings(predicate.deepEquals), predicate, encoding, false),
+        actual = normalize(forceStrings(request), predicate, encoding, true);
 
     return Object.keys(expected).every(function (fieldName) {
         return stringify(expected[fieldName]) === stringify(actual[fieldName]);
