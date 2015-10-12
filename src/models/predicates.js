@@ -28,10 +28,36 @@ function forceStrings (obj) {
     }, {});
 }
 
-function selectXPath (selector, text) {
+function selectXPath (config, caseTransform, text) {
+    /* jshint maxcomplexity: 6 */
+
     var doc = new DOMParser().parseFromString(text),
-        nodes = xpath.select(selector, doc);
-    return nodes.length === 0 ? undefined : nodes[0].firstChild.data;
+        select,
+        selector,
+        nodes;
+
+    if (typeof config === 'object') {
+        select = xpath.useNamespaces(config.ns || {});
+        selector = caseTransform(config.value);
+    }
+    else {
+        select = xpath.useNamespaces({});
+        selector = caseTransform(config);
+    }
+    nodes = select(selector, doc);
+
+    if (nodes.length === 0) {
+        return '';
+    }
+    else if (nodes[0].nodeType === nodes[0].TEXT_NODE) {
+        return nodes[0].nodeValue;
+    }
+    else if (nodes[0].nodeType === nodes[0].ATTRIBUTE_NODE) {
+        return nodes[0].value;
+    }
+    else {
+        return nodes[0].firstChild.data;
+    }
 }
 
 function normalize (obj, config, encoding, withSelectors) {
@@ -42,7 +68,7 @@ function normalize (obj, config, encoding, withSelectors) {
         exceptTransform = config.except ? exceptionRemover : combinators.identity,
         encoder = function (text) { return new Buffer(text, 'base64').toString(); },
         encodeTransform = encoding === 'base64' ? encoder : combinators.identity,
-        xpathSelector = combinators.curry(selectXPath, caseTransform(config.xpath || '')),
+        xpathSelector = combinators.curry(selectXPath, config.xpath, caseTransform),
         xpathTransform = withSelectors && config.xpath ? xpathSelector : combinators.identity,
         transform = combinators.compose(xpathTransform, exceptTransform, caseTransform, encodeTransform),
         transformAll = function (o) {

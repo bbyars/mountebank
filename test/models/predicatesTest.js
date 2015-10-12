@@ -134,54 +134,6 @@ describe('predicates', function () {
                 request = { query: { key: ['123', '234'] } };
             assert.ok(!predicates.equals(predicate, request));
         });
-
-        it('should be false if field is not XML and xpath selector used', function () {
-            var predicate = { equals: { field: 'VALUE' }, xpath: '//title' },
-                request = { field: 'VALUE' };
-            assert.ok(!predicates.equals(predicate, request));
-        });
-
-        it('should equal value in provided xpath expression', function () {
-            var predicate = { equals: { field: 'VALUE' }, xpath: '//title' },
-                request = { field: '<doc><title>value</title></doc>' };
-            assert.ok(predicates.equals(predicate, request));
-        });
-
-        it('should be false if value provided xpath expression does not equal', function () {
-            var predicate = { equals: { field: 'NOT VALUE' }, xpath: '//title' },
-                request = { field: '<doc><title>value</title></doc>' };
-            assert.ok(!predicates.equals(predicate, request));
-        });
-
-        it('should use case-insensitive xpath selector by default', function () {
-            var predicate = { equals: { field: 'VALUE' }, xpath: '//Title' },
-                request = { field: '<DOC><TITLE>value</TITLE></DOC>' };
-            assert.ok(predicates.equals(predicate, request));
-        });
-
-        it('should not equal if case-sensitive xpath selector does not match', function () {
-            var predicate = { equals: { field: 'value' }, xpath: '//Title', caseSensitive: true },
-                request = { field: '<DOC><TITLE>value</TITLE></DOC>' };
-            assert.ok(!predicates.equals(predicate, request));
-        });
-
-        it('should equal if case-sensitive xpath selector matches', function () {
-            var predicate = { equals: { field: 'value' }, xpath: '//Title', caseSensitive: true },
-                request = { field: '<Doc><Title>value</Title></Doc>' };
-            assert.ok(predicates.equals(predicate, request));
-        });
-
-        it('should equal if case-sensitive xpath selector matches, stripping out the exception', function () {
-            var predicate = { equals: { field: 've' }, xpath: '//Title', caseSensitive: true, except: 'alu' },
-                request = { field: '<Doc><Title>value</Title></Doc>' };
-            assert.ok(predicates.equals(predicate, request));
-        });
-
-        it('should not equal if case-sensitive xpath selector matches, but stripped values differ', function () {
-            var predicate = { equals: { field: 'v' }, xpath: '//Title', caseSensitive: true, except: 'alu' },
-                request = { field: '<Doc><Title>value</Title></Doc>' };
-            assert.ok(!predicates.equals(predicate, request));
-        });
     });
 
     describe('#deepEquals', function () {
@@ -343,24 +295,6 @@ describe('predicates', function () {
                 request = { query: { key: ['second', 'first'] }, field: 'true' };
             assert.ok(!predicates.deepEquals(predicate, request));
         });
-
-        it('should be false if field is not XML and xpath selector used', function () {
-            var predicate = { deepEquals: { field: 'VALUE' }, xpath: '//title' },
-                request = { field: 'VALUE' };
-            assert.ok(!predicates.deepEquals(predicate, request));
-        });
-
-        //it('should equal value in provided xpath expression', function () {
-        //    var predicate = { equals: { field: 'VALUE' }, xpath: '//title' },
-        //        request = { field: '<doc><title>value</title></doc>' };
-        //    assert.ok(predicates.equals(predicate, request));
-        //});
-        //
-        //it('should be false if value provided xpath expression does not equal', function () {
-        //    var predicate = { equals: { field: 'NOT VALUE' }, xpath: '//title' },
-        //        request = { field: '<doc><title>value</title></doc>' };
-        //    assert.ok(!predicates.equals(predicate, request));
-        //});
     });
 
     describe('#contains', function () {
@@ -830,6 +764,145 @@ describe('predicates', function () {
             var predicate = { deepEquals: { query: {} } },
                 request = { query: {} };
             assert.ok(predicates.resolve(predicate, request));
+        });
+    });
+
+    describe('xpath', function () {
+        /*
+         should support multiple xpath matches, contains in ay of them?
+         namespaces
+         */
+        it('#equals should be false if field is not XML', function () {
+            var predicate = { equals: { field: 'VALUE' }, xpath: '//title' },
+                request = { field: 'VALUE' };
+            assert.ok(!predicates.equals(predicate, request));
+        });
+
+        it('#equals should be true if value in provided xpath expression', function () {
+            var predicate = { equals: { field: 'VALUE' }, xpath: '//title' },
+                request = { field: '<doc><title>value</title></doc>' };
+            assert.ok(predicates.equals(predicate, request));
+        });
+
+        it('#equals should be false if value provided xpath expression does not equal', function () {
+            var predicate = { equals: { field: 'NOT VALUE' }, xpath: '//title' },
+                request = { field: '<doc><title>value</title></doc>' };
+            assert.ok(!predicates.equals(predicate, request));
+        });
+
+        it('#equals should use case-insensitive xpath selector by default', function () {
+            var predicate = { equals: { field: 'VALUE' }, xpath: '//Title' },
+                request = { field: '<DOC><TITLE>value</TITLE></DOC>' };
+            assert.ok(predicates.equals(predicate, request));
+        });
+
+        it('#equals should not equal if case-sensitive xpath selector does not match', function () {
+            var predicate = { equals: { field: 'value' }, xpath: '//Title', caseSensitive: true },
+                request = { field: '<DOC><TITLE>value</TITLE></DOC>' };
+            assert.ok(!predicates.equals(predicate, request));
+        });
+
+        it('#equals should equal if case-sensitive xpath selector matches', function () {
+            var predicate = { equals: { field: 'value' }, xpath: '//Title', caseSensitive: true },
+                request = { field: '<Doc><Title>value</Title></Doc>' };
+            assert.ok(predicates.equals(predicate, request));
+        });
+
+        it('#equals should equal if case-sensitive xpath selector matches, stripping out the exception', function () {
+            var predicate = { equals: { field: 've' }, xpath: '//Title', caseSensitive: true, except: 'alu' },
+                request = { field: '<Doc><Title>value</Title></Doc>' };
+            assert.ok(predicates.equals(predicate, request));
+        });
+
+        it('#equals should not equal if case-sensitive xpath selector matches, but stripped values differ', function () {
+            var predicate = { equals: { field: 'v' }, xpath: '//Title', caseSensitive: true, except: 'alu' },
+                request = { field: '<Doc><Title>value</Title></Doc>' };
+            assert.ok(!predicates.equals(predicate, request));
+        });
+
+        it('#deepEquals should be false if field is not XML and xpath selector used', function () {
+            var predicate = { deepEquals: { field: 'VALUE' }, xpath: '//title' },
+                request = { field: 'VALUE' };
+            assert.ok(!predicates.deepEquals(predicate, request));
+        });
+
+        it('#deepEquals should equal value in provided xpath attribute', function () {
+            var predicate = { deepEquals: { field: 'VALUE' }, xpath: '//title/@href' },
+                request = { field: '<doc><title href="value">text</title></doc>' };
+            assert.ok(predicates.deepEquals(predicate, request));
+        });
+
+        it('#deepEquals should be false if value in provided xpath attribute expression does not equal', function () {
+            var predicate = { deepEquals: { field: 'NOT VALUE' }, xpath: '//title/@attr' },
+                request = { field: '<doc><title attr="value">text</title></doc>' };
+            assert.ok(!predicates.deepEquals(predicate, request));
+        });
+
+        it('#contains should be true if direct text value contains predicate', function () {
+            var predicate = { contains: { field: 'value' }, xpath: '//title/text()' },
+                request = { field: '<doc><title>this is a value</title>' };
+            assert.ok(predicates.contains(predicate, request));
+        });
+
+        it('#contains should be false if direct text value does not contain predicate', function () {
+            var predicate = { contains: { field: 'VALUE' }, xpath: '//title/text()', caseSensitive: true },
+                request = { field: '<doc><title>this is a value</title>' };
+            assert.ok(!predicates.contains(predicate, request));
+        });
+
+        it('#startsWith should be true if direct namespaced xpath selection starts with value', function () {
+            var predicate = {
+                    startsWith: { field: 'Harry' },
+                    xpath: '//*[local-name(.)="title" and namespace-uri(.)="myns"]'
+                },
+                request = { field: '<book><title xmlns="myns">Harry Potter</title></book>' };
+            assert.ok(predicates.startsWith(predicate, request));
+        });
+
+        it('#startsWith should be false if direct namespaced xpath selection does not start with value', function () {
+            var predicate = {
+                    startsWith: { field: 'Potter' },
+                    xpath: '//*[local-name(.)="title" and namespace-uri(.)="myns"]'
+                },
+                request = { field: '<book><title xmlns="myns">Harry Potter</title></book>' };
+            assert.ok(!predicates.startsWith(predicate, request));
+        });
+
+        it('#startsWith should be false if direct namespaced xpath selection does not match', function () {
+            var predicate = {
+                    startsWith: { field: 'Harry' },
+                    xpath: '//*[local-name(.)="title" and namespace-uri(.)="myns"]'
+                },
+                request = { field: '<book><title>Harry Potter</title></book>' };
+            assert.ok(!predicates.startsWith(predicate, request));
+        });
+
+        it('#endsWith should be true if aliased namespace match ends with predicate', function () {
+            var predicate = {
+                    endsWith: { field: 'Potter' },
+                    xpath: {
+                        value: '//bookml:title/text()',
+                        ns: {
+                            bookml: 'http://example.com/book'
+                        }
+                    }
+                },
+                request = { field: '<book xmlns:bookml="http://example.com/book"><bookml:title>Harry Potter</bookml:title></book>' };
+            assert.ok(predicates.endsWith(predicate, request));
+        });
+
+        it('#endsWith should be false if aliased namespace match does not end with predicate', function () {
+            var predicate = {
+                    endsWith: { field: 'Harry' },
+                    xpath: {
+                        value: '//bookml:title/text()',
+                        ns: {
+                            bookml: 'http://example.com/book'
+                        }
+                    }
+                },
+                request = { field: '<book xmlns:bookml="http://example.com/book"><bookml:title>Harry Potter</bookml:title></book>' };
+            assert.ok(!predicates.endsWith(predicate, request));
         });
     });
 });
