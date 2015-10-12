@@ -768,9 +768,6 @@ describe('predicates', function () {
     });
 
     describe('xpath', function () {
-        /*
-         should support multiple xpath matches, contains in ay of them?
-         */
         it('#equals should be false if field is not XML', function () {
             var predicate = {
                     equals: { field: 'VALUE' },
@@ -851,8 +848,8 @@ describe('predicates', function () {
 
         it('#deepEquals should be false if field is not XML and xpath selector used', function () {
             var predicate = {
-                    deepEquals: {field: 'VALUE'},
-                    xpath: {selector: '//title'}
+                    deepEquals: { field: 'VALUE' },
+                    xpath: { selector: '//title' }
                 },
                 request = { field: 'VALUE' };
             assert.ok(!predicates.deepEquals(predicate, request));
@@ -873,6 +870,33 @@ describe('predicates', function () {
                     xpath: { selector: '//title/@attr' }
                 },
                 request = { field: '<doc><title attr="value">text</title></doc>' };
+            assert.ok(!predicates.deepEquals(predicate, request));
+        });
+
+        it('#deepEquals should be true if all values in a multi-value selector match are present', function () {
+            var predicate = {
+                    deepEquals: { field: ['first', 'second'] },
+                    xpath: { selector: '//title' }
+                },
+                request = { field: '<doc><title>first</title><title>second</title></doc>' };
+            assert.ok(predicates.deepEquals(predicate, request));
+        });
+
+        it('#deepEquals should be false if some values in a multi-value selector match are missing', function () {
+            var predicate = {
+                    deepEquals: { field: ['first', 'second'] },
+                    xpath: { selector: '//title' }
+                },
+                request = { field: '<doc><title>first</title><title>second</title><title>third</title></doc>' };
+            assert.ok(!predicates.deepEquals(predicate, request));
+        });
+
+        it('#deepEquals should be false if values in a multi-value selector match are out of order', function () {
+            var predicate = {
+                    deepEquals: { field: ['first', 'second'] },
+                    xpath: { selector: '//title' }
+                },
+                request = { field: '<doc><title>second</title><title>first</title></doc>' };
             assert.ok(!predicates.deepEquals(predicate, request));
         });
 
@@ -947,6 +971,125 @@ describe('predicates', function () {
                 },
                 request = { field: '<book xmlns:bookml="http://example.com/book"><bookml:title>Harry Potter</bookml:title></book>' };
             assert.ok(!predicates.endsWith(predicate, request));
+        });
+
+        it('#equals should be true if any matched node equals the predicate value', function () {
+            var predicate = {
+                    equals: { field: 'Second' },
+                    xpath: {
+                        selector: '//a:child',
+                        ns: {
+                            a: 'http://example.com/a',
+                            b: 'http://example.com/b'
+                        }
+                    }
+                },
+                request = {
+                    field: '<root xmlns:thisa="http://example.com/a" xmlns:thisb="http://example.com/b">' +
+                           '  <thisa:child>First</thisa:child>' +
+                           '  <thisa:child>Second</thisa:child>' +
+                           '  <thisa:child>Third</thisa:child>' +
+                           '</root>'
+                };
+            assert.ok(predicates.equals(predicate, request));
+        });
+
+        it('#equals should be false if no nodes match the selector (despite namespace aliases matching, urls do not)', function () {
+            var predicate = {
+                    equals: { field: 'Second' },
+                    xpath: {
+                        selector: '//a:child',
+                        ns: {
+                            a: 'http://example.com/a',
+                            b: 'http://example.com/b'
+                        }
+                    }
+                },
+                request = {
+                    field: '<root xmlns:b="http://example.com/a" xmlns:a="http://example.com/b">' +
+                    '  <a:child>First</a:child>' +
+                    '  <a:child>Second</a:child>' +
+                    '  <a:child>Third</a:child>' +
+                    '</root>'
+                };
+            assert.ok(!predicates.equals(predicate, request));
+        });
+
+        it('#matches should be false if field is not XML', function () {
+            var predicate = {
+                    matches: { field: 'VALUE' },
+                    xpath: { selector: '//title' }
+                },
+                request = { field: 'VALUE' };
+            assert.ok(!predicates.matches(predicate, request));
+        });
+
+        it('#matches should be true if selected value matches regex', function () {
+            var predicate = {
+                    matches: { field: '^v' },
+                    xpath: { selector: '//title' }
+                },
+                request = { field: '<doc><title>value</title></doc>' };
+            assert.ok(predicates.matches(predicate, request));
+        });
+
+        it('#matches should be false if selected value does not match regex', function () {
+            var predicate = {
+                    matches: { field: 'v$' },
+                    xpath: { selector: '//title' }
+                },
+                request = { field: '<doc><title>value</title></doc>' };
+            assert.ok(!predicates.matches(predicate, request));
+        });
+
+        it('should throw an error if encoding is base64', function () {
+            try {
+                var predicate = {
+                        equals: { field: 'dGVzdA==' },
+                        xpath: { selector: 'dGVzdA==' }
+                    },
+                    request = { field: 'dGVzdA==' };
+                predicates.equals(predicate, request, 'base64');
+                assert.fail('should have thrown');
+            }
+            catch (error) {
+                assert.strictEqual(error.code, 'bad data');
+                assert.strictEqual(error.message, 'the xpath predicate parameter is not allowed in binary mode');
+            }
+        });
+
+        it('#exists should be true if xpath selector has at least one result', function () {
+            var predicate = {
+                    exists: { field: true },
+                    xpath: { selector: '//title' }
+                },
+                request = { field: '<doc><title>value</title></doc>' };
+            assert.ok(predicates.exists(predicate, request));
+        });
+
+        it('#exists should be false if xpath selector does not match', function () {
+            var predicate = {
+                    exists: { field: true },
+                    xpath: { selector: '//title' }
+                },
+                request = { field: '<doc><summary>value</summary></doc>' };
+            assert.ok(!predicates.exists(predicate, request));
+        });
+
+        it('should throw error if xpath selector is malformed', function () {
+            try {
+                var predicate = {
+                        equals: { field: 'value' },
+                        xpath: { selector: '=*INVALID*=' }
+                    },
+                    request = { field: '<doc><title>value</title></doc>' };
+                predicates.equals(predicate, request);
+                assert.fail('should have thrown');
+            }
+            catch (error) {
+                assert.strictEqual(error.code, 'bad data');
+                assert.strictEqual(error.message, 'malformed xpath predicate selector');
+            }
         });
     });
 });

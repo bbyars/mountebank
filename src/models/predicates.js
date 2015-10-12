@@ -28,23 +28,50 @@ function forceStrings (obj) {
     }, {});
 }
 
-function selectXPath (config, caseTransform, text) {
+function selectXPath (config, caseTransform, encoding, text) {
+    /* jshint maxcomplexity: 6 */
+    if (encoding === 'base64') {
+        throw errors.ValidationError('the xpath predicate parameter is not allowed in binary mode');
+    }
+
     var doc = new DOMParser().parseFromString(text),
         select = xpath.useNamespaces(config.ns || {}),
         selector = caseTransform(config.selector),
-        nodes = select(selector, doc);
+        nodes,
+        nodeValues;
 
-    if (nodes.length === 0) {
-        return '';
+    try {
+        nodes = select(selector, doc);
     }
-    else if (nodes[0].nodeType === nodes[0].TEXT_NODE) {
-        return nodes[0].nodeValue;
+    catch (e) {
+        throw errors.ValidationError('malformed xpath predicate selector', { inner: e });
     }
-    else if (nodes[0].nodeType === nodes[0].ATTRIBUTE_NODE) {
-        return nodes[0].value;
+
+    nodeValues = nodes.map(function (node) {
+        if (node.nodeType === node.TEXT_NODE) {
+            return node.nodeValue;
+        }
+        else if (node.nodeType === node.ATTRIBUTE_NODE) {
+            return node.value;
+        }
+        else {
+            return node.firstChild.data;
+        }
+    });
+
+    // Return either a string if one match or array if multiple
+    // This matches the behavior of node's handling of query parameters,
+    // which allows us to maintain the same semantics between deepEquals
+    // (all have to match, passing in an array if necessary) and the other
+    // predicates (any can match)
+    if (nodeValues.length === 0) {
+        return undefined;
+    }
+    else if (nodeValues.length === 1) {
+        return nodeValues[0];
     }
     else {
-        return nodes[0].firstChild.data;
+        return nodeValues;
     }
 }
 
@@ -56,7 +83,7 @@ function normalize (obj, config, encoding, withSelectors) {
         exceptTransform = config.except ? exceptionRemover : combinators.identity,
         encoder = function (text) { return new Buffer(text, 'base64').toString(); },
         encodeTransform = encoding === 'base64' ? encoder : combinators.identity,
-        xpathSelector = combinators.curry(selectXPath, config.xpath, caseTransform),
+        xpathSelector = combinators.curry(selectXPath, config.xpath, caseTransform, encoding),
         xpathTransform = withSelectors && config.xpath ? xpathSelector : combinators.identity,
         transform = combinators.compose(xpathTransform, exceptTransform, caseTransform, encodeTransform),
         transformAll = function (o) {
@@ -127,8 +154,8 @@ function matches (predicate, request, encoding) {
     // We want to avoid the lowerCase transform so we don't accidentally butcher
     // a regular expression with upper case metacharacters like \W and \S
     var clone = helpers.merge(predicate, { caseSensitive: true }),
-        expected = normalize(predicate.matches, clone, encoding),
-        actual = normalize(request, clone, encoding),
+        expected = normalize(predicate.matches, clone, encoding, false),
+        actual = normalize(request, clone, encoding, true),
         options = predicate.caseSensitive ? '' : 'i';
 
     if (encoding === 'base64') {
