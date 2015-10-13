@@ -37,8 +37,7 @@ function create (releases, options) {
     }
 
     function getReleases (request, response) {
-        var versions = feedReleases.map(function (release) { return release.version; });
-        response.render('releases', { versions: versions });
+        response.render('releases', { releases: feedReleases });
     }
 
     function getRelease (request, response) {

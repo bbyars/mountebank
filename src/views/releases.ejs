@@ -10,10 +10,17 @@ description = 'All past releases of mountebank, saved for posterity'
 <p>Below are the releases starting with the most recent.  Subscribe to the
 <a href='/feed'>ATOM feed</a> to stay up to date with future releases.</p>
 
-<ul class='bullet-list'>
-<% versions.forEach(function (version) { %>
-  <li><a href='/releases/<%= version %>'><%= version %></a></li>
+<table>
+  <tr>
+    <th>Version</th>
+    <th>Release Date</th>
+  </tr>
+<% releases.forEach(function (release) { %>
+  <tr>
+    <td><a href='/releases/<%= release.version %>'><%= release.version %></a></td>
+    <td><%= release.date %></td>
+  </tr>
 <% }); %>
-</ul>
+</table>
 
 <% include _footer %>
