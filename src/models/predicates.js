@@ -28,36 +28,43 @@ function forceStrings (obj) {
     }, {});
 }
 
-function selectXPath (config, caseTransform, encoding, text) {
-    /* jshint maxcomplexity: 6 */
+function xpathSelect (select, selector, doc, encoding) {
     if (encoding === 'base64') {
         throw errors.ValidationError('the xpath predicate parameter is not allowed in binary mode');
     }
 
-    var doc = new DOMParser().parseFromString(text),
-        select = xpath.useNamespaces(config.ns || {}),
-        selector = caseTransform(config.selector),
-        nodes,
-        nodeValues;
-
     try {
-        nodes = select(selector, doc);
+        return select(selector, doc);
     }
     catch (e) {
         throw errors.ValidationError('malformed xpath predicate selector', { inner: e });
     }
+}
 
-    nodeValues = nodes.map(function (node) {
-        if (node.nodeType === node.TEXT_NODE) {
-            return node.nodeValue;
-        }
-        else if (node.nodeType === node.ATTRIBUTE_NODE) {
-            return node.value;
-        }
-        else {
-            return node.firstChild.data;
-        }
-    });
+function nodeValue (node) {
+    if (node.nodeType === node.TEXT_NODE) {
+        return node.nodeValue;
+    }
+    else if (node.nodeType === node.ATTRIBUTE_NODE) {
+        return node.value;
+    }
+    else {
+        return node.firstChild.data;
+    }
+}
+
+function selectXPath (config, caseTransform, encoding, text) {
+    var doc = new DOMParser().parseFromString(text),
+        select = xpath.useNamespaces(config.ns || {}),
+        selector = caseTransform(config.selector),
+        result = xpathSelect(select, selector, doc, encoding),
+        nodeValues;
+
+    if (['number', 'boolean'].indexOf(typeof result) >= 0) {
+        return result;
+    }
+
+    nodeValues = result.map(nodeValue);
 
     // Return either a string if one match or array if multiple
     // This matches the behavior of node's handling of query parameters,
@@ -71,7 +78,8 @@ function selectXPath (config, caseTransform, encoding, text) {
         return nodeValues[0];
     }
     else {
-        return nodeValues;
+        // array can match in any order
+        return nodeValues.sort();
     }
 }
 
@@ -79,7 +87,8 @@ function normalize (obj, config, encoding, withSelectors) {
     /* jshint maxcomplexity: 6 */
     var lowerCaser = function (text) { return text.toLowerCase(); },
         caseTransform = config.caseSensitive ? combinators.identity : lowerCaser,
-        exceptionRemover = function (text) { return text.replace(new RegExp(config.except, 'g'), ''); },
+        exceptRegexOptions = config.caseSensitive ? 'g' : 'gi',
+        exceptionRemover = function (text) { return text.replace(new RegExp(config.except, exceptRegexOptions), ''); },
         exceptTransform = config.except ? exceptionRemover : combinators.identity,
         encoder = function (text) { return new Buffer(text, 'base64').toString(); },
         encodeTransform = encoding === 'base64' ? encoder : combinators.identity,
@@ -92,7 +101,10 @@ function normalize (obj, config, encoding, withSelectors) {
             }
 
             if (Array.isArray(o)) {
-                return o.map(transformAll);
+                // sort to provide deterministic comparison for deepEquals,
+                // where the order in the array for multi-valued querystring keys
+                // and xpath selections isn't important
+                return o.map(transformAll).sort();
             }
             else if (typeof o === 'object') {
                 return Object.keys(o).reduce(function (result, key) {
@@ -117,7 +129,10 @@ function predicateSatisfied (expected, actual, predicate) {
     }
     return Object.keys(expected).every(function (fieldName) {
         var test = function (value) {
-            return predicate(expected[fieldName], value || '');
+            if (typeof value === 'undefined') {
+                value = '';
+            }
+            return predicate(expected[fieldName], value);
         };
 
         if (Array.isArray(actual[fieldName])) {

@@ -56,15 +56,13 @@ function validateDocs (page) {
 describe('docs', function () {
     this.timeout(timeout);
 
-    // The behavior changes in minor and annoying ways between node versions
-    // (e.g. using IPv6 remoteAddress or changing the order of headers), making
-    // these tests not easy to reuse between them.
     [
         '/docs/api/overview',
         '/docs/api/mocks',
         '/docs/api/proxies',
         '/docs/api/injection',
-        '/docs/api/behaviors'
+        '/docs/api/behaviors',
+        '/docs/api/xpath'
     ].forEach(function (page) {
             validateDocs(page);
         });

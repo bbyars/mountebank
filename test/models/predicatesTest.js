@@ -112,8 +112,8 @@ describe('predicates', function () {
         });
 
         it('should obey be case-insensitive except match by default', function () {
-            var predicate = { equals: { field: 'his is a test' }, except: '^t' },
-                request = { field: 'this is a test' };
+            var predicate = { equals: { field: 'is is a test' }, except: '^tH' },
+                request = { field: 'This is a test' };
             assert.ok(predicates.equals(predicate, request));
         });
 
@@ -290,10 +290,12 @@ describe('predicates', function () {
             assert.ok(!predicates.deepEquals(predicate, request));
         });
 
-        it('should be false if values in a multi-value key are out of order', function () {
+        it('should be true if values in a multi-value key are out of order', function () {
+            // In cases where this comes up - querystrings and xpath selectors,
+            // order is irrelevant
             var predicate = { deepEquals: { query: { key: ['first', 'second'] } } },
                 request = { query: { key: ['second', 'first'] }, field: 'true' };
-            assert.ok(!predicates.deepEquals(predicate, request));
+            assert.ok(predicates.deepEquals(predicate, request));
         });
     });
 
@@ -891,13 +893,13 @@ describe('predicates', function () {
             assert.ok(!predicates.deepEquals(predicate, request));
         });
 
-        it('#deepEquals should be false if values in a multi-value selector match are out of order', function () {
+        it('#deepEquals should be true if values in a multi-value selector match are out of order', function () {
             var predicate = {
                     deepEquals: { field: ['first', 'second'] },
                     xpath: { selector: '//title' }
                 },
                 request = { field: '<doc><title>second</title><title>first</title></doc>' };
-            assert.ok(!predicates.deepEquals(predicate, request));
+            assert.ok(predicates.deepEquals(predicate, request));
         });
 
         it('#contains should be true if direct text value contains predicate', function () {
@@ -945,7 +947,7 @@ describe('predicates', function () {
             assert.ok(!predicates.startsWith(predicate, request));
         });
 
-        it('#endsWith should be true if aliased namespace match ends with predicate', function () {
+        it('#endsWith should be true if aliased namespace match endsWith predicate', function () {
             var predicate = {
                     endsWith: { field: 'Potter' },
                     xpath: {
@@ -1090,6 +1092,24 @@ describe('predicates', function () {
                 assert.strictEqual(error.code, 'bad data');
                 assert.strictEqual(error.message, 'malformed xpath predicate selector');
             }
+        });
+
+        it('should accept numbers using count()', function () {
+            var predicate = {
+                    equals: { field: 2 },
+                    xpath: { selector: 'count(//title)' }
+                },
+                request = { field: '<doc><title>first</title><title>second</title></doc>' };
+            assert.ok(predicates.equals(predicate, request));
+        });
+
+        it('should accept booleans returning false', function () {
+            var predicate = {
+                    equals: { field: false },
+                    xpath: { selector: 'boolean(//title)' }
+                },
+                request = { field: '<doc></doc>' };
+            assert.ok(predicates.equals(predicate, request));
         });
     });
 });

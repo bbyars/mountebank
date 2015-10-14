@@ -29,6 +29,7 @@ if (process.env.MB_AIRPLANE_MODE !== 'true' && process.env.MB_SKIP_W3C_TESTS !==
             '/docs/api/mocks',
             '/docs/api/stubs',
             '/docs/api/predicates',
+            '/docs/api/xpath',
             '/docs/api/proxies',
             '/docs/api/injection',
             '/docs/api/behaviors',

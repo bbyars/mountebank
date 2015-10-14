@@ -104,6 +104,7 @@ function create (options) {
         '/docs/api/mocks',
         '/docs/api/stubs',
         '/docs/api/predicates',
+        '/docs/api/xpath',
         '/docs/api/proxies',
         '/docs/api/injection',
         '/docs/api/behaviors',

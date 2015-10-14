@@ -71,7 +71,7 @@ predicate operators are allowed:</p>
   </tr>
 </table>
 
-<p>Predicates can be parameterized.  At the moment, mountebank accepts the following
+<p>Predicates can be parameterized.  mountebank accepts the following
 predicate parameters:</p>
 
 <table>
@@ -92,9 +92,17 @@ predicate parameters:</p>
     <td>Defines a regular expression that is stripped out of the request field
     before matching.</td>
   </tr>
+  <tr>
+    <td><code>xpath</code></td>
+    <td><code>null</code></td>
+    <td>Defines an object containing a <code>selector</code> string and, optionally, an
+    <code>ns</code> object field that defines a namespace map.</td>
+  </tr>
 </table>
 
-<p>See the <code>equals</code> example below to see the parameters in action.</p>
+<p>See the <code>equals</code> example below to see the <code>caseSensitive</code> and
+<code>except</code> parameters in action.  See the <a href='/docs/api/xpath'>xpath page</a>
+for <code>xpath</code> examples.</p>
 
 <p>Almost all predicates are scoped to a request field; see the protocol pages linked to from
 the sidebar to see the request fields.  <code>inject</code> is the sole exception.  It takes
