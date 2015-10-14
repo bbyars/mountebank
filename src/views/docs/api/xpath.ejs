@@ -91,6 +91,16 @@ Content-Type: application/json
           "exists": { "body": false },
           "xpath": { "selector": "//title/@first" },
           "comment": "body must not exist (e.g. be empty) OR the xpath must not match any nodes"
+        },
+        {
+          "equals": { "body": 3 },
+          "xpath": { "selector": "count(//title)" },
+          "comment": "number results from xpath selectors are fine..."
+        },
+        {
+          "equals": { "body": true },
+          "xpath": { "selector": "boolean(//title)" },
+          "comment": "...as are boolean results"
         }
       ]
     }</strong>,<strong class='highlight2'>
