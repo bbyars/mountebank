@@ -121,7 +121,7 @@ imposters, as even binary RPC data generally contains strings representing metho
 
 <p>On occasion you may encounter multi-valued keys.  This can be the case with querystrings
 that have repeating keys, for example <code>?key=first&amp;key=second</code>.  In those cases,
-<code>deepEquals</code> will require all the values in the same order to match.  All other
+<code>deepEquals</code> will require all the values (in any order) to match.  All other
 predicates will match if any value matches, so an <code>equals</code> predicate
 will match with the value of <code>second</code> in the example above.</p>
 

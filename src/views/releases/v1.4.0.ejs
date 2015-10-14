@@ -2,8 +2,17 @@
 
 <h2>New Features</h2>
 <ul class='bullet-list'>
-  <li>A new xpath predicate parameter</li>
+  <li>A new <a href='http://<%= host %>/docs/api/xpath'>xpath predicate parameter</a></li>
   <li>Support for node 4.2</li>
+  <li>Updated <a href='http://<%= host %>/docs/examples'>examples</a> and
+    <a href='http://<%= host %>/docs/clientLibraries'>clientLibraries</a></li>
+</ul>
+
+<h2>Bug Fixes</h2>
+<ul class='bullet-list'>
+  <li><code>deepEquals</code> predicates that match on multi-value keys (e.g. repeating
+  querystring keys) no longer depend on the order of the keys matching between the request
+  and the predicate</li>
 </ul>
 
 <p>Many thanks to the following kind folk for help with this release:</p>
