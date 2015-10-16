@@ -10,6 +10,7 @@ var errors = require('../util/errors'),
     combinators = require('../util/combinators'),
     stringify = require('json-stable-stringify'),
     xpath = require('xpath'),
+    JSONPath = require('JSONPath'),
     DOMParser = require('xmldom').DOMParser;
 
 function forceStrings (obj) {
@@ -88,6 +89,28 @@ function selectXPath (config, caseTransform, encoding, text) {
     }
 }
 
+function selectJSONPath (config, caseTransform, encoding, text) {
+    var selector = caseTransform(config.selector),
+        select = JSONPath;
+    try {
+        console.log(JSONPath.eval(JSON.parse(text), selector));
+        var result = JSONPath.eval(JSON.parse(text), selector);
+
+        if (result == typeof String) {
+            return result;
+        } else if (result.length === 0) {
+            return undefined;
+        } else if (result.length === 1) {
+            return result[0];
+        } else{
+            return result.sort();
+        }
+
+    } catch(e) {
+        return undefined;
+    }
+}
+
 function normalize (obj, config, encoding, withSelectors) {
     var lowerCaser = function (text) { return text.toLowerCase(); },
         caseTransform = config.caseSensitive ? combinators.identity : lowerCaser,
@@ -98,7 +121,9 @@ function normalize (obj, config, encoding, withSelectors) {
         encodeTransform = encoding === 'base64' ? encoder : combinators.identity,
         xpathSelector = combinators.curry(selectXPath, config.xpath, caseTransform, encoding),
         xpathTransform = withSelectors && config.xpath ? xpathSelector : combinators.identity,
-        transform = combinators.compose(xpathTransform, exceptTransform, caseTransform, encodeTransform),
+        jsonPathSelector = combinators.curry(selectJSONPath, config.jsonpath, caseTransform, encoding),
+        jsonPathTransform = withSelectors && config.jsonpath ? jsonPathSelector : combinators.identity,
+        transform = combinators.compose(jsonPathTransform, xpathTransform, exceptTransform, caseTransform, encodeTransform),
         transformAll = function (o) {
             if (!o) {
                 return o;

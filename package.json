@@ -55,6 +55,7 @@
     "service virtualization"
   ],
   "dependencies": {
+    "JSONPath": "^0.10.0",
     "cors": "~2.7.1",
     "ejs": "~2.3.1",
     "errorhandler": "^1.0.0",
