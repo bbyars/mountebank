@@ -1,0 +1,18 @@
+<% searchString = "Bar"; %>
+<% xPathValue = "//hello"; %>
+{
+    "protocol": "http",
+    "port": 3000,
+    "stubs": [
+        {
+            "responses": [{ "is": { "body": "It Worked!!!" } }],
+            "predicates": [
+                {
+                    "equals": { "body": "<%= searchString %>" },
+                    "xpath": { "selector": "<%= xPathValue %>" }
+                }
+            ]
+        }
+    ]
+}
+
