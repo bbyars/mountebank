@@ -1,15 +1,27 @@
-{
-  &quot;port&quot;: 4545,
-  &quot;protocol&quot;: &quot;https&quot;,
-  &quot;name&quot;: &quot;imposter contract service&quot;,
-  &quot;key&quot;: &quot;-----BEGIN RSA PRIVATE KEY-----\nMIICXAIBAAKBgQCrvse04YkxtVGagyvGJCsvv7LTfLK5uR/ZIJKDYCnuF+BqBzM4\nlko8O39vx+Lz9FfF11Xl+CN1aY37YurLYOle3dC/qslSbQDe2TJN7lcVHVssePvc\nO5IExpvNFV5LYtmyCMKJHxpnIprv/trUso5obqzzXhFVPV9SQbFH/snInwIDAQAB\nAoGARywlqLD6YO4qJiULw+4DM6N2oSwBCPRN3XYhIW59kdy1NFtNf7rQgsuJUTJ9\nu+lbYnKNd2LwltyqaS4h7Sx5KRhpFNmMpyVsBf5J2q3fbfmrsXt+emY7XhVTc1NV\nizUWYyxCoTTeMWvN/6NYpPV0lSxq7jMTFVZrWQUMqJclxpECQQDTlGwALtAX1Y8u\nGKsEHPkoq9bhHA5N9WAboQ4LQCZVC8eBf/XH//2iosYTXRNgII2JLmHmmxJHo5iN\nJPFMbnoHAkEAz81osJf+yHm7PBBJP4zEWZCV25c+iJiPDpj5UoUXEbq47qVfy1mV\nDqy2zoDynAWitU7PeHyZ8ozfyribPoR2qQJAVmvMhXKZmvKnLivzRpXTC9LMzVwZ\nV6x/Wim5w8yrG5fZIMM0kEG2xwR3pZch/+SsCzl/0aLLn6lp+VT6nr6NZwJBAMxs\nHrvymoLvNeDtiJFK0nHliXafP7YyljDfDg4+vSYE0R57c1RhSQBJqgBV29TeumSw\nJes6cFuqeBE+MAJ9XxkCQDdUdhnA8HHQRNetqK7lygUep7EcHHCB6u/0FypoLw7o\nEUVo5KSEFq93UeMr3B7DDPIz3LOrFXlm7clCh1HFZhQ=\n-----END RSA PRIVATE KEY-----&quot;,
-  &quot;cert&quot;: &quot;-----BEGIN CERTIFICATE-----\nMIIB6TCCAVICCQCZgxbBD0CG4zANBgkqhkiG9w0BAQUFADA5MQswCQYDVQQGEwJV\nUzETMBEGA1UECBMKU29tZS1TdGF0ZTEVMBMGA1UEChMMVGhvdWdodFdvcmtzMB4X\nDTEzMTIyOTE2NDAzN1oXDTE0MDEyODE2NDAzN1owOTELMAkGA1UEBhMCVVMxEzAR\nBgNVBAgTClNvbWUtU3RhdGUxFTATBgNVBAoTDFRob3VnaHRXb3JrczCBnzANBgkq\nhkiG9w0BAQEFAAOBjQAwgYkCgYEAq77HtOGJMbVRmoMrxiQrL7+y03yyubkf2SCS\ng2Ap7hfgagczOJZKPDt/b8fi8/RXxddV5fgjdWmN+2Lqy2DpXt3Qv6rJUm0A3tky\nTe5XFR1bLHj73DuSBMabzRVeS2LZsgjCiR8aZyKa7/7a1LKOaG6s814RVT1fUkGx\nR/7JyJ8CAwEAATANBgkqhkiG9w0BAQUFAAOBgQCPhixeKxIy+ftrfPikwjYo1uxp\ngQ18FdVN1pbI//IIx1o8kJuX8yZzO95PsCOU0GbIRCkFMhBlqHiD9H0/W/GvWzjf\n7WFW15lL61y/kH1J0wqEgoaMrUDjHZvKVr0HrN+vSxHlNQcSNFJ2KdvZ5a9dhpGf\nXOdprCdUUXzSoJWCCg==\n-----END CERTIFICATE-----&quot;,
-  &quot;mutualAuth&quot;: false,
-  &quot;stubs&quot;: [
+<%
+title = 'Imposter contract'
+description = "The specification of the imposter resource"
+%>
+
+<% include ../../../_header %>
+
+<h1>Imposter Contract</h1>
+
+<p>To get more details on any field, simply hover your mouse over that field.
+Click on the field to freeze the documentation (click again to unfreeze).</p>
+
+<pre class='contract' id='specification'><code>{
+  <span id='port'>&quot;port&quot;: 4545,</span>
+  <span id='protocol'>&quot;protocol&quot;: &quot;https&quot;,</span>
+  <span id='name'>&quot;name&quot;: &quot;imposter contract service&quot;,</span>
+  <span id='key'>&quot;key&quot;: &quot;-----BEGIN RSA PRIVATE KEY-----\nMIICXAIBAAKBgQCrvse04YkxtVGagyvGJCsvv7LTfLK5uR/ZIJKDYCnuF+BqBzM4\nlko8O39vx+Lz9FfF11Xl+CN1aY37YurLYOle3dC/qslSbQDe2TJN7lcVHVssePvc\nO5IExpvNFV5LYtmyCMKJHxpnIprv/trUso5obqzzXhFVPV9SQbFH/snInwIDAQAB\nAoGARywlqLD6YO4qJiULw+4DM6N2oSwBCPRN3XYhIW59kdy1NFtNf7rQgsuJUTJ9\nu+lbYnKNd2LwltyqaS4h7Sx5KRhpFNmMpyVsBf5J2q3fbfmrsXt+emY7XhVTc1NV\nizUWYyxCoTTeMWvN/6NYpPV0lSxq7jMTFVZrWQUMqJclxpECQQDTlGwALtAX1Y8u\nGKsEHPkoq9bhHA5N9WAboQ4LQCZVC8eBf/XH//2iosYTXRNgII2JLmHmmxJHo5iN\nJPFMbnoHAkEAz81osJf+yHm7PBBJP4zEWZCV25c+iJiPDpj5UoUXEbq47qVfy1mV\nDqy2zoDynAWitU7PeHyZ8ozfyribPoR2qQJAVmvMhXKZmvKnLivzRpXTC9LMzVwZ\nV6x/Wim5w8yrG5fZIMM0kEG2xwR3pZch/+SsCzl/0aLLn6lp+VT6nr6NZwJBAMxs\nHrvymoLvNeDtiJFK0nHliXafP7YyljDfDg4+vSYE0R57c1RhSQBJqgBV29TeumSw\nJes6cFuqeBE+MAJ9XxkCQDdUdhnA8HHQRNetqK7lygUep7EcHHCB6u/0FypoLw7o\nEUVo5KSEFq93UeMr3B7DDPIz3LOrFXlm7clCh1HFZhQ=\n-----END RSA PRIVATE KEY-----&quot;,</span>
+  <span id='cert'>&quot;cert&quot;: &quot;-----BEGIN CERTIFICATE-----\nMIIB6TCCAVICCQCZgxbBD0CG4zANBgkqhkiG9w0BAQUFADA5MQswCQYDVQQGEwJV\nUzETMBEGA1UECBMKU29tZS1TdGF0ZTEVMBMGA1UEChMMVGhvdWdodFdvcmtzMB4X\nDTEzMTIyOTE2NDAzN1oXDTE0MDEyODE2NDAzN1owOTELMAkGA1UEBhMCVVMxEzAR\nBgNVBAgTClNvbWUtU3RhdGUxFTATBgNVBAoTDFRob3VnaHRXb3JrczCBnzANBgkq\nhkiG9w0BAQEFAAOBjQAwgYkCgYEAq77HtOGJMbVRmoMrxiQrL7+y03yyubkf2SCS\ng2Ap7hfgagczOJZKPDt/b8fi8/RXxddV5fgjdWmN+2Lqy2DpXt3Qv6rJUm0A3tky\nTe5XFR1bLHj73DuSBMabzRVeS2LZsgjCiR8aZyKa7/7a1LKOaG6s814RVT1fUkGx\nR/7JyJ8CAwEAATANBgkqhkiG9w0BAQUFAAOBgQCPhixeKxIy+ftrfPikwjYo1uxp\ngQ18FdVN1pbI//IIx1o8kJuX8yZzO95PsCOU0GbIRCkFMhBlqHiD9H0/W/GvWzjf\n7WFW15lL61y/kH1J0wqEgoaMrUDjHZvKVr0HrN+vSxHlNQcSNFJ2KdvZ5a9dhpGf\nXOdprCdUUXzSoJWCCg==\n-----END CERTIFICATE-----&quot;,</span>
+  <span id='mutualAuth'>&quot;mutualAuth&quot;: false,</span>
+  <span id='stubs'>&quot;stubs&quot;: [</span>
     {
-      &quot;responses&quot;: [
+      <span id='stubs.responses'>&quot;responses&quot;: [</span>
         {
-          &quot;is&quot;: {
+          <span id='stubs.responses.is'>&quot;is&quot;: {</span>
             &quot;statusCode&quot;: 201,
             &quot;headers&quot;: {
               &quot;Location&quot;: &quot;http://example.com/resource&quot;
@@ -17,20 +29,20 @@
             &quot;body&quot;: &quot;The time is ${TIME}&quot;,
             &quot;_mode&quot;: &quot;text&quot;
           },
-          &quot;_behaviors&quot;: {
-            &quot;wait&quot;: 500,
-            &quot;decorate&quot;: &quot;function (request, response) { response.body = response.body.replace('${TIME}', 'now'); }&quot;
+          <span id='stubs._behaviors'>&quot;_behaviors&quot;: {</span>
+            <span id='stubs._behaviors.wait'>&quot;wait&quot;: 500,</span>
+            <span id='stubs._behaviors.decorate'>&quot;decorate&quot;: &quot;function (request, response) { response.body = response.body.replace('${TIME}', 'now'); }&quot;</span>
           }
         },
         {
-          &quot;proxy&quot;: {
-            &quot;to&quot;: &quot;https://www.somesite.com:3000&quot;,
-            &quot;mode&quot;: &quot;proxyAlways&quot;,
-            &quot;key&quot;: &quot;-----BEGIN RSA PRIVATE KEY-----\nMIICXAIBAAKBgQCrvse04YkxtVGagyvGJCsvv7LTfLK5uR/ZIJKDYCnuF+BqBzM4\nlko8O39vx+Lz9FfF11Xl+CN1aY37YurLYOle3dC/qslSbQDe2TJN7lcVHVssePvc\nO5IExpvNFV5LYtmyCMKJHxpnIprv/trUso5obqzzXhFVPV9SQbFH/snInwIDAQAB\nAoGARywlqLD6YO4qJiULw+4DM6N2oSwBCPRN3XYhIW59kdy1NFtNf7rQgsuJUTJ9\nu+lbYnKNd2LwltyqaS4h7Sx5KRhpFNmMpyVsBf5J2q3fbfmrsXt+emY7XhVTc1NV\nizUWYyxCoTTeMWvN/6NYpPV0lSxq7jMTFVZrWQUMqJclxpECQQDTlGwALtAX1Y8u\nGKsEHPkoq9bhHA5N9WAboQ4LQCZVC8eBf/XH//2iosYTXRNgII2JLmHmmxJHo5iN\nJPFMbnoHAkEAz81osJf+yHm7PBBJP4zEWZCV25c+iJiPDpj5UoUXEbq47qVfy1mV\nDqy2zoDynAWitU7PeHyZ8ozfyribPoR2qQJAVmvMhXKZmvKnLivzRpXTC9LMzVwZ\nV6x/Wim5w8yrG5fZIMM0kEG2xwR3pZch/+SsCzl/0aLLn6lp+VT6nr6NZwJBAMxs\nHrvymoLvNeDtiJFK0nHliXafP7YyljDfDg4+vSYE0R57c1RhSQBJqgBV29TeumSw\nJes6cFuqeBE+MAJ9XxkCQDdUdhnA8HHQRNetqK7lygUep7EcHHCB6u/0FypoLw7o\nEUVo5KSEFq93UeMr3B7DDPIz3LOrFXlm7clCh1HFZhQ=\n-----END RSA PRIVATE KEY-----&quot;,
-            &quot;cert&quot;: &quot;-----BEGIN CERTIFICATE-----\nMIIB6TCCAVICCQCZgxbBD0CG4zANBgkqhkiG9w0BAQUFADA5MQswCQYDVQQGEwJV\nUzETMBEGA1UECBMKU29tZS1TdGF0ZTEVMBMGA1UEChMMVGhvdWdodFdvcmtzMB4X\nDTEzMTIyOTE2NDAzN1oXDTE0MDEyODE2NDAzN1owOTELMAkGA1UEBhMCVVMxEzAR\nBgNVBAgTClNvbWUtU3RhdGUxFTATBgNVBAoTDFRob3VnaHRXb3JrczCBnzANBgkq\nhkiG9w0BAQEFAAOBjQAwgYkCgYEAq77HtOGJMbVRmoMrxiQrL7+y03yyubkf2SCS\ng2Ap7hfgagczOJZKPDt/b8fi8/RXxddV5fgjdWmN+2Lqy2DpXt3Qv6rJUm0A3tky\nTe5XFR1bLHj73DuSBMabzRVeS2LZsgjCiR8aZyKa7/7a1LKOaG6s814RVT1fUkGx\nR/7JyJ8CAwEAATANBgkqhkiG9w0BAQUFAAOBgQCPhixeKxIy+ftrfPikwjYo1uxp\ngQ18FdVN1pbI//IIx1o8kJuX8yZzO95PsCOU0GbIRCkFMhBlqHiD9H0/W/GvWzjf\n7WFW15lL61y/kH1J0wqEgoaMrUDjHZvKVr0HrN+vSxHlNQcSNFJ2KdvZ5a9dhpGf\nXOdprCdUUXzSoJWCCg==\n-----END CERTIFICATE-----&quot;,
-            &quot;predicateGenerators&quot;: [
+          <span id='stubs.responses.proxy'>&quot;proxy&quot;: {</span>
+            <span id='stubs.responses.proxy.to'>&quot;to&quot;: &quot;https://www.somesite.com:3000&quot;,</span>
+            <span id='stubs.responses.proxy.mode'>&quot;mode&quot;: &quot;proxyAlways&quot;,</span>
+            <span id='stubs.responses.proxy.key'>&quot;key&quot;: &quot;-----BEGIN RSA PRIVATE KEY-----\nMIICXAIBAAKBgQCrvse04YkxtVGagyvGJCsvv7LTfLK5uR/ZIJKDYCnuF+BqBzM4\nlko8O39vx+Lz9FfF11Xl+CN1aY37YurLYOle3dC/qslSbQDe2TJN7lcVHVssePvc\nO5IExpvNFV5LYtmyCMKJHxpnIprv/trUso5obqzzXhFVPV9SQbFH/snInwIDAQAB\nAoGARywlqLD6YO4qJiULw+4DM6N2oSwBCPRN3XYhIW59kdy1NFtNf7rQgsuJUTJ9\nu+lbYnKNd2LwltyqaS4h7Sx5KRhpFNmMpyVsBf5J2q3fbfmrsXt+emY7XhVTc1NV\nizUWYyxCoTTeMWvN/6NYpPV0lSxq7jMTFVZrWQUMqJclxpECQQDTlGwALtAX1Y8u\nGKsEHPkoq9bhHA5N9WAboQ4LQCZVC8eBf/XH//2iosYTXRNgII2JLmHmmxJHo5iN\nJPFMbnoHAkEAz81osJf+yHm7PBBJP4zEWZCV25c+iJiPDpj5UoUXEbq47qVfy1mV\nDqy2zoDynAWitU7PeHyZ8ozfyribPoR2qQJAVmvMhXKZmvKnLivzRpXTC9LMzVwZ\nV6x/Wim5w8yrG5fZIMM0kEG2xwR3pZch/+SsCzl/0aLLn6lp+VT6nr6NZwJBAMxs\nHrvymoLvNeDtiJFK0nHliXafP7YyljDfDg4+vSYE0R57c1RhSQBJqgBV29TeumSw\nJes6cFuqeBE+MAJ9XxkCQDdUdhnA8HHQRNetqK7lygUep7EcHHCB6u/0FypoLw7o\nEUVo5KSEFq93UeMr3B7DDPIz3LOrFXlm7clCh1HFZhQ=\n-----END RSA PRIVATE KEY-----&quot;,</span>
+            <span id='stubs.responses.proxy.cert'>&quot;cert&quot;: &quot;-----BEGIN CERTIFICATE-----\nMIIB6TCCAVICCQCZgxbBD0CG4zANBgkqhkiG9w0BAQUFADA5MQswCQYDVQQGEwJV\nUzETMBEGA1UECBMKU29tZS1TdGF0ZTEVMBMGA1UEChMMVGhvdWdodFdvcmtzMB4X\nDTEzMTIyOTE2NDAzN1oXDTE0MDEyODE2NDAzN1owOTELMAkGA1UEBhMCVVMxEzAR\nBgNVBAgTClNvbWUtU3RhdGUxFTATBgNVBAoTDFRob3VnaHRXb3JrczCBnzANBgkq\nhkiG9w0BAQEFAAOBjQAwgYkCgYEAq77HtOGJMbVRmoMrxiQrL7+y03yyubkf2SCS\ng2Ap7hfgagczOJZKPDt/b8fi8/RXxddV5fgjdWmN+2Lqy2DpXt3Qv6rJUm0A3tky\nTe5XFR1bLHj73DuSBMabzRVeS2LZsgjCiR8aZyKa7/7a1LKOaG6s814RVT1fUkGx\nR/7JyJ8CAwEAATANBgkqhkiG9w0BAQUFAAOBgQCPhixeKxIy+ftrfPikwjYo1uxp\ngQ18FdVN1pbI//IIx1o8kJuX8yZzO95PsCOU0GbIRCkFMhBlqHiD9H0/W/GvWzjf\n7WFW15lL61y/kH1J0wqEgoaMrUDjHZvKVr0HrN+vSxHlNQcSNFJ2KdvZ5a9dhpGf\nXOdprCdUUXzSoJWCCg==\n-----END CERTIFICATE-----&quot;,</span>
+            <span id='stubs.responses.proxy.predicateGenerators'>&quot;predicateGenerators&quot;: [</span>
               {
-                &quot;matches&quot;: {
+                <span id='stubs.responses.proxy.predicateGenerators.matches'>&quot;matches&quot;: {</span>
                   &quot;method&quot;: true,
                   &quot;path&quot;: true
                 }
@@ -39,32 +51,32 @@
           }
         },
         {
-          &quot;inject&quot;: &quot;function (request, state, logger callback) { callback({ body: 'It worked!' ); }&quot;
+          <span id='stubs.responses.inject'>&quot;inject&quot;: &quot;function (request, state, logger callback) { callback({ body: 'It worked!' ); }&quot;</span>
         }
       ],
-      &quot;predicates&quot;: [
+      <span id='stubs.predicates'>&quot;predicates&quot;: [</span>
         {
-          &quot;equals&quot;: {
+          <span id='stubs.predicates.equals'>&quot;equals&quot;: {</span>
             &quot;body&quot;: &quot;value&quot;,
-            &quot;caseSensitive&quot;: true,
-            &quot;except&quot;: &quot;^The &quot;,
-            &quot;xpath&quot;: {
-              &quot;selector&quot;: &quot;//book/@title&quot;,
-              &quot;ns&quot;: {
+            <span id='stubs.predicates.equals.caseSensitive'>&quot;caseSensitive&quot;: true,</span>
+            <span id='stubs.predicates.equals.except'>&quot;except&quot;: &quot;^The &quot;,</span>
+            <span id='stubs.predicates.equals.xpath'>&quot;xpath&quot;: {</span>
+              <span id='stubs.predicates.equals.xpath.selector'>&quot;selector&quot;: &quot;//book/@title&quot;,</span>
+              <span id='stubs.predicates.equals.xpath.ns'>&quot;ns&quot;: {</span>
                 &quot;isbn&quot;: &quot;http://schemas.isbn.org/ns/1999/basic.dtd&quot;
               }
             }
           }
         },
         {
-          &quot;inject&quot;: &quot;function (request, logger) { return request.body.length &lt; 100; }&quot;
+          <span id='stubs.predicates.inject'>&quot;inject&quot;: &quot;function (request, logger) { return request.body.length &lt; 100; }&quot;</span>
         }
       ],
-      &quot;matches&quot;: [
+      <span id='stubs.matches'>&quot;matches&quot;: [</span>
         {
-          &quot;timestamp&quot;: &quot;2014-01-09T02:30:31.043Z&quot;,
-          &quot;request&quot;: {
-            &quot;requestFrom&quot;: &quot;::ffff:127.0.0.1:60523&quot;,
+          <span id='stubs.matches.timestamp'>&quot;timestamp&quot;: &quot;2014-01-09T02:30:31.043Z&quot;,</span>
+          <span id='stubs.matches.request'>&quot;request&quot;: {</span>
+            <span id='stubs.matches.request.requestFrom'>&quot;requestFrom&quot;: &quot;::ffff:127.0.0.1:60523&quot;,</span>
             &quot;method&quot;: &quot;POST&quot;,
             &quot;path&quot;: &quot;/imposters&quot;,
             &quot;query&quot;: {},
@@ -77,7 +89,7 @@
             },
             &quot;body&quot;: &quot;&lt;books&gt;&lt;book title='The value' /&gt;&lt;/books&gt;&quot;
           },
-          &quot;response&quot;: {
+          <span id='stubs.matches.response'>&quot;response&quot;: {</span>
             &quot;statusCode&quot;: 201,
             &quot;headers&quot;: {
               &quot;Location&quot;: &quot;http://example.com/resource&quot;
@@ -89,12 +101,13 @@
       ]
     }
   ],
-  &quot;endOfRequestResolver&quot;: {
-    &quot;inject&quot;: &quot;function (request, logger) { return request.length &gt;= 100; }&quot;
+  <span id='endOfRequestResolver'>&quot;endOfRequestResolver&quot;: {</span>
+    <span id='endOfRequestResolver.inject'>&quot;inject&quot;: &quot;function (request, logger) { return request.length &gt;= 100; }&quot;</span>
   },
-  &quot;requests&quot;: [
+  <span id='requests'>&quot;requests&quot;: [</span>
     {
-      &quot;requestFrom&quot;: &quot;::ffff:127.0.0.1:60523&quot;,
+      <span id='requests.timestamp'>&quot;timestamp&quot;: &quot;2014-01-09T02:30:31.043Z&quot;,</span>
+      <span id='requests.requestFrom'>&quot;requestFrom&quot;: &quot;::ffff:127.0.0.1:60523&quot;,</span>
       &quot;method&quot;: &quot;POST&quot;,
       &quot;path&quot;: &quot;/imposters&quot;,
       &quot;query&quot;: {},
@@ -105,13 +118,73 @@
         &quot;connection&quot;: &quot;keep-alive&quot;,
         &quot;transfer-encoding&quot;: &quot;chunked&quot;
       },
-      &quot;body&quot;: &quot;Just checking&quot;,
-      &quot;timestamp&quot;: &quot;2014-01-09T02:30:31.043Z&quot;
+      &quot;body&quot;: &quot;Just checking&quot;
     }
   ],
-  &quot;_links&quot;: {
-    &quot;self&quot;: {
-      &quot;href&quot;: &quot;http://localhost:2525/imposters/4545&quot;
+  <span id='_links'>&quot;_links&quot;: {</span>
+    <span id='_links.self'>&quot;self&quot;: {</span>
+      <span id='_links.self.href'>&quot;href&quot;: &quot;http://localhost:2525/imposters/4545&quot;</span>
     }
   }
 }
+</code></pre>
+
+<div class='contract' id='specification-description'>
+  <div id='port-description'>
+    <p>The port to run the imposter on.<p>
+    <p>Optional.  Defaults to a randomly assigned port that will be returned in the response</p>
+    <p>On Linux and Mac, requires <code>sudo</code> to set to a privileged port (1-1023)</p>
+  </div>
+  <div id='protocol-description'>
+    <p>Defines the protocol that the imposter will respond to.  Valid values are:</p>
+    <ul class='bullet-list' style='margin: 0 0 0 20px;'>
+      <li>http</li>
+      <li>https</li>
+      <li>tcp</li>
+      <li>smtp</li>
+    </ul>
+    <p>Most of the API represented in this contract is protocol-agnostic, except for the request
+    and response fields.  When a field is specific to a particular protocol, it will be documented
+    as such when you hover over it.</p>
+  </div>
+</div>
+
+<script type='text/javascript'>
+  $('#specification-description').height($('#specification').height());
+
+  function descriptionFor (id) {
+    return $('#' + id + '-description');
+  }
+
+  function hoverOn {
+    $('#specification span').on('mouseenter', function () {
+      descriptionFor(this.id).show();
+      $(this).css('background-color', 'gold');
+    });
+
+    $('#specification span').on('mouseleave', function () {
+      descriptionFor(this.id).hide();
+      $(this).css('background-color', '');
+    });
+  }
+
+  function hoverOff {
+    $('#specification span').off('mouseenter');
+    $('#specification span').off('mouseleave');
+  }
+
+  $('#specification span').click(function () {
+    if (!this.pinned) {
+      this.pinned = true;
+      hoverOff();
+    }
+    else {
+      this.pinned = false;
+      hoverOn();
+    }
+  });
+
+  hoverOn();
+</script>
+
+<% include ../../../_footer %>

@@ -346,3 +346,28 @@ input[type=search] {
 #notice a {
     color: blue;
 }
+
+/* For contract pages */
+.contract {
+    float: left;
+    width: 45%;
+    margin-left: 1em;
+}
+
+#specification span {
+    cursor: pointer;
+    width: 100%;
+}
+
+#specification-description {
+    background-color: #ddd;
+    border: 1px solid #888;
+    border-radius: 3px;
+    overflow: auto;
+    padding: 6px 10px;
+    margin-top: 14px;
+}
+
+#specification-description div {
+    display: none;
+}
