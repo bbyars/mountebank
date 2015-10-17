@@ -146,6 +146,10 @@ description = "The specification of the imposter resource"
     and response fields.  When a field is specific to a particular protocol, it will be documented
     as such when you hover over it.</p>
   </div>
+
+  <div id='_links-description'>
+    <p>Defines the hypermedia relationships for the imposter.</p>
+  </div>
 </div>
 
 <script type='text/javascript'>
@@ -157,6 +161,7 @@ description = "The specification of the imposter resource"
 
   function hoverOn () {
     $('#specification span').on('mouseenter', function () {
+      descriptionFor(this.id).css('top', $(this).offset().top - $('#port').offset().top);
       descriptionFor(this.id).show();
       $(this).css('background-color', 'gold');
       $(this).find('a').css('visibility', 'visible');

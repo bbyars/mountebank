@@ -379,4 +379,5 @@ input[type=search] {
 
 #specification-description div {
     display: none;
+    position: relative;
 }
