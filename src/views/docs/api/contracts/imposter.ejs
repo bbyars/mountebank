@@ -20,14 +20,14 @@ description = "The specification of the imposter resource"
     {
 <span id='stubs.responses'> <a href='#' title='Click to pin documentation on the right' class='thumbtack-icon'></a>    &quot;responses&quot;: [</span>
         {
-<span id='stubs.responses.is'> <a href='#' title='Click to pin documentation on the right' class='thumbtack-icon'></a>        &quot;is&quot;: {</span>
+<span id='stubs.responses.is'> <a href='#' title='Click to pin documentation on the right' class='thumbtack-icon'></a>        &quot;is&quot;: {
             &quot;statusCode&quot;: 201,
             &quot;headers&quot;: {
               &quot;Location&quot;: &quot;http://example.com/resource&quot;
             },
             &quot;body&quot;: &quot;The time is ${TIME}&quot;,
             &quot;_mode&quot;: &quot;text&quot;
-          },
+          },</span>
 <span id='stubs._behaviors'> <a href='#' title='Click to pin documentation on the right' class='thumbtack-icon'></a>        &quot;_behaviors&quot;: {</span>
 <span id='stubs._behaviors.wait'> <a href='#' title='Click to pin documentation on the right' class='thumbtack-icon'></a>          &quot;wait&quot;: 500,</span>
 <span id='stubs._behaviors.decorate'> <a href='#' title='Click to pin documentation on the right' class='thumbtack-icon'></a>          &quot;decorate&quot;: &quot;function (request, response) { response.body = response.body.replace('${TIME}', 'now'); }&quot;</span>
@@ -41,10 +41,10 @@ description = "The specification of the imposter resource"
 <span id='stubs.responses.proxy.cert'> <a href='#' title='Click to pin documentation on the right' class='thumbtack-icon'></a>          &quot;cert&quot;: &quot;-----BEGIN CERTIFICATE-----\nMIIB6TCCAVICCQCZgxbBD0CG4zANBgkqhkiG9w0BAQUFADA5MQswCQYDVQQGEwJV\nUzETMBEGA1UECBMKU29tZS1TdGF0ZTEVMBMGA1UEChMMVGhvdWdodFdvcmtzMB4X\nDTEzMTIyOTE2NDAzN1oXDTE0MDEyODE2NDAzN1owOTELMAkGA1UEBhMCVVMxEzAR\nBgNVBAgTClNvbWUtU3RhdGUxFTATBgNVBAoTDFRob3VnaHRXb3JrczCBnzANBgkq\nhkiG9w0BAQEFAAOBjQAwgYkCgYEAq77HtOGJMbVRmoMrxiQrL7+y03yyubkf2SCS\ng2Ap7hfgagczOJZKPDt/b8fi8/RXxddV5fgjdWmN+2Lqy2DpXt3Qv6rJUm0A3tky\nTe5XFR1bLHj73DuSBMabzRVeS2LZsgjCiR8aZyKa7/7a1LKOaG6s814RVT1fUkGx\nR/7JyJ8CAwEAATANBgkqhkiG9w0BAQUFAAOBgQCPhixeKxIy+ftrfPikwjYo1uxp\ngQ18FdVN1pbI//IIx1o8kJuX8yZzO95PsCOU0GbIRCkFMhBlqHiD9H0/W/GvWzjf\n7WFW15lL61y/kH1J0wqEgoaMrUDjHZvKVr0HrN+vSxHlNQcSNFJ2KdvZ5a9dhpGf\nXOdprCdUUXzSoJWCCg==\n-----END CERTIFICATE-----&quot;,</span>
 <span id='stubs.responses.proxy.predicateGenerators'> <a href='#' title='Click to pin documentation on the right' class='thumbtack-icon'></a>          &quot;predicateGenerators&quot;: [</span>
               {
-<span id='stubs.responses.proxy.predicateGenerators.matches'> <a href='#' title='Click to pin documentation on the right' class='thumbtack-icon'></a>              &quot;matches&quot;: {</span>
+<span id='stubs.responses.proxy.predicateGenerators.matches'> <a href='#' title='Click to pin documentation on the right' class='thumbtack-icon'></a>              &quot;matches&quot;: {
                   &quot;method&quot;: true,
                   &quot;path&quot;: true
-                }
+                }</span>
               }
             ]
           }
@@ -61,9 +61,9 @@ description = "The specification of the imposter resource"
 <span id='stubs.predicates.equals.except'> <a href='#' title='Click to pin documentation on the right' class='thumbtack-icon'></a>          &quot;except&quot;: &quot;^The &quot;,</span>
 <span id='stubs.predicates.equals.xpath'> <a href='#' title='Click to pin documentation on the right' class='thumbtack-icon'></a>          &quot;xpath&quot;: {</span>
 <span id='stubs.predicates.equals.xpath.selector'> <a href='#' title='Click to pin documentation on the right' class='thumbtack-icon'></a>            &quot;selector&quot;: &quot;//book/@title&quot;,</span>
-<span id='stubs.predicates.equals.xpath.ns'> <a href='#' title='Click to pin documentation on the right' class='thumbtack-icon'></a>            &quot;ns&quot;: {</span>
+<span id='stubs.predicates.equals.xpath.ns'> <a href='#' title='Click to pin documentation on the right' class='thumbtack-icon'></a>            &quot;ns&quot;: {
                 &quot;isbn&quot;: &quot;http://schemas.isbn.org/ns/1999/basic.dtd&quot;
-              }
+              }</span>
             }
           }
         },
@@ -74,8 +74,8 @@ description = "The specification of the imposter resource"
 <span id='stubs.matches'> <a href='#' title='Click to pin documentation on the right' class='thumbtack-icon'></a>    &quot;matches&quot;: [</span>
         {
 <span id='stubs.matches.timestamp'> <a href='#' title='Click to pin documentation on the right' class='thumbtack-icon'></a>        &quot;timestamp&quot;: &quot;2014-01-09T02:30:31.043Z&quot;,</span>
-<span id='stubs.matches.request'> <a href='#' title='Click to pin documentation on the right' class='thumbtack-icon'></a>        &quot;request&quot;: {</span>
-<span id='stubs.matches.request.requestFrom'> <a href='#' title='Click to pin documentation on the right' class='thumbtack-icon'></a>          &quot;requestFrom&quot;: &quot;::ffff:127.0.0.1:60523&quot;,</span>
+<span id='stubs.matches.request'> <a href='#' title='Click to pin documentation on the right' class='thumbtack-icon'></a>        &quot;request&quot;: {
+            &quot;requestFrom&quot;: &quot;::ffff:127.0.0.1:60523&quot;,
             &quot;method&quot;: &quot;POST&quot;,
             &quot;path&quot;: &quot;/imposters&quot;,
             &quot;query&quot;: {},
@@ -87,15 +87,15 @@ description = "The specification of the imposter resource"
               &quot;transfer-encoding&quot;: &quot;chunked&quot;
             },
             &quot;body&quot;: &quot;&lt;books&gt;&lt;book title='The value' /&gt;&lt;/books&gt;&quot;
-          },
-<span id='stubs.matches.response'> <a href='#' title='Click to pin documentation on the right' class='thumbtack-icon'></a>        &quot;response&quot;: {</span>
+          },</span>
+<span id='stubs.matches.response'> <a href='#' title='Click to pin documentation on the right' class='thumbtack-icon'></a>        &quot;response&quot;: {
             &quot;statusCode&quot;: 201,
             &quot;headers&quot;: {
               &quot;Location&quot;: &quot;http://example.com/resource&quot;
             },
             &quot;body&quot;: &quot;The time is now&quot;,
             &quot;_mode&quot;: &quot;text&quot;
-          }
+          }</span>
         }
       ]
     }
@@ -103,10 +103,10 @@ description = "The specification of the imposter resource"
 <span id='endOfRequestResolver'> <a href='#' title='Click to pin documentation on the right' class='thumbtack-icon'></a>&quot;endOfRequestResolver&quot;: {</span>
 <span id='endOfRequestResolver.inject'> <a href='#' title='Click to pin documentation on the right' class='thumbtack-icon'></a>  &quot;inject&quot;: &quot;function (request, logger) { return request.length &gt;= 100; }&quot;</span>
   },
-<span id='requests'> <a href='#' title='Click to pin documentation on the right' class='thumbtack-icon'></a>&quot;requests&quot;: [</span>
+<span id='requests'> <a href='#' title='Click to pin documentation on the right' class='thumbtack-icon'></a>&quot;requests&quot;: [
     {
-<span id='requests.timestamp'> <a href='#' title='Click to pin documentation on the right' class='thumbtack-icon'></a>    &quot;timestamp&quot;: &quot;2014-01-09T02:30:31.043Z&quot;,</span>
-<span id='requests.requestFrom'> <a href='#' title='Click to pin documentation on the right' class='thumbtack-icon'></a>    &quot;requestFrom&quot;: &quot;::ffff:127.0.0.1:60523&quot;,</span>
+      &quot;timestamp&quot;: &quot;2014-01-09T02:30:31.043Z&quot;,
+      &quot;requestFrom&quot;: &quot;::ffff:127.0.0.1:60523&quot;,
       &quot;method&quot;: &quot;POST&quot;,
       &quot;path&quot;: &quot;/imposters&quot;,
       &quot;query&quot;: {},
@@ -119,10 +119,10 @@ description = "The specification of the imposter resource"
       },
       &quot;body&quot;: &quot;Just checking&quot;
     }
-  ],
-<span id='_links'> <a href='#' title='Click to pin documentation on the right' class='thumbtack-icon'></a>&quot;_links&quot;: {</span>
-<span id='_links.self'> <a href='#' title='Click to pin documentation on the right' class='thumbtack-icon'></a>  &quot;self&quot;: {</span>
-<span id='_links.self.href'> <a href='#' title='Click to pin documentation on the right' class='thumbtack-icon'></a>    &quot;href&quot;: &quot;http://localhost:2525/imposters/4545&quot;</span>
+  ],</span>
+<span id='_links'> <a href='#' title='Click to pin documentation on the right' class='thumbtack-icon'></a>&quot;_links&quot;: {
+    &quot;self&quot;: {
+      &quot;href&quot;: &quot;http://localhost:2525/imposters/4545&quot;</span>
     }
   }
 }
