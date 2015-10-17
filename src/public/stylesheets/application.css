@@ -329,6 +329,11 @@ strong {
     *margin-right: .3em;
 }
 
+.thumbtack-icon:before {
+    content:"\f08d";
+    font-family: FontAwesome;
+}
+
 input[type=search] {
     width: 15em;
 }
@@ -355,8 +360,12 @@ input[type=search] {
 }
 
 #specification span {
-    cursor: pointer;
     width: 100%;
+    display: inline-block;
+}
+
+#specification a {
+    visibility: hidden;
 }
 
 #specification-description {
