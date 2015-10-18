@@ -64,7 +64,8 @@ ul {
 }
 
 .indent {
-    margin: 0 0 0 20px;
+    margin: 0 0 0 1em;
+    padding: 0 1em;
 }
 
 nav.vertical ul {
@@ -323,6 +324,7 @@ strong {
     height: auto;
 }
 
+/* fontawesome icons used */
 .feed-icon:before {
     content: "\f09e";
     font-family: FontAwesome;
@@ -336,6 +338,19 @@ strong {
 .thumbtack-icon:before {
     content:"\f08d";
     font-family: FontAwesome;
+}
+
+.info-icon:before {
+    content: "\f05a  ";
+    font-family: FontAwesome;
+    color: green;
+}
+
+.warning-icon:before {
+    content: "\f071  ";
+    font-family: FontAwesome;
+    color: #f07600;
+    font-weight: bold;
 }
 
 input[type=search] {
