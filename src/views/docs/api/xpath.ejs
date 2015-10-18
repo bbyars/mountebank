@@ -14,6 +14,27 @@ value to a value matched by the the xpath selector, much like the <a href='/docs
 <code>except</code> parameter</a>.  mountebank suggests avoiding using this parameter on fields
 that are not XML documents.  He also counsels avoiding the temptation to use it with binary protocols.</p>
 
+<p>mountebank uses the following fields with xpath:</p>
+
+<table>
+  <tr>
+    <th>Field</th>
+    <th>Required?</th>
+    <th>Description</th>
+  </tr>
+  <tr>
+    <td><code>selector</code></td>
+    <td>Yes</td>
+    <td>The XPath selector</td>
+  </tr>
+  <tr>
+    <td><code>ns</code></td>
+    <td>No</td>
+    <td>The XPath namespace map, aliasing a prefix to a URL, which allows you to use the prefix in
+    the <code>selector</code>.</td>
+  </tr>
+</table>
+
 <p>You can send the parameter without namespaces...</p>
 
 <pre><code>

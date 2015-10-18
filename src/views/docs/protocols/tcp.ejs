@@ -114,7 +114,7 @@ protocols give some way of determining this, such as the <code>Content-Length</c
 HTTP or by embedding the message length in binary protocols.  By default, mountebank assumes
 each packet represents a separate request, which typically limits the size of each request
 to somewhere between 1500 and 64k bytes (you'll get a larger payload using the loopback interface
-on localhost, but protocols like Ethernet will force a smaller payload over the network).
+on localhost, but lower level protocols like Ethernet will force a smaller payload over the network).
 This strategy works for many scenarios as simple serialized requests tend to fall below this size,
 but breaks down with large requests.</p>
 

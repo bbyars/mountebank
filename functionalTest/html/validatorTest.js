@@ -26,6 +26,7 @@ if (process.env.MB_AIRPLANE_MODE !== 'true' && process.env.MB_SKIP_W3C_TESTS !==
             '/docs/commandLine',
             '/docs/clientLibraries',
             '/docs/api/overview',
+            '/docs/api/contracts/imposter',
             '/docs/api/mocks',
             '/docs/api/stubs',
             '/docs/api/predicates',
