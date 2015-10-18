@@ -101,7 +101,7 @@ function create (options) {
         '/docs/commandLine',
         '/docs/clientLibraries',
         '/docs/api/overview',
-        '/docs/api/contracts/imposter',
+        '/docs/api/contracts',
         '/docs/api/mocks',
         '/docs/api/stubs',
         '/docs/api/predicates',
