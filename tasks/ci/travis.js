@@ -53,7 +53,7 @@ function responseFor (options) {
     return deferred.promise;
 }
 
-function triggerBuild (version) {
+function triggerBuild () {
     return responseFor({
         method: 'POST',
         path: '/repo/bbyars%2Fmountebank/requests',
@@ -107,7 +107,7 @@ function getBuildStatus (buildNumber) {
         }
 
         return (response.body.builds.length === 0) ? 'pending' : response.body.builds[0].state;
-    })
+    });
 }
 
 module.exports = {

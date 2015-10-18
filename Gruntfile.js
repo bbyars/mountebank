@@ -38,7 +38,15 @@ module.exports = function (grunt) {
             }
         },
         jshint: {
-            all: ['Gruntfile.js', 'src/**/*.js', 'test/**/*.js', 'functionalTest/**/*.js', 'performanceTest/**/*.js', 'bin/mb'],
+            all: [
+                'Gruntfile.js',
+                'src/**/*.js',
+                'tasks/**/*.js',
+                'test/**/*.js',
+                'functionalTest/**/*.js',
+                'performanceTest/**/*.js',
+                'bin/mb'
+            ],
             options: {
                 node: true,
                 globals: {

@@ -63,7 +63,7 @@ ul {
     padding: 1em;
 }
 
-li.indent {
+.indent {
     margin: 0 0 0 20px;
 }
 
@@ -370,9 +370,10 @@ input[type=search] {
 #specification span {
     width: 100%;
     display: inline-block;
+    cursor: default;
 }
 
-#specification span.response {
+.response {
     color: #660055;
 }
 

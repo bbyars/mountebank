@@ -9,7 +9,6 @@ var fs = require('fs-extra'),
     version = process.env.MB_VERSION || thisPackage.version,
     versionMajorMinor = version.replace(/\.\d+(\+\d+)?$/, ''),
     urlPrefix = 'https://s3.amazonaws.com/mountebank/v' + versionMajorMinor;
-;
 
 function download (file, destination) {
     var deferred = Q.defer(),

@@ -84,7 +84,7 @@ function getBuildStatus (buildNumber) {
         path: '/api/projects/bbyars/mountebank/build/' + buildNumber
     }).then(function (response) {
         if (response.statusCode !== 200) {
-            console.error('Status code of GET /api/projects/mountebank/build/' + buildNumber + ': ' + resopnse.statusCode);
+            console.error('Status code of GET /api/projects/mountebank/build/' + buildNumber + ': ' + response.statusCode);
             throw response.body;
         }
 
