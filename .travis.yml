@@ -59,12 +59,17 @@ matrix:
     - os: linux
       sudo: false
       env:
+        - NODE_VERSION=4.0
+    - os: linux
+      sudo: false
+      env:
         - NODE_VERSION=0.12
         - MB_SKIP_W3C_TESTS=true
     - os: linux
       sudo: false
       env:
         - NODE_VERSION=0.10
+        - MB_SKIP_W3C_TESTS=true
     - os: osx
       sudo: false
       env:
