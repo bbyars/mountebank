@@ -1,6 +1,14 @@
 <%
-title = 'Imposter contract'
-description = "The specification of the imposter resource"
+title = 'Contracts'
+description = 'Contract specifications and descriptions'
+
+function indent (spaces) {
+  var result = '';
+  for (var i = 0; i < spaces - 2; i++) {
+    result += ' ';
+  }
+  return " <a title='Click to pin documentation on the right' class='thumbtack-icon'></a>" + result;
+}
 %>
 
 <% include ../../../_header %>
@@ -11,17 +19,17 @@ description = "The specification of the imposter resource"
 are only meaningful in the response; they will be ignored in any requests.</p>
 
 <pre class='contract' id='specification'><code>{
-<span id='port'> <a title='Click to pin documentation on the right' class='thumbtack-icon'></a>&quot;port&quot;: 4545,</span>
-<span id='protocol'> <a title='Click to pin documentation on the right' class='thumbtack-icon'></a>&quot;protocol&quot;: &quot;https&quot;,</span>
-<span id='name'> <a title='Click to pin documentation on the right' class='thumbtack-icon'></a>&quot;name&quot;: &quot;imposter contract service&quot;,</span>
-<span id='key'> <a title='Click to pin documentation on the right' class='thumbtack-icon'></a>&quot;key&quot;: &quot;-----BEGIN RSA PRIVATE KEY-----\nMIICXAIBAAKBgQCrvse04YkxtVGagyvGJCsvv7LTfLK5uR/ZIJKDYCnuF+BqBzM4\nlko8O39vx+Lz9FfF11Xl+CN1aY37YurLYOle3dC/qslSbQDe2TJN7lcVHVssePvc\nO5IExpvNFV5LYtmyCMKJHxpnIprv/trUso5obqzzXhFVPV9SQbFH/snInwIDAQAB\nAoGARywlqLD6YO4qJiULw+4DM6N2oSwBCPRN3XYhIW59kdy1NFtNf7rQgsuJUTJ9\nu+lbYnKNd2LwltyqaS4h7Sx5KRhpFNmMpyVsBf5J2q3fbfmrsXt+emY7XhVTc1NV\nizUWYyxCoTTeMWvN/6NYpPV0lSxq7jMTFVZrWQUMqJclxpECQQDTlGwALtAX1Y8u\nGKsEHPkoq9bhHA5N9WAboQ4LQCZVC8eBf/XH//2iosYTXRNgII2JLmHmmxJHo5iN\nJPFMbnoHAkEAz81osJf+yHm7PBBJP4zEWZCV25c+iJiPDpj5UoUXEbq47qVfy1mV\nDqy2zoDynAWitU7PeHyZ8ozfyribPoR2qQJAVmvMhXKZmvKnLivzRpXTC9LMzVwZ\nV6x/Wim5w8yrG5fZIMM0kEG2xwR3pZch/+SsCzl/0aLLn6lp+VT6nr6NZwJBAMxs\nHrvymoLvNeDtiJFK0nHliXafP7YyljDfDg4+vSYE0R57c1RhSQBJqgBV29TeumSw\nJes6cFuqeBE+MAJ9XxkCQDdUdhnA8HHQRNetqK7lygUep7EcHHCB6u/0FypoLw7o\nEUVo5KSEFq93UeMr3B7DDPIz3LOrFXlm7clCh1HFZhQ=\n-----END RSA PRIVATE KEY-----&quot;,</span>
-<span id='cert'> <a title='Click to pin documentation on the right' class='thumbtack-icon'></a>&quot;cert&quot;: &quot;-----BEGIN CERTIFICATE-----\nMIIB6TCCAVICCQCZgxbBD0CG4zANBgkqhkiG9w0BAQUFADA5MQswCQYDVQQGEwJV\nUzETMBEGA1UECBMKU29tZS1TdGF0ZTEVMBMGA1UEChMMVGhvdWdodFdvcmtzMB4X\nDTEzMTIyOTE2NDAzN1oXDTE0MDEyODE2NDAzN1owOTELMAkGA1UEBhMCVVMxEzAR\nBgNVBAgTClNvbWUtU3RhdGUxFTATBgNVBAoTDFRob3VnaHRXb3JrczCBnzANBgkq\nhkiG9w0BAQEFAAOBjQAwgYkCgYEAq77HtOGJMbVRmoMrxiQrL7+y03yyubkf2SCS\ng2Ap7hfgagczOJZKPDt/b8fi8/RXxddV5fgjdWmN+2Lqy2DpXt3Qv6rJUm0A3tky\nTe5XFR1bLHj73DuSBMabzRVeS2LZsgjCiR8aZyKa7/7a1LKOaG6s814RVT1fUkGx\nR/7JyJ8CAwEAATANBgkqhkiG9w0BAQUFAAOBgQCPhixeKxIy+ftrfPikwjYo1uxp\ngQ18FdVN1pbI//IIx1o8kJuX8yZzO95PsCOU0GbIRCkFMhBlqHiD9H0/W/GvWzjf\n7WFW15lL61y/kH1J0wqEgoaMrUDjHZvKVr0HrN+vSxHlNQcSNFJ2KdvZ5a9dhpGf\nXOdprCdUUXzSoJWCCg==\n-----END CERTIFICATE-----&quot;,</span>
-<span id='mutualAuth'> <a title='Click to pin documentation on the right' class='thumbtack-icon'></a>&quot;mutualAuth&quot;: false,</span>
-<span id='stubs'> <a title='Click to pin documentation on the right' class='thumbtack-icon'></a>&quot;stubs&quot;: [</span>
+<span id='port'><%- indent(2) %>&quot;port&quot;: 4545,</span>
+<span id='protocol'><%- indent(2) %>&quot;protocol&quot;: &quot;https&quot;,</span>
+<span id='name'><%- indent(2) %>&quot;name&quot;: &quot;imposter contract service&quot;,</span>
+<span id='key'><%- indent(2) %>&quot;key&quot;: &quot;-----BEGIN RSA PRIVATE KEY-----\nMIICXAIBAAKBgQCrvse04YkxtVGagyvGJCsvv7LTfLK5uR/ZIJKDYCnuF+BqBzM4\nlko8O39vx+Lz9FfF11Xl+CN1aY37YurLYOle3dC/qslSbQDe2TJN7lcVHVssePvc\nO5IExpvNFV5LYtmyCMKJHxpnIprv/trUso5obqzzXhFVPV9SQbFH/snInwIDAQAB\nAoGARywlqLD6YO4qJiULw+4DM6N2oSwBCPRN3XYhIW59kdy1NFtNf7rQgsuJUTJ9\nu+lbYnKNd2LwltyqaS4h7Sx5KRhpFNmMpyVsBf5J2q3fbfmrsXt+emY7XhVTc1NV\nizUWYyxCoTTeMWvN/6NYpPV0lSxq7jMTFVZrWQUMqJclxpECQQDTlGwALtAX1Y8u\nGKsEHPkoq9bhHA5N9WAboQ4LQCZVC8eBf/XH//2iosYTXRNgII2JLmHmmxJHo5iN\nJPFMbnoHAkEAz81osJf+yHm7PBBJP4zEWZCV25c+iJiPDpj5UoUXEbq47qVfy1mV\nDqy2zoDynAWitU7PeHyZ8ozfyribPoR2qQJAVmvMhXKZmvKnLivzRpXTC9LMzVwZ\nV6x/Wim5w8yrG5fZIMM0kEG2xwR3pZch/+SsCzl/0aLLn6lp+VT6nr6NZwJBAMxs\nHrvymoLvNeDtiJFK0nHliXafP7YyljDfDg4+vSYE0R57c1RhSQBJqgBV29TeumSw\nJes6cFuqeBE+MAJ9XxkCQDdUdhnA8HHQRNetqK7lygUep7EcHHCB6u/0FypoLw7o\nEUVo5KSEFq93UeMr3B7DDPIz3LOrFXlm7clCh1HFZhQ=\n-----END RSA PRIVATE KEY-----&quot;,</span>
+<span id='cert'><%- indent(2) %>&quot;cert&quot;: &quot;-----BEGIN CERTIFICATE-----\nMIIB6TCCAVICCQCZgxbBD0CG4zANBgkqhkiG9w0BAQUFADA5MQswCQYDVQQGEwJV\nUzETMBEGA1UECBMKU29tZS1TdGF0ZTEVMBMGA1UEChMMVGhvdWdodFdvcmtzMB4X\nDTEzMTIyOTE2NDAzN1oXDTE0MDEyODE2NDAzN1owOTELMAkGA1UEBhMCVVMxEzAR\nBgNVBAgTClNvbWUtU3RhdGUxFTATBgNVBAoTDFRob3VnaHRXb3JrczCBnzANBgkq\nhkiG9w0BAQEFAAOBjQAwgYkCgYEAq77HtOGJMbVRmoMrxiQrL7+y03yyubkf2SCS\ng2Ap7hfgagczOJZKPDt/b8fi8/RXxddV5fgjdWmN+2Lqy2DpXt3Qv6rJUm0A3tky\nTe5XFR1bLHj73DuSBMabzRVeS2LZsgjCiR8aZyKa7/7a1LKOaG6s814RVT1fUkGx\nR/7JyJ8CAwEAATANBgkqhkiG9w0BAQUFAAOBgQCPhixeKxIy+ftrfPikwjYo1uxp\ngQ18FdVN1pbI//IIx1o8kJuX8yZzO95PsCOU0GbIRCkFMhBlqHiD9H0/W/GvWzjf\n7WFW15lL61y/kH1J0wqEgoaMrUDjHZvKVr0HrN+vSxHlNQcSNFJ2KdvZ5a9dhpGf\nXOdprCdUUXzSoJWCCg==\n-----END CERTIFICATE-----&quot;,</span>
+<span id='mutualAuth'><%- indent(2) %>&quot;mutualAuth&quot;: false,</span>
+<span id='stubs'><%- indent(2) %>&quot;stubs&quot;: [</span>
     {
-<span id='stubs-responses'> <a title='Click to pin documentation on the right' class='thumbtack-icon'></a>    &quot;responses&quot;: [</span>
+<span id='stubs-responses'><%- indent(6) %>&quot;responses&quot;: [</span>
         {
-<span id='stubs-responses-is'> <a title='Click to pin documentation on the right' class='thumbtack-icon'></a>        &quot;is&quot;: {
+<span id='stubs-responses-is'><%- indent(10) %>&quot;is&quot;: {
             &quot;statusCode&quot;: 201,
             &quot;headers&quot;: {
               &quot;Location&quot;: &quot;http://example.com/resource&quot;
@@ -29,18 +37,18 @@ are only meaningful in the response; they will be ignored in any requests.</p>
             &quot;body&quot;: &quot;The time is ${TIME}&quot;,
             &quot;_mode&quot;: &quot;text&quot;
           },</span>
-<span id='stubs-_behaviors'> <a title='Click to pin documentation on the right' class='thumbtack-icon'></a>        &quot;_behaviors&quot;: {</span>
-<span id='stubs-_behaviors-wait'> <a title='Click to pin documentation on the right' class='thumbtack-icon'></a>          &quot;wait&quot;: 500,</span>
-<span id='stubs-_behaviors-decorate'> <a title='Click to pin documentation on the right' class='thumbtack-icon'></a>          &quot;decorate&quot;: &quot;function (request, response) { response.body = response.body.replace('${TIME}', 'now'); }&quot;</span>
+<span id='stubs-_behaviors'><%- indent(10) %>&quot;_behaviors&quot;: {</span>
+<span id='stubs-_behaviors-wait'><%- indent(12) %>&quot;wait&quot;: 500,</span>
+<span id='stubs-_behaviors-decorate'><%- indent(12) %>&quot;decorate&quot;: &quot;function (request, response) { response.body = response.body.replace('${TIME}', 'now'); }&quot;</span>
           }
         },
         {
-<span id='stubs-responses-proxy'> <a title='Click to pin documentation on the right' class='thumbtack-icon'></a>        &quot;proxy&quot;: {</span>
-<span id='stubs-responses-proxy-to'> <a title='Click to pin documentation on the right' class='thumbtack-icon'></a>          &quot;to&quot;: &quot;https://www.somesite.com:3000&quot;,</span>
-<span id='stubs-responses-proxy-mode'> <a title='Click to pin documentation on the right' class='thumbtack-icon'></a>          &quot;mode&quot;: &quot;proxyAlways&quot;,</span>
-<span id='stubs-responses-proxy-key'> <a title='Click to pin documentation on the right' class='thumbtack-icon'></a>          &quot;key&quot;: &quot;-----BEGIN RSA PRIVATE KEY-----\nMIICXAIBAAKBgQCrvse04YkxtVGagyvGJCsvv7LTfLK5uR/ZIJKDYCnuF+BqBzM4\nlko8O39vx+Lz9FfF11Xl+CN1aY37YurLYOle3dC/qslSbQDe2TJN7lcVHVssePvc\nO5IExpvNFV5LYtmyCMKJHxpnIprv/trUso5obqzzXhFVPV9SQbFH/snInwIDAQAB\nAoGARywlqLD6YO4qJiULw+4DM6N2oSwBCPRN3XYhIW59kdy1NFtNf7rQgsuJUTJ9\nu+lbYnKNd2LwltyqaS4h7Sx5KRhpFNmMpyVsBf5J2q3fbfmrsXt+emY7XhVTc1NV\nizUWYyxCoTTeMWvN/6NYpPV0lSxq7jMTFVZrWQUMqJclxpECQQDTlGwALtAX1Y8u\nGKsEHPkoq9bhHA5N9WAboQ4LQCZVC8eBf/XH//2iosYTXRNgII2JLmHmmxJHo5iN\nJPFMbnoHAkEAz81osJf+yHm7PBBJP4zEWZCV25c+iJiPDpj5UoUXEbq47qVfy1mV\nDqy2zoDynAWitU7PeHyZ8ozfyribPoR2qQJAVmvMhXKZmvKnLivzRpXTC9LMzVwZ\nV6x/Wim5w8yrG5fZIMM0kEG2xwR3pZch/+SsCzl/0aLLn6lp+VT6nr6NZwJBAMxs\nHrvymoLvNeDtiJFK0nHliXafP7YyljDfDg4+vSYE0R57c1RhSQBJqgBV29TeumSw\nJes6cFuqeBE+MAJ9XxkCQDdUdhnA8HHQRNetqK7lygUep7EcHHCB6u/0FypoLw7o\nEUVo5KSEFq93UeMr3B7DDPIz3LOrFXlm7clCh1HFZhQ=\n-----END RSA PRIVATE KEY-----&quot;,</span>
-<span id='stubs-responses-proxy-cert'> <a title='Click to pin documentation on the right' class='thumbtack-icon'></a>          &quot;cert&quot;: &quot;-----BEGIN CERTIFICATE-----\nMIIB6TCCAVICCQCZgxbBD0CG4zANBgkqhkiG9w0BAQUFADA5MQswCQYDVQQGEwJV\nUzETMBEGA1UECBMKU29tZS1TdGF0ZTEVMBMGA1UEChMMVGhvdWdodFdvcmtzMB4X\nDTEzMTIyOTE2NDAzN1oXDTE0MDEyODE2NDAzN1owOTELMAkGA1UEBhMCVVMxEzAR\nBgNVBAgTClNvbWUtU3RhdGUxFTATBgNVBAoTDFRob3VnaHRXb3JrczCBnzANBgkq\nhkiG9w0BAQEFAAOBjQAwgYkCgYEAq77HtOGJMbVRmoMrxiQrL7+y03yyubkf2SCS\ng2Ap7hfgagczOJZKPDt/b8fi8/RXxddV5fgjdWmN+2Lqy2DpXt3Qv6rJUm0A3tky\nTe5XFR1bLHj73DuSBMabzRVeS2LZsgjCiR8aZyKa7/7a1LKOaG6s814RVT1fUkGx\nR/7JyJ8CAwEAATANBgkqhkiG9w0BAQUFAAOBgQCPhixeKxIy+ftrfPikwjYo1uxp\ngQ18FdVN1pbI//IIx1o8kJuX8yZzO95PsCOU0GbIRCkFMhBlqHiD9H0/W/GvWzjf\n7WFW15lL61y/kH1J0wqEgoaMrUDjHZvKVr0HrN+vSxHlNQcSNFJ2KdvZ5a9dhpGf\nXOdprCdUUXzSoJWCCg==\n-----END CERTIFICATE-----&quot;,</span>
-<span id='stubs-responses-proxy-predicateGenerators'> <a title='Click to pin documentation on the right' class='thumbtack-icon'></a>          &quot;predicateGenerators&quot;: [
+<span id='stubs-responses-proxy'><%- indent(10) %>&quot;proxy&quot;: {</span>
+<span id='stubs-responses-proxy-to'><%- indent(12) %>&quot;to&quot;: &quot;https://www.somesite.com:3000&quot;,</span>
+<span id='stubs-responses-proxy-mode'><%- indent(12) %>&quot;mode&quot;: &quot;proxyAlways&quot;,</span>
+<span id='stubs-responses-proxy-key'><%- indent(12) %>&quot;key&quot;: &quot;-----BEGIN RSA PRIVATE KEY-----\nMIICXAIBAAKBgQCrvse04YkxtVGagyvGJCsvv7LTfLK5uR/ZIJKDYCnuF+BqBzM4\nlko8O39vx+Lz9FfF11Xl+CN1aY37YurLYOle3dC/qslSbQDe2TJN7lcVHVssePvc\nO5IExpvNFV5LYtmyCMKJHxpnIprv/trUso5obqzzXhFVPV9SQbFH/snInwIDAQAB\nAoGARywlqLD6YO4qJiULw+4DM6N2oSwBCPRN3XYhIW59kdy1NFtNf7rQgsuJUTJ9\nu+lbYnKNd2LwltyqaS4h7Sx5KRhpFNmMpyVsBf5J2q3fbfmrsXt+emY7XhVTc1NV\nizUWYyxCoTTeMWvN/6NYpPV0lSxq7jMTFVZrWQUMqJclxpECQQDTlGwALtAX1Y8u\nGKsEHPkoq9bhHA5N9WAboQ4LQCZVC8eBf/XH//2iosYTXRNgII2JLmHmmxJHo5iN\nJPFMbnoHAkEAz81osJf+yHm7PBBJP4zEWZCV25c+iJiPDpj5UoUXEbq47qVfy1mV\nDqy2zoDynAWitU7PeHyZ8ozfyribPoR2qQJAVmvMhXKZmvKnLivzRpXTC9LMzVwZ\nV6x/Wim5w8yrG5fZIMM0kEG2xwR3pZch/+SsCzl/0aLLn6lp+VT6nr6NZwJBAMxs\nHrvymoLvNeDtiJFK0nHliXafP7YyljDfDg4+vSYE0R57c1RhSQBJqgBV29TeumSw\nJes6cFuqeBE+MAJ9XxkCQDdUdhnA8HHQRNetqK7lygUep7EcHHCB6u/0FypoLw7o\nEUVo5KSEFq93UeMr3B7DDPIz3LOrFXlm7clCh1HFZhQ=\n-----END RSA PRIVATE KEY-----&quot;,</span>
+<span id='stubs-responses-proxy-cert'><%- indent(12) %>&quot;cert&quot;: &quot;-----BEGIN CERTIFICATE-----\nMIIB6TCCAVICCQCZgxbBD0CG4zANBgkqhkiG9w0BAQUFADA5MQswCQYDVQQGEwJV\nUzETMBEGA1UECBMKU29tZS1TdGF0ZTEVMBMGA1UEChMMVGhvdWdodFdvcmtzMB4X\nDTEzMTIyOTE2NDAzN1oXDTE0MDEyODE2NDAzN1owOTELMAkGA1UEBhMCVVMxEzAR\nBgNVBAgTClNvbWUtU3RhdGUxFTATBgNVBAoTDFRob3VnaHRXb3JrczCBnzANBgkq\nhkiG9w0BAQEFAAOBjQAwgYkCgYEAq77HtOGJMbVRmoMrxiQrL7+y03yyubkf2SCS\ng2Ap7hfgagczOJZKPDt/b8fi8/RXxddV5fgjdWmN+2Lqy2DpXt3Qv6rJUm0A3tky\nTe5XFR1bLHj73DuSBMabzRVeS2LZsgjCiR8aZyKa7/7a1LKOaG6s814RVT1fUkGx\nR/7JyJ8CAwEAATANBgkqhkiG9w0BAQUFAAOBgQCPhixeKxIy+ftrfPikwjYo1uxp\ngQ18FdVN1pbI//IIx1o8kJuX8yZzO95PsCOU0GbIRCkFMhBlqHiD9H0/W/GvWzjf\n7WFW15lL61y/kH1J0wqEgoaMrUDjHZvKVr0HrN+vSxHlNQcSNFJ2KdvZ5a9dhpGf\nXOdprCdUUXzSoJWCCg==\n-----END CERTIFICATE-----&quot;,</span>
+<span id='stubs-responses-proxy-predicateGenerators'><%- indent(12) %>&quot;predicateGenerators&quot;: [
               {
                 &quot;matches&quot;: {
                   &quot;method&quot;: true,
@@ -51,16 +59,16 @@ are only meaningful in the response; they will be ignored in any requests.</p>
           }
         },
         {
-<span id='stubs-responses-inject'> <a title='Click to pin documentation on the right' class='thumbtack-icon'></a>        &quot;inject&quot;: &quot;function (request, state, logger callback) { callback({ body: 'It worked!' ); }&quot;</span>
+<span id='stubs-responses-inject'><%- indent(10) %>&quot;inject&quot;: &quot;function (request, state, logger callback) { callback({ body: 'It worked!' ); }&quot;</span>
         }
       ],
-<span id='stubs-predicates'> <a title='Click to pin documentation on the right' class='thumbtack-icon'></a>    &quot;predicates&quot;: [</span>
+<span id='stubs-predicates'><%- indent(6) %>&quot;predicates&quot;: [</span>
         {
-<span id='stubs-predicates-equals'> <a title='Click to pin documentation on the right' class='thumbtack-icon'></a>        &quot;equals&quot;: {
+<span id='stubs-predicates-equals'><%- indent(10) %>&quot;equals&quot;: {
             &quot;body&quot;: &quot;value&quot;,</span>
-<span id='stubs-predicates-equals-caseSensitive'> <a title='Click to pin documentation on the right' class='thumbtack-icon'></a>          &quot;caseSensitive&quot;: true,</span>
-<span id='stubs-predicates-equals-except'> <a title='Click to pin documentation on the right' class='thumbtack-icon'></a>          &quot;except&quot;: &quot;^The &quot;,</span>
-<span id='stubs-predicates-equals-xpath'> <a title='Click to pin documentation on the right' class='thumbtack-icon'></a>          &quot;xpath&quot;: {
+<span id='stubs-predicates-equals-caseSensitive'><%- indent(12) %>&quot;caseSensitive&quot;: true,</span>
+<span id='stubs-predicates-equals-except'><%- indent(12) %>&quot;except&quot;: &quot;^The &quot;,</span>
+<span id='stubs-predicates-equals-xpath'><%- indent(12) %>&quot;xpath&quot;: {
               &quot;selector&quot;: &quot;//book/@title&quot;,
               &quot;ns&quot;: {
                 &quot;isbn&quot;: &quot;http://schemas.isbn.org/ns/1999/basic.dtd&quot;
@@ -69,10 +77,10 @@ are only meaningful in the response; they will be ignored in any requests.</p>
           }
         },
         {
-<span id='stubs-predicates-inject'> <a title='Click to pin documentation on the right' class='thumbtack-icon'></a>        &quot;inject&quot;: &quot;function (request, logger) { return request.body.length &lt; 100; }&quot;</span>
+<span id='stubs-predicates-inject'><%- indent(8) %>&quot;inject&quot;: &quot;function (request, logger) { return request.body.length &lt; 100; }&quot;</span>
         }
       ],
-<span id='stubs-matches' class='response'> <a title='Click to pin documentation on the right' class='thumbtack-icon'></a>    &quot;matches&quot;: [
+<span id='stubs-matches' class='response'><%- indent(6) %>&quot;matches&quot;: [
         {
           &quot;timestamp&quot;: &quot;2014-01-09T02:30:31.043Z&quot;,
           &quot;request&quot;: {
@@ -101,10 +109,10 @@ are only meaningful in the response; they will be ignored in any requests.</p>
       ]
     }
   ],</span>
-<span id='endOfRequestResolver'> <a title='Click to pin documentation on the right' class='thumbtack-icon'></a>&quot;endOfRequestResolver&quot;: {
+<span id='endOfRequestResolver'><%- indent(2) %>&quot;endOfRequestResolver&quot;: {
     &quot;inject&quot;: &quot;function (request, logger) { return request.length &gt;= 100; }&quot;</span>
   },
-<span id='requests' class='response'> <a title='Click to pin documentation on the right' class='thumbtack-icon'></a>&quot;requests&quot;: [
+<span id='requests' class='response'><%- indent(2) %>&quot;requests&quot;: [
     {
       &quot;timestamp&quot;: &quot;2014-01-09T02:30:31.043Z&quot;,
       &quot;requestFrom&quot;: &quot;::ffff:127.0.0.1:60523&quot;,
@@ -121,7 +129,7 @@ are only meaningful in the response; they will be ignored in any requests.</p>
       &quot;body&quot;: &quot;Just checking&quot;
     }
   ],</span>
-<span id='_links' class='response'> <a title='Click to pin documentation on the right' class='thumbtack-icon'></a>&quot;_links&quot;: {
+<span id='_links' class='response'><%- indent(2) %>&quot;_links&quot;: {
     &quot;self&quot;: {
       &quot;href&quot;: &quot;http://localhost:2525/imposters/4545&quot;</span>
     }
