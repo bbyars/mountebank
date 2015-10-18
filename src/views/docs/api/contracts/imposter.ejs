@@ -7,20 +7,21 @@ description = "The specification of the imposter resource"
 
 <h1>Imposter Contract</h1>
 
-<p>To get more details on any field, simply hover your mouse over that field.</p>
+<p>To get more details on any field, simply hover your mouse over that field.  Purple fields
+are only meaningful in the response; they will be ignored in any requests.</p>
 
 <pre class='contract' id='specification'><code>{
-<span id='port'> <a href='#' title='Click to pin documentation on the right' class='thumbtack-icon'></a>&quot;port&quot;: 4545,</span>
-<span id='protocol'> <a href='#' title='Click to pin documentation on the right' class='thumbtack-icon'></a>&quot;protocol&quot;: &quot;https&quot;,</span>
-<span id='name'> <a href='#' title='Click to pin documentation on the right' class='thumbtack-icon'></a>&quot;name&quot;: &quot;imposter contract service&quot;,</span>
-<span id='key'> <a href='#' title='Click to pin documentation on the right' class='thumbtack-icon'></a>&quot;key&quot;: &quot;-----BEGIN RSA PRIVATE KEY-----\nMIICXAIBAAKBgQCrvse04YkxtVGagyvGJCsvv7LTfLK5uR/ZIJKDYCnuF+BqBzM4\nlko8O39vx+Lz9FfF11Xl+CN1aY37YurLYOle3dC/qslSbQDe2TJN7lcVHVssePvc\nO5IExpvNFV5LYtmyCMKJHxpnIprv/trUso5obqzzXhFVPV9SQbFH/snInwIDAQAB\nAoGARywlqLD6YO4qJiULw+4DM6N2oSwBCPRN3XYhIW59kdy1NFtNf7rQgsuJUTJ9\nu+lbYnKNd2LwltyqaS4h7Sx5KRhpFNmMpyVsBf5J2q3fbfmrsXt+emY7XhVTc1NV\nizUWYyxCoTTeMWvN/6NYpPV0lSxq7jMTFVZrWQUMqJclxpECQQDTlGwALtAX1Y8u\nGKsEHPkoq9bhHA5N9WAboQ4LQCZVC8eBf/XH//2iosYTXRNgII2JLmHmmxJHo5iN\nJPFMbnoHAkEAz81osJf+yHm7PBBJP4zEWZCV25c+iJiPDpj5UoUXEbq47qVfy1mV\nDqy2zoDynAWitU7PeHyZ8ozfyribPoR2qQJAVmvMhXKZmvKnLivzRpXTC9LMzVwZ\nV6x/Wim5w8yrG5fZIMM0kEG2xwR3pZch/+SsCzl/0aLLn6lp+VT6nr6NZwJBAMxs\nHrvymoLvNeDtiJFK0nHliXafP7YyljDfDg4+vSYE0R57c1RhSQBJqgBV29TeumSw\nJes6cFuqeBE+MAJ9XxkCQDdUdhnA8HHQRNetqK7lygUep7EcHHCB6u/0FypoLw7o\nEUVo5KSEFq93UeMr3B7DDPIz3LOrFXlm7clCh1HFZhQ=\n-----END RSA PRIVATE KEY-----&quot;,</span>
-<span id='cert'> <a href='#' title='Click to pin documentation on the right' class='thumbtack-icon'></a>&quot;cert&quot;: &quot;-----BEGIN CERTIFICATE-----\nMIIB6TCCAVICCQCZgxbBD0CG4zANBgkqhkiG9w0BAQUFADA5MQswCQYDVQQGEwJV\nUzETMBEGA1UECBMKU29tZS1TdGF0ZTEVMBMGA1UEChMMVGhvdWdodFdvcmtzMB4X\nDTEzMTIyOTE2NDAzN1oXDTE0MDEyODE2NDAzN1owOTELMAkGA1UEBhMCVVMxEzAR\nBgNVBAgTClNvbWUtU3RhdGUxFTATBgNVBAoTDFRob3VnaHRXb3JrczCBnzANBgkq\nhkiG9w0BAQEFAAOBjQAwgYkCgYEAq77HtOGJMbVRmoMrxiQrL7+y03yyubkf2SCS\ng2Ap7hfgagczOJZKPDt/b8fi8/RXxddV5fgjdWmN+2Lqy2DpXt3Qv6rJUm0A3tky\nTe5XFR1bLHj73DuSBMabzRVeS2LZsgjCiR8aZyKa7/7a1LKOaG6s814RVT1fUkGx\nR/7JyJ8CAwEAATANBgkqhkiG9w0BAQUFAAOBgQCPhixeKxIy+ftrfPikwjYo1uxp\ngQ18FdVN1pbI//IIx1o8kJuX8yZzO95PsCOU0GbIRCkFMhBlqHiD9H0/W/GvWzjf\n7WFW15lL61y/kH1J0wqEgoaMrUDjHZvKVr0HrN+vSxHlNQcSNFJ2KdvZ5a9dhpGf\nXOdprCdUUXzSoJWCCg==\n-----END CERTIFICATE-----&quot;,</span>
-<span id='mutualAuth'> <a href='#' title='Click to pin documentation on the right' class='thumbtack-icon'></a>&quot;mutualAuth&quot;: false,</span>
-<span id='stubs'> <a href='#' title='Click to pin documentation on the right' class='thumbtack-icon'></a>&quot;stubs&quot;: [</span>
+<span id='port'> <a title='Click to pin documentation on the right' class='thumbtack-icon'></a>&quot;port&quot;: 4545,</span>
+<span id='protocol'> <a title='Click to pin documentation on the right' class='thumbtack-icon'></a>&quot;protocol&quot;: &quot;https&quot;,</span>
+<span id='name'> <a title='Click to pin documentation on the right' class='thumbtack-icon'></a>&quot;name&quot;: &quot;imposter contract service&quot;,</span>
+<span id='key'> <a title='Click to pin documentation on the right' class='thumbtack-icon'></a>&quot;key&quot;: &quot;-----BEGIN RSA PRIVATE KEY-----\nMIICXAIBAAKBgQCrvse04YkxtVGagyvGJCsvv7LTfLK5uR/ZIJKDYCnuF+BqBzM4\nlko8O39vx+Lz9FfF11Xl+CN1aY37YurLYOle3dC/qslSbQDe2TJN7lcVHVssePvc\nO5IExpvNFV5LYtmyCMKJHxpnIprv/trUso5obqzzXhFVPV9SQbFH/snInwIDAQAB\nAoGARywlqLD6YO4qJiULw+4DM6N2oSwBCPRN3XYhIW59kdy1NFtNf7rQgsuJUTJ9\nu+lbYnKNd2LwltyqaS4h7Sx5KRhpFNmMpyVsBf5J2q3fbfmrsXt+emY7XhVTc1NV\nizUWYyxCoTTeMWvN/6NYpPV0lSxq7jMTFVZrWQUMqJclxpECQQDTlGwALtAX1Y8u\nGKsEHPkoq9bhHA5N9WAboQ4LQCZVC8eBf/XH//2iosYTXRNgII2JLmHmmxJHo5iN\nJPFMbnoHAkEAz81osJf+yHm7PBBJP4zEWZCV25c+iJiPDpj5UoUXEbq47qVfy1mV\nDqy2zoDynAWitU7PeHyZ8ozfyribPoR2qQJAVmvMhXKZmvKnLivzRpXTC9LMzVwZ\nV6x/Wim5w8yrG5fZIMM0kEG2xwR3pZch/+SsCzl/0aLLn6lp+VT6nr6NZwJBAMxs\nHrvymoLvNeDtiJFK0nHliXafP7YyljDfDg4+vSYE0R57c1RhSQBJqgBV29TeumSw\nJes6cFuqeBE+MAJ9XxkCQDdUdhnA8HHQRNetqK7lygUep7EcHHCB6u/0FypoLw7o\nEUVo5KSEFq93UeMr3B7DDPIz3LOrFXlm7clCh1HFZhQ=\n-----END RSA PRIVATE KEY-----&quot;,</span>
+<span id='cert'> <a title='Click to pin documentation on the right' class='thumbtack-icon'></a>&quot;cert&quot;: &quot;-----BEGIN CERTIFICATE-----\nMIIB6TCCAVICCQCZgxbBD0CG4zANBgkqhkiG9w0BAQUFADA5MQswCQYDVQQGEwJV\nUzETMBEGA1UECBMKU29tZS1TdGF0ZTEVMBMGA1UEChMMVGhvdWdodFdvcmtzMB4X\nDTEzMTIyOTE2NDAzN1oXDTE0MDEyODE2NDAzN1owOTELMAkGA1UEBhMCVVMxEzAR\nBgNVBAgTClNvbWUtU3RhdGUxFTATBgNVBAoTDFRob3VnaHRXb3JrczCBnzANBgkq\nhkiG9w0BAQEFAAOBjQAwgYkCgYEAq77HtOGJMbVRmoMrxiQrL7+y03yyubkf2SCS\ng2Ap7hfgagczOJZKPDt/b8fi8/RXxddV5fgjdWmN+2Lqy2DpXt3Qv6rJUm0A3tky\nTe5XFR1bLHj73DuSBMabzRVeS2LZsgjCiR8aZyKa7/7a1LKOaG6s814RVT1fUkGx\nR/7JyJ8CAwEAATANBgkqhkiG9w0BAQUFAAOBgQCPhixeKxIy+ftrfPikwjYo1uxp\ngQ18FdVN1pbI//IIx1o8kJuX8yZzO95PsCOU0GbIRCkFMhBlqHiD9H0/W/GvWzjf\n7WFW15lL61y/kH1J0wqEgoaMrUDjHZvKVr0HrN+vSxHlNQcSNFJ2KdvZ5a9dhpGf\nXOdprCdUUXzSoJWCCg==\n-----END CERTIFICATE-----&quot;,</span>
+<span id='mutualAuth'> <a title='Click to pin documentation on the right' class='thumbtack-icon'></a>&quot;mutualAuth&quot;: false,</span>
+<span id='stubs'> <a title='Click to pin documentation on the right' class='thumbtack-icon'></a>&quot;stubs&quot;: [</span>
     {
-<span id='stubs.responses'> <a href='#' title='Click to pin documentation on the right' class='thumbtack-icon'></a>    &quot;responses&quot;: [</span>
+<span id='stubs-responses'> <a title='Click to pin documentation on the right' class='thumbtack-icon'></a>    &quot;responses&quot;: [</span>
         {
-<span id='stubs.responses.is'> <a href='#' title='Click to pin documentation on the right' class='thumbtack-icon'></a>        &quot;is&quot;: {
+<span id='stubs-responses-is'> <a title='Click to pin documentation on the right' class='thumbtack-icon'></a>        &quot;is&quot;: {
             &quot;statusCode&quot;: 201,
             &quot;headers&quot;: {
               &quot;Location&quot;: &quot;http://example.com/resource&quot;
@@ -28,20 +29,20 @@ description = "The specification of the imposter resource"
             &quot;body&quot;: &quot;The time is ${TIME}&quot;,
             &quot;_mode&quot;: &quot;text&quot;
           },</span>
-<span id='stubs._behaviors'> <a href='#' title='Click to pin documentation on the right' class='thumbtack-icon'></a>        &quot;_behaviors&quot;: {</span>
-<span id='stubs._behaviors.wait'> <a href='#' title='Click to pin documentation on the right' class='thumbtack-icon'></a>          &quot;wait&quot;: 500,</span>
-<span id='stubs._behaviors.decorate'> <a href='#' title='Click to pin documentation on the right' class='thumbtack-icon'></a>          &quot;decorate&quot;: &quot;function (request, response) { response.body = response.body.replace('${TIME}', 'now'); }&quot;</span>
+<span id='stubs-_behaviors'> <a title='Click to pin documentation on the right' class='thumbtack-icon'></a>        &quot;_behaviors&quot;: {</span>
+<span id='stubs-_behaviors-wait'> <a title='Click to pin documentation on the right' class='thumbtack-icon'></a>          &quot;wait&quot;: 500,</span>
+<span id='stubs-_behaviors-decorate'> <a title='Click to pin documentation on the right' class='thumbtack-icon'></a>          &quot;decorate&quot;: &quot;function (request, response) { response.body = response.body.replace('${TIME}', 'now'); }&quot;</span>
           }
         },
         {
-<span id='stubs.responses.proxy'> <a href='#' title='Click to pin documentation on the right' class='thumbtack-icon'></a>        &quot;proxy&quot;: {</span>
-<span id='stubs.responses.proxy.to'> <a href='#' title='Click to pin documentation on the right' class='thumbtack-icon'></a>          &quot;to&quot;: &quot;https://www.somesite.com:3000&quot;,</span>
-<span id='stubs.responses.proxy.mode'> <a href='#' title='Click to pin documentation on the right' class='thumbtack-icon'></a>          &quot;mode&quot;: &quot;proxyAlways&quot;,</span>
-<span id='stubs.responses.proxy.key'> <a href='#' title='Click to pin documentation on the right' class='thumbtack-icon'></a>          &quot;key&quot;: &quot;-----BEGIN RSA PRIVATE KEY-----\nMIICXAIBAAKBgQCrvse04YkxtVGagyvGJCsvv7LTfLK5uR/ZIJKDYCnuF+BqBzM4\nlko8O39vx+Lz9FfF11Xl+CN1aY37YurLYOle3dC/qslSbQDe2TJN7lcVHVssePvc\nO5IExpvNFV5LYtmyCMKJHxpnIprv/trUso5obqzzXhFVPV9SQbFH/snInwIDAQAB\nAoGARywlqLD6YO4qJiULw+4DM6N2oSwBCPRN3XYhIW59kdy1NFtNf7rQgsuJUTJ9\nu+lbYnKNd2LwltyqaS4h7Sx5KRhpFNmMpyVsBf5J2q3fbfmrsXt+emY7XhVTc1NV\nizUWYyxCoTTeMWvN/6NYpPV0lSxq7jMTFVZrWQUMqJclxpECQQDTlGwALtAX1Y8u\nGKsEHPkoq9bhHA5N9WAboQ4LQCZVC8eBf/XH//2iosYTXRNgII2JLmHmmxJHo5iN\nJPFMbnoHAkEAz81osJf+yHm7PBBJP4zEWZCV25c+iJiPDpj5UoUXEbq47qVfy1mV\nDqy2zoDynAWitU7PeHyZ8ozfyribPoR2qQJAVmvMhXKZmvKnLivzRpXTC9LMzVwZ\nV6x/Wim5w8yrG5fZIMM0kEG2xwR3pZch/+SsCzl/0aLLn6lp+VT6nr6NZwJBAMxs\nHrvymoLvNeDtiJFK0nHliXafP7YyljDfDg4+vSYE0R57c1RhSQBJqgBV29TeumSw\nJes6cFuqeBE+MAJ9XxkCQDdUdhnA8HHQRNetqK7lygUep7EcHHCB6u/0FypoLw7o\nEUVo5KSEFq93UeMr3B7DDPIz3LOrFXlm7clCh1HFZhQ=\n-----END RSA PRIVATE KEY-----&quot;,</span>
-<span id='stubs.responses.proxy.cert'> <a href='#' title='Click to pin documentation on the right' class='thumbtack-icon'></a>          &quot;cert&quot;: &quot;-----BEGIN CERTIFICATE-----\nMIIB6TCCAVICCQCZgxbBD0CG4zANBgkqhkiG9w0BAQUFADA5MQswCQYDVQQGEwJV\nUzETMBEGA1UECBMKU29tZS1TdGF0ZTEVMBMGA1UEChMMVGhvdWdodFdvcmtzMB4X\nDTEzMTIyOTE2NDAzN1oXDTE0MDEyODE2NDAzN1owOTELMAkGA1UEBhMCVVMxEzAR\nBgNVBAgTClNvbWUtU3RhdGUxFTATBgNVBAoTDFRob3VnaHRXb3JrczCBnzANBgkq\nhkiG9w0BAQEFAAOBjQAwgYkCgYEAq77HtOGJMbVRmoMrxiQrL7+y03yyubkf2SCS\ng2Ap7hfgagczOJZKPDt/b8fi8/RXxddV5fgjdWmN+2Lqy2DpXt3Qv6rJUm0A3tky\nTe5XFR1bLHj73DuSBMabzRVeS2LZsgjCiR8aZyKa7/7a1LKOaG6s814RVT1fUkGx\nR/7JyJ8CAwEAATANBgkqhkiG9w0BAQUFAAOBgQCPhixeKxIy+ftrfPikwjYo1uxp\ngQ18FdVN1pbI//IIx1o8kJuX8yZzO95PsCOU0GbIRCkFMhBlqHiD9H0/W/GvWzjf\n7WFW15lL61y/kH1J0wqEgoaMrUDjHZvKVr0HrN+vSxHlNQcSNFJ2KdvZ5a9dhpGf\nXOdprCdUUXzSoJWCCg==\n-----END CERTIFICATE-----&quot;,</span>
-<span id='stubs.responses.proxy.predicateGenerators'> <a href='#' title='Click to pin documentation on the right' class='thumbtack-icon'></a>          &quot;predicateGenerators&quot;: [</span>
+<span id='stubs-responses-proxy'> <a title='Click to pin documentation on the right' class='thumbtack-icon'></a>        &quot;proxy&quot;: {</span>
+<span id='stubs-responses-proxy-to'> <a title='Click to pin documentation on the right' class='thumbtack-icon'></a>          &quot;to&quot;: &quot;https://www.somesite.com:3000&quot;,</span>
+<span id='stubs-responses-proxy-mode'> <a title='Click to pin documentation on the right' class='thumbtack-icon'></a>          &quot;mode&quot;: &quot;proxyAlways&quot;,</span>
+<span id='stubs-responses-proxy-key'> <a title='Click to pin documentation on the right' class='thumbtack-icon'></a>          &quot;key&quot;: &quot;-----BEGIN RSA PRIVATE KEY-----\nMIICXAIBAAKBgQCrvse04YkxtVGagyvGJCsvv7LTfLK5uR/ZIJKDYCnuF+BqBzM4\nlko8O39vx+Lz9FfF11Xl+CN1aY37YurLYOle3dC/qslSbQDe2TJN7lcVHVssePvc\nO5IExpvNFV5LYtmyCMKJHxpnIprv/trUso5obqzzXhFVPV9SQbFH/snInwIDAQAB\nAoGARywlqLD6YO4qJiULw+4DM6N2oSwBCPRN3XYhIW59kdy1NFtNf7rQgsuJUTJ9\nu+lbYnKNd2LwltyqaS4h7Sx5KRhpFNmMpyVsBf5J2q3fbfmrsXt+emY7XhVTc1NV\nizUWYyxCoTTeMWvN/6NYpPV0lSxq7jMTFVZrWQUMqJclxpECQQDTlGwALtAX1Y8u\nGKsEHPkoq9bhHA5N9WAboQ4LQCZVC8eBf/XH//2iosYTXRNgII2JLmHmmxJHo5iN\nJPFMbnoHAkEAz81osJf+yHm7PBBJP4zEWZCV25c+iJiPDpj5UoUXEbq47qVfy1mV\nDqy2zoDynAWitU7PeHyZ8ozfyribPoR2qQJAVmvMhXKZmvKnLivzRpXTC9LMzVwZ\nV6x/Wim5w8yrG5fZIMM0kEG2xwR3pZch/+SsCzl/0aLLn6lp+VT6nr6NZwJBAMxs\nHrvymoLvNeDtiJFK0nHliXafP7YyljDfDg4+vSYE0R57c1RhSQBJqgBV29TeumSw\nJes6cFuqeBE+MAJ9XxkCQDdUdhnA8HHQRNetqK7lygUep7EcHHCB6u/0FypoLw7o\nEUVo5KSEFq93UeMr3B7DDPIz3LOrFXlm7clCh1HFZhQ=\n-----END RSA PRIVATE KEY-----&quot;,</span>
+<span id='stubs-responses-proxy-cert'> <a title='Click to pin documentation on the right' class='thumbtack-icon'></a>          &quot;cert&quot;: &quot;-----BEGIN CERTIFICATE-----\nMIIB6TCCAVICCQCZgxbBD0CG4zANBgkqhkiG9w0BAQUFADA5MQswCQYDVQQGEwJV\nUzETMBEGA1UECBMKU29tZS1TdGF0ZTEVMBMGA1UEChMMVGhvdWdodFdvcmtzMB4X\nDTEzMTIyOTE2NDAzN1oXDTE0MDEyODE2NDAzN1owOTELMAkGA1UEBhMCVVMxEzAR\nBgNVBAgTClNvbWUtU3RhdGUxFTATBgNVBAoTDFRob3VnaHRXb3JrczCBnzANBgkq\nhkiG9w0BAQEFAAOBjQAwgYkCgYEAq77HtOGJMbVRmoMrxiQrL7+y03yyubkf2SCS\ng2Ap7hfgagczOJZKPDt/b8fi8/RXxddV5fgjdWmN+2Lqy2DpXt3Qv6rJUm0A3tky\nTe5XFR1bLHj73DuSBMabzRVeS2LZsgjCiR8aZyKa7/7a1LKOaG6s814RVT1fUkGx\nR/7JyJ8CAwEAATANBgkqhkiG9w0BAQUFAAOBgQCPhixeKxIy+ftrfPikwjYo1uxp\ngQ18FdVN1pbI//IIx1o8kJuX8yZzO95PsCOU0GbIRCkFMhBlqHiD9H0/W/GvWzjf\n7WFW15lL61y/kH1J0wqEgoaMrUDjHZvKVr0HrN+vSxHlNQcSNFJ2KdvZ5a9dhpGf\nXOdprCdUUXzSoJWCCg==\n-----END CERTIFICATE-----&quot;,</span>
+<span id='stubs-responses-proxy-predicateGenerators'> <a title='Click to pin documentation on the right' class='thumbtack-icon'></a>          &quot;predicateGenerators&quot;: [</span>
               {
-<span id='stubs.responses.proxy.predicateGenerators.matches'> <a href='#' title='Click to pin documentation on the right' class='thumbtack-icon'></a>              &quot;matches&quot;: {
+<span id='stubs-responses-proxy-predicateGenerators-matches'> <a title='Click to pin documentation on the right' class='thumbtack-icon'></a>              &quot;matches&quot;: {
                   &quot;method&quot;: true,
                   &quot;path&quot;: true
                 }</span>
@@ -50,31 +51,31 @@ description = "The specification of the imposter resource"
           }
         },
         {
-<span id='stubs.responses.inject'> <a href='#' title='Click to pin documentation on the right' class='thumbtack-icon'></a>        &quot;inject&quot;: &quot;function (request, state, logger callback) { callback({ body: 'It worked!' ); }&quot;</span>
+<span id='stubs-responses-inject'> <a title='Click to pin documentation on the right' class='thumbtack-icon'></a>        &quot;inject&quot;: &quot;function (request, state, logger callback) { callback({ body: 'It worked!' ); }&quot;</span>
         }
       ],
-<span id='stubs.predicates'> <a href='#' title='Click to pin documentation on the right' class='thumbtack-icon'></a>    &quot;predicates&quot;: [</span>
+<span id='stubs-predicates'> <a title='Click to pin documentation on the right' class='thumbtack-icon'></a>    &quot;predicates&quot;: [</span>
         {
-<span id='stubs.predicates.equals'> <a href='#' title='Click to pin documentation on the right' class='thumbtack-icon'></a>        &quot;equals&quot;: {</span>
+<span id='stubs-predicates-equals'> <a title='Click to pin documentation on the right' class='thumbtack-icon'></a>        &quot;equals&quot;: {</span>
             &quot;body&quot;: &quot;value&quot;,
-<span id='stubs.predicates.equals.caseSensitive'> <a href='#' title='Click to pin documentation on the right' class='thumbtack-icon'></a>          &quot;caseSensitive&quot;: true,</span>
-<span id='stubs.predicates.equals.except'> <a href='#' title='Click to pin documentation on the right' class='thumbtack-icon'></a>          &quot;except&quot;: &quot;^The &quot;,</span>
-<span id='stubs.predicates.equals.xpath'> <a href='#' title='Click to pin documentation on the right' class='thumbtack-icon'></a>          &quot;xpath&quot;: {</span>
-<span id='stubs.predicates.equals.xpath.selector'> <a href='#' title='Click to pin documentation on the right' class='thumbtack-icon'></a>            &quot;selector&quot;: &quot;//book/@title&quot;,</span>
-<span id='stubs.predicates.equals.xpath.ns'> <a href='#' title='Click to pin documentation on the right' class='thumbtack-icon'></a>            &quot;ns&quot;: {
+<span id='stubs-predicates-equals-caseSensitive'> <a title='Click to pin documentation on the right' class='thumbtack-icon'></a>          &quot;caseSensitive&quot;: true,</span>
+<span id='stubs-predicates-equals-except'> <a title='Click to pin documentation on the right' class='thumbtack-icon'></a>          &quot;except&quot;: &quot;^The &quot;,</span>
+<span id='stubs-predicates-equals-xpath'> <a title='Click to pin documentation on the right' class='thumbtack-icon'></a>          &quot;xpath&quot;: {</span>
+<span id='stubs-predicates-equals-xpath-selector'> <a title='Click to pin documentation on the right' class='thumbtack-icon'></a>            &quot;selector&quot;: &quot;//book/@title&quot;,</span>
+<span id='stubs-predicates-equals-xpath-ns'> <a title='Click to pin documentation on the right' class='thumbtack-icon'></a>            &quot;ns&quot;: {
                 &quot;isbn&quot;: &quot;http://schemas.isbn.org/ns/1999/basic.dtd&quot;
               }</span>
             }
           }
         },
         {
-<span id='stubs.predicates.inject'> <a href='#' title='Click to pin documentation on the right' class='thumbtack-icon'></a>        &quot;inject&quot;: &quot;function (request, logger) { return request.body.length &lt; 100; }&quot;</span>
+<span id='stubs-predicates-inject'> <a title='Click to pin documentation on the right' class='thumbtack-icon'></a>        &quot;inject&quot;: &quot;function (request, logger) { return request.body.length &lt; 100; }&quot;</span>
         }
       ],
-<span id='stubs.matches'> <a href='#' title='Click to pin documentation on the right' class='thumbtack-icon'></a>    &quot;matches&quot;: [</span>
+<span id='stubs-matches' class='response'> <a title='Click to pin documentation on the right' class='thumbtack-icon'></a>    &quot;matches&quot;: [
         {
-<span id='stubs.matches.timestamp'> <a href='#' title='Click to pin documentation on the right' class='thumbtack-icon'></a>        &quot;timestamp&quot;: &quot;2014-01-09T02:30:31.043Z&quot;,</span>
-<span id='stubs.matches.request'> <a href='#' title='Click to pin documentation on the right' class='thumbtack-icon'></a>        &quot;request&quot;: {
+          &quot;timestamp&quot;: &quot;2014-01-09T02:30:31.043Z&quot;,
+          &quot;request&quot;: {
             &quot;requestFrom&quot;: &quot;::ffff:127.0.0.1:60523&quot;,
             &quot;method&quot;: &quot;POST&quot;,
             &quot;path&quot;: &quot;/imposters&quot;,
@@ -87,23 +88,23 @@ description = "The specification of the imposter resource"
               &quot;transfer-encoding&quot;: &quot;chunked&quot;
             },
             &quot;body&quot;: &quot;&lt;books&gt;&lt;book title='The value' /&gt;&lt;/books&gt;&quot;
-          },</span>
-<span id='stubs.matches.response'> <a href='#' title='Click to pin documentation on the right' class='thumbtack-icon'></a>        &quot;response&quot;: {
+          },
+          &quot;response&quot;: {
             &quot;statusCode&quot;: 201,
             &quot;headers&quot;: {
               &quot;Location&quot;: &quot;http://example.com/resource&quot;
             },
             &quot;body&quot;: &quot;The time is now&quot;,
             &quot;_mode&quot;: &quot;text&quot;
-          }</span>
+          }
         }
       ]
     }
-  ],
-<span id='endOfRequestResolver'> <a href='#' title='Click to pin documentation on the right' class='thumbtack-icon'></a>&quot;endOfRequestResolver&quot;: {</span>
-<span id='endOfRequestResolver.inject'> <a href='#' title='Click to pin documentation on the right' class='thumbtack-icon'></a>  &quot;inject&quot;: &quot;function (request, logger) { return request.length &gt;= 100; }&quot;</span>
+  ],</span>
+<span id='endOfRequestResolver'> <a title='Click to pin documentation on the right' class='thumbtack-icon'></a>&quot;endOfRequestResolver&quot;: {</span>
+<span id='endOfRequestResolver-inject'> <a title='Click to pin documentation on the right' class='thumbtack-icon'></a>  &quot;inject&quot;: &quot;function (request, logger) { return request.length &gt;= 100; }&quot;</span>
   },
-<span id='requests'> <a href='#' title='Click to pin documentation on the right' class='thumbtack-icon'></a>&quot;requests&quot;: [
+<span id='requests' class='response'> <a title='Click to pin documentation on the right' class='thumbtack-icon'></a>&quot;requests&quot;: [
     {
       &quot;timestamp&quot;: &quot;2014-01-09T02:30:31.043Z&quot;,
       &quot;requestFrom&quot;: &quot;::ffff:127.0.0.1:60523&quot;,
@@ -120,7 +121,7 @@ description = "The specification of the imposter resource"
       &quot;body&quot;: &quot;Just checking&quot;
     }
   ],</span>
-<span id='_links'> <a href='#' title='Click to pin documentation on the right' class='thumbtack-icon'></a>&quot;_links&quot;: {
+<span id='_links' class='response'> <a title='Click to pin documentation on the right' class='thumbtack-icon'></a>&quot;_links&quot;: {
     &quot;self&quot;: {
       &quot;href&quot;: &quot;http://localhost:2525/imposters/4545&quot;</span>
     }
@@ -134,9 +135,10 @@ description = "The specification of the imposter resource"
     <p>Optional.  Defaults to a randomly assigned port that will be returned in the response</p>
     <p>On Linux and Mac, requires <code>sudo</code> to set to a privileged port (1-1023)</p>
   </div>
+
   <div id='protocol-description'>
     <p>Defines the protocol that the imposter will respond to.  Valid values are:</p>
-    <ul class='bullet-list' style='margin: 0 0 0 20px;'>
+    <ul class='bullet-list indent'>
       <li>http</li>
       <li>https</li>
       <li>tcp</li>
@@ -147,52 +149,164 @@ description = "The specification of the imposter resource"
     as such when you hover over it.</p>
   </div>
 
+  <div id='name-description'>
+    <p>Optional.  Allows you to provide a descriptive name that will show up in the <a href='/logs'>logs</a>
+    and the <a href='/imposters'>imposters UI</a>.</p>
+  </div>
+
+  <div id='key-description'>
+    <p>Optional.  Allows you to pass in an SSL private key for creating an https server (this field only applies
+    to https).  Must be a PEM-formatted string.  Defaults to a built-in private key.</p>
+
+    <p>More information: <a href='/docs/protocols/https'>https</a></p>
+  </div>
+
+  <div id='cert-description'>
+    <p>Optional.  Allows you to pass in an SSL certificate for creating an https server (this field only applies
+      to https).  Must be a PEM-formatted string.  Defaults to a built-in self-signed certificate.</p>
+
+    <p>More information: <a href='/docs/protocols/https'>https</a></p>
+  </div>
+
+  <div id='mutualAuth-description'>
+    <p>Optional.  If set to <code>true</code>, the server will request a client certificate. Since the goal
+      is simply to virtualize a server requiring mutual auth, invalid certificates will not be rejected.</p>
+
+    <p>More information: <a href='/docs/protocols/https'>https</a></p>
+  </div>
+
+  <div id='stubs-description'>
+    <p>A set of behaviors used to generate a response for an imposter. An imposter can have 0 or more stubs,
+      each of which are associated with different predicates and support different responses.</p>
+
+    <p>You would use multiple stubs for an imposter if the types of response you return depends on something
+    in the request, matched with a predicate.</p>
+  </div>
+
+  <div id='stubs-responses-description'>
+    <p>An array of responses to return for this stub.  The responses array defines a circular buffer - every
+      time the stub is used for the request, the first response is pulled from the front of the
+      <code>responses</code> array, evaluated, and pushed to the back of the array.  This elegantly does what
+      you want.  In the common case, when you always want to return the same response, you just add one response
+      to the array.  More complex scenarios will require that the same endpoint returns a sequence of
+      different responses for the same predicates.  Simply add them all to the array in order.
+      When the sequence finishes, it will start over.  More complexity can be added by simply
+      adding more responses to the array without complicating the contract.</p>
+
+    <p>Each response is defined by one and only one <i>stub resolver</i>.  This defines the type of response
+    generated.  The following stub resolvers are supported, and described in more detail in the contract
+    example to the left as well as the links provided below.</p>
+
+    <ul class='bullet-list indent'>
+      <li><a href='/docs/api/stubs'>is</a>: A canned response</li>
+      <li><a href='/docs/api/proxies'>proxy</a>: A record/replay response</li>
+      <li><a href='/docs/api/injection'>inject</a>: A scripted response</li>
+    </ul>
+  </div>
+
+  <div id='stubs-responses-is-description'>
+    <p>The <code>is</code> resolver represents a canned response that you define.  The response fields will
+      be those defined with each protocol according to the links below (the http response fields
+      are shown in this example).  smtp stubbing is not supported.</p>
+
+    <p>You do not need to fill in every response field; mountebank will merge the specified response fields
+      with the response defaults (see the protocol pages below for the defaults).</p>
+
+    <ul class='bullet-list indent'>
+      <li><a href='/docs/protocols/http'>http</a></li>
+      <li><a href='/docs/protocols/https'>https</a></li>
+      <li><a href='/docs/protocols/tcp'>tcp</a></li>
+    </ul>
+
+    <p>More information: <a href='/docs/api/stubs'>stubs</a></p>
+  </div>
+
+  <div id='stubs-_behaviors-description'></div>
+  <div id='stubs-_behaviors-wait-description'></div>
+  <div id='stubs-_behaviors-decorate-description'></div>
+  <div id='stubs-responses-proxy-description'></div>
+  <div id='stubs-responses-proxy-to-description'></div>
+  <div id='stubs-responses-proxy-mode-description'></div>
+  <div id='stubs-responses-proxy-key-description'></div>
+  <div id='stubs-responses-proxy-cert-description'></div>
+  <div id='stubs-responses-proxy-predicateGenerators-description'></div>
+  <div id='stubs-responses-proxy-predicateGenerators-matches-description'></div>
+  <div id='stubs-responses-inject-description'></div>
+  <div id='stubs-predicates-description'></div>
+  <div id='stubs-predicates-equals-description'></div>
+  <div id='stubs-predicates-equals-caseSensitive-description'></div>
+  <div id='stubs-predicates-equals-except-description'></div>
+  <div id='stubs-predicates-equals-xpath-description'></div>
+  <div id='stubs-predicates-equals-xpath-selector-description'></div>
+  <div id='stubs-predicates-equals-xpath-ns-description'></div>
+  <div id='stubs-predicates-inject-description'></div>
+  <div id='stubs-matches-description' class='response'></div>
+  <div id='endOfRequestResolver-description'></div>
+  <div id='endOfRequestResolver-inject-description'></div>
+  <div id='requests-description' class='response'></div>
+
   <div id='_links-description'>
     <p>Defines the hypermedia relationships for the imposter.</p>
   </div>
 </div>
 
 <script type='text/javascript'>
+  function mbHighlight () {
+    function descriptionFor (id) {
+      return $('#' + id + '-description');
+    }
+
+    function movedRight (fromElement, x, y) {
+      return x > fromElement.offset().left &&
+             y > fromElement.offset().top &&
+             y < fromElement.offset().top + fromElement.height();
+    }
+
+    function hoverOn () {
+      $('#specification span').on('mouseenter', function () {
+        $('#specification span').css('background-color', '');
+        $('#specification-description div').hide();
+
+        descriptionFor(this.id).css('top', $(this).offset().top - $('#port').offset().top);
+
+        $(this).find('a').css('visibility', 'visible');
+        $(this).css('background-color', 'gold');
+        descriptionFor(this.id).show();
+      });
+
+      $('#specification span').on('mouseleave', function (event) {
+        $(this).find('a').css('visibility', 'hidden');
+
+        if (!movedRight($(event.fromElement), event.pageX, event.pageY)) {
+          $(this).css('background-color', '');
+          descriptionFor(this.id).hide();
+        }
+      });
+    }
+
+    function hoverOff () {
+      $('#specification span').off('mouseenter');
+      $('#specification span').off('mouseleave');
+    }
+
+    $('#specification a').click(function () {
+      if (!this.pinned) {
+        this.pinned = true;
+        $(this).css('text-decoration', 'underline');
+        hoverOff();
+      }
+      else {
+        this.pinned = false;
+        $(this).css('text-decoration', '');
+        hoverOn();
+      }
+    });
+
+    hoverOn();
+  }
+
   $('#specification-description').height($('#specification').height());
-
-  function descriptionFor (id) {
-    return $('#' + id + '-description');
-  }
-
-  function hoverOn () {
-    $('#specification span').on('mouseenter', function () {
-      descriptionFor(this.id).css('top', $(this).offset().top - $('#port').offset().top);
-      descriptionFor(this.id).show();
-      $(this).css('background-color', 'gold');
-      $(this).find('a').css('visibility', 'visible');
-    });
-
-    $('#specification span').on('mouseleave', function () {
-      descriptionFor(this.id).hide();
-      $(this).css('background-color', '');
-      $(this).find('a').css('visibility', 'hidden');
-    });
-  }
-
-  function hoverOff () {
-    $('#specification span').off('mouseenter');
-    $('#specification span').off('mouseleave');
-  }
-
-  $('#specification a').click(function () {
-    if (!this.pinned) {
-      this.pinned = true;
-      $(this).css('text-decoration', 'underline');
-      hoverOff();
-    }
-    else {
-      this.pinned = false;
-      $(this).css('text-decoration', '');
-      hoverOn();
-    }
-  });
-
-  hoverOn();
+  mbHighlight();
 </script>
 
 <% include ../../../_footer %>

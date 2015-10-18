@@ -63,6 +63,10 @@ ul {
     padding: 1em;
 }
 
+li.indent {
+    margin: 0 0 0 20px;
+}
+
 nav.vertical ul {
     margin-left: 1em;
 }
@@ -359,9 +363,17 @@ input[type=search] {
     margin-left: 1em;
 }
 
+#specification a {
+    cursor: pointer;
+}
+
 #specification span {
     width: 100%;
     display: inline-block;
+}
+
+#specification span.response {
+    color: #660055;
 }
 
 #specification a {
