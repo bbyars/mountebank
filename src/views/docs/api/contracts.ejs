@@ -13,20 +13,24 @@ function indent (spaces) {
 
 <% include ../../_header %>
 
-<h1>
-  <select>
-    <option>Imposter</option>
-    <option>Imposters</option>
-  </select>
-</h1>
+<h1>Contracts</h1>
 
 <p>To get more details on any field, simply hover your mouse over that field.  Purple fields
 are only meaningful in the response; they will be ignored in any requests.</p>
 
+<p>Showing contract for the
+  <select id='contract-types'>
+    <option value='home'>home</option>
+    <option value='imposters'>imposters</option>
+    <option value='imposter'>imposter</option>
+    <option value='config'>config</option>
+    <option value='logs'>logs</option>
+  </select> resource.</p>
+
 <% include contracts/imposter %>
 
 <script type='text/javascript'>
-  function mbHighlight () {
+  $(document).ready(function () {
     function descriptionFor (id) {
       return $('#' + id + '-description');
     }
@@ -77,11 +81,22 @@ are only meaningful in the response; they will be ignored in any requests.</p>
       }
     });
 
-    hoverOn();
-  }
+    function contractType () {
+      var query = location.search.substring(1).split('&');
+      for (var i = 0; i < query.length; i++) {
+        var key = query[i].split('=')[0],
+            value = query[i].split('=')[1];
+        if (key === 'type') {
+          return value;
+        }
+      }
+      return 'imposter';
+    }
 
-  $('#specification-description').height($('#specification').height());
-  mbHighlight();
+    hoverOn();
+    $('#specification-description').height($('#specification').height());
+    $('#contract-types').val(contractType());
+  });
 </script>
 
 <% include ../../_footer %>
