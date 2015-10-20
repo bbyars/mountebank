@@ -15,9 +15,9 @@ describe('responseResolver', function () {
                 postProcess = combinators.identity,
                 resolver = ResponseResolver.create(proxy, postProcess),
                 logger = { debug: mock() },
-                stub = { is: 'value' };
+                responseConfig = { is: 'value' };
 
-            return resolver.resolve(stub, {}, logger, []).then(function (response) {
+            return resolver.resolve(responseConfig, {}, logger, []).then(function (response) {
                 assert.strictEqual(response, 'value');
             });
         });
@@ -26,9 +26,9 @@ describe('responseResolver', function () {
             var postProcess = function (response, request) { return response.toUpperCase() + '-' + request.value;},
                 resolver = ResponseResolver.create({}, postProcess),
                 logger = { debug: mock() },
-                stub = { is: 'value' };
+                responseConfig = { is: 'value' };
 
-            return resolver.resolve(stub, { value: 'REQUEST' }, logger, []).then(function (response) {
+            return resolver.resolve(responseConfig, { value: 'REQUEST' }, logger, []).then(function (response) {
                 assert.strictEqual(response, 'VALUE-REQUEST');
             });
         });
@@ -37,9 +37,9 @@ describe('responseResolver', function () {
             var proxy = { to: mock().returns(Q('value')) },
                 resolver = ResponseResolver.create(proxy, combinators.identity),
                 logger = { debug: mock() },
-                stub = { proxy: { to: 'where' } };
+                responseConfig = { proxy: { to: 'where' } };
 
-            return resolver.resolve(stub, 'request', logger, []).then(function (response) {
+            return resolver.resolve(responseConfig, 'request', logger, []).then(function (response) {
                 assert.strictEqual(response, 'value');
                 assert.ok(proxy.to.wasCalledWith('where', 'request', { to: 'where', mode: 'proxyOnce' }), proxy.to.message());
             });
@@ -49,10 +49,10 @@ describe('responseResolver', function () {
             var proxy = { to: mock().returns(Q('value')) },
                 resolver = ResponseResolver.create(proxy, combinators.identity),
                 logger = { debug: mock() },
-                stub = { proxy: { to: 'where' } };
+                responseConfig = { proxy: { to: 'where' } };
 
-            return resolver.resolve(stub, 'request', logger, []).then(function () {
-                assert.strictEqual(stub.proxy.mode, 'proxyOnce');
+            return resolver.resolve(responseConfig, 'request', logger, []).then(function () {
+                assert.strictEqual(responseConfig.proxy.mode, 'proxyOnce');
             });
         });
 
@@ -60,10 +60,10 @@ describe('responseResolver', function () {
             var proxy = { to: mock().returns(Q('value')) },
                 resolver = ResponseResolver.create(proxy, combinators.identity),
                 logger = { debug: mock() },
-                stub = { proxy: { to: 'where', mode: 'unrecognized' } };
+                responseConfig = { proxy: { to: 'where', mode: 'unrecognized' } };
 
-            return resolver.resolve(stub, 'request', logger, []).then(function () {
-                assert.strictEqual(stub.proxy.mode, 'proxyOnce');
+            return resolver.resolve(responseConfig, 'request', logger, []).then(function () {
+                assert.strictEqual(responseConfig.proxy.mode, 'proxyOnce');
             });
         });
 
@@ -71,16 +71,16 @@ describe('responseResolver', function () {
             var proxy = { to: mock().returns(Q('value')) },
                 resolver = ResponseResolver.create(proxy, combinators.identity),
                 logger = { debug: mock() },
-                stub = { proxy: { to: 'where' } },
+                responseConfig = { proxy: { to: 'where' } },
                 request = { },
-                stubs = [{ responses: [] }, { responses: [stub] }];
+                stubs = [{ responses: [] }, { responses: [responseConfig] }];
 
-            return resolver.resolve(stub, request, logger, stubs).then(function (response) {
+            return resolver.resolve(responseConfig, request, logger, stubs).then(function (response) {
                 assert.strictEqual(response, 'value');
                 assert.deepEqual(stubs, [
                     { responses: [] },
                     { responses: [{ is: 'value' }], predicates: {} },
-                    { responses: [stub] }
+                    { responses: [responseConfig] }
                 ]);
             });
         });
@@ -89,23 +89,23 @@ describe('responseResolver', function () {
             var proxy = { to: mock().returns(Q('value')) },
                 resolver = ResponseResolver.create(proxy, combinators.identity),
                 logger = { debug: mock() },
-                stub = {
+                responseConfig = {
                     proxy: {
                         to: 'where',
                         predicateGenerators: [{ matches: { key: true } }]
                     }
                 },
                 request = { key: { nested: { first: 'one', second: 'two' }, third: 'three' } },
-                stubs = [{ responses: [stub] }];
+                stubs = [{ responses: [responseConfig] }];
 
-            return resolver.resolve(stub, request, logger, stubs).then(function () {
+            return resolver.resolve(responseConfig, request, logger, stubs).then(function () {
                 assert.deepEqual(stubs, [
                     {
                         predicates: [{ deepEquals: { key: { nested: { first: 'one', second: 'two' }, third: 'three' } } }],
                         responses: [{ is: 'value' }]
                     },
                     {
-                        responses: [stub]
+                        responses: [responseConfig]
                     }
                 ]);
             });
@@ -115,7 +115,7 @@ describe('responseResolver', function () {
             var proxy = { to: mock().returns(Q('value')) },
                 resolver = ResponseResolver.create(proxy, combinators.identity),
                 logger = { debug: mock() },
-                stub = {
+                responseConfig = {
                     proxy: {
                         to: 'where',
                         mode: 'proxyOnce',
@@ -123,16 +123,16 @@ describe('responseResolver', function () {
                     }
                 },
                 request = { key: { nested: { first: 'one', second: 'two' }, third: 'three' } },
-                stubs = [{ responses: [stub] }];
+                stubs = [{ responses: [responseConfig] }];
 
-            return resolver.resolve(stub, request, logger, stubs).then(function () {
+            return resolver.resolve(responseConfig, request, logger, stubs).then(function () {
                 assert.deepEqual(stubs, [
                     {
                         predicates: [{ equals: { key: { nested: { first: 'one' } } } }],
                         responses: [{ is: 'value' }]
                     },
                     {
-                        responses: [stub]
+                        responses: [responseConfig]
                     }
                 ]);
             });
@@ -142,23 +142,23 @@ describe('responseResolver', function () {
             var proxy = { to: mock().returns(Q('value')) },
                 resolver = ResponseResolver.create(proxy, combinators.identity),
                 logger = { debug: mock() },
-                stub = {
+                responseConfig = {
                     proxy: {
                         to: 'where',
                         predicateGenerators: [{ matches: { key: true }, caseSensitive: true, except: 'xxx' }]
                     }
                 },
                 request = { key: 'Test' },
-                stubs = [{ responses: [stub] }];
+                stubs = [{ responses: [responseConfig] }];
 
-            return resolver.resolve(stub, request, logger, stubs).then(function () {
+            return resolver.resolve(responseConfig, request, logger, stubs).then(function () {
                 assert.deepEqual(stubs, [
                     {
                         predicates: [{ deepEquals: { key: 'Test' }, caseSensitive: true, except: 'xxx' }],
                         responses: [{ is: 'value' }]
                     },
                     {
-                        responses: [stub]
+                        responses: [responseConfig]
                     }
                 ]);
             });
@@ -168,10 +168,10 @@ describe('responseResolver', function () {
             var resolver = ResponseResolver.create({}, combinators.identity),
                 logger = { debug: mock() },
                 fn = 'function (request) { return request.key  + " injected"; }',
-                stub = { inject: fn },
+                responseConfig = { inject: fn },
                 request = { key: 'request' };
 
-            return resolver.resolve(stub, request, logger, []).then(function (response) {
+            return resolver.resolve(responseConfig, request, logger, []).then(function (response) {
                 assert.strictEqual(response, 'request injected');
             });
         });
@@ -180,7 +180,7 @@ describe('responseResolver', function () {
             var resolver = ResponseResolver.create({}, combinators.identity),
                 logger = { debug: mock() },
                 fn = 'function (request) { throw Error("BOOM!!!"); }',
-                stub = { inject: fn },
+                responseConfig = { inject: fn },
                 errorsLogged = [];
 
             logger.error = function () {
@@ -188,7 +188,7 @@ describe('responseResolver', function () {
                 errorsLogged.push(message);
             };
 
-            return resolver.resolve(stub, {}, logger, []).then(function () {
+            return resolver.resolve(responseConfig, {}, logger, []).then(function () {
                 assert.fail('should not have resolved');
             }, function (error) {
                 assert.strictEqual(error.message, 'invalid response injection');
@@ -204,12 +204,12 @@ describe('responseResolver', function () {
                      '    state.counter += 1;\n' +
                      '    return state.counter;\n' +
                      '}',
-                stub = { inject: fn },
+                responseConfig = { inject: fn },
                 request = { key: 'request' };
 
-            return resolver.resolve(stub, request, logger, []).then(function (response) {
+            return resolver.resolve(responseConfig, request, logger, []).then(function (response) {
                 assert.strictEqual(response, 1);
-                return resolver.resolve(stub, request, logger, []);
+                return resolver.resolve(responseConfig, request, logger, []);
             }).then(function (response) {
                 assert.strictEqual(response, 2);
             });
@@ -221,10 +221,10 @@ describe('responseResolver', function () {
                 fn = 'function (request, state, logger, callback) {\n' +
                      '    setTimeout(function () { callback("value"); }, 1);\n' +
                     '}',
-                stub = { inject: fn },
+                responseConfig = { inject: fn },
                 request = { key: 'request' };
 
-            return resolver.resolve(stub, request, logger, []).then(function (response) {
+            return resolver.resolve(responseConfig, request, logger, []).then(function (response) {
                 assert.strictEqual(response, 'value');
             });
         });
@@ -233,11 +233,25 @@ describe('responseResolver', function () {
             var resolver = ResponseResolver.create({}, combinators.identity),
                 logger = { debug: mock() },
                 fn = 'function (request) { request.key = "CHANGED"; return 0; }',
-                stub = { inject: fn },
+                responseConfig = { inject: fn },
                 request = { key: 'ORIGINAL' };
 
-            return resolver.resolve(stub, request, logger, []).then(function () {
+            return resolver.resolve(responseConfig, request, logger, []).then(function () {
                 assert.strictEqual(request.key, 'ORIGINAL');
+            });
+        });
+
+        promiseIt('should throw error if multiple response types given', function () {
+            var proxy = {},
+                postProcess = combinators.identity,
+                resolver = ResponseResolver.create(proxy, postProcess),
+                logger = { debug: mock() },
+                responseConfig = { is: 'value', proxy: { to: 'http://www.google.com' }};
+
+            return resolver.resolve(responseConfig, {}, logger, []).then(function () {
+                assert.fail('should not have resolved');
+            }, function (error) {
+                assert.strictEqual(error.message, 'each response object must have only one response type');
             });
         });
     });

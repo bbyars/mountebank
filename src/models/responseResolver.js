@@ -129,7 +129,17 @@ function create (proxy, postProcess) {
         }
     }
 
+    function hasMultipleTypes (responseConfig) {
+        return (responseConfig.is && responseConfig.proxy) ||
+               (responseConfig.is && responseConfig.inject) ||
+               (responseConfig.proxy && responseConfig.inject);
+    }
+
     function resolve (responseConfig, request, logger, stubs) {
+        if (hasMultipleTypes(responseConfig)) {
+            return Q.reject(errors.ValidationError('each response object must have only one response type', { source: responseConfig }));
+        }
+
         return process(responseConfig, request, logger, stubs).then(function (response) {
             return Q(postProcess(response, request));
         }).then(function (response) {
