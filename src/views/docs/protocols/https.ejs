@@ -91,6 +91,32 @@ switch in <code>curl</code>).  Alternatively, you may pass in the key pair yours
   to change the <code>protocol</code> parameter to <code>https</code> during imposter
   creation!</p>
 
+<h2>Using your own certificate</h2>
+
+<p>By default, mountebank will use an internal self-signed certificate.  You can use your
+own by passing it in to the <code>key</code> and <code>cert</code> fields.  The following
+commands will allow you to create your own certificate:</p>
+
+<p>Create a private key:</p>
+
+<pre><code>
+openssl genrsa -out test-key.pem 1024
+</code></pre>
+
+<p>Create a Certificate Signing Request (CSR):</p>
+
+<pre><code>
+openssl req -new -key test-key.pem -out test-csr.pem
+</code></pre>
+
+<p>Create a self-signed certificate using the CSR (normally you would send the CSR to a certificate authority for signing):</p>
+
+<pre><code>
+openssl x509 -req -in test-csr.pem -signkey test-key.pem -out test-cert.pem
+</code></pre>
+
+<p>The mutual authentication example below shows including them in your imposter setup.</p>
+
 <h2>Mutual Authentication</h2>
 
 <p>mountebank supports mutual authentication involving client certificates both for the
