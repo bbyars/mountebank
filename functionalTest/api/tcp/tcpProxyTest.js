@@ -110,7 +110,7 @@ describe('tcp proxy', function () {
             });
         });
 
-        promiseIt.only('should reject non-tcp protocols', function () {
+        promiseIt('should reject non-tcp protocols', function () {
             var proxy = TcpProxy.create(logger, 'utf8');
 
             return proxy.to('http://localhost:80', { data: 'hello, world!' }).then(function () {
