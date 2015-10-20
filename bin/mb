@@ -164,9 +164,7 @@ try {
             pidfile: 'mb.pid',
             logfile: 'mb.log',
             loglevel: 'info',
-            configfile: '',
-            keyfile: '',
-            certfile: ''
+            configfile: ''
         },
         booleanOptions = ['allowInjection', 'mock', 'heroku', 'version', 'allowCORS', 'debug'],
         commandLine = cli.parse(process.argv.slice(2), defaultOptions, booleanOptions),

@@ -1,11 +1,17 @@
 'use strict';
 
+var helpers = require('../util/helpers');
+
 function create (version, options) {
+
+    var publicOptions = helpers.clone(options);
+    delete publicOptions.heroku;
+    delete publicOptions.version;
 
     function get (request, response) {
         var config = {
             version: version,
-            options: options,
+            options: publicOptions,
             process: {
                 nodeVersion: process.version,
                 architecture: process.arch,

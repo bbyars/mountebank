@@ -605,29 +605,31 @@ Accept: application/json
 
 <pre><code>
 {
-  "version": "<%= version %>",
+  "version": "1.4.1",
   "options": {
-    "port": <%= port %>,
+    "port": 2525,
     "pidfile": "mb.pid",
     "logfile": "mb.log",
     "loglevel": "info",
-    "allowInjection": false,
+    "configfile": "",
+    "allowInjection": true,
     "mock": true,
-    "heroku": true,
-    "version": false
+    "allowCORS": false,
+    "debug": true
   },
   "process": {
-    "nodeVersion": "v0.10.21",
+    "nodeVersion": "v4.2.0",
     "architecture": "x64",
     "platform": "darwin",
-    "rss": 29822976,
-    "heapTotal": 18635008,
-    "heapUsed": 9294352,
-    "uptime": 16,
-    "cwd": "/Users/bbyars/src/mountebank"
+    "rss": 55255040,
+    "heapTotal": 37113600,
+    "heapUsed": 23185680,
+    "uptime": 3.718,
+    "cwd": "/Users/bbyars/Dropbox/src/mountebank"
   },
   "environment": {
-    ...
+    "PWD": "/Users/bbyars/src/mountebank",
+    "SHELL": "/bin/zsh"
   }
 }
 </code></pre>
