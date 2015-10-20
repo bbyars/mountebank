@@ -37,14 +37,14 @@ function create (resolver, recordMatches, encoding) {
 
     function resolve (request, logger) {
         var stub = findFirstMatch(request, logger) || { responses: [{ is: {} }]},
-            stubResolver = stub.responses.shift(),
+            responseConfig = stub.responses.shift(),
             deferred = Q.defer();
 
-        logger.debug('using stub resolver ' + JSON.stringify(stubResolver));
+        logger.debug('generating response from ' + JSON.stringify(responseConfig));
 
-        stub.responses.push(stubResolver);
+        stub.responses.push(responseConfig);
 
-        resolver.resolve(stubResolver, request, logger, stubs).done(function (response) {
+        resolver.resolve(responseConfig, request, logger, stubs).done(function (response) {
             var match = {
                     timestamp: new Date().toJSON(),
                     request: request,

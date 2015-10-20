@@ -4,7 +4,7 @@ var net = require('net'),
     Q = require('q'),
     baseLogger = require('winston'),
     ScopedLogger = require('../../util/scopedLogger'),
-    StubResolver = require('../stubResolver'),
+    ResponseResolver = require('../responseResolver'),
     StubRepository = require('../stubRepository'),
     util = require('util'),
     helpers = require('../../util/helpers'),
@@ -45,9 +45,9 @@ function createServer (options, recordRequests, debug) {
         logger = ScopedLogger.create(baseLogger, scopeFor(options.port)),
             // create the protocol-specific proxy (here we're reusing tcp's proxy)
         proxy = TcpProxy.create(logger, 'utf8'),
-            // create the stub resolver, which contains the strategies for resolving is, proxy, and inject stubs
+            // create the response resolver, which contains the strategies for resolving is, proxy, and inject stubs
             // the postProcess parameter is used to fill in defaults for the response that were not passed by the user
-        resolver = StubResolver.create(proxy, postProcess),
+        resolver = ResponseResolver.create(proxy, postProcess),
             // create the repository which matches the appropriate stub to respond with
         stubs = StubRepository.create(resolver, debug, 'utf8'),
             // and create the actual server using node.js's net module

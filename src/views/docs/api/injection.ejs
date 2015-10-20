@@ -7,7 +7,7 @@ description = 'Extending mountebank with custom JavaScript scripting'
 
 <h1>Injection</h1>
 
-<p>mountebank allows JavaScript injection for predicates and stub resolvers for situations
+<p>mountebank allows JavaScript injection for predicates and response types for situations
 where the built-in ones are not sufficient.  Injection only works if <code>mb</code> is
 run with the <code>--allowInjection</code> flag.</p>
 
@@ -16,8 +16,8 @@ possible, there are a couple of things to be aware of.  First, when validating s
 mountebank actually dry runs a sample request in a sandbox.  Normally, this is
 side-effect free, as mountebank fakes out proxy calls and uses different state objects,
 but he can make no guarantees with injections.  The <code>state</code> variable described
-in the stub resolver section below will be untouched, but any environmental changes you
-make may persist to the actual stub calls.  The stub resolver example below shows an
+in the response type section below will be untouched, but any environmental changes you
+make may persist to the actual stub calls.  The response type example below shows an
 example of where this can trip you up.  If you need to work around the dry run, the
 test request passed in as the first parameter of the injected function will always
 have <code>isDryRun</code> set to <code>true</code> during the dry run.</p>
@@ -27,11 +27,11 @@ to <code>require</code> in different modules.  Of course, such power comes with 
 challenges.  Though mountebank has gone to some effort to be robust in the face of errors,
 he is not as clever as you are.  With injections, you can crash mountebank.
 If you find yourself coding injections frequently because of missing functionality that you
-believe would make a useful resolver, mountebank humbly requests you to add a
+believe would be generally useful, mountebank humbly requests you to add a
 <a href='https://github.com/bbyars/mountebank/issues'>feature request.</a></p>
 
 <p>There are four options for injecting JavaScript into mountebank.  The first two,
-predicate injection and stub resolver injection, are described below.  The third,
+predicate injection and response injection, are described below.  The third,
 post-processing responses through the <code>decorate</code> behavior, is described
 on the <a href='/docs/api/behaviors'>behaviors</a> page.  Finally, determining the end
 of a TCP request is described on the <a href='/docs/protocols/tcp'>tcp</a> protocol page.</p>
@@ -170,7 +170,7 @@ parameters have not already been sent.</p>
 
 <p>The example below will use two imposters, an origin server and a server that proxies
 to the the origin server.  It would be better implemented using
-<a href='/docs/api/proxies'>a proxy resolver</a>, but has sufficient complexity to
+<a href='/docs/api/proxies'>a proxy response type</a>, but has sufficient complexity to
 demonstrate many nuances of injection.</p>
 
 <p>First we'll create the origin server at port 5555.  To help us keep track of the

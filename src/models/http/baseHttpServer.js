@@ -7,7 +7,7 @@ var AbstractServer = require('../abstractServer'),
     helpers = require('../../util/helpers'),
     combinators = require('../../util/combinators'),
     StubRepository = require('../stubRepository'),
-    StubResolver = require('../stubResolver'),
+    ResponseResolver = require('../responseResolver'),
     HttpProxy = require('./httpProxy'),
     DryRunValidator = require('../dryRunValidator'),
     events = require('events'),
@@ -34,7 +34,7 @@ function setup (protocolName, createBaseServer) {
 
     function createServer (logger, options) {
         var proxy = HttpProxy.create(logger),
-            resolver = StubResolver.create(proxy, postProcess),
+            resolver = ResponseResolver.create(proxy, postProcess),
             stubs = StubRepository.create(resolver, options.debug, 'utf8'),
             baseServer = createBaseServer(options),
             result = inherit.from(events.EventEmitter, {

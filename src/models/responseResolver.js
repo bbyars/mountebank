@@ -78,29 +78,29 @@ function create (proxy, postProcess) {
         return predicates;
     }
 
-    function stubIndexFor (stubResolver, stubs) {
+    function stubIndexFor (responseConfig, stubs) {
         for (var i = 0; i < stubs.length; i++) {
             var stub = stubs[i];
-            if (stub.responses.indexOf(stubResolver) >= 0) {
+            if (stub.responses.indexOf(responseConfig) >= 0) {
                 break;
             }
         }
         return i;
     }
 
-    function proxyAndRecord (stubResolver, request, stubs) {
+    function proxyAndRecord (responseConfig, request, stubs) {
         /* jshint maxcomplexity: 6 */
-        return proxy.to(stubResolver.proxy.to, request, stubResolver.proxy).then(function (response) {
-            var predicates = predicatesFor(request, stubResolver.proxy.predicateGenerators || []),
+        return proxy.to(responseConfig.proxy.to, request, responseConfig.proxy).then(function (response) {
+            var predicates = predicatesFor(request, responseConfig.proxy.predicateGenerators || []),
                 stubResponse = { is: response },
                 newStub = { predicates: predicates, responses: [stubResponse] },
-                index = stubIndexFor(stubResolver, stubs);
+                index = stubIndexFor(responseConfig, stubs);
 
-            if (['proxyOnce', 'proxyAlways'].indexOf(stubResolver.proxy.mode) < 0) {
-                stubResolver.proxy.mode = 'proxyOnce';
+            if (['proxyOnce', 'proxyAlways'].indexOf(responseConfig.proxy.mode) < 0) {
+                responseConfig.proxy.mode = 'proxyOnce';
             }
 
-            if (stubResolver.proxy.mode === 'proxyAlways') {
+            if (responseConfig.proxy.mode === 'proxyAlways') {
                 for (index = index + 1; index < stubs.length; index++) {
                     if (stringify(predicates) === stringify(stubs[index].predicates)) {
                         stubs[index].responses.push(stubResponse);
@@ -114,26 +114,26 @@ function create (proxy, postProcess) {
         });
     }
 
-    function process (stubResolver, request, logger, stubs) {
-        if (stubResolver.is) {
-            return Q(stubResolver.is);
+    function process (responseConfig, request, logger, stubs) {
+        if (responseConfig.is) {
+            return Q(responseConfig.is);
         }
-        else if (stubResolver.proxy) {
-            return proxyAndRecord(stubResolver, request, stubs);
+        else if (responseConfig.proxy) {
+            return proxyAndRecord(responseConfig, request, stubs);
         }
-        else if (stubResolver.inject) {
-            return inject(request, stubResolver.inject, logger).then(Q);
+        else if (responseConfig.inject) {
+            return inject(request, responseConfig.inject, logger).then(Q);
         }
         else {
-            return Q.reject(errors.ValidationError('unrecognized stub resolver', { source: stubResolver }));
+            return Q.reject(errors.ValidationError('unrecognized response type', { source: responseConfig }));
         }
     }
 
-    function resolve (stubResolver, request, logger, stubs) {
-        return process(stubResolver, request, logger, stubs).then(function (response) {
+    function resolve (responseConfig, request, logger, stubs) {
+        return process(responseConfig, request, logger, stubs).then(function (response) {
             return Q(postProcess(response, request));
         }).then(function (response) {
-            return Q(behaviors.execute(request, response, stubResolver._behaviors, logger));
+            return Q(behaviors.execute(request, response, responseConfig._behaviors, logger));
         });
     }
 

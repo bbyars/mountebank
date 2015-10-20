@@ -27,17 +27,17 @@ what those concepts represent can greatly help in learning how to use the tool.<
   <dd>The behavior that generates the response for a <em>stub</em>.  Each <em>stub</em> can have
   0 or more <em>responses</em>.</dd>
 
-  <dt>stub resolver</dt>
-  <dd>Defines the specific behavior used to generate a response.  The simplest resolver is called
+  <dt>response type</dt>
+  <dd>Defines the specific behavior used to generate a response.  The simplest type is called
   <em>is</em>, and allows you to define the <em>imposter's</em> response directly.  Each
-  <em>response</em> has exactly one <em>stub resolver</em>.</dd>
+  <em>response</em> has exactly one <em>response type</em>.</dd>
 
   <dt>proxy</dt>
-  <dd>A specific type of <em>stub resolver</em> that allows you to pass a request through to another
+  <dd>A specific type of <em>response type</em> that allows you to pass a request through to another
   server and remember the response for later playback.</dd>
 
   <dt>injection</dt>
-  <dd>A specific type of <em>stub resolver</em> that allows you to inject JavaScript to determine
+  <dd>A specific type of <em>response type</em> that allows you to inject JavaScript to determine
   the <em>imposter's</em> response.  Also supported as a <em>predicate</em> to allow sophisticated
   logic to determine whether a particular <em>stub</em> should be used or not.</dd>
 

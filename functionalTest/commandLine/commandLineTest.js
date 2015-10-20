@@ -71,7 +71,7 @@ describe('mb command line', function () {
         });
     });
 
-    // This is the stub resolver injection example on /docs/api/injection
+    // This is the response resolver injection example on /docs/api/injection
     promiseIt('should evaluate stringify function in templates when loading configuration files', function () {
         // Delay because we need to wait long enough for the imposters to be created
         return mb.start(['--configfile', path.join(__dirname, 'templates/imposters.ejs'), '--allowInjection']).delay(500).then(function () {

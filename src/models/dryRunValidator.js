@@ -5,7 +5,7 @@ var utils = require('util'),
     exceptions = require('../util/errors'),
     helpers = require('../util/helpers'),
     combinators = require('../util/combinators'),
-    StubResolver = require('./stubResolver');
+    ResponseResolver = require('./responseResolver');
 
 function create (options) {
 
@@ -39,7 +39,7 @@ function create (options) {
                 warn: combinators.noop,
                 error: logger.error
             },
-            resolver = StubResolver.create(dryRunProxy, combinators.identity),
+            resolver = ResponseResolver.create(dryRunProxy, combinators.identity),
             stubsToValidateWithPredicates = stub.responses.map(function (response) {
                 return stubForResponse(stub, response, true);
             }),

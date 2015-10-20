@@ -23,7 +23,7 @@ the problem, he has listed the API error codes below.  Feel free to
   <tr>
     <td><code>invalid injection</code></td>
     <td>You are using the <code>inject</code> operator, either as a predicate
-    or stub resolver.  Perhaps you have not run <code>mb</code> with the
+    or response type.  Perhaps you have not run <code>mb</code> with the
     <code>--allowInjection</code> flag, or perhaps there is an error in the
     JavaScript you are injecting.  Consider using the node.js
     <code>console</code> or mountebank <code>logger</code> objects to help
@@ -43,7 +43,7 @@ the problem, he has listed the API error codes below.  Feel free to
   </tr>
   <tr>
     <td><code>invalid proxy</code></td>
-    <td>You have configured a proxy stub resolver with an invalid address,
+    <td>You have configured a proxy response type with an invalid address,
     or the server has refused the connection.  Double check the DNS name or
     IP address, and double check the port.  If <code>mb</code> is running
     on a different network than you are, does he have the same connectivity

@@ -424,7 +424,7 @@ describe('dryRunValidator', function () {
                     isValid: false,
                     errors: [{
                         code: 'bad data',
-                        message: 'unrecognized stub resolver',
+                        message: 'unrecognized response type',
                         source: request.stubs[0].responses[0]
                     }]
                 });
@@ -448,7 +448,7 @@ describe('dryRunValidator', function () {
                     isValid: false,
                     errors: [{
                         code: 'bad data',
-                        message: 'unrecognized stub resolver',
+                        message: 'unrecognized response type',
                         source: request.stubs[0].responses[1]
                     }]
                 });
@@ -470,7 +470,7 @@ describe('dryRunValidator', function () {
                     isValid: false,
                     errors: [{
                         code: 'bad data',
-                        message: 'unrecognized stub resolver',
+                        message: 'unrecognized response type',
                         source: request.stubs[0].responses[0]
                     }]
                 });

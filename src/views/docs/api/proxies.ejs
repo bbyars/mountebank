@@ -15,7 +15,7 @@ the fields which should be included in newly created <code>predicates</code>.  T
 <code>proxy</code> will ensure that the proxied request data for those fields are
 filled in.</p>
 
-<p><code>proxy</code> resolvers take the following parameters:</p>
+<p><code>proxy</code> response types take the following parameters:</p>
 
 <table>
   <tr>
@@ -153,7 +153,7 @@ newly created stub will match, and the recorded response will be replayed.  If
 the imposter receives a <code>GET /test?q=mountebank&amp;sort=descending</code>, then
 it will proxy again, creating a new stub, because the querystring is different.</p>
 
-<p>A <code>proxyAlways</code> resolver saves stubs behind the <code>proxy</code>
+<p>The <code>proxyAlways</code> mode saves stubs behind the <code>proxy</code>
 stub.  This allows you to record a richer set of interactions with the origin server,
 but requires you to save off the imposter representation and remove or reorder the
 <code>proxy</code> to replay those interactions.</p>

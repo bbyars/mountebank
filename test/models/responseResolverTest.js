@@ -1,19 +1,19 @@
 'use strict';
 
 var assert = require('assert'),
-    StubResolver = require('../../src/models/stubResolver'),
+    ResponseResolver = require('../../src/models/responseResolver'),
     combinators = require('../../src/util/combinators'),
     promiseIt = require('../testHelpers').promiseIt,
     mock = require('../mock').mock,
     Q = require('q'),
     util = require('util');
 
-describe('stubResolver', function () {
+describe('responseResolver', function () {
     describe('#resolve', function () {
         promiseIt('should resolve "is" without transformation', function () {
             var proxy = {},
                 postProcess = combinators.identity,
-                resolver = StubResolver.create(proxy, postProcess),
+                resolver = ResponseResolver.create(proxy, postProcess),
                 logger = { debug: mock() },
                 stub = { is: 'value' };
 
@@ -24,7 +24,7 @@ describe('stubResolver', function () {
 
         promiseIt('should post process the result', function () {
             var postProcess = function (response, request) { return response.toUpperCase() + '-' + request.value;},
-                resolver = StubResolver.create({}, postProcess),
+                resolver = ResponseResolver.create({}, postProcess),
                 logger = { debug: mock() },
                 stub = { is: 'value' };
 
@@ -35,7 +35,7 @@ describe('stubResolver', function () {
 
         promiseIt('should resolve "proxy" by delegating to the proxy', function () {
             var proxy = { to: mock().returns(Q('value')) },
-                resolver = StubResolver.create(proxy, combinators.identity),
+                resolver = ResponseResolver.create(proxy, combinators.identity),
                 logger = { debug: mock() },
                 stub = { proxy: { to: 'where' } };
 
@@ -47,7 +47,7 @@ describe('stubResolver', function () {
 
         promiseIt('should default to "proxyOnce" mode', function () {
             var proxy = { to: mock().returns(Q('value')) },
-                resolver = StubResolver.create(proxy, combinators.identity),
+                resolver = ResponseResolver.create(proxy, combinators.identity),
                 logger = { debug: mock() },
                 stub = { proxy: { to: 'where' } };
 
@@ -58,7 +58,7 @@ describe('stubResolver', function () {
 
         promiseIt('should change unrecognized mode to "proxyOnce" mode', function () {
             var proxy = { to: mock().returns(Q('value')) },
-                resolver = StubResolver.create(proxy, combinators.identity),
+                resolver = ResponseResolver.create(proxy, combinators.identity),
                 logger = { debug: mock() },
                 stub = { proxy: { to: 'where', mode: 'unrecognized' } };
 
@@ -69,7 +69,7 @@ describe('stubResolver', function () {
 
         promiseIt('should resolve "proxy" in "proxyOnce" mode by adding a new "is" stub to the front of the list', function () {
             var proxy = { to: mock().returns(Q('value')) },
-                resolver = StubResolver.create(proxy, combinators.identity),
+                resolver = ResponseResolver.create(proxy, combinators.identity),
                 logger = { debug: mock() },
                 stub = { proxy: { to: 'where' } },
                 request = { },
@@ -87,7 +87,7 @@ describe('stubResolver', function () {
 
         promiseIt('should resolve "proxy" and remember full objects as "deepEquals" predicates', function () {
             var proxy = { to: mock().returns(Q('value')) },
-                resolver = StubResolver.create(proxy, combinators.identity),
+                resolver = ResponseResolver.create(proxy, combinators.identity),
                 logger = { debug: mock() },
                 stub = {
                     proxy: {
@@ -113,7 +113,7 @@ describe('stubResolver', function () {
 
         promiseIt('should resolve "proxy" and remember nested keys as "equals" predicates', function () {
             var proxy = { to: mock().returns(Q('value')) },
-                resolver = StubResolver.create(proxy, combinators.identity),
+                resolver = ResponseResolver.create(proxy, combinators.identity),
                 logger = { debug: mock() },
                 stub = {
                     proxy: {
@@ -140,7 +140,7 @@ describe('stubResolver', function () {
 
         promiseIt('should add predicate parameters from predicateGenerators', function () {
             var proxy = { to: mock().returns(Q('value')) },
-                resolver = StubResolver.create(proxy, combinators.identity),
+                resolver = ResponseResolver.create(proxy, combinators.identity),
                 logger = { debug: mock() },
                 stub = {
                     proxy: {
@@ -165,7 +165,7 @@ describe('stubResolver', function () {
         });
 
         promiseIt('should allow "inject" response', function () {
-            var resolver = StubResolver.create({}, combinators.identity),
+            var resolver = ResponseResolver.create({}, combinators.identity),
                 logger = { debug: mock() },
                 fn = 'function (request) { return request.key  + " injected"; }',
                 stub = { inject: fn },
@@ -177,7 +177,7 @@ describe('stubResolver', function () {
         });
 
         promiseIt('should log injection exceptions', function () {
-            var resolver = StubResolver.create({}, combinators.identity),
+            var resolver = ResponseResolver.create({}, combinators.identity),
                 logger = { debug: mock() },
                 fn = 'function (request) { throw Error("BOOM!!!"); }',
                 stub = { inject: fn },
@@ -197,7 +197,7 @@ describe('stubResolver', function () {
         });
 
         promiseIt('should allow injection state across calls to resolve', function () {
-            var resolver = StubResolver.create({}, combinators.identity),
+            var resolver = ResponseResolver.create({}, combinators.identity),
                 logger = { debug: mock() },
                 fn = 'function (request, state) {\n' +
                      '    state.counter = state.counter || 0;\n' +
@@ -216,7 +216,7 @@ describe('stubResolver', function () {
         });
 
         promiseIt('should allow asynchronous injection', function () {
-            var resolver = StubResolver.create({}, combinators.identity),
+            var resolver = ResponseResolver.create({}, combinators.identity),
                 logger = { debug: mock() },
                 fn = 'function (request, state, logger, callback) {\n' +
                      '    setTimeout(function () { callback("value"); }, 1);\n' +
@@ -230,7 +230,7 @@ describe('stubResolver', function () {
         });
 
         promiseIt('should not be able to change state through inject', function () {
-            var resolver = StubResolver.create({}, combinators.identity),
+            var resolver = ResponseResolver.create({}, combinators.identity),
                 logger = { debug: mock() },
                 fn = 'function (request) { request.key = "CHANGED"; return 0; }',
                 stub = { inject: fn },
