@@ -27,13 +27,13 @@ are only meaningful in the response; they will be ignored in any requests.</p>
     <option value='logs'>logs</option>
   </select> resource.</p>
 
-<pre class='contract' id='specification'>
-<% include contracts/home %>
-<% include contracts/imposters %>
-<% include contracts/imposter %>
-<% include contracts/config %>
-<% include contracts/logs %>
-</pre>
+<div class='contract' id='specification'>
+  <% include contracts/home %>
+  <% include contracts/imposters %>
+  <% include contracts/imposter %>
+  <% include contracts/config %>
+  <% include contracts/logs %>
+</div>
 
 <div class='contract' id='specification-description'>
   <% include contracts/home-description %>
@@ -111,9 +111,9 @@ are only meaningful in the response; they will be ignored in any requests.</p>
 
     $('#contract-types').change(function () {
       var id = $(this).val() + '-specification';
-      $('#specification code').hide();
+      $('#specification pre').hide();
       $('#' + id).show();
-      $('#specification-description').height($('#specification').height());
+      $('#specification-description').height($('#' + id).height());
     });
 
     hoverOn();
