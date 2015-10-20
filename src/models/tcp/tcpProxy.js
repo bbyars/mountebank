@@ -2,6 +2,7 @@
 
 var net = require('net'),
     Q = require('q'),
+    url = require('url'),
     errors = require('../../util/errors');
 
 function create (logger, encoding) {
@@ -14,9 +15,26 @@ function create (logger, encoding) {
         return request.data.toString(encoding);
     }
 
+    function connectionInfoFor (proxyDestination) {
+        if (typeof proxyDestination === 'string') {
+            var parts = url.parse(proxyDestination);
+
+            if (parts.protocol !== 'tcp') {
+                throw errors.InvalidProxyError('Unable to proxy to any protocol other than tcp',
+                    { source: proxyDestination });
+            }
+            return { host: parts.hostname, port: parts.port };
+        }
+        else {
+            // old syntax, inconsistent with http proxies: { host: 'localhost', port: 3000 }
+            // left for backwards compatibility prior to version 1.4.1
+            return proxyDestination;
+        }
+    }
+
     function getProxyRequest (proxyDestination, originalRequest) {
         var buffer = new Buffer(originalRequest.data, encoding),
-            socket = net.connect(proxyDestination, function () {
+            socket = net.connect(connectionInfoFor(proxyDestination), function () {
                 socket.write(buffer, function () { socket.end(); });
             });
         return socket;
@@ -42,26 +60,31 @@ function create (logger, encoding) {
         }
 
         var deferred = Q.defer(),
+            proxiedRequest;
+
+        try {
             proxiedRequest = getProxyRequest(proxyDestination, originalRequest);
+            log('=>', originalRequest);
 
-        log('=>', originalRequest);
+            proxy(proxiedRequest).done(function (response) {
+                log('<=', response);
+                deferred.resolve(response);
+            });
 
-        proxy(proxiedRequest).done(function (response) {
-            log('<=', response);
-            deferred.resolve(response);
-        });
-
-        proxiedRequest.once('error', function (error) {
-            if (error.code === 'ENOTFOUND') {
-                deferred.reject(errors.InvalidProxyError('Cannot resolve ' + JSON.stringify(proxyDestination)));
-            }
-            else if (error.code === 'ECONNREFUSED') {
-                deferred.reject(errors.InvalidProxyError('Unable to connect to ' + JSON.stringify(proxyDestination)));
-            }
-            else {
-                deferred.reject(error);
-            }
-        });
+            proxiedRequest.once('error', function (error) {
+                if (error.code === 'ENOTFOUND') {
+                    deferred.reject(errors.InvalidProxyError('Cannot resolve ' + JSON.stringify(proxyDestination)));
+                }
+                else if (error.code === 'ECONNREFUSED') {
+                    deferred.reject(errors.InvalidProxyError('Unable to connect to ' + JSON.stringify(proxyDestination)));
+                }
+                else {
+                    deferred.reject(error);
+                }
+            });
+        } catch (e) {
+            deferred.reject(e);
+        }
 
         return deferred.promise;
     }

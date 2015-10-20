@@ -29,6 +29,20 @@ describe('tcp proxy', function () {
                 proxy = TcpProxy.create(logger, 'utf8');
 
             return api.post('/imposters', request).then(function () {
+                return proxy.to('tcp://localhost:' + port, { data: 'hello, world!' });
+            }).then(function (response) {
+                assert.deepEqual(response.data.toString(), 'howdy!');
+            }).finally(function () {
+                return api.del('/imposters');
+            });
+        });
+
+        promiseIt('should support old proxy syntax for backwards compatibility', function () {
+            var stub = { responses: [{ is: { data: 'howdy!' } }] },
+                request = { protocol: 'tcp', port: port, stubs: [stub], name: this.name },
+                proxy = TcpProxy.create(logger, 'utf8');
+
+            return api.post('/imposters', request).then(function () {
                 return proxy.to({ host: 'localhost', port: port }, { data: 'hello, world!' });
             }).then(function (response) {
                 assert.deepEqual(response.data.toString(), 'howdy!');
@@ -44,7 +58,7 @@ describe('tcp proxy', function () {
                 proxy = TcpProxy.create(logger, 'base64');
 
             return api.post('/imposters', request).then(function () {
-                return proxy.to({ host: 'localhost', port: port }, { data: buffer });
+                return proxy.to('tcp://localhost:' + port, { data: buffer });
             }).then(function (response) {
                 assert.deepEqual(compatibility.bufferJSON(new Buffer(response.data, 'base64')), [0, 1, 2, 3]);
             }).finally(function () {
@@ -63,7 +77,7 @@ describe('tcp proxy', function () {
 
             var proxy = TcpProxy.create(logger, 'utf8');
 
-            return proxy.to({ host: 'localhost', port: port }, { data: 'hello, world!' }).then(function (response) {
+            return proxy.to('tcp://localhost:' + port, { data: 'hello, world!' }).then(function (response) {
                 assert.strictEqual(response.data.length, 10*1024*1024 - 1);
             }).finally(function () {
                 server.close();
@@ -73,12 +87,12 @@ describe('tcp proxy', function () {
         promiseIt('should gracefully deal with DNS errors', function () {
             var proxy = TcpProxy.create(logger, 'utf8');
 
-            return proxy.to({ host: 'no.such.domain', port: 80 }, { data: 'hello, world!' }).then(function () {
+            return proxy.to('tcp://no.such.domain:80', { data: 'hello, world!' }).then(function () {
                 assert.fail('should not have resolved promise');
             }, function (reason) {
                 assert.deepEqual(reason, {
                     code: 'invalid proxy',
-                    message: 'Cannot resolve {"host":"no.such.domain","port":80}'
+                    message: 'Cannot resolve "tcp://no.such.domain:80"'
                 });
             });
         });
@@ -86,12 +100,26 @@ describe('tcp proxy', function () {
         promiseIt('should gracefully deal with non listening ports', function () {
             var proxy = TcpProxy.create(logger, 'utf8');
 
-            return proxy.to({ host: 'localhost', port: 18000 }, { data: 'hello, world!' }).then(function () {
+            return proxy.to('tcp://localhost:18000', { data: 'hello, world!' }).then(function () {
                 assert.fail('should not have resolved promise');
             }, function (reason) {
                 assert.deepEqual(reason, {
                     code: 'invalid proxy',
-                    message: 'Unable to connect to {"host":"localhost","port":18000}'
+                    message: 'Unable to connect to "tcp://localhost:18000"'
+                });
+            });
+        });
+
+        promiseIt.only('should reject non-tcp protocols', function () {
+            var proxy = TcpProxy.create(logger, 'utf8');
+
+            return proxy.to('http://localhost:80', { data: 'hello, world!' }).then(function () {
+                assert.fail('should not have resolved promise');
+            }, function (reason) {
+                assert.deepEqual(reason, {
+                    code: 'invalid proxy',
+                    message: 'Unable to proxy to any protocol other than tcp',
+                    source: 'http://localhost:80'
                 });
             });
         });

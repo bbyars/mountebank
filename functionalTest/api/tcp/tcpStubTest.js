@@ -125,7 +125,7 @@ describe('tcp imposter', function () {
             var proxyPort = port + 1,
                 proxyStub = { responses: [{ is: { data: 'PROXIED' } }] },
                 proxyRequest = { protocol: 'tcp', port: proxyPort, stubs: [proxyStub], name: this.name + ' PROXY' },
-                stub = { responses: [{ proxy: { to: { host: 'localhost', port:  proxyPort } } }] },
+                stub = { responses: [{ proxy: { to: 'tcp://localhost:' + proxyPort } }] },
                 request = { protocol: 'tcp', port: port, stubs: [stub], name: this.name + ' MAIN' };
 
             return api.post('/imposters', proxyRequest).then(function () {
@@ -140,7 +140,7 @@ describe('tcp imposter', function () {
         });
 
         promiseIt('should allow proxy stubs to invalid hosts', function () {
-            var stub = { responses: [{ proxy: { to: { host: 'remotehost', port: 8000 } } }] },
+            var stub = { responses: [{ proxy: { to: 'tcp://remotehost:8000' } }] },
                 request = { protocol: 'tcp', port: port, stubs: [stub], name: this.name };
 
             return api.post('/imposters', request).then(function () {
@@ -148,7 +148,7 @@ describe('tcp imposter', function () {
             }).then(function (response) {
                 var error = JSON.parse(response).errors[0];
                 assert.strictEqual(error.code, 'invalid proxy');
-                assert.strictEqual(error.message, 'Cannot resolve {"host":"remotehost","port":8000}');
+                assert.strictEqual(error.message, 'Cannot resolve "tcp://remotehost:8000"');
             }).finally(function () {
                 return api.del('/imposters');
             });
@@ -162,7 +162,7 @@ describe('tcp imposter', function () {
                     response.data = response.data + ' DECORATED';
                 },
                 proxyResponse = {
-                    proxy: { to: { host: 'localhost', port:  originServerPort } },
+                    proxy: { to: 'tcp://localhost:' + originServerPort },
                     _behaviors: { decorate: decorator.toString() }
                 },
                 proxyStub = { responses: [proxyResponse] },
