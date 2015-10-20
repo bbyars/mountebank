@@ -19,7 +19,7 @@ function create (logger, encoding) {
         if (typeof proxyDestination === 'string') {
             var parts = url.parse(proxyDestination);
 
-            if (parts.protocol !== 'tcp') {
+            if (parts.protocol !== 'tcp:') {
                 throw errors.InvalidProxyError('Unable to proxy to any protocol other than tcp',
                     { source: proxyDestination });
             }
