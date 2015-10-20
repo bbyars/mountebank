@@ -27,7 +27,14 @@ are only meaningful in the response; they will be ignored in any requests.</p>
     <option value='logs'>logs</option>
   </select> resource.</p>
 
+<pre class='contract' id='specification'>
 <% include contracts/imposter %>
+</pre>
+
+<div class='contract' id='specification-description'>
+  <% include contracts/imposter-description %>
+</div>
+
 
 <script type='text/javascript'>
   $(document).ready(function () {
@@ -93,9 +100,15 @@ are only meaningful in the response; they will be ignored in any requests.</p>
       return 'imposter';
     }
 
+    $('#contract-types').change(function () {
+      var id = $(this).val() + '-specification';
+      $('#specification code').hide();
+      $('#' + id).show();
+      $('#specification-description').height($('#specification').height());
+    });
+
     hoverOn();
-    $('#specification-description').height($('#specification').height());
-    $('#contract-types').val(contractType());
+    $('#contract-types').val(contractType()).change();
   });
 </script>
 
