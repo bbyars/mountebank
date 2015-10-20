@@ -8,7 +8,7 @@ function create (logfile) {
             logs = JSON.parse(json);
 
         response.format({
-            json: function () { response.send({ logs: json }); },
+            json: function () { response.send({ logs: logs }); },
             html: function () { response.render('logs', { logs: logs }); }
         });
     }
