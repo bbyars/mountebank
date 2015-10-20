@@ -28,11 +28,19 @@ are only meaningful in the response; they will be ignored in any requests.</p>
   </select> resource.</p>
 
 <pre class='contract' id='specification'>
+<% include contracts/home %>
+<% include contracts/imposters %>
 <% include contracts/imposter %>
+<% include contracts/config %>
+<% include contracts/logs %>
 </pre>
 
 <div class='contract' id='specification-description'>
+  <% include contracts/home-description %>
+  <% include contracts/imposters-description %>
   <% include contracts/imposter-description %>
+  <% include contracts/config-description %>
+  <% include contracts/logs-description %>
 </div>
 
 
@@ -53,7 +61,8 @@ are only meaningful in the response; they will be ignored in any requests.</p>
         $('#specification span').css('background-color', '');
         $('#specification-description div').hide();
 
-        descriptionFor(this.id).css('top', $(this).offset().top - $('#port').offset().top);
+        var firstSpan = $(this).parent().find(':first-child');
+        descriptionFor(this.id).css('top', $(this).offset().top - firstSpan.offset().top);
 
         $(this).find('a').css('visibility', 'visible');
         $(this).css('background-color', 'gold');
