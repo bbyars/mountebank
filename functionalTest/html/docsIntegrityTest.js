@@ -62,7 +62,8 @@ describe('docs', function () {
         '/docs/api/proxies',
         '/docs/api/injection',
         '/docs/api/behaviors',
-        '/docs/api/xpath'
+        '/docs/api/xpath',
+        '/docs/protocols/https'
     ].forEach(function (page) {
             validateDocs(page);
         });

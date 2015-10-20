@@ -91,4 +91,107 @@ switch in <code>curl</code>).  Alternatively, you may pass in the key pair yours
   to change the <code>protocol</code> parameter to <code>https</code> during imposter
   creation!</p>
 
+<h2>Mutual Authentication</h2>
+
+<p>mountebank supports mutual authentication involving client certificates both for the
+server itself and through proxies.  The following example demonstrates this capability,
+as well as setting up your own certificate for the server.  First we'll set up a server
+that expects client certificates by using the <code>mutualAuth</code> field:</p>
+
+<pre><code data-test-id='https-mutual-auth'
+           data-test-step='1'
+           data-test-type='http'>
+POST /imposters HTTP/1.1
+Host: localhost:<%= port %>
+Accept: application/json
+Content-Type: application/json
+
+{
+  "port": 4545,
+  "protocol": "https",
+  "name": "origin server",
+  "mutualAuth": true,
+  "key": "-----BEGIN RSA PRIVATE KEY-----\nMIICXAIBAAKBgQCrvse04YkxtVGagyvGJCsvv7LTfLK5uR/ZIJKDYCnuF+BqBzM4\nlko8O39vx+Lz9FfF11Xl+CN1aY37YurLYOle3dC/qslSbQDe2TJN7lcVHVssePvc\nO5IExpvNFV5LYtmyCMKJHxpnIprv/trUso5obqzzXhFVPV9SQbFH/snInwIDAQAB\nAoGARywlqLD6YO4qJiULw+4DM6N2oSwBCPRN3XYhIW59kdy1NFtNf7rQgsuJUTJ9\nu+lbYnKNd2LwltyqaS4h7Sx5KRhpFNmMpyVsBf5J2q3fbfmrsXt+emY7XhVTc1NV\nizUWYyxCoTTeMWvN/6NYpPV0lSxq7jMTFVZrWQUMqJclxpECQQDTlGwALtAX1Y8u\nGKsEHPkoq9bhHA5N9WAboQ4LQCZVC8eBf/XH//2iosYTXRNgII2JLmHmmxJHo5iN\nJPFMbnoHAkEAz81osJf+yHm7PBBJP4zEWZCV25c+iJiPDpj5UoUXEbq47qVfy1mV\nDqy2zoDynAWitU7PeHyZ8ozfyribPoR2qQJAVmvMhXKZmvKnLivzRpXTC9LMzVwZ\nV6x/Wim5w8yrG5fZIMM0kEG2xwR3pZch/+SsCzl/0aLLn6lp+VT6nr6NZwJBAMxs\nHrvymoLvNeDtiJFK0nHliXafP7YyljDfDg4+vSYE0R57c1RhSQBJqgBV29TeumSw\nJes6cFuqeBE+MAJ9XxkCQDdUdhnA8HHQRNetqK7lygUep7EcHHCB6u/0FypoLw7o\nEUVo5KSEFq93UeMr3B7DDPIz3LOrFXlm7clCh1HFZhQ=\n-----END RSA PRIVATE KEY-----",
+  "cert": "-----BEGIN CERTIFICATE-----\nMIIB6TCCAVICCQCZgxbBD0CG4zANBgkqhkiG9w0BAQUFADA5MQswCQYDVQQGEwJV\nUzETMBEGA1UECBMKU29tZS1TdGF0ZTEVMBMGA1UEChMMVGhvdWdodFdvcmtzMB4X\nDTEzMTIyOTE2NDAzN1oXDTE0MDEyODE2NDAzN1owOTELMAkGA1UEBhMCVVMxEzAR\nBgNVBAgTClNvbWUtU3RhdGUxFTATBgNVBAoTDFRob3VnaHRXb3JrczCBnzANBgkq\nhkiG9w0BAQEFAAOBjQAwgYkCgYEAq77HtOGJMbVRmoMrxiQrL7+y03yyubkf2SCS\ng2Ap7hfgagczOJZKPDt/b8fi8/RXxddV5fgjdWmN+2Lqy2DpXt3Qv6rJUm0A3tky\nTe5XFR1bLHj73DuSBMabzRVeS2LZsgjCiR8aZyKa7/7a1LKOaG6s814RVT1fUkGx\nR/7JyJ8CAwEAATANBgkqhkiG9w0BAQUFAAOBgQCPhixeKxIy+ftrfPikwjYo1uxp\ngQ18FdVN1pbI//IIx1o8kJuX8yZzO95PsCOU0GbIRCkFMhBlqHiD9H0/W/GvWzjf\n7WFW15lL61y/kH1J0wqEgoaMrUDjHZvKVr0HrN+vSxHlNQcSNFJ2KdvZ5a9dhpGf\nXOdprCdUUXzSoJWCCg==\n-----END CERTIFICATE-----",
+  "stubs": [
+    {
+      "responses": [
+        {
+          "is": {
+            "body": "It worked!"
+          }
+        }
+      ]
+    }
+  ]
+}
+</code></pre>
+
+<p>If we try and connect to this server without providing a client certificate, it will immediately terminate the connection.
+Let's create an imposter that will proxy to it, providing the necessary credentials:</p>
+
+<pre><code data-test-id='https-mutual-auth'
+           data-test-step='2'
+           data-test-type='http'>
+POST /imposters HTTP/1.1
+Host: localhost:<%= port %>
+Accept: application/json
+Content-Type: application/json
+
+{
+  "port": 5555,
+  "protocol": "http",
+  "name": "proxy",
+  "stubs": [
+    {
+      "responses": [
+        {
+          "proxy": {
+            "to": "https://localhost:4545",
+            "key": "-----BEGIN RSA PRIVATE KEY-----\nMIICXAIBAAKBgQCrvse04YkxtVGagyvGJCsvv7LTfLK5uR/ZIJKDYCnuF+BqBzM4\nlko8O39vx+Lz9FfF11Xl+CN1aY37YurLYOle3dC/qslSbQDe2TJN7lcVHVssePvc\nO5IExpvNFV5LYtmyCMKJHxpnIprv/trUso5obqzzXhFVPV9SQbFH/snInwIDAQAB\nAoGARywlqLD6YO4qJiULw+4DM6N2oSwBCPRN3XYhIW59kdy1NFtNf7rQgsuJUTJ9\nu+lbYnKNd2LwltyqaS4h7Sx5KRhpFNmMpyVsBf5J2q3fbfmrsXt+emY7XhVTc1NV\nizUWYyxCoTTeMWvN/6NYpPV0lSxq7jMTFVZrWQUMqJclxpECQQDTlGwALtAX1Y8u\nGKsEHPkoq9bhHA5N9WAboQ4LQCZVC8eBf/XH//2iosYTXRNgII2JLmHmmxJHo5iN\nJPFMbnoHAkEAz81osJf+yHm7PBBJP4zEWZCV25c+iJiPDpj5UoUXEbq47qVfy1mV\nDqy2zoDynAWitU7PeHyZ8ozfyribPoR2qQJAVmvMhXKZmvKnLivzRpXTC9LMzVwZ\nV6x/Wim5w8yrG5fZIMM0kEG2xwR3pZch/+SsCzl/0aLLn6lp+VT6nr6NZwJBAMxs\nHrvymoLvNeDtiJFK0nHliXafP7YyljDfDg4+vSYE0R57c1RhSQBJqgBV29TeumSw\nJes6cFuqeBE+MAJ9XxkCQDdUdhnA8HHQRNetqK7lygUep7EcHHCB6u/0FypoLw7o\nEUVo5KSEFq93UeMr3B7DDPIz3LOrFXlm7clCh1HFZhQ=\n-----END RSA PRIVATE KEY-----",
+            "cert": "-----BEGIN CERTIFICATE-----\nMIIB6TCCAVICCQCZgxbBD0CG4zANBgkqhkiG9w0BAQUFADA5MQswCQYDVQQGEwJV\nUzETMBEGA1UECBMKU29tZS1TdGF0ZTEVMBMGA1UEChMMVGhvdWdodFdvcmtzMB4X\nDTEzMTIyOTE2NDAzN1oXDTE0MDEyODE2NDAzN1owOTELMAkGA1UEBhMCVVMxEzAR\nBgNVBAgTClNvbWUtU3RhdGUxFTATBgNVBAoTDFRob3VnaHRXb3JrczCBnzANBgkq\nhkiG9w0BAQEFAAOBjQAwgYkCgYEAq77HtOGJMbVRmoMrxiQrL7+y03yyubkf2SCS\ng2Ap7hfgagczOJZKPDt/b8fi8/RXxddV5fgjdWmN+2Lqy2DpXt3Qv6rJUm0A3tky\nTe5XFR1bLHj73DuSBMabzRVeS2LZsgjCiR8aZyKa7/7a1LKOaG6s814RVT1fUkGx\nR/7JyJ8CAwEAATANBgkqhkiG9w0BAQUFAAOBgQCPhixeKxIy+ftrfPikwjYo1uxp\ngQ18FdVN1pbI//IIx1o8kJuX8yZzO95PsCOU0GbIRCkFMhBlqHiD9H0/W/GvWzjf\n7WFW15lL61y/kH1J0wqEgoaMrUDjHZvKVr0HrN+vSxHlNQcSNFJ2KdvZ5a9dhpGf\nXOdprCdUUXzSoJWCCg==\n-----END CERTIFICATE-----"
+          }
+        }
+      ]
+    }
+  ]
+}
+</code></pre>
+
+<p>With the client certificate specified, we should now be able to successfully proxy:</p>
+
+<pre><code data-test-id='https-mutual-auth'
+           data-test-step='3'
+           data-test-type='http'>
+GET /imposters HTTP/1.1
+Host: localhost:5555
+</code></pre>
+
+<pre><code data-test-id='https-mutual-auth'
+           data-test-verify-step='3'
+           data-test-ignore-lines='["^Date"]'>
+HTTP/1.1 200 OK
+Connection: close
+Date: Thu, 09 Jan 2014 02:30:31 GMT
+Transfer-Encoding: chunked
+
+It worked!
+</code></pre>
+
+<code class='hidden' data-test-id='https-mutual-auth'
+                     data-test-step='4'
+                     data-test-type='http'>
+DELETE /imposters/5555 HTTP/1.1
+Host: localhost:<%= port %>
+Accept: application/json
+</code>
+
+<code class='hidden' data-test-id='https-mutual-auth'
+                     data-test-step='5'
+                     data-test-type='http'>
+DELETE /imposters/4545 HTTP/1.1
+Host: localhost:<%= port %>
+Accept: application/json
+</code>
+
 <% include ../../_footer %>

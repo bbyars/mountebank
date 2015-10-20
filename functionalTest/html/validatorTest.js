@@ -40,7 +40,7 @@ if (process.env.MB_AIRPLANE_MODE !== 'true' && process.env.MB_SKIP_W3C_TESTS !==
             '/docs/protocols/tcp',
             '/docs/protocols/smtp',
             '/releases',
-            '/releases/v1.4.0' // save time by only checking latest releases, others should be immutable
+            '/releases/v1.4.1' // save time by only checking latest releases, others should be immutable
         ].forEach(function (endpoint) {
             it(endpoint + ' should have no html errors', function (done) {
                 var spec = {
