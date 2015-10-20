@@ -35,21 +35,54 @@ help make it right for you.</p>
 
 <p>mountebank supports the following capabilities:</p>
 
-<ul class='bullet-list'>
-  <li><a href='#get-home'>Get entry hypermedia</a></li>
-  <li><a href='#post-imposters'>Create a single imposter</a></li>
-  <li><a href='#get-imposter'>Get a single imposter</a></li>
-  <li><a href='#delete-imposter'>Delete a single imposter</a></li>
-  <li><a href='#put-imposters'>Overwrite all imposters with a new set of imposters</a></li>
-  <li><a href='#get-imposters'>Get a list of all imposters</a></li>
-  <li><a href='#delete-imposters'>Delete all imposters</a></li>
-  <li><a href='#get-config'>Get mountebank configuration and process information</a></li>
-  <li><a href='#get-logs'>Get the logs</a></li>
-</ul>
+<table>
+  <tr>
+    <th style='width: 25em;'>Capability</th>
+    <th>Resource Contract</th>
+  </tr>
+  <tr>
+    <td><a href='#get-home'>Get entry hypermedia</a></td>
+    <td><a href='/docs/api/contracts?type=home'>home resource</a></td>
+  </tr>
+  <tr>
+    <td><a href='#post-imposters'>Create a single imposter</a></td>
+    <td><a href='/docs/api/contracts?type=imposter'>imposter resource</a></td>
+  </tr>
+  <tr>
+    <td><a href='#get-imposter'>Get a single imposter</a></td>
+    <td><a href='/docs/api/contracts?type=imposter'>imposter resource</a></td>
+  </tr>
+  <tr>
+    <td><a href='#delete-imposter'>Delete a single imposter</a></td>
+    <td><a href='/docs/api/contracts?type=imposter'>imposter resource</a></td>
+  </tr>
+  <tr>
+    <td><a href='#put-imposters'>Overwrite all imposters with a new set of imposters</a></td>
+    <td><a href='/docs/api/contracts?type=imposters'>imposters resource</a></td>
+  </tr>
+  <tr>
+    <td><a href='#get-imposters'>Get a list of all imposters</a></td>
+    <td><a href='/docs/api/contracts?type=imposters'>imposters resource</a></td>
+  </tr>
+  <tr>
+    <td><a href='#delete-imposters'>Delete all imposters</a></td>
+    <td><a href='/docs/api/contracts?type=imposters'>imposters resource</a></td>
+  </tr>
+  <tr>
+    <td><a href='#get-config'>Get mountebank configuration and process information</a></td>
+    <td><a href='/docs/api/contracts?type=config'>config resource</a></td>
+  </tr>
+  <tr>
+    <td><a href='#get-logs'>Get the logs</a></td>
+    <td><a href='/docs/api/contracts?type=logs'>logs resource</a></td>
+  </tr>
+</table>
 
 <h3 id='get-home'>Get entry hypermedia</h3>
 
 <pre><code>GET /</code></pre>
+
+<p><b>Contract</b>: <a href='/docs/api/contracts?type=home'>home resource</a></p>
 
 <p>Unpretentious and welcoming, mirroring mountebank's simple good nature.  This endpoint
 exists for those who aspire to the RESTful
@@ -95,6 +128,8 @@ Connection: keep-alive
 <h3 id='post-imposters'>Create a single imposter</h3>
 
 <pre><code>POST /imposters</code></pre>
+
+<p><b>Contract</b>: <a href='/docs/api/contracts?type=imposter'>imposter resource</a></p>
 
 <p>Though he's not proud to admit it, mountebank employs an army of imposters to
 fulfill your orders.  Because your needs are varied and sundry, his imposters
@@ -151,9 +186,6 @@ Connection: keep-alive
 }
 </code></pre>
 
-<p>See the <a href='/docs/api/contracts'>imposter contract definition</a> for more
-details.</p>
-
 <p>You would also create any <a href='/docs/api/stubs'>stubs</a> in the <code>POST</code> call.
 Imposters are not mutable through the API once created.  The expected use case is that they are
 setup for a single test run and destroyed at the completion of the test.  The
@@ -168,6 +200,8 @@ http://localhost:3535.  To retrieve a list of all imposters, simply issue a <cod
 <h3 id='get-imposter'>Get a single imposter</h3>
 
 <pre><code>GET /imposters/:port</code></pre>
+
+<p><b>Contract</b>: <a href='/docs/api/contracts?type=imposter'>imposter resource</a></p>
 
 <p>Retrieving an imposter is generally useful for one the following reasons:</p>
 
@@ -277,6 +311,8 @@ Connection: keep-alive
 
 <pre><code>DELETE /imposters/:port</code></pre>
 
+<p><b>Contract</b>: <a href='/docs/api/contracts?type=imposter'>imposter resource</a></p>
+
 <p>As mentioned above, typically you want to delete the imposter after each test run.  This
 frees up the socket and removes the resource.  As a convenience, the <code>DELETE</code> call
 also returns the imposter representation just like a <a href='#get-imposter'><code>GET</code> imposter</a>
@@ -344,6 +380,8 @@ Connection: keep-alive
 <h3 id='put-imposters'>Overwrite all imposters with a new set of imposters</h3>
 
 <pre><code>PUT /imposters</code></pre>
+
+<p><b>Contract</b>: <a href='/docs/api/contracts?type=imposters'>imposters resource</a></p>
 
 <p>Sometimes you want to create a batch of imposters in a single call, overwriting
 any imposters already created.  This call is destructive - it will first delete all
@@ -430,6 +468,8 @@ Connection: keep-alive
 <h3 id='get-imposters'>Get a list of all imposters</h3>
 
 <pre><code>GET /imposters</code></pre>
+
+<p><b>Contract</b>: <a href='/docs/api/contracts?type=imposters'>imposters resource</a></p>
 
 <p>This is where you will come to retrieve a list of all active imposters.  By default,
 mountebank returns some basic information and hypermedia.  If you want more information,
@@ -519,6 +559,8 @@ Connection: keep-alive
 
 <pre><code>DELETE /imposters</code></pre>
 
+<p><b>Contract</b>: <a href='/docs/api/contracts?type=imposters'>imposters resource</a></p>
+
 <p>The surest way to reset to a clean slate is to delete all imposters.  Any imposter sockets
 mountebank has open will be closed, and the response body will contain exactly what you need
 to <a href='#put-imposters'>mass create</a> the same imposters in the future.</p>
@@ -593,6 +635,8 @@ Connection: keep-alive
 
 <pre><code>GET /config</code></pre>
 
+<p><b>Contract</b>: <a href='/docs/api/contracts?type=config'>config resource</a></p>
+
 <p>If you want to know about the environment mountebank is running it, this resource will give you
 what you need.  It describes the version, command line flags, process information, and environment
 variables.</p>
@@ -638,6 +682,31 @@ Accept: application/json
 <h3 id='get-logs'>Get the logs</h3>
 
 <pre><code>GET /logs</code></pre>
+
+<p><b>Contract</b>: <a href='/docs/api/contracts?type=logs'>logs resource</a></p>
+
+<pre><code>
+  GET /logs HTTP/1.1
+  Host: localhost:<%= port %>
+  Accept: application/json
+</code></pre>
+
+<pre><code>
+{
+  "logs": [
+    {
+      "level": "info",
+      "message": "[mb:2525] mountebank v1.4.1 (node v4.2.0) now taking orders - point your browser to http://localhost:2525 for help",
+      "timestamp": "2015-10-20T03:33:23.018Z"
+    },
+    {
+      "level": "info",
+      "message": "[mb:2525] GET /logs",
+      "timestamp": "2015-10-20T03:33:25.429Z"
+    }
+  ]
+}
+</code></pre>
 
 <p>In the rare scenario where mountebank is hosted on a different server and you need access to the logs,
 they are accessible through this endpoint.</p>
