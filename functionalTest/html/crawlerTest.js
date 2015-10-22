@@ -22,7 +22,7 @@ if (process.env.MB_AIRPLANE_MODE !== 'true' && process.env.MB_SKIP_W3C_TESTS !==
     describe('The mountebank website', function () {
         this.timeout(30000);
 
-        promiseIt.only('should have no dead links and a valid sitemap', function () {
+        promiseIt('should have no dead links and a valid sitemap', function () {
             var crawlResults;
             return crawler.create().crawl(api.url + '/', '').then(function (result) {
                 // Validate no broken links
