@@ -1,7 +1,8 @@
+'use strict';
+
 var assert = require('assert'),
     api = require('../api/api'),
     crawler = require('./crawler'),
-    Q = require('q'),
     promiseIt = require('../testHelpers').promiseIt;
 
 function expectedContentType (contentType) {

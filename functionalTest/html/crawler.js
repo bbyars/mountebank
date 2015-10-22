@@ -1,3 +1,5 @@
+'use strict';
+
 var jsdom = require('jsdom'),
     api = require('../api/api'),
     Q = require('q'),
@@ -11,7 +13,7 @@ function parseLinksFrom (window) {
     var links = [],
         anchorTags = window.document.getElementsByTagName('a');
     for (var i = 0; i < anchorTags.length; i++) {
-        var href = anchorTags[i].attributes['href'] ? anchorTags[i].attributes['href'].value : undefined;
+        var href = anchorTags[i].attributes.href ? anchorTags[i].attributes.href.value : undefined;
         if (href) {
             if (href.indexOf('/') === 0) {
                 href = 'http://localhost:' + api.port + href;
@@ -82,7 +84,7 @@ function create () {
     }
 
     function addReferrer (href, referrer) {
-        pages.hits[href].from.push(referrer)
+        pages.hits[href].from.push(referrer);
     }
 
     function addError (href, referrer) {
