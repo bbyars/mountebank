@@ -8,9 +8,9 @@ var assert = require('assert'),
     timeout = 10000;
 
 // MB_AIRPLANE_MODE because these require network access
-// MB_SKIP_W3C_TESTS because these are slow, occasionally fragile, and there's
+// MB_RUN_WEB_TESTS because these are slow, occasionally fragile, and there's
 // no value running them with every node in the build matrix
-if (process.env.MB_AIRPLANE_MODE !== 'true' && process.env.MB_SKIP_W3C_TESTS !== 'true') {
+if (process.env.MB_AIRPLANE_MODE !== 'true' && process.env.MB_RUN_WEB_TESTS === 'true') {
     describe('html validation', function () {
         this.timeout(timeout);
 

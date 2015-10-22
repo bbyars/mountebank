@@ -61,8 +61,7 @@ function triggerBuild (version) {
         path: '/project/bbyars/mountebank/branch/master/trigger',
         body: {
             env: {
-                MB_VERSION: version,
-                MB_SKIP_W3C_TESTS: true
+                MB_VERSION: version
             }
         }
     }).then(function (response) {

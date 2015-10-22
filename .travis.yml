@@ -17,24 +17,20 @@ matrix:
       env:
         - NODE_VERSION=4.2
         - MB_GRUNT_TASK='test:pkg deploy:s3'
-        - MB_SKIP_W3C_TESTS=true
     - os: osx
       sudo: false
       env:
         - NODE_VERSION=4.2
         - MB_GRUNT_TASK='test:tarball:x64 deploy:s3'
-        - MB_SKIP_W3C_TESTS=true
     - os: osx
       sudo: false
       env:
         - NODE_VERSION=0.12
-        - MB_SKIP_W3C_TESTS=true
     - os: linux
       sudo: false
       env:
         - NODE_VERSION=4.2
         - MB_GRUNT_TASK='test:npm dist:zip:x64 dist:zip:x86 deploy:s3 trigger:appveyor'
-        - MB_SKIP_W3C_TESTS=true
         # APPVEYOR_API_TOKEN
         - secure: "A4hhAF4npjjpiV+X6u1dt4sHYUDLyB+0mIdovXSbR/eh1jTn1ZnaCwZD8G248N+yf5Kj1jTsUUzT4mxkWSO9uzxA93W7CimLH7iBjPVyOEemuXBlBqxPJAAweB6BhiGpiuPZk2SeC0SVa+gwC+KL3oy/PW4dz8Q5ytL/IE9b3/o="
     - os: linux
@@ -43,7 +39,6 @@ matrix:
         - NODE_VERSION=4.2
         - MB_INSTALL_RPM=true
         - MB_GRUNT_TASK='test:deb dist:package:rpm deploy:s3 trigger:snapci deploy:heroku deploy:npm'
-        - MB_SKIP_W3C_TESTS=true
         # HEROKU_API_KEY
         - secure: "BQunTTpCSGjhIYiBAXKxuuOluJIhKXdW/94GCsPlK1N8Ln20/nj/0U4qnSH7yASWQWssVG4ttm/cAbjfi+3DS4KDLtBGK1i3IoM+cJ2ADCeG7BHsqJDB0f9JyAkULjIRdkqilzR/tyD+w78pPHd7QbfplLvqUcnt7HVxw9lp4PY="
         # NPM_API_KEY
@@ -55,26 +50,23 @@ matrix:
       env:
         - NODE_VERSION=4.2
         - MB_GRUNT_TASK='test:tarball:x64 dist:tarball:x86 deploy:s3 coveralls'
-        - MB_SKIP_W3C_TESTS=true
     - os: linux
       sudo: false
       env:
         - NODE_VERSION=4.0
+        - MB_RUN_WEB_TESTS=true
     - os: linux
       sudo: false
       env:
         - NODE_VERSION=0.12
-        - MB_SKIP_W3C_TESTS=true
     - os: linux
       sudo: false
       env:
         - NODE_VERSION=0.10
-        - MB_SKIP_W3C_TESTS=true
     - os: osx
       sudo: false
       env:
         - NODE_VERSION=0.10
-        - MB_SKIP_W3C_TESTS=true
 
 install:
   - rm -rf ~/.nvm

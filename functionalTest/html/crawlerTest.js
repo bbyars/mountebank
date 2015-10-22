@@ -18,7 +18,7 @@ function expectedStatusCode (statusCode) {
     return [200, 301, 302].indexOf(statusCode) >= 0;
 }
 
-if (process.env.MB_AIRPLANE_MODE !== 'true' && process.env.MB_SKIP_W3C_TESTS !== 'true') {
+if (process.env.MB_AIRPLANE_MODE !== 'true' && process.env.MB_RUN_WEB_TESTS === 'true') {
     describe('The mountebank website', function () {
         this.timeout(30000);
 
