@@ -15,6 +15,7 @@ if (process.env.MB_AIRPLANE_MODE !== 'true' && process.env.MB_SKIP_W3C_TESTS !==
         this.timeout(timeout);
 
         [
+            '/',
             '/contributing',
             '/license',
             '/faqs',
