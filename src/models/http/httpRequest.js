@@ -15,6 +15,14 @@ function createTestRequest () {
     };
 }
 
+function headersFor (rawHeaders) {
+    var result = {};
+    for (var i = 0; i < rawHeaders.length; i += 2) {
+        result[rawHeaders[i]] = rawHeaders[i+1];
+    }
+    return result;
+}
+
 function transform (request) {
     var parts = url.parse(request.url, true);
     return {
@@ -22,7 +30,7 @@ function transform (request) {
         method: request.method,
         path: parts.pathname,
         query: parts.query,
-        headers: request.headers,
+        headers: headersFor(request.rawHeaders),
         body: request.body
     };
 }

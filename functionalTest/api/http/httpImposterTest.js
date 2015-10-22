@@ -60,6 +60,28 @@ var assert = require('assert'),
                 });
             });
 
+            promiseIt('should save headers in case-sensitive way', function () {
+                var request = { protocol: protocol, port: port, name: this.name };
+
+                return api.post('/imposters', request).then(function () {
+                    return client.responseFor({
+                        method: 'GET',
+                        path: '/',
+                        port: port,
+                        headers: {
+                            Accept: 'APPLICATION/json'
+                        }
+                    });
+                }).then(function () {
+                    return api.get('/imposters/' + port);
+                }).then(function (response) {
+                    var request = response.body.requests[0];
+                    assert.strictEqual(request.headers.Accept, 'APPLICATION/json');
+                }).finally(function () {
+                    return api.del('/imposters');
+                });
+            });
+
             promiseIt('should return list of stubs in order', function () {
                 var first = { responses: [{ is: { body: '1' }}]},
                     second = { responses: [{ is: { body: '2' }}]},
@@ -93,7 +115,7 @@ var assert = require('assert'),
                         withTimeRemoved = stubs.replace(/"timestamp":"[^"]+"/g, '"timestamp":"NOW"'),
                         withClientPortRemoved = withTimeRemoved.replace(/"requestFrom":"[a-f:\.\d]+"/g, '"requestFrom":"HERE"'),
                         actualWithoutEphemeralData = JSON.parse(withClientPortRemoved),
-                        requestHeaders = { accept: 'application/json', host: 'localhost:' + port, connection: 'keep-alive' };
+                        requestHeaders = { accept: 'application/json', Host: 'localhost:' + port, Connection: 'keep-alive' };
 
                     assert.deepEqual(actualWithoutEphemeralData, [{
                         responses: [{ is: { body: '1' } }, { is: { body: '2' } }],

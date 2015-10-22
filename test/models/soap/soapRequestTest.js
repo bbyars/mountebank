@@ -25,7 +25,8 @@ describe('SoapRequest', function () {
             httpRequest = inherit.from(events.EventEmitter, {
                 socket: { remoteAddress: '', remotePort: '' },
                 setEncoding: mock(),
-                url: 'http://localhost/'
+                url: 'http://localhost/',
+                rawHeaders: []
             });
         });
 
@@ -42,14 +43,28 @@ describe('SoapRequest', function () {
             return promise;
         });
 
-        promiseIt('should echo method and headers from original request', function () {
+        promiseIt('should echo method from original request', function () {
             httpRequest.method = 'METHOD';
-            httpRequest.headers = 'HEADERS';
 
             var promise = SoapRequest.createFrom(httpRequest).then(function (soapRequest) {
                     assert.strictEqual(soapRequest.http.method, 'METHOD');
-                    assert.strictEqual(soapRequest.http.headers, 'HEADERS');
                 });
+
+            httpRequest.emit('data', defaultBody);
+            httpRequest.emit('end');
+
+            return promise;
+        });
+
+        promiseIt('should transform rawHeaders from original request, keeping case and merging duplicates', function () {
+            httpRequest.rawHeaders = ['Accept', 'invalid', 'Accept', 'TEXT/html', 'Host', '127.0.0.1:8000'];
+
+            var promise = SoapRequest.createFrom(httpRequest).then(function (soapRequest) {
+                assert.deepEqual(soapRequest.http.headers, {
+                    Accept: 'TEXT/html',
+                    Host: '127.0.0.1:8000'
+                });
+            });
 
             httpRequest.emit('data', defaultBody);
             httpRequest.emit('end');

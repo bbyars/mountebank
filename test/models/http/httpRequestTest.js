@@ -15,7 +15,8 @@ describe('HttpRequest', function () {
             request = inherit.from(events.EventEmitter, {
                 socket: { remoteAddress: '', remotePort: '' },
                 setEncoding: mock(),
-                url: 'http://localhost/'
+                url: 'http://localhost/',
+                rawHeaders: []
             });
             container = { request: request };
         });
@@ -32,14 +33,27 @@ describe('HttpRequest', function () {
             return promise;
         });
 
-        promiseIt('should echo method and headers from original request', function () {
+        promiseIt('should echo method from original request', function () {
             request.method = 'METHOD';
-            request.headers = 'HEADERS';
 
             var promise = httpRequest.createFrom(container).then(function (httpRequest) {
                     assert.strictEqual(httpRequest.method, 'METHOD');
-                    assert.strictEqual(httpRequest.headers, 'HEADERS');
                 });
+
+            request.emit('end');
+
+            return promise;
+        });
+
+        promiseIt('should transform rawHeaders from original request, keeping case and merging duplicates', function () {
+            request.rawHeaders = ['Accept', 'invalid', 'Accept', 'TEXT/html', 'Host', '127.0.0.1:8000'];
+
+            var promise = httpRequest.createFrom(container).then(function (httpRequest) {
+                assert.deepEqual(httpRequest.headers, {
+                    Accept: 'TEXT/html',
+                    Host: '127.0.0.1:8000'
+                });
+            });
 
             request.emit('end');
 

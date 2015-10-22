@@ -64,7 +64,7 @@ Content-Type: application/json
     {
       "responses": [{ "is": { "statusCode": 400 } }],
       "predicates": [{
-        "inject": "function (request, logger) {\n\n    function hasXMLProlog () {\n        return request.body.indexOf('&lt;?xml') === 0;\n    }\n\n    if (request.headers['content-type'] === 'application/xml') {\n        return !hasXMLProlog();\n    }\n    else {\n        return hasXMLProlog();\n    }\n}"
+        "inject": "function (request, logger) {\n\n    function hasXMLProlog () {\n        return request.body.indexOf('&lt;?xml') === 0;\n    }\n\n    if (request.headers['Content-Type'] === 'application/xml') {\n        return !hasXMLProlog();\n    }\n    else {\n        return hasXMLProlog();\n    }\n}"
       }]
     }
   ]
@@ -83,7 +83,7 @@ function (request, logger) {
         return request.body.indexOf('&lt;?xml') === 0;
     }
 
-    if (request.headers['content-type'] === 'application/xml') {
+    if (request.headers['Content-Type'] === 'application/xml') {
         return !hasXMLProlog();
     }
     else {

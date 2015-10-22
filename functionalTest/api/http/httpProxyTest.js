@@ -31,7 +31,7 @@ describe('http proxy', function () {
                 assert.strictEqual(requests[0].path, '/PATH');
                 assert.strictEqual(requests[0].method, 'POST');
                 assert.strictEqual(requests[0].body, 'BODY');
-                assert.strictEqual(requests[0].headers['x-key'], 'TRUE');
+                assert.strictEqual(requests[0].headers['X-Key'], 'TRUE');
             }).finally(function () {
                 return api.del('/imposters');
             });
