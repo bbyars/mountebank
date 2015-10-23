@@ -31,6 +31,6 @@ module.exports = {
         if (process.version.indexOf('v0.10') === 0) {
             patchRawHeaders();
         }
-        baseHttpServer.setup('http', createBaseServer).initialize(allowInjection, mock, debug);
+        return baseHttpServer.setup('http', createBaseServer).initialize(allowInjection, mock, debug);
     }
 };
