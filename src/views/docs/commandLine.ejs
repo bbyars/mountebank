@@ -108,10 +108,11 @@ functions and HTTP response bodies because you store them as multi-line files an
 templating to turn them into JSON-friendly single line strings.</p>
 
 <p>mountebank will pass an <code>stringify</code> function into your templates that allows you to put
-multi-line strings in separate files.  The example below is based on the
+multi-line strings in separate files.  The example below is loosely based on the
 <a href='/docs/api/injection#response-injection'>response injection</a> example described on
 the Injection page, and shows the use of the <code>stringify</code> function.  The <code>filename</code>
-parameter is required.  The variable is passed in by <code>mb</code> and used to resolve relative
+parameter is required, and unfortunately is simply a bit of magic that mountebank isn't clever enough
+to find a way to hide.  The variable is passed in by <code>mb</code> and used to resolve relative
 paths.</p>
 
 <p>Assuming the files below are in a relative directory called <code>templates</code>, you can
@@ -139,10 +140,23 @@ mb --configfile templates/imposters.ejs --allowInjection
   "name": "origin",
   "stubs": [
     {
+      "predicates": [{ "contains": { "headers": { "Content-Type": "xml" } } }],
+      "responses": [{ "is": { "body": "&lt;%- stringify(filename, 'originXMLResponse.ejs') %&gt;" }}]
+    },
+    {
       "responses": [{ "inject": "&lt;%- stringify(filename, 'originServerResponse.ejs') %&gt;" }]
     }
   ]
 }
+</code></pre>
+
+<p>templates/originXMLResponse.ejs</p>
+<pre><code>
+&lt;rootNode&gt;
+  &lt;childNode&gt;first&lt;/childNode&gt;
+  &lt;childNode&gt;second&lt;/childNode&gt;
+  &lt;childNode&gt;third&lt;/childNode&gt;
+&lt;/rootNode&gt;
 </code></pre>
 
 <p>templates/originServerResponse.ejs</p>
