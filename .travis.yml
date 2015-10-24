@@ -22,10 +22,11 @@ matrix:
       env:
         - NODE_VERSION=4.2
         - MB_GRUNT_TASK='test:tarball:x64 deploy:s3'
-    - os: osx
-      sudo: false
+    - os: linux
+      sudo: true
       env:
-        - NODE_VERSION=0.12
+        - NODE_VERSION=4.2
+        - MB_GRUNT_TASK=test:performance
     - os: linux
       sudo: false
       env:
@@ -67,11 +68,10 @@ matrix:
       sudo: false
       env:
         - NODE_VERSION=0.10
-    - os: linux
-      sudo: true
+    - os: osx
+      sudo: false
       env:
-        - NODE_VERSION=4.2
-        - MB_GRUNT_TASK=test:performance
+        - NODE_VERSION=0.12
 
 install:
   - rm -rf ~/.nvm
