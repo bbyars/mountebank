@@ -46,7 +46,7 @@ describe('mb', function () {
                 return getMemoryUsedForFiftyThousandRequests(mb.port);
             }).then(function (memoryUsed) {
                 console.log('memory usage for 50,000 requests with --mock: ' + memoryUsed);
-                assert.ok(memoryUsed > 150, 'Memory used: ' + memoryUsed);
+                assert.ok(memoryUsed > 290, 'Memory used: ' + memoryUsed);
             }).finally(function () {
                 return mb.stop();
             });
@@ -59,7 +59,7 @@ describe('mb', function () {
                 return getMemoryUsedForFiftyThousandRequests(mb.port);
             }).then(function (memoryUsed) {
                 console.log('default memory usage with for 50,000 requests: ' + memoryUsed);
-                assert.ok(memoryUsed < 50, 'Memory used: ' + memoryUsed);
+                assert.ok(memoryUsed < 110, 'Memory used: ' + memoryUsed);
             }).finally(function () {
                 return mb.stop();
             });
