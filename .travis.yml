@@ -67,6 +67,11 @@ matrix:
       sudo: false
       env:
         - NODE_VERSION=0.10
+    - os: linux
+      sudo: false
+      env:
+        - NODE_VERSION=4.2
+        - MB_GRUNT_TASK=test:performance
 
 install:
   - rm -rf ~/.nvm
