@@ -4,6 +4,7 @@ var Q = require('q'),
     exec = require('child_process').exec,
     thisPackage = require('../package.json'),
     version = process.env.MB_VERSION || thisPackage.version,
+    hasTriggerRights = process.env.MB_DEPLOY === 'true',
     appveyor = require('./ci/appveyor'),
     snapci = require('./ci/snapci'),
     travis = require('./ci/travis');
@@ -23,6 +24,10 @@ function getCurrentCommitId () {
 
 module.exports = function (grunt) {
     grunt.registerTask('trigger:appveyor', 'Trigger Appveyor build for same commit', function () {
+        if (!hasTriggerRights) {
+            return;
+        }
+
         var done = this.async();
 
         return getCurrentCommitId().then(function (commitId) {
@@ -75,6 +80,10 @@ module.exports = function (grunt) {
     });
 
     grunt.registerTask('trigger:snapci', 'Trigger Snap CI build for latest commit', function () {
+        if (!hasTriggerRights) {
+            return;
+        }
+
         var done = this.async();
 
         return snapci.triggerBuild(version).then(function (result) {
