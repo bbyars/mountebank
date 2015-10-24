@@ -68,7 +68,7 @@ matrix:
       env:
         - NODE_VERSION=0.10
     - os: linux
-      sudo: false
+      sudo: true
       env:
         - NODE_VERSION=4.2
         - MB_GRUNT_TASK=test:performance
