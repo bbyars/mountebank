@@ -3,85 +3,85 @@
 var assert = require('assert'),
     w3cjs = require('w3cjs'),
     api = require('../api/api'),
+    Q = require('q'),
     httpClient = require('../api/http/baseHttpClient').create('http'),
-    fs = require('fs'),
-    timeout = 10000;
+    currentVersion = require('../../package.json').version,
+    promiseIt = require('../testHelpers').promiseIt;
+
+function assertValid (path, html) {
+    var deferred = Q.defer();
+
+    w3cjs.validate({
+        input: html,
+        callback: function (response) {
+            if (response.messages) {
+                var errors = response.messages.filter(function (message) {
+                    return message.type === 'error';
+                }).map(function (message) {
+                    return {
+                        line: message.lastLine,
+                        message: message.message
+                    };
+                });
+                assert.strictEqual(0, errors.length,
+                    'Errors for ' + path + ': ' + JSON.stringify(errors, null, 2));
+                console.log(path + ' is valid');
+            }
+            else {
+                console.warn('HTML validation skipped for ' + path);
+            }
+            deferred.resolve();
+        }
+    });
+
+    return deferred.promise;
+}
+
+function getHTML (path) {
+    var spec = {
+            port: api.port,
+            method: 'GET',
+            path: path,
+            headers: { accept: 'text/html' }
+        };
+
+    return httpClient.responseFor(spec).then(function (response) {
+        assert.strictEqual(response.statusCode, 200, 'Status code for ' + path + ': ' + response.statusCode);
+
+        // ignore errors for webkit attributes on search box
+        return Q(response.body.replace("results='5' autosave='mb' ", ''));
+    });
+}
 
 // MB_AIRPLANE_MODE because these require network access
 // MB_RUN_WEB_TESTS because these are slow, occasionally fragile, and there's
 // no value running them with every node in the build matrix
 if (process.env.MB_AIRPLANE_MODE !== 'true' && process.env.MB_RUN_WEB_TESTS === 'true') {
-    describe('html validation', function () {
-        this.timeout(timeout);
+    describe('all pages in the mountebank website', function () {
+        this.timeout(60000);
 
-        [
-            '/',
-            '/contributing',
-            '/license',
-            '/faqs',
-            '/thoughtworks',
-            '/docs/examples',
-            '/docs/gettingStarted',
-            '/docs/install',
-            '/docs/glossary',
-            '/docs/commandLine',
-            '/docs/clientLibraries',
-            '/docs/api/overview',
-            '/docs/api/contracts',
-            '/docs/api/mocks',
-            '/docs/api/stubs',
-            '/docs/api/predicates',
-            '/docs/api/xpath',
-            '/docs/api/proxies',
-            '/docs/api/injection',
-            '/docs/api/behaviors',
-            '/docs/api/errors',
-            '/docs/protocols/http',
-            '/docs/protocols/https',
-            '/docs/protocols/tcp',
-            '/docs/protocols/smtp',
-            '/releases',
-            '/releases/v1.4.1' // save time by only checking latest releases, others should be immutable
-        ].forEach(function (endpoint) {
-            it(endpoint + ' should have no html errors', function (done) {
-                var spec = {
-                    port: api.port,
-                    method: 'GET',
-                    path: endpoint,
-                    headers: { accept: 'text/html' }
-                };
+        promiseIt('should be valid html', function () {
+            // feed isn't html and is tested elsewhere; support has non-valid Google HTML embedded
+            var blacklist = ['/feed', '/support', '/imposters', '/logs'];
 
-                httpClient.responseFor(spec).then(function (response) {
-                    // ignore errors for webkit attributes on search box
-                    // use unique filename each time because otherwise a timed out test
-                    // causes the next test(s) to fail
-                    var body = response.body.replace("results='5' autosave='mb' ", ''),
-                        filename = endpoint.replace(/\//g, '') + '-validation-test.html';
-                    fs.writeFileSync(filename, body);
+            return api.get('/sitemap').then(function (response) {
+                assert.strictEqual(response.statusCode, 200);
 
-                    w3cjs.validate({
-                        file: filename,
-                        callback: function (response) {
-                            fs.unlinkSync(filename);
-
-                            if (response.messages) {
-                                var errors = response.messages.filter(function (message) {
-                                    return message.type === 'error';
-                                }).map(function (message) {
-                                    return {
-                                        line: message.lastLine,
-                                        message: message.message
-                                    };
-                                });
-                                assert.strictEqual(0, errors.length, JSON.stringify(errors, null, 2));
-                            }
-                            else {
-                                console.warn('HTML validation skipped for ' + endpoint);
-                            }
-                            done();
-                        }
+                var siteLinks = response.body.split('\n').map(function (link) {
+                        return link.replace('http://www.mbtest.org', '');
+                    }).filter(function (path) {
+                        // save time by only checking latest releases, others should be immutable
+                        return path !== '' &&
+                               blacklist.indexOf(path) < 0 &&
+                               (path.indexOf('/releases/') < 0 || path.indexOf(currentVersion) > 0);
+                    }),
+                    tests = siteLinks.map(function (link) {
+                        return getHTML(link).then(function (html) {
+                            return assertValid(link, html);
+                        });
                     });
-                });
+
+                return Q.all(tests);
             });
         });
     });
