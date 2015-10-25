@@ -39,8 +39,6 @@ if (process.env.MB_AIRPLANE_MODE !== 'true' && process.env.MB_RUN_WEB_TESTS === 
                 crawlResults = result;
                 return api.get('/sitemap');
             }).then(function (response) {
-                console.log(response.body);
-
                 var siteLinks = Object.keys(crawlResults.hits).filter(function (link) {
                         return link.indexOf(api.url) === 0 && link.indexOf('#') < 0 && link.indexOf('?') < 0;
                     }).map(function (link) {
