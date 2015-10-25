@@ -13,11 +13,10 @@ response.  mountebank supports mocking through the <code>requests</code> element
 an imposter.  The fields saved for each request depends on the protocol, and are documented
 in the protocol pages linked to from the sidebar.</p>
 
-<p><b>Note, the <code>--mock</code> command line flag must be set to enable mock verification.</b></p>
-
-<p>Mocking requires mountebank to remember information about each request to each imposter.
+<p class='warning-icon'>Note, the <code>--mock</code> command line flag must be set to enable mock verification.
+Mocking requires mountebank to remember information about each request to each imposter.
 For long-running instances of mountebank, this represents a memory leak, so this functionality
-is turned off by default.  To turn it on, you need to pass the <code>--mock</code> command line flag.</p>
+is turned off by default.</p>
 
 <h2>Example</h2>
 

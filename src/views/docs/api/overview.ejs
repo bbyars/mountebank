@@ -9,7 +9,7 @@ description = "An overview of mountebank's RESTful API"
 
 <p>mountebank, being a man of the people, prefers the simple words of the vernacular over
 the silvery speech of the priesthood.  As if to prove the point, he speaks in a RESTful
-<code>application/json</code> rather than <code>application\vnd.mountebank+json</code>.
+<code>application/json</code> rather than <code>application/vnd.mountebank+json</code>.
 While he does provide hypermedia, it is more as a convenience to you, with no professorial
 dictate that you follow the script provided.  To show how committed he is to that principle,
 all resources are described below, complete with URL templates.</p>
@@ -85,11 +85,9 @@ help make it right for you.</p>
 <p><b>Contract</b>: <a href='/docs/api/contracts?type=home'>home resource</a></p>
 
 <p>Unpretentious and welcoming, mirroring mountebank's simple good nature.  This endpoint
-exists for those who aspire to the RESTful
-<a href='http://martinfowler.com/articles/richardsonMaturityModel.html'>priesthood</a>,
-though they may be disappointed to find such a lowly language as <code>application/json</code>
-and the lack of URLs for relationships.  mountebank has no intention of forcing anybody to use
-this endpoint, and does not intend to use it for his implementation of native language bindings.</p>
+exists for those who aspire to the
+<a href='http://martinfowler.com/articles/richardsonMaturityModel.html'>upper echelons of REST</a>,
+though they may be disappointed at the lack of URLs for relationships.</p>
 
 <pre><code data-test-id='home'
            data-test-step='1'
@@ -194,7 +192,7 @@ languages and for multiple protocols.</p>
 
 <p>mountebank expects you to configure your application under test to point to the imposter.  In
 the case above, that would mean that your application has an http dependency configured to
-http://localhost:3535.  To retrieve a list of all imposters, simply issue a <code>GET</code>:</p>
+http://localhost:4545.  To retrieve a list of all imposters, simply issue a <code>GET</code>:</p>
 
 
 <h3 id='get-imposter'>Get a single imposter</h3>

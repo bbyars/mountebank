@@ -16,7 +16,7 @@ what those concepts represent can greatly help in learning how to use the tool.<
   a protocol.  mountebank is non-modal and can create as many <em>imposters</em> as your test requires.</dd>
 
   <dt>stub</dt>
-  <dd>A set of behaviors used to generate a response for an <em>imposter</em>.  An <em>imposter</em>
+  <dd>A set of configuration used to generate a response for an <em>imposter</em>.  An <em>imposter</em>
   can have 0 or more <em>stubs</em>, each of which are associated with different <em>predicates</em>.</dd>
 
   <dt>predicate</dt>
@@ -24,27 +24,20 @@ what those concepts represent can greatly help in learning how to use the tool.<
   <em>stub</em> can have 0 or more <em>predicates</em>.</dd>
 
   <dt>response</dt>
-  <dd>The behavior that generates the response for a <em>stub</em>.  Each <em>stub</em> can have
+  <dd>The configuration that generates the response for a <em>stub</em>.  Each <em>stub</em> can have
   0 or more <em>responses</em>.</dd>
 
   <dt>response type</dt>
-  <dd>Defines the specific behavior used to generate a response.  The simplest type is called
-  <em>is</em>, and allows you to define the <em>imposter's</em> response directly.  Each
-  <em>response</em> has exactly one <em>response type</em>.</dd>
-
-  <dt>proxy</dt>
-  <dd>A specific type of <em>response type</em> that allows you to pass a request through to another
-  server and remember the response for later playback.</dd>
-
-  <dt>injection</dt>
-  <dd>A specific type of <em>response type</em> that allows you to inject JavaScript to determine
-  the <em>imposter's</em> response.  Also supported as a <em>predicate</em> to allow sophisticated
-  logic to determine whether a particular <em>stub</em> should be used or not.</dd>
+  <dd>Defines the specific type of configuration used to generate a response.  The simplest type is called
+  <em>is</em>, and allows you to define the <em>imposter's</em> response directly.  mountebank also
+  supports a <em>proxy</em> response type, which allows record-replay behavior, and an <em>inject</em>
+  response type, which allows you to script mountebank responses.  Each <em>response</em> has exactly
+  one <em>response type</em>.</dd>
 
   <dt>stub behavior</dt>
   <dd>Adds additional cross-cutting behavior to a response, for example by adding latency to the
   response or augmenting the response with more information.  A <em>response</em> can have zero
-  or more behaviors, but only one of each type of behavior.</dd>
+  or more <em>behaviors</em>, but only one of each type of <em>behavior</em>.</dd>
 
 </dl>
 

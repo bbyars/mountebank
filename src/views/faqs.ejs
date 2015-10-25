@@ -30,14 +30,11 @@ description = 'Frequently asked questions about using mountebank'
         <dd>See the <a href='/docs/commandLine#config-file'><code>--configfile</code> command line option</a>
         It can either be a single file containing the JSON that you get back when you call
         <a href='/docs/api/overview#get-imposters'><code>GET /imposters?replayable=true</code></a>
-        or multiple files that will be collected via either templating or a file globbing pattern.</dd>
+        or multiple files that will be collected via templating.</dd>
 
         <dt>How can I change imposters once I've created them?</dt>
         <dd>You can't - imposters are immutable through the API once created.  The expected workflow
-        is that you recreate the imposters rather than mutate them, which is a lightweight operation.
-        mountebank is reluctant to support imposter changes through the API because it adds a significant
-        amount of complexity, but if you have a use case that would benefit from mutable imposters, please do
-        <a href='/support'>let him know!</a></dd>
+        is that you recreate the imposters rather than mutate them, which is a lightweight operation.</dd>
 
         <dt>Why did you misspell impostor?</dt>
         <dd>mountebank is not an educated man, having spent the waking hours of his
@@ -52,8 +49,8 @@ description = 'Frequently asked questions about using mountebank'
         integration and continuous delivery than commercial software.  A key goal of mountebank's approach
         to service virtualization is that the intelligence of what will be returned by the test double belongs
         as close to your test as possible, which is why he makes it easy for you to customize the response
-        on a test-by-test.  Putting the intelligence in the tool means that tests become non-deterministic
-        based on your environment.</dd>
+        on a test-by-test.  Putting the intelligence in the tool means that the tests become victims of your
+        environment rather than rulers of it.</dd>
 
       </dl>
 
