@@ -7,19 +7,33 @@ description = 'Logs of the currently running mb process'
 
 <h1>Logs</h1>
 
-<table class='logs'>
-  <tr>
-    <th>level</th>
-    <th>timestamp</th>
-    <th>message</th>
-  </tr>
-<% logs.forEach(function (log) { %>
-  <tr>
-    <td><%= log.level %></td>
-    <td><%= log.timestamp %></td>
-    <td><%= log.message %></td>
-  </tr>
-<% }) %>
-</table>
+<div id='tail' class='down-arrow-icon button'> <span>Follow log</span></div>
+
+<pre id='logs'>
+  <code>
+<% logs.forEach(function (log) { -%>
+<%= log.level %> <%= log.message %>
+<% }) -%>
+  </code>
+</pre>
+
+<script type='text/javascript'>
+  $(document).ready(function () {
+    $('#tail').click(function () {
+      var currentLeft = parseFloat($(this).css('left').replace('px', ''));
+
+      if (this.tailing) {
+        this.tailing = false;
+        $('#tail span').text('Follow log');
+        $(this).css('left', (currentLeft + 12) + 'px');
+      }
+      else {
+        this.tailing = true;
+        $('#tail span').text('Unfollow log');
+        $(this).css('left', (currentLeft - 12) + 'px');
+      }
+    })
+  });
+</script>
 
 <% include _footer %>
