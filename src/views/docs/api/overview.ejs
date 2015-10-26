@@ -683,6 +683,26 @@ Accept: application/json
 
 <p><b>Contract</b>: <a href='/docs/api/contracts?type=logs'>logs resource</a></p>
 
+<p><strong>Query Parameters:</strong></p>
+
+<table>
+  <tr>
+    <th>Name</th>
+    <th>Type</th>
+    <th>Description</th>
+  </tr>
+  <tr>
+    <td><code>startIndex</code></td>
+    <td>integer</td>
+    <td>Set to array index of the first log entry you want returned.</td>
+  </tr>
+  <tr>
+    <td><code>endIndex</code></td>
+    <td>integer</td>
+    <td>Set to the array index of the last log entry you want returned</td>
+  </tr>
+</table>
+
 <pre><code>
   GET /logs HTTP/1.1
   Host: localhost:<%= port %>
