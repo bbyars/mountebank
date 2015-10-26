@@ -12,7 +12,7 @@ platform:
 
 environment:
   global:
-    MB_SLOW_TEST_TIMEOUT: 30000
+    MB_SLOW_TEST_TIMEOUT: 45000
 
   matrix:
     # Appveyor doesn't give us a way of explicitly defining each node in the matrix like Travis does,
