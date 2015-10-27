@@ -172,6 +172,16 @@ describe('middleware', function () {
             assert(!log.info.wasCalled());
         });
 
+        it('should not log AJAX requests', function () {
+            var log = { info: mock() },
+                request = { method: 'METHOD', url: 'URL', headers: { 'x-requested-with': 'XMLHttpRequest' } },
+                middlewareFn = middleware.logger(log, 'TEST');
+
+            middlewareFn(request, {}, next);
+
+            assert(!log.info.wasCalled());
+        });
+
         it('should call next', function () {
             var log = { info: mock() },
                 request = { url: '', headers: { accept: '' } },
