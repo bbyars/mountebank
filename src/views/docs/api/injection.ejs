@@ -8,7 +8,9 @@ description = 'Extending mountebank with custom JavaScript scripting'
 <h1>Injection</h1>
 
 <p>mountebank allows JavaScript injection for predicates and response types for situations
-where the built-in ones are not sufficient.  Injection only works if <code>mb</code> is
+where the built-in ones are not sufficient</p>
+
+<p class='warning-icon'>Injection only works if <code>mb</code> is
 run with the <code>--allowInjection</code> flag.</p>
 
 <p>Though mountebank has gone to some trouble to make injections as hassle-free as
@@ -411,7 +413,7 @@ There have been 2 proxied calls
 cause unexpected results.</p>
 
 <p>This is the most complicated example in the documentation, and took
-mountebank some time to get working (these examples in the docs are executed
+mountebank some time to get it working (these examples in the docs are executed
 as part of the test suite).  This is appropriate since injection is the most
 complicated thing you can do in the tool.  When injection errors are detected,
 mountebank logs the full <code>eval</code>'d code, including the bits he's added

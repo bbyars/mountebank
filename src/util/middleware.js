@@ -68,9 +68,10 @@ function logger (log, format) {
         var isStaticAsset = (['.js', '.css', '.gif', '.png', '.ico'].some(function (fileType) {
                 return request.url.indexOf(fileType) >= 0;
             })),
-            isHtmlRequest = (request.headers.accept || '').indexOf('html') >= 0;
+            isHtmlRequest = (request.headers.accept || '').indexOf('html') >= 0,
+            isXHR = request.headers['x-requested-with'] === 'XMLHttpRequest';
 
-        return !(isStaticAsset || isHtmlRequest);
+        return !(isStaticAsset || isHtmlRequest || isXHR);
     }
 
     return function (request, response, next) {

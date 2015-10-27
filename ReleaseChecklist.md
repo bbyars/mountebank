@@ -8,7 +8,6 @@ Travis.ci does most of the heavy lifting.
 # Review major / minor version.
 # Update the releases.json
 # Change the views/releases/vx.x.x filename
-  * Update validatorTest
 # Make sure to use absolute URLs in views/releases so they work in aggregators, etc
 # commit
 # push

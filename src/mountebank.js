@@ -4,6 +4,7 @@ var express = require('express'),
     cors = require('cors'),
     errorHandler = require('errorhandler'),
     path = require('path'),
+    fs = require('fs'),
     middleware = require('./util/middleware'),
     HomeController = require('./controllers/homeController'),
     ImpostersController = require('./controllers/impostersController'),
@@ -17,6 +18,17 @@ var express = require('express'),
     releases = require('../releases.json'),
     ScopedLogger = require('./util/scopedLogger'),
     util = require('util');
+
+function initializeLogfile (filename) {
+    // Ensure new logfile on startup so the /logs only shows for this process
+    var extension = path.extname(filename),
+        pattern = new RegExp(extension + '$'),
+        newFilename = filename.replace(pattern, '1' + extension);
+
+    if (fs.existsSync(filename)) {
+        fs.renameSync(filename, newFilename);
+    }
+}
 
 function create (options) {
     var app = express(),
@@ -44,6 +56,7 @@ function create (options) {
     if (process.stdout.isTTY) {
         logger.add(logger.transports.Console, { colorize: true, level: options.loglevel });
     }
+    initializeLogfile (options.logfile);
     logger.add(logger.transports.File, {
         filename: options.logfile,
         timestamp: true,

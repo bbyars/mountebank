@@ -66,12 +66,12 @@ for any support questions.  Don't be shy!
 [![Coverage Status](https://coveralls.io/repos/bbyars/mountebank/badge.png?branch=master)](https://coveralls.io/r/bbyars/mountebank?branch=master)
 [![Codacy Badge](https://www.codacy.com/project/badge/c030a6aebe274e21b4ce11a74e01fa12)](https://www.codacy.com/public/brandonbyars/mountebank)
 
-| OS      | CI        | Status |
-| ------- | --------- | ------ |
-| Debian  | Travis CI | [![Build Status](https://travis-ci.org/bbyars/mountebank.png)](https://travis-ci.org/bbyars/mountebank) |
-| CentOS  | Snap CI   | [![Build Status](https://img.shields.io/snap-ci/bbyars/mountebank/master.svg)](https://snap-ci.com/bbyars/mountebank/branch/master) |
-| Windows | Appveyor  | [![Build status](https://ci.appveyor.com/api/projects/status/acfhg44px95s4pk5?svg=true)](https://ci.appveyor.com/project/bbyars/mountebank) |
-| OSX     | Travis CI | [![Build Status](https://travis-ci.org/bbyars/mountebank.png)](https://travis-ci.org/bbyars/mountebank) |
+| OS      | CI                                                             | Status |
+| ------- | -------------------------------------------------------------- | ------ |
+| Debian  | [Travis CI](https://travis-ci.org/bbyars/mountebank)           | [![Build Status](https://travis-ci.org/bbyars/mountebank.png)](https://travis-ci.org/bbyars/mountebank) |
+| CentOS  | [Snap CI](https://snap-ci.com/bbyars/mountebank/branch/master) | [![Build Status](https://img.shields.io/snap-ci/bbyars/mountebank/master.svg)](https://snap-ci.com/bbyars/mountebank/branch/master) |
+| Windows | [Appveyor](https://ci.appveyor.com/project/bbyars/mountebank)  | [![Build status](https://ci.appveyor.com/api/projects/status/acfhg44px95s4pk5?svg=true)](https://ci.appveyor.com/project/bbyars/mountebank) |
+| OSX     | [Travis CI](https://travis-ci.org/bbyars/mountebank)           | [![Build Status](https://travis-ci.org/bbyars/mountebank.png)](https://travis-ci.org/bbyars/mountebank) |
 
 `./build` should do the trick on Mac and Linux, and `build.bat` on Windows, assuming you have at least node 0.10.
 If not, yell at me.
@@ -81,6 +81,12 @@ moral sensibilities).  A few of these tests verify the correct behavior under DN
 is kind enough to hijack the NXDOMAIN DNS response in an attempt to allow you to conveniently peruse their
 advertising page, those tests will fail.  I suggest that, under such circumstances, you talk to your ISP
 and let them know that their policies are causing mountebank tests to fail.
+
+I have not fully eradicated some flaky tests.  In particular, a test called
+'tcp imposter POST /imposters with injections should allow asynchronous injection' seems to wag its ugly finger at
+some fine folk, and do so on every build, yet it not only "works on my machine," it works in CI on four different
+operating systems.  I may end up rewriting the test to make it pass, but I'd like to let it simmer for a bit to
+see if I can understand the cause of the environmental differences.
 
 ## Contributing
 

@@ -12,7 +12,7 @@ description = 'Command line parameters for starting mountebank'
 
 <table>
   <tr>
-    <th>Option</th>
+    <th style='width: 12em;'>Option</th>
     <th>Description</th>
     <th>Default</th>
   </tr>
@@ -29,7 +29,7 @@ description = 'Command line parameters for starting mountebank'
   </tr>
   <tr>
     <td><code>--configfile imposters.ejs</code></td>
-    <td>If present, mountebank will load the contents of the file.  See
+    <td>If present, mountebank will load the contents of the specified file.  See
     <a href='#config-file'>below</a> for details.</td>
     <td><code>N/A</code></td>
   </tr>
@@ -42,15 +42,15 @@ description = 'Command line parameters for starting mountebank'
   </tr>
   <tr>
     <td><code>--loglevel debug</code></td>
-    <td>The logging level for the console, one of <code>debug, info, warn, error</code></td>
+    <td>The logging level, one of <code>debug, info, warn, error</code></td>
     <td><code>info</code></td>
   </tr>
   <tr>
     <td><code>--allowInjection</code></td>
-    <td>mountebank supports JavaScript injection for predicates, stub responses, and tcp
-      request resolution, but they are disabled by default.  Including this parameter will enable them,
-      which are <code>eval</code>'d in.  See the <a href='/docs/api/injection'>injection</a>
-      page for more details.</td>
+    <td>mountebank supports JavaScript injection for <a href='/docs/api/predicates'>predicates</a>,
+      <a href='/docs/api/injection'>stub responses</a>, <a href='/docs/api/behaviors'>behavior decoration</a>,
+      and <a href='/docs/protocols/tcp#endOfRequestResolver'>tcp request resolution</a>, but they are
+      disabled by default.  Including this parameter will enable them.</td>
     <td><code>false</code></td>
   </tr>
   <tr>
@@ -63,10 +63,16 @@ description = 'Command line parameters for starting mountebank'
   </tr>
   <tr>
     <td><code>--mock</code></td>
-    <td>mountebank supports mock verification by remembering the requests
-      made against each stub.  See the <a href='/docs/api/mocks'>mocks</a> page for more details.
-      Note that this represents a memory leak for any long running <code>mb</code> process, as
-      requests are never forgotten.</td>
+    <td>mountebank supports <a href='/docs/api/mocks'>mock verification</a> by remembering the requests
+      made against each stub.  Note that this represents a memory leak for any long running
+      <code>mb</code> process, as requests are never forgotten.</td>
+    <td><code>false</code></td>
+  </tr>
+  <tr>
+    <td><code>--debug</code></td>
+    <td>Include a <code>matches</code> array with each stub in the body of a
+      <a href='/docs/api/overview#get-imposter'>GET imposter</a> response
+      for debugging why a particular stub did or did not match a request.</td>
     <td><code>false</code></td>
   </tr>
   <tr>
@@ -79,13 +85,6 @@ description = 'Command line parameters for starting mountebank'
     <td>Print the version out to the console and exit.</td>
     <td><code>N/A</code></td>
   </tr>
-  <tr>
-    <td><code>--debug</code></td>
-    <td>Include a <code>matches</code> array with each stub in the body of a
-      <a href='/docs/api/overview#get-imposter'>GET imposter</a> response
-      for debugging why a particular stub did or did not match a request</td>
-    <td><code>false</code></td>
-  </tr>
 </table>
 
 <p>Note that <code>mb</code> is not persistent.  Stopping and restarting <code>mb</code>
@@ -93,25 +92,28 @@ will lose all stubs and all requests.</p>
 
 <h2 id='config-file'>Config Files</h2>
 
-<p>Some people prefer to load imposters via a config file rather than loading them on
+<p>Sometimes it's more convenient to load imposters via a config file rather than loading them on
 a per-test basis through the API.  The <code>--configfile</code> option supports that
 by sending a <a href='/docs/api/overview#put-imposters'><code>PUT</code> command</a>
-to <code>/imposters</code>.  See the <a href='/docs/api/overview#put-imposters'>API docs</a>
-for what the contents should look like.</p>
+to <code>/imposters</code>.  View the <a href='/docs/api/contracts?type=imposters'>JSON contract</a>
+to see what the contents should look like.</p>
 
 <p>Creating one file containing a set of complex configurations for multiple imposters
 can be unwieldy.  <code>mb</code> supports using <a href='https://github.com/tj/ejs'>EJS</a>
 templates, which allow you to put contents into separate files and use an
 <a href='https://github.com/tj/ejs#user-content-includes'>EJS include</a> directive to merge the
 contents into one file.  This is particularly useful for separating out JavaScript injection
-functions and HTTP response bodies because you store them as multi-line files and rely on
+functions and XML or JSON HTTP response bodies because you store them as multi-line files and rely on
 templating to turn them into JSON-friendly single line strings.</p>
 
-<p>mountebank will pass an <code>stringify</code> function into your templates that allows you to put
-multi-line strings in separate files.  The example below is based on the
+<p>mountebank will pass a <code>stringify</code> function into your templates that allows you to put
+multi-line strings in separate files.  The example below is loosely based on the
 <a href='/docs/api/injection#response-injection'>response injection</a> example described on
-the Injection page, and shows the use of the <code>stringify</code> function.  The <code>filename</code>
-parameter is required.  The variable is passed in by <code>mb</code> and used to resolve relative
+the Injection page, and shows the use of the <code>stringify</code> function.  You'll note that
+<code>stringify</code> takes a mysterious parameter named <code>filename</code>.  Unfortunately,
+this is a required parameter, one that is required to be satisfied by the hidden variable named
+<code>filename</code>, and is simply a bit of magic that mountebank isn't clever enough
+to find a way to hide.  The variable is passed in by <code>mb</code> and used to resolve relative
 paths.</p>
 
 <p>Assuming the files below are in a relative directory called <code>templates</code>, you can
@@ -139,10 +141,23 @@ mb --configfile templates/imposters.ejs --allowInjection
   "name": "origin",
   "stubs": [
     {
+      "predicates": [{ "contains": { "headers": { "Content-Type": "xml" } } }],
+      "responses": [{ "is": { "body": "&lt;%- stringify(filename, 'originXMLResponse.ejs') %&gt;" }}]
+    },
+    {
       "responses": [{ "inject": "&lt;%- stringify(filename, 'originServerResponse.ejs') %&gt;" }]
     }
   ]
 }
+</code></pre>
+
+<p>templates/originXMLResponse.ejs</p>
+<pre><code>
+&lt;rootNode&gt;
+  &lt;childNode&gt;first&lt;/childNode&gt;
+  &lt;childNode&gt;second&lt;/childNode&gt;
+  &lt;childNode&gt;third&lt;/childNode&gt;
+&lt;/rootNode&gt;
 </code></pre>
 
 <p>templates/originServerResponse.ejs</p>

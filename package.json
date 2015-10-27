@@ -1,7 +1,7 @@
 {
   "name": "mountebank",
   "preferGlobal": true,
-  "version": "1.4.1",
+  "version": "1.5.0",
   "author": "Brandon Byars <brandon.byars@gmail.com>",
   "description": "Over the wire test doubles",
   "homepage": "http://www.mbtest.org",
@@ -47,7 +47,7 @@
     "npm": "~3.3.3",
     "q": "~1.4.1",
     "simplesmtp": "~0.3.16",
-    "soap": "^0.9.1",
+    "soap": "^0.10.3",
     "winston": "~1.1.0",
     "xml2js": "^0.4.4",
     "xmldom": "^0.1.19",
@@ -56,7 +56,7 @@
   "devDependencies": {
     "blanket": "~1.1.5",
     "coveralls": "~2.11.1",
-    "fs-extra": "~0.24.0",
+    "fs-extra": "~0.26.0",
     "grunt": "~0.4.1",
     "grunt-cli": "^0.1.13",
     "grunt-contrib-jshint": "~0.11.0",

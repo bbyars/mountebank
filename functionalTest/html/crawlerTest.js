@@ -1,24 +1,22 @@
 'use strict';
 
-var assert = require('assert'),
-    api = require('../api/api'),
-    crawler = require('./crawler'),
-    promiseIt = require('../testHelpers').promiseIt;
-
-function expectedContentType (contentType) {
-    if (!contentType) {
-        return true;
-    }
-    return ['text/html', 'application/atom+xml'].some(function (type) {
-        return contentType.indexOf(type) >= 0;
-    });
-}
-
-function expectedStatusCode (statusCode) {
-    return [200, 301, 302].indexOf(statusCode) >= 0;
-}
-
 if (process.env.MB_AIRPLANE_MODE !== 'true' && process.env.MB_RUN_WEB_TESTS === 'true') {
+    var assert = require('assert'),
+        api = require('../api/api'),
+        crawler = require('./crawler'),
+        promiseIt = require('../testHelpers').promiseIt,
+        expectedContentType = function (contentType) {
+            if (!contentType) {
+                return true;
+            }
+            return ['text/html', 'application/atom+xml'].some(function (type) {
+                return contentType.indexOf(type) >= 0;
+            });
+        },
+        expectedStatusCode = function (statusCode) {
+            return [200, 301, 302].indexOf(statusCode) >= 0;
+        };
+
     describe('The mountebank website', function () {
         this.timeout(30000);
 
@@ -39,8 +37,6 @@ if (process.env.MB_AIRPLANE_MODE !== 'true' && process.env.MB_RUN_WEB_TESTS === 
                 crawlResults = result;
                 return api.get('/sitemap');
             }).then(function (response) {
-                console.log(response.body);
-
                 var siteLinks = Object.keys(crawlResults.hits).filter(function (link) {
                         return link.indexOf(api.url) === 0 && link.indexOf('#') < 0 && link.indexOf('?') < 0;
                     }).map(function (link) {

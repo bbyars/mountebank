@@ -115,12 +115,12 @@ nav.vertical p {
     margin-bottom: 2em;
 }
 
-a:link, a:visited{
+a:link, a:visited {
     color: #008;
     text-decoration: none;
 }
 
-a:hover{
+a:hover {
     text-decoration: underline;
 }
 
@@ -353,6 +353,11 @@ strong {
     font-weight: bold;
 }
 
+.down-arrow-icon:before {
+    content: '\f063';
+    font-family: FontAwesome;
+}
+
 input[type=search] {
     width: 15em;
 }
@@ -408,4 +413,31 @@ input[type=search] {
 #specification-description div {
     display: none;
     position: relative;
+}
+
+/* logs page */
+.button {
+    display: inline;
+    cursor: pointer;
+    padding: 2px 10px;
+    background-color: #696867;
+    color: #f2f2f2;
+    font-size: 13px;
+    border: none;
+    border-radius: 2px;
+}
+
+.button:hover {
+    text-decoration: underline;
+}
+
+#tail {
+    position: relative;
+    left: 52.8em;
+}
+
+#logs {
+    position: relative;
+    top: -2.5em;
+    z-index: -1;
 }

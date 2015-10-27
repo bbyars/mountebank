@@ -8,7 +8,7 @@ var assert = require('assert'),
     port = api.port + 1,
     mb = require('../functionalTest/mb').create(port + 1);
 
-function getMemoryUsedForOneHundredThousandRequests (mbPort) {
+function getMemoryUsedForFiftyThousandRequests (mbPort) {
     var stub = { responses: [{ is: { statusCode: 400 } }] },
         request = { protocol: 'http', port: port, stubs: [stub] },
         requestFn = function () { return client.get('/', port);},
@@ -16,7 +16,7 @@ function getMemoryUsedForOneHundredThousandRequests (mbPort) {
         originalProcess;
 
     // I run out of memory in the test process with 1,000,000
-    for (var i = 0; i < 100000; i++) {
+    for (var i = 0; i < 50000; i++) {
         allRequests[i] = requestFn;
     }
 
@@ -43,10 +43,10 @@ describe('mb', function () {
     describe('when remembering requests', function () {
         promiseIt('should increase memory usage with number of requests', function () {
             return mb.start(['--mock']).then(function () {
-                return getMemoryUsedForOneHundredThousandRequests(mb.port);
+                return getMemoryUsedForFiftyThousandRequests(mb.port);
             }).then(function (memoryUsed) {
-                console.log('memory usage for 100,000 requests with --mock: ' + memoryUsed);
-                assert.ok(memoryUsed > 300, 'Memory used: ' + memoryUsed);
+                console.log('memory usage for 50,000 requests with --mock: ' + memoryUsed);
+                assert.ok(memoryUsed > 250, 'Memory used: ' + memoryUsed);
             }).finally(function () {
                 return mb.stop();
             });
@@ -56,10 +56,10 @@ describe('mb', function () {
     describe('when not remembering requests', function () {
         promiseIt('should not leak memory', function () {
             return mb.start().then(function () {
-                return getMemoryUsedForOneHundredThousandRequests(mb.port);
+                return getMemoryUsedForFiftyThousandRequests(mb.port);
             }).then(function (memoryUsed) {
-                console.log('default memory usage with for 100,000 requests: ' + memoryUsed);
-                assert.ok(memoryUsed < 50, 'Memory used: ' + memoryUsed);
+                console.log('default memory usage with for 50,000 requests: ' + memoryUsed);
+                assert.ok(memoryUsed < 125, 'Memory used: ' + memoryUsed);
             }).finally(function () {
                 return mb.stop();
             });

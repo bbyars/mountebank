@@ -1,23 +1,31 @@
 <h1>v<%= releaseVersion %></h1>
 
+<p>v<%= releaseVersion %> is primarily a documentation release.</p>
+
 <h2>New Features</h2>
 <ul class='bullet-list'>
-  <li>A new <a href='http://<%= host %>/docs/api/contracts'>JSON contract explorer</a> to help you
-  navigate the mountebank API</li>
+  <li>A new and exciting <a href='http://<%= host %>/docs/api/contracts'>JSON contract explorer</a> to help you
+  navigate the mountebank API.</li>
   <li>Improved documentation for <a href='http://<%= host %>/docs/protocols/https'>https mutual authentication</a></li>
   <li>Renamed stub resolver to response type for clarity</li>
+  <li>Changed the <a href='http://<%= host %>/docs/api/proxies'>tcp proxy <code>to</code> field</a> to a URL string
+  to match the format of the http <code>to</code> field.  This is a backwards-compatible change; the old object
+  format will still be honored.</li>
 </ul>
 
 <h2>Bug Fixes</h2>
 <ul class='bullet-list'>
   <li>Fixed the JSON /logs resource</li>
   <li>Erroring if multiple response types included in single response configuration</li>
+  <li>Maintain the case of http headers (<a href='https://github.com/bbyars/mountebank/issues/75'>issue 75</a>)</li>
 </ul>
 
 <p>Many thanks to the following kind folk for help with this release:</p>
 
 <ul class='bullet-list'>
   <li>Nils Janson</li>
+  <li>Sean Bennett</li>
+  <li>Cannon Biggs</li>
 </ul>
 
 <h2>Install</h2>
