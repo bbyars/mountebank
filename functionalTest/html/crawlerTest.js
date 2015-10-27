@@ -4,20 +4,18 @@ if (process.env.MB_AIRPLANE_MODE !== 'true' && process.env.MB_RUN_WEB_TESTS === 
     var assert = require('assert'),
         api = require('../api/api'),
         crawler = require('./crawler'),
-        promiseIt = require('../testHelpers').promiseIt;
-
-    function expectedContentType (contentType) {
-        if (!contentType) {
-            return true;
-        }
-        return ['text/html', 'application/atom+xml'].some(function (type) {
-            return contentType.indexOf(type) >= 0;
-        });
-    }
-
-    function expectedStatusCode (statusCode) {
-        return [200, 301, 302].indexOf(statusCode) >= 0;
-    }
+        promiseIt = require('../testHelpers').promiseIt,
+        expectedContentType = function (contentType) {
+            if (!contentType) {
+                return true;
+            }
+            return ['text/html', 'application/atom+xml'].some(function (type) {
+                return contentType.indexOf(type) >= 0;
+            });
+        },
+        expectedStatusCode = function (statusCode) {
+            return [200, 301, 302].indexOf(statusCode) >= 0;
+        };
 
     describe('The mountebank website', function () {
         this.timeout(30000);
