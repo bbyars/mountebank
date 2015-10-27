@@ -19,7 +19,16 @@ function create (releases, options) {
     }
 
     function getFeed (request, response) {
-        var config = { host: request.headers.host, releases: feedReleases };
+        var page = parseInt(request.query.page || '1'),
+            nextPage = page + 1,
+            entriesPerPage = 10,
+            hasNextPage = feedReleases.slice((nextPage * entriesPerPage) - 10, entriesPerPage * nextPage).length > 0,
+            config = {
+                host: request.headers.host,
+                releases: feedReleases.slice(page * entriesPerPage - 10, entriesPerPage * page),
+                hasNextPage: hasNextPage,
+                nextLink: '/feed?page=' + nextPage
+            };
 
         if (!feedReleases[0].view) {
             feedReleases.forEach(function (release) {
