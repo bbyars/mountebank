@@ -63,7 +63,8 @@ module.exports = function (grunt) {
                     errors = errors.concat(file + ' has more than one trailing newline');
                 }
             },
-            exclusions = ['node_modules', '.git', '.DS_Store', '.idea', 'images', 'dist', 'mountebank.iml', 'mb.log', '*.pid'];
+            exclusions = ['node_modules', '.git', '.DS_Store', '.idea', 'images',
+                          'dist', 'mountebank.iml', 'mb.log', '*.pid', 'jquery', 'jqueryui'];
 
         forEachFileIn('.', wsCheck, { exclude: exclusions });
 
@@ -92,7 +93,7 @@ module.exports = function (grunt) {
                     }));
                 });
             },
-            exclusions = ['node_modules', 'dist', 'staticAnalysis.js', 'testHelpers.js', '*.pid'];
+            exclusions = ['node_modules', 'dist', 'staticAnalysis.js', 'testHelpers.js', '*.pid', 'jquery'];
 
         forEachFileIn('.', jsCheck, { exclude: exclusions, filetype: '.js' });
 

@@ -48,6 +48,9 @@ module.exports = function (grunt) {
                 'bin/mb'
             ],
             options: {
+                ignores: [
+                    'src/public/scripts/jquery/**/*.js'
+                ],
                 node: true,
                 globals: {
                     describe: false,
