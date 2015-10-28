@@ -5,6 +5,9 @@
   <title>mountebank releases</title>
   <subtitle>Release notes for mountebank</subtitle>
   <link href='http://<%= host %>/feed' rel='self' />
+<% if (hasNextPage) { %>
+  <link href='http://<%= host %><%= nextLink %>' rel='next' />
+<% } %>
   <link href='http://<%= host %>/' />
   <id>http://<%= host %>/feed</id>
   <updated><%= releases[0].date %>T00:00:00Z</updated>
