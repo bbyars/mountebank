@@ -441,3 +441,18 @@ input[type=search] {
     top: -2.5em;
     z-index: -1;
 }
+
+.debug {
+}
+
+.info {
+    color: darkgreen;
+}
+
+.warn {
+    color: gold;
+}
+
+.error {
+    color: red;
+}

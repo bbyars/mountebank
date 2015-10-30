@@ -1,6 +1,10 @@
 <%
 title = 'logs'
 description = 'Logs of the currently running mb process'
+
+function formatLogEntry (logEntry) {
+  return '<span><span class="' + logEntry.level + '">' + logEntry.level + '</span>: ' + logEntry.message + '</span>';
+}
 %>
 
 <% include _header %>
@@ -9,16 +13,34 @@ description = 'Logs of the currently running mb process'
 
 <div id='tail' class='down-arrow-icon button'> <span>Follow log</span></div>
 
-<pre id='logs'>
-  <code>
-<% logs.forEach(function (log) { -%>
-<%= log.level %> <%= log.message %>
+<pre id='logs'><code>
+<% logs.forEach(function (logEntry) { -%>
+<%- formatLogEntry(logEntry) %>
 <% }) -%>
-  </code>
-</pre>
+</code></pre>
 
 <script type='text/javascript'>
   $(document).ready(function () {
+    var nextIndex = <%= logs.length %>,
+        intervalId;
+
+    <%- formatLogEntry.toString() %>
+
+    function scrollToBottom () {
+      $('body').animate({ scrollTop: $(document).height() });
+    }
+
+    function getLatestLogEntries () {
+      $.getJSON('/logs?startIndex=' + nextIndex, function (json) {
+        var logs = json.logs;
+        for (var i = 0; i < logs.length; i++) {
+          $('#logs code').append(formatLogEntry(logs[i]) + '\n');
+        }
+        nextIndex += json.logs.length;
+        scrollToBottom();
+      });
+    }
+
     $('#tail').click(function () {
       var currentLeft = parseFloat($(this).css('left').replace('px', ''));
 
@@ -26,11 +48,15 @@ description = 'Logs of the currently running mb process'
         this.tailing = false;
         $('#tail span').text('Follow log');
         $(this).css('left', (currentLeft + 12) + 'px');
+        clearInterval(intervalId);
       }
       else {
         this.tailing = true;
         $('#tail span').text('Unfollow log');
         $(this).css('left', (currentLeft - 12) + 'px');
+
+        intervalId = setInterval(getLatestLogEntries, 250);
+        scrollToBottom();
       }
     })
   });
