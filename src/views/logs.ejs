@@ -27,7 +27,8 @@ function formatLogEntry (logEntry) {
     <%- formatLogEntry.toString() %>
 
     function scrollToBottom () {
-      $('body').animate({ scrollTop: $(document).height() });
+      $('html, body').animate({ scrollTop: $(document).height() }, 200);
+      $('#tail').css('top', $(document).height() - $(window).height() - 235);
     }
 
     function getLatestLogEntries () {
