@@ -442,9 +442,6 @@ input[type=search] {
     z-index: -1;
 }
 
-.debug {
-}
-
 .info {
     color: darkgreen;
 }
