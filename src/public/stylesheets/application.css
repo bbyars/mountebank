@@ -442,14 +442,22 @@ input[type=search] {
     z-index: -1;
 }
 
+.debug {
+    color: darkblue;
+    font-weight: bold;
+}
+
 .info {
     color: darkgreen;
+    font-weight: bold;
 }
 
 .warn {
-    color: gold;
+    color: #ff8c00;
+    font-weight: bold;
 }
 
 .error {
     color: red;
+    font-weight: bold;
 }
