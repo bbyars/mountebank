@@ -86,6 +86,9 @@ describe('tcp imposter', function () {
         if (process.env.MB_AIRPLANE_MODE !== 'true') {
             promiseIt('should allow asynchronous injection', function () {
                 var fn = function (request, state, logger, callback) {
+                        if (request.isDryRun) {
+                            return {};
+                        }
                         var net = require('net'),
                             options = {
                                 host: 'www.google.com',

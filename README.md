@@ -82,12 +82,6 @@ is kind enough to hijack the NXDOMAIN DNS response in an attempt to allow you to
 advertising page, those tests will fail.  I suggest that, under such circumstances, you talk to your ISP
 and let them know that their policies are causing mountebank tests to fail.
 
-I have not fully eradicated some flaky tests.  In particular, a test called
-'tcp imposter POST /imposters with injections should allow asynchronous injection' seems to wag its ugly finger at
-some fine folk, and do so on every build, yet it not only "works on my machine," it works in CI on four different
-operating systems.  I may end up rewriting the test to make it pass, but I'd like to let it simmer for a bit to
-see if I can understand the cause of the environmental differences.
-
 ## Contributing
 
 Contributions are welcome!
