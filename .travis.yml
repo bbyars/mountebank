@@ -60,7 +60,6 @@ matrix:
       sudo: false
       env:
         - NODE_VERSION=4.2
-        - MB_RUN_WEB_TESTS=true
     - os: linux
       sudo: false
       env:
@@ -77,6 +76,10 @@ matrix:
       sudo: false
       env:
         - NODE_VERSION=0.12
+    - os: osx
+      sudo: false
+      env:
+        - NODE_VERSION=4.2
 
 install:
   - rm -rf ~/.nvm
