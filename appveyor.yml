@@ -20,7 +20,7 @@ environment:
     - MB_APPVEYOR_CONFIG: "NODE_VERSION=0.12|MB_GRUNT_TASK=test:zip"
     - MB_APPVEYOR_CONFIG: "NODE_VERSION=0.10|MB_GRUNT_TASK=default|MB_SKIP_x86=true"
     - MB_APPVEYOR_CONFIG: "NODE_VERSION=0.12|MB_GRUNT_TASK=default|MB_SKIP_x86=true"
-    - MB_APPVEYOR_CONFIG: "NODE_VERSION=4.2|MB_GRUNT_TASK=default|MB_SKIP_x86=true"
+    - MB_APPVEYOR_CONFIG: "NODE_VERSION=5.0|MB_GRUNT_TASK=default|MB_SKIP_x86=true"
 
 cache:
   - node_modules -> package.json
