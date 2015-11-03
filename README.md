@@ -63,6 +63,17 @@ for any support questions.  Don't be shy!
 
 ## Building
 
+`./build` should do the trick on Mac and Linux, and `build.bat` on Windows, assuming you have at least node 0.10.
+If not, yell at me.
+
+There are some tests that require network access (`grunt airplane` ignores them in case that offends your
+moral sensibilities).  A few of these tests verify the correct behavior under DNS failures.  If your ISP
+is kind enough to hijack the NXDOMAIN DNS response in an attempt to allow you to conveniently peruse their
+advertising page, those tests will fail.  I suggest that, under such circumstances, you talk to your ISP
+and let them know that their policies are causing mountebank tests to fail.
+
+## Build Status
+
 [![Coverage Status](https://coveralls.io/repos/bbyars/mountebank/badge.png?branch=master)](https://coveralls.io/r/bbyars/mountebank?branch=master)
 [![Codacy Badge](https://www.codacy.com/project/badge/c030a6aebe274e21b4ce11a74e01fa12)](https://www.codacy.com/public/brandonbyars/mountebank)
 
@@ -76,15 +87,6 @@ for any support questions.  Don't be shy!
 |OS package             | [![Build Status](https://travis-ci.org/bbyars/mountebank.png)](https://travis-ci.org/bbyars/mountebank) | [![Build Status](https://travis-ci.org/bbyars/mountebank.png)](https://travis-ci.org/bbyars/mountebank) | [![Build Status](https://travis-ci.org/bbyars/mountebank.png)](https://travis-ci.org/bbyars/mountebank) | N/A                                                                                                                                         |
 |Self-contained archive | [![Build Status](https://travis-ci.org/bbyars/mountebank.png)](https://travis-ci.org/bbyars/mountebank) | (not tested)                                                                                            | [![Build Status](https://travis-ci.org/bbyars/mountebank.png)](https://travis-ci.org/bbyars/mountebank) | [![Build status](https://ci.appveyor.com/api/projects/status/acfhg44px95s4pk5?svg=true)](https://ci.appveyor.com/project/bbyars/mountebank) |
 |(Performance)          | [![Build Status](https://travis-ci.org/bbyars/mountebank.png)](https://travis-ci.org/bbyars/mountebank) | (not tested)                                                                                            | (not tested)                                                                                            | (not tested)                                                                                                                                |
-
-`./build` should do the trick on Mac and Linux, and `build.bat` on Windows, assuming you have at least node 0.10.
-If not, yell at me.
-
-There are some tests that require network access (`grunt airplane` ignores them in case that offends your
-moral sensibilities).  A few of these tests verify the correct behavior under DNS failures.  If your ISP
-is kind enough to hijack the NXDOMAIN DNS response in an attempt to allow you to conveniently peruse their
-advertising page, those tests will fail.  I suggest that, under such circumstances, you talk to your ISP
-and let them know that their policies are causing mountebank tests to fail.
 
 ## Contributing
 
