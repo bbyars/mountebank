@@ -66,12 +66,16 @@ for any support questions.  Don't be shy!
 [![Coverage Status](https://coveralls.io/repos/bbyars/mountebank/badge.png?branch=master)](https://coveralls.io/r/bbyars/mountebank?branch=master)
 [![Codacy Badge](https://www.codacy.com/project/badge/c030a6aebe274e21b4ce11a74e01fa12)](https://www.codacy.com/public/brandonbyars/mountebank)
 
-| OS      | CI                                                             | Status |
-| ------- | -------------------------------------------------------------- | ------ |
-| Debian  | [Travis CI](https://travis-ci.org/bbyars/mountebank)           | [![Build Status](https://travis-ci.org/bbyars/mountebank.png)](https://travis-ci.org/bbyars/mountebank) |
-| CentOS  | [Snap CI](https://snap-ci.com/bbyars/mountebank/branch/master) | [![Build Status](https://img.shields.io/snap-ci/bbyars/mountebank/master.svg)](https://snap-ci.com/bbyars/mountebank/branch/master) |
-| Windows | [Appveyor](https://ci.appveyor.com/project/bbyars/mountebank)  | [![Build status](https://ci.appveyor.com/api/projects/status/acfhg44px95s4pk5?svg=true)](https://ci.appveyor.com/project/bbyars/mountebank) |
-| OSX     | [Travis CI](https://travis-ci.org/bbyars/mountebank)           | [![Build Status](https://travis-ci.org/bbyars/mountebank.png)](https://travis-ci.org/bbyars/mountebank) |
+|                       |Ubuntu 12.04 |CentOS 6.7 |OS X Mavericks |Windows Server 2012 |
+|-----------------------|:-----------:|:---------:|:-------------:|:------------------:|
+|npm (node v5.0)        | [![Build Status](https://travis-ci.org/bbyars/mountebank.png)](https://travis-ci.org/bbyars/mountebank) | (not tested) | [![Build Status](https://travis-ci.org/bbyars/mountebank.png)](https://travis-ci.org/bbyars/mountebank) | [![Build status](https://ci.appveyor.com/api/projects/status/acfhg44px95s4pk5?svg=true)](https://ci.appveyor.com/project/bbyars/mountebank) |
+|npm (node v4.2)        | [![Build Status](https://travis-ci.org/bbyars/mountebank.png)](https://travis-ci.org/bbyars/mountebank) | (not tested) | (not tested) | (not tested) |
+|npm (node v4.0)        | [![Build Status](https://travis-ci.org/bbyars/mountebank.png)](https://travis-ci.org/bbyars/mountebank) | (not tested) | (not tested) | (not tested) |
+|npm (node v0.12        | [![Build Status](https://travis-ci.org/bbyars/mountebank.png)](https://travis-ci.org/bbyars/mountebank) | (not tested) | [![Build Status](https://travis-ci.org/bbyars/mountebank.png)](https://travis-ci.org/bbyars/mountebank) | [![Build status](https://ci.appveyor.com/api/projects/status/acfhg44px95s4pk5?svg=true)](https://ci.appveyor.com/project/bbyars/mountebank) |
+|npm (node v0.10        | [![Build Status](https://travis-ci.org/bbyars/mountebank.png)](https://travis-ci.org/bbyars/mountebank) | (not tested) | [![Build Status](https://travis-ci.org/bbyars/mountebank.png)](https://travis-ci.org/bbyars/mountebank) | [![Build status](https://ci.appveyor.com/api/projects/status/acfhg44px95s4pk5?svg=true)](https://ci.appveyor.com/project/bbyars/mountebank) |
+|OS package             | [![Build Status](https://travis-ci.org/bbyars/mountebank.png)](https://travis-ci.org/bbyars/mountebank) | [![Build Status](https://travis-ci.org/bbyars/mountebank.png)](https://travis-ci.org/bbyars/mountebank) | [![Build Status](https://travis-ci.org/bbyars/mountebank.png)](https://travis-ci.org/bbyars/mountebank) | N/A |
+|Self-contained archive | [![Build Status](https://travis-ci.org/bbyars/mountebank.png)](https://travis-ci.org/bbyars/mountebank) | [![Build Status](https://travis-ci.org/bbyars/mountebank.png)](https://travis-ci.org/bbyars/mountebank) | [![Build Status](https://travis-ci.org/bbyars/mountebank.png)](https://travis-ci.org/bbyars/mountebank) | [![Build Status](https://travis-ci.org/bbyars/mountebank.png)](https://travis-ci.org/bbyars/mountebank) |
+
 
 `./build` should do the trick on Mac and Linux, and `build.bat` on Windows, assuming you have at least node 0.10.
 If not, yell at me.
