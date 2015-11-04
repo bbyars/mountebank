@@ -14,7 +14,12 @@ function create (port) {
 
     function start (args) {
         var deferred = Q.defer(),
-            mbArgs = ['restart', '--port', port, '--pidfile', pidfile].concat(args || []),
+            mbArgs = [
+                'restart',
+                '--port', port,
+                '--pidfile', pidfile,
+                '--logfile', 'mb-test.log',
+            ].concat(args || []),
             mb;
 
         if (isWindows) {

@@ -12,7 +12,13 @@ function isWindows () {
 }
 
 function start (done) {
-    var mbArgs = ['restart', '--port', port, '--pidfile', pidfile, '--allowInjection', '--mock', '--debug'],
+    var mbArgs = [
+            'restart',
+            '--port', port,
+            '--pidfile', pidfile,
+            '--logfile', 'mb-grunt.log',
+            '--allowInjection', '--mock', '--debug'
+        ],
         mb;
 
     if (isWindows) {
