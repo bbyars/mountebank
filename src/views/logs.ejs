@@ -22,13 +22,21 @@ function formatLogEntry (logEntry) {
 <script type='text/javascript'>
   $(document).ready(function () {
     var nextIndex = <%= logs.length %>,
-        intervalId;
+        intervalId,
+        topOfTail = $('#tail').position().top,
+        tailset = 5;
+
+    $(document).on('scroll', window, animateTail);
 
     <%- formatLogEntry.toString() %>
 
+    function findTop () {
+      return $(window).scrollTop() >= topOfTail ? $(window).scrollTop() - topOfTail + tailset : 0;
+    }
+
     function scrollToBottom () {
       $('html, body').animate({ scrollTop: $(document).height() }, 200);
-      $('#tail').css('top', $(document).height() - $(window).height() - 235);
+      $('#tail').css('top', findTop());
     }
 
     function getLatestLogEntries () {
@@ -40,6 +48,10 @@ function formatLogEntry (logEntry) {
         nextIndex += json.logs.length;
         scrollToBottom();
       });
+    }
+
+    function animateTail() {
+      $('#tail').css('top', findTop());
     }
 
     $('#tail').click(function () {
@@ -55,7 +67,6 @@ function formatLogEntry (logEntry) {
         this.tailing = true;
         $('#tail span').text('Unfollow log');
         $(this).css('left', (currentLeft - 12) + 'px');
-
         intervalId = setInterval(getLatestLogEntries, 250);
         scrollToBottom();
       }
