@@ -121,7 +121,7 @@ module.exports = function (grunt) {
 
     grunt.registerTask('install:rpm', 'Set test executable to mb installed in Red Hat package', function () {
         var done = this.async(),
-            rpm = util.format('mountebank-%s-1.x86_64.rpm', version);
+            rpm = util.format('mountebank-%s-1.x86_64.rpm', version.replace('-', '_'));
 
         fs.removeSync(testDir);
         fs.mkdirSync(testDir);

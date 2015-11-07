@@ -8,7 +8,7 @@ set -e
 
 S3_DIR=$(cat dist/mountebank/package.json | grep '"version"' | sed -E -e 's/.*"version": "([0-9]+)\.([0-9]+)\.[^"]+",/v\1.\2/')
 
-echo "Deploying the following to S3 bucket $S3_DIR:"
+echo "Deploying the following to S3 dir $S3_DIR:"
 ls -l dist/s3
 dpl --provider=s3 --access-key-id=AKIAIE2GUJRUIHGE2PWA --secret-access-key=$AWS_ACCESS_KEY \
     --bucket=mountebank --local-dir=dist/s3 --upload-dir=$S3_DIR --skip-cleanup

@@ -7,7 +7,7 @@ var fs = require('fs-extra'),
     util = require('util'),
     thisPackage = require('../package.json'),
     version = process.env.MB_VERSION || thisPackage.version,
-    versionMajorMinor = version.replace(/\.\d+(\+\d+)?$/, ''),
+    versionMajorMinor = version.replace(/\.\d+(-beta\.\d+)?$/, ''),
     urlPrefix = 'https://s3.amazonaws.com/mountebank/v' + versionMajorMinor;
 
 function download (file, destination) {
@@ -52,7 +52,7 @@ module.exports = function (grunt) {
     });
 
     grunt.registerTask('download:rpm', 'Download this version of the rpm', function () {
-        var rpmFile = util.format('mountebank-%s-1.x86_64.rpm', version);
+        var rpmFile = util.format('mountebank-%s-1.x86_64.rpm', version.replace('-', '_'));
 
         if (!fs.existsSync('dist')) {
             fs.mkdirSync('dist');
