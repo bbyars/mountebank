@@ -1,5 +1,8 @@
 <h1>v<%= releaseVersion %></h1>
 
+<p class='info-icon'>Be sure to keep up with the latest releases by subscribing to the
+<a href='http://<%= host %>/feed'>ATOM feed</a>.</p>
+
 <h2>New Features</h2>
 <ul class='bullet-list'>
   <li>node v5.0 support</li>
@@ -14,8 +17,6 @@
 <ul class='bullet-list'>
   <li>No longer validating injected JavaScript functions during imposter creation.  This created
   too many edge cases that were very difficult to debug and leaked a validation abstraction to end users.</li>
-  <li>Erroring if multiple response types included in single response configuration</li>
-  <li>Maintain the case of http headers (<a href='https://github.com/bbyars/mountebank/issues/75'>issue 75</a>)</li>
 </ul>
 
 <p>Many thanks to the following kind folk for help with this release:</p>
