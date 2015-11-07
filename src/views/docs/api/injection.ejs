@@ -15,21 +15,13 @@ run with the <code>--allowInjection</code> flag.</p>
 
 <p>Though mountebank has gone to some trouble to make injections as hassle-free as
 possible, there are a couple of things to be aware of.  First, when validating stub creation,
-mountebank actually dry runs a sample request in a sandbox.  Normally, this is
-side-effect free, as mountebank fakes out proxy calls and uses different state objects,
-but he can make no guarantees with injections.  The <code>state</code> variable described
-in the response type section below will be untouched, but any environmental changes you
-make may persist to the actual stub calls.  The response type example below shows an
-example of where this can trip you up.  If you need to work around the dry run, the
-test request passed in as the first parameter of the injected function will always
-have <code>isDryRun</code> set to <code>true</code> during the dry run.</p>
-
-<p>Second, all injections have full access to a node.js runtime environment, including the ability
-to <code>require</code> in different modules.  Of course, such power comes with its own
-challenges.  Though mountebank has gone to some effort to be robust in the face of errors,
-he is not as clever as you are.  With injections, you can crash mountebank.
-If you find yourself coding injections frequently because of missing functionality that you
-believe would be generally useful, mountebank humbly requests you to add a
+mountebank does not validate any injected functions.  Second, all injections have full access
+to a node.js runtime environment, including the ability to <code>require</code> in different
+modules.  Of course, such power comes with its own challenges, which leads us to third, with
+injections, you can crash mountebank.  Though mountebank has gone to some effort to be robust
+in the face of errors, he is not as clever as you are.  If you find yourself coding injections
+frequently because of missing functionality that you believe would be generally useful,
+mountebank humbly requests you to add a
 <a href='https://github.com/bbyars/mountebank/issues'>feature request.</a></p>
 
 <p>There are four options for injecting JavaScript into mountebank.  The first two,
@@ -74,7 +66,7 @@ Content-Type: application/json
 </code></pre>
 
 <p>Injections certainly don't help the readability of the JSON.  If you're loading imposters through a config file,
-look at the <code>inject</code> function supported in file templating with the <a href='/docs/commandLine#templating'>
+look at the <code>stringify</code> function supported in file templating with the <a href='/docs/commandLine#templating'>
 <code>--configfile</code></a> command line option to support storing the functions in a readable format.
 Let's look at our injected function appropriately formatted:</p>
 
@@ -311,10 +303,6 @@ function (request, state, logger, callback) {
 }
 </code></pre>
 
-<p>This is an example of where mountebank's dry run validation can trip you
-up.  If we had created the imposters in reverse order, this function would
-have failed, because it would not have been able to connect.</p>
-
 <p>Our first request should trigger a proxy call:</p>
 
 <pre><code data-test-id='predicate resolver example'
@@ -334,14 +322,9 @@ Date: Thu, 09 Jan 2014 02:30:31 GMT
 Transfer-Encoding: chunked
 
 {
-  "count": <strong class='highlight1'>3</strong>
+  "count": 1
 }
 </code></pre>
-
-<p>The origin unexpectedly returns 3.  This is an example where the dry
-run validation left behind some state in the environment.  If we had wanted
-to avoid this situation, we could have used the <code>isDryRun</code> field
-on the <code>request</code> parameter to avoid the proxy call during validation.</p>
 
 <p>A second call also proxies because the path is different.</p>
 
@@ -362,7 +345,7 @@ Date: Thu, 09 Jan 2014 02:30:31 GMT
 Transfer-Encoding: chunked
 
 {
-  "count": 4
+  "count": 2
 }
 </code></pre>
 
@@ -385,7 +368,7 @@ Date: Thu, 09 Jan 2014 02:30:31 GMT
 Transfer-Encoding: chunked
 
 {
-  "count": 3
+  "count": 1
 }
 </code></pre>
 

@@ -753,6 +753,13 @@ describe('predicates', function () {
                 assert.ok(errorsLogged.indexOf('injection X=> Error: BOOM!!!') >= 0);
             }
         });
+
+        it('should not run injection during dry run validation', function () {
+            var fn = function () { throw 'BOOM!'; },
+                predicate = { inject: fn.toString() },
+                request = { isDryRun: true };
+            assert.ok(predicates.inject(predicate, request));
+        });
     });
 
     describe('#resolve', function () {

@@ -53,10 +53,6 @@ function create (options) {
                 return stubRepository;
             });
 
-        if (hasStubInjection(stub)) {
-            logger.warn('dry running injection, use the isDryRun request field in your JavaScript to ignore...');
-        }
-
         return Q.all(dryRunRepositories.map(function (stubRepository) {
             var testRequest = options.testRequest;
             testRequest.isDryRun = true;

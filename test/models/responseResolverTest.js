@@ -167,8 +167,8 @@ describe('responseResolver', function () {
         promiseIt('should allow "inject" response', function () {
             var resolver = ResponseResolver.create({}, combinators.identity),
                 logger = { debug: mock() },
-                fn = 'function (request) { return request.key  + " injected"; }',
-                responseConfig = { inject: fn },
+                fn = function (request) { return request.key  + ' injected'; },
+                responseConfig = { inject: fn.toString() },
                 request = { key: 'request' };
 
             return resolver.resolve(responseConfig, request, logger, []).then(function (response) {
@@ -179,7 +179,7 @@ describe('responseResolver', function () {
         promiseIt('should log injection exceptions', function () {
             var resolver = ResponseResolver.create({}, combinators.identity),
                 logger = { debug: mock() },
-                fn = 'function (request) { throw Error("BOOM!!!"); }',
+                fn = function () { throw Error('BOOM!!!'); },
                 responseConfig = { inject: fn },
                 errorsLogged = [];
 
@@ -199,12 +199,12 @@ describe('responseResolver', function () {
         promiseIt('should allow injection state across calls to resolve', function () {
             var resolver = ResponseResolver.create({}, combinators.identity),
                 logger = { debug: mock() },
-                fn = 'function (request, state) {\n' +
-                     '    state.counter = state.counter || 0;\n' +
-                     '    state.counter += 1;\n' +
-                     '    return state.counter;\n' +
-                     '}',
-                responseConfig = { inject: fn },
+                fn = function (request, state) {
+                    state.counter = state.counter || 0;
+                    state.counter += 1;
+                    return state.counter;
+                 },
+                responseConfig = { inject: fn.toString() },
                 request = { key: 'request' };
 
             return resolver.resolve(responseConfig, request, logger, []).then(function (response) {
@@ -218,9 +218,9 @@ describe('responseResolver', function () {
         promiseIt('should allow asynchronous injection', function () {
             var resolver = ResponseResolver.create({}, combinators.identity),
                 logger = { debug: mock() },
-                fn = 'function (request, state, logger, callback) {\n' +
-                     '    setTimeout(function () { callback("value"); }, 1);\n' +
-                    '}',
+                fn = function (request, state, logger, callback) {
+                    setTimeout(function () { callback('value'); }, 1);
+                },
                 responseConfig = { inject: fn },
                 request = { key: 'request' };
 
@@ -232,8 +232,8 @@ describe('responseResolver', function () {
         promiseIt('should not be able to change state through inject', function () {
             var resolver = ResponseResolver.create({}, combinators.identity),
                 logger = { debug: mock() },
-                fn = 'function (request) { request.key = "CHANGED"; return 0; }',
-                responseConfig = { inject: fn },
+                fn = function (request) { request.key = 'CHANGED'; return 0; },
+                responseConfig = { inject: fn.toString() },
                 request = { key: 'ORIGINAL' };
 
             return resolver.resolve(responseConfig, request, logger, []).then(function () {
@@ -241,10 +241,20 @@ describe('responseResolver', function () {
             });
         });
 
+        promiseIt('should not run injection during dry run validation', function () {
+            var resolver = ResponseResolver.create({}, combinators.identity),
+                logger = { debug: mock() },
+                fn = function () { throw Error('BOOM!!!'); },
+                responseConfig = { inject: fn.toString() },
+                request = { isDryRun: true };
+
+            return resolver.resolve(responseConfig, request, logger, []).then(function (response) {
+                assert.deepEqual(response, {});
+            });
+        });
+
         promiseIt('should throw error if multiple response types given', function () {
-            var proxy = {},
-                postProcess = combinators.identity,
-                resolver = ResponseResolver.create(proxy, postProcess),
+            var resolver = ResponseResolver.create({}, combinators.identity),
                 logger = { debug: mock() },
                 responseConfig = { is: 'value', proxy: { to: 'http://www.google.com' }};
 

@@ -16,18 +16,28 @@ function create (proxy, postProcess) {
             scope = helpers.clone(request),
             injected = '(' + fn + ')(scope, injectState, logger, deferred.resolve);';
 
-        try {
-            var response = eval(injected);
-            if (typeof response !== 'undefined') {
-                deferred.resolve(response);
-            }
+        if (request.isDryRun === true) {
+            Q.delay(1).then(function () {
+                deferred.resolve({});
+            });
         }
-        catch (error) {
-            logger.error('injection X=> ' + error);
-            logger.error('    full source: ' + JSON.stringify(injected));
-            logger.error('    scope: ' + JSON.stringify(scope));
-            logger.error('    injectState: ' + JSON.stringify(injectState));
-            deferred.reject(errors.InjectionError('invalid response injection', { source: injected, data: error.message }));
+        else {
+            try {
+                var response = eval(injected);
+                if (typeof response !== 'undefined') {
+                    deferred.resolve(response);
+                }
+            }
+            catch (error) {
+                logger.error('injection X=> ' + error);
+                logger.error('    full source: ' + JSON.stringify(injected));
+                logger.error('    scope: ' + JSON.stringify(scope));
+                logger.error('    injectState: ' + JSON.stringify(injectState));
+                deferred.reject(errors.InjectionError('invalid response injection', {
+                    source: injected,
+                    data: error.message
+                }));
+            }
         }
         return deferred.promise;
     }

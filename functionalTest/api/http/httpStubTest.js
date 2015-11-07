@@ -274,7 +274,7 @@ var assert = require('assert'),
                 });
             });
 
-            promiseIt('should return an error if the decorate JavaScript is not well formed', function () {
+            promiseIt('should not validate the decorate JavaScript function', function () {
                 var decorator = "response.body = 'This should not work';",
                     stub = {
                         responses: [{
@@ -286,7 +286,7 @@ var assert = require('assert'),
                     request = { protocol: protocol, port: port, stubs: stubs, name: this.name };
 
                 return api.post('/imposters', request).then(function (response) {
-                    assert.strictEqual(response.statusCode, 400, JSON.stringify(response.body, null, 2));
+                    assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body, null, 2));
                 }).finally(function () {
                     return api.del('/imposters');
                 });

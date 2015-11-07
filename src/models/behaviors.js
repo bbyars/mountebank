@@ -14,6 +14,9 @@ function decorate (originalRequest, responsePromise, fn, logger) {
         var request = helpers.clone(originalRequest),
             injected = '(' + fn + ')(request, response, logger);';
 
+        if (request.isDryRun === true) {
+            return response;
+        }
         try {
             // Support functions that mutate response in place and those
             // that return a new response

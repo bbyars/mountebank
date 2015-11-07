@@ -1,10 +1,6 @@
 function (request, state, logger, callback) {
     var cacheKey = request.method + ' ' + request.path;
 
-    if (request.isDryRun) {
-        callback({});;
-    }
-
     if (typeof state.requests === 'undefined') {
         state.requests = {};
     }

@@ -77,13 +77,13 @@ describe('mb command line', function () {
         return mb.start(['--configfile', path.join(__dirname, 'templates/imposters.ejs'), '--allowInjection']).delay(500).then(function () {
             return http.get('/first', 4546);
         }).then(function (response) {
-            assert.deepEqual(response.body, { count: 3 });
+            assert.deepEqual(response.body, { count: 1 });
             return http.get('/second', 4546);
         }).then(function (response) {
-            assert.deepEqual(response.body, { count: 4 });
+            assert.deepEqual(response.body, { count: 2 });
             return http.get('/first', 4546);
         }).then(function (response) {
-            assert.deepEqual(response.body, { count: 3 });
+            assert.deepEqual(response.body, { count: 1 });
             return http.get('/counter', 4546);
         }).then(function (response) {
             assert.strictEqual(response.body, 'There have been 2 proxied calls');

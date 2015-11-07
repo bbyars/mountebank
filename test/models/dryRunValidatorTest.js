@@ -354,62 +354,6 @@ describe('dryRunValidator', function () {
             });
         });
 
-        promiseIt('should reject inject with no wrapper function', function () {
-            var request = {
-                    stubs: [{
-                        predicates: [{ inject: 'return true;' }],
-                        responses: [{ is: { body: 'Matched' } }]
-                    }]
-                },
-                validator = Validator.create({
-                    StubRepository: StubRepository,
-                    testRequest: testRequest,
-                    allowInjection: true
-                }),
-                logger = { warn: mock(), error: mock() };
-
-            return validator.validate(request, logger).then(function (result) {
-                assert.deepEqual(result, {
-                    isValid: false,
-                    errors: [{
-                        code: 'bad data',
-                        message: 'malformed stub request',
-                        data: 'invalid predicate injection',
-                        source: '(return true;)(scope, logger);'
-                    }]
-                });
-            });
-        });
-
-        promiseIt('should reject decorate with no wrapper function', function () {
-            var request = {
-                    stubs: [{
-                        responses: [{
-                            is: { body: 'Matched' },
-                            _behaviors: { decorate: 'response.body = "";' }
-                        }]
-                    }]
-                },
-                validator = Validator.create({
-                    StubRepository: StubRepository,
-                    testRequest: testRequest,
-                    allowInjection: true
-                }),
-                logger = { warn: mock(), error: mock() };
-
-            return validator.validate(request, logger).then(function (result) {
-                assert.deepEqual(result, {
-                    isValid: false,
-                    errors: [{
-                        code: 'invalid injection',
-                        message: 'invalid decorator injection',
-                        data: 'Unexpected token ;',
-                        source: '(response.body = "";)(request, response, logger);'
-                    }]
-                });
-            });
-        });
-
         promiseIt('should reject unrecognized response resolver', function () {
             var request = {
                     stubs: [{

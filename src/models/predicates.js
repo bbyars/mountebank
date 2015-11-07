@@ -213,6 +213,10 @@ function inject (predicate, request, encoding, logger) {
     var scope = helpers.clone(request),
         injected =  '(' + predicate.inject + ')(scope, logger);';
 
+    if (request.isDryRun === true) {
+        return true;
+    }
+
     try {
         return eval(injected);
     }

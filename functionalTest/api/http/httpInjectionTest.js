@@ -52,7 +52,7 @@ var assert = require('assert'),
                 });
             });
 
-            promiseIt('should give a 400 on a bad predicate injection', function () {
+            promiseIt('should not validate a bad predicate injection', function () {
                 var stub = {
                         predicates: [{ inject: 'return true;' }],
                         responses: [{ is: { body: 'MATCHED' } }]
@@ -60,8 +60,7 @@ var assert = require('assert'),
                     request = { protocol: protocol, port: port, stubs: [stub], name: this.name };
 
                 return api.post('/imposters', request).then(function (response) {
-                    assert.strictEqual(response.statusCode, 400, JSON.stringify(response.body));
-                    assert.strictEqual(response.body.errors[0].data, 'invalid predicate injection');
+                    assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body));
                 }).finally(function () {
                     return api.del('/imposters');
                 });
@@ -83,14 +82,13 @@ var assert = require('assert'),
                 });
             });
 
-            promiseIt('should give a 400 on a bad response injection', function () {
+            promiseIt('should not validate a bad response injection', function () {
                 var fn = function () { throw('BOOM'); },
                     stub = { responses: [{ inject: fn.toString() }] },
                     request = { protocol: protocol, port: port, stubs: [stub], name: this.name };
 
                 return api.post('/imposters', request).then(function (response) {
-                    assert.strictEqual(response.statusCode, 400, JSON.stringify(response.body));
-                    assert.strictEqual(response.body.errors[0].message, 'invalid response injection');
+                    assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body));
                 }).finally(function () {
                     return api.del('/imposters');
                 });
