@@ -20,7 +20,7 @@ See [getting started](http://www.mbtest.org/docs/gettingStarted) guide for more 
 
 ## Install and Run
 
-[![NPM version](https://badge.fury.io/js/mountebank.png)](http://badge.fury.io/js/mountebank)
+[![npm](https://nodei.co/npm/mountebank.png?downloads=true&downloadRank=true&stars=true)](https://www.npmjs.com/package/mountebank)
 
 Install:
 
