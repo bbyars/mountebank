@@ -11,7 +11,7 @@ the basic workflow or the advanced workflow depending on your time commitment an
 * Change some code.  Or add new code.  Or maybe delete some.
 * Create a pull request
 
-That's it!  Seriously.  I have an extraordinarily lenient policy for accepting pull requests, and once you're pull
+That's it!  Seriously.  I have an extraordinarily lenient policy for accepting pull requests, and once your pull
 request is accepted, I'll mention you on the release notes and add you to the contributors section of the package.json
 (feel free to add yourself during the pull request if you want).
 
