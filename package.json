@@ -3,6 +3,53 @@
   "preferGlobal": true,
   "version": "1.5.0",
   "author": "Brandon Byars <brandon.byars@gmail.com>",
+  "contributors": [
+    {
+      "name": "Jason Reid",
+      "email": "jason@jasonreid.com"
+    },
+    {
+      "name": "James Thomas"
+    },
+    {
+      "name": "Nikos Baxevanis"
+    },
+    {
+      "name": "Andrew Dean"
+    },
+    {
+      "name": "Cannon Biggs"
+    },
+    {
+      "name": "Robert Zakrzewski"
+    },
+    {
+      "name": "Alex Nishikawa"
+    },
+    {
+      "name": "Scott Robinson",
+      "email": "scott@quadhome.com"
+    },
+    {
+      "name": "Paul Phillips",
+      "email": "paul.phillips@thoughtworks.com"
+    },
+    {
+      "name": "Manoj",
+      "email": "manojlds@gmail.com"
+    },
+    {
+      "name": "Andrew Hadley",
+      "email": "andhadley@gmail.com"
+    },
+    {
+      "name": "Carson Ramdem",
+      "email": "cramsden@hmc.edu"
+    },
+    {
+      "name": "Avalon McRae"
+    }
+  ],
   "description": "Over the wire test doubles",
   "homepage": "http://www.mbtest.org",
   "license": "MIT",
