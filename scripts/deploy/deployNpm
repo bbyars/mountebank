@@ -2,21 +2,6 @@
 
 set -e
 
-PUBLISH=$1
-
-echo "Deploying to npm (PUBLISH=$PUBLISH)..."
-
-if [ "$PUBLISH" = "true" ]; then
-    cd dist/mountebank
-else
-    # Test npm publish to detect issues before the production publish
-    # I've been surprised by Travis-related errors before
-    cp -r dist/mountebank dist/mountebank-test
-    cd dist/mountebank-test
-    mv package.json package.json.orig
-    sed -E -e 's/"name": "mountebank"/"name": "mountebank-test"/' package.json.orig | \
-        sed -E -e 's/"version": "([0-9]+)\.([0-9]+)\.([0-9]+)\+([0-9]+)"/"version": "\1.\2.\4"/' > package.json
-fi
-
+cd dist/mountebank
 dpl --provider=npm --email=brandon.byars@gmail.com --api-key=$NPM_API_KEY --skip-cleanup
 cd ../..

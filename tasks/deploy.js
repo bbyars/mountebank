@@ -33,6 +33,6 @@ module.exports = function (grunt) {
             return;
         }
 
-        run('scripts/deploy/deployNpm', [publish]).done(this.async(), failTask('deploy:npm'));
+        run('scripts/deploy/deployNpm', []).done(this.async(), failTask('deploy:npm'));
     });
 };
