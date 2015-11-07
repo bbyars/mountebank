@@ -117,7 +117,7 @@ module.exports = function (grunt) {
             },
             exclusions = ['node_modules', '.git', '.DS_Store', '.idea', 'images', 'dist', 'mountebank.iml', 'mb.log', '*.pid'],
             errors = [],
-            whitelist = ['npm', 'grunt', 'mocha', 'mocha-lcov-reporter', 'coveralls', 'grunt-cli'];
+            whitelist = ['grunt', 'mocha', 'mocha-lcov-reporter', 'coveralls', 'grunt-cli'];
 
         dependencies.forEach(function (dependency) {
             usedCount[dependency] = 0;
