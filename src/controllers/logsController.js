@@ -1,9 +1,25 @@
 'use strict';
 
+/**
+ * The controller that exposes the logs
+ * @module
+ */
+
 var fs = require('fs'),
     url = require('url');
 
+/**
+ * Creates the logs controller
+ * @param {string} logfile - the path to the logfile
+ * @returns {{get: get}}
+ */
 function create (logfile) {
+    /**
+     * The function that responds to GET /logs
+     * @memberOf module:controllers/logsController#
+     * @param {Object} request - the HTTP request
+     * @param {Object} response - the HTTP response
+     */
     function get (request, response) {
         var json = '[' + fs.readFileSync(logfile).toString().split('\n').join(',').replace(/,$/, '') + ']',
             allLogs = JSON.parse(json),

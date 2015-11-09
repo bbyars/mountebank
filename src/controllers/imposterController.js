@@ -1,8 +1,18 @@
 'use strict';
 
+/**
+ * The controller that gets and deletes single imposters
+ * @module
+ */
+
 var url = require('url'),
     Q = require('q');
 
+/**
+ * Creates the imposter controller
+ * @param {Object} imposters - the map of ports to imposters
+ * @returns {{get: get, del: del}}
+ */
 function create (imposters) {
 
     function queryBoolean (query, key) {
@@ -12,6 +22,12 @@ function create (imposters) {
         return query[key].toLowerCase() === 'true';
     }
 
+    /**
+     * The function responding to GET /imposters/:port
+     * @memberOf module:controllers/imposterController#
+     * @param {Object} request - the HTTP request
+     * @param {Object} response - the HTTP response
+     */
     function get (request, response) {
         var query = url.parse(request.url, true).query,
             options = { replayable: queryBoolean(query, 'replayable'), removeProxies: queryBoolean(query, 'removeProxies') },
@@ -30,6 +46,12 @@ function create (imposters) {
         });
     }
 
+    /**
+     * The function responding to DELETE /imposters/:port
+     * @memberOf module:controllers/imposterController#
+     * @param {Object} request - the HTTP request
+     * @param {Object} response - the HTTP response
+     */
     function del (request, response) {
         var imposter = imposters[request.params.id],
             json = {},

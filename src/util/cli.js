@@ -1,5 +1,17 @@
 'use strict';
 
+/**
+ * The module used to parse the command line arguments
+ * @module
+ */
+
+/**
+ * The function that parses command line arguments
+ * @param {Object} argv - array of command line switches
+ * @param {Object} defaultOptions - default options if a command line switch is missing
+ * @param {Object} booleanOptions - array of boolean switches, all of which default to false if not passed
+ * @returns {{command: string, options: *}}
+ */
 var parse = function (argv, defaultOptions, booleanOptions) {
 
     var OPTION_PREFIX = /^--/;

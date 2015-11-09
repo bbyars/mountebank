@@ -29,6 +29,7 @@ function create (releases, options) {
 
     /**
      * The function that responds to GET /feed
+     * @memberOf module:controllers/feedController#
      * @param request {object} The HTTP request
      * @param response {object} The HTTP response
      */
@@ -62,6 +63,7 @@ function create (releases, options) {
 
     /**
      * The function that responds to GET /releases
+     * @memberOf module:controllers/feedController#
      * @param request {object} The HTTP request
      * @param response {object} The HTTP response
      */
@@ -71,6 +73,7 @@ function create (releases, options) {
 
     /**
      * The function that responds to GET /releases/:version
+     * @memberOf module:controllers/feedController#
      * @param request {object} The HTTP request
      * @param response {object} The HTTP response
      */

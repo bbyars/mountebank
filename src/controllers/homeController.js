@@ -1,7 +1,17 @@
 'use strict';
 
+/**
+ * The controller that returns the base mountebank hypermedia
+ * @module
+ */
+
 var date = require('../util/date');
 
+/**
+ * Creates the home controller
+ * @param releases
+ * @returns {{get: get}}
+ */
 function create (releases) {
 
     function createNotice (release) {
@@ -15,6 +25,12 @@ function create (releases) {
         return notice.when !== '';
     }
 
+    /**
+     * The function that responds to GET /
+     * @memberOf module:controllers/homeController#
+     * @param {Object} request - the HTTP request
+     * @param {Object} response - the HTTP response
+     */
     function get (request, response) {
         var hypermedia = {
                 _links: {
