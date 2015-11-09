@@ -1,11 +1,15 @@
 'use strict';
 
+var thisPackage = require('./package.json'),
+    version = process.env.MB_VERSION || thisPackage.version;
+
 module.exports = function (grunt) {
 
     grunt.loadTasks('tasks');
     grunt.loadNpmTasks('grunt-mocha-test');
     grunt.loadNpmTasks('grunt-contrib-jshint');
     grunt.loadNpmTasks('grunt-jsdoc');
+    grunt.loadNpmTasks('grunt-bitballoon');
 
     grunt.initConfig({
         pkg: grunt.file.readJSON('package.json'),
@@ -84,6 +88,15 @@ module.exports = function (grunt) {
                     readme: 'CONTRIBUTING.md',
                     package: 'package.json'
                 }
+            }
+        },
+        bitballoon: {
+            options: {
+                token: process.env.BITBALLOON_API_TOKEN,
+                src: 'docs/mountebank/' + version
+            },
+            prod: {
+                site: 'http://mountebank.bitballoon.com'
             }
         }
     });
