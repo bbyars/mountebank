@@ -4,8 +4,8 @@
 var thisPackage = require('../package.json'),
     fs = require('fs');
 
-var nodeMajorMinor = process.version.replace(/(v\d+\.\d+)\..*/, '$1'),
-    devDependenciesToReplace = thisPackage.devDependenciesBasedOnNodeVersion[nodeMajorMinor] || {};
+var nodeMajor = process.version.replace(/(v\d+)\..*/, '$1'),
+    devDependenciesToReplace = thisPackage.devDependenciesBasedOnNodeVersion[nodeMajor] || {};
 
 Object.keys(devDependenciesToReplace).forEach(function (dep) {
     console.log('Switching ' + dep + ' to ' + devDependenciesToReplace[dep]);
