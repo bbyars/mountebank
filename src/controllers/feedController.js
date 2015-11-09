@@ -1,9 +1,18 @@
 'use strict';
 
+/**
+ * The controller that exposes information about releases
+ * @module
+ */
+
 var fs = require('fs'),
     ejs = require('ejs'),
     helpers = require('../util/helpers');
 
+/**
+ * @param {object} releases - The object represented in the releases.json file
+ * @param {object} options - The command line options used to start mountebank
+ */
 function create (releases, options) {
 
     // Init once since we hope many consumers poll the heroku feed and we don't have monitoring
@@ -18,6 +27,11 @@ function create (releases, options) {
         return __dirname + '/../views/' + releaseViewFor(version);
     }
 
+    /**
+     * The function that responds to GET /feed
+     * @param request {object} The HTTP request
+     * @param response {object} The HTTP response
+     */
     function getFeed (request, response) {
         var page = parseInt(request.query.page || '1'),
             nextPage = page + 1,
@@ -30,6 +44,7 @@ function create (releases, options) {
                 nextLink: '/feed?page=' + nextPage
             };
 
+        // I'd prefer putting this as an include in the view, but EJS doesn't support dynamic includes
         if (!feedReleases[0].view) {
             feedReleases.forEach(function (release) {
                 var contents = fs.readFileSync(releaseFilenameFor(release.version), { encoding: 'utf8' });
@@ -45,10 +60,20 @@ function create (releases, options) {
         response.render('feed', config);
     }
 
+    /**
+     * The function that responds to GET /releases
+     * @param request {object} The HTTP request
+     * @param response {object} The HTTP response
+     */
     function getReleases (request, response) {
         response.render('releases', { releases: feedReleases });
     }
 
+    /**
+     * The function that responds to GET /releases/:version
+     * @param request {object} The HTTP request
+     * @param response {object} The HTTP response
+     */
     function getRelease (request, response) {
         var version = request.params.version,
             config = {

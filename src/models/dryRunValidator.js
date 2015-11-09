@@ -1,5 +1,12 @@
 'use strict';
 
+/**
+ * Validating a syntactically correct imposter creation statically is quite difficult.
+ * This module validates dynamically by running test requests through each predicate and each stub
+ * to see if it throws an error.  A valid request is one that passes the dry run error-free.
+ * @module
+ */
+
 var utils = require('util'),
     Q = require('q'),
     exceptions = require('../util/errors'),
@@ -7,6 +14,15 @@ var utils = require('util'),
     combinators = require('../util/combinators'),
     ResponseResolver = require('./responseResolver');
 
+/**
+ * Creates the validator
+ * @param {Object} options - Configuration for the validator
+ * @param {Object} options.testRequest - The protocol-specific request used for each dry run
+ * @param {Object} options.StubRepository - The creation function
+ * @param {boolean} options.allowInjection - Whether JavaScript injection is allowed or not
+ * @param {function} options.additionalValidation - A function that performs protocol-specific validation
+ * @returns {Object}
+ */
 function create (options) {
 
     function stubForResponse (originalStub, response, withPredicates) {
@@ -152,6 +168,13 @@ function create (options) {
         return errors;
     }
 
+    /**
+     * Validates that the imposter creation is syntactically valid
+     * @memberOf module:models/dryRunValidator#
+     * @param request {object} The request containing the imposter definition
+     * @param logger {object} The logger
+     * @returns {Object} Promise resolving to an object containing isValid and an errors array
+     */
     function validate (request, logger) {
         var stubs = request.stubs || [],
             encoding = request.mode === 'binary' ? 'base64' : 'utf8',

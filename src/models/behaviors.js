@@ -1,13 +1,33 @@
 'use strict';
 
+/**
+ * The functionality behind the _behaviors field in the API, supporting post-processing responses
+ * @module
+ */
+
 var helpers = require('../util/helpers'),
     errors = require('../util/errors'),
     Q = require('q');
 
+/**
+ * Waits a specified number of milliseconds before sending the response.  Due to the approximate
+ * nature of the timer, there is no guarantee that it will wait the given amount, but it will be close.
+ * @param responsePromise {Object} The promise returning the response
+ * @param milliseconds {number} The number of milliseconds to wait before returning
+ * @returns {Object} A promise resolving to the response
+ */
 function wait (responsePromise, milliseconds) {
     return responsePromise.delay(milliseconds);
 }
 
+/**
+ * Runs the response through a post-processing function provided by the user
+ * @param originalRequest {object} The request object, in case post-processing depends on it
+ * @param responsePromise {Object} The promise returning the response
+ * @param fn {Function} The function that performs the post-processing
+ * @param logger {Logger} The mountebank logger, useful in debugging
+ * @returns {Object}
+ */
 function decorate (originalRequest, responsePromise, fn, logger) {
     return responsePromise.then(function (response) {
         /* jshint evil: true */
@@ -36,6 +56,14 @@ function decorate (originalRequest, responsePromise, fn, logger) {
     });
 }
 
+/**
+ * The entry point to execute all behaviors provided in the API
+ * @param request {object} The request object
+ * @param response {object} The response generated from the stubs
+ * @param behaviors {object} The behaviors specified in the API
+ * @param logger {Logger} The mountebank logger, useful for debugging
+ * @returns {Object}
+ */
 function execute (request, response, behaviors, logger) {
     var result = Q(response);
 

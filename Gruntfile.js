@@ -5,6 +5,7 @@ module.exports = function (grunt) {
     grunt.loadTasks('tasks');
     grunt.loadNpmTasks('grunt-mocha-test');
     grunt.loadNpmTasks('grunt-contrib-jshint');
+    grunt.loadNpmTasks('grunt-jsdoc');
 
     grunt.initConfig({
         pkg: grunt.file.readJSON('package.json'),
@@ -71,6 +72,18 @@ module.exports = function (grunt) {
                 maxparams: 4,
                 maxdepth: 3,
                 maxcomplexity: 5
+            }
+        },
+        jsdoc : {
+            dist : {
+                src: ['src/**/*.js'],
+                options: {
+                    destination: 'docs',
+                    configure: '.jsdoc',
+                    pedantic: true,
+                    readme: 'CONTRIBUTING.md',
+                    package: 'package.json'
+                }
             }
         }
     });

@@ -1,13 +1,30 @@
 'use strict';
 
+/**
+ * The controller that exposes the mountebank configuration for the running process
+ * @module
+ */
+
 var helpers = require('../util/helpers');
 
+/**
+ * Creates the config controller
+ * @param version {string} The version of the currently running process
+ * @param options {object} The command line options used to start mb
+ * @returns {Object}
+ */
 function create (version, options) {
 
     var publicOptions = helpers.clone(options);
     delete publicOptions.heroku;
     delete publicOptions.version;
 
+    /**
+     * The method that responds to GET /config
+     * @memberOf module:controllers/configController#
+     * @param request {object} The HTTP request
+     * @param response {object} The HTTP response
+     */
     function get (request, response) {
         var config = {
             version: version,

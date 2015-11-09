@@ -1,5 +1,11 @@
 'use strict';
 
+/**
+ * The entry point for mountebank.  This module creates the mountebank server,
+ * configures all middleware, starts the logger, and manages all routing
+ * @module
+ */
+
 var express = require('express'),
     cors = require('cors'),
     errorHandler = require('errorhandler'),
@@ -30,6 +36,11 @@ function initializeLogfile (filename) {
     }
 }
 
+/**
+ * Creates the mountebank server
+ * @param {object} options - The command line options
+ * @returns {Object} An object with a close method to stop the server
+ */
 function create (options) {
     var app = express(),
         imposters = {},
