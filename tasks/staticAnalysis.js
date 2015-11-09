@@ -63,7 +63,7 @@ module.exports = function (grunt) {
                     errors = errors.concat(file + ' has more than one trailing newline');
                 }
             },
-            exclusions = ['node_modules', '.git', '.DS_Store', '.idea', 'images',
+            exclusions = ['node_modules', '.git', '.DS_Store', '.idea', 'images', 'docs',
                           'dist', 'mountebank.iml', 'mb.log', '*.pid', 'jquery', 'jqueryui'];
 
         forEachFileIn('.', wsCheck, { exclude: exclusions });
@@ -93,7 +93,7 @@ module.exports = function (grunt) {
                     }));
                 });
             },
-            exclusions = ['node_modules', 'dist', 'staticAnalysis.js', 'testHelpers.js', '*.pid', 'jquery'];
+            exclusions = ['node_modules', 'dist', 'staticAnalysis.js', 'testHelpers.js', '*.pid', 'jquery', 'docs'];
 
         forEachFileIn('.', jsCheck, { exclude: exclusions, filetype: '.js' });
 
@@ -117,7 +117,7 @@ module.exports = function (grunt) {
             },
             exclusions = ['node_modules', '.git', '.DS_Store', '.idea', 'images', 'dist', 'mountebank.iml', 'mb.log', '*.pid'],
             errors = [],
-            whitelist = ['grunt', 'mocha', 'mocha-lcov-reporter', 'coveralls', 'grunt-cli'];
+            whitelist = ['grunt', 'mocha', 'mocha-lcov-reporter', 'coveralls', 'grunt-cli', 'jsdoc'];
 
         dependencies.forEach(function (dependency) {
             usedCount[dependency] = 0;
