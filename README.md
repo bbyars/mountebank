@@ -20,7 +20,7 @@ See [getting started](http://www.mbtest.org/docs/gettingStarted) guide for more 
 
 ## Install and Run
 
-[![npm](https://nodei.co/npm/mountebank.png?downloads=true&downloadRank=true&stars=true)](https://www.npmjs.com/package/mountebank)
+[![npm][npm-badge]][npm]
 
 Install:
 
@@ -63,19 +63,29 @@ for any support questions.  Don't be shy!
 
 ## Build Status
 
-[![Coverage Status](https://coveralls.io/repos/bbyars/mountebank/badge.png?branch=master)](https://coveralls.io/r/bbyars/mountebank?branch=master)
-[![Codacy Badge](https://www.codacy.com/project/badge/c030a6aebe274e21b4ce11a74e01fa12)](https://www.codacy.com/public/brandonbyars/mountebank)
+[![Coverage Status][coveralls-badge]][coveralls]
+[![Codacy Badge][codacy-badge]][codacy]
 
-|                       |Ubuntu 12.04                                                                                             |CentOS 6.7                                                                                               |OS X Mavericks                                                                                           |Windows Server 2012                                                                                                                          |
-|-----------------------|:-------------------------------------------------------------------------------------------------------:|:-------------------------------------------------------------------------------------------------------:|:-------------------------------------------------------------------------------------------------------:|:-------------------------------------------------------------------------------------------------------------------------------------------:|
-|npm (node v5.0)        | [![Build Status][travis-status]][travis] | (not tested)                                                                                            | [![Build Status](https://travis-ci.org/bbyars/mountebank.png)](https://travis-ci.org/bbyars/mountebank) | [![Build status](https://ci.appveyor.com/api/projects/status/acfhg44px95s4pk5?svg=true)](https://ci.appveyor.com/project/bbyars/mountebank) |
-|npm (node v4.2)        | [![Build Status](https://travis-ci.org/bbyars/mountebank.png)](https://travis-ci.org/bbyars/mountebank) | (not tested)                                                                                            | [![Build Status](https://travis-ci.org/bbyars/mountebank.png)](https://travis-ci.org/bbyars/mountebank) | [![Build status](https://ci.appveyor.com/api/projects/status/acfhg44px95s4pk5?svg=true)](https://ci.appveyor.com/project/bbyars/mountebank) |
-|npm (node v4.0)        | [![Build Status](https://travis-ci.org/bbyars/mountebank.png)](https://travis-ci.org/bbyars/mountebank) | (not tested)                                                                                            | (not tested)                                                                                            | (not tested)                                                                                                                                |
-|npm (node v0.12)       | [![Build Status](https://travis-ci.org/bbyars/mountebank.png)](https://travis-ci.org/bbyars/mountebank) | (not tested)                                                                                            | [![Build Status](https://travis-ci.org/bbyars/mountebank.png)](https://travis-ci.org/bbyars/mountebank) | [![Build status](https://ci.appveyor.com/api/projects/status/acfhg44px95s4pk5?svg=true)](https://ci.appveyor.com/project/bbyars/mountebank) |
-|npm (node v0.10)       | [![Build Status](https://travis-ci.org/bbyars/mountebank.png)](https://travis-ci.org/bbyars/mountebank) | (not tested)                                                                                            | [![Build Status](https://travis-ci.org/bbyars/mountebank.png)](https://travis-ci.org/bbyars/mountebank) | [![Build status](https://ci.appveyor.com/api/projects/status/acfhg44px95s4pk5?svg=true)](https://ci.appveyor.com/project/bbyars/mountebank) |
-|OS package             | [![Build Status](https://travis-ci.org/bbyars/mountebank.png)](https://travis-ci.org/bbyars/mountebank) | [![Build Status](https://travis-ci.org/bbyars/mountebank.png)](https://travis-ci.org/bbyars/mountebank) | [![Build Status](https://travis-ci.org/bbyars/mountebank.png)](https://travis-ci.org/bbyars/mountebank) | N/A                                                                                                                                         |
-|Self-contained archive | [![Build Status](https://travis-ci.org/bbyars/mountebank.png)](https://travis-ci.org/bbyars/mountebank) | (not tested)                                                                                            | [![Build Status](https://travis-ci.org/bbyars/mountebank.png)](https://travis-ci.org/bbyars/mountebank) | [![Build status](https://ci.appveyor.com/api/projects/status/acfhg44px95s4pk5?svg=true)](https://ci.appveyor.com/project/bbyars/mountebank) |
-|(Performance)          | [![Build Status](https://travis-ci.org/bbyars/mountebank.png)](https://travis-ci.org/bbyars/mountebank) | (not tested)                                                                                            | (not tested)                                                                                            | (not tested)                                                                                                                                |
+|                       |Ubuntu 12.04                             |CentOS 6.7                            |OS X Mavericks                           |Windows Server 2012                          |
+|-----------------------|:---------------------------------------:|:------------------------------------:|:---------------------------------------:|:-------------------------------------------:|
+|npm (node v5.0)        | [![Build Status][travis-badge]][travis] | (not tested)                         | [![Build Status][travis-badge]][travis] | [![Build status][appveyor-badge]][appveyor] |
+|npm (node v4.2)        | [![Build Status][travis-badge]][travis] | (not tested)                         | [![Build Status][travis-badge]][travis] | [![Build status][appveyor-badge]][appveyor] |
+|npm (node v4.0)        | [![Build Status][travis-badge]][travis] | (not tested)                         | (not tested)                            | (not tested)                                |
+|npm (node v0.12)       | [![Build Status][travis-badge]][travis] | (not tested)                         | [![Build Status][travis-badge]][travis] | [![Build status][appveyor-badge]][appveyor] |
+|npm (node v0.10)       | [![Build Status][travis-badge]][travis] | (not tested)                         | [![Build Status][travis-badge]][travis] | [![Build status][appveyor-badge]][appveyor] |
+|OS package             | [![Build Status][travis-badge]][travis] | [![Build Status][snap-badge]][snap]  | [![Build Status][travis-badge]][travis] | N/A                                         |
+|Self-contained archive | [![Build Status][travis-badge]][travis] | (not tested)                         | [![Build Status][travis-badge]][travis] | [![Build status][appveyor-badge]][appveyor] |
+|(Performance)          | [![Build Status][travis-badge]][travis] | (not tested)                         | (not tested)                            | (not tested)                                |
 
-[travis-status]: https://travis-ci.org/bbyars/mountebank.png
+[npm-badge]: https://nodei.co/npm/mountebank.png?downloads=true&downloadRank=true&stars=true
+[npm]: https://www.npmjs.com/package/mountebank
+[coveralls-badge]: https://coveralls.io/repos/bbyars/mountebank/badge.png?branch=master
+[coveralls]: https://coveralls.io/r/bbyars/mountebank?branch=master
+[codacy-badge]: https://www.codacy.com/project/badge/c030a6aebe274e21b4ce11a74e01fa12
+[codacy]: https://www.codacy.com/public/brandonbyars/mountebank
+[travis-badge]: https://travis-ci.org/bbyars/mountebank.png
 [travis]: https://travis-ci.org/bbyars/mountebank
+[appveyor-badge]: https://ci.appveyor.com/api/projects/status/acfhg44px95s4pk5?svg=true
+[appveyor]: https://ci.appveyor.com/project/bbyars/mountebank
+[snap-badge]: https://img.shields.io/snap-ci/bbyars/mountebank/master.svg
+[snap]: https://snap-ci.com/bbyars/mountebank/branch/master
