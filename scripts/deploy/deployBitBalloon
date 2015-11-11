@@ -1,9 +1,0 @@
-#!/bin/sh
-
-set -e
-
-VERSION=$1
-
-echo "Deploying to BitBalloon"
-ls -l docs/mountebank/$VERSION
-bitballoon deploy docs/mountebank/$VERSION --access-token=$BITBALLOON_API_TOKEN --site-id=mountebank
