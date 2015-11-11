@@ -15,6 +15,7 @@ matrix:
     - os: linux
       sudo: false
       env:
+        - NODE_VERSION=5.0
         - MB_GRUNT_TASK='dist version jsdoc deploy:docs'
         # BITBALLOON_API_TOKEN
         - secure: "IWEs2nyILF3oQKKle31U1ZVIbeZhucjKJgfIs0AWJatpgOngSMJujeViex0O08XgVE5ANfk9lbMh5IseJ/Vb+D7dCq8vl3AK+12tqlhflIh0XDKtpoAk7oy9v4sznFAwhALyFzAS2Pf6dyCfWY9zyzYwu38cU990FJK/FxEIML0="
