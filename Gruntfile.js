@@ -81,8 +81,7 @@ module.exports = function (grunt) {
                     destination: 'docs',
                     configure: '.jsdoc',
                     pedantic: true,
-                    readme: 'CONTRIBUTING.md',
-                    package: 'dist/mountebank/package.json' // use dist to get correct version
+                    readme: 'CONTRIBUTING.md'
                 }
             }
         }
