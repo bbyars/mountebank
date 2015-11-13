@@ -2,9 +2,7 @@
 
 var run = require('./run').run,
     deploy = process.env.MB_DEPLOY === 'true',
-    publish = process.env.MB_PUBLISH === 'true',
-    thisPackage = require('../package.json'),
-    version = process.env.MB_VERSION || thisPackage.version;
+    publish = process.env.MB_PUBLISH === 'true';
 
 module.exports = function (grunt) {
 
