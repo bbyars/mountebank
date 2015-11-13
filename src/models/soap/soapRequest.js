@@ -1,5 +1,10 @@
 'use strict';
 
+/**
+ * Transforms a raw http request into an API-friendly soap request
+ * @module
+ */
+
 var Q = require('q'),
     httpRequest = require('../http/httpRequest'),
     xml2js = require('xml2js');
@@ -100,6 +105,11 @@ function transform (request, body) {
     };
 }
 
+/**
+ * Transforms the raw http request into a mountebank soap request
+ * @param {Object} request - The http request
+ * @returns {Object}
+ */
 function createFrom (request) {
     var deferred = Q.defer();
     httpRequest.createFrom({ request: request }).done(function (parsedRequest) {

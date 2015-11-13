@@ -1,5 +1,14 @@
 'use strict';
 
+/**
+ * Defines the template for the protocols, abstracting logging, error-handling,
+ * and proper close behavior for consistency.  While it's useful to not have to
+ * duplicate these responsibilities per protocol implementation, I haven't been
+ * crazy about this abstraction (it requires a lot of ping-ponging between this
+ * module and the actual implementation to understand a protocol) and may tweak it.
+ * @module
+ */
+
 var Q = require('q'),
     util = require('util'),
     ScopedLogger = require('../util/scopedLogger'),
@@ -7,8 +16,25 @@ var Q = require('q'),
     Domain = require('domain'),
     errors = require('../util/errors');
 
+/**
+ * Creates the protocol implementation
+ * @param {Object} implementation - The protocol implementation
+ * @param {string} implementation.protocolName - The name of the protocol (prefer lower-case letters)
+ * @param {Function} implementation.createServer - The function to create the server and listen on a socket
+ * @param {Object} implementation.Request - The request type for the protocol
+ * @param {boolean} recordRequests - Whether or not we should record requests (the --mock command line flag)
+ * @param {boolean} debug -- Whether or not we should record stub matches (the --debug command line flag)
+ * @param {Object} baseLogger - The logger
+ * @returns {Object}
+ */
 function implement (implementation, recordRequests, debug, baseLogger) {
 
+    /**
+     * Creates the protocol-specific server
+     * @memberOf module:models/abstractServer#
+     * @param {Object} options - The startup options
+     * @returns {Object} - The interface for all protocols
+     */
     function create (options) {
         options.recordRequests = recordRequests;
         options.debug = debug;
@@ -91,6 +117,9 @@ function implement (implementation, recordRequests, debug, baseLogger) {
 
             logger.info('Open for business...');
 
+            /**
+             * This is the interface for all protocols
+             */
             deferred.resolve({
                 requests: requests,
                 addStub: server.addStub,

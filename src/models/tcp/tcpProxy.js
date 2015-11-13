@@ -1,10 +1,21 @@
 'use strict';
 
+/**
+ * Represents the tcp proxy implementation
+ * @module
+ */
+
 var net = require('net'),
     Q = require('q'),
     url = require('url'),
     errors = require('../../util/errors');
 
+/**
+ * Creates the proxy
+ * @param {Object} logger - The logger
+ * @param {string} encoding - utf8 or base64, depending on if the destination expects text or binary
+ * @returns {Object}
+ */
 function create (logger, encoding) {
 
     function socketName (socket) {
@@ -52,6 +63,12 @@ function create (logger, encoding) {
         return deferred.promise;
     }
 
+    /**
+     * Proxies a tcp request to the destination
+     * @param {string} proxyDestination - The URL to proxy to (e.g. tcp://127.0.0.1:3535)
+     * @param {Object} originalRequest - The tcp request to forward
+     * @returns {Object} - A promise resolving to the response
+     */
     function to (proxyDestination, originalRequest) {
 
         function log (direction, what) {

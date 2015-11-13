@@ -1,5 +1,10 @@
 'use strict';
 
+/**
+ * Represents a soap imposter - Work in progress
+ * @module
+ */
+
 var http = require('http'),
     Q = require('q'),
     baseLogger = require('winston'),
@@ -149,6 +154,15 @@ function createServer (options, recordRequests, debug) {
     return deferred.promise;
 }
 
+/**
+ * Initializes the soap protocol
+ * This implementation does not yet use module:models/abstractServer because I
+ * wanted to play around with a different abstraction
+ * @param {boolean} allowInjection - The --allowInjection command line parameter
+ * @param {boolean} recordRequests - The --mock command line parameter
+ * @param {boolean} debug - The --debug command line parameter
+ * @returns {Object} - The protocol implementation
+ */
 function initialize (allowInjection, recordRequests, debug) {
     return {
         name: 'soap',

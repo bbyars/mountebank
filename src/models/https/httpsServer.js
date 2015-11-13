@@ -1,11 +1,23 @@
 'use strict';
 
+/**
+ * Represents an https imposter
+ * @module
+ */
+
 var fs = require('fs'),
     https = require('https'),
     baseHttpServer = require('../http/baseHttpServer'),
     defaultKey = fs.readFileSync(__dirname + '/cert/mb-key.pem', 'utf8'),
     defaultCert = fs.readFileSync(__dirname + '/cert/mb-cert.pem', 'utf8');
 
+/**
+ * Initializes the https protocol
+ * @param {boolean} allowInjection - The --allowInjection command line parameter
+ * @param {boolean} mock - The --mock command line parameter
+ * @param {boolean} debug - The --debug command line parameter
+ * @returns {Object} - The protocol implementation
+ */
 function initialize (allowInjection, recordRequests, debug) {
     var createBaseServer = function (options) {
             var metadata = {

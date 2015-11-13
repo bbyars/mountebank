@@ -33,13 +33,16 @@ know on [the relevant issue](https://github.com/bbyars/mountebank/issues/101).
 * Reference the [relevant issue](https://github.com/bbyars/mountebank/issues) in your git commit message,
 if appropriate
 
-## Additional Notes
+## Tests failing?
 
 There are some tests that require network access (`grunt airplane` ignores them in case that offends your
 moral sensibilities).  A few of these tests verify the correct behavior under DNS failures.  If your ISP
 is kind enough to hijack the NXDOMAIN DNS response in an attempt to allow you to conveniently peruse their
 advertising page, those tests will fail.  I suggest that, under such circumstances, you talk to your ISP
 and let them know that their policies are causing mountebank tests to fail.
+
+I am still fighting the occasional flaky test elsewhere as well.  If you find one, please
+[report it](https://github.com/bbyars/mountebank/issues/101).
 
 ## Getting Help
 
@@ -48,3 +51,22 @@ nearly up-to-date, but I'm on a free plan that limits the number of deploys per 
 
 I'm also available via Skype or something similar to help you get started.
 Feel free to reach me at brandon.byars@gmail.com
+
+## Other Ways to Help
+
+You don't need to write code to help.  I am grateful for all of the following contributions:
+
+* Submitting an issue, either through github or the [support page](http://www.mbtest.org/support)
+* Making a suggestion
+* Letting me know that you're using mountebank and how you're using it.  It's surprisingly hard to find
+that out with open source projects, and provides healthy motivation
+* Writing about mountebank (bonus points if you link to the [home page](http://www.mbtest.org/))
+* Creating a how-to video about mountebank
+* Speaking about mountebank in conferences or meetups
+* Telling your friends about mountebank
+* Writing a client library that hides the REST API under a language-specific API
+* Writing a build plugin for (maven,gradle,MSBuild,rake,gulp,etc)
+
+Let me know if you write an article or a project using mountebank and I'll link to it from the
+[examples](http://www.mbtest.org/docs/examples) or [client libraries](http://www.mbtest.org/docs/clientLibraries)
+page.

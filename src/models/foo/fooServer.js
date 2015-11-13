@@ -1,5 +1,10 @@
 'use strict';
 
+/**
+ * A sample protocol implementation, used for demo purposes only
+ * @module
+ */
+
 var net = require('net'),
     Q = require('q'),
     baseLogger = require('winston'),
@@ -14,6 +19,8 @@ var net = require('net'),
 /**
  * Used to fill in defaults for the response.  A user may set up a stub
  * with not all fields filled in, and we use this function to fill in the rest
+ * @param {Object} stub - The stub
+ * @returns {Object} - the response
  */
 function postProcess (stub) {
     return {
@@ -23,6 +30,9 @@ function postProcess (stub) {
 
 /**
  * Used to get consistent logging look & feel
+ * @param {number} port - The port for the imposter
+ * @param {string} [name] - The name of the imposter
+ * @returns {string}
  */
 function scopeFor (port, name) {
     var scope = util.format('foo:%s', port);
@@ -31,10 +41,13 @@ function scopeFor (port, name) {
     }
     return scope;
 }
+
 /**
  * Spins up a server listening on a socket
- * @param options - the JSON request body for the imposter create request
- * @param recordRequests - the --mock command line parameter
+ * @param {Object} options - the JSON request body for the imposter create request
+ * @param {boolean} recordRequests - The --mock command line parameter
+ * @param {boolean} debug - The --debug command line parameter
+ * @returns {d.promise|promise|n.ready.promise}
  */
 function createServer (options, recordRequests, debug) {
             // This is an async operation, so we use a deferred
@@ -115,8 +128,9 @@ function createServer (options, recordRequests, debug) {
 
 /**
  * Creates the core protocol interface - all protocols must implement
- * @param allowInjection - represents the command line --allowInjection parameter
- * @param recordRequests - represents the command line --mock parameter
+ * @param {boolean} allowInjection - represents the command line --allowInjection parameter
+ * @param {boolean} recordRequests - represents the command line --mock parameter
+ * @param {boolean} debug - represents the command line --debug parameter
  */
 function initialize (allowInjection, recordRequests, debug) {
     return {

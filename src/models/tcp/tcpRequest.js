@@ -1,8 +1,17 @@
 'use strict';
 
+/**
+ * Transforms a raw tcp request into the API-friendly representation of one
+ * @module
+ */
+
 var Q = require('q'),
     helpers = require('../../util/helpers');
 
+/**
+ * Creates the request used during dry run validation
+ * @returns {Object}
+ */
 function createTestRequest () {
     return {
         requestFrom: '',
@@ -10,6 +19,11 @@ function createTestRequest () {
     };
 }
 
+/**
+ * Transforms the raw tcp request into a mountebank tcp request
+ * @param {Object} request - The raw tcp request
+ * @returns {Object} - A promise resolving to the mountebank tcp request
+ */
 function createFrom (request) {
     return Q({
         requestFrom: helpers.socketName(request.socket),

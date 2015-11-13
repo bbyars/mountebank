@@ -1,8 +1,8 @@
 'use strict';
 
 /**
- * @module
  * Express middleware functions to inject into the HTTP processing
+ * @module
  */
 
 var errors = require('./errors');

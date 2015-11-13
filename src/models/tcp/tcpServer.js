@@ -1,5 +1,10 @@
 'use strict';
 
+/**
+ * Represents a tcp imposter
+ * @module
+ */
+
 var AbstractServer = require('../abstractServer'),
     net = require('net'),
     Q = require('q'),
@@ -116,6 +121,13 @@ function createServer (logger, options) {
     return result;
 }
 
+/**
+ * Initializes the tcp protocol
+ * @param {boolean} allowInjection - The --allowInjection command line parameter
+ * @param {boolean} recordRequests - The --mock command line parameter
+ * @param {boolean} debug - The --debug command line parameter
+ * @returns {Object} - The protocol implementation
+ */
 function initialize (allowInjection, recordRequests, debug) {
     var implementation = {
             protocolName: 'tcp',

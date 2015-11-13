@@ -1,11 +1,22 @@
 'use strict';
 
+/**
+ * Determines the response for a stub based on the user-provided response configuration
+ * @module
+ */
+
 var helpers = require('../util/helpers'),
     errors = require('../util/errors'),
     behaviors = require('./behaviors'),
     Q = require('q'),
     stringify = require('json-stable-stringify');
 
+/**
+ * Creates the resolver
+ * @param {Object} proxy - The protocol-specific proxy implementation
+ * @param {Function} postProcess - The protocol-specific post-processor to add default response values
+ * @returns {Object}
+ */
 function create (proxy, postProcess) {
     /* jshint unused: false */
     var injectState = {};
@@ -145,6 +156,15 @@ function create (proxy, postProcess) {
                (responseConfig.proxy && responseConfig.inject);
     }
 
+    /**
+     * Resolves a single response
+     * @memberOf module:models/responseResolver#
+     * @param {Object} responseConfig - The API-provided response configuration
+     * @param {Object} request - The protocol-specific request object
+     * @param {Object} logger - The logger
+     * @param {Object} stubs - The stubs for the imposter
+     * @returns {Object} - Promise resolving to the response
+     */
     function resolve (responseConfig, request, logger, stubs) {
         if (hasMultipleTypes(responseConfig)) {
             return Q.reject(errors.ValidationError('each response object must have only one response type', { source: responseConfig }));

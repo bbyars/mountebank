@@ -1,5 +1,10 @@
 'use strict';
 
+/**
+ * The proxy implementation for http/s imposters
+ * @module
+ */
+
 var http = require('http'),
     https = require('https'),
     url = require('url'),
@@ -10,6 +15,11 @@ var http = require('http'),
 
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 
+/**
+ * Creates the proxy
+ * @param {Object} logger - The logger
+ * @returns {Object}
+ */
 function create (logger) {
 
     function toUrl (path, query) {
@@ -98,6 +108,16 @@ function create (logger) {
         return deferred.promise;
     }
 
+    /**
+     * Proxies an http/s request to a destination
+     * @memberOf module:models/http/httpProxy#
+     * @param {string} proxyDestination - The base URL to proxy to, without a path (e.g. http://www.google.com)
+     * @param {Object} originalRequest - The original http/s request to forward on to proxyDestination
+     * @param {Object} options - Proxy options
+     * @param {string} [options.cert] - The certificate, in case the destination requires mutual authentication
+     * @param {string} [options.key] - The private key, in case the destination requires mutual authentication
+     * @returns {Object} - Promise resolving to the response
+     */
     function to (proxyDestination, originalRequest, options) {
 
         function log (direction, what) {

@@ -1,5 +1,10 @@
 'use strict';
 
+/**
+ * The base implementation of http/s servers
+ * @module
+ */
+
 var AbstractServer = require('../abstractServer'),
     Q = require('q'),
     logger = require('winston'),
@@ -13,6 +18,12 @@ var AbstractServer = require('../abstractServer'),
     events = require('events'),
     HttpRequest = require('./httpRequest');
 
+/**
+ * Sets up the creation method for the given protocol
+ * @param {string} protocolName - http or https
+ * @param {Function} createBaseServer - The function to create the http or https server
+ * @returns {Object}
+ */
 function setup (protocolName, createBaseServer) {
     function postProcess (stub) {
         var response = {
@@ -32,6 +43,13 @@ function setup (protocolName, createBaseServer) {
         return response;
     }
 
+    /**
+     * Creates the http/s server, opening up the socket
+     * @memberOf module:models/http/baseHttpServer#
+     * @param {Object} logger - The logger
+     * @param {Object} options - Creation options
+     * @returns {Object}
+     */
     function createServer (logger, options) {
         var proxy = HttpProxy.create(logger),
             resolver = ResponseResolver.create(proxy, postProcess),
@@ -83,6 +101,15 @@ function setup (protocolName, createBaseServer) {
         return result;
     }
 
+    /**
+     * Initializes the http/s server.  I'm certainly not in love with the layers of creation
+     * (setup -> initialize -> create)
+     * @memberOf module:models/http/baseHttpServer#
+     * @param {boolean} allowInjection - The --allowInjection command line parameter
+     * @param {boolean} recordRequests - The --mock command line parameter
+     * @param {boolean} debug - The --debug command line parameter
+     * @returns {Object}
+     */
     function initialize (allowInjection, recordRequests, debug) {
         var implementation = {
                 protocolName: protocolName,

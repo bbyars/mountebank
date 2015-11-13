@@ -1,5 +1,10 @@
 'use strict';
 
+/**
+ * Additional tcp-specific validations
+ * @module
+ */
+
 var DryRunValidator = require('../dryRunValidator'),
     StubRepository = require('../stubRepository'),
     TcpRequest = require('./tcpRequest'),
@@ -14,6 +19,11 @@ function validateMode (request) {
 }
 
 module.exports = {
+    /**
+     * Creates the tcp validator, which wraps dry run validation with some protocol-specific validation
+     * @param {boolean} allowInjection - The --allowInjection command line parameter
+     * @returns {Object}
+     */
     create: function (allowInjection) {
         return DryRunValidator.create({
             StubRepository: StubRepository,
