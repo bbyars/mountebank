@@ -18,7 +18,7 @@ matrix:
           - NODE_VERSION=4.2
           - MB_GRUNT_TASK='dist version jsdoc deploy:docs'
           # FIREBASE_API_TOKEN
-          - secure: "bjfPHWD6H2xvAf+anDhaVcU+w9t9MVdsVJEZg3xShxU7dJfEfShn88tezY+HrKW+XYe+fnwWKPiEDYmVe3/iAkV5LBdn1KSNAk77Rb4FIuKJo8XIxsvSUUOXIQFv0TPY1dRR+IPHdPS9SEMEqFDHuaQhz8EAXMn/gIDhJMXZN5Y=""
+          - secure: "bjfPHWD6H2xvAf+anDhaVcU+w9t9MVdsVJEZg3xShxU7dJfEfShn88tezY+HrKW+XYe+fnwWKPiEDYmVe3/iAkV5LBdn1KSNAk77Rb4FIuKJo8XIxsvSUUOXIQFv0TPY1dRR+IPHdPS9SEMEqFDHuaQhz8EAXMn/gIDhJMXZN5Y="
 #    - os: osx
 #      sudo: true
 #      env:
