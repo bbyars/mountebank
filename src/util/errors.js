@@ -3,6 +3,11 @@
 var inherit = require('./inherit'),
     helpers = require('./helpers');
 
+/**
+ * @module
+ * Error types returned by the API
+ */
+
 function create (code) {
     return function (message, options) {
         var result = inherit.from(Error, {

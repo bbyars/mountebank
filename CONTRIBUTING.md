@@ -41,5 +41,10 @@ is kind enough to hijack the NXDOMAIN DNS response in an attempt to allow you to
 advertising page, those tests will fail.  I suggest that, under such circumstances, you talk to your ISP
 and let them know that their policies are causing mountebank tests to fail.
 
+## Getting Help
+
+The source documentation is always available at [netlify](http://mountebank.netlify.com/).  It should be
+nearly up-to-date, but I'm on a free plan that limits the number of deploys per month.
+
 I'm also available via Skype or something similar to help you get started.
 Feel free to reach me at brandon.byars@gmail.com

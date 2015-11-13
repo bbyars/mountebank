@@ -1,7 +1,18 @@
 'use strict';
 
+/**
+ * @module
+ * Express middleware functions to inject into the HTTP processing
+ */
+
 var errors = require('./errors');
 
+/**
+ * Returns a middleware function to transforms all outgoing relative links in the response body
+ * to absolute URLs, incorporating the current host name and port
+ * @param {number} port - The port of the current instance
+ * @returns {Function}
+ */
 function useAbsoluteUrls (port) {
     return function (request, response, next) {
         var setHeaderOriginal = response.setHeader,
@@ -47,6 +58,11 @@ function useAbsoluteUrls (port) {
     };
 }
 
+/**
+ * Returns a middleware function to return a 404 if the imposter does not exist
+ * @param {Object} imposters - The current dictionary of imposters
+ * @returns {Function}
+ */
 function createImposterValidator (imposters) {
     return function validateImposterExists (request, response, next) {
         var imposter = imposters[request.params.id];
@@ -63,6 +79,12 @@ function createImposterValidator (imposters) {
     };
 }
 
+/**
+ * Returns a middleware function that logs the requests made to the server
+ * @param {Object} log - The logger
+ * @param {string} format - The log format
+ * @returns {Function}
+ */
 function logger (log, format) {
     function shouldLog (request) {
         var isStaticAsset = (['.js', '.css', '.gif', '.png', '.ico'].some(function (fileType) {
@@ -83,6 +105,12 @@ function logger (log, format) {
     };
 }
 
+/**
+ * Returns a middleware function that passes global variables to all render calls without
+ * having to pass them explicitly
+ * @param {Object} vars - the global variables to pass
+ * @returns {Function}
+ */
 function globals (vars) {
     return function (request, response, next) {
         var originalRender = response.render;
@@ -100,6 +128,16 @@ function globals (vars) {
     };
 }
 
+/**
+ * The mountebank server uses header-based content negotiation to return either HTML or JSON
+ * for each URL.  This breaks down on IE browsers as they fail to send the correct Accept header,
+ * and since we default to JSON (to make the API easier to use), that leads to a poor experience
+ * for IE users.  We special case IE to html by inspecting the user agent, making sure not to
+ * interfere with XHR requests that do add the Accept header
+ * @param {Object} request - The http request
+ * @param {Object} response - The http response
+ * @param {Function} next - The next middleware function to call
+ */
 function defaultIEtoHTML (request, response, next) {
     // IE has inconsistent Accept headers, often defaulting to */*
     // Our default is JSON, which fails to render in the browser on content-negotiated pages
@@ -111,9 +149,15 @@ function defaultIEtoHTML (request, response, next) {
     next();
 }
 
+/**
+ * Returns a middleware function that defaults the content type to JSON if not set to make
+ * command line testing easier (e.g. you don't have to set the Accept header with curl) and
+ * parses the JSON before reaching a controller, handling errors gracefully.
+ * @param {Object} logger - The logger
+ * @returns {Function}
+ */
 function json (logger) {
     return function (request, response, next) {
-        // Accept requests even if no content type passed in to make command line testing easier
         request.body = '';
         request.setEncoding('utf8');
         request.on('data', function (chunk) {
