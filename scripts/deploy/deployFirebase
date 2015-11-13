@@ -1,0 +1,15 @@
+#!/bin/sh
+
+set -e
+
+VERSION=$1
+
+echo "Deploying to Firebase..."
+
+npm install -g firebase-tools
+cp firebase.json docs/mountebank/$VERSION
+
+(
+cd docs/mountebank/$VERSION
+firebase deploy --token "$FIREBASE_API_TOKEN"
+)

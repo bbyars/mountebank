@@ -46,8 +46,7 @@ I am still fighting the occasional flaky test elsewhere as well.  If you find on
 
 ## Getting Help
 
-The source documentation is always available at [netlify](http://mountebank.netlify.com/).  It should be
-nearly up-to-date, but I'm on a free plan that limits the number of deploys per month.
+The source documentation is always available at [Firebase](https://mountebank.firebaseapp.com/).
 
 I'm also available via Skype or something similar to help you get started.
 Feel free to reach me at brandon.byars@gmail.com
