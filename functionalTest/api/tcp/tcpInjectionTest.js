@@ -83,35 +83,38 @@ describe('tcp imposter', function () {
             });
         });
 
-        if (process.env.MB_AIRPLANE_MODE !== 'true') {
-            promiseIt('should allow asynchronous injection', function () {
-                var fn = function (request, state, logger, callback) {
-                        var net = require('net'),
-                            options = {
-                                host: 'www.google.com',
-                                port: 80
-                            },
-                            socket = net.connect(options, function () {
-                                socket.end(request.data + '\n');
-                            });
-                        socket.once('data', function (data) {
-                            callback({data: data});
+        promiseIt('should allow asynchronous injection', function () {
+            var originServerPort = port + 1,
+                originServerStub = { responses: [{ is: { body: 'origin server' } }] },
+                originServerRequest = { protocol: 'http', port: originServerPort, stubs: [originServerStub], name: this.name + ' origin' },
+                fn = function (request, state, logger, callback) {
+                    var net = require('net'),
+                        options = {
+                            host: '127.0.0.1',
+                            port: '$PORT'
+                        },
+                        socket = net.connect(options, function () {
+                            socket.end(request.data + '\n');
                         });
-                        // No return value!!!
-                    },
-                    stub = {responses: [{inject: fn.toString()}]};
+                    socket.once('data', function (data) {
+                        callback({data: data});
+                    });
+                    // No return value!!!
+                },
+                stub = { responses: [{ inject: fn.toString().replace("'$PORT'", originServerPort) }] };
 
-                return api.post('/imposters', {protocol: 'tcp', port: port, stubs: [stub]}).then(function (response) {
-                    assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body));
-
-                    return tcp.send('GET / HTTP/1.1\r\nHost: www.google.com\r\n\r', port);
-                }).then(function (response) {
-                    assert.strictEqual(response.toString().indexOf('HTTP/1.1'), 0);
-                }).finally(function () {
-                    return api.del('/imposters');
-                });
+            return api.post('/imposters', originServerRequest).then(function (response) {
+                assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body, null, 4));
+                return api.post('/imposters', {protocol: 'tcp', port: port, stubs: [stub]});
+            }).then(function (response) {
+                assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body));
+                return tcp.send('GET / HTTP/1.1\r\nHost: www.google.com\r\n\r', port);
+            }).then(function (response) {
+                assert.strictEqual(response.toString().indexOf('HTTP/1.1'), 0);
+            }).finally(function () {
+                return api.del('/imposters');
             });
-        }
+        });
 
         promiseIt('should allow binary requests extending beyond a single packet using endOfRequestResolver', function () {
             // We'll simulate a protocol that has a 4 byte message length at byte 0 indicating how many bytes follow
