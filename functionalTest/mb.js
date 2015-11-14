@@ -18,7 +18,7 @@ function create (port) {
                 'restart',
                 '--port', port,
                 '--pidfile', pidfile,
-                '--logfile', 'mb-test.log',
+                '--logfile', 'mb-test.log'
             ].concat(args || []),
             mb;
 
