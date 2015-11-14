@@ -62,7 +62,7 @@ matrix:
         - NODE_VERSION=4.2
         - MB_GRUNT_TASK='default jsdoc deploy:docs'
         # FIREBASE_TOKEN
-        - secure: "QKsIDJF/waYdv6V5rX9a1H1rndp8varbO90Wim/EhF566vjKD28LhGI79vVyjN7xTkX91AoyOI98DERtmWc/X+VTpsLvnjwZnhpe2xas2W0E8KHpN2zDSOw41DPBUVdQbesiDrfAYIldn+zLjBiTfY2QvJyvqtzJgH0jdwap+JM="
+        - secure: "pgk3HmuGSzgQ0ofprY0jCpjrZdxTalIdEpY4xIAxoaqGYb+3q3PQ3ZXc7fLDuUZcgdp6hImVtzoYWQfj5WbbP9YIomyJWLMaOoFdXGy7fKyO3nA2noHSKrFxuBLH+Rwcy9XWSNL/hsLOXZHDW6Kc5kE+DRrkDB4SjNIRblwCvUk="
     - os: linux
       sudo: false
       env:
