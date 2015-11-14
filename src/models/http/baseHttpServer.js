@@ -26,12 +26,18 @@ var AbstractServer = require('../abstractServer'),
  */
 function setup (protocolName, createBaseServer) {
     function postProcess (stub) {
+        /* jshint maxcomplexity: 6 */
         var response = {
                 statusCode: stub.statusCode || 200,
                 headers: stub.headers || {},
                 body: stub.body || '',
                 _mode: stub._mode || 'text'
             };
+
+        if (typeof response.body === 'object') {
+            // Support JSON response bodies
+            response.body = JSON.stringify(response.body, null, 4);
+        }
 
         // We don't want to use keepalive connections, because a test case
         // may shutdown the stub, which prevents new connections for

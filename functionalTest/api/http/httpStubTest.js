@@ -306,6 +306,51 @@ var assert = require('assert'),
                     return api.del('/imposters');
                 });
             });
+
+            promiseIt('should support JSON bodies', function () {
+                var stub = {
+                        responses: [
+                            {
+                                is: {
+                                    body: {
+                                        key: 'value',
+                                        sub: {
+                                            'string-key': 'value'
+                                        },
+                                        arr: [1, 2]
+                                    }
+                                }
+                            },
+                            {
+                                is: {
+                                    body: {
+                                        key: 'second request'
+                                    }
+                                }
+                            }
+                        ]
+                    },
+                    request = { protocol: protocol, port: port, stubs: [stub], name: this.name };
+
+                return api.post('/imposters', request).then(function (response) {
+                    assert.strictEqual(response.statusCode, 201);
+
+                    return client.get('/', port);
+                }).then(function (response) {
+                    assert.deepEqual(JSON.parse(response.body), {
+                        key: 'value',
+                        sub: {
+                            'string-key': 'value'
+                        },
+                        arr: [1, 2]
+                    });
+                    return client.get('/', port);
+                }).then(function (response) {
+                    assert.deepEqual(JSON.parse(response.body), { key: 'second request' });
+                }).finally(function () {
+                    return api.del('/imposters');
+                });
+            });
         });
     });
 });
