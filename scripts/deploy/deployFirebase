@@ -11,5 +11,5 @@ cp firebase.json docs/mountebank/$VERSION
 
 (
 cd docs/mountebank/$VERSION
-firebase deploy --token "$FIREBASE_API_TOKEN"
+firebase deploy --token "$FIREBASE_TOKEN"
 )
