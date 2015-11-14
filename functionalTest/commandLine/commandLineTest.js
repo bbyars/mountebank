@@ -16,7 +16,7 @@ var assert = require('assert'),
 describe('mb command line', function () {
     if (isWindows) {
         // slower process startup time because Windows
-        this.timeout(timeout*3);
+        this.timeout(timeout*5);
     }
     else {
         this.timeout(timeout);
