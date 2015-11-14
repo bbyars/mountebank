@@ -114,7 +114,6 @@ function create (options) {
 
     [
         '/support',
-        '/contributing',
         '/license',
         '/faqs',
         '/thoughtworks',
