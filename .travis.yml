@@ -60,9 +60,6 @@ matrix:
       sudo: false
       env:
         - NODE_VERSION=4.2
-        - MB_GRUNT_TASK='default jsdoc deploy:docs'
-        # FIREBASE_TOKEN
-        - secure: "pgk3HmuGSzgQ0ofprY0jCpjrZdxTalIdEpY4xIAxoaqGYb+3q3PQ3ZXc7fLDuUZcgdp6hImVtzoYWQfj5WbbP9YIomyJWLMaOoFdXGy7fKyO3nA2noHSKrFxuBLH+Rwcy9XWSNL/hsLOXZHDW6Kc5kE+DRrkDB4SjNIRblwCvUk="
     - os: linux
       sudo: false
       env:
@@ -99,5 +96,4 @@ install:
 script:
   - echo "MB_DEPLOY - $MB_DEPLOY"
   - echo "MB_PUBLISH - $MB_PUBLISH"
-  - echo "FIREBASE_API_TOKEN = $FIREBASE_TOKEN"
   - ./build $MB_GRUNT_TASK
