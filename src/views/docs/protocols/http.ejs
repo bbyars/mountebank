@@ -144,4 +144,72 @@ to <code>binary</code> and base64 encode the <code>body</code>.  mountebank will
 to preserve binary responses in proxies by looking at the <code>Content-Encoding</code> and
 <code>Content-Type</code> headers.</p>
 
+<h2 id='inline-json-response-bodies'>Inline JSON For Response Bodies</h2>
+
+<p>The example below shows passing an inline JSON object as the response body.</p>
+
+<pre><code data-test-id='example'
+           data-test-step='1'
+           data-test-type='http'>
+POST /imposters HTTP/1.1
+Host: localhost:<%= port %>
+Accept: application/json
+Content-Type: application/json
+
+{
+  "port": 4545,
+  "protocol": "http",
+  "stubs": [
+    {
+      "responses": [
+        {
+          "is": {
+            "statusCode": 200,
+            "headers": {
+              "Content-Type": "application/json"
+            },
+            "body": {
+              "bikeId": 123,
+              "name": "Turbo Bike 4000"
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
+</code></pre>
+
+<p>Now let's test the response by calling the imposter:</p>
+
+<pre><code data-test-id='example'
+           data-test-step='2'
+           data-test-type='http'>
+GET / HTTP/1.1
+Host: localhost:4545
+Accept: application/json
+</code></pre>
+
+<pre><code data-test-id='example'
+           data-test-verify-step='2'
+           data-test-ignore-lines='["^Date"]'>
+HTTP/1.1 200 OK
+Content-Type: application/json
+Connection: close
+Date: Sun, 15 Nov 2015 01:02:03 GMT
+Transfer-Encoding: chunked
+
+{
+  "bikeId": 123,
+  "name": "Turbo Bike 4000"
+}
+</code></pre>
+
+<code class='hidden' data-test-id='example'
+                     data-test-step='3'
+                     data-test-type='http'>
+DELETE /imposters/4545 HTTP/1.1
+Host: localhost:<%= port %>
+</code>
+
 <% include ../../_footer %>
