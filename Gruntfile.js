@@ -1,11 +1,14 @@
 'use strict';
 
+var port = process.env.MB_PORT || 2525;
+
 module.exports = function (grunt) {
 
     grunt.loadTasks('tasks');
     grunt.loadNpmTasks('grunt-mocha-test');
     grunt.loadNpmTasks('grunt-contrib-jshint');
     grunt.loadNpmTasks('grunt-jsdoc');
+    grunt.loadNpmTasks('grunt-mountebank');
 
     grunt.initConfig({
         mochaTest: {
@@ -73,7 +76,7 @@ module.exports = function (grunt) {
                 maxcomplexity: 5
             }
         },
-        jsdoc : {
+        jsdoc: {
             dist : {
                 src: ['src/**/*.js'],
                 options: {
@@ -84,6 +87,13 @@ module.exports = function (grunt) {
                     package: 'dist/mountebank/package.json' // use dist to get correct version
                 }
             }
+        },
+        mb: {
+            options: {
+                path: 'bin/mb'
+            },
+            restart: ['--port', port, '--pidfile', 'mb-grunt.pid', '--logfile', 'mb-grunt.log', '--allowInjection', '--mock', '--debug'],
+            stop: ['--pidfile', 'mb-grunt.pid']
         }
     });
 
@@ -93,7 +103,7 @@ module.exports = function (grunt) {
 
     grunt.registerTask('test:unit', 'Run the unit tests', ['mochaTest:unit']);
     grunt.registerTask('test:functional', 'Run the functional tests',
-        ['mb:start', 'try', 'mochaTest:functional', 'finally', 'mb:stop', 'checkForErrors']);
+        ['mb:restart', 'try', 'mochaTest:functional', 'finally', 'mb:stop', 'checkForErrors']);
     grunt.registerTask('test:performance', 'Run the performance tests', ['mochaTest:performance']);
     grunt.registerTask('test', 'Run all non-performance tests', ['test:unit', 'test:functional']);
     grunt.registerTask('coverage', 'Generate code coverage', ['mochaTest:coverage']);
