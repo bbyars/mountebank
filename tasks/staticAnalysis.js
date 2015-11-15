@@ -39,40 +39,6 @@ function forEachFileIn (dir, fileCallback, options) {
 
 module.exports = function (grunt) {
 
-    grunt.registerTask('wsCheck', 'Check for whitespace problems that make diffing harder', function () {
-        var errors = [],
-            wsCheck = function (file) {
-                var contents = fs.readFileSync(file, 'utf8'),
-                    lines = contents.split(os.EOL);
-
-                lines.forEach(function (line) {
-                    var trailingWhitespaceErrors = line.match(/ $/) || [],
-                        tabErrors = line.match(/^.*\t.*$/) || [];
-
-                    errors = errors.concat(trailingWhitespaceErrors.map(function () {
-                        return file + ' has trailing whitespace\n\t<<' + line + '>>';
-                    })).concat(tabErrors.map(function () {
-                        return file + ' has tabs instead of spaces\n\t<<' + line + '>>';
-                    }));
-                });
-
-                if (contents[contents.length-1] !== '\n') {
-                    errors = errors.concat(file + ' has no trailing newline');
-                }
-                else if (contents[contents.length-2] === os.EOL) {
-                    errors = errors.concat(file + ' has more than one trailing newline');
-                }
-            },
-            exclusions = ['node_modules', '.git', '.DS_Store', '.idea', 'images', 'docs',
-                          'dist', 'mountebank.iml', 'mb.log', '*.pid', 'jquery', 'jqueryui'];
-
-        forEachFileIn('.', wsCheck, { exclude: exclusions });
-
-        if (errors.length > 0) {
-            grunt.warn(errors.join(os.EOL));
-        }
-    });
-
     grunt.registerTask('jsCheck', 'Run JavaScript checks not covered by jshint', function () {
         var errors = [],
             jsCheck = function (file) {
