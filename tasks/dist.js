@@ -2,35 +2,10 @@
 
 var fs = require('fs-extra'),
     os = require('os'),
-    isWindows = require('os').platform().indexOf('win') === 0,
-    path = require('path'),
+    rimraf = require('rimraf'),
     thisPackage = require('../package.json'),
     version = process.env.MB_VERSION || thisPackage.version,
     run = require('./run').run;
-
-function rmdirRecursiveSync (dir) {
-    if (isWindows) {
-        if (!fs.existsSync(dir)) {
-            return;
-        }
-
-        fs.readdirSync(dir).forEach(function (file) {
-            var filePath = path.join(dir, file);
-
-            if (fs.lstatSync(filePath).isDirectory()) {
-                rmdirRecursiveSync(filePath);
-            } else {
-                fs.unlinkSync(filePath);
-            }
-        });
-
-        fs.rmdirSync(dir);
-    }
-    else {
-        // This doesn't appear to work on Windows
-        fs.removeSync(dir);
-    }
-}
 
 module.exports = function (grunt) {
 
@@ -46,13 +21,13 @@ module.exports = function (grunt) {
             failed = failTask('dist');
 
         // This doesn't work on Windows
-        rmdirRecursiveSync('dist');
+        rimraf.sync('dist');
         fs.mkdirSync('dist');
         fs.mkdirSync('dist/mountebank');
         ['bin', 'src', 'package.json', 'npm-shrinkwrap.json', 'releases.json', 'README.md', 'LICENSE'].forEach(function (source) {
             fs.copySync(source, 'dist/mountebank/' + source);
         });
-        rmdirRecursiveSync('dist/mountebank/src/public/images/sources');
+        rimraf.sync('dist/mountebank/src/public/images/sources');
 
         // removing devDependencies so the standard npm install (without --production) is smooth
         // in all cases.  The jsdom dependency gets tricky otherwise, since we need different versions
