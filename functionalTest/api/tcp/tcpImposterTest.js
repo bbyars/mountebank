@@ -34,8 +34,8 @@ describe('tcp imposter', function () {
             }).then(function () {
                 return api.get('/imposters/' + port);
             }).then(function (response) {
-                var requests = response.body.requests.map(function (request) {
-                    return request.data;
+                var requests = response.body.requests.map(function (recordedRequest) {
+                    return recordedRequest.data;
                 });
                 assert.deepEqual(requests, ['first', 'second']);
             }).finally(function () {
@@ -44,8 +44,8 @@ describe('tcp imposter', function () {
         });
 
         promiseIt('should return list of stubs in order', function () {
-            var first = { responses: [{ is: { data: '1' }}]},
-                second = { responses: [{ is: { data: '2' }}]},
+            var first = { responses: [{ is: { data: '1' } }] },
+                second = { responses: [{ is: { data: '2' } }] },
                 request = { protocol: 'tcp', port: port, stubs: [first, second], name: this.name };
 
             return api.post('/imposters', request).then(function () {
@@ -85,7 +85,7 @@ describe('tcp imposter', function () {
         });
 
         promiseIt('should record matches against stubs', function () {
-            var stub = { responses: [{ is: { data: '1' }}, { is: { data: '2' }}]},
+            var stub = { responses: [{ is: { data: '1' } }, { is: { data: '2' } }] },
                 request = { protocol: 'tcp', port: port, stubs: [stub], name: this.name };
 
             return api.post('/imposters', request).then(function () {

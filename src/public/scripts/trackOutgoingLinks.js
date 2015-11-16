@@ -1,8 +1,4 @@
 'use strict';
-/*global $:false */
-/*global document:false */
-/*global _gaq:false */
-/*global location:false */
 
 // Adapted from http://www.blastam.com/blog/index.php/2013/03/how-to-track-downloads-in-google-analytics-v2/
 
@@ -15,8 +11,6 @@ $(document).ready(function () {
     }
 
     $('a').on('click', function () {
-        /*jshint maxcomplexity:7 */
-
         var element = $(this),
             track = false,
             href = element.attr('href'),
@@ -45,6 +39,7 @@ $(document).ready(function () {
         }
 
         if (track) {
+            /* global _gaq */
             _gaq.push(['_trackEvent', events.category, events.action, events.label, events.value, events.nonInteraction]);
             if (element.attr('target') === undefined || element.attr('target').toLowerCase() !== '_blank') {
                 setTimeout(function () { location.href = events.location; }, 400);

@@ -70,7 +70,7 @@ describe('tcp proxy', function () {
             var server = net.createServer(function (client) {
                 client.on('data', function () {
                     // force multiple data packets
-                    client.write((new Array(10*1024*1024)).join('x'));
+                    client.write((new Array(10 * 1024 * 1024)).join('x'));
                 });
             });
             server.listen(port);
@@ -78,7 +78,7 @@ describe('tcp proxy', function () {
             var proxy = TcpProxy.create(logger, 'utf8');
 
             return proxy.to('tcp://localhost:' + port, { data: 'hello, world!' }).then(function (response) {
-                assert.strictEqual(response.data.length, 10*1024*1024 - 1);
+                assert.strictEqual(response.data.length, 10 * 1024 * 1024 - 1);
             }).finally(function () {
                 server.close();
             });

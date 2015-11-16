@@ -66,7 +66,7 @@ function create (resolver, recordMatches, encoding) {
      * @returns {Object} - Promise resolving to the response
      */
     function resolve (request, logger) {
-        var stub = findFirstMatch(request, logger) || { responses: [{ is: {} }]},
+        var stub = findFirstMatch(request, logger) || { responses: [{ is: {} }] },
             responseConfig = stub.responses.shift(),
             deferred = Q.defer();
 
@@ -76,10 +76,10 @@ function create (resolver, recordMatches, encoding) {
 
         resolver.resolve(responseConfig, request, logger, stubs).done(function (response) {
             var match = {
-                    timestamp: new Date().toJSON(),
-                    request: request,
-                    response: response
-                };
+                timestamp: new Date().toJSON(),
+                request: request,
+                response: response
+            };
             if (recordMatches) {
                 stub.matches = stub.matches || [];
                 stub.matches.push(match);

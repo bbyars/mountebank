@@ -44,9 +44,9 @@ var assert = require('assert'),
 
         describe('GET /imposters/:id', function () {
             promiseIt('should provide access to all requests', function () {
-                var request = { protocol: protocol, port: port, name: this.name };
+                var imposterRequest = { protocol: protocol, port: port, name: this.name };
 
-                return api.post('/imposters', request).then(function () {
+                return api.post('/imposters', imposterRequest).then(function () {
                     return client.get('/first', port);
                 }).then(function () {
                     return client.get('/second', port);
@@ -61,9 +61,9 @@ var assert = require('assert'),
             });
 
             promiseIt('should save headers in case-sensitive way', function () {
-                var request = { protocol: protocol, port: port, name: this.name };
+                var imposterRequest = { protocol: protocol, port: port, name: this.name };
 
-                return api.post('/imposters', request).then(function () {
+                return api.post('/imposters', imposterRequest).then(function () {
                     return client.responseFor({
                         method: 'GET',
                         path: '/',
@@ -83,8 +83,8 @@ var assert = require('assert'),
             });
 
             promiseIt('should return list of stubs in order', function () {
-                var first = { responses: [{ is: { body: '1' }}]},
-                    second = { responses: [{ is: { body: '2' }}]},
+                var first = { responses: [{ is: { body: '1' } }] },
+                    second = { responses: [{ is: { body: '2' } }] },
                     request = { protocol: protocol, port: port, stubs: [first, second], name: this.name };
 
                 return api.post('/imposters', request).then(function () {
@@ -101,7 +101,7 @@ var assert = require('assert'),
             });
 
             promiseIt('should record matches against stubs', function () {
-                var stub = { responses: [{ is: { body: '1' }}, { is: { body: '2' }}]},
+                var stub = { responses: [{ is: { body: '1' } }, { is: { body: '2' } }] },
                     request = { protocol: protocol, port: port, stubs: [stub], name: this.name };
 
                 return api.post('/imposters', request).then(function () {
@@ -113,7 +113,8 @@ var assert = require('assert'),
                 }).then(function (response) {
                     var stubs = JSON.stringify(response.body.stubs),
                         withTimeRemoved = stubs.replace(/"timestamp":"[^"]+"/g, '"timestamp":"NOW"'),
-                        withClientPortRemoved = withTimeRemoved.replace(/"requestFrom":"[a-f:\.\d]+"/g, '"requestFrom":"HERE"'),
+                        withClientPortRemoved = withTimeRemoved.replace(
+                            /"requestFrom":"[a-f:\.\d]+"/g, '"requestFrom":"HERE"'),
                         actualWithoutEphemeralData = JSON.parse(withClientPortRemoved),
                         requestHeaders = { accept: 'application/json', Host: 'localhost:' + port, Connection: 'keep-alive' };
 
@@ -142,7 +143,7 @@ var assert = require('assert'),
                                 request: {
                                     requestFrom: 'HERE',
                                     path: '/second',
-                                    query: { q: '2'},
+                                    query: { q: '2' },
                                     method: 'GET',
                                     headers: requestHeaders,
                                     body: ''
@@ -163,7 +164,7 @@ var assert = require('assert'),
 
             promiseIt('should not record matches against stubs if --debug flag is missing', function () {
                 var stub = { responses: [{ is: { body: '1' } }, { is: { body: '2' } }] },
-                    request = { protocol: protocol, port: port, stubs: [stub], name: this.name};
+                    request = { protocol: protocol, port: port, stubs: [stub], name: this.name };
 
                 return mb.start().then(function () {
                     return mb.post('/imposters', request);
@@ -174,7 +175,7 @@ var assert = require('assert'),
                 }).then(function () {
                     return mb.get('/imposters/' + port);
                 }).then(function (response) {
-                    assert.deepEqual(response.body.stubs, [ { responses: [{ is: { body: '1' } }, { is: { body: '2' } }] } ]);
+                    assert.deepEqual(response.body.stubs, [{ responses: [{ is: { body: '1' } }, { is: { body: '2' } }] }]);
                 }).finally(function () {
                     return mb.stop();
                 });
@@ -212,14 +213,14 @@ var assert = require('assert'),
 
             promiseIt('supports returning a replayable body with proxies removed', function () {
                 var imposter = {
-                        protocol: 'http',
-                        port: port + 1,
-                        name: this.name,
-                        stubs: [{ responses: [
-                            { proxy: { to: 'http://www.google.com' } },
-                            { is: { body: 'Hello, World!' } }
-                        ] }]
-                    };
+                    protocol: 'http',
+                    port: port + 1,
+                    name: this.name,
+                    stubs: [{ responses: [
+                        { proxy: { to: 'http://www.google.com' } },
+                        { is: { body: 'Hello, World!' } }
+                    ] }]
+                };
 
                 return api.post('/imposters', imposter).then(function (response) {
                     assert.strictEqual(response.statusCode, 201);

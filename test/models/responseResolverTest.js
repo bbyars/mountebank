@@ -23,7 +23,7 @@ describe('responseResolver', function () {
         });
 
         promiseIt('should post process the result', function () {
-            var postProcess = function (response, request) { return response.toUpperCase() + '-' + request.value;},
+            var postProcess = function (response, request) { return response.toUpperCase() + '-' + request.value; },
                 resolver = ResponseResolver.create({}, postProcess),
                 logger = { debug: mock() },
                 responseConfig = { is: 'value' };
@@ -41,7 +41,10 @@ describe('responseResolver', function () {
 
             return resolver.resolve(responseConfig, 'request', logger, []).then(function (response) {
                 assert.strictEqual(response, 'value');
-                assert.ok(proxy.to.wasCalledWith('where', 'request', { to: 'where', mode: 'proxyOnce' }), proxy.to.message());
+                assert.ok(proxy.to.wasCalledWith('where', 'request', {
+                    to: 'where',
+                    mode: 'proxyOnce'
+                }), proxy.to.message());
             });
         });
 
@@ -67,7 +70,7 @@ describe('responseResolver', function () {
             });
         });
 
-        promiseIt('should resolve "proxy" in "proxyOnce" mode by adding a new "is" stub to the front of the list', function () {
+        promiseIt('should resolve proxy in proxyOnce mode by adding a new "is" stub to the front of the list', function () {
             var proxy = { to: mock().returns(Q('value')) },
                 resolver = ResponseResolver.create(proxy, combinators.identity),
                 logger = { debug: mock() },
@@ -167,7 +170,7 @@ describe('responseResolver', function () {
         promiseIt('should allow "inject" response', function () {
             var resolver = ResponseResolver.create({}, combinators.identity),
                 logger = { debug: mock() },
-                fn = function (request) { return request.key  + ' injected'; },
+                fn = function (request) { return request.key + ' injected'; },
                 responseConfig = { inject: fn.toString() },
                 request = { key: 'request' };
 
@@ -203,7 +206,7 @@ describe('responseResolver', function () {
                     state.counter = state.counter || 0;
                     state.counter += 1;
                     return state.counter;
-                 },
+                },
                 responseConfig = { inject: fn.toString() },
                 request = { key: 'request' };
 
@@ -217,14 +220,13 @@ describe('responseResolver', function () {
 
         promiseIt('should allow asynchronous injection', function () {
             var resolver = ResponseResolver.create({}, combinators.identity),
-                logger = { debug: mock() },
                 fn = function (request, state, logger, callback) {
                     setTimeout(function () { callback('value'); }, 1);
                 },
                 responseConfig = { inject: fn },
                 request = { key: 'request' };
 
-            return resolver.resolve(responseConfig, request, logger, []).then(function (response) {
+            return resolver.resolve(responseConfig, request, { debug: mock() }, []).then(function (response) {
                 assert.strictEqual(response, 'value');
             });
         });
@@ -256,7 +258,7 @@ describe('responseResolver', function () {
         promiseIt('should throw error if multiple response types given', function () {
             var resolver = ResponseResolver.create({}, combinators.identity),
                 logger = { debug: mock() },
-                responseConfig = { is: 'value', proxy: { to: 'http://www.google.com' }};
+                responseConfig = { is: 'value', proxy: { to: 'http://www.google.com' } };
 
             return resolver.resolve(responseConfig, {}, logger, []).then(function () {
                 assert.fail('should not have resolved');

@@ -130,7 +130,7 @@ function normalize (obj, config, encoding, withSelectors) {
 
 function predicateSatisfied (expected, actual, predicate) {
     if (!actual) {
-      return false;
+        return false;
     }
     return Object.keys(expected).every(function (fieldName) {
         var test = function (value) {
@@ -211,7 +211,7 @@ function matches (predicate, request, encoding) {
  */
 function resolve (predicate, request, encoding, logger) {
     var keys = Object.keys(predicate);
-    for (var i = 0; i < keys.length; i++) {
+    for (var i = 0; i < keys.length; i += 1) {
         var key = keys[i],
             predicateFn = module.exports[key];
         if (predicateFn) {
@@ -270,9 +270,8 @@ function and (predicate, request, encoding, logger) {
  * @returns {boolean}
  */
 function inject (predicate, request, encoding, logger) {
-    /* jshint evil: true, unused: false */
     var scope = helpers.clone(request),
-        injected =  '(' + predicate.inject + ')(scope, logger);';
+        injected = '(' + predicate.inject + ')(scope, logger);';
 
     if (request.isDryRun === true) {
         return true;

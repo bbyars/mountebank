@@ -17,7 +17,7 @@ describe('http proxy', function () {
     describe('#to', function () {
         promiseIt('should send same request information to proxied url', function () {
             var proxyRequest = { protocol: 'http', port: port, name: this.name },
-                request = { path: '/PATH', method: 'POST', body: 'BODY', headers: { 'X-Key': 'TRUE' }};
+                request = { path: '/PATH', method: 'POST', body: 'BODY', headers: { 'X-Key': 'TRUE' } };
 
             return api.post('/imposters', proxyRequest).then(function () {
                 return proxy.to('http://localhost:' + port, request, {});
@@ -54,7 +54,7 @@ describe('http proxy', function () {
         });
 
         promiseIt('should proxy to https', function () {
-            var stub = { responses: [{ is: { statusCode: 400, body: 'ERROR' } }]},
+            var stub = { responses: [{ is: { statusCode: 400, body: 'ERROR' } }] },
                 request = { protocol: 'https', port: port, stubs: [stub], name: this.name };
 
             return api.post('/imposters', request).then(function (response) {
@@ -112,31 +112,31 @@ describe('http proxy', function () {
 
         ['application/octet-stream', 'audio/mpeg', 'audio/mp4', 'image/gif', 'image/jpeg',
          'video/avi', 'video/mpeg'].forEach(function (mimeType) {
-            promiseIt('should base64 encode '  + mimeType + ' responses', function () {
-                var buffer = new Buffer([0, 1, 2, 3]),
-                    stub = {
-                        responses: [{
-                            is: {
-                                body: buffer.toString('base64'),
-                                headers: { 'content-type': mimeType },
-                                _mode: 'binary'
-                            }
-                        }]
-                    },
-                    request = { protocol: 'http', port: port, stubs: [stub], name: this.name };
+             promiseIt('should base64 encode ' + mimeType + ' responses', function () {
+                 var buffer = new Buffer([0, 1, 2, 3]),
+                     stub = {
+                         responses: [{
+                             is: {
+                                 body: buffer.toString('base64'),
+                                 headers: { 'content-type': mimeType },
+                                 _mode: 'binary'
+                             }
+                         }]
+                     },
+                     request = { protocol: 'http', port: port, stubs: [stub], name: this.name };
 
-                return api.post('/imposters', request).then(function (response) {
-                    assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body));
+                 return api.post('/imposters', request).then(function (response) {
+                     assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body));
 
-                    return proxy.to('http://localhost:' + port, { path: '/', method: 'GET', headers: {} }, {});
-                }).then(function (response) {
-                    assert.strictEqual(response.body, buffer.toString('base64'));
-                    assert.strictEqual(response._mode, 'binary');
-                }).finally(function () {
-                    return api.del('/imposters');
-                });
-            });
-        });
+                     return proxy.to('http://localhost:' + port, { path: '/', method: 'GET', headers: {} }, {});
+                 }).then(function (response) {
+                     assert.strictEqual(response.body, buffer.toString('base64'));
+                     assert.strictEqual(response._mode, 'binary');
+                 }).finally(function () {
+                     return api.del('/imposters');
+                 });
+             });
+         });
 
         if (process.env.MB_AIRPLANE_MODE !== 'true') {
             promiseIt('should proxy to different host', function () {

@@ -7,7 +7,7 @@
 
 var AbstractServer = require('../abstractServer'),
     Q = require('q'),
-    logger = require('winston'),
+    winston = require('winston'),
     inherit = require('../../util/inherit'),
     helpers = require('../../util/helpers'),
     combinators = require('../../util/combinators'),
@@ -28,11 +28,11 @@ function setup (protocolName, createBaseServer) {
     function postProcess (stub) {
         /* jshint maxcomplexity: 6 */
         var response = {
-                statusCode: stub.statusCode || 200,
-                headers: stub.headers || {},
-                body: stub.body || '',
-                _mode: stub._mode || 'text'
-            };
+            statusCode: stub.statusCode || 200,
+            headers: stub.headers || {},
+            body: stub.body || '',
+            _mode: stub._mode || 'text'
+        };
 
         if (typeof response.body === 'object') {
             // Support JSON response bodies
@@ -118,14 +118,14 @@ function setup (protocolName, createBaseServer) {
      */
     function initialize (allowInjection, recordRequests, debug) {
         var implementation = {
-                protocolName: protocolName,
-                createServer: createServer,
-                Request: HttpRequest
-            };
+            protocolName: protocolName,
+            createServer: createServer,
+            Request: HttpRequest
+        };
 
         return {
             name: protocolName,
-            create: AbstractServer.implement(implementation, recordRequests, debug, logger).create,
+            create: AbstractServer.implement(implementation, recordRequests, debug, winston).create,
             Validator: {
                 create: function () {
                     return DryRunValidator.create({

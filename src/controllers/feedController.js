@@ -6,6 +6,7 @@
  */
 
 var fs = require('fs'),
+    path = require('path'),
     ejs = require('ejs'),
     helpers = require('../util/helpers');
 
@@ -24,7 +25,7 @@ function create (releases, options) {
     }
 
     function releaseFilenameFor (version) {
-        return __dirname + '/../views/' + releaseViewFor(version);
+        return path.join(__dirname, '/../views/', releaseViewFor(version));
     }
 
     /**
@@ -87,9 +88,12 @@ function create (releases, options) {
             };
 
         if (fs.existsSync(releaseFilenameFor(version))) {
-            response.render('_header', config, function (error, header) {
-                response.render(releaseViewFor(version), config, function (error, body) {
-                    response.render('_footer', config, function (error, footer) {
+            response.render('_header', config, function (headerError, header) {
+                if (headerError) { throw headerError; }
+                response.render(releaseViewFor(version), config, function (bodyError, body) {
+                    if (bodyError) { throw bodyError; }
+                    response.render('_footer', config, function (footerError, footer) {
+                        if (footerError) { throw footerError; }
                         response.send(header + body + footer);
                     });
                 });

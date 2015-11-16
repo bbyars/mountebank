@@ -30,9 +30,9 @@ module.exports = function (grunt) {
 
         var done = this.async();
 
-        return getCurrentCommitId().then(function (commitId) {
+        getCurrentCommitId().then(function (commitId) {
             return appveyor.triggerBuild(commitId, version);
-        }).then(function (result) {
+        }).done(function (result) {
             process.env.MB_APPVEYOR_BUILD_NUMBER = result.version;
             console.log('Appveyor build successfully triggered for ' + version + ' => ' + result.version);
             done();
@@ -86,7 +86,7 @@ module.exports = function (grunt) {
 
         var done = this.async();
 
-        return snapci.triggerBuild(version).then(function (result) {
+        snapci.triggerBuild(version).done(function (result) {
             console.log('Snap CI build successfully triggered for ' + version + ' => ' + result.counter);
             done();
         }, function (error) {
@@ -115,10 +115,10 @@ module.exports = function (grunt) {
                 var deferred = Q.defer(),
                     elapsedTime = new Date() - start;
 
-                //process.stdout.write('.');
+                // process.stdout.write('.');
                 process.stdout.write(status + '\n');
                 if (elapsedTime > timeout) {
-                    //process.stdout.write('\n');
+                    // process.stdout.write('\n');
                     deferred.resolve('timeout');
                 }
                 else if (['pending', 'created', 'started'].indexOf(status) < 0) {

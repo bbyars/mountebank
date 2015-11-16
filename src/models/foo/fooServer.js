@@ -118,7 +118,7 @@ function createServer (options, recordRequests, debug) {
             port: actualPort,
             close: function () {
                 server.close();
-                logger.info ('Ciao for now');
+                logger.info('Ciao for now');
             }
         });
     });

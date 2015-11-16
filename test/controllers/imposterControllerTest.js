@@ -18,7 +18,7 @@ describe('ImposterController', function () {
                 },
                 controller = Controller.create(imposters);
 
-            controller.get({ url: '/imposters/2', params: { id: 2 }}, response);
+            controller.get({ url: '/imposters/2', params: { id: 2 } }, response);
 
             assert.strictEqual(response.body, 'secondJSON');
         });
@@ -31,7 +31,7 @@ describe('ImposterController', function () {
                 },
                 controller = Controller.create(imposters);
 
-            controller.get({ url: '/imposters/2?replayable=true', params: { id: 2 }}, response);
+            controller.get({ url: '/imposters/2?replayable=true', params: { id: 2 } }, response);
 
             assert.strictEqual(response.body, 'secondJSON');
             assert.ok(imposters['2'].toJSON.wasCalledWith({ replayable: true, removeProxies: false }), imposters['2'].toJSON.message());
@@ -45,7 +45,7 @@ describe('ImposterController', function () {
                 },
                 controller = Controller.create(imposters);
 
-            controller.get({ url: '/imposters/2?removeProxies=true', params: { id: 2 }}, response);
+            controller.get({ url: '/imposters/2?removeProxies=true', params: { id: 2 } }, response);
 
             assert.strictEqual(response.body, 'secondJSON');
             assert.ok(imposters['2'].toJSON.wasCalledWith({ replayable: false, removeProxies: true }), imposters['2'].toJSON.message());
@@ -59,7 +59,7 @@ describe('ImposterController', function () {
                 },
                 controller = Controller.create(imposters);
 
-            controller.get({ url: '/imposters/2?removeProxies=true&replayable=true', params: { id: 2 }}, response);
+            controller.get({ url: '/imposters/2?removeProxies=true&replayable=true', params: { id: 2 } }, response);
 
             assert.strictEqual(response.body, 'secondJSON');
             assert.ok(imposters['2'].toJSON.wasCalledWith({ replayable: true, removeProxies: true }), imposters['2'].toJSON.message());
@@ -73,7 +73,7 @@ describe('ImposterController', function () {
                 },
                 controller = Controller.create(imposters);
 
-            controller.get({ url: '/imposters/2?replayable=false&removeProxies=false', params: { id: 2 }}, response);
+            controller.get({ url: '/imposters/2?replayable=false&removeProxies=false', params: { id: 2 } }, response);
 
             assert.strictEqual(response.body, 'secondJSON');
             assert.ok(imposters['2'].toJSON.wasCalledWith({ replayable: false, removeProxies: false }), imposters['2'].toJSON.message());
@@ -89,7 +89,7 @@ describe('ImposterController', function () {
                 },
                 controller = Controller.create({ 1: imposter });
 
-            return controller.del({ url: '/imposters/1', params: { id: 1 }}, response).then(function () {
+            return controller.del({ url: '/imposters/1', params: { id: 1 } }, response).then(function () {
                 assert(imposter.stop.wasCalled());
             });
         });
@@ -104,7 +104,7 @@ describe('ImposterController', function () {
                 },
                 controller = Controller.create(imposters);
 
-            return controller.del({ url: '/imposters/1', params: { id: 1 }}, response).then(function () {
+            return controller.del({ url: '/imposters/1', params: { id: 1 } }, response).then(function () {
                 assert.deepEqual(imposters, {});
             });
         });
@@ -114,7 +114,7 @@ describe('ImposterController', function () {
                 imposters = {},
                 controller = Controller.create(imposters);
 
-            return controller.del({ url: '/imposters/1', params: { id: 1 }}, response).then(function () {
+            return controller.del({ url: '/imposters/1', params: { id: 1 } }, response).then(function () {
                 assert.deepEqual(response.body, {});
             });
         });
@@ -127,7 +127,7 @@ describe('ImposterController', function () {
                 },
                 controller = Controller.create({ 1: imposter });
 
-            return controller.del({ url: '/imposters/1?replayable=true', params: { id: 1 }}, response).then(function () {
+            return controller.del({ url: '/imposters/1?replayable=true', params: { id: 1 } }, response).then(function () {
                 assert.ok(imposter.toJSON.wasCalledWith({ replayable: true, removeProxies: false }), imposter.toJSON.message());
             });
         });
@@ -140,7 +140,7 @@ describe('ImposterController', function () {
                 },
                 controller = Controller.create({ 1: imposter });
 
-            return controller.del({ url: '/imposters/1?removeProxies=true', params: { id: 1 }}, response).then(function () {
+            return controller.del({ url: '/imposters/1?removeProxies=true', params: { id: 1 } }, response).then(function () {
                 assert.ok(imposter.toJSON.wasCalledWith({ replayable: false, removeProxies: true }), imposter.toJSON.message());
             });
         });
@@ -153,7 +153,7 @@ describe('ImposterController', function () {
                 },
                 controller = Controller.create({ 1: imposter });
 
-            return controller.del({ url: '/imposters/1?removeProxies=true&replayable=true', params: { id: 1 }}, response).then(function () {
+            return controller.del({ url: '/imposters/1?removeProxies=true&replayable=true', params: { id: 1 } }, response).then(function () {
                 assert.ok(imposter.toJSON.wasCalledWith({ replayable: true, removeProxies: true }), imposter.toJSON.message());
             });
         });
@@ -166,7 +166,7 @@ describe('ImposterController', function () {
                 },
                 controller = Controller.create({ 1: imposter });
 
-            return controller.del({ url: '/imposters/1', params: { id: 1 }}, response).then(function () {
+            return controller.del({ url: '/imposters/1', params: { id: 1 } }, response).then(function () {
                 assert.ok(imposter.toJSON.wasCalledWith({ replayable: false, removeProxies: false }), imposter.toJSON.message());
             });
         });

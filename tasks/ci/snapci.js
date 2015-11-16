@@ -6,7 +6,7 @@ var Q = require('q'),
 
 function responseFor (options) {
     if (!apiToken) {
-        throw 'SNAPCI_API_KEY environment variable must be set';
+        throw new Error('SNAPCI_API_KEY environment variable must be set');
     }
 
     var deferred = Q.defer(),

@@ -13,7 +13,7 @@ describe('tcp imposter', function () {
 
     describe('POST /imposters with injections', function () {
         promiseIt('should allow javascript predicate for matching', function () {
-            var fn = function (request) { return request.data.toString() === 'test';},
+            var fn = function (request) { return request.data.toString() === 'test'; },
                 stub = {
                     predicates: [{ inject: fn.toString() }],
                     responses: [{ is: { data: 'MATCHED' } }]
@@ -46,10 +46,10 @@ describe('tcp imposter', function () {
 
         promiseIt('should allow javascript injection to keep state between requests', function () {
             var fn = function (request, state) {
-                        if (!state.calls) { state.calls = 0; }
-                        state.calls += 1;
-                        return { data: state.calls.toString() };
-                    },
+                    if (!state.calls) { state.calls = 0; }
+                    state.calls += 1;
+                    return { data: state.calls.toString() };
+                },
                 stub = { responses: [{ inject: fn.toString() }] },
                 request = { protocol: 'tcp', port: port, stubs: [stub], name: this.name };
 
@@ -86,7 +86,12 @@ describe('tcp imposter', function () {
         promiseIt('should allow asynchronous injection', function () {
             var originServerPort = port + 1,
                 originServerStub = { responses: [{ is: { body: 'origin server' } }] },
-                originServerRequest = { protocol: 'http', port: originServerPort, stubs: [originServerStub], name: this.name + ' origin' },
+                originServerRequest = {
+                    protocol: 'http',
+                    port: originServerPort,
+                    stubs: [originServerStub],
+                    name: this.name + ' origin'
+                },
                 fn = function (request, state, logger, callback) {
                     var net = require('net'),
                         options = {
@@ -97,7 +102,7 @@ describe('tcp imposter', function () {
                             socket.end(request.data + '\n');
                         });
                     socket.once('data', function (data) {
-                        callback({data: data});
+                        callback({ data: data });
                     });
                     // No return value!!!
                 },
@@ -105,7 +110,7 @@ describe('tcp imposter', function () {
 
             return api.post('/imposters', originServerRequest).then(function (response) {
                 assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body, null, 4));
-                return api.post('/imposters', {protocol: 'tcp', port: port, stubs: [stub]});
+                return api.post('/imposters', { protocol: 'tcp', port: port, stubs: [stub] });
             }).then(function (response) {
                 assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body));
                 return tcp.send('GET / HTTP/1.1\r\nHost: www.google.com\r\n\r', port);
@@ -122,7 +127,7 @@ describe('tcp imposter', function () {
                     var buffer = new Buffer(length + 4);
                     buffer.writeUInt32LE(length, 0);
 
-                    for (var i = 0; i < length; i++) {
+                    for (var i = 0; i < length; i += 1) {
                         buffer.writeInt8(0, i + 4);
                     }
                     return buffer;

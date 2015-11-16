@@ -20,7 +20,7 @@ function parse (text) {
     var lines = text.split('\n'),
         message = { to: [], cc: [], bcc: [] };
 
-    for (var i = 0; i < lines.length; i++) {
+    for (var i = 0; i < lines.length; i += 1) {
         if (lines[i].trim() === '') {
             break;
         }

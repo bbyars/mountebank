@@ -57,7 +57,7 @@ describe('tcp imposter', function () {
         promiseIt('should allow a sequence of stubs as a circular buffer', function () {
             var stub = {
                     predicates: [{ equals: { data: 'request' } }],
-                    responses: [{ is: { data: 'first' }}, { is: { data: 'second' }}]
+                    responses: [{ is: { data: 'first' } }, { is: { data: 'second' } }]
                 },
                 request = { protocol: 'tcp', port: port, stubs: [stub], name: this.name };
 
@@ -84,7 +84,7 @@ describe('tcp imposter', function () {
 
         promiseIt('should only return stubbed response if matches complex predicate', function () {
             var stub = {
-                    responses: [{ is: { data: 'MATCH' }}],
+                    responses: [{ is: { data: 'MATCH' } }],
                     predicates: [
                         { equals: { data: 'test' } },
                         { startsWith: { data: 'te' } }
@@ -108,7 +108,7 @@ describe('tcp imposter', function () {
 
         promiseIt('should return 400 if uses matches predicate with binary mode', function () {
             var stub = {
-                    responses: [{ is: { data: 'dGVzdA==' }}],
+                    responses: [{ is: { data: 'dGVzdA==' } }],
                     predicates: [{ matches: { data: 'dGVzdA==' } }]
                 },
                 request = { protocol: 'tcp', port: port, mode: 'binary', stubs: [stub] };
@@ -157,9 +157,14 @@ describe('tcp imposter', function () {
         promiseIt('should support decorating response from origin server', function () {
             var originServerPort = port + 1,
                 originServerStub = { responses: [{ is: { data: 'ORIGIN' } }] },
-                originServerRequest = { protocol: 'tcp', port: originServerPort, stubs: [originServerStub], name: this.name + ' ORIGIN' },
+                originServerRequest = {
+                    protocol: 'tcp',
+                    port: originServerPort,
+                    stubs: [originServerStub],
+                    name: this.name + ' ORIGIN'
+                },
                 decorator = function (request, response) {
-                    response.data = response.data + ' DECORATED';
+                    response.data += ' DECORATED';
                 },
                 proxyResponse = {
                     proxy: { to: 'tcp://localhost:' + originServerPort },
@@ -199,8 +204,8 @@ describe('tcp imposter', function () {
                 return api.get('/imposters/' + port);
             }).then(function (response) {
                 var requests = response.body.requests,
-                    dataLength = requests.reduce(function (sum, request) {
-                        return sum + request.data.length;
+                    dataLength = requests.reduce(function (sum, recordedRequest) {
+                        return sum + recordedRequest.data.length;
                     }, 0);
                 assert.ok(requests.length > 1);
                 assert.strictEqual(65537, dataLength);

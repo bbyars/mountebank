@@ -55,7 +55,7 @@ describe('helpers', function () {
 
         it('should use second parameter for conflict resolution', function () {
             var defaults = { onlyInDefault: 1, inBoth: 1 },
-                overrides = { onlyInOverrides: 2, inBoth: 2};
+                overrides = { onlyInOverrides: 2, inBoth: 2 };
 
             var merged = helpers.merge(defaults, overrides);
 

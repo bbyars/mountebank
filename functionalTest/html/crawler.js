@@ -9,11 +9,11 @@ var jsdom = require('jsdom'),
     whitelistPatterns = ['https://s3.amazonaws.com', '^#'];
 
 function parseLinksFrom (window) {
-    //console.log(jsdom.serializeDocument(window.document));
+    // console.log(jsdom.serializeDocument(window.document));
     var links = [],
         anchorTags = window.document.getElementsByTagName('a');
-    for (var i = 0; i < anchorTags.length; i++) {
-        var href = anchorTags[i].attributes.href ? anchorTags[i].attributes.href.value : undefined;
+    for (var i = 0; i < anchorTags.length; i += 1) {
+        var href = anchorTags[i].attributes.href ? anchorTags[i].attributes.href.value : null;
         if (href) {
             if (href.indexOf('/') === 0) {
                 href = 'http://localhost:' + api.port + href;
@@ -95,7 +95,7 @@ function create () {
         if (isWhitelisted(startingUrl)) {
             return Q(true);
         }
-        else if (isBadLink (startingUrl)) {
+        else if (isBadLink(startingUrl)) {
             addError(startingUrl, referrer);
             return Q(true);
         }

@@ -113,7 +113,7 @@ module.exports = function (grunt) {
 
         run('sudo', ['dpkg', '-r', 'mountebank'], { cwd: testDir }).done(function () {
             if (fs.existsSync('/usr/local/bin/mb')) {
-                throw 'Uninstalling debian package did not remove /usr/local/bin/mb';
+                throw new Error('Uninstalling debian package did not remove /usr/local/bin/mb');
             }
             done();
         }, failTask('uninstall:deb'));
@@ -138,7 +138,7 @@ module.exports = function (grunt) {
 
         run('sudo', ['yum', 'remove', 'mountebank'], { cwd: testDir }).done(function () {
             if (fs.existsSync('/usr/local/bin/mb')) {
-                throw 'Uninstalling Red Hat package did not remove /usr/local/bin/mb';
+                throw new Error('Uninstalling Red Hat package did not remove /usr/local/bin/mb');
             }
             done();
         }, failTask('uninstall:rpm'));

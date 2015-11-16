@@ -34,7 +34,7 @@ function error (message) {
     process.exit(1);
 }
 
-function processExists(pid) {
+function processExists (pid) {
     try {
         // "As a special case, signal 0 can be used to test existence of process"
         // https://nodejs.org/api/process.html#process_process_kill_pid_signal
@@ -59,16 +59,16 @@ function serverAt (options) {
 
     return {
         start: function () {
-            var server = mountebank.create(options);
+            var server = mountebank.create(options),
+                shutdown = function shutdown () {
+                    if (fs.existsSync(options.pidfile)) {
+                        fs.unlinkSync(options.pidfile);
+                    }
+                    server.close();
+                    process.exit();
+                };
 
             fs.writeFileSync(options.pidfile, process.pid.toString());
-            var shutdown = function shutdown () {
-                if (fs.existsSync(options.pidfile)) {
-                    fs.unlinkSync(options.pidfile);
-                }
-                server.close();
-                process.exit();
-            };
             process.on('SIGINT', shutdown);
             process.on('SIGTERM', shutdown);
         },

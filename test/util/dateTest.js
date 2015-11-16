@@ -13,7 +13,7 @@ describe('date', function () {
             assert.strictEqual(date.howLongAgo('2015-01-09', '2015-01-10'), 'yesterday');
         });
 
-        it('should be yesterday for last day of previous month if today is the first day of this month in same year', function () {
+        it('should be yesterday for last day of previous month if today is the first day of next month', function () {
             assert.strictEqual(date.howLongAgo('2015-01-31', '2015-02-01'), 'yesterday');
         });
 

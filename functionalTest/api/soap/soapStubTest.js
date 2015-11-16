@@ -6,16 +6,17 @@ var assert = require('assert'),
     port = api.port + 1,
     timeout = parseInt(process.env.MB_SLOW_TEST_TIMEOUT || 2000),
     http = require('../http/baseHttpClient').create('http'),
-    fs = require('fs');
+    fs = require('fs'),
+    path = require('path');
 
 describe('soap imposter', function () {
     this.timeout(timeout);
 
     describe('POST /imposters with stubs', function () {
-        promiseIt('should default to 202 response and one way message exchange pattern and record method name and parameters', function () {
-            var request = { protocol: 'soap', port: port, name: this.name };
+        promiseIt('should default to 202 response and one way message exchange pattern', function () {
+            var imposterRequest = { protocol: 'soap', port: port, name: this.name };
 
-            return api.post('/imposters', request).then(function (response) {
+            return api.post('/imposters', imposterRequest).then(function (response) {
                 assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body));
 
                 var body = '<?xml version="1.0"?>\n' +
@@ -58,7 +59,7 @@ describe('soap imposter', function () {
 
         promiseIt('should return stubbed response', function () {
             // example borrowed from the sample that ships with SOAP UI
-            var wsdl = fs.readFileSync(__dirname + '/wsdl/sample-service.wsdl', 'utf8').replace('$PORT', port),
+            var wsdl = fs.readFileSync(path.join(__dirname, '/wsdl/sample-service.wsdl'), 'utf8').replace('$PORT', port),
                 stub = {
                     predicates: [{
                         equals: {
@@ -114,7 +115,7 @@ describe('soap imposter', function () {
         });
 
         promiseIt('should add default response answers', function () {
-            var wsdl = fs.readFileSync(__dirname + '/wsdl/sample-service.wsdl', 'utf8').replace('$PORT', port),
+            var wsdl = fs.readFileSync(path.join(__dirname, '/wsdl/sample-service.wsdl'), 'utf8').replace('$PORT', port),
                 stub = {
                     responses: [{ is: {} }]
                 },

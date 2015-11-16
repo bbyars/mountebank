@@ -124,13 +124,13 @@ describe('predicates', function () {
         });
 
         it('should return true if any value in a multi-value key is equal', function () {
-            var predicate = { equals: { query: { key: '234' } }},
+            var predicate = { equals: { query: { key: '234' } } },
                 request = { query: { key: ['123', '234'] } };
             assert.ok(predicates.equals(predicate, request));
         });
 
         it('should return false if no value in a multi-value key is equal', function () {
-            var predicate = { equals: { query: { key: '23' } }},
+            var predicate = { equals: { query: { key: '23' } } },
                 request = { query: { key: ['123', '234'] } };
             assert.ok(!predicates.equals(predicate, request));
         });
@@ -367,19 +367,19 @@ describe('predicates', function () {
         });
 
         it('should return true if repeating query key contains value', function () {
-            var predicate = { contains: { query: { key: '123' } }},
+            var predicate = { contains: { query: { key: '123' } } },
                 request = { query: { key: ['123', '234'] } };
             assert.ok(predicates.contains(predicate, request));
         });
 
         it('should return true if repeating query key contains value with the right substring', function () {
-            var predicate = { contains: { query: { key: 'mid' } }},
+            var predicate = { contains: { query: { key: 'mid' } } },
                 request = { query: { key: ['begin', 'middle', 'end'] } };
             assert.ok(predicates.contains(predicate, request));
         });
 
         it('should return false if repeating query key does not contain value', function () {
-            var predicate = { contains: { query: { key: 'bid' } }},
+            var predicate = { contains: { query: { key: 'bid' } } },
                 request = { query: { key: ['begin', 'middle', 'end'] } };
             assert.ok(!predicates.contains(predicate, request));
         });
@@ -441,13 +441,13 @@ describe('predicates', function () {
         });
 
         it('should return true if repeating query key has value starting with string', function () {
-            var predicate = { startsWith: { query: { key: 'mid' } }},
+            var predicate = { startsWith: { query: { key: 'mid' } } },
                 request = { query: { key: ['begin', 'middle', 'end'] } };
             assert.ok(predicates.startsWith(predicate, request));
         });
 
         it('should return false if repeating query key does not have value starting with string', function () {
-            var predicate = { startsWith: { query: { key: 'egin' } }},
+            var predicate = { startsWith: { query: { key: 'egin' } } },
                 request = { query: { key: ['begin', 'middle', 'end'] } };
             assert.ok(!predicates.startsWith(predicate, request));
         });
@@ -497,25 +497,25 @@ describe('predicates', function () {
         });
 
         it('should return true if ends with binary sequence and encoding is base64', function () {
-            var predicate = { endsWith: {  field: new Buffer([2, 3, 4]).toString('base64') } },
+            var predicate = { endsWith: { field: new Buffer([2, 3, 4]).toString('base64') } },
                 request = { field: new Buffer([1, 2, 3, 4]).toString('base64') };
             assert.ok(predicates.endsWith(predicate, request, 'base64'));
         });
 
         it('should return false if does not end with binary sequence and encoding is base64', function () {
-            var predicate = { endsWith: {  field: new Buffer([1, 2, 3]).toString('base64') } },
+            var predicate = { endsWith: { field: new Buffer([1, 2, 3]).toString('base64') } },
                 request = { field: new Buffer([1, 2, 3, 4]).toString('base64') };
             assert.ok(!predicates.endsWith(predicate, request, 'base64'));
         });
 
         it('should return true if repeating query key has value ending with string', function () {
-            var predicate = { endsWith: { query: { key: 'gin' } }},
+            var predicate = { endsWith: { query: { key: 'gin' } } },
                 request = { query: { key: ['begin', 'middle', 'end'] } };
             assert.ok(predicates.endsWith(predicate, request));
         });
 
         it('should return false if repeating query key does not have value ending with string', function () {
-            var predicate = { endsWith: { query: { key: 'begi' } }},
+            var predicate = { endsWith: { query: { key: 'begi' } } },
                 request = { query: { key: ['begin', 'middle', 'end'] } };
             assert.ok(!predicates.endsWith(predicate, request));
         });
@@ -584,13 +584,13 @@ describe('predicates', function () {
         });
 
         it('should return true if repeating query key has value matching string', function () {
-            var predicate = { matches: { query: { key: 'iddle$' } }},
+            var predicate = { matches: { query: { key: 'iddle$' } } },
                 request = { query: { key: ['begin', 'middle', 'end'] } };
             assert.ok(predicates.matches(predicate, request));
         });
 
         it('should return false if repeating query key does not have value matching string', function () {
-            var predicate = { matches: { query: { key: '^iddle' } }},
+            var predicate = { matches: { query: { key: '^iddle' } } },
                 request = { query: { key: ['begin', 'middle', 'end'] } };
             assert.ok(!predicates.matches(predicate, request));
         });
@@ -755,7 +755,7 @@ describe('predicates', function () {
         });
 
         it('should not run injection during dry run validation', function () {
-            var fn = function () { throw 'BOOM!'; },
+            var fn = function () { throw new Error('BOOM!'); },
                 predicate = { inject: fn.toString() },
                 request = { isDryRun: true };
             assert.ok(predicates.inject(predicate, request));
@@ -1003,7 +1003,8 @@ describe('predicates', function () {
             assert.ok(predicates.equals(predicate, request));
         });
 
-        it('#equals should be false if no nodes match the selector (despite namespace aliases matching, urls do not)', function () {
+        it('#equals should be false if no nodes match the selector', function () {
+            // despite namespace aliases matching, urls do not
             var predicate = {
                     equals: { field: 'Second' },
                     xpath: {

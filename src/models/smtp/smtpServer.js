@@ -43,6 +43,7 @@ function createServer () {
     };
 
     result.listen = function (port) {
+        /* eslint-disable no-underscore-dangle */
         var deferred = Q.defer();
         server.listen(port, function () { deferred.resolve(server.server.SMTPServer._server.address().port); });
         return deferred.promise;

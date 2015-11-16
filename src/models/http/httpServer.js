@@ -16,6 +16,7 @@ var baseHttpServer = require('./baseHttpServer'),
     };
 
 function patchRawHeaders () {
+    /* eslint-disable no-underscore-dangle */
     var requestPrototype = http.IncomingMessage.prototype,
         _addHeaderLine = requestPrototype._addHeaderLine;
 

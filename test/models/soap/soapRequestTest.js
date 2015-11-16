@@ -34,8 +34,8 @@ describe('SoapRequest', function () {
             httpRequest.socket = { remoteAddress: 'HOST', remotePort: 'PORT' };
 
             var promise = SoapRequest.createFrom(httpRequest).then(function (soapRequest) {
-                    assert.strictEqual(soapRequest.http.requestFrom, 'HOST:PORT');
-                });
+                assert.strictEqual(soapRequest.http.requestFrom, 'HOST:PORT');
+            });
 
             httpRequest.emit('data', defaultBody);
             httpRequest.emit('end');
@@ -47,8 +47,8 @@ describe('SoapRequest', function () {
             httpRequest.method = 'METHOD';
 
             var promise = SoapRequest.createFrom(httpRequest).then(function (soapRequest) {
-                    assert.strictEqual(soapRequest.http.method, 'METHOD');
-                });
+                assert.strictEqual(soapRequest.http.method, 'METHOD');
+            });
 
             httpRequest.emit('data', defaultBody);
             httpRequest.emit('end');
@@ -76,9 +76,9 @@ describe('SoapRequest', function () {
             httpRequest.url = 'http://localhost/path?key=value';
 
             var promise = SoapRequest.createFrom(httpRequest).then(function (soapRequest) {
-                    assert.strictEqual(soapRequest.http.path, '/path');
-                    assert.deepEqual(soapRequest.http.query, { key: 'value' });
-                });
+                assert.strictEqual(soapRequest.http.path, '/path');
+                assert.deepEqual(soapRequest.http.query, { key: 'value' });
+            });
 
             httpRequest.emit('data', defaultBody);
             httpRequest.emit('end');
@@ -88,8 +88,8 @@ describe('SoapRequest', function () {
 
         promiseIt('should set body from data events', function () {
             var promise = SoapRequest.createFrom(httpRequest).then(function (soapRequest) {
-                    assert.strictEqual(soapRequest.http.body, defaultBody);
-                });
+                assert.strictEqual(soapRequest.http.body, defaultBody);
+            });
 
             httpRequest.emit('data', defaultBody);
             httpRequest.emit('end');

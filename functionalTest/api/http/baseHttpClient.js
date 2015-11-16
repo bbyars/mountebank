@@ -11,10 +11,10 @@ function create (protocol) {
 
     function optionsFor (spec) {
         var defaults = {
-                hostname: 'localhost',
-                headers: { accept: 'application/json' },
-                rejectUnauthorized: false
-            };
+            hostname: 'localhost',
+            headers: { accept: 'application/json' },
+            rejectUnauthorized: false
+        };
 
         return helpers.merge(defaults, spec);
     }
@@ -55,7 +55,7 @@ function create (protocol) {
         request.on('error', deferred.reject);
 
         if (spec.body) {
-            if (typeof(spec.body) === 'object') {
+            if (typeof spec.body === 'object') {
                 request.write(JSON.stringify(spec.body));
             }
             else {

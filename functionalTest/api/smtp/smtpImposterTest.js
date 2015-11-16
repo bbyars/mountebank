@@ -25,9 +25,9 @@ describe('smtp imposter', function () {
 
     describe('GET /imposters/:id', function () {
         promiseIt('should provide access to all requests', function () {
-            var request = { protocol: 'smtp', port: port, name: this.name };
+            var imposterRequest = { protocol: 'smtp', port: port, name: this.name };
 
-            return api.post('/imposters', request).then(function () {
+            return api.post('/imposters', imposterRequest).then(function () {
                 return client.send({
                     envelopeFrom: 'envelopeFrom1@mb.org',
                     envelopeTo: ['envelopeTo1@mb.org'],
@@ -64,7 +64,7 @@ describe('smtp imposter', function () {
                         envelopeFrom: 'envelopeFrom1@mb.org',
                         envelopeTo: ['envelopeTo1@mb.org'],
                         from: { address: 'from1@mb.org', name: 'From 1' },
-                        to: [{ address: 'to1@mb.org', 'name': 'To 1' }],
+                        to: [{ address: 'to1@mb.org', name: 'To 1' }],
                         cc: [],
                         bcc: [],
                         subject: 'subject 1',
@@ -81,7 +81,7 @@ describe('smtp imposter', function () {
                         envelopeFrom: 'envelopeFrom2@mb.org',
                         envelopeTo: ['envelopeTo2@mb.org'],
                         from: { address: 'from2@mb.org', name: 'From 2' },
-                        to: [{ address: 'to2@mb.org', 'name': 'To 2' }],
+                        to: [{ address: 'to2@mb.org', name: 'To 2' }],
                         cc: [],
                         bcc: [],
                         subject: 'subject 2',

@@ -28,7 +28,7 @@ function createTestRequest () {
 function headersFor (rawHeaders) {
     var result = {};
     for (var i = 0; i < rawHeaders.length; i += 2) {
-        result[rawHeaders[i]] = rawHeaders[i+1];
+        result[rawHeaders[i]] = rawHeaders[i + 1];
     }
     return result;
 }

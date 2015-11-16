@@ -6,7 +6,7 @@ var Q = require('q'),
 
 function responseFor (options) {
     if (!apiToken) {
-        throw 'TRAVIS_API_TOKEN environment variable must be set';
+        throw new Error('TRAVIS_API_TOKEN environment variable must be set');
     }
 
     var deferred = Q.defer();

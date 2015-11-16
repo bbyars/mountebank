@@ -6,23 +6,24 @@ var assert = require('assert'),
     port = api.port + 1,
     timeout = parseInt(process.env.MB_SLOW_TEST_TIMEOUT || 4000),
     fs = require('fs'),
+    path = require('path'),
     client = require('../http/baseHttpClient').create('https'),
-    key = fs.readFileSync(__dirname + '/cert/key.pem', 'utf8'),
-    cert = fs.readFileSync(__dirname + '/cert/cert.pem', 'utf8'),
-    defaultKey = fs.readFileSync(__dirname + '/../../../src/models/https/cert/mb-key.pem', 'utf8'),
-    defaultCert = fs.readFileSync(__dirname + '/../../../src/models/https/cert/mb-cert.pem', 'utf8');
+    key = fs.readFileSync(path.join(__dirname, '/cert/key.pem'), 'utf8'),
+    cert = fs.readFileSync(path.join(__dirname, '/cert/cert.pem'), 'utf8'),
+    defaultKey = fs.readFileSync(path.join(__dirname, '/../../../src/models/https/cert/mb-key.pem'), 'utf8'),
+    defaultCert = fs.readFileSync(path.join(__dirname, '/../../../src/models/https/cert/mb-cert.pem'), 'utf8');
 
 describe('https imposter', function () {
     this.timeout(timeout);
 
     promiseIt('should support sending key/cert pair during imposter creation', function () {
         var request = {
-                protocol: 'https',
-                port: port,
-                key: key,
-                cert: cert,
-                name: this.name
-            };
+            protocol: 'https',
+            port: port,
+            key: key,
+            cert: cert,
+            name: this.name
+        };
 
         return api.post('/imposters', request).then(function (response) {
             assert.strictEqual(response.statusCode, 201);

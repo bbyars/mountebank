@@ -117,9 +117,7 @@ function createServer (options, recordRequests, debug) {
             }).then(function (stubResponse) {
                 response.writeHead(stubResponse.http.statusCode, stubResponse.http.headers);
                 response.end(stubResponse.http.body, 'utf8');
-                return stubResponse;
-            }).done(function (response) {
-                logger.debug('%s <= %s', clientName, JSON.stringify(response));
+                logger.debug('%s <= %s', clientName, JSON.stringify(stubResponse));
             }, errorHandler);
         });
     });
@@ -146,7 +144,7 @@ function createServer (options, recordRequests, debug) {
             port: actualPort,
             close: function () {
                 server.close();
-                logger.info ('Ciao for now');
+                logger.info('Ciao for now');
             }
         });
     });

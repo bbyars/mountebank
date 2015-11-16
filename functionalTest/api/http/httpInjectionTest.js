@@ -15,7 +15,7 @@ var assert = require('assert'),
     describe(protocol + ' imposter', function () {
         if (isWindows) {
             // slower process startup time because Windows
-            this.timeout(timeout*2);
+            this.timeout(timeout * 2);
         }
         else {
             this.timeout(timeout);
@@ -24,7 +24,7 @@ var assert = require('assert'),
         describe('POST /imposters with injections', function () {
             promiseIt('should allow javascript predicate for matching', function () {
                 // note the lower-case keys for headers!!!
-                var fn = function (request) { return request.path === '/test';},
+                var fn = function (request) { return request.path === '/test'; },
                     stub = {
                         predicates: [{ inject: fn.toString() }],
                         responses: [{ is: { body: 'MATCHED' } }]
@@ -35,15 +35,15 @@ var assert = require('assert'),
                     assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body));
 
                     var spec = {
-                            path: '/test?key=value',
-                            port: port,
-                            method: 'POST',
-                            headers: {
-                                'X-Test': 'test header',
-                                'Content-Type': 'text/plain'
-                            },
-                            body: 'BODY'
-                        };
+                        path: '/test?key=value',
+                        port: port,
+                        method: 'POST',
+                        headers: {
+                            'X-Test': 'test header',
+                            'Content-Type': 'text/plain'
+                        },
+                        body: 'BODY'
+                    };
                     return client.responseFor(spec);
                 }).then(function (response) {
                     assert.strictEqual(response.body, 'MATCHED');
@@ -83,7 +83,7 @@ var assert = require('assert'),
             });
 
             promiseIt('should not validate a bad response injection', function () {
-                var fn = function () { throw('BOOM'); },
+                var fn = function () { throw new Error('BOOM'); },
                     stub = { responses: [{ inject: fn.toString() }] },
                     request = { protocol: protocol, port: port, stubs: [stub], name: this.name };
 
@@ -96,10 +96,10 @@ var assert = require('assert'),
 
             promiseIt('should allow javascript injection to keep state between requests', function () {
                 var fn = function (request, state) {
-                            if (!state.calls) { state.calls = 0; }
-                            state.calls += 1;
-                            return { body: state.calls.toString() };
-                        },
+                        if (!state.calls) { state.calls = 0; }
+                        state.calls += 1;
+                        return { body: state.calls.toString() };
+                    },
                     stub = { responses: [{ inject: fn.toString() }] },
                     request = { protocol: protocol, port: port, stubs: [stub], name: this.name };
 
@@ -161,8 +161,8 @@ var assert = require('assert'),
                             httpRequest.end();
                             // No return value!!!
                         },
-                        stub = {responses: [{inject: fn.toString()}]},
-                        request = {protocol: protocol, port: port, stubs: [stub], name: this.name};
+                        stub = { responses: [{ inject: fn.toString() }] },
+                        request = { protocol: protocol, port: port, stubs: [stub], name: this.name };
 
                     return api.post('/imposters', request).then(function (response) {
                         assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body));

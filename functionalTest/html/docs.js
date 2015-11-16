@@ -84,7 +84,7 @@ function get (endpoint) {
         var elements = window.document.getElementsByTagName('code'),
             tests = {};
 
-        for (var i = 0; i < elements.length; i++) {
+        for (var i = 0; i < elements.length; i += 1) {
             var element = elements[i],
                 testId = getAttribute(element, 'data-test-id'),
                 testSpec = {

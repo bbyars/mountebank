@@ -16,7 +16,7 @@ var assert = require('assert'),
 describe('mb command line', function () {
     if (isWindows) {
         // slower process startup time because Windows
-        this.timeout(timeout*5);
+        this.timeout(timeout * 5);
     }
     else {
         this.timeout(timeout);
@@ -73,8 +73,10 @@ describe('mb command line', function () {
 
     // This is the response resolver injection example on /docs/api/injection
     promiseIt('should evaluate stringify function in templates when loading configuration files', function () {
+        var args = ['--configfile', path.join(__dirname, 'templates/imposters.ejs'), '--allowInjection'];
+
         // Delay because we need to wait long enough for the imposters to be created
-        return mb.start(['--configfile', path.join(__dirname, 'templates/imposters.ejs'), '--allowInjection']).delay(500).then(function () {
+        return mb.start(args).delay(500).then(function () {
             return http.get('/first', 4546);
         }).then(function (response) {
             assert.deepEqual(response.body, { count: 1 });

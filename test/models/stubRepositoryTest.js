@@ -39,16 +39,17 @@ describe('stubRepository', function () {
                 stubs = StubRepository.create({ resolve: resolver }),
                 logger = { debug: mock() },
                 request = { field: '2' },
-                firstStub = { predicates: [{ equals: { field: '1' }}], responses: ['first stub'] },
-                secondStub = { predicates: [{ equals: { field: '2' }}], responses: ['second stub'] },
-                thirdStub = { predicates: [{ equals: { field: '2' }}], responses: ['third stub'] };
+                firstStub = { predicates: [{ equals: { field: '1' } }], responses: ['first stub'] },
+                secondStub = { predicates: [{ equals: { field: '2' } }], responses: ['second stub'] },
+                thirdStub = { predicates: [{ equals: { field: '2' } }], responses: ['third stub'] };
 
             stubs.addStub(firstStub);
             stubs.addStub(secondStub);
             stubs.addStub(thirdStub);
 
             return stubs.resolve(request, logger).then(function () {
-                assert.ok(resolver.wasCalledWith('second stub', request, logger, [firstStub, secondStub, thirdStub]), resolver.message());
+                assert.ok(resolver.wasCalledWith('second stub', request, logger,
+                    [firstStub, secondStub, thirdStub]), resolver.message());
             });
         });
 
@@ -78,7 +79,7 @@ describe('stubRepository', function () {
                 logger = { debug: mock() },
                 matchingRequest = { field: 'value' },
                 mismatchingRequest = { field: 'other' },
-                stub = { predicates: [{ equals: { field: 'value' }}], responses: ['first response'] };
+                stub = { predicates: [{ equals: { field: 'value' } }], responses: ['first response'] };
 
             stubs.addStub(stub);
 
@@ -96,7 +97,7 @@ describe('stubRepository', function () {
                 logger = { debug: mock() },
                 matchingRequest = { field: 'value' },
                 mismatchingRequest = { field: 'other' },
-                stub = { predicates: [{ equals: { field: 'value' }}], responses: ['first response'] };
+                stub = { predicates: [{ equals: { field: 'value' } }], responses: ['first response'] };
 
             stubs.addStub(stub);
 

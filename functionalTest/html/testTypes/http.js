@@ -22,7 +22,7 @@ function parse (text) {
             body: ''
         };
 
-    for (var i = 1; i < lines.length; i++) {
+    for (var i = 1; i < lines.length; i += 1) {
         if (lines[i].trim() === '') {
             break;
         }

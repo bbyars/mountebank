@@ -100,7 +100,7 @@ function create (proxy, postProcess) {
     }
 
     function stubIndexFor (responseConfig, stubs) {
-        for (var i = 0; i < stubs.length; i++) {
+        for (var i = 0; i < stubs.length; i += 1) {
             var stub = stubs[i];
             if (stub.responses.indexOf(responseConfig) >= 0) {
                 break;
@@ -122,7 +122,7 @@ function create (proxy, postProcess) {
             }
 
             if (responseConfig.proxy.mode === 'proxyAlways') {
-                for (index = index + 1; index < stubs.length; index++) {
+                for (index += 1; index < stubs.length; index += 1) {
                     if (stringify(predicates) === stringify(stubs[index].predicates)) {
                         stubs[index].responses.push(stubResponse);
                         return Q(response);

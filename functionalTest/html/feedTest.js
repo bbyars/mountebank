@@ -9,13 +9,13 @@ var assert = require('assert'),
 
 function entryCount (body) {
     var doc = new DOMParser().parseFromString(body),
-        select = xpath.useNamespaces({"atom": "http://www.w3.org/2005/Atom"});
-    return select("count(//atom:entry)", doc);
+        select = xpath.useNamespaces({ atom: 'http://www.w3.org/2005/Atom' });
+    return select('count(//atom:entry)', doc);
 }
 
 function getNextLink (body) {
     var doc = new DOMParser().parseFromString(body),
-        select = xpath.useNamespaces({"atom": "http://www.w3.org/2005/Atom"});
+        select = xpath.useNamespaces({ atom: 'http://www.w3.org/2005/Atom' });
     return select('//atom:link[@rel="next"]/@href', doc)[0].value;
 }
 

@@ -67,7 +67,7 @@ function create (options) {
     if (process.stdout.isTTY) {
         logger.add(logger.transports.Console, { colorize: true, level: options.loglevel });
     }
-    initializeLogfile (options.logfile);
+    initializeLogfile(options.logfile);
     logger.add(logger.transports.File, {
         filename: options.logfile,
         timestamp: true,
@@ -84,7 +84,7 @@ function create (options) {
     app.use(express.static(path.join(__dirname, 'public')));
     app.use(express.static(path.join(__dirname, '../node_modules')));
     app.use(errorHandler());
-    if(options.allowCORS) {
+    if (options.allowCORS) {
         app.use(cors());
     }
 

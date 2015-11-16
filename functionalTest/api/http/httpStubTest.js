@@ -45,7 +45,7 @@ var assert = require('assert'),
             });
 
             promiseIt('should allow a sequence of stubs as a circular buffer', function () {
-                var stub = { responses: [{ is: { statusCode: 400 }}, { is: { statusCode: 405 } }] },
+                var stub = { responses: [{ is: { statusCode: 400 } }, { is: { statusCode: 405 } }] },
                     request = { protocol: protocol, port: port, stubs: [stub], name: this.name };
 
                 return api.post('/imposters', request).then(function () {
@@ -122,7 +122,7 @@ var assert = require('assert'),
                 }).then(function (response) {
                     assert.strictEqual(response.statusCode, 200, 'should not have matched; missing header');
 
-                    var options = helpers.merge(spec, { headers: { 'X-Two': 'Testing', body: 'TEST' }});
+                    var options = helpers.merge(spec, { headers: { 'X-Two': 'Testing', body: 'TEST' } });
                     return client.responseFor(options);
                 }).then(function (response) {
                     assert.strictEqual(response.statusCode, 200, 'should not have matched; wrong value for header');
@@ -141,15 +141,15 @@ var assert = require('assert'),
 
             promiseIt('should correctly handle deepEquals object predicates', function () {
                 var stubWithEmptyObjectPredicate = {
-                        responses: [{ is: { body: 'first stub'} }],
+                        responses: [{ is: { body: 'first stub' } }],
                         predicates: [{ deepEquals: { query: {} } }]
                     },
                     stubWithPredicateKeywordInObject = {
-                        responses: [{ is: { body: 'second stub'} }],
+                        responses: [{ is: { body: 'second stub' } }],
                         predicates: [{ deepEquals: { query: { equals: 1 } } }]
                     },
                     stubWithTwoKeywordsInObject = {
-                        responses: [{ is: { body: 'third stub'} }],
+                        responses: [{ is: { body: 'third stub' } }],
                         predicates: [{ deepEquals: { query: { equals: 'true', contains: false } } }]
                     },
                     stubs = [stubWithEmptyObjectPredicate, stubWithPredicateKeywordInObject, stubWithTwoKeywordsInObject],
@@ -249,7 +249,7 @@ var assert = require('assert'),
                 });
             });
 
-            promiseIt('should support decorate functions that return a value by making that value the response', function () {
+            promiseIt('should support decorate functions that return a value', function () {
                 var decorator = function (request, response) {
                         var clonedResponse = JSON.parse(JSON.stringify(response));
                         clonedResponse.body = 'This is a clone';

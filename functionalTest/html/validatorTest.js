@@ -14,22 +14,17 @@ function assertValid (path, html) {
     w3cjs.validate({
         input: html,
         callback: function (response) {
-            if (response.messages) {
-                var errors = response.messages.filter(function (message) {
-                    return message.type === 'error';
-                }).map(function (message) {
-                    return {
-                        line: message.lastLine,
-                        message: message.message
-                    };
-                });
-                assert.strictEqual(0, errors.length,
-                    'Errors for ' + path + ': ' + JSON.stringify(errors, null, 2));
-                console.log(path + ' is valid');
-            }
-            else {
-                console.warn('HTML validation skipped for ' + path);
-            }
+            var errors = (response.messages || []).filter(function (message) {
+                return message.type === 'error';
+            }).map(function (message) {
+                return {
+                    line: message.lastLine,
+                    message: message.message
+                };
+            });
+            assert.strictEqual(0, errors.length,
+                'Errors for ' + path + ': ' + JSON.stringify(errors, null, 2));
+            console.log(path + ' is valid');
             deferred.resolve();
         }
     });
@@ -39,11 +34,11 @@ function assertValid (path, html) {
 
 function getHTML (path) {
     var spec = {
-            port: api.port,
-            method: 'GET',
-            path: path,
-            headers: { accept: 'text/html' }
-        };
+        port: api.port,
+        method: 'GET',
+        path: path,
+        headers: { accept: 'text/html' }
+    };
 
     return httpClient.responseFor(spec).then(function (response) {
         assert.strictEqual(response.statusCode, 200, 'Status code for ' + path + ': ' + response.statusCode);

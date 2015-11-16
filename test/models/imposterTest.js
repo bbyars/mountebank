@@ -121,7 +121,7 @@ describe('imposter', function () {
                 assert.deepEqual(imposter.toJSON({ replayable: true }), {
                     protocol: 'http',
                     port: 3535,
-                    stubs: [{ responses: ['FIRST'] }, { responses: ['SECOND'] }],
+                    stubs: [{ responses: ['FIRST'] }, { responses: ['SECOND'] }]
                 });
             });
         });

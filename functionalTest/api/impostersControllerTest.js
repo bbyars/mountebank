@@ -171,12 +171,12 @@ describe('DELETE /imposters', function () {
 describe('PUT /imposters', function () {
     promiseIt('creates all imposters provided when no imposters previously exist', function () {
         var request = {
-                imposters: [
-                    { protocol: 'http', port: port, name: this.name + '1' },
-                    { protocol: 'http', port: port + 1, name: this.name + '2' },
-                    { protocol: 'http', port: port + 2, name: this.name + '3' }
-                ]
-            };
+            imposters: [
+                { protocol: 'http', port: port, name: this.name + '1' },
+                { protocol: 'http', port: port + 1, name: this.name + '2' },
+                { protocol: 'http', port: port + 2, name: this.name + '3' }
+            ]
+        };
 
         return api.put('/imposters', request).then(function (response) {
             assert.strictEqual(response.statusCode, 200);

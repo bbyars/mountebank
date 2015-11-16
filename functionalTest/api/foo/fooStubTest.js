@@ -32,7 +32,7 @@ describe('foo imposter', function () {
         promiseIt('should allow a sequence of stubs as a circular buffer', function () {
             var stub = {
                     predicates: [{ equals: { data: 'request' } }],
-                    responses: [{ is: { data: 'first' }}, { is: { data: 'second' }}]
+                    responses: [{ is: { data: 'first' } }, { is: { data: 'second' } }]
                 },
                 request = { protocol: 'foo', port: port, stubs: [stub], name: this.name };
 
@@ -59,7 +59,7 @@ describe('foo imposter', function () {
 
         promiseIt('should only return stubbed response if matches complex predicate', function () {
             var stub = {
-                    responses: [{ is: { data: 'MATCH' }}],
+                    responses: [{ is: { data: 'MATCH' } }],
                     predicates: [
                         { equals: { data: 'test' } },
                         { startsWith: { data: 'te' } }
@@ -84,8 +84,13 @@ describe('foo imposter', function () {
         promiseIt('should allow proxy stubs', function () {
             var originServerPort = port + 1,
                 originServerStub = { responses: [{ is: { data: 'PROXIED' } }] },
-                originServerRequest = { protocol: 'foo', port: originServerPort, stubs: [originServerStub], name: this.name + ' ORIGIN' },
-                proxyStub = { responses: [{ proxy: { to: { host: 'localhost', port:  originServerPort } } }] },
+                originServerRequest = {
+                    protocol: 'foo',
+                    port: originServerPort,
+                    stubs: [originServerStub],
+                    name: this.name + ' ORIGIN'
+                },
+                proxyStub = { responses: [{ proxy: { to: { host: 'localhost', port: originServerPort } } }] },
                 proxyRequest = { protocol: 'foo', port: port, stubs: [proxyStub], name: this.name + ' PROXY' };
 
             return api.post('/imposters', originServerRequest).then(function () {

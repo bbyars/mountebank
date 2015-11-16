@@ -228,7 +228,7 @@ describe('AbstractServer', function () {
                 socket = inherit.from(events.EventEmitter, { remoteAddress: 'host', remotePort: 'port' });
             implementation.protocolName = 'test';
             implementation.Request.createFrom.returns(Q({ id: 'simple request' }));
-            baseServer.respond = function () { throw 'BOOM'; };
+            baseServer.respond = function () { throw 'BOOM'; }; // eslint-disable-line no-throw-literal
 
             return Server.create({ port: 3000 }).then(function () {
                 baseServer.listeners('request')[0](socket, 'originalRequest', function () {

@@ -7,7 +7,7 @@ var Q = require('q'),
     httpClient = require('./api/http/baseHttpClient').create('http'),
     headers = { connection: 'close' },
     isWindows = require('os').platform().indexOf('win') === 0,
-    mbPath = process.env.MB_EXECUTABLE || path.normalize(__dirname + '/../bin/mb'),
+    mbPath = process.env.MB_EXECUTABLE || path.join(__dirname, '/../bin/mb'),
     pidfile = 'test.pid';
 
 function create (port) {
@@ -69,12 +69,12 @@ function create (port) {
     // After trial and error, I discovered that we have to set
     // the connection: close header on Windows or we end up with
     // ECONNRESET errors
-    function get (path) {
-        return httpClient.responseFor({ method: 'GET', path: path, port: port, headers: headers });
+    function get (endpoint) {
+        return httpClient.responseFor({ method: 'GET', path: endpoint, port: port, headers: headers });
     }
 
-    function post (path, body) {
-        return httpClient.responseFor({ method: 'POST', path: path, port: port, body: body, headers: headers });
+    function post (endpoint, body) {
+        return httpClient.responseFor({ method: 'POST', path: endpoint, port: port, body: body, headers: headers });
     }
 
     return {

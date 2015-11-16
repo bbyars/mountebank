@@ -8,14 +8,11 @@ var assert = require('assert'),
     timeout = parseInt(process.env.MB_SLOW_TEST_TIMEOUT || 3000);
 
 function normalize (text, linesToIgnore) {
-    text = (text || '').replace(/\r/g, '');
-    linesToIgnore = linesToIgnore || [];
-
-    var lines = text.split('\n'),
+    var lines = (text || '').replace(/\r/g, '').split('\n'),
         result = [];
 
     lines.forEach(function (line) {
-        if (!linesToIgnore.some(function (pattern) {
+        if (!(linesToIgnore || []).some(function (pattern) {
             return new RegExp(pattern).test(line);
         })) {
             result.push(line);
@@ -33,7 +30,7 @@ function executeTest (doc) {
                     expected = normalize(step.verify, step.ignoreLines);
 
                 if (actual !== expected) {
-                    console.log("%s %s step %s failed; below is the actual result", doc.endpoint, doc.name, step.id);
+                    console.log('%s %s step %s failed; below is the actual result', doc.endpoint, doc.name, step.id);
                     console.log(normalize(step.result));
                 }
                 assert.strictEqual(actual, expected);
@@ -44,9 +41,9 @@ function executeTest (doc) {
 
 function validateDocs (page) {
     promiseIt(page + ' should be up-to-date', function () {
-        return docs.get(page).then(function (docs) {
-            var tests = Object.keys(docs).map(function (testName) {
-                return executeTest(docs[testName]);
+        return docs.get(page).then(function (doc) {
+            var tests = Object.keys(doc).map(function (testName) {
+                return executeTest(doc[testName]);
             });
             return Q.all(tests);
         });
@@ -66,8 +63,8 @@ describe('docs', function () {
         '/docs/protocols/https',
         '/docs/protocols/http'
     ].forEach(function (page) {
-            validateDocs(page);
-        });
+        validateDocs(page);
+    });
 
     if (!isWindows) {
         [

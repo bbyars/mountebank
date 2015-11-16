@@ -7,11 +7,11 @@ describe('cli', function () {
     describe('#parse()', function () {
         it('should parse command', function () {
             var result = cli.parse(['command']).command;
-            assert.strictEqual(result ,'command');
+            assert.strictEqual(result, 'command');
         });
 
         it('should return defaultOptions if no options provided', function () {
-            var defaultOptions = { key: 'value'},
+            var defaultOptions = { key: 'value' },
                 result = cli.parse(['command'], defaultOptions);
 
             assert.deepEqual(result.options, defaultOptions);

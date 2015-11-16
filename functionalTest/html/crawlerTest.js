@@ -24,15 +24,16 @@ if (process.env.MB_AIRPLANE_MODE !== 'true' && process.env.MB_RUN_WEB_TESTS === 
             var crawlResults;
             return crawler.create().crawl(api.url + '/', '').then(function (result) {
                 // Validate no broken links
-                var errors = {misses: {}};
+                var errors = { misses: {} };
                 errors.errors = result.errors;
                 Object.keys(result.hits).forEach(function (link) {
-                    if (!expectedStatusCode(result.hits[link].statusCode) || !expectedContentType(result.hits[link].contentType)) {
+                    if (!expectedStatusCode(result.hits[link].statusCode) ||
+                        !expectedContentType(result.hits[link].contentType)) {
                         errors.misses[link] = result.hits[link];
                     }
                 });
 
-                assert.deepEqual(errors, {errors: [], misses: {}}, JSON.stringify(errors, null, 4));
+                assert.deepEqual(errors, { errors: [], misses: {} }, JSON.stringify(errors, null, 4));
 
                 crawlResults = result;
                 return api.get('/sitemap');

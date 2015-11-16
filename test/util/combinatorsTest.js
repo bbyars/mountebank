@@ -44,7 +44,7 @@ describe('combinators', function () {
 
     describe('#curry', function () {
         it('should pass curried parameter', function () {
-            var fn = function (param) { return param;},
+            var fn = function (param) { return param; },
                 curriedFn = combinators.curry(fn, 1);
 
             assert.strictEqual(curriedFn(), 1);

@@ -26,14 +26,14 @@ function howLongAgo (thenText, testNowText) {
     var nowText = testNowText ? testNowText : new Date(Date.now()).toISOString(), // testNow is just for testing purposes
         then = toEpochWithoutTime(thenText),
         now = toEpochWithoutTime(nowText),
-        millisecondsInDay = 24*60*60*1000,
+        millisecondsInDay = 24 * 60 * 60 * 1000,
         daysAgo = Math.floor((now - then) / millisecondsInDay);
 
     if (daysAgo === 0) {
         return 'today';
     }
     else if (daysAgo === 1) {
-        return 'yesterday' ;
+        return 'yesterday';
     }
     else if (daysAgo < 7) {
         return 'this week';

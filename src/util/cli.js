@@ -18,6 +18,14 @@ var parse = function (argv, defaultOptions, booleanOptions) {
     defaultOptions = defaultOptions || {};
     booleanOptions = booleanOptions || [];
 
+    function isSwitch (arg) {
+        return OPTION_PREFIX.test(arg);
+    }
+
+    function isBoolean (arg) {
+        return booleanOptions.indexOf(arg) >= 0;
+    }
+
     function validate (key, optionName, value) {
         if (!isSwitch(key)) {
             throw Error("Invalid option '" + key + "'.");
@@ -32,14 +40,6 @@ var parse = function (argv, defaultOptions, booleanOptions) {
         }
     }
 
-    function isSwitch (arg) {
-        return OPTION_PREFIX.test(arg);
-    }
-
-    function isBoolean (arg) {
-        return booleanOptions.indexOf(arg) >= 0;
-    }
-
     function baseOptions () {
         var result = defaultOptions;
         booleanOptions.forEach(function (key) {
@@ -52,7 +52,7 @@ var parse = function (argv, defaultOptions, booleanOptions) {
         while (i < argv.length) {
             var key = argv[i],
                 optionName = key.replace(OPTION_PREFIX, ''),
-                value = argv[i+1];
+                value = argv[i + 1];
 
             validate(key, optionName, value);
 
@@ -61,7 +61,7 @@ var parse = function (argv, defaultOptions, booleanOptions) {
                 i += 1;
             }
             else {
-                i +=2;
+                i += 2;
             }
 
             options[optionName] = value;

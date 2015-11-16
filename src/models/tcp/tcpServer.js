@@ -8,7 +8,7 @@
 var AbstractServer = require('../abstractServer'),
     net = require('net'),
     Q = require('q'),
-    logger = require('winston'),
+    winston = require('winston'),
     inherit = require('../../util/inherit'),
     combinators = require('../../util/combinators'),
     helpers = require('../../util/helpers'),
@@ -86,9 +86,9 @@ function createServer (logger, options) {
             return eval(injected);
         }
         catch (error) {
-            logger.error("injection X=> " + error);
-            logger.error("    full source: " + JSON.stringify(injected));
-            logger.error("    requestData: " + JSON.stringify(requestData));
+            logger.error('injection X=> ' + error);
+            logger.error('    full source: ' + JSON.stringify(injected));
+            logger.error('    requestData: ' + JSON.stringify(requestData));
             return false;
         }
     }
@@ -130,14 +130,14 @@ function createServer (logger, options) {
  */
 function initialize (allowInjection, recordRequests, debug) {
     var implementation = {
-            protocolName: 'tcp',
-            createServer: createServer,
-            Request: TcpRequest
-        };
+        protocolName: 'tcp',
+        createServer: createServer,
+        Request: TcpRequest
+    };
 
     return {
         name: implementation.protocolName,
-        create: AbstractServer.implement(implementation, recordRequests, debug, logger).create,
+        create: AbstractServer.implement(implementation, recordRequests, debug, winston).create,
         Validator: { create: combinators.curry(TcpValidator.create, allowInjection) }
     };
 }

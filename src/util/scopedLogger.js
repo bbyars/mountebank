@@ -17,7 +17,7 @@ function wrap (wrappedLogger, logger) {
 /**
  * Returns a logger that prefixes each message of the given logger with a given scope
  * @param {Object} logger - The logger to add a scope to
- * @param {String} scope - The prefix for all log messaegs
+ * @param {string} scope - The prefix for all log messages
  * @returns {Object}
  */
 function create (logger, scope) {
@@ -26,15 +26,15 @@ function create (logger, scope) {
     }
 
     var wrappedLogger = inherit.from(logger, {
-            scopePrefix: formatScope(scope),
-            withScope: function (nestedScopePrefix) {
-                return create(logger, wrappedLogger.scopePrefix + nestedScopePrefix + ' ');
-            },
-            changeScope: function (newScope) {
-                wrappedLogger.scopePrefix = formatScope(newScope);
-                wrap(wrappedLogger, logger);
-            }
-        });
+        scopePrefix: formatScope(scope),
+        withScope: function (nestedScopePrefix) {
+            return create(logger, wrappedLogger.scopePrefix + nestedScopePrefix + ' ');
+        },
+        changeScope: function (newScope) {
+            wrappedLogger.scopePrefix = formatScope(newScope);
+            wrap(wrappedLogger, logger);
+        }
+    });
 
     wrap(wrappedLogger, logger);
     return wrappedLogger;

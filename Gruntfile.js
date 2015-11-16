@@ -12,6 +12,7 @@ module.exports = function (grunt) {
     grunt.loadNpmTasks('grunt-jsdoc');
     grunt.loadNpmTasks('grunt-mountebank');
     grunt.loadNpmTasks('grunt-wslint');
+    grunt.loadNpmTasks('grunt-eslint');
 
     grunt.initConfig({
         mochaTest: {
@@ -42,6 +43,17 @@ module.exports = function (grunt) {
                 },
                 src: ['test/**/*.js']
             }
+        },
+        eslint: {
+            target: [
+                'Gruntfile.js',
+                'src/**/*.js',
+                'tasks/**/*.js',
+                'test/**/*.js',
+                'functionalTest/**/*.js',
+                'performanceTest/**/*.js',
+                'bin/mb'
+            ]
         },
         jshint: {
             all: [
@@ -80,7 +92,7 @@ module.exports = function (grunt) {
             }
         },
         jsdoc: {
-            dist : {
+            dist: {
                 src: ['src/**/*.js'],
                 options: {
                     destination: 'docs',
@@ -133,7 +145,7 @@ module.exports = function (grunt) {
     grunt.registerTask('test:performance', 'Run the performance tests', ['mochaTest:performance']);
     grunt.registerTask('test', 'Run all non-performance tests', ['test:unit', 'test:functional']);
     grunt.registerTask('coverage', 'Generate code coverage', ['mochaTest:coverage']);
-    grunt.registerTask('lint', 'Run all lint checks', ['wslint', 'jsCheck', 'deadCheck', 'jshint']);
+    grunt.registerTask('lint', 'Run all lint checks', ['wslint', 'jsCheck', 'deadCheck', 'eslint']);
     grunt.registerTask('default', ['dist', 'version', 'test', 'lint']);
 
     grunt.registerTask('local', 'Fast build for local development (avoids distribution)', ['test', 'lint']);

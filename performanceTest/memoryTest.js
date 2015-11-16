@@ -11,12 +11,12 @@ var assert = require('assert'),
 function getMemoryUsedForFiftyThousandRequests (mbPort) {
     var stub = { responses: [{ is: { statusCode: 400 } }] },
         request = { protocol: 'http', port: port, stubs: [stub] },
-        requestFn = function () { return client.get('/', port);},
+        requestFn = function () { return client.get('/', port); },
         allRequests = [],
         originalProcess;
 
     // I run out of memory in the test process with 1,000,000
-    for (var i = 0; i < 50000; i++) {
+    for (var i = 0; i < 50000; i += 1) {
         allRequests[i] = requestFn;
     }
 

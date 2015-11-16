@@ -28,10 +28,9 @@ function forEachFileIn (dir, fileCallback, options) {
         if (!exclude(options.exclude, filePath)) {
             if (fs.lstatSync(filePath).isDirectory()) {
                 forEachFileIn(filePath, fileCallback, options);
-            } else {
-                if (include(options.filetype, filePath)) {
-                    fileCallback(filePath);
-                }
+            }
+            else if (include(options.filetype, filePath)) {
+                fileCallback(filePath);
             }
         }
     });

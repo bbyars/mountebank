@@ -25,9 +25,9 @@ describe('foo imposter', function () {
 
     describe('GET /imposters/:id', function () {
         promiseIt('should provide access to all requests', function () {
-            var request = { protocol: 'foo', port: port, name: this.name };
+            var imposterRequest = { protocol: 'foo', port: port, name: this.name };
 
-            return api.post('/imposters', request).then(function () {
+            return api.post('/imposters', imposterRequest).then(function () {
                 return tcp.fireAndForget('first', port);
             }).then(function () {
                 return tcp.fireAndForget('second', port);
@@ -44,8 +44,8 @@ describe('foo imposter', function () {
         });
 
         promiseIt('should return list of stubs in order', function () {
-            var first = { responses: [{ is: { data: '1' }}]},
-                second = { responses: [{ is: { data: '2' }}]},
+            var first = { responses: [{ is: { data: '1' } }] },
+                second = { responses: [{ is: { data: '2' } }] },
                 request = { protocol: 'foo', port: port, stubs: [first, second], name: this.name };
 
             return api.post('/imposters', request).then(function () {
@@ -62,7 +62,7 @@ describe('foo imposter', function () {
         });
 
         promiseIt('should record matches against stubs', function () {
-            var stub = { responses: [{ is: { data: '1' }}, { is: { data: '2' }}]},
+            var stub = { responses: [{ is: { data: '1' } }, { is: { data: '2' } }] },
                 request = { protocol: 'foo', port: port, stubs: [stub], name: this.name };
 
             return api.post('/imposters', request).then(function () {

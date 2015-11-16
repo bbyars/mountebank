@@ -99,7 +99,8 @@ function create (logger, encoding) {
                     deferred.reject(error);
                 }
             });
-        } catch (e) {
+        }
+        catch (e) {
             deferred.reject(e);
         }
 

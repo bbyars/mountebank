@@ -6,7 +6,7 @@ var middleware = require('../../src/util/middleware'),
     FakeResponse = require('../fakes/fakeResponse');
 
 describe('middleware', function () {
-    var request, response,  next;
+    var request, response, next;
 
     beforeEach(function () {
         request = { headers: {}, params: {} };
@@ -133,8 +133,8 @@ describe('middleware', function () {
     describe('#logger', function () {
         it('should log request at info level', function () {
             var log = { info: mock() },
-                request = { url: '', headers: { accept: '' } },
                 middlewareFn = middleware.logger(log, 'TEST MESSAGE');
+            request = { url: '', headers: { accept: '' } };
 
             middlewareFn(request, {}, next);
 
@@ -143,8 +143,8 @@ describe('middleware', function () {
 
         it('should log request url and method', function () {
             var log = { info: mock() },
-                request = { method: 'METHOD', url: 'URL', headers: { accept: '' } },
                 middlewareFn = middleware.logger(log, 'MESSAGE WITH :method :url');
+            request = { method: 'METHOD', url: 'URL', headers: { accept: '' } };
 
             middlewareFn(request, {}, next);
 
@@ -164,8 +164,8 @@ describe('middleware', function () {
 
         it('should not log html requests', function () {
             var log = { info: mock() },
-                request = { method: 'METHOD', url: 'URL', headers: { accept: 'text/html' } },
                 middlewareFn = middleware.logger(log, 'TEST');
+            request = { method: 'METHOD', url: 'URL', headers: { accept: 'text/html' } };
 
             middlewareFn(request, {}, next);
 
@@ -174,8 +174,8 @@ describe('middleware', function () {
 
         it('should not log AJAX requests', function () {
             var log = { info: mock() },
-                request = { method: 'METHOD', url: 'URL', headers: { 'x-requested-with': 'XMLHttpRequest' } },
                 middlewareFn = middleware.logger(log, 'TEST');
+            request = { method: 'METHOD', url: 'URL', headers: { 'x-requested-with': 'XMLHttpRequest' } };
 
             middlewareFn(request, {}, next);
 
@@ -184,8 +184,8 @@ describe('middleware', function () {
 
         it('should call next', function () {
             var log = { info: mock() },
-                request = { url: '', headers: { accept: '' } },
                 middlewareFn = middleware.logger(log, 'TEST');
+            request = { url: '', headers: { accept: '' } };
 
             middlewareFn(request, {}, next);
 
@@ -196,8 +196,8 @@ describe('middleware', function () {
     describe('#globals', function () {
         it('should pass variables to all render calls', function () {
             var render = mock(),
-                response = { render: render },
                 middlewareFn = middleware.globals({ first: 1, second: 2 });
+            response = { render: render };
 
             middlewareFn({}, response, next);
             response.render('view');
@@ -207,8 +207,8 @@ describe('middleware', function () {
 
         it('should merge variables to all render calls', function () {
             var render = mock(),
-                response = { render: render },
                 middlewareFn = middleware.globals({ first: 1, second: 2 });
+            response = { render: render };
 
             middlewareFn({}, response, next);
             response.render('view', { third: 3 });
@@ -218,8 +218,8 @@ describe('middleware', function () {
 
         it('should overwrite variables of the same name', function () {
             var render = mock(),
-                response = { render: render },
                 middlewareFn = middleware.globals({ key: 'global' });
+            response = { render: render };
 
             middlewareFn({}, response, next);
             response.render('view', { key: 'local' });

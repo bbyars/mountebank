@@ -62,7 +62,7 @@ function create (protocols, imposters, Imposter, logger) {
         }
     }
 
-    function validate (request, logger) {
+    function validate (request) {
         var errors = [],
             valid = Q({ isValid: false, errors: errors });
 
@@ -128,7 +128,7 @@ function create (protocols, imposters, Imposter, logger) {
      */
     function post (request, response) {
         var protocol = request.body.protocol,
-            validationPromise = validate(request.body, logger);
+            validationPromise = validate(request.body);
 
         logger.debug(helpers.socketName(request.socket) + ' => ' + JSON.stringify(request.body));
 
@@ -164,7 +164,7 @@ function create (protocols, imposters, Imposter, logger) {
             },
             json = Object.keys(imposters).reduce(function (accumulator, id) {
                 return accumulator.concat(imposters[id].toJSON(options));
-             }, []);
+            }, []);
         return deleteAllImposters().then(function () {
             response.send({ imposters: json });
         });
@@ -185,9 +185,9 @@ function create (protocols, imposters, Imposter, logger) {
         logger.debug(helpers.socketName(request.socket) + ' => ' + JSON.stringify(request.body));
 
         return Q.all(validationPromises).then(function (validations) {
-            var isValid =  validations.every(function (validation) {
-                    return validation.isValid;
-                });
+            var isValid = validations.every(function (validation) {
+                return validation.isValid;
+            });
 
             if (isValid) {
                 return deleteAllImposters().then(function () {
@@ -210,8 +210,8 @@ function create (protocols, imposters, Imposter, logger) {
             }
             else {
                 var validationErrors = validations.reduce(function (accumulator, validation) {
-                        return accumulator.concat(validation.errors);
-                    }, []);
+                    return accumulator.concat(validation.errors);
+                }, []);
 
                 respondWithValidationErrors(response, validationErrors);
             }

@@ -1,8 +1,6 @@
 'use strict';
-/*global $:false */
-/*global document:false */
-/*global window:false */
-/*global Q:false */
+
+/* global Q */
 
 var predicateExplanations = {
     equals: 'a request field must match exactly',
@@ -60,7 +58,7 @@ var StubList = {
     create: function () {
         function forEachRow (fn) {
             var rows = $('#stubs tr');
-            for (var i = 2; i < rows.length - 1; i++) {
+            for (var i = 2; i < rows.length - 1; i += 1) {
                 fn(rows[i]);
             }
         }
@@ -161,7 +159,7 @@ function setResponse (xhr) {
 
 function request (verb, path, json) {
     setRequest(verb, path, json);
-    return ajax({ url: path, type: verb, data: json}).then(setResponse);
+    return ajax({ url: path, type: verb, data: json }).then(setResponse);
 }
 
 function updateLinks () {
@@ -196,7 +194,6 @@ function updateLinks () {
 }
 
 function buildJSON () {
-    /*jshint maxcomplexity: 7 */
     var json = { protocol: $('#protocol').val() };
 
     if ($('#port').val()) {
@@ -217,7 +214,7 @@ function buildJSON () {
 }
 
 function addImposterRow (port) {
-    ajax({ url: '/imposters/' + port, type: 'GET', dataType: 'html'}).done(function (xhr) {
+    ajax({ url: '/imposters/' + port, type: 'GET', dataType: 'html' }).done(function (xhr) {
         $('#imposters tr:last').before(xhr.responseText);
         updateLinks();
     });

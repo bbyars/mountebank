@@ -142,7 +142,7 @@ function defaultIEtoHTML (request, response, next) {
     // IE has inconsistent Accept headers, often defaulting to */*
     // Our default is JSON, which fails to render in the browser on content-negotiated pages
     if (request.headers['user-agent'] && request.headers['user-agent'].indexOf('MSIE') >= 0) {
-        if ( !(request.headers.accept && request.headers.accept.match(/application\/json/)) ) {
+        if (!(request.headers.accept && request.headers.accept.match(/application\/json/))) {
             request.headers.accept = 'text/html';
         }
     }
@@ -153,10 +153,10 @@ function defaultIEtoHTML (request, response, next) {
  * Returns a middleware function that defaults the content type to JSON if not set to make
  * command line testing easier (e.g. you don't have to set the Accept header with curl) and
  * parses the JSON before reaching a controller, handling errors gracefully.
- * @param {Object} logger - The logger
+ * @param {Object} log - The logger
  * @returns {Function}
  */
-function json (logger) {
+function json (log) {
     return function (request, response, next) {
         request.body = '';
         request.setEncoding('utf8');
@@ -174,7 +174,7 @@ function json (logger) {
                     next();
                 }
                 catch (e) {
-                    logger.error('Invalid JSON: ' + request.body);
+                    log.error('Invalid JSON: ' + request.body);
                     response.statusCode = 400;
                     response.send({
                         errors: [errors.InvalidJSONError({ source: request.body })]
