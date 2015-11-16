@@ -21,7 +21,9 @@ on a web page (I will never announce a company's usage of mountebank without the
 * Writing a build plugin for (maven, gradle, MSBuild, rake, gulp, etc)
 
 Still want to write some code?  Great!  You may want to keep the [source documentation](https://mountebank.firebaseapp.com/)
-handy.  You can choose the basic workflow or the advanced workflow depending  on your time commitment and level of interest.
+handy, and you may want to review [the issues](https://github.com/bbyars/mountebank/labels/up-for-grabs) that I suspect
+are relatively easy to get up and going.  From there, you can choose the basic workflow or the advanced workflow
+depending on your time commitment and level of interest.
 
 ## The Basic Workflow
 
