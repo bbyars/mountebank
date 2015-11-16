@@ -87,6 +87,7 @@
     "mocha": "~2.3.1",
     "mocha-lcov-reporter": "1.0.0",
     "rimraf": "^2.4.3",
+    "time-grunt": "^1.2.2",
     "w3cjs": "~0.3.0"
   },
   "devDependenciesBasedOnNodeVersion": {
