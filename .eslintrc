@@ -18,6 +18,7 @@
         "comma-dangle": [2, "never"],
         "comma-spacing": [2, {"before": false, "after": true}],
         "comma-style": [2, "last"],
+        "complexity": [2, 7],
         "computed-property-spacing": [2, "never"],
         "consistent-return": 2,
         "curly": 2,
