@@ -4,7 +4,7 @@ var port = process.env.MB_PORT || 2525;
 
 module.exports = function (grunt) {
 
-    if (process.env.TRAVIS !== true) {
+    if (process.env.TRAVIS !== 'true') {
         // Unclear why, but this errors some of the Travis builds
         require('time-grunt')(grunt);
     }
