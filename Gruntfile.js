@@ -71,7 +71,8 @@ module.exports = function (grunt) {
         },
         mb: {
             options: {
-                path: 'bin/mb'
+                path: 'bin/mb',
+                pathEnvironmentVariable: 'MB_EXECUTABLE'
             },
             restart: ['--port', port, '--pidfile', 'mb-grunt.pid', '--logfile', 'mb-grunt.log', '--allowInjection', '--mock', '--debug'],
             stop: ['--pidfile', 'mb-grunt.pid']
