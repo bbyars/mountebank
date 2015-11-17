@@ -158,20 +158,6 @@ me of ways to overcome these tradeoffs in a mutually agreeable manner:
 * I aim for fairly comprehensive error handling with useful error messages to help users out
 * Windows support can be painful at times, but it is a core platform for mountebank
 
-### Linting
-
-Running the build (or `grunt lint`) prior to committing will catch any linting errors.  I occasionally stick a finger in jshint's
-eyes by commenting a function saying that I refuse to abide by the straightjacket imposed upon me,
-but that's really just me being immature and rebellious.  I'm OK with you being rebellious too if it encourages
-you to submit a pull request.  There are other linting checks that verify:
-
-* That each file ends in one and only one newline
-* You didn't leave whitespace at the end of the line
-* That you used spaces instead of tabs
-* That you declare functions with a space between the name and parentheses, but you call functions with no spaces
-  (Douglas Crockford documented this style in [JavaScript: The Good Parts](http://www.amazon.com/JavaScript-Good-Parts-Douglas-Crockford/dp/0596517742))
-* That you 'use strict'
-
 ### The Continuous Integration Pipeline
 
 Looking at the [README](https://github.com/bbyars/mountebank#build-status) will show that I have a complex CI pipleline.

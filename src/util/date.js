@@ -22,7 +22,6 @@ function sameMonth (firstEpoch, secondEpoch) {
  * @returns {string}
  */
 function howLongAgo (thenText, testNowText) {
-    /* jshint maxcomplexity: 7 */
     var nowText = testNowText ? testNowText : new Date(Date.now()).toISOString(), // testNow is just for testing purposes
         then = toEpochWithoutTime(thenText),
         now = toEpochWithoutTime(nowText),

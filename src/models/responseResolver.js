@@ -18,11 +18,9 @@ var helpers = require('../util/helpers'),
  * @returns {Object}
  */
 function create (proxy, postProcess) {
-    /* jshint unused: false */
     var injectState = {};
 
     function inject (request, fn, logger) {
-        /* jshint evil: true */
         var deferred = Q.defer(),
             scope = helpers.clone(request),
             injected = '(' + fn + ')(scope, injectState, logger, deferred.resolve);';
@@ -110,7 +108,6 @@ function create (proxy, postProcess) {
     }
 
     function proxyAndRecord (responseConfig, request, stubs) {
-        /* jshint maxcomplexity: 6 */
         return proxy.to(responseConfig.proxy.to, request, responseConfig.proxy).then(function (response) {
             var predicates = predicatesFor(request, responseConfig.proxy.predicateGenerators || []),
                 stubResponse = { is: response },

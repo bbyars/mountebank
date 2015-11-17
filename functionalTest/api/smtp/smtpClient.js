@@ -11,7 +11,6 @@ function addressOf (email) {
 }
 
 function send (message, port) {
-    /* jshint maxcomplexity: 6 */
     var deferred = Q.defer(),
         client = smtp.connect(port);
 

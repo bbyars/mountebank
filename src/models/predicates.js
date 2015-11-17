@@ -89,7 +89,6 @@ function selectXPath (config, caseTransform, encoding, text) {
 }
 
 function normalize (obj, config, encoding, withSelectors) {
-    /* jshint maxcomplexity: 6 */
     var lowerCaser = function (text) { return text.toLowerCase(); },
         caseTransform = config.caseSensitive ? combinators.identity : lowerCaser,
         exceptRegexOptions = config.caseSensitive ? 'g' : 'gi',

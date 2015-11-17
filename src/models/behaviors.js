@@ -30,7 +30,6 @@ function wait (responsePromise, milliseconds) {
  */
 function decorate (originalRequest, responsePromise, fn, logger) {
     return responsePromise.then(function (response) {
-        /* jshint evil: true */
         var request = helpers.clone(originalRequest),
             injected = '(' + fn + ')(request, response, logger);';
 

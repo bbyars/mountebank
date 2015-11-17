@@ -38,23 +38,17 @@ function forEachFileIn (dir, fileCallback, options) {
 
 module.exports = function (grunt) {
 
-    grunt.registerTask('jsCheck', 'Run JavaScript checks not covered by jshint', function () {
+    grunt.registerTask('jsCheck', 'Run JavaScript checks not covered by eslint', function () {
         var errors = [],
             jsCheck = function (file) {
                 var contents = fs.readFileSync(file, 'utf8'),
                     lines = contents.split(os.EOL);
 
-                if (contents.indexOf("'use strict'") < 0) {
-                    errors = errors.concat(file + " does not start with 'use strict';");
-                }
                 lines.forEach(function (line) {
-                    var accidentalOnlyErrors = line.match(/(describe|[Ii]t)\.only\(/) || [],
-                        functionDeclarationErrors = line.match(/(function [A-Za-z]+\(|function\()/) || [];
+                    var accidentalOnlyErrors = line.match(/(describe|[Ii]t)\.only\(/) || [];
 
                     errors = errors.concat(accidentalOnlyErrors.map(function () {
                         return file + ' appears to have been left with a mocha .only() call\n\t' + line;
-                    })).concat(functionDeclarationErrors.map(function () {
-                        return file + ' uses function xyz() instead of function xyz () style for function definitions\n\t' + line;
                     }));
                 });
             },

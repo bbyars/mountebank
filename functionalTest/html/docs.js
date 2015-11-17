@@ -28,7 +28,6 @@ function getAttribute (element, attributeName) {
 }
 
 function addStep (test, stepSpec) {
-    /* jshint maxcomplexity: 8 */
     var stepIndex = (stepSpec.stepId || stepSpec.verifyStepId || 0) - 1;
 
     if (stepIndex < 0) {

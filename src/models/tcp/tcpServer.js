@@ -71,7 +71,6 @@ function createServer (logger, options) {
         server = net.createServer();
 
     function isEndOfRequest (requestData) {
-        /* jshint evil: true */
         if (!options.endOfRequestResolver || !options.endOfRequestResolver.inject) {
             return true;
         }

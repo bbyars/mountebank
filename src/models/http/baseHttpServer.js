@@ -26,7 +26,6 @@ var AbstractServer = require('../abstractServer'),
  */
 function setup (protocolName, createBaseServer) {
     function postProcess (stub) {
-        /* jshint maxcomplexity: 6 */
         var response = {
             statusCode: stub.statusCode || 200,
             headers: stub.headers || {},

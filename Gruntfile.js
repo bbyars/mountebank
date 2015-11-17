@@ -8,7 +8,6 @@ module.exports = function (grunt) {
 
     grunt.loadTasks('tasks');
     grunt.loadNpmTasks('grunt-mocha-test');
-    grunt.loadNpmTasks('grunt-contrib-jshint');
     grunt.loadNpmTasks('grunt-jsdoc');
     grunt.loadNpmTasks('grunt-mountebank');
     grunt.loadNpmTasks('grunt-wslint');
@@ -54,42 +53,6 @@ module.exports = function (grunt) {
                 'performanceTest/**/*.js',
                 'bin/mb'
             ]
-        },
-        jshint: {
-            all: [
-                'Gruntfile.js',
-                'src/**/*.js',
-                'tasks/**/*.js',
-                'test/**/*.js',
-                'functionalTest/**/*.js',
-                'performanceTest/**/*.js',
-                'bin/mb'
-            ],
-            options: {
-                ignores: [
-                    'src/public/scripts/jquery/**/*.js'
-                ],
-                node: true,
-                globals: {
-                    describe: false,
-                    it: false,
-                    before: false,
-                    beforeEach: false,
-                    after: false,
-                    afterEach: false
-                },
-                newcap: false,
-                camelcase: true,
-                curly: true,
-                eqeqeq: true,
-                latedef: true,
-                undef: true,
-                unused: true,
-                trailing: true,
-                maxparams: 4,
-                maxdepth: 3,
-                maxcomplexity: 5
-            }
         },
         jsdoc: {
             dist: {

@@ -9,7 +9,6 @@ var Q = require('q'),
     Parser = require('mailparser').MailParser;
 
 function transform (request, email) {
-    /* jshint maxcomplexity: 7 */
     return {
         requestFrom: request.remoteAddress,
         envelopeFrom: request.from,
