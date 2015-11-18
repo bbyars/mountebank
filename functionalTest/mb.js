@@ -14,6 +14,7 @@ function create (port) {
 
     function start (args) {
         var deferred = Q.defer(),
+            command = mbPath,
             mbArgs = [
                 'restart',
                 '--port', port,
@@ -26,16 +27,17 @@ function create (port) {
             mbArgs.unshift(mbPath);
 
             if (mbPath.indexOf('.cmd') >= 0) {
+                // Accommodate the self-contained Windows zip files that ship with mountebank
                 mbArgs.unshift('/c');
-                mb = spawn('cmd', mbArgs);
+                command = 'cmd';
             }
             else {
-                mb = spawn('node', mbArgs);
+                command = 'node';
             }
         }
-        else {
-            mb = spawn(mbPath, mbArgs);
-        }
+
+        console.log(command + ' ' + mbArgs.join(' '));
+        mb = spawn(command, mbArgs);
 
         mb.on('error', deferred.reject);
         mb.stderr.on('data', function (data) {
@@ -58,7 +60,12 @@ function create (port) {
         if (isWindows && mbPath.indexOf('.cmd') < 0) {
             command = 'node ' + command;
         }
-        exec(command, function () {
+        console.log(command);
+        exec(command, function (error, stdout, stderr) {
+            if (error) { throw error; }
+            if (stdout) { console.log(stdout); }
+            if (stderr) { console.error(stderr); }
+
             // Prevent address in use errors on the next start
             setTimeout(deferred.resolve, isWindows ? 1000 : 250);
         });
