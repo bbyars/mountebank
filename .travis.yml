@@ -94,7 +94,6 @@ install:
   - if [ -n "$AWS_ACCESS_KEY" -a -n "`git describe --tags --exact-match 2>/dev/null`" ]; then export MB_PUBLISH=true; else export MB_PUBLISH=false; fi
 
 script:
-  - echo "$PATH"
   - echo "MB_DEPLOY - $MB_DEPLOY"
   - echo "MB_PUBLISH - $MB_PUBLISH"
   - ./build $MB_GRUNT_TASK
