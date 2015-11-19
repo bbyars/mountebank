@@ -27,6 +27,8 @@ describe('mb command line', function () {
     promiseIt('should support complex configuration with --configfile in multiple files', function () {
         // Delay because we need to wait long enough for the imposters to be created
         return mb.start(['--configfile', path.join(__dirname, 'imposters/imposters.ejs')]).delay(500).then(function () {
+            console.log(new Date().toISOString());
+            console.log('About to post');
             return http.post('/orders', '', 4545);
         }).then(function (response) {
             assert.strictEqual(response.statusCode, 201);

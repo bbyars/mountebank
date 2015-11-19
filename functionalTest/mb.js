@@ -36,6 +36,7 @@ function create (port) {
             }
         }
 
+        console.log(new Date().toISOString());
         console.log(command + ' ' + mbArgs.join(' '));
         mb = spawn(command, mbArgs);
 
@@ -44,6 +45,8 @@ function create (port) {
             console.error(data.toString('utf8'));
         });
         mb.stdout.on('data', function (data) {
+            console.log(new Date().toISOString());
+            console.log('DATA: ' + data.toString('utf8'));
             // Looking for "mountebank va.b.c (node vx.y.z) now taking orders..."
             if (data.toString('utf8').indexOf('now taking orders') > 0) {
                 deferred.resolve();
