@@ -20,7 +20,7 @@ function create (port) {
                 fs.readFile(logfile, function (error, data) {
                     if (error) { /* OK, it's the logfile rotation */ }
                     var fragmentLogged = function (fragment) {
-                        return data.toString('utf8').indexOf(fragment) >= 0;
+                        return (data || '').toString('utf8').indexOf(fragment) >= 0;
                     };
                     if (fragmentsToWaitFor.every(fragmentLogged)) {
                         fs.unwatchFile(logfile);
