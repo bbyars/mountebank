@@ -1,6 +1,7 @@
 'use strict';
 
 var Q = require('q'),
+    fs = require('fs'),
     path = require('path'),
     spawn = require('child_process').spawn,
     exec = require('child_process').exec,
@@ -8,19 +9,38 @@ var Q = require('q'),
     headers = { connection: 'close' },
     isWindows = require('os').platform().indexOf('win') === 0,
     mbPath = process.env.MB_EXECUTABLE || path.join(__dirname, '/../bin/mb'),
-    pidfile = 'test.pid';
+    pidfile = 'test.pid',
+    logfile = 'mb-test.log';
 
 function create (port) {
 
-    function start (args) {
+    function afterAllFragmentsLogged (fragmentsToWaitFor, callback) {
+        fs.watchFile(logfile, { interval: 200 }, function (current, previous) {
+            if (current.mtime !== previous.mtime) {
+                fs.readFile(logfile, function (error, data) {
+                    if (error) { /* OK, it's the logfile rotation */ }
+                    var fragmentLogged = function (fragment) {
+                        return (data || '').indexOf(fragment) >= 0;
+                    };
+                    if (fragmentsToWaitFor.every(fragmentLogged)) {
+                        fs.unwatchFile(logfile);
+                        callback(data);
+                    }
+                });
+            }
+        });
+    }
+
+    function start (args, logFragmentsToWaitFor) {
         var deferred = Q.defer(),
             command = mbPath,
             mbArgs = [
                 'restart',
                 '--port', port,
                 '--pidfile', pidfile,
-                '--logfile', 'mb-test.log'
+                '--logfile', logfile
             ].concat(args || []),
+            fragmentsToWaitFor = logFragmentsToWaitFor || [],
             mb;
 
         if (isWindows) {
@@ -36,22 +56,11 @@ function create (port) {
             }
         }
 
-        console.log(new Date().toISOString());
-        console.log(command + ' ' + mbArgs.join(' '));
-        mb = spawn(command, mbArgs);
+        fragmentsToWaitFor.push('now taking orders'); // mountebank va.b.c (node vx.y.z) now taking orders...
+        afterAllFragmentsLogged(fragmentsToWaitFor, deferred.resolve);
 
+        mb = spawn(command, mbArgs);
         mb.on('error', deferred.reject);
-        mb.stderr.on('data', function (data) {
-            console.error(data.toString('utf8'));
-        });
-        mb.stdout.on('data', function (data) {
-            console.log(new Date().toISOString());
-            console.log('DATA: ' + data.toString('utf8'));
-            // Looking for "mountebank va.b.c (node vx.y.z) now taking orders..."
-            if (data.toString('utf8').indexOf('now taking orders') > 0) {
-                deferred.resolve();
-            }
-        });
 
         return deferred.promise;
     }
@@ -63,7 +72,6 @@ function create (port) {
         if (isWindows && mbPath.indexOf('.cmd') < 0) {
             command = 'node ' + command;
         }
-        console.log(command);
         exec(command, function (error, stdout, stderr) {
             if (error) { throw error; }
             if (stdout) { console.log(stdout); }

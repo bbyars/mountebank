@@ -16,46 +16,40 @@ var assert = require('assert'),
 describe('mb command line', function () {
     if (isWindows) {
         // slower process startup time because Windows
-        this.timeout(timeout * 5);
+        this.timeout(timeout * 3);
     }
     else {
         this.timeout(timeout);
     }
 
-    // I normally separating the data needed for the assertions from the test setup,
+    // I normally advocated separating the data needed for the assertions from the test setup,
     // but I wanted this to be a reasonably complex regression test
     promiseIt('should support complex configuration with --configfile in multiple files', function () {
-        // Delay because we need to wait long enough for the imposters to be created
-        return mb.start(['--configfile', path.join(__dirname, 'imposters/imposters.ejs')]).delay(500).then(function () {
-            console.log(new Date().toISOString());
-            console.log('About to post /orders');
+        var args = ['--configfile', path.join(__dirname, 'imposters/imposters.ejs')],
+            logFragmentsToWaitFor = [
+                '[https:5555 account service]',
+                '[smtp:6565 email server]',
+                '[http:4545 order service]'
+            ];
+
+        return mb.start(args, logFragmentsToWaitFor).then(function () {
             return http.post('/orders', '', 4545);
         }).then(function (response) {
             assert.strictEqual(response.statusCode, 201);
             assert.strictEqual(response.headers.location, 'http://localhost:4545/orders/123');
-            console.log(new Date().toISOString());
-            console.log('About to post /orders again');
             return http.post('/orders', '', 4545);
         }).then(function (response) {
             assert.strictEqual(response.statusCode, 201);
             assert.strictEqual(response.headers.location, 'http://localhost:4545/orders/234');
-            console.log(new Date().toISOString());
-            console.log('About to post /orders/123');
             return http.get('/orders/123', 4545);
         }).then(function (response) {
             assert.strictEqual(response.body, 'Order 123');
-            console.log(new Date().toISOString());
-            console.log('About to post /orders/234');
             return http.get('/orders/234', 4545);
         }).then(function (response) {
             assert.strictEqual(response.body, 'Order 234');
-            console.log(new Date().toISOString());
-            console.log('About to post /accounts/123');
             return https.get('/accounts/123', 5555);
         }).then(function (response) {
             assert.strictEqual(response.statusCode, 401);
-            console.log(new Date().toISOString());
-            console.log('About to post /accounts/123 again');
             return https.responseFor({
                 method: 'GET',
                 path: '/accounts/123',
@@ -64,8 +58,6 @@ describe('mb command line', function () {
             });
         }).then(function (response) {
             assert.ok(response.body.indexOf('<id>123</id>') > 0);
-            console.log(new Date().toISOString());
-            console.log('About to post /accounts/234');
             return https.responseFor({
                 method: 'GET',
                 path: '/accounts/234',
@@ -74,8 +66,6 @@ describe('mb command line', function () {
             });
         }).then(function (response) {
             assert.strictEqual(response.statusCode, 404);
-            console.log(new Date().toISOString());
-            console.log('About to send email');
             return smtp.send({
                 from: '"From 1" <from1@mb.org>',
                 to: ['"To 1" <to1@mb.org>'],
@@ -89,27 +79,20 @@ describe('mb command line', function () {
 
     // This is the response resolver injection example on /docs/api/injection
     promiseIt('should evaluate stringify function in templates when loading configuration files', function () {
-        var args = ['--configfile', path.join(__dirname, 'templates/imposters.ejs'), '--allowInjection'];
+        var args = ['--configfile', path.join(__dirname, 'templates/imposters.ejs'), '--allowInjection'],
+            logFragmentsToWaitFor = ['[http:5555 origin]', '[http:4546 proxy]'];
 
         // Delay because we need to wait long enough for the imposters to be created
-        return mb.start(args).delay(500).then(function () {
-            console.log(new Date().toISOString());
-            console.log('About to get first');
+        return mb.start(args, logFragmentsToWaitFor).then(function () {
             return http.get('/first', 4546);
         }).then(function (response) {
             assert.deepEqual(response.body, { count: 1 });
-            console.log(new Date().toISOString());
-            console.log('About to get /second');
             return http.get('/second', 4546);
         }).then(function (response) {
             assert.deepEqual(response.body, { count: 2 });
-            console.log(new Date().toISOString());
-            console.log('About to get /first again');
             return http.get('/first', 4546);
         }).then(function (response) {
             assert.deepEqual(response.body, { count: 1 });
-            console.log(new Date().toISOString());
-            console.log('About to get counter');
             return http.get('/counter', 4546);
         }).then(function (response) {
             assert.strictEqual(response.body, 'There have been 2 proxied calls');
