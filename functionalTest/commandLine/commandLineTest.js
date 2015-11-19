@@ -28,24 +28,34 @@ describe('mb command line', function () {
         // Delay because we need to wait long enough for the imposters to be created
         return mb.start(['--configfile', path.join(__dirname, 'imposters/imposters.ejs')]).delay(500).then(function () {
             console.log(new Date().toISOString());
-            console.log('About to post');
+            console.log('About to post /orders');
             return http.post('/orders', '', 4545);
         }).then(function (response) {
             assert.strictEqual(response.statusCode, 201);
             assert.strictEqual(response.headers.location, 'http://localhost:4545/orders/123');
+            console.log(new Date().toISOString());
+            console.log('About to post /orders again');
             return http.post('/orders', '', 4545);
         }).then(function (response) {
             assert.strictEqual(response.statusCode, 201);
             assert.strictEqual(response.headers.location, 'http://localhost:4545/orders/234');
+            console.log(new Date().toISOString());
+            console.log('About to post /orders/123');
             return http.get('/orders/123', 4545);
         }).then(function (response) {
             assert.strictEqual(response.body, 'Order 123');
+            console.log(new Date().toISOString());
+            console.log('About to post /orders/234');
             return http.get('/orders/234', 4545);
         }).then(function (response) {
             assert.strictEqual(response.body, 'Order 234');
+            console.log(new Date().toISOString());
+            console.log('About to post /accounts/123');
             return https.get('/accounts/123', 5555);
         }).then(function (response) {
             assert.strictEqual(response.statusCode, 401);
+            console.log(new Date().toISOString());
+            console.log('About to post /accounts/123 again');
             return https.responseFor({
                 method: 'GET',
                 path: '/accounts/123',
@@ -54,6 +64,8 @@ describe('mb command line', function () {
             });
         }).then(function (response) {
             assert.ok(response.body.indexOf('<id>123</id>') > 0);
+            console.log(new Date().toISOString());
+            console.log('About to post /accounts/234');
             return https.responseFor({
                 method: 'GET',
                 path: '/accounts/234',
@@ -62,6 +74,8 @@ describe('mb command line', function () {
             });
         }).then(function (response) {
             assert.strictEqual(response.statusCode, 404);
+            console.log(new Date().toISOString());
+            console.log('About to send email');
             return smtp.send({
                 from: '"From 1" <from1@mb.org>',
                 to: ['"To 1" <to1@mb.org>'],
@@ -79,15 +93,23 @@ describe('mb command line', function () {
 
         // Delay because we need to wait long enough for the imposters to be created
         return mb.start(args).delay(500).then(function () {
+            console.log(new Date().toISOString());
+            console.log('About to get first');
             return http.get('/first', 4546);
         }).then(function (response) {
             assert.deepEqual(response.body, { count: 1 });
+            console.log(new Date().toISOString());
+            console.log('About to get /second');
             return http.get('/second', 4546);
         }).then(function (response) {
             assert.deepEqual(response.body, { count: 2 });
+            console.log(new Date().toISOString());
+            console.log('About to get /first again');
             return http.get('/first', 4546);
         }).then(function (response) {
             assert.deepEqual(response.body, { count: 1 });
+            console.log(new Date().toISOString());
+            console.log('About to get counter');
             return http.get('/counter', 4546);
         }).then(function (response) {
             assert.strictEqual(response.body, 'There have been 2 proxied calls');
