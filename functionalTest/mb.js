@@ -23,11 +23,8 @@ function create (port) {
                 fs.readFile(logfile, function (error, data) {
                     var text = (data || '').toString('utf8');
 
-                    if (error) { console.log('ERROR:'); console.log(error); /* OK, it's the logfile rotation */ }
-                    console.log('DATA:');
-                    console.log(text);
+                    if (error) { /* OK, it's the ENOENT from the logfile rotation */ }
                     var fragmentLogged = function (fragment) {
-                        console.log(fragment + ' is ' + (text.indexOf(fragment) >= 0 ? 'FOUND' : 'NOT FOUND'));
                         return text.indexOf(fragment) >= 0;
                     };
                     if (fragmentsToWaitFor.every(fragmentLogged)) {
@@ -66,7 +63,7 @@ function create (port) {
 
         fragmentsToWaitFor.push('now taking orders'); // mountebank va.b.c (node vx.y.z) now taking orders...
         afterAllFragmentsLogged(fragmentsToWaitFor, deferred.resolve);
-        console.log(command + ' ' + mbArgs.join(' '));
+
         mb = spawn(command, mbArgs);
         mb.on('error', deferred.reject);
 
