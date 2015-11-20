@@ -59,8 +59,9 @@ function serverAt (options) {
 
     return {
         start: function () {
-            var server = mountebank.create(options),
-                shutdown = function shutdown () {
+            fs.writeFileSync(options.pidfile, process.pid.toString());
+            return mountebank.create(options).then(function (server) {
+                var shutdown = function shutdown () {
                     if (fs.existsSync(options.pidfile)) {
                         fs.unlinkSync(options.pidfile);
                     }
@@ -68,9 +69,9 @@ function serverAt (options) {
                     process.exit();
                 };
 
-            fs.writeFileSync(options.pidfile, process.pid.toString());
-            process.on('SIGINT', shutdown);
-            process.on('SIGTERM', shutdown);
+                process.on('SIGINT', shutdown);
+                process.on('SIGTERM', shutdown);
+            });
         },
 
         stop: function () {
@@ -89,11 +90,10 @@ function serverAt (options) {
         },
 
         restart: function () {
+            // Need a delay or get an address in use error
             var timeToWait = willKill() ? killWait : 0;
             this.stop();
-
-            // Need a delay or get an address in use error
-            setTimeout(this.start, timeToWait);
+            return Q.delay(timeToWait).then(this.start);
         }
     };
 }
@@ -180,13 +180,21 @@ try {
     else {
         switch (commandLine.command) {
             case 'start':
-                server.start();
+                server.start().done(function () {
+                    if (shouldLoadConfigFile(commandLine)) {
+                        loadConfig(commandLine);
+                    }
+                });
                 break;
             case 'stop':
                 server.stop();
                 break;
             case 'restart':
-                server.restart();
+                server.restart().done(function () {
+                    if (shouldLoadConfigFile(commandLine)) {
+                        loadConfig(commandLine);
+                    }
+                });
                 break;
             case 'help':
                 usage();
@@ -194,10 +202,6 @@ try {
             default:
                 error("Invalid command '" + commandLine.command + "'.");
                 break;
-        }
-
-        if (shouldLoadConfigFile(commandLine)) {
-            loadConfig(commandLine);
         }
     }
 }

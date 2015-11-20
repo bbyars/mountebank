@@ -6,7 +6,8 @@
  * @module
  */
 
-var express = require('express'),
+var Q = require('q'),
+    express = require('express'),
     cors = require('cors'),
     errorHandler = require('errorhandler'),
     path = require('path'),
@@ -42,7 +43,8 @@ function initializeLogfile (filename) {
  * @returns {Object} An object with a close method to stop the server
  */
 function create (options) {
-    var app = express(),
+    var deferred = Q.defer(),
+        app = express(),
         imposters = {},
         protocols = {
             tcp: require('./models/tcp/tcpServer').initialize(options.allowInjection, options.mock, options.debug),
@@ -143,18 +145,19 @@ function create (options) {
         });
     });
 
-    app.listen(options.port);
+    app.listen(options.port, function () {
+        logger.info(welcome);
+        if (!process.stdout.isTTY) {
+            // needed for a number of functional tests (e.g. httpInjectionTest.js)
+            // that need to wait for a new mb process to start without a TTY
+            console.log(welcome);
+        }
+        deferred.resolve({
+            close: function () { logger.info('Adios - see you soon?'); }
+        });
+    });
 
-    logger.info(welcome);
-    if (!process.stdout.isTTY) {
-        // needed for a number of functional tests (e.g. httpInjectionTest.js)
-        // that need to wait for a new mb process to start without a TTY
-        console.log(welcome);
-    }
-
-    return {
-        close: function () { logger.info('Adios - see you soon?'); }
-    };
+    return deferred.promise;
 }
 
 module.exports = {
