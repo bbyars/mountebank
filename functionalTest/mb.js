@@ -18,21 +18,29 @@ function create (port) {
         if (fs.existsSync(logfile)) {
             fs.unlinkSync(logfile);
         }
-        fs.watchFile(logfile, { interval: 200 }, function (current, previous) {
-            if (current.mtime !== previous.mtime) {
-                fs.readFile(logfile, function (error, data) {
-                    var text = (data || '').toString('utf8');
+        fs.watchFile(logfile, { interval: 100 }, function (current, previous) {
+            if (current.mtime === previous.mtime) {
+                return;
+            }
 
-                    if (error) { /* OK, it's the ENOENT from the logfile rotation */ }
-                    var fragmentLogged = function (fragment) {
+            fs.readFile(logfile, function (error, data) {
+                var text = (data || '').toString('utf8'),
+                    fragmentLogged = function (fragment) {
                         return text.indexOf(fragment) >= 0;
                     };
-                    if (fragmentsToWaitFor.every(fragmentLogged)) {
-                        fs.unwatchFile(logfile);
-                        callback(data);
-                    }
-                });
-            }
+
+                if (error) {
+                    // OK, it's the ENOENT from the logfile rotation
+                }
+                else if (fragmentsToWaitFor.every(fragmentLogged)) {
+                    fs.unwatchFile(logfile);
+                    callback(data);
+                }
+                else {
+                    console.log(new Date().toISOString());
+                    console.log(text);
+                }
+            });
         });
     }
 
