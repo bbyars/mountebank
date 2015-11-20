@@ -18,30 +18,52 @@ function create (port) {
         if (fs.existsSync(logfile)) {
             fs.unlinkSync(logfile);
         }
-        fs.watchFile(logfile, { interval: 100 }, function (current, previous) {
-            if (current.mtime === previous.mtime) {
-                return;
-            }
+        var intervalId,
+            watchFile = function () {
+                fs.readFile(logfile, function (error, data) {
+                    var text = (data || '').toString('utf8'),
+                        fragmentLogged = function (fragment) {
+                            return text.indexOf(fragment) >= 0;
+                        };
 
-            fs.readFile(logfile, function (error, data) {
-                var text = (data || '').toString('utf8'),
-                    fragmentLogged = function (fragment) {
-                        return text.indexOf(fragment) >= 0;
-                    };
-
-                if (error) {
-                    // OK, it's the ENOENT from the logfile rotation
-                }
-                else if (fragmentsToWaitFor.every(fragmentLogged)) {
-                    fs.unwatchFile(logfile);
-                    callback(data);
-                }
-                else {
-                    console.log(new Date().toISOString());
-                    console.log(text);
-                }
-            });
-        });
+                    if (error) {
+                        // OK, it's the ENOENT from the logfile rotation
+                    }
+                    else if (fragmentsToWaitFor.every(fragmentLogged)) {
+                        clearInterval(intervalId);
+                        callback(data);
+                    }
+                    else {
+                        console.log(new Date().toISOString());
+                        console.log(text);
+                    }
+                });
+            };
+        intervalId = setInterval(watchFile, 100);
+        // fs.watchFile(logfile, { interval: 100 }, function (current, previous) {
+        //    if (current.mtime === previous.mtime) {
+        //        return;
+        //    }
+        //
+        //    fs.readFile(logfile, function (error, data) {
+        //        var text = (data || '').toString('utf8'),
+        //            fragmentLogged = function (fragment) {
+        //                return text.indexOf(fragment) >= 0;
+        //            };
+        //
+        //        if (error) {
+        //            // OK, it's the ENOENT from the logfile rotation
+        //        }
+        //        else if (fragmentsToWaitFor.every(fragmentLogged)) {
+        //            fs.unwatchFile(logfile);
+        //            callback(data);
+        //        }
+        //        else {
+        //            console.log(new Date().toISOString());
+        //            console.log(text);
+        //        }
+        //    });
+        // });
     }
 
     function start (args, logFragmentsToWaitFor) {
