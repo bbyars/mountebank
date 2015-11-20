@@ -18,9 +18,13 @@ function create (port) {
         fs.watchFile(logfile, { interval: 200 }, function (current, previous) {
             if (current.mtime !== previous.mtime) {
                 fs.readFile(logfile, function (error, data) {
-                    if (error) { /* OK, it's the logfile rotation */ }
+                    var text = (data || '').toString('utf8');
+
+                    if (error) { console.log('ERROR:'); console.log(error); /* OK, it's the logfile rotation */ }
+                    console.log('DATA:');
+                    console.log(text);
                     var fragmentLogged = function (fragment) {
-                        return (data || '').toString('utf8').indexOf(fragment) >= 0;
+                        return text.indexOf(fragment) >= 0;
                     };
                     if (fragmentsToWaitFor.every(fragmentLogged)) {
                         fs.unwatchFile(logfile);
