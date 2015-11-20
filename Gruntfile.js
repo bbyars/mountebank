@@ -110,7 +110,7 @@ module.exports = function (grunt) {
     grunt.registerTask('test:performance', 'Run the performance tests', ['mochaTest:performance']);
     grunt.registerTask('test', 'Run all non-performance tests', ['test:unit', 'test:functional']);
     grunt.registerTask('coverage', 'Generate code coverage', ['mochaTest:coverage']);
-    grunt.registerTask('lint', 'Run all lint checks', ['wslint', 'jsCheck', 'deadCheck', 'eslint']);
+    grunt.registerTask('lint', 'Run all lint checks', ['wslint', /*' jsCheck',*/ 'deadCheck', 'eslint']);
     grunt.registerTask('default', ['dist', 'version', 'test', 'lint']);
 
     grunt.registerTask('local', 'Fast build for local development (avoids distribution)', ['test', 'lint']);

@@ -15,6 +15,9 @@ var Q = require('q'),
 function create (port) {
 
     function afterAllFragmentsLogged (fragmentsToWaitFor, callback) {
+        if (fs.existsSync(logfile)) {
+            fs.unlinkSync(logfile);
+        }
         fs.watchFile(logfile, { interval: 200 }, function (current, previous) {
             if (current.mtime !== previous.mtime) {
                 fs.readFile(logfile, function (error, data) {
@@ -24,6 +27,7 @@ function create (port) {
                     console.log('DATA:');
                     console.log(text);
                     var fragmentLogged = function (fragment) {
+                        console.log(fragment + ' is ' + (text.indexOf(fragment) >= 0 ? 'FOUND' : 'NOT FOUND'));
                         return text.indexOf(fragment) >= 0;
                     };
                     if (fragmentsToWaitFor.every(fragmentLogged)) {
@@ -62,7 +66,7 @@ function create (port) {
 
         fragmentsToWaitFor.push('now taking orders'); // mountebank va.b.c (node vx.y.z) now taking orders...
         afterAllFragmentsLogged(fragmentsToWaitFor, deferred.resolve);
-
+        console.log(command + ' ' + mbArgs.join(' '));
         mb = spawn(command, mbArgs);
         mb.on('error', deferred.reject);
 

@@ -13,7 +13,7 @@ var assert = require('assert'),
     http = BaseHttpClient.create('http'),
     https = BaseHttpClient.create('https');
 
-describe('mb command line', function () {
+describe.only('mb command line', function () {
     if (isWindows) {
         // slower process startup time because Windows
         this.timeout(timeout * 2);
