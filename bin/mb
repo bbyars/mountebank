@@ -117,8 +117,10 @@ function putConfig (options, body) {
         request = http.request(requestOptions, function (response) {
             response.body = '';
             response.setEncoding('utf8');
-            response.on('data', function (chunk) { response.body += chunk; });
+            response.on('data', function (chunk) { console.log('DATA:'); console.log(chunk.toString('utf8')); response.body += chunk; });
             response.on('end', function () {
+                console.log('END:');
+                console.log(response.body);
                 response.body = JSON.parse(response.body);
                 deferred.resolve(response);
             });
@@ -126,6 +128,8 @@ function putConfig (options, body) {
 
     request.on('error', deferred.reject);
 
+    console.log('REQUEST:');
+    console.log(body);
     request.write(body);
     request.end();
     return deferred.promise;
