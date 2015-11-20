@@ -46,60 +46,8 @@ function processExists (pid) {
     }
 }
 
-function serverAt (options) {
-
-    function willKill () {
-        if (!fs.existsSync(options.pidfile)) {
-            return false;
-        }
-
-        var pid = fs.readFileSync(options.pidfile);
-        return processExists(pid);
-    }
-
-    return {
-        start: function () {
-            fs.writeFileSync(options.pidfile, process.pid.toString());
-            return mountebank.create(options).then(function (server) {
-                var shutdown = function shutdown () {
-                    if (fs.existsSync(options.pidfile)) {
-                        fs.unlinkSync(options.pidfile);
-                    }
-                    server.close();
-                    process.exit();
-                };
-
-                process.on('SIGINT', shutdown);
-                process.on('SIGTERM', shutdown);
-            });
-        },
-
-        stop: function () {
-            if (!fs.existsSync(options.pidfile)) {
-                return;
-            }
-
-            var pid = fs.readFileSync(options.pidfile);
-
-            if (processExists(pid)) {
-                process.kill(pid);
-            }
-            else {
-                fs.unlinkSync(options.pidfile);
-            }
-        },
-
-        restart: function () {
-            // Need a delay or get an address in use error
-            var timeToWait = willKill() ? killWait : 0;
-            this.stop();
-            return Q.delay(timeToWait).then(this.start);
-        }
-    };
-}
-
-function shouldLoadConfigFile (commandLine) {
-    return commandLine.options.configfile !== '' && commandLine.command.indexOf('start') >= 0;
+function shouldLoadConfigFile (options) {
+    return options.configfile !== '';
 }
 
 function putConfig (options, body) {
@@ -140,10 +88,14 @@ function stringify (filename, includeFile) {
     return jsonString.substring(1, jsonString.length - 1);
 }
 
-function loadConfig (commandLine) {
-    var configContents = fs.readFileSync(commandLine.options.configfile, 'utf8'),
+function loadConfig (options) {
+    if (!shouldLoadConfigFile(options)) {
+        return Q(true);
+    }
+
+    var configContents = fs.readFileSync(options.configfile, 'utf8'),
         parsedContents = ejs.render(configContents, {
-            filename: commandLine.options.configfile,
+            filename: options.configfile,
             stringify: stringify,
             inject: stringify       // backwards compatibility
         }),
@@ -155,7 +107,64 @@ function loadConfig (commandLine) {
         imposters = [json];
     }
 
-    return putConfig(commandLine.options, JSON.stringify({ imposters: imposters }));
+    return putConfig(options, JSON.stringify({ imposters: imposters }));
+}
+
+function serverAt (options) {
+
+    function willKill () {
+        if (!fs.existsSync(options.pidfile)) {
+            return false;
+        }
+
+        var pid = fs.readFileSync(options.pidfile);
+        return processExists(pid);
+    }
+
+    return {
+        start: function () {
+            mountebank.create(options).then(function (server) {
+                var shutdown = function shutdown () {
+                    if (fs.existsSync(options.pidfile)) {
+                        fs.unlinkSync(options.pidfile);
+                    }
+                    server.close();
+                    process.exit();
+                };
+
+                process.on('SIGINT', shutdown);
+                process.on('SIGTERM', shutdown);
+
+                return loadConfig(options);
+            }).done(function () {
+                // Useful for build plugins that need to wait for mb to be fully initialized
+                // They can wait for the pidfile to be written
+                fs.writeFileSync(options.pidfile, process.pid.toString());
+            });
+        },
+
+        stop: function () {
+            if (!fs.existsSync(options.pidfile)) {
+                return;
+            }
+
+            var pid = fs.readFileSync(options.pidfile);
+
+            if (processExists(pid)) {
+                process.kill(pid);
+            }
+            else {
+                fs.unlinkSync(options.pidfile);
+            }
+        },
+
+        restart: function () {
+            // Need a delay or get an address in use error
+            var timeToWait = willKill() ? killWait : 0;
+            this.stop();
+            return Q.delay(timeToWait).then(this.start);
+        }
+    };
 }
 
 try {
@@ -176,21 +185,13 @@ try {
     else {
         switch (commandLine.command) {
             case 'start':
-                server.start().done(function () {
-                    if (shouldLoadConfigFile(commandLine)) {
-                        loadConfig(commandLine);
-                    }
-                });
+                server.start();
                 break;
             case 'stop':
                 server.stop();
                 break;
             case 'restart':
-                server.restart().done(function () {
-                    if (shouldLoadConfigFile(commandLine)) {
-                        loadConfig(commandLine);
-                    }
-                });
+                server.restart();
                 break;
             case 'help':
                 usage();

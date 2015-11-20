@@ -25,14 +25,9 @@ describe('mb command line', function () {
     // I normally advocated separating the data needed for the assertions from the test setup,
     // but I wanted this to be a reasonably complex regression test
     promiseIt('should support complex configuration with --configfile in multiple files', function () {
-        var args = ['--configfile', path.join(__dirname, 'imposters/imposters.ejs')],
-            logFragmentsToWaitFor = [
-                '[https:5555 account service]',
-                '[smtp:6565 email server]',
-                '[http:4545 order service]'
-            ];
+        var args = ['--configfile', path.join(__dirname, 'imposters/imposters.ejs')];
 
-        return mb.start(args, logFragmentsToWaitFor).then(function () {
+        return mb.start(args).then(function () {
             return http.post('/orders', '', 4545);
         }).then(function (response) {
             assert.strictEqual(response.statusCode, 201);
@@ -79,11 +74,10 @@ describe('mb command line', function () {
 
     // This is the response resolver injection example on /docs/api/injection
     promiseIt('should evaluate stringify function in templates when loading configuration files', function () {
-        var args = ['--configfile', path.join(__dirname, 'templates/imposters.ejs'), '--allowInjection'],
-            logFragmentsToWaitFor = ['[http:5555 origin]', '[http:4546 proxy]'];
+        var args = ['--configfile', path.join(__dirname, 'templates/imposters.ejs'), '--allowInjection'];
 
         // Delay because we need to wait long enough for the imposters to be created
-        return mb.start(args, logFragmentsToWaitFor).then(function () {
+        return mb.start(args).then(function () {
             return http.get('/first', 4546);
         }).then(function (response) {
             assert.deepEqual(response.body, { count: 1 });

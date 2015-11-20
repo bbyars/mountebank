@@ -148,8 +148,7 @@ function create (options) {
     app.listen(options.port, function () {
         logger.info(welcome);
         if (!process.stdout.isTTY) {
-            // needed for a number of functional tests (e.g. httpInjectionTest.js)
-            // that need to wait for a new mb process to start without a TTY
+            // needed for grunt-mountebank for now
             console.log(welcome);
         }
         deferred.resolve({

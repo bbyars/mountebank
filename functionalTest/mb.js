@@ -12,36 +12,21 @@ var Q = require('q'),
     pidfile = 'test.pid',
     logfile = 'mb-test.log';
 
+function whenFullyInitialized (callback) {
+    var spinWait = function () {
+        if (fs.existsSync(pidfile)) {
+            callback({});
+        }
+        else {
+            Q.delay(100).done(spinWait);
+        }
+    };
+    spinWait();
+}
+
 function create (port) {
 
-    function afterAllFragmentsLogged (fragmentsToWaitFor, callback) {
-        if (fs.existsSync(logfile)) {
-            fs.unlinkSync(logfile);
-        }
-
-        fs.watchFile(logfile, { interval: 100 }, function (current, previous) {
-            if (current.mtime === previous.mtime) {
-                return;
-            }
-
-            fs.readFile(logfile, function (error, data) {
-                var text = (data || '').toString('utf8'),
-                    fragmentLogged = function (fragment) {
-                        return text.indexOf(fragment) >= 0;
-                    };
-
-                if (error) {
-                    // OK, it's the ENOENT from the logfile rotation
-                }
-                else if (fragmentsToWaitFor.every(fragmentLogged)) {
-                    fs.unwatchFile(logfile);
-                    callback(data);
-                }
-            });
-        });
-    }
-
-    function start (args, logFragmentsToWaitFor) {
+    function start (args) {
         var deferred = Q.defer(),
             command = mbPath,
             mbArgs = [
@@ -50,7 +35,6 @@ function create (port) {
                 '--pidfile', pidfile,
                 '--logfile', logfile
             ].concat(args || []),
-            fragmentsToWaitFor = logFragmentsToWaitFor || [],
             mb;
 
         if (isWindows) {
@@ -66,11 +50,10 @@ function create (port) {
             }
         }
 
-        fragmentsToWaitFor.push('now taking orders'); // mountebank va.b.c (node vx.y.z) now taking orders...
-        afterAllFragmentsLogged(fragmentsToWaitFor, deferred.resolve);
-
         mb = spawn(command, mbArgs);
         mb.on('error', deferred.reject);
+
+        whenFullyInitialized(deferred.resolve);
 
         return deferred.promise;
     }
