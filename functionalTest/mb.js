@@ -37,10 +37,6 @@ function create (port) {
                     fs.unwatchFile(logfile);
                     callback(data);
                 }
-                else {
-                    console.log(new Date().toISOString());
-                    console.log(text);
-                }
             });
         });
     }
@@ -75,7 +71,6 @@ function create (port) {
 
         mb = spawn(command, mbArgs);
         mb.on('error', deferred.reject);
-        mb.stdout.on('data', function (data) { console.log(data.toString('utf8')); });
 
         return deferred.promise;
     }
