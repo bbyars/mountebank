@@ -45,7 +45,7 @@ function initializeLogfile (filename) {
 function create (options) {
     var deferred = Q.defer(),
         app = express(),
-        imposters = {},
+        imposters = options.imposters || {},
         protocols = {
             tcp: require('./models/tcp/tcpServer').initialize(options.allowInjection, options.mock, options.debug),
             http: require('./models/http/httpServer').initialize(options.allowInjection, options.mock, options.debug),
