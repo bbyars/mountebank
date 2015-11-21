@@ -145,14 +145,19 @@ function create (options) {
         });
     });
 
-    app.listen(options.port, function () {
+    var server = app.listen(options.port, function () {
         logger.info(welcome);
         if (!process.stdout.isTTY) {
             // needed for grunt-mountebank for now
             console.log(welcome);
         }
         deferred.resolve({
-            close: function () { logger.info('Adios - see you soon?'); }
+            close: function (callback) {
+                server.close(function () {
+                    logger.info('Adios - see you soon?');
+                    callback();
+                });
+            }
         });
     });
 

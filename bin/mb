@@ -128,8 +128,7 @@ function serverAt (options) {
                     if (fs.existsSync(options.pidfile)) {
                         fs.unlinkSync(options.pidfile);
                     }
-                    server.close();
-                    process.exit();
+                    server.close(process.exit);
                 };
 
                 process.on('SIGINT', shutdown);

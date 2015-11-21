@@ -21,6 +21,10 @@ function whenFullyInitialized (callback) {
             Q.delay(100).done(spinWait);
         }
     };
+
+    if (fs.existsSync(pidfile)) {
+        fs.unlinkSync(pidfile);
+    }
     spinWait();
 }
 
@@ -50,10 +54,9 @@ function create (port) {
             }
         }
 
+        whenFullyInitialized(deferred.resolve);
         mb = spawn(command, mbArgs);
         mb.on('error', deferred.reject);
-
-        whenFullyInitialized(deferred.resolve);
 
         return deferred.promise;
     }
