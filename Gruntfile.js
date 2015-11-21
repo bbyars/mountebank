@@ -10,7 +10,6 @@ module.exports = function (grunt) {
     grunt.loadNpmTasks('grunt-mocha-test');
     grunt.loadNpmTasks('grunt-jsdoc');
     grunt.loadNpmTasks('grunt-mountebank');
-    grunt.loadNpmTasks('grunt-wslint');
     grunt.loadNpmTasks('grunt-eslint');
 
     grunt.initConfig({
@@ -74,29 +73,6 @@ module.exports = function (grunt) {
             },
             restart: ['--port', port, '--pidfile', 'mb-grunt.pid', '--logfile', 'mb-grunt.log', '--allowInjection', '--mock', '--debug'],
             stop: ['--pidfile', 'mb-grunt.pid']
-        },
-        wslint: {
-            all: [
-                '**/*',
-                '!node_modules/**/*',
-                '!.git/**/*',
-                '!.DS_Store',
-                '!.idea/**/*',
-                '!src/public/images/**/*',
-                '!docs/**/*',
-                '!dist/**/*',
-                '!mountebank.iml',
-                '!*.log',
-                '!*.pid',
-                '!src/public/scripts/jquery/**/*',
-                '!src/public/stylesheets/jqueryui/**/*'
-            ],
-            options: {
-                noTrailingWhitespace: true,
-                noTabs: true,
-                trailingNewline: true,
-                noMultipleTrailingNewlines: true
-            }
         }
     });
 
@@ -110,7 +86,7 @@ module.exports = function (grunt) {
     grunt.registerTask('test:performance', 'Run the performance tests', ['mochaTest:performance']);
     grunt.registerTask('test', 'Run all non-performance tests', ['test:unit', 'test:functional']);
     grunt.registerTask('coverage', 'Generate code coverage', ['mochaTest:coverage']);
-    grunt.registerTask('lint', 'Run all lint checks', ['wslint', 'jsCheck', 'deadCheck', 'eslint']);
+    grunt.registerTask('lint', 'Run all lint checks', ['jsCheck', 'deadCheck', 'eslint']);
     grunt.registerTask('default', ['dist', 'version', 'test', 'lint']);
 
     grunt.registerTask('local', 'Fast build for local development (avoids distribution)', ['test', 'lint']);
