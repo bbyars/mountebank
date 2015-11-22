@@ -61,10 +61,7 @@ function create (options) {
         logsController = LogsController.create(options.logfile),
         configController = ConfigController.create(thisPackage.version, options),
         feedController = FeedController.create(releases, options),
-        validateImposterExists = middleware.createImposterValidator(imposters),
-        welcome = util.format('mountebank v%s (node %s) now taking orders - point your browser to http://localhost:%s for help',
-            thisPackage.version, process.version, options.port);
-
+        validateImposterExists = middleware.createImposterValidator(imposters);
     logger.remove(logger.transports.Console);
     if (process.stdout.isTTY) {
         logger.add(logger.transports.Console, { colorize: true, level: options.loglevel });
@@ -146,7 +143,17 @@ function create (options) {
     });
 
     var server = app.listen(options.port, function () {
-        logger.info(welcome);
+        logger.info(util.format('mountebank v%s now taking orders - point your browser to http://localhost:%s for help',
+            thisPackage.version, options.port));
+        logger.debug('config: ' + JSON.stringify({
+                options: options,
+                process: {
+                    nodeVersion: process.version,
+                    architecture: process.arch,
+                    platform: process.platform
+                }
+            })
+        );
         deferred.resolve({
             close: function (callback) {
                 server.close(function () {
