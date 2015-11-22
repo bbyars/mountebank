@@ -131,6 +131,7 @@ function createServer (options, recordRequests, debug) {
  * @param {boolean} allowInjection - represents the command line --allowInjection parameter
  * @param {boolean} recordRequests - represents the command line --mock parameter
  * @param {boolean} debug - represents the command line --debug parameter
+ * @returns {Object} The server factory
  */
 function initialize (allowInjection, recordRequests, debug) {
     return {

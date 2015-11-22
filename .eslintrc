@@ -139,7 +139,7 @@
         "spaced-comment": [2, "always"],
         "strict": [2, "global"],
         "use-isnan": 2,
-        //"valid-jsdoc": 2,
+        "valid-jsdoc": [2, {"requireReturn": false, "requireReturnDescription": false}],
         "valid-typeof": 2,
         "yoda": 2
     }

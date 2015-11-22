@@ -51,6 +51,7 @@ function create (imposters) {
      * @memberOf module:controllers/imposterController#
      * @param {Object} request - the HTTP request
      * @param {Object} response - the HTTP response
+     * @returns {Object} A promise for testing
      */
     function del (request, response) {
         var imposter = imposters[request.params.id],

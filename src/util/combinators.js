@@ -49,13 +49,13 @@ module.exports = {
     /**
      * Returns what was passed in unchanged, occasionally useful as the default transformation function
      * to avoid special case logic
-     * @param i
-     * @returns Exactly what was passed in
+     * @param {Object} i - The input
+     * @returns {Object} Exactly what was passed in
      */
     identity: function (i) { return i; },
     /**
      * Ignores its parameters, and instead always returns a constant value
-     * @param k - The constant to return
+     * @param {Object} k - The constant to return
      * @returns {Function} - A function that will always return the constant
      */
     constant: function (k) { return function () { return k; }; },

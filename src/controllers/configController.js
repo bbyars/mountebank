@@ -9,8 +9,8 @@ var helpers = require('../util/helpers');
 
 /**
  * Creates the config controller
- * @param version {string} The version of the currently running process
- * @param options {object} The command line options used to start mb
+ * @param {string} version - The version of the currently running process
+ * @param {Object} options - The command line options used to start mb
  * @returns {Object}
  */
 function create (version, options) {
@@ -22,8 +22,8 @@ function create (version, options) {
     /**
      * The method that responds to GET /config
      * @memberOf module:controllers/configController#
-     * @param request {object} The HTTP request
-     * @param response {object} The HTTP response
+     * @param {Object} request - The HTTP request
+     * @param {Object} response - The HTTP response
      */
     function get (request, response) {
         var config = {

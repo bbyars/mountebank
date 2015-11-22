@@ -75,8 +75,10 @@ function logConnection (logger, socket) {
 
 /**
  * Spins up a server listening on a socket
- * @param options - the JSON request body for the imposter create request
- * @param recordRequests - the --mock command line parameter
+ * @param {Object} options - the JSON request body for the imposter create request
+ * @param {boolean} recordRequests - the --mock command line parameter
+ * @param {boolean} debug - the --debug command line parameter
+ * @returns {Object} The promise resolving to the protocol interface
  */
 function createServer (options, recordRequests, debug) {
     var deferred = Q.defer(),

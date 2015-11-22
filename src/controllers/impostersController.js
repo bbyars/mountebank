@@ -125,6 +125,7 @@ function create (protocols, imposters, Imposter, logger) {
      * @memberOf module:controllers/impostersController#
      * @param {Object} request - the HTTP request
      * @param {Object} response - the HTTP response
+     * @returns {Object} A promise for testing purposes
      */
     function post (request, response) {
         var protocol = request.body.protocol,
@@ -154,6 +155,7 @@ function create (protocols, imposters, Imposter, logger) {
      * @memberOf module:controllers/impostersController#
      * @param {Object} request - the HTTP request
      * @param {Object} response - the HTTP response
+     * @returns {Object} A promise for testing purposes
      */
     function del (request, response) {
         var query = url.parse(request.url, true).query,
@@ -175,6 +177,7 @@ function create (protocols, imposters, Imposter, logger) {
      * @memberOf module:controllers/impostersController#
      * @param {Object} request - the HTTP request
      * @param {Object} response - the HTTP response
+     * @returns {Object} A promise for testing purposes
      */
     function put (request, response) {
         var requestImposters = request.body.imposters || [],

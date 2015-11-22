@@ -9,8 +9,8 @@ var date = require('../util/date');
 
 /**
  * Creates the home controller
- * @param releases
- * @returns {{get: get}}
+ * @param {Object} releases - The releases.json file
+ * @returns {Object} The controller
  */
 function create (releases) {
 

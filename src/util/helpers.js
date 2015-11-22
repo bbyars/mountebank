@@ -26,8 +26,8 @@ function clone (obj) {
 
 /**
  * Returns a new object combining the two parameters
- * @param defaults - The base object
- * @param overrides - The object to merge from.  Where the same property exists in both defaults
+ * @param {Object} defaults - The base object
+ * @param {Object} overrides - The object to merge from.  Where the same property exists in both defaults
  * and overrides, the values for overrides will be used
  * @returns {Object}
  */

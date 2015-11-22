@@ -11,8 +11,9 @@ var fs = require('fs'),
     helpers = require('../util/helpers');
 
 /**
- * @param {object} releases - The object represented in the releases.json file
- * @param {object} options - The command line options used to start mountebank
+ * @param {Object} releases - The object represented in the releases.json file
+ * @param {Object} options - The command line options used to start mountebank
+ * @returns {Object} The controller
  */
 function create (releases, options) {
 
@@ -31,8 +32,8 @@ function create (releases, options) {
     /**
      * The function that responds to GET /feed
      * @memberOf module:controllers/feedController#
-     * @param request {object} The HTTP request
-     * @param response {object} The HTTP response
+     * @param {Object} request - The HTTP request
+     * @param {Object} response - The HTTP response
      */
     function getFeed (request, response) {
         var page = parseInt(request.query.page || '1'),
@@ -65,8 +66,8 @@ function create (releases, options) {
     /**
      * The function that responds to GET /releases
      * @memberOf module:controllers/feedController#
-     * @param request {object} The HTTP request
-     * @param response {object} The HTTP response
+     * @param {Object} request - The HTTP request
+     * @param {Object} response - The HTTP response
      */
     function getReleases (request, response) {
         response.render('releases', { releases: feedReleases });
@@ -75,8 +76,8 @@ function create (releases, options) {
     /**
      * The function that responds to GET /releases/:version
      * @memberOf module:controllers/feedController#
-     * @param request {object} The HTTP request
-     * @param response {object} The HTTP response
+     * @param {Object} request - The HTTP request
+     * @param {Object} response - The HTTP response
      */
     function getRelease (request, response) {
         var version = request.params.version,

@@ -15,7 +15,7 @@ var fs = require('fs'),
 /**
  * Initializes the https protocol
  * @param {boolean} allowInjection - The --allowInjection command line parameter
- * @param {boolean} mock - The --mock command line parameter
+ * @param {boolean} recordRequests - The --mock command line parameter
  * @param {boolean} debug - The --debug command line parameter
  * @returns {Object} - The protocol implementation
  */

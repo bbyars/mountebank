@@ -171,8 +171,8 @@ function create (options) {
     /**
      * Validates that the imposter creation is syntactically valid
      * @memberOf module:models/dryRunValidator#
-     * @param request {object} The request containing the imposter definition
-     * @param logger {object} The logger
+     * @param {Object} request - The request containing the imposter definition
+     * @param {Object} logger - The logger
      * @returns {Object} Promise resolving to an object containing isValid and an errors array
      */
     function validate (request, logger) {
