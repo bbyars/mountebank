@@ -18,7 +18,7 @@ if (process.env.MB_AIRPLANE_MODE !== 'true' && process.env.MB_RUN_WEB_TESTS === 
         };
 
     describe('The mountebank website', function () {
-        this.timeout(30000);
+        this.timeout(60000);
 
         promiseIt('should have no dead links and a valid sitemap', function () {
             var crawlResults;
