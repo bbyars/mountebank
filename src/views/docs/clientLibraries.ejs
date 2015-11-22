@@ -39,16 +39,16 @@ If you have a plugin, please add it to this page.</p>
 <p>As of v1.4.3, <code>mb</code> writes the pidfile (mb.pid by default, although it can be overridden on the
 command line) only after it has fully initialized, including binding to the socket and initializing any
 imposters passed in a config file.  You can use this fact to wait for the pidfile creation before returning
-from a build task to guarantee initialization before the next task runs.<p>
+from a build task to guarantee initialization before the next task runs.</p>
 
 <p>Similarly, the <code>mb stop</code> command only removes the pidfile after the server has fully shut down.
 Though it's probably not as important, if you need to ensure full shut down before continuing to the next task,
-you can wait for the pidfile to disappear.<p>
+you can wait for the pidfile to disappear.</p>
 
 <p>Finally, the command to actually run mountebank can vary depending on both the platform and the installation
 package.  To support all options, you will need to dynamically determine the executable command to run.</p>
 
 <p>See the <a href='https://github.com/bbyars/grunt-mountebank/blob/master/tasks/mb.js'>grunt-mountebank code</a>
-that mountebank uses for its build for an example.<p/>
+that mountebank uses for its build for an example.</p>
 
 <% include ../_footer %>
