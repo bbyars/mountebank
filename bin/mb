@@ -125,11 +125,11 @@ function serverAt (options) {
             process.on('SIGTERM', shutdown);
 
             return loadConfig(options);
-        }).done(function () {
+        }).then(function () {
             // Useful for build plugins that need to wait for mb to be fully initialized
             // They can wait for the pidfile to be written
             fs.writeFileSync(options.pidfile, process.pid.toString());
-        });
+        }).done();
     }
 
     function stop () {
@@ -144,10 +144,10 @@ function serverAt (options) {
         }
 
         var deferred = Q.defer(),
-            start = new Date(),
+            startTime = new Date(),
             timeout = 1000,
             waitForClose = function () {
-                var elapsedTime = new Date() - start;
+                var elapsedTime = new Date() - startTime;
 
                 if (fs.existsSync(options.pidfile) || elapsedTime > timeout) {
                     deferred.resolve();
@@ -163,7 +163,7 @@ function serverAt (options) {
     }
 
     function restart () {
-        this.stop().done(this.start);
+        stop().then(start).done();
     }
 
     return {
