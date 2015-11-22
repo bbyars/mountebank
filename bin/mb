@@ -8,9 +8,7 @@ var mountebank = require('../src/mountebank'),
     http = require('http'),
     thisPackage = require('../package.json'),
     Q = require('q'),
-    ejs = require('ejs'),
-    isWindows = require('os').platform().indexOf('win') === 0,
-    killWait = isWindows ? 1000 : 0;
+    ejs = require('ejs');
 
 function usage () {
     console.log('Usage: mb [command] [options...]');
@@ -112,57 +110,68 @@ function loadConfig (options) {
 
 function serverAt (options) {
 
-    function willKill () {
-        if (!fs.existsSync(options.pidfile)) {
-            return false;
-        }
-
-        var pid = fs.readFileSync(options.pidfile);
-        return processExists(pid);
-    }
-
-    return {
-        start: function () {
-            mountebank.create(options).then(function (server) {
-                var shutdown = function shutdown () {
+    function start () {
+        mountebank.create(options).then(function (server) {
+            var shutdown = function shutdown () {
+                server.close(function () {
                     if (fs.existsSync(options.pidfile)) {
                         fs.unlinkSync(options.pidfile);
                     }
-                    server.close(process.exit);
-                };
+                    process.exit();
+                });
+            };
 
-                process.on('SIGINT', shutdown);
-                process.on('SIGTERM', shutdown);
+            process.on('SIGINT', shutdown);
+            process.on('SIGTERM', shutdown);
 
-                return loadConfig(options);
-            }).done(function () {
-                // Useful for build plugins that need to wait for mb to be fully initialized
-                // They can wait for the pidfile to be written
-                fs.writeFileSync(options.pidfile, process.pid.toString());
-            });
-        },
+            return loadConfig(options);
+        }).done(function () {
+            // Useful for build plugins that need to wait for mb to be fully initialized
+            // They can wait for the pidfile to be written
+            fs.writeFileSync(options.pidfile, process.pid.toString());
+        });
+    }
 
-        stop: function () {
-            if (!fs.existsSync(options.pidfile)) {
-                return;
-            }
-
-            var pid = fs.readFileSync(options.pidfile);
-
-            if (processExists(pid)) {
-                process.kill(pid);
-            }
-            else {
-                fs.unlinkSync(options.pidfile);
-            }
-        },
-
-        restart: function () {
-            // Need a delay or get an address in use error
-            var timeToWait = willKill() ? killWait : 0;
-            this.stop();
-            return Q.delay(timeToWait).then(this.start);
+    function stop () {
+        if (!fs.existsSync(options.pidfile)) {
+            return Q(true);
         }
+
+        var pid = fs.readFileSync(options.pidfile);
+        if (!processExists(pid)) {
+            fs.unlinkSync(options.pidfile);
+            return Q(true);
+        }
+
+        var deferred = Q.defer(),
+            start = new Date(),
+            timeout = 1000,
+            waitForClose = function () {
+                var elapsedTime = new Date() - start;
+
+                if (fs.existsSync(options.pidfile) || elapsedTime > timeout) {
+                    deferred.resolve();
+                }
+                else {
+                    setTimeout(waitForClose, 100);
+                }
+            };
+
+        process.kill(pid);
+        waitForClose();
+        return deferred.promise;
+    }
+
+    function restart () {
+        this.stop().done(this.start);
+    }
+
+    return {
+        start: start,
+        stop: function () {
+            stop().done(process.exit);
+        },
+        restart: restart
     };
 }
 
