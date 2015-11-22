@@ -32,15 +32,6 @@ module.exports = function (grunt) {
                     reporter: 'spec'
                 },
                 src: ['performanceTest/**/*.js']
-            },
-            coverage: {
-                options: {
-                    reporter: 'html-cov',
-                    quiet: true,
-                    captureFile: 'coverage.html',
-                    require: 'coverage/blanket'
-                },
-                src: ['test/**/*.js']
             }
         },
         eslint: {
@@ -85,7 +76,6 @@ module.exports = function (grunt) {
         ['mb:restart', 'try', 'mochaTest:functional', 'finally', 'mb:stop', 'checkForErrors']);
     grunt.registerTask('test:performance', 'Run the performance tests', ['mochaTest:performance']);
     grunt.registerTask('test', 'Run all non-performance tests', ['test:unit', 'test:functional']);
-    grunt.registerTask('coverage', 'Generate code coverage', ['mochaTest:coverage']);
     grunt.registerTask('lint', 'Run all lint checks', ['jsCheck', 'deadCheck', 'eslint']);
     grunt.registerTask('default', ['dist', 'version', 'test', 'lint']);
 

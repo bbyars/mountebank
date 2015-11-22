@@ -1,7 +1,6 @@
 .idea
 node_modules/
 .DS_Store
-coverage.html
 mb*.log
 *.pid
 dist/
@@ -12,3 +11,4 @@ TODO
 request.txt
 docs
 CREDENTIALS.md
+coverage
