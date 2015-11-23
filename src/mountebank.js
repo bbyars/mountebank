@@ -146,14 +146,13 @@ function create (options) {
         logger.info(util.format('mountebank v%s now taking orders - point your browser to http://localhost:%s for help',
             thisPackage.version, options.port));
         logger.debug('config: ' + JSON.stringify({
-                options: options,
-                process: {
-                    nodeVersion: process.version,
-                    architecture: process.arch,
-                    platform: process.platform
-                }
-            })
-        );
+            options: options,
+            process: {
+                nodeVersion: process.version,
+                architecture: process.arch,
+                platform: process.platform
+            }
+        }));
         deferred.resolve({
             close: function (callback) {
                 server.close(function () {
