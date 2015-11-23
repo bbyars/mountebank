@@ -77,7 +77,7 @@ module.exports = function (grunt) {
     grunt.registerTask('test:performance', 'Run the performance tests', ['mochaTest:performance']);
     grunt.registerTask('test', 'Run all non-performance tests', ['test:unit', 'test:functional']);
     grunt.registerTask('lint', 'Run all lint checks', ['jsCheck', 'deadCheck', 'eslint']);
-    grunt.registerTask('default', ['dist', 'version', 'test', 'lint']);
+    grunt.registerTask('default', ['test', 'lint']);
 
     grunt.registerTask('local', 'Fast build for local development (avoids distribution)', ['test', 'lint']);
     grunt.registerTask('airplane', 'Build that avoids tests requiring network access', ['setAirplaneMode', 'local']);

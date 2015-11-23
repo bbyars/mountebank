@@ -20,7 +20,6 @@ module.exports = function (grunt) {
             newPackage = JSON.parse(JSON.stringify(thisPackage)),
             failed = failTask('dist');
 
-        // This doesn't work on Windows
         rimraf.sync('dist');
         fs.mkdirSync('dist');
         fs.mkdirSync('dist/mountebank');
