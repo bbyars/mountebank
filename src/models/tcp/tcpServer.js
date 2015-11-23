@@ -19,9 +19,9 @@ var AbstractServer = require('../abstractServer'),
     events = require('events'),
     TcpRequest = require('./tcpRequest');
 
-function postProcess (stub) {
+function postProcess (response) {
     return {
-        data: stub.data || ''
+        data: response.data || ''
     };
 }
 

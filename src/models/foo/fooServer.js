@@ -17,14 +17,14 @@ var net = require('net'),
     DryRunValidator = require('../dryRunValidator');
 
 /**
- * Used to fill in defaults for the response.  A user may set up a stub
+ * Used to fill in defaults for the response.  A user may set up a response
  * with not all fields filled in, and we use this function to fill in the rest
- * @param {Object} stub - The stub
- * @returns {Object} - the response
+ * @param {Object} response - The response returned by the stub
+ * @returns {Object} - The response we will send back
  */
-function postProcess (stub) {
+function postProcess (response) {
     return {
-        data: stub.data || 'foo'
+        data: response.data || 'foo'
     };
 }
 
@@ -47,7 +47,7 @@ function scopeFor (port, name) {
  * @param {Object} options - the JSON request body for the imposter create request
  * @param {boolean} recordRequests - The --mock command line parameter
  * @param {boolean} debug - The --debug command line parameter
- * @returns {d.promise|promise|n.ready.promise}
+ * @returns {Object} The protocol server implementation
  */
 function createServer (options, recordRequests, debug) {
             // This is an async operation, so we use a deferred

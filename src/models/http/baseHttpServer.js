@@ -25,12 +25,12 @@ var AbstractServer = require('../abstractServer'),
  * @returns {Object}
  */
 function setup (protocolName, createBaseServer) {
-    function postProcess (stub) {
+    function postProcess (stubResponse) {
         var response = {
-            statusCode: stub.statusCode || 200,
-            headers: stub.headers || {},
-            body: stub.body || '',
-            _mode: stub._mode || 'text'
+            statusCode: stubResponse.statusCode || 200,
+            headers: stubResponse.headers || {},
+            body: stubResponse.body || '',
+            _mode: stubResponse._mode || 'text'
         };
 
         if (typeof response.body === 'object') {
