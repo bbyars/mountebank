@@ -11,6 +11,7 @@ module.exports = function (grunt) {
     grunt.loadNpmTasks('grunt-jsdoc');
     grunt.loadNpmTasks('grunt-mountebank');
     grunt.loadNpmTasks('grunt-eslint');
+    grunt.loadNpmTasks('grunt-css');
 
     grunt.initConfig({
         pkg: grunt.file.readJSON('package.json'), // needed for coveralls
@@ -64,7 +65,21 @@ module.exports = function (grunt) {
             },
             restart: ['--port', port, '--pidfile', 'mb-grunt.pid', '--logfile', 'mb-grunt.log', '--allowInjection', '--mock', '--debug'],
             stop: ['--pidfile', 'mb-grunt.pid']
+        },
+
+        csslint: {
+        	strict: {
+			    options: {
+			      important: 2,
+			      ids: 2
+			    },
+			    all: [
+			    'src/**/*.css', 
+			    '!src/**/jquery-ui.css'
+			    ]
+			}
         }
+
     });
 
     grunt.registerTask('setAirplaneMode', function () {
@@ -76,8 +91,9 @@ module.exports = function (grunt) {
         ['mb:restart', 'try', 'mochaTest:functional', 'finally', 'mb:stop', 'checkForErrors']);
     grunt.registerTask('test:performance', 'Run the performance tests', ['mochaTest:performance']);
     grunt.registerTask('test', 'Run all non-performance tests', ['test:unit', 'test:functional']);
-    grunt.registerTask('lint', 'Run all lint checks', ['jsCheck', 'deadCheck', 'eslint']);
+    grunt.registerTask('lint', 'Run all lint checks', ['jsCheck', 'deadCheck', 'eslint', 'csslint']);
     grunt.registerTask('default', ['test', 'lint']);
+    grunt.registerTask()
 
     grunt.registerTask('local', 'Fast build for local development (avoids distribution)', ['test', 'lint']);
     grunt.registerTask('airplane', 'Build that avoids tests requiring network access', ['setAirplaneMode', 'local']);
