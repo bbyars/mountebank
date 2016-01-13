@@ -88,6 +88,22 @@ describe('http proxy', function () {
             });
         });
 
+        promiseIt('should capture response time to origin server', function () {
+            var stub = { responses: [{ is: { body: 'ORIGIN' }, _behaviors: { wait: 250 } }] },
+                request = { protocol: 'http', port: port, stubs: [stub], name: this.name };
+
+            return api.post('/imposters', request).then(function (response) {
+                assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body));
+
+                return proxy.to('http://localhost:' + port, { path: '/', method: 'GET', headers: {} }, {});
+            }).then(function (response) {
+                assert.strictEqual(response.body, 'ORIGIN');
+                assert.ok(response._proxyResponseTime > 230); // eslint-disable-line no-underscore-dangle
+            }).finally(function () {
+                return api.del('/imposters');
+            });
+        });
+
         promiseIt('should gracefully deal with DNS errors', function () {
             return proxy.to('http://no.such.domain', { path: '/', method: 'GET', headers: {} }, {}).then(function () {
                 assert.fail('should not have resolved promise');

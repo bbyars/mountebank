@@ -121,10 +121,10 @@ Accept: application/json
 
 <code class='hidden' data-test-id='proxy example'
                      data-test-verify-step='13'
-                     data-test-ignore-lines='["[Dd]ate"]'>
+                     data-test-ignore-lines='["[Dd]ate", "_proxyResponseTime"]'>
 HTTP/1.1 200 OK
 Content-Type: application/json; charset=utf-8
-Content-Length: 1768
+Content-Length: 1879
 Date: Mon, 27 Jan 2014 04:38:44 GMT
 Connection: keep-alive
 
@@ -163,7 +163,8 @@ Connection: keep-alive
               "transfer-encoding": "chunked"
             },
             "body": "call 4",
-            "_mode": "text"
+            "_mode": "text",
+            "_proxyResponseTime": 2
           }
         },
         {
@@ -175,7 +176,8 @@ Connection: keep-alive
               "transfer-encoding": "chunked"
             },
             "body": "call 5",
-            "_mode": "text"
+            "_mode": "text",
+            "_proxyResponseTime": 2
           }
         }
       ]
@@ -210,7 +212,8 @@ Connection: keep-alive
               "transfer-encoding": "chunked"
             },
             "body": "call 6",
-            "_mode": "text"
+            "_mode": "text",
+            "_proxyResponseTime": 2
           }
         }
       ]

@@ -334,7 +334,8 @@ describe('http proxy stubs', function () {
         }).then(function (response) {
             var actual = JSON.stringify(response.body),
                 withDateRemoved = actual.replace(/"date":"[^"]+"/g, '"date":"NOW"'),
-                actualWithoutEphemeralData = JSON.parse(withDateRemoved);
+                withResponseTimeRemoved = withDateRemoved.replace(/"_proxyResponseTime":\d+/g, '"_proxyResponseTime":0'),
+                actualWithoutEphemeralData = JSON.parse(withResponseTimeRemoved);
 
             assert.deepEqual(actualWithoutEphemeralData, {
                 imposters: [
@@ -361,7 +362,8 @@ describe('http proxy stubs', function () {
                                                 'transfer-encoding': 'chunked'
                                             },
                                             body: '1. /first',
-                                            _mode: 'text'
+                                            _mode: 'text',
+                                            _proxyResponseTime: 0
                                         }
                                     },
                                     {
@@ -373,7 +375,8 @@ describe('http proxy stubs', function () {
                                                 'transfer-encoding': 'chunked'
                                             },
                                             body: '3. /first',
-                                            _mode: 'text'
+                                            _mode: 'text',
+                                            _proxyResponseTime: 0
                                         }
                                     }
                                 ]
@@ -396,7 +399,8 @@ describe('http proxy stubs', function () {
                                                 'transfer-encoding': 'chunked'
                                             },
                                             body: '2. /second',
-                                            _mode: 'text'
+                                            _mode: 'text',
+                                            _proxyResponseTime: 0
                                         }
                                     }
                                 ]

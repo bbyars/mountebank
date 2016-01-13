@@ -80,7 +80,8 @@ function create (logger) {
     }
 
     function proxy (proxiedRequest) {
-        var deferred = Q.defer();
+        var deferred = Q.defer(),
+            start = new Date();
 
         proxiedRequest.end();
 
@@ -99,7 +100,8 @@ function create (logger) {
                         statusCode: response.statusCode,
                         headers: response.headers,
                         body: body.toString(encoding),
-                        _mode: mode
+                        _mode: mode,
+                        _proxyResponseTime: new Date() - start
                     };
                 deferred.resolve(stubResponse);
             });

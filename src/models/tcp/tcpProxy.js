@@ -52,13 +52,18 @@ function create (logger, encoding) {
     }
 
     function proxy (socket) {
-        var packets = [];
-        var deferred = Q.defer();
+        var packets = [],
+            deferred = Q.defer(),
+            start = new Date();
+
         socket.on('data', function (data) {
             packets.push(data);
         });
         socket.on('end', function () {
-            deferred.resolve({ data: Buffer.concat(packets).toString(encoding) });
+            deferred.resolve({
+                data: Buffer.concat(packets).toString(encoding),
+                _proxyResponseTime: new Date() - start
+            });
         });
         return deferred.promise;
     }

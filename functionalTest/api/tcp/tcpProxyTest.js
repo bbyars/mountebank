@@ -84,6 +84,21 @@ describe('tcp proxy', function () {
             });
         });
 
+        promiseIt('should capture response time to origin server', function () {
+            var stub = { responses: [{ is: { data: 'howdy!' } }] },
+                request = { protocol: 'tcp', port: port, stubs: [stub], name: this.name },
+                proxy = TcpProxy.create(logger, 'utf8');
+
+            return api.post('/imposters', request).then(function () {
+                return proxy.to('tcp://localhost:' + port, { data: 'hello, world!' });
+            }).then(function (response) {
+                assert.deepEqual(response.data.toString(), 'howdy!');
+                assert.ok(response._proxyResponseTime > 0); // eslint-disable-line no-underscore-dangle
+            }).finally(function () {
+                return api.del('/imposters');
+            });
+        });
+
         promiseIt('should gracefully deal with DNS errors', function () {
             var proxy = TcpProxy.create(logger, 'utf8');
 

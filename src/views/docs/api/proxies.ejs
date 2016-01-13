@@ -75,6 +75,10 @@ origin server expects to use mutual authentication and will request a client cer
   </tr>
 </table>
 
+<p>It is occasionally useful to capture how long the original proxied request takes.  mountebank
+stores the number of milliseconds for the request in the <code>_proxyResponseTime</code> field in the
+response.</p>
+
 <h2>Understanding proxy behavior</h2>
 
 <p>The <code>mode</code> and <code>predicateGenerators</code> parameters define the behavior of
