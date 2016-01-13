@@ -24,7 +24,8 @@ var Q = require('q'),
     thisPackage = require('../package.json'),
     releases = require('../releases.json'),
     ScopedLogger = require('./util/scopedLogger'),
-    util = require('util');
+    util = require('util'),
+    helpers = require('./util/helpers');
 
 function initializeLogfile (filename) {
     // Ensure new logfile on startup so the /logs only shows for this process
@@ -142,26 +143,42 @@ function create (options) {
         });
     });
 
-    var server = app.listen(options.port, function () {
-        logger.info(util.format('mountebank v%s now taking orders - point your browser to http://localhost:%s for help',
-            thisPackage.version, options.port));
-        logger.debug('config: ' + JSON.stringify({
-            options: options,
-            process: {
-                nodeVersion: process.version,
-                architecture: process.arch,
-                platform: process.platform
-            }
-        }));
-        deferred.resolve({
-            close: function (callback) {
-                server.close(function () {
-                    logger.info('Adios - see you soon?');
-                    callback();
+    var connections = {},
+        server = app.listen(options.port, function () {
+            logger.info(util.format('mountebank v%s now taking orders - point your browser to http://localhost:%s for help',
+                thisPackage.version, options.port));
+            logger.debug('config: ' + JSON.stringify({
+                options: options,
+                process: {
+                    nodeVersion: process.version,
+                    architecture: process.arch,
+                    platform: process.platform
+                }
+            }));
+
+            server.on('connection', function (socket) {
+                var name = helpers.socketName(socket);
+                connections[name] = socket;
+
+                socket.on('close', function () {
+                    delete connections[name];
                 });
-            }
+            });
+
+            deferred.resolve({
+                close: function (callback) {
+                    server.close(function () {
+                        logger.info('Adios - see you soon?');
+                        callback();
+                    });
+
+                    // Force kill any open connections to prevent process hanging
+                    Object.keys(connections).forEach(function (socket) {
+                        connections[socket].destroy();
+                    });
+                }
+            });
         });
-    });
 
     return deferred.promise;
 }

@@ -114,10 +114,14 @@ function serverAt (options) {
         mountebank.create(options).then(function (server) {
             var shutdown = function shutdown () {
                 server.close(function () {
-                    if (fs.existsSync(options.pidfile)) {
-                        fs.unlinkSync(options.pidfile);
+                    try {
+                        if (fs.existsSync(options.pidfile)) {
+                            fs.unlinkSync(options.pidfile);
+                        }
                     }
-                    process.exit();
+                    finally {
+                        process.exit();
+                    }
                 });
             };
 
