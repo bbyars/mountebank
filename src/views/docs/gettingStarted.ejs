@@ -84,7 +84,7 @@ curl -i -X POST -H 'Content-Type: application/json' http://127.0.0.1:4545/test -
            data-test-verify-step='2'
            data-test-ignore-lines='["^Date"]'>
 HTTP/1.1 <strong class='highlight1'>400</strong> Bad Request
-connection: close
+Connection: close
 Date: Sat, 04 Jan 2014 02:48:16 GMT
 Transfer-Encoding: chunked
 </code></pre>
@@ -102,7 +102,7 @@ curl -i -X POST http://127.0.0.1:4545/test --data '{"optionalField": true}'
            data-test-verify-step='3'
            data-test-ignore-lines='["^Date"]'>
 HTTP/1.1 200 OK
-connection: close
+Connection: close
 Date: Sat, 04 Jan 2014 02:48:16 GMT
 Transfer-Encoding: chunked
 </code></pre>

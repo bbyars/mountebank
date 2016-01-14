@@ -228,7 +228,7 @@ Connection: keep-alive
             "headers": {
               "Location": "http://localhost:4545/customers/123",
               "Content-Type": "application/xml",
-              "connection": "close"
+              "Connection": "close"
             },
             "body": "&lt;customer&gt;&lt;email&gt;customer@test.com&lt;/email&gt;&lt;/customer&gt;"
           }
@@ -238,7 +238,7 @@ Connection: keep-alive
             "statusCode": 400,
             "headers": {
               "Content-Type": "application/xml",
-              "connection": "close"
+              "Connection": "close"
             },
             "body": "&lt;error&gt;email already exists&lt;/error&gt;"
           }
@@ -266,7 +266,7 @@ Connection: keep-alive
             "headers": {
               "Location": "http://localhost:4545/customers/123",
               "Content-Type": "application/xml",
-              "connection": "close"
+              "Connection": "close"
             },
             "body": "&lt;customer&gt;&lt;email&gt;customer@test.com&lt;/email&gt;&lt;/customer&gt;",
             "_mode": "text"
@@ -292,7 +292,7 @@ Connection: keep-alive
             "statusCode": 400,
             "headers": {
               "Content-Type": "application/xml",
-              "connection": "close"
+              "Connection": "close"
             },
             "body": "&lt;error&gt;email already exists&lt;/error&gt;",
             "_mode": "text"

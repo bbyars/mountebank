@@ -333,7 +333,7 @@ describe('http proxy stubs', function () {
             return api.get('/imposters?replayable=true&removeProxies=true');
         }).then(function (response) {
             var actual = JSON.stringify(response.body),
-                withDateRemoved = actual.replace(/"date":"[^"]+"/g, '"date":"NOW"'),
+                withDateRemoved = actual.replace(/"Date":"[^"]+"/g, '"Date":"NOW"'),
                 withResponseTimeRemoved = withDateRemoved.replace(/"_proxyResponseTime":\d+/g, '"_proxyResponseTime":0'),
                 actualWithoutEphemeralData = JSON.parse(withResponseTimeRemoved);
 
@@ -357,9 +357,9 @@ describe('http proxy stubs', function () {
                                         is: {
                                             statusCode: 200,
                                             headers: {
-                                                connection: 'close',
-                                                date: 'NOW',
-                                                'transfer-encoding': 'chunked'
+                                                Connection: 'close',
+                                                Date: 'NOW',
+                                                'Transfer-Encoding': 'chunked'
                                             },
                                             body: '1. /first',
                                             _mode: 'text',
@@ -370,9 +370,9 @@ describe('http proxy stubs', function () {
                                         is: {
                                             statusCode: 200,
                                             headers: {
-                                                connection: 'close',
-                                                date: 'NOW',
-                                                'transfer-encoding': 'chunked'
+                                                Connection: 'close',
+                                                Date: 'NOW',
+                                                'Transfer-Encoding': 'chunked'
                                             },
                                             body: '3. /first',
                                             _mode: 'text',
@@ -394,9 +394,9 @@ describe('http proxy stubs', function () {
                                         is: {
                                             statusCode: 200,
                                             headers: {
-                                                connection: 'close',
-                                                date: 'NOW',
-                                                'transfer-encoding': 'chunked'
+                                                Connection: 'close',
+                                                Date: 'NOW',
+                                                'Transfer-Encoding': 'chunked'
                                             },
                                             body: '2. /second',
                                             _mode: 'text',
@@ -461,6 +461,25 @@ describe('http proxy stubs', function () {
 
                 // https://www.google.com.br in Brasil, etc
                 assert.ok(response.headers.location.indexOf('google.com') >= 0, response.headers.location);
+            }).finally(function () {
+                return api.del('/imposters');
+            });
+        });
+
+        promiseIt('should maintain case of headers from origin', function () {
+            var proxyStub = { responses: [{ proxy: { to: 'http://google.com' } }] },
+                proxyRequest = { protocol: 'http', port: port, stubs: [proxyStub], name: this.name + ' proxy' },
+                isUpperCase = function (header) {
+                    return header[0] === header[0].toUpperCase();
+                };
+
+            return api.post('/imposters', proxyRequest).then(function (response) {
+                assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body, null, 2));
+                return client.get('/', port);
+            }).then(function (response) {
+                for (var i = 0; i < response.rawHeaders.length; i += 2) {
+                    assert.ok(isUpperCase(response.rawHeaders[i]), response.rawHeaders[i] + ' is not upper-case');
+                }
             }).finally(function () {
                 return api.del('/imposters');
             });

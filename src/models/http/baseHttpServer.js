@@ -44,7 +44,12 @@ function setup (protocolName, createBaseServer) {
         // from reusing an existing TCP connection after the stub
         // has shutdown, causing difficult to track down bugs when
         // multiple tests are run.
-        response.headers.connection = 'close';
+        if (response.headers.connection) {
+            response.headers.connection = 'close';
+        }
+        else {
+            response.headers.Connection = 'close';
+        }
         return response;
     }
 

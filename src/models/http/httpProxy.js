@@ -79,6 +79,14 @@ function create (logger) {
         });
     }
 
+    function headersFor (rawHeaders) {
+        var result = {};
+        for (var i = 0; i < rawHeaders.length; i += 2) {
+            result[rawHeaders[i]] = rawHeaders[i + 1];
+        }
+        return result;
+    }
+
     function proxy (proxiedRequest) {
         var deferred = Q.defer(),
             start = new Date();
@@ -98,7 +106,7 @@ function create (logger) {
                     encoding = mode === 'binary' ? 'base64' : 'utf8',
                     stubResponse = {
                         statusCode: response.statusCode,
-                        headers: response.headers,
+                        headers: headersFor(response.rawHeaders),
                         body: body.toString(encoding),
                         _mode: mode,
                         _proxyResponseTime: new Date() - start
