@@ -93,7 +93,7 @@ describe('tcp proxy', function () {
                 return proxy.to('tcp://localhost:' + port, { data: 'hello, world!' });
             }).then(function (response) {
                 assert.deepEqual(response.data.toString(), 'howdy!');
-                assert.ok(response._proxyResponseTime > 0); // eslint-disable-line no-underscore-dangle
+                assert.ok(response._proxyResponseTime >= 0); // eslint-disable-line no-underscore-dangle
             }).finally(function () {
                 return api.del('/imposters');
             });
