@@ -473,6 +473,8 @@ describe('http proxy stubs', function () {
                     return header[0] === header[0].toUpperCase();
                 };
 
+            compatibility.patchRawHeaders();
+
             return api.post('/imposters', proxyRequest).then(function (response) {
                 assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body, null, 2));
                 return client.get('/', port);
