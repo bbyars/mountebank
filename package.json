@@ -1,7 +1,7 @@
 {
   "name": "mountebank",
   "preferGlobal": true,
-  "version": "1.4.3",
+  "version": "1.5.0",
   "author": "Brandon Byars <brandon.byars@gmail.com>",
   "contributors": [
     "Jason Reid <jason@jasonreid.com>",
@@ -18,7 +18,7 @@
     "Carson Ramdem <cramsden@hmc.edu>",
     "Avalon McRae",
     "Burkhard Reffeling",
-    "shubhekshajalan",
+    "Shubheksha Jalan",
     "Tim Brown <Tpbrown@gmail.com>"
   ],
   "description": "Over the wire test doubles",
