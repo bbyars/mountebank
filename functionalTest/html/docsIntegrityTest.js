@@ -60,6 +60,7 @@ describe('docs', function () {
         '/docs/api/injection',
         '/docs/api/behaviors',
         '/docs/api/xpath',
+        '/docs/api/json',
         '/docs/protocols/https',
         '/docs/protocols/http'
     ].forEach(function (page) {

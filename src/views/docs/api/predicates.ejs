@@ -101,8 +101,7 @@ predicate parameters:</p>
 </table>
 
 <p>See the <code>equals</code> example below to see the <code>caseSensitive</code> and
-<code>except</code> parameters in action.  See the <a href='/docs/api/xpath'>xpath page</a>
-for <code>xpath</code> examples.</p>
+<code>except</code> parameters in action.</p>
 
 <p>Almost all predicates are scoped to a request field; see the protocol pages linked to from
 the sidebar to see the request fields.  <code>inject</code> is the sole exception.  It takes
@@ -124,6 +123,16 @@ that have repeating keys, for example <code>?key=first&amp;key=second</code>.  I
 <code>deepEquals</code> will require all the values (in any order) to match.  All other
 predicates will match if any value matches, so an <code>equals</code> predicate
 will match with the value of <code>second</code> in the example above.</p>
+
+<h2>Matching XML or JSON</h2>
+
+<p>mountebank has special support for matching XML and JSON request fields, such as in an <code>http body</code>
+or <code>tcp data</code> field.  Where XML or JSON predicates are used against <code>string</code> fields,
+mountebank will attempt to parse the field as XML or JSON and apply the given predicate.  If he is unable to
+parse the field, the predicate will fail; otherwise it will pass or fail according to the selected value.</p>
+
+<p>See the <a href='/docs/api/xpath'>xpath page</a> for <code>xpath</code> examples.</p>
+<p>See the <a href='/docs/api/json'>json page</a> for <code>json</code> examples.</p>
 
 <h2>Examples</h2>
 

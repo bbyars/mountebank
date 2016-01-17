@@ -135,6 +135,7 @@ function create (options) {
         '/docs/api/stubs',
         '/docs/api/predicates',
         '/docs/api/xpath',
+        '/docs/api/json',
         '/docs/api/proxies',
         '/docs/api/injection',
         '/docs/api/behaviors',
