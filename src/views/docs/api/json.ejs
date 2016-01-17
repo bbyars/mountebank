@@ -1,0 +1,115 @@
+<%
+title = 'json'
+description = 'Using JSON in mountebank predicates'
+%>
+
+<% include ../../_header %>
+
+<h1>Using JSON Predicates</h1>
+
+<p>It is possible to match <code>string</code> JSON fields using string operators, but mountebank finds
+    it clumsy, as you have to either exactly match the whitespace or use a regular expression.  Given
+    mountebank's desire for elegance above all else, he supports predicates that treat JSON strings as
+    objects, allowing a fuller range of predicate matching.</p>
+
+<p>JSON predicates follow the same semantics as those obeyed for multi-valued keys described on the
+    <a href='/docs/api/predicates'>main predicates page</a>, like those observed when a querystring has
+    the same key multiple times.  Since the selected JSON field can potentially represent an array, most predicates
+    match if <em>any</em> array element matches.  <code>deepEquals</code> will require all the values to match
+    (although the order isn't important).</p>
+
+<h2>Examples</h2>
+
+<p>Let's create an HTTP imposter.  To show mountebank's first class support for JSON, we'll also
+    demonstrate <a href='/docs/protocols/http#inline-json-response-bodies'>passing a JSON object
+    as the <code>http body</code></a> in the response.  We've added a <code>comment</code> field
+    to help explain each predicate.  Like all unrecognized fields passed in, mountebank will
+    simply ignore it.</p>
+
+<pre><code data-test-id='json example'
+           data-test-step='1'
+           data-test-type='http'>
+POST /imposters HTTP/1.1
+Host: localhost:<%= port %>
+Accept: application/json
+Content-Type: application/json
+
+{
+  "port": 4545,
+  "protocol": "http",
+  "stubs": [
+    {
+      "responses": [{
+        "is": {
+          "body": <strong class='highlight1'>{
+            "code": "SUCCESS",
+            "author": "J.K. Rowling"
+          }</strong>
+        }
+      }],
+      "predicates": [
+        {
+          "equals": { "body": { "title": "Harry Potter" } },
+          "caseSensitive": true,
+          "comment": "case sensitivity applies to the key as well as the value"
+        },
+        {
+          "equals": { "body": { "title": "POTTER" } },
+          "except": "HARRY ",
+          "comment": "The except regular expression is removed from the value before matching"
+        },
+        {
+          "matches": { "body": { "title": "^Harry" } }
+        },
+        {
+          "exists": { "body": { "title": true } },
+          "comment": "The given JSON key must exist"
+        },
+        {
+          "exists": { "body": { "name": false } },
+          "comment": "The given JSON key must NOT exist"
+        }
+      ]
+    }
+  ]
+}
+</code></pre>
+
+<p>We'll pass the following HTTP request to test the predicates and confirm we get the
+    expected response:</p>
+
+<pre><code data-test-id='json example'
+           data-test-step='2'
+           data-test-type='http'>
+POST / HTTP/1.1
+Host: localhost:4545
+
+{
+  "title": "Harry Potter",
+  "summary": "Dragons and a boy wizard"
+}
+</code></pre>
+
+<pre><code data-test-id='json example'
+           data-test-verify-step='2'
+           data-test-ignore-lines='["^Date"]'>
+HTTP/1.1 200 OK
+Connection: close
+Date: Thu, 09 Jan 2014 02:30:31 GMT
+Transfer-Encoding: chunked
+
+<strong class='highlight1'>{
+    "code": "SUCCESS",
+    "author": "J.K. Rowling"
+}</strong>
+</code></pre>
+
+<code class='hidden' data-test-id='json example'
+                     data-test-step='3'
+                     data-test-type='http'>
+DELETE /imposters/4545 HTTP/1.1
+Host: localhost:<%= port %>
+Accept: application/json
+</code>
+
+<% include ../../_footer %>
