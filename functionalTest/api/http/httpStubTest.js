@@ -351,6 +351,28 @@ var assert = require('assert'),
                     return api.del('/imposters');
                 });
             });
+
+            promiseIt('should support treating the body as a JSON object for predicate matching', function () {
+                var stub = {
+                        responses: [{ is: { body: 'SUCCESS' } }],
+                        predicates: [
+                            { equals: { body: { key: 'value' } } },
+                            { equals: { body: { arr: 3 } } },
+                            { deepEquals: { body: { key: 'value', arr: [2, 1, 3] } } },
+                            { matches: { body: { key: '^v' } } }
+                        ]
+                    },
+                    request = { protocol: protocol, port: port, stubs: [stub], name: this.name };
+
+                return api.post('/imposters', request).then(function (response) {
+                    assert.strictEqual(response.statusCode, 201);
+                    return client.post('/', '{"key": "value", "arr": [3,2,1]}', port);
+                }).then(function (response) {
+                    assert.strictEqual(response.body, 'SUCCESS');
+                }).finally(function () {
+                    return api.del('/imposters');
+                });
+            });
         });
     });
 });

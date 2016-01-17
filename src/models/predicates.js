@@ -127,6 +127,15 @@ function normalize (obj, config, encoding, withSelectors) {
     return transformAll(obj);
 }
 
+function tryJSON (value) {
+    try {
+        return JSON.parse(value);
+    }
+    catch (e) {
+        return value;
+    }
+}
+
 function predicateSatisfied (expected, actual, predicate) {
     if (!actual) {
         return false;
@@ -138,6 +147,11 @@ function predicateSatisfied (expected, actual, predicate) {
             }
             return predicate(expected[fieldName], value);
         };
+
+        // Support predicates that reach into fields encoded in JSON strings (e.g. HTTP bodies)
+        if (typeof actual[fieldName] === 'undefined' && typeof actual === 'string') {
+            actual = tryJSON(actual);
+        }
 
         if (Array.isArray(actual[fieldName])) {
             return actual[fieldName].some(test);
@@ -173,6 +187,10 @@ function deepEquals (predicate, request, encoding) {
         actual = normalize(forceStrings(request), predicate, encoding, true);
 
     return Object.keys(expected).every(function (fieldName) {
+        // Support predicates that reach into fields encoded in JSON strings (e.g. HTTP bodies)
+        if (typeof expected[fieldName] === 'object' && typeof actual[fieldName] === 'string') {
+            actual[fieldName] = normalize(forceStrings(tryJSON(actual[fieldName])), predicate, encoding, false);
+        }
         return stringify(expected[fieldName]) === stringify(actual[fieldName]);
     });
 }
