@@ -1306,5 +1306,29 @@ describe('predicates', function () {
                 request = { field: '{}' };
             assert.ok(!predicates.exists(predicate, request));
         });
+
+        it('#equals should be true if matches key for any object in array', function () {
+            var predicate = { equals: { examples: { key: 'third' } } },
+                request = { examples: [{ key: 'first' }, { different: true }, { key: 'third' }] };
+            assert.ok(predicates.equals(predicate, request));
+        });
+
+        it('#equals should be false if all keys in an array do not match', function () {
+            var predicate = { equals: { examples: { key: true } } },
+                request = { examples: [{ key: 'first' }, { different: true }, { key: 'third' }] };
+            assert.ok(!predicates.equals(predicate, request));
+        });
+
+        it('#deepEquals should be true if all objects in an array have fields equaling predicate', function () {
+            var predicate = { deepEquals: { examples: [{ key: 'first' }, { key: 'second' }] } },
+                request = { examples: [{ key: 'first' }, { key: 'second' }] };
+            assert.ok(predicates.deepEquals(predicate, request));
+        });
+
+        it('#deepEquals should be false if missing an object in an array in request', function () {
+            var predicate = { deepEquals: { examples: [{ key: 'first' }, { key: 'second' }] } },
+                request = { examples: [{ key: 'first' }, { different: true }, { key: 'second' }] };
+            assert.ok(!predicates.deepEquals(predicate, request));
+        });
     });
 });

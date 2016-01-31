@@ -140,12 +140,18 @@ function predicateSatisfied (expected, actual, predicate) {
     if (!actual) {
         return false;
     }
+
     return Object.keys(expected).every(function (fieldName) {
         var test = function (value) {
             if (typeof value === 'undefined') {
                 value = '';
             }
-            return predicate(expected[fieldName], value);
+            if (typeof expected[fieldName] === 'object') {
+                return predicateSatisfied(expected[fieldName], value, predicate);
+            }
+            else {
+                return predicate(expected[fieldName], value);
+            }
         };
 
         // Support predicates that reach into fields encoded in JSON strings (e.g. HTTP bodies)
