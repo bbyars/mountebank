@@ -144,20 +144,23 @@ var assert = require('assert'),
                                     path: request.path,
                                     headers: request.headers
                                 },
-                                httpRequest = http.request(options, function (response) {
-                                    response.body = '';
-                                    response.setEncoding('utf8');
-                                    response.on('data', function (chunk) {
-                                        response.body += chunk;
-                                    });
-                                    response.on('end', function () {
-                                        callback({
-                                            statusCode: response.statusCode,
-                                            headers: response.headers,
-                                            body: response.body
-                                        });
+                                httpRequest;
+
+                            options.headers.host = options.hostname;
+                            httpRequest = http.request(options, function (response) {
+                                response.body = '';
+                                response.setEncoding('utf8');
+                                response.on('data', function (chunk) {
+                                    response.body += chunk;
+                                });
+                                response.on('end', function () {
+                                    callback({
+                                        statusCode: response.statusCode,
+                                        headers: response.headers,
+                                        body: response.body
                                     });
                                 });
+                            });
                             httpRequest.end();
                             // No return value!!!
                         },
@@ -167,13 +170,17 @@ var assert = require('assert'),
                     return api.post('/imposters', request).then(function (response) {
                         assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body));
 
-                        return client.get('', port);
+                        return client.get('/', port);
                     }).then(function (response) {
                         // sometimes 301, sometimes 302
-                        assert.strictEqual(response.statusCode.toString().substring(0, 2), '30');
-
-                        // https://www.google.com.br in Brasil, etc
-                        assert.ok(response.headers.location.indexOf('google.com') >= 0, response.headers.location);
+                        // 200 on new Mac with El Capitan?
+                        assert.ok(response.statusCode <= 301);
+                        if (response.statusCode === 200) {
+                            assert.ok(response.body.indexOf('google') >= 0, response.body);
+                        }
+                        else {
+                            assert.ok(response.headers.location.indexOf('google.com') >= 0, response.headers.location);
+                        }
                     }).finally(function () {
                         return api.del('/imposters');
                     });
