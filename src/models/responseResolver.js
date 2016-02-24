@@ -107,7 +107,7 @@ function create (proxy, postProcess) {
         return i;
     }
 
-    function proxyAndRecord (responseConfig, request, stubs) {
+    function proxyAndRecord (responseConfig, request, logger, stubs) {
         return proxy.to(responseConfig.proxy.to, request, responseConfig.proxy)
         .then(function (response){
             if ( request.isDryRun ){
@@ -143,7 +143,7 @@ function create (proxy, postProcess) {
             return Q(responseConfig.is);
         }
         else if (responseConfig.proxy) {
-            return proxyAndRecord(responseConfig, request, stubs);
+            return proxyAndRecord(responseConfig, request, logger, stubs);
         }
         else if (responseConfig.inject) {
             return inject(request, responseConfig.inject, logger).then(Q);
