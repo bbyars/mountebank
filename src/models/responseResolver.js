@@ -108,7 +108,13 @@ function create (proxy, postProcess) {
     }
 
     function proxyAndRecord (responseConfig, request, stubs) {
-        return proxy.to(responseConfig.proxy.to, request, responseConfig.proxy).then(function (response) {
+        return proxy.to(responseConfig.proxy.to, request, responseConfig.proxy)
+        .then(function (response){
+            if ( request.isDryRun ){
+                return Q(response);
+            }
+            return Q(behaviors.execute(request, response, responseConfig.proxy._behaviors, logger))
+        }).then(function (response) {
             var predicates = predicatesFor(request, responseConfig.proxy.predicateGenerators || []),
                 stubResponse = { is: response },
                 newStub = { predicates: predicates, responses: [stubResponse] },
