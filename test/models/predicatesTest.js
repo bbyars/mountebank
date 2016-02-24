@@ -948,6 +948,14 @@ describe('predicates', function () {
                 request = {field: JSON.stringify({'title':[{'attribute':'value'},{'attribute':'other value'}]})};
             assert.ok(predicates.deepEquals(predicate, request));
         });
+        it('#deepEquals should return a string if looking at an index of 1 item', function () {
+            var predicate = {
+                    deepEquals: {field: 'value'},
+                    jsonpath: {selector: '$..title[0].attribute'}
+                },
+                request = {field: JSON.stringify({'title':[{'attribute':'value'},{'attribute':'other value'}]})};
+            assert.ok(predicates.deepEquals(predicate, request));
+        });
         it('#deepEquals should be true if embedded values are provided jsonpath attribute expression out of order', function () {
             var predicate = {
                     deepEquals: {field: ['other value', 'value']},
@@ -1059,7 +1067,7 @@ describe('predicates', function () {
             assert.ok(predicates.equals(predicate, request));
         });
 
-        it.only('#equals should be false if value provided xpath expression does not equal', function () {
+        it('#equals should be false if value provided xpath expression does not equal', function () {
             var predicate = {
                     equals: {field: 'NOT VALUE'},
                     xpath: {selector: '//title'}

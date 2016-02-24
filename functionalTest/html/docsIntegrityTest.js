@@ -63,6 +63,7 @@ describe('docs', function () {
         '/docs/api/json',
         '/docs/protocols/https',
         '/docs/protocols/http'
+        '/docs/api/jsonpath',
     ].forEach(function (page) {
         validateDocs(page);
     });

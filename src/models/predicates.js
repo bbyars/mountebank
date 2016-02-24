@@ -90,13 +90,10 @@ function selectXPath (config, caseTransform, encoding, text) {
 }
 
 function selectJSONPath (config, caseTransform, encoding, text) {
-    var selector = caseTransform(config.selector),
-        select = JSONPath;
+    var selector = caseTransform(config.selector);
     try {
-        console.log(JSONPath.eval(JSON.parse(text), selector));
         var result = JSONPath.eval(JSON.parse(text), selector);
-
-        if (result == typeof String) {
+        if (result === typeof String) {
             return result;
         } else if (result.length === 0) {
             return undefined;
@@ -105,13 +102,13 @@ function selectJSONPath (config, caseTransform, encoding, text) {
         } else{
             return result.sort();
         }
-
     } catch(e) {
         return undefined;
     }
 }
 
 function normalize (obj, config, encoding, withSelectors) {
+    /* jshint maxcomplexity: 7 */
     var lowerCaser = function (text) { return text.toLowerCase(); },
         caseTransform = config.caseSensitive ? combinators.identity : lowerCaser,
         exceptRegexOptions = config.caseSensitive ? 'g' : 'gi',
