@@ -9,7 +9,7 @@ description = 'Using JsonPath in mountebank predicates'
 
 <p>It is common for mountebank to see JSON documents in his line of business, and he suspects
     the same may be true for you.  With the goal of making JSON easier to work with, mountebank
-    accepts an <code>jsonpath</code> predicate parameter.  This parameter narrows the scope of the predicate
+    accepts a <code>jsonpath</code> predicate parameter.  This parameter narrows the scope of the predicate
     value to a value matched by the the jsonpath selector, much like the <a href='/docs/api/predicates'>
         <code>except</code> parameter</a>.  mountebank suggests avoiding using this parameter on fields
     that are not JSON documents.  He also counsels avoiding the temptation to use it with binary protocols.</p>
@@ -32,11 +32,15 @@ description = 'Using JsonPath in mountebank predicates'
 <p>You can send the parameter:</p>
 
 <pre><code>
-        {
-        "equals": { "body": "Catcher in the Rye" },
-        "json": { "selector": "$..title" }
-        }
-    </code></pre>
+{
+    "equals": {
+        "body": "Catcher in the Rye"
+    },
+    "json": {
+        "selector": "$..title"
+    }
+}
+</code></pre>
 
 <p>The JSONPath parameter follows the same semantics as those obeyed for multi-valued keys described on the
     <a href='/docs/api/predicates'>main predicates page</a>, like those observed when a querystring has
@@ -61,56 +65,80 @@ Accept: application/json
 Content-Type: application/json
 
 {
-"port": 4545,
-"protocol": "http",
-"stubs": [<strong class='highlight1'>
-    {
-    "responses": [{ "is": { "body": "Basic jsonpath usage" } }],
-    "predicates": [
-    {
-    "equals": { "body": "Catcher in the Rye" },
-    "jsonpath": { "selector": "$..title" },
-    "caseSensitive": true,
-    "comment": "case sensitivity applies to the selector as well as the value"
-    },
-    {
-    "equals": { "body": "RYE" },
-    "jsonpath": { "selector": "$..TITLE" },
-    "except": "CATCHER IN THE ",
-    "comment": "The except regular expression is removed from the value before matching"
-    },
-    {
-    "matches": { "body": "^Catcher" },
-    "jsonpath": { "selector": "$..title" }
-    },
-    {
-    "exists": { "body": true },
-    "jsonpath": { "selector": "$..title" },
-    "comment": "body must exist (e.g. be empty) AND the JSONPath must match at least one node"
-    },
-    {
-    "exists": { "body": false },
-    "jsonpath": { "selector": "$..publisher" },
-    "comment": "body must not exist (e.g. be empty) OR the JSONPath must not match any nodes"
-    }
-    ]
-    }</strong>,<strong class='highlight2'>
-    {
-    "responses": [{ "is": { "body": "JSONPath with attributes and the quirks of deepEquals" } }],
-    "predicates": [
-    {
-    "deepEquals": { "body": "J. D. Salinger" },
-    "jsonpath": { "selector": "$.title[1].author" },
-    "comment": "deepEquals expects a string when there is only one match"
-    },
-    {
-    "deepEquals": { "body": ["George R.R. Martin", "J. D. Salinger", "Fyodor Dostoyevsky"] },
-    "jsonpath": { "selector": "$.title..author"},
-    "comment": "Use an array for deepEquals when there are multiple matches"
-    }
-    ]
-    }</strong>
-]
+    "port": 4545,
+    "protocol": "http",
+    "stubs": [<strong class='highlight1'>{
+        "responses": [{
+            "is": {
+                "body": "Basic jsonpath usage"
+            }
+        }],
+        "predicates": [{
+            "equals": {
+                "body": "Catcher in the Rye"
+            },
+            "jsonpath": {
+                "selector": "$..title"
+            },
+            "caseSensitive": true,
+            "comment": "case sensitivity applies to the selector as well as the value"
+        },{
+            "equals": {
+                "body": "RYE"
+            },
+            "jsonpath": {
+                "selector": "$..TITLE"
+            },
+            "except": "CATCHER IN THE ",
+            "comment": "The except regular expression is removed from the value before matching"
+        },{
+            "matches": {
+                "body": "^Catcher"
+            },
+            "jsonpath": {
+                "selector": "$..title"
+            }
+        },{
+            "exists": {
+                "body": true
+            },
+            "jsonpath": {
+                "selector": "$..title"
+            },
+            "comment": "body must exist (e.g. be empty) AND the JSONPath must match at least one node"
+        },{
+            "exists": {
+                "body": false
+            },
+            "jsonpath": {
+                "selector": "$..publisher"
+            },
+            "comment": "body must not exist (e.g. be empty) OR the JSONPath must not match any nodes"
+        }]
+    }</strong>,<strong class='highlight2'>{
+        "responses": [{
+            "is": {
+                "body": "JSONPath with attributes and the quirks of deepEquals"
+            }
+        }],
+        "predicates": [{
+            "deepEquals": {
+                "body": "Robert Cecil Martin"
+            },
+            "jsonpath": {
+                "selector": "$.book[1].author"
+            },
+            "comment": "deepEquals expects a string when there is only one match"
+        },{
+            "deepEquals": {
+                "body": ["J. K. Rowling", "Robert Cecil Martin", "Dr. Seuss"]
+            },
+            "jsonpath": {
+                "selector": "$.book..author"
+            },
+            "comment": "Use an array for deepEquals when there are multiple matches"
+        }]
+    }</strong>]
 }
 </code></pre>
 
@@ -130,19 +158,24 @@ Content-Type: application/json
            data-test-type='http'>
 POST / HTTP/1.1
 Host: localhost:4545
-{"book":
-    [{ "title": "Game of Thrones",
-    "isbn:summary": "Dragons and political intrigue",
-    "author": "George R.R. Martin"
+
+{
+    "book":[{
+        "title": "Game of Thrones",
+        "isbn:summary": "Dragons and political intrigue",
+        "author": "George R.R. Martin"
     },
-    {<strong class='highlight1'>"title": "Catcher in the Rye"</strong>,
-    "isbn:summary": "It is a book",
-    "author": "J. D. Salinger"
+    {
+        <strong class='highlight1'>"title": "Catcher in the Rye"</strong>,
+        "isbn:summary": "It is a book",
+        "author": "J. D. Salinger"
     },
-    {"title": "Notes from the Underground",
-    "isbn:summary": "The world's first existentialist novel",
-    "author":"Fyodor Dostoyevsky"}]
-    }
+    {
+        "title": "Notes from the Underground",
+        "isbn:summary": "The world's first existentialist novel",
+        "author":"Fyodor Dostoyevsky"
+    }]
+}
 </code></pre>
 
 <pre><code data-test-id='jsonpath example'
@@ -156,13 +189,9 @@ Transfer-Encoding: chunked
 <strong class='highlight1'>Basic jsonpath usage</strong>
 </code></pre>
 
-<p>The JSON above also would match the second stub's predicates, but mountebank
-    always uses the first stub that matches.  To test the second stub, we'll namespace the
-    <code>title</code> nodes to get past the first stub.</p>
-
-<p>The third stub will only match on a <code>first</code> attribute, and expects one
-    to be set to true and two to be set to false.  In the interests of providing an unbiased
-    presentation, we'll simply denote which book was first published with this attribute.</p>
+<p>To test the second stub, we'll use deep equals to get a specific <code>title</code>
+    node dependant on what book we are looking at. We can also use deep equals to get
+    all the corresponding nodes.</p>
 
 <pre><code data-test-id='jsonpath example'
            data-test-step='3'
@@ -170,17 +199,22 @@ Transfer-Encoding: chunked
 POST / HTTP/1.1
 Host: localhost:4545
 
-        {"book":
-        [{ "title": "Harry Potter",
-           "isbn:summary": "Wizards and Magic",
-           "author": "J. K. Rowling"},
-        {<strong class='highlight2'>"title": "Clean Code"</strong>,
-           "isbn:summary": "Technological bible",
-           "author": "Robert Cecil Martin"},
-        {"title": "The Cat in the Hat",
-          "isbn:summary": "Childhood classic",
-          "author":"Dr. Seuss"}]}
-    </code></pre>
+{
+    "book":[{
+        <strong class='highlight2'>"title": "Harry Potter"</strong>,
+        "isbn:summary": "Wizards and Magic",
+        "author": "J. K. Rowling"},
+    {
+        "title": "Clean Code",
+        "isbn:summary": "Technological bible",
+        "author": "Robert Cecil Martin"},
+    {
+        "title": "The Cat in the Hat",
+        "isbn:summary": "Childhood classic",
+        "author":"Dr. Seuss"
+    }]
+}
+</code></pre>
 
 <pre><code data-test-id='jsonpath example'
            data-test-verify-step='3'
