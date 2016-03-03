@@ -367,35 +367,20 @@ describe('predicates', function () {
         });
 
         it('should return true if repeating query key contains value', function () {
-<<<<<<< e14ff782f80fc84b4368c2b64ee058ec7b393b95
-            var predicate = { contains: { query: { key: '123' } } },
-                request = { query: { key: ['123', '234'] } };
-=======
             var predicate = {contains: {query: {key: '123'}}},
                 request = {query: {key: ['123', '234']}};
->>>>>>> [Avalon & Carson] - imported JSONPath and implemented ability to normalize with case sensistivity, partial matches, multiple layers, and deep equals
             assert.ok(predicates.contains(predicate, request));
         });
 
         it('should return true if repeating query key contains value with the right substring', function () {
-<<<<<<< e14ff782f80fc84b4368c2b64ee058ec7b393b95
-            var predicate = { contains: { query: { key: 'mid' } } },
-                request = { query: { key: ['begin', 'middle', 'end'] } };
-=======
             var predicate = {contains: {query: {key: 'mid'}}},
                 request = {query: {key: ['begin', 'middle', 'end']}};
->>>>>>> [Avalon & Carson] - imported JSONPath and implemented ability to normalize with case sensistivity, partial matches, multiple layers, and deep equals
             assert.ok(predicates.contains(predicate, request));
         });
 
         it('should return false if repeating query key does not contain value', function () {
-<<<<<<< e14ff782f80fc84b4368c2b64ee058ec7b393b95
-            var predicate = { contains: { query: { key: 'bid' } } },
-                request = { query: { key: ['begin', 'middle', 'end'] } };
-=======
             var predicate = {contains: {query: {key: 'bid'}}},
                 request = {query: {key: ['begin', 'middle', 'end']}};
->>>>>>> [Avalon & Carson] - imported JSONPath and implemented ability to normalize with case sensistivity, partial matches, multiple layers, and deep equals
             assert.ok(!predicates.contains(predicate, request));
         });
     });
@@ -456,24 +441,14 @@ describe('predicates', function () {
         });
 
         it('should return true if repeating query key has value starting with string', function () {
-<<<<<<< e14ff782f80fc84b4368c2b64ee058ec7b393b95
-            var predicate = { startsWith: { query: { key: 'mid' } } },
-                request = { query: { key: ['begin', 'middle', 'end'] } };
-=======
             var predicate = {startsWith: {query: {key: 'mid'}}},
                 request = {query: {key: ['begin', 'middle', 'end']}};
->>>>>>> [Avalon & Carson] - imported JSONPath and implemented ability to normalize with case sensistivity, partial matches, multiple layers, and deep equals
             assert.ok(predicates.startsWith(predicate, request));
         });
 
         it('should return false if repeating query key does not have value starting with string', function () {
-<<<<<<< e14ff782f80fc84b4368c2b64ee058ec7b393b95
-            var predicate = { startsWith: { query: { key: 'egin' } } },
-                request = { query: { key: ['begin', 'middle', 'end'] } };
-=======
             var predicate = {startsWith: {query: {key: 'egin'}}},
                 request = {query: {key: ['begin', 'middle', 'end']}};
->>>>>>> [Avalon & Carson] - imported JSONPath and implemented ability to normalize with case sensistivity, partial matches, multiple layers, and deep equals
             assert.ok(!predicates.startsWith(predicate, request));
         });
     });
@@ -522,46 +497,26 @@ describe('predicates', function () {
         });
 
         it('should return true if ends with binary sequence and encoding is base64', function () {
-<<<<<<< e14ff782f80fc84b4368c2b64ee058ec7b393b95
-            var predicate = { endsWith: { field: new Buffer([2, 3, 4]).toString('base64') } },
-                request = { field: new Buffer([1, 2, 3, 4]).toString('base64') };
-=======
             var predicate = {endsWith: {field: new Buffer([2, 3, 4]).toString('base64')}},
                 request = {field: new Buffer([1, 2, 3, 4]).toString('base64')};
->>>>>>> [Avalon & Carson] - imported JSONPath and implemented ability to normalize with case sensistivity, partial matches, multiple layers, and deep equals
             assert.ok(predicates.endsWith(predicate, request, 'base64'));
         });
 
         it('should return false if does not end with binary sequence and encoding is base64', function () {
-<<<<<<< e14ff782f80fc84b4368c2b64ee058ec7b393b95
-            var predicate = { endsWith: { field: new Buffer([1, 2, 3]).toString('base64') } },
-                request = { field: new Buffer([1, 2, 3, 4]).toString('base64') };
-=======
             var predicate = {endsWith: {field: new Buffer([1, 2, 3]).toString('base64')}},
                 request = {field: new Buffer([1, 2, 3, 4]).toString('base64')};
->>>>>>> [Avalon & Carson] - imported JSONPath and implemented ability to normalize with case sensistivity, partial matches, multiple layers, and deep equals
             assert.ok(!predicates.endsWith(predicate, request, 'base64'));
         });
 
         it('should return true if repeating query key has value ending with string', function () {
-<<<<<<< e14ff782f80fc84b4368c2b64ee058ec7b393b95
-            var predicate = { endsWith: { query: { key: 'gin' } } },
-                request = { query: { key: ['begin', 'middle', 'end'] } };
-=======
             var predicate = {endsWith: {query: {key: 'gin'}}},
                 request = {query: {key: ['begin', 'middle', 'end']}};
->>>>>>> [Avalon & Carson] - imported JSONPath and implemented ability to normalize with case sensistivity, partial matches, multiple layers, and deep equals
             assert.ok(predicates.endsWith(predicate, request));
         });
 
         it('should return false if repeating query key does not have value ending with string', function () {
-<<<<<<< e14ff782f80fc84b4368c2b64ee058ec7b393b95
-            var predicate = { endsWith: { query: { key: 'begi' } } },
-                request = { query: { key: ['begin', 'middle', 'end'] } };
-=======
             var predicate = {endsWith: {query: {key: 'begi'}}},
                 request = {query: {key: ['begin', 'middle', 'end']}};
->>>>>>> [Avalon & Carson] - imported JSONPath and implemented ability to normalize with case sensistivity, partial matches, multiple layers, and deep equals
             assert.ok(!predicates.endsWith(predicate, request));
         });
     });
@@ -629,24 +584,14 @@ describe('predicates', function () {
         });
 
         it('should return true if repeating query key has value matching string', function () {
-<<<<<<< e14ff782f80fc84b4368c2b64ee058ec7b393b95
-            var predicate = { matches: { query: { key: 'iddle$' } } },
-                request = { query: { key: ['begin', 'middle', 'end'] } };
-=======
             var predicate = {matches: {query: {key: 'iddle$'}}},
                 request = {query: {key: ['begin', 'middle', 'end']}};
->>>>>>> [Avalon & Carson] - imported JSONPath and implemented ability to normalize with case sensistivity, partial matches, multiple layers, and deep equals
             assert.ok(predicates.matches(predicate, request));
         });
 
         it('should return false if repeating query key does not have value matching string', function () {
-<<<<<<< e14ff782f80fc84b4368c2b64ee058ec7b393b95
-            var predicate = { matches: { query: { key: '^iddle' } } },
-                request = { query: { key: ['begin', 'middle', 'end'] } };
-=======
             var predicate = {matches: {query: {key: '^iddle'}}},
                 request = {query: {key: ['begin', 'middle', 'end']}};
->>>>>>> [Avalon & Carson] - imported JSONPath and implemented ability to normalize with case sensistivity, partial matches, multiple layers, and deep equals
             assert.ok(!predicates.matches(predicate, request));
         });
     });
