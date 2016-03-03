@@ -95,14 +95,18 @@ function selectJSONPath (config, caseTransform, encoding, text) {
         var result = JSONPath.eval(JSON.parse(text), selector);
         if (result === typeof String) {
             return result;
-        } else if (result.length === 0) {
+        }
+        else if (result.length === 0) {
             return undefined;
-        } else if (result.length === 1) {
+        }
+        else if (result.length === 1) {
             return result[0];
-        } else{
+        }
+        else {
             return result.sort();
         }
-    } catch(e) {
+    }
+    catch (e) {
         return undefined;
     }
 }
