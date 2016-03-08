@@ -68,7 +68,8 @@ Multiple stubs only make sense with predicates.</p>
 
 <p>Let's create an http imposter with a couple of <code>is</code> response types.  It will simulate
 a RESTful endpoint that creates a customer the first time it's called and returns a 400
-the second time it's called because the email already exists.</p>
+the second time it's called because the email already exists.  We add a second stub that returns a
+404 on any request that isn't a <code>POST</code> to <code>/customers/123</code></p>
 
 <pre><code data-test-id='example'
            data-test-step='1'
@@ -83,6 +84,14 @@ Content-Type: application/json
   "protocol": "http",
   "stubs": [
     {
+      "predicates": [
+        {
+          "equals": {
+            "method": "POST",
+            "path": "/customers/123"
+          }
+        }
+      ],
       "responses": [
         {
           "is": {
@@ -104,6 +113,15 @@ Content-Type: application/json
           }
         }
       ]
+    },
+    {
+      "responses": [
+        {
+          "is": {
+            "statusCode": 404
+          }
+        }
+      ]
     }
   ]
 }
@@ -114,7 +132,7 @@ Content-Type: application/json
 <pre><code data-test-id='example'
            data-test-step='2'
            data-test-type='http'>
-POST /imposters HTTP/1.1
+POST /customers/123 HTTP/1.1
 Host: localhost:4545
 Accept: application/xml
 Content-Type: application/xml
@@ -142,7 +160,7 @@ Transfer-Encoding: chunked
 <pre><code data-test-id='example'
            data-test-step='3'
            data-test-type='http'>
-POST /imposters HTTP/1.1
+POST /customers/123 HTTP/1.1
 Host: localhost:4545
 Accept: application/xml
 Content-Type: application/xml
@@ -191,7 +209,7 @@ Connection: keep-alive
   "requests": [
     {
       "method": "POST",
-      "path": "/imposters",
+      "path": "/customers/123",
       "query": {},
       "headers": {
         "Accept": "application/xml",
@@ -206,7 +224,7 @@ Connection: keep-alive
     {
       "requestFrom": "::ffff:127.0.0.1:60523",
       "method": "POST",
-      "path": "/imposters",
+      "path": "/customers/123",
       "query": {},
       "headers": {
         "Accept": "application/xml",
@@ -221,6 +239,14 @@ Connection: keep-alive
   ],
   "stubs": [
     {
+      "predicates": [
+        {
+          "equals": {
+            "method": "POST",
+            "path": "/customers/123"
+          }
+        }
+      ],
       "responses": [
         {
           "is": {
@@ -250,7 +276,7 @@ Connection: keep-alive
           "request": {
             "requestFrom": "::ffff:127.0.0.1:60524",
             "method": "POST",
-            "path": "/imposters",
+            "path": "/customers/123",
             "query": {},
             "headers": {
               "Accept": "application/xml",
@@ -277,7 +303,7 @@ Connection: keep-alive
           "request": {
             "requestFrom": "::ffff:127.0.0.1:60523",
             "method": "POST",
-            "path": "/imposters",
+            "path": "/customers/123",
             "query": {},
             "headers": {
               "Accept": "application/xml",
@@ -296,6 +322,15 @@ Connection: keep-alive
             },
             "body": "&lt;error&gt;email already exists&lt;/error&gt;",
             "_mode": "text"
+          }
+        }
+      ]
+    },
+    {
+      "responses": [
+        {
+          "is": {
+            "statusCode": 404
           }
         }
       ]
