@@ -447,6 +447,40 @@ describe('http proxy stubs', function () {
         });
     });
 
+    promiseIt('should persist decorated proxy responses and only run decorator once', function () {
+        var originServerPort = port + 1,
+            originServerStub = { responses: [{ is: { body: 'origin server' } }] },
+            originServerRequest = {
+                protocol: 'http',
+                port: originServerPort,
+                stubs: [originServerStub],
+                name: this.name + ' origin'
+            },
+            decorator = function (request, response) {
+                response.body += ' decorated';
+            },
+            proxyStub = { responses: [{
+                proxy: { to: 'http://localhost:' + originServerPort },
+                _behaviors: { decorate: decorator.toString() }
+            }] },
+            proxyRequest = { protocol: 'http', port: port, stubs: [proxyStub], name: this.name + ' proxy' };
+
+        return api.post('/imposters', originServerRequest).then(function (response) {
+            assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body, null, 2));
+            return api.post('/imposters', proxyRequest);
+        }).then(function (response) {
+            assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body, null, 2));
+            return client.get('/', port);
+        }).then(function (response) {
+            assert.strictEqual(response.body, 'origin server decorated');
+            return api.get('/imposters/' + port);
+        }).then(function (response) {
+            assert.strictEqual(response.body.stubs[0].responses[0].is.body, 'origin server decorated');
+        }).finally(function () {
+            return api.del('/imposters');
+        });
+    });
+
     if (process.env.MB_AIRPLANE_MODE !== 'true') {
         promiseIt('should support http proxy to https server', function () {
             var proxyStub = { responses: [{ proxy: { to: 'https://google.com' } }] },

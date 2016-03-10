@@ -107,33 +107,42 @@ function create (proxy, postProcess) {
         return i;
     }
 
-    function proxyAndRecord (responseConfig, request, logger, stubs) {
-        return proxy.to(responseConfig.proxy.to, request, responseConfig.proxy)
-        .then(function (response){
-            if ( request.isDryRun ){
-                return Q(response);
-            }
-            return Q(behaviors.execute(request, response, responseConfig.proxy._behaviors, logger))
-        }).then(function (response) {
-            var predicates = predicatesFor(request, responseConfig.proxy.predicateGenerators || []),
-                stubResponse = { is: response },
-                newStub = { predicates: predicates, responses: [stubResponse] },
-                index = stubIndexFor(responseConfig, stubs);
+    function recordProxyResponse (responseConfig, request, response, stubs) {
+        var predicates = predicatesFor(request, responseConfig.proxy.predicateGenerators || []),
+            stubResponse = { is: response },
+            newStub = { predicates: predicates, responses: [stubResponse] },
+            index = stubIndexFor(responseConfig, stubs);
 
-            if (['proxyOnce', 'proxyAlways'].indexOf(responseConfig.proxy.mode) < 0) {
-                responseConfig.proxy.mode = 'proxyOnce';
-            }
+        if (['proxyOnce', 'proxyAlways'].indexOf(responseConfig.proxy.mode) < 0) {
+            responseConfig.proxy.mode = 'proxyOnce';
+        }
 
-            if (responseConfig.proxy.mode === 'proxyAlways') {
-                for (index += 1; index < stubs.length; index += 1) {
-                    if (stringify(predicates) === stringify(stubs[index].predicates)) {
-                        stubs[index].responses.push(stubResponse);
-                        return Q(response);
-                    }
+        if (responseConfig.proxy.mode === 'proxyAlways') {
+            for (index += 1; index < stubs.length; index += 1) {
+                if (stringify(predicates) === stringify(stubs[index].predicates)) {
+                    stubs[index].responses.push(stubResponse);
+                    return;
                 }
             }
+        }
 
-            stubs.splice(index, 0, newStub);
+        stubs.splice(index, 0, newStub);
+    }
+
+    function shouldDecorate (request, responseConfig) {
+        return !request.isDryRun && responseConfig._behaviors && responseConfig._behaviors.decorate;
+    }
+
+    function proxyAndRecord (responseConfig, request, logger, stubs) {
+        return proxy.to(responseConfig.proxy.to, request, responseConfig.proxy).then(function (response) {
+            if (!shouldDecorate(request, responseConfig)) {
+                return Q(response);
+            }
+
+            // Run decorator here to persist decorated response
+            return Q(behaviors.decorate(request, Q(response), responseConfig._behaviors.decorate, logger));
+        }).then(function (response) {
+            recordProxyResponse(responseConfig, request, response, stubs);
             return Q(response);
         });
     }
@@ -176,7 +185,14 @@ function create (proxy, postProcess) {
         return process(responseConfig, request, logger, stubs).then(function (response) {
             return Q(postProcess(response, request));
         }).then(function (response) {
-            return Q(behaviors.execute(request, response, responseConfig._behaviors, logger));
+            // We may have already run the decorator in the proxy call to persist the decorated response
+            // in the new stub.  If so, we need to ensure we don't re-run it
+            var clonedConfig = helpers.clone(responseConfig);
+
+            if (clonedConfig.proxy && shouldDecorate(request, clonedConfig)) {
+                delete clonedConfig._behaviors.decorate;
+            }
+            return Q(behaviors.execute(request, response, clonedConfig._behaviors, logger));
         });
     }
 
