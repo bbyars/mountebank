@@ -727,7 +727,9 @@ describe('predicates', function () {
         });
 
         it('should return true if injected function matches request', function () {
-            var fn = function (obj) { return obj.path === '/' && obj.method === 'GET'; },
+            var fn = function (obj) {
+                    return obj.path === '/' && obj.method === 'GET';
+                },
                 predicate = { inject: fn.toString() },
                 request = { path: '/', method: 'GET' };
             assert.ok(predicates.inject(predicate, request));
@@ -741,7 +743,7 @@ describe('predicates', function () {
                         errorsLogged.push(message);
                     }
                 },
-                predicate = { inject: 'function () { throw Error("BOOM!!!"); }' },
+                predicate = { inject: 'function () {  throw Error("BOOM!!!"); }' },
                 request = {};
 
             try {
@@ -775,6 +777,221 @@ describe('predicates', function () {
             assert.ok(predicates.resolve(predicate, request));
         });
     });
+
+    describe('JSONPath', function () {
+        it('#equals should be false if field is not JSON', function () {
+            var predicate = {
+                    equals: { field: 'VALUE' },
+                    jsonpath: { selector: '$..title' }
+                },
+                request = { field: 'VALUE' };
+            assert.ok(!predicates.equals(predicate, request));
+        });
+        it('#equals should be true if value in provided json', function () {
+            var predicate = {
+                    equals: { field: 'VALUE' },
+                    jsonpath: { selector: '$..title' }
+                },
+                request = { field: JSON.stringify({ title: 'VALUE' }) };
+            assert.ok(predicates.equals(predicate, request));
+        });
+        it('#equals should be false if value provided json expression does not equal', function () {
+            var predicate = {
+                    equals: { field: 'NOT VALUE' },
+                    jsonpath: { selector: '$..title' }
+                },
+                request = { field: JSON.stringify({ title: 'VALUE' }) };
+            assert.ok(!predicates.equals(predicate, request));
+        });
+        it('#equals should use case-insensitive json selector by default', function () {
+            var predicate = {
+                    equals: { field: 'VALUE' },
+                    jsonpath: { selector: '$..Title' }
+                },
+                request = { field: JSON.stringify({ title: 'VALUE' }) };
+            assert.ok(predicates.equals(predicate, request));
+        });
+        it('#equals should not equal if case-sensitive json selector does not match', function () {
+            var predicate = {
+                    equals: { field: 'value' },
+                    jsonpath: { selector: '$..title' },
+                    caseSensitive: true
+                },
+                request = { field: JSON.stringify({ TITLE: 'value' }) };
+            assert.ok(!predicates.equals(predicate, request));
+        });
+        it('#equals should equal if case-sensitive jsonpath selector matches', function () {
+            var predicate = {
+                    equals: { field: 'value' },
+                    jsonpath: { selector: '$..Title' },
+                    caseSensitive: true
+                },
+                request = { field: JSON.stringify({ Title: 'value' }) };
+            assert.ok(predicates.equals(predicate, request));
+        });
+
+        it('#equals should equal if case-sensitive jsonpath selector matches, stripping out the exception', function () {
+            var predicate = {
+                    equals: { field: 've' },
+                    jsonpath: { selector: '$..Title' },
+                    caseSensitive: true,
+                    except: 'alu'
+                },
+                request = { field: JSON.stringify({ Title: 'value' }) };
+            assert.ok(predicates.equals(predicate, request));
+        });
+        it('#equals should not equal if case-sensitive jsonpath selector matches, but stripped values differ', function () {
+            var predicate = {
+                    equals: { field: 'v' },
+                    jsonpath: { selector: '$..Title' },
+                    caseSensitive: true,
+                    except: 'alu'
+                },
+                request = { field: JSON.stringify({ Title: 'value' }) };
+            assert.ok(!predicates.equals(predicate, request));
+        });
+
+        it('#deepEquals should be false if field is not JSON and jsonpath selector used', function () {
+            var predicate = {
+                    deepEquals: { field: 'VALUE' },
+                    jsonpath: { selector: '$..title' }
+                },
+                request = { field: 'VALUE' };
+            assert.ok(!predicates.deepEquals(predicate, request));
+        });
+
+        it('#deepEquals should be false if value in provided jsonpath attribute expression does not equal', function () {
+            var predicate = {
+                    deepEquals: { field: 'NOT VALUE' },
+                    jsonpath: { selector: '$.title..attribute' }
+                },
+                request = { field: JSON.stringify({ Title: { attribute: 'value' } }) };
+            assert.ok(!predicates.deepEquals(predicate, request));
+        });
+
+        it('#deepEquals should be true if singly embedded value in provided jsonpath attribute expression does equal', function () {
+            var predicate = {
+                    deepEquals: { field: 'value' },
+                    jsonpath: { selector: '$.title.attribute' }
+                },
+                request = { field: JSON.stringify({ title: { attribute: 'value' } }) };
+            assert.ok(predicates.deepEquals(predicate, request));
+        });
+        it('#deepEquals should be true if doubly embedded value in provided jsonpath attribute expression does equal', function () {
+            var predicate = {
+                    deepEquals: { field: 'value' },
+                    jsonpath: { selector: '$.title.attribute.test' }
+                },
+                request = { field: JSON.stringify({ title: { attribute: { test: 'value' } } }) };
+            assert.ok(predicates.deepEquals(predicate, request));
+        });
+        it('#deepEquals should be true if embedded values are provided jsonpath attribute expression does equal', function () {
+            var predicate = {
+                    deepEquals: { field: ['value', 'other value'] },
+                    jsonpath: { selector: '$.title..attribute' }
+                },
+                request = { field: JSON.stringify({ title: [{ attribute: 'value' }, { attribute: 'other value' }] }) };
+            assert.ok(predicates.deepEquals(predicate, request));
+        });
+        it('#deepEquals should return a string if looking at an index of 1 item', function () {
+            var predicate = {
+                    deepEquals: { field: 'value' },
+                    jsonpath: { selector: '$..title[0].attribute' }
+                },
+                request = { field: JSON.stringify({ title: [{ attribute: 'value' }, { attribute: 'other value' }] }) };
+            assert.ok(predicates.deepEquals(predicate, request));
+        });
+        it('#deepEquals should be true if embedded values are provided jsonpath attribute expression out of order', function () {
+            var predicate = {
+                    deepEquals: { field: ['other value', 'value'] },
+                    jsonpath: { selector: '$.title..attribute' }
+                },
+                request = { field: JSON.stringify({ title: [{ attribute: 'value' }, { attribute: 'other value' }] }) };
+            assert.ok(predicates.deepEquals(predicate, request));
+        });
+        it('#deepEquals should be false if does not get all embedded values provided jsonpath attribute expression', function () {
+            var predicate = {
+                    deepEquals: { field: ['value', 'other value'] },
+                    jsonpath: { selector: '$.title..attribute' }
+                },
+                request = { field: JSON.stringify({ title: [{ attribute: 'value' }, { attribute: 'other value' }, { attribute: 'last value' }] }) };
+            assert.ok(!predicates.deepEquals(predicate, request));
+        });
+
+        it('#contains should be true if direct text value contains predicate', function () {
+            var predicate = {
+                    contains: { field: 'value' },
+                    jsonpath: { selector: '$..title' }
+                },
+                request = { field: JSON.stringify({ title: 'this is a value' }) };
+            assert.ok(predicates.contains(predicate, request));
+        });
+
+        it('#contains should be false if direct text value does not contain predicate', function () {
+            var predicate = {
+                    contains: { field: 'VALUE' },
+                    jsonpath: { selector: '$..title' },
+                    caseSensitive: true
+                },
+                request = { field: JSON.stringify({ title: 'this is a value' }) };
+            assert.ok(!predicates.contains(predicate, request));
+        });
+
+        it('#startsWith should be true if direct namespaced jsonpath selection starts with value', function () {
+            var predicate = {
+                    startsWith: { field: 'this' },
+                    jsonpath: { selector: '$..title' }
+                },
+                request = { field: JSON.stringify({ title: 'this is a value' }) };
+            assert.ok(predicates.startsWith(predicate, request));
+        });
+
+        it('#startsWith should be false if direct namespaced jsonpath selection does not start with value', function () {
+            var predicate = {
+                    startsWith: { field: 'this' },
+                    jsonpath: { selector: '$..title' }
+                },
+                request = { field: JSON.stringify({ title: 'if this is a value, it is a value' }) };
+            assert.ok(!predicates.startsWith(predicate, request));
+        });
+
+        it('#exists should be true if jsonpath selector has at least one result', function () {
+            var predicate = {
+                    exists: { field: true },
+                    jsonpath: { selector: '$..title' }
+                },
+                request = { field: JSON.stringify({ title: 'value' }) };
+            assert.ok(predicates.exists(predicate, request));
+        });
+
+        it('#exists should be false if jsonpath selector does not match', function () {
+            var predicate = {
+                    exists: { field: true },
+                    jsonpath: { selector: '$..title' }
+                },
+                request = { field: JSON.stringify({ newTitle: 'if this is a value, it is a value' }) };
+            assert.ok(!predicates.exists(predicate, request));
+        });
+
+        it('#matches should be true if selected value matches regex', function () {
+            var predicate = {
+                    matches: { field: '^v' },
+                    jsonpath: { selector: '$..title' }
+                },
+                request = { field: JSON.stringify({ title: 'value' }) };
+            assert.ok(predicates.matches(predicate, request));
+        });
+
+        it('#matches should be false if selected value does not match regex', function () {
+            var predicate = {
+                    matches: { field: 'v$' },
+                    jsonpath: { selector: '$..title' }
+                },
+                request = { field: JSON.stringify({ title: 'value' }) };
+            assert.ok(!predicates.matches(predicate, request));
+        });
+    });
+
 
     describe('xpath', function () {
         it('#equals should be false if field is not XML', function () {
@@ -922,7 +1139,8 @@ describe('predicates', function () {
             var predicate = {
                     contains: { field: 'VALUE' },
                     xpath: { selector: '//title/text()' },
-                    caseSensitive: true },
+                    caseSensitive: true
+                },
                 request = { field: '<doc><title>this is a value</title>' };
             assert.ok(!predicates.contains(predicate, request));
         });
@@ -995,10 +1213,10 @@ describe('predicates', function () {
                 },
                 request = {
                     field: '<root xmlns:thisa="http://example.com/a" xmlns:thisb="http://example.com/b">' +
-                           '  <thisa:child>First</thisa:child>' +
-                           '  <thisa:child>Second</thisa:child>' +
-                           '  <thisa:child>Third</thisa:child>' +
-                           '</root>'
+                    '  <thisa:child>First</thisa:child>' +
+                    '  <thisa:child>Second</thisa:child>' +
+                    '  <thisa:child>Third</thisa:child>' +
+                    '</root>'
                 };
             assert.ok(predicates.equals(predicate, request));
         });
@@ -1189,7 +1407,7 @@ describe('predicates', function () {
 
         it('#deepEquals should be false if value in provided JSON predicate does not equal', function () {
             var predicate = { deepEquals: { field: { key: 'test' } } },
-                request = { field: '{"key": "VALUE"}' };
+                request = { field: '{ "key": "VALUE"}' };
             assert.ok(!predicates.deepEquals(predicate, request));
         });
 
@@ -1202,7 +1420,7 @@ describe('predicates', function () {
                         }
                     }
                 },
-                request = { field: '{"key": "VALUE", "outer": { "inner": "value" }}' };
+                request = { field: '{"key": "VALUE", "outer": { "inner": "value" } }' };
             assert.ok(predicates.deepEquals(predicate, request));
         });
 
@@ -1215,13 +1433,13 @@ describe('predicates', function () {
                         }
                     }
                 },
-                request = { field: '{"outer": { "inner": "value" }}' };
+                request = { field: '{"outer": { "inner": "value" } }' };
             assert.ok(!predicates.deepEquals(predicate, request));
         });
 
         it('#deepEquals should be true if all array values in a JSON predicate match are present regardless of order', function () {
             var predicate = { deepEquals: { field: { key: [2, 1, 3] } } },
-                request = { field: '{"key": [3, 1, 2]}' };
+                request = { field: '{"key": [3, 1, 2] }' };
             assert.ok(predicates.deepEquals(predicate, request));
         });
 
@@ -1266,14 +1484,14 @@ describe('predicates', function () {
 
         it('#equals should be true if any array element equals the predicate value', function () {
             var predicate = { equals: { field: { key: 'Second' } } },
-                request = { field: '{"key": ["First", "Second", "Third"]}' };
+                request = { field: '{"key": ["First", "Second", "Third"] }' };
             assert.ok(predicates.equals(predicate, request));
         });
 
         it('#equals should be false if no array elements match the predicate value', function () {
             // despite namespace aliases matching, urls do not
             var predicate = { equals: { field: { key: 'Second' } } },
-                request = { field: '{"key": ["first", "third"]}' };
+                request = { field: '{"key": ["first", "third"] }' };
             assert.ok(!predicates.equals(predicate, request));
         });
 

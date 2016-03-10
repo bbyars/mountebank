@@ -89,3 +89,32 @@ for any support questions.  Don't be shy!
 [appveyor]: https://ci.appveyor.com/project/bbyars/mountebank
 [snap-badge]: https://img.shields.io/snap-ci/bbyars/mountebank/master.svg
 [snap]: https://snap-ci.com/bbyars/mountebank/branch/master
+=======
+## Building
+
+[![Coverage Status](https://coveralls.io/repos/bbyars/mountebank/badge.png?branch=master)](https://coveralls.io/r/bbyars/mountebank?branch=master)
+[![Codacy Badge](https://www.codacy.com/project/badge/c030a6aebe274e21b4ce11a74e01fa12)](https://www.codacy.com/public/brandonbyars/mountebank)
+
+| OS      | CI                                                             | Status |
+| ------- | -------------------------------------------------------------- | ------ |
+| Debian  | [Travis CI](https://travis-ci.org/bbyars/mountebank)           | [![Build Status](https://travis-ci.org/bbyars/mountebank.png)](https://travis-ci.org/bbyars/mountebank) |
+| CentOS  | [Snap CI](https://snap-ci.com/bbyars/mountebank/branch/master) | [![Build Status](https://img.shields.io/snap-ci/bbyars/mountebank/master.svg)](https://snap-ci.com/bbyars/mountebank/branch/master) |
+| Windows | [Appveyor](https://ci.appveyor.com/project/bbyars/mountebank)  | [![Build status](https://ci.appveyor.com/api/projects/status/acfhg44px95s4pk5?svg=true)](https://ci.appveyor.com/project/bbyars/mountebank) |
+| OSX     | [Travis CI](https://travis-ci.org/bbyars/mountebank)           | [![Build Status](https://travis-ci.org/bbyars/mountebank.png)](https://travis-ci.org/bbyars/mountebank) |
+
+`./build` should do the trick on Mac and Linux, and `build.bat` on Windows, assuming you have at least node 0.10.
+If not, yell at me.
+
+There are some tests that require network access (`grunt airplane` ignores them in case that offends your
+moral sensibilities).  A few of these tests verify the correct behavior under DNS failures.  If your ISP
+is kind enough to hijack the NXDOMAIN DNS response in an attempt to allow you to conveniently peruse their
+advertising page, those tests will fail.  I suggest that, under such circumstances, you talk to your ISP
+and let them know that their policies are causing mountebank tests to fail.
+
+## Contributing
+
+Contributions are welcome!
+Some tips for contributing are in the contributing link that spins up when you run mb.
+I have a liberal policy accepting pull requests - I'd rather you sent them even if you can't figure out
+how to get the build working, etc.  I'm also available via Skype or something similar to help you get started.
+Feel free to reach me at brandon.byars@gmail.com.

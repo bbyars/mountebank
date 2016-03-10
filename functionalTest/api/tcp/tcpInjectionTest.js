@@ -82,7 +82,6 @@ describe('tcp imposter', function () {
                 return mb.stop();
             });
         });
-
         promiseIt('should allow asynchronous injection', function () {
             var originServerPort = port + 1,
                 originServerStub = { responses: [{ is: { body: 'origin server' } }] },

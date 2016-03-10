@@ -52,7 +52,6 @@ function validateDocs (page) {
 
 describe('docs', function () {
     this.timeout(timeout);
-
     [
         '/docs/api/overview',
         '/docs/api/mocks',
@@ -62,7 +61,8 @@ describe('docs', function () {
         '/docs/api/xpath',
         '/docs/api/json',
         '/docs/protocols/https',
-        '/docs/protocols/http'
+        '/docs/protocols/http',
+        '/docs/api/jsonpath'
     ].forEach(function (page) {
         validateDocs(page);
     });
