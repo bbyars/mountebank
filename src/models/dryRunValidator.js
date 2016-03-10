@@ -113,7 +113,8 @@ function create (options) {
     function hasStubInjection (stub) {
         var hasResponseInjections = utils.isArray(stub.responses) && stub.responses.some(function (response) {
                 var hasDecorator = response._behaviors && response._behaviors.decorate;
-                return response.inject || hasDecorator;
+                var hasProxyDecorator = response.proxy && response.proxy._behaviors && response.proxy._behaviors.decorate;
+                return response.inject || hasDecorator || hasProxyDecorator;
             }),
             hasPredicateInjections = Object.keys(stub.predicates || {}).some(function (predicate) {
                 return stub.predicates[predicate].inject;
