@@ -10,7 +10,7 @@ var errors = require('../util/errors'),
     combinators = require('../util/combinators'),
     stringify = require('json-stable-stringify'),
     xpath = require('xpath'),
-    JSONPath = require('JSONPath'),
+    JSONPath = require('jsonpath-plus'),
     DOMParser = require('xmldom').DOMParser;
 
 function forceStrings (obj) {
