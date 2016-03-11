@@ -85,7 +85,7 @@
     "grunt-mountebank": "1.0.3",
     "istanbul": "^0.4.0",
     "jsdoc": "^3.3.3",
-    "jsdom": "~7.2.2",
+    "jsdom": "~8.1.0",
     "mocha": "~2.4.5",
     "rimraf": "^2.4.3",
     "time-grunt": "^1.2.2",

@@ -14,4 +14,8 @@ fi
 
 scripts/fixDependencies
 npm install
+
+# I can't figure out why this isn't installed with the previous command on node < 5.0
+npm install jsonpath-plus
+
 MB_PORT=3535 MB_VERSION=$MB_VERSION node_modules/grunt-cli/bin/grunt "$@"
