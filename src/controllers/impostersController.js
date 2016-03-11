@@ -146,6 +146,7 @@ function create (protocols, imposters, Imposter, logger) {
             }
             else {
                 respondWithValidationErrors(response, validation.errors);
+                return Q(false);
             }
         });
     }
@@ -217,6 +218,7 @@ function create (protocols, imposters, Imposter, logger) {
                 }, []);
 
                 respondWithValidationErrors(response, validationErrors);
+                return Q(false);
             }
         });
     }
