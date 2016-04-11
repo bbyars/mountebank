@@ -68,7 +68,7 @@ for any support questions.  Don't be shy!
 
 |                       |Ubuntu 12.04                             |CentOS 6.7                            |OS X Mavericks                           |Windows Server 2012                          |
 |-----------------------|:---------------------------------------:|:------------------------------------:|:---------------------------------------:|:-------------------------------------------:|
-|npm (node v5.8)        | [![Build Status][travis-badge]][travis] | (not tested)                         | [![Build Status][travis-badge]][travis] | [![Build status][appveyor-badge]][appveyor] |
+|npm (node v5.10)       | [![Build Status][travis-badge]][travis] | (not tested)                         | [![Build Status][travis-badge]][travis] | [![Build status][appveyor-badge]][appveyor] |
 |npm (node v4.4)        | [![Build Status][travis-badge]][travis] | (not tested)                         | [![Build Status][travis-badge]][travis] | [![Build status][appveyor-badge]][appveyor] |
 |npm (node v0.12)       | [![Build Status][travis-badge]][travis] | (not tested)                         | [![Build Status][travis-badge]][travis] | [![Build status][appveyor-badge]][appveyor] |
 |npm (node v0.10)       | [![Build Status][travis-badge]][travis] | (not tested)                         | [![Build Status][travis-badge]][travis] | [![Build status][appveyor-badge]][appveyor] |
