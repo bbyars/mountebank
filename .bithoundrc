@@ -1,5 +1,7 @@
 {
-    "ignore": [],
+    "ignore": [
+
+    ],
     "test": [
         "**/test/**",
         "**/functionalTest/**",
@@ -9,5 +11,8 @@
         "mute": [
             "mocha"
         ]
+    },
+    "critics": {
+      "lint": { "engine": "eslint" }
     }
 }
