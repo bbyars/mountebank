@@ -104,10 +104,114 @@ Transfer-Encoding: chunked
 }</strong>
 </code></pre>
 
+<h3>Embedded Arrays</h3>
+
+<p>mountebank uses the same logic to process arrays as he uses in other predicate operations, which
+can be summarized as follows:</p>
+
+<ul class='bullet list'>
+    <li>For all operators except <code>deepEquals</code>, at least one element in the array must match.
+    The array syntax can be left off.</li>
+    <li>For <code>deepEquals</code>, all elements of the array have to match.</li>
+    <li>The order of the elements in the actual array does not have match the order of the elements in the
+    <code>deepEquals</code> predicate.</li>
+</ul>
+
+<p>These rules can be explored through the following example:</p>
+
+<pre><code data-test-id='json example'
+           data-test-step='3'
+           data-test-type='http'>
+POST /imposters HTTP/1.1
+Host: localhost:<%= port %>
+Accept: application/json
+Content-Type: application/json
+
+{
+  "port": 4546,
+  "protocol": "http",
+  "stubs": [
+    {
+      "responses": [{
+        "is": {
+          "body": "<strong class='highlight1'>Matched all elements exactly</strong>"
+        }
+      }],
+      "predicates": [
+        {
+          "deepEquals": {
+            "body": {
+              "books": [
+                { "title": "The Hobbit" },
+                { "title": "Game of Thrones" }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "responses": [{
+        "is": {
+          "body": "<strong class='highlight2'>Matched all elements listed</strong>"
+        }
+      }],
+      "predicates": [
+        {
+          "equals": {
+            "body": {
+              "books": {
+                "title": "The Hobbit"
+              }
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
+</code></pre>
+
+<p>We'll pass the following HTTP request, leaving off <em>Harry Potter</em> so that all elements match the
+    <code>deepEquals</code> predicate:</p>
+
+<pre><code data-test-id='json example'
+           data-test-step='4'
+           data-test-type='http'>
+POST / HTTP/1.1
+Host: localhost:4546
+
+{
+  "books": [
+    { "title": "Game of Thrones" },
+    { "title": "The Hobbit" }
+  ]
+}
+</code></pre>
+
+<pre><code data-test-id='json example'
+           data-test-verify-step='4'
+           data-test-ignore-lines='["^Date"]'>
+HTTP/1.1 200 OK
+Connection: close
+Date: Thu, 09 Jan 2014 02:30:31 GMT
+Transfer-Encoding: chunked
+
+<strong class='highlight1'>Matched all elements exactly</strong>
+</code></pre>
+
 <code class='hidden' data-test-id='json example'
-                     data-test-step='3'
+                     data-test-step='5'
                      data-test-type='http'>
 DELETE /imposters/4545 HTTP/1.1
+Host: localhost:<%= port %>
+Accept: application/json
+</code>
+
+<code class='hidden' data-test-id='json example'
+                     data-test-step='6'
+                     data-test-type='http'>
+DELETE /imposters/4546s HTTP/1.1
 Host: localhost:<%= port %>
 Accept: application/json
 </code>

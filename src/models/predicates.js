@@ -13,25 +13,44 @@ var errors = require('../util/errors'),
     JSONPath = require('jsonpath-plus'),
     DOMParser = require('xmldom').DOMParser;
 
+function sortObjects (a, b) {
+    if (typeof a === 'object' && typeof b === 'object') {
+        // Make best effort at sorting arrays of objects to make
+        // deepEquals order-independent
+        return sortObjects(stringify(a), stringify(b));
+    }
+    else if (a < b) {
+        return -1;
+    }
+    else {
+        return 1;
+    }
+}
+
 function forceStrings (obj) {
     if (typeof obj !== 'object') {
         return obj;
     }
-    return Object.keys(obj).reduce(function (result, key) {
-        if (Array.isArray(obj[key])) {
-            result[key] = obj[key].map(forceStrings);
-        }
-        else if (typeof obj[key] === 'object') {
-            result[key] = forceStrings(obj[key]);
-        }
-        else if (['boolean', 'number'].indexOf(typeof obj[key]) >= 0) {
-            result[key] = obj[key].toString();
-        }
-        else {
-            result[key] = obj[key];
-        }
-        return result;
-    }, {});
+    else if (Array.isArray(obj)) {
+        return obj.map(forceStrings);
+    }
+    else {
+        return Object.keys(obj).reduce(function (result, key) {
+            if (Array.isArray(obj[key])) {
+                result[key] = obj[key].map(forceStrings);
+            }
+            else if (typeof obj[key] === 'object') {
+                result[key] = forceStrings(obj[key]);
+            }
+            else if (['boolean', 'number'].indexOf(typeof obj[key]) >= 0) {
+                result[key] = obj[key].toString();
+            }
+            else {
+                result[key] = obj[key];
+            }
+            return result;
+        }, {});
+    }
 }
 
 function xpathSelect (select, selector, doc, encoding) {
@@ -134,7 +153,7 @@ function normalize (obj, config, encoding, withSelectors) {
                 // sort to provide deterministic comparison for deepEquals,
                 // where the order in the array for multi-valued querystring keys
                 // and xpath selections isn't important
-                return o.map(transformAll).sort();
+                return o.map(transformAll).sort(sortObjects);
             }
             else if (typeof o === 'object') {
                 return Object.keys(o).reduce(function (result, key) {
@@ -187,6 +206,12 @@ function predicateSatisfied (expected, actual, predicate) {
 
         if (Array.isArray(actual[fieldName])) {
             return actual[fieldName].some(test);
+        }
+        else if (typeof actual[fieldName] === 'undefined' && Array.isArray(actual)) {
+            // support array of objects in JSON
+            return actual.some(function (element) {
+                return predicateSatisfied(expected, element, predicate);
+            });
         }
         else if (typeof expected[fieldName] === 'object') {
             return predicateSatisfied(expected[fieldName], actual[fieldName], predicate);
