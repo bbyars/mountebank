@@ -82,7 +82,7 @@
     "grunt-eslint": "^18.0.0",
     "grunt-jsdoc": "^1.0.0",
     "grunt-mocha-test": "~0.12.1",
-    "grunt-mountebank": "1.0.3",
+    "grunt-mountebank": "1.0.5",
     "istanbul": "^0.4.0",
     "jsdoc": "^3.3.3",
     "jsdom": "~8.3.1",
