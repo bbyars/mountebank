@@ -12,34 +12,12 @@ description = 'The version, command line parameters, and environment information
     <td>version</td>
     <td><%= version %></td>
   </tr>
+<% Object.keys(options).forEach(function (key) { %>
   <tr>
-    <td>allowInjection</td>
-    <td><%= options.allowInjection %></td>
+    <td><%= key %></td>
+    <td><%= options[key] %></td>
   </tr>
-  <tr>
-    <td>mock</td>
-    <td><%= options.mock %></td>
-  </tr>
-  <tr>
-    <td>configfile</td>
-    <td><%= options.configfile %></td>
-  </tr>
-  <tr>
-    <td>logfile</td>
-    <td><%= options.logfile %></td>
-  </tr>
-  <tr>
-    <td>loglevel</td>
-    <td><%= options.loglevel %></td>
-  </tr>
-  <tr>
-    <td>pidfile</td>
-    <td><%= options.pidfile %></td>
-  </tr>
-  <tr>
-    <td>debug</td>
-    <td><%= options.debug %></td>
-  </tr>
+<% }); -%>
 </table>
 
 <h2>Process Information</h2>
