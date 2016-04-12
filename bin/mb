@@ -210,10 +210,6 @@ yargs.options({
         description: 'include stub match information in imposter retrievals for debugging purposes',
         type: 'boolean'
     },
-    allowCORS: {
-        description: 'allow Cross-Origin Site Requests to mountebank server',
-        type: 'boolean'
-    },
     heroku: {
         type: 'boolean'
     }

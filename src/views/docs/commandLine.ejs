@@ -54,14 +54,6 @@ description = 'Command line parameters for starting mountebank'
     <td><code>false</code></td>
   </tr>
   <tr>
-    <td><code>--allowCORS</code></td>
-    <td>Permits Cross-Origin Site Requests by adding the appropriate HTTP response headers. This can
-      be useful if you're working with mountebank via browser-based AJAX requests. Note that this
-      does not add the CORS headers to any imposters you create. You'll need to add those to the
-      imposter itself.
-    <td><code>false</code></td>
-  </tr>
-  <tr>
     <td><code>--mock</code></td>
     <td>mountebank supports <a href='/docs/api/mocks'>mock verification</a> by remembering the requests
       made against each stub.  Note that this represents a memory leak for any long running
