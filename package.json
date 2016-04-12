@@ -70,7 +70,8 @@
     "winston": "~2.2.0",
     "xml2js": "^0.4.4",
     "xmldom": "^0.1.19",
-    "xpath": "0.0.23"
+    "xpath": "0.0.23",
+    "yargs": "^4.4.0"
   },
   "devDependencies": {
     "coveralls": "~2.11.1",

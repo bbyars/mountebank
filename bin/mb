@@ -2,33 +2,16 @@
 'use strict';
 
 var mountebank = require('../src/mountebank'),
-    cli = require('../src/util/cli'),
     fs = require('fs'),
     path = require('path'),
     http = require('http'),
-    thisPackage = require('../package.json'),
     Q = require('q'),
-    ejs = require('ejs');
-
-function usage () {
-    console.log('Usage: mb [command] [options...]');
-    console.log('Commands: start, stop, restart, help (defaults to start)');
-    console.log('Options:');
-    console.log('    --port PORT       the port to run the mountebank server on (default 2525)');
-    console.log('    --configfile      file to load imposters from, can be an EJS template');
-    console.log('    --pidfile FILE    where the pid is stored for the stop command (default mb.pid)');
-    console.log('    --logfile FILE    file used for all log (default mb.log)');
-    console.log('    --loglevel LEVEL  level for terminal logs (default info)');
-    console.log('    --allowInjection  set to allow JavaScript injection');
-    console.log('    --mock            remember requests for mock verification');
-    console.log('    --version         show the mountebank version and exit');
-    console.log('    --allowCORS       allow Cross-Origin Site Requests to mountebank server');
-    console.log('    --debug           include stub match information in imposter retrievals for debugging purposes');
-}
+    ejs = require('ejs'),
+    yargs = require('yargs');
 
 function error (message) {
     console.error(message + '\n');
-    usage();
+    yargs.showHelp();
     process.exit(1);
 }
 
@@ -45,7 +28,7 @@ function processExists (pid) {
 }
 
 function shouldLoadConfigFile (options) {
-    return options.configfile !== '';
+    return typeof options.configfile !== 'undefined';
 }
 
 function putConfig (options, body) {
@@ -179,39 +162,92 @@ function serverAt (options) {
     };
 }
 
-try {
-    var defaultOptions = {
-            port: 2525,
-            pidfile: 'mb.pid',
-            logfile: 'mb.log',
-            loglevel: 'info',
-            configfile: ''
-        },
-        booleanOptions = ['allowInjection', 'mock', 'heroku', 'version', 'allowCORS', 'debug'],
-        commandLine = cli.parse(process.argv.slice(2), defaultOptions, booleanOptions),
-        server = serverAt(commandLine.options);
+yargs.usage('Usage: mb [command] [options...]');
+yargs.command('start', 'Starts the server (default command)');
+yargs.command('stop', 'Stops the server');
+yargs.command('restart', 'Restarts the server, stopping any previously started server');
 
-    if (commandLine.options.version) {
-        console.log(thisPackage.version);
+yargs.options({
+    port: {
+        default: 2525,
+        description: 'the port to run the mountebank server on',
+        nargs: 1,
+        type: 'number'
+    },
+    configfile: {
+        description: 'file to load imposters from, can be an EJS template',
+        nargs: 1,
+        type: 'string'
+    },
+    pidfile: {
+        default: 'mb.pid',
+        description: 'where the pid is stored for the stop command',
+        nargs: 1,
+        type: 'string'
+    },
+    logfile: {
+        default: 'mb.log',
+        description: 'file used for all log',
+        nargs: 1,
+        type: 'string'
+    },
+    loglevel: {
+        default: 'info',
+        description: 'level for terminal logs',
+        nargs: 1,
+        type: 'string',
+        choices: ['debug', 'info', 'warn', 'error']
+    },
+    allowInjection: {
+        description: 'set to allow JavaScript injection',
+        type: 'boolean'
+    },
+    mock: {
+        description: 'remember requests for mock verification',
+        type: 'boolean'
+    },
+    debug: {
+        description: 'include stub match information in imposter retrievals for debugging purposes',
+        type: 'boolean'
+    },
+    allowCORS: {
+        description: 'allow Cross-Origin Site Requests to mountebank server',
+        type: 'boolean'
+    },
+    heroku: {
+        type: 'boolean'
     }
-    else {
-        switch (commandLine.command) {
-            case 'start':
-                server.start();
-                break;
-            case 'stop':
-                server.stop();
-                break;
-            case 'restart':
-                server.restart();
-                break;
-            case 'help':
-                usage();
-                break;
-            default:
-                error("Invalid command '" + commandLine.command + "'.");
-                break;
-        }
+});
+
+yargs.version();
+yargs.help();
+yargs.epilog('For more information, see http://www.mbtest.org/docs/commandLine');
+
+try {
+    var argv = yargs.argv,
+        command = argv._.length === 0 ? 'start' : argv._[0],
+        server = serverAt(argv);
+
+    // Avoid noise in logs
+    delete argv._;
+    delete argv.$0;
+
+    switch (command) {
+        case 'start':
+            server.start(argv);
+            break;
+        case 'stop':
+            server.stop();
+            break;
+        case 'restart':
+            server.restart();
+            break;
+        case 'help':
+            yargs.showHelp();
+            break;
+        default:
+            error("Invalid command '" + command + "'.");
+            break;
     }
 }
 catch (err) {
