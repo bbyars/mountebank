@@ -35,7 +35,7 @@ function setup (protocolName, createBaseServer) {
     function createServer (logger, options) {
 
         function postProcess (stubResponse) {
-            /* eslint complexity: ["error", 12] */
+            /* eslint complexity: 0 */
             var defaultResponse = options.defaultResponse || {},
                 response = {
                     statusCode: stubResponse.statusCode || defaultResponse.statusCode || 200,
