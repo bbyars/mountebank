@@ -19,13 +19,15 @@ var AbstractServer = require('../abstractServer'),
     events = require('events'),
     TcpRequest = require('./tcpRequest');
 
-function postProcess (response) {
-    return {
-        data: response.data || ''
-    };
-}
-
 function createServer (logger, options) {
+
+    function postProcess (response) {
+        var defaultResponse = options.defaultResponse || {};
+        return {
+            data: response.data || defaultResponse.data || ''
+        };
+    }
+
     var mode = options.mode ? options.mode : 'text',
         encoding = mode === 'binary' ? 'base64' : 'utf8',
         ensureBuffer = function (data) {

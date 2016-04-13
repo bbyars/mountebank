@@ -213,5 +213,32 @@ describe('tcp imposter', function () {
                 return api.del('/imposters');
             });
         });
+
+        promiseIt('should support changing default response for stub', function () {
+            var stub = {
+                    responses: [{ is: { data: 'Given response' } }],
+                    predicates: [{ equals: { data: 'MATCH ME' } }]
+                },
+                request = {
+                    protocol: 'tcp',
+                    mode: 'text',
+                    port: port,
+                    defaultResponse: { data: 'Default response' },
+                    stubs: [stub],
+                    name: this.name
+                };
+
+            return api.post('/imposters', request).then(function (response) {
+                assert.strictEqual(response.statusCode, 201, response.body);
+                return tcp.send('MATCH ME', port);
+            }).then(function (response) {
+                assert.strictEqual('Given response', response.toString());
+                return tcp.send('NO MATCH', port);
+            }).then(function (response) {
+                assert.strictEqual('Default response', response.toString());
+            }).finally(function () {
+                return api.del('/imposters');
+            });
+        });
     });
 });

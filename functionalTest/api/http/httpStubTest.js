@@ -373,6 +373,36 @@ var assert = require('assert'),
                     return api.del('/imposters');
                 });
             });
+
+            promiseIt('should support changing default response for stub', function () {
+                var stub = {
+                        responses: [
+                            { is: { body: 'Wrong address' } },
+                            { is: { statusCode: 500 } }
+                        ],
+                        predicates: [{ equals: { path: '/' } }]
+                    },
+                    defaultResponse = { statusCode: 404, body: 'Not found' },
+                    request = { protocol: protocol, port: port, defaultResponse: defaultResponse, stubs: [stub], name: this.name };
+
+                return api.post('/imposters', request).then(function (response) {
+                    assert.strictEqual(response.statusCode, 201, response.body);
+                    return client.get('/', port);
+                }).then(function (response) {
+                    assert.strictEqual(404, response.statusCode);
+                    assert.strictEqual('Wrong address', response.body);
+                    return client.get('/', port);
+                }).then(function (response) {
+                    assert.strictEqual(500, response.statusCode);
+                    assert.strictEqual('Not found', response.body);
+                    return client.get('/differentStub', port);
+                }).then(function (response) {
+                    assert.strictEqual(404, response.statusCode);
+                    assert.strictEqual('Not found', response.body);
+                }).finally(function () {
+                    return api.del('/imposters');
+                });
+            });
         });
     });
 });

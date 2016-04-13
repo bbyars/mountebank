@@ -25,34 +25,6 @@ var AbstractServer = require('../abstractServer'),
  * @returns {Object}
  */
 function setup (protocolName, createBaseServer) {
-    function postProcess (stubResponse) {
-        var response = {
-            statusCode: stubResponse.statusCode || 200,
-            headers: stubResponse.headers || {},
-            body: stubResponse.body || '',
-            _mode: stubResponse._mode || 'text'
-        };
-
-        if (typeof response.body === 'object') {
-            // Support JSON response bodies
-            response.body = JSON.stringify(response.body, null, 4);
-        }
-
-        // We don't want to use keepalive connections, because a test case
-        // may shutdown the stub, which prevents new connections for
-        // the port, but that won't prevent the system under test
-        // from reusing an existing TCP connection after the stub
-        // has shutdown, causing difficult to track down bugs when
-        // multiple tests are run.
-        if (response.headers.connection) {
-            response.headers.connection = 'close';
-        }
-        else {
-            response.headers.Connection = 'close';
-        }
-        return response;
-    }
-
     /**
      * Creates the http/s server, opening up the socket
      * @memberOf module:models/http/baseHttpServer#
@@ -61,6 +33,37 @@ function setup (protocolName, createBaseServer) {
      * @returns {Object}
      */
     function createServer (logger, options) {
+
+        function postProcess (stubResponse) {
+            /* eslint complexity: ["error", 12] */
+            var defaultResponse = options.defaultResponse || {},
+                response = {
+                    statusCode: stubResponse.statusCode || defaultResponse.statusCode || 200,
+                    headers: stubResponse.headers || defaultResponse.headers || {},
+                    body: stubResponse.body || defaultResponse.body || '',
+                    _mode: stubResponse._mode || defaultResponse._mode || 'text'
+                };
+
+            if (typeof response.body === 'object') {
+                // Support JSON response bodies
+                response.body = JSON.stringify(response.body, null, 4);
+            }
+
+            // We don't want to use keepalive connections, because a test case
+            // may shutdown the stub, which prevents new connections for
+            // the port, but that won't prevent the system under test
+            // from reusing an existing TCP connection after the stub
+            // has shutdown, causing difficult to track down bugs when
+            // multiple tests are run.
+            if (response.headers.connection) {
+                response.headers.connection = 'close';
+            }
+            else {
+                response.headers.Connection = 'close';
+            }
+            return response;
+        }
+
         var proxy = HttpProxy.create(logger),
             resolver = ResponseResolver.create(proxy, postProcess),
             stubs = StubRepository.create(resolver, options.debug, 'utf8'),
