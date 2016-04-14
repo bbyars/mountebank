@@ -133,6 +133,24 @@ var assert = require('assert'),
                 });
             });
 
+            promiseIt('should allow access to the global process object', function () {
+                // https://github.com/bbyars/mountebank/issues/134
+                var fn = function () {
+                        return { body: process.env.USER };
+                    },
+                    stub = { responses: [{ inject: fn.toString() }] },
+                    request = { protocol: protocol, port: port, stubs: [stub], name: this.name };
+
+                return api.post('/imposters', request).then(function (response) {
+                    assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body));
+                    return client.get('/', port);
+                }).then(function (response) {
+                    assert.strictEqual(response.body, process.env.USER);
+                }).finally(function () {
+                    return api.del('/imposters');
+                });
+            });
+
             if (process.env.MB_AIRPLANE_MODE !== 'true') {
                 promiseIt('should allow asynchronous injection', function () {
                     var fn = function (request, state, logger, callback) {

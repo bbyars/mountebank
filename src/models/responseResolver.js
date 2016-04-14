@@ -147,7 +147,7 @@ function create (proxy, postProcess) {
         });
     }
 
-    function process (responseConfig, request, logger, stubs) {
+    function processResponse (responseConfig, request, logger, stubs) {
         if (responseConfig.is) {
             return Q(responseConfig.is);
         }
@@ -182,7 +182,7 @@ function create (proxy, postProcess) {
             return Q.reject(errors.ValidationError('each response object must have only one response type', { source: responseConfig }));
         }
 
-        return process(responseConfig, request, logger, stubs).then(function (response) {
+        return processResponse(responseConfig, request, logger, stubs).then(function (response) {
             return Q(postProcess(response, request));
         }).then(function (response) {
             // We may have already run the decorator in the proxy call to persist the decorated response
