@@ -76,6 +76,7 @@ describe('mb command line', function () {
     promiseIt('should evaluate stringify function in templates when loading configuration files', function () {
         var args = ['--configfile', path.join(__dirname, 'templates/imposters.ejs'), '--allowInjection'];
 
+        // Delay because we need to wait long enough for the imposters to be created
         return mb.start(args).then(function () {
             return http.get('/first', 4546);
         }).then(function (response) {
@@ -89,18 +90,6 @@ describe('mb command line', function () {
             return http.get('/counter', 4546);
         }).then(function (response) {
             assert.strictEqual(response.body, 'There have been 2 proxied calls');
-        }).finally(function () {
-            return mb.stop();
-        });
-    });
-
-    promiseIt('should not render through ejs when --no-parse option provided', function () {
-        var args = ['--configfile', path.join(__dirname, 'noParse.json'), '--noParse'];
-
-        return mb.start(args).then(function () {
-            return http.get('/', 4545);
-        }).then(function (response) {
-            assert.strictEqual(response.body, '<% should not render through ejs');
         }).finally(function () {
             return mb.stop();
         });
