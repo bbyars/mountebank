@@ -14,6 +14,5 @@ fi
 
 scripts/fixDependencies
 npm install
-npm install jsonpath-plus
 
 MB_PORT=3535 MB_VERSION=$MB_VERSION node_modules/grunt-cli/bin/grunt "$@"

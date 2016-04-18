@@ -3,27 +3,24 @@
 <p class='info-icon'>Be sure to keep up with the latest releases by subscribing to the
     <a href='http://mbtest.org/feed'>ATOM feed</a>.</p>
 
-<h2>New Features</h2>
-<ul class='bullet-list'>
-    <li></li>
-</ul>
-
 <h2>Bug Fixes</h2>
-<ul>
-    <li></li>
+<ul class='bullet-list'>
+    <li>Fix npm install issues due to misconfigured shrinkwrap</li>
+    <li>Allow access to global <code>process</code> object in response injection
+     (it was being shadowed by a local mountebank function of the same name)</li>
 </ul>
 
 <p>Many thanks to the following kind folk for help with this release:</p>
 
 <ul class='bullet-list'>
-    <li></li>
+    <li>Burkhard Reffeling</li>
+    <li>Zen Chen</li>
+    <li>Natalia Pedan</li>
 </ul>
 
 <h2>Install</h2>
 
-<pre><code>
-        npm install -g mountebank@<%= releaseVersion %>
-    </code></pre>
+<pre><code>npm install -g mountebank@<%= releaseVersion %></code></pre>
 
 <p>or:</p>
 

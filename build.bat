@@ -18,9 +18,6 @@ if "%MB_SKIP_x86%"=="true" (
 call node scripts/fixDependencies
 call npm install
 
-REM I can't figure out why this isn't installed with the previous command on node < 5.0
-call npm install jsonpath-plus
-
 set MB_PORT=3535
 node node_modules\grunt-cli\bin\grunt %*
 
