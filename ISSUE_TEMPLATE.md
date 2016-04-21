@@ -34,7 +34,7 @@ Please review before pasting to ensure no sensitive data is copied
 -->
 
 ```
-...
+Log contents here
 ```
 
 
