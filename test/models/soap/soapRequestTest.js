@@ -56,12 +56,18 @@ describe('SoapRequest', function () {
             return promise;
         });
 
-        promiseIt('should transform rawHeaders from original request, keeping case and merging duplicates', function () {
-            httpRequest.rawHeaders = ['Accept', 'invalid', 'Accept', 'TEXT/html', 'Host', '127.0.0.1:8000'];
+        promiseIt('should transform rawHeaders from original request, keeping case and duplicates', function () {
+            httpRequest.rawHeaders = [
+                'Accept', 'text/plain',
+                'Accept', 'TEXT/html',
+                'accept', '*',
+                'Host', '127.0.0.1:8000'
+            ];
 
             var promise = SoapRequest.createFrom(httpRequest).then(function (soapRequest) {
                 assert.deepEqual(soapRequest.http.headers, {
-                    Accept: 'TEXT/html',
+                    Accept: ['text/plain', 'TEXT/html'],
+                    accept: '*',
                     Host: '127.0.0.1:8000'
                 });
             });

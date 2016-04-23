@@ -25,10 +25,20 @@ function createTestRequest () {
     };
 }
 
+function add (current, value) {
+    return Array.isArray(current) ? current.concat(value) : [current].concat(value);
+}
+
+function arrayifyIfExists (current, value) {
+    return current ? add(current, value) : value;
+}
+
 function headersFor (rawHeaders) {
     var result = {};
     for (var i = 0; i < rawHeaders.length; i += 2) {
-        result[rawHeaders[i]] = rawHeaders[i + 1];
+        var name = rawHeaders[i];
+        var value = rawHeaders[i + 1];
+        result[name] = arrayifyIfExists(result[name], value);
     }
     return result;
 }

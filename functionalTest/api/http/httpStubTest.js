@@ -403,6 +403,20 @@ var assert = require('assert'),
                     return api.del('/imposters');
                 });
             });
+
+            promiseIt('should support sending multiple value back for same header', function () {
+                var stub = { responses: [{ is: { headers: { 'Set-Cookie': ['first', 'second'] } } }] },
+                    request = { protocol: protocol, port: port, stubs: [stub], name: this.name };
+
+                return api.post('/imposters', request).then(function (response) {
+                    assert.strictEqual(response.statusCode, 201, response.body);
+                    return client.get('/', port);
+                }).then(function (response) {
+                    assert.deepEqual(response.headers['set-cookie'], ['first', 'second']);
+                }).finally(function () {
+                    return api.del('/imposters');
+                });
+            });
         });
     });
 });

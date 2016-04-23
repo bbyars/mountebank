@@ -45,12 +45,18 @@ describe('HttpRequest', function () {
             return promise;
         });
 
-        promiseIt('should transform rawHeaders from original request, keeping case and merging duplicates', function () {
-            request.rawHeaders = ['Accept', 'invalid', 'Accept', 'TEXT/html', 'Host', '127.0.0.1:8000'];
+        promiseIt('should transform rawHeaders from original request, keeping case and duplicates', function () {
+            request.rawHeaders = [
+                'Accept', 'text/plain',
+                'Accept', 'TEXT/html',
+                'accept', '*',
+                'Host', '127.0.0.1:8000'
+            ];
 
             var promise = httpRequest.createFrom(container).then(function (mbRequest) {
                 assert.deepEqual(mbRequest.headers, {
-                    Accept: 'TEXT/html',
+                    Accept: ['text/plain', 'TEXT/html'],
+                    accept: '*',
                     Host: '127.0.0.1:8000'
                 });
             });
