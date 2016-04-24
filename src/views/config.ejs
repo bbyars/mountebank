@@ -1,6 +1,6 @@
 <%
 title = 'configuration'
-description = 'The version, command line parameters, and environment information about this running mb process'
+description = 'The version, command line parameters, and process information about this running mb process'
 %>
 
 <% include _header %>
@@ -55,17 +55,6 @@ description = 'The version, command line parameters, and environment information
     <td>cwd</td>
     <td><%= process.cwd %></td>
   </tr>
-</table>
-
-<h2>Environment</h2>
-
-<table>
-<% Object.keys(environment).forEach(function (key) { %>
-  <tr>
-    <td><%= key %></td>
-    <td><%= environment[key] %></td>
-  </tr>
-<% }); %>
 </table>
 
 <% include _footer %>

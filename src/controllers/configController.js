@@ -38,8 +38,7 @@ function create (version, options) {
                 heapUsed: process.memoryUsage().heapUsed,
                 uptime: process.uptime(),
                 cwd: process.cwd()
-            },
-            environment: process.env
+            }
         };
 
         response.format({

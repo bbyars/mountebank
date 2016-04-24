@@ -644,8 +644,7 @@ Connection: keep-alive
 <p><b>Contract</b>: <a href='/docs/api/contracts?type=config'>config resource</a></p>
 
 <p>If you want to know about the environment mountebank is running it, this resource will give you
-what you need.  It describes the version, command line flags, process information, and environment
-variables.</p>
+what you need.  It describes the version, command line flags, and process information.</p>
 
 <pre><code>
 GET /config HTTP/1.1
@@ -675,10 +674,6 @@ Accept: application/json
     "heapUsed": 23185680,
     "uptime": 3.718,
     "cwd": "/Users/bbyars/Dropbox/src/mountebank"
-  },
-  "environment": {
-    "PWD": "/Users/bbyars/src/mountebank",
-    "SHELL": "/bin/zsh"
   }
 }
 </code></pre>
