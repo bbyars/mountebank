@@ -271,7 +271,7 @@ describe('responseResolver', function () {
                 },
                 request = { key: 'request' };
 
-            return resolver.resolve(responseConfig, request, logger, []).then(function() {
+            return resolver.resolve(responseConfig, request, logger, []).then(function () {
                 assert.fail('Promise resolved, should have been rejected');
             }, function (error) {
                 assert.equal(error.message, 'Error message');
