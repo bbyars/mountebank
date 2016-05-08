@@ -12,12 +12,32 @@ var helpers = require('../util/helpers'),
 /**
  * Waits a specified number of milliseconds before sending the response.  Due to the approximate
  * nature of the timer, there is no guarantee that it will wait the given amount, but it will be close.
+ * @param {Object} request - The request object
+ * @param {Object} response - The response generated from the stubs
  * @param {Object} responsePromise -kThe promise returning the response
  * @param {number} milliseconds - The number of milliseconds to wait before returning
+ * @param {Object} logger - The mountebank logger, useful for debugging
  * @returns {Object} A promise resolving to the response
  */
-function wait (responsePromise, milliseconds) {
-    return responsePromise.delay(milliseconds);
+function wait (request, response, responsePromise, milliseconds, logger) {
+    if (typeof milliseconds === 'number') {
+        return responsePromise.delay(milliseconds);
+    }
+    else {
+        try {
+            var waitFunction = eval('(' + milliseconds + ')');
+            return responsePromise.then(function () {
+                return responsePromise.delay(waitFunction());
+            });
+        }
+        catch (error) {
+            logger.error('injection X=> ' + error);
+            logger.error('    full source: ' + JSON.stringify(milliseconds));
+            logger.error('    request: ' + JSON.stringify(request));
+            logger.error('    response: ' + JSON.stringify(response));
+            return Q.reject(errors.InjectionError('invalid wait injection', { source: milliseconds, data: error.message }));
+        }
+    }
 }
 
 /**
@@ -73,7 +93,7 @@ function execute (request, response, behaviors, logger) {
     logger.debug('using stub response behavior ' + JSON.stringify(behaviors));
 
     if (behaviors.wait) {
-        result = wait(result, behaviors.wait);
+        result = wait(request, response, result, behaviors.wait, logger);
     }
     if (behaviors.decorate) {
         result = decorate(request, result, behaviors.decorate, logger);

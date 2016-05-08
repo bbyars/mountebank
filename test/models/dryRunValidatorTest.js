@@ -422,7 +422,7 @@ describe('dryRunValidator', function () {
         });
 
         promiseIt('should detect invalid wait behavior value', function () {
-            var request = { stubs: [{ responses: [{ is: { statusCode: 400 }, _behaviors: { wait: 'INVALID' } }] }] },
+            var request = { stubs: [{ responses: [{ is: { statusCode: 400 }, _behaviors: { wait: -1 } }] }] },
                 validator = Validator.create({ StubRepository: StubRepository, testRequest: testRequest }),
                 logger = { error: mock() };
 
@@ -434,6 +434,19 @@ describe('dryRunValidator', function () {
                         message: "'wait' value must be an integer greater than or equal to 0",
                         source: request.stubs[0]
                     }]
+                });
+            });
+        });
+
+        promiseIt('should allow functions as wait behavior', function () {
+            var request = { stubs: [{ responses: [{ is: { statusCode: 400 }, _behaviors: { wait: 'function(){return 1000;}' } }] }] },
+                validator = Validator.create({ StubRepository: StubRepository, testRequest: testRequest }),
+                logger = { error: mock() };
+
+            return validator.validate(request, logger).then(function (result) {
+                assert.deepEqual(result, {
+                    isValid: true,
+                    errors: []
                 });
             });
         });
