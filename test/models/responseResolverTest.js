@@ -233,7 +233,7 @@ describe('responseResolver', function () {
                 var end = Date.now();
                 var elapsed = end - start;
 
-                assert.ok(elapsed > 50, 'Did not wait longer than 50 ms, only waited for ' + elapsed);
+                assert.ok(elapsed >= 50, 'Did not wait longer than 50 ms, only waited for ' + elapsed);
             });
         });
 
@@ -255,7 +255,7 @@ describe('responseResolver', function () {
                 var end = Date.now();
                 var elapsed = end - start;
 
-                assert.ok(elapsed > 50, 'Did not wait longer than 50 ms, only waited for ' + elapsed);
+                assert.ok(elapsed >= 50, 'Did not wait longer than 50 ms, only waited for ' + elapsed);
             });
         });
 
