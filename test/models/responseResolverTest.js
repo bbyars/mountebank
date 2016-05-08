@@ -259,6 +259,25 @@ describe('responseResolver', function () {
             });
         });
 
+        promiseIt('should reject the promise when the wait function fails', function () {
+            var resolver = ResponseResolver.create({}, combinators.identity),
+                logger = { debug: mock() },
+                fn = function () {
+                    throw new Error('Error message');
+                },
+                responseConfig = {
+                    is: 'value',
+                    _behaviors: { wait: fn.toString() }
+                },
+                request = { key: 'request' };
+
+            return resolver.resolve(responseConfig, request, logger, []).then(function() {
+                assert.fail('Promise resolved, should have been rejected');
+            }, function (error) {
+                assert.equal(error.message, 'Error message');
+            });
+        });
+
         promiseIt('should allow asynchronous injection', function () {
             var resolver = ResponseResolver.create({}, combinators.identity),
                 fn = function (request, state, logger, callback) {
