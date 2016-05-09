@@ -99,8 +99,7 @@ function create (options) {
 
     function addInvalidWaitErrors (stub, errors) {
         var hasInvalidWait = stub.responses.some(function (response) {
-            return response._behaviors && response._behaviors.wait &&
-                (typeof response._behaviors.wait !== 'number' || response._behaviors.wait < 0);
+            return response._behaviors && response._behaviors.wait && response._behaviors.wait < 0;
         });
 
         if (hasInvalidWait) {

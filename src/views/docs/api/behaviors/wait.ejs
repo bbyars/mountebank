@@ -54,5 +54,64 @@ This took at least half a second to send
                      data-test-step='3'
                      data-test-type='http'>
 DELETE /imposters/4545 HTTP/1.1
+    Host: localhost:<%= port %>
+</code>
+
+<p>If a more advanced wait strategy is needed, you can also specify a function body as the wait variable. As long as the function returns a number, mountebank can be configured to wait a variable
+    amount of time.</p>
+
+
+<pre><code data-test-id='wait'
+           data-test-step='4'
+           data-test-type='http'>
+POST /imposters HTTP/1.1
 Host: localhost:<%= port %>
+Accept: application/json
+Content-Type: application/json
+
+{
+  "port": 4545,
+  "protocol": "http",
+  "stubs": [
+    {
+      "responses": [
+        {
+          "is": {
+            "body": "This took at least 100 to 1000 ms to send"
+          },
+          "_behaviors": {
+            "wait": "function(){Math.floor(Math.random() * 901) + 100;}"
+          }
+        }
+      ]
+    }
+  ]
+}
+</code></pre>
+
+<p>Now when the function is called, it will take at least 100 ms to 1000 ms to respond.</p>
+
+<pre><code data-test-id='wait'
+           data-test-step='5'
+           data-test-type='http'>
+GET / HTTP/1.1
+Host: localhost:4545
+</code></pre>
+
+<pre><code data-test-id='wait'
+           data-test-verify-step='5'
+           data-test-ignore-lines='["^Date"]'>
+HTTP/1.1 200 OK
+Date: Thu, 01 Jan 2015 02:30:31 GMT
+Connection: close
+Transfer-Encoding: chunked
+
+This took at least 100 to 1000 ms to send
+</code></pre>
+
+<code class='hidden' data-test-id='wait'
+      data-test-step='6'
+      data-test-type='http'>
+    DELETE /imposters/4545 HTTP/1.1
+    Host: localhost:<%= port %>
 </code>

@@ -218,6 +218,66 @@ describe('responseResolver', function () {
             });
         });
 
+        promiseIt('should allow wait behavior', function () {
+            var start = Date.now();
+
+            var resolver = ResponseResolver.create({}, combinators.identity),
+                logger = { debug: mock() },
+                responseConfig = {
+                    is: 'value',
+                    _behaviors: { wait: 50 }
+                },
+                request = { key: 'request' };
+
+            return resolver.resolve(responseConfig, request, logger, []).then(function () {
+                var end = Date.now();
+                var elapsed = end - start;
+
+                assert.ok(elapsed >= 50, 'Did not wait longer than 50 ms, only waited for ' + elapsed);
+            });
+        });
+
+        promiseIt('should allow wait behavior based on a function', function () {
+            var start = Date.now();
+
+            var resolver = ResponseResolver.create({}, combinators.identity),
+                logger = { debug: mock() },
+                fn = function () {
+                    return 50;
+                },
+                responseConfig = {
+                    is: 'value',
+                    _behaviors: { wait: fn.toString() }
+                },
+                request = { key: 'request' };
+
+            return resolver.resolve(responseConfig, request, logger, []).then(function () {
+                var end = Date.now();
+                var elapsed = end - start;
+
+                assert.ok(elapsed >= 50, 'Did not wait longer than 50 ms, only waited for ' + elapsed);
+            });
+        });
+
+        promiseIt('should reject the promise when the wait function fails', function () {
+            var resolver = ResponseResolver.create({}, combinators.identity),
+                logger = { debug: mock() },
+                fn = function () {
+                    throw new Error('Error message');
+                },
+                responseConfig = {
+                    is: 'value',
+                    _behaviors: { wait: fn.toString() }
+                },
+                request = { key: 'request' };
+
+            return resolver.resolve(responseConfig, request, logger, []).then(function () {
+                assert.fail('Promise resolved, should have been rejected');
+            }, function (error) {
+                assert.equal(error.message, 'Error message');
+            });
+        });
+
         promiseIt('should allow asynchronous injection', function () {
             var resolver = ResponseResolver.create({}, combinators.identity),
                 fn = function (request, state, logger, callback) {

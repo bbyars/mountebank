@@ -203,6 +203,32 @@ var assert = require('assert'),
                 });
             });
 
+            promiseIt('should add latency when using behaviors.wait as a function', function () {
+                var stub = {
+                        responses: [{
+                            is: { body: 'stub' },
+                            _behaviors: { wait: 'function(){return 1000;}' }
+                        }]
+                    },
+                    stubs = [stub],
+                    request = { protocol: protocol, port: port, stubs: stubs, name: this.name },
+                    timer;
+
+                return api.post('/imposters', request).then(function (response) {
+                    assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body, null, 2));
+                    timer = new Date();
+                    return client.get('/', port);
+                }).then(function (response) {
+                    assert.strictEqual(response.body, 'stub');
+                    var time = new Date() - timer;
+
+                    // Occasionally there's some small inaccuracies
+                    assert.ok(time >= 990, 'actual time: ' + time);
+                }).finally(function () {
+                    return api.del('/imposters');
+                });
+            });
+
             promiseIt('should support post-processing when using behaviors.decorate', function () {
                 var decorator = function (request, response) {
                         response.body = response.body.replace('${YEAR}', new Date().getFullYear());
