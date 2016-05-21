@@ -21,14 +21,14 @@ var Q = require('q'),
 function create (protocols, imposters, Imposter, logger) {
 
     function queryIsFalse (query, key) {
-        if (!query.hasOwnProperty(key)) {
+        if (query[key] === undefined) {
             return true;
         }
         return query[key].toLowerCase() !== 'false';
     }
 
     function queryBoolean (query, key) {
-        if (!query.hasOwnProperty(key)) {
+        if (query[key] === undefined) {
             return false;
         }
         return query[key].toLowerCase() === 'true';
