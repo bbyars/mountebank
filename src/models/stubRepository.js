@@ -6,6 +6,7 @@
  */
 
 var predicates = require('./predicates'),
+    RepeatBehavior = require('./repeatBehavior'),
     Q = require('q');
 
 /**
@@ -22,6 +23,7 @@ function create (resolver, recordMatches, encoding) {
      * @type {Array}
      */
     var stubs = [];
+    var repeatBehavior = RepeatBehavior.create();
 
     function trueForAll (list, predicate) {
         // we call map before calling every so we make sure to call every
@@ -67,12 +69,10 @@ function create (resolver, recordMatches, encoding) {
      */
     function resolve (request, logger) {
         var stub = findFirstMatch(request, logger) || { responses: [{ is: {} }] },
-            responseConfig = stub.responses.shift(),
+            responseConfig = repeatBehavior.execute(stub),
             deferred = Q.defer();
 
         logger.debug('generating response from ' + JSON.stringify(responseConfig));
-
-        stub.responses.push(responseConfig);
 
         resolver.resolve(responseConfig, request, logger, stubs).done(function (response) {
             var match = {

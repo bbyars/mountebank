@@ -1,0 +1,106 @@
+<p>The <code>repeat</code> behavior allows certain responses to only return a certain number of times.
+    In the below example, the first response is configured to return 2 times, then all subsequent requests
+    return the second response:</p>
+
+<pre><code data-test-id='repeat'
+           data-test-step='1'
+           data-test-type='http'>
+POST /imposters HTTP/1.1
+Host: localhost:<%= port %>
+Accept: application/json
+Content-Type: application/json
+
+{
+  "port": 7777,
+  "protocol": "http",
+  "stubs": [
+    {
+      "responses": [
+        {
+          "is": {
+            "body": "This will only repeat 2 times"
+          },
+          "_behaviors": {
+            "repeat": 2
+          }
+        },
+        {
+          "is": {
+            "body": "Then this will start responding"
+          }
+        }
+      ]
+    }
+  ]
+}
+</code></pre>
+
+<p>Now the first response will return 2 times, then every call thereafter will return the second response.</p>
+
+<pre><code data-test-id='repeat'
+           data-test-step='2'
+           data-test-type='http'>
+GET / HTTP/1.1
+Host: localhost:7777
+</code></pre>
+
+<pre><code data-test-id='repeat'
+           data-test-verify-step='2'
+           data-test-ignore-lines='["^Date"]'>
+HTTP/1.1 200 OK
+Date: Thu, 01 Jan 2015 02:30:31 GMT
+Connection: close
+Transfer-Encoding: chunked
+
+This will only repeat 2 times
+</code></pre>
+
+
+<pre><code data-test-id='repeat'
+           data-test-step='3'
+           data-test-type='http'>
+GET / HTTP/1.1
+Host: localhost:7777
+</code></pre>
+
+<pre><code data-test-id='repeat'
+           data-test-verify-step='3'
+           data-test-ignore-lines='["^Date"]'>
+HTTP/1.1 200 OK
+Date: Thu, 01 Jan 2015 02:30:31 GMT
+Connection: close
+Transfer-Encoding: chunked
+
+This will only repeat 2 times
+</code></pre>
+
+
+<pre><code data-test-id='repeat'
+           data-test-step='4'
+           data-test-type='http'>
+GET / HTTP/1.1
+Host: localhost:7777
+</code></pre>
+
+<pre><code data-test-id='repeat'
+           data-test-verify-step='4'
+           data-test-ignore-lines='["^Date"]'>
+HTTP/1.1 200 OK
+Date: Thu, 01 Jan 2015 02:30:31 GMT
+Connection: close
+Transfer-Encoding: chunked
+
+Then this will start responding
+</code></pre>
+
+
+<code class='hidden' data-test-id='repeat'
+      data-test-step='5'
+      data-test-type='http'>
+    DELETE /imposters/5555 HTTP/1.1
+    Host: localhost:<%= port %>
+</code>
+
+<p>Mountebank keeps track internally of how many times each response has been returned.  Typically
+    this means that the last response should not have a repeat defined.  If all requests have repeats
+    defined, then Mountebank will return the default response thereafter.</p>
