@@ -16,7 +16,7 @@ var url = require('url'),
 function create (imposters) {
 
     function queryBoolean (query, key) {
-        if (!query.hasOwnProperty(key)) {
+        if (query[key] === undefined) {
             return false;
         }
         return query[key].toLowerCase() === 'true';
