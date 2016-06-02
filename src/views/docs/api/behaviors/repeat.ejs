@@ -101,6 +101,6 @@ Then this will start responding
     Host: localhost:<%= port %>
 </code>
 
-<p>Mountebank keeps track internally of how many times each response has been returned.  Typically
-    this means that the last response should not have a repeat defined.  If all requests have repeats
-    defined, then Mountebank will return the default response thereafter.</p>
+<p>Mountebank keeps track internally of how many times each response has been returned.  Responses without
+    repeats will return indefinitely.  If all requests have repeats defined, then Mountebank will return
+    the default response after all repeats are exhausted.</p>
