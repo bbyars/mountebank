@@ -30,6 +30,12 @@ the following behaviors</p>
       can take up to three values: the request, the response, and a logger.  You can either mutate the
       response passed in (and return nothing), or return an altogether new response.</td>
   </tr>
+    <tr>
+        <td><code>repeat</code></td>
+        <td>Repeat a response only a set number of times.  When this is set, Mountebank will not cycle
+            through multiple responses as normal and instead will return this response until the number of repeats has
+            been exhausted.</td>
+    </tr>
 </table>
 
 <p>Multiple behaviors can be added to a response.  However, only one of each type of behavior
@@ -47,13 +53,20 @@ can exist on a single response.</p>
       <% include behaviors/wait %>
     </section>
   </div>
-  <div>
-    <input id='behavior-decorate' name='behavior-decorate' type="checkbox" />
-    <label for='behavior-decorate'>decorate</label>
-    <section>
-      <% include behaviors/decorate %>
-    </section>
-  </div>
+    <div>
+        <input id='behavior-decorate' name='behavior-decorate' type="checkbox" />
+        <label for='behavior-decorate'>decorate</label>
+        <section>
+            <% include behaviors/decorate %>
+        </section>
+    </div>
+    <div>
+        <input id='behavior-repeat' name='behavior-repeat' type="checkbox" />
+        <label for='behavior-repeat'>repeat</label>
+        <section>
+            <% include behaviors/repeat %>
+        </section>
+    </div>
 </section>
 
 <% include ../../_footer %>

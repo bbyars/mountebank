@@ -107,5 +107,81 @@ describe('stubRepository', function () {
                 assert.ok(!stub.hasOwnProperty('matches'));
             });
         });
+
+        promiseIt('should return a repeat response only a set number of times', function () {
+            var resolver = mock().returns(Q()),
+                stubs = StubRepository.create({ resolve: resolver }, false),
+                logger = { debug: mock() },
+                request = { field: 'value' },
+                stub = { responses: [
+                    { is: { body: 'first response' }, _behaviors: { repeat: 2 } },
+                    { is: { body: 'second response' } }
+                ] };
+
+            stubs.addStub(stub);
+
+            return stubs.resolve(request, logger).then(function () {
+                assert.ok(resolver.wasCalledWith({ is: { body: 'first response' }, _behaviors: { repeat: 2 } },
+                    request, logger, [stub]), resolver.message());
+
+                return stubs.resolve(request, logger);
+            }).then(function () {
+                assert.ok(resolver.wasCalledWith({ is: { body: 'first response' }, _behaviors: { repeat: 2 } },
+                    request, logger, [stub]), resolver.message());
+
+                return stubs.resolve(request, logger);
+            }).then(function () {
+                assert.ok(resolver.wasCalledWith({ is: { body: 'second response' } },
+                    request, logger, [stub]), resolver.message());
+            });
+        });
+
+        promiseIt('returns default response after repeats are exhausted', function () {
+            var resolver = mock().returns(Q()),
+                stubs = StubRepository.create({ resolve: resolver }, false),
+                logger = { debug: mock() },
+                request = { field: 'value' },
+                stub = { responses: [{ is: { body: 'first response' }, _behaviors: { repeat: 1 } },
+                    { is: { body: 'second response' }, _behaviors: { repeat: 1 } }] };
+
+            stubs.addStub(stub);
+
+            return stubs.resolve(request, logger).then(function () {
+                assert.ok(resolver.wasCalledWith({ is: { body: 'first response' }, _behaviors: { repeat: 1 } },
+                    request, logger, [stub]), resolver.message());
+
+                return stubs.resolve(request, logger);
+            }).then(function () {
+                assert.ok(resolver.wasCalledWith({ is: { body: 'second response' }, _behaviors: { repeat: 1 } },
+                    request, logger, [stub]), resolver.message());
+
+                return stubs.resolve(request, logger);
+            }).then(function () {
+                assert.ok(resolver.wasCalledWith({ is: {} }, request, logger, [stub]), resolver.message());
+            });
+        });
+
+        promiseIt('returns multiple default responses', function () {
+            var resolver = mock().returns(Q()),
+                stubs = StubRepository.create({ resolve: resolver }, false),
+                logger = { debug: mock() },
+                request = { field: 'value' },
+                stub = { responses: [{ is: { body: 'first response' }, _behaviors: { repeat: 1 } }] };
+
+            stubs.addStub(stub);
+
+            return stubs.resolve(request, logger).then(function () {
+                assert.ok(resolver.wasCalledWith({ is: { body: 'first response' }, _behaviors: { repeat: 1 } },
+                    request, logger, [stub]), resolver.message());
+
+                return stubs.resolve(request, logger);
+            }).then(function () {
+                assert.ok(resolver.wasCalledWith({ is: {} }, request, logger, [stub]), resolver.message());
+
+                return stubs.resolve(request, logger);
+            }).then(function () {
+                assert.ok(resolver.wasCalledWith({ is: {} }, request, logger, [stub]), resolver.message());
+            });
+        });
     });
 });
