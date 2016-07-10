@@ -49,6 +49,14 @@ filled in.</p>
     <td>array</td>
     <td>An array of objects that defines how the predicates for new stubs are created.</td>
   </tr>
+  <tr>
+    <td><code>injectHeaders</code></td>
+    <td><code>{}</code></td>
+    <td>object</td>
+    <td>Key-value pairs of headers to inject into the proxied <i>request</i>.  This is useful when the behavior of
+    the system being proxied can be altered with appropriate headers (e.g. pointing REST links back to Mountebank
+    for further proxying).  Existing headers will be overwritten if they match the injected headers.</td>
+  </tr>
 </table>
 
 <p>http and https proxies add two additional optional parameters for situations where the
@@ -269,6 +277,13 @@ Content-Type: application/json
     <label for='proxy-always'>proxyAlways</label>
     <section>
       <% include proxy/proxyAlways %>
+    </section>
+  </div>
+  <div>
+    <input id='proxy-inject-headers' name='proxy-inject-headers' type="checkbox" />
+    <label for='proxy-inject-headers'>injectHeaders</label>
+    <section>
+      <% include proxy/injectHeaders %>
     </section>
   </div>
 </section>
