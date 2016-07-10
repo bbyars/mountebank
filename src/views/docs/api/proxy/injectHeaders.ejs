@@ -30,7 +30,7 @@ Content-Type: application/json
 }
 </code></pre>
 
-<p>Now, let's set up another imposter that will proxy requests to that mirror imposter.  We'll also set up the inject
+<p>Now, let's set up another imposter that will proxy requests to the mirror imposter.  We'll also set up the inject
 headers field to insert some custom headers in the outgoing request:</p>
 
 <pre><code data-test-id='proxy example'
@@ -88,5 +88,5 @@ Transfer-Encoding: chunked
 The body.
 </code></pre>
 
-<p>Now we can see that the 'X-My-Custom-Header' value was returned back to us, reflected back from the mirror imposter
+<p>Now we can see that the X-My-Custom-Header-One and Two headers were returned back to us, reflected back from the mirror imposter
 after being injected into the <i>outgoing</i> request.</p>
