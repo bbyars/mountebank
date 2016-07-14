@@ -520,5 +520,29 @@ describe('http proxy stubs', function () {
                 return api.del('/imposters');
             });
         });
+
+        promiseIt('should inject proxy headers if specified', function () {
+            var proxyPort = port + 1;
+            var mirrorPort = port + 2;
+
+            var proxyStub = { responses: [{ proxy: { to: 'http://localhost:' + mirrorPort,
+                    injectHeaders: { 'X-Forwarded-Host': 'http://www.google.com' } } }] },
+                proxyStubRequest = { protocol: 'http', port: proxyPort, stubs: [proxyStub], name: 'proxy stub' },
+                mirrorStub = { responses: [{ is: { body: '' }, _behaviors: {
+                    decorate: (function (request, response) { response.headers = request.headers; }).toString() } }] },
+                mirrorStubRequest = { protocol: 'http', port: mirrorPort, stubs: [mirrorStub], name: 'mirror stub' };
+
+            return api.post('/imposters', mirrorStubRequest).then(function (response) {
+                assert.equal(201, response.statusCode);
+                return api.post('/imposters', proxyStubRequest);
+            }).then(function (response) {
+                assert.equal(201, response.statusCode);
+                return client.get('/', proxyPort);
+            }).then(function (response) {
+                assert.equal(response.headers['x-forwarded-host'], 'http://www.google.com');
+            }).finally(function () {
+                return api.del('/imposters');
+            });
+        });
     }
 });

@@ -134,6 +134,12 @@ function create (proxy, postProcess) {
     }
 
     function proxyAndRecord (responseConfig, request, logger, stubs) {
+        if (responseConfig.proxy && responseConfig.proxy.injectHeaders) {
+            for (var key in responseConfig.proxy.injectHeaders) {
+                request.headers[key] = responseConfig.proxy.injectHeaders[key];
+            }
+        }
+
         return proxy.to(responseConfig.proxy.to, request, responseConfig.proxy).then(function (response) {
             if (!shouldDecorate(request, responseConfig)) {
                 return Q(response);

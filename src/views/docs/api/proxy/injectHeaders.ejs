@@ -1,0 +1,92 @@
+<p>First let's create a mirror imposter so we can see what headers are sent.  This imposter just takes the request
+headers it receives and sends them back in the response:</p>
+
+<pre><code data-test-id='proxy example'
+           data-test-step='18'
+           data-test-type='http'>
+POST /imposters HTTP/1.1
+Host: localhost:<%= port %>
+        Accept: application/json
+Content-Type: application/json
+
+{
+  "port": 7002,
+  "protocol": "http",
+  "name": "Mirror",
+  "stubs": [
+    {
+      "responses": [
+        {
+          "is": {
+            "body": "The body."
+          },
+          "_behaviors": {
+            "decorate": "function (req, res) { res.headers = req.headers; }"
+          }
+        }
+      ]
+    }
+  ]
+}
+</code></pre>
+
+<p>Now, let's set up another imposter that will proxy requests to the mirror imposter.  We'll also set up the inject
+headers field to insert some custom headers in the outgoing request:</p>
+
+<pre><code data-test-id='proxy example'
+           data-test-step='19'
+           data-test-type='http'>
+POST /imposters HTTP/1.1
+Host: localhost:<%= port %>
+        Accept: application/json
+Content-Type: application/json
+
+{
+  "port": 7001,
+  "protocol": "http",
+  "name": "Inject Headers",
+  "stubs": [
+    {
+      "responses": [
+        {
+          "proxy": {
+            "to": "http://localhost:7002",
+            "mode": "proxyAlways",
+            "injectHeaders": {
+               "X-My-Custom-Header-One": "my first value",
+               "X-My-Custom-Header-Two": "my second value"
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
+</code></pre>
+
+<p>Then we send a request to our proxy imposter:</p>
+
+<pre><code data-test-id='proxy example'
+           data-test-step='20'
+           data-test-type='http'>
+GET / HTTP/1.1
+Host: localhost:7001
+</code></pre>
+
+<pre><code data-test-id='proxy example'
+           data-test-verify-step='20'
+           data-test-ignore-lines='["^Date"]'>
+HTTP/1.1 200 OK
+Accept: application/json
+Host: localhost:7002
+Connection: close
+Date: Thu, 09 Jan 2014 02:30:31 GMT
+X-My-Custom-Header-One: my first value
+X-My-Custom-Header-Two: my second value
+Transfer-Encoding: chunked
+
+The body.
+</code></pre>
+
+<p>Now we can see that the X-My-Custom-Header-One and Two headers were returned back to us, reflected back from the mirror imposter
+after being injected into the <i>outgoing</i> request.</p>
