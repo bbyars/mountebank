@@ -66,16 +66,15 @@ for any support questions.  Don't be shy!
 [![Coverage Status][coveralls-badge]][coveralls]
 [![Codacy Badge][codacy-badge]][codacy]
 
-|                       |Node Version |Ubuntu 12.04                            |CentOS 6.7                            |OS X Mavericks                           |Windows Server 2012                          |
-|-----------------------|:-----------:|:--------------------------------------:|:------------------------------------:|:---------------------------------------:|:-------------------------------------------:|
-|npm                    | v6.3        |[![Build Status][travis-badge]][travis] | (not tested)                         | [![Build Status][travis-badge]][travis] | [![Build status][appveyor-badge]][appveyor] |
-|npm                    | v5.12       |[![Build Status][travis-badge]][travis] | (not tested)                         | (not tested)                            | (not tested)                                |
-|npm                    | v4.7 (LTS)  |[![Build Status][travis-badge]][travis] | (not tested)                         | [![Build Status][travis-badge]][travis] | [![Build status][appveyor-badge]][appveyor] |
-|npm                    | v0.12       |[![Build Status][travis-badge]][travis] | (not tested)                         | (not tested)                            | (not tested)                                |
-|npm                    | v0.10       |[![Build Status][travis-badge]][travis] | (not tested)                         | (not tested)                            | (not tested)                                |
-|OS package             | v4.7        |[![Build Status][travis-badge]][travis] | [![Build Status][snap-badge]][snap]  | [![Build Status][travis-badge]][travis] | N/A                                         |
-|Self-contained archive | v4.7        |[![Build Status][travis-badge]][travis] | (not tested)                         | [![Build Status][travis-badge]][travis] | [![Build status][appveyor-badge]][appveyor] |
-|(Performance)          | v4.7        |[![Build Status][travis-badge]][travis] | (not tested)                         | (not tested)                            | (not tested)                                |
+|                       |Ubuntu 12.04                             |CentOS 6.7                            |OS X Mavericks                           |Windows Server 2012                          |
+|-----------------------|:---------------------------------------:|:------------------------------------:|:---------------------------------------:|:-------------------------------------------:|
+|npm (node v5.10)       | [![Build Status][travis-badge]][travis] | (not tested)                         | [![Build Status][travis-badge]][travis] | [![Build status][appveyor-badge]][appveyor] |
+|npm (node v4.4)        | [![Build Status][travis-badge]][travis] | (not tested)                         | [![Build Status][travis-badge]][travis] | [![Build status][appveyor-badge]][appveyor] |
+|npm (node v0.12)       | [![Build Status][travis-badge]][travis] | (not tested)                         | [![Build Status][travis-badge]][travis] | [![Build status][appveyor-badge]][appveyor] |
+|npm (node v0.10)       | [![Build Status][travis-badge]][travis] | (not tested)                         | [![Build Status][travis-badge]][travis] | [![Build status][appveyor-badge]][appveyor] |
+|OS package             | [![Build Status][travis-badge]][travis] | [![Build Status][snap-badge]][snap]  | [![Build Status][travis-badge]][travis] | N/A                                         |
+|Self-contained archive | [![Build Status][travis-badge]][travis] | (not tested)                         | [![Build Status][travis-badge]][travis] | [![Build status][appveyor-badge]][appveyor] |
+|(Performance)          | [![Build Status][travis-badge]][travis] | (not tested)                         | (not tested)                            | (not tested)                                |
 
 [npm-badge]: https://nodei.co/npm/mountebank.png?downloads=true&downloadRank=true&stars=true
 [npm]: https://www.npmjs.com/package/mountebank
