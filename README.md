@@ -70,12 +70,12 @@ for any support questions.  Don't be shy!
 |-----------------------|:-----------:|:--------------------------------------:|:------------------------------------:|:---------------------------------------:|:-------------------------------------------:|
 |npm                    | v6.3        |[![Build Status][travis-badge]][travis] | (not tested)                         | [![Build Status][travis-badge]][travis] | [![Build status][appveyor-badge]][appveyor] |
 |npm                    | v5.12       |[![Build Status][travis-badge]][travis] | (not tested)                         | (not tested)                            | (not tested)                                |
-|npm                    | v4.7 (LTS)  |[![Build Status][travis-badge]][travis] | (not tested)                         | [![Build Status][travis-badge]][travis] | [![Build status][appveyor-badge]][appveyor] |
+|npm                    | v4.4 (LTS)  |[![Build Status][travis-badge]][travis] | (not tested)                         | [![Build Status][travis-badge]][travis] | [![Build status][appveyor-badge]][appveyor] |
 |npm                    | v0.12       |[![Build Status][travis-badge]][travis] | (not tested)                         | (not tested)                            | (not tested)                                |
 |npm                    | v0.10       |[![Build Status][travis-badge]][travis] | (not tested)                         | (not tested)                            | (not tested)                                |
-|OS package             | v4.7        |[![Build Status][travis-badge]][travis] | [![Build Status][snap-badge]][snap]  | [![Build Status][travis-badge]][travis] | N/A                                         |
-|Self-contained archive | v4.7        |[![Build Status][travis-badge]][travis] | (not tested)                         | [![Build Status][travis-badge]][travis] | [![Build status][appveyor-badge]][appveyor] |
-|(Performance)          | v4.7        |[![Build Status][travis-badge]][travis] | (not tested)                         | (not tested)                            | (not tested)                                |
+|OS package             | v4.4        |[![Build Status][travis-badge]][travis] | [![Build Status][snap-badge]][snap]  | [![Build Status][travis-badge]][travis] | N/A                                         |
+|Self-contained archive | v4.4        |[![Build Status][travis-badge]][travis] | (not tested)                         | [![Build Status][travis-badge]][travis] | [![Build status][appveyor-badge]][appveyor] |
+|(Performance)          | v4.4        |[![Build Status][travis-badge]][travis] | (not tested)                         | (not tested)                            | (not tested)                                |
 
 [npm-badge]: https://nodei.co/npm/mountebank.png?downloads=true&downloadRank=true&stars=true
 [npm]: https://www.npmjs.com/package/mountebank
