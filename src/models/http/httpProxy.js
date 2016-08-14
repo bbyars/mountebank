@@ -11,7 +11,9 @@ var http = require('http'),
     Q = require('q'),
     querystring = require('querystring'),
     helpers = require('../../util/helpers'),
-    errors = require('../../util/errors');
+    errors = require('../../util/errors'),
+    HttpsProxyAgent = require('https-proxy-agent'),
+    HttpProxyAgent = require('http-proxy-agent');
 
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 
@@ -54,6 +56,12 @@ function create (logger) {
             };
         options.headers.connection = 'close';
         options.headers.host = hostnameFor(parts.protocol, parts.hostname, options.port);
+        if (process.env.http_proxy && parts.protocol === 'http:') {
+            options.agent = new HttpProxyAgent(process.env.http_proxy);
+        }
+        else if (process.env.https_proxy && parts.protocol === 'https:') {
+            options.agent = new HttpsProxyAgent(process.env.https_proxy);
+        }
 
         var proxiedRequest = protocol.request(options);
         if (originalRequest.body) {
