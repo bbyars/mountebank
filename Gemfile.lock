@@ -5,12 +5,6 @@ GEM
     archive-tar-minitar (0.5.2)
     arr-pm (0.0.10)
       cabin (> 0)
-    aws-sdk (2.6.14)
-      aws-sdk-resources (= 2.6.14)
-    aws-sdk-core (2.6.14)
-      jmespath (~> 1.0)
-    aws-sdk-resources (2.6.14)
-      aws-sdk-core (= 2.6.14)
     backports (3.6.8)
     cabin (0.8.1)
     childprocess (0.5.9)
@@ -83,10 +77,9 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
-  aws-sdk
   dpl
   fpm
   travis
 
 BUNDLED WITH
-   1.13.6
+   1.11.2
