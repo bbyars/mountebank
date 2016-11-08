@@ -49,6 +49,9 @@ GEM
     json (1.8.3)
     launchy (2.4.3)
       addressable (~> 2.3)
+    mime-types (3.1)
+      mime-types-data (~> 3.2015)
+    mime-types-data (3.2016.0521)
     multi_json (1.12.1)
     multipart-post (2.0.0)
     mustache (0.99.8)
@@ -87,6 +90,7 @@ DEPENDENCIES
   aws-sdk
   dpl
   fpm
+  mime-types
   travis
 
 BUNDLED WITH
