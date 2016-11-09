@@ -64,16 +64,6 @@ matrix:
       sudo: false
       env:
         - NODE_VERSION=5.12
-    - os: linux
-      sudo: false
-      env:
-        - NODE_VERSION=0.12
-        - MB_GRUNT_TASK=test
-    - os: linux
-      sudo: false
-      env:
-        - NODE_VERSION=0.10
-        - MB_GRUNT_TASK=test
     - os: osx
       sudo: false
       env:

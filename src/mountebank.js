@@ -13,7 +13,6 @@ var Q = require('q'),
     path = require('path'),
     fs = require('fs'),
     middleware = require('./util/middleware'),
-    compatibility = require('./util/compatibility'),
     HomeController = require('./controllers/homeController'),
     ImpostersController = require('./controllers/impostersController'),
     ImposterController = require('./controllers/imposterController'),
@@ -27,11 +26,6 @@ var Q = require('q'),
     ScopedLogger = require('./util/scopedLogger'),
     util = require('util'),
     helpers = require('./util/helpers');
-
-/**
- * Patches needed to run with older versions of node
- */
-compatibility.patchRawHeaders();
 
 function initializeLogfile (filename) {
     // Ensure new logfile on startup so the /logs only shows for this process

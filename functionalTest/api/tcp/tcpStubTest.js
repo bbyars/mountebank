@@ -3,7 +3,6 @@
 var assert = require('assert'),
     api = require('../api'),
     promiseIt = require('../../testHelpers').promiseIt,
-    compatibility = require('../../compatibility'),
     port = api.port + 1,
     isWindows = require('os').platform().indexOf('win') === 0,
     timeout = parseInt(process.env.MB_SLOW_TEST_TIMEOUT || 2000),
@@ -48,7 +47,7 @@ describe('tcp imposter', function () {
                 return tcp.send('0', port);
             }).then(function (response) {
                 assert.ok(Buffer.isBuffer(response));
-                assert.deepEqual(compatibility.bufferJSON(response), [0, 1, 2, 3]);
+                assert.deepEqual(response.toJSON().data, [0, 1, 2, 3]);
             }).finally(function () {
                 return api.del('/imposters');
             });
