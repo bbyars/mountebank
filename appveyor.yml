@@ -19,7 +19,8 @@ environment:
     # so we'll encode the information in a single environment variable and decode it in the install section
     - MB_APPVEYOR_CONFIG: "NODE_VERSION=4.4|MB_GRUNT_TASK=test:zip"
     - MB_APPVEYOR_CONFIG: "NODE_VERSION=4.4|MB_GRUNT_TASK=default|MB_SKIP_x86=true"
-    - MB_APPVEYOR_CONFIG: "NODE_VERSION=6.3|MB_GRUNT_TASK=default|MB_SKIP_x86=true"
+    - MB_APPVEYOR_CONFIG: "NODE_VERSION=6.9.1|MB_GRUNT_TASK=default|MB_SKIP_x86=true"
+    - MB_APPVEYOR_CONFIG: "NODE_VERSION=7.1.0|MB_GRUNT_TASK=default|MB_SKIP_x86=true"
 
 cache:
   - node_modules -> package.json
