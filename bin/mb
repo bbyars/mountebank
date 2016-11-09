@@ -75,7 +75,7 @@ function loadConfig (options) {
     }
 
     var configContents = fs.readFileSync(options.configfile, 'utf8'),
-        parsedContents = options.noParse ? configContents : ejs.render(configContents, {
+        parsedContents = ejs.render(configContents, {
             filename: options.configfile,
             stringify: stringify,
             inject: stringify       // backwards compatibility
@@ -178,10 +178,6 @@ yargs.options({
         description: 'file to load imposters from, can be an EJS template',
         nargs: 1,
         type: 'string'
-    },
-    noParse: {
-        description: 'prevent rendering the configfile as an EJS template',
-        type: 'boolean'
     },
     pidfile: {
         default: 'mb.pid',
