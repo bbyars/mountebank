@@ -41,7 +41,7 @@ describe('mb', function () {
     this.timeout(300000);
 
     describe('when remembering requests', function () {
-        promiseIt.only('should increase memory usage with number of requests', function () {
+        promiseIt('should increase memory usage with number of requests', function () {
             return mb.start(['--mock']).then(function () {
                 return getMemoryUsedForFiftyThousandRequests(mb.port);
             }).then(function (memoryUsed) {
