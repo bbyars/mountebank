@@ -15,7 +15,6 @@ if "%MB_SKIP_x86%"=="true" (
     )
 )
 
-call node scripts/fixDependencies
 call npm install
 
 set MB_PORT=3535

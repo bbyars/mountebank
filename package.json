@@ -97,17 +97,6 @@
     "time-grunt": "^1.2.2",
     "w3cjs": "~0.3.0"
   },
-  "devDependenciesBasedOnNodeVersion": {
-    "v0": {
-      "jsdom": "~3.1.0"
-    },
-    "v4": {
-      "jsdom": "~9.8.3"
-    },
-    "v5": {
-      "jsdom": "~9.8.3"
-    }
-  },
   "engines": {
     "node": ">=0.10"
   }

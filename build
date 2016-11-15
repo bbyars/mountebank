@@ -12,7 +12,6 @@ if [ -n "$TRAVIS_BUILD_NUMBER" -a -z "$IS_PUBLISHED_VERSION" ]; then
     MB_VERSION="$MB_VERSION-beta.$TRAVIS_BUILD_NUMBER"
 fi
 
-scripts/fixDependencies
 npm install
 
 MB_PORT=3535 MB_VERSION=$MB_VERSION node_modules/grunt-cli/bin/grunt "$@"
