@@ -69,26 +69,36 @@ function stringify (filename, includeFile) {
     return jsonString.substring(1, jsonString.length - 1);
 }
 
-function loadConfig (options) {
+function loadConfig (options, server) {
     if (!shouldLoadConfigFile(options)) {
         return Q(true);
     }
 
-    var configContents = fs.readFileSync(options.configfile, 'utf8'),
-        parsedContents = ejs.render(configContents, {
-            filename: options.configfile,
-            stringify: stringify,
-            inject: stringify       // backwards compatibility
-        }),
-        json = JSON.parse(parsedContents),
-        imposters = json.imposters;
+    try {
+        var configContents = fs.readFileSync(options.configfile, 'utf8'),
+            parsedContents = options.noParse ? configContents : ejs.render(configContents, {
+                filename: options.configfile,
+                stringify: stringify,
+                inject: stringify       // backwards compatibility
+            }),
+            json = JSON.parse(parsedContents),
+            imposters = json.imposters;
 
-    if (!imposters) {
-        // Assume they left off the outer imposters array
-        imposters = [json];
+        if (!imposters) {
+            // Assume they left off the outer imposters array
+            imposters = [json];
+        }
+
+        return putConfig(options, JSON.stringify({imposters: imposters}));
     }
-
-    return putConfig(options, JSON.stringify({ imposters: imposters }));
+    catch (e) {
+        if (e.code === 'ENOENT') {
+            server.close(function () {
+                console.error('No such file: ' + options.configfile);
+                process.exit(1);
+            });
+        }
+    }
 }
 
 function serverAt (options) {
@@ -111,7 +121,7 @@ function serverAt (options) {
             process.on('SIGINT', shutdown);
             process.on('SIGTERM', shutdown);
 
-            return loadConfig(options);
+            return loadConfig(options, server);
         }).then(function () {
             // Useful for build plugins that need to wait for mb to be fully initialized
             // They can wait for the pidfile to be written
@@ -178,6 +188,10 @@ yargs.options({
         description: 'file to load imposters from, can be an EJS template',
         nargs: 1,
         type: 'string'
+    },
+    noParse: {
+        description: 'prevent rendering the configfile as an EJS template',
+        type: 'boolean'
     },
     pidfile: {
         default: 'mb.pid',
