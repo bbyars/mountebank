@@ -66,11 +66,7 @@ function getResponseFor (href) {
             port: parts.port || defaultPort,
             method: 'GET',
             path: parts.path,
-            headers: {
-                accept: 'text/html',
-                // Slideshare returns a 999 Request Denied status based on user agent when run in TravisCI
-                'user-agent': 'Mozilla/5.0 (Windows NT 6.1) AppleWebKit/535.1 (KHTML, like Gecko) Chrome/14.0.812.0 Safari/535.1'
-            }
+            headers: { accept: 'text/html' }
         };
 
     return client.responseFor(spec);
