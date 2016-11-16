@@ -94,8 +94,8 @@ describe('mb command line', function () {
         });
     });
 
-    promiseIt('should not render through ejs when --no-parse option provided', function () {
-        var args = ['--configfile', path.join(__dirname, 'noParse.json'), '--noParse'];
+    promiseIt('should not render through ejs when --noParse option provided', function () {
+        var args = ['--configfile', path.join(__dirname, 'noparse.json'), '--noParse'];
 
         return mb.start(args).then(function () {
             return http.get('/', 4545);
