@@ -11,10 +11,6 @@ $(document).ready(function () {
     }
 
     $('a').on('click', function () {
-        if (!$(this).attr('href') || $(this).attr('href') === '#') {
-            return;
-        }
-
         var element = $(this),
             track = false,
             href = element.attr('href'),
