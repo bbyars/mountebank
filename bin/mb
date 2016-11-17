@@ -208,6 +208,10 @@ yargs.options({
         nargs: 1,
         type: 'string'
     },
+    nologfile: {
+        description: 'prevent logging to the filesystem',
+        type: 'boolean'
+    },
     logfile: {
         default: 'mb.log',
         description: 'file used for all log',

@@ -63,18 +63,21 @@ function create (options) {
         configController = ConfigController.create(thisPackage.version, options),
         feedController = FeedController.create(releases, options),
         validateImposterExists = middleware.createImposterValidator(imposters);
+
     logger.remove(logger.transports.Console);
     if (process.stdout.isTTY) {
         logger.add(logger.transports.Console, { colorize: true, level: options.loglevel });
     }
-    initializeLogfile(options.logfile);
-    logger.add(logger.transports.File, {
-        filename: options.logfile,
-        timestamp: true,
-        level: options.loglevel,
-        maxsize: 10000000,
-        maxFiles: 1
-    });
+    if (!options.nologfile) {
+        initializeLogfile(options.logfile);
+        logger.add(logger.transports.File, {
+            filename: options.logfile,
+            timestamp: true,
+            level: options.loglevel,
+            maxsize: 10000000,
+            maxFiles: 1
+        });
+    }
 
     app.use(middleware.useAbsoluteUrls(options.port));
     app.use(middleware.logger(logger, ':method :url'));
