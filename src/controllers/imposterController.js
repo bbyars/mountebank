@@ -40,7 +40,7 @@ function create (imposters) {
                     response.render('_imposter', { imposter: imposter });
                 }
                 else {
-                    response.render('imposter', imposter);
+                    response.render('imposter', { imposter: imposter });
                 }
             }
         });
