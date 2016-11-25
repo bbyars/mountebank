@@ -53,7 +53,7 @@ function getHTML (path) {
 // no value running them with every node in the build matrix
 if (process.env.MB_AIRPLANE_MODE !== 'true' && process.env.MB_RUN_WEB_TESTS === 'true') {
     describe('all pages in the mountebank website', function () {
-        this.timeout(60000);
+        this.timeout(120000);
 
         promiseIt('should be valid html', function () {
             // feed isn't html and is tested elsewhere; support has non-valid Google HTML embedded
