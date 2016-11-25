@@ -189,8 +189,6 @@ function create (proxy, postProcess) {
         }
 
         return processResponse(responseConfig, request, logger, stubs).then(function (response) {
-            return Q(postProcess(response, request));
-        }).then(function (response) {
             // We may have already run the decorator in the proxy call to persist the decorated response
             // in the new stub.  If so, we need to ensure we don't re-run it
             var clonedConfig = helpers.clone(responseConfig);
@@ -199,6 +197,8 @@ function create (proxy, postProcess) {
                 delete clonedConfig._behaviors.decorate;
             }
             return Q(behaviors.execute(request, response, clonedConfig._behaviors, logger));
+        }).then(function (response) {
+            return Q(postProcess(response, request));
         });
     }
 

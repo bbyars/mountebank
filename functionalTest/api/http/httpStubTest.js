@@ -251,6 +251,33 @@ var assert = require('assert'),
                 });
             });
 
+            promiseIt('should fix content-length if set and adjusted using decoration (issue #155)', function () {
+                var decorator = function (request, response) {
+                        response.body = 'length-8';
+                    },
+                    stub = {
+                        responses: [{
+                            is: {
+                                body: 'len-5',
+                                headers: { 'content-length': 5 }
+                            },
+                            _behaviors: { decorate: decorator.toString() }
+                        }]
+                    },
+                    stubs = [stub],
+                    request = { protocol: protocol, port: port, stubs: stubs, name: this.name };
+
+                return api.post('/imposters', request).then(function (response) {
+                    assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body, null, 2));
+                    return client.get('/', port);
+                }).then(function (response) {
+                    assert.strictEqual(response.body, 'length-8');
+                    assert.strictEqual(response.headers['content-length'], '8');
+                }).finally(function () {
+                    return api.del('/imposters');
+                });
+            });
+
             promiseIt('should support using request parameters during decorating', function () {
                 var decorator = function (request, response) {
                         response.body = response.body.replace('${PATH}', request.path);

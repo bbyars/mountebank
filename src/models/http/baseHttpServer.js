@@ -61,6 +61,10 @@ function setup (protocolName, createBaseServer) {
             else {
                 response.headers.Connection = 'close';
             }
+
+            if (typeof response.headers['content-length'] !== 'undefined' && response._mode === 'text') {
+                response.headers['content-length'] = response.body.length;
+            }
             return response;
         }
 
