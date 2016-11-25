@@ -1337,6 +1337,33 @@ describe('predicates', function () {
                 request = { field: '<doc></doc>' };
             assert.ok(predicates.equals(predicate, request));
         });
+
+        it('should return true if node exists even if no data in the node (issue #163)', function () {
+            var predicate = {
+                    exists: { field: true },
+                    xpath: { selector: '//book' }
+                },
+                request = { field: '<books><book></book></books>' };
+            assert.ok(predicates.exists(predicate, request));
+        });
+
+        it('should return false if node does not exist (issue #163)', function () {
+            var predicate = {
+                    exists: { field: true },
+                    xpath: { selector: '//book' }
+                },
+                request = { field: '<books></books>' };
+            assert.ok(!predicates.exists(predicate, request));
+        });
+
+        it('should return true if node exists with child node data (issue #163)', function () {
+            var predicate = {
+                    exists: { field: true },
+                    xpath: { selector: '//book' }
+                },
+                request = { field: '<books><book><title>Game of Thrones</title></book></books>' };
+            assert.ok(predicates.exists(predicate, request));
+        });
     });
 
     describe('treating strings as json', function () {
