@@ -52,7 +52,9 @@ function create (logger) {
                 path: toUrl(originalRequest.path, originalRequest.query),
                 headers: helpers.clone(originalRequest.headers),
                 cert: proxyOptions.cert,
-                key: proxyOptions.key
+                key: proxyOptions.key,
+                ciphers: 'ALL',
+                rejectUnauthorized: false
             };
         options.headers.connection = 'close';
         options.headers.host = hostnameFor(parts.protocol, parts.hostname, options.port);
