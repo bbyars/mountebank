@@ -469,6 +469,37 @@ var assert = require('assert'),
                     return api.del('/imposters');
                 });
             });
+
+            promiseIt('should repeat consistently with headers (issue #158)', function () {
+                var stub = {
+                        responses: [
+                            {
+                                is: {
+                                    body: 'first response',
+                                    headers: { 'Content-Type': 'application/xml' }
+                                },
+                                _behaviors: { repeat: 2 }
+                            },
+                            { is: { body: 'second response' } }
+                        ]
+                    },
+                    request = { protocol: protocol, port: port, stubs: [stub], name: this.name };
+
+                return api.post('/imposters', request).then(function (response) {
+                    assert.strictEqual(response.statusCode, 201, response.body);
+                    return client.get('/', port);
+                }).then(function (response) {
+                    assert.deepEqual(response.body, 'first response', 'first try');
+                    return client.get('/', port);
+                }).then(function (response) {
+                    assert.deepEqual(response.body, 'first response', 'second try');
+                    return client.get('/', port);
+                }).then(function (response) {
+                    assert.deepEqual(response.body, 'second response', 'third try');
+                }).finally(function () {
+                    return api.del('/imposters');
+                });
+            });
         });
     });
 });

@@ -1,10 +1,11 @@
 'use strict';
 
+var helpers = require('../util/helpers');
+
 /**
  * Executes the repeat behavior for a stub.
  * @module
  */
-
 
 /**
  * Creates an instance of RepeatBehavior
@@ -45,13 +46,24 @@ function create () {
         return response;
     }
 
+    function cloneAndClean (response) {
+        var clone = helpers.clone(response);
+
+        // https://github.com/bbyars/mountebank/issues/158
+        if (clone.is && clone.is.headers) {
+            delete clone.is.headers.connection;
+            delete clone.is.headers.Connection;
+        }
+        return clone;
+    }
+
     /* eslint no-use-before-define: 0 */ // Recursion prevents proper ordering of functions
     function getNextResponse (stub, alreadyTraversed) {
-        var response = stub.responses.shift();
+        var response = stub.responses.shift(),
+            clone = cloneAndClean(response),
+            key = JSON.stringify(clone);
 
         if (hasRepeatBehavior(response)) {
-            var key = JSON.stringify(response);
-
             if (alreadyTraversed[key]) {
                 response = defaultResponse(stub, response);
             }

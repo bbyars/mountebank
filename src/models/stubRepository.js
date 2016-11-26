@@ -22,8 +22,8 @@ function create (resolver, recordMatches, encoding) {
      * @memberOf module:models/stubRepository#
      * @type {Array}
      */
-    var stubs = [];
-    var repeatBehavior = RepeatBehavior.create();
+    var stubs = [],
+        repeatBehavior = RepeatBehavior.create();
 
     function trueForAll (list, predicate) {
         // we call map before calling every so we make sure to call every
