@@ -470,6 +470,59 @@ var assert = require('assert'),
                 });
             });
 
+            promiseIt('should repeat if behavior set and loop around responses with same repeat behavior (issue #165)', function () {
+                var stub = {
+                        responses: [
+                            {
+                                is: {
+                                    body: 'first response',
+                                    statusCode: 400,
+                                    headers: { 'Content-Type': 'text/plain' }
+                                },
+                                _behaviors: { repeat: 2 }
+                            },
+                            {
+                                is: { body: 'second response' },
+                                _behaviors: { repeat: 3 }
+                            },
+                            { is: { body: 'third response' } }
+                        ]
+                    },
+                    request = { protocol: protocol, port: port, stubs: [stub], name: this.name };
+
+                return api.post('/imposters', request).then(function (response) {
+                    assert.strictEqual(response.statusCode, 201, response.body);
+                    return client.get('/', port);
+                }).then(function (response) {
+                    assert.strictEqual(response.statusCode, 400);
+                    assert.strictEqual(response.body, 'first response');
+                    return client.get('/', port);
+                }).then(function (response) {
+                    assert.strictEqual(response.body, 'first response');
+                    return client.get('/', port);
+                }).then(function (response) {
+                    assert.strictEqual(response.body, 'second response');
+                    return client.get('/', port);
+                }).then(function (response) {
+                    assert.strictEqual(response.body, 'second response');
+                    return client.get('/', port);
+                }).then(function (response) {
+                    assert.strictEqual(response.body, 'second response');
+                    return client.get('/', port);
+                }).then(function (response) {
+                    assert.strictEqual(response.body, 'third response');
+                    return client.get('/', port);
+                }).then(function (response) {
+                    assert.strictEqual(response.body, 'first response');
+                    return client.get('/', port);
+                }).then(function (response) {
+                    assert.strictEqual(response.body, 'first response');
+                    return client.get('/', port);
+                }).finally(function () {
+                    return api.del('/imposters');
+                });
+            });
+
             promiseIt('should repeat consistently with headers (issue #158)', function () {
                 var stub = {
                         responses: [

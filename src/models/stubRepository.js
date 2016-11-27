@@ -6,7 +6,7 @@
  */
 
 var predicates = require('./predicates'),
-    RepeatBehavior = require('./repeatBehavior'),
+    helpers = require('../util/helpers'),
     Q = require('q');
 
 /**
@@ -22,8 +22,7 @@ function create (resolver, recordMatches, encoding) {
      * @memberOf module:models/stubRepository#
      * @type {Array}
      */
-    var stubs = [],
-        repeatBehavior = RepeatBehavior.create();
+    var stubs = [];
 
     function trueForAll (list, predicate) {
         // we call map before calling every so we make sure to call every
@@ -47,8 +46,36 @@ function create (resolver, recordMatches, encoding) {
         }
         else {
             logger.debug('using predicate match: ' + JSON.stringify(matches[0].predicates || {}));
+            if (typeof matches[0].statefulResponses === 'undefined') {
+                // This happens when the responseResolver adds a stub, but doesn't know about this hidden state
+                matches[0].statefulResponses = matches[0].responses;
+            }
             return matches[0];
         }
+    }
+
+    function repeatsFor (response) {
+        if (response._behaviors && response._behaviors.repeat) {
+            return response._behaviors.repeat;
+        }
+        else {
+            return 1;
+        }
+    }
+
+    function repeatTransform (responses) {
+        var result = [],
+            response,
+            repeats;
+
+        for (var i = 0; i < responses.length; i += 1) {
+            response = responses[i];
+            repeats = repeatsFor(response);
+            for (var j = 0; j < repeats; j += 1) {
+                result.push(response);
+            }
+        }
+        return result;
     }
 
     /**
@@ -57,7 +84,21 @@ function create (resolver, recordMatches, encoding) {
      * @param {Object} stub - The stub to add
      */
     function addStub (stub) {
+        stub.statefulResponses = repeatTransform(stub.responses);
         stubs.push(stub);
+    }
+
+    /**
+     * Returns the outside representation of the stubs
+     * @memberOf module:models/stubRepository#
+     * @returns {Object} - The stubs
+     */
+    function getStubs () {
+        var result = helpers.clone(stubs);
+        result.forEach(function (stub) {
+            delete stub.statefulResponses;
+        });
+        return result;
     }
 
     /**
@@ -68,11 +109,13 @@ function create (resolver, recordMatches, encoding) {
      * @returns {Object} - Promise resolving to the response
      */
     function resolve (request, logger) {
-        var stub = findFirstMatch(request, logger) || { responses: [{ is: {} }] },
-            responseConfig = repeatBehavior.execute(stub),
+        var stub = findFirstMatch(request, logger) || { statefulResponses: [{ is: {} }] },
+            responseConfig = stub.statefulResponses.shift(),
             deferred = Q.defer();
 
         logger.debug('generating response from ' + JSON.stringify(responseConfig));
+
+        stub.statefulResponses.push(responseConfig);
 
         resolver.resolve(responseConfig, request, logger, stubs).done(function (response) {
             var match = {
@@ -91,7 +134,7 @@ function create (resolver, recordMatches, encoding) {
     }
 
     return {
-        stubs: stubs,
+        stubs: getStubs,
         addStub: addStub,
         resolve: resolve
     };

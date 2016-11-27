@@ -26,7 +26,7 @@ function createServer () {
             respond: function (smtpRequest, originalRequest) { originalRequest.accept(); },
             metadata: combinators.constant({}),
             addStub: combinators.noop,
-            stubs: []
+            stubs: function () { return []; }
         }),
         requestHandler = function (request) {
             result.emit('request', { remoteAddress: request.remoteAddress }, request);

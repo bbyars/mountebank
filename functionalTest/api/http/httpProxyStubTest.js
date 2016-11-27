@@ -53,7 +53,7 @@ describe('http proxy stubs', function () {
             assert.strictEqual(response.body, 'origin server');
             return api.get('/imposters/' + port);
         }).then(function (response) {
-            assert.strictEqual(response.body.stubs[1].responses[0].proxy.mode, 'proxyOnce');
+            assert.strictEqual(response.body.stubs[1].responses[0].proxy.mode, 'proxyOnce', response.body);
         }).finally(function () {
             return api.del('/imposters');
         });
@@ -156,7 +156,7 @@ describe('http proxy stubs', function () {
         }).then(function () {
             return api.del('/imposters/' + port);
         }).then(function (response) {
-            assert.strictEqual(response.body.stubs.length, 3);
+            assert.strictEqual(response.body.stubs.length, 3, JSON.stringify(response.body.stubs, null, 2));
 
             var stubs = response.body.stubs,
                 responses = stubs.splice(1).map(function (stub) {

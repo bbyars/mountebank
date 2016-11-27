@@ -33,10 +33,11 @@ function mock () {
     };
 
     stubFunction.wasCalledWith = function () {
-        var expected = slice.call(arguments);
+        var expected = slice.call(arguments),
+            actual = actualArguments.slice(0, expected.length); // allow matching only first few params
         setMessage(expected, actualArguments);
-        return wasCalled &&
-            JSON.stringify(actualArguments) === JSON.stringify(expected);
+
+        return wasCalled && JSON.stringify(actual) === JSON.stringify(expected);
     };
 
     stubFunction.message = function () {

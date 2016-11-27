@@ -48,8 +48,7 @@ describe('stubRepository', function () {
             stubs.addStub(thirdStub);
 
             return stubs.resolve(request, logger).then(function () {
-                assert.ok(resolver.wasCalledWith('second stub', request, logger,
-                    [firstStub, secondStub, thirdStub]), resolver.message());
+                assert.ok(resolver.wasCalledWith('second stub'), resolver.message());
             });
         });
 
@@ -63,13 +62,13 @@ describe('stubRepository', function () {
             stubs.addStub(stub);
 
             return stubs.resolve(request, logger).then(function () {
-                assert.ok(resolver.wasCalledWith('first response', request, logger, [stub]), resolver.message());
+                assert.ok(resolver.wasCalledWith('first response'), resolver.message());
                 return stubs.resolve(request, logger);
             }).then(function () {
-                assert.ok(resolver.wasCalledWith('second response', request, logger, [stub]), resolver.message());
+                assert.ok(resolver.wasCalledWith('second response'), resolver.message());
                 return stubs.resolve(request, logger);
             }).then(function () {
-                assert.ok(resolver.wasCalledWith('first response', request, logger, [stub]), resolver.message());
+                assert.ok(resolver.wasCalledWith('first response'), resolver.message());
             });
         });
 
@@ -136,51 +135,28 @@ describe('stubRepository', function () {
             });
         });
 
-        promiseIt('returns default response after repeats are exhausted', function () {
+        promiseIt('should loop back around after repeats are exhausted', function () {
             var resolver = mock().returns(Q()),
                 stubs = StubRepository.create({ resolve: resolver }, false),
                 logger = { debug: mock() },
                 request = { field: 'value' },
-                stub = { responses: [{ is: { body: 'first response' }, _behaviors: { repeat: 1 } },
-                    { is: { body: 'second response' }, _behaviors: { repeat: 1 } }] };
+                firstResponse = { is: { body: 'first response' }, _behaviors: { repeat: 1 } },
+                secondResponse = { is: { body: 'second response' }, _behaviors: { repeat: 2 } },
+                stub = { responses: [firstResponse, secondResponse] };
 
             stubs.addStub(stub);
 
             return stubs.resolve(request, logger).then(function () {
-                assert.ok(resolver.wasCalledWith({ is: { body: 'first response' }, _behaviors: { repeat: 1 } },
-                    request, logger, [stub]), resolver.message());
-
+                assert.ok(resolver.wasCalledWith(firstResponse), resolver.message());
                 return stubs.resolve(request, logger);
             }).then(function () {
-                assert.ok(resolver.wasCalledWith({ is: { body: 'second response' }, _behaviors: { repeat: 1 } },
-                    request, logger, [stub]), resolver.message());
-
+                assert.ok(resolver.wasCalledWith(secondResponse), resolver.message());
                 return stubs.resolve(request, logger);
             }).then(function () {
-                assert.ok(resolver.wasCalledWith({ is: {} }, request, logger, [stub]), resolver.message());
-            });
-        });
-
-        promiseIt('returns multiple default responses', function () {
-            var resolver = mock().returns(Q()),
-                stubs = StubRepository.create({ resolve: resolver }, false),
-                logger = { debug: mock() },
-                request = { field: 'value' },
-                stub = { responses: [{ is: { body: 'first response' }, _behaviors: { repeat: 1 } }] };
-
-            stubs.addStub(stub);
-
-            return stubs.resolve(request, logger).then(function () {
-                assert.ok(resolver.wasCalledWith({ is: { body: 'first response' }, _behaviors: { repeat: 1 } },
-                    request, logger, [stub]), resolver.message());
-
+                assert.ok(resolver.wasCalledWith(secondResponse), resolver.message());
                 return stubs.resolve(request, logger);
             }).then(function () {
-                assert.ok(resolver.wasCalledWith({ is: {} }, request, logger, [stub]), resolver.message());
-
-                return stubs.resolve(request, logger);
-            }).then(function () {
-                assert.ok(resolver.wasCalledWith({ is: {} }, request, logger, [stub]), resolver.message());
+                assert.ok(resolver.wasCalledWith(firstResponse), resolver.message());
             });
         });
     });

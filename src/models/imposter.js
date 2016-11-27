@@ -10,8 +10,7 @@
 
 var Q = require('q'),
     Domain = require('domain'),
-    errors = require('../util/errors'),
-    helpers = require('../util/helpers');
+    errors = require('../util/errors');
 
 function createErrorHandler (deferred) {
     return function errorHandler (error) {
@@ -54,7 +53,7 @@ function create (Protocol, request) {
                 });
 
                 result.requests = server.requests;
-                result.stubs = helpers.clone(server.stubs);
+                result.stubs = server.stubs();
             }
 
             function removeNonEssentialInformationFrom (result) {

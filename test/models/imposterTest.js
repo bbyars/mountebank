@@ -15,7 +15,7 @@ describe('imposter', function () {
             server = {
                 requests: [],
                 addStub: mock(),
-                stubs: [],
+                stubs: mock().returns([]),
                 metadata: metadata
             };
             Protocol = {
@@ -98,14 +98,14 @@ describe('imposter', function () {
         });
 
         promiseIt('should return list of stubs', function () {
-            server.stubs = ['ONE', 'TWO'];
+            server.stubs = mock().returns(['ONE', 'TWO']);
             return Imposter.create(Protocol, {}).then(function (imposter) {
                 assert.deepEqual(imposter.toJSON().stubs, ['ONE', 'TWO']);
             });
         });
 
         promiseIt('replayable JSON should remove stub matches', function () {
-            server.stubs = [
+            server.stubs = mock().returns([
                 {
                     responses: ['FIRST'],
                     matches: ['MATCH']
@@ -114,7 +114,7 @@ describe('imposter', function () {
                     responses: ['SECOND'],
                     matches: ['MATCH']
                 }
-            ];
+            ]);
             server.port = 3535;
 
             return Imposter.create(Protocol, {}).then(function (imposter) {
@@ -127,7 +127,7 @@ describe('imposter', function () {
         });
 
         promiseIt('should remove proxies from responses if asked', function () {
-            server.stubs = [
+            server.stubs = mock().returns([
                 {
                     responses: [
                         { proxy: { to: 'http://localhost:3000' } },
@@ -140,7 +140,7 @@ describe('imposter', function () {
                         { is: { body: 'second' } }
                     ]
                 }
-            ];
+            ]);
             return Imposter.create(Protocol, {}).then(function (imposter) {
                 assert.deepEqual(imposter.toJSON({ removeProxies: true }).stubs, [
                     {
@@ -159,7 +159,7 @@ describe('imposter', function () {
         });
 
         promiseIt('should remove empty stubs after proxy removal', function () {
-            server.stubs = [
+            server.stubs = mock().returns([
                 {
                     responses: [
                         { proxy: { to: 'http://localhost:3000' } },
@@ -172,7 +172,7 @@ describe('imposter', function () {
                         { proxy: { to: 'http://localhost:3001' } }
                     ]
                 }
-            ];
+            ]);
             return Imposter.create(Protocol, {}).then(function (imposter) {
                 assert.deepEqual(imposter.toJSON({ removeProxies: true }).stubs, [
                     {
@@ -180,39 +180,6 @@ describe('imposter', function () {
                             { is: { body: 'first' } },
                             { inject: 'inject' }
                         ]
-                    }
-                ]);
-            });
-        });
-
-        promiseIt('does not mutate servers stub representation for replayable removeProxies requests', function () {
-            server.stubs = [
-                {
-                    responses: [
-                        { proxy: { to: 'http://localhost:3000' } },
-                        { is: { body: 'first' } },
-                        { inject: 'inject' }
-                    ],
-                    matches: ['MATCH']
-                }
-            ];
-            return Imposter.create(Protocol, {}).then(function (imposter) {
-                assert.deepEqual(imposter.toJSON({ removeProxies: true, replayable: true }).stubs, [
-                    {
-                        responses: [
-                            { is: { body: 'first' } },
-                            { inject: 'inject' }
-                        ]
-                    }
-                ]);
-                assert.deepEqual(server.stubs, [
-                    {
-                        responses: [
-                            { proxy: { to: 'http://localhost:3000' } },
-                            { is: { body: 'first' } },
-                            { inject: 'inject' }
-                        ],
-                        matches: ['MATCH']
                     }
                 ]);
             });
