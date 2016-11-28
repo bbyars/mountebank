@@ -40,6 +40,15 @@ function create (logger) {
         return result;
     }
 
+    function setProxyAgent (parts, options) {
+        if (process.env.http_proxy && parts.protocol === 'http:') {
+            options.agent = new HttpProxyAgent(process.env.http_proxy);
+        }
+        else if (process.env.https_proxy && parts.protocol === 'https:') {
+            options.agent = new HttpsProxyAgent(process.env.https_proxy);
+        }
+    }
+
     function getProxyRequest (baseUrl, originalRequest, proxyOptions) {
         var parts = url.parse(baseUrl),
             protocol = parts.protocol === 'https:' ? https : http,
@@ -53,17 +62,12 @@ function create (logger) {
                 headers: helpers.clone(originalRequest.headers),
                 cert: proxyOptions.cert,
                 key: proxyOptions.key,
-                ciphers: 'ALL',
+                ciphers: proxyOptions.ciphers || 'ALL',
                 rejectUnauthorized: false
             };
         options.headers.connection = 'close';
         options.headers.host = hostnameFor(parts.protocol, parts.hostname, options.port);
-        if (process.env.http_proxy && parts.protocol === 'http:') {
-            options.agent = new HttpProxyAgent(process.env.http_proxy);
-        }
-        else if (process.env.https_proxy && parts.protocol === 'https:') {
-            options.agent = new HttpsProxyAgent(process.env.https_proxy);
-        }
+        setProxyAgent(parts, options);
 
         var proxiedRequest = protocol.request(options);
         if (originalRequest.body) {
