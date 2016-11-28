@@ -60,6 +60,39 @@ function putConfig (options, body) {
     return deferred.promise;
 }
 
+function getConfig (options) {
+    var deferred = Q.defer(),
+        requestOptions = {
+            method: 'GET',
+            path: '/imposters?replayable=true',
+            port: options.port,
+            hostname: 'localhost',
+            headers: {
+                'Content-Type': 'application/json',
+                Connection: 'close'
+            }
+        },
+        request;
+
+    if (options.removeProxies) {
+        requestOptions.path += '&removeProxies=true';
+    }
+
+    request = http.request(requestOptions, function (response) {
+        response.body = '';
+        response.setEncoding('utf8');
+        response.on('data', function (chunk) { response.body += chunk; });
+        response.on('end', function () {
+            deferred.resolve(response);
+        });
+    });
+
+    request.on('error', deferred.reject);
+
+    request.end();
+    return deferred.promise;
+}
+
 function stringify (filename, includeFile) {
     var resolvedPath = path.join(path.dirname(filename), includeFile),
         contents = fs.readFileSync(resolvedPath, 'utf8'),
@@ -172,12 +205,19 @@ function serverAt (options) {
         stop().then(start).done();
     }
 
+    function save () {
+        getConfig(options).then(function (response) {
+            fs.writeFileSync(options.configfile || 'mb.json', response.body);
+        }).done();
+    }
+
     return {
         start: start,
         stop: function () {
             stop().done(process.exit);
         },
-        restart: restart
+        restart: restart,
+        save: save
     };
 }
 
@@ -185,6 +225,7 @@ yargs.usage('Usage: mb [command] [options...]');
 yargs.command('start', 'Starts the server (default command)');
 yargs.command('stop', 'Stops the server');
 yargs.command('restart', 'Restarts the server, stopping any previously started server');
+yargs.command('save', 'Saves current imposter configuration to a config file');
 
 yargs.options({
     port: {
@@ -194,7 +235,7 @@ yargs.options({
         type: 'number'
     },
     configfile: {
-        description: 'file to load imposters from, can be an EJS template',
+        description: 'file to load imposters from or save imposters to, can be an EJS template',
         nargs: 1,
         type: 'string'
     },
@@ -237,6 +278,10 @@ yargs.options({
         description: 'include stub match information in imposter retrievals for debugging purposes',
         type: 'boolean'
     },
+    removeProxies: {
+        description: 'removes proxies from the configuration when using the save command',
+        type: 'boolean'
+    },
     heroku: {
         type: 'boolean'
     }
@@ -257,13 +302,16 @@ try {
 
     switch (command) {
         case 'start':
-            server.start(argv);
+            server.start();
             break;
         case 'stop':
             server.stop();
             break;
         case 'restart':
             server.restart();
+            break;
+        case 'save':
+            server.save();
             break;
         case 'help':
             yargs.showHelp();

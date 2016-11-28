@@ -28,34 +28,34 @@ function whenFullyInitialized (callback) {
     spinWait();
 }
 
+function spawnMb (args) {
+    var command = mbPath;
+
+    if (isWindows) {
+        args.unshift(mbPath);
+
+        if (mbPath.indexOf('.cmd') >= 0) {
+            // Accommodate the self-contained Windows zip files that ship with mountebank
+            args.unshift('/c');
+            command = 'cmd';
+        }
+        else {
+            command = 'node';
+        }
+    }
+
+    return spawn(command, args);
+}
+
 function create (port) {
 
     function start (args) {
         var deferred = Q.defer(),
-            command = mbPath,
-            mbArgs = [
-                'restart',
-                '--port', port,
-                '--pidfile', pidfile,
-                '--logfile', logfile
-            ].concat(args || []),
+            mbArgs = ['restart', '--port', port, '--logfile', logfile, '--pidfile', pidfile].concat(args || []),
             mb;
 
-        if (isWindows) {
-            mbArgs.unshift(mbPath);
-
-            if (mbPath.indexOf('.cmd') >= 0) {
-                // Accommodate the self-contained Windows zip files that ship with mountebank
-                mbArgs.unshift('/c');
-                command = 'cmd';
-            }
-            else {
-                command = 'node';
-            }
-        }
-
         whenFullyInitialized(deferred.resolve);
-        mb = spawn(command, mbArgs);
+        mb = spawnMb(mbArgs);
         mb.on('error', deferred.reject);
 
         return deferred.promise;
@@ -80,6 +80,22 @@ function create (port) {
         return deferred.promise;
     }
 
+    function save (args) {
+        var deferred = Q.defer(),
+            mbArgs = ['save', '--port', port].concat(args || []),
+            mb;
+
+        mb = spawnMb(mbArgs);
+        mb.on('error', deferred.reject);
+        mb.on('close', function (exitCode) {
+            deferred.resolve({
+                exitCode: exitCode
+            });
+        });
+
+        return deferred.promise;
+    }
+
     // After trial and error, I discovered that we have to set
     // the connection: close header on Windows or we end up with
     // ECONNRESET errors
@@ -96,6 +112,7 @@ function create (port) {
         url: 'http://localhost:' + port,
         start: start,
         stop: stop,
+        save: save,
         get: get,
         post: post
     };

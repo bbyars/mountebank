@@ -11,7 +11,8 @@ var assert = require('assert'),
     timeout = parseInt(process.env.MB_SLOW_TEST_TIMEOUT || 3000),
     smtp = require('../api/smtp/smtpClient'),
     http = BaseHttpClient.create('http'),
-    https = BaseHttpClient.create('https');
+    https = BaseHttpClient.create('https'),
+    fs = require('fs');
 
 describe('mb command line', function () {
     if (isWindows) {
@@ -22,7 +23,7 @@ describe('mb command line', function () {
         this.timeout(timeout);
     }
 
-    // I normally advocated separating the data needed for the assertions from the test setup,
+    // I normally advocate separating the data needed for the assertions from the test setup,
     // but I wanted this to be a reasonably complex regression test
     promiseIt('should support complex configuration with --configfile in multiple files', function () {
         var args = ['--configfile', path.join(__dirname, 'imposters/imposters.ejs')];
@@ -105,4 +106,67 @@ describe('mb command line', function () {
             return mb.stop();
         });
     });
+
+    promiseIt('should allow saving replayable format', function () {
+        var args = ['--configfile', path.join(__dirname, 'imposters/imposters.ejs')],
+            expected;
+
+        return mb.start(args).then(function () {
+            return mb.get('/imposters?replayable=true');
+        }).then(function (response) {
+            expected = response.body;
+            return mb.save();
+        }).then(function () {
+            assert.ok(fs.existsSync('mb.json'));
+            assert.deepEqual(expected, JSON.parse(fs.readFileSync('mb.json')));
+            fs.unlinkSync('mb.json');
+        }).finally(function () {
+            return mb.stop();
+        });
+    });
+
+    promiseIt('should allow saving to a different config file', function () {
+        var args = ['--configfile', path.join(__dirname, 'imposters/imposters.ejs')],
+            expected;
+
+        return mb.start(args).then(function () {
+            return mb.get('/imposters?replayable=true');
+        }).then(function (response) {
+            expected = response.body;
+            return mb.save(['--configfile', 'saved.json']);
+        }).then(function () {
+            assert.ok(fs.existsSync('saved.json'));
+            assert.deepEqual(expected, JSON.parse(fs.readFileSync('saved.json')));
+            fs.unlinkSync('saved.json');
+        }).finally(function () {
+            return mb.stop();
+        });
+    });
+
+    if (process.env.MB_AIRPLANE_MODE !== 'true') {
+        promiseIt('should allow removing proxies during save', function () {
+            var proxyStub = { responses: [{ proxy: { to: 'https://google.com' } }] },
+                proxyRequest = { protocol: 'http', port: port + 1, stubs: [proxyStub], name: this.name + ' proxy' },
+                expected;
+
+            return mb.start().then(function () {
+                return mb.post('/imposters', proxyRequest);
+            }).then(function (response) {
+                assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body, null, 4));
+                return http.get('/', port + 1);
+            }).then(function () {
+                return mb.get('/imposters?replayable=true&removeProxies=true');
+            }).then(function (response) {
+                expected = response.body;
+                return mb.save(['--removeProxies']);
+            }).then(function (result) {
+                assert.strictEqual(result.exitCode, 0);
+                assert.ok(fs.existsSync('mb.json'));
+                assert.deepEqual(expected, JSON.parse(fs.readFileSync('mb.json')));
+                fs.unlinkSync('mb.json');
+            }).finally(function () {
+                return mb.stop();
+            });
+        });
+    }
 });
