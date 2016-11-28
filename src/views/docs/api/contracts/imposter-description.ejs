@@ -105,6 +105,13 @@
   <p class='info-icon'>More information: <a href='/docs/api/behaviors'>behaviors</a></p>
 </div>
 
+<div id='imposter-stubs-_behaviors-repeat-description'>
+    <p>Causes the response to repeat a given number of times before returning the next response
+        in the <code>responses</code> array.</p>
+
+    <p class='info-icon'>More information: <a href='/docs/api/behaviors'>behaviors</a></p>
+</div>
+
 <div id='imposter-stubs-_behaviors-decorate-description'>
   <p>Post-processes the response before sending it.  Since post-processing requires JavaScript
     injection, the <code><a href='/docs/commandLine'>--allowInjection</a></code> flag must be passed.
@@ -165,6 +172,20 @@
     certificate.  This field can contain the PEM-formatted client certificate.</p>
 
   <p class='info-icon'>More information: <a href='/docs/api/proxies'>proxies</a></p>
+</div>
+
+<div id='imposter-stubs-responses-proxy-ciphers-description'>
+    <p>In nearly all cases, you'll never need to use this field. However if you need to proxy to an
+        older HTTPS server using insecure ciphers that are no longer used, you can override the
+        cipher using one of the <a href='http://openssl.cs.utah.edu/docs/apps/ciphers.html'>standard formats</a>.</p>
+
+    <p class='info-icon'>More information: <a href='/docs/api/proxies'>proxies</a></p>
+</div>
+
+<div id='imposter-stubs-responses-proxy-injectHeaders-description'>
+    <p>Allows you to add or override headers returned from the proxy.</p>
+
+    <p class='info-icon'>More information: <a href='/docs/api/proxies'>proxies</a></p>
 </div>
 
 <div id='imposter-stubs-responses-proxy-predicateGenerators-description'>
