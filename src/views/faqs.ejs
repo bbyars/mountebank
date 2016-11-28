@@ -14,16 +14,15 @@ description = 'Frequently asked questions about using mountebank'
 
         <dt>How can I post-process a response, for example, to add a custom header to
           a proxied response or add a current timestamp into the response</dt>
-        <dd>See the <a href='/docs/api/behaviors'><code>decorate</code> behavior</a>.</dd>
+        <dd>See the <a href='/docs/api/behaviors'><code>decorate</code> behavior</a> for general purpose decoration.
+            You can inject headers into proxied responses using the <a href='/docs/api/proxies#proxy-inject-headers'>
+            <code>injectHeaders</code></a> field</dd>
 
         <dt>How can I optimize the number of API calls during test setup and teardown?</dt>
         <dd>You can use the <a href='/docs/api/overview#put-imposters'>PUT /imposters</a> API
         call to combine cleanup of the previous test run's imposters and setup of the new
         test run.  If you need to do mock verification, the <a href='/docs/api/overview#delete-imposter'>
         DELETE /imposter</a> call will return the <code>requests</code> array.</dd>
-
-        <dt>Why is the command line application simply called <code>mb</code>?</dt>
-        <dd>Because <code>mb</code> is easier to pronounce than mountebank.</dd>
 
         <dt>How can I split my imposters into multiple files and have them automatically
         loaded when <code>mb</code> restarts?</dt>
@@ -36,6 +35,14 @@ description = 'Frequently asked questions about using mountebank'
         <dd>You can't - imposters are immutable through the API once created.  The expected workflow
         is that you recreate the imposters rather than mutate them, which is a lightweight operation.</dd>
 
+        <dt>Can I use mountebank for load testing?</dt>
+        <dd>Yes, and field reports have indicated that mountebank is perhaps the only open source
+        service virtualization tool that performs under significant load. For any long-running process, make
+        sure you leave off the <code>--mock</code> and <code>--debug</code> command line flags (which are
+        disabled by default) so mountebank isn't leaking memory. As long as you set up each <code>mb</code>
+        instance with the same configuration, you can run multiple instances behind a load balancer. Given a
+        reasonable hardware setup, organizations have reported managing 200-250 TPS per instance.</dd>
+
         <dt>Why did you misspell impostor?</dt>
         <dd>mountebank is not an educated man, having spent the waking hours of his
           youth caring for the poor and the sick.</dd>
@@ -43,8 +50,8 @@ description = 'Frequently asked questions about using mountebank'
         <dt>Does mountebank proved service virtualization?</dt>
         <dd>Yes!  Service virtualization is the term that commercial vendors use that
         came out of the SOA tools, and essentially just means over the wire test doubles, which
-        is something mountebank knows a thing or two about.  And, unlike commercial service virtualization packages,
-        he offers this free of charge, so there are no licensing concerns preventing you from pushing the
+        is something mountebank knows a thing or two about.  Unlike commercial service virtualization packages,
+        mountebank is free of charge, so there are no licensing concerns preventing you from pushing the
         tests to the left of the project lifecycle.  mountebank is also far more friendly of continuous
         integration and continuous delivery than commercial software.  A key goal of mountebank's approach
         to service virtualization is that the intelligence of what will be returned by the test double belongs

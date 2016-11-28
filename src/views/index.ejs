@@ -19,7 +19,8 @@ description = 'mountebank is the first open source, cross-platform, multi-protoc
 doubles over the wire.  Simply point your application under test to mountebank
 instead of the real dependency, and test like you would with traditional stubs and mocks.</p>
 
-<p>mountebank will cure what ails you, guaranteed.</p>
+<p>mountebank is the most capable open source service virtualization tool in existence, and
+    will cure what ails you, guaranteed.</p>
 
 <h2>How it works</h2>
 
@@ -27,7 +28,9 @@ instead of the real dependency, and test like you would with traditional stubs a
 Your test communicates to mountebank over http using the <a href='/docs/api/overview'>api</a>
 to set up <a href='/docs/api/stubs'>stubs</a>, <a href='/docs/api/proxies'>record and replay proxies</a>,
 and verify <a href='/docs/api/mocks'>mock expectations</a>.  In the typical use case, each
-test will start an imposter during test setup and stop an imposter during test teardown.</p>
+test will start an imposter during test setup and stop an imposter during test teardown, although
+you are also welcome to configure mountebank at startup using a <a href='/docs/commandLine#config-file'>
+config file</a>.</p>
 
 <p>mountebank employs several types of imposters, each responding to a specific protocol.
 Typically, your test will tell the imposter which port to bind to, and the imposter will
@@ -70,10 +73,10 @@ open the corresponding socket.</p>
     functionality isn't enough.</dd>
 
   <dt>Powerful</dt>
-  <dd>mountebank is the only open source stubbing tool that is non-modal and multi-protocol.
-    Commercial "service virtualization" solutions exist, but their licensed platforms make
-    it hard to move the tests closer to development and can even require a specialized IDE.
-    mountebank provides service virtualization free of charge without any platform constraints</dd>
+  <dd>mountebank is the only open source service virtualization tool that is non-modal and multi-protocol.
+    Commercial solutions exist, but their licensed platforms make it hard to move the tests closer to development
+    and may even require a specialized IDE. mountebank provides service virtualization free of charge without any
+    platform constraints</dd>
 </dl>
 
 <p>Not all of mountebank's goals are currently implemented, but fear not, for he has
