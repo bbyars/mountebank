@@ -159,8 +159,8 @@ describe('http proxy', function () {
                     // sometimes 301, sometimes 302
                     assert.strictEqual(response.statusCode.toString().substring(0, 2), '30');
 
-                    // https://www.google.com.br in Brasil, etc
-                    assert.ok(response.headers.Location.indexOf('google.com') >= 0, response.headers.Location);
+                    // https://www.google.com.br in Brasil, google.ca in Canada, etc
+                    assert.ok(response.headers.Location.indexOf('google.') >= 0, response.headers.Location);
                 });
             });
         }

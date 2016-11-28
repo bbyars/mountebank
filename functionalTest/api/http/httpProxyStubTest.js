@@ -492,8 +492,8 @@ describe('http proxy stubs', function () {
                 // Sometimes 301, sometimes 302
                 assert.strictEqual(response.statusCode.toString().substring(0, 2), '30');
 
-                // https://www.google.com.br in Brasil, etc
-                assert.ok(response.headers.location.indexOf('google.com') >= 0, response.headers.location);
+                // https://www.google.com.br in Brasil, google.ca in Canada, etc
+                assert.ok(response.headers.location.indexOf('google.') >= 0, response.headers.location);
             }).finally(function () {
                 return api.del('/imposters');
             });

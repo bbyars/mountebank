@@ -192,12 +192,13 @@ var assert = require('assert'),
                     }).then(function (response) {
                         // sometimes 301, sometimes 302
                         // 200 on new Mac with El Capitan?
-                        assert.ok(response.statusCode <= 301);
+                        assert.ok(response.statusCode <= 302, response.statusCode);
                         if (response.statusCode === 200) {
                             assert.ok(response.body.indexOf('google') >= 0, response.body);
                         }
                         else {
-                            assert.ok(response.headers.location.indexOf('google.com') >= 0, response.headers.location);
+                            // google.com.br in Brasil, google.ca in Canada, etc
+                            assert.ok(response.headers.location.indexOf('google.') >= 0, response.headers.location);
                         }
                     }).finally(function () {
                         return api.del('/imposters');
