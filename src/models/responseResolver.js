@@ -107,26 +107,49 @@ function create (proxy, postProcess) {
         return i;
     }
 
-    function recordProxyResponse (responseConfig, request, response, stubs) {
+    function indexOfStubToAddResponseTo (responseConfig, request, stubs) {
+        var predicates = predicatesFor(request, responseConfig.proxy.predicateGenerators || []),
+            index;
+
+        for (index = stubIndexFor(responseConfig, stubs) + 1; index < stubs.length; index += 1) {
+            if (stringify(predicates) === stringify(stubs[index].predicates)) {
+                return index;
+            }
+        }
+        return -1;
+    }
+
+    function canAddResponseToExistingStub (responseConfig, request, stubs) {
+        return indexOfStubToAddResponseTo(responseConfig, request, stubs) >= 0;
+    }
+
+    function addNewResponse (responseConfig, request, response, stubs) {
+        var stubResponse = { is: response },
+            responseIndex = indexOfStubToAddResponseTo(responseConfig, request, stubs);
+
+        stubs[responseIndex].responses.push(stubResponse);
+    }
+
+    function addNewStub (responseConfig, request, response, stubs) {
         var predicates = predicatesFor(request, responseConfig.proxy.predicateGenerators || []),
             stubResponse = { is: response },
             newStub = { predicates: predicates, responses: [stubResponse] },
-            index = stubIndexFor(responseConfig, stubs);
+            index = responseConfig.proxy.mode === 'proxyAlways' ? stubs.length : stubIndexFor(responseConfig, stubs);
 
+        stubs.splice(index, 0, newStub);
+    }
+
+    function recordProxyResponse (responseConfig, request, response, stubs) {
         if (['proxyOnce', 'proxyAlways'].indexOf(responseConfig.proxy.mode) < 0) {
             responseConfig.proxy.mode = 'proxyOnce';
         }
 
-        if (responseConfig.proxy.mode === 'proxyAlways') {
-            for (index += 1; index < stubs.length; index += 1) {
-                if (stringify(predicates) === stringify(stubs[index].predicates)) {
-                    stubs[index].responses.push(stubResponse);
-                    return;
-                }
-            }
+        if (responseConfig.proxy.mode === 'proxyAlways' && canAddResponseToExistingStub(responseConfig, request, stubs)) {
+            addNewResponse(responseConfig, request, response, stubs);
         }
-
-        stubs.splice(index, 0, newStub);
+        else {
+            addNewStub(responseConfig, request, response, stubs);
+        }
     }
 
     function shouldDecorate (request, responseConfig) {
