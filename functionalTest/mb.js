@@ -83,13 +83,19 @@ function create (port) {
     function save (args) {
         var deferred = Q.defer(),
             mbArgs = ['save', '--port', port].concat(args || []),
-            mb;
+            mb,
+            stdout = '',
+            stderr = '';
 
         mb = spawnMb(mbArgs);
         mb.on('error', deferred.reject);
+        mb.stdout.on('data', function (chunk) { stdout += chunk; });
+        mb.stderr.on('data', function (chunk) { stderr += chunk; });
         mb.on('close', function (exitCode) {
             deferred.resolve({
-                exitCode: exitCode
+                exitCode: exitCode,
+                stdout: stdout,
+                stderr: stderr
             });
         });
 

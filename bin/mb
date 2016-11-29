@@ -208,6 +208,14 @@ function serverAt (options) {
     function save () {
         getConfig(options).then(function (response) {
             fs.writeFileSync(options.configfile || 'mb.json', response.body);
+        }).catch(function (err) {
+            if (err.code === 'ECONNREFUSED') {
+                console.error('No mb process running on port ' + options.port);
+            }
+            else {
+                console.error(err);
+            }
+            process.exit(1);
         }).done();
     }
 
