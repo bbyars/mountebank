@@ -18,6 +18,16 @@ var AbstractServer = require('../abstractServer'),
     events = require('events'),
     HttpRequest = require('./httpRequest');
 
+function connectionHeader (headers) {
+    return Object.keys(headers).find(function (header) {
+        return header.toLowerCase() === 'connection';
+    });
+}
+
+function hasConnectionHeader (headers) {
+    return typeof connectionHeader(headers) !== 'undefined';
+}
+
 /**
  * Sets up the creation method for the given protocol
  * @param {string} protocolName - http or https
@@ -37,9 +47,10 @@ function setup (protocolName, createBaseServer) {
         function postProcess (stubResponse) {
             /* eslint complexity: 0 */
             var defaultResponse = options.defaultResponse || {},
+                defaultHeaders = defaultResponse.headers || {},
                 response = {
                     statusCode: stubResponse.statusCode || defaultResponse.statusCode || 200,
-                    headers: stubResponse.headers || defaultResponse.headers || {},
+                    headers: stubResponse.headers || defaultHeaders,
                     body: stubResponse.body || defaultResponse.body || '',
                     _mode: stubResponse._mode || defaultResponse._mode || 'text'
                 };
@@ -49,17 +60,16 @@ function setup (protocolName, createBaseServer) {
                 response.body = JSON.stringify(response.body, null, 4);
             }
 
-            // We don't want to use keepalive connections, because a test case
-            // may shutdown the stub, which prevents new connections for
-            // the port, but that won't prevent the system under test
-            // from reusing an existing TCP connection after the stub
-            // has shutdown, causing difficult to track down bugs when
-            // multiple tests are run.
-            if (response.headers.connection) {
-                response.headers.connection = 'close';
-            }
-            else {
-                response.headers.Connection = 'close';
+            // Allow overriding connection header by explicitly passing it in to the defaultResponse field only
+            if (!hasConnectionHeader(defaultHeaders)) {
+                // We don't want to use keepalive connections, because a test case
+                // may shutdown the stub, which prevents new connections for
+                // the port, but that won't prevent the system under test
+                // from reusing an existing TCP connection after the stub
+                // has shutdown, causing difficult to track down bugs when
+                // multiple tests are run.
+                var headerName = connectionHeader(response.headers) || 'Connection'; // maintain case
+                response.headers[headerName] = 'close';
             }
 
             if (typeof response.headers['content-length'] !== 'undefined' && response._mode === 'text') {

@@ -456,6 +456,22 @@ var assert = require('assert'),
                 });
             });
 
+            promiseIt('should support keepalive connections', function () {
+                var stub = { responses: [{ is: { body: 'Success' } }] },
+                    defaultResponse = { headers: { CONNECTION: 'Keep-Alive' } }, // tests case-sensitivity of header match
+                    request = { protocol: protocol, port: port, defaultResponse: defaultResponse, stubs: [stub], name: this.name };
+
+                return api.post('/imposters', request).then(function (response) {
+                    assert.strictEqual(response.statusCode, 201, response.body);
+                    return client.get('/', port);
+                }).then(function (response) {
+                    assert.strictEqual(response.body, 'Success');
+                    assert.strictEqual(response.headers.connection, 'Keep-Alive');
+                }).finally(function () {
+                    return api.del('/imposters');
+                });
+            });
+
             promiseIt('should support sending multiple value back for same header', function () {
                 var stub = { responses: [{ is: { headers: { 'Set-Cookie': ['first', 'second'] } } }] },
                     request = { protocol: protocol, port: port, stubs: [stub], name: this.name };
