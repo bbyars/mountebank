@@ -182,6 +182,15 @@
     <p class='info-icon'>More information: <a href='/docs/api/proxies'>proxies</a></p>
 </div>
 
+<div id='imposter-stubs-responses-proxy-addWaitBehavior-description'>
+    <p>When this field is true, mountebank will add latency to the saved responses that mirrors the time
+    the actual proxied call took. This is useful in load testing when you want to virtualize downstream services
+    but keep the latency of those services.</p>
+
+    <p class='info-icon'>More information: <a href='/docs/api/proxies'>proxies</a> and the
+        <a href='/docs/api/behaviors#behavior-wait'>wait behavior</a></p>
+</div>
+
 <div id='imposter-stubs-responses-proxy-injectHeaders-description'>
     <p>Allows you to add or override headers returned from the proxy.</p>
 

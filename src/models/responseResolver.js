@@ -123,8 +123,17 @@ function create (proxy, postProcess) {
         return indexOfStubToAddResponseTo(responseConfig, request, stubs) >= 0;
     }
 
+    function newIsResponse (response, addWaitBehavior) {
+        var result = { is: response };
+
+        if (addWaitBehavior && response._proxyResponseTime) {           // eslint-disable-line no-underscore-dangle
+            result._behaviors = { wait: response._proxyResponseTime };  // eslint-disable-line no-underscore-dangle
+        }
+        return result;
+    }
+
     function addNewResponse (responseConfig, request, response, stubs) {
-        var stubResponse = { is: response },
+        var stubResponse = newIsResponse(response, responseConfig.proxy.addWaitBehavior),
             responseIndex = indexOfStubToAddResponseTo(responseConfig, request, stubs);
 
         stubs[responseIndex].responses.push(stubResponse);
@@ -132,7 +141,7 @@ function create (proxy, postProcess) {
 
     function addNewStub (responseConfig, request, response, stubs) {
         var predicates = predicatesFor(request, responseConfig.proxy.predicateGenerators || []),
-            stubResponse = { is: response },
+            stubResponse = newIsResponse(response, responseConfig.proxy.addWaitBehavior),
             newStub = { predicates: predicates, responses: [stubResponse] },
             index = responseConfig.proxy.mode === 'proxyAlways' ? stubs.length : stubIndexFor(responseConfig, stubs);
 

@@ -293,6 +293,38 @@ describe('http proxy stubs', function () {
         });
     });
 
+    promiseIt('should support adding latency to saved responses based on how long the origin server took to respond', function () {
+        var originServerPort = port + 1,
+            originServerStub = { responses: [{ is: { body: 'origin server' }, _behaviors: { wait: 100 } }] },
+            originServerRequest = {
+                protocol: 'http',
+                port: originServerPort,
+                stubs: [originServerStub],
+                name: this.name + ' origin'
+            },
+            proxyStub = { responses: [{ proxy: {
+                to: 'http://localhost:' + originServerPort,
+                addWaitBehavior: true
+            } }] },
+            proxyRequest = { protocol: 'http', port: port, stubs: [proxyStub], name: this.name + ' proxy' };
+
+        return api.post('/imposters', originServerRequest).then(function () {
+            return api.post('/imposters', proxyRequest);
+        }).then(function (response) {
+            assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body, null, 2));
+            return client.get('/', port);
+        }).then(function (response) {
+            assert.strictEqual(response.body, 'origin server');
+            return api.get('/imposters/' + port);
+        }).then(function (response) {
+            var stubResponse = response.body.stubs[0].responses[0];
+            // eslint-disable-next-line no-underscore-dangle
+            assert.strictEqual(stubResponse._behaviors.wait, stubResponse.is._proxyResponseTime, JSON.stringify(stubResponse, null, 4));
+        }).finally(function () {
+            return api.del('/imposters');
+        });
+    });
+
     promiseIt('should support retrieving replayable JSON with proxies removed for later playback', function () {
         var originServerPort = port + 1,
             originServerFn = function (request, state) {

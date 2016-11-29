@@ -57,6 +57,15 @@ filled in.</p>
     the system being proxied can be altered with appropriate headers (e.g. pointing REST links back to Mountebank
     for further proxying).  Existing headers will be overwritten if they match the injected headers.</td>
   </tr>
+  <tr>
+    <td><code>addWaitBehavior</code></td>
+    <td><code>false</code></td>
+    <td>boolean</td>
+    <td>If true, mountebank will add a <a href='/docs/api/behaviors#behavior-wait'><code>wait</code></a>
+    behavior to the response with the same latency that the proxied call took. This is useful in load
+    testing scenarios where you want to simulate the actual latency of downstream services that you're
+    virtualizing.</td>
+  </tr>
 </table>
 
 <p>http and https proxies add two additional optional parameters for situations where the
