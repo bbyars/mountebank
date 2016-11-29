@@ -207,7 +207,7 @@ function serverAt (options) {
 
     function save () {
         getConfig(options).then(function (response) {
-            fs.writeFileSync(options.configfile || 'mb.json', response.body);
+            fs.writeFileSync(options.savefile, response.body);
         }).catch(function (err) {
             if (err.code === 'ECONNREFUSED') {
                 console.error('No mb process running on port ' + options.port);
@@ -243,7 +243,7 @@ yargs.options({
         type: 'number'
     },
     configfile: {
-        description: 'file to load imposters from or save imposters to, can be an EJS template',
+        description: 'file to load imposters from, can be an EJS template',
         nargs: 1,
         type: 'string'
     },
@@ -285,6 +285,12 @@ yargs.options({
     debug: {
         description: 'include stub match information in imposter retrievals for debugging purposes',
         type: 'boolean'
+    },
+    savefile: {
+        default: 'mb.json',
+        description: 'file to save imposters to',
+        nargs: 1,
+        type: 'string'
     },
     removeProxies: {
         description: 'removes proxies from the configuration when using the save command',

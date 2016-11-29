@@ -133,7 +133,7 @@ describe('mb command line', function () {
             return mb.get('/imposters?replayable=true');
         }).then(function (response) {
             expected = response.body;
-            return mb.save(['--configfile', 'saved.json']);
+            return mb.save(['--savefile', 'saved.json']);
         }).then(function () {
             assert.ok(fs.existsSync('saved.json'));
             assert.deepEqual(expected, JSON.parse(fs.readFileSync('saved.json')));

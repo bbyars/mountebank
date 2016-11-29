@@ -18,7 +18,8 @@ description = 'Command line parameters for starting mountebank'
   </tr>
   <tr>
     <td><code><em>command</em></code></td>
-    <td>One of <code>start</code>, <code>stop</code>, <code>restart</code>, or
+    <td>One of <code>start</code>, <code>stop</code>, <code>restart</code>,
+      <code><a href='#save'>save</a></code> (which saves off the current imposter configuration), or
       <code>help</code> (which shows the usage information).</td>
     <td><code>start</code></td>
   </tr>
@@ -90,10 +91,38 @@ description = 'Command line parameters for starting mountebank'
     <td>Print the version out to the console and exit.</td>
     <td><code>N/A</code></td>
   </tr>
+  <tr>
+    <td><code>--savefile saved.json</code></td>
+    <td>The file to save imposters to when using the <code><a href='#save'>save</a></code> command</td>
+    <td><code>mb.json</code></td>
+  </tr>
+  <tr>
+    <td><code>--removeProxies</code></td>
+    <td>Remove proxies from the saved configuration (only relevant when using the
+      <code><a href='#save'>save</a></code> command). Corresponds to the
+      <code><a href='/docs/api/overview#get-imposters'>removeProxies</a></code> API
+      query parameter</td>
+    <td><code>false</code></td>
+  </tr>
 </table>
 
 <p>Note that <code>mb</code> is not persistent.  Stopping and restarting <code>mb</code>
 will lose all stubs and all requests.</p>
+
+<h2 id='save'>Saving mountebank configuration</h2>
+
+<p>While you can always use the <a href='/docs/api/overview'>API</a> to capture the current configuration
+of imposters, mountebank provides a convenient command line mechanism to save the configuration
+into a file that can be used to start a subsequent process of <code>mb</code> using the
+<code>--configfile</code> command line option. With a running <code>mb</code> process operating on port
+3000, you can execute the following command:</p>
+
+<pre><code>mb save --port 3000 --savefile saved.json --removeProxies</code></pre>
+
+<p>All of the parameters are optional with the defaults listed in the table above. You could then
+restart mountebank with the following command:</p>
+
+<pre><code>mb restart --port 3000 --configfile saved.json</code></pre>
 
 <h2 id='config-file'>Config Files</h2>
 

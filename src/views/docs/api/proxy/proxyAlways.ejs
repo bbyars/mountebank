@@ -111,6 +111,12 @@ Accept: application/json
 parameter to remove the proxy responses and stubs, and the <code>replayable</code> query
 parameter to remove information not needed to recreate the imposter.</p>
 
+<p class='info-icon'>Tip: We could also use the <code><a href='/docs/commandLine#save'>
+mb save</a></code> command with the <code>--removeProxies</code> parameter to save
+the imposters without the proxies, and restart using the <code>--configfile</code>
+command line option. Everything in mountebank is API-first, and this example will demonstrate
+using the API.</p>
+
 <pre><code data-test-id='proxy example'
            data-test-step='13'
            data-test-type='http'>
