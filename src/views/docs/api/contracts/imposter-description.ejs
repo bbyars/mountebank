@@ -40,6 +40,15 @@
   <p class='info-icon'>More information: <a href='/docs/protocols/https'>https</a></p>
 </div>
 
+<div id='imposter-defaultResponse-description'>
+  <p>Optional. Allows you to override the default response that mountebank sends back if no predicate matches
+  a request. Even if a predicate does match but the response isn't fully specified, these values get merged
+  in to complete the response.</p>
+
+  <p class='info-icon'>More information: <a href='/docs/protocols/http'>http</a>,
+      <a href='/docs/protocols/https'>https</a>, and <a href='/docs/protocols/tcp'>tcp</a></p>
+</div>
+
 <div id='imposter-stubs-description'>
   <p>A set of behaviors used to generate a response for an imposter. An imposter can have 0 or more stubs,
     each of which are associated with different predicates and support different responses.</p>

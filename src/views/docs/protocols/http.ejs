@@ -41,7 +41,14 @@ description = 'The HTTP protocol support by mountebank'
   </tr>
   <tr>
     <td><code>stubs</code></td>
-    <td>A stub request.</td>
+    <td>Valid stubs</td>
+    <td>No</td>
+    <td>An empty array</td>
+    <td>The list of stubs responsible for matching a request and returning a response</td>
+  </tr>
+  <tr>
+    <td><code>defaultResponse</code></td>
+    <td>A valid response, see below for response fields</td>
     <td>No</td>
     <td><pre><code>
 {
@@ -54,16 +61,17 @@ description = 'The HTTP protocol support by mountebank'
   }
 }
     </code></pre></td>
-    <td>Defines the response to send when certain conditions are met.  See examples
-    below.</td>
+    <td>The default response to send if no predicate matches. Also represents the default values
+        that get merged into a response that doesn't specify every field</td>
   </tr>
 </table>
 
-<p>http and https imposters always prevent keepalive connections, because they can lead
+<p>http and https imposters prevent keepalive connections by default because they can lead
 to some difficult to troubleshoot problems in use cases where you start in stop imposters
 in the scope of one test.  The test may shut down the imposter, which prevents new connections
 for the port, but that won't prevent the system under test from trying to reuse an existing
-keepalive socket.</p>
+keepalive socket. If you need to override that behavior, override the <code>defaultResponse</code>
+field.</p>
 
 <h2>HTTP Requests</h2>
 

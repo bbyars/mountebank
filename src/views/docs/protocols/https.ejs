@@ -69,7 +69,14 @@ switch in <code>curl</code>).  Alternatively, you may pass in the key pair yours
   </tr>
   <tr>
     <td><code>stubs</code></td>
-    <td>A stub request.</td>
+    <td>Valid stubs</td>
+    <td>No</td>
+    <td>An empty array</td>
+    <td>The list of stubs responsible for matching a request and returning a response</td>
+  </tr>
+  <tr>
+    <td><code>defaultResponse</code></td>
+    <td>A valid response, see the <a href='/docs/protocols/http'>http</a> page for response fields</td>
     <td>No</td>
     <td><pre><code>
 {
@@ -82,8 +89,8 @@ switch in <code>curl</code>).  Alternatively, you may pass in the key pair yours
   }
 }
     </code></pre></td>
-    <td>Defines the response to send when certain conditions are met.  See examples
-    below.</td>
+    <td>The default response to send if no predicate matches. Also represents the default values
+        that get merged into a response that doesn't specify every field</td>
   </tr>
 </table>
 
