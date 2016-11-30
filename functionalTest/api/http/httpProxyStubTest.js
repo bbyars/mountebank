@@ -574,4 +574,64 @@ describe('http proxy stubs', function () {
             });
         });
     }
+
+    promiseIt('should not default to chunked encoding on proxied request (issue #132)', function () {
+        var originServerPort = port + 1,
+            fn = function (request, state, logger) {
+                function hasHeaderKey (headerKey, headers) {
+                    return Object.keys(headers).some(function (header) {
+                        return header.toLowerCase() === headerKey.toLowerCase();
+                    });
+                }
+
+                var encoding = '';
+                logger.warn(JSON.stringify(request.headers, null, 4));
+                if (hasHeaderKey('Transfer-Encoding', request.headers)) {
+                    encoding = 'chunked';
+                }
+                else if (hasHeaderKey('Content-Length', request.headers)) {
+                    encoding = 'content-length';
+                }
+                return {
+                    body: 'Encoding: ' + encoding
+                };
+            },
+            originServerStub = { responses: [{ inject: fn.toString() }] },
+            originServerRequest = {
+                protocol: 'http',
+                port: originServerPort,
+                stubs: [originServerStub],
+                name: this.name + ' origin'
+            },
+            proxyStub = { responses: [{ proxy: {
+                to: 'http://localhost:' + originServerPort,
+                mode: 'proxyAlways',
+                predicateGenerators: [{
+                    matches: {
+                        method: true,
+                        path: true,
+                        query: true
+                    }
+                }]
+            } }] },
+            proxyRequest = { protocol: 'http', port: port, stubs: [proxyStub], name: this.name + ' proxy' };
+
+        return api.post('/imposters', originServerRequest).then(function (response) {
+            assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body, null, 2));
+            return api.post('/imposters', proxyRequest);
+        }).then(function (response) {
+            assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body, null, 2));
+            return client.responseFor({
+                method: 'PUT',
+                path: '/',
+                port: port,
+                body: 'TEST',
+                headers: { 'Content-Length': 4 } // needed to bypass node's implicit chunked encoding
+            });
+        }).then(function (response) {
+            assert.strictEqual(response.body, 'Encoding: content-length');
+        }).finally(function () {
+            return api.del('/imposters');
+        });
+    });
 });

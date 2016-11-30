@@ -17,6 +17,12 @@ var http = require('http'),
 
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 
+function hasHeader (headerName, headers) {
+    return Object.keys(headers).some(function (header) {
+        return header.toLowerCase() === headerName.toLowerCase();
+    });
+}
+
 /**
  * Creates the proxy
  * @param {Object} logger - The logger
@@ -68,6 +74,13 @@ function create (logger) {
         options.headers.connection = 'close';
         options.headers.host = hostnameFor(parts.protocol, parts.hostname, options.port);
         setProxyAgent(parts, options);
+
+        // Avoid implicit chunked encoding (issue #132)
+        if (originalRequest.body &&
+            !hasHeader('Transfer-Encoding', originalRequest.headers) &&
+            !hasHeader('Content-Length', originalRequest.headers)) {
+            options.headers['Content-Length'] = Buffer.byteLength(originalRequest.body);
+        }
 
         var proxiedRequest = protocol.request(options);
         if (originalRequest.body) {
