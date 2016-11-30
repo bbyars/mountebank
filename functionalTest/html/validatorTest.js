@@ -57,10 +57,7 @@ if (process.env.MB_AIRPLANE_MODE !== 'true' && process.env.MB_RUN_WEB_TESTS === 
 
         promiseIt('should be valid html', function () {
             // feed isn't html and is tested elsewhere; support has non-valid Google HTML embedded
-            // TODO: /docs/commandLine shouldn't be here, and passes locally as I write this comment
-            // It consistently times out when run in Travis CI, no matter what the timeout value,
-            // and I haven't figured out why
-            var blacklist = ['/feed', '/support', '/imposters', '/logs', '/docs/commandLine'];
+            var blacklist = ['/feed', '/support', '/imposters', '/logs'];
 
             return api.get('/sitemap').then(function (response) {
                 assert.strictEqual(response.statusCode, 200);
