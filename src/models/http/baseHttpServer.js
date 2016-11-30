@@ -18,14 +18,20 @@ var AbstractServer = require('../abstractServer'),
     events = require('events'),
     HttpRequest = require('./httpRequest');
 
-function connectionHeader (headers) {
-    return Object.keys(headers).find(function (header) {
-        return header.toLowerCase() === 'connection';
+function headerNameFor (headerName, headers) {
+    var result = Object.keys(headers).find(function (header) {
+        return header.toLowerCase() === headerName.toLowerCase();
     });
+    if (typeof result === 'undefined') {
+        result = headerName;
+    }
+    return result;
 }
 
-function hasConnectionHeader (headers) {
-    return typeof connectionHeader(headers) !== 'undefined';
+function hasHeader (headerName, headers) {
+    return Object.keys(headers).some(function (header) {
+        return header.toLowerCase() === headerName.toLowerCase();
+    });
 }
 
 /**
@@ -61,19 +67,18 @@ function setup (protocolName, createBaseServer) {
             }
 
             // Allow overriding connection header by explicitly passing it in to the defaultResponse field only
-            if (!hasConnectionHeader(defaultHeaders)) {
+            if (!hasHeader('Connection', defaultHeaders)) {
                 // We don't want to use keepalive connections, because a test case
                 // may shutdown the stub, which prevents new connections for
                 // the port, but that won't prevent the system under test
                 // from reusing an existing TCP connection after the stub
                 // has shutdown, causing difficult to track down bugs when
                 // multiple tests are run.
-                var headerName = connectionHeader(response.headers) || 'Connection'; // maintain case
-                response.headers[headerName] = 'close';
+                response.headers[headerNameFor('Connection', response.headers)] = 'close';
             }
 
-            if (typeof response.headers['content-length'] !== 'undefined' && response._mode === 'text') {
-                response.headers['content-length'] = response.body.length;
+            if (hasHeader('Content-Length', response.headers)) {
+                response.headers[headerNameFor('Content-Length', response.headers)] = Buffer.byteLength(response.body);
             }
             return response;
         }
