@@ -2,8 +2,8 @@ Contributing to mountebank
 ==========================
 
 Congratulations!  You're here because you want to join the millions of open source developers
-contributing to mountebank.  The good news is contributing is an easy process.  In fact, you don't
-even have to write code to contribute.  I am grateful for all of the following contributions:
+contributing to mountebank.  The good news is contributing is an easy process.  In fact, you can
+make a difference without writing a single line of code. I am grateful for all of the following contributions:
 
 * Submitting an issue, either through github or the [support page](http://www.mbtest.org/support)
 * Making a suggestion
@@ -14,7 +14,7 @@ brandon.byars@gmail.com
 * Creating a how-to video about mountebank
 * Speaking about mountebank in conferences or meetups
 * Telling your friends about mountebank
-* Starring and forking the repo
+* Starring and forking the repo. Open source is a popularity contest, and the number of stars and forks matter.
 * Convincing your company to let me announce that they're using mountebank, including letting me put their logo
 on a web page (I will never announce a company's usage of mountebank without their express permission).
 * Writing a client library that hides the REST API under a language-specific API
@@ -32,7 +32,7 @@ depending on your time commitment and level of interest.
 * Create a pull request
 
 That's it!  Seriously.  I have an extraordinarily lenient policy for accepting pull requests, and once your pull
-request is accepted, I'll mention you on the release notes and add you to the contributors section of the package.json
+request is accepted, I'll mention you in the release notes and add you to the contributors section of the package.json
 to memorialize your contribution for all eternity (feel free to add yourself in the pull request if you want).
 
 If it breaks tests, and you're struggling to figure out why, create the pull request anyway.  I'll fix it.
@@ -69,7 +69,8 @@ I am still fighting the occasional flaky test elsewhere as well.  If you find on
 
 ## Debugging
 
-I was somewhat of a JavaScript newbie when I started mountebank.  If you're a pro, feel free to skip
+I was somewhat of a JavaScript newbie when I started mountebank, and even now, I don't actually code for a living
+so I find it hard to keep my skills up-to-date. If you're a pro, feel free to skip
 this section, but if you're like me, you may find the tips below helpful:
 
 * mocha decorates test functions with an `only` function, that allows you to isolate test runs
@@ -121,15 +122,18 @@ Use promises.  mountebank ships with [q](https://github.com/kriskowal/q) in the 
 
 ### Backwards Compatibility
 
-I've gone on record with the recommendation to avoid the API versioning if at all possible
-([essay](http://martinfowler.com/articles/enterpriseREST.html#versioning)
- [presentation](http://www.infoq.com/presentations/constraints-api-rest-integration)).  I may make
-some suggestions to any API changes you make in an effort to make them more
+I've aimed to keep the mountebank REST API intentionally versionless (see an
+[essay](http://martinfowler.com/articles/enterpriseREST.html#versioning) or
+[presentation](http://www.infoq.com/presentations/constraints-api-rest-integration) for my views on API
+versioning). This isn't as radical as it may sound: the NPR API has been versionless since launch.
+I may make some suggestions to any API changes you make in an effort to make them more
 future-compatible.  You can help by thinking through any breaking changes you make and explaining the
 reasons in the commit messages.
 
 This applies mostly to the API, which is what I consider my public API for semantic versioning.  I try
 to minimize disruption with the command line arguments, but am more likely to accept breaking changes there.
+I only consider API breaking changes in the semantic versioning scheme for mountebank, and aspire to never
+need to release mountebank v2.
 
 ### Documentation Tests
 
@@ -152,8 +156,6 @@ me of ways to overcome these tradeoffs in a mutually agreeable manner:
 
 * I stick to ES5 instead of ES6 to maintain compatibility with older versions of node
 * I've kept mountebank monolithic rather than add protocols through plugins to make it easier to get started
-* I've had to patch a certain node.js library call in node v0.10 to maintain support for that version.  I'll
-  deprecate it when the node.js team deprecates it.
 * The build and CI infrastructure is quite complex and a little slow, but I'd prefer that over releasing flaky software
 * I aim for fairly comprehensive error handling with useful error messages to help users out
 * Windows support can be painful at times, but it is a core platform for mountebank
