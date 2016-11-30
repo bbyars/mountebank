@@ -11,6 +11,7 @@ $(document).ready(function () {
     }
 
     $('a').on('click', function () {
+        /* eslint complexity: 0 */
         try {
             var element = $(this),
                 track = false,
