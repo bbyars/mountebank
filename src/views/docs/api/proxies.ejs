@@ -68,7 +68,7 @@ filled in.</p>
   </tr>
 </table>
 
-<p>http and https proxies add two additional optional parameters for situations where the
+<p>http and https proxies add three additional optional parameters for situations where the
 origin server expects to use mutual authentication and will request a client certificate:</p>
 
 <table>
@@ -89,6 +89,12 @@ origin server expects to use mutual authentication and will request a client cer
     <td><code>null</code></td>
     <td>A PEM-formatted string</td>
     <td>The SSL client private key</td>
+  </tr>
+  <tr>
+    <td><code>ciphers</code></td>
+    <td><code>ALL</code></td>
+    <td>A valid cipher (see <a href='http://openssl.cs.utah.edu/docs/apps/ciphers.html'>this page</a> for formats)</td>
+    <td>For older (and insecure) https servers, this field allows you to override the cipher used to commuicate</td>
   </tr>
 </table>
 
