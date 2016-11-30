@@ -51,7 +51,6 @@ function create (options) {
             tcp: require('./models/tcp/tcpServer').initialize(options.allowInjection, options.mock, options.debug),
             http: require('./models/http/httpServer').initialize(options.allowInjection, options.mock, options.debug),
             https: require('./models/https/httpsServer').initialize(options.allowInjection, options.mock, options.debug),
-            soap: require('./models/soap/soapServer').initialize(options.allowInjection, options.mock, options.debug),
             smtp: require('./models/smtp/smtpServer').initialize(options.mock, options.debug),
             foo: require('./models/foo/fooServer').initialize(options.allowInjection, options.mock, options.debug)
         },
