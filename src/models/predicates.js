@@ -136,9 +136,10 @@ function selectJSONPath (config, caseTransform, encoding, text) {
 }
 
 function normalize (obj, config, encoding, withSelectors) {
-    /* jshint maxcomplexity: 7 */
+    /* eslint complexity: [2, 8] */
     var lowerCaser = function (text) { return text.toLowerCase(); },
         caseTransform = config.caseSensitive ? combinators.identity : lowerCaser,
+        keyCaseTransform = config.keyCaseSensitive === false ? lowerCaser : caseTransform,
         exceptRegexOptions = config.caseSensitive ? 'g' : 'gi',
         exceptionRemover = function (text) { return text.replace(new RegExp(config.except, exceptRegexOptions), ''); },
         exceptTransform = config.except ? exceptionRemover : combinators.identity,
@@ -163,7 +164,7 @@ function normalize (obj, config, encoding, withSelectors) {
             else if (typeof o === 'object') {
                 return Object.keys(o).reduce(function (result, key) {
                     var value = transformAll(o[key]);
-                    result[caseTransform(key)] = value;
+                    result[keyCaseTransform(key)] = value;
                     return result;
                 }, {});
             }
@@ -266,12 +267,15 @@ function deepEquals (predicate, request, encoding) {
  * @returns {boolean}
  */
 function matches (predicate, request, encoding) {
-    // We want to avoid the lowerCase transform so we don't accidentally butcher
+    // We want to avoid the lowerCase transform on values so we don't accidentally butcher
     // a regular expression with upper case metacharacters like \W and \S
-    var clone = helpers.merge(predicate, { caseSensitive: true }),
+    // However, we need to maintain the case transform for keys like http header names (issue #169)
+    // eslint-disable-next-line no-unneeded-ternary
+    var caseSensitive = predicate.caseSensitive ? true : false, // convert to boolean even if undefined
+        clone = helpers.merge(predicate, { caseSensitive: true, keyCaseSensitive: caseSensitive }),
         expected = normalize(predicate.matches, clone, encoding, false),
         actual = normalize(request, clone, encoding, true),
-        options = predicate.caseSensitive ? '' : 'i';
+        options = caseSensitive ? '' : 'i';
 
     if (encoding === 'base64') {
         throw errors.ValidationError('the matches predicate is not allowed in binary mode');

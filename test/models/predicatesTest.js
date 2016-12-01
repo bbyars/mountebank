@@ -594,6 +594,30 @@ describe('predicates', function () {
                 request = { query: { key: ['begin', 'middle', 'end'] } };
             assert.ok(!predicates.matches(predicate, request));
         });
+
+        it('should be case insensitive for object keys by default (issue 169)', function () {
+            var predicate = { matches: { headers: { field: 'end$' } } },
+                request = { headers: { FIELD: 'begin middle end' } };
+            assert.ok(predicates.matches(predicate, request));
+        });
+
+        it('should be false if case on object key differs and configured to be case sensitive', function () {
+            var predicate = { matches: { headers: { field: 'end$' } }, caseSensitive: true },
+                request = { headers: { FIELD: 'begin middle end' } };
+            assert.ok(!predicates.matches(predicate, request));
+        });
+
+        it('should be false if case on value differs and configured to be case sensitive', function () {
+            var predicate = { matches: { headers: { field: 'end$' } }, caseSensitive: true },
+                request = { headers: { field: 'begin middle END' } };
+            assert.ok(!predicates.matches(predicate, request));
+        });
+
+        it('should be true if case on object key same and configured to be case sensitive', function () {
+            var predicate = { matches: { headers: { field: 'end$' } }, caseSensitive: true },
+                request = { headers: { field: 'begin middle end' } };
+            assert.ok(predicates.matches(predicate, request));
+        });
     });
 
     describe('#exists', function () {
