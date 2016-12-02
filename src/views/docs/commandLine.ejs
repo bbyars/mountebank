@@ -63,8 +63,14 @@ description = 'Command line parameters for starting mountebank'
     <td><code>--allowInjection</code></td>
     <td>mountebank supports JavaScript injection for <a href='/docs/api/predicates'>predicates</a>,
       <a href='/docs/api/injection'>stub responses</a>, <a href='/docs/api/behaviors'>behavior decoration</a>,
-      and <a href='/docs/protocols/tcp#endOfRequestResolver'>tcp request resolution</a>, but they are
-      disabled by default.  Including this parameter will enable them.</td>
+      <a href='/docs/api/behaviors'>wait behavior functions</a> and
+      <a href='/docs/protocols/tcp#endOfRequestResolver'>tcp request resolution</a>, but they are
+      disabled by default.  Including this parameter will enable them.
+
+      <p class='warning-icon'>Note that allowing injection means that an attacker can run random
+      code on the machine running <code>mb</code>. It is highly recommended you run <code>mb</code>
+      as an unprivileged user</p>
+    </td>
     <td><code>false</code></td>
   </tr>
   <tr>
