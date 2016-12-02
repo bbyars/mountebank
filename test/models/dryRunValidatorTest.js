@@ -438,15 +438,47 @@ describe('dryRunValidator', function () {
             });
         });
 
-        promiseIt('should allow functions as wait behavior', function () {
-            var request = { stubs: [{ responses: [{ is: { statusCode: 400 }, _behaviors: { wait: 'function(){return 1000;}' } }] }] },
-                validator = Validator.create({ StubRepository: StubRepository, testRequest: testRequest }),
+        promiseIt('should allow functions as wait behavior if injections allowed', function () {
+            var request = { stubs: [{ responses: [{
+                    is: { statusCode: 400 },
+                    _behaviors: { wait: 'function () { return 1000; }' }
+                }] }] },
+                validator = Validator.create({
+                    StubRepository: StubRepository,
+                    testRequest: testRequest,
+                    allowInjection: true
+                }),
                 logger = { error: mock() };
 
             return validator.validate(request, logger).then(function (result) {
                 assert.deepEqual(result, {
                     isValid: true,
                     errors: []
+                });
+            });
+        });
+
+        promiseIt('should not allow functions as wait behavior if injections not allowed', function () {
+            var response = {
+                    is: { statusCode: 400 },
+                    _behaviors: { wait: 'function () { return 1000; }' }
+                },
+                request = { stubs: [{ responses: [response] }] },
+                validator = Validator.create({
+                    StubRepository: StubRepository,
+                    testRequest: testRequest,
+                    allowInjection: false
+                }),
+                logger = { error: mock() };
+
+            return validator.validate(request, logger).then(function (result) {
+                assert.deepEqual(result, {
+                    isValid: false,
+                    errors: [{
+                        code: 'invalid injection',
+                        message: 'JavaScript injection is not allowed unless mb is run with the --allowInjection flag',
+                        source: { responses: [response] }
+                    }]
                 });
             });
         });

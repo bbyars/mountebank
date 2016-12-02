@@ -5,7 +5,6 @@ var assert = require('assert'),
     tcp = require('./tcpClient'),
     promiseIt = require('../../testHelpers').promiseIt,
     port = api.port + 1,
-    mb = require('../../mb').create(port + 1),
     timeout = parseInt(process.env.MB_SLOW_TEST_TIMEOUT || 4000);
 
 describe('tcp imposter', function () {
@@ -68,20 +67,6 @@ describe('tcp imposter', function () {
             });
         });
 
-        promiseIt('should return a 400 if injection is disallowed and inject is used', function () {
-            var fn = function () { return { data: 'INJECTED' }; },
-                stub = { responses: [{ inject: fn.toString() }] },
-                request = { protocol: 'tcp', port: port, stubs: [stub], name: this.name };
-
-            return mb.start().then(function () {
-                return mb.post('/imposters', request);
-            }).then(function (response) {
-                assert.strictEqual(response.statusCode, 400);
-                assert.strictEqual(response.body.errors[0].code, 'invalid injection');
-            }).finally(function () {
-                return mb.stop();
-            });
-        });
         promiseIt('should allow asynchronous injection', function () {
             var originServerPort = port + 1,
                 originServerStub = { responses: [{ is: { body: 'origin server' } }] },

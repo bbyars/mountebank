@@ -41,10 +41,11 @@ var assert = require('assert'),
             });
 
             promiseIt('should add latency when using behaviors.wait as a function', function () {
-                var stub = {
+                var fn = function () { return 1000; },
+                    stub = {
                         responses: [{
                             is: { body: 'stub' },
-                            _behaviors: { wait: 'function(){return 1000;}' }
+                            _behaviors: { wait: fn.toString() }
                         }]
                     },
                     stubs = [stub],
