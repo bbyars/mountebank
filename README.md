@@ -98,7 +98,8 @@ There are some tests that require network access (`grunt airplane` ignores them 
 moral sensibilities).  A few of these tests verify the correct behavior under DNS failures.  If your ISP
 is kind enough to hijack the NXDOMAIN DNS response in an attempt to allow you to conveniently peruse their
 advertising page, those tests will fail.  I suggest that, under such circumstances, you talk to your ISP
-and let them know that their policies are causing mountebank tests to fail.
+and let them know that their policies are causing mountebank tests to fail. You can also run `grunt airplane`,
+which will avoid tests requiring your DNS resolver.
 
 ## Contributing
 
