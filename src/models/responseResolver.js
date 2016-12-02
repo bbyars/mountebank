@@ -187,7 +187,8 @@ function create (proxy, postProcess) {
 
     function processResponse (responseConfig, request, logger, stubs) {
         if (responseConfig.is) {
-            return Q(responseConfig.is);
+            // Clone to prevent accidental state changes downstream
+            return Q(helpers.clone(responseConfig.is));
         }
         else if (responseConfig.proxy) {
             return proxyAndRecord(responseConfig, request, logger, stubs);

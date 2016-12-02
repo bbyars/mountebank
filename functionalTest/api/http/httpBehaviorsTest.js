@@ -140,6 +140,38 @@ var assert = require('assert'),
                 });
             });
 
+            promiseIt('should support using request parameters during decorating multiple times (issue #173)', function () {
+                var decorator = function (request, response) {
+                        response.body = response.body.replace('${id}', request.query.id);
+                    },
+                    stub = {
+                        responses: [{
+                            is: { body: 'request ${id}' },
+                            _behaviors: { decorate: decorator.toString() }
+                        }]
+                    },
+                    stubs = [stub],
+                    request = { protocol: protocol, port: port, stubs: stubs, name: this.name };
+
+                return api.post('/imposters', request).then(function (response) {
+                    assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body, null, 2));
+                    return client.get('/test?id=100', port);
+                }).then(function (response) {
+                    assert.strictEqual(response.body, 'request 100');
+                    return api.get('/imposters/' + port);
+                }).then(function (response) {
+                    console.log(JSON.stringify(response.body, null, 4));
+                    return client.get('/test?id=200', port);
+                }).then(function (response) {
+                    assert.strictEqual(response.body, 'request 200');
+                    return client.get('/test?id=300', port);
+                }).then(function (response) {
+                    assert.strictEqual(response.body, 'request 300');
+                }).finally(function () {
+                    return api.del('/imposters');
+                });
+            });
+
             promiseIt('should support decorate functions that return a value', function () {
                 var decorator = function (request, response) {
                         var clonedResponse = JSON.parse(JSON.stringify(response));
