@@ -1,6 +1,6 @@
-<p>The <code>repeat</code> behavior allows certain responses to only return a certain number of times.
-    In the below example, the first response is configured to return 2 times, then all subsequent requests
-    return the second response:</p>
+<p>The <code>repeat</code> behavior allows certain responses to return a certain number of times before
+    moving on to the next reponse in the array. In the below example, the first response is configured to
+    return 2 times before advancing to the second response:</p>
 
 <pre><code data-test-id='repeat'
            data-test-step='1'
@@ -18,7 +18,7 @@ Content-Type: application/json
       "responses": [
         {
           "is": {
-            "body": "This will only repeat 2 times"
+            "body": "This will repeat 2 times"
           },
           "_behaviors": {
             "repeat": 2
@@ -26,7 +26,7 @@ Content-Type: application/json
         },
         {
           "is": {
-            "body": "Then this will start responding"
+            "body": "Then this will return"
           }
         }
       ]
@@ -35,7 +35,7 @@ Content-Type: application/json
 }
 </code></pre>
 
-<p>Now the first response will return 2 times, then every call thereafter will return the second response.</p>
+<p>Now the first response will return 2 times before returning the second response.</p>
 
 <pre><code data-test-id='repeat'
            data-test-step='2'
@@ -52,7 +52,7 @@ Date: Thu, 01 Jan 2015 02:30:31 GMT
 Connection: close
 Transfer-Encoding: chunked
 
-This will only repeat 2 times
+This will repeat 2 times
 </code></pre>
 
 
@@ -71,7 +71,7 @@ Date: Thu, 01 Jan 2015 02:30:31 GMT
 Connection: close
 Transfer-Encoding: chunked
 
-This will only repeat 2 times
+This will repeat 2 times
 </code></pre>
 
 
@@ -90,17 +90,12 @@ Date: Thu, 01 Jan 2015 02:30:31 GMT
 Connection: close
 Transfer-Encoding: chunked
 
-Then this will start responding
+Then this will return
 </code></pre>
-
 
 <code class='hidden' data-test-id='repeat'
       data-test-step='5'
       data-test-type='http'>
-    DELETE /imposters/5555 HTTP/1.1
-    Host: localhost:<%= port %>
+DELETE /imposters/5555 HTTP/1.1
+Host: localhost:<%= port %>
 </code>
-
-<p>Mountebank keeps track internally of how many times each response has been returned.  Responses without
-    repeats will return indefinitely.  If all requests have repeats defined, then Mountebank will return
-    the default response after all repeats are exhausted.</p>
