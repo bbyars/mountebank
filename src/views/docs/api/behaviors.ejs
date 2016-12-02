@@ -18,24 +18,30 @@ the following behaviors</p>
   <tr>
     <td><code>wait</code></td>
     <td>Adds latency to a response by waiting a specified number of milliseconds before sending
-      the response.</td>
+      the response.
+
+      <p class='info-icon'>Tip: Setting the <a href='/docs/api/proxies'><code>addWaitBehavior</code></a>
+      flag on proxies will automatically add this behavior with the actual time it took to call the
+      downstream service</p>
+    </td>
   </tr>
-    <tr>
+  <tr>
     <td><code>decorate</code></td>
-    <td>Post-processes the response before sending it.  Since post-processing requires JavaScript
-      injection, the <code><a href='/docs/commandLine'>--allowInjection</a></code> flag must be passed.
-      Post-processing opens up a world of opportunities - you can use a <code>decorate</code> behavior
-      to add data to a proxied response or substitute data from the request into the response, for
-      example.  The value passed into the <code>decorate</code> behavior is a JavaScript function that
-      can take up to three values: the request, the response, and a logger.  You can either mutate the
-      response passed in (and return nothing), or return an altogether new response.</td>
+    <td>Post-processes the response before sending it.  Post-processing opens up a world of opportunities
+      - you can use a <code>decorate</code> behavior to add data to a proxied response or substitute data
+      from the request into the response, for example.  The value passed into the <code>decorate</code>
+      behavior is a JavaScript function that can take up to three values: the request, the response, and
+      a logger.  You can either mutate the response passed in (and return nothing), or return an
+      altogether new response.
+
+      <p class='warning-icon'>The <code><a href='/docs/commandLine'>--allowInjection</a></code> command
+      line flag must be set to support this behavior</p>
+    </td>
   </tr>
-    <tr>
-        <td><code>repeat</code></td>
-        <td>Repeat a response only a set number of times.  When this is set, Mountebank will not cycle
-            through multiple responses as normal and instead will return this response until the number of repeats has
-            been exhausted.</td>
-    </tr>
+  <tr>
+    <td><code>repeat</code></td>
+    <td>Repeat a response a set number of times before moving on to the next response.</td>
+  </tr>
 </table>
 
 <p>Multiple behaviors can be added to a response.  However, only one of each type of behavior
