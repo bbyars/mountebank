@@ -1,7 +1,7 @@
 'use strict';
 
 var assert = require('assert'),
-    api = require('./api'),
+    api = require('../api/api'),
     isWindows = require('os').platform().indexOf('win') === 0,
     promiseIt = require('../testHelpers').promiseIt,
     port = api.port + 1,
