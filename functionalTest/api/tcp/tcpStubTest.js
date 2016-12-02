@@ -156,36 +156,6 @@ describe('tcp imposter', function () {
             });
         }
 
-        promiseIt('should support decorating response from origin server', function () {
-            var originServerPort = port + 1,
-                originServerStub = { responses: [{ is: { data: 'ORIGIN' } }] },
-                originServerRequest = {
-                    protocol: 'tcp',
-                    port: originServerPort,
-                    stubs: [originServerStub],
-                    name: this.name + ' ORIGIN'
-                },
-                decorator = function (request, response) {
-                    response.data += ' DECORATED';
-                },
-                proxyResponse = {
-                    proxy: { to: 'tcp://localhost:' + originServerPort },
-                    _behaviors: { decorate: decorator.toString() }
-                },
-                proxyStub = { responses: [proxyResponse] },
-                proxyRequest = { protocol: 'tcp', port: port, stubs: [proxyStub], name: this.name + ' PROXY' };
-
-            return api.post('/imposters', originServerRequest).then(function () {
-                return api.post('/imposters', proxyRequest);
-            }).then(function () {
-                return tcp.send('request', port);
-            }).then(function (response) {
-                assert.strictEqual(response.toString(), 'ORIGIN DECORATED');
-            }).finally(function () {
-                return api.del('/imposters');
-            });
-        });
-
         promiseIt('should split each packet into a separate request by default', function () {
             // max 64k packet size, likely to hit max on the loopback interface
             var largeRequest = new Array(65537).join('1') + '2',
