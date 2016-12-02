@@ -47,13 +47,14 @@ HTTP/1.1 201 Created
 Access-Control-Allow-Origin: *
 Location: http://localhost:<%= port %>/imposters/4545
 Content-Type: application/json; charset=utf-8
-Content-Length: 165
+Content-Length: 190
 Date: Sun, 05 Jan 2014 16:28:40 GMT
 Connection: keep-alive
 
 {
   "protocol": "smtp",
   "port": 4545,
+  "numberOfRequests": 0,
   "requests": [],
   "stubs": [],
   "_links": {
@@ -106,6 +107,7 @@ Connection: keep-alive
 {
   "protocol": "smtp",
   "port": 4545,
+  "numberOfRequests": 1,
   "requests": [
     {
       "requestFrom": "::ffff:127.0.0.1",

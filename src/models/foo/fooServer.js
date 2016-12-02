@@ -52,6 +52,8 @@ function scopeFor (port, name) {
 function createServer (options, recordRequests, debug) {
             // This is an async operation, so we use a deferred
     var deferred = Q.defer(),
+            // track the number of requests even if recordRequests = false
+        numRequests = 0,
             // and an array to record all requests for mock verification
         requests = [],
             // set up a logger with the correct log prefix
@@ -76,6 +78,7 @@ function createServer (options, recordRequests, debug) {
             };
 
             // remember the request for mock verification, unless told not to
+            numRequests += 1;
             if (recordRequests) {
                 var recordedRequest = helpers.clone(request);
                 recordedRequest.timestamp = new Date().toJSON();
@@ -111,6 +114,7 @@ function createServer (options, recordRequests, debug) {
         // This resolves the promise, allowing execution to continue after we're listening on a socket
         // The object we resolve with defines the core imposter API expected in imposter.js
         deferred.resolve({
+            numberOfRequests: function () { return numRequests; },
             requests: requests,
             addStub: stubs.addStub,
             stubs: stubs.stubs,

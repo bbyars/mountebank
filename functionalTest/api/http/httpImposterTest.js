@@ -181,6 +181,25 @@ var assert = require('assert'),
                 });
             });
 
+            promiseIt('should record numberOfRequests even if --mock flag is missing', function () {
+                var stub = { responses: [{ is: { body: 'SUCCESS' } }] },
+                    request = { protocol: protocol, port: port, stubs: [stub], name: this.name };
+
+                return mb.start().then(function () {
+                    return mb.post('/imposters', request);
+                }).then(function () {
+                    return client.get('/', port);
+                }).then(function () {
+                    return client.get('/', port);
+                }).then(function () {
+                    return mb.get('/imposters/' + port);
+                }).then(function (response) {
+                    assert.strictEqual(response.body.numberOfRequests, 2);
+                }).finally(function () {
+                    return mb.stop();
+                });
+            });
+
             promiseIt('should return 404 if imposter has not been created', function () {
                 return api.get('/imposters/3535').then(function (response) {
                     assert.strictEqual(response.statusCode, 404);

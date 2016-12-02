@@ -49,6 +49,7 @@ function implement (implementation, recordRequests, debug, baseLogger) {
 
         var deferred = Q.defer(),
             requests = [],
+            numRequests = 0,
             logger = ScopedLogger.create(baseLogger, scopeFor(options.port)),
             server = implementation.createServer(logger, options),
             connections = {};
@@ -88,6 +89,7 @@ function implement (implementation, recordRequests, debug, baseLogger) {
             domain.run(function () {
                 implementation.Request.createFrom(request).then(function (simpleRequest) {
                     logger.debug('%s => %s', clientName, JSON.stringify(server.formatRequest(simpleRequest)));
+                    numRequests += 1;
                     if (recordRequests) {
                         var recordedRequest = helpers.clone(simpleRequest);
                         recordedRequest.timestamp = new Date().toJSON();
@@ -121,6 +123,7 @@ function implement (implementation, recordRequests, debug, baseLogger) {
              * This is the interface for all protocols
              */
             deferred.resolve({
+                numberOfRequests: function () { return numRequests; },
                 requests: requests,
                 addStub: server.addStub,
                 stubs: server.stubs,
