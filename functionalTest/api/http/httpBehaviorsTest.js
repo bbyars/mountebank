@@ -5,7 +5,8 @@ var assert = require('assert'),
     BaseHttpClient = require('./baseHttpClient'),
     promiseIt = require('../../testHelpers').promiseIt,
     port = api.port + 1,
-    timeout = parseInt(process.env.MB_SLOW_TEST_TIMEOUT || 2000);
+    timeout = parseInt(process.env.MB_SLOW_TEST_TIMEOUT || 2000),
+    fs = require('fs');
 
 ['http', 'https'].forEach(function (protocol) {
     var client = BaseHttpClient.create(protocol);
@@ -295,6 +296,30 @@ var assert = require('assert'),
                 }).then(function (response) {
                     assert.deepEqual(response.body, 'second response', 'third try');
                 }).finally(function () {
+                    return api.del('/imposters');
+                });
+            });
+
+            promiseIt('should support shell transforms', function () {
+                var stub = {
+                        responses: [{
+                            is: { body: 'Hello, {YOU}!' },
+                            _behaviors: { shellTransform: 'node shellTransformTest.js' }
+                        }]
+                    },
+                    stubs = [stub],
+                    request = { protocol: protocol, port: port, stubs: stubs, name: this.name };
+
+                fs.writeFileSync('shellTransformTest.js',
+                    'console.log(process.argv[3].replace("{YOU}", "mountebank"));');
+
+                return api.post('/imposters', request).then(function (response) {
+                    assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body, null, 2));
+                    return client.get('/', port);
+                }).then(function (response) {
+                    assert.strictEqual(response.body, 'Hello, mountebank!');
+                }).finally(function () {
+                    fs.unlinkSync('shellTransformTest.js');
                     return api.del('/imposters');
                 });
             });

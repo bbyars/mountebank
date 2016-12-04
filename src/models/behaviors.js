@@ -7,7 +7,9 @@
 
 var helpers = require('../util/helpers'),
     errors = require('../util/errors'),
-    Q = require('q');
+    Q = require('q'),
+    exec = require('child_process').exec,
+    util = require('util');
 
 /**
  * Waits a specified number of milliseconds before sending the response.  Due to the approximate
@@ -21,11 +23,13 @@ var helpers = require('../util/helpers'),
  */
 function wait (request, response, responsePromise, milliseconds, logger) {
     if (typeof milliseconds === 'number') {
+        logger.debug('Waiting %s ms...');
         return responsePromise.delay(milliseconds);
     }
     else {
         try {
             var waitFunction = eval('(' + milliseconds + ')');
+            logger.debug('Waiting %s ms...');
             return responsePromise.then(function () {
                 return responsePromise.delay(waitFunction());
             });
@@ -41,6 +45,43 @@ function wait (request, response, responsePromise, milliseconds, logger) {
 }
 
 /**
+ * Runs the response through a shell function, passing the JSON in as stdin and using
+ * stdout as the new response
+ * @param {Object} request - Will be the first arg to the command
+ * @param {Object} responsePromise - The promise chain for building the response, which will be the second arg
+ * @param {string} command - The shell command to execute
+ * @param {Object} logger - The mountebank logger, useful in debugging
+ * @returns {Object}
+ */
+function shellTransform (request, responsePromise, command, logger) {
+    if (request.isDryRun) {
+        return responsePromise;
+    }
+
+    return responsePromise.then(function (response) {
+        var deferred = Q.defer(),
+            fullCommand = util.format("%s '%s' '%s'", command, JSON.stringify(request), JSON.stringify(response));
+
+        logger.info('Shelling out to %s', command);
+        logger.debug(fullCommand);
+
+        exec(fullCommand, function (error, stdout, stderr) {
+            if (error) {
+                if (stderr) {
+                    logger.error(stderr);
+                }
+                deferred.reject(error);
+            }
+            else {
+                logger.debug("Shell returned '%s'", stdout);
+                deferred.resolve(Q(JSON.parse(stdout)));
+            }
+        });
+        return deferred.promise;
+    });
+}
+
+/**
  * Runs the response through a post-processing function provided by the user
  * @param {Object} originalRequest - The request object, in case post-processing depends on it
  * @param {Object} responsePromise - The promise returning the response
@@ -49,13 +90,14 @@ function wait (request, response, responsePromise, milliseconds, logger) {
  * @returns {Object}
  */
 function decorate (originalRequest, responsePromise, fn, logger) {
+    if (originalRequest.isDryRun === true) {
+        return responsePromise;
+    }
+
     return responsePromise.then(function (response) {
         var request = helpers.clone(originalRequest),
             injected = '(' + fn + ')(request, response, logger);';
 
-        if (request.isDryRun === true) {
-            return response;
-        }
         try {
             // Support functions that mutate response in place and those
             // that return a new response
@@ -94,6 +136,9 @@ function execute (request, response, behaviors, logger) {
 
     if (behaviors.wait) {
         result = wait(request, response, result, behaviors.wait, logger);
+    }
+    if (behaviors.shellTransform) {
+        result = shellTransform(request, result, behaviors.shellTransform, logger);
     }
     if (behaviors.decorate) {
         result = decorate(request, result, behaviors.decorate, logger);
