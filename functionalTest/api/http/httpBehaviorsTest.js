@@ -6,7 +6,8 @@ var assert = require('assert'),
     promiseIt = require('../../testHelpers').promiseIt,
     port = api.port + 1,
     timeout = parseInt(process.env.MB_SLOW_TEST_TIMEOUT || 2000),
-    fs = require('fs');
+    fs = require('fs'),
+    util = require('util');
 
 ['http', 'https'].forEach(function (protocol) {
     var client = BaseHttpClient.create(protocol);
@@ -307,10 +308,20 @@ var assert = require('assert'),
                         }]
                     },
                     stubs = [stub],
-                    request = { protocol: protocol, port: port, stubs: stubs, name: this.name };
+                    request = { protocol: protocol, port: port, stubs: stubs, name: this.name },
+                    shellFn = function exec () {
+                        console.log(process.argv[3].replace('{YOU}', 'mountebank'));
+                    };
 
-                fs.writeFileSync('shellTransformTest.js',
-                    'console.log(process.argv[3].replace("{YOU}", "mountebank"));');
+                fs.writeFileSync('shellTransformTest.js', util.format('%s\nexec();', shellFn.toString()));
+
+                // Temporary to debug Windows in Appveyor
+                var execSync = require('child_process').execSync,
+                    command = 'node shellTransformTest.js',
+                    fullCommand = util.format("%s '%s' '%s'", command, JSON.stringify({ path: '/' }),
+                        JSON.stringify({ body: 'Hello, {YOU}!' }));
+
+                console.log('>>>>>>>>' + execSync(fullCommand).toString() + '<<<<<<<<<');
 
                 return api.post('/imposters', request).then(function (response) {
                     assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body, null, 2));

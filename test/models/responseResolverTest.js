@@ -6,7 +6,6 @@ var assert = require('assert'),
     promiseIt = require('../testHelpers').promiseIt,
     mock = require('../mock').mock,
     Q = require('q'),
-    util = require('util'),
     Logger = require('../fakes/fakeLogger');
 
 describe('responseResolver', function () {

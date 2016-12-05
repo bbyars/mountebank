@@ -4,7 +4,6 @@ var assert = require('assert'),
     util = require('util'),
     Q = require('q'),
     promiseIt = require('../testHelpers').promiseIt,
-    mock = require('../mock').mock,
     behaviors = require('../../src/models/behaviors'),
     Logger = require('../fakes/fakeLogger'),
     fs = require('fs');
@@ -46,11 +45,11 @@ describe('behaviors', function () {
                 command = 'node shellTransformTest.js',
                 logger = Logger.create(),
                 shellFn = function exec () {
-                    var request = JSON.parse(process.argv[2]),
-                        response = JSON.parse(process.argv[3]);
+                    var shellRequest = JSON.parse(process.argv[2]),
+                        shellResponse = JSON.parse(process.argv[3]);
 
-                    response.requestData = request.data;
-                    console.log(JSON.stringify(response));
+                    shellResponse.requestData = shellRequest.data;
+                    console.log(JSON.stringify(shellResponse));
                 };
 
             fs.writeFileSync('shellTransformTest.js', util.format('%s\nexec();', shellFn.toString()));
@@ -68,7 +67,7 @@ describe('behaviors', function () {
                 command = 'fileDoesNotExist',
                 logger = Logger.create();
 
-            return behaviors.shellTransform(request, responsePromise, command, logger).then(function (response) {
+            return behaviors.shellTransform(request, responsePromise, command, logger).then(function () {
                 assert.fail('Promise resolved, should have been rejected');
             }, function (error) {
                 assert.ok(error.indexOf('command not found') >= 0);
@@ -87,7 +86,7 @@ describe('behaviors', function () {
 
             fs.writeFileSync('shellTransformTest.js', util.format('%s\nexec();', shellFn.toString()));
 
-            return behaviors.shellTransform(request, responsePromise, command, logger).then(function (response) {
+            return behaviors.shellTransform(request, responsePromise, command, logger).then(function () {
                 assert.fail('Promise resolved, should have been rejected');
             }, function (error) {
                 assert.ok(error.indexOf('Command failed') >= 0);
@@ -106,7 +105,7 @@ describe('behaviors', function () {
 
             fs.writeFileSync('shellTransformTest.js', util.format('%s\nexec();', shellFn.toString()));
 
-            return behaviors.shellTransform(request, responsePromise, command, logger).then(function (response) {
+            return behaviors.shellTransform(request, responsePromise, command, logger).then(function () {
                 assert.fail('Promise resolved, should have been rejected');
             }, function (error) {
                 assert.ok(error.indexOf('Shell command returned invalid JSON') >= 0);

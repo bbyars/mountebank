@@ -2,7 +2,6 @@
 
 var assert = require('assert'),
     events = require('events'),
-    util = require('util'),
     Q = require('q'),
     AbstractServer = require('../../src/models/abstractServer'),
     promiseIt = require('../testHelpers').promiseIt,

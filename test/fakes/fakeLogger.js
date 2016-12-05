@@ -13,7 +13,7 @@ function create () {
         };
         logger[level].assertLogged = function (message) {
             assert.ok(logger.calls[level].indexOf(message) >= 0, JSON.stringify(logger.calls, null, 4));
-        }
+        };
     });
 
     return logger;
