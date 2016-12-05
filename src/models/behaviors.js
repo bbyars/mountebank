@@ -74,7 +74,12 @@ function shellTransform (request, responsePromise, command, logger) {
             }
             else {
                 logger.debug("Shell returned '%s'", stdout);
-                deferred.resolve(Q(JSON.parse(stdout)));
+                try {
+                    deferred.resolve(Q(JSON.parse(stdout)));
+                }
+                catch (err) {
+                    deferred.reject(util.format("Shell command returned invalid JSON: '%s'", stdout));
+                }
             }
         });
         return deferred.promise;
@@ -150,5 +155,6 @@ function execute (request, response, behaviors, logger) {
 module.exports = {
     wait: wait,
     decorate: decorate,
+    shellTransform: shellTransform,
     execute: execute
 };
