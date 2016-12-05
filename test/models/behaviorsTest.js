@@ -25,11 +25,13 @@ describe('behaviors', function () {
         promiseIt('should return output of command', function () {
             var request = {},
                 responsePromise = Q({ data: 'ORIGINAL' }),
-                changedJSON = { data: 'CHANGED' },
                 command = 'node shellTransformTest.js',
-                logger = Logger.create();
+                logger = Logger.create(),
+                shellFn = function exec () {
+                    console.log('%s', JSON.stringify({ data: 'CHANGED' }));
+                };
 
-            fs.writeFileSync('shellTransformTest.js', util.format("console.log('%s');", JSON.stringify(changedJSON)));
+            fs.writeFileSync('shellTransformTest.js', util.format('%s\nexec();', shellFn.toString()));
 
             return behaviors.shellTransform(request, responsePromise, command, logger).then(function (response) {
                 assert.deepEqual(response, { data: 'CHANGED' });
@@ -57,6 +59,57 @@ describe('behaviors', function () {
                 assert.deepEqual(response, { data: 'UNCHANGED', requestData: 'FROM REQUEST' });
             }).finally(function () {
                 fs.unlinkSync('shellTransformTest.js');
+            });
+        });
+
+        promiseIt('should reject promise if file does not exist', function () {
+            var request = {},
+                responsePromise = Q({}),
+                command = 'fileDoesNotExist',
+                logger = Logger.create();
+
+            return behaviors.shellTransform(request, responsePromise, command, logger).then(function (response) {
+                assert.fail('Promise resolved, should have been rejected');
+            }, function (error) {
+                assert.ok(error.indexOf('command not found') >= 0);
+            });
+        });
+
+        promiseIt('should reject if command returned non-zero status code', function () {
+            var request = {},
+                responsePromise = Q({}),
+                command = 'node shellTransformTest.js',
+                logger = Logger.create(),
+                shellFn = function exec () {
+                    console.error('BOOM!!!');
+                    process.exit(1);
+                };
+
+            fs.writeFileSync('shellTransformTest.js', util.format('%s\nexec();', shellFn.toString()));
+
+            return behaviors.shellTransform(request, responsePromise, command, logger).then(function (response) {
+                assert.fail('Promise resolved, should have been rejected');
+            }, function (error) {
+                assert.ok(error.indexOf('Command failed') >= 0);
+                assert.ok(error.indexOf('BOOM!!!') >= 0);
+            });
+        });
+
+        promiseIt('should reject if command does not return valid JSON', function () {
+            var request = {},
+                responsePromise = Q({}),
+                command = 'node shellTransformTest.js',
+                logger = Logger.create(),
+                shellFn = function exec () {
+                    console.log('This is not JSON');
+                };
+
+            fs.writeFileSync('shellTransformTest.js', util.format('%s\nexec();', shellFn.toString()));
+
+            return behaviors.shellTransform(request, responsePromise, command, logger).then(function (response) {
+                assert.fail('Promise resolved, should have been rejected');
+            }, function (error) {
+                assert.ok(error.indexOf('Shell command returned invalid JSON') >= 0);
             });
         });
     });

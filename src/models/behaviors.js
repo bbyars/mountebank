@@ -70,7 +70,7 @@ function shellTransform (request, responsePromise, command, logger) {
                 if (stderr) {
                     logger.error(stderr);
                 }
-                deferred.reject(error);
+                deferred.reject(error.message);
             }
             else {
                 logger.debug("Shell returned '%s'", stdout);
