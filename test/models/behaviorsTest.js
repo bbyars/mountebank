@@ -70,7 +70,7 @@ describe('behaviors', function () {
             return behaviors.shellTransform(request, responsePromise, command, logger).then(function () {
                 assert.fail('Promise resolved, should have been rejected');
             }, function (error) {
-                assert.ok(error.indexOf('command not found') >= 0);
+                assert.ok(error.indexOf('command not found') >= 0, error);
             });
         });
 
@@ -89,8 +89,10 @@ describe('behaviors', function () {
             return behaviors.shellTransform(request, responsePromise, command, logger).then(function () {
                 assert.fail('Promise resolved, should have been rejected');
             }, function (error) {
-                assert.ok(error.indexOf('Command failed') >= 0);
-                assert.ok(error.indexOf('BOOM!!!') >= 0);
+                assert.ok(error.indexOf('Command failed') >= 0, error);
+                assert.ok(error.indexOf('BOOM!!!') >= 0, error);
+            }).finally(function () {
+                fs.unlinkSync('shellTransformTest.js');
             });
         });
 
@@ -108,7 +110,9 @@ describe('behaviors', function () {
             return behaviors.shellTransform(request, responsePromise, command, logger).then(function () {
                 assert.fail('Promise resolved, should have been rejected');
             }, function (error) {
-                assert.ok(error.indexOf('Shell command returned invalid JSON') >= 0);
+                assert.ok(error.indexOf('Shell command returned invalid JSON') >= 0, error);
+            }).finally(function () {
+                fs.unlinkSync('shellTransformTest.js');
             });
         });
     });
