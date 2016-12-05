@@ -70,7 +70,7 @@ describe('behaviors', function () {
             return behaviors.shellTransform(request, responsePromise, command, logger).then(function () {
                 assert.fail('Promise resolved, should have been rejected');
             }, function (error) {
-                assert.ok(error.indexOf('command not found') >= 0, error);
+                assert.ok(error.indexOf('not found') >= 0, error);
             });
         });
 
