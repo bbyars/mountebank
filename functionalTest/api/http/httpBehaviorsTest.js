@@ -160,8 +160,7 @@ var assert = require('assert'),
                 }).then(function (response) {
                     assert.strictEqual(response.body, 'request 100');
                     return api.get('/imposters/' + port);
-                }).then(function (response) {
-                    console.log(JSON.stringify(response.body, null, 4));
+                }).then(function () {
                     return client.get('/test?id=200', port);
                 }).then(function (response) {
                     assert.strictEqual(response.body, 'request 200');
