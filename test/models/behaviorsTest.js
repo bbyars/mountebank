@@ -45,8 +45,9 @@ describe('behaviors', function () {
                 command = 'node shellTransformTest.js',
                 logger = Logger.create(),
                 shellFn = function exec () {
-                    var shellRequest = JSON.parse(process.argv[2]),
-                        shellResponse = JSON.parse(process.argv[3]);
+                    // The replace of quotes only matters on Windows due to shell differences
+                    var shellRequest = JSON.parse(process.argv[2].replace("'", '')),
+                        shellResponse = JSON.parse(process.argv[3].replace("'", ''));
 
                     shellResponse.requestData = shellRequest.data;
                     console.log(JSON.stringify(shellResponse));
