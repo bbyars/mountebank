@@ -26,8 +26,7 @@ Install:
 
     npm install -g mountebank
 
-The npm install requires at least node 0.10.  Billions of other install options are
-[also available](http://www.mbtest.org/docs/install) with no platform dependencies.
+Billions of other install options are [also available](http://www.mbtest.org/docs/install) with no platform dependencies.
 
 Run:
 
@@ -91,7 +90,7 @@ for any support questions.  Don't be shy!
 
 ## Building
 
-`./build` should do the trick on Mac and Linux, and `build.bat` on Windows, assuming you have at least node 0.10.
+`./build` should do the trick on Mac and Linux, and `build.bat` on Windows, assuming you have at least node 4.0.
 If not, yell at me.
 
 There are some tests that require network access (`grunt airplane` ignores them in case that offends your
