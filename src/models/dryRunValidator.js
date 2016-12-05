@@ -110,7 +110,7 @@ function create (options) {
     }
 
     function hasStubInjection (stub) {
-        var hasResponseInjections = utils.isArray(stub.responses) && stub.responses.some(function (response) {
+        var hasResponseInjections = stub.responses.some(function (response) {
                 var hasDecorator = response._behaviors && response._behaviors.decorate,
                     hasWaitFunction = response._behaviors && typeof response._behaviors.wait === 'string';
 
@@ -122,10 +122,24 @@ function create (options) {
         return hasResponseInjections || hasPredicateInjections;
     }
 
+    function hasShellExecution (stub) {
+        return stub.responses.some(function (response) {
+            return response._behaviors && response._behaviors.shellTransform;
+        });
+    }
+
     function addStubInjectionErrors (stub, errors) {
-        if (!options.allowInjection && hasStubInjection(stub)) {
+        if (options.allowInjection) {
+            return;
+        }
+
+        if (hasStubInjection(stub)) {
             errors.push(exceptions.InjectionError(
                 'JavaScript injection is not allowed unless mb is run with the --allowInjection flag', { source: stub }));
+        }
+        if (hasShellExecution(stub)) {
+            errors.push(exceptions.InjectionError(
+                'Shell execution is not allowed unless mb is run with the --allowInjection flag', { source: stub }));
         }
     }
 
@@ -140,8 +154,8 @@ function create (options) {
         }
         else {
             addInvalidWaitErrors(stub, errors);
+            addStubInjectionErrors(stub, errors);
         }
-        addStubInjectionErrors(stub, errors);
 
         if (errors.length > 0) {
             // no sense in dry-running if there are already problems;

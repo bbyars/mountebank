@@ -114,4 +114,18 @@ describe('mb without --allowInjection', function () {
             return mb.stop();
         });
     });
+
+    promiseIt('should return a 400 if a shellTransform behavior is used', function () {
+        var stub = { responses: [{ is: {}, _behaviors: { shellTransform: 'command' } }] },
+            request = { protocol: 'http', port: port, stubs: [stub], name: this.name };
+
+        return mb.start().then(function () {
+            return mb.post('/imposters', request);
+        }).then(function (response) {
+            assert.strictEqual(response.statusCode, 400);
+            assert.strictEqual(response.body.errors[0].code, 'invalid injection');
+        }).finally(function () {
+            return mb.stop();
+        });
+    });
 });

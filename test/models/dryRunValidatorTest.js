@@ -527,5 +527,29 @@ describe('dryRunValidator', function () {
                 assert.ok(result.isValid);
             });
         });
+
+        promiseIt('should not be valid for shellTransform if injections are disallowed', function () {
+            var request = {
+                    stubs: [{
+                        responses: [{ is: {}, _behaviors: { shellTransform: 'command' } }]
+                    }]
+                },
+                validator = Validator.create({
+                    StubRepository: StubRepository,
+                    testRequest: testRequest,
+                    allowInjection: false
+                });
+
+            return validator.validate(request).then(function (result) {
+                assert.deepEqual(result, {
+                    isValid: false,
+                    errors: [{
+                        code: 'invalid injection',
+                        message: 'Shell execution is not allowed unless mb is run with the --allowInjection flag',
+                        source: request.stubs[0]
+                    }]
+                });
+            });
+        });
     });
 });
