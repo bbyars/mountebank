@@ -152,7 +152,6 @@ describe('AbstractServer', function () {
                 baseServer.listeners('request')[0](socket, {}, function () {
                     logger.debug.assertLogged('[test:3000] host:port => "full request"');
                 });
-                // The delay is not needed in node v0.10; evidently it came on a later process tick in subsequent versions
                 return Q.delay(1);
             });
         });
