@@ -9,6 +9,75 @@ var assert = require('assert'),
     fs = require('fs');
 
 describe('behaviors', function () {
+    describe('#wait', function () {
+        promiseIt('should not execute during dry run', function () {
+            var request = { isDryRun: true },
+                response = { key: 'value' },
+                logger = Logger.create(),
+                start = new Date();
+
+            return behaviors.wait(request, response, Q(response), 1000, logger).then(function (actualResponse) {
+                var time = new Date() - start;
+                assert.ok(time < 50, 'Took ' + time + ' milliseconds');
+                assert.deepEqual(actualResponse, { key: 'value' });
+            });
+        });
+
+        promiseIt('should wait specified number of milliseconds', function () {
+            var request = {},
+                response = { key: 'value' },
+                logger = Logger.create(),
+                start = new Date();
+
+            return behaviors.wait(request, response, Q(response), 100, logger).then(function (actualResponse) {
+                var time = new Date() - start;
+                assert.ok(time > 90, 'Took ' + time + ' milliseconds'); // allows for approximate timing
+                assert.deepEqual(actualResponse, { key: 'value' });
+            });
+        });
+
+        promiseIt('should allow function to specifiy latency', function () {
+            var request = {},
+                response = { key: 'value' },
+                logger = Logger.create(),
+                fn = function () { return 100; },
+                start = new Date();
+
+            return behaviors.wait(request, response, Q(response), fn.toString(), logger).then(function (actualResponse) {
+                var time = new Date() - start;
+                assert.ok(time > 90, 'Took ' + time + ' milliseconds'); // allows for approximate timing
+                assert.deepEqual(actualResponse, { key: 'value' });
+            });
+        });
+
+        promiseIt('should log error and reject function if function throws error', function () {
+            var request = {},
+                response = { key: 'value' },
+                logger = Logger.create(),
+                fn = function () { throw Error('BOOM!!!'); };
+
+            return behaviors.wait(request, response, Q(response), fn.toString(), logger).then(function () {
+                assert.fail('should have rejected');
+            }, function (error) {
+                assert.ok(error.message.indexOf('invalid wait injection') >= 0);
+                logger.error.assertLogged(fn.toString());
+            });
+        });
+
+        promiseIt('should treat a string as milliseconds if it can be parsed as a number', function () {
+            var request = {},
+                response = { key: 'value' },
+                logger = Logger.create(),
+                start = new Date();
+
+            return behaviors.wait(request, response, Q(response), '100', logger).then(function (actualResponse) {
+                var time = new Date() - start;
+                assert.ok(time > 90, 'Took ' + time + ' milliseconds'); // allows for approximate timing
+                assert.deepEqual(actualResponse, { key: 'value' });
+            });
+        });
+    });
+
     describe('#shellTransform', function () {
         promiseIt('should not execute during dry run', function () {
             var request = { isDryRun: true },

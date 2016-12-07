@@ -12,7 +12,9 @@ function create () {
             logger.calls[level].push(util.format.apply(logger, arguments));
         };
         logger[level].assertLogged = function (message) {
-            assert.ok(logger.calls[level].indexOf(message) >= 0, JSON.stringify(logger.calls, null, 4));
+            assert.ok(logger.calls[level].some(function (entry) {
+                return entry.indexOf(message) >= 0;
+            }), JSON.stringify(logger.calls, null, 4));
         };
     });
 

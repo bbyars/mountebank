@@ -18,31 +18,34 @@ var helpers = require('../util/helpers'),
  * @param {Object} request - The request object
  * @param {Object} response - The response generated from the stubs
  * @param {Object} responsePromise -kThe promise returning the response
- * @param {number} milliseconds - The number of milliseconds to wait before returning
+ * @param {number} millisecondsOrFn - The number of milliseconds to wait before returning, or a function returning milliseconds
  * @param {Object} logger - The mountebank logger, useful for debugging
  * @returns {Object} A promise resolving to the response
  */
-function wait (request, response, responsePromise, milliseconds, logger) {
-    if (typeof milliseconds === 'number') {
-        logger.debug('Waiting %s ms...');
-        return responsePromise.delay(milliseconds);
+function wait (request, response, responsePromise, millisecondsOrFn, logger) {
+    if (request.isDryRun) {
+        return responsePromise;
     }
-    else {
+
+    var fn = util.format('(%s)()', millisecondsOrFn),
+        milliseconds = parseInt(millisecondsOrFn);
+
+    if (isNaN(milliseconds)) {
         try {
-            var waitFunction = eval('(' + milliseconds + ')');
-            logger.debug('Waiting %s ms...');
-            return responsePromise.then(function () {
-                return responsePromise.delay(waitFunction());
-            });
+            milliseconds = eval(fn);
         }
         catch (error) {
             logger.error('injection X=> ' + error);
-            logger.error('    full source: ' + JSON.stringify(milliseconds));
+            logger.error('    full source: ' + JSON.stringify(fn));
             logger.error('    request: ' + JSON.stringify(request));
             logger.error('    response: ' + JSON.stringify(response));
-            return Q.reject(errors.InjectionError('invalid wait injection', { source: milliseconds, data: error.message }));
+            return Q.reject(errors.InjectionError('invalid wait injection',
+                { source: millisecondsOrFn, data: error.message }));
         }
     }
+
+    logger.debug('Waiting %s ms...', milliseconds);
+    return responsePromise.delay(milliseconds);
 }
 
 function quoteForShell (obj) {

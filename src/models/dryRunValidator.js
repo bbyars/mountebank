@@ -39,10 +39,6 @@ function create (options) {
             delete clonedStub.predicates;
         }
 
-        // we've already validated waits and don't want to add latency to validation
-        if (clonedResponse._behaviors && clonedResponse._behaviors.wait) {
-            delete clonedResponse._behaviors.wait;
-        }
         return clonedStub;
     }
 
