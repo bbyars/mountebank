@@ -49,8 +49,9 @@ function quoteForShell (obj) {
     var json = JSON.stringify(obj);
 
     if (isWindows) {
-        // Confused? Me too. See http://stackoverflow.com/questions/7760545/escape-double-quotes-in-parameter
-        return util.format('"%s"', json.replace(/"/g, '"""'));
+        // Confused? Me too. All other approaches I tried were spectacular failures
+        // in both 1) keeping the JSON as a single CLI arg, and 2) maintaining the inner quotes
+        return util.format('"%s"', json.replace(/"/g, '\\"'));
     }
     else {
         return util.format("'%s'", json);
