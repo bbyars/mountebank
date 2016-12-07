@@ -1155,7 +1155,7 @@ describe('predicates', function () {
                     contains: { field: 'value' },
                     xpath: { selector: '//title/text()' }
                 },
-                request = { field: '<doc><title>this is a value</title>' };
+                request = { field: '<doc><title>this is a value</title></doc>' };
             assert.ok(predicates.contains(predicate, request));
         });
 
