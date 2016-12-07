@@ -36,7 +36,7 @@ describe('behaviors', function () {
             });
         });
 
-        promiseIt('should allow function to specifiy latency', function () {
+        promiseIt('should allow function to specify latency', function () {
             var request = {},
                 response = { key: 'value' },
                 logger = Logger.create(),
@@ -184,6 +184,55 @@ describe('behaviors', function () {
                 assert.ok(error.indexOf('Shell command returned invalid JSON') >= 0, error);
             }).finally(function () {
                 fs.unlinkSync('shellTransformTest.js');
+            });
+        });
+    });
+
+    describe('#decorate', function () {
+        promiseIt('should allow changing the response directly', function () {
+            var request = {},
+                response = { key: 'ORIGINAL' },
+                logger = Logger.create(),
+                fn = function (req, responseToDecorate) { responseToDecorate.key = 'CHANGED'; };
+
+            return behaviors.decorate(request, Q(response), fn.toString(), logger).then(function (actualResponse) {
+                assert.deepEqual(actualResponse, { key: 'CHANGED' });
+            });
+        });
+
+        promiseIt('should allow returning response', function () {
+            var request = {},
+                response = { key: 'VALUE' },
+                logger = Logger.create(),
+                fn = function () { return { newKey: 'NEW-VALUE' }; };
+
+            return behaviors.decorate(request, Q(response), fn.toString(), logger).then(function (actualResponse) {
+                assert.deepEqual(actualResponse, { newKey: 'NEW-VALUE' });
+            });
+        });
+
+        promiseIt('should allow logging in the decoration function', function () {
+            var request = {},
+                response = { key: 'VALUE' },
+                logger = Logger.create(),
+                fn = function (req, resp, log) { log.info('test entry'); };
+
+            return behaviors.decorate(request, Q(response), fn.toString(), logger).then(function () {
+                logger.info.assertLogged('test entry');
+            });
+        });
+
+        promiseIt('should log error and reject function if function throws error', function () {
+            var request = {},
+                response = { key: 'value' },
+                logger = Logger.create(),
+                fn = function () { throw Error('BOOM!!!'); };
+
+            return behaviors.decorate(request, Q(response), fn.toString(), logger).then(function () {
+                assert.fail('should have rejected');
+            }, function (error) {
+                assert.ok(error.message.indexOf('invalid decorator injection') >= 0);
+                logger.error.assertLogged(fn.toString());
             });
         });
     });
