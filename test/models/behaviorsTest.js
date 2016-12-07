@@ -2,7 +2,6 @@
 
 var assert = require('assert'),
     util = require('util'),
-    Q = require('q'),
     promiseIt = require('../testHelpers').promiseIt,
     behaviors = require('../../src/models/behaviors'),
     Logger = require('../fakes/fakeLogger'),
@@ -14,9 +13,10 @@ describe('behaviors', function () {
             var request = { isDryRun: true },
                 response = { key: 'value' },
                 logger = Logger.create(),
-                start = new Date();
+                start = new Date(),
+                config = { wait: 1000 };
 
-            return behaviors.wait(request, response, Q(response), 1000, logger).then(function (actualResponse) {
+            return behaviors.execute(request, response, config, logger).then(function (actualResponse) {
                 var time = new Date() - start;
                 assert.ok(time < 50, 'Took ' + time + ' milliseconds');
                 assert.deepEqual(actualResponse, { key: 'value' });
@@ -27,9 +27,10 @@ describe('behaviors', function () {
             var request = {},
                 response = { key: 'value' },
                 logger = Logger.create(),
-                start = new Date();
+                start = new Date(),
+                config = { wait: 100 };
 
-            return behaviors.wait(request, response, Q(response), 100, logger).then(function (actualResponse) {
+            return behaviors.execute(request, response, config, logger).then(function (actualResponse) {
                 var time = new Date() - start;
                 assert.ok(time > 90, 'Took ' + time + ' milliseconds'); // allows for approximate timing
                 assert.deepEqual(actualResponse, { key: 'value' });
@@ -41,9 +42,10 @@ describe('behaviors', function () {
                 response = { key: 'value' },
                 logger = Logger.create(),
                 fn = function () { return 100; },
-                start = new Date();
+                start = new Date(),
+                config = { wait: fn.toString() };
 
-            return behaviors.wait(request, response, Q(response), fn.toString(), logger).then(function (actualResponse) {
+            return behaviors.execute(request, response, config, logger).then(function (actualResponse) {
                 var time = new Date() - start;
                 assert.ok(time > 90, 'Took ' + time + ' milliseconds'); // allows for approximate timing
                 assert.deepEqual(actualResponse, { key: 'value' });
@@ -54,9 +56,10 @@ describe('behaviors', function () {
             var request = {},
                 response = { key: 'value' },
                 logger = Logger.create(),
-                fn = function () { throw Error('BOOM!!!'); };
+                fn = function () { throw Error('BOOM!!!'); },
+                config = { wait: fn.toString() };
 
-            return behaviors.wait(request, response, Q(response), fn.toString(), logger).then(function () {
+            return behaviors.execute(request, response, config, logger).then(function () {
                 assert.fail('should have rejected');
             }, function (error) {
                 assert.ok(error.message.indexOf('invalid wait injection') >= 0);
@@ -68,9 +71,10 @@ describe('behaviors', function () {
             var request = {},
                 response = { key: 'value' },
                 logger = Logger.create(),
-                start = new Date();
+                start = new Date(),
+                config = { wait: '100' };
 
-            return behaviors.wait(request, response, Q(response), '100', logger).then(function (actualResponse) {
+            return behaviors.execute(request, response, config, logger).then(function (actualResponse) {
                 var time = new Date() - start;
                 assert.ok(time > 90, 'Took ' + time + ' milliseconds'); // allows for approximate timing
                 assert.deepEqual(actualResponse, { key: 'value' });
@@ -81,28 +85,28 @@ describe('behaviors', function () {
     describe('#shellTransform', function () {
         promiseIt('should not execute during dry run', function () {
             var request = { isDryRun: true },
-                responsePromise = Q({ data: 'ORIGINAL' }),
-                command = 'echo Should not reach here',
-                logger = Logger.create();
+                response = { data: 'ORIGINAL' },
+                logger = Logger.create(),
+                config = { shellTransform: 'echo Should not reach here' };
 
-            return behaviors.shellTransform(request, responsePromise, command, logger).then(function (response) {
-                assert.deepEqual(response, { data: 'ORIGINAL' });
+            return behaviors.execute(request, response, config, logger).then(function (actualResponse) {
+                assert.deepEqual(actualResponse, { data: 'ORIGINAL' });
             });
         });
 
         promiseIt('should return output of command', function () {
             var request = {},
-                responsePromise = Q({ data: 'ORIGINAL' }),
-                command = 'node shellTransformTest.js',
+                response = { data: 'ORIGINAL' },
                 logger = Logger.create(),
                 shellFn = function exec () {
-                    console.log('%s', JSON.stringify({ data: 'CHANGED' }));
-                };
+                    console.log(JSON.stringify({ data: 'CHANGED' }));
+                },
+                config = { shellTransform: 'node shellTransformTest.js' };
 
             fs.writeFileSync('shellTransformTest.js', util.format('%s\nexec();', shellFn.toString()));
 
-            return behaviors.shellTransform(request, responsePromise, command, logger).then(function (response) {
-                assert.deepEqual(response, { data: 'CHANGED' });
+            return behaviors.execute(request, response, config, logger).then(function (actualResponse) {
+                assert.deepEqual(actualResponse, { data: 'CHANGED' });
             }).finally(function () {
                 fs.unlinkSync('shellTransformTest.js');
             });
@@ -110,8 +114,7 @@ describe('behaviors', function () {
 
         promiseIt('should pass request and response to shell command', function () {
             var request = { data: 'FROM REQUEST' },
-                responsePromise = Q({ data: 'UNCHANGED', requestData: '' }),
-                command = 'node shellTransformTest.js',
+                response = { data: 'UNCHANGED', requestData: '' },
                 logger = Logger.create(),
                 shellFn = function exec () {
                     // The replace of quotes only matters on Windows due to shell differences
@@ -120,12 +123,13 @@ describe('behaviors', function () {
 
                     shellResponse.requestData = shellRequest.data;
                     console.log(JSON.stringify(shellResponse));
-                };
+                },
+                config = { shellTransform: 'node shellTransformTest.js' };
 
             fs.writeFileSync('shellTransformTest.js', util.format('%s\nexec();', shellFn.toString()));
 
-            return behaviors.shellTransform(request, responsePromise, command, logger).then(function (response) {
-                assert.deepEqual(response, { data: 'UNCHANGED', requestData: 'FROM REQUEST' });
+            return behaviors.execute(request, response, config, logger).then(function (actualResponse) {
+                assert.deepEqual(actualResponse, { data: 'UNCHANGED', requestData: 'FROM REQUEST' });
             }).finally(function () {
                 fs.unlinkSync('shellTransformTest.js');
             });
@@ -133,11 +137,11 @@ describe('behaviors', function () {
 
         promiseIt('should reject promise if file does not exist', function () {
             var request = {},
-                responsePromise = Q({}),
-                command = 'fileDoesNotExist',
-                logger = Logger.create();
+                response = {},
+                logger = Logger.create(),
+                config = { shellTransform: 'fileDoesNotExist' };
 
-            return behaviors.shellTransform(request, responsePromise, command, logger).then(function () {
+            return behaviors.execute(request, response, config, logger).then(function () {
                 assert.fail('Promise resolved, should have been rejected');
             }, function (error) {
                 // Error message is OS-dependent
@@ -147,17 +151,17 @@ describe('behaviors', function () {
 
         promiseIt('should reject if command returned non-zero status code', function () {
             var request = {},
-                responsePromise = Q({}),
-                command = 'node shellTransformTest.js',
+                response = {},
                 logger = Logger.create(),
                 shellFn = function exec () {
                     console.error('BOOM!!!');
                     process.exit(1);
-                };
+                },
+                config = { shellTransform: 'node shellTransformTest.js' };
 
             fs.writeFileSync('shellTransformTest.js', util.format('%s\nexec();', shellFn.toString()));
 
-            return behaviors.shellTransform(request, responsePromise, command, logger).then(function () {
+            return behaviors.execute(request, response, config, logger).then(function () {
                 assert.fail('Promise resolved, should have been rejected');
             }, function (error) {
                 assert.ok(error.indexOf('Command failed') >= 0, error);
@@ -169,16 +173,16 @@ describe('behaviors', function () {
 
         promiseIt('should reject if command does not return valid JSON', function () {
             var request = {},
-                responsePromise = Q({}),
-                command = 'node shellTransformTest.js',
+                response = {},
                 logger = Logger.create(),
                 shellFn = function exec () {
                     console.log('This is not JSON');
-                };
+                },
+                config = { shellTransform: 'node shellTransformTest.js' };
 
             fs.writeFileSync('shellTransformTest.js', util.format('%s\nexec();', shellFn.toString()));
 
-            return behaviors.shellTransform(request, responsePromise, command, logger).then(function () {
+            return behaviors.execute(request, response, config, logger).then(function () {
                 assert.fail('Promise resolved, should have been rejected');
             }, function (error) {
                 assert.ok(error.indexOf('Shell command returned invalid JSON') >= 0, error);
@@ -193,9 +197,10 @@ describe('behaviors', function () {
             var request = {},
                 response = { key: 'ORIGINAL' },
                 logger = Logger.create(),
-                fn = function (req, responseToDecorate) { responseToDecorate.key = 'CHANGED'; };
+                fn = function (req, responseToDecorate) { responseToDecorate.key = 'CHANGED'; },
+                config = { decorate: fn.toString() };
 
-            return behaviors.decorate(request, Q(response), fn.toString(), logger).then(function (actualResponse) {
+            return behaviors.execute(request, response, config, logger).then(function (actualResponse) {
                 assert.deepEqual(actualResponse, { key: 'CHANGED' });
             });
         });
@@ -204,9 +209,10 @@ describe('behaviors', function () {
             var request = {},
                 response = { key: 'VALUE' },
                 logger = Logger.create(),
-                fn = function () { return { newKey: 'NEW-VALUE' }; };
+                fn = function () { return { newKey: 'NEW-VALUE' }; },
+                config = { decorate: fn.toString() };
 
-            return behaviors.decorate(request, Q(response), fn.toString(), logger).then(function (actualResponse) {
+            return behaviors.execute(request, response, config, logger).then(function (actualResponse) {
                 assert.deepEqual(actualResponse, { newKey: 'NEW-VALUE' });
             });
         });
@@ -215,9 +221,10 @@ describe('behaviors', function () {
             var request = {},
                 response = { key: 'VALUE' },
                 logger = Logger.create(),
-                fn = function (req, resp, log) { log.info('test entry'); };
+                fn = function (req, resp, log) { log.info('test entry'); },
+                config = { decorate: fn.toString() };
 
-            return behaviors.decorate(request, Q(response), fn.toString(), logger).then(function () {
+            return behaviors.execute(request, response, config, logger).then(function () {
                 logger.info.assertLogged('test entry');
             });
         });
@@ -226,9 +233,10 @@ describe('behaviors', function () {
             var request = {},
                 response = { key: 'value' },
                 logger = Logger.create(),
-                fn = function () { throw Error('BOOM!!!'); };
+                fn = function () { throw Error('BOOM!!!'); },
+                config = { decorate: fn.toString() };
 
-            return behaviors.decorate(request, Q(response), fn.toString(), logger).then(function () {
+            return behaviors.execute(request, response, config, logger).then(function () {
                 assert.fail('should have rejected');
             }, function (error) {
                 assert.ok(error.message.indexOf('invalid decorator injection') >= 0);
