@@ -9,7 +9,8 @@ var helpers = require('../util/helpers'),
     errors = require('../util/errors'),
     Q = require('q'),
     exec = require('child_process').exec,
-    util = require('util');
+    util = require('util'),
+    isWindows = require('os').platform().indexOf('win') === 0;
 
 /**
  * Waits a specified number of milliseconds before sending the response.  Due to the approximate
@@ -44,6 +45,18 @@ function wait (request, response, responsePromise, milliseconds, logger) {
     }
 }
 
+function quoteForShell (obj) {
+    var json = JSON.stringify(obj);
+
+    if (isWindows) {
+        // Confused? Me too. See http://stackoverflow.com/questions/7760545/escape-double-quotes-in-parameter
+        return util.format('"%s"', json.replace(/"/g, '"""'));
+    }
+    else {
+        return util.format("'%s'", json);
+    }
+}
+
 /**
  * Runs the response through a shell function, passing the JSON in as stdin and using
  * stdout as the new response
@@ -60,7 +73,7 @@ function shellTransform (request, responsePromise, command, logger) {
 
     return responsePromise.then(function (response) {
         var deferred = Q.defer(),
-            fullCommand = util.format("%s '%s' '%s'", command, JSON.stringify(request), JSON.stringify(response));
+            fullCommand = util.format('%s %s %s', command, quoteForShell(request), quoteForShell(response));
 
         logger.info('Shelling out to %s', command);
         logger.debug(fullCommand);

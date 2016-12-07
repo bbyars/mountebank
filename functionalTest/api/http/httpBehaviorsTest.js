@@ -315,14 +315,6 @@ var assert = require('assert'),
 
                 fs.writeFileSync('shellTransformTest.js', util.format('%s\nexec();', shellFn.toString()));
 
-                // Temporary to debug Windows in Appveyor
-                var execSync = require('child_process').execSync,
-                    command = 'node shellTransformTest.js',
-                    fullCommand = util.format("%s '%s' '%s'", command, JSON.stringify({ path: '/' }),
-                        JSON.stringify({ body: 'Hello, {YOU}!' }));
-
-                console.log('>>>>>>>>' + execSync(fullCommand).toString() + '<<<<<<<<<');
-
                 return api.post('/imposters', request).then(function (response) {
                     assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body, null, 2));
                     return client.get('/', port);
