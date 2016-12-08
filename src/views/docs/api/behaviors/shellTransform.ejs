@@ -80,9 +80,8 @@ var request = JSON.parse(process.argv[2]),
     response = JSON.parse(process.argv[3]),
     requestId = request.path.replace('/accounts/', ''),
     fs = require('fs'),
-    os = require('os'),
     mappings = fs.readFileSync('names.csv', { encoding: 'utf8' }),
-    lines = mappings.split(os.EOL);
+    lines = mappings.split('\n');
 
 for (var i = 0; i &lt; lines.length; i += 1) {
     var fields = lines[i].split(','),
