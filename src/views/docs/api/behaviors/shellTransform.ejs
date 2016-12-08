@@ -1,0 +1,155 @@
+<p>The <code>shellTransform</code> behavior plays the same role as the <code>decorate</code> behavior,
+enabling transformation of the response. Since it allows shelling out to another application,
+the <a href='/docs/commandLine'>--allowInjection</a> flag must be passed in to <code>mb</code> on startup.
+mountebank will pass the shell command two parameters: a JSON representation of the request and a
+JSON representation of the response. The application should write to stdout a JSON representation of
+the transformed response.</p>
+
+<p>We'll show a simple example of shelling out to plug in response values based on an external data source.</p>
+
+<h3 id='external-datasource'>Using an external data source</h3>
+
+<p>At times you may find it convenient to use an external data store to fill in dynamic values based on
+data coming in from the request. You can combine an <code>is</code> canned response with a
+<code>shellTransform</code> behavior to achieve this, regardless of what the external data source is.
+For this example, we'll assume it's a simple comma-delimited file mapping customer ids to names. We'll
+save it as <code>names.csv</code> in the directory we run <code>mb</code> from.</p>
+
+<pre><code data-test-id='shellTransform'
+           data-test-step='1'
+           data-test-type='file'
+           data-test-filename='names.csv'>
+123,Frodo Baggins
+234,Samwise Gamgee
+345,Gandalf the White
+456,Smeagol
+</code></pre>
+
+<p>We expect the incoming http request to specify the id in the URL, and we want to represent the name
+in the response body. We'll set up our imposter like this:</p>
+
+<pre><code data-test-id='shellTransform'
+           data-test-step='2'
+           data-test-type='http'>
+POST /imposters HTTP/1.1
+Host: localhost:<%= port %>
+Accept: application/json
+Content-Type: application/json
+
+{
+  "port": 5555,
+  "protocol": "http",
+  "stubs": [
+    {
+      "predicates": [
+        {
+          "matches": {
+            "path": "/accounts/\\d+"
+          }
+        }
+      ],
+      "responses": [
+        {
+          "is": {
+            "body": "Hello, ${YOU}!"
+          },
+          "_behaviors": {
+            "shellTransform": "node addName.js"
+          }
+        }
+      ]
+    }
+  ]
+}
+</code></pre>
+
+<p>In this example, we're shelling out to a node.js application, which isn't much different than
+using a <code>decorate</code> function. However, that's just to keep it simple; the application
+could be written in any language.</p>
+
+<p>Let's create the <code>addName.js</code> file in the same directory we ran <code>mb</code> from.
+Since our shell command is <code>node addName.js</code>, the command line arguments passed in
+will look something like <br />
+<code>['node', 'addName.js', <em>requestJSON</em>, <em>responseJSON</em>]</code>.</p>
+
+<pre><code data-test-id='shellTransform'
+           data-test-step='3'
+           data-test-type='file'
+           data-test-filename='addName.js'>
+var request = JSON.parse(process.argv[2]),
+    response = JSON.parse(process.argv[3]),
+    requestId = request.path.replace('/accounts/', ''),
+    fs = require('fs'),
+    os = require('os'),
+    mappings = fs.readFileSync('names.csv', { encoding: 'utf8' }),
+    lines = mappings.split(os.EOL);
+
+for (var i = 0; i &lt; lines.length; i += 1) {
+    var fields = lines[i].split(','),
+        id = fields[0],
+        name = fields[1];
+
+    if (requestId === id) {
+        response.body = response.body.replace('${YOU}', name);
+    }
+}
+
+console.log(JSON.stringify(response));
+</code></pre>
+
+<p>Now we can test it out:</p>
+
+<pre><code data-test-id='shellTransform'
+           data-test-step='4'
+           data-test-type='http'>
+GET /accounts/234 HTTP/1.1
+Host: localhost:5555
+</code></pre>
+
+<pre><code data-test-id='shellTransform'
+           data-test-verify-step='4'
+           data-test-ignore-lines='["^Date"]'>
+HTTP/1.1 200 OK
+Date: Wed, 07 Jan 2016 21:27:14 GMT
+Connection: close
+Transfer-Encoding: chunked
+
+Hello, Samwise Gamgee!
+</code></pre>
+
+<p>And again...</p>
+
+<pre><code data-test-id='shellTransform'
+           data-test-step='5'
+           data-test-type='http'>
+GET /accounts/456 HTTP/1.1
+Host: localhost:5555
+</code></pre>
+
+<pre><code data-test-id='shellTransform'
+           data-test-verify-step='5'
+           data-test-ignore-lines='["^Date"]'>
+HTTP/1.1 200 OK
+Date: Wed, 07 Jan 2016 21:27:14 GMT
+Connection: close
+Transfer-Encoding: chunked
+
+Hello, Smeagol!
+</code></pre>
+
+<code class='hidden' data-test-id='shellTransform'
+                     data-test-step='6'
+                     data-test-type='http'>
+DELETE /imposters/5555 HTTP/1.1
+Host: localhost:<%= port %>
+</code>
+
+<code class='hidden' data-test-id='shellTransform'
+                     data-test-step='7'
+                     data-test-type='file'
+                     data-test-filename='names.csv'></code>
+
+<code class='hidden' data-test-id='shellTransform'
+                     data-test-step='8'
+                     data-test-type='file'
+                     data-test-filename='addName.js'></code>
