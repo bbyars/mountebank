@@ -40,7 +40,8 @@ function addStep (test, stepSpec) {
             type: stepSpec.testType,
             ignoreLines: [],
             port: stepSpec.port,
-            execute: test.addReplacementsTo(stepSpec.text)
+            execute: test.addReplacementsTo(stepSpec.text),
+            filename: stepSpec.filename
         };
     }
     if (stepSpec.verifyStepId) {
@@ -96,7 +97,8 @@ function get (endpoint) {
                     verifyStepId: getAttribute(element, 'data-test-verify-step'),
                     ignoreLines: getAttribute(element, 'data-test-ignore-lines'),
                     text: element.textContent.trim(),
-                    port: getAttribute(element, 'data-test-port')
+                    port: getAttribute(element, 'data-test-port'),
+                    filename: getAttribute(element, 'data-test-filename')
                 };
 
             if (testId) {

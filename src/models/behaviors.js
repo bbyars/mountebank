@@ -79,7 +79,7 @@ function shellTransform (request, responsePromise, command, logger) {
         var deferred = Q.defer(),
             fullCommand = util.format('%s %s %s', command, quoteForShell(request), quoteForShell(response));
 
-        logger.info('Shelling out to %s', command);
+        logger.debug('Shelling out to %s', command);
         logger.debug(fullCommand);
 
         exec(fullCommand, function (error, stdout, stderr) {

@@ -26,21 +26,32 @@ the following behaviors</p>
     </td>
   </tr>
   <tr>
+    <td><code>repeat</code></td>
+    <td>Repeat a response a set number of times before moving on to the next response.</td>
+  </tr>
+  <tr>
     <td><code>decorate</code></td>
-    <td>Post-processes the response before sending it.  Post-processing opens up a world of opportunities
-      - you can use a <code>decorate</code> behavior to add data to a proxied response or substitute data
-      from the request into the response, for example.  The value passed into the <code>decorate</code>
-      behavior is a JavaScript function that can take up to three values: the request, the response, and
-      a logger.  You can either mutate the response passed in (and return nothing), or return an
-      altogether new response.
+    <td>Post-processes the response using JavaScript injection before sending it. Post-processing opens
+      up a world of opportunities - you can use a <code>decorate</code> behavior to add data to a proxied
+      response or substitute data from the request into the response, for example.  The value passed into
+      the <code>decorate</code> behavior is a JavaScript function that can take up to three values: the
+      request, the response, and a logger.  You can either mutate the response passed in (and return nothing),
+      or return an altogether new response.
 
       <p class='warning-icon'>The <code><a href='/docs/commandLine'>--allowInjection</a></code> command
       line flag must be set to support this behavior</p>
     </td>
   </tr>
   <tr>
-    <td><code>repeat</code></td>
-    <td>Repeat a response a set number of times before moving on to the next response.</td>
+    <td><code>shellTransform</code></td>
+    <td>Like <code>decorate</code>, a <code>shellTransform</code> post-processes the response, but
+    instead of using JavaScript injection, it shells out to another application. That application
+    will get two command line parameters representing the request JSON and the response JSON, and
+    should print to <code>stdout</code> the transformed response JSON.
+
+    <p class='warning-icon'>The <code><a href='/docs/commandLine'>--allowInjection</a></code> command
+    line flag must be set to support this behavior.</p>
+    </td>
   </tr>
 </table>
 
@@ -59,20 +70,27 @@ can exist on a single response.</p>
       <% include behaviors/wait %>
     </section>
   </div>
-    <div>
-        <input id='behavior-decorate' name='behavior-decorate' type="checkbox" />
-        <label for='behavior-decorate'>decorate</label>
-        <section>
-            <% include behaviors/decorate %>
-        </section>
-    </div>
-    <div>
-        <input id='behavior-repeat' name='behavior-repeat' type="checkbox" />
-        <label for='behavior-repeat'>repeat</label>
-        <section>
-            <% include behaviors/repeat %>
-        </section>
-    </div>
+  <div>
+    <input id='behavior-repeat' name='behavior-repeat' type="checkbox" />
+    <label for='behavior-repeat'>repeat</label>
+    <section>
+      <% include behaviors/repeat %>
+    </section>
+  </div>
+  <div>
+    <input id='behavior-decorate' name='behavior-decorate' type="checkbox" />
+    <label for='behavior-decorate'>decorate</label>
+    <section>
+      <% include behaviors/decorate %>
+    </section>
+  </div>
+  <div>
+    <input id='behavior-shellTransform' name='behavior-shellTransform' type="checkbox" />
+    <label for='behavior-shellTransform'>shellTransform</label>
+    <section>
+      <% include behaviors/shellTransform %>
+    </section>
+  </div>
 </section>
 
 <% include ../../_footer %>

@@ -109,7 +109,9 @@
 
   <ul class='bullet-list indent'>
     <li><code>wait</code> - adds latency to the response</li>
+    <li><code>repeat</code> - repeats the response a given number of times</li>
     <li><code>decorate</code> - post-processes the response using a JavaScript function</li>
+    <li><code>shellTransform</code> - post-processes the response using a command line application</li>
   </ul>
 
   <p>More information: <a href='/docs/api/behaviors'>behaviors</a></p>
@@ -138,6 +140,19 @@
     response passed in (and return nothing), or return an altogether new response.</p>
 
   <p class='warning-icon'>JavaScript injection requires the
+    <a href='/docs/commandLine'>--allowInjection command line flag</a> to execute.</p>
+
+  <p class='info-icon'>More information: <a href='/docs/api/behaviors'>behaviors</a></p>
+</div>
+
+<div id='imposter-stubs-_behaviors-shellTransform-description'>
+  <p>Post-processes the response before sending it.  Unlike a <code>decorate</code>, the post-processing
+    occurs through a command line application, which still requires the <code><a href='/docs/commandLine'>
+    --allowInjection</a></code> flag to be set. The command line application will be passed two parameters
+    representing the request JSON and the response JSON, and should write the transformed response
+    JSON to <code>stdout</code>.</p>
+
+  <p class='warning-icon'>Shell execution requires the
     <a href='/docs/commandLine'>--allowInjection command line flag</a> to execute.</p>
 
   <p class='info-icon'>More information: <a href='/docs/api/behaviors'>behaviors</a></p>
