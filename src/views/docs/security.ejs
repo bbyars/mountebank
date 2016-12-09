@@ -1,0 +1,34 @@
+<%
+title = 'security'
+description = 'Securing mountebank against remote execution attacks'
+%>
+
+<% include ../_header %>
+
+<h1>Security</h1>
+
+<p>mountebank is programmable through <a href='/docs/api/injection'>injection</a>. This makes
+the tool very extensible and flexible, but it should only be used with an understanding of the
+security implications. When you enable the <a href='/docs/commandLine'><code>--allowInjection</code></a>
+flag, you aren't just giving yourself the ability to extend mountebank: you're also potentially enabling
+attackers remote execution capabilities on your machine.</p>
+
+<p>mountebank highly recommends you take the following approaches to securing your environment if you
+require <code>--allowInjection</code>:</p>
+
+<ul class='bullet-list'>
+  <li>Always run <code>mb</code> as an unprivileged user</li>
+  <li>If possible, set the <a href='/docs/commandLine'><code>--localOnly</code></a> flag to only accept
+    requests from localhost</li>
+  <li>Whitelist all IP addresses allowed to connect to mountebank by setting the
+    <a href='/docs/commandLine'><code>--ipWhitelist</code></a> flag</li>
+  <li>Consider using a local OS level firewall like iptables</li>
+  <li>Consider running <code>mb</code> in a Docker environment or under a <code>chroot</code> operation
+    to prevent access to the full filesystem</li>
+</ul>
+
+<p>The most secure option, of course, is to simply not use the <code>--allowInjection</code> flag.
+If there are common operations you find yourself using injection for, feel suggest those operations
+as core features in a future release of mountebank.</p>
+
+<% include ../_footer %>

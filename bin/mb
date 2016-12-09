@@ -286,6 +286,18 @@ yargs.options({
         type: 'boolean',
         global: true
     },
+    localOnly: {
+        default: false,
+        description: 'allow connections only from localhost',
+        type: 'boolean',
+        global: true
+    },
+    ipWhitelist: {
+        default: '*',
+        description: 'pipe-delimited list of allowed IP address patterns to connect to the mountebank admin port',
+        type: 'string',
+        global: true
+    },
     mock: {
         description: 'remember requests for mock verification',
         type: 'boolean',
@@ -326,6 +338,8 @@ try {
     // Avoid noise in logs
     delete argv._;
     delete argv.$0;
+
+    argv.ipWhitelist = argv.ipWhitelist.split('|');
 
     switch (command) {
         case 'start':
