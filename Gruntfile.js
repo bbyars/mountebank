@@ -99,8 +99,9 @@ module.exports = function (grunt) {
     grunt.registerTask('test:performance', 'Run the performance tests', ['mochaTest:performance']);
     grunt.registerTask('test', 'Run all non-performance tests', ['test:unit', 'test:functional']);
     grunt.registerTask('lint', 'Run all lint checks', ['jsCheck', 'deadCheck', 'eslint']);
-    grunt.registerTask('default', ['test', 'lint', 'shonkwrap']);
+    grunt.registerTask('default', ['test', 'lint']);
     grunt.registerTask('airplane', 'Build that avoids tests requiring network access', ['setAirplaneMode', 'default']);
+    grunt.registerTask('commit', 'Pre-commit checks', ['default', 'shonkwrap']);
 
     // Package-specific testing
     grunt.registerTask('test:tarball:x64', 'Run tests against packaged tarball',
