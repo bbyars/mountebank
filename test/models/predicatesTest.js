@@ -1155,7 +1155,7 @@ describe('predicates', function () {
                     contains: { field: 'value' },
                     xpath: { selector: '//title/text()' }
                 },
-                request = { field: '<doc><title>this is a value</title>' };
+                request = { field: '<doc><title>this is a value</title></doc>' };
             assert.ok(predicates.contains(predicate, request));
         });
 
@@ -1165,7 +1165,7 @@ describe('predicates', function () {
                     xpath: { selector: '//title/text()' },
                     caseSensitive: true
                 },
-                request = { field: '<doc><title>this is a value</title>' };
+                request = { field: '<doc><title>this is a value</title></doc>' };
             assert.ok(!predicates.contains(predicate, request));
         });
 
@@ -1220,7 +1220,7 @@ describe('predicates', function () {
                         }
                     }
                 },
-                request = { field: '<book xmlns:bookml="http://example.com/book"><bookml:title>Harry Potter</bookml:title></book>' };
+                request = { field: '<b:book xmlns:b="http://example.com/book"><b:title>Harry Potter</b:title></b:book>' };
             assert.ok(!predicates.endsWith(predicate, request));
         });
 

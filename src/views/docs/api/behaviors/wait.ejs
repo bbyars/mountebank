@@ -57,9 +57,12 @@ DELETE /imposters/4545 HTTP/1.1
     Host: localhost:<%= port %>
 </code>
 
-<p>If a more advanced wait strategy is needed, you can also specify a function body as the wait variable. As long as the function returns a number, mountebank can be configured to wait a variable
-    amount of time.</p>
+<p>If a more advanced wait strategy is needed, you can also specify a function body as the wait variable.
+As long as the function returns a number, mountebank can be configured to wait a variable
+amount of time.</p>
 
+<p class='warning-icon'>The <code><a href='/docs/commandLine'>--allowInjection</a></code> command
+line flag must be set to support using a function to determine the wait time.</p>
 
 <pre><code data-test-id='wait'
            data-test-step='4'

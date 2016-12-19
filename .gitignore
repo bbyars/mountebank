@@ -3,13 +3,13 @@ node_modules/
 .DS_Store
 mb*.log
 *.pid
-dist/
+/dist/
 !scripts/dist/
 mountebank.iml
 REFERENCES
 TODO
 request.txt
-docs
+/docs
 CREDENTIALS.md
-coverage
+/coverage
 ~$build-pipeline.xlsx

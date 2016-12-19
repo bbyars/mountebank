@@ -5,7 +5,8 @@ var assert = require('assert'),
     api = require('../api'),
     promiseIt = require('../../testHelpers').promiseIt,
     port = api.port + 1,
-    timeout = parseInt(process.env.MB_SLOW_TEST_TIMEOUT || 3000);
+    timeout = parseInt(process.env.MB_SLOW_TEST_TIMEOUT || 3000),
+    airplaneMode = process.env.MB_AIRPLANE_MODE === 'true';
 
 describe('http proxy', function () {
     this.timeout(timeout);
@@ -104,16 +105,18 @@ describe('http proxy', function () {
             });
         });
 
-        promiseIt('should gracefully deal with DNS errors', function () {
-            return proxy.to('http://no.such.domain', { path: '/', method: 'GET', headers: {} }, {}).then(function () {
-                assert.fail('should not have resolved promise');
-            }, function (reason) {
-                assert.deepEqual(reason, {
-                    code: 'invalid proxy',
-                    message: 'Cannot resolve "http://no.such.domain"'
+        if (!airplaneMode) {
+            promiseIt('should gracefully deal with DNS errors', function () {
+                return proxy.to('http://no.such.domain', { path: '/', method: 'GET', headers: {} }, {}).then(function () {
+                    assert.fail('should not have resolved promise');
+                }, function (reason) {
+                    assert.deepEqual(reason, {
+                        code: 'invalid proxy',
+                        message: 'Cannot resolve "http://no.such.domain"'
+                    });
                 });
             });
-        });
+        }
 
         promiseIt('should gracefully deal with bad urls', function () {
             return proxy.to('1 + 2', { path: '/', method: 'GET', headers: {} }, {}).then(function () {
@@ -153,7 +156,7 @@ describe('http proxy', function () {
             });
         });
 
-        if (process.env.MB_AIRPLANE_MODE !== 'true') {
+        if (!airplaneMode) {
             promiseIt('should proxy to different host', function () {
                 return proxy.to('https://google.com', { path: '/', method: 'GET', headers: {} }, {}).then(function (response) {
                     // sometimes 301, sometimes 302

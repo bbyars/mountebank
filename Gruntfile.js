@@ -1,6 +1,8 @@
 'use strict';
 
-var port = process.env.MB_PORT || 2525;
+var port = process.env.MB_PORT || 2525,
+    execSync = require('child_process').execSync,
+    isWindows = require('os').platform().indexOf('win') === 0;
 
 module.exports = function (grunt) {
 
@@ -84,6 +86,13 @@ module.exports = function (grunt) {
         process.env.MB_AIRPLANE_MODE = 'true';
     });
 
+    grunt.registerTask('shonkwrap', function () {
+        if (!isWindows) {
+            // Ensure shrinkwrap keeps out repo references so it works behind a repo manager
+            execSync('node_modules/.bin/shonkwrap');
+        }
+    });
+
     grunt.registerTask('test:unit', 'Run the unit tests', ['mochaTest:unit']);
     grunt.registerTask('test:functional', 'Run the functional tests',
         ['mb:restart', 'try', 'mochaTest:functional', 'finally', 'mb:stop', 'checkForErrors']);
@@ -91,9 +100,8 @@ module.exports = function (grunt) {
     grunt.registerTask('test', 'Run all non-performance tests', ['test:unit', 'test:functional']);
     grunt.registerTask('lint', 'Run all lint checks', ['jsCheck', 'deadCheck', 'eslint']);
     grunt.registerTask('default', ['test', 'lint']);
-
-    grunt.registerTask('local', 'Fast build for local development (avoids distribution)', ['test', 'lint']);
-    grunt.registerTask('airplane', 'Build that avoids tests requiring network access', ['setAirplaneMode', 'local']);
+    grunt.registerTask('airplane', 'Build that avoids tests requiring network access', ['setAirplaneMode', 'default']);
+    grunt.registerTask('commit', 'Pre-commit checks', ['default', 'shonkwrap']);
 
     // Package-specific testing
     grunt.registerTask('test:tarball:x64', 'Run tests against packaged tarball',

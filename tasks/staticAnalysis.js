@@ -76,7 +76,7 @@ module.exports = function (grunt) {
             },
             exclusions = ['node_modules', '.git', '.DS_Store', '.idea', 'images', 'dist', 'mountebank.iml', 'mb.log', '*.pid'],
             errors = [],
-            whitelist = ['grunt', 'mocha', 'istanbul', 'coveralls', 'grunt-cli', 'jsdoc', 'grunt-contrib-csslint'];
+            whitelist = ['grunt', 'mocha', 'istanbul', 'coveralls', 'grunt-cli', 'jsdoc', 'grunt-contrib-csslint', 'shonkwrap'];
 
         dependencies.forEach(function (dependency) {
             usedCount[dependency] = 0;

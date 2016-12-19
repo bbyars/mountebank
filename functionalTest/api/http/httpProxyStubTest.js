@@ -6,7 +6,8 @@ var assert = require('assert'),
     promiseIt = require('../../testHelpers').promiseIt,
     port = api.port + 1,
     isWindows = require('os').platform().indexOf('win') === 0,
-    timeout = parseInt(process.env.MB_SLOW_TEST_TIMEOUT || 2000);
+    timeout = parseInt(process.env.MB_SLOW_TEST_TIMEOUT || 2000),
+    airplaneMode = process.env.MB_AIRPLANE_MODE === 'true';
 
 describe('http proxy stubs', function () {
     if (isWindows) {
@@ -17,20 +18,22 @@ describe('http proxy stubs', function () {
         this.timeout(timeout);
     }
 
-    promiseIt('should allow proxy stubs to invalid domains', function () {
-        var stub = { responses: [{ proxy: { to: 'http://invalid.domain' } }] },
-            request = { protocol: 'http', port: port, stubs: [stub], name: this.name };
+    if (!airplaneMode) {
+        promiseIt('should allow proxy stubs to invalid domains', function () {
+            var stub = { responses: [{ proxy: { to: 'http://invalid.domain' } }] },
+                request = { protocol: 'http', port: port, stubs: [stub], name: this.name };
 
-        return api.post('/imposters', request).then(function () {
-            return client.get('/', port);
-        }).then(function (response) {
-            assert.strictEqual(response.statusCode, 500);
-            assert.strictEqual(response.body.errors[0].code, 'invalid proxy');
-            assert.strictEqual(response.body.errors[0].message, 'Cannot resolve "http://invalid.domain"');
-        }).finally(function () {
-            return api.del('/imposters');
+            return api.post('/imposters', request).then(function () {
+                return client.get('/', port);
+            }).then(function (response) {
+                assert.strictEqual(response.statusCode, 500);
+                assert.strictEqual(response.body.errors[0].code, 'invalid proxy');
+                assert.strictEqual(response.body.errors[0].message, 'Cannot resolve "http://invalid.domain"');
+            }).finally(function () {
+                return api.del('/imposters');
+            });
         });
-    });
+    }
 
     promiseIt('should reflect default mode after first proxy if no mode passed in', function () {
         var originServerPort = port + 1,
@@ -512,7 +515,7 @@ describe('http proxy stubs', function () {
         });
     });
 
-    if (process.env.MB_AIRPLANE_MODE !== 'true') {
+    if (!airplaneMode) {
         promiseIt('should support http proxy to https server', function () {
             var proxyStub = { responses: [{ proxy: { to: 'https://google.com' } }] },
                 proxyRequest = { protocol: 'http', port: port, stubs: [proxyStub], name: this.name + ' proxy' };

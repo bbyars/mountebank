@@ -61,7 +61,9 @@ function create (options) {
         logsController = LogsController.create(options.logfile),
         configController = ConfigController.create(thisPackage.version, options),
         feedController = FeedController.create(releases, options),
-        validateImposterExists = middleware.createImposterValidator(imposters);
+        validateImposterExists = middleware.createImposterValidator(imposters),
+        localIPs = ['::ffff:127.0.0.1', '::1', '127.0.0.1'],
+        allowedIPs = localIPs.concat(options.ipWhitelist);
 
     logger.remove(logger.transports.Console);
     if (process.stdout.isTTY) {
@@ -123,6 +125,7 @@ function create (options) {
         '/docs/glossary',
         '/docs/commandLine',
         '/docs/clientLibraries',
+        '/docs/security',
         '/docs/api/overview',
         '/docs/api/contracts',
         '/docs/api/mocks',
@@ -145,10 +148,17 @@ function create (options) {
         });
     });
 
-    var connections = {},
-        server = app.listen(options.port, function () {
-            logger.info(util.format('mountebank v%s now taking orders - point your browser to http://localhost:%s for help',
-                thisPackage.version, options.port));
+    function isAllowedConnection (ipAddress) {
+        return allowedIPs.some(function (allowedIP) {
+            return allowedIP === '*' || allowedIP.toLowerCase() === ipAddress.toLowerCase();
+        });
+    }
+
+    var host = options.localOnly ? 'localhost' : undefined,
+        connections = {},
+        server = app.listen(options.port, host, function () {
+            logger.info('mountebank v%s now taking orders - point your browser to http://localhost:%s for help',
+                thisPackage.version, options.port);
             logger.debug('config: ' + JSON.stringify({
                 options: options,
                 process: {
@@ -157,6 +167,10 @@ function create (options) {
                     platform: process.platform
                 }
             }));
+            if (options.allowInjection) {
+                logger.warn('Running with --allowInjection set. See http://localhost:%s/docs/security for security info',
+                    options.port);
+            }
 
             server.on('connection', function (socket) {
                 var name = helpers.socketName(socket);
@@ -165,6 +179,12 @@ function create (options) {
                 socket.on('close', function () {
                     delete connections[name];
                 });
+
+                if (!isAllowedConnection(socket.address().address)) {
+                    logger.warn('Blocking incoming connection from %s. Add to --ipWhitelist to allow',
+                        socket.address().address);
+                    socket.end();
+                }
             });
 
             deferred.resolve({

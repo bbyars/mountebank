@@ -2,29 +2,19 @@
 
 var assert = require('assert'),
     events = require('events'),
-    util = require('util'),
     Q = require('q'),
     AbstractServer = require('../../src/models/abstractServer'),
     promiseIt = require('../testHelpers').promiseIt,
     inherit = require('../../src/util/inherit'),
-    mock = require('../mock').mock;
+    mock = require('../mock').mock,
+    Logger = require('../fakes/fakeLogger');
 
 describe('AbstractServer', function () {
     describe('#create', function () {
         var logger, implementation, baseServer;
 
-        function assertLogged (level, message) {
-            assert.ok(logger.calls[level].indexOf(message) >= 0, JSON.stringify(logger.calls));
-        }
-
         beforeEach(function () {
-            logger = {
-                calls: { debug: [], info: [], warn: [], error: [] },
-                debug: function () { this.calls.debug.push(util.format.apply(this, arguments)); },
-                info: function () { this.calls.info.push(util.format.apply(this, arguments)); },
-                warn: function () { this.calls.warn.push(util.format.apply(this, arguments)); },
-                error: function () { this.calls.error.push(util.format.apply(this, arguments)); }
-            };
+            logger = Logger.create();
             baseServer = inherit.from(events.EventEmitter, {
                 listen: mock().returns(Q(3000)),
                 metadata: mock(),
@@ -47,7 +37,7 @@ describe('AbstractServer', function () {
             implementation.protocolName = 'test';
 
             return Server.create({ port: 3000 }).then(function () {
-                assertLogged('info', '[test:3000] Open for business...');
+                logger.info.assertLogged('[test:3000] Open for business...');
             });
         });
 
@@ -57,7 +47,7 @@ describe('AbstractServer', function () {
             implementation.protocolName = 'test';
 
             return Server.create({}).then(function () {
-                assertLogged('info', '[test:3000] Open for business...');
+                logger.info.assertLogged('[test:3000] Open for business...');
             });
         });
 
@@ -68,7 +58,7 @@ describe('AbstractServer', function () {
 
             return Server.create({ port: 3000 }).then(function (server) {
                 server.close();
-                assertLogged('info', '[test:3000] Ciao for now');
+                logger.info.assertLogged('[test:3000] Ciao for now');
             });
         });
 
@@ -110,7 +100,7 @@ describe('AbstractServer', function () {
 
             return Server.create({ port: 3000 }).then(function () {
                 baseServer.listeners('connection')[0](socket);
-                assertLogged('debug', '[test:3000] host:port ESTABLISHED');
+                logger.debug.assertLogged('[test:3000] host:port ESTABLISHED');
             });
         });
 
@@ -122,7 +112,7 @@ describe('AbstractServer', function () {
             return Server.create({ port: 3000 }).then(function () {
                 baseServer.listeners('connection')[0](socket);
                 socket.listeners('error')[0]('ERROR');
-                assertLogged('error', '[test:3000] host:port transmission error X=> "ERROR"');
+                logger.error.assertLogged('[test:3000] host:port transmission error X=> "ERROR"');
             });
         });
 
@@ -135,8 +125,8 @@ describe('AbstractServer', function () {
                 baseServer.listeners('connection')[0](socket);
                 socket.listeners('end')[0]();
                 socket.listeners('close')[0]();
-                assertLogged('debug', '[test:3000] host:port LAST-ACK');
-                assertLogged('debug', '[test:3000] host:port CLOSED');
+                logger.debug.assertLogged('[test:3000] host:port LAST-ACK');
+                logger.debug.assertLogged('[test:3000] host:port CLOSED');
             });
         });
 
@@ -148,7 +138,7 @@ describe('AbstractServer', function () {
 
             return Server.create({ port: 3000 }).then(function () {
                 baseServer.listeners('request')[0](socket, {});
-                assertLogged('info', '[test:3000] host:port => request');
+                logger.info.assertLogged('[test:3000] host:port => request');
             });
         });
 
@@ -160,9 +150,8 @@ describe('AbstractServer', function () {
 
             return Server.create({ port: 3000 }).then(function () {
                 baseServer.listeners('request')[0](socket, {}, function () {
-                    assertLogged('debug', '[test:3000] host:port => "full request"');
+                    logger.debug.assertLogged('[test:3000] host:port => "full request"');
                 });
-                // The delay is not needed in node v0.10; evidently it came on a later process tick in subsequent versions
                 return Q.delay(1);
             });
         });
@@ -217,7 +206,7 @@ describe('AbstractServer', function () {
 
             return Server.create({ port: 3000 }).then(function () {
                 baseServer.listeners('request')[0](socket, {}, function () {
-                    assertLogged('debug', '[test:3000] host:port <= "response"');
+                    logger.debug.assertLogged('[test:3000] host:port <= "response"');
                 });
                 return Q.delay(1);
             });
@@ -232,7 +221,7 @@ describe('AbstractServer', function () {
 
             return Server.create({ port: 3000 }).then(function () {
                 baseServer.listeners('request')[0](socket, 'originalRequest', function () {
-                    assertLogged('error', '[test:3000] host:port X=> "BOOM"');
+                    logger.error.assertLogged('[test:3000] host:port X=> "BOOM"');
                     assert.ok(baseServer.errorHandler.wasCalledWith('BOOM', 'originalRequest'), baseServer.errorHandler.message());
                 });
                 return Q.delay(1);

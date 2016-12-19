@@ -39,10 +39,6 @@ function create (options) {
             delete clonedStub.predicates;
         }
 
-        // we've already validated waits and don't want to add latency to validation
-        if (clonedResponse._behaviors && clonedResponse._behaviors.wait) {
-            delete clonedResponse._behaviors.wait;
-        }
         return clonedStub;
     }
 
@@ -110,10 +106,11 @@ function create (options) {
     }
 
     function hasStubInjection (stub) {
-        var hasResponseInjections = utils.isArray(stub.responses) && stub.responses.some(function (response) {
-                var hasDecorator = response._behaviors && response._behaviors.decorate;
-                var hasProxyDecorator = response.proxy && response.proxy._behaviors && response.proxy._behaviors.decorate;
-                return response.inject || hasDecorator || hasProxyDecorator;
+        var hasResponseInjections = stub.responses.some(function (response) {
+                var hasDecorator = response._behaviors && response._behaviors.decorate,
+                    hasWaitFunction = response._behaviors && typeof response._behaviors.wait === 'string';
+
+                return response.inject || hasDecorator || hasWaitFunction;
             }),
             hasPredicateInjections = Object.keys(stub.predicates || {}).some(function (predicate) {
                 return stub.predicates[predicate].inject;
@@ -121,10 +118,24 @@ function create (options) {
         return hasResponseInjections || hasPredicateInjections;
     }
 
+    function hasShellExecution (stub) {
+        return stub.responses.some(function (response) {
+            return response._behaviors && response._behaviors.shellTransform;
+        });
+    }
+
     function addStubInjectionErrors (stub, errors) {
-        if (!options.allowInjection && hasStubInjection(stub)) {
+        if (options.allowInjection) {
+            return;
+        }
+
+        if (hasStubInjection(stub)) {
             errors.push(exceptions.InjectionError(
                 'JavaScript injection is not allowed unless mb is run with the --allowInjection flag', { source: stub }));
+        }
+        if (hasShellExecution(stub)) {
+            errors.push(exceptions.InjectionError(
+                'Shell execution is not allowed unless mb is run with the --allowInjection flag', { source: stub }));
         }
     }
 
@@ -139,8 +150,8 @@ function create (options) {
         }
         else {
             addInvalidWaitErrors(stub, errors);
+            addStubInjectionErrors(stub, errors);
         }
-        addStubInjectionErrors(stub, errors);
 
         if (errors.length > 0) {
             // no sense in dry-running if there are already problems;

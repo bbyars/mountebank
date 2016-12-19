@@ -7,7 +7,8 @@ var assert = require('assert'),
     port = api.port + 1,
     isWindows = require('os').platform().indexOf('win') === 0,
     net = require('net'),
-    timeout = parseInt(process.env.MB_SLOW_TEST_TIMEOUT || 3000);
+    timeout = parseInt(process.env.MB_SLOW_TEST_TIMEOUT || 3000),
+    airplaneMode = process.env.MB_AIRPLANE_MODE === 'true';
 
 describe('tcp proxy', function () {
     if (isWindows) {
@@ -98,18 +99,20 @@ describe('tcp proxy', function () {
             });
         });
 
-        promiseIt('should gracefully deal with DNS errors', function () {
-            var proxy = TcpProxy.create(logger, 'utf8');
+        if (!airplaneMode) {
+            promiseIt('should gracefully deal with DNS errors', function () {
+                var proxy = TcpProxy.create(logger, 'utf8');
 
-            return proxy.to('tcp://no.such.domain:80', { data: 'hello, world!' }).then(function () {
-                assert.fail('should not have resolved promise');
-            }, function (reason) {
-                assert.deepEqual(reason, {
-                    code: 'invalid proxy',
-                    message: 'Cannot resolve "tcp://no.such.domain:80"'
+                return proxy.to('tcp://no.such.domain:80', { data: 'hello, world!' }).then(function () {
+                    assert.fail('should not have resolved promise');
+                }, function (reason) {
+                    assert.deepEqual(reason, {
+                        code: 'invalid proxy',
+                        message: 'Cannot resolve "tcp://no.such.domain:80"'
+                    });
                 });
             });
-        });
+        }
 
         promiseIt('should gracefully deal with non listening ports', function () {
             var proxy = TcpProxy.create(logger, 'utf8');

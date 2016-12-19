@@ -240,64 +240,89 @@ yargs.options({
         default: 2525,
         description: 'the port to run the mountebank server on',
         nargs: 1,
-        type: 'number'
+        type: 'number',
+        global: true
     },
     configfile: {
         description: 'file to load imposters from, can be an EJS template',
         nargs: 1,
-        type: 'string'
+        type: 'string',
+        global: true
     },
     noParse: {
         description: 'prevent rendering the configfile as an EJS template',
-        type: 'boolean'
+        type: 'boolean',
+        global: true
     },
     pidfile: {
         default: 'mb.pid',
         description: 'where the pid is stored for the stop command',
         nargs: 1,
-        type: 'string'
+        type: 'string',
+        global: true
     },
     nologfile: {
         description: 'prevent logging to the filesystem',
-        type: 'boolean'
+        type: 'boolean',
+        global: true
     },
     logfile: {
         default: 'mb.log',
         description: 'file used for all log',
         nargs: 1,
-        type: 'string'
+        type: 'string',
+        global: true
     },
     loglevel: {
         default: 'info',
         description: 'level for terminal logs',
         nargs: 1,
         type: 'string',
-        choices: ['debug', 'info', 'warn', 'error']
+        choices: ['debug', 'info', 'warn', 'error'],
+        global: true
     },
     allowInjection: {
         description: 'set to allow JavaScript injection',
-        type: 'boolean'
+        type: 'boolean',
+        global: true
+    },
+    localOnly: {
+        default: false,
+        description: 'allow connections only from localhost',
+        type: 'boolean',
+        global: true
+    },
+    ipWhitelist: {
+        default: '*',
+        description: 'pipe-delimited list of allowed IP address patterns to connect to the mountebank admin port',
+        type: 'string',
+        global: true
     },
     mock: {
         description: 'remember requests for mock verification',
-        type: 'boolean'
+        type: 'boolean',
+        global: true
     },
     debug: {
         description: 'include stub match information in imposter retrievals for debugging purposes',
-        type: 'boolean'
+        type: 'boolean',
+        global: true
     },
     savefile: {
         default: 'mb.json',
         description: 'file to save imposters to',
         nargs: 1,
-        type: 'string'
+        type: 'string',
+        global: true
     },
     removeProxies: {
         description: 'removes proxies from the configuration when using the save command',
-        type: 'boolean'
+        type: 'boolean',
+        global: true
     },
     heroku: {
-        type: 'boolean'
+        type: 'boolean',
+        global: true
     }
 });
 
@@ -313,6 +338,8 @@ try {
     // Avoid noise in logs
     delete argv._;
     delete argv.$0;
+
+    argv.ipWhitelist = argv.ipWhitelist.split('|');
 
     switch (command) {
         case 'start':

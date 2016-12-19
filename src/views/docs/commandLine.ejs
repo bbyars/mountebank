@@ -63,9 +63,27 @@ description = 'Command line parameters for starting mountebank'
     <td><code>--allowInjection</code></td>
     <td>mountebank supports JavaScript injection for <a href='/docs/api/predicates'>predicates</a>,
       <a href='/docs/api/injection'>stub responses</a>, <a href='/docs/api/behaviors'>behavior decoration</a>,
-      and <a href='/docs/protocols/tcp#endOfRequestResolver'>tcp request resolution</a>, but they are
-      disabled by default.  Including this parameter will enable them.</td>
+      <a href='/docs/api/behaviors'>wait behavior functions</a> and
+      <a href='/docs/protocols/tcp#endOfRequestResolver'>tcp request resolution</a>, but they are
+      disabled by default.  Including this parameter will enable them.
+
+      <p class='warning-icon'>Note that allowing injection means that an attacker can run random
+      code on the machine running <code>mb</code>. Please see the <a href='/docs/security'>security page</a>
+      for tips on securing your system.</p>
+    </td>
     <td><code>false</code></td>
+  </tr>
+  <tr>
+    <td><code>--localOnly</code></td>
+    <td>Only accept requests from localhost</td>
+    <td><code>false</code></td>
+  </tr>
+  <tr>
+    <td><code>--ipWhitelist</code></td>
+    <td>A pipe-delimited string of remote IP addresses to whitelist (local IP addresses will always
+    be allowed). Any request to the primary <code>mb</code> socket that isn't whitelisted will be
+    dropped.</td>
+    <td><code>*</code>, representing all IP addresses</td>
   </tr>
   <tr>
     <td><code>--mock</code></td>

@@ -6,7 +6,8 @@ var assert = require('assert'),
     port = api.port + 1,
     isWindows = require('os').platform().indexOf('win') === 0,
     timeout = parseInt(process.env.MB_SLOW_TEST_TIMEOUT || 2000),
-    tcp = require('./tcpClient');
+    tcp = require('./tcpClient'),
+    airplaneMode = process.env.MB_AIRPLANE_MODE === 'true';
 
 describe('tcp imposter', function () {
     if (isWindows) {
@@ -138,50 +139,22 @@ describe('tcp imposter', function () {
             });
         });
 
-        promiseIt('should allow proxy stubs to invalid hosts', function () {
-            var stub = { responses: [{ proxy: { to: 'tcp://remotehost:8000' } }] },
-                request = { protocol: 'tcp', port: port, stubs: [stub], name: this.name };
+        if (!airplaneMode) {
+            promiseIt('should allow proxy stubs to invalid hosts', function () {
+                var stub = { responses: [{ proxy: { to: 'tcp://remotehost:8000' } }] },
+                    request = { protocol: 'tcp', port: port, stubs: [stub], name: this.name };
 
-            return api.post('/imposters', request).then(function () {
-                return tcp.send('request', port);
-            }).then(function (response) {
-                var error = JSON.parse(response).errors[0];
-                assert.strictEqual(error.code, 'invalid proxy');
-                assert.strictEqual(error.message, 'Cannot resolve "tcp://remotehost:8000"');
-            }).finally(function () {
-                return api.del('/imposters');
+                return api.post('/imposters', request).then(function () {
+                    return tcp.send('request', port);
+                }).then(function (response) {
+                    var error = JSON.parse(response).errors[0];
+                    assert.strictEqual(error.code, 'invalid proxy');
+                    assert.strictEqual(error.message, 'Cannot resolve "tcp://remotehost:8000"');
+                }).finally(function () {
+                    return api.del('/imposters');
+                });
             });
-        });
-
-        promiseIt('should support decorating response from origin server', function () {
-            var originServerPort = port + 1,
-                originServerStub = { responses: [{ is: { data: 'ORIGIN' } }] },
-                originServerRequest = {
-                    protocol: 'tcp',
-                    port: originServerPort,
-                    stubs: [originServerStub],
-                    name: this.name + ' ORIGIN'
-                },
-                decorator = function (request, response) {
-                    response.data += ' DECORATED';
-                },
-                proxyResponse = {
-                    proxy: { to: 'tcp://localhost:' + originServerPort },
-                    _behaviors: { decorate: decorator.toString() }
-                },
-                proxyStub = { responses: [proxyResponse] },
-                proxyRequest = { protocol: 'tcp', port: port, stubs: [proxyStub], name: this.name + ' PROXY' };
-
-            return api.post('/imposters', originServerRequest).then(function () {
-                return api.post('/imposters', proxyRequest);
-            }).then(function () {
-                return tcp.send('request', port);
-            }).then(function (response) {
-                assert.strictEqual(response.toString(), 'ORIGIN DECORATED');
-            }).finally(function () {
-                return api.del('/imposters');
-            });
-        });
+        }
 
         promiseIt('should split each packet into a separate request by default', function () {
             // max 64k packet size, likely to hit max on the loopback interface

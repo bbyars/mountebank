@@ -62,6 +62,7 @@ function create (Protocol, request) {
                         delete stub.matches;
                     }
                 });
+                delete result.numberOfRequests;
                 delete result.requests;
                 delete result._links;
             }
@@ -83,7 +84,8 @@ function create (Protocol, request) {
                 // relevant information at the top
                 var result = {
                     protocol: Protocol.name,
-                    port: server.port
+                    port: server.port,
+                    numberOfRequests: server.numberOfRequests()
                 };
 
                 options = options || {};

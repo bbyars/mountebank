@@ -16,7 +16,8 @@ describe('imposter', function () {
                 requests: [],
                 addStub: mock(),
                 stubs: mock().returns([]),
-                metadata: metadata
+                metadata: metadata,
+                numberOfRequests: mock().returns(0)
             };
             Protocol = {
                 name: 'http',
@@ -40,6 +41,7 @@ describe('imposter', function () {
                 assert.deepEqual(imposter.toJSON({ list: true }), {
                     protocol: 'http',
                     port: 3535,
+                    numberOfRequests: 0,
                     _links: { self: { href: '/imposters/3535' } }
                 });
             });
@@ -52,6 +54,7 @@ describe('imposter', function () {
                 assert.deepEqual(imposter.toJSON(), {
                     protocol: 'http',
                     port: 3535,
+                    numberOfRequests: 0,
                     requests: [],
                     stubs: [],
                     _links: { self: { href: '/imposters/3535' } }
@@ -67,6 +70,7 @@ describe('imposter', function () {
                 assert.deepEqual(imposter.toJSON(), {
                     protocol: 'http',
                     port: 3535,
+                    numberOfRequests: 0,
                     requests: [],
                     stubs: [],
                     key: 'value',

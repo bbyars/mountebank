@@ -150,6 +150,7 @@ describe('DELETE /imposters', function () {
                         protocol: 'http',
                         port: isImposter.port,
                         name: isImposter.name,
+                        numberOfRequests: 0,
                         requests: [],
                         stubs: isImposter.stubs,
                         _links: { self: { href: 'http://localhost:' + api.port + '/imposters/' + isImposter.port } }
@@ -158,6 +159,7 @@ describe('DELETE /imposters', function () {
                         protocol: 'http',
                         port: proxyImposter.port,
                         name: proxyImposter.name,
+                        numberOfRequests: 0,
                         requests: [],
                         stubs: [],
                         _links: { self: { href: 'http://localhost:' + api.port + '/imposters/' + proxyImposter.port } }
