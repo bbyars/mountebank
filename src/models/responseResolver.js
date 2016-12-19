@@ -187,7 +187,8 @@ function create (proxy, postProcess) {
 
     function processResponse (responseConfig, request, logger, stubs) {
         if (responseConfig.is) {
-            return Q(responseConfig.is);
+            // Clone to prevent accidental state changes downstream
+            return Q(helpers.clone(responseConfig.is));
         }
         else if (responseConfig.proxy) {
             return proxyAndRecord(responseConfig, request, logger, stubs);
@@ -215,7 +216,6 @@ function create (proxy, postProcess) {
      * @param {Object} stubs - The stubs for the imposter
      * @returns {Object} - Promise resolving to the response
      */
-  /*v1.70 Caching decorated responses
     function resolve (responseConfig, request, logger, stubs) {
         if (hasMultipleTypes(responseConfig)) {
             return Q.reject(errors.ValidationError('each response object must have only one response type', { source: responseConfig }));
@@ -232,27 +232,6 @@ function create (proxy, postProcess) {
             return Q(behaviors.execute(request, response, clonedConfig._behaviors, logger));
         }).then(function (response) {
             return Q(postProcess(response, request));
-        });
-    }*/
-
-    //Compatible with v1.60 and CopyFrom Functionality
-    function resolve (responseConfig, request, logger, stubs) {
-        if (hasMultipleTypes(responseConfig)) {
-            return Q.reject(errors.ValidationError('each response object must have only one response type', { source: responseConfig }));
-        }
-
-        return processResponse(responseConfig, request, logger, stubs).then(function (response) {
-            return Q(postProcess(response, request)).then(function (response) {
-            // We may have already run the decorator in the proxy call to persist the decorated response
-            // in the new stub.  If so, we need to ensure we don't re-run it
-            var clonedConfig = helpers.clone(responseConfig);
-
-            if (clonedConfig.proxy && shouldDecorate(request, clonedConfig)) {
-                delete clonedConfig._behaviors.decorate;
-            }
-            return Q(behaviors.execute(request, response, clonedConfig._behaviors, logger));
-        })
-
         });
     }
 

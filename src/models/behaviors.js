@@ -86,15 +86,9 @@ function decorate (originalRequest, responsePromise, fn, logger) {
 */
 function copyFrom(originalRequest, responsePromise, fn, logger){
   return responsePromise.then(function (response) {
-
-    var fn1=JSON.stringify(fn);
-    var split_func= fn1.split("\"");
-    var split_func_1= "\""+"###,"+split_func[1]+"\"";
-    var fn2 = "function (request, response) { response.body = response.body+JSON.stringify("+"###(Replacer)"+");}"
-    var res = fn2.replace("###(Replacer)", split_func_1);
+    var fn2 = "function (request, response) {}"
     var request = helpers.clone(originalRequest),
-    injected = '(' + res + ')(request, response, logger);';
-
+    injected = '(' + fn2 + ')(request, response, logger);';
     var json_parse=JSON.stringify(request['body']);
 
     if (request.isDryRun === true) {
@@ -109,75 +103,48 @@ function copyFrom(originalRequest, responsePromise, fn, logger){
       var Message_Type = originalRequest['body'];
       request_type= isCheck(Message_Type);
 
-      //string_a.localeCompare(string_b);
-      //if (request_type.localeCompare("XML"))
       var xpath = require('xpath');
       var dom = require('xmldom').DOMParser;
       var xml = originalRequest['body'];
-      //var doc = new dom().parseFromString(xml);
 
       var parseJson = require('parse-json');
-      var JSONPath = require('jsonpath-plus');
-      var JSON_req = originalRequest['body'];
-      //var JSON_doc = parseJson(JSON_req);
-      var app_body=result['body'];
+      var JSONPath  = require('jsonpath-plus');
+      var JSON_req  = originalRequest['body'];
 
-      var Clean_Response = app_body.split("###");
-      var len=Clean_Response.length;
-      for(var ii=0;ii<len;ii++)
-      {
-        //loop through length of copyFrom injection function to determine number of parameters
-        var t=Clean_Response[ii].length;
-        if (Clean_Response[ii].charAt(0)=='"') Clean_Response[ii]=Clean_Response[ii].substring(1,t--);
-        if (Clean_Response[ii].charAt(--t)=='"') Clean_Response[ii]=Clean_Response[ii].substring(0,t);
-      }
+      var app_body  = result['body'];
+      var Clean_Response = app_body;
 
-      //Set clean response to 0 before looping through
-      var Clean_Response_Save=Clean_Response[0];
-      var Get_parameter = Clean_Response[1].split(",");
       var title;
-
-
-      //Set i to 1 so that PATH variable begins with PATH1 rather than PATH0
-      for(var i=1;i<Get_parameter.length;i++)
-      {
-        //Set index equal to parameter looping through, starting at PATH1
-        var index='#{PATH'+(i)+'}';
-        //console.log("Loop Index:"+i+" | value:"+Clean_Response[i]);
-        if(Clean_Response_Save.includes(index))
+        for (var key in fn) {
+        var index='#{'+key+'}';
+        if(Clean_Response.includes(index))
         {
           if (request_type.localeCompare("XML")==0) {
-            //console.log ("ENTERS into XML"+request_type+"===="+"XML");
             var doc = new dom().parseFromString(xml);
-            //console.log("Clean_Response[i]"+Clean_Response[i]+"    "+doc);
-            title= xpath.select(Get_parameter[i], doc).toString();
-
+            title= xpath.select(fn[key], doc).toString();
           }
           else if (request_type.localeCompare("JSON")==0) {
-            //console.log ("ENTERS into JSON"+request_type+"===="+"JSON");
             var JSON_doc = parseJson(JSON_req);
-            title= JSONPath(Get_parameter[i], JSON_doc).toString();
+            title= JSONPath(fn[key], JSON_doc).toString();
           }
-          //Clean_Response_Save=Clean_Response_Save.replace(index, title );
           var initial_index = 0;
                         do {
-                            Clean_Response_Save = Clean_Response_Save.replace(index, title);
-                                    } while((initial_index = Clean_Response_Save.indexOf(index, initial_index + 1)) > -1);
+                            Clean_Response = Clean_Response.replace(index, title);
+                                    } while((initial_index = Clean_Response.indexOf(index, initial_index + 1)) > -1);
         }
         else
-        console.log("Couldnt Find: "+index+" at loop :"+i);
+        console.log("Couldnt Find: "+index+" at loop : "+key);
       }
-      result['body'] = Clean_Response_Save;
+      result['body'] = Clean_Response;
 
       return Q(result);
     }
-    //catch errors for function injection or malformed json
     catch (error) {
       logger.error('injection X=> ' + error);
       logger.error('    full source: ' + JSON.stringify(injected));
       logger.error('    request: ' + JSON.stringify(request));
       logger.error('    response: ' + JSON.stringify(response));
-      return Q.reject(errors.InjectionError('invalid copyFrom injection', { source: injected, data: error.message }));
+      return Q.reject(errors.InjectionError('invalid copyfrom injection', { source: injected, data: error.message }));
     }
   });
 }
@@ -254,7 +221,6 @@ function execute (request, response, behaviors, logger) {
     if (behaviors.copyFrom) {
       result = copyFrom(request, result, behaviors.copyFrom, logger);
     }
-
 
     return result;
 }
