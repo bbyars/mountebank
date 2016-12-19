@@ -139,122 +139,117 @@ function decorate (originalRequest, responsePromise, fn, logger) {
     });
 }
 
-/**
-* Runs the response through a post-processing function provided by the user
-* @param {Object} originalRequest - The request object, in case post-processing depends on it
-* @param {Object} responsePromise - The promise returning the response
-* @param {Function} fn - The function that performs the post-processing
-* @param {Object} logger - The mountebank logger, useful in debugging
-* @returns {Object}
-*/
-function copyFrom(originalRequest, responsePromise, fn, logger){
-  return responsePromise.then(function (response) {
-    var fn2 = "function (request, response) {}"
-    var request = helpers.clone(originalRequest),
-    injected = '(' + fn2 + ')(request, response, logger);';
-    var json_parse=JSON.stringify(request['body']);
-
-    if (request.isDryRun === true) {
-      return response;
-    }
+function isJSON (json) {
     try {
-      var result = eval(injected);
-      if (!result) {
-        result = response;
-      }
-      var request_type='';
-      var Message_Type = originalRequest['body'];
-      request_type= isCheck(Message_Type);
-
-      var xpath = require('xpath');
-      var dom = require('xmldom').DOMParser;
-      var xml = originalRequest['body'];
-
-      var parseJson = require('parse-json');
-      var JSONPath  = require('jsonpath-plus');
-      var JSON_req  = originalRequest['body'];
-
-      var app_body  = result['body'];
-      var Clean_Response = app_body;
-
-      var title;
-        for (var key in fn) {
-        var index='#{'+key+'}';
-        if(Clean_Response.includes(index))
-        {
-          if (request_type.localeCompare("XML")==0) {
-            var doc = new dom().parseFromString(xml);
-            title= xpath.select(fn[key], doc).toString();
-          }
-          else if (request_type.localeCompare("JSON")==0) {
-            var JSON_doc = parseJson(JSON_req);
-            title= JSONPath(fn[key], JSON_doc).toString();
-          }
-          var initial_index = 0;
-                        do {
-                            Clean_Response = Clean_Response.replace(index, title);
-                                    } while((initial_index = Clean_Response.indexOf(index, initial_index + 1)) > -1);
-        }
-        else
-        console.log("Couldnt Find: "+index+" at loop : "+key);
-      }
-      result['body'] = Clean_Response;
-
-      return Q(result);
+        JSON.parse(json);
     }
-    catch (error) {
-      logger.error('injection X=> ' + error);
-      logger.error('    full source: ' + JSON.stringify(injected));
-      logger.error('    request: ' + JSON.stringify(request));
-      logger.error('    response: ' + JSON.stringify(response));
-      return Q.reject(errors.InjectionError('invalid copyfrom injection', { source: injected, data: error.message }));
-    }
-  });
-}
-
-  // Function to check XML or JSON
-  function isCheck(request)
-  {
-    var type='';
-
-    if(isXML(request)) {
-      type='XML';
-    }
-    else if(isJson(request)) {
-      type='JSON';
-    }
-    return type;
-  }
-
-  //Function to verify the incoming message is JSON
-  function isJson(json) {
-    try {
-      JSON.parse(json);
-    } catch (e) {
-      return false;
+    catch (e) {
+        return false;
     }
     return true;
-  }
+}
 
-  //Function to verify the incoming message is XML
-  function isXML(xml) {
-    var parseString = require('xml2js').parseString;
-    var result_1='';
+function isXML (xml) {
+    var parseString = require('xml2js').parseString,
+        result = '';
 
-    parseString(xml, function (err, result) {
-      if (err==null){
-        result_1=true;
-      }
-      else {
-        result_1=false;
-      }
+    parseString(xml, function (err) {
+        if (err === null) {
+            result = true;
+        }
+        else {
+            result = false;
+        }
     });
-    if (result_1==true){
-      return true;
+    if (result === true) {
+        return true;
     }
-    else
-    return false;
-  }
+    else {
+        return false;
+    }
+}
+
+function isCheck (request) {
+    var type = '';
+
+    if (isXML(request)) {
+        type = 'XML';
+    }
+    else if (isJSON(request)) {
+        type = 'JSON';
+    }
+    return type;
+}
+
+/**
+ * Runs the response through a post-processing function provided by the user
+ * @param {Object} originalRequest - The request object, in case post-processing depends on it
+ * @param {Object} responsePromise - The promise returning the response
+ * @param {Function} fn - The function that performs the post-processing
+ * @param {Object} logger - The mountebank logger, useful in debugging
+ * @returns {Object}
+ */
+function copyFrom (originalRequest, responsePromise, fn, logger) {
+    /* eslint complexity: 0 */
+    /* eslint max-depth: 0 */
+    return responsePromise.then(function (response) {
+        var fn2 = 'function (request, response) {}',
+            request = helpers.clone(originalRequest),
+            injected = '(' + fn2 + ')(request, response, logger);';
+
+        if (request.isDryRun === true) {
+            return response;
+        }
+        try {
+            var result = eval(injected);
+            if (!result) {
+                result = response;
+            }
+            var messageType = originalRequest.body,
+                requestType = isCheck(messageType),
+                xpath = require('xpath'),
+                dom = require('xmldom').DOMParser,
+                xml = originalRequest.body,
+                parseJson = require('parse-json'),
+                JSONPath = require('jsonpath-plus'),
+                jsonReq = originalRequest.body,
+                appBody = result.body,
+                cleanResponse = appBody,
+                title;
+
+            for (var key in fn) {
+                var index = '#{' + key + '}';
+                if (cleanResponse.includes(index)) {
+                    if (requestType.localeCompare('XML') === 0) {
+                        var doc = new dom().parseFromString(xml);
+                        title = xpath.select(fn[key], doc).toString();
+                    }
+                    else if (requestType.localeCompare('JSON') === 0) {
+                        var jsonDoc = parseJson(jsonReq);
+                        title = JSONPath(fn[key], jsonDoc).toString();
+                    }
+                    var initialIndex = 0;
+                    do {
+                        cleanResponse = cleanResponse.replace(index, title);
+                    } while ((initialIndex = cleanResponse.indexOf(index, initialIndex + 1)) > -1);
+                }
+                else {
+                    console.log("Couldn't Find: " + index + ' at loop : ' + key);
+                }
+            }
+            result.body = cleanResponse;
+
+            return Q(result);
+        }
+        catch (error) {
+            logger.error('injection X=> ' + error);
+            logger.error('    full source: ' + JSON.stringify(injected));
+            logger.error('    request: ' + JSON.stringify(request));
+            logger.error('    response: ' + JSON.stringify(response));
+            return Q.reject(errors.InjectionError('invalid copyfrom injection', { source: injected, data: error.message }));
+        }
+    });
+}
 
 /**
  * The entry point to execute all behaviors provided in the API
@@ -283,7 +278,7 @@ function execute (request, response, behaviors, logger) {
         result = decorate(request, result, behaviors.decorate, logger);
     }
     if (behaviors.copyFrom) {
-      result = copyFrom(request, result, behaviors.copyFrom, logger);
+        result = copyFrom(request, result, behaviors.copyFrom, logger);
     }
 
     return result;
