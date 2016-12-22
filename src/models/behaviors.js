@@ -204,23 +204,20 @@ function copyFrom(originalRequest, responsePromise, fn, logger){
       if (!result) {
         result = response;
       }
-      var request_type='';
-      var Message_Type = originalRequest['body'];
-      request_type= isCheck(Message_Type);
+      var request_type='',
+      Message_Type = originalRequest['body'],
+      request_type= isCheck(Message_Type),
+      xpath = require('xpath'),
+      dom = require('xmldom').DOMParser,
+      xml = originalRequest['body'],
+      parseJson = require('parse-json'),
+      JSONPath  = require('jsonpath-plus'),
+      JSON_req  = originalRequest['body'],
+      app_body  = result['body'],
+      Clean_Response = app_body,
+      title,
+      doc = new dom().parseFromString(xml);
 
-      var xpath = require('xpath');
-      var dom = require('xmldom').DOMParser;
-      var xml = originalRequest['body'];
-
-      var parseJson = require('parse-json');
-      var JSONPath  = require('jsonpath-plus');
-      var JSON_req  = originalRequest['body'];
-
-      var app_body  = result['body'];
-      var Clean_Response = app_body;
-      var title;
-
-      var doc = new dom().parseFromString(xml);
       for (var key1 in fn)
       {
         for (var subkey1 in fn[key1])
