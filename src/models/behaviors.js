@@ -185,131 +185,118 @@ function isCheck (request) {
  * Runs the response through a post-processing function provided by the user
  * @param {Object} originalRequest - The request object, in case post-processing depends on it
  * @param {Object} responsePromise - The promise returning the response
- * @param {Function} fn - The function that performs the post-processing
+ * @param {Function} config - The configuration
  * @param {Object} logger - The mountebank logger, useful in debugging
  * @returns {Object}
  */
-function copyFrom(originalRequest, responsePromise, fn, logger){
-  return responsePromise.then(function (response) {
-    var fn2 = "function (request, response) {}"
-    var request = helpers.clone(originalRequest),
-    injected = '(' + fn2 + ')(request, response, logger);';
-    var json_parse=JSON.stringify(request['body']);
+function copyFrom (originalRequest, responsePromise, config, logger) {
+    /* eslint-disable complexity */
+    /* eslint-disable max-depth */
+    return responsePromise.then(function (response) {
+        var fn2 = 'function (request, response) {}';
+        var request = helpers.clone(originalRequest),
+            injected = '(' + fn2 + ')(request, response, logger);';
 
-    if (request.isDryRun === true) {
-      return response;
-    }
-    try {
-      var result = eval(injected);
-      if (!result) {
-        result = response;
-      }
-      var request_type='',
-      Message_Type = originalRequest['body'],
-      request_type= isCheck(Message_Type),
-      xpath = require('xpath'),
-      dom = require('xmldom').DOMParser,
-      xml = originalRequest['body'],
-      parseJson = require('parse-json'),
-      JSONPath  = require('jsonpath-plus'),
-      JSON_req  = originalRequest['body'],
-      app_body  = result['body'],
-      Clean_Response = app_body,
-      title,
-      doc = new dom().parseFromString(xml);
-
-      for (var key1 in fn)
-      {
-        for (var subkey1 in fn[key1])
-        {
-            var Param1 =  (fn[key1][subkey1]).toString();
-                  if ((Param1.localeCompare("path")==0))
-                  {
-                  var query_uri = fn[key1]['uri'];
-                  title = originalRequest.path.split('/')[fn[key1]['uri']];
-                    if((title==undefined)||(title==null)||(title==""))
-                    {
-                    result['statusCode'] = 404;
-                    result['body'] = "Copy criteria does not match"+'\r\n'+"Corresponding value of "+"\""+Param1+"\""+" is Undefined or null." ;
-                    return Q(result);
-                    }
-                  var initial_index = 0;
-                           do {
-                            Clean_Response = Clean_Response.replace(fn[key1]['into'], title);
-                                    } while((initial_index = Clean_Response.indexOf(fn[key1]['into'], initial_index + 1)) > -1);
-                  }
-
-                  if ((Param1.localeCompare("query")==0))
-                  {
-                  var query_param = fn[key1]['param'];
-                  title = originalRequest.query[query_param];
-                    if((title==undefined)||(title==null)||(title==""))
-                    {
-                    result['statusCode'] = 404;
-                    result['body'] = "Copy criteria does not match"+'\r\n'+"Corresponding value of "+"\""+Param1+"\""+" is Undefined or null." ;
-                    return Q(result);
-                    }
-                  var initial_index = 0;
-                           do {
-                            Clean_Response = Clean_Response.replace(fn[key1]['into'], title);
-                                    } while((initial_index = Clean_Response.indexOf(fn[key1]['into'], initial_index + 1)) > -1);
-                  }
-
-                  if ((Param1.localeCompare("headers")==0))
-                  {
-                  var header_value = fn[key1]['value'];
-                  title = originalRequest.headers[header_value];
-                    if((title==undefined)||(title==null))
-                    {
-                    result['statusCode'] = 404;
-                    result['body'] = "Copy criteria does not match"+'\r\n'+"Corresponding value of "+"\""+Param1+"\""+" is Undefined or null." ;
-                    return Q(result);
-                    }
-                  var initial_index = 0;
-                           do {
-                            Clean_Response = Clean_Response.replace(fn[key1]['into'], title);
-                                    } while((initial_index = Clean_Response.indexOf(fn[key1]['into'], initial_index + 1)) > -1);
-                  }
-
-                       for (var subkey2 in fn[key1][subkey1])
-                        {
-                            if ((subkey2).localeCompare("selector")==0)
-                            {
-                                var Req_path =  fn[key1][subkey1][subkey2];
-                                if (request_type.localeCompare("XML")==0)
-                                {
-                                var doc = new dom().parseFromString(xml);
-                                title= xpath.select(Req_path, doc).toString();
-                                }
-                                else if (request_type.localeCompare("JSON")==0) {
-                                  var JSON_doc = parseJson(JSON_req);
-                                  title= JSONPath(Req_path, JSON_doc).toString();
-                                }
-                                  if((title==undefined)||(title==null)||(title==""))
-                                  {
-                                  result['statusCode'] = 404;
-                                 result['body'] = "Copy criteria does not match"+'\r\n'+"Corresponding value of "+"\""+subkey2+"\""+" is Undefined or null." ;
-                                  return Q(result);
-                                  }
-                                var initial_index = 0;
-                                                 do {
-                                                  Clean_Response = Clean_Response.replace(fn[key1]['into'], title);
-                                                          } while((initial_index = Clean_Response.indexOf(fn[key1]['into'], initial_index + 1)) > -1);
-                            }
-                        }
+        if (request.isDryRun === true) {
+            return response;
         }
-      }
-      result['body'] = Clean_Response;
-      return Q(result);
-    }
-    catch (error) {
-      logger.error('injection X=> ' + error);
-      logger.error('    full source: ' + JSON.stringify(injected));
-      logger.error('    request: ' + JSON.stringify(request));
-      logger.error('    response: ' + JSON.stringify(response));
-      return Q.reject(errors.InjectionError('invalid copyfrom injection', { source: injected, data: error.message }));
-    }
-  });
+        try {
+            var result = eval(injected);
+            if (!result) {
+                result = response;
+            }
+            var messageType = originalRequest.body,
+                requestType = isCheck(messageType),
+                xpath = require('xpath'),
+                dom = require('xmldom').DOMParser,
+                xml = originalRequest.body,
+                parseJson = require('parse-json'),
+                JSONPath = require('jsonpath-plus'),
+                JSONReq = originalRequest.body,
+                appBody = result.body,
+                cleanResponse = appBody,
+                title,
+                doc = new dom().parseFromString(xml);
+
+            for (var key1 in config) {
+                for (var subkey1 in config[key1]) {
+                    var Param1 = (config[key1][subkey1]).toString();
+                    if ((Param1.localeCompare('path') === 0)) {
+                        title = originalRequest.path.split('/')[config[key1].uri];
+                        if ((title === undefined) || (title === '')) {
+                            result.statusCode = 404;
+                            result.body = 'Copy criteria does not match\r\nCorresponding value of "' + Param1 + '" is Undefined or null.';
+                            return Q(result);
+                        }
+                        var initialIndex = 0;
+                        do {
+                            cleanResponse = cleanResponse.replace(config[key1].into, title);
+                        } while ((initialIndex = cleanResponse.indexOf(config[key1].into, initialIndex + 1)) > -1);
+                    }
+
+                    if ((Param1.localeCompare('query') === 0)) {
+                        var queryParam = config[key1].param;
+                        title = originalRequest.query[queryParam];
+                        if ((title === undefined) || (title === null) || (title === '')) {
+                            result.statusCode = 404;
+                            result.body = 'Copy criteria does not match\r\nCorresponding value of "' + Param1 + '" is Undefined or null.';
+                            return Q(result);
+                        }
+                        initialIndex = 0;
+                        do {
+                            cleanResponse = cleanResponse.replace(config[key1].into, title);
+                        } while ((initialIndex = cleanResponse.indexOf(config[key1].into, initialIndex + 1)) > -1);
+                    }
+
+                    if ((Param1.localeCompare('headers') === 0)) {
+                        var headerValue = config[key1].value;
+                        title = originalRequest.headers[headerValue];
+                        if ((title === undefined) || (title === null)) {
+                            result.statusCode = 404;
+                            result.body = 'Copy criteria does not match\r\nCorresponding value of "' + Param1 + '" is Undefined or null.';
+                            return Q(result);
+                        }
+                        initialIndex = 0;
+                        do {
+                            cleanResponse = cleanResponse.replace(config[key1].into, title);
+                        } while ((initialIndex = cleanResponse.indexOf(config[key1].into, initialIndex + 1)) > -1);
+                    }
+
+                    for (var subkey2 in config[key1][subkey1]) {
+                        if ((subkey2).localeCompare('selector') === 0) {
+                            var reqPath = config[key1][subkey1][subkey2];
+                            if (requestType.localeCompare('XML') === 0) {
+                                doc = new dom().parseFromString(xml);
+                                title = xpath.select(reqPath, doc).toString();
+                            }
+                            else if (requestType.localeCompare('JSON') === 0) {
+                                var JSONDoc = parseJson(JSONReq);
+                                title = JSONPath(reqPath, JSONDoc).toString();
+                            }
+                            if ((title === undefined) || (title === null) || (title === '')) {
+                                result.statusCode = 404;
+                                result.body = 'Copy criteria does not match\r\nCorresponding value of "' + subkey2 + '" is Undefined or null.';
+                                return Q(result);
+                            }
+                            initialIndex = 0;
+                            do {
+                                cleanResponse = cleanResponse.replace(config[key1].into, title);
+                            } while ((initialIndex = cleanResponse.indexOf(config[key1].into, initialIndex + 1)) > -1);
+                        }
+                    }
+                }
+            }
+            result.body = cleanResponse;
+            return Q(result);
+        }
+        catch (error) {
+            logger.error('injection X=> ' + error);
+            logger.error('    full source: ' + JSON.stringify(injected));
+            logger.error('    request: ' + JSON.stringify(request));
+            logger.error('    response: ' + JSON.stringify(response));
+            return Q.reject(errors.InjectionError('invalid copyfrom injection', { source: injected, data: error.message }));
+        }
+    });
 }
 
 /**
