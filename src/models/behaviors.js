@@ -10,19 +10,19 @@ var helpers = require('../util/helpers'),
     Q = require('q'),
     exec = require('child_process').exec,
     util = require('util'),
+    combinators = require('../util/combinators'),
     isWindows = require('os').platform().indexOf('win') === 0;
 
 /**
  * Waits a specified number of milliseconds before sending the response.  Due to the approximate
  * nature of the timer, there is no guarantee that it will wait the given amount, but it will be close.
  * @param {Object} request - The request object
- * @param {Object} response - The response generated from the stubs
  * @param {Object} responsePromise -kThe promise returning the response
  * @param {number} millisecondsOrFn - The number of milliseconds to wait before returning, or a function returning milliseconds
  * @param {Object} logger - The mountebank logger, useful for debugging
  * @returns {Object} A promise resolving to the response
  */
-function wait (request, response, responsePromise, millisecondsOrFn, logger) {
+function wait (request, responsePromise, millisecondsOrFn, logger) {
     if (request.isDryRun) {
         return responsePromise;
     }
@@ -37,8 +37,6 @@ function wait (request, response, responsePromise, millisecondsOrFn, logger) {
         catch (error) {
             logger.error('injection X=> ' + error);
             logger.error('    full source: ' + JSON.stringify(fn));
-            logger.error('    request: ' + JSON.stringify(request));
-            logger.error('    response: ' + JSON.stringify(response));
             return Q.reject(errors.InjectionError('invalid wait injection',
                 { source: millisecondsOrFn, data: error.message }));
         }
@@ -339,28 +337,26 @@ function copy (originalRequest, responsePromise, copyArray, logger) {
  * @returns {Object}
  */
 function execute (request, response, behaviors, logger) {
-    var result = Q(response);
-
     if (!behaviors) {
-        return result;
+        return Q(response);
     }
+
+    var waitFn = behaviors.wait ?
+            function (result) { return wait(request, result, behaviors.wait, logger); } :
+            combinators.identity,
+        copyFn = behaviors.copy ?
+            function (result) { return copy(request, result, behaviors.copy, logger); } :
+            combinators.identity,
+        shellTransformFn = behaviors.shellTransform ?
+            function (result) { return shellTransform(request, result, behaviors.shellTransform, logger); } :
+            combinators.identity,
+        decorateFn = behaviors.decorate ?
+            function (result) { return decorate(request, result, behaviors.decorate, logger); } :
+            combinators.identity;
 
     logger.debug('using stub response behavior ' + JSON.stringify(behaviors));
 
-    if (behaviors.wait) {
-        result = wait(request, response, result, behaviors.wait, logger);
-    }
-    if (behaviors.copy) {
-        result = copy(request, result, behaviors.copy, logger);
-    }
-    if (behaviors.shellTransform) {
-        result = shellTransform(request, result, behaviors.shellTransform, logger);
-    }
-    if (behaviors.decorate) {
-        result = decorate(request, result, behaviors.decorate, logger);
-    }
-
-    return result;
+    return combinators.compose(decorateFn, shellTransformFn, copyFn, waitFn, Q)(response);
 }
 
 module.exports = {

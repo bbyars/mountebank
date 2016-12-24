@@ -325,6 +325,56 @@ var assert = require('assert'),
                     return api.del('/imposters');
                 });
             });
+
+            promiseIt('should compose multiple behaviors together', function () {
+                var shellFn = function exec () {
+                        console.log(process.argv[3].replace('${SALUTATION}', 'Hello'));
+                    },
+                    decorator = function (request, response) {
+                        response.body = response.body.replace('${SUBJECT}', 'mountebank');
+                    },
+                    stub = {
+                        responses: [
+                            {
+                                is: { body: '${SALUTATION}, ${SUBJECT}!' },
+                                _behaviors: {
+                                    wait: 300,
+                                    repeat: 2,
+                                    shellTransform: 'node shellTransformTest.js',
+                                    decorate: decorator.toString()
+                                }
+                            },
+                            {
+                                is: { body: 'No behaviors' }
+                            }
+                        ]
+                    },
+                    stubs = [stub],
+                    request = { protocol: protocol, port: port, stubs: stubs, name: this.name },
+                    timer = new Date();
+
+                fs.writeFileSync('shellTransformTest.js', util.format('%s\nexec();', shellFn.toString()));
+
+                return api.post('/imposters', request).then(function (response) {
+                    assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body, null, 2));
+                    return client.get('/', port);
+                }).then(function (response) {
+                    var time = new Date() - timer;
+                    assert.strictEqual(response.body, 'Hello, mountebank!');
+                    assert.ok(time >= 250, 'actual time: ' + time);
+                    return client.get('/', port);
+                }).then(function (response) {
+                    var time = new Date() - timer;
+                    assert.strictEqual(response.body, 'Hello, mountebank!');
+                    assert.ok(time >= 250, 'actual time: ' + time);
+                    return client.get('/', port);
+                }).then(function (response) {
+                    assert.strictEqual(response.body, 'No behaviors');
+                }).finally(function () {
+                    fs.unlinkSync('shellTransformTest.js');
+                    return api.del('/imposters');
+                });
+            });
         });
     });
 });
