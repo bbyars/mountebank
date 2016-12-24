@@ -246,23 +246,6 @@ describe('behaviors', function () {
     });
 
     describe('#copy', function () {
-        promiseIt('should not execute during dry run', function () {
-            var request = { isDryRun: true, data: 'My name is mountebank' },
-                response = { data: 'Hello, ${you}' },
-                logger = Logger.create(),
-                config = {
-                    copy: [{
-                        from: 'data',
-                        regex: { pattern: 'My name is (\\w+)$' },
-                        into: '${you}'
-                    }]
-                };
-
-            return behaviors.execute(request, response, config, logger).then(function (actualResponse) {
-                assert.deepEqual(actualResponse, { data: 'Hello, ${you}' });
-            });
-        });
-
         promiseIt('should support copying regex group from request', function () {
             var request = { data: 'My name is mountebank' },
                 response = { data: 'Hello, ${you}' },
