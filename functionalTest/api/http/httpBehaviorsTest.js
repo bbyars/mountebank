@@ -375,6 +375,56 @@ var assert = require('assert'),
                     return api.del('/imposters');
                 });
             });
+
+            promiseIt('should support copying from request fields using regex', function () {
+                var stub = {
+                        responses: [{
+                            is: {
+                                statusCode: '${code}',
+                                headers: {
+                                    'X-Test': '${header}'
+                                },
+                                body: '${body}'
+                            },
+                            _behaviors: {
+                                copy: [
+                                    {
+                                        from: 'path',
+                                        regex: { pattern: '(\\d+)' },
+                                        into: '${code}'
+                                    },
+                                    {
+                                        from: { headers: 'X-Request' },
+                                        regex: { pattern: '(.+)' },
+                                        into: '${header}'
+                                    },
+                                    {
+                                        from: { query: 'body' },
+                                        regex: { pattern: 'BODY IS (.+)$', ignoreCase: true },
+                                        into: '${body}'
+                                    }
+                                ]
+                            }
+                        }]
+                    },
+                    request = { protocol: protocol, port: port, stubs: [stub], name: this.name };
+
+                return api.post('/imposters', request).then(function (response) {
+                    assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body, null, 2));
+                    return client.responseFor({
+                        port: port,
+                        method: 'GET',
+                        headers: { 'X-Request': 'header value' },
+                        path: '/400/this-will-be-ignored?body=body%20is%20HERE'
+                    });
+                }).then(function (response) {
+                    assert.strictEqual(response.statusCode, 400);
+                    assert.strictEqual(response.headers['x-test'], 'header value');
+                    assert.strictEqual(response.body, 'HERE');
+                }).finally(function () {
+                    return api.del('/imposters');
+                });
+            });
         });
     });
 });

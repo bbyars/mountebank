@@ -179,6 +179,20 @@ function isCheck (request) {
     return type;
 }
 
+function getFrom (obj, from) {
+    if (typeof from === 'object') {
+        var keys = Object.keys(from);
+        if (keys.length === 0 || keys.length > 1) {
+            throw errors.ValidationError('copy behavior "from" field can only have one key per object',
+                { source: from });
+        }
+        return getFrom(obj[keys[0]], from[keys[0]]);
+    }
+    else {
+        return obj[from];
+    }
+}
+
 function regexFlags (config) {
     var result = '';
     if (config.ignoreCase) {
@@ -219,7 +233,7 @@ function copy (originalRequest, responsePromise, copyArray, logger) {
     if (copyArray[0].regex) {
         return responsePromise.then(function (response) {
             copyArray.forEach(function (copyConfig) {
-                var from = originalRequest[copyConfig.from],
+                var from = getFrom(originalRequest, copyConfig.from),
                     value = copyConfig.into;
 
                 if (copyConfig.regex) {

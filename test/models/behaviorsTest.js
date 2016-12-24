@@ -313,5 +313,56 @@ describe('behaviors', function () {
                 assert.deepEqual(actualResponse, { data: 'Hello, ${you}' });
             });
         });
+
+        promiseIt('should support copying regex group into object response field', function () {
+            var request = { data: 'My name is mountebank' },
+                response = { outer: { inner: 'Hello, ${you}' } },
+                logger = Logger.create(),
+                config = {
+                    copy: [{
+                        from: 'data',
+                        regex: { pattern: 'My name is (\\w+)$' },
+                        into: '${you}'
+                    }]
+                };
+
+            return behaviors.execute(request, response, config, logger).then(function (actualResponse) {
+                assert.deepEqual(actualResponse, { outer: { inner: 'Hello, mountebank' } });
+            });
+        });
+
+        promiseIt('should support copying regex group into all response field', function () {
+            var request = { data: 'My name is mountebank' },
+                response = { data: '${you}', outer: { inner: 'Hello, ${you}' } },
+                logger = Logger.create(),
+                config = {
+                    copy: [{
+                        from: 'data',
+                        regex: { pattern: 'My name is (\\w+)$' },
+                        into: '${you}'
+                    }]
+                };
+
+            return behaviors.execute(request, response, config, logger).then(function (actualResponse) {
+                assert.deepEqual(actualResponse, { data: 'mountebank', outer: { inner: 'Hello, mountebank' } });
+            });
+        });
+
+        promiseIt('should support copying regex group from object request field', function () {
+            var request = { data: { name: 'My name is mountebank', other: 'ignore' } },
+                response = { data: 'Hello, ${you}' },
+                logger = Logger.create(),
+                config = {
+                    copy: [{
+                        from: { data: 'name' },
+                        regex: { pattern: 'My name is (\\w+)$' },
+                        into: '${you}'
+                    }]
+                };
+
+            return behaviors.execute(request, response, config, logger).then(function (actualResponse) {
+                assert.deepEqual(actualResponse, { data: 'Hello, mountebank' });
+            });
+        });
     });
 });
