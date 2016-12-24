@@ -364,5 +364,110 @@ describe('behaviors', function () {
                 assert.deepEqual(actualResponse, { data: 'Hello, mountebank' });
             });
         });
+
+        promiseIt('should support copying xpath match into response', function () {
+            var request = { field: '<doc><name>mountebank</name></doc>' },
+                response = { data: 'Hello, ${you}' },
+                logger = Logger.create(),
+                config = {
+                    copy: [{
+                        from: 'field',
+                        xpath: { selector: '//name' },
+                        into: '${you}'
+                    }]
+                };
+
+            return behaviors.execute(request, response, config, logger).then(function (actualResponse) {
+                assert.deepEqual(actualResponse, { data: 'Hello, mountebank' });
+            });
+        });
+
+        promiseIt('should ignore xpath if does not match', function () {
+            var request = { field: '<doc><name>mountebank</name></doc>' },
+                response = { data: 'Hello, ${you}' },
+                logger = Logger.create(),
+                config = {
+                    copy: [{
+                        from: 'field',
+                        xpath: { selector: '//title' },
+                        into: '${you}'
+                    }]
+                };
+
+            return behaviors.execute(request, response, config, logger).then(function (actualResponse) {
+                assert.deepEqual(actualResponse, { data: 'Hello, ${you}' });
+            });
+        });
+
+        promiseIt('should ignore xpath if field is not xml', function () {
+            var request = { field: 'mountebank' },
+                response = { data: 'Hello, ${you}' },
+                logger = Logger.create(),
+                config = {
+                    copy: [{
+                        from: 'field',
+                        xpath: { selector: '//title' },
+                        into: '${you}'
+                    }]
+                };
+
+            return behaviors.execute(request, response, config, logger).then(function (actualResponse) {
+                assert.deepEqual(actualResponse, { data: 'Hello, ${you}' });
+            });
+        });
+
+        promiseIt('should support replacing token with xml attribute', function () {
+            var request = { field: '<doc><tool name="mountebank">Service virtualization</tool></doc>' },
+                response = { data: 'Hello, ${you}' },
+                logger = Logger.create(),
+                config = {
+                    copy: [{
+                        from: 'field',
+                        xpath: { selector: '//tool/@name' },
+                        into: '${you}'
+                    }]
+                };
+
+            return behaviors.execute(request, response, config, logger).then(function (actualResponse) {
+                assert.deepEqual(actualResponse, { data: 'Hello, mountebank' });
+            });
+        });
+
+        promiseIt('should support replacing token with xml direct text', function () {
+            var request = { field: '<doc><name>mountebank</name></doc>' },
+                response = { data: 'Hello, ${you}' },
+                logger = Logger.create(),
+                config = {
+                    copy: [{
+                        from: 'field',
+                        xpath: { selector: '//name/text()' },
+                        into: '${you}'
+                    }]
+                };
+
+            return behaviors.execute(request, response, config, logger).then(function (actualResponse) {
+                assert.deepEqual(actualResponse, { data: 'Hello, mountebank' });
+            });
+        });
+
+        promiseIt('should support replacing token with namespaced xml field', function () {
+            var request = { field: '<doc xmlns:mb="http://example.com/mb"><mb:name>mountebank</mb:name></doc>' },
+                response = { data: 'Hello, ${you}' },
+                logger = Logger.create(),
+                config = {
+                    copy: [{
+                        from: 'field',
+                        xpath: {
+                            selector: '//mb:name',
+                            ns: { mb: 'http://example.com/mb' }
+                        },
+                        into: '${you}'
+                    }]
+                };
+
+            return behaviors.execute(request, response, config, logger).then(function (actualResponse) {
+                assert.deepEqual(actualResponse, { data: 'Hello, mountebank' });
+            });
+        });
     });
 });

@@ -11,6 +11,9 @@ var helpers = require('../util/helpers'),
     exec = require('child_process').exec,
     util = require('util'),
     combinators = require('../util/combinators'),
+    xpath = require('xpath'),
+    JSONPath = require('jsonpath-plus'),
+    DOMParser = require('xmldom').DOMParser,
     isWindows = require('os').platform().indexOf('win') === 0;
 
 /**
@@ -204,6 +207,21 @@ function regexFlags (config) {
     return result;
 }
 
+function nodeValue (node) {
+    if (node.nodeType === node.TEXT_NODE) {
+        return node.nodeValue;
+    }
+    else if (node.nodeType === node.ATTRIBUTE_NODE) {
+        return node.value;
+    }
+    else if (node.firstChild) {
+        return node.firstChild.data + '';
+    }
+    else {
+        return node.data + '';
+    }
+}
+
 function replace (obj, token, replacement) {
     Object.keys(obj).forEach(function (key) {
         if (typeof obj[key] === 'string') {
@@ -230,12 +248,13 @@ function copy (originalRequest, responsePromise, copyArray, logger) {
         return Q.reject(errors.ValidationError('copy behavior must be an array', { source: { copy: copyArray } }));
     }
 
-    if (copyArray[0].regex) {
+    if (copyArray[0].regex || copyArray[0].xpath) {
         return responsePromise.then(function (response) {
             copyArray.forEach(function (copyConfig) {
                 var from = getFrom(originalRequest, copyConfig.from),
                     value = copyConfig.into;
 
+                // TODO: throw if more than one selected
                 if (copyConfig.regex) {
                     var matches = new RegExp(copyConfig.regex.pattern, regexFlags(copyConfig.regex)).exec(from);
                     if (matches && matches.length >= 2) {
@@ -243,7 +262,20 @@ function copy (originalRequest, responsePromise, copyArray, logger) {
                         logger.debug('Replacing %s with %s', copyConfig.into, value);
                     }
                     else {
-                        logger.debug('No match for /%s/', copyConfig.regex.pattern);
+                        logger.debug('No match for /%s/ (be sure to set a match group)', copyConfig.regex.pattern);
+                    }
+                }
+                else if (copyConfig.xpath) {
+                    var doc = new DOMParser().parseFromString(from),
+                        select = xpath.useNamespaces(copyConfig.xpath.ns || {}),
+                        nodes = select(copyConfig.xpath.selector, doc);
+
+                    if (nodes.length > 0) {
+                        value = nodeValue(nodes[0]);
+                        logger.debug('Replacing %s with %s', copyConfig.into, value);
+                    }
+                    else {
+                        logger.debug('No match for "%s"', copyConfig.xpath.selector);
                     }
                 }
 
@@ -258,11 +290,9 @@ function copy (originalRequest, responsePromise, copyArray, logger) {
         var result = response;
         var messageType = originalRequest.body,
             requestType = isCheck(messageType),
-            xpath = require('xpath'),
             dom = require('xmldom').DOMParser,
             xml = originalRequest.body,
             parseJson = require('parse-json'),
-            JSONPath = require('jsonpath-plus'),
             JSONReq = originalRequest.body,
             appBody = result.body,
             cleanResponse = appBody,
