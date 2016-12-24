@@ -181,17 +181,67 @@ function isCheck (request) {
     return type;
 }
 
+function regexFlags (config) {
+    var result = '';
+    if (config.ignoreCase) {
+        result += 'i';
+    }
+    if (config.multiline) {
+        result += 'm';
+    }
+    return result;
+}
+
+function replace (obj, token, replacement) {
+    Object.keys(obj).forEach(function (key) {
+        if (typeof obj[key] === 'string') {
+            obj[key] = obj[key].split(token).join(replacement);
+        }
+        else if (typeof obj[key] === 'object') {
+            replace(obj[key], token, replacement);
+        }
+    });
+}
+
 /**
  * Runs the response through a post-processing function provided by the user
  * @param {Object} originalRequest - The request object, in case post-processing depends on it
  * @param {Object} responsePromise - The promise returning the response
- * @param {Function} config - The configuration
+ * @param {Function} copyArray - The list of values to copy
  * @param {Object} logger - The mountebank logger, useful in debugging
  * @returns {Object}
  */
-function copyFrom (originalRequest, responsePromise, config, logger) {
+function copy (originalRequest, responsePromise, copyArray, logger) {
     /* eslint-disable complexity */
     /* eslint-disable max-depth */
+    if (originalRequest.isDryRun === true) {
+        return responsePromise;
+    }
+
+    if (copyArray[0].regex) {
+        return responsePromise.then(function (response) {
+            copyArray.forEach(function (copyConfig) {
+                var from = originalRequest[copyConfig.from],
+                    value = copyConfig.into;
+
+                if (copyConfig.regex) {
+                    var matches = new RegExp(copyConfig.regex.pattern, regexFlags(copyConfig.regex)).exec(from);
+                    if (matches && matches.length >= 2) {
+                        value = matches[1];
+                        logger.debug('Replacing %s with %s', copyConfig.into, value);
+                    }
+                    else {
+                        logger.debug('No match for /%s/', copyConfig.regex.pattern);
+                    }
+                }
+
+                replace(response, copyConfig.into, value);
+            });
+            return Q(response);
+        });
+    }
+
+
     return responsePromise.then(function (response) {
         var fn2 = 'function (request, response) {}';
         var request = helpers.clone(originalRequest),
@@ -218,11 +268,11 @@ function copyFrom (originalRequest, responsePromise, config, logger) {
                 title,
                 doc = new dom().parseFromString(xml);
 
-            for (var key1 in config) {
-                for (var subkey1 in config[key1]) {
-                    var Param1 = (config[key1][subkey1]).toString();
+            for (var key1 in copyArray) {
+                for (var subkey1 in copyArray[key1]) {
+                    var Param1 = (copyArray[key1][subkey1]).toString();
                     if ((Param1.localeCompare('path') === 0)) {
-                        title = originalRequest.path.split('/')[config[key1].uri];
+                        title = originalRequest.path.split('/')[copyArray[key1].uri];
                         if ((title === undefined) || (title === '')) {
                             result.statusCode = 404;
                             result.body = 'Copy criteria does not match\r\nCorresponding value of "' + Param1 + '" is Undefined or null.';
@@ -230,12 +280,12 @@ function copyFrom (originalRequest, responsePromise, config, logger) {
                         }
                         var initialIndex = 0;
                         do {
-                            cleanResponse = cleanResponse.replace(config[key1].into, title);
-                        } while ((initialIndex = cleanResponse.indexOf(config[key1].into, initialIndex + 1)) > -1);
+                            cleanResponse = cleanResponse.replace(copyArray[key1].into, title);
+                        } while ((initialIndex = cleanResponse.indexOf(copyArray[key1].into, initialIndex + 1)) > -1);
                     }
 
                     if ((Param1.localeCompare('query') === 0)) {
-                        var queryParam = config[key1].param;
+                        var queryParam = copyArray[key1].param;
                         title = originalRequest.query[queryParam];
                         if ((title === undefined) || (title === null) || (title === '')) {
                             result.statusCode = 404;
@@ -244,12 +294,12 @@ function copyFrom (originalRequest, responsePromise, config, logger) {
                         }
                         initialIndex = 0;
                         do {
-                            cleanResponse = cleanResponse.replace(config[key1].into, title);
-                        } while ((initialIndex = cleanResponse.indexOf(config[key1].into, initialIndex + 1)) > -1);
+                            cleanResponse = cleanResponse.replace(copyArray[key1].into, title);
+                        } while ((initialIndex = cleanResponse.indexOf(copyArray[key1].into, initialIndex + 1)) > -1);
                     }
 
                     if ((Param1.localeCompare('headers') === 0)) {
-                        var headerValue = config[key1].value;
+                        var headerValue = copyArray[key1].value;
                         title = originalRequest.headers[headerValue];
                         if ((title === undefined) || (title === null)) {
                             result.statusCode = 404;
@@ -258,13 +308,13 @@ function copyFrom (originalRequest, responsePromise, config, logger) {
                         }
                         initialIndex = 0;
                         do {
-                            cleanResponse = cleanResponse.replace(config[key1].into, title);
-                        } while ((initialIndex = cleanResponse.indexOf(config[key1].into, initialIndex + 1)) > -1);
+                            cleanResponse = cleanResponse.replace(copyArray[key1].into, title);
+                        } while ((initialIndex = cleanResponse.indexOf(copyArray[key1].into, initialIndex + 1)) > -1);
                     }
 
-                    for (var subkey2 in config[key1][subkey1]) {
+                    for (var subkey2 in copyArray[key1][subkey1]) {
                         if ((subkey2).localeCompare('selector') === 0) {
-                            var reqPath = config[key1][subkey1][subkey2];
+                            var reqPath = copyArray[key1][subkey1][subkey2];
                             if (requestType.localeCompare('XML') === 0) {
                                 doc = new dom().parseFromString(xml);
                                 title = xpath.select(reqPath, doc).toString();
@@ -280,8 +330,8 @@ function copyFrom (originalRequest, responsePromise, config, logger) {
                             }
                             initialIndex = 0;
                             do {
-                                cleanResponse = cleanResponse.replace(config[key1].into, title);
-                            } while ((initialIndex = cleanResponse.indexOf(config[key1].into, initialIndex + 1)) > -1);
+                                cleanResponse = cleanResponse.replace(copyArray[key1].into, title);
+                            } while ((initialIndex = cleanResponse.indexOf(copyArray[key1].into, initialIndex + 1)) > -1);
                         }
                     }
                 }
@@ -310,7 +360,7 @@ function copyFrom (originalRequest, responsePromise, config, logger) {
 function execute (request, response, behaviors, logger) {
     var result = Q(response);
 
-    if (!behaviors) {
+    if (!behaviors || request.isDryRun) {
         return result;
     }
 
@@ -319,14 +369,14 @@ function execute (request, response, behaviors, logger) {
     if (behaviors.wait) {
         result = wait(request, response, result, behaviors.wait, logger);
     }
+    if (behaviors.copy) {
+        result = copy(request, result, behaviors.copy, logger);
+    }
     if (behaviors.shellTransform) {
         result = shellTransform(request, result, behaviors.shellTransform, logger);
     }
     if (behaviors.decorate) {
         result = decorate(request, result, behaviors.decorate, logger);
-    }
-    if (behaviors.copyFrom) {
-        result = copyFrom(request, result, behaviors.copyFrom, logger);
     }
 
     return result;
@@ -336,6 +386,6 @@ module.exports = {
     wait: wait,
     decorate: decorate,
     shellTransform: shellTransform,
-    copyFrom: copyFrom,
+    copy: copy,
     execute: execute
 };

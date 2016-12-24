@@ -244,4 +244,91 @@ describe('behaviors', function () {
             });
         });
     });
+
+    describe('#copy', function () {
+        promiseIt('should not execute during dry run', function () {
+            var request = { isDryRun: true, data: 'My name is mountebank' },
+                response = { data: 'Hello, ${you}' },
+                logger = Logger.create(),
+                config = {
+                    copy: [{
+                        from: 'data',
+                        regex: { pattern: 'My name is (\\w+)$' },
+                        into: '${you}'
+                    }]
+                };
+
+            return behaviors.execute(request, response, config, logger).then(function (actualResponse) {
+                assert.deepEqual(actualResponse, { data: 'Hello, ${you}' });
+            });
+        });
+
+        promiseIt('should support copying regex group from request', function () {
+            var request = { data: 'My name is mountebank' },
+                response = { data: 'Hello, ${you}' },
+                logger = Logger.create(),
+                config = {
+                    copy: [{
+                        from: 'data',
+                        regex: { pattern: 'My name is (\\w+)$' },
+                        into: '${you}'
+                    }]
+                };
+
+            return behaviors.execute(request, response, config, logger).then(function (actualResponse) {
+                assert.deepEqual(actualResponse, { data: 'Hello, mountebank' });
+            });
+        });
+
+        promiseIt('should support copying regex group from request with ignoreCase', function () {
+            var request = { data: 'My name is mountebank' },
+                response = { data: 'Hello, ${you}' },
+                logger = Logger.create(),
+                config = {
+                    copy: [{
+                        from: 'data',
+                        regex: { pattern: 'MY NAME IS (\\w+)$', ignoreCase: true },
+                        into: '${you}'
+                    }]
+                };
+
+            return behaviors.execute(request, response, config, logger).then(function (actualResponse) {
+                assert.deepEqual(actualResponse, { data: 'Hello, mountebank' });
+            });
+        });
+
+        promiseIt('should support copying regex group from request with multiine', function () {
+            var request = { data: 'First line\nMy name is mountebank\nThird line' },
+                response = { data: 'Hello, ${you}' },
+                logger = Logger.create(),
+                config = {
+                    copy: [{
+                        from: 'data',
+                        regex: { pattern: '^My name is (\\w+)$', multiline: true },
+                        into: '${you}'
+                    }]
+                };
+
+            return behaviors.execute(request, response, config, logger).then(function (actualResponse) {
+                assert.deepEqual(actualResponse, { data: 'Hello, mountebank' });
+            });
+        });
+
+        promiseIt('should not replace if regex does not match', function () {
+            var request = { data: 'My name is mountebank' },
+                response = { data: 'Hello, ${you}' },
+                logger = Logger.create(),
+                config = {
+                    copy: [{
+                        from: 'data',
+                        regex: { pattern: 'Mi nombre es (\\w+)$' },
+                        into: '${you}'
+                    }]
+                };
+
+            return behaviors.execute(request, response, config, logger).then(function (actualResponse) {
+                assert.deepEqual(actualResponse, { data: 'Hello, ${you}' });
+            });
+        });
+    });
 });
