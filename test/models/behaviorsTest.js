@@ -469,5 +469,56 @@ describe('behaviors', function () {
                 assert.deepEqual(actualResponse, { data: 'Hello, mountebank' });
             });
         });
+
+        promiseIt('should ignore jsonpath selector if field is not json', function () {
+            var request = { field: 'mountebank' },
+                response = { data: 'Hello, ${you}' },
+                logger = Logger.create(),
+                config = {
+                    copy: [{
+                        from: 'field',
+                        jsonpath: { selector: '$..name' },
+                        into: '${you}'
+                    }]
+                };
+
+            return behaviors.execute(request, response, config, logger).then(function (actualResponse) {
+                assert.deepEqual(actualResponse, { data: 'Hello, ${you}' });
+            });
+        });
+
+        promiseIt('should support replacing token with jsonpath selector', function () {
+            var request = { field: JSON.stringify({ name: 'mountebank' }) },
+                response = { data: 'Hello, ${you}' },
+                logger = Logger.create(),
+                config = {
+                    copy: [{
+                        from: 'field',
+                        jsonpath: { selector: '$..name' },
+                        into: '${you}'
+                    }]
+                };
+
+            return behaviors.execute(request, response, config, logger).then(function (actualResponse) {
+                assert.deepEqual(actualResponse, { data: 'Hello, mountebank' });
+            });
+        });
+
+        promiseIt('should not replace token if jsonpath selector does not match', function () {
+            var request = { field: JSON.stringify({ name: 'mountebank' }) },
+                response = { data: 'Hello, ${you}' },
+                logger = Logger.create(),
+                config = {
+                    copy: [{
+                        from: 'field',
+                        jsonpath: { selector: '$..title' },
+                        into: '${you}'
+                    }]
+                };
+
+            return behaviors.execute(request, response, config, logger).then(function (actualResponse) {
+                assert.deepEqual(actualResponse, { data: 'Hello, ${you}' });
+            });
+        });
     });
 });

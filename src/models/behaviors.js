@@ -140,48 +140,6 @@ function decorate (originalRequest, responsePromise, fn, logger) {
     });
 }
 
-function isJSON (json) {
-    try {
-        JSON.parse(json);
-    }
-    catch (e) {
-        return false;
-    }
-    return true;
-}
-
-function isXML (xml) {
-    var parseString = require('xml2js').parseString,
-        result = '';
-
-    parseString(xml, function (err) {
-        if (err === null) {
-            result = true;
-        }
-        else {
-            result = false;
-        }
-    });
-    if (result === true) {
-        return true;
-    }
-    else {
-        return false;
-    }
-}
-
-function isCheck (request) {
-    var type = '';
-
-    if (isXML(request)) {
-        type = 'XML';
-    }
-    else if (isJSON(request)) {
-        type = 'JSON';
-    }
-    return type;
-}
-
 function getFrom (obj, from) {
     if (typeof from === 'object') {
         var keys = Object.keys(from);
@@ -196,6 +154,12 @@ function getFrom (obj, from) {
     }
 }
 
+function hasMoreThanOneSelector (copyConfig) {
+    return (copyConfig.regex && copyConfig.xpath) ||
+        (copyConfig.regex && copyConfig.jsonpath) ||
+        (copyConfig.xpath && copyConfig.jsonpath);
+}
+
 function regexFlags (config) {
     var result = '';
     if (config.ignoreCase) {
@@ -205,6 +169,18 @@ function regexFlags (config) {
         result += 'm';
     }
     return result;
+}
+
+function regexValue (from, copyConfig, defaultValue, logger) {
+    var matches = new RegExp(copyConfig.regex.pattern, regexFlags(copyConfig.regex)).exec(from);
+    if (matches && matches.length >= 2) {
+        logger.debug('Replacing %s with %s', copyConfig.into, matches[1]);
+        return matches[1];
+    }
+    else {
+        logger.debug('No match for /%s/ (be sure to set a match group)', copyConfig.regex.pattern);
+        return defaultValue;
+    }
 }
 
 function nodeValue (node) {
@@ -219,6 +195,51 @@ function nodeValue (node) {
     }
     else {
         return node.data + '';
+    }
+}
+
+function xpathValue (from, copyConfig, defaultValue, logger) {
+    var doc = new DOMParser().parseFromString(from),
+        select = xpath.useNamespaces(copyConfig.xpath.ns || {}),
+        nodes = select(copyConfig.xpath.selector, doc);
+
+    if (nodes.length > 0) {
+        logger.debug('Replacing %s with %s', copyConfig.into, nodeValue(nodes[0]));
+        return nodeValue(nodes[0]);
+    }
+    else {
+        logger.debug('No match for "%s"', copyConfig.xpath.selector);
+        return defaultValue;
+    }
+}
+
+function selectJSONPath (possibleJSON, selector) {
+    try {
+        var result = JSONPath.eval(JSON.parse(possibleJSON), selector);
+        if (typeof result === 'string') {
+            return result;
+        }
+        else if (result.length === 0) {
+            return undefined;
+        }
+        else {
+            return result[0];
+        }
+    }
+    catch (e) {
+        return undefined;
+    }
+}
+
+function jsonpathValue (from, copyConfig, defaultValue, logger) {
+    var jsonValue = selectJSONPath(from, copyConfig.jsonpath.selector);
+    if (typeof jsonValue !== 'undefined') {
+        logger.debug('Replacing %s with %s', copyConfig.into, jsonValue);
+        return jsonValue;
+    }
+    else {
+        logger.debug('No match for "%s"', copyConfig.jsonpath.selector);
+        return defaultValue;
     }
 }
 
@@ -242,133 +263,33 @@ function replace (obj, token, replacement) {
  * @returns {Object}
  */
 function copy (originalRequest, responsePromise, copyArray, logger) {
-    /* eslint-disable complexity */
-    /* eslint-disable max-depth */
     if (!util.isArray(copyArray)) {
         return Q.reject(errors.ValidationError('copy behavior must be an array', { source: { copy: copyArray } }));
     }
 
-    if (copyArray[0].regex || copyArray[0].xpath) {
-        return responsePromise.then(function (response) {
-            copyArray.forEach(function (copyConfig) {
-                var from = getFrom(originalRequest, copyConfig.from),
-                    value = copyConfig.into;
-
-                // TODO: throw if more than one selected
-                if (copyConfig.regex) {
-                    var matches = new RegExp(copyConfig.regex.pattern, regexFlags(copyConfig.regex)).exec(from);
-                    if (matches && matches.length >= 2) {
-                        value = matches[1];
-                        logger.debug('Replacing %s with %s', copyConfig.into, value);
-                    }
-                    else {
-                        logger.debug('No match for /%s/ (be sure to set a match group)', copyConfig.regex.pattern);
-                    }
-                }
-                else if (copyConfig.xpath) {
-                    var doc = new DOMParser().parseFromString(from),
-                        select = xpath.useNamespaces(copyConfig.xpath.ns || {}),
-                        nodes = select(copyConfig.xpath.selector, doc);
-
-                    if (nodes.length > 0) {
-                        value = nodeValue(nodes[0]);
-                        logger.debug('Replacing %s with %s', copyConfig.into, value);
-                    }
-                    else {
-                        logger.debug('No match for "%s"', copyConfig.xpath.selector);
-                    }
-                }
-
-                replace(response, copyConfig.into, value);
-            });
-            return Q(response);
-        });
-    }
-
-
     return responsePromise.then(function (response) {
-        var result = response;
-        var messageType = originalRequest.body,
-            requestType = isCheck(messageType),
-            dom = require('xmldom').DOMParser,
-            xml = originalRequest.body,
-            parseJson = require('parse-json'),
-            JSONReq = originalRequest.body,
-            appBody = result.body,
-            cleanResponse = appBody,
-            title,
-            doc = new dom().parseFromString(xml);
+        copyArray.forEach(function (copyConfig) {
+            var from = getFrom(originalRequest, copyConfig.from),
+                value = copyConfig.into;
 
-        for (var key1 in copyArray) {
-            for (var subkey1 in copyArray[key1]) {
-                var Param1 = (copyArray[key1][subkey1]).toString();
-                if ((Param1.localeCompare('path') === 0)) {
-                    title = originalRequest.path.split('/')[copyArray[key1].uri];
-                    if ((title === undefined) || (title === '')) {
-                        result.statusCode = 404;
-                        result.body = 'Copy criteria does not match\r\nCorresponding value of "' + Param1 + '" is Undefined or null.';
-                        return Q(result);
-                    }
-                    var initialIndex = 0;
-                    do {
-                        cleanResponse = cleanResponse.replace(copyArray[key1].into, title);
-                    } while ((initialIndex = cleanResponse.indexOf(copyArray[key1].into, initialIndex + 1)) > -1);
-                }
-
-                if ((Param1.localeCompare('query') === 0)) {
-                    var queryParam = copyArray[key1].param;
-                    title = originalRequest.query[queryParam];
-                    if ((title === undefined) || (title === null) || (title === '')) {
-                        result.statusCode = 404;
-                        result.body = 'Copy criteria does not match\r\nCorresponding value of "' + Param1 + '" is Undefined or null.';
-                        return Q(result);
-                    }
-                    initialIndex = 0;
-                    do {
-                        cleanResponse = cleanResponse.replace(copyArray[key1].into, title);
-                    } while ((initialIndex = cleanResponse.indexOf(copyArray[key1].into, initialIndex + 1)) > -1);
-                }
-
-                if ((Param1.localeCompare('headers') === 0)) {
-                    var headerValue = copyArray[key1].value;
-                    title = originalRequest.headers[headerValue];
-                    if ((title === undefined) || (title === null)) {
-                        result.statusCode = 404;
-                        result.body = 'Copy criteria does not match\r\nCorresponding value of "' + Param1 + '" is Undefined or null.';
-                        return Q(result);
-                    }
-                    initialIndex = 0;
-                    do {
-                        cleanResponse = cleanResponse.replace(copyArray[key1].into, title);
-                    } while ((initialIndex = cleanResponse.indexOf(copyArray[key1].into, initialIndex + 1)) > -1);
-                }
-
-                for (var subkey2 in copyArray[key1][subkey1]) {
-                    if ((subkey2).localeCompare('selector') === 0) {
-                        var reqPath = copyArray[key1][subkey1][subkey2];
-                        if (requestType.localeCompare('XML') === 0) {
-                            doc = new dom().parseFromString(xml);
-                            title = xpath.select(reqPath, doc).toString();
-                        }
-                        else if (requestType.localeCompare('JSON') === 0) {
-                            var JSONDoc = parseJson(JSONReq);
-                            title = JSONPath(reqPath, JSONDoc).toString();
-                        }
-                        if ((title === undefined) || (title === null) || (title === '')) {
-                            result.statusCode = 404;
-                            result.body = 'Copy criteria does not match\r\nCorresponding value of "' + subkey2 + '" is Undefined or null.';
-                            return Q(result);
-                        }
-                        initialIndex = 0;
-                        do {
-                            cleanResponse = cleanResponse.replace(copyArray[key1].into, title);
-                        } while ((initialIndex = cleanResponse.indexOf(copyArray[key1].into, initialIndex + 1)) > -1);
-                    }
-                }
+            if (hasMoreThanOneSelector(copyConfig)) {
+                throw errors.ValidationError('each copy behavior can only use one of [regex, xpath, jsonpath]',
+                    { source: copyConfig });
             }
-        }
-        result.body = cleanResponse;
-        return Q(result);
+
+            if (copyConfig.regex) {
+                value = regexValue(from, copyConfig, value, logger);
+            }
+            else if (copyConfig.xpath) {
+                value = xpathValue(from, copyConfig, value, logger);
+            }
+            else if (copyConfig.jsonpath) {
+                value = jsonpathValue(from, copyConfig, value, logger);
+            }
+
+            replace(response, copyConfig.into, value);
+        });
+        return Q(response);
     });
 }
 
