@@ -20,7 +20,11 @@ description = 'Command line parameters for starting mountebank'
     <td><code><em>command</em></code></td>
     <td>One of <code>start</code>, <code>stop</code>, <code>restart</code>,
       <code><a href='#save'>save</a></code> (which saves off the current imposter configuration), or
-      <code>help</code> (which shows the usage information).</td>
+      <code>help</code> (which shows the usage information).
+
+      <p class='info-icon'>Note that <code>stop</code> and <code>restart</code> must either be
+      run from the same directory as the <code>start</code> command, or be provided the
+      <code>--pidfile</code> parameter to let <code>mb</code> know where to find the pidfile.</p></td>
     <td><code>start</code></td>
   </tr>
   <tr>
