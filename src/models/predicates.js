@@ -9,9 +9,8 @@ var errors = require('../util/errors'),
     helpers = require('../util/helpers'),
     combinators = require('../util/combinators'),
     stringify = require('json-stable-stringify'),
-    xpath = require('xpath'),
-    JSONPath = require('jsonpath-plus'),
-    DOMParser = require('xmldom').DOMParser;
+    xpath = require('./xpath'),
+    jsonpath = require('./jsonpath');
 
 function sortObjects (a, b) {
     if (typeof a === 'object' && typeof b === 'object') {
@@ -53,86 +52,34 @@ function forceStrings (obj) {
     }
 }
 
-function xpathSelect (select, selector, doc, encoding) {
+function select (type, selectFn, encoding) {
     if (encoding === 'base64') {
-        throw errors.ValidationError('the xpath predicate parameter is not allowed in binary mode');
+        throw errors.ValidationError('the ' + type + ' predicate parameter is not allowed in binary mode');
     }
 
-    try {
-        return select(selector, doc);
-    }
-    catch (e) {
-        throw errors.ValidationError('malformed xpath predicate selector', { inner: e });
-    }
-}
-
-function nodeValue (node) {
-    if (node.nodeType === node.TEXT_NODE) {
-        return node.nodeValue;
-    }
-    else if (node.nodeType === node.ATTRIBUTE_NODE) {
-        return node.value;
-    }
-    else if (node.firstChild) {
-        // Converting to a string allows exists to return true if the node exists,
-        // even if there's no data
-        return node.firstChild.data + '';
-    }
-    else {
-        return node.data + '';
-    }
-}
-
-function selectXPath (config, caseTransform, encoding, text) {
-    var doc = new DOMParser().parseFromString(text),
-        select = xpath.useNamespaces(config.ns || {}),
-        selector = caseTransform(config.selector),
-        result = xpathSelect(select, selector, doc, encoding),
-        nodeValues;
-
-    if (['number', 'boolean'].indexOf(typeof result) >= 0) {
-        return result;
-    }
-
-    nodeValues = result.map(nodeValue);
+    var nodeValues = selectFn();
 
     // Return either a string if one match or array if multiple
     // This matches the behavior of node's handling of query parameters,
     // which allows us to maintain the same semantics between deepEquals
     // (all have to match, passing in an array if necessary) and the other
     // predicates (any can match)
-    if (nodeValues.length === 0) {
-        return undefined;
-    }
-    else if (nodeValues.length === 1) {
+    if (nodeValues && nodeValues.length === 1) {
         return nodeValues[0];
     }
     else {
-        // array can match in any order
-        return nodeValues.sort();
+        return nodeValues;
     }
 }
 
+function selectXPath (config, caseTransform, encoding, text) {
+    var selectFn = combinators.curry(xpath.select, caseTransform(config.selector), config.ns, text);
+    return select('xpath', selectFn, encoding);
+}
+
 function selectJSONPath (config, caseTransform, encoding, text) {
-    var selector = caseTransform(config.selector);
-    try {
-        var result = JSONPath.eval(JSON.parse(text), selector);
-        if (result === typeof String) {
-            return result;
-        }
-        else if (result.length === 0) {
-            return undefined;
-        }
-        else if (result.length === 1) {
-            return result[0];
-        }
-        else {
-            return result.sort();
-        }
-    }
-    catch (e) {
-        return undefined;
-    }
+    var selectFn = combinators.curry(jsonpath.select, caseTransform(config.selector), text);
+    return select('jsonpath', selectFn, encoding);
 }
 
 function normalize (obj, config, encoding, withSelectors) {

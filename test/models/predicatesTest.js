@@ -802,7 +802,7 @@ describe('predicates', function () {
         });
     });
 
-    describe('JSONPath', function () {
+    describe('jsonpath', function () {
         it('#equals should be false if field is not JSON', function () {
             var predicate = {
                     equals: { field: 'VALUE' },

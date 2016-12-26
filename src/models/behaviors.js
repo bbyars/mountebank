@@ -11,9 +11,8 @@ var helpers = require('../util/helpers'),
     exec = require('child_process').exec,
     util = require('util'),
     combinators = require('../util/combinators'),
-    xpath = require('xpath'),
-    JSONPath = require('jsonpath-plus'),
-    DOMParser = require('xmldom').DOMParser,
+    xpath = require('./xpath'),
+    jsonpath = require('./jsonpath'),
     isWindows = require('os').platform().indexOf('win') === 0;
 
 /**
@@ -173,6 +172,7 @@ function regexFlags (config) {
 
 function regexValue (from, copyConfig, defaultValue, logger) {
     var matches = new RegExp(copyConfig.regex.pattern, regexFlags(copyConfig.regex)).exec(from);
+
     if (matches && matches.length >= 2) {
         logger.debug('Replacing %s with %s', copyConfig.into, matches[1]);
         return matches[1];
@@ -183,29 +183,12 @@ function regexValue (from, copyConfig, defaultValue, logger) {
     }
 }
 
-function nodeValue (node) {
-    if (node.nodeType === node.TEXT_NODE) {
-        return node.nodeValue;
-    }
-    else if (node.nodeType === node.ATTRIBUTE_NODE) {
-        return node.value;
-    }
-    else if (node.firstChild) {
-        return node.firstChild.data + '';
-    }
-    else {
-        return node.data + '';
-    }
-}
-
 function xpathValue (from, copyConfig, defaultValue, logger) {
-    var doc = new DOMParser().parseFromString(from),
-        select = xpath.useNamespaces(copyConfig.xpath.ns || {}),
-        nodes = select(copyConfig.xpath.selector, doc);
+    var nodeValues = xpath.select(copyConfig.xpath.selector, copyConfig.xpath.ns, from);
 
-    if (nodes.length > 0) {
-        logger.debug('Replacing %s with %s', copyConfig.into, nodeValue(nodes[0]));
-        return nodeValue(nodes[0]);
+    if (nodeValues && nodeValues.length > 0) {
+        logger.debug('Replacing %s with %s', copyConfig.into, nodeValues[0]);
+        return nodeValues[0];
     }
     else {
         logger.debug('No match for "%s"', copyConfig.xpath.selector);
@@ -213,29 +196,12 @@ function xpathValue (from, copyConfig, defaultValue, logger) {
     }
 }
 
-function selectJSONPath (possibleJSON, selector) {
-    try {
-        var result = JSONPath.eval(JSON.parse(possibleJSON), selector);
-        if (typeof result === 'string') {
-            return result;
-        }
-        else if (result.length === 0) {
-            return undefined;
-        }
-        else {
-            return result[0];
-        }
-    }
-    catch (e) {
-        return undefined;
-    }
-}
-
 function jsonpathValue (from, copyConfig, defaultValue, logger) {
-    var jsonValue = selectJSONPath(from, copyConfig.jsonpath.selector);
-    if (typeof jsonValue !== 'undefined') {
-        logger.debug('Replacing %s with %s', copyConfig.into, jsonValue);
-        return jsonValue;
+    var nodeValues = jsonpath.select(copyConfig.jsonpath.selector, from);
+
+    if (nodeValues && nodeValues.length > 0) {
+        logger.debug('Replacing %s with %s', copyConfig.into, nodeValues[0]);
+        return nodeValues;
     }
     else {
         logger.debug('No match for "%s"', copyConfig.jsonpath.selector);
