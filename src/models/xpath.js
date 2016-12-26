@@ -10,11 +10,18 @@ var xpath = require('xpath'),
     DOMParser = require('xmldom').DOMParser;
 
 function xpathSelect (selectFn, selector, doc) {
+    if (typeof doc === 'undefined') {
+        return [];
+    }
+
     try {
         return selectFn(selector, doc);
     }
     catch (e) {
-        throw errors.ValidationError('malformed xpath predicate selector', { inner: e });
+        throw errors.ValidationError('malformed xpath predicate selector', {
+            source: selector,
+            inner: e
+        });
     }
 }
 
@@ -39,11 +46,11 @@ function nodeValue (node) {
  * Returns xpath value(s) from given xml
  * @param {String} selector - The xpath selector
  * @param {Object} ns - The namespace map
- * @param {String} xml - the xml
+ * @param {String} possibleXML - the xml
  * @returns {Object}
  */
-function select (selector, ns, xml) {
-    var doc = new DOMParser().parseFromString(xml),
+function select (selector, ns, possibleXML) {
+    var doc = new DOMParser().parseFromString(possibleXML),
         selectFn = xpath.useNamespaces(ns || {}),
         result = xpathSelect(selectFn, selector, doc),
         nodeValues;

@@ -5,7 +5,9 @@ var assert = require('assert'),
     promiseIt = require('../../testHelpers').promiseIt,
     port = api.port + 1,
     timeout = parseInt(process.env.MB_SLOW_TEST_TIMEOUT || 2000),
-    tcp = require('./tcpClient');
+    tcp = require('./tcpClient'),
+    fs = require('fs'),
+    util = require('util');
 
 describe('tcp imposter', function () {
     this.timeout(timeout);
@@ -37,6 +39,61 @@ describe('tcp imposter', function () {
             }).then(function (response) {
                 assert.strictEqual(response.toString(), 'ORIGIN DECORATED');
             }).finally(function () {
+                return api.del('/imposters');
+            });
+        });
+
+        promiseIt('should compose multiple behaviors together', function () {
+            var shellFn = function exec () {
+                    console.log(process.argv[3].replace('${SALUTATION}', 'Hello'));
+                },
+                decorator = function (request, response) {
+                    response.data = response.data.replace('${SUBJECT}', 'mountebank');
+                },
+                stub = {
+                    responses: [
+                        {
+                            is: { data: '${SALUTATION}, ${SUBJECT}${PUNCTUATION}' },
+                            _behaviors: {
+                                wait: 300,
+                                repeat: 2,
+                                shellTransform: 'node shellTransformTest.js',
+                                decorate: decorator.toString(),
+                                copy: [{
+                                    from: 'data',
+                                    regex: { pattern: '([,.?!])' },
+                                    into: '${PUNCTUATION}'
+                                }]
+                            }
+                        },
+                        {
+                            is: { data: 'No behaviors' }
+                        }
+                    ]
+                },
+                stubs = [stub],
+                request = { protocol: 'tcp', port: port, stubs: stubs, name: this.name },
+                timer = new Date();
+
+            fs.writeFileSync('shellTransformTest.js', util.format('%s\nexec();', shellFn.toString()));
+
+            return api.post('/imposters', request).then(function (response) {
+                assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body, null, 2));
+                return tcp.send('!', port);
+            }).then(function (response) {
+                var time = new Date() - timer;
+                assert.strictEqual(response.toString(), 'Hello, mountebank!');
+                assert.ok(time >= 250, 'actual time: ' + time);
+                return tcp.send('!', port);
+            }).then(function (response) {
+                var time = new Date() - timer;
+                assert.strictEqual(response.toString(), 'Hello, mountebank!');
+                assert.ok(time >= 250, 'actual time: ' + time);
+                return tcp.send('!', port);
+            }).then(function (response) {
+                assert.strictEqual(response.toString(), 'No behaviors');
+            }).finally(function () {
+                fs.unlinkSync('shellTransformTest.js');
                 return api.del('/imposters');
             });
         });

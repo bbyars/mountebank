@@ -326,56 +326,6 @@ var assert = require('assert'),
                 });
             });
 
-            promiseIt('should compose multiple behaviors together', function () {
-                var shellFn = function exec () {
-                        console.log(process.argv[3].replace('${SALUTATION}', 'Hello'));
-                    },
-                    decorator = function (request, response) {
-                        response.body = response.body.replace('${SUBJECT}', 'mountebank');
-                    },
-                    stub = {
-                        responses: [
-                            {
-                                is: { body: '${SALUTATION}, ${SUBJECT}!' },
-                                _behaviors: {
-                                    wait: 300,
-                                    repeat: 2,
-                                    shellTransform: 'node shellTransformTest.js',
-                                    decorate: decorator.toString()
-                                }
-                            },
-                            {
-                                is: { body: 'No behaviors' }
-                            }
-                        ]
-                    },
-                    stubs = [stub],
-                    request = { protocol: protocol, port: port, stubs: stubs, name: this.name },
-                    timer = new Date();
-
-                fs.writeFileSync('shellTransformTest.js', util.format('%s\nexec();', shellFn.toString()));
-
-                return api.post('/imposters', request).then(function (response) {
-                    assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body, null, 2));
-                    return client.get('/', port);
-                }).then(function (response) {
-                    var time = new Date() - timer;
-                    assert.strictEqual(response.body, 'Hello, mountebank!');
-                    assert.ok(time >= 250, 'actual time: ' + time);
-                    return client.get('/', port);
-                }).then(function (response) {
-                    var time = new Date() - timer;
-                    assert.strictEqual(response.body, 'Hello, mountebank!');
-                    assert.ok(time >= 250, 'actual time: ' + time);
-                    return client.get('/', port);
-                }).then(function (response) {
-                    assert.strictEqual(response.body, 'No behaviors');
-                }).finally(function () {
-                    fs.unlinkSync('shellTransformTest.js');
-                    return api.del('/imposters');
-                });
-            });
-
             promiseIt('should support copying from request fields using regex', function () {
                 var stub = {
                         responses: [{
@@ -422,6 +372,114 @@ var assert = require('assert'),
                     assert.strictEqual(response.headers['x-test'], 'header value');
                     assert.strictEqual(response.body, 'HERE');
                 }).finally(function () {
+                    return api.del('/imposters');
+                });
+            });
+
+            promiseIt('should support copying from request fields using xpath', function () {
+                var stub = {
+                        responses: [{
+                            is: { body: 'Hello, NAME! Good to see you, NAME.' },
+                            _behaviors: {
+                                copy: [{
+                                    from: 'body',
+                                    xpath: {
+                                        selector: '//mb:name',
+                                        ns: { mb: 'http://example.com/mb' }
+                                    },
+                                    into: 'NAME'
+                                }]
+                            }
+                        }]
+                    },
+                    request = { protocol: protocol, port: port, stubs: [stub], name: this.name };
+
+                return api.post('/imposters', request).then(function (response) {
+                    assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body, null, 2));
+                    return client.post('/', '<doc xmlns:mb="http://example.com/mb"><mb:name>mountebank</mb:name></doc>', port);
+                }).then(function (response) {
+                    assert.strictEqual(response.body, 'Hello, mountebank! Good to see you, mountebank.');
+                }).finally(function () {
+                    return api.del('/imposters');
+                });
+            });
+
+            promiseIt('should support copying from request fields using jsonpath', function () {
+                var stub = {
+                        responses: [{
+                            is: { body: 'Hello, NAME! Good to see you, NAME.' },
+                            _behaviors: {
+                                copy: [{
+                                    from: 'body',
+                                    jsonpath: { selector: '$..name' },
+                                    into: 'NAME'
+                                }]
+                            }
+                        }]
+                    },
+                    request = { protocol: protocol, port: port, stubs: [stub], name: this.name };
+
+                return api.post('/imposters', request).then(function (response) {
+                    assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body, null, 2));
+                    return client.post('/', JSON.stringify({ name: 'mountebank' }), port);
+                }).then(function (response) {
+                    assert.strictEqual(response.body, 'Hello, mountebank! Good to see you, mountebank.');
+                }).finally(function () {
+                    return api.del('/imposters');
+                });
+            });
+
+            promiseIt('should compose multiple behaviors together', function () {
+                var shellFn = function exec () {
+                        console.log(process.argv[3].replace('${SALUTATION}', 'Hello'));
+                    },
+                    decorator = function (request, response) {
+                        response.body = response.body.replace('${SUBJECT}', 'mountebank');
+                    },
+                    stub = {
+                        responses: [
+                            {
+                                is: { body: '${SALUTATION}, ${SUBJECT}${PUNCTUATION}' },
+                                _behaviors: {
+                                    wait: 300,
+                                    repeat: 2,
+                                    shellTransform: 'node shellTransformTest.js',
+                                    decorate: decorator.toString(),
+                                    copy: [{
+                                        from: { query: 'punctuation' },
+                                        regex: { pattern: '([,.?!])' },
+                                        into: '${PUNCTUATION}'
+                                    }]
+                                }
+                            },
+                            {
+                                is: { body: 'No behaviors' }
+                            }
+                        ]
+                    },
+                    stubs = [stub],
+                    request = { protocol: protocol, port: port, stubs: stubs, name: this.name },
+                    timer = new Date();
+
+                fs.writeFileSync('shellTransformTest.js', util.format('%s\nexec();', shellFn.toString()));
+
+                return api.post('/imposters', request).then(function (response) {
+                    assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body, null, 2));
+                    return client.get('/?punctuation=!', port);
+                }).then(function (response) {
+                    var time = new Date() - timer;
+                    assert.strictEqual(response.body, 'Hello, mountebank!');
+                    assert.ok(time >= 250, 'actual time: ' + time);
+                    return client.get('/?punctuation=!', port);
+                }).then(function (response) {
+                    var time = new Date() - timer;
+                    assert.strictEqual(response.body, 'Hello, mountebank!');
+                    assert.ok(time >= 250, 'actual time: ' + time);
+                    return client.get('/?punctuation=!', port);
+                }).then(function (response) {
+                    assert.strictEqual(response.body, 'No behaviors');
+                }).finally(function () {
+                    fs.unlinkSync('shellTransformTest.js');
                     return api.del('/imposters');
                 });
             });

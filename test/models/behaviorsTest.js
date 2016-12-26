@@ -400,7 +400,7 @@ describe('behaviors', function () {
         });
 
         promiseIt('should ignore xpath if field is not xml', function () {
-            var request = { field: 'mountebank' },
+            var request = { field: '' },
                 response = { data: 'Hello, ${you}' },
                 logger = Logger.create(),
                 config = {
