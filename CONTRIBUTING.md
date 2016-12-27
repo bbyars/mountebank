@@ -92,6 +92,16 @@ I'm also available via Skype or something similar for questions.  Feel free to r
 
 ## Coding Guidelines
 
+### Maintaining Design Vision
+
+Most of mountebank is protocol-agnostic, and I consider this a key design concern. In general, every file
+outside fo the protocol folders (http, tcp, etc) should _not_ reference any of the request or response fields
+(like http bodies). Instead, they should accept generic object structures and deal with them appropriately.
+This includes much of the core logic in mountebank, including predicates, behaviors, and response resolution.
+To help myself maintain that mentality, I often write unit tests that use a different request or response
+structure than any of the existing protocols. This approach both makes it easier to add protocols in the future
+and ensures that the logic will work for existing protocols.
+
 ### JavaScript OO
 
 Try to avoid using the `new` and `this` keyword, unless a third-party dependency requires it.  They
