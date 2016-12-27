@@ -340,18 +340,22 @@ var assert = require('assert'),
                                 copy: [
                                     {
                                         from: 'path',
-                                        regex: { pattern: '(\\d+)' },
-                                        into: '${code}'
+                                        into: '${code}',
+                                        using: { method: 'regex', selector: '\\d+' }
                                     },
                                     {
                                         from: { headers: 'X-Request' },
-                                        regex: { pattern: '(.+)' },
-                                        into: '${header}'
+                                        into: '${header}',
+                                        using: { method: 'regex', selector: '.+' }
                                     },
                                     {
                                         from: { query: 'body' },
-                                        regex: { pattern: 'BODY IS (.+)$', ignoreCase: true },
-                                        into: '${body}'
+                                        into: '${body}',
+                                        using: {
+                                            method: 'regex',
+                                            selector: 'he\\w+$',
+                                            options: { ignoreCase: true }
+                                        }
                                     }
                                 ]
                             }
@@ -383,11 +387,12 @@ var assert = require('assert'),
                             _behaviors: {
                                 copy: [{
                                     from: 'body',
-                                    xpath: {
+                                    into: 'NAME',
+                                    using: {
+                                        method: 'xpath',
                                         selector: '//mb:name',
                                         ns: { mb: 'http://example.com/mb' }
-                                    },
-                                    into: 'NAME'
+                                    }
                                 }]
                             }
                         }]
@@ -411,8 +416,8 @@ var assert = require('assert'),
                             _behaviors: {
                                 copy: [{
                                     from: 'body',
-                                    jsonpath: { selector: '$..name' },
-                                    into: 'NAME'
+                                    into: 'NAME',
+                                    using: { method: 'jsonpath', selector: '$..name' }
                                 }]
                             }
                         }]
@@ -447,8 +452,8 @@ var assert = require('assert'),
                                     decorate: decorator.toString(),
                                     copy: [{
                                         from: { query: 'punctuation' },
-                                        regex: { pattern: '([,.?!])' },
-                                        into: '${PUNCTUATION}'
+                                        into: '${PUNCTUATION}',
+                                        using: { method: 'regex', selector: '[,.?!]' }
                                     }]
                                 }
                             },

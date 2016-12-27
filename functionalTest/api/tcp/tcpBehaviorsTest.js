@@ -61,8 +61,8 @@ describe('tcp imposter', function () {
                                 decorate: decorator.toString(),
                                 copy: [{
                                     from: 'data',
-                                    regex: { pattern: '([,.?!])' },
-                                    into: '${PUNCTUATION}'
+                                    into: '${PUNCTUATION}',
+                                    using: { method: 'regex', selector: '[,.?!]' }
                                 }]
                             }
                         },

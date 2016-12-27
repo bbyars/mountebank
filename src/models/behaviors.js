@@ -153,58 +153,53 @@ function getFrom (obj, from) {
     }
 }
 
-function hasMoreThanOneSelector (copyConfig) {
-    return (copyConfig.regex && copyConfig.xpath) ||
-        (copyConfig.regex && copyConfig.jsonpath) ||
-        (copyConfig.xpath && copyConfig.jsonpath);
-}
-
-function regexFlags (config) {
+function regexFlags (options) {
     var result = '';
-    if (config.ignoreCase) {
+    if (options && options.ignoreCase) {
         result += 'i';
     }
-    if (config.multiline) {
+    if (options && options.multiline) {
         result += 'm';
     }
     return result;
 }
 
 function regexValue (from, copyConfig, defaultValue, logger) {
-    var matches = new RegExp(copyConfig.regex.pattern, regexFlags(copyConfig.regex)).exec(from);
+    var regex = new RegExp(copyConfig.using.selector, regexFlags(copyConfig.using.options)),
+        matches = regex.exec(from);
 
-    if (matches && matches.length >= 2) {
-        logger.debug('Replacing %s with %s', copyConfig.into, matches[1]);
-        return matches[1];
+    if (matches && matches.length > 0) {
+        logger.debug('Replacing %s with %s', copyConfig.into, matches[0]);
+        return matches[0];
     }
     else {
-        logger.debug('No match for /%s/ (be sure to set a match group)', copyConfig.regex.pattern);
+        logger.debug('No match for %s', regex);
         return defaultValue;
     }
 }
 
 function xpathValue (from, copyConfig, defaultValue, logger) {
-    var nodeValues = xpath.select(copyConfig.xpath.selector, copyConfig.xpath.ns, from);
+    var nodeValues = xpath.select(copyConfig.using.selector, copyConfig.using.ns, from);
 
     if (nodeValues && nodeValues.length > 0) {
         logger.debug('Replacing %s with %s', copyConfig.into, nodeValues[0]);
         return nodeValues[0];
     }
     else {
-        logger.debug('No match for "%s"', copyConfig.xpath.selector);
+        logger.debug('No match for "%s"', copyConfig.using.selector);
         return defaultValue;
     }
 }
 
 function jsonpathValue (from, copyConfig, defaultValue, logger) {
-    var nodeValues = jsonpath.select(copyConfig.jsonpath.selector, from);
+    var nodeValues = jsonpath.select(copyConfig.using.selector, from);
 
     if (nodeValues && nodeValues.length > 0) {
         logger.debug('Replacing %s with %s', copyConfig.into, nodeValues[0]);
         return nodeValues;
     }
     else {
-        logger.debug('No match for "%s"', copyConfig.jsonpath.selector);
+        logger.debug('No match for "%s"', copyConfig.using.selector);
         return defaultValue;
     }
 }
@@ -236,21 +231,12 @@ function copy (originalRequest, responsePromise, copyArray, logger) {
     return responsePromise.then(function (response) {
         copyArray.forEach(function (copyConfig) {
             var from = getFrom(originalRequest, copyConfig.from),
-                value = copyConfig.into;
+                value = copyConfig.into,
+                using = copyConfig.using || {},
+                fnMap = { regex: regexValue, xpath: xpathValue, jsonpath: jsonpathValue };
 
-            if (hasMoreThanOneSelector(copyConfig)) {
-                throw errors.ValidationError('each copy behavior can only use one of [regex, xpath, jsonpath]',
-                    { source: copyConfig });
-            }
-
-            if (copyConfig.regex) {
-                value = regexValue(from, copyConfig, value, logger);
-            }
-            else if (copyConfig.xpath) {
-                value = xpathValue(from, copyConfig, value, logger);
-            }
-            else if (copyConfig.jsonpath) {
-                value = jsonpathValue(from, copyConfig, value, logger);
+            if (fnMap[using.method]) {
+                value = fnMap[using.method](from, copyConfig, value, logger);
             }
 
             replace(response, copyConfig.into, value);

@@ -246,15 +246,15 @@ describe('behaviors', function () {
     });
 
     describe('#copy', function () {
-        promiseIt('should support copying regex group from request', function () {
+        promiseIt('should support copying regex match from request', function () {
             var request = { data: 'My name is mountebank' },
                 response = { data: 'Hello, ${you}' },
                 logger = Logger.create(),
                 config = {
                     copy: [{
                         from: 'data',
-                        regex: { pattern: 'My name is (\\w+)$' },
-                        into: '${you}'
+                        into: '${you}',
+                        using: { method: 'regex', selector: '\\w+$' }
                     }]
                 };
 
@@ -263,15 +263,19 @@ describe('behaviors', function () {
             });
         });
 
-        promiseIt('should support copying regex group from request with ignoreCase', function () {
+        promiseIt('should support copying regex match from request with ignoreCase', function () {
             var request = { data: 'My name is mountebank' },
                 response = { data: 'Hello, ${you}' },
                 logger = Logger.create(),
                 config = {
                     copy: [{
                         from: 'data',
-                        regex: { pattern: 'MY NAME IS (\\w+)$', ignoreCase: true },
-                        into: '${you}'
+                        into: '${you}',
+                        using: {
+                            method: 'regex',
+                            selector: 'MOUNT\\w+$',
+                            options: { ignoreCase: true }
+                        }
                     }]
                 };
 
@@ -280,15 +284,19 @@ describe('behaviors', function () {
             });
         });
 
-        promiseIt('should support copying regex group from request with multiine', function () {
+        promiseIt('should support copying regex match from request with multiline', function () {
             var request = { data: 'First line\nMy name is mountebank\nThird line' },
                 response = { data: 'Hello, ${you}' },
                 logger = Logger.create(),
                 config = {
                     copy: [{
                         from: 'data',
-                        regex: { pattern: '^My name is (\\w+)$', multiline: true },
-                        into: '${you}'
+                        into: '${you}',
+                        using: {
+                            method: 'regex',
+                            selector: 'mount\\w+$',
+                            options: { multiline: true }
+                        }
                     }]
                 };
 
@@ -304,8 +312,11 @@ describe('behaviors', function () {
                 config = {
                     copy: [{
                         from: 'data',
-                        regex: { pattern: 'Mi nombre es (\\w+)$' },
-                        into: '${you}'
+                        into: '${you}',
+                        using: {
+                            method: 'regex',
+                            selector: 'Mi nombre es (\\w+)$'
+                        }
                     }]
                 };
 
@@ -314,15 +325,15 @@ describe('behaviors', function () {
             });
         });
 
-        promiseIt('should support copying regex group into object response field', function () {
+        promiseIt('should support copying regex match into object response field', function () {
             var request = { data: 'My name is mountebank' },
                 response = { outer: { inner: 'Hello, ${you}' } },
                 logger = Logger.create(),
                 config = {
                     copy: [{
                         from: 'data',
-                        regex: { pattern: 'My name is (\\w+)$' },
-                        into: '${you}'
+                        into: '${you}',
+                        using: { method: 'regex', selector: '\\w+$' }
                     }]
                 };
 
@@ -331,15 +342,15 @@ describe('behaviors', function () {
             });
         });
 
-        promiseIt('should support copying regex group into all response field', function () {
+        promiseIt('should support copying regex match into all response field', function () {
             var request = { data: 'My name is mountebank' },
                 response = { data: '${you}', outer: { inner: 'Hello, ${you}' } },
                 logger = Logger.create(),
                 config = {
                     copy: [{
                         from: 'data',
-                        regex: { pattern: 'My name is (\\w+)$' },
-                        into: '${you}'
+                        into: '${you}',
+                        using: { method: 'regex', selector: '\\w+$' }
                     }]
                 };
 
@@ -348,15 +359,15 @@ describe('behaviors', function () {
             });
         });
 
-        promiseIt('should support copying regex group from object request field', function () {
+        promiseIt('should support copying regex match from object request field', function () {
             var request = { data: { name: 'My name is mountebank', other: 'ignore' } },
                 response = { data: 'Hello, ${you}' },
                 logger = Logger.create(),
                 config = {
                     copy: [{
                         from: { data: 'name' },
-                        regex: { pattern: 'My name is (\\w+)$' },
-                        into: '${you}'
+                        into: '${you}',
+                        using: { method: 'regex', selector: '\\w+$' }
                     }]
                 };
 
@@ -372,8 +383,8 @@ describe('behaviors', function () {
                 config = {
                     copy: [{
                         from: 'field',
-                        xpath: { selector: '//name' },
-                        into: '${you}'
+                        into: '${you}',
+                        using: { method: 'xpath', selector: '//name' }
                     }]
                 };
 
@@ -389,8 +400,8 @@ describe('behaviors', function () {
                 config = {
                     copy: [{
                         from: 'field',
-                        xpath: { selector: '//title' },
-                        into: '${you}'
+                        into: '${you}',
+                        using: { method: 'xpath', selector: '//title' }
                     }]
                 };
 
@@ -406,8 +417,8 @@ describe('behaviors', function () {
                 config = {
                     copy: [{
                         from: 'field',
-                        xpath: { selector: '//title' },
-                        into: '${you}'
+                        into: '${you}',
+                        using: { method: 'xpath', selector: '//title' }
                     }]
                 };
 
@@ -423,8 +434,8 @@ describe('behaviors', function () {
                 config = {
                     copy: [{
                         from: 'field',
-                        xpath: { selector: '//tool/@name' },
-                        into: '${you}'
+                        into: '${you}',
+                        using: { method: 'xpath', selector: '//tool/@name' }
                     }]
                 };
 
@@ -440,8 +451,8 @@ describe('behaviors', function () {
                 config = {
                     copy: [{
                         from: 'field',
-                        xpath: { selector: '//name/text()' },
-                        into: '${you}'
+                        into: '${you}',
+                        using: { method: 'xpath', selector: '//name/text()' }
                     }]
                 };
 
@@ -457,11 +468,12 @@ describe('behaviors', function () {
                 config = {
                     copy: [{
                         from: 'field',
-                        xpath: {
+                        into: '${you}',
+                        using: {
+                            method: 'xpath',
                             selector: '//mb:name',
                             ns: { mb: 'http://example.com/mb' }
-                        },
-                        into: '${you}'
+                        }
                     }]
                 };
 
@@ -477,8 +489,8 @@ describe('behaviors', function () {
                 config = {
                     copy: [{
                         from: 'field',
-                        jsonpath: { selector: '$..name' },
-                        into: '${you}'
+                        into: '${you}',
+                        using: { method: 'jsonpath', selector: '$..name' }
                     }]
                 };
 
@@ -494,8 +506,8 @@ describe('behaviors', function () {
                 config = {
                     copy: [{
                         from: 'field',
-                        jsonpath: { selector: '$..name' },
-                        into: '${you}'
+                        into: '${you}',
+                        using: { method: 'jsonpath', selector: '$..name' }
                     }]
                 };
 
@@ -511,8 +523,8 @@ describe('behaviors', function () {
                 config = {
                     copy: [{
                         from: 'field',
-                        jsonpath: { selector: '$..title' },
-                        into: '${you}'
+                        into: '${you}',
+                        using: { method: 'jsonpath', selector: '$..title' }
                     }]
                 };
 

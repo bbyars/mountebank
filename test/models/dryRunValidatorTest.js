@@ -579,38 +579,5 @@ describe('dryRunValidator', function () {
                 });
             });
         });
-
-        promiseIt('should not be valid if copy behavior uses multiple selection types', function () {
-            var request = {
-                    stubs: [{
-                        responses: [{
-                            is: {},
-                            _behaviors: { copy: [{
-                                from: 'body',
-                                regex: { pattern: '\\w+' },
-                                xpath: { selector: '//title' },
-                                into: '${token}'
-                            }] }
-                        }]
-                    }]
-                },
-                validator = Validator.create({ StubRepository: StubRepository, testRequest: testRequest });
-
-            return validator.validate(request, Logger.create()).then(function (result) {
-                assert.deepEqual(result, {
-                    isValid: false,
-                    errors: [{
-                        code: 'bad data',
-                        message: 'each copy behavior can only use one of [regex, xpath, jsonpath]',
-                        source: {
-                            from: 'body',
-                            regex: { pattern: '\\w+' },
-                            xpath: { selector: '//title' },
-                            into: '${token}'
-                        }
-                    }]
-                });
-            });
-        });
     });
 });
