@@ -368,7 +368,7 @@ var assert = require('assert'),
                     return client.responseFor({
                         port: port,
                         method: 'GET',
-                        headers: { 'X-Request': 'header value' },
+                        headers: { 'x-request': 'header value' },
                         path: '/400/this-will-be-ignored?body=body%20is%20HERE'
                     });
                 }).then(function (response) {
@@ -415,7 +415,7 @@ var assert = require('assert'),
                             is: { body: 'Hello, NAME! Good to see you, NAME.' },
                             _behaviors: {
                                 copy: [{
-                                    from: 'body',
+                                    from: 'BODY',
                                     into: 'NAME',
                                     using: { method: 'jsonpath', selector: '$..name' }
                                 }]

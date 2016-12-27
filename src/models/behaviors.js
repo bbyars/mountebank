@@ -139,6 +139,17 @@ function decorate (originalRequest, responsePromise, fn, logger) {
     });
 }
 
+function getKeyIgnoringCase (obj, expectedKey) {
+    return Object.keys(obj).find(function (key) {
+        if (key.toLowerCase() === expectedKey.toLowerCase()) {
+            return key;
+        }
+        else {
+            return undefined;
+        }
+    });
+}
+
 function getFrom (obj, from) {
     if (typeof from === 'object') {
         var keys = Object.keys(from);
@@ -149,7 +160,7 @@ function getFrom (obj, from) {
         return getFrom(obj[keys[0]], from[keys[0]]);
     }
     else {
-        return obj[from];
+        return obj[getKeyIgnoringCase(obj, from)];
     }
 }
 

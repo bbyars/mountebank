@@ -342,7 +342,7 @@ describe('behaviors', function () {
             });
         });
 
-        promiseIt('should support copying regex match into all response field', function () {
+        promiseIt('should support copying regex match into all response fields', function () {
             var request = { data: 'My name is mountebank' },
                 response = { data: '${you}', outer: { inner: 'Hello, ${you}' } },
                 logger = Logger.create(),
@@ -366,6 +366,23 @@ describe('behaviors', function () {
                 config = {
                     copy: [{
                         from: { data: 'name' },
+                        into: '${you}',
+                        using: { method: 'regex', selector: '\\w+$' }
+                    }]
+                };
+
+            return behaviors.execute(request, response, config, logger).then(function (actualResponse) {
+                assert.deepEqual(actualResponse, { data: 'Hello, mountebank' });
+            });
+        });
+
+        promiseIt('should support copying regex match from object request field ignoring case of key', function () {
+            var request = { data: { name: 'My name is mountebank', other: 'ignore' } },
+                response = { data: 'Hello, ${you}' },
+                logger = Logger.create(),
+                config = {
+                    copy: [{
+                        from: { data: 'NAME' },
                         into: '${you}',
                         using: { method: 'regex', selector: '\\w+$' }
                     }]
