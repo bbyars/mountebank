@@ -170,11 +170,11 @@ function regexValue (from, copyConfig, defaultValue, logger) {
 
     if (matches && matches.length > 0) {
         logger.debug('Replacing %s with %s', copyConfig.into, matches[0]);
-        return matches[0];
+        return matches;
     }
     else {
         logger.debug('No match for %s', regex);
-        return defaultValue;
+        return [defaultValue];
     }
 }
 
@@ -183,16 +183,16 @@ function xpathValue (from, copyConfig, defaultValue, logger) {
 
     if (nodeValues && nodeValues.length > 0) {
         logger.debug('Replacing %s with %s', copyConfig.into, nodeValues[0]);
-        return nodeValues[0];
+        return nodeValues;
     }
     else {
         logger.debug('No match for "%s"', copyConfig.using.selector);
-        return defaultValue;
+        return [defaultValue];
     }
 }
 
 function jsonpathValue (from, copyConfig, defaultValue, logger) {
-    var nodeValues = jsonpath.select(copyConfig.using.selector, from);
+    var nodeValues = jsonpath.select(copyConfig.using.selector, from, logger);
 
     if (nodeValues && nodeValues.length > 0) {
         logger.debug('Replacing %s with %s', copyConfig.into, nodeValues[0]);
@@ -200,17 +200,29 @@ function jsonpathValue (from, copyConfig, defaultValue, logger) {
     }
     else {
         logger.debug('No match for "%s"', copyConfig.using.selector);
-        return defaultValue;
+        return [defaultValue];
     }
 }
 
-function replace (obj, token, replacement) {
+function globalStringReplace (str, substring, newSubstring) {
+    return str.split(substring).join(newSubstring);
+}
+
+function replace (obj, token, values) {
     Object.keys(obj).forEach(function (key) {
         if (typeof obj[key] === 'string') {
-            obj[key] = obj[key].split(token).join(replacement);
+            values.forEach(function (replacement, index) {
+                // replace ${TOKEN}[1] with indexed element
+                var indexedToken = util.format('%s[%s]', token, index);
+                obj[key] = globalStringReplace(obj[key], indexedToken, replacement);
+            });
+            if (values.length > 0) {
+                // replace ${TOKEN} with first element
+                obj[key] = globalStringReplace(obj[key], token, values[0]);
+            }
         }
         else if (typeof obj[key] === 'object') {
-            replace(obj[key], token, replacement);
+            replace(obj[key], token, values);
         }
     });
 }
@@ -231,15 +243,15 @@ function copy (originalRequest, responsePromise, copyArray, logger) {
     return responsePromise.then(function (response) {
         copyArray.forEach(function (copyConfig) {
             var from = getFrom(originalRequest, copyConfig.from),
-                value = copyConfig.into,
+                values = [copyConfig.into],
                 using = copyConfig.using || {},
                 fnMap = { regex: regexValue, xpath: xpathValue, jsonpath: jsonpathValue };
 
             if (fnMap[using.method]) {
-                value = fnMap[using.method](from, copyConfig, value, logger);
+                values = fnMap[using.method](from, copyConfig, values, logger);
             }
 
-            replace(response, copyConfig.into, value);
+            replace(response, copyConfig.into, values);
         });
         return Q(response);
     });

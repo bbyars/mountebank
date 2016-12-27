@@ -376,6 +376,23 @@ describe('behaviors', function () {
             });
         });
 
+        promiseIt('should support copying regex indexed groups from request', function () {
+            var request = { name: 'The date is 2016-12-29' },
+                response = { data: 'Year ${DATE}[1], Month ${DATE}[2], Day ${DATE}[3]: ${DATE}' },
+                logger = Logger.create(),
+                config = {
+                    copy: [{
+                        from: 'name',
+                        into: '${DATE}',
+                        using: { method: 'regex', selector: '(\\d{4})-(\\d{2})-(\\d{2})' }
+                    }]
+                };
+
+            return behaviors.execute(request, response, config, logger).then(function (actualResponse) {
+                assert.deepEqual(actualResponse, { data: 'Year 2016, Month 12, Day 29: 2016-12-29' });
+            });
+        });
+
         promiseIt('should support copying xpath match into response', function () {
             var request = { field: '<doc><name>mountebank</name></doc>' },
                 response = { data: 'Hello, ${you}' },
@@ -483,6 +500,23 @@ describe('behaviors', function () {
             });
         });
 
+        promiseIt('should support multiple indexed xpath matches into response', function () {
+            var request = { field: '<doc><num>1</num><num>2</num><num>3</num></doc>' },
+                response = { data: '${NUM}, ${NUM}[1], ${NUM}[2]' },
+                logger = Logger.create(),
+                config = {
+                    copy: [{
+                        from: 'field',
+                        into: '${NUM}',
+                        using: { method: 'xpath', selector: '//num' }
+                    }]
+                };
+
+            return behaviors.execute(request, response, config, logger).then(function (actualResponse) {
+                assert.deepEqual(actualResponse, { data: '1, 2, 3' });
+            });
+        });
+
         promiseIt('should ignore jsonpath selector if field is not json', function () {
             var request = { field: 'mountebank' },
                 response = { data: 'Hello, ${you}' },
@@ -497,6 +531,7 @@ describe('behaviors', function () {
 
             return behaviors.execute(request, response, config, logger).then(function (actualResponse) {
                 assert.deepEqual(actualResponse, { data: 'Hello, ${you}' });
+                logger.warn.assertLogged('Cannot parse as JSON: "mountebank"');
             });
         });
 
@@ -531,6 +566,23 @@ describe('behaviors', function () {
 
             return behaviors.execute(request, response, config, logger).then(function (actualResponse) {
                 assert.deepEqual(actualResponse, { data: 'Hello, ${you}' });
+            });
+        });
+
+        promiseIt('should support replacing multiple indexed tokens with jsonpath selector', function () {
+            var request = { field: JSON.stringify({ numbers: [{ key: 1 }, { key: 2 }, { key: 3 }] }) },
+                response = { data: '${NUM}, ${NUM}[1], ${NUM}[2]' },
+                logger = Logger.create(),
+                config = {
+                    copy: [{
+                        from: 'field',
+                        into: '${NUM}',
+                        using: { method: 'jsonpath', selector: '$..key' }
+                    }]
+                };
+
+            return behaviors.execute(request, response, config, logger).then(function (actualResponse) {
+                assert.deepEqual(actualResponse, { data: '1, 2, 3' });
             });
         });
     });
