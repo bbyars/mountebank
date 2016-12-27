@@ -424,6 +424,7 @@ describe('behaviors', function () {
 
             return behaviors.execute(request, response, config, logger).then(function (actualResponse) {
                 assert.deepEqual(actualResponse, { data: 'Hello, ${you}' });
+                logger.warn.assertLogged('[xmldom error]\tinvalid doc source\n@#[line:undefined,col:undefined] (source: "")');
             });
         });
 

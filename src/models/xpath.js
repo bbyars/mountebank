@@ -47,10 +47,18 @@ function nodeValue (node) {
  * @param {String} selector - The xpath selector
  * @param {Object} ns - The namespace map
  * @param {String} possibleXML - the xml
+ * @param {Object} logger - Optional, used to log XML parsing errors
  * @returns {Object}
  */
-function select (selector, ns, possibleXML) {
-    var doc = new DOMParser().parseFromString(possibleXML),
+function select (selector, ns, possibleXML, logger) {
+    var parser = new DOMParser({
+            errorHandler: function (level, message) {
+                if (logger) {
+                    logger.warn('%s (source: %s)', message, JSON.stringify(possibleXML));
+                }
+            }
+        }),
+        doc = parser.parseFromString(possibleXML),
         selectFn = xpath.useNamespaces(ns || {}),
         result = xpathSelect(selectFn, selector, doc),
         nodeValues;

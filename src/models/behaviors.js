@@ -179,7 +179,7 @@ function regexValue (from, copyConfig, defaultValue, logger) {
 }
 
 function xpathValue (from, copyConfig, defaultValue, logger) {
-    var nodeValues = xpath.select(copyConfig.using.selector, copyConfig.using.ns, from);
+    var nodeValues = xpath.select(copyConfig.using.selector, copyConfig.using.ns, from, logger);
 
     if (nodeValues && nodeValues.length > 0) {
         logger.debug('Replacing %s with %s', copyConfig.into, nodeValues[0]);
