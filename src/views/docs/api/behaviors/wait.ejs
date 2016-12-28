@@ -1,3 +1,24 @@
+<table>
+  <tr>
+    <th>Parameter</th>
+    <th>Default</th>
+    <th>Type</th>
+    <th>Description</th>
+  </tr>
+  <tr>
+    <td><code>wait</code></td>
+    <td>N/A</td>
+    <td><code>A positive integer, or a string</code></td>
+    <td>If a number is passed in, mountebank will wait that number of milliseconds before returning.
+    If a string is passed in, it is expected to be a parameterless JavaScript function that returns the number
+    of milliseconds to wait.
+
+    <p class='warning-icon'>The <code><a href='/docs/commandLine'>--allowInjection</a></code> command
+      line flag must be set to support passing in a JavaScript function</p>
+    </td>
+  </tr>
+</table>
+
 <p>The <code>wait</code> behavior is conceptually quite simple.  Just pass in a number of milliseconds
 to wait into the behavior:</p>
 
@@ -83,7 +104,7 @@ Content-Type: application/json
             "body": "This took at least 100 to 1000 ms to send"
           },
           "_behaviors": {
-            "wait": "function(){ return Math.floor(Math.random() * 901) + 100; }"
+            "wait": "function() { return Math.floor(Math.random() * 901) + 100; }"
           }
         }
       ]

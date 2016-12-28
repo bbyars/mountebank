@@ -66,8 +66,15 @@ function createTestSpec (endpoint, id, testSpec) {
         execute: function () {
             var steps = this.steps.map(function (step) {
                     return function () {
-                        var executor = require('./testTypes/' + step.type);
-                        return executor.runStep(step);
+                        try {
+                            var executor = require('./testTypes/' + step.type);
+                            return executor.runStep(step);
+                        }
+                        catch (e) {
+                            console.log('Invalid step type:');
+                            console.log(JSON.stringify(step, null, 4));
+                            throw e;
+                        }
                     };
                 }),
                 that = this;

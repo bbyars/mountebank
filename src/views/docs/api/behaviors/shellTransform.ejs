@@ -1,3 +1,24 @@
+<table>
+  <tr>
+    <th>Parameter</th>
+    <th>Default</th>
+    <th>Type</th>
+    <th>Description</th>
+  </tr>
+  <tr>
+    <td><code>shellTransform</code></td>
+    <td>N/A</td>
+    <td><code>A string</code></td>
+    <td>The path of a command line application. The application should accept the JSON-encoded
+        <code>request</code> and <code>response</code> as arguments and print out the transformed
+        <code>response</code> to <code>stdout</code>.
+
+    <p class='warning-icon'>The <code><a href='/docs/commandLine'>--allowInjection</a></code> command
+      line flag must be set to support this behavior.</p>
+    </td>
+  </tr>
+</table>
+
 <p>The <code>shellTransform</code> behavior plays the same role as the <code>decorate</code> behavior,
 enabling transformation of the response. Since it allows shelling out to another application,
 the <a href='/docs/commandLine'>--allowInjection</a> flag must be passed in to <code>mb</code> on startup.
@@ -51,7 +72,7 @@ Content-Type: application/json
       "responses": [
         {
           "is": {
-            "body": "Hello, ${YOU}!"
+            "body": "Hello, <strong class='highlight1'>${YOU}!</strong>"
           },
           "_behaviors": {
             "shellTransform": "node addName.js"
@@ -89,7 +110,7 @@ for (var i = 0; i &lt; lines.length; i += 1) {
         name = fields[1];
 
     if (requestId === id) {
-        response.body = response.body.replace('${YOU}', name);
+        <strong class='highlight1'>response.body = response.body.replace('${YOU}', name);</strong>
     }
 }
 
@@ -113,7 +134,7 @@ Date: Wed, 07 Jan 2016 21:27:14 GMT
 Connection: close
 Transfer-Encoding: chunked
 
-Hello, Samwise Gamgee!
+Hello, <strong class='highlight1'>Samwise Gamgee!</strong>
 </code></pre>
 
 <p>And again...</p>
@@ -133,7 +154,7 @@ Date: Wed, 07 Jan 2016 21:27:14 GMT
 Connection: close
 Transfer-Encoding: chunked
 
-Hello, Smeagol!
+Hello, <strong class='highlight1'>Smeagol!</strong>
 </code></pre>
 
 <code class='hidden' data-test-id='shellTransform'
