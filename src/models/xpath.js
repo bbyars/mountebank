@@ -53,9 +53,8 @@ function nodeValue (node) {
 function select (selector, ns, possibleXML, logger) {
     var parser = new DOMParser({
             errorHandler: function (level, message) {
-                if (logger) {
-                    logger.warn('%s (source: %s)', message, JSON.stringify(possibleXML));
-                }
+                var warn = logger.warn || function () {};
+                warn('%s (source: %s)', message, JSON.stringify(possibleXML));
             }
         }),
         doc = parser.parseFromString(possibleXML),

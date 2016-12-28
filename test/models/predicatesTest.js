@@ -1401,7 +1401,7 @@ describe('predicates', function () {
     });
 
     describe('treating strings as json', function () {
-        it('#equals should be false if field is not XML', function () {
+        it('#equals should be false if field does not equal given value', function () {
             var predicate = { equals: { field: { key: 'VALUE' } } },
                 request = { field: 'KEY: VALUE' };
             assert.ok(!predicates.equals(predicate, request));
