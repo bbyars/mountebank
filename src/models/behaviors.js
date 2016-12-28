@@ -175,65 +175,63 @@ function regexFlags (options) {
     return result;
 }
 
-function regexValue (from, copyConfig, defaultValue, logger) {
-    var regex = new RegExp(copyConfig.using.selector, regexFlags(copyConfig.using.options)),
-        matches = regex.exec(from);
+function getMatches (selectionFn, selector, logger) {
+    var matches = selectionFn();
 
     if (matches && matches.length > 0) {
-        logger.debug('Replacing %s with %s', copyConfig.into, matches[0]);
         return matches;
     }
     else {
-        logger.debug('No match for %s', regex);
-        return [defaultValue];
+        logger.debug('No match for "%s"', selector);
+        return [];
     }
 }
 
-function xpathValue (from, copyConfig, defaultValue, logger) {
-    var nodeValues = xpath.select(copyConfig.using.selector, copyConfig.using.ns, from, logger);
+function regexValue (from, copyConfig, logger) {
+    var regex = new RegExp(copyConfig.using.selector, regexFlags(copyConfig.using.options)),
+        selectionFn = function () { return regex.exec(from); };
+    return getMatches(selectionFn, regex, logger);
+}
 
-    if (nodeValues && nodeValues.length > 0) {
-        logger.debug('Replacing %s with %s', copyConfig.into, nodeValues[0]);
-        return nodeValues;
+function xpathValue (from, copyConfig, logger) {
+    var selectionFn = function () {
+        return xpath.select(copyConfig.using.selector, copyConfig.using.ns, from, logger);
+    };
+    return getMatches(selectionFn, copyConfig.using.selector, logger);
+}
+
+function jsonpathValue (from, copyConfig, logger) {
+    var selectionFn = function () {
+        return jsonpath.select(copyConfig.using.selector, from, logger);
+    };
+    return getMatches(selectionFn, copyConfig.using.selector, logger);
+}
+
+function globalStringReplace (str, substring, newSubstring, logger) {
+    if (substring !== newSubstring) {
+        logger.debug('Replacing %s with %s', JSON.stringify(substring), JSON.stringify(newSubstring));
+        return str.split(substring).join(newSubstring);
     }
     else {
-        logger.debug('No match for "%s"', copyConfig.using.selector);
-        return [defaultValue];
+        return str;
     }
 }
 
-function jsonpathValue (from, copyConfig, defaultValue, logger) {
-    var nodeValues = jsonpath.select(copyConfig.using.selector, from, logger);
-
-    if (nodeValues && nodeValues.length > 0) {
-        logger.debug('Replacing %s with %s', copyConfig.into, nodeValues[0]);
-        return nodeValues;
-    }
-    else {
-        logger.debug('No match for "%s"', copyConfig.using.selector);
-        return [defaultValue];
-    }
-}
-
-function globalStringReplace (str, substring, newSubstring) {
-    return str.split(substring).join(newSubstring);
-}
-
-function replace (obj, token, values) {
+function replace (obj, token, values, logger) {
     Object.keys(obj).forEach(function (key) {
         if (typeof obj[key] === 'string') {
             values.forEach(function (replacement, index) {
                 // replace ${TOKEN}[1] with indexed element
                 var indexedToken = util.format('%s[%s]', token, index);
-                obj[key] = globalStringReplace(obj[key], indexedToken, replacement);
+                obj[key] = globalStringReplace(obj[key], indexedToken, replacement, logger);
             });
             if (values.length > 0) {
                 // replace ${TOKEN} with first element
-                obj[key] = globalStringReplace(obj[key], token, values[0]);
+                obj[key] = globalStringReplace(obj[key], token, values[0], logger);
             }
         }
         else if (typeof obj[key] === 'object') {
-            replace(obj[key], token, values);
+            replace(obj[key], token, values, logger);
         }
     });
 }
@@ -254,15 +252,15 @@ function copy (originalRequest, responsePromise, copyArray, logger) {
     return responsePromise.then(function (response) {
         copyArray.forEach(function (copyConfig) {
             var from = getFrom(originalRequest, copyConfig.from),
-                values = [copyConfig.into],
                 using = copyConfig.using || {},
-                fnMap = { regex: regexValue, xpath: xpathValue, jsonpath: jsonpathValue };
+                fnMap = { regex: regexValue, xpath: xpathValue, jsonpath: jsonpathValue },
+                values = [];
 
             if (fnMap[using.method]) {
-                values = fnMap[using.method](from, copyConfig, values, logger);
+                values = fnMap[using.method](from, copyConfig, logger);
             }
 
-            replace(response, copyConfig.into, values);
+            replace(response, copyConfig.into, values, logger);
         });
         return Q(response);
     });
