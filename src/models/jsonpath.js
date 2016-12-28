@@ -24,7 +24,7 @@ function select (selector, possibleJSON, logger) {
             return undefined;
         }
         else {
-            return result.sort();
+            return result;
         }
     }
     catch (e) {

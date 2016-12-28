@@ -72,8 +72,7 @@ function select (selector, ns, possibleXML, logger) {
         return undefined;
     }
     else {
-        // array can match in any order
-        return nodeValues.sort();
+        return nodeValues;
     }
 }
 

@@ -518,7 +518,7 @@ describe('behaviors', function () {
         });
 
         promiseIt('should support multiple indexed xpath matches into response', function () {
-            var request = { field: '<doc><num>1</num><num>2</num><num>3</num></doc>' },
+            var request = { field: '<doc><num>3</num><num>2</num><num>1</num></doc>' },
                 response = { data: '${NUM}, ${NUM}[1], ${NUM}[2]' },
                 logger = Logger.create(),
                 config = {
@@ -530,7 +530,7 @@ describe('behaviors', function () {
                 };
 
             return behaviors.execute(request, response, config, logger).then(function (actualResponse) {
-                assert.deepEqual(actualResponse, { data: '1, 2, 3' });
+                assert.deepEqual(actualResponse, { data: '3, 2, 1' });
             });
         });
 
@@ -587,7 +587,7 @@ describe('behaviors', function () {
         });
 
         promiseIt('should support replacing multiple indexed tokens with jsonpath selector', function () {
-            var request = { field: JSON.stringify({ numbers: [{ key: 1 }, { key: 2 }, { key: 3 }] }) },
+            var request = { field: JSON.stringify({ numbers: [{ key: 3 }, { key: 2 }, { key: 1 }] }) },
                 response = { data: '${NUM}, ${NUM}[1], ${NUM}[2]' },
                 logger = Logger.create(),
                 config = {
@@ -599,7 +599,7 @@ describe('behaviors', function () {
                 };
 
             return behaviors.execute(request, response, config, logger).then(function (actualResponse) {
-                assert.deepEqual(actualResponse, { data: '1, 2, 3' });
+                assert.deepEqual(actualResponse, { data: '3, 2, 1' });
             });
         });
     });

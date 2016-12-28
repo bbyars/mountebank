@@ -10,7 +10,8 @@ var errors = require('../util/errors'),
     combinators = require('../util/combinators'),
     stringify = require('json-stable-stringify'),
     xpath = require('./xpath'),
-    jsonpath = require('./jsonpath');
+    jsonpath = require('./jsonpath'),
+    util = require('util');
 
 function sortObjects (a, b) {
     if (typeof a === 'object' && typeof b === 'object') {
@@ -72,14 +73,23 @@ function select (type, selectFn, encoding) {
     }
 }
 
+function orderIndependent (possibleArray) {
+    if (util.isArray(possibleArray)) {
+        return possibleArray.sort();
+    }
+    else {
+        return possibleArray;
+    }
+}
+
 function selectXPath (config, caseTransform, encoding, text) {
     var selectFn = combinators.curry(xpath.select, caseTransform(config.selector), config.ns, text);
-    return select('xpath', selectFn, encoding);
+    return orderIndependent(select('xpath', selectFn, encoding));
 }
 
 function selectJSONPath (config, caseTransform, encoding, text) {
     var selectFn = combinators.curry(jsonpath.select, caseTransform(config.selector), text);
-    return select('jsonpath', selectFn, encoding);
+    return orderIndependent(select('jsonpath', selectFn, encoding));
 }
 
 function normalize (obj, config, encoding, withSelectors) {
