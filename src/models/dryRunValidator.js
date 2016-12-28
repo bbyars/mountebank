@@ -12,7 +12,8 @@ var utils = require('util'),
     exceptions = require('../util/errors'),
     helpers = require('../util/helpers'),
     combinators = require('../util/combinators'),
-    ResponseResolver = require('./responseResolver');
+    ResponseResolver = require('./responseResolver'),
+    behaviors = require('./behaviors');
 
 /**
  * Creates the validator
@@ -93,18 +94,6 @@ function create (options) {
         return deferred.promise;
     }
 
-    function addInvalidWaitErrors (stub, errors) {
-        var hasInvalidWait = stub.responses.some(function (response) {
-            return response._behaviors && response._behaviors.wait && response._behaviors.wait < 0;
-        });
-
-        if (hasInvalidWait) {
-            errors.push(exceptions.ValidationError("'wait' value must be an integer greater than or equal to 0", {
-                source: stub
-            }));
-        }
-    }
-
     function hasStubInjection (stub) {
         var hasResponseInjections = stub.responses.some(function (response) {
                 var hasDecorator = response._behaviors && response._behaviors.decorate,
@@ -139,6 +128,18 @@ function create (options) {
         }
     }
 
+    function addAllTo (values, additionalValues) {
+        additionalValues.forEach(function (value) {
+            values.push(value);
+        });
+    }
+
+    function addBehaviorErrors (stub, errors) {
+        stub.responses.forEach(function (response) {
+            addAllTo(errors, behaviors.validate(response._behaviors));
+        });
+    }
+
     function errorsForStub (stub, encoding, logger) {
         var errors = [],
             deferred = Q.defer();
@@ -149,8 +150,8 @@ function create (options) {
             }));
         }
         else {
-            addInvalidWaitErrors(stub, errors);
             addStubInjectionErrors(stub, errors);
+            addBehaviorErrors(stub, errors);
         }
 
         if (errors.length > 0) {

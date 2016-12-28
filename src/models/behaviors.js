@@ -16,6 +16,29 @@ var helpers = require('../util/helpers'),
     isWindows = require('os').platform().indexOf('win') === 0;
 
 /**
+ * Validates the behavior configuration and returns all errors
+ * @param {Object} config - The behavior configuration
+ * @returns {Object} The array of errors
+ */
+function validate (config) {
+    if (typeof config === 'undefined') {
+        return [];
+    }
+
+    var result = [];
+    if (config.wait && config.wait < 0) {
+        result.push(errors.ValidationError('"wait" value must be an integer greater than or equal to 0',
+            { source: config }));
+    }
+    if (config.repeat && config.repeat < 0) {
+        result.push(errors.ValidationError('"repeat" value must be an integer greater than or equal to 0',
+            { source: config }));
+    }
+
+    return result;
+}
+
+/**
  * Waits a specified number of milliseconds before sending the response.  Due to the approximate
  * nature of the timer, there is no guarantee that it will wait the given amount, but it will be close.
  * @param {Object} request - The request object
@@ -306,5 +329,6 @@ function execute (request, response, behaviors, logger) {
 }
 
 module.exports = {
+    validate: validate,
     execute: execute
 };

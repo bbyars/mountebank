@@ -407,18 +407,31 @@ describe('dryRunValidator', function () {
             });
         });
 
-        promiseIt('should detect invalid wait behavior value', function () {
-            var request = { stubs: [{ responses: [{ is: { statusCode: 400 }, _behaviors: { wait: -1 } }] }] },
+        promiseIt('should add behavior validation errors', function () {
+            var request = { stubs: [{ responses: [{
+                    is: { statusCode: 400 },
+                    _behaviors: {
+                        wait: -1,
+                        repeat: -1
+                    }
+                }] }] },
                 validator = Validator.create({ StubRepository: StubRepository, testRequest: testRequest });
 
             return validator.validate(request, Logger.create()).then(function (result) {
                 assert.deepEqual(result, {
                     isValid: false,
-                    errors: [{
-                        code: 'bad data',
-                        message: "'wait' value must be an integer greater than or equal to 0",
-                        source: request.stubs[0]
-                    }]
+                    errors: [
+                        {
+                            code: 'bad data',
+                            message: '"wait" value must be an integer greater than or equal to 0',
+                            source: { wait: -1, repeat: -1 }
+                        },
+                        {
+                            code: 'bad data',
+                            message: '"repeat" value must be an integer greater than or equal to 0',
+                            source: { wait: -1, repeat: -1 }
+                        }
+                    ]
                 });
             });
         });
