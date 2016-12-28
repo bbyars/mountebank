@@ -1,6 +1,8 @@
 'use strict';
 
 var assert = require('assert'),
+    fs = require('fs'),
+    util = require('util'),
     api = require('../api'),
     client = require('./baseHttpClient').create('http'),
     promiseIt = require('../../testHelpers').promiseIt,
@@ -264,34 +266,52 @@ describe('http proxy stubs', function () {
         });
     });
 
-    promiseIt('should support decorating response from origin server', function () {
+    promiseIt('should persist behaviors from origin server', function () {
         var originServerPort = port + 1,
-            originServerStub = { responses: [{ is: { body: 'origin server' } }] },
+            originServerStub = { responses: [{ is: { body: '${SALUTATION} ${NAME}' } }] },
             originServerRequest = {
                 protocol: 'http',
                 port: originServerPort,
                 stubs: [originServerStub],
                 name: this.name + ' origin'
             },
+            shellFn = function exec () {
+                console.log(process.argv[3].replace('${SALUTATION}', 'Hello'));
+            },
             decorator = function (request, response) {
                 response.headers['X-Test'] = 'decorated';
             },
             proxyResponse = {
                 proxy: { to: 'http://localhost:' + originServerPort },
-                _behaviors: { decorate: decorator.toString() }
+                _behaviors: {
+                    decorate: decorator.toString(),
+                    shellTransform: 'node shellTransformTest.js',
+                    copy: [{
+                        from: 'path',
+                        into: '${NAME}',
+                        using: { method: 'regex', selector: '\\w+' }
+                    }]
+                }
             },
             proxyStub = { responses: [proxyResponse] },
             proxyRequest = { protocol: 'http', port: port, stubs: [proxyStub], name: this.name + ' proxy' };
+
+        fs.writeFileSync('shellTransformTest.js', util.format('%s\nexec();', shellFn.toString()));
 
         return api.post('/imposters', originServerRequest).then(function () {
             return api.post('/imposters', proxyRequest);
         }).then(function (response) {
             assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body, null, 2));
-            return client.get('/', port);
+            return client.get('/mountebank', port);
         }).then(function (response) {
-            assert.strictEqual(response.body, 'origin server');
+            assert.strictEqual(response.body, 'Hello mountebank');
+            assert.strictEqual(response.headers['x-test'], 'decorated', JSON.stringify(response.headers, null, 2));
+            return client.get('/world', port);
+        }).then(function (response) {
+            assert.strictEqual(response.body, 'Hello mountebank');
             assert.strictEqual(response.headers['x-test'], 'decorated', JSON.stringify(response.headers, null, 2));
         }).finally(function () {
+            fs.unlinkSync('shellTransformTest.js');
             return api.del('/imposters');
         });
     });

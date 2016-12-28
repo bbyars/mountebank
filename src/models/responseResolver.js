@@ -161,10 +161,6 @@ function create (proxy, postProcess) {
         }
     }
 
-    function shouldDecorate (request, responseConfig) {
-        return !request.isDryRun && responseConfig._behaviors && responseConfig._behaviors.decorate;
-    }
-
     function proxyAndRecord (responseConfig, request, logger, stubs) {
         if (responseConfig.proxy && responseConfig.proxy.injectHeaders) {
             for (var key in responseConfig.proxy.injectHeaders) {
@@ -173,12 +169,8 @@ function create (proxy, postProcess) {
         }
 
         return proxy.to(responseConfig.proxy.to, request, responseConfig.proxy).then(function (response) {
-            if (!shouldDecorate(request, responseConfig)) {
-                return Q(response);
-            }
-
-            // Run decorator here to persist decorated response
-            return Q(behaviors.decorate(request, Q(response), responseConfig._behaviors.decorate, logger));
+            // Run behaviors here to persist decorated response
+            return Q(behaviors.execute(request, response, responseConfig._behaviors, logger));
         }).then(function (response) {
             recordProxyResponse(responseConfig, request, response, stubs);
             return Q(response);
@@ -222,14 +214,14 @@ function create (proxy, postProcess) {
         }
 
         return processResponse(responseConfig, request, logger, stubs).then(function (response) {
-            // We may have already run the decorator in the proxy call to persist the decorated response
-            // in the new stub.  If so, we need to ensure we don't re-run it
-            var clonedConfig = helpers.clone(responseConfig);
-
-            if (clonedConfig.proxy && shouldDecorate(request, clonedConfig)) {
-                delete clonedConfig._behaviors.decorate;
+            // We may have already run the behaviors in the proxy call to persist the decorated response
+            // in the new stub. If so, we need to ensure we don't re-run it
+            if (responseConfig.proxy) {
+                return Q(response);
             }
-            return Q(behaviors.execute(request, response, clonedConfig._behaviors, logger));
+            else {
+                return Q(behaviors.execute(request, response, responseConfig._behaviors, logger));
+            }
         }).then(function (response) {
             return Q(postProcess(response, request));
         });

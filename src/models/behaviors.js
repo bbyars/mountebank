@@ -306,9 +306,5 @@ function execute (request, response, behaviors, logger) {
 }
 
 module.exports = {
-    wait: wait,
-    decorate: decorate,
-    shellTransform: shellTransform,
-    copy: copy,
     execute: execute
 };
