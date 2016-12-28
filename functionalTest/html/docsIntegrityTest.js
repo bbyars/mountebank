@@ -57,7 +57,6 @@ describe('docs', function () {
         '/docs/api/mocks',
         '/docs/api/proxies',
         '/docs/api/injection',
-        '/docs/api/behaviors',
         '/docs/api/xpath',
         '/docs/api/json',
         '/docs/protocols/https',
@@ -71,6 +70,7 @@ describe('docs', function () {
         [
             '/docs/gettingStarted',
             '/docs/api/predicates',
+            '/docs/api/behaviors',
             '/docs/api/stubs',
             '/docs/protocols/tcp'
         ].forEach(function (page) {

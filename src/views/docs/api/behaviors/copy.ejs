@@ -100,7 +100,7 @@ replaced. We'll look at the following examples:</p>
 
 <p>The following example shows multiple regular expression matches on request fields to copy into the response.</p>
 
-<pre><code data-test-id='copy'
+<pre><code data-test-id='copy-regex'
            data-test-step='1'
            data-test-type='http'>
 POST /imposters HTTP/1.1
@@ -160,7 +160,7 @@ regular expression to capture the <code>name</code> query parameter. It also sho
 request fields using an array of <code>copy</code> configurations. Let's see what happens when we
 craft a request to match all of those selectors:</p>
 
-<pre><code data-test-id='copy'
+<pre><code data-test-id='copy-regex'
            data-test-step='2'
            data-test-type='http'>
 GET /statusCode/<strong class='highlight1'>400</strong>?ignore=this&<strong class='highlight3'>name=mountebank</strong> HTTP/1.1
@@ -168,7 +168,7 @@ Host: localhost:8585
 X-REQUEST: <strong class='highlight2'>Header value</strong>
 </code></pre>
 
-<pre><code data-test-id='copy'
+<pre><code data-test-id='copy-regex'
            data-test-verify-step='2'
            data-test-ignore-lines='["^Date"]'>
 HTTP/1.1 <strong class='highlight1'>400</strong> Bad Request
@@ -181,7 +181,7 @@ The request name was <strong class='highlight3'>mountebank</strong>. Hello, <str
 </code></pre>
 
 <code class='hidden'
-      data-test-id='copy'
+      data-test-id='copy-regex'
       data-test-step='3'
       data-test-type='http'>
 DELETE /imposters/8585 HTTP/1.1
@@ -190,11 +190,11 @@ Host: localhost:<%= port %>
 
 <h3 id='xpath-replacement'>xpath</h3>
 
-<p>The following example shows a simple namespaced xpath match to grab the first <code>name</code> field in
-an XML document and copy it into the <code>NAME</code> response token.</p>
+<p>The following example shows a simple namespaced xpath match to grab the first <code>title</code> field in
+an XML document and copy it into the <code>BOOK</code> response token.</p>
 
-<pre><code data-test-id='copy'
-           data-test-step='4'
+<pre><code data-test-id='copy-xpath'
+           data-test-step='1'
            data-test-type='http'>
 POST /imposters HTTP/1.1
 Host: localhost:<%= port %>
@@ -235,8 +235,8 @@ Content-Type: application/json
 namespaces. It doesn't matter how many <code>name</code> elements exist in the XML. Without using indexed
 tokens, only the first match will be used:</p>
 
-<pre><code data-test-id='copy'
-           data-test-step='5'
+<pre><code data-test-id='copy-xpath'
+           data-test-step='2'
            data-test-type='http'>
 POST /names HTTP/1.1
 Host: localhost:8586
@@ -257,8 +257,8 @@ Host: localhost:8586
 &lt;/books&gt;
 </code></pre>
 
-<pre><code data-test-id='copy'
-           data-test-verify-step='5'
+<pre><code data-test-id='copy-xpath'
+           data-test-verify-step='2'
            data-test-ignore-lines='["^Date"]'>
 HTTP/1.1 200 OK
 Date: Thu, 28 Dec 2016 11:37:31 GMT
@@ -269,9 +269,85 @@ Have you read <strong class='highlight1'>Game of Thrones</strong>?
 </code></pre>
 
 <code class='hidden'
-      data-test-id='copy'
-      data-test-step='6'
+      data-test-id='copy-xpath'
+      data-test-step='3'
       data-test-type='http'>
 DELETE /imposters/8586 HTTP/1.1
+Host: localhost:<%= port %>
+</code>
+
+<h3 id='jsonpath-replacement'>xpath</h3>
+
+<p>The following example translates the XML example above into JSON. To make it more interesting,
+we'll show it using the <code>tcp</code> protocol</p>
+
+<pre><code data-test-id='copy-jsonpath'
+           data-test-step='1'
+           data-test-type='http'>
+POST /imposters HTTP/1.1
+Host: localhost:<%= port %>
+Accept: application/json
+Content-Type: application/json
+
+{
+  "port": 8587,
+  "protocol": "tcp",
+  "stubs": [
+    {
+      "responses": [
+        {
+          "is": {
+            "data": "Have you read <strong class='highlight1'>BOOK</strong>?"
+          },
+          "_behaviors": {
+            "copy": [{
+              "from": "data",
+              "into": "<strong class='highlight1'>BOOK</strong>",
+              "using": {
+                "method": "jsonpath",
+                "selector": "$..title"
+              }
+            }]
+          }
+        }
+      ]
+    }
+  ]
+}
+</code></pre>
+
+<p>Again, by default only the first match will be used:</p>
+
+<pre><code data-test-id='copy-jsonpath'
+           data-test-step='2'
+           data-test-type='exec'>
+echo '{
+  "books": [
+    {
+      "title": "<strong class='highlight1'>Game of Thrones</strong>",
+      "summary": "Dragons and political intrigue"
+    },
+    {
+      "title": "Harry Potter",
+      "summary": "Dragons and a boy wizard"
+    },
+    {
+      "title": "The Hobbit",
+      "summary": "A dragon and short people"
+    }
+  ]
+}' | nc localhost 8587
+</code></pre>
+
+<pre><code data-test-id='copy-jsonpath'
+           data-test-verify-step='2'>
+Have you read <strong class='highlight1'>Game of Thrones</strong>?
+</code></pre>
+
+<code class='hidden'
+      data-test-id='copy-jsonpath'
+      data-test-step='3'
+      data-test-type='http'>
+DELETE /imposters/8587 HTTP/1.1
 Host: localhost:<%= port %>
 </code>
