@@ -84,3 +84,106 @@
     regular expression</td>
   </tr>
 </table>
+
+<p>The <code>copy</code> behavior supports dynamically replacing values in the response with something that
+comes from the request. It relies on you adding tokens of your own choosing into the response fields you want
+replaced. We'll look at the following examples:</p>
+
+<ul class='bullet-list'>
+  <li><a href='#regex-replacement'>Regular expressions</a></li>
+  <li><a href='#xpath-replacement'>xpath</a></li>
+  <li><a href='#jsonpath-replacement'>jsonpath</a></li>
+  <li><a href='#indexed-replacement'>Using match groups and indexed replacements</a></li>
+</ul>
+
+<h3 id='regex-replacement'>Regular expressions</h3>
+
+<p>The following example shows multiple regular expression matches on request fields to copy into the response.</p>
+
+<pre><code data-test-id='copy'
+           data-test-step='1'
+           data-test-type='http'>
+POST /imposters HTTP/1.1
+Host: localhost:<%= port %>
+Accept: application/json
+Content-Type: application/json
+
+{
+  "port": 8585,
+  "protocol": "http",
+  "stubs": [
+    {
+      "responses": [
+        {
+          "is": {
+            "statusCode": "<strong class='highlight1'>${code}</strong>",
+            "headers": {
+              "X-Test": "<strong class='highlight2'>${header}</strong>"
+            },
+            "body": "The request name was <strong class='highlight3'>${name}</strong>. Hello, <strong class='highlight3'>${name}</strong>!"
+          },
+          "_behaviors": {
+            "copy": [
+              {
+                "from": "path",
+                "into": "<strong class='highlight1'>${code}</strong>",
+                "using": { "method": "regex", "selector": "\\d+" }
+              },
+              {
+                "from": { "headers": "X-Request" },
+                "into": "<strong class='highlight2'>${header}</strong>",
+                "using": { "method": "regex", "selector": ".+" }
+              },
+              {
+                "from": { "query": "name" },
+                "into": "<strong class='highlight3'>${name}</strong>",
+                "using": {
+                  "method": "regex",
+                  "selector": "MOUNT\\w+$",
+                  "options": { "ignoreCase": true }
+                }
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}
+</code></pre>
+
+<p>This example shows off many of the options of the <code>copy</code> behavior. For example,
+we can plug tokens into any of the response fields (including the <code>statusCode</code>), and
+it shows how to navigate object request fields, like the <code>name</code> querystring
+parameter. It shows an example of using regular expressions options to get a case-insensitive
+regular expression to capture the <code>name</code> query parameter. It also shows matching multiple
+request fields using an array of <code>copy</code> configurations. Let's see what happens when we
+craft a request to match all of those selectors:</p>
+
+<pre><code data-test-id='copy'
+           data-test-step='2'
+           data-test-type='http'>
+GET /statusCode/<strong class='highlight1'>400</strong>?ignore=this&<strong class='highlight3'>name=mountebank</strong> HTTP/1.1
+Host: localhost:8585
+X-REQUEST: <strong class='highlight2'>Header value</strong>
+</code></pre>
+
+<pre><code data-test-id='copy'
+           data-test-verify-step='2'
+           data-test-ignore-lines='["^Date"]'>
+HTTP/1.1 <strong class='highlight1'>400</strong> Bad Request
+Date: Thu, 28 Dec 2016 11:37:31 GMT
+X-Test: <strong class='highlight2'>Header value</strong>
+Connection: close
+Transfer-Encoding: chunked
+
+The request name was <strong class='highlight3'>mountebank</strong>. Hello, <strong class='highlight3'>mountebank</strong>!
+</code></pre>
+
+<code class='hidden'
+      data-test-id='copy'
+      data-test-step='3'
+      data-test-type='http'>
+DELETE /imposters/8585 HTTP/1.1
+Host: localhost:<%= port %>
+</code>
