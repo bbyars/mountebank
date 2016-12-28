@@ -160,7 +160,15 @@ function getFrom (obj, from) {
         return getFrom(obj[keys[0]], from[keys[0]]);
     }
     else {
-        return obj[getKeyIgnoringCase(obj, from)];
+        var result = obj[getKeyIgnoringCase(obj, from)];
+
+        // Some request fields, like query parameters, can be multi-valued
+        if (util.isArray(result)) {
+            return result[0];
+        }
+        else {
+            return result;
+        }
     }
 }
 

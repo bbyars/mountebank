@@ -410,6 +410,23 @@ describe('behaviors', function () {
             });
         });
 
+        promiseIt('should default to first value in multi-valued request field', function () {
+            var request = { data: ['first', 'second', 'third'] },
+                response = { data: 'Grabbed the ${num}' },
+                logger = Logger.create(),
+                config = {
+                    copy: [{
+                        from: 'data',
+                        into: '${num}',
+                        using: { method: 'regex', selector: '\\w+$' }
+                    }]
+                };
+
+            return behaviors.execute(request, response, config, logger).then(function (actualResponse) {
+                assert.deepEqual(actualResponse, { data: 'Grabbed the first' });
+            });
+        });
+
         promiseIt('should support copying xpath match into response', function () {
             var request = { field: '<doc><name>mountebank</name></doc>' },
                 response = { data: 'Hello, ${you}' },
