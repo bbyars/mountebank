@@ -187,3 +187,91 @@ The request name was <strong class='highlight3'>mountebank</strong>. Hello, <str
 DELETE /imposters/8585 HTTP/1.1
 Host: localhost:<%= port %>
 </code>
+
+<h3 id='xpath-replacement'>xpath</h3>
+
+<p>The following example shows a simple namespaced xpath match to grab the first <code>name</code> field in
+an XML document and copy it into the <code>NAME</code> response token.</p>
+
+<pre><code data-test-id='copy'
+           data-test-step='4'
+           data-test-type='http'>
+POST /imposters HTTP/1.1
+Host: localhost:<%= port %>
+Accept: application/json
+Content-Type: application/json
+
+{
+  "port": 8586,
+  "protocol": "http",
+  "stubs": [
+    {
+      "responses": [
+        {
+          "is": {
+            "body": "Have you read <strong class='highlight1'>BOOK</strong>?"
+          },
+          "_behaviors": {
+            "copy": [{
+              "from": "body",
+              "into": "<strong class='highlight1'>BOOK</strong>",
+              "using": {
+                "method": "xpath",
+                "selector": "//isbn:title",
+                "ns": {
+                  "isbn": "http://schemas.isbn.org/ns/1999/basic.dtd"
+                }
+              }
+            }]
+          }
+        }
+      ]
+    }
+  ]
+}
+</code></pre>
+
+<p>The <code>ns</code> object map is optional and can be ignored if your xpath selector doesn't depend on
+namespaces. It doesn't matter how many <code>name</code> elements exist in the XML. Without using indexed
+tokens, only the first match will be used:</p>
+
+<pre><code data-test-id='copy'
+           data-test-step='5'
+           data-test-type='http'>
+POST /names HTTP/1.1
+Host: localhost:8586
+
+&lt;books xmlns:isbn=&quot;http://schemas.isbn.org/ns/1999/basic.dtd&quot;&gt;
+  &lt;book&gt;
+    &lt;isbn:title&gt;<strong class='highlight1'>Game of Thrones</strong>&lt;/isbn:title&gt;
+    &lt;isbn:summary&gt;Dragons and political intrigue&lt;/isbn:summary&gt;
+  &lt;/book&gt;
+  &lt;book&gt;
+    &lt;isbn:title&gt;Harry Potter&lt;/isbn:title&gt;
+    &lt;isbn:summary&gt;Dragons and a boy wizard&lt;/isbn:summary&gt;
+  &lt;/book&gt;
+  &lt;book&gt;
+    &lt;isbn:title&gt;The Hobbit&lt;/isbn:title&gt;
+    &lt;isbn:summary&gt;A dragon and short people&lt;/isbn:summary&gt;
+  &lt;/book&gt;
+&lt;/books&gt;
+</code></pre>
+
+<pre><code data-test-id='copy'
+           data-test-verify-step='5'
+           data-test-ignore-lines='["^Date"]'>
+HTTP/1.1 200 OK
+Date: Thu, 28 Dec 2016 11:37:31 GMT
+Connection: close
+Transfer-Encoding: chunked
+
+Have you read <strong class='highlight1'>Game of Thrones</strong>?
+</code></pre>
+
+<code class='hidden'
+      data-test-id='copy'
+      data-test-step='6'
+      data-test-type='http'>
+DELETE /imposters/8586 HTTP/1.1
+Host: localhost:<%= port %>
+</code>
