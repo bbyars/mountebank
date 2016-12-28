@@ -30,6 +30,11 @@ the following behaviors:</p>
     <td>Repeats a response a set number of times before moving on to the next response.</td>
   </tr>
   <tr>
+    <td><code>copy</code></td>
+    <td>Copies one or more values from request fields into the response. You can tokenize the response
+    and select values from request fields using regular expressions, xpath, or jsonpath.</td>
+  </tr>
+  <tr>
     <td><code>decorate</code></td>
     <td>Post-processes the response using JavaScript injection before sending it. Post-processing opens
       up a world of opportunities - you can use a <code>decorate</code> behavior to add data to a proxied
@@ -75,6 +80,13 @@ can exist on a single response.</p>
     <label for='behavior-repeat'>repeat</label>
     <section>
       <% include behaviors/repeat %>
+    </section>
+  </div>
+  <div>
+    <input id='behavior-copy' name='behavior-copy' type="checkbox" />
+    <label for='behavior-copy'>copy</label>
+    <section>
+      <% include behaviors/copy %>
     </section>
   </div>
   <div>
