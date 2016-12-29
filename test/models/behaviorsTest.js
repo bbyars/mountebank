@@ -80,6 +80,49 @@ describe('behaviors', function () {
                 assert.deepEqual(actualResponse, { key: 'value' });
             });
         });
+
+        it('should not be valid if below zero', function () {
+            var errors = behaviors.validate({ wait: -1 });
+            assert.deepEqual(errors, [{
+                code: 'bad data',
+                message: '"wait" value must be an integer greater than or equal to 0',
+                source: { wait: -1 }
+            }]);
+        });
+
+        it('should be valid if a string is passed in for the function', function () {
+            var errors = behaviors.validate({ wait: 'function () {}' });
+            assert.deepEqual(errors, []);
+        });
+
+        it('should not be valid if a boolean is passed in', function () {
+            var errors = behaviors.validate({ wait: true });
+            assert.deepEqual(errors, [{
+                code: 'bad data',
+                message: '"wait" value must be an integer greater than or equal to 0',
+                source: { wait: true }
+            }]);
+        });
+    });
+
+    describe('#repeat', function () {
+        it('should not be valid if it is less than 0', function () {
+            var errors = behaviors.validate({ repeat: 0 });
+            assert.deepEqual(errors, [{
+                code: 'bad data',
+                message: '"repeat" value must be an integer greater than 0',
+                source: { repeat: 0 }
+            }]);
+        });
+
+        it('should not be valid if boolean', function () {
+            var errors = behaviors.validate({ repeat: true });
+            assert.deepEqual(errors, [{
+                code: 'bad data',
+                message: '"repeat" value must be an integer greater than 0',
+                source: { repeat: true }
+            }]);
+        });
     });
 
     describe('#shellTransform', function () {
@@ -190,6 +233,15 @@ describe('behaviors', function () {
                 fs.unlinkSync('shellTransformTest.js');
             });
         });
+
+        it('should not be valid if not a string', function () {
+            var errors = behaviors.validate({ shellTransform: {} });
+            assert.deepEqual(errors, [{
+                code: 'bad data',
+                message: '"shellTransform" value must be a string of the path to a command line application',
+                source: { shellTransform: {} }
+            }]);
+        });
     });
 
     describe('#decorate', function () {
@@ -242,6 +294,15 @@ describe('behaviors', function () {
                 assert.ok(error.message.indexOf('invalid decorator injection') >= 0);
                 logger.error.assertLogged(fn.toString());
             });
+        });
+
+        it('should not be valid if not a string', function () {
+            var errors = behaviors.validate({ decorate: {} });
+            assert.deepEqual(errors, [{
+                code: 'bad data',
+                message: '"decorate" value must be a string representing a JavaScript function',
+                source: { decorate: {} }
+            }]);
         });
     });
 
@@ -618,6 +679,125 @@ describe('behaviors', function () {
             return behaviors.execute(request, response, config, logger).then(function (actualResponse) {
                 assert.deepEqual(actualResponse, { data: '3, 2, 1' });
             });
+        });
+
+        it('should not be valid if not an array', function () {
+            var errors = behaviors.validate({
+                copy: {}
+            });
+            assert.deepEqual(errors, [{
+                code: 'bad data',
+                message: '"copy" behavior must be an array',
+                source: { copy: {} }
+            }]);
+        });
+
+        it('should not be valid if missing "from" field', function () {
+            var config = { into: 'TOKEN', using: { method: 'regex', selector: '.*' } },
+                errors = behaviors.validate({ copy: [config] });
+            assert.deepEqual(errors, [{
+                code: 'bad data',
+                message: 'copy behavior "from" field required',
+                source: config
+            }]);
+        });
+
+        it('should not be valid if "from" field is not a string or an object', function () {
+            var config = { from: 0, into: 'TOKEN', using: { method: 'regex', selector: '.*' } },
+                errors = behaviors.validate({ copy: [config] });
+            assert.deepEqual(errors, [{
+                code: 'bad data',
+                message: 'copy behavior "from" field must be a string or an object, representing the request field to copy from',
+                source: config
+            }]);
+        });
+
+        it('should not be valid if "from" object field has zero keys', function () {
+            var config = {
+                    from: {},
+                    into: 'TOKEN',
+                    using: { method: 'regex', selector: '.*' }
+                },
+                errors = behaviors.validate({ copy: [config] });
+            assert.deepEqual(errors, [{
+                code: 'bad data',
+                message: 'copy behavior "from" field can only have one key per object',
+                source: config
+            }]);
+        });
+
+        it('should not be valid if "from" object field has multiple keys', function () {
+            var config = {
+                    from: { first: 'first', second: 'second' },
+                    into: 'TOKEN',
+                    using: { method: 'regex', selector: '.*' }
+                },
+                errors = behaviors.validate({ copy: [config] });
+            assert.deepEqual(errors, [{
+                code: 'bad data',
+                message: 'copy behavior "from" field can only have one key per object',
+                source: config
+            }]);
+        });
+
+        it('should not be valid if missing "into" field', function () {
+            var config = { from: 'field', using: { method: 'regex', selector: '.*' } },
+                errors = behaviors.validate({ copy: [config] });
+            assert.deepEqual(errors, [{
+                code: 'bad data',
+                message: 'copy behavior "into" field required',
+                source: config
+            }]);
+        });
+
+        it('should not be valid if "into" field is not a string', function () {
+            var config = { from: 'field', into: 0, using: { method: 'regex', selector: '.*' } },
+                errors = behaviors.validate({ copy: [config] });
+            assert.deepEqual(errors, [{
+                code: 'bad data',
+                message: 'copy behavior "into" field must be a string, representing the token to replace in response fields',
+                source: config
+            }]);
+        });
+
+        it('should not be valid if missing "using" field', function () {
+            var config = { from: 'field', into: 'TOKEN' },
+                errors = behaviors.validate({ copy: [config] });
+            assert.deepEqual(errors, [{
+                code: 'bad data',
+                message: 'copy behavior "using" field required',
+                source: config
+            }]);
+        });
+
+        it('should not be valid if "using.method" field is missing', function () {
+            var config = { from: 'field', into: 'TOKEN', using: { selector: '.*' } },
+                errors = behaviors.validate({ copy: [config] });
+            assert.deepEqual(errors, [{
+                code: 'bad data',
+                message: 'copy behavior "using.method" field required',
+                source: config
+            }]);
+        });
+
+        it('should not be valid if "using.method" field is not supported', function () {
+            var config = { from: 'field', into: 'TOKEN', using: { method: 'INVALID', selector: '.*' } },
+                errors = behaviors.validate({ copy: [config] });
+            assert.deepEqual(errors, [{
+                code: 'bad data',
+                message: 'copy behavior "using.method" field must be one of [regex, xpath, jsonpath]',
+                source: config
+            }]);
+        });
+
+        it('should not be valid if "using.selector" field is missing', function () {
+            var config = { from: 'field', into: 'TOKEN', using: { method: 'regex' } },
+                errors = behaviors.validate({ copy: [config] });
+            assert.deepEqual(errors, [{
+                code: 'bad data',
+                message: 'copy behavior "using.selector" field required',
+                source: config
+            }]);
         });
     });
 });

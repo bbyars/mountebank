@@ -428,7 +428,7 @@ describe('dryRunValidator', function () {
                         },
                         {
                             code: 'bad data',
-                            message: '"repeat" value must be an integer greater than or equal to 0',
+                            message: '"repeat" value must be an integer greater than 0',
                             source: { wait: -1, repeat: -1 }
                         }
                     ]
@@ -541,53 +541,6 @@ describe('dryRunValidator', function () {
                         code: 'invalid injection',
                         message: 'Shell execution is not allowed unless mb is run with the --allowInjection flag',
                         source: request.stubs[0]
-                    }]
-                });
-            });
-        });
-
-        promiseIt('should not be valid if copy behavior is not an array', function () {
-            var request = {
-                    stubs: [{
-                        responses: [{ is: {}, _behaviors: { copy: {} } }]
-                    }]
-                },
-                validator = Validator.create({ StubRepository: StubRepository, testRequest: testRequest });
-
-            return validator.validate(request, Logger.create()).then(function (result) {
-                assert.deepEqual(result, {
-                    isValid: false,
-                    errors: [{
-                        code: 'bad data',
-                        message: 'copy behavior must be an array',
-                        source: { copy: {} }
-                    }]
-                });
-            });
-        });
-
-        promiseIt('should not be valid if copy behavior uses multiple object keys in from', function () {
-            var request = {
-                    stubs: [{
-                        responses: [{
-                            is: {},
-                            _behaviors: { copy: [{
-                                from: { first: 'first', second: 'second' },
-                                regex: { pattern: '\w+' },
-                                into: '${token}'
-                            }] }
-                        }]
-                    }]
-                },
-                validator = Validator.create({ StubRepository: StubRepository, testRequest: testRequest });
-
-            return validator.validate(request, Logger.create()).then(function (result) {
-                assert.deepEqual(result, {
-                    isValid: false,
-                    errors: [{
-                        code: 'bad data',
-                        message: 'copy behavior "from" field can only have one key per object',
-                        source: { first: 'first', second: 'second' }
                     }]
                 });
             });

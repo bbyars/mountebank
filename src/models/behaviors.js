@@ -6,7 +6,7 @@
  */
 
 var helpers = require('../util/helpers'),
-    errors = require('../util/errors'),
+    exceptions = require('../util/errors'),
     Q = require('q'),
     exec = require('child_process').exec,
     util = require('util'),
@@ -15,27 +15,148 @@ var helpers = require('../util/helpers'),
     jsonpath = require('./jsonpath'),
     isWindows = require('os').platform().indexOf('win') === 0;
 
+function defined (value) {
+    return typeof value !== 'undefined';
+}
+
+function ofType (value) {
+    var allowedTypes = Array.prototype.slice.call(arguments),
+        actualType = typeof value;
+
+    // remove value
+    allowedTypes.shift();
+
+    return allowedTypes.indexOf(actualType) >= 0;
+}
+
+function missingRequiredFields (obj) {
+    var requiredFields = Array.prototype.slice.call(arguments),
+        actualFields = Object.keys(obj),
+        missingFields = [];
+
+    // remove obj
+    requiredFields.shift();
+
+    requiredFields.forEach(function (field) {
+        if (actualFields.indexOf(field) < 0) {
+            missingFields.push(field);
+        }
+    });
+    return missingFields;
+}
+
+function addWaitErrors (config, errors) {
+    if (!ofType(config.wait, 'number', 'string') || (typeof config.wait === 'number' && config.wait < 0)) {
+        errors.push(exceptions.ValidationError('"wait" value must be an integer greater than or equal to 0',
+            { source: config }));
+    }
+}
+
+function addRepeatErrors (config, errors) {
+    if (!ofType(config.repeat, 'number', 'string') || config.repeat <= 0) {
+        errors.push(exceptions.ValidationError('"repeat" value must be an integer greater than 0',
+            { source: config }));
+    }
+}
+
+function addCopyFromErrors (config, errors) {
+    if (!defined(config.from)) {
+        return;
+    }
+    if (!ofType(config.from, 'string', 'object')) {
+        errors.push(exceptions.ValidationError(
+            'copy behavior "from" field must be a string or an object, representing the request field to copy from',
+            { source: config }));
+    }
+    else if (typeof config.from === 'object') {
+        var keys = Object.keys(config.from);
+        if (keys.length === 0 || keys.length > 1) {
+            errors.push(exceptions.ValidationError('copy behavior "from" field can only have one key per object',
+                { source: config }));
+        }
+    }
+}
+
+function addCopyIntoErrors (config, errors) {
+    if (!defined(config.into)) {
+        return;
+    }
+    if (!ofType(config.into, 'string')) {
+        errors.push(exceptions.ValidationError(
+            'copy behavior "into" field must be a string, representing the token to replace in response fields',
+            { source: config }
+        ));
+    }
+}
+
+function addCopyUsingErrors (config, errors) {
+    if (!defined(config.using)) {
+        return;
+    }
+    missingRequiredFields(config.using, 'method', 'selector').forEach(function (field) {
+        errors.push(exceptions.ValidationError('copy behavior "using.' + field + '" field required',
+            { source: config }));
+    });
+    if (defined(config.using.method) && ['regex', 'xpath', 'jsonpath'].indexOf(config.using.method) < 0) {
+        errors.push(exceptions.ValidationError('copy behavior "using.method" field must be one of [regex, xpath, jsonpath]',
+            { source: config }));
+    }
+}
+
+function addCopyErrors (config, errors) {
+    if (!util.isArray(config.copy)) {
+        errors.push(exceptions.ValidationError('"copy" behavior must be an array',
+            { source: config }));
+    }
+    else {
+        config.copy.forEach(function (copyConfig) {
+            missingRequiredFields(copyConfig, 'from', 'into', 'using').forEach(function (field) {
+                errors.push(exceptions.ValidationError('copy behavior "' + field + '" field required',
+                    { source: copyConfig }));
+            });
+            addCopyFromErrors(copyConfig, errors);
+            addCopyIntoErrors(copyConfig, errors);
+            addCopyUsingErrors(copyConfig, errors);
+        });
+    }
+}
+
+function addShellTransformErrors (config, errors) {
+    if (!ofType(config.shellTransform, 'string')) {
+        errors.push(exceptions.ValidationError('"shellTransform" value must be a string of the path to a command line application',
+            { source: config }));
+    }
+}
+
+function addDecorateErrors (config, errors) {
+    if (!ofType(config.decorate, 'string')) {
+        errors.push(exceptions.ValidationError('"decorate" value must be a string representing a JavaScript function',
+            { source: config }));
+    }
+}
+
 /**
  * Validates the behavior configuration and returns all errors
  * @param {Object} config - The behavior configuration
  * @returns {Object} The array of errors
  */
 function validate (config) {
-    if (typeof config === 'undefined') {
-        return [];
-    }
+    var errors = [],
+        validations = {
+            wait: addWaitErrors,
+            repeat: addRepeatErrors,
+            copy: addCopyErrors,
+            shellTransform: addShellTransformErrors,
+            decorate: addDecorateErrors
+        };
 
-    var result = [];
-    if (config.wait && config.wait < 0) {
-        result.push(errors.ValidationError('"wait" value must be an integer greater than or equal to 0',
-            { source: config }));
-    }
-    if (config.repeat && config.repeat < 0) {
-        result.push(errors.ValidationError('"repeat" value must be an integer greater than or equal to 0',
-            { source: config }));
-    }
+    Object.keys(config || {}).forEach(function (key) {
+        if (validations[key]) {
+            validations[key](config, errors);
+        }
+    });
 
-    return result;
+    return errors;
 }
 
 /**
@@ -62,7 +183,7 @@ function wait (request, responsePromise, millisecondsOrFn, logger) {
         catch (error) {
             logger.error('injection X=> ' + error);
             logger.error('    full source: ' + JSON.stringify(fn));
-            return Q.reject(errors.InjectionError('invalid wait injection',
+            return Q.reject(exceptions.InjectionError('invalid wait injection',
                 { source: millisecondsOrFn, data: error.message }));
         }
     }
@@ -157,7 +278,7 @@ function decorate (originalRequest, responsePromise, fn, logger) {
             logger.error('    full source: ' + JSON.stringify(injected));
             logger.error('    request: ' + JSON.stringify(request));
             logger.error('    response: ' + JSON.stringify(response));
-            return Q.reject(errors.InjectionError('invalid decorator injection', { source: injected, data: error.message }));
+            return Q.reject(exceptions.InjectionError('invalid decorator injection', { source: injected, data: error.message }));
         }
     });
 }
@@ -176,10 +297,6 @@ function getKeyIgnoringCase (obj, expectedKey) {
 function getFrom (obj, from) {
     if (typeof from === 'object') {
         var keys = Object.keys(from);
-        if (keys.length === 0 || keys.length > 1) {
-            throw errors.ValidationError('copy behavior "from" field can only have one key per object',
-                { source: from });
-        }
         return getFrom(obj[keys[0]], from[keys[0]]);
     }
     else {
@@ -276,10 +393,6 @@ function replace (obj, token, values, logger) {
  * @returns {Object}
  */
 function copy (originalRequest, responsePromise, copyArray, logger) {
-    if (!util.isArray(copyArray)) {
-        return Q.reject(errors.ValidationError('copy behavior must be an array', { source: { copy: copyArray } }));
-    }
-
     return responsePromise.then(function (response) {
         copyArray.forEach(function (copyConfig) {
             var from = getFrom(originalRequest, copyConfig.from),
