@@ -265,7 +265,8 @@ describe('responseResolver', function () {
                 var end = Date.now();
                 var elapsed = end - start;
 
-                assert.ok(elapsed >= 50, 'Did not wait longer than 50 ms, only waited for ' + elapsed);
+                // allow some approximation
+                assert.ok(elapsed >= 45, 'Did not wait longer than 50 ms, only waited for ' + elapsed);
             });
         });
 
