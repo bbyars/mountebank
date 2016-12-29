@@ -161,12 +161,14 @@ function create (proxy, postProcess) {
         }
     }
 
+    function addInjectedHeadersTo (request, headersToInject) {
+        Object.keys(headersToInject || {}).forEach(function (key) {
+            request.headers[key] = headersToInject[key];
+        });
+    }
+
     function proxyAndRecord (responseConfig, request, logger, stubs) {
-        if (responseConfig.proxy && responseConfig.proxy.injectHeaders) {
-            for (var key in responseConfig.proxy.injectHeaders) {
-                request.headers[key] = responseConfig.proxy.injectHeaders[key];
-            }
-        }
+        addInjectedHeadersTo(request, responseConfig.proxy.injectHeaders);
 
         return proxy.to(responseConfig.proxy.to, request, responseConfig.proxy).then(function (response) {
             // Run behaviors here to persist decorated response
@@ -213,7 +215,7 @@ function create (proxy, postProcess) {
             return Q.reject(errors.ValidationError('each response object must have only one response type', { source: responseConfig }));
         }
 
-        return processResponse(responseConfig, request, logger, stubs).then(function (response) {
+        return processResponse(responseConfig, helpers.clone(request), logger, stubs).then(function (response) {
             // We may have already run the behaviors in the proxy call to persist the decorated response
             // in the new stub. If so, we need to ensure we don't re-run it
             if (responseConfig.proxy) {
