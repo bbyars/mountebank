@@ -95,6 +95,18 @@ describe('mb command line', function () {
         });
     });
 
+    promiseIt('should evaluate nested stringify functions when loading configuration files', function () {
+        var args = ['--configfile', path.join(__dirname, 'nestedStringify/imposters.ejs'), '--allowInjection'];
+
+        return mb.start(args).then(function () {
+            return http.get('/', 4542);
+        }).then(function (response) {
+            assert.deepEqual(response.body, { success: true });
+        }).finally(function () {
+            return mb.stop();
+        });
+    });
+
     promiseIt('should not render through ejs when --noParse option provided', function () {
         var args = ['--configfile', path.join(__dirname, 'noparse.json'), '--noParse'];
 

@@ -96,7 +96,12 @@ function getConfig (options) {
 function stringify (filename, includeFile) {
     var resolvedPath = path.join(path.dirname(filename), includeFile),
         contents = fs.readFileSync(resolvedPath, 'utf8'),
-        jsonString = JSON.stringify(contents);
+        rendered = ejs.render(contents, {
+            filename: filename,
+            stringify: stringify,
+            inject: stringify       // backwards compatibility
+        }),
+        jsonString = JSON.stringify(rendered);
 
     // get rid of the surrounding quotes because it makes the templates more natural to quote them there
     return jsonString.substring(1, jsonString.length - 1);
