@@ -1,20 +1,17 @@
 <table>
   <tr>
     <th>Parameter</th>
-    <th>Default</th>
     <th>Type</th>
     <th>Description</th>
   </tr>
   <tr>
     <td><code>copy</code></td>
-    <td>N/A</td>
     <td>An array</td>
     <td>A list of objects specifying the request field and response token, as well as a way
     of selecting the value from the request field</td>
   </tr>
   <tr>
     <td><code>copy[].from</code></td>
-    <td>N/A</td>
     <td>A string or an object</td>
     <td>The name of the request field to copy from, or, if the request field is an object,
     then an object specifying the path to the request field. For example,
@@ -23,7 +20,6 @@
   </tr>
   <tr>
     <td><code>copy[].into</code></td>
-    <td>N/A</td>
     <td>A string</td>
     <td>The token to replace in the response with the selected request value. There is
     no need to specify which field in the response the token will be in; all response
@@ -36,20 +32,17 @@
   </tr>
   <tr>
     <td><code>copy[].using</code></td>
-    <td>N/A</td>
     <td>An object</td>
     <td>The configuration needed to select values from the response</td>
   </tr>
   <tr>
     <td><code>copy[].using.method</code></td>
-    <td>N/A</td>
     <td>An string</td>
     <td>The method used to select the value(s) from the request. Allowed values are <code>regex</code>,
     <code>xpath</code>, and <code>jsonpath</code>.</td>
   </tr>
   <tr>
     <td><code>copy[].using.selector</code></td>
-    <td>N/A</td>
     <td>An string</td>
     <td>The selector used to select the value(s) from the request. For a <code>regex</code>, this would
     be the pattern, and the replacement value will be the entire match. Match groups using parentheses are supported
@@ -59,26 +52,22 @@
   </tr>
   <tr>
     <td><code>copy[].using.ns</code></td>
-    <td>N/A</td>
     <td>An object</td>
     <td>For <code>xpath</code> selectors, the <code>ns</code> object maps namespace aliases to URLs</td>
   </tr>
   <tr>
     <td><code>copy[].using.options</code></td>
-    <td>N/A</td>
     <td>An object</td>
     <td>For <code>regex</code> selectors, the <code>options</code> object describes the regular expression options</td>
   </tr>
   <tr>
     <td><code>copy[].using.options.ignoreCase</code></td>
-    <td><code>false</code></td>
     <td>A boolean</td>
     <td>Uses a <a href='https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/RegExp/ignoreCase'>case-insensitive</a>
     regular expression</td>
   </tr>
   <tr>
     <td><code>copy[].using.options.multiline</code></td>
-    <td><code>false</code></td>
     <td>A boolean</td>
     <td>Uses a <a href='https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/RegExp/multiline'>multiline</a>
     regular expression</td>
