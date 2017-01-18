@@ -39,11 +39,15 @@ function useAbsoluteUrls (port) {
                         });
                     }
                 },
-                traverse = function (obj, fn) {
+                traverse = function (obj, fn, parent) {
+                    if (parent === 'stubs') {
+                        // Don't change _links within stubs
+                        return;
+                    }
                     fn(obj);
                     Object.keys(obj).forEach(function (key) {
                         if (obj[key] && typeof obj[key] === 'object') {
-                            traverse(obj[key], fn);
+                            traverse(obj[key], fn, key);
                         }
                     });
                 };
