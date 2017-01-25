@@ -28,7 +28,7 @@
     "Vince Maiuri <RookY2K@gmail.com>",
     "Andrew <sunfreakz@gmail.com>",
     "Nikolaus Piccolotto <prayerslayer@gmail.com>",
-    "Stephen Tkak"
+    "Stephen Tkac"
   ],
   "description": "Over the wire test doubles",
   "homepage": "http://www.mbtest.org",
@@ -65,14 +65,15 @@
   ],
   "dependencies": {
     "cors": "~2.8.1",
+    "csv-to-object": "0.0.1",
     "ejs": "~2.5.1",
     "errorhandler": "^1.0.0",
     "express": "~4.14.0",
+    "http-proxy-agent": "^1.0.0",
+    "https-proxy-agent": "1.0.0",
     "json-stable-stringify": "~1.0.0",
     "jsonpath-plus": "^0.15.0",
     "mailparser": "~0.6.1",
-    "http-proxy-agent": "^1.0.0",
-    "https-proxy-agent": "1.0.0",
     "q": "~1.4.1",
     "simplesmtp": "~0.3.16",
     "winston": "~2.3.0",
