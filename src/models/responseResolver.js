@@ -123,17 +123,25 @@ function create (proxy, postProcess) {
         return indexOfStubToAddResponseTo(responseConfig, request, stubs) >= 0;
     }
 
-    function newIsResponse (response, addWaitBehavior) {
+    function newIsResponse (response, addWaitBehavior, addDecorateBehavior) {
         var result = { is: response };
+        var addBehaviors = {};
 
-        if (addWaitBehavior && response._proxyResponseTime) {           // eslint-disable-line no-underscore-dangle
-            result._behaviors = { wait: response._proxyResponseTime };  // eslint-disable-line no-underscore-dangle
+        if (addWaitBehavior && response._proxyResponseTime) { // eslint-disable-line no-underscore-dangle
+            addBehaviors.wait = response._proxyResponseTime;  // eslint-disable-line no-underscore-dangle
+        }
+        if (addDecorateBehavior) {
+            addBehaviors.decorate = addDecorateBehavior;
+        }
+
+        if (Object.keys(addBehaviors).length) {
+            result._behaviors = addBehaviors;
         }
         return result;
     }
 
     function addNewResponse (responseConfig, request, response, stubs) {
-        var stubResponse = newIsResponse(response, responseConfig.proxy.addWaitBehavior),
+        var stubResponse = newIsResponse(response, responseConfig.proxy.addWaitBehavior, responseConfig.proxy.addDecorateBehavior),
             responseIndex = indexOfStubToAddResponseTo(responseConfig, request, stubs);
 
         stubs[responseIndex].responses.push(stubResponse);
@@ -141,7 +149,7 @@ function create (proxy, postProcess) {
 
     function addNewStub (responseConfig, request, response, stubs) {
         var predicates = predicatesFor(request, responseConfig.proxy.predicateGenerators || []),
-            stubResponse = newIsResponse(response, responseConfig.proxy.addWaitBehavior),
+            stubResponse = newIsResponse(response, responseConfig.proxy.addWaitBehavior, responseConfig.proxy.addDecorateBehavior),
             newStub = { predicates: predicates, responses: [stubResponse] },
             index = responseConfig.proxy.mode === 'proxyAlways' ? stubs.length : stubIndexFor(responseConfig, stubs);
 
