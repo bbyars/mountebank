@@ -551,14 +551,14 @@ function copy (originalRequest, responsePromise, copyArray, logger) {
     });
 }
 
-function CSV_DATA (CSVPath, ColumnMatch, result, values, response) {
+function CSV_DATA (CSVPath, ColumnMatch, result, values) {
     var flag = true;
     var storeColumnIntoValues = [];
     var csvData0 = csvToObject({
         filename: CSVPath
     });
     Object.keys(csvData0).forEach(function (key) {
-        Object.keys(csvData0[key]).forEach(function (key1) {
+        Object.keys(csvData0[key]).forEach(function () {
             var keyCheck = (csvData0[key][ColumnMatch]);
             if ((flag) && (defined(keyCheck)) && (keyCheck.localeCompare(values) === 0)) {
                 for (var t = 1; t <= result.length; t += 1) {
@@ -589,8 +589,7 @@ function CSVDatasource (originalRequest, responsePromise, csvobject, logger) {
         csvobject.forEach(function (csvConfig) {
             var CSVPath,
                 ColumnMatch,
-                DataInto,
-                ColumnInto;
+                DataInto;
             if (typeof csvConfig === 'object') {
                 CSVPath = csvConfig.CSVPath;
                 ColumnMatch = csvConfig.ColumnMatch;
