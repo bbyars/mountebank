@@ -131,120 +131,120 @@ function addCopyErrors (config, errors) {
     }
 }
 
-function addCSV_DatasourceFromErrors (config, errors) {
+function addCSVDatasourceFromErrors (config, errors) {
     if (!defined(config.from)) {
         return;
     }
     if (!ofType(config.from, 'string', 'object')) {
         errors.push(exceptions.ValidationError(
-            'CSV_Datasource behavior "from" field must be a string or an object, representing the request field to CSV_Datasource from', {
+            'CSVDatasource behavior "from" field must be a string or an object, representing the request field to CSVDatasource from', {
                 source: config
             }));
     }
     else if (typeof config.from === 'object') {
         var keys = Object.keys(config.from);
         if (keys.length === 0 || keys.length > 1) {
-            errors.push(exceptions.ValidationError('CSV_Datasource behavior "from" field can only have one key per object', {
+            errors.push(exceptions.ValidationError('CSVDatasource behavior "from" field can only have one key per object', {
                 source: config
             }));
         }
     }
 }
 
-function addCSV_Datasource_CSV_PathErrors (config, errors) {
+function addCSVDatasourceCSVPathErrors (config, errors) {
     if (!defined(config.into)) {
         return;
     }
     if (!ofType(config.into, 'string')) {
         errors.push(exceptions.ValidationError(
-            'CSV_Datasource behavior "CSV_Path" field must be a string, representing the token to fetch values from CSV', {
+            'CSVDatasource behavior "CSVPath" field must be a string, representing the token to fetch values from CSV', {
                 source: config
             }
         ));
     }
 }
 
-function addCSV_Datasource_Column_MatchErrors (config, errors) {
+function addCSVDatasourceColumnMatchErrors (config, errors) {
     if (!defined(config.into)) {
         return;
     }
     if (!ofType(config.into, 'string')) {
         errors.push(exceptions.ValidationError(
-            'CSV_Datasource behavior "Column_Match" field must be a string, representing the token to match column in CSV with xpath value', {
+            'CSVDatasource behavior "ColumnMatch" field must be a string, representing the token to match column in CSV with xpath value', {
                 source: config
             }
         ));
     }
 }
 
-function addCSV_Datasource_Column_IntoErrors (config, errors) {
-    if (!defined(config.Column_into)) {
+function addCSVDatasourceColumnIntoErrors (config, errors) {
+    if (!defined(config.ColumnInto)) {
         return;
     }
-    if (!ofType(config.Column_into, 'object')) {
+    if (!ofType(config.ColumnInto, 'object')) {
         errors.push(exceptions.ValidationError(
-            'CSV_Datasource behavior "Column_Into" field must be a string or an object, representing the request field to pass values of column in response', {
+            'CSVDatasource behavior "ColumnInto" field must be a string or an object, representing the request field to pass values of column in response', {
                 source: config
             }));
     }
-    else if (typeof config.Column_into === 'object') {
-        var keys = Object.keys(config.Column_into);
+    else if (typeof config.ColumnInto === 'object') {
+        var keys = Object.keys(config.ColumnInto);
         if (keys.length === 0) {
-            errors.push(exceptions.ValidationError('CSV_Datasource behavior "Column_Into" field can only have one key per object', {
+            errors.push(exceptions.ValidationError('CSVDatasource behavior "ColumnInto" field can only have one key per object', {
                 source: config
             }));
         }
     }
 }
 
-function addCSV_Datasource_Data_IntoErrors (config, errors) {
-    if (!defined(config.Data_into)) {
+function addCSVDatasourceDataIntoErrors (config, errors) {
+    if (!defined(config.DataInto)) {
         return;
     }
-    if (!ofType(config.Data_into, 'string')) {
+    if (!ofType(config.DataInto, 'string')) {
         errors.push(exceptions.ValidationError(
-            'CSV_Datasource behavior "Data_into" field must be a string, representing the token to replace in response fields', {
+            'CSVDatasource behavior "DataInto" field must be a string, representing the token to replace in response fields', {
                 source: config
             }
         ));
     }
 }
 
-function addCSV_DatasourceUsingErrors (config, errors) {
+function addCSVDatasourceUsingErrors (config, errors) {
     if (!defined(config.using)) {
         return;
     }
     missingRequiredFields(config.using, 'method', 'selector').forEach(function (field) {
-        errors.push(exceptions.ValidationError('CSV_Datasource behavior "using.' + field + '" field required', {
+        errors.push(exceptions.ValidationError('CSVDatasource behavior "using.' + field + '" field required', {
             source: config
         }));
     });
     if (defined(config.using.method) && ['regex', 'xpath', 'jsonpath'].indexOf(config.using.method) < 0) {
-        errors.push(exceptions.ValidationError('CSV_Datasource behavior "using.method" field must be one of [regex, xpath, jsonpath]', {
+        errors.push(exceptions.ValidationError('CSVDatasource behavior "using.method" field must be one of [regex, xpath, jsonpath]', {
             source: config
         }));
     }
 }
 
-function addCSV_DatasourceErrors (config, errors) {
-    if (!util.isArray(config.CSV_Datasource)) {
-        errors.push(exceptions.ValidationError('"CSV_Datasource" behavior must be an array', {
+function addCSVDatasourceErrors (config, errors) {
+    if (!util.isArray(config.CSVDatasource)) {
+        errors.push(exceptions.ValidationError('"CSVDatasource" behavior must be an array', {
             source: config
         }));
     }
     else {
-        config.CSV_Datasource.forEach(function (CSV_DatasourceConfig) {
-            missingRequiredFields(CSV_DatasourceConfig, 'from', 'CSV_Path', 'Column_Match', 'Column_into', 'Data_into', 'using').forEach(function (field) {
-                errors.push(exceptions.ValidationError('CSV_Datasource behavior "' + field + '" field required', {
-                    source: CSV_DatasourceConfig
+        config.CSVDatasource.forEach(function (CSVDatasourceConfig) {
+            missingRequiredFields(CSVDatasourceConfig, 'from', 'CSVPath', 'ColumnMatch', 'ColumnInto', 'DataInto', 'using').forEach(function (field) {
+                errors.push(exceptions.ValidationError('CSVDatasource behavior "' + field + '" field required', {
+                    source: CSVDatasourceConfig
                 }));
             });
-            addCSV_DatasourceFromErrors(CSV_DatasourceConfig, errors);
-            addCSV_Datasource_CSV_PathErrors(CSV_DatasourceConfig, errors);
-            addCSV_Datasource_Column_MatchErrors(CSV_DatasourceConfig, errors);
-            addCSV_Datasource_Column_IntoErrors(CSV_DatasourceConfig, errors);
-            addCSV_Datasource_Data_IntoErrors(CSV_DatasourceConfig, errors);
-            addCSV_DatasourceUsingErrors(CSV_DatasourceConfig, errors);
+            addCSVDatasourceFromErrors(CSVDatasourceConfig, errors);
+            addCSVDatasourceCSVPathErrors(CSVDatasourceConfig, errors);
+            addCSVDatasourceColumnMatchErrors(CSVDatasourceConfig, errors);
+            addCSVDatasourceColumnIntoErrors(CSVDatasourceConfig, errors);
+            addCSVDatasourceDataIntoErrors(CSVDatasourceConfig, errors);
+            addCSVDatasourceUsingErrors(CSVDatasourceConfig, errors);
         });
     }
 }
@@ -276,7 +276,7 @@ function validate (config) {
             wait: addWaitErrors,
             repeat: addRepeatErrors,
             copy: addCopyErrors,
-            CSV_Datasource: addCSV_DatasourceErrors,
+            CSVDatasource: addCSVDatasourceErrors,
             shellTransform: addShellTransformErrors,
             decorate: addDecorateErrors
         };
@@ -551,31 +551,31 @@ function copy (originalRequest, responsePromise, copyArray, logger) {
     });
 }
 
-function CSV_DATA (CSV_Path, Column_Match, result, values, response) {
+function CSV_DATA (CSVPath, ColumnMatch, result, values, response) {
     var flag = true;
-    var store_columninto_values = [];
-    var csv_data = csvToObject({
-        filename: CSV_Path
+    var storeColumnIntoValues = [];
+    var csvData0 = csvToObject({
+        filename: CSVPath
     });
-    Object.keys(csv_data).forEach(function (key) {
-        Object.keys(csv_data[key]).forEach(function (key1) {
-            var key_check = (csv_data[key][Column_Match]);
-            if ((flag) && (defined(key_check)) && (key_check.localeCompare(values) === 0)) {
+    Object.keys(csvData0).forEach(function (key) {
+        Object.keys(csvData0[key]).forEach(function (key1) {
+            var keyCheck = (csvData0[key][ColumnMatch]);
+            if ((flag) && (defined(keyCheck)) && (keyCheck.localeCompare(values) === 0)) {
                 for (var t = 1; t <= result.length; t += 1) {
-                    var into_subset = result[t - 1];
-                    var output_check = csv_data[key][into_subset];
-                    if (defined(output_check)) {
-                        store_columninto_values.push(output_check.trim());
+                    var intoSubset = result[t - 1];
+                    var outputCheck = csvData0[key][intoSubset];
+                    if (defined(outputCheck)) {
+                        storeColumnIntoValues.push(outputCheck.trim());
                     }
                     flag = false;
                 }
             }
         });
     });
-    return store_columninto_values;
+    return storeColumnIntoValues;
 }
 
-function CSV_Column_into_Value (obj) {
+function CSVColumnIntoValue (obj) {
     var result = [];
     Object.keys(obj).forEach(function (key) {
         result.push(obj[key]);
@@ -584,17 +584,17 @@ function CSV_Column_into_Value (obj) {
 }
 
 
-function CSV_Datasource (originalRequest, responsePromise, csvobject, logger) {
+function CSVDatasource (originalRequest, responsePromise, csvobject, logger) {
     return responsePromise.then(function (response) {
         csvobject.forEach(function (csvConfig) {
-            var CSV_Path,
-                Column_Match,
-                Data_into,
-                Column_into;
+            var CSVPath,
+                ColumnMatch,
+                DataInto,
+                ColumnInto;
             if (typeof csvConfig === 'object') {
-                CSV_Path = csvConfig.CSV_Path;
-                Column_Match = csvConfig.Column_Match;
-                Data_into = csvConfig.Data_into;
+                CSVPath = csvConfig.CSVPath;
+                ColumnMatch = csvConfig.ColumnMatch;
+                DataInto = csvConfig.DataInto;
                 var from = getFrom(originalRequest, csvConfig.from),
                     using = csvConfig.using || {},
                     fnMap = {
@@ -606,9 +606,9 @@ function CSV_Datasource (originalRequest, responsePromise, csvobject, logger) {
                 if (fnMap[using.method]) {
                     values = fnMap[using.method](from, csvConfig, logger);
                 }
-                var result = CSV_Column_into_Value(csvConfig.Column_into);
-                var save_values = CSV_DATA(CSV_Path, Column_Match, result, values, response);
-                replace(response, Data_into, save_values, logger);
+                var result = CSVColumnIntoValue(csvConfig.ColumnInto);
+                var saveValues = CSV_DATA(CSVPath, ColumnMatch, result, values, response);
+                replace(response, DataInto, saveValues, logger);
             }
         });
         return Q(response);
@@ -638,9 +638,9 @@ function execute (request, response, behaviors, logger) {
             return copy(request, result, behaviors.copy, logger);
         } :
         combinators.identity,
-        CSV_DatasourceFn = behaviors.CSV_Datasource ?
+        CSVDatasourceFn = behaviors.CSVDatasource ?
         function (result) {
-            return CSV_Datasource(request, result, behaviors.CSV_Datasource, logger);
+            return CSVDatasource(request, result, behaviors.CSVDatasource, logger);
         } :
         combinators.identity,
         shellTransformFn = behaviors.shellTransform ?
@@ -656,7 +656,7 @@ function execute (request, response, behaviors, logger) {
 
     logger.debug('using stub response behavior ' + JSON.stringify(behaviors));
 
-    return combinators.compose(decorateFn, shellTransformFn, copyFn, CSV_DatasourceFn, waitFn, Q)(response);
+    return combinators.compose(decorateFn, shellTransformFn, copyFn, CSVDatasourceFn, waitFn, Q)(response);
 }
 
 module.exports = {
