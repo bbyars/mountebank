@@ -118,6 +118,7 @@ function createServer (options, recordRequests, debug) {
             requests: requests,
             addStub: stubs.addStub,
             stubs: stubs.stubs,
+            state: {},
             metadata: metadata,
             port: actualPort,
             close: function () {

@@ -247,15 +247,16 @@ function matches (predicate, request, encoding) {
  * @param {Object} request - The protocol request object
  * @param {string} encoding - utf8 or base64
  * @param {Object} logger - The logger, useful for debugging purposes
+ * @param {Object} imposterState - The current state for the imposter
  * @returns {boolean}
  */
-function resolve (predicate, request, encoding, logger) {
+function resolve (predicate, request, encoding, logger, imposterState) {
     var keys = Object.keys(predicate);
     for (var i = 0; i < keys.length; i += 1) {
         var key = keys[i],
             predicateFn = module.exports[key];
         if (predicateFn) {
-            return predicateFn(predicate, request, encoding, logger);
+            return predicateFn(predicate, request, encoding, logger, imposterState);
         }
     }
     throw errors.ValidationError('missing predicate: ' + JSON.stringify(keys), { source: predicate });
@@ -307,11 +308,12 @@ function and (predicate, request, encoding, logger) {
  * @param {Object} request - The protocol request object
  * @param {string} encoding - utf8 or base64
  * @param {Object} logger - The logger, useful for debugging purposes
+ * @param {Object} imposterState - The current state for the imposter
  * @returns {boolean}
  */
-function inject (predicate, request, encoding, logger) {
+function inject (predicate, request, encoding, logger, imposterState) {
     var scope = helpers.clone(request),
-        injected = '(' + predicate.inject + ')(scope, logger);';
+        injected = '(' + predicate.inject + ')(scope, logger, imposterState);';
 
     if (request.isDryRun === true) {
         return true;
@@ -324,6 +326,7 @@ function inject (predicate, request, encoding, logger) {
         logger.error('injection X=> ' + error);
         logger.error('    source: ' + JSON.stringify(injected));
         logger.error('    scope: ' + JSON.stringify(scope));
+        logger.error('    imposterState: ' + JSON.stringify(imposterState));
         throw errors.InjectionError('invalid predicate injection', { source: injected, data: error.message });
     }
 }

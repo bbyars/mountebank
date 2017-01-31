@@ -54,6 +54,9 @@ function create (Protocol, request) {
 
                 result.requests = server.requests;
                 result.stubs = server.stubs();
+                result.stubs.forEach(function (stub) {
+                    stub.state = server.state;
+                });
             }
 
             function removeNonEssentialInformationFrom (result) {

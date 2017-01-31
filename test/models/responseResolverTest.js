@@ -23,7 +23,9 @@ describe('responseResolver', function () {
         });
 
         promiseIt('should post process the result', function () {
-            var postProcess = function (response, request) { return response.toUpperCase() + '-' + request.value; },
+            var postProcess = function (response, request) {
+                    return response.toUpperCase() + '-' + request.value;
+                },
                 resolver = ResponseResolver.create({}, postProcess),
                 logger = Logger.create(),
                 responseConfig = { is: 'value' };
@@ -75,7 +77,7 @@ describe('responseResolver', function () {
                 resolver = ResponseResolver.create(proxy, combinators.identity),
                 logger = Logger.create(),
                 responseConfig = { proxy: { to: 'where' } },
-                request = { },
+                request = {},
                 stubs = [{ responses: [] }, { responses: [responseConfig] }];
 
             return resolver.resolve(responseConfig, request, logger, stubs).then(function (response) {
@@ -98,7 +100,10 @@ describe('responseResolver', function () {
 
             return resolver.resolve(responseConfig, request, logger, stubs).then(function () {
                 assert.deepEqual(stubs, [
-                    { responses: [{ is: { data: 'value', _proxyResponseTime: 100 }, _behaviors: { wait: 100 } }], predicates: [] },
+                    {
+                        responses: [{ is: { data: 'value', _proxyResponseTime: 100 }, _behaviors: { wait: 100 } }],
+                        predicates: []
+                    },
                     { responses: [responseConfig] }
                 ]);
             });
@@ -118,10 +123,12 @@ describe('responseResolver', function () {
             }).then(function () {
                 assert.deepEqual(stubs, [
                     { responses: [responseConfig] },
-                    { responses: [
-                        { is: { data: 'value', _proxyResponseTime: 100 }, _behaviors: { wait: 100 } },
-                        { is: { data: 'value', _proxyResponseTime: 100 }, _behaviors: { wait: 100 } }
-                    ], predicates: [] }
+                    {
+                        responses: [
+                            { is: { data: 'value', _proxyResponseTime: 100 }, _behaviors: { wait: 100 } },
+                            { is: { data: 'value', _proxyResponseTime: 100 }, _behaviors: { wait: 100 } }
+                        ], predicates: []
+                    }
                 ]);
             });
         });
@@ -142,7 +149,14 @@ describe('responseResolver', function () {
             return resolver.resolve(responseConfig, request, logger, stubs).then(function () {
                 assert.deepEqual(stubs, [
                     {
-                        predicates: [{ deepEquals: { key: { nested: { first: 'one', second: 'two' }, third: 'three' } } }],
+                        predicates: [{
+                            deepEquals: {
+                                key: {
+                                    nested: { first: 'one', second: 'two' },
+                                    third: 'three'
+                                }
+                            }
+                        }],
                         responses: [{ is: 'value' }]
                     },
                     {
@@ -208,7 +222,9 @@ describe('responseResolver', function () {
         promiseIt('should allow "inject" response', function () {
             var resolver = ResponseResolver.create({}, combinators.identity),
                 logger = Logger.create(),
-                fn = function (request) { return request.key + ' injected'; },
+                fn = function (request) {
+                    return request.key + ' injected';
+                },
                 responseConfig = { inject: fn.toString() },
                 request = { key: 'request' };
 
@@ -220,7 +236,9 @@ describe('responseResolver', function () {
         promiseIt('should log injection exceptions', function () {
             var resolver = ResponseResolver.create({}, combinators.identity),
                 logger = Logger.create(),
-                fn = function () { throw Error('BOOM!!!'); },
+                fn = function () {
+                    throw Error('BOOM!!!');
+                },
                 responseConfig = { inject: fn };
 
             return resolver.resolve(responseConfig, {}, logger, []).then(function () {
@@ -231,7 +249,7 @@ describe('responseResolver', function () {
             });
         });
 
-        promiseIt('should allow injection state across calls to resolve', function () {
+        promiseIt('should allow injection request state across calls to resolve', function () {
             var resolver = ResponseResolver.create({}, combinators.identity),
                 logger = Logger.create(),
                 fn = function (request, state) {
@@ -247,6 +265,27 @@ describe('responseResolver', function () {
                 return resolver.resolve(responseConfig, request, logger, []);
             }).then(function (response) {
                 assert.strictEqual(response, 2);
+            });
+        });
+
+
+        promiseIt('should allow injection imposter state across calls to resolve', function () {
+            var mockedResolver = ResponseResolver.create({}, combinators.identity),
+                mockedLogger = Logger.create(),
+                mockedImposterState = { foo: 'bar', counter: 0 },
+                fn = function (request, state, logger, deferred, imposterState) {
+                    imposterState.foo = 'barbar';
+                    imposterState.counter += 1;
+                    return imposterState.foo + imposterState.counter;
+                },
+                responseConfig = { inject: fn.toString() },
+                request = { key: 'request' };
+
+            return mockedResolver.resolve(responseConfig, request, mockedLogger, [], mockedImposterState).then(function (response) {
+                assert.strictEqual(response, 'barbar1');
+                return mockedResolver.resolve(responseConfig, request, mockedLogger, [], mockedImposterState);
+            }).then(function (response) {
+                assert.strictEqual(response, 'barbar2');
             });
         });
 
@@ -315,7 +354,9 @@ describe('responseResolver', function () {
         promiseIt('should allow asynchronous injection', function () {
             var resolver = ResponseResolver.create({}, combinators.identity),
                 fn = function (request, state, logger, callback) {
-                    setTimeout(function () { callback('value'); }, 1);
+                    setTimeout(function () {
+                        callback('value');
+                    }, 1);
                 },
                 responseConfig = { inject: fn },
                 request = { key: 'request' };
@@ -328,7 +369,10 @@ describe('responseResolver', function () {
         promiseIt('should not be able to change state through inject', function () {
             var resolver = ResponseResolver.create({}, combinators.identity),
                 logger = Logger.create(),
-                fn = function (request) { request.key = 'CHANGED'; return 0; },
+                fn = function (request) {
+                    request.key = 'CHANGED';
+                    return 0;
+                },
                 responseConfig = { inject: fn.toString() },
                 request = { key: 'ORIGINAL' };
 
@@ -340,7 +384,9 @@ describe('responseResolver', function () {
         promiseIt('should not run injection during dry run validation', function () {
             var resolver = ResponseResolver.create({}, combinators.identity),
                 logger = Logger.create(),
-                fn = function () { throw Error('BOOM!!!'); },
+                fn = function () {
+                    throw Error('BOOM!!!');
+                },
                 responseConfig = { inject: fn.toString() },
                 request = { isDryRun: true };
 

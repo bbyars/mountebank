@@ -43,7 +43,7 @@ function create (options) {
         return clonedStub;
     }
 
-    function dryRun (stub, encoding, logger) {
+    function dryRun (stub, encoding, logger, imposterState) {
         // Need a well-formed proxy response in case a behavior decorator expects certain fields to exist
         var dryRunProxy = { to: function () { return Q(options.testProxyResponse); } },
             dryRunLogger = {
@@ -69,15 +69,15 @@ function create (options) {
         return Q.all(dryRunRepositories.map(function (stubRepository) {
             var testRequest = options.testRequest;
             testRequest.isDryRun = true;
-            return stubRepository.resolve(testRequest, dryRunLogger);
+            return stubRepository.resolve(testRequest, dryRunLogger, imposterState);
         }));
     }
 
-    function addDryRunErrors (stub, encoding, errors, logger) {
+    function addDryRunErrors (stub, encoding, errors, logger, imposterState) {
         var deferred = Q.defer();
 
         try {
-            dryRun(stub, encoding, logger).done(deferred.resolve, function (reason) {
+            dryRun(stub, encoding, logger, imposterState).done(deferred.resolve, function (reason) {
                 reason.source = reason.source || JSON.stringify(stub);
                 errors.push(reason);
                 deferred.resolve();
@@ -140,7 +140,7 @@ function create (options) {
         });
     }
 
-    function errorsForStub (stub, encoding, logger) {
+    function errorsForStub (stub, encoding, logger, imposterState) {
         var errors = [],
             deferred = Q.defer();
 
@@ -160,7 +160,7 @@ function create (options) {
             deferred.resolve(errors);
         }
         else {
-            addDryRunErrors(stub, encoding, errors, logger).done(function () {
+            addDryRunErrors(stub, encoding, errors, logger, imposterState).done(function () {
                 deferred.resolve(errors);
             });
         }
@@ -185,12 +185,13 @@ function create (options) {
      * @memberOf module:models/dryRunValidator#
      * @param {Object} request - The request containing the imposter definition
      * @param {Object} logger - The logger
+     * @param {Object} imposterState - The current state for the imposter
      * @returns {Object} Promise resolving to an object containing isValid and an errors array
      */
-    function validate (request, logger) {
+    function validate (request, logger, imposterState) {
         var stubs = request.stubs || [],
             encoding = request.mode === 'binary' ? 'base64' : 'utf8',
-            validationPromises = stubs.map(function (stub) { return errorsForStub(stub, encoding, logger); }),
+            validationPromises = stubs.map(function (stub) { return errorsForStub(stub, encoding, logger, imposterState); }),
             deferred = Q.defer();
 
         validationPromises.push(Q(errorsForRequest(request)));

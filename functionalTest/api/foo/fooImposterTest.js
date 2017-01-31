@@ -53,8 +53,8 @@ describe('foo imposter', function () {
             }).then(function (response) {
                 assert.strictEqual(response.statusCode, 200);
                 assert.deepEqual(response.body.stubs, [
-                    { responses: [{ is: { data: '1' } }] },
-                    { responses: [{ is: { data: '2' } }] }
+                    { responses: [{ is: { data: '1' } }], state: {} },
+                    { responses: [{ is: { data: '2' } }], state: {} }
                 ]);
             }).finally(function () {
                 return api.del('/imposters');
@@ -90,7 +90,8 @@ describe('foo imposter', function () {
                             request: { requestFrom: 'HERE', data: 'second' },
                             response: { data: '2' }
                         }
-                    ]
+                    ],
+                    state: {}
                 }]);
             }).finally(function () {
                 return api.del('/imposters');

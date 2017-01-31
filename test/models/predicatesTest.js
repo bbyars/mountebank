@@ -780,6 +780,23 @@ describe('predicates', function () {
             }
         });
 
+        it('should allow changing the state in the injection', function () {
+            var mockedImposterState = { foo: 'bar' },
+                expectedImposterState = { foo: 'barbar' },
+                mockedLogger = {
+                    error: function () {
+                    }
+                };
+            var fn = function (request, logger, imposterState) {
+                    imposterState.foo = 'barbar';
+                    return true;
+                },
+                predicate = { inject: fn.toString() },
+                request = { path: '/', method: 'GET' };
+            assert.ok(predicates.inject(predicate, request, 'utf8', mockedLogger, mockedImposterState));
+            assert.deepEqual(mockedImposterState, expectedImposterState);
+        });
+
         it('should not run injection during dry run validation', function () {
             var fn = function () { throw new Error('BOOM!'); },
                 predicate = { inject: fn.toString() },

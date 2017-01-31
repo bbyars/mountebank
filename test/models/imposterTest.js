@@ -17,6 +17,7 @@ describe('imposter', function () {
                 addStub: mock(),
                 stubs: mock().returns([]),
                 metadata: metadata,
+                state: { foo: 'bar' },
                 numberOfRequests: mock().returns(0)
             };
             Protocol = {
@@ -102,9 +103,12 @@ describe('imposter', function () {
         });
 
         promiseIt('should return list of stubs', function () {
-            server.stubs = mock().returns(['ONE', 'TWO']);
+            server.stubs = mock().returns([{ responses: ['FIRST'] }, { responses: ['SECOND'] }]);
             return Imposter.create(Protocol, {}).then(function (imposter) {
-                assert.deepEqual(imposter.toJSON().stubs, ['ONE', 'TWO']);
+                assert.deepEqual(imposter.toJSON().stubs, [
+                    { responses: ['FIRST'], state: { foo: 'bar' } },
+                    { responses: ['SECOND'], state: { foo: 'bar' } }
+                ]);
             });
         });
 
@@ -125,7 +129,8 @@ describe('imposter', function () {
                 assert.deepEqual(imposter.toJSON({ replayable: true }), {
                     protocol: 'http',
                     port: 3535,
-                    stubs: [{ responses: ['FIRST'] }, { responses: ['SECOND'] }]
+                    stubs: [{ responses: ['FIRST'], state: { foo: 'bar' } },
+                        { responses: ['SECOND'], state: { foo: 'bar' } }]
                 });
             });
         });
@@ -151,12 +156,14 @@ describe('imposter', function () {
                         responses: [
                             { is: { body: 'first' } },
                             { inject: 'inject' }
-                        ]
+                        ],
+                        state: { foo: 'bar' }
                     },
                     {
                         responses: [
                             { is: { body: 'second' } }
-                        ]
+                        ],
+                        state: { foo: 'bar' }
                     }
                 ]);
             });
@@ -169,12 +176,14 @@ describe('imposter', function () {
                         { proxy: { to: 'http://localhost:3000' } },
                         { is: { body: 'first' } },
                         { inject: 'inject' }
-                    ]
+                    ],
+                    state: { foo: 'bar' }
                 },
                 {
                     responses: [
                         { proxy: { to: 'http://localhost:3001' } }
-                    ]
+                    ],
+                    state: { foo: 'bar' }
                 }
             ]);
             return Imposter.create(Protocol, {}).then(function (imposter) {
@@ -183,7 +192,8 @@ describe('imposter', function () {
                         responses: [
                             { is: { body: 'first' } },
                             { inject: 'inject' }
-                        ]
+                        ],
+                        state: { foo: 'bar' }
                     }
                 ]);
             });
