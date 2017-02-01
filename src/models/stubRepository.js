@@ -118,7 +118,7 @@ function create (resolver, recordMatches, encoding) {
 
         stub.statefulResponses.push(responseConfig);
 
-        resolver.resolve(responseConfig, request, logger, stubs).done(function (response) {
+        resolver.resolve(responseConfig, request, logger, stubs, imposterState).done(function (response) {
             var match = {
                 timestamp: new Date().toJSON(),
                 request: request,
