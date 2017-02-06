@@ -43,7 +43,7 @@ function create (options) {
         return clonedStub;
     }
 
-    function dryRun (stub, encoding, logger, imposterState) {
+    function dryRun (stub, encoding, logger) {
         // Need a well-formed proxy response in case a behavior decorator expects certain fields to exist
         var dryRunProxy = { to: function () { return Q(options.testProxyResponse); } },
             dryRunLogger = {
@@ -69,7 +69,7 @@ function create (options) {
         return Q.all(dryRunRepositories.map(function (stubRepository) {
             var testRequest = options.testRequest;
             testRequest.isDryRun = true;
-            return stubRepository.resolve(testRequest, dryRunLogger, imposterState);
+            return stubRepository.resolve(testRequest, dryRunLogger, {});
         }));
     }
 
@@ -185,13 +185,12 @@ function create (options) {
      * @memberOf module:models/dryRunValidator#
      * @param {Object} request - The request containing the imposter definition
      * @param {Object} logger - The logger
-     * @param {Object} imposterState - The current state for the imposter
      * @returns {Object} Promise resolving to an object containing isValid and an errors array
      */
-    function validate (request, logger, imposterState) {
+    function validate (request, logger) {
         var stubs = request.stubs || [],
             encoding = request.mode === 'binary' ? 'base64' : 'utf8',
-            validationPromises = stubs.map(function (stub) { return errorsForStub(stub, encoding, logger, imposterState); }),
+            validationPromises = stubs.map(function (stub) { return errorsForStub(stub, encoding, logger); }),
             deferred = Q.defer();
 
         validationPromises.push(Q(errorsForRequest(request)));
