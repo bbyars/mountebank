@@ -126,6 +126,46 @@ describe('responseResolver', function () {
             });
         });
 
+        promiseIt('should support adding decorate behavior to newly created stub', function () {
+            var decorateFunc = 'function (request, response) {}';
+            var proxy = { to: mock().returns(Q({ data: 'value' })) },
+                resolver = ResponseResolver.create(proxy, combinators.identity),
+                logger = Logger.create(),
+                responseConfig = { proxy: { to: 'where', addDecorateBehavior: decorateFunc } },
+                request = {},
+                stubs = [{ responses: [responseConfig] }];
+
+            return resolver.resolve(responseConfig, request, logger, stubs).then(function () {
+                assert.deepEqual(stubs, [
+                    { responses: [{ is: { data: 'value' }, _behaviors: { decorate: decorateFunc } }], predicates: [] },
+                    { responses: [responseConfig] }
+                ]);
+            });
+        });
+
+        promiseIt('should support adding decorate behavior to newly created response in proxyAlways mode', function () {
+            var decorateFunc = 'function (request, response) {}';
+            var proxy = { to: mock().returns(Q({ data: 'value' })) },
+                resolver = ResponseResolver.create(proxy, combinators.identity),
+                logger = Logger.create(),
+                responseConfig = { proxy: { to: 'where', mode: 'proxyAlways', addDecorateBehavior: decorateFunc } },
+                request = {},
+                stubs = [{ responses: [responseConfig] }];
+
+            return resolver.resolve(responseConfig, request, logger, stubs).then(function () {
+                // First call adds the stub, second call adds a response
+                return resolver.resolve(responseConfig, request, logger, stubs);
+            }).then(function () {
+                assert.deepEqual(stubs, [
+                    { responses: [responseConfig] },
+                    { responses: [
+                        { is: { data: 'value' }, _behaviors: { decorate: decorateFunc } },
+                        { is: { data: 'value' }, _behaviors: { decorate: decorateFunc } }
+                    ], predicates: [] }
+                ]);
+            });
+        });
+
         promiseIt('should resolve "proxy" and remember full objects as "deepEquals" predicates', function () {
             var proxy = { to: mock().returns(Q('value')) },
                 resolver = ResponseResolver.create(proxy, combinators.identity),
