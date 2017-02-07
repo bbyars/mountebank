@@ -20,10 +20,10 @@ var helpers = require('../util/helpers'),
 function create (proxy, postProcess) {
     var injectState = {};
 
-    function inject (request, fn, logger) {
+    function inject (request, fn, logger, imposterState) {
         var deferred = Q.defer(),
             scope = helpers.clone(request),
-            injected = '(' + fn + ')(scope, injectState, logger, deferred.resolve);';
+            injected = '(' + fn + ')(scope, injectState, logger, deferred.resolve, imposterState);';
 
         if (request.isDryRun === true) {
             Q.delay(1).then(function () {
@@ -42,6 +42,7 @@ function create (proxy, postProcess) {
                 logger.error('    full source: ' + JSON.stringify(injected));
                 logger.error('    scope: ' + JSON.stringify(scope));
                 logger.error('    injectState: ' + JSON.stringify(injectState));
+                logger.error('    imposterState: ' + JSON.stringify(imposterState));
                 deferred.reject(errors.InjectionError('invalid response injection', {
                     source: injected,
                     data: error.message
@@ -187,7 +188,7 @@ function create (proxy, postProcess) {
         });
     }
 
-    function processResponse (responseConfig, request, logger, stubs) {
+    function processResponse (responseConfig, request, logger, stubs, imposterState) {
         if (responseConfig.is) {
             // Clone to prevent accidental state changes downstream
             return Q(helpers.clone(responseConfig.is));
@@ -196,7 +197,7 @@ function create (proxy, postProcess) {
             return proxyAndRecord(responseConfig, request, logger, stubs);
         }
         else if (responseConfig.inject) {
-            return inject(request, responseConfig.inject, logger).then(Q);
+            return inject(request, responseConfig.inject, logger, imposterState).then(Q);
         }
         else {
             return Q.reject(errors.ValidationError('unrecognized response type', { source: responseConfig }));
@@ -216,14 +217,15 @@ function create (proxy, postProcess) {
      * @param {Object} request - The protocol-specific request object
      * @param {Object} logger - The logger
      * @param {Object} stubs - The stubs for the imposter
+     * @param {Object} imposterState - The current state for the imposter
      * @returns {Object} - Promise resolving to the response
      */
-    function resolve (responseConfig, request, logger, stubs) {
+    function resolve (responseConfig, request, logger, stubs, imposterState) {
         if (hasMultipleTypes(responseConfig)) {
             return Q.reject(errors.ValidationError('each response object must have only one response type', { source: responseConfig }));
         }
 
-        return processResponse(responseConfig, helpers.clone(request), logger, stubs).then(function (response) {
+        return processResponse(responseConfig, helpers.clone(request), logger, stubs, imposterState).then(function (response) {
             // We may have already run the behaviors in the proxy call to persist the decorated response
             // in the new stub. If so, we need to ensure we don't re-run it
             if (responseConfig.proxy) {

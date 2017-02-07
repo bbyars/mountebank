@@ -73,7 +73,8 @@ function create (protocols, imposters, Imposter, logger) {
             return valid;
         }
         else {
-            return protocols[request.protocol].Validator.create().validate(request, logger);
+            var imposterState = {};
+            return protocols[request.protocol].Validator.create().validate(request, logger, imposterState);
         }
     }
 

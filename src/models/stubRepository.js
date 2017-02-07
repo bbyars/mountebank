@@ -30,14 +30,14 @@ function create (resolver, recordMatches, encoding) {
         return list.map(predicate).every(function (result) { return result; });
     }
 
-    function findFirstMatch (request, logger) {
+    function findFirstMatch (request, logger, imposterState) {
         if (stubs.length === 0) {
             return undefined;
         }
         var matches = stubs.filter(function (stub) {
             var stubPredicates = stub.predicates || [];
             return trueForAll(stubPredicates, function (predicate) {
-                return predicates.resolve(predicate, request, encoding, logger);
+                return predicates.resolve(predicate, request, encoding, logger, imposterState);
             });
         });
         if (matches.length === 0) {
@@ -106,10 +106,11 @@ function create (resolver, recordMatches, encoding) {
      * @memberOf module:models/stubRepository#
      * @param {Object} request - The protocol request
      * @param {Object} logger - The logger
+     * @param {Object} imposterState - The current state for the imposter
      * @returns {Object} - Promise resolving to the response
      */
-    function resolve (request, logger) {
-        var stub = findFirstMatch(request, logger) || { statefulResponses: [{ is: {} }] },
+    function resolve (request, logger, imposterState) {
+        var stub = findFirstMatch(request, logger, imposterState) || { statefulResponses: [{ is: {} }] },
             responseConfig = stub.statefulResponses.shift(),
             deferred = Q.defer();
 
@@ -117,7 +118,7 @@ function create (resolver, recordMatches, encoding) {
 
         stub.statefulResponses.push(responseConfig);
 
-        resolver.resolve(responseConfig, request, logger, stubs).done(function (response) {
+        resolver.resolve(responseConfig, request, logger, stubs, imposterState).done(function (response) {
             var match = {
                 timestamp: new Date().toJSON(),
                 request: request,
