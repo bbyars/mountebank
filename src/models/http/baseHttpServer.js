@@ -100,7 +100,7 @@ function setup (protocolName, createBaseServer) {
                 respond: function (httpRequest, container) {
                     var scopedLogger = logger.withScope(helpers.socketName(container.request.socket));
 
-                    return stubs.resolve(httpRequest, scopedLogger).then(function (stubResponse) {
+                    return stubs.resolve(httpRequest, scopedLogger, this.state).then(function (stubResponse) {
                         var mode = stubResponse._mode ? stubResponse._mode : 'text',
                             encoding = mode === 'binary' ? 'base64' : 'utf8';
 
@@ -111,6 +111,7 @@ function setup (protocolName, createBaseServer) {
                 },
                 metadata: baseServer.metadata,
                 addStub: stubs.addStub,
+                state: {},
                 stubs: stubs.stubs
             }),
             server = baseServer.createNodeServer();

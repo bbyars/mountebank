@@ -69,15 +69,15 @@ function create (options) {
         return Q.all(dryRunRepositories.map(function (stubRepository) {
             var testRequest = options.testRequest;
             testRequest.isDryRun = true;
-            return stubRepository.resolve(testRequest, dryRunLogger);
+            return stubRepository.resolve(testRequest, dryRunLogger, {});
         }));
     }
 
-    function addDryRunErrors (stub, encoding, errors, logger) {
+    function addDryRunErrors (stub, encoding, errors, logger, imposterState) {
         var deferred = Q.defer();
 
         try {
-            dryRun(stub, encoding, logger).done(deferred.resolve, function (reason) {
+            dryRun(stub, encoding, logger, imposterState).done(deferred.resolve, function (reason) {
                 reason.source = reason.source || JSON.stringify(stub);
                 errors.push(reason);
                 deferred.resolve();
@@ -140,7 +140,7 @@ function create (options) {
         });
     }
 
-    function errorsForStub (stub, encoding, logger) {
+    function errorsForStub (stub, encoding, logger, imposterState) {
         var errors = [],
             deferred = Q.defer();
 
@@ -160,7 +160,7 @@ function create (options) {
             deferred.resolve(errors);
         }
         else {
-            addDryRunErrors(stub, encoding, errors, logger).done(function () {
+            addDryRunErrors(stub, encoding, errors, logger, imposterState).done(function () {
                 deferred.resolve(errors);
             });
         }

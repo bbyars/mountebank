@@ -317,6 +317,23 @@ var assert = require('assert'),
                     return api.del('/imposters');
                 });
             });
+
+            promiseIt('should support sending JSON bodies with _links field for canned responses', function () {
+                var stub = { responses: [{ is: {
+                        headers: { 'Content-Type': 'application/json' },
+                        body: { _links: { self: '/products/123' } }
+                    } }] },
+                    request = { protocol: protocol, port: port, stubs: [stub], name: this.name };
+
+                return api.post('/imposters', request).then(function (response) {
+                    assert.strictEqual(response.statusCode, 201, response.body);
+                    return client.get('/', port);
+                }).then(function (response) {
+                    assert.deepEqual(response.body, { _links: { self: '/products/123' } });
+                }).finally(function () {
+                    return api.del('/imposters');
+                });
+            });
         });
     });
 });
