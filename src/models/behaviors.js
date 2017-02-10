@@ -14,6 +14,7 @@ var helpers = require('../util/helpers'),
     xpath = require('./xpath'),
     jsonpath = require('./jsonpath'),
     csvToObject = require('csv-to-object'),
+    hashmap = require('hashmap'),
     isWindows = require('os').platform().indexOf('win') === 0;
 
 function defined (value) {
@@ -131,120 +132,132 @@ function addCopyErrors (config, errors) {
     }
 }
 
-function addCSVDatasourceFromErrors (config, errors) {
-    if (!defined(config.from)) {
+function addlookupCSVPathErrors (config, errors) {
+    if (!defined(config.CSVPath)) {
         return;
     }
-    if (!ofType(config.from, 'string', 'object')) {
+    if (!ofType(config.CSVPath, 'string')) {
         errors.push(exceptions.ValidationError(
-            'CSVDatasource behavior "from" field must be a string or an object, representing the request field to CSVDatasource from', {
-                source: config
-            }));
-    }
-    else if (typeof config.from === 'object') {
-        var keys = Object.keys(config.from);
-        if (keys.length === 0 || keys.length > 1) {
-            errors.push(exceptions.ValidationError('CSVDatasource behavior "from" field can only have one key per object', {
-                source: config
-            }));
-        }
-    }
-}
-
-function addCSVDatasourceCSVPathErrors (config, errors) {
-    if (!defined(config.into)) {
-        return;
-    }
-    if (!ofType(config.into, 'string')) {
-        errors.push(exceptions.ValidationError(
-            'CSVDatasource behavior "CSVPath" field must be a string, representing the token to fetch values from CSV', {
+            'lookup behavior "CSVPath" field must be a string, representing the token to fetch values from CSV', {
                 source: config
             }
         ));
     }
 }
 
-function addCSVDatasourceColumnMatchErrors (config, errors) {
-    if (!defined(config.into)) {
+function addlookupColumnMatchErrors (config, errors) {
+    if (!defined(config.ColumnMatch)) {
         return;
     }
-    if (!ofType(config.into, 'string')) {
+    if (!ofType(config.ColumnMatch, 'string')) {
         errors.push(exceptions.ValidationError(
-            'CSVDatasource behavior "ColumnMatch" field must be a string, representing the token to match column in CSV with xpath value', {
+            'lookup behavior "ColumnMatch" field must be a string, representing the token to match column in CSV with xpath value', {
                 source: config
             }
         ));
     }
 }
 
-function addCSVDatasourceColumnIntoErrors (config, errors) {
+function addlookupColumnIntoErrors (config, errors) {
     if (!defined(config.ColumnInto)) {
         return;
     }
     if (!ofType(config.ColumnInto, 'object')) {
         errors.push(exceptions.ValidationError(
-            'CSVDatasource behavior "ColumnInto" field must be a string or an object, representing the request field to pass values of column in response', {
+            'lookup behavior "ColumnInto" field must be a string or an object, representing the request field to pass values of column in response', {
                 source: config
             }));
     }
     else if (typeof config.ColumnInto === 'object') {
         var keys = Object.keys(config.ColumnInto);
         if (keys.length === 0) {
-            errors.push(exceptions.ValidationError('CSVDatasource behavior "ColumnInto" field can only have one key per object', {
+            errors.push(exceptions.ValidationError('lookup behavior "ColumnInto" field can only have one key per object', {
                 source: config
             }));
         }
     }
 }
 
-function addCSVDatasourceDataIntoErrors (config, errors) {
-    if (!defined(config.DataInto)) {
-        return;
-    }
-    if (!ofType(config.DataInto, 'string')) {
-        errors.push(exceptions.ValidationError(
-            'CSVDatasource behavior "DataInto" field must be a string, representing the token to replace in response fields', {
-                source: config
-            }
-        ));
-    }
-}
-
-function addCSVDatasourceUsingErrors (config, errors) {
+function addlookupKeyUsingErrors (config, errors) {
     if (!defined(config.using)) {
         return;
     }
-    missingRequiredFields(config.using, 'method', 'selector').forEach(function (field) {
-        errors.push(exceptions.ValidationError('CSVDatasource behavior "using.' + field + '" field required', {
-            source: config
+    if (!ofType(config.using, 'object')) {
+        errors.push(exceptions.ValidationError('using should be an object', {
+            source: config.using
         }));
-    });
-    if (defined(config.using.method) && ['regex', 'xpath', 'jsonpath'].indexOf(config.using.method) < 0) {
-        errors.push(exceptions.ValidationError('CSVDatasource behavior "using.method" field must be one of [regex, xpath, jsonpath]', {
-            source: config
+    }
+    if (!ofType(config.using.method, 'string')) {
+        errors.push(exceptions.ValidationError('method should be an string', {
+            source: config.using.method
+        }));
+    }
+    if (!ofType(config.using.selector, 'string')) {
+        errors.push(exceptions.ValidationError('selector should be an string', {
+            source: config.using.selector
+        }));
+    }
+
+}
+
+function addlookupKeyFromErrors (config, errors) {
+    if (!defined(config.from)) {
+        return;
+    }
+    if (!ofType(config.from, 'string')) {
+        errors.push(exceptions.ValidationError('from should be an string', {
+            source: config.from
         }));
     }
 }
 
-function addCSVDatasourceErrors (config, errors) {
-    if (!util.isArray(config.CSVDatasource)) {
-        errors.push(exceptions.ValidationError('"CSVDatasource" behavior must be an array', {
+function addlookupKeyErrors (config, errors) {
+    if (!defined(config.key)) {
+        return;
+    }
+    if (!ofType(config.key, 'Object')) {
+        missingRequiredFields(config.key, 'from', 'using').forEach(function (field) {
+            errors.push(exceptions.ValidationError('lookup behavior "' + field + '" field required', {
+                source: config.key
+            }));
+        });
+    }
+    addlookupKeyUsingErrors(config.key, errors);
+    addlookupKeyFromErrors(config.key, errors);
+}
+
+function addlookupCSVErrors (config, errors) {
+    if (!defined(config.fromDataSource)) {
+        return;
+    }
+    if (!ofType(config.fromDataSource.csv, 'Object')) {
+        missingRequiredFields(config.fromDataSource.csv, 'CSVPath', 'ColumnMatch', 'ColumnInto').forEach(function (field) {
+            errors.push(exceptions.ValidationError('lookup behavior "' + field + '" field required', {
+                source: config.fromDataSource.csv
+            }));
+        });
+    }
+
+    addlookupCSVPathErrors(config.fromDataSource.csv, errors);
+    addlookupColumnMatchErrors(config.fromDataSource.csv, errors);
+    addlookupColumnIntoErrors(config.fromDataSource.csv, errors);
+}
+
+function addlookupErrors (config, errors) {
+    if (!util.isArray(config.lookup)) {
+        errors.push(exceptions.ValidationError('"lookup" behavior must be an array', {
             source: config
         }));
     }
     else {
-        config.CSVDatasource.forEach(function (CSVDatasourceConfig) {
-            missingRequiredFields(CSVDatasourceConfig, 'from', 'CSVPath', 'ColumnMatch', 'ColumnInto', 'DataInto', 'using').forEach(function (field) {
-                errors.push(exceptions.ValidationError('CSVDatasource behavior "' + field + '" field required', {
-                    source: CSVDatasourceConfig
+        config.lookup.forEach(function (csvdatasourceconfig) {
+            missingRequiredFields(csvdatasourceconfig, 'key', 'fromDataSource', 'DataInto').forEach(function (field) {
+                errors.push(exceptions.ValidationError('lookup behavior "' + field + '" field required', {
+                    source: csvdatasourceconfig
                 }));
             });
-            addCSVDatasourceFromErrors(CSVDatasourceConfig, errors);
-            addCSVDatasourceCSVPathErrors(CSVDatasourceConfig, errors);
-            addCSVDatasourceColumnMatchErrors(CSVDatasourceConfig, errors);
-            addCSVDatasourceColumnIntoErrors(CSVDatasourceConfig, errors);
-            addCSVDatasourceDataIntoErrors(CSVDatasourceConfig, errors);
-            addCSVDatasourceUsingErrors(CSVDatasourceConfig, errors);
+            addlookupKeyErrors(csvdatasourceconfig, errors);
+            addlookupCSVErrors(csvdatasourceconfig, errors);
         });
     }
 }
@@ -276,7 +289,7 @@ function validate (config) {
             wait: addWaitErrors,
             repeat: addRepeatErrors,
             copy: addCopyErrors,
-            CSVDatasource: addCSVDatasourceErrors,
+            lookup: addlookupErrors,
             shellTransform: addShellTransformErrors,
             decorate: addDecorateErrors
         };
@@ -326,7 +339,6 @@ function wait (request, responsePromise, millisecondsOrFn, logger) {
 
 function quoteForShell (obj) {
     var json = JSON.stringify(obj);
-
     if (isWindows) {
         // Confused? Me too. All other approaches I tried were spectacular failures
         // in both 1) keeping the JSON as a single CLI arg, and 2) maintaining the inner quotes
@@ -551,19 +563,19 @@ function copy (originalRequest, responsePromise, copyArray, logger) {
     });
 }
 
-function CSV_DATA (CSVPath, ColumnMatch, result, values) {
+function CSVData (CSVPath, ColumnMatch, result, values, index) {
     var flag = true;
     var storeColumnIntoValues = [];
-    var csvData0 = csvToObject({
+    var CSVData0 = csvToObject({
         filename: CSVPath
     });
-    Object.keys(csvData0).forEach(function (key) {
-        Object.keys(csvData0[key]).forEach(function () {
-            var keyCheck = (csvData0[key][ColumnMatch]);
-            if ((flag) && (defined(keyCheck)) && (keyCheck.localeCompare(values) === 0)) {
+    Object.keys(CSVData0).forEach(function (key) {
+        Object.keys(CSVData0[key]).forEach(function () {
+            var keyCheck = (CSVData0[key][ColumnMatch]);
+            if ((flag) && (defined(keyCheck)) && (keyCheck.localeCompare(values[index]) === 0)) {
                 for (var t = 1; t <= result.length; t += 1) {
                     var intoSubset = result[t - 1];
-                    var outputCheck = csvData0[key][intoSubset];
+                    var outputCheck = CSVData0[key][intoSubset];
                     if (defined(outputCheck)) {
                         storeColumnIntoValues.push(outputCheck.trim());
                     }
@@ -584,30 +596,39 @@ function CSVColumnIntoValue (obj) {
 }
 
 
-function CSVDatasource (originalRequest, responsePromise, csvobject, logger) {
+function lookup (originalRequest, responsePromise, csvobject, logger) {
     return responsePromise.then(function (response) {
         csvobject.forEach(function (csvConfig) {
             var CSVPath,
                 ColumnMatch,
-                DataInto;
+                index,
+                map = new hashmap();
+            var DataInto = csvConfig.DataInto;
             if (typeof csvConfig === 'object') {
-                CSVPath = csvConfig.CSVPath;
-                ColumnMatch = csvConfig.ColumnMatch;
-                DataInto = csvConfig.DataInto;
-                var from = getFrom(originalRequest, csvConfig.from),
-                    using = csvConfig.using || {},
+                CSVPath = csvConfig.fromDataSource.csv.CSVPath;
+                ColumnMatch = csvConfig.fromDataSource.csv.ColumnMatch;
+                if (typeof csvConfig.key.index === 'undefined') {
+                    index = 0;
+                }
+                else {
+                    index = csvConfig.key.index;
+                }
+                var from = getFrom(originalRequest, csvConfig.key.from),
                     fnMap = {
                         regex: regexValue,
                         xpath: xpathValue,
                         jsonpath: jsonpathValue
                     },
                     values = [];
-                if (fnMap[using.method]) {
-                    values = fnMap[using.method](from, csvConfig, logger);
+                if (fnMap[csvConfig.key.using.method]) {
+                    values = fnMap[csvConfig.key.using.method](from, csvConfig.key, logger);
                 }
-                var result = CSVColumnIntoValue(csvConfig.ColumnInto);
-                var saveValues = CSV_DATA(CSVPath, ColumnMatch, result, values, response);
-                replace(response, DataInto, saveValues, logger);
+                var result = CSVColumnIntoValue(csvConfig.fromDataSource.csv.ColumnInto);
+                var saveValues = CSVData(CSVPath, ColumnMatch, result, values, index, response);
+                for (var i = 0; i < saveValues.length; i += 1) {
+                    map.set(result[i], saveValues[i]);
+                }
+                replace(response, DataInto, map, logger);
             }
         });
         return Q(response);
@@ -637,9 +658,9 @@ function execute (request, response, behaviors, logger) {
             return copy(request, result, behaviors.copy, logger);
         } :
         combinators.identity,
-        CSVDatasourceFn = behaviors.CSVDatasource ?
+        lookupFn = behaviors.lookup ?
         function (result) {
-            return CSVDatasource(request, result, behaviors.CSVDatasource, logger);
+            return lookup(request, result, behaviors.lookup, logger);
         } :
         combinators.identity,
         shellTransformFn = behaviors.shellTransform ?
@@ -655,7 +676,7 @@ function execute (request, response, behaviors, logger) {
 
     logger.debug('using stub response behavior ' + JSON.stringify(behaviors));
 
-    return combinators.compose(decorateFn, shellTransformFn, copyFn, CSVDatasourceFn, waitFn, Q)(response);
+    return combinators.compose(decorateFn, shellTransformFn, copyFn, lookupFn, waitFn, Q)(response);
 }
 
 module.exports = {
