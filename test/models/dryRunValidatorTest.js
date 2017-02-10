@@ -545,5 +545,33 @@ describe('dryRunValidator', function () {
                 });
             });
         });
+
+        promiseIt('should not be valid for proxy addDecorateBehavior if injections are disallowed', function () {
+            var proxy = {
+                    to: 'http://google.com',
+                    addDecorateBehavior: 'function (request, response) { response.body = ""; }'
+                },
+                request = {
+                    stubs: [{
+                        responses: [{ proxy: proxy }]
+                    }]
+                },
+                validator = Validator.create({
+                    StubRepository: StubRepository,
+                    testRequest: testRequest,
+                    allowInjection: false
+                });
+
+            return validator.validate(request, Logger.create()).then(function (result) {
+                assert.deepEqual(result, {
+                    isValid: false,
+                    errors: [{
+                        code: 'invalid injection',
+                        message: 'JavaScript injection is not allowed unless mb is run with the --allowInjection flag',
+                        source: request.stubs[0]
+                    }]
+                });
+            });
+        });
     });
 });

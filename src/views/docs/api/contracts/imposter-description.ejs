@@ -112,6 +112,7 @@
     <li><code>repeat</code> - repeats the response a given number of times</li>
     <li><code>decorate</code> - post-processes the response using a JavaScript function</li>
     <li><code>shellTransform</code> - post-processes the response using a command line application</li>
+    <li><code>copy</code> - copies a value from the request into the response</li>
   </ul>
 
   <p>More information: <a href='/docs/api/behaviors'>behaviors</a></p>
@@ -227,6 +228,15 @@
 
     <p class='info-icon'>More information: <a href='/docs/api/proxies'>proxies</a> and the
         <a href='/docs/api/behaviors#behavior-wait'>wait behavior</a></p>
+</div>
+
+<div id='imposter-stubs-responses-proxy-addDecorateBehavior-description'>
+  <p>When present, adds the given function as a <code>decorate</code> behavior to each newly created response.</p>
+
+  <p class='warning-icon'>JavaScript injection requires the
+    <a href='/docs/commandLine'>--allowInjection command line flag</a> to execute.</p>
+
+  <p class='info-icon'>More information: <a href='/docs/api/proxies'>proxies</a></p>
 </div>
 
 <div id='imposter-stubs-responses-proxy-injectHeaders-description'>

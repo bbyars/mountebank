@@ -657,4 +657,37 @@ describe('http proxy stubs', function () {
             return api.del('/imposters');
         });
     });
+
+    promiseIt('should add decorate behaviors to newly created response', function () {
+        var originServerPort = port + 1,
+            originServerStub = { responses: [{ is: { body: 'origin server' } }] },
+            originServerRequest = {
+                protocol: 'http',
+                port: originServerPort,
+                stubs: [originServerStub],
+                name: this.name + ' origin'
+            },
+            decorator = function (request, response) {
+                response.body += ' decorated';
+            },
+            proxyStub = { responses: [{
+                proxy: { to: 'http://localhost:' + originServerPort, addDecorateBehavior: decorator.toString() }
+            }] },
+            proxyRequest = { protocol: 'http', port: port, stubs: [proxyStub], name: this.name + ' proxy' };
+
+        return api.post('/imposters', originServerRequest).then(function (response) {
+            assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body, null, 2));
+            return api.post('/imposters', proxyRequest);
+        }).then(function (response) {
+            assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body, null, 2));
+            return client.get('/', port);
+        }).then(function (response) {
+            assert.strictEqual(response.body, 'origin server');
+            return client.get('/', port);
+        }).then(function (response) {
+            assert.strictEqual(response.body, 'origin server decorated');
+        }).finally(function () {
+            return api.del('/imposters');
+        });
+    });
 });

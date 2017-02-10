@@ -103,8 +103,11 @@ function create (options) {
             }),
             hasPredicateInjections = Object.keys(stub.predicates || {}).some(function (predicate) {
                 return stub.predicates[predicate].inject;
+            }),
+            hasAddDecorateBehaviorInProxy = stub.responses.some(function (response) {
+                return response.proxy && response.proxy.addDecorateBehavior;
             });
-        return hasResponseInjections || hasPredicateInjections;
+        return hasResponseInjections || hasPredicateInjections || hasAddDecorateBehaviorInProxy;
     }
 
     function hasShellExecution (stub) {
