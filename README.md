@@ -55,7 +55,7 @@ mountebank has the following goals:
 Not all of mountebank's goals are currently implemented, but fear not, for he has a team of top-notch open
 source developers, and they are legion.
 
-## Roadmap
+## Roadmap and Support
 
 mountebank is used by a large number of companies and I think it's important to convey my best guess as to what
 the feature roadmap is. I've adopted github tools to manage the roadmap. Specifically, the
@@ -63,13 +63,13 @@ the feature roadmap is. I've adopted github tools to manage the roadmap. Specifi
 match the versions I show in the [milestones](https://github.com/bbyars/mountebank/milestones) page, which
 gives expected dates.
 
-mountebank is provided free of charge and maintained in my free time. All timeline expectations are best
-guesses, but sometimes life interferes.
-
-## Support
-
 Visit the [Google group](https://groups.google.com/forum/#!forum/mountebank-discuss)
 for any support questions.  Don't be shy!
+
+mountebank is provided free of charge and maintained in my free time. As such, I'm unable to make any kind
+of guarantees around either support turn-around time or release dates. If your company has commitments
+that require more confidence and are willing to pay a reasonable services fee to obtain that confidence,
+you can contact me directly at brandon.byars@gmail.com.
 
 ## Build Status
 
