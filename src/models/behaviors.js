@@ -87,7 +87,7 @@ function addCopyIntoErrors (config, errors) {
         errors.push(exceptions.ValidationError(
             'copy behavior "into" field must be a string, representing the token to replace in response fields',
             { source: config }
-          ));
+        ));
     }
 }
 
@@ -601,8 +601,8 @@ function execute (request, response, behaviors, logger) {
     }
 
     var waitFn = behaviors.wait ?
-          function (result) { return wait(request, result, behaviors.wait, logger); } :
-          combinators.identity,
+            function (result) { return wait(request, result, behaviors.wait, logger); } :
+            combinators.identity,
         copyFn = behaviors.copy ?
             function (result) { return copy(request, result, behaviors.copy, logger); } :
             combinators.identity,
