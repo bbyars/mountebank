@@ -50,7 +50,7 @@ function missingRequiredFields (obj) {
 function addWaitErrors (config, errors) {
     if (!ofType(config.wait, 'number', 'string') || (typeof config.wait === 'number' && config.wait < 0)) {
         errors.push(exceptions.ValidationError('"wait" value must be an integer greater than or equal to 0',
-          { source: config }));
+            { source: config }));
     }
 }
 
@@ -66,14 +66,15 @@ function addCopyFromErrors (config, errors) {
         return;
     }
     if (!ofType(config.from, 'string', 'object')) {
-        errors.push(exceptions.ValidationError('copy behavior "from" field must be a string or an object, representing the request field to copy from',
+        errors.push(exceptions.ValidationError(
+            'copy behavior "from" field must be a string or an object, representing the request field to copy from',
             { source: config }));
     }
     else if (typeof config.from === 'object') {
         var keys = Object.keys(config.from);
         if (keys.length === 0 || keys.length > 1) {
             errors.push(exceptions.ValidationError('copy behavior "from" field can only have one key per object',
-            { source: config }));
+              { source: config }));
         }
     }
 }
@@ -83,7 +84,8 @@ function addCopyIntoErrors (config, errors) {
         return;
     }
     if (!ofType(config.into, 'string')) {
-        errors.push(exceptions.ValidationError('copy behavior "into" field must be a string, representing the token to replace in response fields',
+        errors.push(exceptions.ValidationError(
+            'copy behavior "into" field must be a string, representing the token to replace in response fields',
             { source: config }));
     }
 }
@@ -389,8 +391,7 @@ function decorate (originalRequest, responsePromise, fn, logger) {
             logger.error('    full source: ' + JSON.stringify(injected));
             logger.error('    request: ' + JSON.stringify(request));
             logger.error('    response: ' + JSON.stringify(response));
-            return Q.reject(exceptions.InjectionError('invalid decorator injection',
-                { source: injected, data: error.message }));
+            return Q.reject(exceptions.InjectionError('invalid decorator injection', { source: injected, data: error.message }));
         }
     });
 }
@@ -449,9 +450,7 @@ function getMatches (selectionFn, selector, logger) {
 
 function regexValue (from, copyConfig, logger) {
     var regex = new RegExp(copyConfig.using.selector, regexFlags(copyConfig.using.options)),
-        selectionFn = function () {
-            return regex.exec(from);
-        };
+        selectionFn = function () { return regex.exec(from); };
     return getMatches(selectionFn, regex, logger);
 }
 
@@ -517,6 +516,7 @@ function copy (originalRequest, responsePromise, copyArray, logger) {
             if (fnMap[using.method]) {
                 values = fnMap[using.method](from, copyConfig, logger);
             }
+
             replace(response, copyConfig.into, values, logger);
         });
         return Q(response);
