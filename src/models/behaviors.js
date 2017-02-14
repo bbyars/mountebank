@@ -74,7 +74,7 @@ function addCopyFromErrors (config, errors) {
         var keys = Object.keys(config.from);
         if (keys.length === 0 || keys.length > 1) {
             errors.push(exceptions.ValidationError('copy behavior "from" field can only have one key per object',
-              { source: config }));
+                { source: config }));
         }
     }
 }
@@ -86,7 +86,8 @@ function addCopyIntoErrors (config, errors) {
     if (!ofType(config.into, 'string')) {
         errors.push(exceptions.ValidationError(
             'copy behavior "into" field must be a string, representing the token to replace in response fields',
-            { source: config }));
+            { source: config }
+          ));
     }
 }
 
@@ -600,20 +601,20 @@ function execute (request, response, behaviors, logger) {
     }
 
     var waitFn = behaviors.wait ?
-        function (result) { return wait(request, result, behaviors.wait, logger); } :
-        combinators.identity,
+          function (result) { return wait(request, result, behaviors.wait, logger); } :
+          combinators.identity,
         copyFn = behaviors.copy ?
-        function (result) { return copy(request, result, behaviors.copy, logger); } :
-        combinators.identity,
+            function (result) { return copy(request, result, behaviors.copy, logger); } :
+            combinators.identity,
         lookupFn = behaviors.lookup ?
-        function (result) { return lookup(request, result, behaviors.lookup, logger); } :
-        combinators.identity,
+            function (result) { return lookup(request, result, behaviors.lookup, logger); } :
+            combinators.identity,
         shellTransformFn = behaviors.shellTransform ?
-        function (result) { return shellTransform(request, result, behaviors.shellTransform, logger); } :
-        combinators.identity,
+            function (result) { return shellTransform(request, result, behaviors.shellTransform, logger); } :
+            combinators.identity,
         decorateFn = behaviors.decorate ?
-        function (result) { return decorate(request, result, behaviors.decorate, logger); } :
-        combinators.identity;
+            function (result) { return decorate(request, result, behaviors.decorate, logger); } :
+            combinators.identity;
 
     logger.debug('using stub response behavior ' + JSON.stringify(behaviors));
 
