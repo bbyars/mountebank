@@ -49,9 +49,9 @@ function missingRequiredFields (obj) {
 
 function addWaitErrors (config, errors) {
     if (!ofType(config.wait, 'number', 'string') || (typeof config.wait === 'number' && config.wait < 0)) {
-        errors.push(exceptions.ValidationError('"wait" value must be an integer greater than or equal to 0', {
-            source: config
-        }));
+        errors.push(exceptions.ValidationError('"wait" value must be an integer greater than or equal to 0',
+            { source: config
+            }));
     }
 }
 
@@ -132,53 +132,53 @@ function addCopyErrors (config, errors) {
     }
 }
 
-function addlookupCSVPathErrors (config, errors) {
-    if (!defined(config.CSVPath)) {
+function addLookupPathErrors (config, errors) {
+    if (!defined(config.path)) {
         return;
     }
-    if (!ofType(config.CSVPath, 'string')) {
+    if (!ofType(config.path, 'string')) {
         errors.push(exceptions.ValidationError(
-            'lookup behavior "CSVPath" field must be a string, representing the token to fetch values from CSV', {
+            'lookup behavior "path" field must be a string, representing the token to fetch values from CSV', {
                 source: config
             }
         ));
     }
 }
 
-function addlookupColumnMatchErrors (config, errors) {
-    if (!defined(config.ColumnMatch)) {
+function addLookupColumnMatchErrors (config, errors) {
+    if (!defined(config.columnMatch)) {
         return;
     }
-    if (!ofType(config.ColumnMatch, 'string')) {
+    if (!ofType(config.columnMatch, 'string')) {
         errors.push(exceptions.ValidationError(
-            'lookup behavior "ColumnMatch" field must be a string, representing the token to match column in CSV with xpath value', {
+            'lookup behavior "columnMatch" field must be a string, representing the token to match column in CSV with xpath, jsonpath, or regex value', {
                 source: config
             }
         ));
     }
 }
 
-function addlookupColumnIntoErrors (config, errors) {
-    if (!defined(config.ColumnInto)) {
+function addLookupColumnIntoErrors (config, errors) {
+    if (!defined(config.columnInto)) {
         return;
     }
-    if (!ofType(config.ColumnInto, 'object')) {
+    if (!ofType(config.columnInto, 'object')) {
         errors.push(exceptions.ValidationError(
-            'lookup behavior "ColumnInto" field must be a string or an object, representing the request field to pass values of column in response', {
+            'lookup behavior "columnInto" field must be a string or an object, representing the request field to pass values of column in response', {
                 source: config
             }));
     }
-    else if (typeof config.ColumnInto === 'object') {
-        var keys = Object.keys(config.ColumnInto);
+    else if (typeof config.columnInto === 'object') {
+        var keys = Object.keys(config.columnInto);
         if (keys.length === 0) {
-            errors.push(exceptions.ValidationError('lookup behavior "ColumnInto" field can only have one key per object', {
+            errors.push(exceptions.ValidationError('lookup behavior "columnInto" field can only have one key per object', {
                 source: config
             }));
         }
     }
 }
 
-function addlookupKeyUsingErrors (config, errors) {
+function addLookupKeyUsingErrors (config, errors) {
     if (!defined(config.using)) {
         return;
     }
@@ -200,7 +200,7 @@ function addlookupKeyUsingErrors (config, errors) {
 
 }
 
-function addlookupKeyFromErrors (config, errors) {
+function addLookupKeyFromErrors (config, errors) {
     if (!defined(config.from)) {
         return;
     }
@@ -211,7 +211,7 @@ function addlookupKeyFromErrors (config, errors) {
     }
 }
 
-function addlookupKeyErrors (config, errors) {
+function addLookupKeyErrors (config, errors) {
     if (!defined(config.key)) {
         return;
     }
@@ -222,25 +222,25 @@ function addlookupKeyErrors (config, errors) {
             }));
         });
     }
-    addlookupKeyUsingErrors(config.key, errors);
-    addlookupKeyFromErrors(config.key, errors);
+    addLookupKeyUsingErrors(config.key, errors);
+    addLookupKeyFromErrors(config.key, errors);
 }
 
-function addlookupCSVErrors (config, errors) {
+function addLookupSourceErrors (config, errors) {
     if (!defined(config.fromDataSource)) {
         return;
     }
     if (!ofType(config.fromDataSource.csv, 'Object')) {
-        missingRequiredFields(config.fromDataSource.csv, 'CSVPath', 'ColumnMatch', 'ColumnInto').forEach(function (field) {
+        missingRequiredFields(config.fromDataSource.csv, 'path', 'columnMatch', 'columnInto').forEach(function (field) {
             errors.push(exceptions.ValidationError('lookup behavior "' + field + '" field required', {
                 source: config.fromDataSource.csv
             }));
         });
     }
 
-    addlookupCSVPathErrors(config.fromDataSource.csv, errors);
-    addlookupColumnMatchErrors(config.fromDataSource.csv, errors);
-    addlookupColumnIntoErrors(config.fromDataSource.csv, errors);
+    addLookupPathErrors(config.fromDataSource.csv, errors);
+    addLookupColumnMatchErrors(config.fromDataSource.csv, errors);
+    addLookupColumnIntoErrors(config.fromDataSource.csv, errors);
 }
 
 function addlookupErrors (config, errors) {
@@ -251,13 +251,13 @@ function addlookupErrors (config, errors) {
     }
     else {
         config.lookup.forEach(function (csvdatasourceconfig) {
-            missingRequiredFields(csvdatasourceconfig, 'key', 'fromDataSource', 'DataInto').forEach(function (field) {
+            missingRequiredFields(csvdatasourceconfig, 'key', 'fromDataSource', 'into').forEach(function (field) {
                 errors.push(exceptions.ValidationError('lookup behavior "' + field + '" field required', {
                     source: csvdatasourceconfig
                 }));
             });
-            addlookupKeyErrors(csvdatasourceconfig, errors);
-            addlookupCSVErrors(csvdatasourceconfig, errors);
+            addLookupKeyErrors(csvdatasourceconfig, errors);
+            addLookupSourceErrors(csvdatasourceconfig, errors);
         });
     }
 }
@@ -563,19 +563,19 @@ function copy (originalRequest, responsePromise, copyArray, logger) {
     });
 }
 
-function CSVData (CSVPath, ColumnMatch, result, values, index) {
+function keyFound (path, columnMatch, result, values, index) {
     var flag = true;
     var storeColumnIntoValues = [];
-    var CSVData0 = csvToObject({
-        filename: CSVPath
+    var dataToObject = csvToObject({
+        filename: path
     });
-    Object.keys(CSVData0).forEach(function (key) {
-        Object.keys(CSVData0[key]).forEach(function () {
-            var keyCheck = (CSVData0[key][ColumnMatch]);
+    Object.keys(dataToObject).forEach(function (key) {
+        Object.keys(dataToObject[key]).forEach(function () {
+            var keyCheck = (dataToObject[key][columnMatch]);
             if ((flag) && (defined(keyCheck)) && (keyCheck.localeCompare(values[index]) === 0)) {
                 for (var t = 1; t <= result.length; t += 1) {
                     var intoSubset = result[t - 1];
-                    var outputCheck = CSVData0[key][intoSubset];
+                    var outputCheck = dataToObject[key][intoSubset];
                     if (defined(outputCheck)) {
                         storeColumnIntoValues.push(outputCheck.trim());
                     }
@@ -587,7 +587,7 @@ function CSVData (CSVPath, ColumnMatch, result, values, index) {
     return storeColumnIntoValues;
 }
 
-function CSVColumnIntoValue (obj) {
+function columnIntoValue (obj) {
     var result = [];
     Object.keys(obj).forEach(function (key) {
         result.push(obj[key]);
@@ -596,39 +596,39 @@ function CSVColumnIntoValue (obj) {
 }
 
 
-function lookup (originalRequest, responsePromise, csvobject, logger) {
+function lookup (originalRequest, responsePromise, lookupArray, logger) {
     return responsePromise.then(function (response) {
-        csvobject.forEach(function (csvConfig) {
-            var CSVPath,
-                ColumnMatch,
+        lookupArray.forEach(function (lookupConfig) {
+            var path,
+                columnMatch,
                 index,
                 map = new hashmap();
-            var DataInto = csvConfig.DataInto;
-            if (typeof csvConfig === 'object') {
-                CSVPath = csvConfig.fromDataSource.csv.CSVPath;
-                ColumnMatch = csvConfig.fromDataSource.csv.ColumnMatch;
-                if (typeof csvConfig.key.index === 'undefined') {
+            var into = lookupConfig.into;
+            if (typeof lookupConfig === 'object') {
+                path = lookupConfig.fromDataSource.csv.path;
+                columnMatch = lookupConfig.fromDataSource.csv.columnMatch;
+                if (typeof lookupConfig.key.index === 'undefined') {
                     index = 0;
                 }
                 else {
-                    index = csvConfig.key.index;
+                    index = lookupConfig.key.index;
                 }
-                var from = getFrom(originalRequest, csvConfig.key.from),
+                var from = getFrom(originalRequest, lookupConfig.key.from),
                     fnMap = {
                         regex: regexValue,
                         xpath: xpathValue,
                         jsonpath: jsonpathValue
                     },
                     values = [];
-                if (fnMap[csvConfig.key.using.method]) {
-                    values = fnMap[csvConfig.key.using.method](from, csvConfig.key, logger);
+                if (fnMap[lookupConfig.key.using.method]) {
+                    values = fnMap[lookupConfig.key.using.method](from, lookupConfig.key, logger);
                 }
-                var result = CSVColumnIntoValue(csvConfig.fromDataSource.csv.ColumnInto);
-                var saveValues = CSVData(CSVPath, ColumnMatch, result, values, index, response);
+                var result = columnIntoValue(lookupConfig.fromDataSource.csv.columnInto);
+                var saveValues = keyFound(path, columnMatch, result, values, index, response);
                 for (var i = 0; i < saveValues.length; i += 1) {
                     map.set(result[i], saveValues[i]);
                 }
-                replace(response, DataInto, map, logger);
+                replace(response, into, map, logger);
             }
         });
         return Q(response);
