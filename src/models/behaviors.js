@@ -47,6 +47,11 @@ function missingRequiredFields (obj) {
     return missingFields;
 }
 
+function hasExactlyOneKey (obj) {
+    var keys = Object.keys(obj);
+    return keys.length === 1;
+}
+
 function addWaitErrors (config, errors) {
     if (!ofType(config.wait, 'number', 'string') || (typeof config.wait === 'number' && config.wait < 0)) {
         errors.push(exceptions.ValidationError('"wait" value must be an integer greater than or equal to 0',
@@ -61,47 +66,59 @@ function addRepeatErrors (config, errors) {
     }
 }
 
-function addCopyFromErrors (config, errors) {
+// Some of the following validation functions are shared between the copy and lookup behaviors
+
+function addFromErrors (config, behaviorName, fieldPrefix, errors) {
+    var fieldName = fieldPrefix.length > 0 ? fieldPrefix + '.from' : 'from';
+
     if (!defined(config.from)) {
         return;
     }
     if (!ofType(config.from, 'string', 'object')) {
         errors.push(exceptions.ValidationError(
-            'copy behavior "from" field must be a string or an object, representing the request field to copy from',
+            behaviorName + ' behavior "' + fieldName + '" field must be a string or an object, representing the request field to select from',
             { source: config }));
     }
-    else if (typeof config.from === 'object') {
-        var keys = Object.keys(config.from);
-        if (keys.length === 0 || keys.length > 1) {
-            errors.push(exceptions.ValidationError('copy behavior "from" field can only have one key per object',
-                { source: config }));
-        }
+    else if (typeof config.from === 'object' && !hasExactlyOneKey(config.from)) {
+        errors.push(exceptions.ValidationError(behaviorName + ' behavior "' + fieldName + '" field must have exactly one key per object',
+            { source: config }));
     }
 }
 
-function addCopyIntoErrors (config, errors) {
+function addIntoErrors (config, behaviorName, errors) {
     if (!defined(config.into)) {
         return;
     }
     if (!ofType(config.into, 'string')) {
         errors.push(exceptions.ValidationError(
-            'copy behavior "into" field must be a string, representing the token to replace in response fields',
+            behaviorName + ' behavior "into" field must be a string, representing the token to replace in response fields',
             { source: config }
         ));
     }
 }
 
-function addCopyUsingErrors (config, errors) {
+function addUsingErrors (config, behaviorName, fieldPrefix, errors) {
+    var fieldName = fieldPrefix.length > 0 ? fieldPrefix + '.using' : 'using';
+
     if (!defined(config.using)) {
         return;
     }
-    missingRequiredFields(config.using, 'method', 'selector').forEach(function (field) {
-        errors.push(exceptions.ValidationError('copy behavior "using.' + field + '" field required',
+    if (!ofType(config.using, 'object')) {
+        errors.push(exceptions.ValidationError(
+            behaviorName + ' behavior "' + fieldName + '" field must be an object',
             { source: config }));
-    });
-    if (defined(config.using.method) && ['regex', 'xpath', 'jsonpath'].indexOf(config.using.method) < 0) {
-        errors.push(exceptions.ValidationError('copy behavior "using.method" field must be one of [regex, xpath, jsonpath]',
-            { source: config }));
+    }
+    else {
+        missingRequiredFields(config.using, 'method', 'selector').forEach(function (field) {
+            errors.push(exceptions.ValidationError(
+                behaviorName + ' behavior "' + fieldName + '.' + field + '" field required',
+                { source: config }));
+        });
+        if (defined(config.using.method) && ['regex', 'xpath', 'jsonpath'].indexOf(config.using.method) < 0) {
+            errors.push(exceptions.ValidationError(
+                behaviorName + ' behavior "' + fieldName + '.method" field must be one of [regex, xpath, jsonpath]',
+                { source: config }));
+        }
     }
 }
 
@@ -116,76 +133,40 @@ function addCopyErrors (config, errors) {
                 errors.push(exceptions.ValidationError('copy behavior "' + field + '" field required',
                     { source: copyConfig }));
             });
-            addCopyFromErrors(copyConfig, errors);
-            addCopyIntoErrors(copyConfig, errors);
-            addCopyUsingErrors(copyConfig, errors);
+            addFromErrors(copyConfig, 'copy', '', errors);
+            addIntoErrors(copyConfig, 'copy', errors);
+            addUsingErrors(copyConfig, 'copy', '', errors);
         });
     }
 }
 
-function addLookupPathErrors (config, errors) {
-    if (!defined(config.path)) {
+function addLookupFromDataSourceCSVPathErrors (config, errors) {
+    if (!defined(config.fromDataSource.csv.path)) {
         return;
     }
-    if (!ofType(config.path, 'string')) {
-        errors.push(exceptions.ValidationError('lookup behavior "path" field must be a string, representing the token to fetch values from CSV',
+    if (!ofType(config.fromDataSource.csv.path, 'string')) {
+        errors.push(exceptions.ValidationError('lookup behavior "fromDataSource.csv.path" field must be a string, representing the path to the CSV file',
             { source: config }));
     }
 }
 
-function addLookupColumnMatchErrors (config, errors) {
-    if (!defined(config.columnMatch)) {
+function addLookupFromDataSourceCSVColumnMatchErrors (config, errors) {
+    if (!defined(config.fromDataSource.csv.columnMatch)) {
         return;
     }
-    if (!ofType(config.columnMatch, 'string')) {
-        errors.push(exceptions.ValidationError('lookup behavior "columnMatch" field must be a string, representing the token to match column in CSV with xpath, jsonpath, or regex value',
+    if (!ofType(config.fromDataSource.csv.columnMatch, 'string')) {
+        errors.push(exceptions.ValidationError('lookup behavior "fromDataSource.csv.columnMatch" field must be a string, representing the column header to select against the "key" field',
             { source: config }));
     }
 }
 
-function addLookupColumnIntoErrors (config, errors) {
-    if (!defined(config.columnInto)) {
+function addLookupFromDataSourceCSVColumnIntoErrors (config, errors) {
+    if (!defined(config.fromDataSource.csv.columnInto)) {
         return;
     }
-    if (!ofType(config.columnInto, 'object')) {
-        errors.push(exceptions.ValidationError('lookup behavior "columnInto" field must be a string or an object, representing the request field to pass values of column in response',
+    if (!util.isArray(config.fromDataSource.csv.columnInto)) {
+        errors.push(exceptions.ValidationError('lookup behavior "fromDataSource.csv.columnInto" field must be an array, representing the columns to select',
             { source: config }));
-    }
-    else if (typeof config.columnInto === 'object') {
-        var keys = Object.keys(config.columnInto);
-        if (keys.length === 0) {
-            errors.push(exceptions.ValidationError('lookup behavior "columnInto" field can only have one key per object',
-                { source: config }));
-        }
-    }
-}
-
-function addLookupKeyUsingErrors (config, errors) {
-    if (!defined(config.using)) {
-        return;
-    }
-    if (!ofType(config.using, 'object')) {
-        errors.push(exceptions.ValidationError('using should be an object',
-            { source: config.using }));
-    }
-    if (!ofType(config.using.method, 'string')) {
-        errors.push(exceptions.ValidationError('method should be an string',
-            { source: config.using.method }));
-    }
-    if (!ofType(config.using.selector, 'string')) {
-        errors.push(exceptions.ValidationError('selector should be an string',
-            { source: config.using.selector }));
-    }
-
-}
-
-function addLookupKeyFromErrors (config, errors) {
-    if (!defined(config.from)) {
-        return;
-    }
-    if (!ofType(config.from, 'string')) {
-        errors.push(exceptions.ValidationError('from should be an string',
-            { source: config.from }));
     }
 }
 
@@ -195,42 +176,70 @@ function addLookupKeyErrors (config, errors) {
     }
     if (!ofType(config.key, 'Object')) {
         missingRequiredFields(config.key, 'from', 'using').forEach(function (field) {
-            errors.push(exceptions.ValidationError('lookup behavior "' + field + '" field required',
+            errors.push(exceptions.ValidationError('lookup behavior "key.' + field + '" field required',
                 { source: config.key }));
         });
     }
-    addLookupKeyUsingErrors(config.key, errors);
-    addLookupKeyFromErrors(config.key, errors);
+    addUsingErrors(config.key, 'lookup', 'key', errors);
+    addFromErrors(config.key, 'lookup', 'key', errors);
 }
 
-function addLookupSourceErrors (config, errors) {
+function addLookupFromDataSourceCSVErrors (config, errors) {
+    if (!ofType(config.fromDataSource.csv, 'object')) {
+        errors.push(exceptions.ValidationError('lookup behavior "fromDataSource.csv" field must be an object',
+            { source: config }));
+        return;
+    }
+
+    missingRequiredFields(config.fromDataSource.csv, 'path', 'columnMatch', 'columnInto').forEach(function (field) {
+        errors.push(exceptions.ValidationError('lookup behavior "fromDataSource.csv.' + field + '" field required',
+            { source: config }));
+    });
+    addLookupFromDataSourceCSVPathErrors(config, errors);
+    addLookupFromDataSourceCSVColumnMatchErrors(config, errors);
+    addLookupFromDataSourceCSVColumnIntoErrors(config, errors);
+}
+
+function addLookupFromDataSourceErrors (config, errors) {
     if (!defined(config.fromDataSource)) {
         return;
     }
-    if (!ofType(config.fromDataSource.csv, 'Object')) {
-        missingRequiredFields(config.fromDataSource.csv, 'path', 'columnMatch', 'columnInto').forEach(function (field) {
-            errors.push(exceptions.ValidationError('lookup behavior "' + field + '" field required',
-                { source: config.fromDataSource.csv }));
-        });
+    if (!ofType(config.fromDataSource, 'object')) {
+        errors.push(exceptions.ValidationError(
+            'lookup behavior "fromDataSource" field must be an object',
+            { source: config }));
+        return;
     }
-    addLookupPathErrors(config.fromDataSource.csv, errors);
-    addLookupColumnMatchErrors(config.fromDataSource.csv, errors);
-    addLookupColumnIntoErrors(config.fromDataSource.csv, errors);
+
+    if (!hasExactlyOneKey(config.fromDataSource)) {
+        errors.push(exceptions.ValidationError(
+            'lookup behavior "fromDataSource" field must have exactly one key',
+            { source: config }));
+    }
+    if (!defined(config.fromDataSource.csv)) {
+        errors.push(exceptions.ValidationError(
+            'lookup behavior "fromDataSource" key must be one of [csv] (other data sources may be supported in the future)',
+            { source: config }));
+    }
+    else {
+        addLookupFromDataSourceCSVErrors(config, errors);
+    }
 }
 
-function addlookupErrors (config, errors) {
+function addLookupErrors (config, errors) {
     if (!util.isArray(config.lookup)) {
         errors.push(exceptions.ValidationError('"lookup" behavior must be an array',
             { source: config }));
     }
     else {
-        config.lookup.forEach(function (csvdatasourceconfig) {
-            missingRequiredFields(csvdatasourceconfig, 'key', 'fromDataSource', 'into').forEach(function (field) {
+        config.lookup.forEach(function (lookupConfig) {
+            missingRequiredFields(lookupConfig, 'key', 'fromDataSource', 'into').forEach(function (field) {
                 errors.push(exceptions.ValidationError('lookup behavior "' + field + '" field required',
-                    { source: csvdatasourceconfig }));
+                    { source: lookupConfig }));
             });
-            addLookupKeyErrors(csvdatasourceconfig, errors);
-            addLookupSourceErrors(csvdatasourceconfig, errors);
+            addLookupKeyErrors(lookupConfig, errors);
+            addLookupFromDataSourceErrors(lookupConfig, errors);
+            addIntoErrors(lookupConfig, 'lookup', errors);
         });
     }
 }
@@ -260,7 +269,7 @@ function validate (config) {
             wait: addWaitErrors,
             repeat: addRepeatErrors,
             copy: addCopyErrors,
-            lookup: addlookupErrors,
+            lookup: addLookupErrors,
             shellTransform: addShellTransformErrors,
             decorate: addDecorateErrors
         };
@@ -499,7 +508,7 @@ function replace (obj, token, values, logger) {
 }
 
 /**
- * Runs the response through a post-processing function provided by the user
+ * Copies a value from the request and replaces response tokens with that value
  * @param {Object} originalRequest - The request object, in case post-processing depends on it
  * @param {Object} responsePromise - The promise returning the response
  * @param {Function} copyArray - The list of values to copy
@@ -554,16 +563,23 @@ function columnIntoValue (obj) {
     return result;
 }
 
-
+/**
+ * Looks up request values from a data source and replaces response tokens with the resulting data
+ * @param {Object} originalRequest - The request object, in case post-processing depends on it
+ * @param {Object} responsePromise - The promise returning the response
+ * @param {Function} lookupArray - The list of lookup configurations
+ * @param {Object} logger - The mountebank logger, useful in debugging
+ * @returns {Object}
+ */
 function lookup (originalRequest, responsePromise, lookupArray, logger) {
     return responsePromise.then(function (response) {
         lookupArray.forEach(function (lookupConfig) {
             var path, columnMatch, index, map = new hashmap();
             var into = lookupConfig.into;
-            if (typeof lookupConfig === 'object') {
+            if (typeof lookupConfig === 'object') {             // TODO: Take this out, test validation
                 path = lookupConfig.fromDataSource.csv.path;
                 columnMatch = lookupConfig.fromDataSource.csv.columnMatch;
-                if (typeof lookupConfig.key.index === 'undefined') {
+                if (typeof lookupConfig.key.index === 'undefined') {    // TODO: index = lookupConfg.key.index || 0
                     index = 0;
                 }
                 else {
