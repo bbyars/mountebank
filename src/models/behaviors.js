@@ -13,6 +13,8 @@ var helpers = require('../util/helpers'),
     combinators = require('../util/combinators'),
     xpath = require('./xpath'),
     jsonpath = require('./jsonpath'),
+    csvToObject = require('csv-to-object'),
+    hashmap = require('hashmap'),
     isWindows = require('os').platform().indexOf('win') === 0;
 
 function defined (value) {
@@ -121,6 +123,118 @@ function addCopyErrors (config, errors) {
     }
 }
 
+function addLookupPathErrors (config, errors) {
+    if (!defined(config.path)) {
+        return;
+    }
+    if (!ofType(config.path, 'string')) {
+        errors.push(exceptions.ValidationError('lookup behavior "path" field must be a string, representing the token to fetch values from CSV',
+            { source: config }));
+    }
+}
+
+function addLookupColumnMatchErrors (config, errors) {
+    if (!defined(config.columnMatch)) {
+        return;
+    }
+    if (!ofType(config.columnMatch, 'string')) {
+        errors.push(exceptions.ValidationError('lookup behavior "columnMatch" field must be a string, representing the token to match column in CSV with xpath, jsonpath, or regex value',
+            { source: config }));
+    }
+}
+
+function addLookupColumnIntoErrors (config, errors) {
+    if (!defined(config.columnInto)) {
+        return;
+    }
+    if (!ofType(config.columnInto, 'object')) {
+        errors.push(exceptions.ValidationError('lookup behavior "columnInto" field must be a string or an object, representing the request field to pass values of column in response',
+            { source: config }));
+    }
+    else if (typeof config.columnInto === 'object') {
+        var keys = Object.keys(config.columnInto);
+        if (keys.length === 0) {
+            errors.push(exceptions.ValidationError('lookup behavior "columnInto" field can only have one key per object',
+                { source: config }));
+        }
+    }
+}
+
+function addLookupKeyUsingErrors (config, errors) {
+    if (!defined(config.using)) {
+        return;
+    }
+    if (!ofType(config.using, 'object')) {
+        errors.push(exceptions.ValidationError('using should be an object',
+            { source: config.using }));
+    }
+    if (!ofType(config.using.method, 'string')) {
+        errors.push(exceptions.ValidationError('method should be an string',
+            { source: config.using.method }));
+    }
+    if (!ofType(config.using.selector, 'string')) {
+        errors.push(exceptions.ValidationError('selector should be an string',
+            { source: config.using.selector }));
+    }
+
+}
+
+function addLookupKeyFromErrors (config, errors) {
+    if (!defined(config.from)) {
+        return;
+    }
+    if (!ofType(config.from, 'string')) {
+        errors.push(exceptions.ValidationError('from should be an string',
+            { source: config.from }));
+    }
+}
+
+function addLookupKeyErrors (config, errors) {
+    if (!defined(config.key)) {
+        return;
+    }
+    if (!ofType(config.key, 'Object')) {
+        missingRequiredFields(config.key, 'from', 'using').forEach(function (field) {
+            errors.push(exceptions.ValidationError('lookup behavior "' + field + '" field required',
+                { source: config.key }));
+        });
+    }
+    addLookupKeyUsingErrors(config.key, errors);
+    addLookupKeyFromErrors(config.key, errors);
+}
+
+function addLookupSourceErrors (config, errors) {
+    if (!defined(config.fromDataSource)) {
+        return;
+    }
+    if (!ofType(config.fromDataSource.csv, 'Object')) {
+        missingRequiredFields(config.fromDataSource.csv, 'path', 'columnMatch', 'columnInto').forEach(function (field) {
+            errors.push(exceptions.ValidationError('lookup behavior "' + field + '" field required',
+                { source: config.fromDataSource.csv }));
+        });
+    }
+    addLookupPathErrors(config.fromDataSource.csv, errors);
+    addLookupColumnMatchErrors(config.fromDataSource.csv, errors);
+    addLookupColumnIntoErrors(config.fromDataSource.csv, errors);
+}
+
+function addlookupErrors (config, errors) {
+    if (!util.isArray(config.lookup)) {
+        errors.push(exceptions.ValidationError('"lookup" behavior must be an array',
+            { source: config }));
+    }
+    else {
+        config.lookup.forEach(function (csvdatasourceconfig) {
+            missingRequiredFields(csvdatasourceconfig, 'key', 'fromDataSource', 'into').forEach(function (field) {
+                errors.push(exceptions.ValidationError('lookup behavior "' + field + '" field required',
+                    { source: csvdatasourceconfig }));
+            });
+            addLookupKeyErrors(csvdatasourceconfig, errors);
+            addLookupSourceErrors(csvdatasourceconfig, errors);
+        });
+    }
+}
+
 function addShellTransformErrors (config, errors) {
     if (!ofType(config.shellTransform, 'string')) {
         errors.push(exceptions.ValidationError('"shellTransform" value must be a string of the path to a command line application',
@@ -146,10 +260,10 @@ function validate (config) {
             wait: addWaitErrors,
             repeat: addRepeatErrors,
             copy: addCopyErrors,
+            lookup: addlookupErrors,
             shellTransform: addShellTransformErrors,
             decorate: addDecorateErrors
         };
-
     Object.keys(config || {}).forEach(function (key) {
         if (validations[key]) {
             validations[key](config, errors);
@@ -410,6 +524,69 @@ function copy (originalRequest, responsePromise, copyArray, logger) {
     });
 }
 
+function keyFound (path, columnMatch, result, values, index) {
+    var flag = true;
+    var storeColumnIntoValues = [];
+    var dataToObject = csvToObject({ filename: path });
+    Object.keys(dataToObject).forEach(function (key) {
+        Object.keys(dataToObject[key]).forEach(function () {
+            var keyCheck = (dataToObject[key][columnMatch]);
+            if ((flag) && (defined(keyCheck)) && (keyCheck.localeCompare(values[index]) === 0)) {
+                for (var t = 1; t <= result.length; t += 1) {
+                    var intoSubset = result[t - 1];
+                    var outputCheck = dataToObject[key][intoSubset];
+                    if (defined(outputCheck)) {
+                        storeColumnIntoValues.push(outputCheck.trim());
+                    }
+                    flag = false;
+                }
+            }
+        });
+    });
+    return storeColumnIntoValues;
+}
+
+function columnIntoValue (obj) {
+    var result = [];
+    Object.keys(obj).forEach(function (key) {
+        result.push(obj[key]);
+    });
+    return result;
+}
+
+
+function lookup (originalRequest, responsePromise, lookupArray, logger) {
+    return responsePromise.then(function (response) {
+        lookupArray.forEach(function (lookupConfig) {
+            var path, columnMatch, index, map = new hashmap();
+            var into = lookupConfig.into;
+            if (typeof lookupConfig === 'object') {
+                path = lookupConfig.fromDataSource.csv.path;
+                columnMatch = lookupConfig.fromDataSource.csv.columnMatch;
+                if (typeof lookupConfig.key.index === 'undefined') {
+                    index = 0;
+                }
+                else {
+                    index = lookupConfig.key.index;
+                }
+                var from = getFrom(originalRequest, lookupConfig.key.from),
+                    fnMap = { regex: regexValue, xpath: xpathValue, jsonpath: jsonpathValue },
+                    values = [];
+                if (fnMap[lookupConfig.key.using.method]) {
+                    values = fnMap[lookupConfig.key.using.method](from, lookupConfig.key, logger);
+                }
+                var result = columnIntoValue(lookupConfig.fromDataSource.csv.columnInto);
+                var saveValues = keyFound(path, columnMatch, result, values, index, response);
+                for (var i = 0; i < saveValues.length; i += 1) {
+                    map.set(result[i], saveValues[i]);
+                }
+                replace(response, into, map, logger);
+            }
+        });
+        return Q(response);
+    });
+}
+
 /**
  * The entry point to execute all behaviors provided in the API
  * @param {Object} request - The request object
@@ -429,6 +606,9 @@ function execute (request, response, behaviors, logger) {
         copyFn = behaviors.copy ?
             function (result) { return copy(request, result, behaviors.copy, logger); } :
             combinators.identity,
+        lookupFn = behaviors.lookup ?
+            function (result) { return lookup(request, result, behaviors.lookup, logger); } :
+            combinators.identity,
         shellTransformFn = behaviors.shellTransform ?
             function (result) { return shellTransform(request, result, behaviors.shellTransform, logger); } :
             combinators.identity,
@@ -438,7 +618,7 @@ function execute (request, response, behaviors, logger) {
 
     logger.debug('using stub response behavior ' + JSON.stringify(behaviors));
 
-    return combinators.compose(decorateFn, shellTransformFn, copyFn, waitFn, Q)(response);
+    return combinators.compose(decorateFn, shellTransformFn, copyFn, lookupFn, waitFn, Q)(response);
 }
 
 module.exports = {
