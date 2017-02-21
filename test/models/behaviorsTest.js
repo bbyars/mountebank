@@ -963,104 +963,6 @@ describe('behaviors', function () {
             }]);
         });
 
-        it('should not be valid if "fromDataSource.csv" is not an object', function () {
-            var config = {
-                    key: { from: 'data', using: { method: 'regex', selector: '.*' } },
-                    fromDataSource: { csv: '' },
-                    into: 'TOKEN'
-                },
-                errors = behaviors.validate({ lookup: [config] });
-            assert.deepEqual(errors, [{
-                code: 'bad data',
-                message: 'lookup behavior "fromDataSource.csv" field must be an object',
-                source: config
-            }]);
-        });
-
-        it('should not be valid if "fromDataSource.csv.path" missing', function () {
-            var config = {
-                    key: { from: 'data', using: { method: 'regex', selector: '.*' } },
-                    fromDataSource: { csv: { columnMatch: '', columnInto: ['key'] } },
-                    into: 'TOKEN'
-                },
-                errors = behaviors.validate({ lookup: [config] });
-            assert.deepEqual(errors, [{
-                code: 'bad data',
-                message: 'lookup behavior "fromDataSource.csv.path" field required',
-                source: config
-            }]);
-        });
-
-        it('should not be valid if "fromDataSource.csv.path" is not a string', function () {
-            var config = {
-                    key: { from: 'data', using: { method: 'regex', selector: '.*' } },
-                    fromDataSource: { csv: { path: 0, columnMatch: '', columnInto: ['key'] } },
-                    into: 'TOKEN'
-                },
-                errors = behaviors.validate({ lookup: [config] });
-            assert.deepEqual(errors, [{
-                code: 'bad data',
-                message: 'lookup behavior "fromDataSource.csv.path" field must be a string, representing the path to the CSV file',
-                source: config
-            }]);
-        });
-
-        it('should not be valid if "fromDataSource.csv.columnMatch" missing', function () {
-            var config = {
-                    key: { from: 'data', using: { method: 'regex', selector: '.*' } },
-                    fromDataSource: { csv: { path: '', columnInto: ['key'] } },
-                    into: 'TOKEN'
-                },
-                errors = behaviors.validate({ lookup: [config] });
-            assert.deepEqual(errors, [{
-                code: 'bad data',
-                message: 'lookup behavior "fromDataSource.csv.columnMatch" field required',
-                source: config
-            }]);
-        });
-
-        it('should not be valid if "fromDataSource.csv.columnMatch" is not a string', function () {
-            var config = {
-                    key: { from: 'data', using: { method: 'regex', selector: '.*' } },
-                    fromDataSource: { csv: { path: '', columnMatch: 0, columnInto: ['key'] } },
-                    into: 'TOKEN'
-                },
-                errors = behaviors.validate({ lookup: [config] });
-            assert.deepEqual(errors, [{
-                code: 'bad data',
-                message: 'lookup behavior "fromDataSource.csv.columnMatch" field must be a string, representing the column header to select against the "key" field',
-                source: config
-            }]);
-        });
-
-        it('should not be valid if "fromDataSource.csv.columnInto" missing', function () {
-            var config = {
-                    key: { from: 'data', using: { method: 'regex', selector: '.*' } },
-                    fromDataSource: { csv: { path: '', columnMatch: '' } },
-                    into: 'TOKEN'
-                },
-                errors = behaviors.validate({ lookup: [config] });
-            assert.deepEqual(errors, [{
-                code: 'bad data',
-                message: 'lookup behavior "fromDataSource.csv.columnInto" field required',
-                source: config
-            }]);
-        });
-
-        it('should not be valid if "fromDataSource.csv.columnInto" is not an array', function () {
-            var config = {
-                    key: { from: 'data', using: { method: 'regex', selector: '.*' } },
-                    fromDataSource: { csv: { path: '', columnMatch: '', columnInto: '' } },
-                    into: 'TOKEN'
-                },
-                errors = behaviors.validate({ lookup: [config] });
-            assert.deepEqual(errors, [{
-                code: 'bad data',
-                message: 'lookup behavior "fromDataSource.csv.columnInto" field must be an array, representing the columns to select',
-                source: config
-            }]);
-        });
-
         it('should not be valid if missing "into" field', function () {
             var config = {
                     key: { from: 'data', using: { method: 'regex', selector: '.*' } },
@@ -1072,6 +974,106 @@ describe('behaviors', function () {
                 message: 'lookup behavior "into" field required',
                 source: config
             }]);
+        });
+
+        describe('csv', function () {
+            it('should not be valid if "fromDataSource.csv" is not an object', function () {
+                var config = {
+                        key: { from: 'data', using: { method: 'regex', selector: '.*' } },
+                        fromDataSource: { csv: '' },
+                        into: 'TOKEN'
+                    },
+                    errors = behaviors.validate({ lookup: [config] });
+                assert.deepEqual(errors, [{
+                    code: 'bad data',
+                    message: 'lookup behavior "fromDataSource.csv" field must be an object',
+                    source: config
+                }]);
+            });
+
+            it('should not be valid if "fromDataSource.csv.path" missing', function () {
+                var config = {
+                        key: { from: 'data', using: { method: 'regex', selector: '.*' } },
+                        fromDataSource: { csv: { columnMatch: '', columnInto: ['key'] } },
+                        into: 'TOKEN'
+                    },
+                    errors = behaviors.validate({ lookup: [config] });
+                assert.deepEqual(errors, [{
+                    code: 'bad data',
+                    message: 'lookup behavior "fromDataSource.csv.path" field required',
+                    source: config
+                }]);
+            });
+
+            it('should not be valid if "fromDataSource.csv.path" is not a string', function () {
+                var config = {
+                        key: { from: 'data', using: { method: 'regex', selector: '.*' } },
+                        fromDataSource: { csv: { path: 0, columnMatch: '', columnInto: ['key'] } },
+                        into: 'TOKEN'
+                    },
+                    errors = behaviors.validate({ lookup: [config] });
+                assert.deepEqual(errors, [{
+                    code: 'bad data',
+                    message: 'lookup behavior "fromDataSource.csv.path" field must be a string, representing the path to the CSV file',
+                    source: config
+                }]);
+            });
+
+            it('should not be valid if "fromDataSource.csv.columnMatch" missing', function () {
+                var config = {
+                        key: { from: 'data', using: { method: 'regex', selector: '.*' } },
+                        fromDataSource: { csv: { path: '', columnInto: ['key'] } },
+                        into: 'TOKEN'
+                    },
+                    errors = behaviors.validate({ lookup: [config] });
+                assert.deepEqual(errors, [{
+                    code: 'bad data',
+                    message: 'lookup behavior "fromDataSource.csv.columnMatch" field required',
+                    source: config
+                }]);
+            });
+
+            it('should not be valid if "fromDataSource.csv.columnMatch" is not a string', function () {
+                var config = {
+                        key: { from: 'data', using: { method: 'regex', selector: '.*' } },
+                        fromDataSource: { csv: { path: '', columnMatch: 0, columnInto: ['key'] } },
+                        into: 'TOKEN'
+                    },
+                    errors = behaviors.validate({ lookup: [config] });
+                assert.deepEqual(errors, [{
+                    code: 'bad data',
+                    message: 'lookup behavior "fromDataSource.csv.columnMatch" field must be a string, representing the column header to select against the "key" field',
+                    source: config
+                }]);
+            });
+
+            it('should not be valid if "fromDataSource.csv.columnInto" missing', function () {
+                var config = {
+                        key: { from: 'data', using: { method: 'regex', selector: '.*' } },
+                        fromDataSource: { csv: { path: '', columnMatch: '' } },
+                        into: 'TOKEN'
+                    },
+                    errors = behaviors.validate({ lookup: [config] });
+                assert.deepEqual(errors, [{
+                    code: 'bad data',
+                    message: 'lookup behavior "fromDataSource.csv.columnInto" field required',
+                    source: config
+                }]);
+            });
+
+            it('should not be valid if "fromDataSource.csv.columnInto" is not an array', function () {
+                var config = {
+                        key: { from: 'data', using: { method: 'regex', selector: '.*' } },
+                        fromDataSource: { csv: { path: '', columnMatch: '', columnInto: '' } },
+                        into: 'TOKEN'
+                    },
+                    errors = behaviors.validate({ lookup: [config] });
+                assert.deepEqual(errors, [{
+                    code: 'bad data',
+                    message: 'lookup behavior "fromDataSource.csv.columnInto" field must be an array, representing the columns to select',
+                    source: config
+                }]);
+            });
         });
     });
 });
