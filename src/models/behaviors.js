@@ -14,7 +14,6 @@ var helpers = require('../util/helpers'),
     xpath = require('./xpath'),
     jsonpath = require('./jsonpath'),
     csvToObject = require('csv-to-object'),
-    hashmap = require('hashmap'),
     isWindows = require('os').platform().indexOf('win') === 0;
 
 function defined (value) {
@@ -488,23 +487,32 @@ function globalStringReplace (str, substring, newSubstring, logger) {
     }
 }
 
-function replace (obj, token, values, logger) {
+function globalObjectReplace (obj, replacer) {
     Object.keys(obj).forEach(function (key) {
         if (typeof obj[key] === 'string') {
-            values.forEach(function (replacement, index) {
-                // replace ${TOKEN}[1] with indexed element
-                var indexedToken = util.format('%s[%s]', token, index);
-                obj[key] = globalStringReplace(obj[key], indexedToken, replacement, logger);
-            });
-            if (values.length > 0) {
-                // replace ${TOKEN} with first element
-                obj[key] = globalStringReplace(obj[key], token, values[0], logger);
-            }
+            obj[key] = replacer(obj[key]);
         }
         else if (typeof obj[key] === 'object') {
-            replace(obj[key], token, values, logger);
+            globalObjectReplace(obj[key], replacer);
         }
     });
+}
+
+function replaceArrayValuesIn (response, token, values, logger) {
+    var replacer = function (field) {
+        values.forEach(function (replacement, index) {
+            // replace ${TOKEN}[1] with indexed element
+            var indexedToken = util.format('%s[%s]', token, index);
+            field = globalStringReplace(field, indexedToken, replacement, logger);
+        });
+        if (values.length > 0) {
+            // replace ${TOKEN} with first element
+            field = globalStringReplace(field, token, values[0], logger);
+        }
+        return field;
+    };
+
+    globalObjectReplace(response, replacer);
 }
 
 /**
@@ -521,51 +529,42 @@ function copy (originalRequest, responsePromise, copyArray, logger) {
             var from = getFrom(originalRequest, copyConfig.from),
                 using = copyConfig.using || {},
                 fnMap = { regex: regexValue, xpath: xpathValue, jsonpath: jsonpathValue },
-                values = [];
-
-            if (fnMap[using.method]) {
                 values = fnMap[using.method](from, copyConfig, logger);
-            }
 
-            replace(response, copyConfig.into, values, logger);
+            replaceArrayValuesIn(response, copyConfig.into, values, logger);
         });
         return Q(response);
     });
 }
 
-function keyFound (path, columnMatch, result, values, index) {
-    var flag = true;
-    var storeColumnIntoValues = [];
-    var dataToObject = csvToObject({ filename: path });
-    Object.keys(dataToObject).forEach(function (key) {
-        Object.keys(dataToObject[key]).forEach(function () {
-            var keyCheck = (dataToObject[key][columnMatch]);
-            if ((flag) && (defined(keyCheck)) && (keyCheck.localeCompare(values[index]) === 0)) {
-                for (var t = 1; t <= result.length; t += 1) {
-                    var intoSubset = result[t - 1];
-                    var outputCheck = dataToObject[key][intoSubset];
-                    if (defined(outputCheck)) {
-                        storeColumnIntoValues.push(outputCheck.trim());
-                    }
-                    flag = false;
-                }
-            }
-        });
-    });
-    return storeColumnIntoValues;
+function lookupValuesFromCSV (csvConfig, keyValue) {
+    var keyColumnName = csvConfig.columnMatch,
+        csvRows = csvToObject({ filename: csvConfig.path });
+
+    return csvRows.find(function (row) {
+        return defined(row[keyColumnName]) && (row[keyColumnName].localeCompare(keyValue) === 0);
+    }) || [];
 }
 
-function columnIntoValue (obj) {
-    var result = [];
-    Object.keys(obj).forEach(function (key) {
-        result.push(obj[key]);
-    });
-    return result;
+function replaceObjectValuesIn (response, token, values, logger) {
+    var replacer = function (field) {
+        Object.keys(values).forEach(function (key) {
+            // replace ${TOKEN}["key"] and ${TOKEN}['key'] and ${TOKEN}[key]
+            ['"', "'", ''].forEach(function (quoteChar) {
+                var quoted = util.format('%s[%s%s%s]', token, quoteChar, key, quoteChar);
+                field = globalStringReplace(field, quoted, values[key], logger);
+            });
+        });
+        return field;
+    };
+
+    globalObjectReplace(response, replacer);
 }
+
 
 /**
  * Looks up request values from a data source and replaces response tokens with the resulting data
- * @param {Object} originalRequest - The request object, in case post-processing depends on it
+ * @param {Object} originalRequest - The request object
  * @param {Object} responsePromise - The promise returning the response
  * @param {Function} lookupArray - The list of lookup configurations
  * @param {Object} logger - The mountebank logger, useful in debugging
@@ -574,30 +573,17 @@ function columnIntoValue (obj) {
 function lookup (originalRequest, responsePromise, lookupArray, logger) {
     return responsePromise.then(function (response) {
         lookupArray.forEach(function (lookupConfig) {
-            var path, columnMatch, index, map = new hashmap();
-            var into = lookupConfig.into;
-            if (typeof lookupConfig === 'object') {             // TODO: Take this out, test validation
-                path = lookupConfig.fromDataSource.csv.path;
-                columnMatch = lookupConfig.fromDataSource.csv.columnMatch;
-                if (typeof lookupConfig.key.index === 'undefined') {    // TODO: index = lookupConfg.key.index || 0
-                    index = 0;
-                }
-                else {
-                    index = lookupConfig.key.index;
-                }
-                var from = getFrom(originalRequest, lookupConfig.key.from),
-                    fnMap = { regex: regexValue, xpath: xpathValue, jsonpath: jsonpathValue },
-                    values = [];
-                if (fnMap[lookupConfig.key.using.method]) {
-                    values = fnMap[lookupConfig.key.using.method](from, lookupConfig.key, logger);
-                }
-                var result = columnIntoValue(lookupConfig.fromDataSource.csv.columnInto);
-                var saveValues = keyFound(path, columnMatch, result, values, index, response);
-                for (var i = 0; i < saveValues.length; i += 1) {
-                    map.set(result[i], saveValues[i]);
-                }
-                replace(response, into, map, logger);
+            var from = getFrom(originalRequest, lookupConfig.key.from),
+                fnMap = { regex: regexValue, xpath: xpathValue, jsonpath: jsonpathValue },
+                keyValues = fnMap[lookupConfig.key.using.method](from, lookupConfig.key, logger),
+                index = lookupConfig.key.index || 0,
+                values = [];
+
+            if (lookupConfig.fromDataSource.csv) {
+                values = lookupValuesFromCSV(lookupConfig.fromDataSource.csv, keyValues[index]);
             }
+
+            replaceObjectValuesIn(response, lookupConfig.into, values, logger);
         });
         return Q(response);
     });

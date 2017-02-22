@@ -977,6 +977,37 @@ describe('behaviors', function () {
         });
 
         describe('csv', function () {
+            before(function () {
+                fs.writeFileSync('lookupTest.csv',
+                    'name,occupation,location\n' +
+                    'mountebank,tester,worldwide\n' +
+                    'Brandon,mountebank,Dallas\n' +
+                    '"Bob Barker","The Price Is Right","Darrington, Washington"');
+            });
+
+            after(function () {
+                fs.unlinkSync('lookupTest.csv');
+            });
+
+            promiseIt('should support lookup keyed by regex match from request', function () {
+                var request = { data: 'My name is mountebank' },
+                    response = { data: 'Hello, ${you}["occupation"]' },
+                    logger = Logger.create(),
+                    config = {
+                        lookup: [{
+                            key: { from: 'data', using: { method: 'regex', selector: '\\w+$' } },
+                            fromDataSource: {
+                                csv: { path: 'lookupTest.csv', columnMatch: 'name', columnInto: ['occupation'] }
+                            },
+                            into: '${you}'
+                        }]
+                    };
+
+                return behaviors.execute(request, response, config, logger).then(function (actualResponse) {
+                    assert.deepEqual(actualResponse, { data: 'Hello, tester' });
+                });
+            });
+
             it('should not be valid if "fromDataSource.csv" is not an object', function () {
                 var config = {
                         key: { from: 'data', using: { method: 'regex', selector: '.*' } },
