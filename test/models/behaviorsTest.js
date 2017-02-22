@@ -813,7 +813,7 @@ describe('behaviors', function () {
 
         it('should not be valid if missing "key" field', function () {
             var config = {
-                    fromDataSource: { csv: { path: '', columnMatch: '', columnInto: ['key'] } },
+                    fromDataSource: { csv: { path: '', keyColumn: '', columnInto: ['key'] } },
                     into: 'TOKEN'
                 },
                 errors = behaviors.validate({ lookup: [config] });
@@ -827,7 +827,7 @@ describe('behaviors', function () {
         it('should not be valid if missing "key.from" field', function () {
             var config = {
                     key: { using: { method: 'regex', selector: '.*' } },
-                    fromDataSource: { csv: { path: '', columnMatch: '', columnInto: ['key'] } },
+                    fromDataSource: { csv: { path: '', keyColumn: '', columnInto: ['key'] } },
                     into: 'TOKEN'
                 },
                 errors = behaviors.validate({ lookup: [config] });
@@ -841,7 +841,7 @@ describe('behaviors', function () {
         it('should not be valid if missing "key.using" field', function () {
             var config = {
                     key: { from: 'data' },
-                    fromDataSource: { csv: { path: '', columnMatch: '', columnInto: ['key'] } },
+                    fromDataSource: { csv: { path: '', keyColumn: '', columnInto: ['key'] } },
                     into: 'TOKEN'
                 },
                 errors = behaviors.validate({ lookup: [config] });
@@ -855,7 +855,7 @@ describe('behaviors', function () {
         it('should not be valid if "key.using" field is not an object', function () {
             var config = {
                     key: { from: 'data', using: 'regex' },
-                    fromDataSource: { csv: { path: '', columnMatch: '', columnInto: ['key'] } },
+                    fromDataSource: { csv: { path: '', keyColumn: '', columnInto: ['key'] } },
                     into: 'TOKEN'
                 },
                 errors = behaviors.validate({ lookup: [config] });
@@ -869,7 +869,7 @@ describe('behaviors', function () {
         it('should not be valid if "key.using.method" field is missing', function () {
             var config = {
                     key: { from: 'data', using: { selector: '.*' } },
-                    fromDataSource: { csv: { path: '', columnMatch: '', columnInto: ['key'] } },
+                    fromDataSource: { csv: { path: '', keyColumn: '', columnInto: ['key'] } },
                     into: 'TOKEN'
                 },
                 errors = behaviors.validate({ lookup: [config] });
@@ -883,7 +883,7 @@ describe('behaviors', function () {
         it('should not be valid if "key.using.method" field is not supported', function () {
             var config = {
                     key: { from: 'data', using: { method: 'INVALID', selector: '.*' } },
-                    fromDataSource: { csv: { path: '', columnMatch: '', columnInto: ['key'] } },
+                    fromDataSource: { csv: { path: '', keyColumn: '', columnInto: ['key'] } },
                     into: 'TOKEN'
                 },
                 errors = behaviors.validate({ lookup: [config] });
@@ -897,7 +897,7 @@ describe('behaviors', function () {
         it('should not be valid if "key.using.selector" field is missing', function () {
             var config = {
                     key: { from: 'data', using: { method: 'regex' } },
-                    fromDataSource: { csv: { path: '', columnMatch: '', columnInto: ['key'] } },
+                    fromDataSource: { csv: { path: '', keyColumn: '', columnInto: ['key'] } },
                     into: 'TOKEN'
                 },
                 errors = behaviors.validate({ lookup: [config] });
@@ -952,7 +952,7 @@ describe('behaviors', function () {
         it('should not be valid if "fromDataSource" object multiple keys', function () {
             var config = {
                     key: { from: 'data', using: { method: 'regex', selector: '.*' } },
-                    fromDataSource: { sql: {}, csv: { path: '', columnMatch: '', columnInto: ['key'] } },
+                    fromDataSource: { sql: {}, csv: { path: '', keyColumn: '', columnInto: ['key'] } },
                     into: 'TOKEN'
                 },
                 errors = behaviors.validate({ lookup: [config] });
@@ -966,7 +966,7 @@ describe('behaviors', function () {
         it('should not be valid if missing "into" field', function () {
             var config = {
                     key: { from: 'data', using: { method: 'regex', selector: '.*' } },
-                    fromDataSource: { csv: { path: '', columnMatch: '', columnInto: ['key'] } }
+                    fromDataSource: { csv: { path: '', keyColumn: '', columnInto: ['key'] } }
                 },
                 errors = behaviors.validate({ lookup: [config] });
             assert.deepEqual(errors, [{
@@ -996,9 +996,7 @@ describe('behaviors', function () {
                     config = {
                         lookup: [{
                             key: { from: 'data', using: { method: 'regex', selector: '\\w+$' } },
-                            fromDataSource: {
-                                csv: { path: 'lookupTest.csv', columnMatch: 'name', columnInto: ['occupation'] }
-                            },
+                            fromDataSource: { csv: { path: 'lookupTest.csv', keyColumn: 'name' } },
                             into: '${you}'
                         }]
                     };
@@ -1025,7 +1023,7 @@ describe('behaviors', function () {
             it('should not be valid if "fromDataSource.csv.path" missing', function () {
                 var config = {
                         key: { from: 'data', using: { method: 'regex', selector: '.*' } },
-                        fromDataSource: { csv: { columnMatch: '', columnInto: ['key'] } },
+                        fromDataSource: { csv: { keyColumn: '', columnInto: ['key'] } },
                         into: 'TOKEN'
                     },
                     errors = behaviors.validate({ lookup: [config] });
@@ -1039,7 +1037,7 @@ describe('behaviors', function () {
             it('should not be valid if "fromDataSource.csv.path" is not a string', function () {
                 var config = {
                         key: { from: 'data', using: { method: 'regex', selector: '.*' } },
-                        fromDataSource: { csv: { path: 0, columnMatch: '', columnInto: ['key'] } },
+                        fromDataSource: { csv: { path: 0, keyColumn: '', columnInto: ['key'] } },
                         into: 'TOKEN'
                     },
                     errors = behaviors.validate({ lookup: [config] });
@@ -1050,7 +1048,7 @@ describe('behaviors', function () {
                 }]);
             });
 
-            it('should not be valid if "fromDataSource.csv.columnMatch" missing', function () {
+            it('should not be valid if "fromDataSource.csv.keyColumn" missing', function () {
                 var config = {
                         key: { from: 'data', using: { method: 'regex', selector: '.*' } },
                         fromDataSource: { csv: { path: '', columnInto: ['key'] } },
@@ -1059,49 +1057,21 @@ describe('behaviors', function () {
                     errors = behaviors.validate({ lookup: [config] });
                 assert.deepEqual(errors, [{
                     code: 'bad data',
-                    message: 'lookup behavior "fromDataSource.csv.columnMatch" field required',
+                    message: 'lookup behavior "fromDataSource.csv.keyColumn" field required',
                     source: config
                 }]);
             });
 
-            it('should not be valid if "fromDataSource.csv.columnMatch" is not a string', function () {
+            it('should not be valid if "fromDataSource.csv.keyColumn" is not a string', function () {
                 var config = {
                         key: { from: 'data', using: { method: 'regex', selector: '.*' } },
-                        fromDataSource: { csv: { path: '', columnMatch: 0, columnInto: ['key'] } },
+                        fromDataSource: { csv: { path: '', keyColumn: 0, columnInto: ['key'] } },
                         into: 'TOKEN'
                     },
                     errors = behaviors.validate({ lookup: [config] });
                 assert.deepEqual(errors, [{
                     code: 'bad data',
-                    message: 'lookup behavior "fromDataSource.csv.columnMatch" field must be a string, representing the column header to select against the "key" field',
-                    source: config
-                }]);
-            });
-
-            it('should not be valid if "fromDataSource.csv.columnInto" missing', function () {
-                var config = {
-                        key: { from: 'data', using: { method: 'regex', selector: '.*' } },
-                        fromDataSource: { csv: { path: '', columnMatch: '' } },
-                        into: 'TOKEN'
-                    },
-                    errors = behaviors.validate({ lookup: [config] });
-                assert.deepEqual(errors, [{
-                    code: 'bad data',
-                    message: 'lookup behavior "fromDataSource.csv.columnInto" field required',
-                    source: config
-                }]);
-            });
-
-            it('should not be valid if "fromDataSource.csv.columnInto" is not an array', function () {
-                var config = {
-                        key: { from: 'data', using: { method: 'regex', selector: '.*' } },
-                        fromDataSource: { csv: { path: '', columnMatch: '', columnInto: '' } },
-                        into: 'TOKEN'
-                    },
-                    errors = behaviors.validate({ lookup: [config] });
-                assert.deepEqual(errors, [{
-                    code: 'bad data',
-                    message: 'lookup behavior "fromDataSource.csv.columnInto" field must be an array, representing the columns to select',
+                    message: 'lookup behavior "fromDataSource.csv.keyColumn" field must be a string, representing the column header to select against the "key" field',
                     source: config
                 }]);
             });

@@ -149,22 +149,12 @@ function addLookupFromDataSourceCSVPathErrors (config, errors) {
     }
 }
 
-function addLookupFromDataSourceCSVColumnMatchErrors (config, errors) {
-    if (!defined(config.fromDataSource.csv.columnMatch)) {
+function addLookupFromDataSourceCSVKeyColumnErrors (config, errors) {
+    if (!defined(config.fromDataSource.csv.keyColumn)) {
         return;
     }
-    if (!ofType(config.fromDataSource.csv.columnMatch, 'string')) {
-        errors.push(exceptions.ValidationError('lookup behavior "fromDataSource.csv.columnMatch" field must be a string, representing the column header to select against the "key" field',
-            { source: config }));
-    }
-}
-
-function addLookupFromDataSourceCSVColumnIntoErrors (config, errors) {
-    if (!defined(config.fromDataSource.csv.columnInto)) {
-        return;
-    }
-    if (!util.isArray(config.fromDataSource.csv.columnInto)) {
-        errors.push(exceptions.ValidationError('lookup behavior "fromDataSource.csv.columnInto" field must be an array, representing the columns to select',
+    if (!ofType(config.fromDataSource.csv.keyColumn, 'string')) {
+        errors.push(exceptions.ValidationError('lookup behavior "fromDataSource.csv.keyColumn" field must be a string, representing the column header to select against the "key" field',
             { source: config }));
     }
 }
@@ -190,13 +180,12 @@ function addLookupFromDataSourceCSVErrors (config, errors) {
         return;
     }
 
-    missingRequiredFields(config.fromDataSource.csv, 'path', 'columnMatch', 'columnInto').forEach(function (field) {
+    missingRequiredFields(config.fromDataSource.csv, 'path', 'keyColumn').forEach(function (field) {
         errors.push(exceptions.ValidationError('lookup behavior "fromDataSource.csv.' + field + '" field required',
             { source: config }));
     });
     addLookupFromDataSourceCSVPathErrors(config, errors);
-    addLookupFromDataSourceCSVColumnMatchErrors(config, errors);
-    addLookupFromDataSourceCSVColumnIntoErrors(config, errors);
+    addLookupFromDataSourceCSVKeyColumnErrors(config, errors);
 }
 
 function addLookupFromDataSourceErrors (config, errors) {
@@ -538,7 +527,7 @@ function copy (originalRequest, responsePromise, copyArray, logger) {
 }
 
 function lookupValuesFromCSV (csvConfig, keyValue) {
-    var keyColumnName = csvConfig.columnMatch,
+    var keyColumnName = csvConfig.keyColumn,
         csvRows = csvToObject({ filename: csvConfig.path });
 
     return csvRows.find(function (row) {
