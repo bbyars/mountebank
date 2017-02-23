@@ -446,24 +446,24 @@ function getMatches (selectionFn, selector, logger) {
     }
 }
 
-function regexValue (from, copyConfig, logger) {
-    var regex = new RegExp(copyConfig.using.selector, regexFlags(copyConfig.using.options)),
+function regexValue (from, config, logger) {
+    var regex = new RegExp(config.using.selector, regexFlags(config.using.options)),
         selectionFn = function () { return regex.exec(from); };
     return getMatches(selectionFn, regex, logger);
 }
 
-function xpathValue (from, copyConfig, logger) {
+function xpathValue (from, config, logger) {
     var selectionFn = function () {
-        return xpath.select(copyConfig.using.selector, copyConfig.using.ns, from, logger);
+        return xpath.select(config.using.selector, config.using.ns, from, logger);
     };
-    return getMatches(selectionFn, copyConfig.using.selector, logger);
+    return getMatches(selectionFn, config.using.selector, logger);
 }
 
-function jsonpathValue (from, copyConfig, logger) {
+function jsonpathValue (from, config, logger) {
     var selectionFn = function () {
-        return jsonpath.select(copyConfig.using.selector, from, logger);
+        return jsonpath.select(config.using.selector, from, logger);
     };
-    return getMatches(selectionFn, copyConfig.using.selector, logger);
+    return getMatches(selectionFn, config.using.selector, logger);
 }
 
 function globalStringReplace (str, substring, newSubstring, logger) {
@@ -526,13 +526,20 @@ function copy (originalRequest, responsePromise, copyArray, logger) {
     });
 }
 
-function lookupValuesFromCSV (csvConfig, keyValue) {
+function selectRowFromCSV (csvConfig, keyValue, logger) {
     var keyColumnName = csvConfig.keyColumn,
+        csvRows = [];
+
+    try {
         csvRows = csvToObject({ filename: csvConfig.path });
+    }
+    catch (e) {
+        logger.error('Cannot read ' + csvConfig.path + ': ' + e);
+    }
 
     return csvRows.find(function (row) {
         return defined(row[keyColumnName]) && (row[keyColumnName].localeCompare(keyValue) === 0);
-    }) || [];
+    }) || {};
 }
 
 function replaceObjectValuesIn (response, token, values, logger) {
@@ -566,13 +573,13 @@ function lookup (originalRequest, responsePromise, lookupArray, logger) {
                 fnMap = { regex: regexValue, xpath: xpathValue, jsonpath: jsonpathValue },
                 keyValues = fnMap[lookupConfig.key.using.method](from, lookupConfig.key, logger),
                 index = lookupConfig.key.index || 0,
-                values = [];
+                row = {};
 
             if (lookupConfig.fromDataSource.csv) {
-                values = lookupValuesFromCSV(lookupConfig.fromDataSource.csv, keyValues[index]);
+                row = selectRowFromCSV(lookupConfig.fromDataSource.csv, keyValues[index], logger);
             }
 
-            replaceObjectValuesIn(response, lookupConfig.into, values, logger);
+            replaceObjectValuesIn(response, lookupConfig.into, row, logger);
         });
         return Q(response);
     });
