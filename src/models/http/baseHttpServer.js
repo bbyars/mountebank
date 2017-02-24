@@ -59,7 +59,8 @@ function setup (protocolName, createBaseServer) {
                     headers: stubResponse.headers || defaultHeaders,
                     body: stubResponse.body || defaultResponse.body || '',
                     _mode: stubResponse._mode || defaultResponse._mode || 'text'
-                };
+                },
+                encoding = response._mode === 'binary' ? 'base64' : 'utf8';
 
             if (typeof response.body === 'object') {
                 // Support JSON response bodies
@@ -78,7 +79,7 @@ function setup (protocolName, createBaseServer) {
             }
 
             if (hasHeader('Content-Length', response.headers)) {
-                response.headers[headerNameFor('Content-Length', response.headers)] = Buffer.byteLength(response.body);
+                response.headers[headerNameFor('Content-Length', response.headers)] = Buffer.byteLength(response.body, encoding);
             }
             return response;
         }
