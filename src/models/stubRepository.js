@@ -37,7 +37,7 @@ function create (resolver, recordMatches, encoding) {
         var matches = stubs.filter(function (stub) {
             var stubPredicates = stub.predicates || [];
             return trueForAll(stubPredicates, function (predicate) {
-                return predicates.resolve(predicate, request, encoding, logger, imposterState);
+                return predicates.evaluate(predicate, request, encoding, logger, imposterState);
             });
         });
         if (matches.length === 0) {

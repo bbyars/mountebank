@@ -194,14 +194,6 @@ function create (operator, predicateFn) {
     };
 }
 
-/**
- * Requires the request field to match the predicate, even if the predicate is an object graph
- * @param {Object} predicate - The predicate configuration
- * @param {Object} request - The protocol request object
- * @param {string} encoding - utf8 or base64
- * @param {Object} logger - The logger, useful for debugging purposes
- * @returns {boolean}
- */
 function deepEquals (predicate, request, encoding) {
     var expected = normalize(forceStrings(predicate.deepEquals), predicate, encoding, false),
         actual = normalize(forceStrings(request), predicate, encoding, true);
@@ -215,14 +207,6 @@ function deepEquals (predicate, request, encoding) {
     });
 }
 
-/**
- * Requires the request field to match the regular expression provided by the predicate
- * @param {Object} predicate - The predicate configuration
- * @param {Object} request - The protocol request object
- * @param {string} encoding - utf8 or base64
- * @param {Object} logger - The logger, useful for debugging purposes
- * @returns {boolean}
- */
 function matches (predicate, request, encoding) {
     // We want to avoid the lowerCase transform on values so we don't accidentally butcher
     // a regular expression with upper case metacharacters like \W and \S
@@ -241,76 +225,22 @@ function matches (predicate, request, encoding) {
     return predicateSatisfied(expected, actual, function (a, b) { return new RegExp(a, options).test(b); });
 }
 
-/**
- * Resolves all predicate keys in given predicate
- * @param {Object} predicate - The predicate configuration
- * @param {Object} request - The protocol request object
- * @param {string} encoding - utf8 or base64
- * @param {Object} logger - The logger, useful for debugging purposes
- * @param {Object} imposterState - The current state for the imposter
- * @returns {boolean}
- */
-function resolve (predicate, request, encoding, logger, imposterState) {
-    var keys = Object.keys(predicate);
-    for (var i = 0; i < keys.length; i += 1) {
-        var key = keys[i],
-            predicateFn = module.exports[key];
-        if (predicateFn) {
-            return predicateFn(predicate, request, encoding, logger, imposterState);
-        }
-    }
-    throw errors.ValidationError('missing predicate: ' + JSON.stringify(keys), { source: predicate });
-}
-
-/**
- * Inverts a predicate
- * @param {Object} predicate - The predicate configuration
- * @param {Object} request - The protocol request object
- * @param {string} encoding - utf8 or base64
- * @param {Object} logger - The logger, useful for debugging purposes
- * @returns {boolean}
- */
 function not (predicate, request, encoding, logger) {
-    return !resolve(predicate.not, request, encoding, logger);
+    return !evaluate(predicate.not, request, encoding, logger);
 }
 
-/**
- * Logically ORs two or more predicates
- * @param {Object} predicate - The predicate configuration
- * @param {Object} request - The protocol request object
- * @param {string} encoding - utf8 or base64
- * @param {Object} logger - The logger, useful for debugging purposes
- * @returns {boolean}
- */
 function or (predicate, request, encoding, logger) {
     return predicate.or.some(function (subPredicate) {
-        return resolve(subPredicate, request, encoding, logger);
+        return evaluate(subPredicate, request, encoding, logger);
     });
 }
 
-/**
- * Logically ANDs two or more predicates
- * @param {Object} predicate - The predicate configuration
- * @param {Object} request - The protocol request object
- * @param {string} encoding - utf8 or base64
- * @param {Object} logger - The logger, useful for debugging purposes
- * @returns {boolean}
- */
 function and (predicate, request, encoding, logger) {
     return predicate.and.every(function (subPredicate) {
-        return resolve(subPredicate, request, encoding, logger);
+        return evaluate(subPredicate, request, encoding, logger);
     });
 }
 
-/**
- * Uses a JavaScript function to determine if the request matches or not
- * @param {Object} predicate - The predicate configuration
- * @param {Object} request - The protocol request object
- * @param {string} encoding - utf8 or base64
- * @param {Object} logger - The logger, useful for debugging purposes
- * @param {Object} imposterState - The current state for the imposter
- * @returns {boolean}
- */
 function inject (predicate, request, encoding, logger, imposterState) {
     var scope = helpers.clone(request),
         injected = '(' + predicate.inject + ')(scope, logger, imposterState);';
@@ -331,22 +261,42 @@ function inject (predicate, request, encoding, logger, imposterState) {
     }
 }
 
-module.exports = {
-    /** Requires the request field to equal the predicate */
+var predicates = {
     equals: create('equals', function (expected, actual) { return expected === actual; }),
     deepEquals: deepEquals,
-    /** Requires the request field to contain the substring provided by the predicate */
     contains: create('contains', function (expected, actual) { return actual.indexOf(expected) >= 0; }),
-    /** Requires the request field to start with the prefix provided by the predicate */
     startsWith: create('startsWith', function (expected, actual) { return actual.indexOf(expected) === 0; }),
-    /** Requires the request field to end with the suffix provided by the predicate */
     endsWith: create('endsWith', function (expected, actual) { return actual.indexOf(expected, actual.length - expected.length) >= 0; }),
     matches: matches,
-    /** Requires the request field to exist and be non-empty, if the predicate is true, or not exist, if false */
     exists: create('exists', function (expected, actual) { return expected ? actual.length > 0 : actual.length === 0; }),
     not: not,
     or: or,
     and: and,
-    inject: inject,
-    resolve: resolve
+    inject: inject
+};
+
+/**
+ * Resolves all predicate keys in given predicate
+ * @param {Object} predicate - The predicate configuration
+ * @param {Object} request - The protocol request object
+ * @param {string} encoding - utf8 or base64
+ * @param {Object} logger - The logger, useful for debugging purposes
+ * @param {Object} imposterState - The current state for the imposter
+ * @returns {boolean}
+ */
+function evaluate (predicate, request, encoding, logger, imposterState) {
+    var predicateFn = Object.keys(predicate).find(function (key) {
+        return Object.keys(predicates).indexOf(key) >= 0;
+    });
+
+    if (predicateFn) {
+        return predicates[predicateFn](predicate, request, encoding, logger, imposterState);
+    }
+    else {
+        throw errors.ValidationError('missing predicate', { source: predicate });
+    }
+}
+
+module.exports = {
+    evaluate: evaluate
 };

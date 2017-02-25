@@ -101,7 +101,7 @@ module.exports = function (grunt) {
     grunt.registerTask('lint', 'Run all lint checks', ['jsCheck', 'deadCheck', 'eslint']);
     grunt.registerTask('default', ['test', 'lint']);
     grunt.registerTask('airplane', 'Build that avoids tests requiring network access', ['setAirplaneMode', 'default']);
-    grunt.registerTask('commit', 'Pre-commit checks', ['default', 'shonkwrap']);
+    grunt.registerTask('commit', 'Pre-commit checks', ['airplane', 'shonkwrap']);
 
     // Package-specific testing
     grunt.registerTask('test:tarball:x64', 'Run tests against packaged tarball',
