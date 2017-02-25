@@ -13,7 +13,8 @@ var helpers = require('../util/helpers'),
     combinators = require('../util/combinators'),
     xpath = require('./xpath'),
     jsonpath = require('./jsonpath'),
-    csvToObject = require('csv-to-object'),
+    fs = require('fs'),
+    csvParse = require('csv-parse'),
     isWindows = require('os').platform().indexOf('win') === 0;
 
 function defined (value) {
@@ -526,20 +527,57 @@ function copy (originalRequest, responsePromise, copyArray, logger) {
     });
 }
 
+function createRowObject (headers, rowArray) {
+    var row = {};
+    rowArray.forEach(function (value, index) {
+        row[headers[index]] = value;
+    });
+    return row;
+}
+
 function selectRowFromCSV (csvConfig, keyValue, logger) {
-    var keyColumnName = csvConfig.keyColumn,
-        csvRows = [];
+    var headers,
+        inputStream = fs.createReadStream(csvConfig.path),
+        parser = csvParse({ delimiter: ',' }),
+        pipe = inputStream.pipe(parser),
+        deferred = Q.defer();
 
-    try {
-        csvRows = csvToObject({ filename: csvConfig.path });
-    }
-    catch (e) {
+    inputStream.on('error', function (e) {
         logger.error('Cannot read ' + csvConfig.path + ': ' + e);
-    }
+        deferred.resolve({});
+    });
 
-    return csvRows.find(function (row) {
-        return defined(row[keyColumnName]) && (row[keyColumnName].localeCompare(keyValue) === 0);
-    }) || {};
+    pipe.on('data', function (rowArray) {
+        if (!defined(headers)) {
+            headers = rowArray;
+        }
+        else {
+            var row = createRowObject(headers, rowArray);
+            if (row[csvConfig.keyColumn].localeCompare(keyValue) === 0) {
+                deferred.resolve(row);
+            }
+        }
+    });
+
+    pipe.on('end', function () {
+        deferred.resolve({});
+    });
+
+    return deferred.promise;
+}
+
+function lookupRow (lookupConfig, originalRequest, logger) {
+    var from = getFrom(originalRequest, lookupConfig.key.from),
+        fnMap = { regex: regexValue, xpath: xpathValue, jsonpath: jsonpathValue },
+        keyValues = fnMap[lookupConfig.key.using.method](from, lookupConfig.key, logger),
+        index = lookupConfig.key.index || 0;
+
+    if (lookupConfig.fromDataSource.csv) {
+        return selectRowFromCSV(lookupConfig.fromDataSource.csv, keyValues[index], logger);
+    }
+    else {
+        return Q({});
+    }
 }
 
 function replaceObjectValuesIn (response, token, values, logger) {
@@ -568,20 +606,14 @@ function replaceObjectValuesIn (response, token, values, logger) {
  */
 function lookup (originalRequest, responsePromise, lookupArray, logger) {
     return responsePromise.then(function (response) {
-        lookupArray.forEach(function (lookupConfig) {
-            var from = getFrom(originalRequest, lookupConfig.key.from),
-                fnMap = { regex: regexValue, xpath: xpathValue, jsonpath: jsonpathValue },
-                keyValues = fnMap[lookupConfig.key.using.method](from, lookupConfig.key, logger),
-                index = lookupConfig.key.index || 0,
-                row = {};
-
-            if (lookupConfig.fromDataSource.csv) {
-                row = selectRowFromCSV(lookupConfig.fromDataSource.csv, keyValues[index], logger);
-            }
-
-            replaceObjectValuesIn(response, lookupConfig.into, row, logger);
+        var lookupPromises = lookupArray.map(function (lookupConfig) {
+            return lookupRow(lookupConfig, originalRequest, logger).then(function (row) {
+                replaceObjectValuesIn(response, lookupConfig.into, row, logger);
+            });
         });
-        return Q(response);
+        return Q.all(lookupPromises).then(function () { return Q(response); });
+    }).catch(function (error) {
+        logger.error(error);
     });
 }
 
