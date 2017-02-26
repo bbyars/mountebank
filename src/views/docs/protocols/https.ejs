@@ -119,7 +119,7 @@ openssl req -new -key test-key.pem -out test-csr.pem
 <p>Create a self-signed certificate using the CSR (normally you would send the CSR to a certificate authority for signing):</p>
 
 <pre><code>
-openssl x509 -req -in test-csr.pem -signkey test-key.pem -out test-cert.pem
+openssl x509 -req -days 3650 -in test-csr.pem -signkey test-key.pem -out test-cert.pem
 </code></pre>
 
 <p>The mutual authentication example below shows including them in your imposter setup.</p>
