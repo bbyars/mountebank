@@ -35,6 +35,12 @@ the following behaviors:</p>
     and select values from request fields using regular expressions, xpath, or jsonpath.</td>
   </tr>
   <tr>
+    <td><code>lookup</code></td>
+    <td>Queries an external data source for data based on a key selected from the request. Like the
+    <code>copy</code> behavior, you can tokenize the response and select the key from the request
+    using regular expressions, xpath, or jsonpath.</td>
+  </tr>
+  <tr>
     <td><code>decorate</code></td>
     <td>Post-processes the response using JavaScript injection before sending it. Post-processing opens
       up a world of opportunities - you can use a <code>decorate</code> behavior to add data to a proxied
@@ -90,6 +96,13 @@ can exist on a single response.</p>
     <label for='behavior-copy'>copy</label>
     <section>
       <% include behaviors/copy %>
+    </section>
+  </div>
+  <div>
+    <input id='behavior-lookup' name='behavior-lookup' type="checkbox" />
+    <label for='behavior-lookup'>lookup</label>
+    <section>
+      <% include behaviors/lookup %>
     </section>
   </div>
   <div>

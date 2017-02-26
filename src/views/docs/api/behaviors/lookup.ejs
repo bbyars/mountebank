@@ -1,0 +1,224 @@
+<table>
+  <tr>
+    <th>Parameter</th>
+    <th>Type</th>
+    <th>Description</th>
+  </tr>
+  <tr>
+    <td><code>lookup</code></td>
+    <td>An array</td>
+    <td>A list of objects specifying the key (copied from a request field), the data source,
+    and the response token</td>
+  </tr>
+  <tr>
+    <td><code>lookup[].key</code></td>
+    <td>An object</td>
+    <td>The information on how to select the key from the request.</td>
+  </tr>
+  <tr>
+    <td><code>lookup[].key.from</code></td>
+    <td>A string or an object</td>
+    <td>The name of the request field to select from, or, if the request field is an object,
+    then an object specifying the path to the request field. For example,
+    <pre><code>{ "from": "body" }</code></pre> and <pre><code>{ "from": { "query": "q" } }</code></pre>
+    are both valid.</td>
+  </tr>
+  <tr>
+    <td><code>lookup[].key.using</code></td>
+    <td>An object</td>
+    <td>The configuration needed to select the key from the response</td>
+  </tr>
+  <tr>
+    <td><code>lookup[].key.using.method</code></td>
+    <td>A string</td>
+    <td>The method used to select the key from the request. Allowed values are <code>regex</code>,
+    <code>xpath</code>, and <code>jsonpath</code>.</td>
+  </tr>
+  <tr>
+    <td><code>lookup[].key.using.selector</code></td>
+    <td>A string</td>
+    <td>The selector used to select the key from the request. For a <code>regex</code>, this would
+    be the pattern, and the replacement value will be the entire match by default.
+    <code>xpath</code> and <code>jsonpath</code> selectors work on XML and JSON documents. If the request
+    value does not match the selector (including through XML or JSON parsing errors), nothing is replaced.</td>
+  </tr>
+  <tr>
+    <td><code>lookup[].key.using.ns</code></td>
+    <td>An object</td>
+    <td>For <code>xpath</code> selectors, the <code>ns</code> object maps namespace aliases to URLs</td>
+  </tr>
+  <tr>
+    <td><code>lookup[].key.using.options</code></td>
+    <td>An object</td>
+    <td>For <code>regex</code> selectors, the <code>options</code> object describes the regular expression options</td>
+  </tr>
+  <tr>
+    <td><code>lookup[].key.using.options.ignoreCase</code></td>
+    <td>A boolean</td>
+    <td>Uses a <a href='https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/RegExp/ignoreCase'>case-insensitive</a>
+    regular expression</td>
+  </tr>
+  <tr>
+    <td><code>lookup[].key.using.options.multiline</code></td>
+    <td>A boolean</td>
+    <td>Uses a <a href='https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/RegExp/multiline'>multiline</a>
+    regular expression</td>
+  </tr>
+  <tr>
+    <td><code>lookup[].key.index</code></td>
+    <td>An int (defaults to 0)</td>
+    <td>Each of the selection options returns an array: <code>regex</code> returns an array of parenthesized
+    gropus (with the entire match in the 0th index), and <code>jsonpath</code> and <code>xpath</code>
+    return an array of matches. This field selects the appropriate value from the array to use as
+    the lookup key into the data source.</td>
+  </tr>
+  <tr>
+    <td><code>lookup[].fromDataSource</code></td>
+    <td>An object</td>
+    <td>Configuration for the external data source to lookup data based on the key. Each
+    <code>lookup</code> configuration may only specify one data source.</td>
+  </tr>
+  <tr>
+    <td><code>lookup[].fromDataSource.csv</code></td>
+    <td>An object</td>
+    <td>Configuration for using a CSV file as the data source</td>
+  </tr>
+  <tr>
+    <td><code>lookup[].fromDataSource.csv.path</code></td>
+    <td>A string</td>
+    <td>The path to the CSV file, which must be readable by the <code>mb</code> process</td>
+  </tr>
+  <tr>
+    <td><code>lookup[].fromDataSource.csv.keyColumn</code></td>
+    <td>A string</td>
+    <td>The header of the column to scan for a match against the key. If a match is
+    found, the entire row will be returned.</td>
+  </tr>
+  <tr>
+    <td><code>lookup[].into</code></td>
+    <td>A string</td>
+    <td>The token to replace in the response with the selected request value. There is
+    no need to specify which field in the response the token will be in; all response
+    tokens will be replaced in all response fields. A successful match will return a
+    hashmap or dictionary type object, with named indexes. For example, if you specify
+    <pre><code>{ "into": "${NAME}" }</code></pre> as your token configuration, and the
+    data source returned a row containing "first" and "last" fields, then
+    <code>${NAME}["first"]</code> and <code>${NAME}["last"]</code> will be replaced by
+    the appropriate data. You can quote the field name with double quotes, single quotes,
+    or no quotes at all.</td>
+  </tr>
+</table>
+
+<p>The <code>lookup</code> behavior supports dynamically replacing values in the response with something that
+comes from an external data source. Looking up the values from the data source requires first selecting
+the key value from the request. The key selection and replacement behavior in the response mirrors the
+functionality for the <code>copy</code> behavior. We'll look at the following examples:</p>
+
+<ul class='bullet-list'>
+  <li><a href='#lookup-regex-replacement'>Lookup up from a CSV file based on a key selected with a regular expression</a></li>
+</ul>
+
+<p class='info-icon'>Look at the <code>copy</code> examples to see how to do advanced key
+selection using jsonpath and xpath.</p>
+
+<p>We'll use the following CSV file for these examples, saved as "values.csv" in the
+current working directory of the <code>mb</code> process (you can always use an absolute path):</p>
+
+<pre><code data-test-id='lookup'
+           data-test-step='1'
+           data-test-type='file'
+           data-test-filename='values.csv'>
+State_ID,code,Name,price,tree,jobs
+1111111,400,liquid,235651,mango,farmer
+9856543,404,solid,54564564,orange,miner
+2222222,500,water,12564,pine,shepherd
+1234564,200,plasma,2656,guava,lumberjack
+9999999,200,lovers,9999,dogwood,steel worker
+</code></pre>
+
+<h3 id='lookup-regex-replacement'>Lookup up from a CSV file based on a key selected with a regular expression</h3>
+
+<p>The following example shows selecting the key using a regular expression to match against the path. We're
+using the <code>index</code> field to select the first parenthesized group in the regular expression.</p>
+
+<pre><code data-test-id='lookup'
+           data-test-step='2'
+           data-test-type='http'>
+POST /imposters HTTP/1.1
+Host: localhost:<%= port %>
+Accept: application/json
+Content-Type: application/json
+
+{
+  "port": 9595,
+  "protocol": "http",
+  "stubs": [
+    {
+      "responses": [
+        {
+          "is": {
+            "statusCode": "<strong class='highlight1'>${row}['code']</strong>",
+            "headers": {
+              "X-Tree": "<strong class='highlight1'>${row}['tree']</strong>"
+            },
+            "body": "Hello <strong class='highlight1'>${row}['Name']</strong>, have you done your <strong class='highlight1'>${row}['jobs']</strong> today?"
+          },
+          "_behaviors": {
+            "lookup": [{
+              "key": <strong class='highlight2'>{
+                "from": "path",
+                "using": { "method": "regex", "selector": "/(.*)$" },
+                "index": 1
+              }</strong>,
+              "fromDataSource": {
+                "csv": {
+                  "path": "values.csv",
+                  "keyColumn": "Name"
+                }
+              },
+              "into": "<strong class='highlight1'>${row}</strong>"
+            }]
+          }
+        }
+      ]
+    }
+  ]
+}
+</code></pre>
+
+<p>As with the <code>copy</code> behavior, we we can plug tokens into any of the response fields
+(including the <code>statusCode</code>). Let's see what happens when we craft a request to match
+all of those selectors:</p>
+
+<pre><code data-test-id='lookup'
+           data-test-step='3'
+           data-test-type='http'>
+GET /<strong class='highlight2'>liquid</strong> HTTP/1.1
+Host: localhost:9595
+</code></pre>
+
+<pre><code data-test-id='lookup'
+           data-test-verify-step='3'
+           data-test-ignore-lines='["^Date"]'>
+HTTP/1.1 <strong class='highlight1'>400</strong> Bad Request
+Date: Thu, 28 Dec 2016 11:37:31 GMT
+X-Tree: <strong class='highlight1'>mango</strong>
+Connection: close
+Transfer-Encoding: chunked
+
+Hello <strong class='highlight1'>liquid</strong>, have you done your <strong class='highlight1'>farmer</strong> today?
+</code></pre>
+
+<code class='hidden'
+      data-test-id='lookup'
+      data-test-step='4'
+      data-test-type='http'>
+DELETE /imposters/9595 HTTP/1.1
+Host: localhost:<%= port %>
+</code>
+
+<code class='hidden'
+      data-test-id='lookup'
+      data-test-step='5'
+      data-test-type='file'
+      data-test-filename='values.csv'></code>

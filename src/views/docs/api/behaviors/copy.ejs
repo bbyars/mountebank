@@ -79,13 +79,13 @@ comes from the request. It relies on you adding tokens of your own choosing into
 replaced. We'll look at the following examples:</p>
 
 <ul class='bullet-list'>
-  <li><a href='#regex-replacement'>Regular expressions</a></li>
-  <li><a href='#xpath-replacement'>xpath</a></li>
-  <li><a href='#jsonpath-replacement'>jsonpath</a></li>
-  <li><a href='#indexed-replacement'>Using match groups and indexed replacements</a></li>
+  <li><a href='#copy-regex-replacement'>Regular expressions</a></li>
+  <li><a href='#copy-xpath-replacement'>xpath</a></li>
+  <li><a href='#copy-jsonpath-replacement'>jsonpath</a></li>
+  <li><a href='#copy-indexed-replacement'>Using match groups and indexed replacements</a></li>
 </ul>
 
-<h3 id='regex-replacement'>Regular expressions</h3>
+<h3 id='copy-regex-replacement'>Regular expressions</h3>
 
 <p>The following example shows multiple regular expression matches on request fields to copy into the response.</p>
 
@@ -177,7 +177,7 @@ DELETE /imposters/8585 HTTP/1.1
 Host: localhost:<%= port %>
 </code>
 
-<h3 id='xpath-replacement'>xpath</h3>
+<h3 id='copy-xpath-replacement'>xpath</h3>
 
 <p>The following example shows a simple namespaced xpath match to grab the first <code>title</code> field in
 an XML document and copy it into the <code>BOOK</code> response token.</p>
@@ -265,7 +265,7 @@ DELETE /imposters/8586 HTTP/1.1
 Host: localhost:<%= port %>
 </code>
 
-<h3 id='jsonpath-replacement'>xpath</h3>
+<h3 id='copy-jsonpath-replacement'>xpath</h3>
 
 <p>The following example translates the XML example above into JSON. To make it more interesting,
 we'll show it using the <code>tcp</code> protocol</p>
@@ -341,7 +341,7 @@ DELETE /imposters/8587 HTTP/1.1
 Host: localhost:<%= port %>
 </code>
 
-<h3 id='indexed-replacement'>Indexed replacements</h3>
+<h3 id='copy-indexed-replacement'>Indexed replacements</h3>
 
 <p>Finally, let's show an example that uses multiple matches for a given selector. To
 show that the same approach works for multiple selection methods, we'll show it for both
