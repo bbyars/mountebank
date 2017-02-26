@@ -72,8 +72,8 @@
     "http-proxy-agent": "^1.0.0",
     "https-proxy-agent": "1.0.0",
     "json-stable-stringify": "~1.0.0",
-    "jsonpath-plus": "^0.16.0",
-    "mailparser": "~2.0.1",
+    "jsonpath-plus": "^0.15.0",
+    "mailparser": "~0.6.1",
     "q": "~1.4.1",
     "simplesmtp": "~0.3.16",
     "winston": "~2.3.0",
@@ -97,6 +97,7 @@
     "jsdom": "~9.10.0",
     "mocha": "~3.2.0",
     "rimraf": "^2.4.3",
+    "semver": "^5.0.3",
     "shonkwrap": "^1.3.0",
     "time-grunt": "^1.2.2",
     "w3cjs": "~0.3.0"
