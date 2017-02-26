@@ -1,0 +1,111 @@
+<h1>v<%= releaseVersion %></h1>
+
+<p>v1.9 adds some really nice features and fixes important bugs. Thanks for all the help
+getting it across the line.</p>
+
+<p class='info-icon'>Be sure to keep up with the latest releases by subscribing to the
+    <a href='http://mbtest.org/feed'>ATOM feed</a>.</p>
+
+<h2>New Features</h2>
+<ul class='bullet-list'>
+    <li>Added a new <a href='http://<%= host %>/docs/api/behaviors'><code>lookup</code></a>
+    behavior that allows you to add data in the response that comes from an external data source.
+    Initially, a CSV file is the only data source supported.</li>
+    <li>Added an ability to add a decorator to the newly created response saved through
+    a <a href='http://<%= host %>/docs/api/proxies'><code>proxy</code></a> response type with
+    the <code>addDecorate</code> field.</li>
+    <li>Support for stateful predicate injections based on response injections changing state.
+    An <code>imposterState</code> parameter has been added to each injection function.</li>
+    <li>A few new FAQs based on common queries around npm shrinkwrap, CORS pre-flight requests,
+    and preventing proxies from compressing data.</li>
+</ul>
+
+<h2>Bug Fixes</h2>
+<ul class='bullet-list'>
+    <li>The default self-signed certificate for https imposters is no longer expired</li>
+    <li>Fixed content-length issues with binary data coming from proxied results</li>
+    <li>Fixed a bug preventing you from seeing the _links field in your imposter body when
+    getting the imposter state through the API</li>
+</ul>
+
+<p>Many thanks to the following kind folks for help with this release, either through bug reports,
+    suggestions, or direct code contributions:</p>
+
+<ul class='bullet-list'>
+    <li>Stephen Tkac and team, for the suggestion and initial implementation of the <code>lookup</code> behavior</li>
+    <li>Kevin Pouget for adding support to decorate saved responses from proxies</li>
+    <li>Gabriel Kohen for adding support for stateful injections to use in predicates</li>
+    <li>Adam Kalman for helping </li>
+</ul>
+
+<h2>Install</h2>
+
+<pre><code>npm install -g mountebank@<%= releaseVersion %></code></pre>
+
+<p>or:</p>
+
+<table>
+    <tr>
+        <th>Option</th>
+        <th>node.js required?</th>
+        <th>sudo required?</th>
+        <th>links</th>
+        <th>Description</th>
+    </tr>
+    <tr>
+        <td>Self-contained archives</td>
+        <td>No</td>
+        <td>No</td>
+        <td style="min-width: 5em;">
+            <ul>
+                <li><a href="https://s3.amazonaws.com/mountebank/v<%= releaseMajorMinor %>/mountebank-v<%= releaseVersion %>-darwin-x64.tar.gz">osx</a></li>
+                <li><a href="https://s3.amazonaws.com/mountebank/v<%= releaseMajorMinor %>/mountebank-v<%= releaseVersion %>-linux-x86.tar.gz">linux x86</a></li>
+                <li><a href="https://s3.amazonaws.com/mountebank/v<%= releaseMajorMinor %>/mountebank-v<%= releaseVersion %>-linux-x64.tar.gz">linux x64</a></li>
+                <li><a href="https://s3.amazonaws.com/mountebank/v<%= releaseMajorMinor %>/mountebank-v<%= releaseVersion %>-win-x86.zip">win x86<sup>*</sup></a></li>
+                <li><a href="https://s3.amazonaws.com/mountebank/v<%= releaseMajorMinor %>/mountebank-v<%= releaseVersion %>-win-x64.zip">win x64<sup>*</sup></a></li>
+            </ul>
+        </td>
+        <td>Simply unpack and run <code>mb</code> from inside</td>
+    </tr>
+    <tr>
+        <td>OS-specific packages</td>
+        <td>No</td>
+        <td>Yes</td>
+        <td>
+            <ul>
+                <li><a href="https://s3.amazonaws.com/mountebank/v<%= releaseMajorMinor %>/mountebank-v<%= releaseVersion %>.pkg">pkg</a></li>
+                <li><a href="https://s3.amazonaws.com/mountebank/v<%= releaseMajorMinor %>/mountebank-<%= releaseVersion %>-1.x86_64.rpm">rpm</a></li>
+                <li><a href="https://s3.amazonaws.com/mountebank/v<%= releaseMajorMinor %>/mountebank_<%= releaseVersion %>_amd64.deb">deb</a></li>
+            </ul>
+        </td>
+        <td>Puts <code>mb</code> at <code>/usr/local/bin</code>, which is generally in the <code>PATH</code>.</td>
+    </tr>
+    <tr>
+        <td>source tarball</td>
+        <td>Yes</td>
+        <td>No</td>
+        <td>
+            <ul>
+                <li><a href="https://s3.amazonaws.com/mountebank/v<%= releaseMajorMinor %>/mountebank-v<%= releaseVersion %>-npm.tar.gz">mb</a></li>
+            </ul>
+        </td>
+        <td>source tarball if you roll that way.</td>
+    </tr>
+</table>
+
+<h2 id='windows-path-limitations'>Windows path limitations</h2>
+
+<p><sup>*</sup>mountebank wishes very much for your Windows experience to be hassle-free, but he is simply not qualified to address
+    a particular constraint of Windows Explorer.  For legacy reasons, some Windows applications, including most notably Windows Explorer,
+    have a maximum number of characters allowed in a path of 260 characters.  As mountebank writes these words, the longest path he
+    includes in the zip files is around 175 characters.  The zip file name, which is likely to represent itself as <i>two</i>
+    nested directories if you use the defaults to unzip it, will be around 25 characters.  That gives you very little wiggle room.
+    If you unzip the file in your users directory, you may very likely get an error because of this constraint.</p>
+
+<p>The following solutions will all work:</p>
+
+<ul class='bullet-list'>
+    <li>Unzip to the root of your C: drive (or a similar small path)</li>
+    <li>Use <a href='http://www.7-zip.org/'>7zip</a> to unzip the file instead of Windows Explorer</li>
+    <li>Use <code>npm</code> to install mountebank instead of the zip file</li>
+</ul>

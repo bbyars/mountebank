@@ -28,7 +28,9 @@
     "Vince Maiuri <RookY2K@gmail.com>",
     "Andrew <sunfreakz@gmail.com>",
     "Nikolaus Piccolotto <prayerslayer@gmail.com>",
-    "Stephen Tkac"
+    "Stephen Tkac",
+    "Gabriel Kohen",
+    "Kevin Pouget <kpouget@altair.com>"
   ],
   "description": "Over the wire test doubles",
   "homepage": "http://www.mbtest.org",
