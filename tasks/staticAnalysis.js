@@ -75,6 +75,7 @@ module.exports = function (grunt) {
         if (errors.length > 0) {
             errors.push('Unforunately, shrinkwrap/shonkwrap functionality is a little buggy, with unhelpful error messages (see https://github.com/npm/npm/issues/4435)');
             errors.push("When it's failed for me in the past, it's been because of mismatched versions in package.json and npm-shrinkwrap.json");
+            errors.push("The best solution I've found is to rm npm-shrinkwrap.json && npm install && npm prune && node_modules/.bin/shonkwrap");
             errors.push("Sorry, I know it's a pain in the arse, but as written, this will fail in certain conditions under an npm install");
             errors.push("If you know an easier way to pin versions and host in internal repos, I'm all ears ;>");
             grunt.warn(errors.join(os.EOL));
