@@ -73,11 +73,8 @@ module.exports = function (grunt) {
         addShonkwrapErrors(shrinkwrap.dependencies, errors);
 
         if (errors.length > 0) {
-            errors.push('Unforunately, shrinkwrap/shonkwrap functionality is buggy (see https://github.com/npm/npm/issues/4435)');
-            errors.push("I've tried the following when a shonkwrap run fails:");
-            errors.push('    rm -rf node_modules && npm install && npm prune && npm dedupe && node_modules/.bin/shonkwrap');
-            errors.push('    Downgrade npm to version 3.10.7. See how here: http://stackoverflow.com/questions/9755841/how-can-i-change-the-version-of-npm-using-nvm');
-            errors.push('    Manually delete the directories shrinkwrap is complaining about from node_modules and try again');
+            errors.push('Unforunately, shrinkwrap/shonkwrap functionality is a little buggy, with unhelpful error messages (see https://github.com/npm/npm/issues/4435)');
+            errors.push("When it's failed for me in the past, it's been because of mismatched versions in package.json and npm-shrinkwrap.json");
             errors.push("Sorry, I know it's a pain in the arse, but as written, this will fail in certain conditions under an npm install");
             errors.push("If you know an easier way to pin versions and host in internal repos, I'm all ears ;>");
             grunt.warn(errors.join(os.EOL));
