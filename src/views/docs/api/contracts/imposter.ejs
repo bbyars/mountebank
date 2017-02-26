@@ -56,6 +56,26 @@
                     }
                 }
             ],</span>
+<span id='imposter-stubs-_behaviors-lookup'><%- indent(12) %>&quot;lookup&quot;: [
+                {
+                    "key": {
+                      "from": { "headers": "If-Modified-Since" },
+                      "using": {
+                        "method": "regex",
+                        "selector": "(\\w+), (\\d+) (\\w+) (\\d+)",
+                        "options": { "ignoreCase": true, "multiline": true }
+                      },
+                      "index": 2
+                    },
+                    "fromDataSource": {
+                      "csv": {
+                        "path": "values.csv",
+                        "keyColumn": "month"
+                      }
+                    }
+                    "into": "${row}"
+                }
+            ]</span>
           }
         },
         {
