@@ -44,6 +44,12 @@ description = 'Frequently asked questions about using mountebank'
             and npm shrinkwrap, delete the node_modules/mountebank/node_modules folder. This workaround works
             for grunt-mountebank, if you are using that as well (thanks Adam Kalman for the explanation).</dd>
 
+        <dt>I'm proxying to a server that returns gzipped (compressed) data, but I'd like to save the
+        data uncompressed. Is there a way to do that?</dt>
+        <dd>Yes! Using the <a href='/docs/api/proxies'><code>injectHeaders</code></a> field on the proxy,
+        add an 'Accept-Encoding: identity' header. That's an HTTP-based way of the proxy client telling
+        the server that it won't accept compressed data.</dd>
+
         <dt>Can I use mountebank for load testing?</dt>
         <dd>Yes, and field reports have indicated that mountebank may be the only open source
         service virtualization tool that performs under significant load. For any long-running process, make

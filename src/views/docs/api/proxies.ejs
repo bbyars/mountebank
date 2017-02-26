@@ -54,8 +54,9 @@ filled in.</p>
     <td><code>{}</code></td>
     <td>object</td>
     <td>Key-value pairs of headers to inject into the proxied <i>request</i>.  This is useful when the behavior of
-    the system being proxied can be altered with appropriate headers (e.g. pointing REST links back to Mountebank
-    for further proxying).  Existing headers will be overwritten if they match the injected headers.</td>
+    the system being proxied can be altered with appropriate headers (e.g. pointing REST links back to mountebank
+    for further proxying). You can also use this to pass along an 'Accept-Encoding: identity' header to prevent
+    the proxy from sending back compressed data. Existing headers will be overwritten if they match the injected headers.</td>
   </tr>
   <tr>
     <td><code>addWaitBehavior</code></td>
