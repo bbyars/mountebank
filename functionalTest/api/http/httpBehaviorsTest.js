@@ -434,6 +434,129 @@ var assert = require('assert'),
                 });
             });
 
+            promiseIt('should support lookup from CSV file keyed by regex', function () {
+                var stub = {
+                        responses: [{
+                            is: {
+                                statusCode: '${mountebank}["code"]',
+                                headers: {
+                                    'X-Occupation': '${mountebank}[occupation]'
+                                },
+                                body: "Hello ${mountebank}['name']. Have you been to ${bob}[location]?"
+                            },
+                            _behaviors: {
+                                lookup: [
+                                    {
+                                        key: { from: 'path', using: { method: 'regex', selector: '/(.*)$' }, index: 1 },
+                                        fromDataSource: { csv: { path: 'lookupTest.csv', keyColumn: 'name' } },
+                                        into: '${mountebank}'
+                                    },
+                                    {
+                                        key: { from: { headers: 'X-Bob' }, using: { method: 'regex', selector: '.+' } },
+                                        fromDataSource: { csv: { path: 'lookupTest.csv', keyColumn: 'occupation' } },
+                                        into: '${bob}'
+                                    }
+                                ]
+                            }
+                        }]
+                    },
+                    request = { protocol: protocol, port: port, stubs: [stub], name: this.name };
+
+                fs.writeFileSync('lookupTest.csv',
+                    'name,code,occupation,location\n' +
+                    'mountebank,400,tester,worldwide\n' +
+                    'Brandon,404,mountebank,Dallas\n' +
+                    'Bob Barker,500,"The Price Is Right","Darrington, Washington"');
+
+                return api.post('/imposters', request).then(function (response) {
+                    assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body, null, 2));
+                    return client.responseFor({
+                        port: port,
+                        method: 'GET',
+                        headers: { 'x-bob': 'The Price Is Right' },
+                        path: '/mountebank'
+                    });
+                }).then(function (response) {
+                    assert.strictEqual(response.statusCode, 400);
+                    assert.strictEqual(response.headers['x-occupation'], 'tester');
+                    assert.strictEqual(response.body, 'Hello mountebank. Have you been to Darrington, Washington?');
+                }).finally(function () {
+                    fs.unlinkSync('lookupTest.csv');
+                    return api.del('/imposters');
+                });
+            });
+
+            promiseIt('should support lookup from CSV file keyed by xpath', function () {
+                var stub = {
+                        responses: [{
+                            is: { body: "Hello, YOU[name]! How is YOU['location'] today?" },
+                            _behaviors: {
+                                lookup: [{
+                                    key: {
+                                        from: 'body',
+                                        using: {
+                                            method: 'xpath',
+                                            selector: '//mb:name',
+                                            ns: { mb: 'http://example.com/mb' }
+                                        }
+                                    },
+                                    fromDataSource: { csv: { path: 'lookupTest.csv', keyColumn: 'occupation' } },
+                                    into: 'YOU'
+                                }]
+                            }
+                        }]
+                    },
+                    request = { protocol: protocol, port: port, stubs: [stub], name: this.name };
+
+                fs.writeFileSync('lookupTest.csv',
+                    'name,occupation,location\n' +
+                    'mountebank,tester,worldwide\n' +
+                    'Brandon,mountebank,Dallas\n' +
+                    'Bob Barker,"The Price Is Right","Darrington, Washington"');
+
+                return api.post('/imposters', request).then(function (response) {
+                    assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body, null, 2));
+                    return client.post('/', '<doc xmlns:mb="http://example.com/mb"><mb:name>mountebank</mb:name></doc>', port);
+                }).then(function (response) {
+                    assert.strictEqual(response.body, 'Hello, Brandon! How is Dallas today?');
+                }).finally(function () {
+                    fs.unlinkSync('lookupTest.csv');
+                    return api.del('/imposters');
+                });
+            });
+
+            promiseIt('should support lookup from CSV file keyed by jsonpath', function () {
+                var stub = {
+                        responses: [{
+                            is: { body: 'Hello, YOU["name"]! How is YOU[location] today?' },
+                            _behaviors: {
+                                lookup: [{
+                                    key: { from: 'body', using: { method: 'jsonpath', selector: '$..occupation' } },
+                                    fromDataSource: { csv: { path: 'lookupTest.csv', keyColumn: 'occupation' } },
+                                    into: 'YOU'
+                                }]
+                            }
+                        }]
+                    },
+                    request = { protocol: protocol, port: port, stubs: [stub], name: this.name };
+
+                fs.writeFileSync('lookupTest.csv',
+                    'name,occupation,location\n' +
+                    'mountebank,tester,worldwide\n' +
+                    'Brandon,mountebank,Dallas\n' +
+                    'Bob Barker,"The Price Is Right","Darrington, Washington"');
+
+                return api.post('/imposters', request).then(function (response) {
+                    assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body, null, 2));
+                    return client.post('/', JSON.stringify({ occupation: 'mountebank' }), port);
+                }).then(function (response) {
+                    assert.strictEqual(response.body, 'Hello, Brandon! How is Dallas today?');
+                }).finally(function () {
+                    fs.unlinkSync('lookupTest.csv');
+                    return api.del('/imposters');
+                });
+            });
+
             promiseIt('should compose multiple behaviors together', function () {
                 var shellFn = function exec () {
                         console.log(process.argv[3].replace('${SALUTATION}', 'Hello'));

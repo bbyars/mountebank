@@ -593,6 +593,24 @@ describe('behaviors', function () {
                 });
             });
 
+            promiseIt('should not replace if index exceeds options', function () {
+                var request = { field: JSON.stringify({
+                        people: [{ name: 'mountebank' }, { name: 'Bob Barker' }, { name: 'Brandon' }] }) },
+                    response = { data: 'Hello, ${you}[occupation]' },
+                    logger = Logger.create(),
+                    config = {
+                        lookup: [{
+                            key: { from: 'field', using: { method: 'jsonpath', selector: '$..name' }, index: 10 },
+                            fromDataSource: { csv: { path: 'lookupTest.csv', keyColumn: 'name' } },
+                            into: '${you}'
+                        }]
+                    };
+
+                return behaviors.execute(request, response, config, logger).then(function (actualResponse) {
+                    assert.deepEqual(actualResponse, { data: 'Hello, ${you}[occupation]' });
+                });
+            });
+
             promiseIt('should support lookup of value with embedded comma', function () {
                 var request = { field: 'The Price Is Right' },
                     response = { data: 'Hello, ${you}[location]' },
@@ -609,12 +627,6 @@ describe('behaviors', function () {
                     assert.deepEqual(actualResponse, { data: 'Hello, Darrington, Washington' });
                 });
             });
-
-            /*
-             // case sensitivity on key lookup
-             // long CSV files
-             // what happens if index too big
-             */
 
             it('should not be valid if "fromDataSource.csv" is not an object', function () {
                 var config = {
