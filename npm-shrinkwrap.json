@@ -9,7 +9,12 @@
       "version": "1.0.1"
     },
     "agent-base": {
-      "version": "2.0.1"
+      "version": "2.0.1",
+      "dependencies": {
+        "semver": {
+          "version": "5.0.3"
+        }
+      }
     },
     "ansi-regex": {
       "version": "2.1.1"
@@ -18,6 +23,9 @@
       "version": "1.1.1"
     },
     "async": {
+      "version": "1.0.0"
+    },
+    "buffer-shims": {
       "version": "1.0.0"
     },
     "builtin-modules": {
@@ -47,6 +55,9 @@
     "cookie-signature": {
       "version": "1.0.6"
     },
+    "core-util-is": {
+      "version": "1.0.2"
+    },
     "cors": {
       "version": "2.8.1"
     },
@@ -68,6 +79,23 @@
     "destroy": {
       "version": "1.0.4"
     },
+    "dom-serializer": {
+      "version": "0.1.0",
+      "dependencies": {
+        "domelementtype": {
+          "version": "1.1.3"
+        }
+      }
+    },
+    "domelementtype": {
+      "version": "1.3.0"
+    },
+    "domhandler": {
+      "version": "2.3.0"
+    },
+    "domutils": {
+      "version": "1.5.1"
+    },
     "ee-first": {
       "version": "1.1.1"
     },
@@ -77,8 +105,8 @@
     "encodeurl": {
       "version": "1.0.1"
     },
-    "encoding": {
-      "version": "0.1.12"
+    "entities": {
+      "version": "1.1.1"
     },
     "error-ex": {
       "version": "1.3.0"
@@ -119,8 +147,25 @@
     "graceful-fs": {
       "version": "4.1.11"
     },
+    "he": {
+      "version": "1.1.1"
+    },
     "hosted-git-info": {
       "version": "2.2.0"
+    },
+    "html-to-text": {
+      "version": "3.1.0",
+      "dependencies": {
+        "minimist": {
+          "version": "0.0.10"
+        },
+        "optimist": {
+          "version": "0.6.1"
+        }
+      }
+    },
+    "htmlparser2": {
+      "version": "3.9.2"
     },
     "http-errors": {
       "version": "1.5.1"
@@ -155,6 +200,9 @@
     "is-utf8": {
       "version": "0.2.1"
     },
+    "isarray": {
+      "version": "1.0.0"
+    },
     "isstream": {
       "version": "0.1.2"
     },
@@ -170,11 +218,26 @@
     "lcid": {
       "version": "1.0.0"
     },
+    "libbase64": {
+      "version": "0.1.0"
+    },
+    "libmime": {
+      "version": "3.1.0"
+    },
+    "libqp": {
+      "version": "1.1.0"
+    },
     "load-json-file": {
       "version": "1.1.0"
     },
     "mailparser": {
-      "version": "0.6.2"
+      "version": "2.0.2"
+    },
+    "mailsplit": {
+      "version": "4.0.0"
+    },
+    "marked": {
+      "version": "0.3.6"
     },
     "media-typer": {
       "version": "0.3.0"
@@ -193,9 +256,6 @@
     },
     "mime-types": {
       "version": "2.1.14"
-    },
-    "mimelib": {
-      "version": "0.3.0"
     },
     "ms": {
       "version": "0.7.1"
@@ -239,6 +299,9 @@
     "pinkie-promise": {
       "version": "2.0.1"
     },
+    "process-nextick-args": {
+      "version": "1.0.7"
+    },
     "proxy-addr": {
       "version": "1.1.3"
     },
@@ -260,6 +323,9 @@
     "read-pkg-up": {
       "version": "1.0.1"
     },
+    "readable-stream": {
+      "version": "2.2.3"
+    },
     "require-directory": {
       "version": "2.1.1"
     },
@@ -267,7 +333,7 @@
       "version": "1.0.1"
     },
     "semver": {
-      "version": "5.0.3"
+      "version": "5.3.0"
     },
     "send": {
       "version": "0.14.2",
@@ -304,6 +370,9 @@
     "statuses": {
       "version": "1.3.1"
     },
+    "string_decoder": {
+      "version": "0.10.31"
+    },
     "string-width": {
       "version": "1.0.2"
     },
@@ -316,14 +385,20 @@
     "type-is": {
       "version": "1.6.14"
     },
+    "underscore": {
+      "version": "1.8.3"
+    },
+    "underscore.string": {
+      "version": "3.2.3"
+    },
     "unpipe": {
       "version": "1.0.0"
     },
+    "util-deprecate": {
+      "version": "1.0.2"
+    },
     "utils-merge": {
       "version": "1.0.0"
-    },
-    "uue": {
-      "version": "3.1.0"
     },
     "validate-npm-package-license": {
       "version": "3.0.1"
@@ -336,6 +411,9 @@
     },
     "winston": {
       "version": "2.3.1"
+    },
+    "wordwrap": {
+      "version": "0.0.3"
     },
     "wrap-ansi": {
       "version": "2.1.0"
