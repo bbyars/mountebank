@@ -157,7 +157,7 @@ module.exports = function (grunt) {
 
     grunt.registerTask('coveralls', 'Send coverage output to coveralls.io', function () {
         var done = this.async(),
-            mocha = './node_modules/.bin/istanbul cover ./node_modules/.bin/_mocha --report lcovonly test/**/*.js -- -R spec',
+            mocha = './node_modules/.bin/istanbul cover grunt mochaTest:unit',
             command = mocha + ' && cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js';
 
         exec(command, function (error, stdout, stderr) {
