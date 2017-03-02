@@ -13,7 +13,7 @@ describe('mb', function () {
     // Over time, mountebank became slower to start because all the require statements
     // were at the top of each module, recursively loading all dependencies on startup.
     // The solution is to localize the require calls.
-    promiseIt('should consistently start up in under half a second no matter how many packages are installed', function () {
+    promiseIt('should consistently start up quickly no matter how many packages are installed', function () {
         var RUNS = 500,
             restartSequence = Q(true),
             start = new Date();
@@ -30,7 +30,7 @@ describe('mb', function () {
                 seconds = milliseconds / 1000,
                 millisecondsPer = milliseconds / RUNS;
             console.log('Took ' + seconds + ' seconds, averaging ' + millisecondsPer + ' ms per restart');
-            assert.ok(millisecondsPer < 500);
+            assert.ok(millisecondsPer < 650);
         }).finally(function () {
             return mb.stop();
         });
