@@ -6,10 +6,6 @@
  * @module
  */
 
-var Q = require('q'),
-    url = require('url'),
-    helpers = require('../../util/helpers');
-
 /**
  * Returns the request that will be used during dry run validation
  * @returns {Object}
@@ -44,7 +40,10 @@ function headersFor (rawHeaders) {
 }
 
 function transform (request) {
-    var parts = url.parse(request.url, true);
+    var helpers = require('../../util/helpers'),
+        url = require('url'),
+        parts = url.parse(request.url, true);
+
     return {
         requestFrom: helpers.socketName(request.socket),
         method: request.method,
@@ -61,7 +60,8 @@ function transform (request) {
  * @returns {Object} - Promise resolving to the simplified request
  */
 function createFrom (container) {
-    var deferred = Q.defer(),
+    var Q = require('q'),
+        deferred = Q.defer(),
         request = container.request;
     request.body = '';
     request.setEncoding('utf8');

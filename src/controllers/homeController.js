@@ -5,16 +5,14 @@
  * @module
  */
 
-var date = require('../util/date');
-
 /**
  * Creates the home controller
  * @param {Object} releases - The releases.json file
  * @returns {Object} The controller
  */
 function create (releases) {
-
     function createNotice (release) {
+        var date = require('../util/date');
         return {
             version: release.version,
             when: date.howLongAgo(release.date)

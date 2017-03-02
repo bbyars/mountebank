@@ -5,11 +5,9 @@
  * @module
  */
 
-var Q = require('q'),
-    util = require('util'),
-    parse = require('mailparser').simpleParser;
-
 function forceArray (obj) {
+    var util = require('util');
+
     if (!util.isArray(obj)) {
         return [obj];
     }
@@ -19,6 +17,8 @@ function forceArray (obj) {
 }
 
 function convertToNameAndAddress (field) {
+    var util = require('util');
+
     if (util.isArray(field)) {
         return field.map(convertToNameAndAddress);
     }
@@ -53,11 +53,14 @@ function transform (request, email) {
  * @returns {Object}
  */
 function createFrom (request) {
-    var deferred = Q.defer(),
+    var Q = require('q'),
+        deferred = Q.defer(),
         text = '';
 
     request.on('data', function (chunk) { text += chunk; });
     request.once('end', function () {
+        var parse = require('mailparser').simpleParser;
+
         parse(text, function (error, mail) {
             if (error) {
                 deferred.reject(error);

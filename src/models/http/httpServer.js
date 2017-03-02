@@ -5,15 +5,14 @@
  * @module
  */
 
-var baseHttpServer = require('./baseHttpServer'),
-    combinators = require('../../util/combinators'),
-    http = require('http'),
-    createBaseServer = function () {
-        return {
-            metadata: combinators.constant({}),
-            createNodeServer: http.createServer
-        };
+function createBaseServer () {
+    var combinators = require('../../util/combinators');
+
+    return {
+        metadata: combinators.constant({}),
+        createNodeServer: require('http').createServer
     };
+}
 
 module.exports = {
     /**
@@ -24,6 +23,6 @@ module.exports = {
      * @returns {Object} - The protocol implementation
      */
     initialize: function (allowInjection, mock, debug) {
-        return baseHttpServer.setup('http', createBaseServer).initialize(allowInjection, mock, debug);
+        return require('./baseHttpServer').setup('http', createBaseServer).initialize(allowInjection, mock, debug);
     }
 };

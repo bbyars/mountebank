@@ -5,12 +5,6 @@
  * @module
  */
 
-var helpers = require('../util/helpers'),
-    errors = require('../util/errors'),
-    behaviors = require('./behaviors'),
-    Q = require('q'),
-    stringify = require('json-stable-stringify');
-
 /**
  * Creates the resolver
  * @param {Object} proxy - The protocol-specific proxy implementation
@@ -21,9 +15,12 @@ function create (proxy, postProcess) {
     var injectState = {};
 
     function inject (request, fn, logger, imposterState) {
-        var deferred = Q.defer(),
+        var Q = require('q'),
+            helpers = require('../util/helpers'),
+            deferred = Q.defer(),
             scope = helpers.clone(request),
-            injected = '(' + fn + ')(scope, injectState, logger, deferred.resolve, imposterState);';
+            injected = '(' + fn + ')(scope, injectState, logger, deferred.resolve, imposterState);',
+            exceptions = require('../util/errors');
 
         if (request.isDryRun === true) {
             Q.delay(1).then(function () {
@@ -43,7 +40,7 @@ function create (proxy, postProcess) {
                 logger.error('    scope: ' + JSON.stringify(scope));
                 logger.error('    injectState: ' + JSON.stringify(injectState));
                 logger.error('    imposterState: ' + JSON.stringify(imposterState));
-                deferred.reject(errors.InjectionError('invalid response injection', {
+                deferred.reject(exceptions.InjectionError('invalid response injection', {
                     source: injected,
                     data: error.message
                 }));
@@ -79,7 +76,8 @@ function create (proxy, postProcess) {
             });
 
             Object.keys(matcher.matches).forEach(function (fieldName) {
-                var value = matcher.matches[fieldName],
+                var helpers = require('../util/helpers'),
+                    value = matcher.matches[fieldName],
                     predicate = helpers.clone(basePredicate);
 
                 if (value === true) {
@@ -110,9 +108,9 @@ function create (proxy, postProcess) {
 
     function indexOfStubToAddResponseTo (responseConfig, request, stubs) {
         var predicates = predicatesFor(request, responseConfig.proxy.predicateGenerators || []),
-            index;
+            stringify = require('json-stable-stringify');
 
-        for (index = stubIndexFor(responseConfig, stubs) + 1; index < stubs.length; index += 1) {
+        for (var index = stubIndexFor(responseConfig, stubs) + 1; index < stubs.length; index += 1) {
             if (stringify(predicates) === stringify(stubs[index].predicates)) {
                 return index;
             }
@@ -177,6 +175,9 @@ function create (proxy, postProcess) {
     }
 
     function proxyAndRecord (responseConfig, request, logger, stubs) {
+        var Q = require('q'),
+            behaviors = require('./behaviors');
+
         addInjectedHeadersTo(request, responseConfig.proxy.injectHeaders);
 
         return proxy.to(responseConfig.proxy.to, request, responseConfig.proxy).then(function (response) {
@@ -189,6 +190,10 @@ function create (proxy, postProcess) {
     }
 
     function processResponse (responseConfig, request, logger, stubs, imposterState) {
+        var Q = require('q'),
+            helpers = require('../util/helpers'),
+            exceptions = require('../util/errors');
+
         if (responseConfig.is) {
             // Clone to prevent accidental state changes downstream
             return Q(helpers.clone(responseConfig.is));
@@ -200,7 +205,7 @@ function create (proxy, postProcess) {
             return inject(request, responseConfig.inject, logger, imposterState).then(Q);
         }
         else {
-            return Q.reject(errors.ValidationError('unrecognized response type', { source: responseConfig }));
+            return Q.reject(exceptions.ValidationError('unrecognized response type', { source: responseConfig }));
         }
     }
 
@@ -221,8 +226,14 @@ function create (proxy, postProcess) {
      * @returns {Object} - Promise resolving to the response
      */
     function resolve (responseConfig, request, logger, stubs, imposterState) {
+        var Q = require('q'),
+            exceptions = require('../util/errors'),
+            helpers = require('../util/helpers'),
+            behaviors = require('./behaviors');
+
         if (hasMultipleTypes(responseConfig)) {
-            return Q.reject(errors.ValidationError('each response object must have only one response type', { source: responseConfig }));
+            return Q.reject(exceptions.ValidationError('each response object must have only one response type',
+                { source: responseConfig }));
         }
 
         return processResponse(responseConfig, helpers.clone(request), logger, stubs, imposterState).then(function (response) {

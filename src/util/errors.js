@@ -5,15 +5,13 @@
  * @module
  */
 
-var inherit = require('./inherit'),
-    helpers = require('./helpers');
-
 function create (code) {
     return function (message, options) {
-        var result = inherit.from(Error, {
-            code: code,
-            message: message
-        });
+        var inherit = require('./inherit'),
+            result = inherit.from(Error, {
+                code: code,
+                message: message
+            });
 
         if (options) {
             Object.keys(options).forEach(function (key) {
@@ -26,10 +24,11 @@ function create (code) {
 
 function createWithMessage (code, message) {
     return function (options) {
-        var result = inherit.from(Error, {
-            code: code,
-            message: message
-        });
+        var inherit = require('./inherit'),
+            result = inherit.from(Error, {
+                code: code,
+                message: message
+            });
 
         if (options) {
             Object.keys(options).forEach(function (key) {
@@ -43,7 +42,9 @@ function createWithMessage (code, message) {
 // Produces a JSON.stringify-able Error object
 // (because message is on the prototype, it doesn't show by default)
 function details (error) {
-    var prototypeProperties = {};
+    var helpers = require('./helpers'),
+        prototypeProperties = {};
+
     ['message', 'name', 'stack'].forEach(function (key) {
         if (error[key]) {
             prototypeProperties[key] = error[key];

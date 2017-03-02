@@ -2,8 +2,6 @@
 
 /** @module */
 
-var inherit = require('./inherit');
-
 function wrap (wrappedLogger, logger) {
     ['debug', 'info', 'warn', 'error'].forEach(function (level) {
         wrappedLogger[level] = function () {
@@ -25,16 +23,17 @@ function create (logger, scope) {
         return scopeText.indexOf('[') === 0 ? scopeText : '[' + scopeText + '] ';
     }
 
-    var wrappedLogger = inherit.from(logger, {
-        scopePrefix: formatScope(scope),
-        withScope: function (nestedScopePrefix) {
-            return create(logger, wrappedLogger.scopePrefix + nestedScopePrefix + ' ');
-        },
-        changeScope: function (newScope) {
-            wrappedLogger.scopePrefix = formatScope(newScope);
-            wrap(wrappedLogger, logger);
-        }
-    });
+    var inherit = require('./inherit'),
+        wrappedLogger = inherit.from(logger, {
+            scopePrefix: formatScope(scope),
+            withScope: function (nestedScopePrefix) {
+                return create(logger, wrappedLogger.scopePrefix + nestedScopePrefix + ' ');
+            },
+            changeScope: function (newScope) {
+                wrappedLogger.scopePrefix = formatScope(newScope);
+                wrap(wrappedLogger, logger);
+            }
+        });
 
     wrap(wrappedLogger, logger);
     return wrappedLogger;

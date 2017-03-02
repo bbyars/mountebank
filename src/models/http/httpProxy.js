@@ -5,16 +5,6 @@
  * @module
  */
 
-var http = require('http'),
-    https = require('https'),
-    url = require('url'),
-    Q = require('q'),
-    querystring = require('querystring'),
-    helpers = require('../../util/helpers'),
-    errors = require('../../util/errors'),
-    HttpsProxyAgent = require('https-proxy-agent'),
-    HttpProxyAgent = require('http-proxy-agent');
-
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 
 function hasHeader (headerName, headers) {
@@ -29,9 +19,10 @@ function hasHeader (headerName, headers) {
  * @returns {Object}
  */
 function create (logger) {
-
     function toUrl (path, query) {
-        var tail = querystring.stringify(query);
+        var querystring = require('querystring'),
+            tail = querystring.stringify(query);
+
         if (tail === '') {
             return path;
         }
@@ -47,6 +38,9 @@ function create (logger) {
     }
 
     function setProxyAgent (parts, options) {
+        var HttpProxyAgent = require('http-proxy-agent'),
+            HttpsProxyAgent = require('https-proxy-agent');
+
         if (process.env.http_proxy && parts.protocol === 'http:') {
             options.agent = new HttpProxyAgent(process.env.http_proxy);
         }
@@ -56,8 +50,10 @@ function create (logger) {
     }
 
     function getProxyRequest (baseUrl, originalRequest, proxyOptions) {
-        var parts = url.parse(baseUrl),
-            protocol = parts.protocol === 'https:' ? https : http,
+        var helpers = require('../../util/helpers'),
+            url = require('url'),
+            parts = url.parse(baseUrl),
+            protocol = parts.protocol === 'https:' ? require('https') : require('http'),
             defaultPort = parts.protocol === 'https:' ? 443 : 80,
             options = {
                 method: originalRequest.method,
@@ -125,7 +121,8 @@ function create (logger) {
     }
 
     function proxy (proxiedRequest) {
-        var deferred = Q.defer(),
+        var Q = require('q'),
+            deferred = Q.defer(),
             start = new Date();
 
         proxiedRequest.end();
@@ -172,7 +169,8 @@ function create (logger) {
                 originalRequest.requestFrom, direction, JSON.stringify(what), direction, proxyDestination);
         }
 
-        var deferred = Q.defer(),
+        var Q = require('q'),
+            deferred = Q.defer(),
             proxiedRequest = getProxyRequest(proxyDestination, originalRequest, options);
 
         log('=>', originalRequest);
@@ -183,6 +181,8 @@ function create (logger) {
         });
 
         proxiedRequest.once('error', function (error) {
+            var errors = require('../../util/errors');
+
             if (error.code === 'ENOTFOUND') {
                 deferred.reject(errors.InvalidProxyError('Cannot resolve ' + JSON.stringify(proxyDestination)));
             }

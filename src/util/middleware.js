@@ -5,8 +5,6 @@
  * @module
  */
 
-var errors = require('./errors');
-
 /**
  * Returns a middleware function to transforms all outgoing relative links in the response body
  * to absolute URLs, incorporating the current host name and port
@@ -69,7 +67,8 @@ function useAbsoluteUrls (port) {
  */
 function createImposterValidator (imposters) {
     return function validateImposterExists (request, response, next) {
-        var imposter = imposters[request.params.id];
+        var errors = require('./errors'),
+            imposter = imposters[request.params.id];
 
         if (imposter) {
             next();
@@ -168,6 +167,8 @@ function json (log) {
             request.body += chunk;
         });
         request.on('end', function () {
+            var errors = require('./errors');
+
             if (request.body === '') {
                 next();
             }

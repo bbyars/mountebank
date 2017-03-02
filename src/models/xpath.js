@@ -5,11 +5,9 @@
  * @module
  */
 
-var xpath = require('xpath'),
-    errors = require('../util/errors'),
-    DOMParser = require('xmldom').DOMParser;
-
 function xpathSelect (selectFn, selector, doc) {
+    var errors = require('../util/errors');
+
     if (typeof doc === 'undefined') {
         return [];
     }
@@ -51,7 +49,9 @@ function nodeValue (node) {
  * @returns {Object}
  */
 function select (selector, ns, possibleXML, logger) {
-    var parser = new DOMParser({
+    var xpath = require('xpath'),
+        DOMParser = require('xmldom').DOMParser,
+        parser = new DOMParser({
             errorHandler: function (level, message) {
                 var warn = logger.warn || function () {};
                 warn('%s (source: %s)', message, JSON.stringify(possibleXML));

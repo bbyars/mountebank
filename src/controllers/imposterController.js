@@ -5,16 +5,12 @@
  * @module
  */
 
-var url = require('url'),
-    Q = require('q');
-
 /**
  * Creates the imposter controller
  * @param {Object} imposters - the map of ports to imposters
  * @returns {{get: get, del: del}}
  */
 function create (imposters) {
-
     function queryBoolean (query, key) {
         if (query[key] === undefined) {
             return false;
@@ -29,7 +25,8 @@ function create (imposters) {
      * @param {Object} response - the HTTP response
      */
     function get (request, response) {
-        var query = url.parse(request.url, true).query,
+        var url = require('url'),
+            query = url.parse(request.url, true).query,
             options = { replayable: queryBoolean(query, 'replayable'), removeProxies: queryBoolean(query, 'removeProxies') },
             imposter = imposters[request.params.id].toJSON(options);
 
@@ -54,8 +51,10 @@ function create (imposters) {
      * @returns {Object} A promise for testing
      */
     function del (request, response) {
-        var imposter = imposters[request.params.id],
+        var Q = require('q'),
+            imposter = imposters[request.params.id],
             json = {},
+            url = require('url'),
             query = url.parse(request.url, true).query,
             options = { replayable: queryBoolean(query, 'replayable'), removeProxies: queryBoolean(query, 'removeProxies') };
 

@@ -5,17 +5,6 @@
  * @module
  */
 
-var net = require('net'),
-    Q = require('q'),
-    baseLogger = require('winston'),
-    ScopedLogger = require('../../util/scopedLogger'),
-    ResponseResolver = require('../responseResolver'),
-    StubRepository = require('../stubRepository'),
-    util = require('util'),
-    helpers = require('../../util/helpers'),
-    TcpProxy = require('../tcp/tcpProxy'),
-    DryRunValidator = require('../dryRunValidator');
-
 /**
  * Used to fill in defaults for the response.  A user may set up a response
  * with not all fields filled in, and we use this function to fill in the rest
@@ -35,7 +24,9 @@ function postProcess (response) {
  * @returns {string}
  */
 function scopeFor (port, name) {
-    var scope = util.format('foo:%s', port);
+    var util = require('util'),
+        scope = util.format('foo:%s', port);
+
     if (name) {
         scope += ' ' + name;
     }
@@ -51,20 +42,23 @@ function scopeFor (port, name) {
  */
 function createServer (options, recordRequests, debug) {
             // This is an async operation, so we use a deferred
-    var deferred = Q.defer(),
+    var Q = require('q'),
+        baseLogger = require('winston'),
+        net = require('net'),
+        deferred = Q.defer(),
             // track the number of requests even if recordRequests = false
         numRequests = 0,
             // and an array to record all requests for mock verification
         requests = [],
             // set up a logger with the correct log prefix
-        logger = ScopedLogger.create(baseLogger, scopeFor(options.port)),
+        logger = require('../../util/scopedLogger').create(baseLogger, scopeFor(options.port)),
             // create the protocol-specific proxy (here we're reusing tcp's proxy)
-        proxy = TcpProxy.create(logger, 'utf8'),
+        proxy = require('../tcp/tcpProxy').create(logger, 'utf8'),
             // create the response resolver, which contains the strategies for resolving is, proxy, and inject stubs
             // the postProcess parameter is used to fill in defaults for the response that were not passed by the user
-        resolver = ResponseResolver.create(proxy, postProcess),
+        resolver = require('../responseResolver').create(proxy, postProcess),
             // create the repository which matches the appropriate stub to respond with
-        stubs = StubRepository.create(resolver, debug, 'utf8'),
+        stubs = require('../stubRepository').create(resolver, debug, 'utf8'),
             // and create the actual server using node.js's net module
         server = net.createServer();
 
@@ -72,10 +66,11 @@ function createServer (options, recordRequests, debug) {
     server.on('connection', function (socket) {
         socket.on('data', function (data) {
             // This will be the request API interface used by stubs, etc.
-            var request = {
-                requestFrom: helpers.socketName(socket),
-                data: data.toString('utf8')
-            };
+            var helpers = require('../../util/helpers'),
+                request = {
+                    requestFrom: helpers.socketName(socket),
+                    data: data.toString('utf8')
+                };
 
             // remember the request for mock verification, unless told not to
             numRequests += 1;
@@ -152,6 +147,9 @@ function initialize (allowInjection, recordRequests, debug) {
         // If you don't have any protocol-specific validation, the DryRunValidator will suffice
         Validator: {
             create: function () {
+                var DryRunValidator = require('../dryRunValidator'),
+                    StubRepository = require('../stubRepository');
+
                 return DryRunValidator.create({
                     StubRepository: StubRepository,
                         // This is the request that will be 'dry run' through the validator

@@ -5,11 +5,6 @@
  * @module
  */
 
-var net = require('net'),
-    Q = require('q'),
-    url = require('url'),
-    errors = require('../../util/errors');
-
 /**
  * Creates the proxy
  * @param {Object} logger - The logger
@@ -17,7 +12,6 @@ var net = require('net'),
  * @returns {Object}
  */
 function create (logger, encoding) {
-
     function socketName (socket) {
         return socket.host + ':' + socket.port;
     }
@@ -28,7 +22,9 @@ function create (logger, encoding) {
 
     function connectionInfoFor (proxyDestination) {
         if (typeof proxyDestination === 'string') {
-            var parts = url.parse(proxyDestination);
+            var url = require('url'),
+                parts = url.parse(proxyDestination),
+                errors = require('../../util/errors');
 
             if (parts.protocol !== 'tcp:') {
                 throw errors.InvalidProxyError('Unable to proxy to any protocol other than tcp',
@@ -45,6 +41,7 @@ function create (logger, encoding) {
 
     function getProxyRequest (proxyDestination, originalRequest) {
         var buffer = new Buffer(originalRequest.data, encoding),
+            net = require('net'),
             socket = net.connect(connectionInfoFor(proxyDestination), function () {
                 socket.write(buffer, function () { socket.end(); });
             });
@@ -53,6 +50,7 @@ function create (logger, encoding) {
 
     function proxy (socket) {
         var packets = [],
+            Q = require('q'),
             deferred = Q.defer(),
             start = new Date();
 
@@ -81,7 +79,8 @@ function create (logger, encoding) {
                 originalRequest.requestFrom, direction, JSON.stringify(format(what)), direction, socketName(proxyDestination));
         }
 
-        var deferred = Q.defer(),
+        var Q = require('q'),
+            deferred = Q.defer(),
             proxiedRequest;
 
         try {
@@ -94,6 +93,8 @@ function create (logger, encoding) {
             });
 
             proxiedRequest.once('error', function (error) {
+                var errors = require('../../util/errors');
+
                 if (error.code === 'ENOTFOUND') {
                     deferred.reject(errors.InvalidProxyError('Cannot resolve ' + JSON.stringify(proxyDestination)));
                 }

@@ -5,8 +5,6 @@
  * @module
  */
 
-var helpers = require('../util/helpers');
-
 /**
  * Creates the config controller
  * @param {string} version - The version of the currently running process
@@ -14,8 +12,9 @@ var helpers = require('../util/helpers');
  * @returns {Object}
  */
 function create (version, options) {
+    var helpers = require('../util/helpers'),
+        publicOptions = helpers.clone(options);
 
-    var publicOptions = helpers.clone(options);
     delete publicOptions.heroku;
     delete publicOptions.version;
 

@@ -6,30 +6,11 @@
  * @module
  */
 
-var Q = require('q'),
-    express = require('express'),
-    cors = require('cors'),
-    errorHandler = require('errorhandler'),
-    path = require('path'),
-    fs = require('fs'),
-    middleware = require('./util/middleware'),
-    HomeController = require('./controllers/homeController'),
-    ImpostersController = require('./controllers/impostersController'),
-    ImposterController = require('./controllers/imposterController'),
-    LogsController = require('./controllers/logsController'),
-    ConfigController = require('./controllers/configController'),
-    FeedController = require('./controllers/feedController'),
-    Imposter = require('./models/imposter'),
-    winston = require('winston'),
-    thisPackage = require('../package.json'),
-    releases = require('../releases.json'),
-    ScopedLogger = require('./util/scopedLogger'),
-    util = require('util'),
-    helpers = require('./util/helpers');
-
 function initializeLogfile (filename) {
     // Ensure new logfile on startup so the /logs only shows for this process
-    var extension = path.extname(filename),
+    var path = require('path'),
+        fs = require('fs'),
+        extension = path.extname(filename),
         pattern = new RegExp(extension + '$'),
         newFilename = filename.replace(pattern, '1' + extension);
 
@@ -44,7 +25,26 @@ function initializeLogfile (filename) {
  * @returns {Object} An object with a close method to stop the server
  */
 function create (options) {
-    var deferred = Q.defer(),
+    var Q = require('q'),
+        express = require('express'),
+        cors = require('cors'),
+        errorHandler = require('errorhandler'),
+        path = require('path'),
+        middleware = require('./util/middleware'),
+        HomeController = require('./controllers/homeController'),
+        ImpostersController = require('./controllers/impostersController'),
+        ImposterController = require('./controllers/imposterController'),
+        LogsController = require('./controllers/logsController'),
+        ConfigController = require('./controllers/configController'),
+        FeedController = require('./controllers/feedController'),
+        Imposter = require('./models/imposter'),
+        winston = require('winston'),
+        thisPackage = require('../package.json'),
+        releases = require('../releases.json'),
+        ScopedLogger = require('./util/scopedLogger'),
+        util = require('util'),
+        helpers = require('./util/helpers'),
+        deferred = Q.defer(),
         app = express(),
         imposters = options.imposters || {},
         protocols = {

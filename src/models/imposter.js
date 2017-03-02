@@ -8,12 +8,10 @@
  * @module
  */
 
-var Q = require('q'),
-    Domain = require('domain'),
-    errors = require('../util/errors');
-
 function createErrorHandler (deferred) {
     return function errorHandler (error) {
+        var errors = require('../util/errors');
+
         if (error.errno === 'EADDRINUSE') {
             deferred.reject(errors.ResourceConflictError('The port is already in use'));
         }
@@ -33,8 +31,9 @@ function createErrorHandler (deferred) {
  * @returns {Object}
  */
 function create (Protocol, request) {
-    var deferred = Q.defer(),
-        domain = Domain.create(),
+    var Q = require('q'),
+        deferred = Q.defer(),
+        domain = require('domain').create(),
         errorHandler = createErrorHandler(deferred);
 
     domain.on('error', errorHandler);

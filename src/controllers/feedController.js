@@ -5,20 +5,16 @@
  * @module
  */
 
-var fs = require('fs'),
-    path = require('path'),
-    ejs = require('ejs'),
-    helpers = require('../util/helpers');
-
 /**
  * @param {Object} releases - The object represented in the releases.json file
  * @param {Object} options - The command line options used to start mountebank
  * @returns {Object} The controller
  */
 function create (releases, options) {
+    var helpers = require('../util/helpers'),
+        feedReleases = helpers.clone(releases);
 
     // Init once since we hope many consumers poll the heroku feed and we don't have monitoring
-    var feedReleases = helpers.clone(releases);
     feedReleases.reverse();
 
     function releaseViewFor (version) {
@@ -26,6 +22,7 @@ function create (releases, options) {
     }
 
     function releaseFilenameFor (version) {
+        var path = require('path');
         return path.join(__dirname, '/../views/', releaseViewFor(version));
     }
 
@@ -36,7 +33,9 @@ function create (releases, options) {
      * @param {Object} response - The HTTP response
      */
     function getFeed (request, response) {
-        var page = parseInt(request.query.page || '1'),
+        var fs = require('fs'),
+            ejs = require('ejs'),
+            page = parseInt(request.query.page || '1'),
             nextPage = page + 1,
             entriesPerPage = 10,
             hasNextPage = feedReleases.slice((nextPage * entriesPerPage) - 10, entriesPerPage * nextPage).length > 0,
@@ -80,7 +79,8 @@ function create (releases, options) {
      * @param {Object} response - The HTTP response
      */
     function getRelease (request, response) {
-        var version = request.params.version,
+        var fs = require('fs'),
+            version = request.params.version,
             config = {
                 host: request.headers.host,
                 heroku: options.heroku,

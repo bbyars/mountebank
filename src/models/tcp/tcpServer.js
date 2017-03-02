@@ -5,22 +5,7 @@
  * @module
  */
 
-var AbstractServer = require('../abstractServer'),
-    net = require('net'),
-    Q = require('q'),
-    winston = require('winston'),
-    inherit = require('../../util/inherit'),
-    combinators = require('../../util/combinators'),
-    helpers = require('../../util/helpers'),
-    TcpProxy = require('./tcpProxy'),
-    TcpValidator = require('./tcpValidator'),
-    ResponseResolver = require('../responseResolver'),
-    StubRepository = require('../stubRepository'),
-    events = require('events'),
-    TcpRequest = require('./tcpRequest');
-
 function createServer (logger, options) {
-
     function postProcess (response) {
         var defaultResponse = options.defaultResponse || {};
         return {
@@ -33,10 +18,13 @@ function createServer (logger, options) {
         ensureBuffer = function (data) {
             return Buffer.isBuffer(data) ? data : new Buffer(data, encoding);
         },
-        proxy = TcpProxy.create(logger, encoding),
-        resolver = ResponseResolver.create(proxy, postProcess),
-        stubs = StubRepository.create(resolver, options.debug, encoding),
-        result = inherit.from(events.EventEmitter, {
+        proxy = require('./tcpProxy').create(logger, encoding),
+        resolver = require('../responseResolver').create(proxy, postProcess),
+        stubs = require('../stubRepository').create(resolver, options.debug, encoding),
+        inherit = require('../../util/inherit'),
+        combinators = require('../../util/combinators'),
+        helpers = require('../../util/helpers'),
+        result = inherit.from(require('events').EventEmitter, {
             errorHandler: function (error, container) {
                 container.socket.write(JSON.stringify({ errors: [error] }), 'utf8');
             },
@@ -71,7 +59,7 @@ function createServer (logger, options) {
             state: {},
             stubs: stubs.stubs
         }),
-        server = net.createServer();
+        server = require('net').createServer();
 
     function isEndOfRequest (requestData) {
         if (!options.endOfRequestResolver || !options.endOfRequestResolver.inject) {
@@ -115,8 +103,12 @@ function createServer (logger, options) {
     result.close = function (callback) { server.close(callback); };
 
     result.listen = function (port) {
-        var deferred = Q.defer();
-        server.listen(port, function () { deferred.resolve(server.address().port); });
+        var Q = require('q'),
+            deferred = Q.defer();
+
+        server.listen(port, function () {
+            deferred.resolve(server.address().port);
+        });
         return deferred.promise;
     };
 
@@ -132,14 +124,18 @@ function createServer (logger, options) {
  */
 function initialize (allowInjection, recordRequests, debug) {
     var implementation = {
-        protocolName: 'tcp',
-        createServer: createServer,
-        Request: TcpRequest
-    };
+            protocolName: 'tcp',
+            createServer: createServer,
+            Request: require('./tcpRequest')
+        },
+        logger = require('winston'),
+        TcpValidator = require('./tcpValidator'),
+        combinators = require('../../util/combinators'),
+        AbstractServer = require('../abstractServer');
 
     return {
         name: implementation.protocolName,
-        create: AbstractServer.implement(implementation, recordRequests, debug, winston).create,
+        create: AbstractServer.implement(implementation, recordRequests, debug, logger).create,
         Validator: { create: combinators.curry(TcpValidator.create, allowInjection) }
     };
 }

@@ -7,14 +7,6 @@
  * @module
  */
 
-var utils = require('util'),
-    Q = require('q'),
-    exceptions = require('../util/errors'),
-    helpers = require('../util/helpers'),
-    combinators = require('../util/combinators'),
-    ResponseResolver = require('./responseResolver'),
-    behaviors = require('./behaviors');
-
 /**
  * Creates the validator
  * @param {Object} options - Configuration for the validator
@@ -25,11 +17,13 @@ var utils = require('util'),
  * @returns {Object}
  */
 function create (options) {
+    var exceptions = require('../util/errors');
 
     function stubForResponse (originalStub, response, withPredicates) {
         // Each dry run only validates the first response, so we
         // explode the number of stubs to dry run each response separately
-        var clonedStub = helpers.clone(originalStub),
+        var helpers = require('../util/helpers'),
+            clonedStub = helpers.clone(originalStub),
             clonedResponse = helpers.clone(response);
         clonedStub.responses = [clonedResponse];
 
@@ -45,14 +39,16 @@ function create (options) {
 
     function dryRun (stub, encoding, logger) {
         // Need a well-formed proxy response in case a behavior decorator expects certain fields to exist
-        var dryRunProxy = { to: function () { return Q(options.testProxyResponse); } },
+        var Q = require('q'),
+            combinators = require('../util/combinators'),
+            dryRunProxy = { to: function () { return Q(options.testProxyResponse); } },
             dryRunLogger = {
                 debug: combinators.noop,
                 info: combinators.noop,
                 warn: combinators.noop,
                 error: logger.error
             },
-            resolver = ResponseResolver.create(dryRunProxy, combinators.identity),
+            resolver = require('./responseResolver').create(dryRunProxy, combinators.identity),
             stubsToValidateWithPredicates = stub.responses.map(function (response) {
                 return stubForResponse(stub, response, true);
             }),
@@ -74,7 +70,8 @@ function create (options) {
     }
 
     function addDryRunErrors (stub, encoding, errors, logger, imposterState) {
-        var deferred = Q.defer();
+        var Q = require('q'),
+            deferred = Q.defer();
 
         try {
             dryRun(stub, encoding, logger, imposterState).done(deferred.resolve, function (reason) {
@@ -139,15 +136,18 @@ function create (options) {
 
     function addBehaviorErrors (stub, errors) {
         stub.responses.forEach(function (response) {
+            var behaviors = require('./behaviors');
             addAllTo(errors, behaviors.validate(response._behaviors));
         });
     }
 
     function errorsForStub (stub, encoding, logger, imposterState) {
         var errors = [],
+            Q = require('q'),
+            util = require('util'),
             deferred = Q.defer();
 
-        if (!utils.isArray(stub.responses) || stub.responses.length === 0) {
+        if (!util.isArray(stub.responses) || stub.responses.length === 0) {
             errors.push(exceptions.ValidationError("'responses' must be a non-empty array", {
                 source: stub
             }));
@@ -194,6 +194,7 @@ function create (options) {
         var stubs = request.stubs || [],
             encoding = request.mode === 'binary' ? 'base64' : 'utf8',
             validationPromises = stubs.map(function (stub) { return errorsForStub(stub, encoding, logger); }),
+            Q = require('q'),
             deferred = Q.defer();
 
         validationPromises.push(Q(errorsForRequest(request)));

@@ -5,8 +5,6 @@
  * @module
  */
 
-var JSONPath = require('jsonpath-plus');
-
 /**
  * Returns xpath value(s) from given xml
  * @param {String} selector - The xpath selector
@@ -15,6 +13,8 @@ var JSONPath = require('jsonpath-plus');
  * @returns {Object}
  */
 function select (selector, possibleJSON, logger) {
+    var JSONPath = require('jsonpath-plus');
+
     try {
         var result = JSONPath.eval(JSON.parse(possibleJSON), selector);
         if (typeof result === 'string') {

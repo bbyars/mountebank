@@ -5,15 +5,9 @@
  * @module
  */
 
-var errors = require('../util/errors'),
-    helpers = require('../util/helpers'),
-    combinators = require('../util/combinators'),
-    stringify = require('json-stable-stringify'),
-    xpath = require('./xpath'),
-    jsonpath = require('./jsonpath'),
-    util = require('util');
-
 function sortObjects (a, b) {
+    var stringify = require('json-stable-stringify');
+
     if (typeof a === 'object' && typeof b === 'object') {
         // Make best effort at sorting arrays of objects to make
         // deepEquals order-independent
@@ -55,6 +49,7 @@ function forceStrings (obj) {
 
 function select (type, selectFn, encoding) {
     if (encoding === 'base64') {
+        var errors = require('../util/errors');
         throw errors.ValidationError('the ' + type + ' predicate parameter is not allowed in binary mode');
     }
 
@@ -74,6 +69,8 @@ function select (type, selectFn, encoding) {
 }
 
 function orderIndependent (possibleArray) {
+    var util = require('util');
+
     if (util.isArray(possibleArray)) {
         return possibleArray.sort();
     }
@@ -83,18 +80,23 @@ function orderIndependent (possibleArray) {
 }
 
 function selectXPath (config, caseTransform, encoding, text) {
-    var selectFn = combinators.curry(xpath.select, caseTransform(config.selector), config.ns, text);
+    var xpath = require('./xpath'),
+        combinators = require('../util/combinators'),
+        selectFn = combinators.curry(xpath.select, caseTransform(config.selector), config.ns, text);
     return orderIndependent(select('xpath', selectFn, encoding));
 }
 
 function selectJSONPath (config, caseTransform, encoding, text) {
-    var selectFn = combinators.curry(jsonpath.select, caseTransform(config.selector), text);
+    var jsonpath = require('./jsonpath'),
+        combinators = require('../util/combinators'),
+        selectFn = combinators.curry(jsonpath.select, caseTransform(config.selector), text);
     return orderIndependent(select('jsonpath', selectFn, encoding));
 }
 
 function normalize (obj, config, encoding, withSelectors) {
     /* eslint complexity: [2, 8] */
-    var lowerCaser = function (text) { return text.toLowerCase(); },
+    var combinators = require('../util/combinators'),
+        lowerCaser = function (text) { return text.toLowerCase(); },
         caseTransform = config.caseSensitive ? combinators.identity : lowerCaser,
         keyCaseTransform = config.keyCaseSensitive === false ? lowerCaser : caseTransform,
         exceptRegexOptions = config.caseSensitive ? 'g' : 'gi',
@@ -196,7 +198,8 @@ function create (operator, predicateFn) {
 
 function deepEquals (predicate, request, encoding) {
     var expected = normalize(forceStrings(predicate.deepEquals), predicate, encoding, false),
-        actual = normalize(forceStrings(request), predicate, encoding, true);
+        actual = normalize(forceStrings(request), predicate, encoding, true),
+        stringify = require('json-stable-stringify');
 
     return Object.keys(expected).every(function (fieldName) {
         // Support predicates that reach into fields encoded in JSON strings (e.g. HTTP bodies)
@@ -213,10 +216,12 @@ function matches (predicate, request, encoding) {
     // However, we need to maintain the case transform for keys like http header names (issue #169)
     // eslint-disable-next-line no-unneeded-ternary
     var caseSensitive = predicate.caseSensitive ? true : false, // convert to boolean even if undefined
+        helpers = require('../util/helpers'),
         clone = helpers.merge(predicate, { caseSensitive: true, keyCaseSensitive: caseSensitive }),
         expected = normalize(predicate.matches, clone, encoding, false),
         actual = normalize(request, clone, encoding, true),
-        options = caseSensitive ? '' : 'i';
+        options = caseSensitive ? '' : 'i',
+        errors = require('../util/errors');
 
     if (encoding === 'base64') {
         throw errors.ValidationError('the matches predicate is not allowed in binary mode');
@@ -242,8 +247,10 @@ function and (predicate, request, encoding, logger) {
 }
 
 function inject (predicate, request, encoding, logger, imposterState) {
-    var scope = helpers.clone(request),
-        injected = '(' + predicate.inject + ')(scope, logger, imposterState);';
+    var helpers = require('../util/helpers'),
+        scope = helpers.clone(request),
+        injected = '(' + predicate.inject + ')(scope, logger, imposterState);',
+        errors = require('../util/errors');
 
     if (request.isDryRun === true) {
         return true;
@@ -286,8 +293,9 @@ var predicates = {
  */
 function evaluate (predicate, request, encoding, logger, imposterState) {
     var predicateFn = Object.keys(predicate).find(function (key) {
-        return Object.keys(predicates).indexOf(key) >= 0;
-    });
+            return Object.keys(predicates).indexOf(key) >= 0;
+        }),
+        errors = require('../util/errors');
 
     if (predicateFn) {
         return predicates[predicateFn](predicate, request, encoding, logger, imposterState);

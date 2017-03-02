@@ -5,9 +5,6 @@
  * @module
  */
 
-var Q = require('q'),
-    helpers = require('../../util/helpers');
-
 /**
  * Creates the request used during dry run validation
  * @returns {Object}
@@ -25,6 +22,9 @@ function createTestRequest () {
  * @returns {Object} - A promise resolving to the mountebank tcp request
  */
 function createFrom (request) {
+    var Q = require('q'),
+        helpers = require('../../util/helpers');
+
     return Q({
         requestFrom: helpers.socketName(request.socket),
         data: request.data

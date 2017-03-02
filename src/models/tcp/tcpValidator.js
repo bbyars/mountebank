@@ -5,13 +5,10 @@
  * @module
  */
 
-var DryRunValidator = require('../dryRunValidator'),
-    StubRepository = require('../stubRepository'),
-    TcpRequest = require('./tcpRequest'),
-    exceptions = require('../../util/errors');
-
 function validateMode (request) {
-    var errors = [];
+    var errors = [],
+        exceptions = require('../../util/errors');
+
     if (request.mode && ['text', 'binary'].indexOf(request.mode) < 0) {
         errors.push(exceptions.ValidationError("'mode' must be one of ['text', 'binary']"));
     }
@@ -25,9 +22,9 @@ module.exports = {
      * @returns {Object}
      */
     create: function (allowInjection) {
-        return DryRunValidator.create({
-            StubRepository: StubRepository,
-            testRequest: TcpRequest.createTestRequest(),
+        return require('../dryRunValidator').create({
+            StubRepository: require('../stubRepository'),
+            testRequest: require('./tcpRequest').createTestRequest(),
             testProxyResponse: { data: '' },
             allowInjection: allowInjection,
             additionalValidation: validateMode

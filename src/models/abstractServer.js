@@ -9,13 +9,6 @@
  * @module
  */
 
-var Q = require('q'),
-    util = require('util'),
-    ScopedLogger = require('../util/scopedLogger'),
-    helpers = require('../util/helpers'),
-    Domain = require('domain'),
-    errors = require('../util/errors');
-
 /**
  * Creates the protocol implementation
  * @param {Object} implementation - The protocol implementation
@@ -28,7 +21,6 @@ var Q = require('q'),
  * @returns {Object}
  */
 function implement (implementation, recordRequests, debug, baseLogger) {
-
     /**
      * Creates the protocol-specific server
      * @memberOf module:models/abstractServer#
@@ -40,22 +32,26 @@ function implement (implementation, recordRequests, debug, baseLogger) {
         options.debug = debug;
 
         function scopeFor (port) {
-            var scope = util.format('%s:%s', implementation.protocolName, port);
+            var util = require('util'),
+                scope = util.format('%s:%s', implementation.protocolName, port);
+
             if (options.name) {
                 scope += ' ' + options.name;
             }
             return scope;
         }
 
-        var deferred = Q.defer(),
+        var Q = require('q'),
+            deferred = Q.defer(),
             requests = [],
             numRequests = 0,
-            logger = ScopedLogger.create(baseLogger, scopeFor(options.port)),
+            logger = require('../util/scopedLogger').create(baseLogger, scopeFor(options.port)),
             server = implementation.createServer(logger, options),
             connections = {};
 
         server.on('connection', function (socket) {
-            var name = helpers.socketName(socket);
+            var helpers = require('../util/helpers'),
+                name = helpers.socketName(socket);
 
             connections[name] = socket;
             logger.debug('%s ESTABLISHED', name);
@@ -73,11 +69,13 @@ function implement (implementation, recordRequests, debug, baseLogger) {
         });
 
         server.on('request', function (socket, request, testCallback) {
-            var domain = Domain.create(),
+            var domain = require('domain').create(),
+                helpers = require('../util/helpers'),
                 clientName = helpers.socketName(socket),
                 errorHandler = function (error) {
-                    logger.error('%s X=> %s', clientName, JSON.stringify(errors.details(error)));
-                    server.errorHandler(errors.details(error), request);
+                    var exceptions = require('../util/errors');
+                    logger.error('%s X=> %s', clientName, JSON.stringify(exceptions.details(error)));
+                    server.errorHandler(exceptions.details(error), request);
                     if (testCallback) {
                         testCallback();
                     }

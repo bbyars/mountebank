@@ -5,9 +5,6 @@
  * @module
  */
 
-var fs = require('fs'),
-    url = require('url');
-
 /**
  * Creates the logs controller
  * @param {string} logfile - the path to the logfile
@@ -21,8 +18,10 @@ function create (logfile) {
      * @param {Object} response - the HTTP response
      */
     function get (request, response) {
-        var json = '[' + fs.readFileSync(logfile).toString().split('\n').join(',').replace(/,$/, '') + ']',
+        var fs = require('fs'),
+            json = '[' + fs.readFileSync(logfile).toString().split('\n').join(',').replace(/,$/, '') + ']',
             allLogs = JSON.parse(json),
+            url = require('url'),
             query = url.parse(request.url, true).query,
             startIndex = parseInt(query.startIndex || 0),
             endIndex = parseInt(query.endIndex || allLogs.length - 1),

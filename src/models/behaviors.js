@@ -5,17 +5,7 @@
  * @module
  */
 
-var helpers = require('../util/helpers'),
-    exceptions = require('../util/errors'),
-    Q = require('q'),
-    exec = require('child_process').exec,
-    util = require('util'),
-    combinators = require('../util/combinators'),
-    xpath = require('./xpath'),
-    jsonpath = require('./jsonpath'),
-    fs = require('fs'),
-    csvParse = require('csv-parse'),
-    isWindows = require('os').platform().indexOf('win') === 0;
+var exceptions = require('../util/errors');
 
 function defined (value) {
     return typeof value !== 'undefined';
@@ -123,6 +113,8 @@ function addUsingErrors (config, behaviorName, fieldPrefix, errors) {
 }
 
 function addCopyErrors (config, errors) {
+    var util = require('util');
+
     if (!util.isArray(config.copy)) {
         errors.push(exceptions.ValidationError('"copy" behavior must be an array',
             { source: config }));
@@ -216,6 +208,8 @@ function addLookupFromDataSourceErrors (config, errors) {
 }
 
 function addLookupErrors (config, errors) {
+    var util = require('util');
+
     if (!util.isArray(config.lookup)) {
         errors.push(exceptions.ValidationError('"lookup" behavior must be an array',
             { source: config }));
@@ -285,8 +279,10 @@ function wait (request, responsePromise, millisecondsOrFn, logger) {
         return responsePromise;
     }
 
-    var fn = util.format('(%s)()', millisecondsOrFn),
-        milliseconds = parseInt(millisecondsOrFn);
+    var util = require('util'),
+        fn = util.format('(%s)()', millisecondsOrFn),
+        milliseconds = parseInt(millisecondsOrFn),
+        Q = require('q');
 
     if (isNaN(milliseconds)) {
         try {
@@ -305,7 +301,9 @@ function wait (request, responsePromise, millisecondsOrFn, logger) {
 }
 
 function quoteForShell (obj) {
-    var json = JSON.stringify(obj);
+    var json = JSON.stringify(obj),
+        isWindows = require('os').platform().indexOf('win') === 0,
+        util = require('util');
 
     if (isWindows) {
         // Confused? Me too. All other approaches I tried were spectacular failures
@@ -332,7 +330,10 @@ function shellTransform (request, responsePromise, command, logger) {
     }
 
     return responsePromise.then(function (response) {
-        var deferred = Q.defer(),
+        var Q = require('q'),
+            deferred = Q.defer(),
+            util = require('util'),
+            exec = require('child_process').exec,
             fullCommand = util.format('%s %s %s', command, quoteForShell(request), quoteForShell(response));
 
         logger.debug('Shelling out to %s', command);
@@ -373,7 +374,9 @@ function decorate (originalRequest, responsePromise, fn, logger) {
     }
 
     return responsePromise.then(function (response) {
-        var request = helpers.clone(originalRequest),
+        var Q = require('q'),
+            helpers = require('../util/helpers'),
+            request = helpers.clone(originalRequest),
             injected = '(' + fn + ')(request, response, logger);';
 
         try {
@@ -412,7 +415,8 @@ function getFrom (obj, from) {
         return getFrom(obj[keys[0]], from[keys[0]]);
     }
     else {
-        var result = obj[getKeyIgnoringCase(obj, from)];
+        var result = obj[getKeyIgnoringCase(obj, from)],
+            util = require('util');
 
         // Some request fields, like query parameters, can be multi-valued
         if (util.isArray(result)) {
@@ -455,6 +459,7 @@ function regexValue (from, config, logger) {
 
 function xpathValue (from, config, logger) {
     var selectionFn = function () {
+        var xpath = require('./xpath');
         return xpath.select(config.using.selector, config.using.ns, from, logger);
     };
     return getMatches(selectionFn, config.using.selector, logger);
@@ -462,6 +467,7 @@ function xpathValue (from, config, logger) {
 
 function jsonpathValue (from, config, logger) {
     var selectionFn = function () {
+        var jsonpath = require('./jsonpath');
         return jsonpath.select(config.using.selector, from, logger);
     };
     return getMatches(selectionFn, config.using.selector, logger);
@@ -492,7 +498,8 @@ function replaceArrayValuesIn (response, token, values, logger) {
     var replacer = function (field) {
         values.forEach(function (replacement, index) {
             // replace ${TOKEN}[1] with indexed element
-            var indexedToken = util.format('%s[%s]', token, index);
+            var util = require('util'),
+                indexedToken = util.format('%s[%s]', token, index);
             field = globalStringReplace(field, indexedToken, replacement, logger);
         });
         if (values.length > 0) {
@@ -515,6 +522,8 @@ function replaceArrayValuesIn (response, token, values, logger) {
  */
 function copy (originalRequest, responsePromise, copyArray, logger) {
     return responsePromise.then(function (response) {
+        var Q = require('q');
+
         copyArray.forEach(function (copyConfig) {
             var from = getFrom(originalRequest, copyConfig.from),
                 using = copyConfig.using || {},
@@ -536,9 +545,11 @@ function createRowObject (headers, rowArray) {
 }
 
 function selectRowFromCSV (csvConfig, keyValue, logger) {
-    var headers,
+    var fs = require('fs'),
+        Q = require('q'),
+        headers,
         inputStream = fs.createReadStream(csvConfig.path),
-        parser = csvParse({ delimiter: ',' }),
+        parser = require('csv-parse')({ delimiter: ',' }),
         pipe = inputStream.pipe(parser),
         deferred = Q.defer();
 
@@ -567,7 +578,8 @@ function selectRowFromCSV (csvConfig, keyValue, logger) {
 }
 
 function lookupRow (lookupConfig, originalRequest, logger) {
-    var from = getFrom(originalRequest, lookupConfig.key.from),
+    var Q = require('q'),
+        from = getFrom(originalRequest, lookupConfig.key.from),
         fnMap = { regex: regexValue, xpath: xpathValue, jsonpath: jsonpathValue },
         keyValues = fnMap[lookupConfig.key.using.method](from, lookupConfig.key, logger),
         index = lookupConfig.key.index || 0;
@@ -583,6 +595,8 @@ function lookupRow (lookupConfig, originalRequest, logger) {
 function replaceObjectValuesIn (response, token, values, logger) {
     var replacer = function (field) {
         Object.keys(values).forEach(function (key) {
+            var util = require('util');
+
             // replace ${TOKEN}["key"] and ${TOKEN}['key'] and ${TOKEN}[key]
             ['"', "'", ''].forEach(function (quoteChar) {
                 var quoted = util.format('%s[%s%s%s]', token, quoteChar, key, quoteChar);
@@ -606,11 +620,12 @@ function replaceObjectValuesIn (response, token, values, logger) {
  */
 function lookup (originalRequest, responsePromise, lookupArray, logger) {
     return responsePromise.then(function (response) {
-        var lookupPromises = lookupArray.map(function (lookupConfig) {
-            return lookupRow(lookupConfig, originalRequest, logger).then(function (row) {
-                replaceObjectValuesIn(response, lookupConfig.into, row, logger);
+        var Q = require('q'),
+            lookupPromises = lookupArray.map(function (lookupConfig) {
+                return lookupRow(lookupConfig, originalRequest, logger).then(function (row) {
+                    replaceObjectValuesIn(response, lookupConfig.into, row, logger);
+                });
             });
-        });
         return Q.all(lookupPromises).then(function () { return Q(response); });
     }).catch(function (error) {
         logger.error(error);
@@ -627,10 +642,12 @@ function lookup (originalRequest, responsePromise, lookupArray, logger) {
  */
 function execute (request, response, behaviors, logger) {
     if (!behaviors) {
-        return Q(response);
+        return require('q')(response);
     }
 
-    var waitFn = behaviors.wait ?
+    var Q = require('q'),
+        combinators = require('../util/combinators'),
+        waitFn = behaviors.wait ?
             function (result) { return wait(request, result, behaviors.wait, logger); } :
             combinators.identity,
         copyFn = behaviors.copy ?
