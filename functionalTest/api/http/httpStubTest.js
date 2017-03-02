@@ -357,6 +357,21 @@ var assert = require('assert'),
                     return api.del('/imposters');
                 });
             });
+
+            promiseIt('should handle JSON null values', function () {
+                // https://github.com/bbyars/mountebank/issues/209
+                var stub = { responses: [{ is: { body: { name: 'test', type: null } } }] },
+                    request = { protocol: protocol, port: port, stubs: [stub], name: this.name };
+
+                return api.post('/imposters', request).then(function (response) {
+                    assert.strictEqual(response.statusCode, 201, response.body);
+                    return client.get('/', port);
+                }).then(function (response) {
+                    assert.deepEqual(JSON.parse(response.body), { name: 'test', type: null });
+                }).finally(function () {
+                    return api.del('/imposters');
+                });
+            });
         });
     });
 });

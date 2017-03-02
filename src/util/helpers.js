@@ -34,7 +34,7 @@ function clone (obj) {
 function merge (defaults, overrides) {
     var result = clone(defaults);
     Object.keys(overrides).forEach(function (key) {
-        if (typeof overrides[key] === 'object') {
+        if (typeof overrides[key] === 'object' && overrides[key] !== null) {
             result[key] = merge(result[key] || {}, overrides[key]);
         }
         else {

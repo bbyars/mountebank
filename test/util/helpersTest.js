@@ -75,5 +75,18 @@ describe('helpers', function () {
             assert.deepEqual(first, { one: 1 });
             assert.deepEqual(second, { two: 2 });
         });
+
+        it('should be able to handle null values', function () {
+            var defaults = { onlyInDefault: 1, inBoth: 1 },
+                overrides = { onlyInOverrides: 2, inBoth: null };
+
+            var merged = helpers.merge(defaults, overrides);
+
+            assert.deepEqual(merged, {
+                onlyInDefault: 1,
+                onlyInOverrides: 2,
+                inBoth: null
+            });
+        });
     });
 });
