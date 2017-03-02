@@ -75,7 +75,7 @@
     "https-proxy-agent": "1.0.0",
     "json-stable-stringify": "~1.0.0",
     "jsonpath-plus": "^0.16.0",
-    "mailparser": "~2.0.2",
+    "mailparser": "~0.6.1",
     "q": "~1.4.1",
     "simplesmtp": "~0.3.16",
     "winston": "~2.3.0",
