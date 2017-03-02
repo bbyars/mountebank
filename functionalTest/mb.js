@@ -12,24 +12,29 @@ var Q = require('q'),
     pidfile = 'test.pid',
     logfile = 'mb-test.log';
 
-function whenFullyInitialized (callback) {
-    var spinWait = function () {
-        if (fs.existsSync(pidfile)) {
-            callback({});
-        }
-        else {
-            Q.delay(100).done(spinWait);
-        }
-    };
+function whenFullyInitialized (operation, callback) {
+    var count = 0,
+        pidfileMustExist = operation === 'start',
+        spinWait = function () {
+            count += 1;
+            if (count > 20) {
+                console.log('ERROR: mb ' + operation + ' not initialized after 2 seconds');
+                callback({});
+            }
+            else if (fs.existsSync(pidfile) === pidfileMustExist) {
+                callback({});
+            }
+            else {
+                Q.delay(100).done(spinWait);
+            }
+        };
 
-    if (fs.existsSync(pidfile)) {
-        fs.unlinkSync(pidfile);
-    }
     spinWait();
 }
 
 function spawnMb (args) {
-    var command = mbPath;
+    var command = mbPath,
+        result;
 
     if (isWindows) {
         args.unshift(mbPath);
@@ -44,7 +49,11 @@ function spawnMb (args) {
         }
     }
 
-    return spawn(command, args);
+    result = spawn(command, args);
+    result.stderr.on('data', function (data) {
+        console.log(data.toString('utf8'));
+    });
+    return result;
 }
 
 function create (port) {
@@ -54,7 +63,7 @@ function create (port) {
             mbArgs = ['restart', '--port', port, '--logfile', logfile, '--pidfile', pidfile].concat(args || []),
             mb;
 
-        whenFullyInitialized(deferred.resolve);
+        whenFullyInitialized('start', deferred.resolve);
         mb = spawnMb(mbArgs);
         mb.on('error', deferred.reject);
 
@@ -73,11 +82,20 @@ function create (port) {
             if (stdout) { console.log(stdout); }
             if (stderr) { console.error(stderr); }
 
-            // Prevent address in use errors on the next start
-            setTimeout(deferred.resolve, isWindows ? 1000 : 250);
+            whenFullyInitialized('stop', deferred.resolve);
         });
 
         return deferred.promise;
+    }
+
+    function restart (args) {
+        // Can't simply call mb restart
+        // The start function relies on whenFullyInitialized to wait for the pidfile to already exist
+        // If it already does exist, and you're expecting mb restart to kill it, the function will
+        // return before you're ready for it
+        return stop(args).then(function () {
+            return start(args);
+        });
     }
 
     function save (args) {
@@ -117,6 +135,7 @@ function create (port) {
         port: port,
         url: 'http://localhost:' + port,
         start: start,
+        restart: restart,
         stop: stop,
         save: save,
         get: get,
