@@ -167,4 +167,18 @@ module.exports = function (grunt) {
             done();
         });
     });
+
+    grunt.registerTask('_codeclimate', 'Send coverage results to codeclimate', function () {
+        var done = this.async(),
+            command = 'node_modules/.bin/codeclimate-test-reporter < coverage/lcov.info';
+
+        exec(command, function (error, stdout, stderr) {
+            if (stdout) { console.log(stdout); }
+            if (stderr) { console.log(stderr); }
+            if (error) { throw error; }
+            done();
+        });
+    });
+
+    grunt.registerTask('codeclimate', 'Send coverage results to codeclimate', ['coverage', '_codeclimate']);
 };

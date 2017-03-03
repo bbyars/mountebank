@@ -84,6 +84,7 @@
     "yargs": "6.6.0"
   },
   "devDependencies": {
+    "codeclimate-test-reporter": "^0.4.1",
     "coveralls": "~2.11.1",
     "fs-extra": "~2.0.0",
     "grunt": "^1.0.1",

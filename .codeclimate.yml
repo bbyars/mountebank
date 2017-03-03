@@ -13,10 +13,16 @@ engines:
     enabled: true
   fixme:
     enabled: true
+  markdownlint:
+    enabled: true
+  nodesecurity:
+    enabled: true
 ratings:
   paths:
   - Gemfile.lock
   - "**.js"
+  - "**.css"
+  - "**.md"
 exclude_paths:
 - test/
 - functionalTest/
