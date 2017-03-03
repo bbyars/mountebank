@@ -82,7 +82,8 @@ function orderIndependent (possibleArray) {
 function selectXPath (config, caseTransform, encoding, text) {
     var xpath = require('./xpath'),
         combinators = require('../util/combinators'),
-        selectFn = combinators.curry(xpath.select, caseTransform(config.selector), config.ns, text);
+        ns = normalize(config.ns, {}, 'utf8'),
+        selectFn = combinators.curry(xpath.select, caseTransform(config.selector), ns, text);
     return orderIndependent(select('xpath', selectFn, encoding));
 }
 
