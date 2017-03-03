@@ -1,0 +1,24 @@
+
+engines:
+  bundler-audit:
+    enabled: true
+  csslint:
+    enabled: true
+  duplication:
+    enabled: true
+    config:
+      languages:
+      - javascript
+  eslint:
+    enabled: true
+  fixme:
+    enabled: true
+ratings:
+  paths:
+  - Gemfile.lock
+  - "**.js"
+exclude_paths:
+- test/
+- functionalTest/
+- performanceTest/
+
