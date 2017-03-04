@@ -154,7 +154,7 @@ module.exports = function (grunt) {
 
     grunt.registerTask('coverage', 'Generate code coverage', function () {
         var done = this.async(),
-            command = './node_modules/.bin/istanbul cover grunt mochaTest:unit';
+            command = 'node_modules/.bin/istanbul cover node_modules/.bin/grunt mochaTest:unit';
 
         exec(command, function (error, stdout, stderr) {
             if (stdout) { console.log(stdout); }
@@ -167,8 +167,8 @@ module.exports = function (grunt) {
 
     grunt.registerTask('coveralls', 'Send coverage output to coveralls.io', function () {
         var done = this.async(),
-            mocha = './node_modules/.bin/istanbul cover ./node_modules/.bin/_mocha --report lcovonly test/**/*.js -- -R spec',
-            command = mocha + ' && cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js';
+            mocha = 'node_modules/.bin/istanbul cover node_modules/.bin/_mocha --report lcovonly test/**/*.js -- -R spec',
+            command = mocha + ' && cat coverage/lcov.info | node_modules/coveralls/bin/coveralls.js';
 
         exec(command, function (error, stdout, stderr) {
             if (stdout) { console.log(stdout); }
