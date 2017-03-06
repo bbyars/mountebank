@@ -73,10 +73,10 @@ you can contact me directly at brandon.byars@gmail.com.
 
 ## Build Status
 
-[![Test Coverage][codeclimate-coverage-badge][codeclimate-coverage]
+[![Test Coverage][codeclimate-coverage-badge]][codeclimate-coverage]
 [![Codacy Badge][codacy-badge]][codacy]
-[![Code Climate][codeclimate-badge][codeclimate]
-[![Greenkeeper badge][greenkeeper-badge][greenkeeper]
+[![Code Climate][codeclimate-badge]][codeclimate]
+[![Greenkeeper badge][greenkeeper-badge]][greenkeeper]
 
 |                       |Node Version |Ubuntu 12.04                            |CentOS 6.7                            |OS X Mavericks                           |Windows Server 2012                          |
 |-----------------------|:-----------:|:--------------------------------------:|:------------------------------------:|:---------------------------------------:|:-------------------------------------------:|
