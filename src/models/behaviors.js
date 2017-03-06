@@ -13,16 +13,10 @@ function defined (value) {
 
 function ofType (value) {
     var allowedTypes = Array.prototype.slice.call(arguments),
-        actualType = typeof value,
-        util = require('util');
+        actualType = typeof value;
 
     // remove value
     allowedTypes.shift();
-
-    // allow passing in array
-    if (util.isArray(allowedTypes[0])) {
-        allowedTypes = allowedTypes[0];
-    }
 
     return allowedTypes.indexOf(actualType) >= 0;
 }
@@ -40,20 +34,6 @@ function navigate (config, path) {
         return path.split('.').reduce(function (field, fieldName) {
             return field[fieldName];
         }, config);
-    }
-}
-
-function addWaitErrors (config, errors) {
-    if (!ofType(config.wait, 'number', 'string') || (typeof config.wait === 'number' && config.wait < 0)) {
-        errors.push(exceptions.ValidationError('"wait" value must be an integer greater than or equal to 0',
-            { source: config }));
-    }
-}
-
-function addRepeatErrors (config, errors) {
-    if (!ofType(config.repeat, 'number', 'string') || config.repeat <= 0) {
-        errors.push(exceptions.ValidationError('"repeat" value must be an integer greater than 0',
-            { source: config }));
     }
 }
 
@@ -85,11 +65,23 @@ function nonMetadata (fieldName) {
     return fieldName.indexOf('_') !== 0;
 }
 
+function enumFieldFor (field) {
+    // Can be the string value or the object key
+    if (typeof field === 'object' && Object.keys(field).length > 0) {
+        return Object.keys(field)[0];
+    }
+    else {
+        return field;
+    }
+}
+
+function matchesEnum (field, enumSpec) {
+    return enumSpec.indexOf(enumFieldFor(field)) >= 0;
+}
+
 function addErrorsTo (errors, config, behaviorName, pathPrefix, spec) {
     /* eslint-disable no-underscore-dangle */
     Object.keys(spec).filter(nonMetadata).forEach(function (fieldName) {
-        /* eslint complexity: [2, 8] */
-        /* eslint max-depth: [2, 4] */
         var util = require('util'),
             fieldSpec = spec[fieldName],
             path = pathFor(pathPrefix, fieldName),
@@ -124,23 +116,31 @@ function addErrorsTo (errors, config, behaviorName, pathPrefix, spec) {
                             behaviorName, path),
                         { source: config }));
                 }
-                else if (typeSpec.enum) {
-                    var enumField = field;
-                    if (typeof field === 'object' && Object.keys(field).length > 0) {
-                        enumField = Object.keys(field)[0];
-                    }
-                    if (typeSpec.enum.indexOf(enumField) < 0) {
-                        errors.push(exceptions.ValidationError(
-                            util.format('%s behavior "%s" field must be one of [%s]',
-                                behaviorName, path, typeSpec.enum.join(', ')),
-                            { source: config }));
-                    }
+                else if (typeSpec.enum && !matchesEnum(field, typeSpec.enum)) {
+                    errors.push(exceptions.ValidationError(
+                        util.format('%s behavior "%s" field must be one of [%s]',
+                            behaviorName, path, typeSpec.enum.join(', ')),
+                        { source: config }));
                 }
 
                 addErrorsTo(errors, config, behaviorName, path, fieldSpec);
             }
         }
     });
+}
+
+function addWaitErrors (config, errors) {
+    if (!ofType(config.wait, 'number', 'string') || (typeof config.wait === 'number' && config.wait < 0)) {
+        errors.push(exceptions.ValidationError('"wait" value must be an integer greater than or equal to 0',
+            { source: config }));
+    }
+}
+
+function addRepeatErrors (config, errors) {
+    if (!ofType(config.repeat, 'number', 'string') || config.repeat <= 0) {
+        errors.push(exceptions.ValidationError('"repeat" value must be an integer greater than 0',
+            { source: config }));
+    }
 }
 
 function addCopyErrors (config, errors) {
