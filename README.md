@@ -1,8 +1,6 @@
 mountebank
 ==========
 
-[![Greenkeeper badge](https://badges.greenkeeper.io/bbyars/mountebank.svg)](https://greenkeeper.io/)
-
 mountebank is the first open source tool to provide cross-platform, multi-protocol test doubles over the wire.
 Just point your application to mountebank instead of the real dependency,
 and test like you would with traditional stubs and mocks.
@@ -77,6 +75,7 @@ you can contact me directly at brandon.byars@gmail.com.
 
 [![Coverage Status][coveralls-badge]][coveralls]
 [![Codacy Badge][codacy-badge]][codacy]
+[![Greenkeeper badge](greenkeeper-badge)](greenkeeper)
 
 |                       |Node Version |Ubuntu 12.04                            |CentOS 6.7                            |OS X Mavericks                           |Windows Server 2012                          |
 |-----------------------|:-----------:|:--------------------------------------:|:------------------------------------:|:---------------------------------------:|:-------------------------------------------:|
@@ -93,6 +92,8 @@ you can contact me directly at brandon.byars@gmail.com.
 [coveralls]: https://coveralls.io/r/bbyars/mountebank?branch=master
 [codacy-badge]: https://www.codacy.com/project/badge/c030a6aebe274e21b4ce11a74e01fa12
 [codacy]: https://www.codacy.com/public/brandonbyars/mountebank
+[greenkeeper-badge]: https://badges.greenkeeper.io/bbyars/mountebank.svg
+[greenkeeper]: https://greenkeeper.io/
 [travis-badge]: https://travis-ci.org/bbyars/mountebank.png
 [travis]: https://travis-ci.org/bbyars/mountebank
 [appveyor-badge]: https://ci.appveyor.com/api/projects/status/acfhg44px95s4pk5?svg=true
