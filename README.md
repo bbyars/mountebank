@@ -1,6 +1,8 @@
 mountebank
 ==========
 
+[![Greenkeeper badge](https://badges.greenkeeper.io/bbyars/mountebank.svg)](https://greenkeeper.io/)
+
 mountebank is the first open source tool to provide cross-platform, multi-protocol test doubles over the wire.
 Just point your application to mountebank instead of the real dependency,
 and test like you would with traditional stubs and mocks.
