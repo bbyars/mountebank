@@ -421,7 +421,7 @@ describe('behaviors', function () {
                 errors = behaviors.validate({ copy: [config] });
             assert.deepEqual(errors, [{
                 code: 'bad data',
-                message: 'copy behavior "from" field must have exactly one key per object',
+                message: 'copy behavior "from" field must have exactly one key',
                 source: config
             }]);
         });
@@ -435,7 +435,7 @@ describe('behaviors', function () {
                 errors = behaviors.validate({ copy: [config] });
             assert.deepEqual(errors, [{
                 code: 'bad data',
-                message: 'copy behavior "from" field must have exactly one key per object',
+                message: 'copy behavior "from" field must have exactly one key',
                 source: config
             }]);
         });

@@ -13,33 +13,34 @@ function defined (value) {
 
 function ofType (value) {
     var allowedTypes = Array.prototype.slice.call(arguments),
-        actualType = typeof value;
+        actualType = typeof value,
+        util = require('util');
 
     // remove value
     allowedTypes.shift();
 
+    // allow passing in array
+    if (util.isArray(allowedTypes[0])) {
+        allowedTypes = allowedTypes[0];
+    }
+
     return allowedTypes.indexOf(actualType) >= 0;
-}
-
-function missingRequiredFields (obj) {
-    var requiredFields = Array.prototype.slice.call(arguments),
-        actualFields = Object.keys(obj),
-        missingFields = [];
-
-    // remove obj
-    requiredFields.shift();
-
-    requiredFields.forEach(function (field) {
-        if (actualFields.indexOf(field) < 0) {
-            missingFields.push(field);
-        }
-    });
-    return missingFields;
 }
 
 function hasExactlyOneKey (obj) {
     var keys = Object.keys(obj);
     return keys.length === 1;
+}
+
+function navigate (config, path) {
+    if (path === '') {
+        return config;
+    }
+    else {
+        return path.split('.').reduce(function (field, fieldName) {
+            return field[fieldName];
+        }, config);
+    }
 }
 
 function addWaitErrors (config, errors) {
@@ -56,60 +57,90 @@ function addRepeatErrors (config, errors) {
     }
 }
 
-// Some of the following validation functions are shared between the copy and lookup behaviors
+function typeErrorMessageFor (spec) {
+    var util = require('util'),
+        spellings = { number: 'a', object: 'an', string: 'a', array: 'an' },
+        message = util.format('%s behavior "%s" field must be %s %s',
+            spec.behaviorName, spec.path, spellings[spec.allowedTypes[0]], spec.allowedTypes[0]);
 
-function addFromErrors (config, behaviorName, fieldPrefix, errors) {
-    var fieldName = fieldPrefix.length > 0 ? fieldPrefix + '.from' : 'from';
-
-    if (!defined(config.from)) {
-        return;
+    for (var i = 1; i < spec.allowedTypes.length; i += 1) {
+        message += util.format(' or %s %s', spellings[spec.allowedTypes[i]], spec.allowedTypes[i]);
     }
-    if (!ofType(config.from, 'string', 'object')) {
-        errors.push(exceptions.ValidationError(
-            behaviorName + ' behavior "' + fieldName + '" field must be a string or an object, representing the request field to select from',
-            { source: config }));
+    if (spec.additionalContext) {
+        message += ', representing ' + spec.additionalContext;
     }
-    else if (typeof config.from === 'object' && !hasExactlyOneKey(config.from)) {
-        errors.push(exceptions.ValidationError(behaviorName + ' behavior "' + fieldName + '" field must have exactly one key per object',
-            { source: config }));
-    }
+    return message;
 }
 
-function addIntoErrors (config, behaviorName, errors) {
-    if (!defined(config.into)) {
-        return;
-    }
-    if (!ofType(config.into, 'string')) {
-        errors.push(exceptions.ValidationError(
-            behaviorName + ' behavior "into" field must be a string, representing the token to replace in response fields',
-            { source: config }
-        ));
-    }
-}
-
-function addUsingErrors (config, behaviorName, fieldPrefix, errors) {
-    var fieldName = fieldPrefix.length > 0 ? fieldPrefix + '.using' : 'using';
-
-    if (!defined(config.using)) {
-        return;
-    }
-    if (!ofType(config.using, 'object')) {
-        errors.push(exceptions.ValidationError(
-            behaviorName + ' behavior "' + fieldName + '" field must be an object',
-            { source: config }));
+function pathFor (pathPrefix, fieldName) {
+    if (pathPrefix === '') {
+        return fieldName;
     }
     else {
-        missingRequiredFields(config.using, 'method', 'selector').forEach(function (field) {
-            errors.push(exceptions.ValidationError(
-                behaviorName + ' behavior "' + fieldName + '.' + field + '" field required',
-                { source: config }));
-        });
-        if (defined(config.using.method) && ['regex', 'xpath', 'jsonpath'].indexOf(config.using.method) < 0) {
-            errors.push(exceptions.ValidationError(
-                behaviorName + ' behavior "' + fieldName + '.method" field must be one of [regex, xpath, jsonpath]',
-                { source: config }));
-        }
+        return pathPrefix + '.' + fieldName;
     }
+}
+
+function nonMetadata (fieldName) {
+    return fieldName.indexOf('_') !== 0;
+}
+
+function addErrorsTo (errors, config, behaviorName, pathPrefix, spec) {
+    /* eslint-disable no-underscore-dangle */
+    Object.keys(spec).filter(nonMetadata).forEach(function (fieldName) {
+        /* eslint complexity: [2, 8] */
+        /* eslint max-depth: [2, 4] */
+        var util = require('util'),
+            fieldSpec = spec[fieldName],
+            path = pathFor(pathPrefix, fieldName),
+            field = navigate(config, path),
+            fieldType = typeof field;
+
+        if (fieldType === 'undefined') {
+            if (fieldSpec._required) {
+                errors.push(exceptions.ValidationError(
+                    util.format('%s behavior "%s" field required', behaviorName, path),
+                    { source: config }));
+            }
+        }
+        else {
+            var allowedTypes = Object.keys(fieldSpec._allowedTypes),
+                typeSpec = fieldSpec._allowedTypes[fieldType];
+
+            if (typeof typeSpec === 'undefined') {
+                errors.push(exceptions.ValidationError(
+                    typeErrorMessageFor({
+                        behaviorName: behaviorName,
+                        path: path,
+                        allowedTypes: allowedTypes,
+                        additionalContext: fieldSpec._additionalContext
+                    }),
+                    { source: config }));
+            }
+            else {
+                if (typeSpec.singleKeyOnly && !hasExactlyOneKey(field)) {
+                    errors.push(exceptions.ValidationError(
+                        util.format('%s behavior "%s" field must have exactly one key',
+                            behaviorName, path),
+                        { source: config }));
+                }
+                else if (typeSpec.enum) {
+                    var enumField = field;
+                    if (typeof field === 'object' && Object.keys(field).length > 0) {
+                        enumField = Object.keys(field)[0];
+                    }
+                    if (typeSpec.enum.indexOf(enumField) < 0) {
+                        errors.push(exceptions.ValidationError(
+                            util.format('%s behavior "%s" field must be one of [%s]',
+                                behaviorName, path, typeSpec.enum.join(', ')),
+                            { source: config }));
+                    }
+                }
+
+                addErrorsTo(errors, config, behaviorName, path, fieldSpec);
+            }
+        }
+    });
 }
 
 function addCopyErrors (config, errors) {
@@ -121,89 +152,34 @@ function addCopyErrors (config, errors) {
     }
     else {
         config.copy.forEach(function (copyConfig) {
-            missingRequiredFields(copyConfig, 'from', 'into', 'using').forEach(function (field) {
-                errors.push(exceptions.ValidationError('copy behavior "' + field + '" field required',
-                    { source: copyConfig }));
+            addErrorsTo(errors, copyConfig, 'copy', '', {
+                from: {
+                    _required: true,
+                    _allowedTypes: {
+                        string: {},
+                        object: { singleKeyOnly: true }
+                    },
+                    _additionalContext: 'the request field to select from'
+                },
+                into: {
+                    _required: true,
+                    _allowedTypes: { string: {} },
+                    _additionalContext: 'the token to replace in response fields'
+                },
+                using: {
+                    _required: true,
+                    _allowedTypes: { object: {} },
+                    method: {
+                        _required: true,
+                        _allowedTypes: { string: { enum: ['regex', 'xpath', 'jsonpath'] } }
+                    },
+                    selector: {
+                        _required: true,
+                        _allowedTypes: { string: {} }
+                    }
+                }
             });
-            addFromErrors(copyConfig, 'copy', '', errors);
-            addIntoErrors(copyConfig, 'copy', errors);
-            addUsingErrors(copyConfig, 'copy', '', errors);
         });
-    }
-}
-
-function addLookupFromDataSourceCSVPathErrors (config, errors) {
-    if (!defined(config.fromDataSource.csv.path)) {
-        return;
-    }
-    if (!ofType(config.fromDataSource.csv.path, 'string')) {
-        errors.push(exceptions.ValidationError('lookup behavior "fromDataSource.csv.path" field must be a string, representing the path to the CSV file',
-            { source: config }));
-    }
-}
-
-function addLookupFromDataSourceCSVKeyColumnErrors (config, errors) {
-    if (!defined(config.fromDataSource.csv.keyColumn)) {
-        return;
-    }
-    if (!ofType(config.fromDataSource.csv.keyColumn, 'string')) {
-        errors.push(exceptions.ValidationError('lookup behavior "fromDataSource.csv.keyColumn" field must be a string, representing the column header to select against the "key" field',
-            { source: config }));
-    }
-}
-
-function addLookupKeyErrors (config, errors) {
-    if (!defined(config.key)) {
-        return;
-    }
-    if (!ofType(config.key, 'Object')) {
-        missingRequiredFields(config.key, 'from', 'using').forEach(function (field) {
-            errors.push(exceptions.ValidationError('lookup behavior "key.' + field + '" field required',
-                { source: config.key }));
-        });
-    }
-    addUsingErrors(config.key, 'lookup', 'key', errors);
-    addFromErrors(config.key, 'lookup', 'key', errors);
-}
-
-function addLookupFromDataSourceCSVErrors (config, errors) {
-    if (!ofType(config.fromDataSource.csv, 'object')) {
-        errors.push(exceptions.ValidationError('lookup behavior "fromDataSource.csv" field must be an object',
-            { source: config }));
-        return;
-    }
-
-    missingRequiredFields(config.fromDataSource.csv, 'path', 'keyColumn').forEach(function (field) {
-        errors.push(exceptions.ValidationError('lookup behavior "fromDataSource.csv.' + field + '" field required',
-            { source: config }));
-    });
-    addLookupFromDataSourceCSVPathErrors(config, errors);
-    addLookupFromDataSourceCSVKeyColumnErrors(config, errors);
-}
-
-function addLookupFromDataSourceErrors (config, errors) {
-    if (!defined(config.fromDataSource)) {
-        return;
-    }
-    if (!ofType(config.fromDataSource, 'object')) {
-        errors.push(exceptions.ValidationError(
-            'lookup behavior "fromDataSource" field must be an object',
-            { source: config }));
-        return;
-    }
-
-    if (!hasExactlyOneKey(config.fromDataSource)) {
-        errors.push(exceptions.ValidationError(
-            'lookup behavior "fromDataSource" field must have exactly one key',
-            { source: config }));
-    }
-    if (!defined(config.fromDataSource.csv)) {
-        errors.push(exceptions.ValidationError(
-            'lookup behavior "fromDataSource" key must be one of [csv] (other data sources may be supported in the future)',
-            { source: config }));
-    }
-    else {
-        addLookupFromDataSourceCSVErrors(config, errors);
     }
 }
 
@@ -216,13 +192,51 @@ function addLookupErrors (config, errors) {
     }
     else {
         config.lookup.forEach(function (lookupConfig) {
-            missingRequiredFields(lookupConfig, 'key', 'fromDataSource', 'into').forEach(function (field) {
-                errors.push(exceptions.ValidationError('lookup behavior "' + field + '" field required',
-                    { source: lookupConfig }));
+            addErrorsTo(errors, lookupConfig, 'lookup', '', {
+                key: {
+                    _required: true,
+                    _allowedTypes: { object: {} },
+                    from: {
+                        _required: true,
+                        _allowedTypes: { string: {}, object: {} }
+                    },
+                    using: {
+                        _required: true,
+                        _allowedTypes: { object: {} },
+                        method: {
+                            _required: true,
+                            _allowedTypes: { string: { enum: ['regex', 'xpath', 'jsonpath'] } }
+                        },
+                        selector: {
+                            _required: true,
+                            _allowedTypes: { string: {} }
+                        }
+                    }
+                },
+                fromDataSource: {
+                    _required: true,
+                    _allowedTypes: { object: { singleKeyOnly: true, enum: ['csv'] } }, // fix
+                    csv: {
+                        _required: false,
+                        _allowedTypes: { object: {} },
+                        path: {
+                            _required: true,
+                            _allowedTypes: { string: {} },
+                            _additionalContext: 'the path to the CSV file'
+                        },
+                        keyColumn: {
+                            _required: true,
+                            _allowedTypes: { string: {} },
+                            _additionalContext: 'the column header to select against the "key" field'
+                        }
+                    }
+                },
+                into: {
+                    _required: true,
+                    _allowedTypes: { string: {} },
+                    _additionalContext: 'the token to replace in response fields'
+                }
             });
-            addLookupKeyErrors(lookupConfig, errors);
-            addLookupFromDataSourceErrors(lookupConfig, errors);
-            addIntoErrors(lookupConfig, 'lookup', errors);
         });
     }
 }
