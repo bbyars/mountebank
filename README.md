@@ -73,9 +73,10 @@ you can contact me directly at brandon.byars@gmail.com.
 
 ## Build Status
 
-[![Coverage Status][coveralls-badge]][coveralls]
+[![Test Coverage][codeclimate-coverage-badge][codeclimate-coverage]
 [![Codacy Badge][codacy-badge]][codacy]
-[![Greenkeeper badge](greenkeeper-badge)](greenkeeper)
+[![Code Climate][codeclimate-badge][codeclimate]
+[![Greenkeeper badge][greenkeeper-badge][greenkeeper]
 
 |                       |Node Version |Ubuntu 12.04                            |CentOS 6.7                            |OS X Mavericks                           |Windows Server 2012                          |
 |-----------------------|:-----------:|:--------------------------------------:|:------------------------------------:|:---------------------------------------:|:-------------------------------------------:|
@@ -88,6 +89,10 @@ you can contact me directly at brandon.byars@gmail.com.
 
 [npm-badge]: https://nodei.co/npm/mountebank.png?downloads=true&downloadRank=true&stars=true
 [npm]: https://www.npmjs.com/package/mountebank
+[codeclimate-badge]: https://codeclimate.com/github/bbyars/mountebank/badges/gpa.svg
+[codeclimate]: https://codeclimate.com/github/bbyars/mountebank
+[codeclimate-coverage-badge]: https://codeclimate.com/github/bbyars/mountebank/badges/coverage.svg
+[codeclimate-covarage]: https://codeclimate.com/github/bbyars/mountebank/coverage
 [coveralls-badge]: https://coveralls.io/repos/bbyars/mountebank/badge.png?branch=master
 [coveralls]: https://coveralls.io/r/bbyars/mountebank?branch=master
 [codacy-badge]: https://www.codacy.com/project/badge/c030a6aebe274e21b4ce11a74e01fa12
