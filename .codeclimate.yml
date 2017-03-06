@@ -17,12 +17,17 @@ engines:
     enabled: true
   nodesecurity:
     enabled: true
+  shellcheck:
+    enabled: true
 ratings:
   paths:
   - Gemfile.lock
   - "**.js"
   - "**.css"
   - "**.md"
+  - "bin/mb"
+  - "build"
+  - "scripts/**/*"
 exclude_paths:
 - test/
 - functionalTest/
