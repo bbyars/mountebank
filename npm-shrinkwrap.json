@@ -465,7 +465,7 @@
       "version": "2.0.2"
     },
     "etag": {
-      "version": "1.7.0"
+      "version": "1.8.0"
     },
     "event-emitter": {
       "version": "0.3.4"
@@ -480,7 +480,18 @@
       "version": "1.1.1"
     },
     "express": {
-      "version": "4.14.1"
+      "version": "4.15.2",
+      "dependencies": {
+        "debug": {
+          "version": "2.6.1"
+        },
+        "ms": {
+          "version": "0.7.2"
+        },
+        "qs": {
+          "version": "6.4.0"
+        }
+      }
     },
     "extend": {
       "version": "3.0.0"
@@ -504,7 +515,15 @@
       "version": "0.0.2"
     },
     "finalhandler": {
-      "version": "0.5.1"
+      "version": "1.0.0",
+      "dependencies": {
+        "debug": {
+          "version": "2.6.1"
+        },
+        "ms": {
+          "version": "0.7.2"
+        }
+      }
     },
     "find-up": {
       "version": "1.1.2"
@@ -533,7 +552,7 @@
       "version": "0.1.0"
     },
     "fresh": {
-      "version": "0.3.0"
+      "version": "0.5.0"
     },
     "fs.realpath": {
       "version": "1.0.0"
@@ -671,7 +690,7 @@
       "version": "1.0.1"
     },
     "http-errors": {
-      "version": "1.5.1"
+      "version": "1.6.1"
     },
     "http-proxy-agent": {
       "version": "1.0.0"
@@ -1212,21 +1231,24 @@
       "version": "5.0.3"
     },
     "send": {
-      "version": "0.14.2",
+      "version": "0.15.1",
       "dependencies": {
+        "debug": {
+          "version": "2.6.1"
+        },
         "ms": {
           "version": "0.7.2"
         }
       }
     },
     "serve-static": {
-      "version": "1.11.2"
+      "version": "1.12.1"
     },
     "set-blocking": {
       "version": "2.0.0"
     },
     "setprototypeof": {
-      "version": "1.0.2"
+      "version": "1.0.3"
     },
     "shelljs": {
       "version": "0.7.6"
@@ -1566,10 +1588,10 @@
       "version": "2.0.0"
     },
     "yargs": {
-      "version": "6.6.0"
+      "version": "7.0.1"
     },
     "yargs-parser": {
-      "version": "4.2.1"
+      "version": "5.0.0"
     }
   }
 }
