@@ -137,7 +137,7 @@ Use promises.  mountebank ships with [q](https://github.com/kriskowal/q) in the 
 
 In the early days, the `mb` process started up quite quickly. Years later, that was no longer true,
 but it was like boiling a frog, the small increase that came from various changes were imperceptible
-at the time. The root cause adding package dependencies - I had a pattern of making the `require`
+at the time. The root cause was adding package dependencies - I had a pattern of making the `require`
 calls at the top of each module. Since that was true for internal modules as well, the entire app,
 including all dependencies, was loaded and parsed at startup, and each new dependency increased the
 startup time.
