@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+
 'use strict';
 
 var mountebank = require('../src/mountebank'),
@@ -224,11 +225,35 @@ function serverAt (options) {
         }).done();
     }
 
+    function replay () {
+        options.removeProxies = true;
+
+        getConfig(options).then(function (response) {
+            if (response.statusCode !== 200) {
+                console.error('Received status code ' + response.statusCode);
+                console.error(response.body);
+                process.exit(1);
+            }
+            else {
+                putConfig(options, response.body);
+            }
+        }).catch(function (err) {
+            if (err.code === 'ECONNREFUSED') {
+                console.error('No mb process running on port ' + options.port);
+            }
+            else {
+                console.error(err);
+            }
+            process.exit(1);
+        }).done();
+    }
+
     return {
         start: start,
         stop: function () { stop().done(function () { process.exit(); }); },
         restart: restart,
-        save: save
+        save: save,
+        replay: replay
     };
 }
 
@@ -356,6 +381,9 @@ try {
             break;
         case 'save':
             server.save();
+            break;
+        case 'replay':
+            server.replay();
             break;
         case 'help':
             yargs.showHelp();

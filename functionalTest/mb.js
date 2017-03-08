@@ -98,9 +98,9 @@ function create (port) {
         });
     }
 
-    function save (args) {
+    function execCommand (command, args) {
         var deferred = Q.defer(),
-            mbArgs = ['save', '--port', port].concat(args || []),
+            mbArgs = [command, '--port', port].concat(args || []),
             mb,
             stdout = '',
             stderr = '';
@@ -118,6 +118,14 @@ function create (port) {
         });
 
         return deferred.promise;
+    }
+
+    function save (args) {
+        return execCommand('save', args);
+    }
+
+    function replay (args) {
+        return execCommand('replay', args);
     }
 
     // After trial and error, I discovered that we have to set
@@ -139,7 +147,8 @@ function create (port) {
         stop: stop,
         save: save,
         get: get,
-        post: post
+        post: post,
+        replay: replay
     };
 }
 
