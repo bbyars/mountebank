@@ -5,22 +5,6 @@
  * @module
  */
 
-function headerNameFor (headerName, headers) {
-    var result = Object.keys(headers).find(function (header) {
-        return header.toLowerCase() === headerName.toLowerCase();
-    });
-    if (typeof result === 'undefined') {
-        result = headerName;
-    }
-    return result;
-}
-
-function hasHeader (headerName, headers) {
-    return Object.keys(headers).some(function (header) {
-        return header.toLowerCase() === headerName.toLowerCase();
-    });
-}
-
 /**
  * Sets up the creation method for the given protocol
  * @param {string} protocolName - http or https
@@ -39,7 +23,8 @@ function setup (protocolName, createBaseServer) {
 
         function postProcess (stubResponse) {
             /* eslint complexity: 0 */
-            var defaultResponse = options.defaultResponse || {},
+            var headersHelper = require('./headersHelper'),
+                defaultResponse = options.defaultResponse || {},
                 defaultHeaders = defaultResponse.headers || {},
                 response = {
                     statusCode: stubResponse.statusCode || defaultResponse.statusCode || 200,
@@ -55,18 +40,19 @@ function setup (protocolName, createBaseServer) {
             }
 
             // Allow overriding connection header by explicitly passing it in to the defaultResponse field only
-            if (!hasHeader('Connection', defaultHeaders)) {
+            if (!headersHelper.hasHeader('Connection', defaultHeaders)) {
                 // We don't want to use keepalive connections, because a test case
                 // may shutdown the stub, which prevents new connections for
                 // the port, but that won't prevent the system under test
                 // from reusing an existing TCP connection after the stub
                 // has shutdown, causing difficult to track down bugs when
                 // multiple tests are run.
-                response.headers[headerNameFor('Connection', response.headers)] = 'close';
+                response.headers[headersHelper.headerNameFor('Connection', response.headers)] = 'close';
             }
 
-            if (hasHeader('Content-Length', response.headers)) {
-                response.headers[headerNameFor('Content-Length', response.headers)] = Buffer.byteLength(response.body, encoding);
+            if (headersHelper.hasHeader('Content-Length', response.headers)) {
+                response.headers[headersHelper.headerNameFor('Content-Length', response.headers)] =
+                    Buffer.byteLength(response.body, encoding);
             }
             return response;
         }

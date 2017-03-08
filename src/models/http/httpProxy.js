@@ -7,12 +7,6 @@
 
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 
-function hasHeader (headerName, headers) {
-    return Object.keys(headers).some(function (header) {
-        return header.toLowerCase() === headerName.toLowerCase();
-    });
-}
-
 /**
  * Creates the proxy
  * @param {Object} logger - The logger
@@ -51,6 +45,7 @@ function create (logger) {
 
     function getProxyRequest (baseUrl, originalRequest, proxyOptions) {
         var helpers = require('../../util/helpers'),
+            headersHelper = require('./headersHelper'),
             url = require('url'),
             parts = url.parse(baseUrl),
             protocol = parts.protocol === 'https:' ? require('https') : require('http'),
@@ -73,8 +68,8 @@ function create (logger) {
 
         // Avoid implicit chunked encoding (issue #132)
         if (originalRequest.body &&
-            !hasHeader('Transfer-Encoding', originalRequest.headers) &&
-            !hasHeader('Content-Length', originalRequest.headers)) {
+            !headersHelper.hasHeader('Transfer-Encoding', originalRequest.headers) &&
+            !headersHelper.hasHeader('Content-Length', originalRequest.headers)) {
             options.headers['Content-Length'] = Buffer.byteLength(originalRequest.body);
         }
 
@@ -102,24 +97,6 @@ function create (logger) {
         });
     }
 
-    function add (current, value) {
-        return Array.isArray(current) ? current.concat(value) : [current].concat(value);
-    }
-
-    function arrayifyIfExists (current, value) {
-        return current ? add(current, value) : value;
-    }
-
-    function headersFor (rawHeaders) {
-        var result = {};
-        for (var i = 0; i < rawHeaders.length; i += 2) {
-            var name = rawHeaders[i];
-            var value = rawHeaders[i + 1];
-            result[name] = arrayifyIfExists(result[name], value);
-        }
-        return result;
-    }
-
     function proxy (proxiedRequest) {
         var Q = require('q'),
             deferred = Q.defer(),
@@ -138,9 +115,10 @@ function create (logger) {
                 var body = Buffer.concat(packets),
                     mode = isBinaryResponse(response.headers) ? 'binary' : 'text',
                     encoding = mode === 'binary' ? 'base64' : 'utf8',
+                    headersHelper = require('./headersHelper'),
                     stubResponse = {
                         statusCode: response.statusCode,
-                        headers: headersFor(response.rawHeaders),
+                        headers: headersHelper.headersFor(response.rawHeaders),
                         body: body.toString(encoding),
                         _mode: mode,
                         _proxyResponseTime: new Date() - start
