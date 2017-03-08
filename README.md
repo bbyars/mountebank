@@ -76,6 +76,7 @@ you can contact me directly at brandon.byars@gmail.com.
 [![Codacy Badge][codacy-badge]][codacy]
 [![Code Climate][codeclimate-badge]][codeclimate]
 [![Greenkeeper badge][greenkeeper-badge]][greenkeeper]
+[![bitHound Overall Score][bithound-badge]][bithound]
 
 |                       |Node Version |Ubuntu 12.04                            |CentOS 6.7                            |OS X Mavericks                           |Windows Server 2012                          |
 |-----------------------|:-----------:|:--------------------------------------:|:------------------------------------:|:---------------------------------------:|:-------------------------------------------:|
@@ -88,6 +89,8 @@ you can contact me directly at brandon.byars@gmail.com.
 
 [npm-badge]: https://nodei.co/npm/mountebank.png?downloads=true&downloadRank=true&stars=true
 [npm]: https://www.npmjs.com/package/mountebank
+[bithound-badge]: https://www.bithound.io/github/bbyars/mountebank/badges/score.svg
+[bithound]: https://www.bithound.io/github/bbyars/mountebank
 [codeclimate-badge]: https://codeclimate.com/github/bbyars/mountebank/badges/gpa.svg
 [codeclimate]: https://codeclimate.com/github/bbyars/mountebank
 [codeclimate-coverage-badge]: https://codeclimate.com/github/bbyars/mountebank/badges/coverage.svg
