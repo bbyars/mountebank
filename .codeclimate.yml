@@ -22,14 +22,9 @@ engines:
 ratings:
   paths:
   - Gemfile.lock
-  - "**.js"
+  - "src/**.js"
   - "**.css"
   - "**.md"
   - "bin/mb"
   - "build"
   - "scripts/**/*"
-exclude_paths:
-- test/
-- functionalTest/
-- performanceTest/
-
