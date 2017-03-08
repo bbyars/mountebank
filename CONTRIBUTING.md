@@ -270,6 +270,23 @@ as I reasonably can.
 Every successful build that isn't a pull request deploys to a [test site](http://mountebank-dev.herokuapp.com/) that will
 have a link to the artifacts for that prerelease version.
 
+## Releasing mountebank
+
+Very few of you will have to worry about this, but in case you're curious, here's the process. Travis.ci does most
+of the heavy lifting.
+
+* Make sure the previous builds pass across all operating systems, install types, and node versions
+* Review major / minor version.
+* Update the releases.json with the latest release
+* Add `views/releases/vx.x.x` with the release notes. Make sure to use absolute URLs so they work in aggregators, etc
+* Make sure all contributors have been added to `package.json`
+* commit
+* push
+* wait for the build to pass
+* `git tag -a vXX.YY.ZZ -m 'vXX.YY.ZZ release'`
+* `git push --tags`
+* update version in package.json to avoid accidental version overwrite for next version
+
 ## Getting Help
 
 The source documentation is always available at [Firebase](https://mountebank.firebaseapp.com/).
