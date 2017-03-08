@@ -30,6 +30,70 @@ var fromSchema = {
             _required: true,
             _allowedTypes: { string: {} }
         }
+    },
+    validations = {
+        wait: {
+            wait: {
+                _required: true,
+                _allowedTypes: { string: {}, number: { nonNegativeInteger: true } }
+            }
+        },
+        repeat: {
+            repeat: {
+                _required: true,
+                _allowedTypes: { number: { positiveInteger: true } }
+            }
+        },
+        copy: {
+            copy: [{
+                from: fromSchema,
+                into: intoSchema,
+                using: usingSchema
+            }]
+        },
+        lookup: {
+            lookup: [{
+                key: {
+                    _required: true,
+                    _allowedTypes: { object: {} },
+                    from: fromSchema,
+                    using: usingSchema
+                },
+                fromDataSource: {
+                    _required: true,
+                    _allowedTypes: { object: { singleKeyOnly: true, enum: ['csv'] } },
+                    csv: {
+                        _required: false,
+                        _allowedTypes: { object: {} },
+                        path: {
+                            _required: true,
+                            _allowedTypes: { string: {} },
+                            _additionalContext: 'the path to the CSV file'
+                        },
+                        keyColumn: {
+                            _required: true,
+                            _allowedTypes: { string: {} },
+                            _additionalContext: 'the column header to select against the "key" field'
+                        }
+                    }
+                },
+                into: intoSchema
+            }]
+        },
+        shellTransform: {
+            shellTransform: {
+                _required: true,
+                _allowedTypes: { string: {} },
+                _additionalContext: 'the path to a command line application'
+            }
+        },
+        decorate: {
+            decorate: {
+                _required: true,
+                _allowedTypes: { string: {} },
+                _additionalContext: 'a JavaScript function'
+            }
+        }
     };
 
 function defined (value) {
@@ -42,80 +106,8 @@ function defined (value) {
  * @returns {Object} The array of errors
  */
 function validate (config) {
-    var errors = [],
-        validator = require('./behaviorsValidator').create(),
-        validations = {
-            wait: {
-                wait: {
-                    _required: true,
-                    _allowedTypes: { string: {}, number: { nonNegativeInteger: true } }
-                }
-            },
-            repeat: {
-                repeat: {
-                    _required: true,
-                    _allowedTypes: { number: { positiveInteger: true } }
-                }
-            },
-            copy: {
-                copy: [{
-                    from: fromSchema,
-                    into: intoSchema,
-                    using: usingSchema
-                }]
-            },
-            lookup: {
-                lookup: [{
-                    key: {
-                        _required: true,
-                        _allowedTypes: { object: {} },
-                        from: fromSchema,
-                        using: usingSchema
-                    },
-                    fromDataSource: {
-                        _required: true,
-                        _allowedTypes: { object: { singleKeyOnly: true, enum: ['csv'] } },
-                        csv: {
-                            _required: false,
-                            _allowedTypes: { object: {} },
-                            path: {
-                                _required: true,
-                                _allowedTypes: { string: {} },
-                                _additionalContext: 'the path to the CSV file'
-                            },
-                            keyColumn: {
-                                _required: true,
-                                _allowedTypes: { string: {} },
-                                _additionalContext: 'the column header to select against the "key" field'
-                            }
-                        }
-                    },
-                    into: intoSchema
-                }]
-            },
-            shellTransform: {
-                shellTransform: {
-                    _required: true,
-                    _allowedTypes: { string: {} },
-                    _additionalContext: 'the path to a command line application'
-                }
-            },
-            decorate: {
-                decorate: {
-                    _required: true,
-                    _allowedTypes: { string: {} },
-                    _additionalContext: 'a JavaScript function'
-                }
-            }
-        };
-
-    Object.keys(config || {}).forEach(function (key) {
-        if (validations[key]) {
-            validator.addErrorsTo(errors, config, key, '', validations[key]);
-        }
-    });
-
-    return errors;
+    var validator = require('./behaviorsValidator').create();
+    return validator.validate(config, validations);
 }
 
 /**

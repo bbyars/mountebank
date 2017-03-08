@@ -19,17 +19,16 @@ function create () {
         }
     }
 
-    function typeErrorMessageFor (spec) {
+    function typeErrorMessageFor (allowedTypes, additionalContext) {
         var util = require('util'),
-            spellings = { number: 'a', object: 'an', string: 'a', array: 'an' },
-            message = util.format('%s behavior "%s" field must be %s %s',
-                spec.behaviorName, spec.path, spellings[spec.allowedTypes[0]], spec.allowedTypes[0]);
+            spellings = { number: 'a', object: 'an', string: 'a' },
+            message = util.format('must be %s %s', spellings[allowedTypes[0]], allowedTypes[0]);
 
-        for (var i = 1; i < spec.allowedTypes.length; i += 1) {
-            message += util.format(' or %s %s', spellings[spec.allowedTypes[i]], spec.allowedTypes[i]);
+        for (var i = 1; i < allowedTypes.length; i += 1) {
+            message += util.format(' or %s %s', spellings[allowedTypes[i]], allowedTypes[i]);
         }
-        if (spec.additionalContext) {
-            message += ', representing ' + spec.additionalContext;
+        if (additionalContext) {
+            message += ', representing ' + additionalContext;
         }
         return message;
     }
@@ -61,82 +60,103 @@ function create () {
         return enumSpec.indexOf(enumFieldFor(field)) >= 0;
     }
 
-    function addErrorsTo (errors, config, behaviorName, pathPrefix, spec) {
+    function addMissingFieldError (fieldSpec, path, addErrorFn) {
         /* eslint-disable no-underscore-dangle */
-        /* eslint complexity: [2, 10] */
+        if (fieldSpec._required) {
+            addErrorFn(path, 'required');
+        }
+    }
+
+    function addArrayErrors (fieldSpec, path, field, addErrorFn) {
+        var util = require('util');
+
+        if (!util.isArray(field)) {
+            addErrorFn(path, 'must be an array');
+        }
+        else {
+            field.forEach(function (subConfig) {
+                // Scope error message to array element instead of entire array
+                var newAddErrorFn = function (fieldName, message) {
+                    return addErrorFn(fieldName, message, subConfig);
+                };
+                addErrorsFor(subConfig, '', fieldSpec[0], newAddErrorFn);
+            });
+        }
+    }
+
+    function addTypeErrors (fieldSpec, path, field, config, addErrorFn) {
+        var util = require('util'),
+            fieldType = typeof field,
+            allowedTypes = Object.keys(fieldSpec._allowedTypes),
+            typeSpec = fieldSpec._allowedTypes[fieldType];
+
+        if (typeof typeSpec === 'undefined') {
+            addErrorFn(path, typeErrorMessageFor(allowedTypes, fieldSpec._additionalContext));
+        }
+        else {
+            if (typeSpec.singleKeyOnly && !hasExactlyOneKey(field)) {
+                addErrorFn(path, 'must have exactly one key');
+            }
+            else if (typeSpec.enum && !matchesEnum(field, typeSpec.enum)) {
+                addErrorFn(path, util.format('must be one of [%s]', typeSpec.enum.join(', ')));
+            }
+            else if (typeSpec.nonNegativeInteger && field < 0) {
+                addErrorFn(path, 'must be an integer greater than or equal to 0');
+            }
+            else if (typeSpec.positiveInteger && field <= 0) {
+                addErrorFn(path, 'must be an integer greater than 0');
+            }
+
+            addErrorsFor(config, path, fieldSpec, addErrorFn);
+        }
+    }
+
+    function addErrorsFor (config, pathPrefix, spec, addErrorFn) {
         Object.keys(spec).filter(nonMetadata).forEach(function (fieldName) {
             var util = require('util'),
                 fieldSpec = spec[fieldName],
                 path = pathFor(pathPrefix, fieldName),
-                field = navigate(config, path),
-                fieldType = typeof field;
+                field = navigate(config, path);
 
-            if (fieldType === 'undefined') {
-                if (fieldSpec._required) {
-                    errors.push(exceptions.ValidationError(
-                        util.format('%s behavior "%s" field required', behaviorName, path),
-                        { source: config }));
-                }
+            if (typeof field === 'undefined') {
+                addMissingFieldError(fieldSpec, path, addErrorFn);
             }
             else if (util.isArray(fieldSpec)) {
-                if (!util.isArray(field)) {
-                    errors.push(exceptions.ValidationError(
-                        util.format('%s behavior "%s" field must be an array', behaviorName, path),
-                        { source: config }));
-                }
-                else {
-                    field.forEach(function (subConfig) {
-                        addErrorsTo(errors, subConfig, behaviorName, '', fieldSpec[0]);
-                    });
-                }
+                addArrayErrors(fieldSpec, path, field, addErrorFn);
             }
             else {
-                var allowedTypes = Object.keys(fieldSpec._allowedTypes),
-                    typeSpec = fieldSpec._allowedTypes[fieldType];
-
-                if (typeof typeSpec === 'undefined') {
-                    errors.push(exceptions.ValidationError(
-                        typeErrorMessageFor({
-                            behaviorName: behaviorName,
-                            path: path,
-                            allowedTypes: allowedTypes,
-                            additionalContext: fieldSpec._additionalContext
-                        }),
-                        { source: config }));
-                }
-                else {
-                    if (typeSpec.singleKeyOnly && !hasExactlyOneKey(field)) {
-                        errors.push(exceptions.ValidationError(
-                            util.format('%s behavior "%s" field must have exactly one key', behaviorName, path),
-                            { source: config }));
-                    }
-                    else if (typeSpec.enum && !matchesEnum(field, typeSpec.enum)) {
-                        errors.push(exceptions.ValidationError(
-                            util.format('%s behavior "%s" field must be one of [%s]',
-                                behaviorName, path, typeSpec.enum.join(', ')),
-                            { source: config }));
-                    }
-                    else if (typeSpec.nonNegativeInteger && field < 0) {
-                        errors.push(exceptions.ValidationError(
-                            util.format('%s behavior "%s" field must be an integer greater than or equal to 0',
-                                behaviorName, path),
-                            { source: config }));
-                    }
-                    else if (typeSpec.positiveInteger && field <= 0) {
-                        errors.push(exceptions.ValidationError(
-                            util.format('%s behavior "%s" field must be an integer greater than 0',
-                                behaviorName, path),
-                            { source: config }));
-                    }
-
-                    addErrorsTo(errors, config, behaviorName, path, fieldSpec);
-                }
+                addTypeErrors(fieldSpec, path, field, config, addErrorFn);
             }
         });
     }
 
+    /**
+     * Validates the behavior configuration and returns all errors
+     * @param {Object} config - The behavior configuration
+     * @param {Object} validationSpec - the specification to validate against
+     * @returns {Object} The array of errors
+     */
+    function validate (config, validationSpec) {
+        var errors = [];
+
+        Object.keys(config || {}).forEach(function (key) {
+            var util = require('util'),
+                addErrorFn = function (field, message, subConfig) {
+                    errors.push(exceptions.ValidationError(
+                        util.format('%s behavior "%s" field %s', key, field, message),
+                        { source: subConfig || config }));
+                };
+
+            if (validationSpec[key]) {
+                addErrorsFor(config, '', validationSpec[key], addErrorFn);
+            }
+        });
+
+        return errors;
+    }
+
     return {
-        addErrorsTo: addErrorsTo
+        validate: validate
     };
 }
 
