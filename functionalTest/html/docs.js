@@ -1,6 +1,6 @@
 'use strict';
 
-var api = require('../api/api'),
+var api = require('../api/api').create(),
     jsdom = require('jsdom'),
     Q = require('q');
 

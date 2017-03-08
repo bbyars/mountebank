@@ -1,7 +1,7 @@
 'use strict';
 
 var assert = require('assert'),
-    api = require('./api'),
+    api = require('./api').create(),
     promiseIt = require('../testHelpers').promiseIt;
 
 describe('GET /', function () {

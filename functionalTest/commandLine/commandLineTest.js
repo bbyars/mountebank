@@ -1,7 +1,7 @@
 'use strict';
 
 var assert = require('assert'),
-    api = require('../api/api'),
+    api = require('../api/api').create(),
     port = api.port + 1,
     mb = require('../mb').create(port),
     path = require('path'),

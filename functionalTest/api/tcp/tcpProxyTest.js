@@ -2,7 +2,7 @@
 
 var assert = require('assert'),
     TcpProxy = require('../../../src/models/tcp/tcpProxy'),
-    api = require('../api'),
+    api = require('../api').create(),
     promiseIt = require('../../testHelpers').promiseIt,
     port = api.port + 1,
     isWindows = require('os').platform().indexOf('win') === 0,

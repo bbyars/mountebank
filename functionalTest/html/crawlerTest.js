@@ -2,7 +2,7 @@
 
 if (process.env.MB_AIRPLANE_MODE !== 'true' && process.env.MB_RUN_WEB_TESTS === 'true') {
     var assert = require('assert'),
-        api = require('../api/api'),
+        api = require('../api/api').create(),
         crawler = require('./crawler'),
         promiseIt = require('../testHelpers').promiseIt,
         expectedContentType = function (contentType) {

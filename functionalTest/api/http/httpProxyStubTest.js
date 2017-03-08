@@ -3,7 +3,7 @@
 var assert = require('assert'),
     fs = require('fs'),
     util = require('util'),
-    api = require('../api'),
+    api = require('../api').create(),
     client = require('./baseHttpClient').create('http'),
     promiseIt = require('../../testHelpers').promiseIt,
     port = api.port + 1,

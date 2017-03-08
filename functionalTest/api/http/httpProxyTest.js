@@ -2,7 +2,7 @@
 
 var assert = require('assert'),
     HttpProxy = require('../../../src/models/http/httpProxy'),
-    api = require('../api'),
+    api = require('../api').create(),
     promiseIt = require('../../testHelpers').promiseIt,
     port = api.port + 1,
     timeout = parseInt(process.env.MB_SLOW_TEST_TIMEOUT || 3000),

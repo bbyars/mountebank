@@ -2,7 +2,7 @@
 
 var assert = require('assert'),
     promiseIt = require('../testHelpers').promiseIt,
-    api = require('../api/api'),
+    api = require('../api/api').create(),
     httpClient = require('../api/http/baseHttpClient').create('http'),
     xpath = require('xpath'),
     DOMParser = require('xmldom').DOMParser;

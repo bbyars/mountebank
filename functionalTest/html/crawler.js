@@ -1,7 +1,7 @@
 'use strict';
 
 var jsdom = require('jsdom'),
-    api = require('../api/api'),
+    api = require('../api/api').create(),
     Q = require('q'),
     url = require('url'),
     httpClient = require('../api/http/baseHttpClient').create('http'),

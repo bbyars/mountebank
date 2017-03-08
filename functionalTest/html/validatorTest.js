@@ -2,7 +2,7 @@
 
 var assert = require('assert'),
     w3cjs = require('w3cjs'),
-    api = require('../api/api'),
+    api = require('../api/api').create(),
     Q = require('q'),
     httpClient = require('../api/http/baseHttpClient').create('http'),
     currentVersion = require('../../package.json').version,

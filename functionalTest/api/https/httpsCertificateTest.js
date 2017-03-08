@@ -1,7 +1,7 @@
 'use strict';
 
 var assert = require('assert'),
-    api = require('../api'),
+    api = require('../api').create(),
     promiseIt = require('../../testHelpers').promiseIt,
     port = api.port + 1,
     timeout = parseInt(process.env.MB_SLOW_TEST_TIMEOUT || 4000),
