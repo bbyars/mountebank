@@ -16,18 +16,16 @@
 function create (protocols, imposters, Imposter, logger) {
     var exceptions = require('../util/errors');
 
+    function defined (obj) {
+        return typeof obj !== 'undefined';
+    }
+
     function queryIsFalse (query, key) {
-        if (query[key] === undefined) {
-            return true;
-        }
-        return query[key].toLowerCase() !== 'false';
+        return !defined(query[key]) || query[key].toLowerCase() !== 'false';
     }
 
     function queryBoolean (query, key) {
-        if (query[key] === undefined) {
-            return false;
-        }
-        return query[key].toLowerCase() === 'true';
+        return defined(query[key]) && query[key].toLowerCase() === 'true';
     }
 
     function deleteAllImposters () {
@@ -88,6 +86,17 @@ function create (protocols, imposters, Imposter, logger) {
         response.send({ errors: [error] });
     }
 
+    function getJSON (options) {
+        return Object.keys(imposters).reduce(function (accumulator, id) {
+            return accumulator.concat(imposters[id].toJSON(options));
+        }, []);
+    }
+
+    function requestDetails (request) {
+        var helpers = require('../util/helpers');
+        return helpers.socketName(request.socket) + ' => ' + JSON.stringify(request.body);
+    }
+
     /**
      * The function responding to GET /imposters
      * @memberOf module:controllers/impostersController#
@@ -103,19 +112,12 @@ function create (protocols, imposters, Imposter, logger) {
                         replayable: queryBoolean(query, 'replayable'),
                         removeProxies: queryBoolean(query, 'removeProxies'),
                         list: !(queryBoolean(query, 'replayable') || queryBoolean(query, 'removeProxies'))
-                    },
-                    result = Object.keys(imposters).reduce(function (accumulator, id) {
-                        return accumulator.concat(imposters[id].toJSON(options));
-                    }, []);
+                    };
 
-                response.send({ imposters: result });
+                response.send({ imposters: getJSON(options) });
             },
             html: function () {
-                var result = Object.keys(imposters).reduce(function (accumulator, id) {
-                    return accumulator.concat(imposters[id].toJSON());
-                }, []);
-
-                response.render('imposters', { imposters: result });
+                response.render('imposters', { imposters: getJSON() });
             }
         });
     }
@@ -129,10 +131,9 @@ function create (protocols, imposters, Imposter, logger) {
      */
     function post (request, response) {
         var protocol = request.body.protocol,
-            validationPromise = validate(request.body),
-            helpers = require('../util/helpers');
+            validationPromise = validate(request.body);
 
-        logger.debug(helpers.socketName(request.socket) + ' => ' + JSON.stringify(request.body));
+        logger.debug(requestDetails(request));
 
         return validationPromise.then(function (validation) {
             var Q = require('q');
@@ -169,9 +170,8 @@ function create (protocols, imposters, Imposter, logger) {
                 replayable: queryIsFalse(query, 'replayable'),
                 removeProxies: queryBoolean(query, 'removeProxies')
             },
-            json = Object.keys(imposters).reduce(function (accumulator, id) {
-                return accumulator.concat(imposters[id].toJSON(options));
-            }, []);
+            json = getJSON(options);
+
         return deleteAllImposters().then(function () {
             response.send({ imposters: json });
         });
@@ -186,13 +186,12 @@ function create (protocols, imposters, Imposter, logger) {
      */
     function put (request, response) {
         var Q = require('q'),
-            helpers = require('../util/helpers'),
             requestImposters = request.body.imposters || [],
             validationPromises = requestImposters.map(function (imposter) {
                 return validate(imposter, logger);
             });
 
-        logger.debug(helpers.socketName(request.socket) + ' => ' + JSON.stringify(request.body));
+        logger.debug(requestDetails(request));
 
         return Q.all(validationPromises).then(function (validations) {
             var isValid = validations.every(function (validation) {
