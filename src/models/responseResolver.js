@@ -30,7 +30,7 @@ function create (proxy, postProcess) {
         else {
             try {
                 var response = eval(injected);
-                if (typeof response !== 'undefined') {
+                if (helpers.defined(response)) {
                     deferred.resolve(response);
                 }
             }

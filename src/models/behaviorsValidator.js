@@ -86,11 +86,12 @@ function create () {
 
     function addTypeErrors (fieldSpec, path, field, config, addErrorFn) {
         var util = require('util'),
+            helpers = require('../util/helpers'),
             fieldType = typeof field,
             allowedTypes = Object.keys(fieldSpec._allowedTypes),
             typeSpec = fieldSpec._allowedTypes[fieldType];
 
-        if (typeof typeSpec === 'undefined') {
+        if (!helpers.defined(typeSpec)) {
             addErrorFn(path, typeErrorMessageFor(allowedTypes, fieldSpec._additionalContext));
         }
         else {
@@ -114,11 +115,12 @@ function create () {
     function addErrorsFor (config, pathPrefix, spec, addErrorFn) {
         Object.keys(spec).filter(nonMetadata).forEach(function (fieldName) {
             var util = require('util'),
+                helpers = require('../util/helpers'),
                 fieldSpec = spec[fieldName],
                 path = pathFor(pathPrefix, fieldName),
                 field = navigate(config, path);
 
-            if (typeof field === 'undefined') {
+            if (!helpers.defined(field)) {
                 addMissingFieldError(fieldSpec, path, addErrorFn);
             }
             else if (util.isArray(fieldSpec)) {

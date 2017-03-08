@@ -12,7 +12,9 @@
  */
 function create (imposters) {
     function queryBoolean (query, key) {
-        if (query[key] === undefined) {
+        var helpers = require('../util/helpers');
+
+        if (!helpers.defined(query[key])) {
             return false;
         }
         return query[key].toLowerCase() === 'true';

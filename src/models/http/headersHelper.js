@@ -25,13 +25,17 @@ function hasHeader (headerName, headers) {
 }
 
 function headerNameFor (headerName, headers) {
-    var result = Object.keys(headers).find(function (header) {
-        return header.toLowerCase() === headerName.toLowerCase();
-    });
-    if (typeof result === 'undefined') {
-        result = headerName;
+    var helpers = require('../../util/helpers'),
+        result = Object.keys(headers).find(function (header) {
+            return header.toLowerCase() === headerName.toLowerCase();
+        });
+
+    if (!helpers.defined(result)) {
+        return headerName;
     }
-    return result;
+    else {
+        return result;
+    }
 }
 
 module.exports = {

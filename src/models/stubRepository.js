@@ -27,6 +27,8 @@ function create (resolver, recordMatches, encoding) {
     }
 
     function findFirstMatch (request, logger, imposterState) {
+        var helpers = require('../util/helpers');
+
         if (stubs.length === 0) {
             return undefined;
         }
@@ -44,7 +46,7 @@ function create (resolver, recordMatches, encoding) {
         }
         else {
             logger.debug('using predicate match: ' + JSON.stringify(matches[0].predicates || {}));
-            if (typeof matches[0].statefulResponses === 'undefined') {
+            if (!helpers.defined(matches[0].statefulResponses)) {
                 // This happens when the responseResolver adds a stub, but doesn't know about this hidden state
                 matches[0].statefulResponses = matches[0].responses;
             }

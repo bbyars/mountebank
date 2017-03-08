@@ -6,9 +6,10 @@
  */
 
 function xpathSelect (selectFn, selector, doc) {
-    var errors = require('../util/errors');
+    var errors = require('../util/errors'),
+        helpers = require('../util/helpers');
 
-    if (typeof doc === 'undefined') {
+    if (!helpers.defined(doc)) {
         return [];
     }
 

@@ -14,18 +14,15 @@
  * @returns {{get: get, post: post, del: del, put: put}}
  */
 function create (protocols, imposters, Imposter, logger) {
-    var exceptions = require('../util/errors');
-
-    function defined (obj) {
-        return typeof obj !== 'undefined';
-    }
+    var exceptions = require('../util/errors'),
+        helpers = require('../util/helpers');
 
     function queryIsFalse (query, key) {
-        return !defined(query[key]) || query[key].toLowerCase() !== 'false';
+        return !helpers.defined(query[key]) || query[key].toLowerCase() !== 'false';
     }
 
     function queryBoolean (query, key) {
-        return defined(query[key]) && query[key].toLowerCase() === 'true';
+        return helpers.defined(query[key]) && query[key].toLowerCase() === 'true';
     }
 
     function deleteAllImposters () {
@@ -38,8 +35,7 @@ function create (protocols, imposters, Imposter, logger) {
     }
 
     function validatePort (port, errors) {
-        var portIsValid = (port === undefined) ||
-            (port.toString().indexOf('.') === -1 && port > 0 && port < 65536);
+        var portIsValid = !helpers.defined(port) || (port.toString().indexOf('.') === -1 && port > 0 && port < 65536);
 
         if (!portIsValid) {
             errors.push(exceptions.ValidationError("invalid value for 'port'"));
@@ -49,7 +45,7 @@ function create (protocols, imposters, Imposter, logger) {
     function validateProtocol (protocol, errors) {
         var Protocol = protocols[protocol];
 
-        if (typeof protocol === 'undefined') {
+        if (!helpers.defined(protocol)) {
             errors.push(exceptions.ValidationError("'protocol' is a required field"));
         }
         else if (!Protocol) {
@@ -93,7 +89,6 @@ function create (protocols, imposters, Imposter, logger) {
     }
 
     function requestDetails (request) {
-        var helpers = require('../util/helpers');
         return helpers.socketName(request.socket) + ' => ' + JSON.stringify(request.body);
     }
 

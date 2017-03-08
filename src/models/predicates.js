@@ -152,8 +152,10 @@ function predicateSatisfied (expected, actual, predicate) {
     }
 
     return Object.keys(expected).every(function (fieldName) {
+        var helpers = require('../util/helpers');
+
         var test = function (value) {
-            if (typeof value === 'undefined') {
+            if (!helpers.defined(value)) {
                 value = '';
             }
             if (typeof expected[fieldName] === 'object') {
@@ -165,14 +167,14 @@ function predicateSatisfied (expected, actual, predicate) {
         };
 
         // Support predicates that reach into fields encoded in JSON strings (e.g. HTTP bodies)
-        if (typeof actual[fieldName] === 'undefined' && typeof actual === 'string') {
+        if (!helpers.defined(actual[fieldName]) && typeof actual === 'string') {
             actual = tryJSON(actual);
         }
 
         if (Array.isArray(actual[fieldName])) {
             return actual[fieldName].some(test);
         }
-        else if (typeof actual[fieldName] === 'undefined' && Array.isArray(actual)) {
+        else if (!helpers.defined(actual[fieldName]) && Array.isArray(actual)) {
             // support array of objects in JSON
             return actual.some(function (element) {
                 return predicateSatisfied(expected, element, predicate);

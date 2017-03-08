@@ -96,10 +96,6 @@ var fromSchema = {
         }
     };
 
-function defined (value) {
-    return typeof value !== 'undefined';
-}
-
 /**
  * Validates the behavior configuration and returns all errors
  * @param {Object} config - The behavior configuration
@@ -394,6 +390,7 @@ function createRowObject (headers, rowArray) {
 function selectRowFromCSV (csvConfig, keyValue, logger) {
     var fs = require('fs'),
         Q = require('q'),
+        helpers = require('../util/helpers'),
         headers,
         inputStream = fs.createReadStream(csvConfig.path),
         parser = require('csv-parse')({ delimiter: ',' }),
@@ -406,7 +403,7 @@ function selectRowFromCSV (csvConfig, keyValue, logger) {
     });
 
     pipe.on('data', function (rowArray) {
-        if (!defined(headers)) {
+        if (!helpers.defined(headers)) {
             headers = rowArray;
         }
         else {

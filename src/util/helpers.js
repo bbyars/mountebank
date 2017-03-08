@@ -3,6 +3,15 @@
 /** @module */
 
 /**
+ * Returns true if obj is a defined value
+ * @param {Object} obj - the value to test
+ * @returns {boolean}
+ */
+function defined (obj) {
+    return typeof obj !== 'undefined';
+}
+
+/**
  * Returns the text used for logging purposes related to this socket
  * @param {Object} socket - the socket
  * @returns {string}
@@ -45,6 +54,7 @@ function merge (defaults, overrides) {
 }
 
 module.exports = {
+    defined: defined,
     socketName: socketName,
     clone: clone,
     merge: merge
