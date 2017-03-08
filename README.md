@@ -1,5 +1,4 @@
-mountebank
-==========
+# mountebank
 
 mountebank is the first open source tool to provide cross-platform, multi-protocol test doubles over the wire.
 Just point your application to mountebank instead of the real dependency,
@@ -34,7 +33,7 @@ Run:
 
 ## Learn More
 
-After installing and running, view the docs in your browser at http://localhost:2525, or visit the
+After installing and running, view the docs in your browser at <http://localhost:2525>, or visit the
 [public site](http://www.mbtest.org/).
 
 ## Goals
@@ -42,12 +41,12 @@ After installing and running, view the docs in your browser at http://localhost:
 mountebank has the following goals:
 
 * Trivial to get started
-    * mountebank is easy to install, without any platform dependencies.  mountebank aims for fun and comprehensive
+  * mountebank is easy to install, without any platform dependencies.  mountebank aims for fun and comprehensive
      documentation with lots of examples, and a nice UI that lets you explore the API interactively.
 * A platform, not just a tool
-    * mountebank aims to be fully cross-platform, with native language bindings.  Servers are extensible through scripting.
+  * mountebank aims to be fully cross-platform, with native language bindings.  Servers are extensible through scripting.
 * Powerful
-    * mountebank is the only open source stubbing tool that is non-modal and multi-protocol.  Commercial
+  * mountebank is the only open source stubbing tool that is non-modal and multi-protocol.  Commercial
     "service virtualization" solutions exist, but their licensed platforms make it hard to move the tests
     closer to development and can even require a specialized IDE.  mountebank provides service virtualization free
     of charge without any platform constraints.

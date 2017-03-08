@@ -1,5 +1,4 @@
-Contributing to mountebank
-==========================
+# Contributing to mountebank
 
 Congratulations!  You're here because you want to join the millions of open source developers
 contributing to mountebank.  The good news is contributing is an easy process.  In fact, you can

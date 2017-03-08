@@ -1,0 +1,5 @@
+# Used by markdownlint in codeclimate
+# Disable rules
+rules '~MD013', # Line Length
+      '~MD026', # Trailing punctuation in header
+      '~MD032'  # Lists should be surrounded by blank line (includes long bullet points broken into multiple lines)
