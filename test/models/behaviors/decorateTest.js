@@ -62,7 +62,7 @@ describe('behaviors', function () {
             var errors = behaviors.validate({ decorate: {} });
             assert.deepEqual(errors, [{
                 code: 'bad data',
-                message: '"decorate" value must be a string representing a JavaScript function',
+                message: 'decorate behavior "decorate" field must be a string, representing a JavaScript function',
                 source: { decorate: {} }
             }]);
         });

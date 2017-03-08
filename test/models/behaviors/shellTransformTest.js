@@ -121,7 +121,7 @@ describe('behaviors', function () {
             var errors = behaviors.validate({ shellTransform: {} });
             assert.deepEqual(errors, [{
                 code: 'bad data',
-                message: '"shellTransform" value must be a string of the path to a command line application',
+                message: 'shellTransform behavior "shellTransform" field must be a string, representing the path to a command line application',
                 source: { shellTransform: {} }
             }]);
         });

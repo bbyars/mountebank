@@ -83,7 +83,7 @@ describe('behaviors', function () {
             var errors = behaviors.validate({ wait: -1 });
             assert.deepEqual(errors, [{
                 code: 'bad data',
-                message: '"wait" value must be an integer greater than or equal to 0',
+                message: 'wait behavior "wait" field must be an integer greater than or equal to 0',
                 source: { wait: -1 }
             }]);
         });
@@ -97,7 +97,7 @@ describe('behaviors', function () {
             var errors = behaviors.validate({ wait: true });
             assert.deepEqual(errors, [{
                 code: 'bad data',
-                message: '"wait" value must be an integer greater than or equal to 0',
+                message: 'wait behavior "wait" field must be a string or a number',
                 source: { wait: true }
             }]);
         });

@@ -423,12 +423,12 @@ describe('dryRunValidator', function () {
                     errors: [
                         {
                             code: 'bad data',
-                            message: '"wait" value must be an integer greater than or equal to 0',
+                            message: 'wait behavior "wait" field must be an integer greater than or equal to 0',
                             source: { wait: -1, repeat: -1 }
                         },
                         {
                             code: 'bad data',
-                            message: '"repeat" value must be an integer greater than 0',
+                            message: 'repeat behavior "repeat" field must be an integer greater than 0',
                             source: { wait: -1, repeat: -1 }
                         }
                     ]

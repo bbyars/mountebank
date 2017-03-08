@@ -9,7 +9,7 @@ describe('behaviors', function () {
             var errors = behaviors.validate({ repeat: 0 });
             assert.deepEqual(errors, [{
                 code: 'bad data',
-                message: '"repeat" value must be an integer greater than 0',
+                message: 'repeat behavior "repeat" field must be an integer greater than 0',
                 source: { repeat: 0 }
             }]);
         });
@@ -18,7 +18,7 @@ describe('behaviors', function () {
             var errors = behaviors.validate({ repeat: true });
             assert.deepEqual(errors, [{
                 code: 'bad data',
-                message: '"repeat" value must be an integer greater than 0',
+                message: 'repeat behavior "repeat" field must be a number',
                 source: { repeat: true }
             }]);
         });

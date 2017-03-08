@@ -5,145 +5,63 @@
  * @module
  */
 
-var exceptions = require('../util/errors');
+// The following schemas are used by both the lookup and copy behaviors and should be kept consistent
+var fromSchema = {
+        _required: true,
+        _allowedTypes: {
+            string: {},
+            object: { singleKeyOnly: true }
+        },
+        _additionalContext: 'the request field to select from'
+    },
+    intoSchema = {
+        _required: true,
+        _allowedTypes: { string: {} },
+        _additionalContext: 'the token to replace in response fields'
+    },
+    usingSchema = {
+        _required: true,
+        _allowedTypes: { object: {} },
+        method: {
+            _required: true,
+            _allowedTypes: { string: { enum: ['regex', 'xpath', 'jsonpath'] } }
+        },
+        selector: {
+            _required: true,
+            _allowedTypes: { string: {} }
+        }
+    };
 
 function defined (value) {
     return typeof value !== 'undefined';
 }
 
-function ofType (value) {
-    var allowedTypes = Array.prototype.slice.call(arguments),
-        actualType = typeof value;
+function addWaitErrors (config, errors) {
+    var validator = require('./behaviorsValidator').create();
 
-    // remove value
-    allowedTypes.shift();
-
-    return allowedTypes.indexOf(actualType) >= 0;
-}
-
-function hasExactlyOneKey (obj) {
-    var keys = Object.keys(obj);
-    return keys.length === 1;
-}
-
-function navigate (config, path) {
-    if (path === '') {
-        return config;
-    }
-    else {
-        return path.split('.').reduce(function (field, fieldName) {
-            return field[fieldName];
-        }, config);
-    }
-}
-
-function typeErrorMessageFor (spec) {
-    var util = require('util'),
-        spellings = { number: 'a', object: 'an', string: 'a', array: 'an' },
-        message = util.format('%s behavior "%s" field must be %s %s',
-            spec.behaviorName, spec.path, spellings[spec.allowedTypes[0]], spec.allowedTypes[0]);
-
-    for (var i = 1; i < spec.allowedTypes.length; i += 1) {
-        message += util.format(' or %s %s', spellings[spec.allowedTypes[i]], spec.allowedTypes[i]);
-    }
-    if (spec.additionalContext) {
-        message += ', representing ' + spec.additionalContext;
-    }
-    return message;
-}
-
-function pathFor (pathPrefix, fieldName) {
-    if (pathPrefix === '') {
-        return fieldName;
-    }
-    else {
-        return pathPrefix + '.' + fieldName;
-    }
-}
-
-function nonMetadata (fieldName) {
-    return fieldName.indexOf('_') !== 0;
-}
-
-function enumFieldFor (field) {
-    // Can be the string value or the object key
-    if (typeof field === 'object' && Object.keys(field).length > 0) {
-        return Object.keys(field)[0];
-    }
-    else {
-        return field;
-    }
-}
-
-function matchesEnum (field, enumSpec) {
-    return enumSpec.indexOf(enumFieldFor(field)) >= 0;
-}
-
-function addErrorsTo (errors, config, behaviorName, pathPrefix, spec) {
-    /* eslint-disable no-underscore-dangle */
-    Object.keys(spec).filter(nonMetadata).forEach(function (fieldName) {
-        var util = require('util'),
-            fieldSpec = spec[fieldName],
-            path = pathFor(pathPrefix, fieldName),
-            field = navigate(config, path),
-            fieldType = typeof field;
-
-        if (fieldType === 'undefined') {
-            if (fieldSpec._required) {
-                errors.push(exceptions.ValidationError(
-                    util.format('%s behavior "%s" field required', behaviorName, path),
-                    { source: config }));
-            }
-        }
-        else {
-            var allowedTypes = Object.keys(fieldSpec._allowedTypes),
-                typeSpec = fieldSpec._allowedTypes[fieldType];
-
-            if (typeof typeSpec === 'undefined') {
-                errors.push(exceptions.ValidationError(
-                    typeErrorMessageFor({
-                        behaviorName: behaviorName,
-                        path: path,
-                        allowedTypes: allowedTypes,
-                        additionalContext: fieldSpec._additionalContext
-                    }),
-                    { source: config }));
-            }
-            else {
-                if (typeSpec.singleKeyOnly && !hasExactlyOneKey(field)) {
-                    errors.push(exceptions.ValidationError(
-                        util.format('%s behavior "%s" field must have exactly one key',
-                            behaviorName, path),
-                        { source: config }));
-                }
-                else if (typeSpec.enum && !matchesEnum(field, typeSpec.enum)) {
-                    errors.push(exceptions.ValidationError(
-                        util.format('%s behavior "%s" field must be one of [%s]',
-                            behaviorName, path, typeSpec.enum.join(', ')),
-                        { source: config }));
-                }
-
-                addErrorsTo(errors, config, behaviorName, path, fieldSpec);
-            }
+    validator.addErrorsTo(errors, config, 'wait', '', {
+        wait: {
+            _required: true,
+            _allowedTypes: { string: {}, number: { nonNegativeInteger: true } }
         }
     });
 }
 
-function addWaitErrors (config, errors) {
-    if (!ofType(config.wait, 'number', 'string') || (typeof config.wait === 'number' && config.wait < 0)) {
-        errors.push(exceptions.ValidationError('"wait" value must be an integer greater than or equal to 0',
-            { source: config }));
-    }
-}
-
 function addRepeatErrors (config, errors) {
-    if (!ofType(config.repeat, 'number', 'string') || config.repeat <= 0) {
-        errors.push(exceptions.ValidationError('"repeat" value must be an integer greater than 0',
-            { source: config }));
-    }
+    var validator = require('./behaviorsValidator').create();
+
+    validator.addErrorsTo(errors, config, 'repeat', '', {
+        repeat: {
+            _required: true,
+            _allowedTypes: { number: { positiveInteger: true } }
+        }
+    });
 }
 
 function addCopyErrors (config, errors) {
+    var validator = require('./behaviorsValidator').create(),
+        exceptions = require('../util/errors');
+
     var util = require('util');
 
     if (!util.isArray(config.copy)) {
@@ -152,39 +70,19 @@ function addCopyErrors (config, errors) {
     }
     else {
         config.copy.forEach(function (copyConfig) {
-            addErrorsTo(errors, copyConfig, 'copy', '', {
-                from: {
-                    _required: true,
-                    _allowedTypes: {
-                        string: {},
-                        object: { singleKeyOnly: true }
-                    },
-                    _additionalContext: 'the request field to select from'
-                },
-                into: {
-                    _required: true,
-                    _allowedTypes: { string: {} },
-                    _additionalContext: 'the token to replace in response fields'
-                },
-                using: {
-                    _required: true,
-                    _allowedTypes: { object: {} },
-                    method: {
-                        _required: true,
-                        _allowedTypes: { string: { enum: ['regex', 'xpath', 'jsonpath'] } }
-                    },
-                    selector: {
-                        _required: true,
-                        _allowedTypes: { string: {} }
-                    }
-                }
+            validator.addErrorsTo(errors, copyConfig, 'copy', '', {
+                from: fromSchema,
+                into: intoSchema,
+                using: usingSchema
             });
         });
     }
 }
 
 function addLookupErrors (config, errors) {
-    var util = require('util');
+    var validator = require('./behaviorsValidator').create(),
+        util = require('util'),
+        exceptions = require('../util/errors');
 
     if (!util.isArray(config.lookup)) {
         errors.push(exceptions.ValidationError('"lookup" behavior must be an array',
@@ -192,26 +90,12 @@ function addLookupErrors (config, errors) {
     }
     else {
         config.lookup.forEach(function (lookupConfig) {
-            addErrorsTo(errors, lookupConfig, 'lookup', '', {
+            validator.addErrorsTo(errors, lookupConfig, 'lookup', '', {
                 key: {
                     _required: true,
                     _allowedTypes: { object: {} },
-                    from: {
-                        _required: true,
-                        _allowedTypes: { string: {}, object: {} }
-                    },
-                    using: {
-                        _required: true,
-                        _allowedTypes: { object: {} },
-                        method: {
-                            _required: true,
-                            _allowedTypes: { string: { enum: ['regex', 'xpath', 'jsonpath'] } }
-                        },
-                        selector: {
-                            _required: true,
-                            _allowedTypes: { string: {} }
-                        }
-                    }
+                    from: fromSchema,
+                    using: usingSchema
                 },
                 fromDataSource: {
                     _required: true,
@@ -231,28 +115,34 @@ function addLookupErrors (config, errors) {
                         }
                     }
                 },
-                into: {
-                    _required: true,
-                    _allowedTypes: { string: {} },
-                    _additionalContext: 'the token to replace in response fields'
-                }
+                into: intoSchema
             });
         });
     }
 }
 
 function addShellTransformErrors (config, errors) {
-    if (!ofType(config.shellTransform, 'string')) {
-        errors.push(exceptions.ValidationError('"shellTransform" value must be a string of the path to a command line application',
-            { source: config }));
-    }
+    var validator = require('./behaviorsValidator').create();
+
+    validator.addErrorsTo(errors, config, 'shellTransform', '', {
+        shellTransform: {
+            _required: true,
+            _allowedTypes: { string: {} },
+            _additionalContext: 'the path to a command line application'
+        }
+    });
 }
 
 function addDecorateErrors (config, errors) {
-    if (!ofType(config.decorate, 'string')) {
-        errors.push(exceptions.ValidationError('"decorate" value must be a string representing a JavaScript function',
-            { source: config }));
-    }
+    var validator = require('./behaviorsValidator').create();
+
+    validator.addErrorsTo(errors, config, 'decorate', '', {
+        decorate: {
+            _required: true,
+            _allowedTypes: { string: {} },
+            _additionalContext: 'a JavaScript function'
+        }
+    });
 }
 
 /**
@@ -296,7 +186,8 @@ function wait (request, responsePromise, millisecondsOrFn, logger) {
     var util = require('util'),
         fn = util.format('(%s)()', millisecondsOrFn),
         milliseconds = parseInt(millisecondsOrFn),
-        Q = require('q');
+        Q = require('q'),
+        exceptions = require('../util/errors');
 
     if (isNaN(milliseconds)) {
         try {
@@ -391,7 +282,8 @@ function decorate (originalRequest, responsePromise, fn, logger) {
         var Q = require('q'),
             helpers = require('../util/helpers'),
             request = helpers.clone(originalRequest),
-            injected = '(' + fn + ')(request, response, logger);';
+            injected = '(' + fn + ')(request, response, logger);',
+            exceptions = require('../util/errors');
 
         try {
             // Support functions that mutate response in place and those
