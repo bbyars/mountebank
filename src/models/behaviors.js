@@ -36,115 +36,6 @@ function defined (value) {
     return typeof value !== 'undefined';
 }
 
-function addWaitErrors (config, errors) {
-    var validator = require('./behaviorsValidator').create();
-
-    validator.addErrorsTo(errors, config, 'wait', '', {
-        wait: {
-            _required: true,
-            _allowedTypes: { string: {}, number: { nonNegativeInteger: true } }
-        }
-    });
-}
-
-function addRepeatErrors (config, errors) {
-    var validator = require('./behaviorsValidator').create();
-
-    validator.addErrorsTo(errors, config, 'repeat', '', {
-        repeat: {
-            _required: true,
-            _allowedTypes: { number: { positiveInteger: true } }
-        }
-    });
-}
-
-function addCopyErrors (config, errors) {
-    var validator = require('./behaviorsValidator').create(),
-        exceptions = require('../util/errors');
-
-    var util = require('util');
-
-    if (!util.isArray(config.copy)) {
-        errors.push(exceptions.ValidationError('"copy" behavior must be an array',
-            { source: config }));
-    }
-    else {
-        config.copy.forEach(function (copyConfig) {
-            validator.addErrorsTo(errors, copyConfig, 'copy', '', {
-                from: fromSchema,
-                into: intoSchema,
-                using: usingSchema
-            });
-        });
-    }
-}
-
-function addLookupErrors (config, errors) {
-    var validator = require('./behaviorsValidator').create(),
-        util = require('util'),
-        exceptions = require('../util/errors');
-
-    if (!util.isArray(config.lookup)) {
-        errors.push(exceptions.ValidationError('"lookup" behavior must be an array',
-            { source: config }));
-    }
-    else {
-        config.lookup.forEach(function (lookupConfig) {
-            validator.addErrorsTo(errors, lookupConfig, 'lookup', '', {
-                key: {
-                    _required: true,
-                    _allowedTypes: { object: {} },
-                    from: fromSchema,
-                    using: usingSchema
-                },
-                fromDataSource: {
-                    _required: true,
-                    _allowedTypes: { object: { singleKeyOnly: true, enum: ['csv'] } }, // fix
-                    csv: {
-                        _required: false,
-                        _allowedTypes: { object: {} },
-                        path: {
-                            _required: true,
-                            _allowedTypes: { string: {} },
-                            _additionalContext: 'the path to the CSV file'
-                        },
-                        keyColumn: {
-                            _required: true,
-                            _allowedTypes: { string: {} },
-                            _additionalContext: 'the column header to select against the "key" field'
-                        }
-                    }
-                },
-                into: intoSchema
-            });
-        });
-    }
-}
-
-function addShellTransformErrors (config, errors) {
-    var validator = require('./behaviorsValidator').create();
-
-    validator.addErrorsTo(errors, config, 'shellTransform', '', {
-        shellTransform: {
-            _required: true,
-            _allowedTypes: { string: {} },
-            _additionalContext: 'the path to a command line application'
-        }
-    });
-}
-
-function addDecorateErrors (config, errors) {
-    var validator = require('./behaviorsValidator').create();
-
-    validator.addErrorsTo(errors, config, 'decorate', '', {
-        decorate: {
-            _required: true,
-            _allowedTypes: { string: {} },
-            _additionalContext: 'a JavaScript function'
-        }
-    });
-}
-
 /**
  * Validates the behavior configuration and returns all errors
  * @param {Object} config - The behavior configuration
@@ -152,17 +43,75 @@ function addDecorateErrors (config, errors) {
  */
 function validate (config) {
     var errors = [],
+        validator = require('./behaviorsValidator').create(),
         validations = {
-            wait: addWaitErrors,
-            repeat: addRepeatErrors,
-            copy: addCopyErrors,
-            lookup: addLookupErrors,
-            shellTransform: addShellTransformErrors,
-            decorate: addDecorateErrors
+            wait: {
+                wait: {
+                    _required: true,
+                    _allowedTypes: { string: {}, number: { nonNegativeInteger: true } }
+                }
+            },
+            repeat: {
+                repeat: {
+                    _required: true,
+                    _allowedTypes: { number: { positiveInteger: true } }
+                }
+            },
+            copy: {
+                copy: [{
+                    from: fromSchema,
+                    into: intoSchema,
+                    using: usingSchema
+                }]
+            },
+            lookup: {
+                lookup: [{
+                    key: {
+                        _required: true,
+                        _allowedTypes: { object: {} },
+                        from: fromSchema,
+                        using: usingSchema
+                    },
+                    fromDataSource: {
+                        _required: true,
+                        _allowedTypes: { object: { singleKeyOnly: true, enum: ['csv'] } },
+                        csv: {
+                            _required: false,
+                            _allowedTypes: { object: {} },
+                            path: {
+                                _required: true,
+                                _allowedTypes: { string: {} },
+                                _additionalContext: 'the path to the CSV file'
+                            },
+                            keyColumn: {
+                                _required: true,
+                                _allowedTypes: { string: {} },
+                                _additionalContext: 'the column header to select against the "key" field'
+                            }
+                        }
+                    },
+                    into: intoSchema
+                }]
+            },
+            shellTransform: {
+                shellTransform: {
+                    _required: true,
+                    _allowedTypes: { string: {} },
+                    _additionalContext: 'the path to a command line application'
+                }
+            },
+            decorate: {
+                decorate: {
+                    _required: true,
+                    _allowedTypes: { string: {} },
+                    _additionalContext: 'a JavaScript function'
+                }
+            }
         };
+
     Object.keys(config || {}).forEach(function (key) {
         if (validations[key]) {
-            validations[key](config, errors);
+            validator.addErrorsTo(errors, config, key, '', validations[key]);
         }
     });
 

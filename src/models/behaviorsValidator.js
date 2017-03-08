@@ -63,7 +63,7 @@ function create () {
 
     function addErrorsTo (errors, config, behaviorName, pathPrefix, spec) {
         /* eslint-disable no-underscore-dangle */
-        /* eslint complexity: [2, 8] */
+        /* eslint complexity: [2, 10] */
         Object.keys(spec).filter(nonMetadata).forEach(function (fieldName) {
             var util = require('util'),
                 fieldSpec = spec[fieldName],
@@ -76,6 +76,18 @@ function create () {
                     errors.push(exceptions.ValidationError(
                         util.format('%s behavior "%s" field required', behaviorName, path),
                         { source: config }));
+                }
+            }
+            else if (util.isArray(fieldSpec)) {
+                if (!util.isArray(field)) {
+                    errors.push(exceptions.ValidationError(
+                        util.format('%s behavior "%s" field must be an array', behaviorName, path),
+                        { source: config }));
+                }
+                else {
+                    field.forEach(function (subConfig) {
+                        addErrorsTo(errors, subConfig, behaviorName, '', fieldSpec[0]);
+                    });
                 }
             }
             else {
@@ -95,8 +107,7 @@ function create () {
                 else {
                     if (typeSpec.singleKeyOnly && !hasExactlyOneKey(field)) {
                         errors.push(exceptions.ValidationError(
-                            util.format('%s behavior "%s" field must have exactly one key',
-                                behaviorName, path),
+                            util.format('%s behavior "%s" field must have exactly one key', behaviorName, path),
                             { source: config }));
                     }
                     else if (typeSpec.enum && !matchesEnum(field, typeSpec.enum)) {

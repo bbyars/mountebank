@@ -387,7 +387,7 @@ describe('behaviors', function () {
             });
             assert.deepEqual(errors, [{
                 code: 'bad data',
-                message: '"copy" behavior must be an array',
+                message: 'copy behavior "copy" field must be an array',
                 source: { copy: {} }
             }]);
         });

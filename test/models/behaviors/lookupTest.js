@@ -12,7 +12,7 @@ describe('behaviors', function () {
             var errors = behaviors.validate({ lookup: {} });
             assert.deepEqual(errors, [{
                 code: 'bad data',
-                message: '"lookup" behavior must be an array',
+                message: 'lookup behavior "lookup" field must be an array',
                 source: { lookup: {} }
             }]);
         });
