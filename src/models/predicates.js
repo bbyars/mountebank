@@ -123,8 +123,7 @@ function normalize (obj, config, encoding, withSelectors) {
             }
             else if (typeof o === 'object') {
                 return Object.keys(o).reduce(function (result, key) {
-                    var value = transformAll(o[key]);
-                    result[keyCaseTransform(key)] = value;
+                    result[keyCaseTransform(key)] = transformAll(o[key]);
                     return result;
                 }, {});
             }
@@ -235,16 +234,18 @@ function not (predicate, request, encoding, logger) {
     return !evaluate(predicate.not, request, encoding, logger);
 }
 
-function or (predicate, request, encoding, logger) {
-    return predicate.or.some(function (subPredicate) {
+function evaluateFn (request, encoding, logger) {
+    return function (subPredicate) {
         return evaluate(subPredicate, request, encoding, logger);
-    });
+    };
+}
+
+function or (predicate, request, encoding, logger) {
+    return predicate.or.some(evaluateFn(request, encoding, logger));
 }
 
 function and (predicate, request, encoding, logger) {
-    return predicate.and.every(function (subPredicate) {
-        return evaluate(subPredicate, request, encoding, logger);
-    });
+    return predicate.and.every(evaluateFn(request, encoding, logger));
 }
 
 function inject (predicate, request, encoding, logger, imposterState) {

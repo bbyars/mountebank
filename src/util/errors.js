@@ -5,37 +5,30 @@
  * @module
  */
 
+function createError (code, message, options) {
+    var inherit = require('./inherit'),
+        result = inherit.from(Error, {
+            code: code,
+            message: message
+        });
+
+    if (options) {
+        Object.keys(options).forEach(function (key) {
+            result[key] = options[key];
+        });
+    }
+    return result;
+}
+
 function create (code) {
     return function (message, options) {
-        var inherit = require('./inherit'),
-            result = inherit.from(Error, {
-                code: code,
-                message: message
-            });
-
-        if (options) {
-            Object.keys(options).forEach(function (key) {
-                result[key] = options[key];
-            });
-        }
-        return result;
+        return createError(code, message, options);
     };
 }
 
 function createWithMessage (code, message) {
     return function (options) {
-        var inherit = require('./inherit'),
-            result = inherit.from(Error, {
-                code: code,
-                message: message
-            });
-
-        if (options) {
-            Object.keys(options).forEach(function (key) {
-                result[key] = options[key];
-            });
-        }
-        return result;
+        return createError(code, message, options);
     };
 }
 
