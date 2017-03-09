@@ -21,7 +21,7 @@
         "computed-property-spacing": [2, "never"],
         "consistent-return": 2,
         "curly": 2,
-        "dot-location": [2, "object"],
+        "dot-location": [2, "property"],
         "dot-notation": 2,
         "eqeqeq": 2,
         "generator-star-spacing": [2, {"before": true, "after": false}],

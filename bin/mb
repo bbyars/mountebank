@@ -257,117 +257,247 @@ function serverAt (options) {
     };
 }
 
-yargs.usage('Usage: mb [command] [options...]');
-yargs.command('start', 'Starts the server (default command)');
-yargs.command('stop', 'Stops the server');
-yargs.command('restart', 'Restarts the server, stopping any previously started server');
-yargs.command('save', 'Saves current imposter configuration to a config file');
+var aliases = {
+        d: 'debug',
+        i: 'allowInjection',
+        l: 'localOnly',
+        m: 'mock',
+        p: 'port',
+        r: 'removeProxies',
+        w: 'ipWhitelist'
+    },
+    options = {
+        port: {
+            default: 2525,
+            description: 'the port to run the mountebank server on',
+            nargs: 1,
+            type: 'number',
+            alias: aliases.p,
+            global: false
+        },
+        configfile: {
+            description: 'file to load imposters from, can be an EJS template',
+            nargs: 1,
+            type: 'string',
+            global: false
+        },
+        noParse: {
+            default: false,
+            description: 'prevent rendering the configfile as an EJS template',
+            type: 'boolean',
+            global: false
+        },
+        pidfile: {
+            default: 'mb.pid',
+            description: 'where the pid is stored for the stop command',
+            nargs: 1,
+            type: 'string',
+            global: false
+        },
+        nologfile: {
+            default: false,
+            description: 'prevent logging to the filesystem',
+            type: 'boolean',
+            global: false
+        },
+        logfile: {
+            default: 'mb.log',
+            description: 'file used for all log',
+            nargs: 1,
+            type: 'string',
+            global: false
+        },
+        loglevel: {
+            default: 'info',
+            description: 'level for terminal logs',
+            nargs: 1,
+            type: 'string',
+            choices: ['debug', 'info', 'warn', 'error'],
+            global: false
+        },
+        allowInjection: {
+            default: false,
+            description: 'set to allow JavaScript injection',
+            type: 'boolean',
+            alias: aliases.i,
+            global: false
+        },
+        localOnly: {
+            default: false,
+            description: 'allow connections only from localhost',
+            type: 'boolean',
+            alias: aliases.l,
+            global: false
+        },
+        ipWhitelist: {
+            default: '*',
+            description: 'pipe-delimited list of allowed IP address patterns to connect to the mountebank admin port',
+            type: 'string',
+            alias: aliases.w,
+            global: false
+        },
+        mock: {
+            default: false,
+            description: 'remember requests for mock verification',
+            type: 'boolean',
+            alias: aliases.m,
+            global: false
+        },
+        debug: {
+            default: false,
+            description: 'include stub match information in imposter retrievals for debugging purposes',
+            type: 'boolean',
+            alias: aliases.d,
+            global: false
+        },
+        savefile: {
+            default: 'mb.json',
+            description: 'file to save imposters to',
+            nargs: 1,
+            type: 'string',
+            global: false
+        },
+        removeProxies: {
+            default: false,
+            description: 'removes proxies from the configuration when using the save command',
+            type: 'boolean',
+            alias: aliases.r,
+            global: false
+        },
+        heroku: {
+            default: false,
+            type: 'boolean',
+            global: false
+        }
+    },
+    startOptions = {
+        port: options.port,
+        configfile: options.configfile,
+        noParse: options.noParse,
+        pidfile: options.pidfile,
+        nologfile: options.nologfile,
+        logfile: options.logfile,
+        loglevel: options.loglevel,
+        allowInjection: options.allowInjection,
+        localOnly: options.localOnly,
+        ipWhitelist: options.ipWhitelist,
+        mock: options.mock,
+        debug: options.debug,
+        heroku: options.heroku
+    };
 
-yargs.options({
-    port: {
-        default: 2525,
-        description: 'the port to run the mountebank server on',
-        nargs: 1,
-        type: 'number',
-        global: true
-    },
-    configfile: {
-        description: 'file to load imposters from, can be an EJS template',
-        nargs: 1,
-        type: 'string',
-        global: true
-    },
-    noParse: {
-        description: 'prevent rendering the configfile as an EJS template',
-        type: 'boolean',
-        global: true
-    },
-    pidfile: {
-        default: 'mb.pid',
-        description: 'where the pid is stored for the stop command',
-        nargs: 1,
-        type: 'string',
-        global: true
-    },
-    nologfile: {
-        description: 'prevent logging to the filesystem',
-        type: 'boolean',
-        global: true
-    },
-    logfile: {
-        default: 'mb.log',
-        description: 'file used for all log',
-        nargs: 1,
-        type: 'string',
-        global: true
-    },
-    loglevel: {
-        default: 'info',
-        description: 'level for terminal logs',
-        nargs: 1,
-        type: 'string',
-        choices: ['debug', 'info', 'warn', 'error'],
-        global: true
-    },
-    allowInjection: {
-        description: 'set to allow JavaScript injection',
-        type: 'boolean',
-        global: true
-    },
-    localOnly: {
-        default: false,
-        description: 'allow connections only from localhost',
-        type: 'boolean',
-        global: true
-    },
-    ipWhitelist: {
-        default: '*',
-        description: 'pipe-delimited list of allowed IP address patterns to connect to the mountebank admin port',
-        type: 'string',
-        global: true
-    },
-    mock: {
-        description: 'remember requests for mock verification',
-        type: 'boolean',
-        global: true
-    },
-    debug: {
-        description: 'include stub match information in imposter retrievals for debugging purposes',
-        type: 'boolean',
-        global: true
-    },
-    savefile: {
-        default: 'mb.json',
-        description: 'file to save imposters to',
-        nargs: 1,
-        type: 'string',
-        global: true
-    },
-    removeProxies: {
-        description: 'removes proxies from the configuration when using the save command',
-        type: 'boolean',
-        global: true
-    },
-    heroku: {
-        type: 'boolean',
-        global: true
+var argv = yargs
+    .usage('Usage: mb [command=start] [options...]')
+    .command('start', 'Starts the server (default command)', function (startYargs) {
+        startYargs
+            .usage('Usage: mb [start] [options...]')
+            .help('help')
+            .wrap(null)
+            .options(startOptions)
+            .example('mb start --port 3000 --allowInjection --loglevel debug',
+                'Starts on port 3000, allowing injections and turning on debug logging')
+            .example('mb --ipWhitelist 192.168.1.20|192.158.1.21',
+                'Starts on port 2525 with the given ip whitelist')
+            .epilog('Note on the last example that start is assumed if no command is specified\n\nFor more information, see http://www.mbtest.org/docs/commandLine');
+    })
+    .command('stop', 'Stops the server', function (stopYargs) {
+        stopYargs
+            .usage('Usage: mb stop [--pidfile file.pid]')
+            .help('help')
+            .wrap(null)
+            .options({ pidfile: options.pidfile })
+            .example('mb stop', 'Stops the process identified in mb.pid')
+            .example('mb stop --pidfile test.pid', 'Stops the process identified in test.pid')
+            .epilog('For more information, see http://www.mbtest.org/docs/commandLine');
+    })
+    .command('restart', "Stops the server if it's running and restarts it", function (restartYargs) {
+        restartYargs
+            .usage('Usage: mb restart [options...]')
+            .help('help')
+            .wrap(null)
+            .options(startOptions)
+            .example('mb restart --port 3000 --allowInjection --loglevel debug',
+                'Restarts on port 3000, allowing injections and turning on debug logging')
+            .example('mb restart --pidfile test.pid', 'Stops the process identified in test.pid and restarts on port 2525')
+            .epilog('The port does not have to match the currently running instance, but the pidfile must match\n\nFor more information, see http://www.mbtest.org/docs/commandLine');
+    })
+    .command('save', 'Saves current imposter configuration to a config file', function (saveYargs) {
+        saveYargs
+            .usage('Usage: mb save [options...]\n\nSaves a snapshot of your configuration, including new responses created by proxies')
+            .help('help')
+            .wrap(null)
+            .options({
+                port: options.port,
+                savefile: options.savefile,
+                removeProxies: options.removeProxies
+            })
+            .example('mb save --savefile config.json --removeProxies --port 3000',
+                'Saves the config without proxies into config.json by querying port 3000')
+            .example('mb save', 'Saves the config as is into mb.json by querying port 2525')
+            .epilog('For more information, see http://www.mbtest.org/docs/commandLine');
+    })
+    .command('replay',
+        'Switches from record mode to replay by removing proxies',
+        function (replayYargs) {
+            replayYargs
+                .usage('Usage: mb replay [--port 3000]')
+                .help('help')
+                .wrap(null)
+                .options({ port: options.port })
+                .example('mb replay --port 3000',
+                    'Resets the configuration of mountebank running on port 3000 to remove all proxies')
+                .example('mb replay', 'Resets the configuration of mountebank running on port 2525 to remove all proxies')
+                .epilog('For more information, see http://www.mbtest.org/docs/commandLine');
+        })
+    .version()
+    .wrap(null)
+    .epilog('mb help [command] provides more details\n\nFor more information, see http://www.mbtest.org/docs/commandLine')
+    .argv;
+
+function fixAliases () {
+    Object.keys(argv).forEach(function (key) {
+        if (aliases[key]) {
+            argv[aliases[key]] = argv[key];
+            delete argv[key];
+        }
+    });
+}
+
+// Unfortunately, while yargs defaults correctly when the command is present, I couldn't
+// figure out how to make it default when the command is absent, which I need to default to start.
+// You can set what yargs considers to be the default command by .command(['start', '*']), but
+// that changes the help docs in ways I don't want.
+function fixDefaults () {
+    if (argv._.length === 0) {
+        Object.keys(startOptions).forEach(function (key) {
+            if (typeof argv[key] === 'undefined') {
+                argv[key] = startOptions[key].default;
+            }
+        });
     }
-});
+}
 
-yargs.version();
-yargs.help();
-yargs.epilog('For more information, see http://www.mbtest.org/docs/commandLine');
+function fixIPWhitelist (command) {
+    if (command === 'start' || command === 'restart') {
+        argv.ipWhitelist = argv.ipWhitelist.split('|');
+    }
+}
 
-try {
-    var argv = yargs.argv,
-        command = argv._.length === 0 ? 'start' : argv._[0],
-        server = serverAt(argv);
-
-    // Avoid noise in logs
+// Prevent noise from being logged
+function removeNoise () {
     delete argv._;
     delete argv.$0;
+    delete argv.version;
+}
 
-    argv.ipWhitelist = argv.ipWhitelist.split('|');
+try {
+    var command = argv._.length === 0 ? 'start' : argv._[0],
+        server = serverAt(argv);
+
+    fixAliases();
+    fixDefaults();
+    fixIPWhitelist(command);
+    removeNoise();
 
     switch (command) {
         case 'start':
