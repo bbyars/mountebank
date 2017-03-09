@@ -19,7 +19,8 @@ description = 'Command line parameters for starting mountebank'
   <tr>
     <td><code><em>command</em></code></td>
     <td>One of <code>start</code>, <code>stop</code>, <code>restart</code>,
-      <code><a href='#save'>save</a></code> (which saves off the current imposter configuration), or
+      <code><a href='#save'>save</a></code> (which saves off the current imposter configuration),
+      <code><a href='#replay'>replay</a></code> (which removes proxies), or
       <code>help</code> (which shows the usage information).
 
       <p class='info-icon'>Note that <code>stop</code> and <code>restart</code> must either be
@@ -145,6 +146,20 @@ into a file that can be used to start a subsequent process of <code>mb</code> us
 restart mountebank with the following command:</p>
 
 <pre><code>mb restart --port 3000 --configfile saved.json</code></pre>
+
+<h2 id='replay'>Switching to replay mode</h2>
+
+<p>Everything in mountebank is API-first, which means you can use the <a href='/docs/api/overview'>API</a>
+to remove proxies after you've captured the traffic you want. However, the <code>replay</code>
+command makes it easy to do this on the command line. Assuming you're running <code>mb</code> on port
+3000, you can execute the following command:</p>
+
+<pre><code>mb replay --port 3000</code></pre>
+
+<p>That will reset the imposter configuration by sending a <code>PUT</code> command to /imposters
+based on the current configuration, excluding the proxies (using the
+<code>?removeProxies=true</code> query parameter). This is a convenient way to switch from record
+mode using proxies to replay mode.</p>
 
 <h2 id='config-file'>Config Files</h2>
 
