@@ -2,7 +2,7 @@
 
 var assert = require('assert'),
     Q = require('q'),
-    api = require('./../functionalTest/api/api'),
+    api = require('./../functionalTest/api/api').create(),
     client = require('./../functionalTest/api/http/baseHttpClient').create('http'),
     promiseIt = require('./../functionalTest/testHelpers').promiseIt,
     port = api.port + 1,
