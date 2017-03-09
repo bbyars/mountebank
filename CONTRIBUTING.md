@@ -251,12 +251,12 @@ is how I debug every test where it isn't immediately obvious why it's broken.
 I use IntelliJ to develop. I've found it convenient to set up the ability to run tests through the IDE,
 and use several configurations to run different types of tests:
 
-![Test configurations](https://github.com/bbyars/mountebank/blob/master/images/IntelliJ-Configurations.gif?raw=true)
+![Test configurations](https://raw.githubusercontent.com/bbyars/mountebank/master/images/Intellij-Configurations.png)
 
 The screenshot below shows how I've set up the ability to run unit and functional tests as part of
 what I've called the `all` configuration:
 
-![Configuration details](https://github.com/bbyars/mountebank/blob/master/images/IntelliJ-Configuration-Details.gif?raw=true)
+![Configuration details](https://raw.githubusercontent.com/bbyars/mountebank/master/images/Intellij-Configuration-Details.png)
 
 That configuration assumes mountebank is running in a separate process. I also have a configuration that removes the
 functional tests from the 'Application Parameters' line, which runs the unit tests without any expectation of
