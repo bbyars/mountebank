@@ -28,31 +28,35 @@ I have two high level goals for community contributions. First, I'd like contrib
 as possible. Secondly, I'd like contributions to follow the design vision of mountebank.
 Unfortunately, those two goals can conflict, especially when you're just getting started and
 don't understand the design vision or coding standards. I hope this document helps, and feel free
-to make a pull request to improve it!
+to make a pull request to improve it! If you have any questions, I am more than happy to help
+at brandon.byars@gmail.com, and I am open to any all suggestions on how to make code contributions
+as rewarding an experience as possible.
 
 ## Designing mountebank
 
 The code in mountebank is now a few years old, and maintaining consistency of design vision
-is key to keeping the code maintainable. The following describe key concepts:
+is key to keeping it maintainable. The following describe key concepts:
 
 ### API changes
 
 I consider the REST API the public API from a semantic versioning standpoint, and I aspire never
-to have to release a v2 of mountebank. In my opinion, the API is more important than the code
-behind it; we can fix the code, but we can't change the API once it's been documented. Therefore,
-expect more scrutiny for API changes, and don't be offended if I recommend some changes.
+to have to release a v2 of mountebank. In my opinion, *the API is more important than the code
+behind it*; we can fix the code, but we can't change the API once it's been documented. Therefore,
+expect more scrutiny for API changes, and don't be offended if I recommend some changes. I often
+agonize over the names in the API, and use tests to help me play with ideas.
 
-Before API changes can be released, the documentation and [contract page](http://www.mbtest.org/docs/api/contracts)
-need to be updated.
+Before API changes can be released, the documentation and
+[contract page](http://www.mbtest.org/docs/api/contracts) need to be updated. The contract page
+is, I hope, friendly for users, but a bit unfriendly for maintainers. I'd love help fixing that.
 
 ### Protocol Agnosticism
 
-Most of mountebank is protocol-agnostic, and I consider this a key design concern. In general, every file
+Most of mountebank is protocol-agnostic, and I consider central to its design. In general, every file
 outside fo the protocol folders (http, tcp, etc) should _not_ reference any of the request or response fields
 (like http bodies). Instead, they should accept generic object structures and deal with them appropriately.
-This includes much of the core logic in mountebank, including predicates, behaviors, and response resolution.
+This includes all of the core logic in mountebank, including predicates, behaviors, and response resolution.
 To help myself maintain that mentality, I often write unit tests that use a different request or response
-structure than any of the existing protocols. This approach both makes it easier to add protocols in the future
+structure than any of the existing protocols. This approach makes it easier to add protocols in the future
 and ensures that the logic will work for existing protocols.
 
 I aim in a [future version](https://github.com/bbyars/mountebank/issues/174) to completely separate
@@ -65,14 +69,15 @@ recognize such a tradeoff, I always favor the users.  Here are a few examples, m
 me of ways to overcome these tradeoffs in a mutually agreeable manner:
 
 * I stick to ES5 instead of ES6 to maintain compatibility with older versions of node
-* The build and CI infrastructure is quite complex and a little slow, but I'd prefer that over releasing flaky software
+* The build and CI infrastructure is quite complex and slow, but I'd prefer that over releasing flaky software
 * I aim for fairly comprehensive error handling with useful error messages to help users out
 * Windows support can be painful at times, but it is a core platform for mountebank
 
 ## Coding mountebank
 
-I've aimed to keep the code in mountebank as maintainable as possible, but like any old codebase
-it has its share of warts. The following help to keep the code as clean as possible:
+I do everything I can to resist code entropy, following the ["no broken windows](https://pragprog.com/the-pragmatic-programmer/extracts/software-entropy)
+advice given by the Pragmatic Programmers. Like any old codebase
+mountebank has its share of warts. The following help to keep the code as clean as possible:
 
 ### Pull Requests
 
@@ -134,9 +139,8 @@ The pattern now is, where possible, to scope the `require` calls inside the func
 
 ### Linting
 
-Like all bodies of code that have been around for several years, mountebank has its share of tech debt.
 In the spirit of being as lazy as possible towards maintaining code quality, I rely on linting heavily.
-You are welcome to fix any of it that you see in SaaS dashboards:
+You are welcome to fix any tech debt that you see in SaaS dashboards:
 
 * [Code Climate](https://codeclimate.com/github/bbyars/mountebank)
 * [Codacy](https://www.codacy.com/app/brandonbyars/mountebank/dashboard)
@@ -152,7 +156,7 @@ to get changes committed, but if not I'd prefer to keep the style consistent.
 Unfortunately, the standard `npm shrinkwrap` command doesn't work if you want to install mountebank
 behind a repository manager (see [this issue](https://github.com/bbyars/mountebank/issues/141)), which
 makes adding package dependencies to mountebank (or upgrading versions) clumsy. My general workflow
-is to update `package.json`, delete `npm-shrinkwrap.json`, and then run `node_modules/.bin/shonkwrap`.
+is to update `package.json`, delete `npm-shrinkwrap.json`, run `npm install`, and then run `node_modules/.bin/shonkwrap`.
 
 ## Testing mountebank
 
