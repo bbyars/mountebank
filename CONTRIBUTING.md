@@ -121,18 +121,6 @@ method to emulate the style for standard JavaScript constructors.
 I have not used ES6 because it's not fully available on node 4, which is the lowest version of node
 supported by mountebank.
 
-### Dependency Injection
-
-Early commits in mountebank's life included [mockery](https://github.com/mfncooper/mockery) to mock out
-dependencies.  Despite the excellence of the library, I found the resultant code both harder to understand
-and less testable.  Prefer passing dependencies into creation methods instead.
-
-### Asynchronous Code
-
-Use promises.  mountebank ships with [q](https://github.com/kriskowal/q) in the codebase.  The inimitable
-[Pete Hodgson](http://blog.thepete.net) taught me how to
-[test asynchronous JavaScript](http://martinfowler.com/articles/asyncJS.html) using promises.
-
 ### Requiring Packages
 
 In the early days, the `mb` process started up quite quickly. Years later, that was no longer true,
@@ -257,6 +245,25 @@ this section, but if you're like me, you may find the tips below helpful:
 
 A combination of `only` calls on tests with `console.log`s alongside a running instance of `mb`
 is how I debug every test where it isn't immediately obvious why it's broken.
+
+### Configuring Your IDE
+
+I use IntelliJ to develop. I've found it convenient to set up the ability to run tests through the IDE,
+and use several configurations to run different types of tests:
+
+![Test configurations](https://github.com/bbyars/mountebank/blob/master/images/IntelliJ-Configurations.gif?raw=true)
+
+The screenshot below shows how I've set up the ability to run unit and functional tests as part of
+what I've called the `all` configuration:
+
+![Configuration details](https://github.com/bbyars/mountebank/blob/master/images/IntelliJ-Configuration-Details.gif?raw=true)
+
+That configuration assumes mountebank is running in a separate process. I also have a configuration that removes the
+functional tests from the 'Application Parameters' line, which runs the unit tests without any expectation of
+mountebank running. Combined with the `only` function described in the Debugging section above, I'm able to
+do a significant amount of troubleshooting without leaving the IDE.
+
+I use [nvm](https://github.com/creationix/nvm) to install different versions of node to test against.
 
 ### The Continuous Integration Pipeline
 
