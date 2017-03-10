@@ -81,7 +81,7 @@
     "winston": "~2.3.0",
     "xmldom": "^0.1.19",
     "xpath": "0.0.23",
-    "yargs": "7.0.1"
+    "yargs": "7.0.2"
   },
   "devDependencies": {
     "codeclimate-test-reporter": "^0.4.1",
