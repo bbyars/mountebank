@@ -80,7 +80,7 @@
     "simplesmtp": "~0.3.16",
     "winston": "~2.3.0",
     "xmldom": "^0.1.19",
-    "xpath": "0.0.23",
+    "xpath": "0.0.24",
     "yargs": "7.0.2"
   },
   "devDependencies": {
