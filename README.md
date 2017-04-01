@@ -19,7 +19,7 @@ See [getting started](http://www.mbtest.org/docs/gettingStarted) guide for more 
 
 ## Install and Run
 
-[![npm][npm-badge]][npm]
+[![npm](npm-badge)](npm)
 
 Install:
 
@@ -34,11 +34,11 @@ Run:
 ## Learn More
 
 After installing and running, view the docs in your browser at <http://localhost:2525>, or visit the
-[public site](http://www.mbtest.org/). Of course, you can always learn more and support mountebank by
-buying the book
-[Testing Microservices with Mountebank](https://www.manning.com/books/testing-microservices-with-mountebank):
+[public site](http://www.mbtest.org/).
 
-![the book](https://images.manning.com/255/340/resize/book/d/b083e59-69bc-477f-b97f-33a701366637/Byars-Mountebank-MEAP-HI.png)
+Of course, you can always learn more and support mountebank development by buying the book:
+
+[![Testing Microservices with Mountebank](https://images.manning.com/255/340/resize/book/d/b083e59-69bc-477f-b97f-33a701366637/Byars-Mountebank-MEAP-HI.png)](https://www.manning.com/books/testing-microservices-with-mountebank)
 
 
 ## Goals
