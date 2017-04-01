@@ -19,7 +19,7 @@ See [getting started](http://www.mbtest.org/docs/gettingStarted) guide for more 
 
 ## Install and Run
 
-[![npm](npm-badge)](npm)
+[![npm][npm-badge]][npm]
 
 Install:
 
