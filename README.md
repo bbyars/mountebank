@@ -34,7 +34,11 @@ Run:
 ## Learn More
 
 After installing and running, view the docs in your browser at <http://localhost:2525>, or visit the
-[public site](http://www.mbtest.org/).
+[public site](http://www.mbtest.org/). Better yet, buy the book
+[Testing Microservices with Mountebank](https://www.manning.com/books/testing-microservices-with-mountebank):
+
+![the book](https://images.manning.com/255/340/resize/book/d/b083e59-69bc-477f-b97f-33a701366637/Byars-Mountebank-MEAP-HI.png)
+
 
 ## Goals
 
