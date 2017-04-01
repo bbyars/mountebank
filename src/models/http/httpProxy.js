@@ -62,7 +62,7 @@ function create (logger) {
                 ciphers: proxyOptions.ciphers || 'ALL',
                 rejectUnauthorized: false
             };
-        options.headers.connection = 'close';
+        // Deleted the proxy connection = 'close'
         options.headers.host = hostnameFor(parts.protocol, parts.hostname, options.port);
         setProxyAgent(parts, options);
 
