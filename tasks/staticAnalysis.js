@@ -4,7 +4,6 @@ var fs = require('fs-extra'),
     path = require('path'),
     exec = require('child_process').exec,
     os = require('os'),
-    semver = require('semver'),
     thisPackage = require('../package.json');
 
 function exclude (exclusions, file) {
@@ -37,50 +36,7 @@ function forEachFileIn (dir, fileCallback, options) {
     });
 }
 
-function addShonkwrapErrors (dependencies, errors) {
-    Object.keys(dependencies).forEach(function (npmPackage) {
-        if (dependencies[npmPackage].from || dependencies[npmPackage].resolved) {
-            errors.push('Package "' + npmPackage + '" has repo information in npm-shrinkwrap.json. This causes issues hosting mountebank in an internal repo manager. Run node_modules/.bin/shonkwrap to fix');
-        }
-        if (dependencies[npmPackage].dependencies) {
-            addShonkwrapErrors(dependencies[npmPackage].dependencies, errors);
-        }
-    });
-}
-
 module.exports = function (grunt) {
-
-    grunt.registerTask('shonkwrapCheck', 'Confirm that all packages have been shonkwrapped', function () {
-        var shrinkwrap = require('../npm-shrinkwrap.json'),
-            errors = [];
-
-        if (thisPackage.version !== shrinkwrap.version) {
-            errors.push('npm-shrinkwrap.json version does not match package.json version');
-        }
-
-        Object.keys(thisPackage.dependencies).forEach(function (npmPackage) {
-            var version = thisPackage.dependencies[npmPackage],
-                shrinkwrapDep = shrinkwrap.dependencies[npmPackage];
-
-            if (!shrinkwrapDep) {
-                errors.push('Package "' + npmPackage + '" missing from npm-shrinkwrap.json. Run node_modules/.bin/shonkwrap');
-            }
-            else if (!semver.satisfies(shrinkwrapDep.version, version)) {
-                errors.push('Package "' + npmPackage + '" version is incorrect in npm-shrinkwrap.json. Run node_modules/.bin/shonkwrap');
-            }
-        });
-
-        addShonkwrapErrors(shrinkwrap.dependencies, errors);
-
-        if (errors.length > 0) {
-            errors.push('Unforunately, shrinkwrap/shonkwrap functionality is a little buggy, with unhelpful error messages (see https://github.com/npm/npm/issues/4435)');
-            errors.push("When it's failed for me in the past, it's been because of mismatched versions in package.json and npm-shrinkwrap.json");
-            errors.push("The best solution I've found is to rm npm-shrinkwrap.json && npm install && npm prune && node_modules/.bin/shonkwrap");
-            errors.push("Sorry, I know it's a pain in the arse, but as written, this will fail in certain conditions under an npm install");
-            errors.push("If you know an easier way to pin versions and host in internal repos, I'm all ears ;>");
-            grunt.warn(errors.join(os.EOL));
-        }
-    });
 
     grunt.registerTask('jsCheck', 'Run JavaScript checks not covered by eslint', function () {
         var errors = [],

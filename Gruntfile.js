@@ -89,7 +89,7 @@ module.exports = function (grunt) {
         ['mb:restart', 'try', 'mochaTest:functional', 'finally', 'mb:stop', 'checkForErrors']);
     grunt.registerTask('test:performance', 'Run the performance tests', ['mochaTest:performance']);
     grunt.registerTask('test', 'Run all non-performance tests', ['test:unit', 'test:functional']);
-    grunt.registerTask('lint', 'Run all lint checks', ['jsCheck', 'deadCheck', 'shonkwrapCheck', 'eslint']);
+    grunt.registerTask('lint', 'Run all lint checks', ['jsCheck', 'deadCheck', 'eslint']);
     grunt.registerTask('default', ['test', 'lint']);
     grunt.registerTask('airplane', 'Build that avoids tests requiring network access', ['setAirplaneMode', 'default']);
 
