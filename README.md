@@ -1,4 +1,4 @@
-# mountebank
+# Welcome, friend
 
 mountebank is the first open source tool to provide cross-platform, multi-protocol test doubles over the wire.
 Just point your application to mountebank instead of the real dependency,
@@ -31,12 +31,15 @@ Run:
 
     mb
 
+There are a number of [command line options](http://www.mbtest.org/docs/commandLine) if you need
+to customize mountebank.
+
 ## Learn More
 
 After installing and running, view the docs in your browser at <http://localhost:2525>, or visit the
 [public site](http://www.mbtest.org/).
 
-Of course, you can always learn more and support mountebank development by buying the book:
+You can always learn more and support mountebank development by buying the book:
 
 [![Testing Microservices with Mountebank](https://images.manning.com/255/340/resize/book/d/b083e59-69bc-477f-b97f-33a701366637/Byars-Mountebank-MEAP-HI.png)](https://www.manning.com/books/testing-microservices-with-mountebank)
 
@@ -92,6 +95,26 @@ you can contact me directly at brandon.byars@gmail.com.
 |Self-contained archive | v6.9        |[![Build Status][travis-badge]][travis] | (not tested)                         | [![Build Status][travis-badge]][travis] | [![Build status][appveyor-badge]][appveyor] |
 |(Performance)          | v6.9        |[![Build Status][travis-badge]][travis] | (not tested)                         | (not tested)                            | (not tested)                                |
 
+## Building
+
+`./build` should do the trick on Mac and Linux, and `build.bat` on Windows, assuming you have at least node 4.0.
+If not, yell at me.
+
+There are some tests that require network access (`grunt airplane` ignores them in case that offends your
+moral sensibilities).  A few of these tests verify the correct behavior under DNS failures.  If your ISP
+is kind enough to hijack the NXDOMAIN DNS response in an attempt to allow you to conveniently peruse their
+advertising page, those tests will fail.  I suggest that, under such circumstances, you talk to your ISP
+and let them know that their policies are causing mountebank tests to fail. You can also run `grunt airplane`,
+which will avoid tests requiring your DNS resolver.
+
+## Contributing
+
+Contributions are welcome!
+Some tips for contributing are in the contributing link that spins up when you run mb.
+I have a liberal policy accepting pull requests - I'd rather you sent them even if you can't figure out
+how to get the build working, etc.  I'm also available via Skype or something similar to help you get started.
+Feel free to reach me at brandon.byars@gmail.com.
+
 [npm-badge]: https://nodei.co/npm/mountebank.png?downloads=true&downloadRank=true&stars=true
 [npm]: https://www.npmjs.com/package/mountebank
 [bithound-badge]: https://www.bithound.io/github/bbyars/mountebank/badges/score.svg
@@ -112,24 +135,3 @@ you can contact me directly at brandon.byars@gmail.com.
 [appveyor]: https://ci.appveyor.com/project/bbyars/mountebank
 [snap-badge]: https://img.shields.io/snap-ci/bbyars/mountebank/master.svg
 [snap]: https://snap-ci.com/bbyars/mountebank/branch/master
-=======
-
-## Building
-
-`./build` should do the trick on Mac and Linux, and `build.bat` on Windows, assuming you have at least node 4.0.
-If not, yell at me.
-
-There are some tests that require network access (`grunt airplane` ignores them in case that offends your
-moral sensibilities).  A few of these tests verify the correct behavior under DNS failures.  If your ISP
-is kind enough to hijack the NXDOMAIN DNS response in an attempt to allow you to conveniently peruse their
-advertising page, those tests will fail.  I suggest that, under such circumstances, you talk to your ISP
-and let them know that their policies are causing mountebank tests to fail. You can also run `grunt airplane`,
-which will avoid tests requiring your DNS resolver.
-
-## Contributing
-
-Contributions are welcome!
-Some tips for contributing are in the contributing link that spins up when you run mb.
-I have a liberal policy accepting pull requests - I'd rather you sent them even if you can't figure out
-how to get the build working, etc.  I'm also available via Skype or something similar to help you get started.
-Feel free to reach me at brandon.byars@gmail.com.
