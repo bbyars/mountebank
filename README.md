@@ -88,12 +88,12 @@ you can contact me directly at brandon.byars@gmail.com.
 
 |                       |Node Version |Ubuntu 12.04                            |CentOS 6.7                            |OS X Mavericks                           |Windows Server 2012                          |
 |-----------------------|:-----------:|:--------------------------------------:|:------------------------------------:|:---------------------------------------:|:-------------------------------------------:|
-|npm                    | v7.1        |[![Build Status][travis-badge]][travis] | (not tested)                         | [![Build Status][travis-badge]][travis] | [![Build status][appveyor-badge]][appveyor] |
-|npm                    | v6.9 (LTS)  |[![Build Status][travis-badge]][travis] | (not tested)                         | [![Build Status][travis-badge]][travis] | [![Build status][appveyor-badge]][appveyor] |
+|npm                    | v7.8        |[![Build Status][travis-badge]][travis] | (not tested)                         | [![Build Status][travis-badge]][travis] | [![Build status][appveyor-badge]][appveyor] |
+|npm                    | v6.10 (LTS) |[![Build Status][travis-badge]][travis] | (not tested)                         | [![Build Status][travis-badge]][travis] | [![Build status][appveyor-badge]][appveyor] |
 |npm                    | v4.4        |[![Build Status][travis-badge]][travis] | (not tested)                         | [![Build Status][travis-badge]][travis] | [![Build status][appveyor-badge]][appveyor] |
-|OS package             | v6.9        |[![Build Status][travis-badge]][travis] | [![Build Status][snap-badge]][snap]  | [![Build Status][travis-badge]][travis] | N/A                                         |
-|Self-contained archive | v6.9        |[![Build Status][travis-badge]][travis] | (not tested)                         | [![Build Status][travis-badge]][travis] | [![Build status][appveyor-badge]][appveyor] |
-|(Performance)          | v6.9        |[![Build Status][travis-badge]][travis] | (not tested)                         | (not tested)                            | (not tested)                                |
+|OS package             | v6.10       |[![Build Status][travis-badge]][travis] | [![Build Status][snap-badge]][snap]  | [![Build Status][travis-badge]][travis] | N/A                                         |
+|Self-contained archive | v6.10       |[![Build Status][travis-badge]][travis] | (not tested)                         | [![Build Status][travis-badge]][travis] | [![Build status][appveyor-badge]][appveyor] |
+|(Performance)          | v6.10       |[![Build Status][travis-badge]][travis] | (not tested)                         | (not tested)                            | (not tested)                                |
 
 ## Building
 
