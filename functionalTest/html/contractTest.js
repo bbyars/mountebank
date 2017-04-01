@@ -12,7 +12,6 @@ function getDOM (endpoint) {
     var deferred = Q.defer(),
         url = api.url + endpoint;
 
-    console.log(url);
     jsdom.env({
         url: url,
         done: function (errors, window) {
