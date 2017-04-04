@@ -49,6 +49,116 @@ function create (proxy, postProcess) {
         return deferred.promise;
     }
 
+    // Function is taken from xpath.js to handle xml namespaces
+    function nodeValue (node) {
+        if (node.nodeType === node.TEXT_NODE) {
+            return node.nodeValue;
+        }
+        else if (node.nodeType === node.ATTRIBUTE_NODE) {
+            return node.value;
+        }
+        else if (node.firstChild) {
+         // Converting to a string allows exists to return true if the node exists,
+         // even if there's no data
+            return node.firstChild.data + '';
+        }
+        else {
+            return node.data + '';
+        }
+    }
+
+    function xpathValue (request, value, field, predicate, predicates) {
+        var reqBody = (request.body).toString();
+        predicate.deepEquals = {};
+        if (reqBody !== '') {
+            var xpath = require('xpath');
+            var dom = require('xmldom').DOMParser;
+            var doc = new dom().parseFromString(request.body);
+            var savePath = value.xpath.selector;
+            var ns = value.xpath.ns;
+            if (typeof ns !== 'undefined') {
+                var selectFn = xpath.useNamespaces(ns || {}),
+                    result = selectFn(savePath, doc),
+                    title = result.map(nodeValue);
+            }
+            else {
+                title = xpath.select(savePath, doc);
+            }
+            if (title.length > 1) {
+                for (var i = 0; i < title.length; i += 1) {
+                    predicate.deepEquals.body = title[i].toString();
+                    predicate.xpath = value.xpath;
+                }
+                predicate = multiplePathValues(predicate, field, title);
+                for (var j = 1; j < title.length; j += 1) {
+                    predicates.push(predicate[j - 1]);
+                }
+            }
+            else {
+                predicate.deepEquals.body = title.toString();
+                predicate.xpath = value.xpath;
+            }
+        }
+        return predicates;
+    }
+
+    function multiplePathValues (predicate, field, title) {
+        var i, buildPredicate = [], storePredicate = [], finalPredicate = [];
+        for (i = 0; i < title.length; i += 1) {
+            buildPredicate.push(predicate);
+        }
+
+        buildPredicate.forEach(function (storeObject, j) {
+            storeObject.deepEquals.body = title[j].toString();
+            storePredicate.push(JSON.parse(JSON.stringify(storeObject)));
+        });
+
+        if (field === 'jsonpath') {
+            storePredicate.forEach(function (jsonpathObject, t) {
+                jsonpathObject.jsonpath.selector = (jsonpathObject.jsonpath.selector).replace('*', t);
+                predicate.jsonpath = jsonpathObject.jsonpath;
+                finalPredicate.push(JSON.parse(JSON.stringify(jsonpathObject)));
+            });
+            return finalPredicate;
+        }
+        else {
+            storePredicate.forEach(function (xpathObject, t) {
+                xpathObject.xpath.selector = xpathObject.xpath.selector + '[' + (t + 1) + ']';
+                predicate.xpath = xpathObject.xpath;
+                finalPredicate.push(JSON.parse(JSON.stringify(xpathObject)));
+            });
+            return finalPredicate;
+        }
+    }
+
+    function jsonpathValue (request, value, field, predicate, predicates) {
+        var reqBody = (request.body).toString();
+        predicate.deepEquals = {};
+        if (reqBody !== '') {
+            var parseJson = require('parse-json');
+            var jsonPath = require('jsonpath-plus');
+            var jsonDoc = parseJson(reqBody);
+            var savePath = value.jsonpath.selector;
+            var title = jsonPath(savePath, jsonDoc);
+            if (title.length > 1) {
+                for (var i = 0; i < title.length; i += 1) {
+                    predicate.deepEquals.body = title[i].toString();
+                    predicate.jsonpath = value.jsonpath;
+                }
+                predicate = multiplePathValues(predicate, field, title);
+                for (var j = 1; j < title.length; j += 1) {
+                    predicates.push(predicate[j - 1]);
+                }
+            }
+            else {
+                predicate.deepEquals.body = title.toString();
+                predicate.jsonpath = value.jsonpath;
+            }
+        }
+        return predicates;
+    }
+
+
     function buildEquals (request, matchers) {
         var result = {};
         Object.keys(matchers).forEach(function (key) {
@@ -83,6 +193,15 @@ function create (proxy, postProcess) {
                 if (value === true) {
                     predicate.deepEquals = {};
                     predicate.deepEquals[fieldName] = request[fieldName];
+                }
+                else if ((fieldName === 'body') && (value !== true)) {
+                    var fnMap = {
+                        xpath: xpathValue,
+                        jsonpath: jsonpathValue
+                    };
+                    Object.keys(value).forEach(function (field) {
+                        fnMap[field](request, value, field, predicate, predicates);
+                    });
                 }
                 else {
                     predicate.equals = {};
