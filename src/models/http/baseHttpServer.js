@@ -39,9 +39,8 @@ function setup (protocolName, createBaseServer) {
                 response.body = JSON.stringify(response.body, null, 4);
             }
 
-            // Allow overriding connection header by explicitly passing it in to the defaultResponse field only
             if (!headersHelper.hasHeader('Connection', response.headers)) {
-                // We don't want to use keepalive connections, because a test case
+                // Default to close connections, because a test case
                 // may shutdown the stub, which prevents new connections for
                 // the port, but that won't prevent the system under test
                 // from reusing an existing TCP connection after the stub

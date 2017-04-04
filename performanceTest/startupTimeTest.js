@@ -2,7 +2,7 @@
 
 var Q = require('q'),
     assert = require('assert'),
-    api = require('./../functionalTest/api/api'),
+    api = require('./../functionalTest/api/api').create(),
     promiseIt = require('./../functionalTest/testHelpers').promiseIt,
     mb = require('../functionalTest/mb').create(api.port + 1);
 

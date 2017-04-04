@@ -14,3 +14,4 @@ CREDENTIALS.md
 /coverage
 ~$build-pipeline.xlsx
 Mountebank_Performance Test Results.docx
+npm-shrinkwrap.json
