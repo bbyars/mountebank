@@ -78,6 +78,30 @@ describe('predicates', function () {
             assert.ok(!predicates.evaluate(predicate, request));
         });
 
+        it('should return true if repeating query key has value matching array', function () {
+            var predicate = { matches: { query: { key: ['^begin', '^middle', 'end$'] } } },
+                request = { query: { key: ['begin', 'middle', 'end'] } };
+            assert.ok(predicates.evaluate(predicate, request));
+        });
+
+        it('should return false if repeating query key does not have value matching array', function () {
+            var predicate = { matches: { query: { key: ['^begin', '^middle', '^nd'] } } },
+                request = { query: { key: ['begin', 'middle', 'end'] } };
+            assert.ok(!predicates.evaluate(predicate, request));
+        });
+
+        it('should return true if repeating query key has value matching array object', function () {
+            var predicate = { matches: { query: { key: [{ key1: 'value1$' }, { key1: '^value2' }] } } },
+                request = { query: { key: [{ key1: 'value1' }, { key1: 'value2' }] } };
+            assert.ok(predicates.evaluate(predicate, request));
+        });
+
+        it('should return false if repeating query key does not have matching array object', function () {
+            var predicate = { matches: { query: { key: [{ key1: 'value1$' }, { key1: '^value2' }] } } },
+                request = { query: { key: [{ key1: 'value1' }, { key1: '^alue2' }] } };
+            assert.ok(!predicates.evaluate(predicate, request));
+        });
+
         it('should be case insensitive for object keys by default (issue 169)', function () {
             var predicate = { matches: { headers: { field: 'end$' } } },
                 request = { headers: { FIELD: 'begin middle end' } };
