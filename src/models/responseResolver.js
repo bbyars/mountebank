@@ -82,7 +82,7 @@ function create (proxy, postProcess) {
         return result;
     }
 
-    function predicatesFor (request, matchers) {
+    function predicatesFor (request, matchers, logger) {
         var predicates = [];
 
         matchers.forEach(function (matcher) {
@@ -106,8 +106,6 @@ function create (proxy, postProcess) {
                 }
                 else {
                     Object.keys(value).forEach(function (field) {
-                        var logger = { warn: function () {} }; // TODO: pass real logger
-
                         if (field === 'xpath') {
                             xpathValue(predicate, fieldName, request[fieldName], value.xpath, logger);
                         }
@@ -139,8 +137,8 @@ function create (proxy, postProcess) {
         return i;
     }
 
-    function indexOfStubToAddResponseTo (responseConfig, request, stubs) {
-        var predicates = predicatesFor(request, responseConfig.proxy.predicateGenerators || []),
+    function indexOfStubToAddResponseTo (responseConfig, request, stubs, logger) {
+        var predicates = predicatesFor(request, responseConfig.proxy.predicateGenerators || [], logger),
             stringify = require('json-stable-stringify');
 
         for (var index = stubIndexFor(responseConfig, stubs) + 1; index < stubs.length; index += 1) {
@@ -151,8 +149,8 @@ function create (proxy, postProcess) {
         return -1;
     }
 
-    function canAddResponseToExistingStub (responseConfig, request, stubs) {
-        return indexOfStubToAddResponseTo(responseConfig, request, stubs) >= 0;
+    function canAddResponseToExistingStub (responseConfig, request, stubs, logger) {
+        return indexOfStubToAddResponseTo(responseConfig, request, stubs, logger) >= 0;
     }
 
     function newIsResponse (response, addWaitBehavior, addDecorateBehavior) {
@@ -172,15 +170,15 @@ function create (proxy, postProcess) {
         return result;
     }
 
-    function addNewResponse (responseConfig, request, response, stubs) {
+    function addNewResponse (responseConfig, request, response, stubs, logger) {
         var stubResponse = newIsResponse(response, responseConfig.proxy.addWaitBehavior, responseConfig.proxy.addDecorateBehavior),
-            responseIndex = indexOfStubToAddResponseTo(responseConfig, request, stubs);
+            responseIndex = indexOfStubToAddResponseTo(responseConfig, request, stubs, logger);
 
         stubs[responseIndex].responses.push(stubResponse);
     }
 
-    function addNewStub (responseConfig, request, response, stubs) {
-        var predicates = predicatesFor(request, responseConfig.proxy.predicateGenerators || []),
+    function addNewStub (responseConfig, request, response, stubs, logger) {
+        var predicates = predicatesFor(request, responseConfig.proxy.predicateGenerators || [], logger),
             stubResponse = newIsResponse(response, responseConfig.proxy.addWaitBehavior, responseConfig.proxy.addDecorateBehavior),
             newStub = { predicates: predicates, responses: [stubResponse] },
             index = responseConfig.proxy.mode === 'proxyAlways' ? stubs.length : stubIndexFor(responseConfig, stubs);
@@ -188,16 +186,16 @@ function create (proxy, postProcess) {
         stubs.splice(index, 0, newStub);
     }
 
-    function recordProxyResponse (responseConfig, request, response, stubs) {
+    function recordProxyResponse (responseConfig, request, response, stubs, logger) {
         if (['proxyOnce', 'proxyAlways'].indexOf(responseConfig.proxy.mode) < 0) {
             responseConfig.proxy.mode = 'proxyOnce';
         }
 
         if (responseConfig.proxy.mode === 'proxyAlways' && canAddResponseToExistingStub(responseConfig, request, stubs)) {
-            addNewResponse(responseConfig, request, response, stubs);
+            addNewResponse(responseConfig, request, response, stubs, logger);
         }
         else {
-            addNewStub(responseConfig, request, response, stubs);
+            addNewStub(responseConfig, request, response, stubs, logger);
         }
     }
 
@@ -217,7 +215,7 @@ function create (proxy, postProcess) {
             // Run behaviors here to persist decorated response
             return Q(behaviors.execute(request, response, responseConfig._behaviors, logger));
         }).then(function (response) {
-            recordProxyResponse(responseConfig, request, response, stubs);
+            recordProxyResponse(responseConfig, request, response, stubs, logger);
             return Q(response);
         });
     }
