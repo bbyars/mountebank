@@ -259,6 +259,68 @@ describe('responseResolver', function () {
             });
         });
 
+        promiseIt('should add xpath predicate parameter in predicateGenerators', function () {
+            var proxy = { to: mock().returns(Q('value')) },
+                resolver = ResponseResolver.create(proxy, combinators.identity),
+                logger = Logger.create(),
+                responseConfig = {
+                    proxy: {
+                        to: 'where',
+                        predicateGenerators: [{
+                            matches: {
+                                body: {
+                                    xpath: {
+                                        selector: '//isbn:title',
+                                        ns: { isbn: 'http://schemas.isbn.org/ns/1999/basic.dtd' }
+                                    }
+                                }
+                            }
+                        }]
+                    }
+                },
+                xml = '<root xmlns:isbn="http://schemas.isbn.org/ns/1999/basic.dtd">' +
+                      '  <isbn:book><isbn:title>Harry Potter</isbn:title></isbn:book>' +
+                      '  <isbn:book><isbn:title>The Hobbit</isbn:title></isbn:book>' +
+                      '  <isbn:book><isbn:title>Game of Thrones</isbn:title></isbn:book>' +
+                      '</root>',
+                request = { body: xml },
+                stubs = [{ responses: [responseConfig] }];
+
+            return resolver.resolve(responseConfig, request, logger, stubs).then(function () {
+                assert.deepEqual(stubs, [
+                    {
+                        predicates: [
+                            {
+                                deepEquals: { body: 'Harry Potter' },
+                                xpath: {
+                                    selector: '//isbn:title[1]',
+                                    ns: { isbn: 'http://schemas.isbn.org/ns/1999/basic.dtd' }
+                                }
+                            },
+                            {
+                                deepEquals: { body: 'The Hobbit' },
+                                xpath: {
+                                    selector: '//isbn:title[2]',
+                                    ns: { isbn: 'http://schemas.isbn.org/ns/1999/basic.dtd' }
+                                }
+                            },
+                            {
+                                deepEquals: { body: 'Game of Thrones' },
+                                xpath: {
+                                    selector: '//isbn:title[3]',
+                                    ns: { isbn: 'http://schemas.isbn.org/ns/1999/basic.dtd' }
+                                }
+                            }
+                        ],
+                        responses: [{ is: 'value' }]
+                    },
+                    {
+                        responses: [responseConfig]
+                    }
+                ]);
+            });
+        });
+
         promiseIt('should allow "inject" response', function () {
             var resolver = ResponseResolver.create({}, combinators.identity),
                 logger = Logger.create(),
