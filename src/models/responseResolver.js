@@ -53,39 +53,21 @@ function create (proxy, postProcess) {
         var xpath = require('./xpath'),
             nodes = xpath.select(xpathConfig.selector, xpathConfig.ns, fieldValue, logger);
 
+        // TODO: Handle undefined
         predicate.deepEquals = {};
         predicate.xpath = xpathConfig;
         predicate.deepEquals[fieldName] = (nodes.length === 1) ? nodes[0] : nodes;
     }
 
-    function jsonpathValue (request, value, field, predicate, predicates, fieldName) {
-        /* eslint max-params: [2, 6] */
-        var reqBody = (request[fieldName]).toString();
-        predicate.deepEquals = {};
-        if (reqBody !== '') {
-            var parseJson = require('parse-json');
-            var jsonPath = require('jsonpath-plus');
-            var jsonDoc;
-            if (typeof request[fieldName] === 'object') {
-                jsonDoc = request[fieldName];
-            }
-            else {
-                jsonDoc = parseJson(reqBody);
-            }
-            var savePath = value.jsonpath.selector;
-            var nodes = jsonPath(savePath, jsonDoc);
-            if (nodes.length > 1) {
-                predicate.deepEquals[fieldName] = nodes.map(function (node) { return node.toString(); });
-                predicate.jsonpath = value.jsonpath;
-            }
-            else {
-                predicate.deepEquals[fieldName] = nodes.toString();
-                predicate.jsonpath = value.jsonpath;
-            }
-        }
-        return predicates;
-    }
+    function jsonpathValue (predicate, fieldName, fieldValue, jsonpathConfig, logger) {
+        var jsonpath = require('./jsonpath'),
+            nodes = jsonpath.select(jsonpathConfig.selector, fieldValue, logger);
 
+        // TODO: Handle undefined
+        predicate.deepEquals = {};
+        predicate.jsonpath = jsonpathConfig;
+        predicate.deepEquals[fieldName] = (nodes.length === 1) ? nodes[0] : nodes;
+    }
 
     function buildEquals (request, matchers) {
         var result = {};
@@ -130,7 +112,7 @@ function create (proxy, postProcess) {
                             xpathValue(predicate, fieldName, request[fieldName], value.xpath, logger);
                         }
                         else if (field === 'jsonpath') {
-                            jsonpathValue(request, value, field, predicate, predicates, fieldName);
+                            jsonpathValue(predicate, fieldName, request[fieldName], value.jsonpath, logger);
                         }
                         else {
                             predicate.equals = {};
