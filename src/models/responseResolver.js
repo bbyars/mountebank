@@ -49,59 +49,13 @@ function create (proxy, postProcess) {
         return deferred.promise;
     }
 
-    // Function is taken from xpath.js to handle xml namespaces
-    function nodeValue (node) {
-        if (node.nodeType === node.TEXT_NODE) {
-            return node.nodeValue;
-        }
-        else if (node.nodeType === node.ATTRIBUTE_NODE) {
-            return node.value;
-        }
-        else if (node.firstChild) {
-         // Converting to a string allows exists to return true if the node exists,
-         // even if there's no data
-            return node.firstChild.data + '';
-        }
-        else {
-            return node.data + '';
-        }
-    }
-
-    function xpathValue (request, value, field, predicate, predicates, fieldName) {
-        // value = matcher.matches[fieldName]
-        // field = xpath
-        // predicate = {} with parameters
-        // predicates = collection of all predicates, b/c may add more than one if multiple nodes match
-        // fieldName = field, or body, etc
-
-        // function select (selector, ns, possibleXML, logger)
-        /* eslint max-params: [2, 6] */
-        var xpath = require('xpath'),
-            dom = require('xmldom').DOMParser,
-            doc = new dom().parseFromString(request[fieldName]),
-            savePath = value.xpath.selector,
-            ns = value.xpath.ns,
-            nodes;
+    function xpathValue (predicate, fieldName, fieldValue, xpathConfig, logger) {
+        var xpath = require('./xpath'),
+            nodes = xpath.select(xpathConfig.selector, xpathConfig.ns, fieldValue, logger);
 
         predicate.deepEquals = {};
-
-        if (typeof ns !== 'undefined') {
-            var selectFn = xpath.useNamespaces(ns || {});
-            nodes = selectFn(savePath, doc);
-        }
-        else {
-            nodes = xpath.select(savePath, doc);
-        }
-
-        if (nodes.length > 1) {
-            predicate.deepEquals[fieldName] = nodes.map(nodeValue);
-            predicate.xpath = value.xpath;
-        }
-        else {
-            predicate.deepEquals[fieldName] = nodeValue(nodes[0]);
-            predicate.xpath = value.xpath;
-        }
-        return predicates;
+        predicate.xpath = xpathConfig;
+        predicate.deepEquals[fieldName] = (nodes.length === 1) ? nodes[0] : nodes;
     }
 
     function jsonpathValue (request, value, field, predicate, predicates, fieldName) {
@@ -170,8 +124,10 @@ function create (proxy, postProcess) {
                 }
                 else {
                     Object.keys(value).forEach(function (field) {
+                        var logger = { warn: function () {} }; // TODO: pass real logger
+
                         if (field === 'xpath') {
-                            xpathValue(request, value, field, predicate, predicates, fieldName);
+                            xpathValue(predicate, fieldName, request[fieldName], value.xpath, logger);
                         }
                         else if (field === 'jsonpath') {
                             jsonpathValue(request, value, field, predicate, predicates, fieldName);
