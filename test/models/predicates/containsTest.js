@@ -88,5 +88,29 @@ describe('predicates', function () {
                 request = { query: { key: ['begin', 'middle', 'end'] } };
             assert.ok(!predicates.evaluate(predicate, request));
         });
+
+        it('should return true if repeating query key has value matching array', function () {
+            var predicate = { contains: { query: { key: ['be', 'nd', 'iddl'] } } },
+                request = { query: { key: ['begin', 'middle', 'end'] } };
+            assert.ok(predicates.evaluate(predicate, request));
+        });
+
+        it('should return false if repeating query key does not have value matching array', function () {
+            var predicate = { contains: { query: { key: ['be', 'nd', 'iddl', 'wtf'] } } },
+                request = { query: { key: ['begin', 'middle', 'end'] } };
+            assert.ok(!predicates.evaluate(predicate, request));
+        });
+
+        it('should return true if repeating query key has value matching array object', function () {
+            var predicate = { contains: { query: { key: [{ key1: '1' }, { key1: '2' }] } } },
+                request = { query: { key: [{ key1: 'value1' }, { key1: 'value2' }] } };
+            assert.ok(predicates.evaluate(predicate, request));
+        });
+
+        it('should return false if repeating query key does not have matching array object', function () {
+            var predicate = { contains: { query: { key: [{ key1: '1' }, { key1: '2' }] } } },
+                request = { query: { key: [{ key1: 'value1' }, { key1: 'value3' }] } };
+            assert.ok(!predicates.evaluate(predicate, request));
+        });
     });
 });

@@ -173,7 +173,7 @@ function predicateSatisfied (expected, actual, predicate) {
 
         if (Array.isArray(actual[fieldName])) {
             if (Array.isArray(expected[fieldName])) {
-                return actual[fieldName].every(test);
+                return actual[fieldName].every(test) && actual[fieldName].length === expected[fieldName].length;
             }
             else {
                 return actual[fieldName].some(test);
