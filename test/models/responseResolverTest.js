@@ -322,29 +322,13 @@ describe('responseResolver', function () {
             return resolver.resolve(responseConfig, request, logger, stubs).then(function () {
                 assert.deepEqual(stubs, [
                     {
-                        predicates: [
-                            {
-                                deepEquals: { field: 'Harry Potter' },
-                                xpath: {
-                                    selector: '//isbn:title[1]',
-                                    ns: { isbn: 'http://schemas.isbn.org/ns/1999/basic.dtd' }
-                                }
-                            },
-                            {
-                                deepEquals: { field: 'The Hobbit' },
-                                xpath: {
-                                    selector: '//isbn:title[2]',
-                                    ns: { isbn: 'http://schemas.isbn.org/ns/1999/basic.dtd' }
-                                }
-                            },
-                            {
-                                deepEquals: { field: 'Game of Thrones' },
-                                xpath: {
-                                    selector: '//isbn:title[3]',
-                                    ns: { isbn: 'http://schemas.isbn.org/ns/1999/basic.dtd' }
-                                }
+                        predicates: [{
+                            deepEquals: { field: ['Harry Potter', 'The Hobbit', 'Game of Thrones'] },
+                            xpath: {
+                                selector: '//isbn:title',
+                                ns: { isbn: 'http://schemas.isbn.org/ns/1999/basic.dtd' }
                             }
-                        ],
+                        }],
                         responses: [{ is: 'value' }]
                     },
                     {
@@ -387,7 +371,7 @@ describe('responseResolver', function () {
             });
         });
 
-        promiseIt('should add jsonpath predicate parameter in predicateGenerators', function () {
+        promiseIt('should add jsonpath predicate parameter in predicateGenerators with multiple matches', function () {
             var proxy = { to: mock().returns(Q('value')) },
                 resolver = ResponseResolver.create(proxy, combinators.identity),
                 logger = Logger.create(),
@@ -413,20 +397,10 @@ describe('responseResolver', function () {
             return resolver.resolve(responseConfig, request, logger, stubs).then(function () {
                 assert.deepEqual(stubs, [
                     {
-                        predicates: [
-                            {
-                                deepEquals: { field: 'Harry Potter' },
-                                jsonpath: { selector: '$.books[0].title' }
-                            },
-                            {
-                                deepEquals: { field: 'The Hobbit' },
-                                jsonpath: { selector: '$.books[1].title' }
-                            },
-                            {
-                                deepEquals: { field: 'Game of Thrones' },
-                                jsonpath: { selector: '$.books[2].title' }
-                            }
-                        ],
+                        predicates: [{
+                            deepEquals: { field: ['Harry Potter', 'The Hobbit', 'Game of Thrones'] },
+                            jsonpath: { selector: '$.books[*].title' }
+                        }],
                         responses: [{ is: 'value' }]
                     },
                     {

@@ -372,6 +372,27 @@ var assert = require('assert'),
                     return api.del('/imposters');
                 });
             });
+
+            promiseIt('should support array predicates with xpath', function () {
+                var stub = {
+                        responses: [{ is: { body: 'SUCCESS' } }],
+                        predicates: [{
+                            equals: { body: ['first', 'third', 'second'] },
+                            xpath: { selector: '//value' }
+                        }]
+                    },
+                    xml = '<values><value>first</value><value>second</value><value>third</value></values>',
+                    request = { protocol: protocol, port: port, stubs: [stub], name: this.name };
+
+                return api.post('/imposters', request).then(function (response) {
+                    assert.strictEqual(response.statusCode, 201);
+                    return client.post('/', xml, port);
+                }).then(function (response) {
+                    assert.strictEqual(response.body, 'SUCCESS');
+                }).finally(function () {
+                    return api.del('/imposters');
+                });
+            });
         });
     });
 });

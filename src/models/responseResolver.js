@@ -68,6 +68,12 @@ function create (proxy, postProcess) {
     }
 
     function xpathValue (request, value, field, predicate, predicates, fieldName) {
+        // value = matcher.matches[fieldName]
+        // field = xpath
+        // predicate = {} with parameters
+        // predicates = collection of all predicates, b/c may add more than one if multiple nodes match
+        // fieldName = field, or body, etc
+
         // function select (selector, ns, possibleXML, logger)
         /* eslint max-params: [2, 6] */
         var xpath = require('xpath'),
@@ -80,58 +86,22 @@ function create (proxy, postProcess) {
         predicate.deepEquals = {};
 
         if (typeof ns !== 'undefined') {
-            var selectFn = xpath.useNamespaces(ns || {}),
-                result = selectFn(savePath, doc);
-            nodes = result.map(nodeValue);
+            var selectFn = xpath.useNamespaces(ns || {});
+            nodes = selectFn(savePath, doc);
         }
         else {
             nodes = xpath.select(savePath, doc);
         }
 
         if (nodes.length > 1) {
-            for (var i = 0; i < nodes.length; i += 1) {
-                predicate.deepEquals[fieldName] = nodes[i].toString();
-                predicate.xpath = value.xpath;
-            }
-            predicate = multiplePathValues(predicate, field, nodes, fieldName);
-            for (var j = 1; j < nodes.length; j += 1) {
-                predicates.push(predicate[j - 1]);
-            }
+            predicate.deepEquals[fieldName] = nodes.map(nodeValue);
+            predicate.xpath = value.xpath;
         }
         else {
             predicate.deepEquals[fieldName] = nodeValue(nodes[0]);
             predicate.xpath = value.xpath;
         }
         return predicates;
-    }
-
-    function multiplePathValues (predicate, field, title, fieldName) {
-        var i, buildPredicate = [], storePredicate = [], finalPredicate = [];
-        for (i = 0; i < title.length; i += 1) {
-            buildPredicate.push(predicate);
-        }
-
-        buildPredicate.forEach(function (storeObject, j) {
-            storeObject.deepEquals[fieldName] = title[j].toString();
-            storePredicate.push(JSON.parse(JSON.stringify(storeObject)));
-        });
-
-        if (field === 'jsonpath') {
-            storePredicate.forEach(function (jsonpathObject, t) {
-                jsonpathObject.jsonpath.selector = (jsonpathObject.jsonpath.selector).replace('*', t);
-                predicate.jsonpath = jsonpathObject.jsonpath;
-                finalPredicate.push(JSON.parse(JSON.stringify(jsonpathObject)));
-            });
-            return finalPredicate;
-        }
-        else {
-            storePredicate.forEach(function (xpathObject, t) {
-                xpathObject.xpath.selector = xpathObject.xpath.selector + '[' + (t + 1) + ']';
-                predicate.xpath = xpathObject.xpath;
-                finalPredicate.push(JSON.parse(JSON.stringify(xpathObject)));
-            });
-            return finalPredicate;
-        }
     }
 
     function jsonpathValue (request, value, field, predicate, predicates, fieldName) {
@@ -149,19 +119,13 @@ function create (proxy, postProcess) {
                 jsonDoc = parseJson(reqBody);
             }
             var savePath = value.jsonpath.selector;
-            var title = jsonPath(savePath, jsonDoc);
-            if (title.length > 1) {
-                for (var i = 0; i < title.length; i += 1) {
-                    predicate.deepEquals[fieldName] = title[i].toString();
-                    predicate.jsonpath = value.jsonpath;
-                }
-                predicate = multiplePathValues(predicate, field, title, fieldName);
-                for (var j = 1; j < title.length; j += 1) {
-                    predicates.push(predicate[j - 1]);
-                }
+            var nodes = jsonPath(savePath, jsonDoc);
+            if (nodes.length > 1) {
+                predicate.deepEquals[fieldName] = nodes.map(function (node) { return node.toString(); });
+                predicate.jsonpath = value.jsonpath;
             }
             else {
-                predicate.deepEquals[fieldName] = title.toString();
+                predicate.deepEquals[fieldName] = nodes.toString();
                 predicate.jsonpath = value.jsonpath;
             }
         }
