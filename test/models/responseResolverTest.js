@@ -259,7 +259,40 @@ describe('responseResolver', function () {
             });
         });
 
-        promiseIt('should add xpath predicate parameter in predicateGenerators', function () {
+        promiseIt('should add xpath predicate parameter in predicateGenerators with one match', function () {
+            var proxy = { to: mock().returns(Q('value')) },
+                resolver = ResponseResolver.create(proxy, combinators.identity),
+                logger = Logger.create(),
+                responseConfig = {
+                    proxy: {
+                        to: 'where',
+                        predicateGenerators: [{
+                            matches: { field: { xpath: { selector: '//title' } } }
+                        }]
+                    }
+                },
+                request = { field: '<books><book><title>Harry Potter</title></book></books>' },
+                stubs = [{ responses: [responseConfig] }];
+
+            return resolver.resolve(responseConfig, request, logger, stubs).then(function () {
+                assert.deepEqual(stubs, [
+                    {
+                        predicates: [
+                            {
+                                deepEquals: { field: '<title>Harry Potter</title>' }, // TODO: This is a bug
+                                xpath: { selector: '//title' }
+                            }
+                        ],
+                        responses: [{ is: 'value' }]
+                    },
+                    {
+                        responses: [responseConfig]
+                    }
+                ]);
+            });
+        });
+
+        promiseIt('should add xpath predicate parameter in predicateGenerators with multiple matches', function () {
             var proxy = { to: mock().returns(Q('value')) },
                 resolver = ResponseResolver.create(proxy, combinators.identity),
                 logger = Logger.create(),
@@ -310,6 +343,39 @@ describe('responseResolver', function () {
                                     selector: '//isbn:title[3]',
                                     ns: { isbn: 'http://schemas.isbn.org/ns/1999/basic.dtd' }
                                 }
+                            }
+                        ],
+                        responses: [{ is: 'value' }]
+                    },
+                    {
+                        responses: [responseConfig]
+                    }
+                ]);
+            });
+        });
+
+        promiseIt('should add jsonpath predicate parameter in predicateGenerators with one match', function () {
+            var proxy = { to: mock().returns(Q('value')) },
+                resolver = ResponseResolver.create(proxy, combinators.identity),
+                logger = Logger.create(),
+                responseConfig = {
+                    proxy: {
+                        to: 'where',
+                        predicateGenerators: [{
+                            matches: { field: { jsonpath: { selector: '$..title' } } }
+                        }]
+                    }
+                },
+                request = { field: { title: 'Harry Potter' } },
+                stubs = [{ responses: [responseConfig] }];
+
+            return resolver.resolve(responseConfig, request, logger, stubs).then(function () {
+                assert.deepEqual(stubs, [
+                    {
+                        predicates: [
+                            {
+                                deepEquals: { field: 'Harry Potter' }, // TODO: This is a bug
+                                jsonpath: { selector: '$..title' }
                             }
                         ],
                         responses: [{ is: 'value' }]
