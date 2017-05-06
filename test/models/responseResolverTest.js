@@ -279,7 +279,7 @@ describe('responseResolver', function () {
                     {
                         predicates: [
                             {
-                                deepEquals: { field: '<title>Harry Potter</title>' }, // TODO: This is a bug
+                                deepEquals: { field: 'Harry Potter' },
                                 xpath: { selector: '//title' }
                             }
                         ],
@@ -374,7 +374,7 @@ describe('responseResolver', function () {
                     {
                         predicates: [
                             {
-                                deepEquals: { field: 'Harry Potter' }, // TODO: This is a bug
+                                deepEquals: { field: 'Harry Potter' },
                                 jsonpath: { selector: '$..title' }
                             }
                         ],

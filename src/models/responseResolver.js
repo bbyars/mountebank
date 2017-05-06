@@ -68,37 +68,39 @@ function create (proxy, postProcess) {
     }
 
     function xpathValue (request, value, field, predicate, predicates, fieldName) {
+        // function select (selector, ns, possibleXML, logger)
         /* eslint max-params: [2, 6] */
-        var reqBody = (request[fieldName]).toString();
+        var xpath = require('xpath'),
+            dom = require('xmldom').DOMParser,
+            doc = new dom().parseFromString(request[fieldName]),
+            savePath = value.xpath.selector,
+            ns = value.xpath.ns,
+            nodes;
+
         predicate.deepEquals = {};
-        if (reqBody !== '') {
-            var xpath = require('xpath');
-            var dom = require('xmldom').DOMParser;
-            var doc = new dom().parseFromString(request[fieldName]);
-            var savePath = value.xpath.selector;
-            var ns = value.xpath.ns;
-            if (typeof ns !== 'undefined') {
-                var selectFn = xpath.useNamespaces(ns || {}),
-                    result = selectFn(savePath, doc),
-                    title = result.map(nodeValue);
-            }
-            else {
-                title = xpath.select(savePath, doc);
-            }
-            if (title.length > 1) {
-                for (var i = 0; i < title.length; i += 1) {
-                    predicate.deepEquals[fieldName] = title[i].toString();
-                    predicate.xpath = value.xpath;
-                }
-                predicate = multiplePathValues(predicate, field, title, fieldName);
-                for (var j = 1; j < title.length; j += 1) {
-                    predicates.push(predicate[j - 1]);
-                }
-            }
-            else {
-                predicate.deepEquals[fieldName] = title.toString();
+
+        if (typeof ns !== 'undefined') {
+            var selectFn = xpath.useNamespaces(ns || {}),
+                result = selectFn(savePath, doc);
+            nodes = result.map(nodeValue);
+        }
+        else {
+            nodes = xpath.select(savePath, doc);
+        }
+
+        if (nodes.length > 1) {
+            for (var i = 0; i < nodes.length; i += 1) {
+                predicate.deepEquals[fieldName] = nodes[i].toString();
                 predicate.xpath = value.xpath;
             }
+            predicate = multiplePathValues(predicate, field, nodes, fieldName);
+            for (var j = 1; j < nodes.length; j += 1) {
+                predicates.push(predicate[j - 1]);
+            }
+        }
+        else {
+            predicate.deepEquals[fieldName] = nodeValue(nodes[0]);
+            predicate.xpath = value.xpath;
         }
         return predicates;
     }
@@ -203,21 +205,19 @@ function create (proxy, postProcess) {
                     predicate.deepEquals[fieldName] = request[fieldName];
                 }
                 else {
-                    var fnMap = {
-                            xpath: xpathValue,
-                            jsonpath: jsonpathValue
-                        },
-                        appliedParameter = false;
                     Object.keys(value).forEach(function (field) {
-                        if (fnMap[field]) {
-                            appliedParameter = true;
-                            fnMap[field](request, value, field, predicate, predicates, fieldName);
+                        if (field === 'xpath') {
+                            xpathValue(request, value, field, predicate, predicates, fieldName);
                         }
+                        else if (field === 'jsonpath') {
+                            jsonpathValue(request, value, field, predicate, predicates, fieldName);
+                        }
+                        else {
+                            predicate.equals = {};
+                            predicate.equals[fieldName] = buildEquals(request[fieldName], value);
+                        }
+
                     });
-                    if (!appliedParameter) {
-                        predicate.equals = {};
-                        predicate.equals[fieldName] = buildEquals(request[fieldName], value);
-                    }
                 }
 
                 predicates.push(predicate);
