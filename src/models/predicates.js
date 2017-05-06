@@ -172,12 +172,27 @@ function predicateSatisfied (expected, actual, predicate) {
         }
 
         if (Array.isArray(actual[fieldName])) {
-            return actual[fieldName].some(test);
+            if (Array.isArray(expected[fieldName])) {
+                return actual[fieldName].every(test);
+            }
+            else {
+                return actual[fieldName].some(test);
+            }
         }
         else if (!helpers.defined(actual[fieldName]) && Array.isArray(actual)) {
             // support array of objects in JSON
             return actual.some(function (element) {
                 return predicateSatisfied(expected, element, predicate);
+            });
+        }
+        else if (Array.isArray(expected)) {
+            return expected.some(function (expectedValue) {
+                if (typeof expected[fieldName] === 'object') {
+                    return predicateSatisfied(expectedValue, actual, predicate);
+                }
+                else {
+                    return predicate(expectedValue, actual);
+                }
             });
         }
         else if (typeof expected[fieldName] === 'object') {
