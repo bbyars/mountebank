@@ -268,7 +268,7 @@ describe('responseResolver', function () {
                         to: 'where',
                         predicateGenerators: [{
                             matches: {
-                                body: {
+                                field: {
                                     xpath: {
                                         selector: '//isbn:title',
                                         ns: { isbn: 'http://schemas.isbn.org/ns/1999/basic.dtd' }
@@ -283,7 +283,7 @@ describe('responseResolver', function () {
                       '  <isbn:book><isbn:title>The Hobbit</isbn:title></isbn:book>' +
                       '  <isbn:book><isbn:title>Game of Thrones</isbn:title></isbn:book>' +
                       '</root>',
-                request = { body: xml },
+                request = { field: xml },
                 stubs = [{ responses: [responseConfig] }];
 
             return resolver.resolve(responseConfig, request, logger, stubs).then(function () {
@@ -291,25 +291,74 @@ describe('responseResolver', function () {
                     {
                         predicates: [
                             {
-                                deepEquals: { body: 'Harry Potter' },
+                                deepEquals: { field: 'Harry Potter' },
                                 xpath: {
                                     selector: '//isbn:title[1]',
                                     ns: { isbn: 'http://schemas.isbn.org/ns/1999/basic.dtd' }
                                 }
                             },
                             {
-                                deepEquals: { body: 'The Hobbit' },
+                                deepEquals: { field: 'The Hobbit' },
                                 xpath: {
                                     selector: '//isbn:title[2]',
                                     ns: { isbn: 'http://schemas.isbn.org/ns/1999/basic.dtd' }
                                 }
                             },
                             {
-                                deepEquals: { body: 'Game of Thrones' },
+                                deepEquals: { field: 'Game of Thrones' },
                                 xpath: {
                                     selector: '//isbn:title[3]',
                                     ns: { isbn: 'http://schemas.isbn.org/ns/1999/basic.dtd' }
                                 }
+                            }
+                        ],
+                        responses: [{ is: 'value' }]
+                    },
+                    {
+                        responses: [responseConfig]
+                    }
+                ]);
+            });
+        });
+
+        promiseIt('should add jsonpath predicate parameter in predicateGenerators', function () {
+            var proxy = { to: mock().returns(Q('value')) },
+                resolver = ResponseResolver.create(proxy, combinators.identity),
+                logger = Logger.create(),
+                responseConfig = {
+                    proxy: {
+                        to: 'where',
+                        predicateGenerators: [{
+                            matches: { field: { jsonpath: { selector: '$.books[*].title' } } }
+                        }]
+                    }
+                },
+                request = {
+                    field: {
+                        books: [
+                            { title: 'Harry Potter' },
+                            { title: 'The Hobbit' },
+                            { title: 'Game of Thrones' }
+                        ]
+                    }
+                },
+                stubs = [{ responses: [responseConfig] }];
+
+            return resolver.resolve(responseConfig, request, logger, stubs).then(function () {
+                assert.deepEqual(stubs, [
+                    {
+                        predicates: [
+                            {
+                                deepEquals: { field: 'Harry Potter' },
+                                jsonpath: { selector: '$.books[0].title' }
+                            },
+                            {
+                                deepEquals: { field: 'The Hobbit' },
+                                jsonpath: { selector: '$.books[1].title' }
+                            },
+                            {
+                                deepEquals: { field: 'Game of Thrones' },
+                                jsonpath: { selector: '$.books[2].title' }
                             }
                         ],
                         responses: [{ is: 'value' }]
