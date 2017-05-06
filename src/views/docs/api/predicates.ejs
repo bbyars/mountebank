@@ -125,11 +125,117 @@ mountebank recommends that you stay away from <code>matches</code> if you're dea
 In mountebank's experience, <code>contains</code> is the most useful predicate for binary
 imposters, as even binary RPC data generally contains strings representing method names.</p>
 
+<h2 id='array-match'>Matching arrays</h2>
+
 <p>On occasion you may encounter multi-valued keys.  This can be the case with querystrings
 that have repeating keys, for example <code>?key=first&amp;key=second</code>.  In those cases,
 <code>deepEquals</code> will require all the values (in any order) to match.  All other
 predicates will match if any value matches, so an <code>equals</code> predicate
 will match with the value of <code>second</code> in the example above.</p>
+
+<p><a href='/docs/api/json'>JSON predicates</a> are also allowed, for example, to match HTTP
+bodies. When the body contains an array, the logic above still applies: <code>deepEquals</code>
+requires all values to match, and other predicates will match if any value in the array
+matches.</p>
+
+<p>You also have the option of specifying an array in the predicate definition. If you do so,
+then <em>all</em> fields in the array must match (in any order). The following example shows
+this with a querystring:</p>
+
+<pre><code data-test-id='array example'
+           data-test-step='1'
+           data-test-type='http'>
+POST /imposters HTTP/1.1
+Host: localhost:<%= port %>
+Accept: application/json
+Content-Type: application/json
+
+{
+  "port": 3333,
+  "protocol": "http",
+  "stubs": [
+    {
+      "predicates": [{
+        "equals": {
+          "query": { "key": <strong class='highlight2'>["first", "second"]</strong> }
+        }
+      }],
+      "responses": [{
+        "is": {
+          "body": <strong class='highlight1'>"Entire array matched"</strong>
+        }
+      }]
+    },
+    {
+      "predicates": [{
+        "equals": {
+          "query": { "key": <strong class='highlight3'>"first"</strong> }
+        }
+      }],
+      "responses": [{
+        "is": {
+          "body": <strong class='highlight4'>"A field in the array matched"</strong>
+        }
+      }]
+    }
+  ]
+}
+</code></pre>
+
+<p>We'll call the imposter with a multi-valued query key, which mountebank recognizes as an array.</p>
+
+<pre><code data-test-id='array example'
+           data-test-step='2'
+           data-test-type='http'>
+GET /path<strong class='highlight2'>?key=second&key=first</strong> HTTP/1.1
+Host: localhost:3333
+</code></pre>
+
+<p>Since both keys match, we get our expected response from the first stub.</p>
+
+<pre><code data-test-id='array example'
+           data-test-verify-step='2'
+           data-test-ignore-lines='["^Date"]'>
+HTTP/1.1 200 OK
+Connection: close
+Date: Sat, 06 May 2017 02:30:31 GMT
+Transfer-Encoding: chunked
+
+<strong class='highlight1'>Entire array matched</strong>
+</code></pre>
+
+<p>Notice that the order of the keys doesn't matter. If you do define an array predicate, the array lengths
+of both the predicate definition and the actual request field must match. For example, if we had three
+keys passed into the query, our array predicate would no longer match.</p>
+
+<pre><code data-test-id='array example'
+           data-test-step='3'
+           data-test-type='http'>
+GET /path?key=second&<strong class='highlight3'>key=first</strong>&key=third HTTP/1.1
+Host: localhost:3333
+</code></pre>
+
+<p>In this case, our second stub matches, because it does <em>not</em> use an array predicate, and
+one of the actual array values in the request matches the predicate definition</p>
+
+<pre><code data-test-id='array example'
+           data-test-verify-step='3'
+           data-test-ignore-lines='["^Date"]'>
+HTTP/1.1 200 OK
+Connection: close
+Date: Sat, 06 May 2017 02:30:31 GMT
+Transfer-Encoding: chunked
+
+<strong class='highlight4'>A field in the array matched</strong>
+</code></pre>
+
+<code class='hidden' data-test-id='array example'
+                     data-test-step='4'
+                     data-test-type='http'>
+DELETE /imposters/3333 HTTP/1.1
+Host: localhost:<%= port %>
+Accept: application/json
+</code>
 
 <h2>Matching XML or JSON</h2>
 
