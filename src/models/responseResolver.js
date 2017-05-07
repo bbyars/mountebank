@@ -49,24 +49,35 @@ function create (proxy, postProcess) {
         return deferred.promise;
     }
 
+    function selectionValue (nodes) {
+        var helpers = require('../util/helpers');
+        if (!helpers.defined(nodes)) {
+            return '';
+        }
+        else if (!Array.isArray(nodes)) {
+            return nodes; // booleans and counts
+        }
+        else {
+            return (nodes.length === 1) ? nodes[0] : nodes;
+        }
+    }
+
     function xpathValue (predicate, fieldName, fieldValue, xpathConfig, logger) {
         var xpath = require('./xpath'),
             nodes = xpath.select(xpathConfig.selector, xpathConfig.ns, fieldValue, logger);
 
-        // TODO: Handle undefined
         predicate.deepEquals = {};
         predicate.xpath = xpathConfig;
-        predicate.deepEquals[fieldName] = (nodes.length === 1) ? nodes[0] : nodes;
+        predicate.deepEquals[fieldName] = selectionValue(nodes);
     }
 
     function jsonpathValue (predicate, fieldName, fieldValue, jsonpathConfig, logger) {
         var jsonpath = require('./jsonpath'),
             nodes = jsonpath.select(jsonpathConfig.selector, fieldValue, logger);
 
-        // TODO: Handle undefined
         predicate.deepEquals = {};
         predicate.jsonpath = jsonpathConfig;
-        predicate.deepEquals[fieldName] = (nodes.length === 1) ? nodes[0] : nodes;
+        predicate.deepEquals[fieldName] = selectionValue(nodes);
     }
 
     function buildEquals (request, matchers) {

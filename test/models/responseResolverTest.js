@@ -277,12 +277,10 @@ describe('responseResolver', function () {
             return resolver.resolve(responseConfig, request, logger, stubs).then(function () {
                 assert.deepEqual(stubs, [
                     {
-                        predicates: [
-                            {
-                                deepEquals: { field: 'Harry Potter' },
-                                xpath: { selector: '//title' }
-                            }
-                        ],
+                        predicates: [{
+                            deepEquals: { field: 'Harry Potter' },
+                            xpath: { selector: '//title' }
+                        }],
                         responses: [{ is: 'value' }]
                     },
                     {
@@ -338,6 +336,99 @@ describe('responseResolver', function () {
             });
         });
 
+        promiseIt('should add xpath predicate parameter in predicateGenerators even if no xpath match', function () {
+            var proxy = { to: mock().returns(Q('value')) },
+                resolver = ResponseResolver.create(proxy, combinators.identity),
+                logger = Logger.create(),
+                responseConfig = {
+                    proxy: {
+                        to: 'where',
+                        predicateGenerators: [{
+                            matches: { field: { xpath: { selector: '//title' } } }
+                        }]
+                    }
+                },
+                request = { field: '<books />' },
+                stubs = [{ responses: [responseConfig] }];
+
+            return resolver.resolve(responseConfig, request, logger, stubs).then(function () {
+                assert.deepEqual(stubs, [
+                    {
+                        predicates: [{
+                            deepEquals: { field: '' },
+                            xpath: { selector: '//title' }
+                        }],
+                        responses: [{ is: 'value' }]
+                    },
+                    {
+                        responses: [responseConfig]
+                    }
+                ]);
+            });
+        });
+
+        promiseIt('should add xpath predicate parameter in predicateGenerators even if scalar xpath match', function () {
+            var proxy = { to: mock().returns(Q('value')) },
+                resolver = ResponseResolver.create(proxy, combinators.identity),
+                logger = Logger.create(),
+                responseConfig = {
+                    proxy: {
+                        to: 'where',
+                        predicateGenerators: [{
+                            matches: { field: { xpath: { selector: 'count(//title)' } } }
+                        }]
+                    }
+                },
+                request = { field: '<doc><title>first</title><title>second</title></doc>' },
+                stubs = [{ responses: [responseConfig] }];
+
+            return resolver.resolve(responseConfig, request, logger, stubs).then(function () {
+                assert.deepEqual(stubs, [
+                    {
+                        predicates: [{
+                            deepEquals: { field: 2 },
+                            xpath: { selector: 'count(//title)' }
+                        }],
+                        responses: [{ is: 'value' }]
+                    },
+                    {
+                        responses: [responseConfig]
+                    }
+                ]);
+            });
+        });
+
+        promiseIt('should add xpath predicate parameter in predicateGenerators even if boolean match', function () {
+            var proxy = { to: mock().returns(Q('value')) },
+                resolver = ResponseResolver.create(proxy, combinators.identity),
+                logger = Logger.create(),
+                responseConfig = {
+                    proxy: {
+                        to: 'where',
+                        predicateGenerators: [{
+                            matches: { field: { xpath: { selector: 'boolean(//title)' } } }
+                        }]
+                    }
+                },
+                request = { field: '<doc></doc>' },
+                stubs = [{ responses: [responseConfig] }];
+
+            return resolver.resolve(responseConfig, request, logger, stubs).then(function () {
+                assert.deepEqual(stubs, [
+                    {
+                        predicates: [{
+                            deepEquals: { field: false },
+                            xpath: { selector: 'boolean(//title)' }
+                        }],
+                        responses: [{ is: 'value' }]
+                    },
+                    {
+                        responses: [responseConfig]
+                    }
+                ]);
+            });
+        });
+
         promiseIt('should add jsonpath predicate parameter in predicateGenerators with one match', function () {
             var proxy = { to: mock().returns(Q('value')) },
                 resolver = ResponseResolver.create(proxy, combinators.identity),
@@ -356,12 +447,10 @@ describe('responseResolver', function () {
             return resolver.resolve(responseConfig, request, logger, stubs).then(function () {
                 assert.deepEqual(stubs, [
                     {
-                        predicates: [
-                            {
-                                deepEquals: { field: 'Harry Potter' },
-                                jsonpath: { selector: '$..title' }
-                            }
-                        ],
+                        predicates: [{
+                            deepEquals: { field: 'Harry Potter' },
+                            jsonpath: { selector: '$..title' }
+                        }],
                         responses: [{ is: 'value' }]
                     },
                     {
@@ -407,6 +496,69 @@ describe('responseResolver', function () {
                         responses: [responseConfig]
                     }
                 ]);
+            });
+        });
+
+        promiseIt('should add jsonpath predicate parameter in predicateGenerators with no match', function () {
+            var proxy = { to: mock().returns(Q('value')) },
+                resolver = ResponseResolver.create(proxy, combinators.identity),
+                logger = Logger.create(),
+                responseConfig = {
+                    proxy: {
+                        to: 'where',
+                        predicateGenerators: [{
+                            matches: { field: { jsonpath: { selector: '$..title' } } }
+                        }]
+                    }
+                },
+                request = { field: false },
+                stubs = [{ responses: [responseConfig] }];
+
+            return resolver.resolve(responseConfig, request, logger, stubs).then(function () {
+                assert.deepEqual(stubs, [
+                    {
+                        predicates: [{
+                            deepEquals: { field: '' },
+                            jsonpath: { selector: '$..title' }
+                        }],
+                        responses: [{ is: 'value' }]
+                    },
+                    {
+                        responses: [responseConfig]
+                    }
+                ]);
+            });
+        });
+
+        promiseIt('should log warning if request not JSON', function () {
+            var proxy = { to: mock().returns(Q('value')) },
+                resolver = ResponseResolver.create(proxy, combinators.identity),
+                logger = Logger.create(),
+                responseConfig = {
+                    proxy: {
+                        to: 'where',
+                        predicateGenerators: [{
+                            matches: { field: { jsonpath: { selector: '$..title' } } }
+                        }]
+                    }
+                },
+                request = { field: 'Hello, world' },
+                stubs = [{ responses: [responseConfig] }];
+
+            return resolver.resolve(responseConfig, request, logger, stubs).then(function () {
+                assert.deepEqual(stubs, [
+                    {
+                        predicates: [{
+                            deepEquals: { field: '' },
+                            jsonpath: { selector: '$..title' }
+                        }],
+                        responses: [{ is: 'value' }]
+                    },
+                    {
+                        responses: [responseConfig]
+                    }
+                ]);
+                logger.warn.assertLogged('Cannot parse as JSON: "Hello, world"');
             });
         });
 
