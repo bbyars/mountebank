@@ -128,9 +128,9 @@ imposters, as even binary RPC data generally contains strings representing metho
 <h2 id='array-match'>Matching arrays</h2>
 
 <p>On occasion you may encounter multi-valued keys.  This can be the case with querystrings
-that have repeating keys, for example <code>?key=first&amp;key=second</code>.  In those cases,
-<code>deepEquals</code> will require all the values (in any order) to match.  All other
-predicates will match if any value matches, so an <code>equals</code> predicate
+and HTTP headers that have repeating keys, for example <code>?key=first&amp;key=second</code>.
+In those cases, <code>deepEquals</code> will require all the values (in any order) to match.
+All other predicates will match if any value matches, so an <code>equals</code> predicate
 will match with the value of <code>second</code> in the example above.</p>
 
 <p><a href='/docs/api/json'>JSON predicates</a> are also allowed, for example, to match HTTP
@@ -139,8 +139,9 @@ requires all values to match, and other predicates will match if any value in th
 matches.</p>
 
 <p>You also have the option of specifying an array in the predicate definition. If you do so,
-then <em>all</em> fields in the array must match (in any order). The following example shows
-this with a querystring:</p>
+then <em>all</em> fields in the predicate array must match (in any order). Most predicates
+will match even if there are additional fields in the actual request array; <code>deepEquals</code>
+requires the array lengths to be equal. The following example shows this with a querystring:</p>
 
 <pre><code data-test-id='array example'
            data-test-step='1'
@@ -187,7 +188,7 @@ Content-Type: application/json
 <pre><code data-test-id='array example'
            data-test-step='2'
            data-test-type='http'>
-GET /path<strong class='highlight2'>?key=second&key=first</strong> HTTP/1.1
+GET /path<strong class='highlight2'>?key=second&key=first</strong>&key=third HTTP/1.1
 Host: localhost:3333
 </code></pre>
 
@@ -204,14 +205,13 @@ Transfer-Encoding: chunked
 <strong class='highlight1'>Entire array matched</strong>
 </code></pre>
 
-<p>Notice that the order of the keys doesn't matter. If you do define an array predicate, the array lengths
-of both the predicate definition and the actual request field must match. For example, if we had three
-keys passed into the query, our array predicate would no longer match.</p>
+<p>Notice that the order of the keys doesn't matter. If the request is missing either array value,
+our predicate no longer matches.</p>
 
 <pre><code data-test-id='array example'
            data-test-step='3'
            data-test-type='http'>
-GET /path?key=second&<strong class='highlight3'>key=first</strong>&key=third HTTP/1.1
+GET /path?<strong class='highlight3'>key=first</strong>&key=third HTTP/1.1
 Host: localhost:3333
 </code></pre>
 

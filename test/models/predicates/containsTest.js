@@ -89,9 +89,9 @@ describe('predicates', function () {
             assert.ok(!predicates.evaluate(predicate, request));
         });
 
-        it('should return true if repeating query key has value matching array', function () {
-            var predicate = { contains: { query: { key: ['be', 'nd', 'iddl'] } } },
-                request = { query: { key: ['begin', 'middle', 'end'] } };
+        it('should return true if array predicate matches actual array', function () {
+            var predicate = { contains: { field: ['be', 'nd', 'iddl'] } },
+                request = { field: ['begin', 'middle', 'end'] };
             assert.ok(predicates.evaluate(predicate, request));
         });
 
@@ -99,6 +99,12 @@ describe('predicates', function () {
             var predicate = { contains: { query: { key: ['be', 'nd', 'iddl', 'wtf'] } } },
                 request = { query: { key: ['begin', 'middle', 'end'] } };
             assert.ok(!predicates.evaluate(predicate, request));
+        });
+
+        it('should return true if all values in predicate definition in array even if array has more elements', function () {
+            var predicate = { contains: { query: { key: ['fi', 'se'] } } },
+                request = { query: { key: ['first', 'second', 'third'] } };
+            assert.ok(predicates.evaluate(predicate, request));
         });
 
         it('should return true if repeating query key has value matching array object', function () {

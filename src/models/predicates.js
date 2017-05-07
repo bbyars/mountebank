@@ -146,60 +146,79 @@ function tryJSON (value) {
     }
 }
 
+function testPredicate (predicate, expected, actual) {
+    var helpers = require('../util/helpers');
+    if (!helpers.defined(actual)) {
+        actual = '';
+    }
+    if (typeof expected === 'object') {
+        return predicateSatisfied(expected, actual, predicate);
+    }
+    else {
+        return predicate(expected, actual);
+    }
+}
+
+function bothArrays (expected, actual) {
+    return Array.isArray(actual) && Array.isArray(expected);
+}
+
+function allExpectedArrayValuesMatchActualArray (predicate, expectedArray, actualArray) {
+    return expectedArray.every(function (expectedValue) {
+        return actualArray.some(function (actualValue) {
+            return testPredicate(predicate, expectedValue, actualValue);
+        });
+    });
+}
+
+function onlyActualIsArray (expected, actual) {
+    return Array.isArray(actual) && !Array.isArray(expected);
+}
+
+function expectedMatchesAtLeastOneValueInActualArray (predicate, expected, actualArray) {
+    return actualArray.some(function (actual) {
+        return testPredicate(predicate, expected, actual);
+    });
+}
+
+function expectedLeftOffArraySyntaxButActualIsArrayOfObjects (expected, actual, fieldName) {
+    var helpers = require('../util/helpers');
+    return !Array.isArray(expected[fieldName]) && !helpers.defined(actual[fieldName]) && Array.isArray(actual);
+}
+
 function predicateSatisfied (expected, actual, predicate) {
     if (!actual) {
         return false;
     }
 
+    // Support predicates that reach into fields encoded in JSON strings (e.g. HTTP bodies)
+    if (typeof actual === 'string') {
+        actual = tryJSON(actual);
+    }
+
     return Object.keys(expected).every(function (fieldName) {
-        var helpers = require('../util/helpers');
-
-        var test = function (value) {
-            if (!helpers.defined(value)) {
-                value = '';
-            }
-            if (typeof expected[fieldName] === 'object') {
-                return predicateSatisfied(expected[fieldName], value, predicate);
-            }
-            else {
-                return predicate(expected[fieldName], value);
-            }
-        };
-
-        // Support predicates that reach into fields encoded in JSON strings (e.g. HTTP bodies)
-        if (!helpers.defined(actual[fieldName]) && typeof actual === 'string') {
-            actual = tryJSON(actual);
+        if (bothArrays(expected[fieldName], actual[fieldName])) {
+            return allExpectedArrayValuesMatchActualArray(predicate, expected[fieldName], actual[fieldName]);
         }
-
-        if (Array.isArray(actual[fieldName])) {
-            if (Array.isArray(expected[fieldName])) {
-                return actual[fieldName].every(test) && actual[fieldName].length === expected[fieldName].length;
-            }
-            else {
-                return actual[fieldName].some(test);
-            }
+        else if (onlyActualIsArray(expected[fieldName], actual[fieldName])) {
+            return expectedMatchesAtLeastOneValueInActualArray(predicate, expected[fieldName], actual[fieldName]);
         }
-        else if (!helpers.defined(actual[fieldName]) && Array.isArray(actual)) {
-            // support array of objects in JSON
-            return actual.some(function (element) {
-                return predicateSatisfied(expected, element, predicate);
-            });
-        }
-        else if (Array.isArray(expected)) {
-            return expected.some(function (expectedValue) {
-                if (typeof expected[fieldName] === 'object') {
-                    return predicateSatisfied(expectedValue, actual, predicate);
-                }
-                else {
-                    return predicate(expectedValue, actual);
-                }
-            });
+        else if (expectedLeftOffArraySyntaxButActualIsArrayOfObjects(expected, actual, fieldName)) {
+            // This is a little confusing, but predated the ability for users to specify an
+            // array for the expected values and is left for backwards compatibility.
+            // The predicate might be:
+            //     { equals: { examples: { key: 'third' } } }
+            // and the request might be
+            //     { examples: '[{ "key": "first" }, { "different": true }, { "key": "third" }]' }
+            // We expect that the "key" field in the predicate definition matches any object key
+            // in the actual array
+            return expectedMatchesAtLeastOneValueInActualArray(predicate, expected, actual);
         }
         else if (typeof expected[fieldName] === 'object') {
             return predicateSatisfied(expected[fieldName], actual[fieldName], predicate);
         }
         else {
-            return test(actual[fieldName]);
+            return testPredicate(predicate, expected[fieldName], actual[fieldName]);
         }
     });
 }
