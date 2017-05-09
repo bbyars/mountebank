@@ -240,7 +240,11 @@ describe('responseResolver', function () {
                 responseConfig = {
                     proxy: {
                         to: 'where',
-                        predicateGenerators: [{ matches: { key: true }, caseSensitive: true, except: 'xxx' }]
+                        predicateGenerators: [{
+                            matches: { key: true },
+                            caseSensitive: true,
+                            except: 'xxx'
+                        }]
                     }
                 },
                 request = { key: 'Test' },
@@ -249,7 +253,11 @@ describe('responseResolver', function () {
             return resolver.resolve(responseConfig, request, logger, stubs).then(function () {
                 assert.deepEqual(stubs, [
                     {
-                        predicates: [{ deepEquals: { key: 'Test' }, caseSensitive: true, except: 'xxx' }],
+                        predicates: [{
+                            deepEquals: { key: 'Test' },
+                            caseSensitive: true,
+                            except: 'xxx'
+                        }],
                         responses: [{ is: 'value' }]
                     },
                     {
@@ -267,7 +275,8 @@ describe('responseResolver', function () {
                     proxy: {
                         to: 'where',
                         predicateGenerators: [{
-                            matches: { field: { xpath: { selector: '//title' } } }
+                            matches: { field: true },
+                            xpath: { selector: '//title' }
                         }]
                     }
                 },
@@ -290,6 +299,38 @@ describe('responseResolver', function () {
             });
         });
 
+        promiseIt('should add xpath predicate parameter in predicateGenerators with one match and a nested match key', function () {
+            var proxy = { to: mock().returns(Q('value')) },
+                resolver = ResponseResolver.create(proxy, combinators.identity),
+                logger = Logger.create(),
+                responseConfig = {
+                    proxy: {
+                        to: 'where',
+                        predicateGenerators: [{
+                            matches: { parent: { child: true } },
+                            xpath: { selector: '//title' }
+                        }]
+                    }
+                },
+                request = { parent: { child: '<books><book><title>Harry Potter</title></book></books>' } },
+                stubs = [{ responses: [responseConfig] }];
+
+            return resolver.resolve(responseConfig, request, logger, stubs).then(function () {
+                assert.deepEqual(stubs, [
+                    {
+                        predicates: [{
+                            equals: { parent: { child: 'Harry Potter' } },
+                            xpath: { selector: '//title' }
+                        }],
+                        responses: [{ is: 'value' }]
+                    },
+                    {
+                        responses: [responseConfig]
+                    }
+                ]);
+            });
+        });
+
         promiseIt('should add xpath predicate parameter in predicateGenerators with multiple matches', function () {
             var proxy = { to: mock().returns(Q('value')) },
                 resolver = ResponseResolver.create(proxy, combinators.identity),
@@ -298,13 +339,10 @@ describe('responseResolver', function () {
                     proxy: {
                         to: 'where',
                         predicateGenerators: [{
-                            matches: {
-                                field: {
-                                    xpath: {
-                                        selector: '//isbn:title',
-                                        ns: { isbn: 'http://schemas.isbn.org/ns/1999/basic.dtd' }
-                                    }
-                                }
+                            matches: { field: true },
+                            xpath: {
+                                selector: '//isbn:title',
+                                ns: { isbn: 'http://schemas.isbn.org/ns/1999/basic.dtd' }
                             }
                         }]
                     }
@@ -344,7 +382,8 @@ describe('responseResolver', function () {
                     proxy: {
                         to: 'where',
                         predicateGenerators: [{
-                            matches: { field: { xpath: { selector: '//title' } } }
+                            matches: { field: true },
+                            xpath: { selector: '//title' }
                         }]
                     }
                 },
@@ -375,7 +414,8 @@ describe('responseResolver', function () {
                     proxy: {
                         to: 'where',
                         predicateGenerators: [{
-                            matches: { field: { xpath: { selector: 'count(//title)' } } }
+                            matches: { field: true },
+                            xpath: { selector: 'count(//title)' }
                         }]
                     }
                 },
@@ -406,7 +446,8 @@ describe('responseResolver', function () {
                     proxy: {
                         to: 'where',
                         predicateGenerators: [{
-                            matches: { field: { xpath: { selector: 'boolean(//title)' } } }
+                            matches: { field: true },
+                            xpath: { selector: 'boolean(//title)' }
                         }]
                     }
                 },
@@ -437,7 +478,8 @@ describe('responseResolver', function () {
                     proxy: {
                         to: 'where',
                         predicateGenerators: [{
-                            matches: { field: { jsonpath: { selector: '$..title' } } }
+                            matches: { field: true },
+                            jsonpath: { selector: '$..title' }
                         }]
                     }
                 },
@@ -468,7 +510,8 @@ describe('responseResolver', function () {
                     proxy: {
                         to: 'where',
                         predicateGenerators: [{
-                            matches: { field: { jsonpath: { selector: '$.books[*].title' } } }
+                            matches: { field: true },
+                            jsonpath: { selector: '$.books[*].title' }
                         }]
                     }
                 },
@@ -507,7 +550,8 @@ describe('responseResolver', function () {
                     proxy: {
                         to: 'where',
                         predicateGenerators: [{
-                            matches: { field: { jsonpath: { selector: '$..title' } } }
+                            matches: { field: true },
+                            jsonpath: { selector: '$..title' }
                         }]
                     }
                 },
@@ -538,7 +582,8 @@ describe('responseResolver', function () {
                     proxy: {
                         to: 'where',
                         predicateGenerators: [{
-                            matches: { field: { jsonpath: { selector: '$..title' } } }
+                            matches: { field: true },
+                            jsonpath: { selector: '$..title' }
                         }]
                     }
                 },

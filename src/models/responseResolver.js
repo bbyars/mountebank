@@ -62,32 +62,26 @@ function create (proxy, postProcess) {
         }
     }
 
-    function xpathValue (predicate, fieldName, fieldValue, xpathConfig, logger) {
+    function xpathValue (xpathConfig, possibleXML, logger) {
         var xpath = require('./xpath'),
-            nodes = xpath.select(xpathConfig.selector, xpathConfig.ns, fieldValue, logger);
-
-        predicate.deepEquals = {};
-        predicate.xpath = xpathConfig;
-        predicate.deepEquals[fieldName] = selectionValue(nodes);
+            nodes = xpath.select(xpathConfig.selector, xpathConfig.ns, possibleXML, logger);
+        return selectionValue(nodes);
     }
 
-    function jsonpathValue (predicate, fieldName, fieldValue, jsonpathConfig, logger) {
+    function jsonpathValue (jsonpathConfig, possibleJSON, logger) {
         var jsonpath = require('./jsonpath'),
-            nodes = jsonpath.select(jsonpathConfig.selector, fieldValue, logger);
-
-        predicate.deepEquals = {};
-        predicate.jsonpath = jsonpathConfig;
-        predicate.deepEquals[fieldName] = selectionValue(nodes);
+            nodes = jsonpath.select(jsonpathConfig.selector, possibleJSON, logger);
+        return selectionValue(nodes);
     }
 
-    function buildEquals (request, matchers) {
+    function buildEquals (request, matchers, valueOf) {
         var result = {};
         Object.keys(matchers).forEach(function (key) {
             if (typeof request[key] === 'object') {
-                result[key] = buildEquals(request[key], matchers[key]);
+                result[key] = buildEquals(request[key], matchers[key], valueOf);
             }
             else {
-                result[key] = request[key];
+                result[key] = valueOf(request[key]);
             }
         });
         return result;
@@ -97,38 +91,34 @@ function create (proxy, postProcess) {
         var predicates = [];
 
         matchers.forEach(function (matcher) {
-            var basePredicate = {};
+            var basePredicate = {},
+                valueOf = function (field) { return field; };
 
             // Add parameters
             Object.keys(matcher).forEach(function (key) {
                 if (key !== 'matches') {
                     basePredicate[key] = matcher[key];
                 }
+                if (key === 'xpath') {
+                    valueOf = function (field) { return xpathValue(matcher.xpath, field, logger); };
+                }
+                else if (key === 'jsonpath') {
+                    valueOf = function (field) { return jsonpathValue(matcher.jsonpath, field, logger); };
+                }
             });
 
             Object.keys(matcher.matches).forEach(function (fieldName) {
                 var helpers = require('../util/helpers'),
-                    value = matcher.matches[fieldName],
+                    matcherValue = matcher.matches[fieldName],
                     predicate = helpers.clone(basePredicate);
 
-                if (value === true) {
+                if (matcherValue === true) {
                     predicate.deepEquals = {};
-                    predicate.deepEquals[fieldName] = request[fieldName];
+                    predicate.deepEquals[fieldName] = valueOf(request[fieldName]);
                 }
                 else {
-                    Object.keys(value).forEach(function (field) {
-                        if (field === 'xpath') {
-                            xpathValue(predicate, fieldName, request[fieldName], value.xpath, logger);
-                        }
-                        else if (field === 'jsonpath') {
-                            jsonpathValue(predicate, fieldName, request[fieldName], value.jsonpath, logger);
-                        }
-                        else {
-                            predicate.equals = {};
-                            predicate.equals[fieldName] = buildEquals(request[fieldName], value);
-                        }
-
-                    });
+                    predicate.equals = {};
+                    predicate.equals[fieldName] = buildEquals(request[fieldName], matcherValue, valueOf);
                 }
 
                 predicates.push(predicate);
