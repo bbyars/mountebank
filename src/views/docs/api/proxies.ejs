@@ -8,15 +8,10 @@ description = 'Using mountebank to record and playback through proxying to a rea
 <h1>Proxies</h1>
 
 <p>Proxies are one of the most powerful features of mountebank, rivaled only by the
-mighty <a href='/docs/api/injection'>injection.</a>  Each proxied response is recorded,
-either as an entirely new stub in the imposter's <code>stubs</code> array, or as a
-new response in the stub's <code>responses</code> array.  Proxies allow you to define
-the fields which should be included in newly created <code>predicates</code>.  The
-<code>proxy</code> will ensure that the proxied request data for those fields are
-filled in.</p>
-
-<p class='info-icon'>Use the <a href='/docs/commandLine#replay'><code>mb replay</code></a> command to
-    automatically remove the proxies, switching from record mode to replay mode.</p>
+mighty <a href='/docs/api/injection'>injection.</a>  Proxies support record/replay
+behavior to easily capture a rich set of test data for your test scenarios.
+Each proxy definition allows you to define the the fields which should be included
+in newly created <code>predicates</code>.</p>
 
 <p><code>proxy</code> response types take the following parameters:</p>
 
@@ -31,26 +26,33 @@ filled in.</p>
     <td><code>to</code></td>
     <td>required</td>
     <td>A URL without the path (e.g. http://someserver:3000 or tcp://someserver:3000)</td>
-    <td>Defines the origin server that the stub should proxy to.</td>
+    <td>Defines the origin server that the request should proxy to.</td>
   </tr>
   <tr>
     <td><code>mode</code></td>
     <td><code>proxyOnce</code></td>
     <td>string, one of <code>proxyOnce</code> or <code>proxyAlways</code>.</td>
-    <td>Defines the replay behavior of the proxy.  <code>proxyOnce</code>
-    always records the proxied call in the <code>stubs</code> array in
-    front of itself, so the same call is never proxied twice.  <code>proxyAlways</code>
-    saves the proxied call <em>after</em> itself in the <code>stubs</code>
-    array.  This allows you to capture different responses for the same call.
-    You can later replay <code>proxyAlways</code> stubs by issuing a <code>GET</code>
-    or <code>DELETE</code> to the imposter with the <code>removeProxies</code> and
-    <code>replayable</code> query params, and re-<code>POST</code>ing the imposter.</td>
+    <td>Defines the replay behavior of the proxy. See <a href='#modes'>below</a> for details.
+        <ul class='bullet-list'>
+            <li><code>proxyOnce</code> - ensures that the same request (defined
+                by the predicates) is never proxied twice. mountebank only records
+                one response for each request, and automatically replays that response the next
+                time the request predicates match.</li>
+            <li><code>proxyAlways</code> - All calls will be proxied, allowing multiple responses
+                to be saved for the same logical request. You have to explicitly tell mountebank
+                to replay those responses.</li>
+        </ul>
+        <p class='info-icon'>Use the <a href='/docs/commandLine#replay'><code>mb replay</code></a>
+            command to automatically remove the proxies, switching from record mode to replay mode.</p>
+    </td>
   </tr>
   <tr>
     <td><code>predicateGenerators</code></td>
     <td><code>[]</code></td>
     <td>array</td>
-    <td>An array of objects that defines how the predicates for new stubs are created.</td>
+    <td>An array of objects that defines how the predicates for new stubs are created. Each object in
+    the array defines the fields to generate predicates from. See <a href='#predicateGenerators'>below</a>
+    for examples.</td>
   </tr>
   <tr>
     <td><code>injectHeaders</code></td>
@@ -113,33 +115,46 @@ origin server expects to use mutual authentication and will request a client cer
 stores the number of milliseconds for the request in the <code>_proxyResponseTime</code> field in the
 response.</p>
 
-<p class='info-icon'>Note, if you use a corporate proxy, then setting the standard shell
+<p class='info-icon'>Note, if you use a corporate proxy, then the standard shell
 <code>http_proxy</code> or <code>https_proxy</code> environment variables will be honored.</p>
 
-<h2>Understanding proxy behavior</h2>
+<h2 id='modes'>Understanding proxy modes</h2>
 
-<p>The <code>mode</code> and <code>predicateGenerators</code> parameters define the behavior of
-the <code>proxy</code>.  The default <code>proxyOnce</code> mode is simpler; it always
-creates a new stub.  Imagine the following <code>stubs</code> array, set by us when
-we create the imposter:</p>
+<p>The <code>mode</code> defines the behavior of the <code>proxy</code>. The default
+<code>proxyOnce</code> mode is simpler; it always creates a new stub in front of the stub with
+the proxy response, relying on mountebank's first-match policy to automatically replay the saved
+response in the new stub the next time a request matches the predicates.  Imagine the following
+<code>stubs</code> array, set by us when we create the imposter:</p>
+
+<pre><code>
+"stubs": [{
+  "responses": [{
+    "proxy": {
+      "to": "http://origin-server.com",
+      "mode": "proxyOnce",
+      "predicateGenerators": [{ "matches": { "path": true } }]
+    }
+  }]
+}]
+</code></pre>
+
+<p>When we issue make an HTTP call to <code>/test</code>, the stub will proxy all of the request
+details to http://origin-server.com/test, and save off the response in a new stub in front of the
+stub with the <code>proxy</code> response:</p>
 
 <pre><code>
 "stubs": [
+  <strong class='highlight1'>{
+    "predicates": [{ "deepEquals': { "path": "/test" } }],
+    "responses": [{ "is": ...saved response }]
+  },</strong>
   {
     "responses": [
       {
         "proxy": {
           "to": "http://origin-server.com",
           "mode": "proxyOnce",
-          "predicateGenerators": [
-            {
-              "matches": {
-                "method": true,
-                "path": true,
-                "query": true
-              }
-            }
-          ]
+          "predicateGenerators": [{ "matches": { "path": true } }]
         }
       }
     ]
@@ -147,56 +162,18 @@ we create the imposter:</p>
 ]
 </code></pre>
 
-<p>When we issue a <code>GET</code> to <code>/test?q=mountebank</code>, the stub
-will proxy to http://origin-server.com/test?q=mountebank, and save
-off the response in a new stub in front of the <code>proxy</code> response:</p>
-
-<pre><code>
-"stubs": [
-  {
-    "predicates": [{
-      "deepEquals': {
-        "method": "GET",
-        "path": "/test",
-        "query": { "q": "mountebank" }
-      }
-    }],
-    "responses": [
-      { "is": ...saved response }
-    ]
-  }
-  {
-    "responses": [
-      {
-        "proxy": {
-          "to": "http://origin-server.com",
-          "mode": "proxyOnce",
-          "predicateGenerators": [
-            {
-              "matches": {
-                "method": true,
-                "path": true,
-                "query": true
-              }
-            }
-          ]
-        }
-      }
-    ]
-  }
-]
-</code></pre>
-
-<p>Because of mountebank's first-match policy on stubs, the next time the imposter
-receives a <code>GET /test?q=mountebank</code> request, the saved predicates on the
+<p>We'll look at how the predicate gets generated shortly. What's important to note
+at this point is that, because of mountebank's first-match policy on stubs, the next
+time the imposter receives a request to <code>/test</code>, the saved predicates on the
 newly created stub will match, and the recorded response will be replayed.  If
-the imposter receives a <code>GET /test?q=mountebank&amp;sort=descending</code>, then
-it will proxy again, creating a new stub, because the querystring is different.</p>
+the imposter receives a call to <code>/different-path</code>, then it will proxy again,
+creating a new stub, because the <code>path</code> is different.</p>
 
-<p>The <code>proxyAlways</code> mode saves stubs behind the <code>proxy</code>
+<p>The <code>proxyAlways</code> mode saves stubs <em>behind</em> the <code>proxy</code>
 stub.  This allows you to record a richer set of interactions with the origin server,
 but requires you to save off the imposter representation and remove or reorder the
-<code>proxy</code> to replay those interactions.</p>
+<code>proxy</code> stubs to replay those interactions. The easiest way to do that is with
+the <a href='/docs/commandLine#replay'><code>mb replay</code></a> command.</p>
 
 <p>Let's say you had the following <code>stubs</code> array:</p>
 
@@ -208,28 +185,22 @@ but requires you to save off the imposter representation and remove or reorder t
         "proxy": {
           "to": "http://origin-server.com",
           "mode": "proxyAlways",
-          "predicateGenerators": [
-            { "matches": { "path": true } }
-          ]
+          "predicateGenerators": [{ "matches": { "path": true } }]
         }
       }
     ]
   },
   {
-    "predicates": [
-      { "equals": { "path": "/test" } }
-    ],
-    "responses": [
-      { "is": { "body": "first response" } }
-    ]
+    "predicates": [{ "equals": { "path": "/test" } }],
+    "responses": [{ "is": { "body": "first response" } }]
   }
 ]
 </code></pre>
 
-<p>The next time we send a request to <code>/test</code>, the request will still
-be proxied to http://origin-server.com/test.  Since the predicate that we would
-normally create already exists after the <code>proxy</code> stub, the proxied
-response instead gets added to an existing stub's <code>responses</code> array.</p>
+<p>Every time we send a request to <code>/test</code>, it will
+be proxied to http://origin-server.com/test.  Since a predicate matching a <code>path</code>
+of <code>/test</code> already exists on another stub, the proxied response is added to the
+existing stub's <code>responses</code> array.</p>
 
 <pre><code>
 "stubs": [
@@ -239,28 +210,206 @@ response instead gets added to an existing stub's <code>responses</code> array.<
         "proxy": {
           "to": "http://origin-server.com",
           "mode": "proxyAlways",
-          "predicateGenerators": [
-            { "matches": { "path": true } }
-          ]
+          "predicateGenerators": [{ "matches": { "path": true } }]
         }
       }
     ]
   },
   {
-    "predicates": [
-      { "deepEquals": { "path": "/test" } }
-    ],
+    "predicates": [{ "equals": { "path": "/test" } }],
     "responses": [
       { "is": { "body": "first response" } },
-      { "is": { ...saved response } }
+      <strong class='highlight1'>{ "is": { ...saved response } }</strong>
     ]
   }
 ]
 </code></pre>
 
-<p><code>predicateGenerators</code> accept the same predicate parameters as
-<a href='/docs/api/predicates'>predicates</a>: <code>caseSensitive</code> and
-<code>except</code>.</p>
+<p>If no existing stub's predicates matched the request, a new stub will be created at the
+end of the <code>stubs</code> array.</p>
+
+<h2 id='predicateGenerators'>Understanding predicateGenerators</h2>
+
+<p>Recording a rich set of test data through proxying requires also capturing the
+appropriate predicates from the request, so that saved responses are only replayed
+when the requests are similar. The <code>predicateGenerators</code> field defines the
+template for the generated predicates. Each object in the <code>predicateGenerators</code>
+array takes the following fields:</p>
+
+<table>
+  <tr>
+    <th>Parameter</th>
+    <th style='min-width: 4em;'>Default</th>
+    <th>Type</th>
+    <th>Description</th>
+  </tr>
+  <tr>
+    <td><code>matches</code></td>
+    <td><code>{}</code></td>
+    <td>object</td>
+    <td>The fields that need to be equal in subsequent requests to replay the saved response.
+    Set the field value <code>true</code> to generate a predicate based on it. Nested fields,
+    as in JSON fields or HTTP headers, are supported as well, as long as the leaf keys have
+    a <code>true</code> value.</td>
+  </tr>
+  <tr>
+    <td><code>caseSensitive</code></td>
+    <td><code>false</code></td>
+    <td>boolean</td>
+    <td>Determines if the match is case sensitive or not.  This includes keys for objects
+    such as query parameters.</td>
+  </tr>
+  <tr>
+    <td><code>except</code>/td>
+    <td><code>""</code></td>
+    <td>string</td>
+    <td>Defines a regular expression that is stripped out of the request field
+    before matching.</td>
+  </tr>
+  <tr>
+    <td><code>xpath</code></td>
+    <td><code>null</code></td>
+    <td>object</td>
+    <td>Defines an object containing a <code>selector</code> string and, optionally, an
+    <code>ns</code> object field that defines a namespace map. The predicate's
+    scope is limited to the selected value in the request field.</td>
+  </tr>
+  <tr>
+    <td><code>jsonpath</code></td>
+    <td><code>null</code></td>
+    <td>object</td>
+    <td>Defines an object containing a <code>selector</code> string. The predicate's
+    scope is limited to the selected value in the request field.</td>
+  </tr>
+</table>
+
+<p>With the exception of <code>matches</code>, the fields correspond to the standard
+<a href='/docs/api/predicates'>predicate parameters</a>. Each object in the
+<code>predicateGenerators</code> array generates an object in
+the newly created stub's <code>predicates</code> array. You can decide how strictly
+you want the generated predicates to match object fields. The following example
+matches the root <code>query</code> field:</p>
+
+<pre><code>
+"stubs": [{
+  "responses": [{
+    "proxy": {
+      "to": "http://origin-server.com",
+      "mode": "proxyOnce",
+      <strong class='highlight1'>"predicateGenerators": [{
+        "matches": { "query": true },
+        "caseSensitive": true
+      }]</strong>
+    }
+  }]
+}]
+</code></pre>
+
+<p>This will generate a <code>deepEquals</code> predicate at the same level, which requires
+that all keys and values in the querystring match (although the order can be different).
+We added the <code>caseSensitive</code> parameter, which will also require the cases of the
+query keys and values to match. If the incoming request is to <code>/test?q=mountebank&page=1</code>,
+the following stub will be generating:</p>
+
+<pre><code>
+"stubs": [
+  {
+    <strong class='highlight1'>"predicates": [{
+      "deepEquals": {
+        "query": {
+          "q": "mountebank",
+          "page": "1"
+        }
+      },
+      "caseSensitive": true
+    }]</strong>,
+    "responses": [{ "is": { ...saved response } }]
+  },
+  {
+    "responses": [{
+      "proxy": {
+        "to": "http://origin-server.com",
+        "mode": "proxyOnce",
+        "predicateGenerators": [{
+          "matches": { "query": true },
+          "caseSensitive": true
+        }]
+      }
+    }]
+  }
+]
+</code></pre>
+
+<p>We could have also specified only the query key we cared about:</p>
+
+<pre><code>
+"stubs": [{
+  "responses": [{
+    "proxy": {
+      "to": "http://origin-server.com",
+      "mode": "proxyOnce",
+      predicateGenerators": [{
+        "matches": {
+          <strong class='highlight1'>"query": { "q": "mountebank" }</strong>
+        }
+      }]
+    }
+  }]
+}]
+</code></pre>
+
+<p>The <a href='/docs/api/xpath'><code>xpath</code></a> and
+<a href='/docs/api/jsonpath'><code>jsonpath</code></a> predicate parameters work
+by limiting the scope of the generated predicate to the matching value in the
+proxied request. If the selector matches multiple values in the proxied request,
+they will all be part of the generated predicate, using standard predicate
+<a href='docs/api/predicates#array-match'>array matching rules</a>. For example,
+imagine a request reaching the following stub with an XML body of
+"&lt;doc&gt;&lt;number&gt;1&lt;/number&gt;&lt;number&gt;2&lt;/number&gt;&lt;number&gt;3&lt;/number&gt;&lt;/doc&gt;"
+</p>
+
+<pre><code>
+"stubs": [{
+  "responses": [{
+    "proxy": {
+      "to": "http://origin-server.com",
+      "mode": "proxyOnce",
+      <strong class='highlight1'>"predicateGenerators": [{
+        "matches": { "body": true },
+        "xpath": { "selector": "//number" }
+      }]</strong>
+    }
+  }]
+}]
+</code></pre>
+
+<p>Rather than matching the entire body, the generated predicate will require all three
+values matching the xpath selector in the original proxied request to be present (in any
+order):</p>
+
+<pre><code>
+"stubs": [
+  {
+    <strong class='highlight1'>"predicates": [{
+      "deepEquals": { "body": ["1", "2", "3"] },
+      "xpath": { "selector": "//number" }
+    }]</strong>,
+    "responses": [{ "is": { ...saved response } }]
+  },
+  {
+    "responses": [{
+      "proxy": {
+        "to": "http://origin-server.com",
+        "mode": "proxyOnce",
+        "predicateGenerators": [{
+          "matches": { "body": true },
+          "xpath": { "selector": "//number" }
+        }]
+      }
+    }]
+  }
+]
+</code></pre>
 
 <h2>Examples</h2>
 
