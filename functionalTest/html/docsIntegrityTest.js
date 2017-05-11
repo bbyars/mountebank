@@ -7,14 +7,37 @@ var assert = require('assert'),
     isWindows = require('os').platform().indexOf('win') === 0,
     timeout = parseInt(process.env.MB_SLOW_TEST_TIMEOUT || 3000);
 
+function ignoreLine (line, linesToIgnore) {
+    return (linesToIgnore || []).some(function (pattern) {
+        return new RegExp(pattern).test(line);
+    });
+}
+
+function normalizeJSON (possibleJSON) {
+    try {
+        return JSON.stringify(JSON.parse(possibleJSON), null, 2);
+    }
+    catch (e) {
+        return possibleJSON;
+    }
+}
+function normalizeJSONSubstrings (text) {
+    // [\S\s] because . doesn't match newlines
+    var jsonPattern = /\{[\S\s]*\}/;
+    if (jsonPattern.test(text)) {
+        var prettyPrintedJSON = normalizeJSON(jsonPattern.exec(text)[0]);
+        text = text.replace(jsonPattern, prettyPrintedJSON);
+    }
+    return text;
+}
+
 function normalize (text, linesToIgnore) {
-    var lines = (text || '').replace(/\r/g, '').split('\n'),
+    var jsonNormalized = normalizeJSONSubstrings(text || ''),
+        lines = jsonNormalized.replace(/\r/g, '').split('\n'),
         result = [];
 
     lines.forEach(function (line) {
-        if (!(linesToIgnore || []).some(function (pattern) {
-            return new RegExp(pattern).test(line);
-        })) {
+        if (!ignoreLine(line, linesToIgnore)) {
             result.push(line);
         }
     });

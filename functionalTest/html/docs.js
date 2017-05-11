@@ -53,6 +53,16 @@ function addStep (test, stepSpec) {
     }
 }
 
+function processText (element) {
+    if (element.textContent.indexOf('http://origin-server.com') >= 0) {
+        var replacements = element.getElementsByTagName('change');
+        for (var i = 0; i < replacements.length; i += 1) {
+            replacements[i].textContent = getAttribute(replacements[i], 'to');
+        }
+    }
+    return element.textContent.trim();
+}
+
 function createTestSpec (endpoint, id, testSpec) {
     return {
         endpoint: endpoint,
@@ -103,7 +113,7 @@ function get (endpoint) {
                     testType: getAttribute(element, 'data-test-type'),
                     verifyStepId: getAttribute(element, 'data-test-verify-step'),
                     ignoreLines: getAttribute(element, 'data-test-ignore-lines'),
-                    text: element.textContent.trim(),
+                    text: processText(element),
                     port: getAttribute(element, 'data-test-port'),
                     filename: getAttribute(element, 'data-test-filename')
                 };

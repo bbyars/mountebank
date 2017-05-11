@@ -123,43 +123,164 @@ response.</p>
 <p>The <code>mode</code> defines the behavior of the <code>proxy</code>. The default
 <code>proxyOnce</code> mode is simpler; it always creates a new stub in front of the stub with
 the proxy response, relying on mountebank's first-match policy to automatically replay the saved
-response in the new stub the next time a request matches the predicates.  Imagine the following
+response in the new stub the next time a request matches the predicates. Imagine the following
 <code>stubs</code> array, set by us when we create the imposter:</p>
 
-<pre><code>
-"stubs": [{
+<code class='hidden' data-test-id='modes example'
+                     data-test-step='1'
+                     data-test-type='http'>
+POST /imposters HTTP/1.1
+Host: localhost:<%= port %>
+Accept: application/json
+Content-Type: application/json
+
+{
+  "port": 2001,
+  "protocol": "http"
+}
+</code>
+
+<pre><code data-test-id='modes example'
+           data-test-step='2'
+           data-test-type='http'>
+<div class='hidden'>POST /imposters HTTP/1.1
+Host: localhost:<%= port %>
+Accept: application/json
+Content-Type: application/json
+
+{
+  "port": 2000,
+  "protocol": "http",
+</div>"stubs": [{
   "responses": [{
     "proxy": {
-      "to": "http://origin-server.com",
+      "to": "<change to='http://localhost:2001'>http://origin-server.com</change>",
       "mode": "proxyOnce",
       "predicateGenerators": [{ "matches": { "path": true } }]
     }
   }]
-}]
+}]<div class='hidden'>
+}</div>
 </code></pre>
 
-<p>When we issue make an HTTP call to <code>/test</code>, the stub will proxy all of the request
+<p>When we issue an HTTP call to <code>/test</code>, the stub will proxy all of the request
 details to http://origin-server.com/test, and save off the response in a new stub in front of the
 stub with the <code>proxy</code> response:</p>
 
-<pre><code>
+<code class='hidden' data-test-id='modes example'
+                     data-test-step='3'
+                     data-test-type='http'>
+GET /test HTTP/1.1
+Host: localhost:2000
+</code>
+
+<code class='hidden' data-test-id='modes example'
+                     data-test-step='4'
+                     data-test-type='http'>
+DELETE /imposters/2001 HTTP/1.1
+Host: localhost:<%= port %>
+Accept: application/json
+</code>
+
+<code class='hidden' data-test-id='modes example'
+                     data-test-step='5'
+                     data-test-type='http'>
+DELETE /imposters/2000 HTTP/1.1
+Host: localhost:<%= port %>
+Accept: application/json
+</code>
+
+<pre><code data-test-id='modes example'
+           data-test-verify-step='5'
+           data-test-ignore-lines='["Date", "requestFrom", "timestamp", "proxyResponseTime", "Content-Length"]'>
+<div class='hidden'>HTTP/1.1 200 OK
+Access-Control-Allow-Origin: *
+Content-Type: application/json; charset=utf-8
+Content-Length: 2112
+Date: Thu, 11 May 2017 03:02:02 GMT
+Connection: keep-alive
+
+{
+  "protocol": "http",
+  "port": 2000,
+  "numberOfRequests": 1,
+  "requests": [
+    {
+      "requestFrom": "::ffff:127.0.0.1:61075",
+      "method": "GET",
+      "path": "/test",
+      "query": {},
+      "headers": {
+        "accept": "application/json",
+        "Host": "localhost:2000",
+        "Connection": "keep-alive"
+      },
+      "body": "",
+      "timestamp": "2017-05-11T02:27:41.725Z"
+    }
+  ],</div>
 "stubs": [
   <strong class='highlight1'>{
-    "predicates": [{ "deepEquals': { "path": "/test" } }],
-    "responses": [{ "is": ...saved response }]
-  },</strong>
+    "predicates": [{ "deepEquals": { "path": "/test" } } ],
+    "responses": [{
+      "is": {
+        "statusCode": 200,
+        "headers": {
+          "Connection": "close",
+          "Date": "Thu, 11 May 2017 03:02:02 GMT",
+          "Transfer-Encoding": "chunked"
+        },
+        "body": "",
+        "_mode": "text",
+        "_proxyResponseTime": 9
+      }
+    }]
+  }</strong>,
   {
     "responses": [
       {
         "proxy": {
-          "to": "http://origin-server.com",
+          "to": "http://localhost:2001",
           "mode": "proxyOnce",
           "predicateGenerators": [{ "matches": { "path": true } }]
         }
       }
-    ]
+    ]<div class='hidden'>,
+      "matches": [
+        {
+          "timestamp": "2017-05-11T03:02:02.945Z",
+          "request": {
+            "requestFrom": "::ffff:127.0.0.1:61227",
+            "method": "GET",
+            "path": "/test",
+            "query": {},
+            "headers": {
+              "accept": "application/json",
+              "Host": "localhost:2000",
+              "Connection": "keep-alive"
+            },
+            "body": ""
+          },
+          "response": {
+            "statusCode": 200,
+            "headers": {
+              "Connection": "close",
+              "Date": "Thu, 11 May 2017 03:02:02 GMT",
+              "Transfer-Encoding": "chunked"
+            },
+            "body": "",
+            "_mode": "text"
+          }
+        }
+      ]
+    }</div>
+  ]<div class='hidden'>,
+  "_links": {
+    "self": {
+      "href": "http://localhost:2525/imposters/2000"
+    }
   }
-]
+}</div>
 </code></pre>
 
 <p>We'll look at how the predicate gets generated shortly. What's important to note
