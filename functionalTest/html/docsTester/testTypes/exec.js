@@ -23,7 +23,7 @@ function runStep (step) {
     var deferred = Q.defer(),
         filename = 'test-' + nextTestId;
 
-    fs.writeFileSync(filename, step.execute, { mode: 484 /* 0744 */});
+    fs.writeFileSync(filename, step.text, { mode: 484 /* 0744 */});
     nextTestId += 1;
 
     execute('sh ./' + filename).done(function (stdout) {
@@ -31,7 +31,7 @@ function runStep (step) {
         fs.unlinkSync(filename);
         deferred.resolve(step);
     }, function (reason) {
-        console.log('Error executing following command: ' + step.execute);
+        console.log('Error executing following command: ' + step.text);
         deferred.reject(reason);
     });
 

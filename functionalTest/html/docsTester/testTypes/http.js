@@ -85,7 +85,7 @@ function format (response) {
 
 function runStep (step) {
     var deferred = Q.defer(),
-        spec = parse(step.execute);
+        spec = parse(step.text);
 
     httpClient.responseFor(spec).done(function (response) {
         step.result = format(response);

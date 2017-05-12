@@ -38,7 +38,7 @@ function parse (text) {
 
 function runStep (step) {
     var deferred = Q.defer(),
-        message = parse(step.execute);
+        message = parse(step.text);
 
     smtpClient.send(message, step.port).done(function () {
         deferred.resolve(step);

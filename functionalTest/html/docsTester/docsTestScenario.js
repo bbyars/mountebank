@@ -25,7 +25,7 @@ function create (endpoint, id) {
                 type: stepSpec.testType,
                 ignoreLines: [],
                 port: stepSpec.port,
-                execute: addReplacementsTo(stepSpec.text),
+                text: addReplacementsTo(stepSpec.text),
                 filename: stepSpec.filename
             };
         }
@@ -113,11 +113,7 @@ function create (endpoint, id) {
     }
 
     return {
-        endpoint: endpoint,
-        name: id,
-        steps: steps,
         addStep: addStep,
-        execute: execute,
         assertValid: assertValid
     };
 }
