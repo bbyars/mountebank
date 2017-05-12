@@ -2,6 +2,7 @@
 
 var api = require('../../api/api').create(),
     jsdom = require('jsdom'),
+    DocsTestScenario = require('./docsTestScenario'),
     Q = require('q');
 
 function getDOM (endpoint) {
@@ -37,62 +38,36 @@ function processText (element) {
     return element.textContent.trim();
 }
 
-function createTestSpec (endpoint, id) {
-    return {
-        endpoint: endpoint,
-        name: id,
-        steps: [],
-        execute: function () {
-            var steps = this.steps.map(function (step) {
-                    return function () {
-                        try {
-                            var executor = require('./testTypes/' + step.type);
-                            return executor.runStep(step);
-                        }
-                        catch (e) {
-                            console.log('Invalid step type:');
-                            console.log(JSON.stringify(step, null, 4));
-                            throw e;
-                        }
-                    };
-                }),
-                that = this;
-
-            return steps.reduce(Q.when, Q()).then(function () { return Q(that); });
-        }
-    };
-}
-
-function addStep (test, stepSpec) {
-    var stepIndex = (stepSpec.stepId || stepSpec.verifyStepId || 0) - 1,
-        addReplacementsTo = function (text) {
-            var pattern = new RegExp(stepSpec.replacePattern, 'g'),
-                substitution = stepSpec.replaceWith.replace('${port}', api.port);
-            return text.replace(pattern, substitution);
-        };
-
-    if (stepIndex < 0) {
-        return;
-    }
-
-    if (!test.steps[stepIndex]) {
-        test.steps[stepIndex] = {
-            id: stepIndex + 1,
-            type: stepSpec.testType,
-            ignoreLines: [],
-            port: stepSpec.port,
-            execute: addReplacementsTo(stepSpec.text),
-            filename: stepSpec.filename
-        };
-    }
-    if (stepSpec.verifyStepId) {
-        test.steps[stepIndex].verify = addReplacementsTo(stepSpec.text);
-
-        if (stepSpec.ignoreLines) {
-            test.steps[stepIndex].ignoreLines = JSON.parse(stepSpec.ignoreLines);
-        }
-    }
-}
+// function processChangeCommands (element, accumulator) {
+//    var replacements = element.getElementsByTagName('change');
+//
+//    accumulator.replacements = [];
+//    for (var i = 0; i < replacements.length; i += 1) {
+//        accumulator.replacements.push({
+//            from: replacements[i].textContent,
+//            to: getAttribute(replacements[i], 'to')
+//        });
+//        replacements[i].textContent = getAttribute(replacements[i], 'to');
+//    }
+// }
+//
+// function processIgnoreCommands (element, accumulator) {
+//    var ignores = element.getElementsByTagName('ignore');
+//
+//    accumulator.jsonpathsToIgnore = [];
+//    for (var i = 0; i < ignores.length; i += 1) {
+//        result.jsonpathsToIgnore.push(getAttribute(ignores[i], 'jsonpath'));
+//        ignores[i].textContent = '';
+//    }
+// }
+//
+// function process (element) {
+//    var result = {};
+//    processChangeCommands(element, result);
+//    processIgnoreCommands(element, result);
+//    result.text = element.textContent.trim();
+//    return result;
+// }
 
 function get (endpoint) {
     var deferred = Q.defer();
@@ -118,9 +93,9 @@ function get (endpoint) {
 
             if (testId) {
                 if (!tests[testId]) {
-                    tests[testId] = createTestSpec(endpoint, testId);
+                    tests[testId] = DocsTestScenario.create(endpoint, testId);
                 }
-                addStep(tests[testId], stepSpec);
+                tests[testId].addStep(stepSpec);
             }
         }
         deferred.resolve(tests);
