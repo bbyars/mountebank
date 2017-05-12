@@ -2,7 +2,7 @@
 
 var Q = require('q'),
     util = require('util'),
-    httpClient = require('../../api/http/baseHttpClient').create('http');
+    httpClient = require('../../../api/http/baseHttpClient').create('http');
 
 function parseHeader (line) {
     var parts = line.split(':');

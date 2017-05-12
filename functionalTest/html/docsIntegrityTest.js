@@ -3,7 +3,7 @@
 var assert = require('assert'),
     Q = require('q'),
     promiseIt = require('../testHelpers').promiseIt,
-    docs = require('./docs'),
+    docs = require('./docsTester/docs'),
     isWindows = require('os').platform().indexOf('win') === 0,
     timeout = parseInt(process.env.MB_SLOW_TEST_TIMEOUT || 3000);
 

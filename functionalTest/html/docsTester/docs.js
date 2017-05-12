@@ -1,6 +1,6 @@
 'use strict';
 
-var api = require('../api/api').create(),
+var api = require('../../api/api').create(),
     jsdom = require('jsdom'),
     Q = require('q');
 
@@ -27,30 +27,35 @@ function getAttribute (element, attributeName) {
     return attribute ? attribute.value : '';
 }
 
-function addStep (test, stepSpec) {
-    var stepIndex = (stepSpec.stepId || stepSpec.verifyStepId || 0) - 1;
+function processChangeCommands (element, accumulator) {
+    var replacements = element.getElementsByTagName('change');
 
-    if (stepIndex < 0) {
-        return;
+    accumulator.replacements = [];
+    for (var i = 0; i < replacements.length; i += 1) {
+        accumulator.replacements.push({
+            from: replacements[i].textContent,
+            to: getAttribute(replacements[i], 'to')
+        });
+        replacements[i].textContent = getAttribute(replacements[i], 'to');
     }
+}
 
-    if (!test.steps[stepIndex]) {
-        test.steps[stepIndex] = {
-            id: stepIndex + 1,
-            type: stepSpec.testType,
-            ignoreLines: [],
-            port: stepSpec.port,
-            execute: test.addReplacementsTo(stepSpec.text),
-            filename: stepSpec.filename
-        };
-    }
-    if (stepSpec.verifyStepId) {
-        test.steps[stepIndex].verify = test.addReplacementsTo(stepSpec.text);
+function processIgnoreCommands (element, accumulator) {
+    var ignores = element.getElementsByTagName('ignore');
 
-        if (stepSpec.ignoreLines) {
-            test.steps[stepIndex].ignoreLines = JSON.parse(stepSpec.ignoreLines);
-        }
+    accumulator.jsonpathsToIgnore = [];
+    for (var i = 0; i < ignores.length; i += 1) {
+        result.jsonpathsToIgnore.push(getAttribute(ignores[i], 'jsonpath'));
+        ignores[i].textContent = '';
     }
+}
+
+function process (element) {
+    var result = {};
+    processChangeCommands(element, result);
+    processIgnoreCommands(element, result);
+    result.text = element.textContent.trim();
+    return result;
 }
 
 function processText (element) {
@@ -92,6 +97,32 @@ function createTestSpec (endpoint, id, testSpec) {
             return steps.reduce(Q.when, Q()).then(function () { return Q(that); });
         }
     };
+}
+
+function addStep (test, stepSpec) {
+    var stepIndex = (stepSpec.stepId || stepSpec.verifyStepId || 0) - 1;
+
+    if (stepIndex < 0) {
+        return;
+    }
+
+    if (!test.steps[stepIndex]) {
+        test.steps[stepIndex] = {
+            id: stepIndex + 1,
+            type: stepSpec.testType,
+            ignoreLines: [],
+            port: stepSpec.port,
+            execute: test.addReplacementsTo(stepSpec.text),
+            filename: stepSpec.filename
+        };
+    }
+    if (stepSpec.verifyStepId) {
+        test.steps[stepIndex].verify = test.addReplacementsTo(stepSpec.text);
+
+        if (stepSpec.ignoreLines) {
+            test.steps[stepIndex].ignoreLines = JSON.parse(stepSpec.ignoreLines);
+        }
+    }
 }
 
 function get (endpoint) {

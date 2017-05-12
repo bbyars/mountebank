@@ -2,7 +2,7 @@
 
 var Q = require('q'),
     util = require('util'),
-    smtpClient = require('../../api/smtp/smtpClient');
+    smtpClient = require('../../../api/smtp/smtpClient');
 
 function camelCase (key) {
     return key.substring(0, 1).toLowerCase() + key.substring(1);
