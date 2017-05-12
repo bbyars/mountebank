@@ -78,7 +78,7 @@ function get (endpoint) {
 
     getDOM(endpoint).done(function (window) {
         var elements = window.document.getElementsByTagName('code'),
-            tests = {};
+            testScenarios = {};
 
         for (var i = 0; i < elements.length; i += 1) {
             var element = elements[i],
@@ -96,13 +96,13 @@ function get (endpoint) {
                 };
 
             if (testId) {
-                if (!tests[testId]) {
-                    tests[testId] = DocsTestScenario.create(endpoint, testId);
+                if (!testScenarios[testId]) {
+                    testScenarios[testId] = DocsTestScenario.create(endpoint, testId);
                 }
-                tests[testId].addStep(stepSpec);
+                testScenarios[testId].addStep(stepSpec);
             }
         }
-        deferred.resolve(tests);
+        deferred.resolve(testScenarios);
     });
     return deferred.promise;
 }

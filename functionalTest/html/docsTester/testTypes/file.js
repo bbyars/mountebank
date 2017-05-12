@@ -3,6 +3,7 @@
 var fs = require('fs'),
     Q = require('q');
 
+// TODO: filename, text
 function runStep (step) {
     if (step.text.trim() === '') {
         fs.unlinkSync(step.filename);

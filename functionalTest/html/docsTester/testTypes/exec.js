@@ -19,6 +19,7 @@ function execute (command) {
     return deferred.promise;
 }
 
+// TODO: text, sets result
 function runStep (step) {
     var deferred = Q.defer(),
         filename = 'test-' + nextTestId;

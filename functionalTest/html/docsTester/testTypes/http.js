@@ -83,6 +83,7 @@ function format (response) {
     return result;
 }
 
+// TODO: text, sets result
 function runStep (step) {
     var deferred = Q.defer(),
         spec = parse(step.text);

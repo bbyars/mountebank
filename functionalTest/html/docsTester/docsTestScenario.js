@@ -7,61 +7,6 @@ var assert = require('assert'),
 function create (endpoint, id) {
     var steps = [];
 
-    function addStep (stepSpec) {
-        var stepIndex = (stepSpec.stepId || stepSpec.verifyStepId || 0) - 1,
-            addReplacementsTo = function (text) {
-                var pattern = new RegExp(stepSpec.replacePattern, 'g'),
-                    substitution = stepSpec.replaceWith.replace('${port}', api.port);
-                return text.replace(pattern, substitution);
-            };
-
-        if (stepIndex < 0) {
-            return;
-        }
-
-        if (!steps[stepIndex]) {
-            steps[stepIndex] = {
-                id: stepIndex + 1,
-                type: stepSpec.testType,
-                ignoreLines: [],
-                port: stepSpec.port,
-                text: addReplacementsTo(stepSpec.text),
-                filename: stepSpec.filename
-            };
-        }
-        if (stepSpec.verifyStepId) {
-            steps[stepIndex].verify = addReplacementsTo(stepSpec.text);
-
-            if (stepSpec.ignoreLines) {
-                steps[stepIndex].ignoreLines = JSON.parse(stepSpec.ignoreLines);
-            }
-        }
-    }
-
-    function execute () {
-        var stepExecutions = steps.map(function (step) {
-            return function () {
-                try {
-                    var executor = require('./testTypes/' + step.type);
-                    return executor.runStep(step);
-                }
-                catch (e) {
-                    console.log('Invalid step type:');
-                    console.log(JSON.stringify(step, null, 4));
-                    throw e;
-                }
-            };
-        });
-
-        return stepExecutions.reduce(Q.when, Q());
-    }
-
-    function ignoreLine (line, linesToIgnore) {
-        return (linesToIgnore || []).some(function (pattern) {
-            return new RegExp(pattern).test(line);
-        });
-    }
-
     function normalizeJSON (possibleJSON) {
         try {
             return JSON.stringify(JSON.parse(possibleJSON), null, 2);
@@ -81,6 +26,12 @@ function create (endpoint, id) {
         return text;
     }
 
+    function ignoreLine (line, linesToIgnore) {
+        return (linesToIgnore || []).some(function (pattern) {
+            return new RegExp(pattern).test(line);
+        });
+    }
+
     function normalize (text, linesToIgnore) {
         var jsonNormalized = normalizeJSONSubstrings(text || ''),
             lines = jsonNormalized.replace(/\r/g, '').split('\n'),
@@ -95,19 +46,63 @@ function create (endpoint, id) {
         return result.join('\n').trim();
     }
 
-    function assertValid () {
-        return execute().then(function () {
-            steps.forEach(function (step) {
-                if (step.verify) {
-                    var actual = normalize(step.result, step.ignoreLines),
-                        expected = normalize(step.verify, step.ignoreLines);
+    // TODO: Add steps automatically with <step><execute><code></code></execute><verify></verify></step>
+    // Get rid of step-index declaration
+    function addStep (stepSpec) {
+        var stepIndex = (stepSpec.stepId || stepSpec.verifyStepId || 0) - 1,
+            addReplacementsTo = function (text) {
+                var pattern = new RegExp(stepSpec.replacePattern, 'g'),
+                    substitution = stepSpec.replaceWith.replace('${port}', api.port);
+                return text.replace(pattern, substitution);
+            },
+            step = steps[stepIndex];
 
-                    if (actual !== expected) {
-                        console.log('%s %s step %s failed; below is the actual result', endpoint, id, step.id);
-                        console.log(normalize(step.result));
+        if (!step) {
+            step = {
+                port: stepSpec.port,
+                text: addReplacementsTo(stepSpec.text),
+                filename: stepSpec.filename,
+                assertValid: function () { return true; },
+                execute: function () {
+                    try {
+                        var executor = require('./testTypes/' + stepSpec.testType);
+                        return executor.runStep(step);
                     }
-                    assert.strictEqual(actual, expected);
+                    catch (e) {
+                        console.log(e);
+                        console.log('Invalid step type: ' + stepSpec.testType);
+                        throw e;
+                    }
                 }
+            };
+            steps[stepIndex] = step;
+        }
+        if (stepSpec.verifyStepId) {
+            var expectedText = addReplacementsTo(stepSpec.text);
+
+            if (stepSpec.ignoreLines) {
+                steps[stepIndex].ignoreLines = JSON.parse(stepSpec.ignoreLines);
+            }
+            step.assertValid = function () {
+                var actual = normalize(step.result, step.ignoreLines),
+                    expected = normalize(expectedText, step.ignoreLines);
+
+                if (actual !== expected) {
+                    console.log('%s %s step %s failed; below is the actual result', endpoint, id, stepIndex + 1);
+                    console.log(normalize(step.result));
+                }
+                assert.strictEqual(actual, expected);
+            };
+        }
+    }
+
+    function assertValid () {
+        var stepExecutions = steps.map(function (step) { return step.execute; }),
+            chainedExecutions = stepExecutions.reduce(Q.when, Q());
+
+        return chainedExecutions.then(function () {
+            steps.forEach(function (step) {
+                step.assertValid();
             });
         });
     }

@@ -36,6 +36,7 @@ function parse (text) {
     return message;
 }
 
+// TODO: text, port
 function runStep (step) {
     var deferred = Q.defer(),
         message = parse(step.text);
