@@ -27,37 +27,6 @@ function getAttribute (element, attributeName) {
     return attribute ? attribute.value : '';
 }
 
-function processChangeCommands (element, accumulator) {
-    var replacements = element.getElementsByTagName('change');
-
-    accumulator.replacements = [];
-    for (var i = 0; i < replacements.length; i += 1) {
-        accumulator.replacements.push({
-            from: replacements[i].textContent,
-            to: getAttribute(replacements[i], 'to')
-        });
-        replacements[i].textContent = getAttribute(replacements[i], 'to');
-    }
-}
-
-function processIgnoreCommands (element, accumulator) {
-    var ignores = element.getElementsByTagName('ignore');
-
-    accumulator.jsonpathsToIgnore = [];
-    for (var i = 0; i < ignores.length; i += 1) {
-        result.jsonpathsToIgnore.push(getAttribute(ignores[i], 'jsonpath'));
-        ignores[i].textContent = '';
-    }
-}
-
-function process (element) {
-    var result = {};
-    processChangeCommands(element, result);
-    processIgnoreCommands(element, result);
-    result.text = element.textContent.trim();
-    return result;
-}
-
 function processText (element) {
     if (element.textContent.indexOf('http://origin-server.com') >= 0) {
         var replacements = element.getElementsByTagName('change');
@@ -68,16 +37,11 @@ function processText (element) {
     return element.textContent.trim();
 }
 
-function createTestSpec (endpoint, id, testSpec) {
+function createTestSpec (endpoint, id) {
     return {
         endpoint: endpoint,
         name: id,
         steps: [],
-        addReplacementsTo: function (text) {
-            var pattern = new RegExp(testSpec.replacePattern, 'g'),
-                substitution = testSpec.replaceWith.replace('${port}', api.port);
-            return text.replace(pattern, substitution);
-        },
         execute: function () {
             var steps = this.steps.map(function (step) {
                     return function () {
@@ -100,7 +64,12 @@ function createTestSpec (endpoint, id, testSpec) {
 }
 
 function addStep (test, stepSpec) {
-    var stepIndex = (stepSpec.stepId || stepSpec.verifyStepId || 0) - 1;
+    var stepIndex = (stepSpec.stepId || stepSpec.verifyStepId || 0) - 1,
+        addReplacementsTo = function (text) {
+            var pattern = new RegExp(stepSpec.replacePattern, 'g'),
+                substitution = stepSpec.replaceWith.replace('${port}', api.port);
+            return text.replace(pattern, substitution);
+        };
 
     if (stepIndex < 0) {
         return;
@@ -112,12 +81,12 @@ function addStep (test, stepSpec) {
             type: stepSpec.testType,
             ignoreLines: [],
             port: stepSpec.port,
-            execute: test.addReplacementsTo(stepSpec.text),
+            execute: addReplacementsTo(stepSpec.text),
             filename: stepSpec.filename
         };
     }
     if (stepSpec.verifyStepId) {
-        test.steps[stepIndex].verify = test.addReplacementsTo(stepSpec.text);
+        test.steps[stepIndex].verify = addReplacementsTo(stepSpec.text);
 
         if (stepSpec.ignoreLines) {
             test.steps[stepIndex].ignoreLines = JSON.parse(stepSpec.ignoreLines);
@@ -135,10 +104,6 @@ function get (endpoint) {
         for (var i = 0; i < elements.length; i += 1) {
             var element = elements[i],
                 testId = getAttribute(element, 'data-test-id'),
-                testSpec = {
-                    replacePattern: getAttribute(element, 'data-test-replace-pattern'),
-                    replaceWith: getAttribute(element, 'data-test-replace-with')
-                },
                 stepSpec = {
                     stepId: getAttribute(element, 'data-test-step'),
                     testType: getAttribute(element, 'data-test-type'),
@@ -146,12 +111,14 @@ function get (endpoint) {
                     ignoreLines: getAttribute(element, 'data-test-ignore-lines'),
                     text: processText(element),
                     port: getAttribute(element, 'data-test-port'),
-                    filename: getAttribute(element, 'data-test-filename')
+                    filename: getAttribute(element, 'data-test-filename'),
+                    replacePattern: getAttribute(element, 'data-test-replace-pattern'),
+                    replaceWith: getAttribute(element, 'data-test-replace-with')
                 };
 
             if (testId) {
                 if (!tests[testId]) {
-                    tests[testId] = createTestSpec(endpoint, testId, testSpec);
+                    tests[testId] = createTestSpec(endpoint, testId);
                 }
                 addStep(tests[testId], stepSpec);
             }
