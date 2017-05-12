@@ -5,6 +5,10 @@ var api = require('../../api/api').create(),
     DocsTestScenario = require('./docsTestScenario'),
     Q = require('q');
 
+/**
+ * All DOM parsing happens here, including processing the special HTML tags
+ */
+
 function getDOM (endpoint) {
     var deferred = Q.defer(),
         url = api.url + endpoint;

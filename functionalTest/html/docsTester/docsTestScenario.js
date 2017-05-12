@@ -1,6 +1,7 @@
 'use strict';
 
-var Q = require('q'),
+var assert = require('assert'),
+    Q = require('q'),
     api = require('../../api/api').create();
 
 function create (endpoint, id) {
@@ -39,21 +40,76 @@ function create (endpoint, id) {
 
     function execute () {
         var stepExecutions = steps.map(function (step) {
-                return function () {
-                    try {
-                        var executor = require('./testTypes/' + step.type);
-                        return executor.runStep(step);
-                    }
-                    catch (e) {
-                        console.log('Invalid step type:');
-                        console.log(JSON.stringify(step, null, 4));
-                        throw e;
-                    }
-                };
-            }),
-            that = this;
+            return function () {
+                try {
+                    var executor = require('./testTypes/' + step.type);
+                    return executor.runStep(step);
+                }
+                catch (e) {
+                    console.log('Invalid step type:');
+                    console.log(JSON.stringify(step, null, 4));
+                    throw e;
+                }
+            };
+        });
 
-        return stepExecutions.reduce(Q.when, Q()).then(function () { return Q(that); });
+        return stepExecutions.reduce(Q.when, Q());
+    }
+
+    function ignoreLine (line, linesToIgnore) {
+        return (linesToIgnore || []).some(function (pattern) {
+            return new RegExp(pattern).test(line);
+        });
+    }
+
+    function normalizeJSON (possibleJSON) {
+        try {
+            return JSON.stringify(JSON.parse(possibleJSON), null, 2);
+        }
+        catch (e) {
+            return possibleJSON;
+        }
+    }
+
+    function normalizeJSONSubstrings (text) {
+        // [\S\s] because . doesn't match newlines
+        var jsonPattern = /\{[\S\s]*\}/;
+        if (jsonPattern.test(text)) {
+            var prettyPrintedJSON = normalizeJSON(jsonPattern.exec(text)[0]);
+            text = text.replace(jsonPattern, prettyPrintedJSON);
+        }
+        return text;
+    }
+
+    function normalize (text, linesToIgnore) {
+        var jsonNormalized = normalizeJSONSubstrings(text || ''),
+            lines = jsonNormalized.replace(/\r/g, '').split('\n'),
+            result = [];
+
+        lines.forEach(function (line) {
+            if (!ignoreLine(line, linesToIgnore)) {
+                result.push(line);
+            }
+        });
+
+        return result.join('\n').trim();
+    }
+
+    function assertValid () {
+        return execute().then(function () {
+            steps.forEach(function (step) {
+                if (step.verify) {
+                    var actual = normalize(step.result, step.ignoreLines),
+                        expected = normalize(step.verify, step.ignoreLines);
+
+                    if (actual !== expected) {
+                        console.log('%s %s step %s failed; below is the actual result', endpoint, id, step.id);
+                        console.log(normalize(step.result));
+                    }
+                    assert.strictEqual(actual, expected);
+                }
+            });
+        });
     }
 
     return {
@@ -61,7 +117,8 @@ function create (endpoint, id) {
         name: id,
         steps: steps,
         addStep: addStep,
-        execute: execute
+        execute: execute,
+        assertValid: assertValid
     };
 }
 
