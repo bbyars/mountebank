@@ -8,7 +8,7 @@ var Q = require('q'),
 
 function validateDocs (page) {
     promiseIt(page + ' should be up-to-date', function () {
-        return docs.get(page).then(function (testScenarios) {
+        return docs.getScenarios(page).then(function (testScenarios) {
             var tests = Object.keys(testScenarios).map(function (testName) {
                 return testScenarios[testName].assertValid();
             });

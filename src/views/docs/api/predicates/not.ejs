@@ -1,9 +1,8 @@
 <p>The <code>not</code> predicate negates its child predicate.</p>
 
-<pre><code data-test-id='tcp not example'
-           data-test-step='1'
-           data-test-type='http'>
-POST /imposters HTTP/1.1
+<testScenario name='tcp not example'>
+    <step type='http'>
+<pre><code>POST /imposters HTTP/1.1
 Host: localhost:<%= port %>
 Accept: application/json
 Content-Type: application/json
@@ -22,39 +21,32 @@ Content-Type: application/json
       "predicates": [{ "equals": { "data": "test\n" } }]
     }</strong>
   ]
-}
-</code></pre>
+}</code></pre>
+    </step>
 
 <p>The first stub matches if the <code>is</code> sub-predicate does not match:</p>
 
-<pre><code data-test-id='tcp not example'
-           data-test-step='2'
-           data-test-type='exec'>
-echo '<strong class='highlight1'>production</strong>' | nc localhost 4552
-</code></pre>
+    <step type='exec'>
+<pre><code>echo '<strong class='highlight1'>production</strong>' | nc localhost 4552</code></pre>
 
-<pre><code data-test-id='tcp not example'
-           data-test-verify-step='2'>
-<strong class='highlight1'>not test</strong>
-</code></pre>
+        <assertResponse>
+<pre><code><strong class='highlight1'>not test</strong></code></pre>
+        </assertResponse>
+    </step>
 
 <p>As expected, the second stub matches if the <code>is</code> sub-predicate does match:</p>
 
-<pre><code data-test-id='tcp not example'
-           data-test-step='3'
-           data-test-type='exec'>
-echo '<strong class='highlight1'>test</strong>' | nc localhost 4552
-</code></pre>
+    <step type='exec'>
+<pre><code>echo '<strong class='highlight1'>test</strong>' | nc localhost 4552</code></pre>
 
-<pre><code data-test-id='tcp not example'
-           data-test-verify-step='3'>
-<strong class='highlight1'>test</strong>
-</code></pre>
+        <assertResponse>
+<pre><code><strong class='highlight1'>test</strong></code></pre>
+        </assertResponse>
+    </step>
 
-<code class='hidden' data-test-id='tcp not example'
-                     data-test-step='4'
-                     data-test-type='http'>
-DELETE /imposters/4552 HTTP/1.1
+    <step type='http'>
+<code class='hidden'>DELETE /imposters/4552 HTTP/1.1
 Host: localhost:<%= port %>
-Accept: application/json
-</code>
+Accept: application/json</code>
+    </step>
+</testScenario>

@@ -26,10 +26,9 @@ description = 'Using JSON in mountebank predicates'
     to help explain each predicate.  Like all unrecognized fields passed in, mountebank will
     simply ignore it.</p>
 
-<pre><code data-test-id='json example'
-           data-test-step='1'
-           data-test-type='http'>
-POST /imposters HTTP/1.1
+<testScenario name='json'>
+    <step type='http'>
+<pre><code>POST /imposters HTTP/1.1
 Host: localhost:<%= port %>
 Accept: application/json
 Content-Type: application/json
@@ -72,37 +71,33 @@ Content-Type: application/json
       ]
     }
   ]
-}
-</code></pre>
+}</code></pre>
+    </step>
 
 <p>We'll pass the following HTTP request to test the predicates and confirm we get the
     expected response:</p>
 
-<pre><code data-test-id='json example'
-           data-test-step='2'
-           data-test-type='http'>
-POST / HTTP/1.1
+    <step type='http'>
+<pre><code>POST / HTTP/1.1
 Host: localhost:4545
 
 {
   "title": "Harry Potter",
   "summary": "Dragons and a boy wizard"
-}
-</code></pre>
+}</code></pre>
 
-<pre><code data-test-id='json example'
-           data-test-verify-step='2'
-           data-test-ignore-lines='["^Date"]'>
-HTTP/1.1 200 OK
+        <assertResponse>
+<pre><code>HTTP/1.1 200 OK
 Connection: close
-Date: Thu, 09 Jan 2014 02:30:31 GMT
+Date: <volatile>Thu, 09 Jan 2014 02:30:31 GMT</volatile>
 Transfer-Encoding: chunked
 
 <strong class='highlight1'>{
     "code": "SUCCESS",
     "author": "J.K. Rowling"
-}</strong>
-</code></pre>
+}</strong></code></pre>
+        </assertResponse>
+    </step>
 
 <h3>Embedded Arrays</h3>
 
@@ -119,10 +114,8 @@ uses in other predicate operations, which can be summarized as follows:</p>
 
 <p>These rules can be explored through the following example:</p>
 
-<pre><code data-test-id='json example'
-           data-test-step='3'
-           data-test-type='http'>
-POST /imposters HTTP/1.1
+    <step type='http'>
+<pre><code>POST /imposters HTTP/1.1
 Host: localhost:<%= port %>
 Accept: application/json
 Content-Type: application/json
@@ -169,16 +162,14 @@ Content-Type: application/json
       ]
     }
   ]
-}
-</code></pre>
+}</code></pre>
+    </step>
 
 <p>We'll pass the following HTTP request, leaving off <em>Harry Potter</em> so that all elements match the
     <code>deepEquals</code> predicate:</p>
 
-<pre><code data-test-id='json example'
-           data-test-step='4'
-           data-test-type='http'>
-POST / HTTP/1.1
+    <step type='http'>
+<pre><code>POST / HTTP/1.1
 Host: localhost:4546
 
 {
@@ -186,34 +177,29 @@ Host: localhost:4546
     { "title": "Game of Thrones" },
     { "title": "The Hobbit" }
   ]
-}
-</code></pre>
+}</code></pre>
 
-<pre><code data-test-id='json example'
-           data-test-verify-step='4'
-           data-test-ignore-lines='["^Date"]'>
-HTTP/1.1 200 OK
+        <assertResponse>
+<pre><code>HTTP/1.1 200 OK
 Connection: close
-Date: Thu, 09 Jan 2014 02:30:31 GMT
+Date: <volatile>Thu, 09 Jan 2014 02:30:31 GMT</volatile>
 Transfer-Encoding: chunked
 
-<strong class='highlight1'>Matched all elements exactly</strong>
-</code></pre>
+<strong class='highlight1'>Matched all elements exactly</strong></code></pre>
+        </assertResponse>
+    </step>
 
-<code class='hidden' data-test-id='json example'
-                     data-test-step='5'
-                     data-test-type='http'>
-DELETE /imposters/4545 HTTP/1.1
+    <step type='http'>
+<code class='hidden'>DELETE /imposters/4545 HTTP/1.1
 Host: localhost:<%= port %>
-Accept: application/json
-</code>
+Accept: application/json</code>
+    </step>
 
-<code class='hidden' data-test-id='json example'
-                     data-test-step='6'
-                     data-test-type='http'>
-DELETE /imposters/4546 HTTP/1.1
+    <step type='http'>
+<code class='hidden'>DELETE /imposters/4546 HTTP/1.1
 Host: localhost:<%= port %>
-Accept: application/json
-</code>
+Accept: application/json</code>
+    </step>
+</testScenario>
 
 <% include ../../_footer %>

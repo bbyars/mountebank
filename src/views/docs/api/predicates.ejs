@@ -145,10 +145,9 @@ then <em>all</em> fields in the predicate array must match (in any order). Most 
 will match even if there are additional fields in the actual request array; <code>deepEquals</code>
 requires the array lengths to be equal. The following example shows this with a querystring:</p>
 
-<pre><code data-test-id='array example'
-           data-test-step='1'
-           data-test-type='http'>
-POST /imposters HTTP/1.1
+<testScenario name='array'>
+    <step type='http'>
+<pre><code>POST /imposters HTTP/1.1
 Host: localhost:<%= port %>
 Accept: application/json
 Content-Type: application/json
@@ -182,62 +181,53 @@ Content-Type: application/json
       }]
     }
   ]
-}
-</code></pre>
+}</code></pre>
+    </step>
 
 <p>We'll call the imposter with a multi-valued query key, which mountebank recognizes as an array.</p>
 
-<pre><code data-test-id='array example'
-           data-test-step='2'
-           data-test-type='http'>
-GET /path<strong class='highlight2'>?key=second&key=first</strong>&key=third HTTP/1.1
-Host: localhost:3333
-</code></pre>
+    <step type='http'>
+<pre><code>GET /path<strong class='highlight2'>?key=second&key=first</strong>&key=third HTTP/1.1
+Host: localhost:3333</code></pre>
 
 <p>Since both keys match, we get our expected response from the first stub.</p>
 
-<pre><code data-test-id='array example'
-           data-test-verify-step='2'
-           data-test-ignore-lines='["^Date"]'>
-HTTP/1.1 200 OK
+        <assertResponse>
+<pre><code>HTTP/1.1 200 OK
 Connection: close
-Date: Sat, 06 May 2017 02:30:31 GMT
+Date: <volatile>Sat, 06 May 2017 02:30:31 GMT</volatile>
 Transfer-Encoding: chunked
 
-<strong class='highlight1'>Entire array matched</strong>
-</code></pre>
+<strong class='highlight1'>Entire array matched</strong></code></pre>
+        </assertResponse>
+    </step>
 
 <p>Notice that the order of the keys doesn't matter. If the request is missing either array value,
 our predicate no longer matches.</p>
 
-<pre><code data-test-id='array example'
-           data-test-step='3'
-           data-test-type='http'>
-GET /path?<strong class='highlight3'>key=first</strong>&key=third HTTP/1.1
-Host: localhost:3333
-</code></pre>
+    <step type='http'>
+<pre><code>GET /path?<strong class='highlight3'>key=first</strong>&key=third HTTP/1.1
+Host: localhost:3333</code></pre>
 
 <p>In this case, our second stub matches, because it does <em>not</em> use an array predicate, and
 one of the actual array values in the request matches the predicate definition</p>
 
-<pre><code data-test-id='array example'
-           data-test-verify-step='3'
-           data-test-ignore-lines='["^Date"]'>
-HTTP/1.1 200 OK
+        <assertResponse>
+<pre><code>HTTP/1.1 200 OK
 Connection: close
-Date: Sat, 06 May 2017 02:30:31 GMT
+Date: <volatile>Sat, 06 May 2017 02:30:31 GMT</volatile>
 Transfer-Encoding: chunked
 
-<strong class='highlight4'>A field in the array matched</strong>
-</code></pre>
+<strong class='highlight4'>A field in the array matched</strong></code></pre>
+        </assertResponse>
+    </step>
 
-<code class='hidden' data-test-id='array example'
-                     data-test-step='4'
-                     data-test-type='http'>
-DELETE /imposters/3333 HTTP/1.1
+    <step type='http'>
+<code class='hidden'>DELETE /imposters/3333 HTTP/1.1
 Host: localhost:<%= port %>
-Accept: application/json
-</code>
+Accept: application/json</code>
+    </step>
+</testScenario>
 
 <h2>Matching XML or JSON</h2>
 

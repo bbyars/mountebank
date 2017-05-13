@@ -4,10 +4,9 @@ HTTP headers and query parameters.  It works on string fields by simply returnin
 string if non-empty.  Setting the <code>exists</code> value to <code>false</code>
 inverts the meaning.</p>
 
-<pre><code data-test-id='http exists example'
-           data-test-step='1'
-           data-test-type='http'>
-POST /imposters HTTP/1.1
+<testScenario name='http exists example'>
+    <step type='http'>
+<pre><code>POST /imposters HTTP/1.1
 Host: localhost:<%= port %>
 Accept: application/json
 Content-Type: application/json
@@ -53,80 +52,67 @@ Content-Type: application/json
       ]
     }</strong>
   ]
-}
-</code></pre>
+}</code></pre>
+    </step>
 
 <p>The first stub matches if the querystring includes <code>q</code>, but not if it
 includes <code>search</code>, and if the headers include <code>Accept</code>,
 but not if they include <code>X-Rate-Limit</code>.</p>
 
-<pre><code data-test-id='http exists example'
-           data-test-step='2'
-           data-test-type='http'>
-GET /?<strong class='highlight1'>q</strong>=mountebank HTTP/1.1
+    <step type='http'>
+<pre><code>GET /?<strong class='highlight1'>q</strong>=mountebank HTTP/1.1
 Host: localhost:4551
-<strong class='highlight1'>Accept</strong>: text/plain
-</code></pre>
+<strong class='highlight1'>Accept</strong>: text/plain</code></pre>
 
-<pre><code data-test-id='http exists example'
-           data-test-verify-step='2'
-           data-test-ignore-lines='["^Date"]'>
-HTTP/1.1 200 OK
+        <assertResponse>
+<pre><code>HTTP/1.1 200 OK
 Connection: close
-Date: Thu, 09 Jan 2014 02:30:31 GMT
+Date: <volatile>Thu, 09 Jan 2014 02:30:31 GMT</volatile>
 Transfer-Encoding: chunked
 
-<strong class='highlight1'>first response</strong>
-</code></pre>
+<strong class='highlight1'>first response</strong></code></pre>
+        </assertResponse>
+    </step>
 
 <p>The second stub matches if the request <code>method</code> is a
 non-empty string (always <code>true</code>), and if the <code>body</code>
 is empty.</p>
 
-<pre><code data-test-id='http exists example'
-           data-test-step='3'
-           data-test-type='http'>
-GET / HTTP/1.1
-Host: localhost:4551
-</code></pre>
+    <step type='http'>
+<pre><code>GET / HTTP/1.1
+Host: localhost:4551</code></pre>
 
-<pre><code data-test-id='http exists example'
-           data-test-verify-step='3'
-           data-test-ignore-lines='["^Date"]'>
-HTTP/1.1 200 OK
+        <assertResponse>
+<pre><code>HTTP/1.1 200 OK
 Connection: close
-Date: Thu, 09 Jan 2014 02:30:31 GMT
+Date: <volatile>Thu, 09 Jan 2014 02:30:31 GMT</volatile>
 Transfer-Encoding: chunked
 
-<strong class='highlight2'>second response</strong>
-</code></pre>
+<strong class='highlight2'>second response</strong></code></pre>
+        </assertResponse>
+    </step>
 
 <p>The last stub matches if the <code>body</code> is non-empty:</p>
 
-<pre><code data-test-id='http exists example'
-           data-test-step='4'
-           data-test-type='http'>
-POST / HTTP/1.1
+    <step type='http'>
+<pre><code>POST / HTTP/1.1
 Host: localhost:4551
 
-<strong class='highlight3'>non-empty body</strong>
-</code></pre>
+<strong class='highlight3'>non-empty body</strong></code></pre>
 
-<pre><code data-test-id='http exists example'
-           data-test-verify-step='4'
-           data-test-ignore-lines='["^Date"]'>
-HTTP/1.1 200 OK
+        <assertResponse>
+<pre><code>HTTP/1.1 200 OK
 Connection: close
-Date: Thu, 09 Jan 2014 02:30:31 GMT
+Date: <volatile>Thu, 09 Jan 2014 02:30:31 GMT</volatile>
 Transfer-Encoding: chunked
 
-<strong class='highlight1'>third response</strong>
-</code></pre>
+<strong class='highlight1'>third response</strong></code></pre>
+        </assertResponse>
+    </step>
 
-<code class='hidden' data-test-id='http exists example'
-                     data-test-step='5'
-                     data-test-type='http'>
-DELETE /imposters/4551 HTTP/1.1
+    <step type='http'>
+<code class='hidden'>DELETE /imposters/4551 HTTP/1.1
 Host: localhost:<%= port %>
-Accept: application/json
-</code>
+Accept: application/json</code>
+    </step>
+</testScenario>

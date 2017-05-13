@@ -8,6 +8,7 @@ var assert = require('assert'),
     currentVersion = require('../../package.json').version,
     promiseIt = require('../testHelpers').promiseIt;
 
+// TODO: Strip bespoke tags
 function assertValid (path, html) {
     var deferred = Q.defer();
 

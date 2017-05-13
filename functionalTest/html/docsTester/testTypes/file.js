@@ -3,15 +3,14 @@
 var fs = require('fs'),
     Q = require('q');
 
-// TODO: filename, text
-function runStep (step) {
-    if (step.text.trim() === '') {
-        fs.unlinkSync(step.filename);
+function runStep (config) {
+    if (config.delete === 'true') {
+        fs.unlinkSync(config.filename);
     }
     else {
-        fs.writeFileSync(step.filename, step.text);
+        fs.writeFileSync(config.filename, config.requestText);
     }
-    return Q(step);
+    return Q(config);
 }
 
 module.exports = {

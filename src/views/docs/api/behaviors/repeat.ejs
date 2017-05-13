@@ -15,10 +15,9 @@
     moving on to the next reponse in the array. In the below example, the first response is configured to
     return 2 times before advancing to the second response:</p>
 
-<pre><code data-test-id='repeat'
-           data-test-step='1'
-           data-test-type='http'>
-POST /imposters HTTP/1.1
+<testScenario name='repeat'>
+    <step type='http'>
+<pre><code>POST /imposters HTTP/1.1
 Host: localhost:<%= port %>
 Accept: application/json
 Content-Type: application/json
@@ -45,71 +44,55 @@ Content-Type: application/json
       ]
     }
   ]
-}
-</code></pre>
+}</code></pre>
+    </step>
 
 <p>Now the first response will return 2 times before returning the second response.</p>
 
-<pre><code data-test-id='repeat'
-           data-test-step='2'
-           data-test-type='http'>
-GET / HTTP/1.1
-Host: localhost:7777
-</code></pre>
+    <step type='http'>
+<pre><code>GET / HTTP/1.1
+Host: localhost:7777</code></pre>
 
-<pre><code data-test-id='repeat'
-           data-test-verify-step='2'
-           data-test-ignore-lines='["^Date"]'>
-HTTP/1.1 200 OK
-Date: Thu, 01 Jan 2015 02:30:31 GMT
+        <assertResponse>
+<pre><code>HTTP/1.1 200 OK
 Connection: close
+Date: <volatile>Thu, 01 Jan 2015 02:30:31 GMT</volatile>
 Transfer-Encoding: chunked
 
-This will repeat 2 times
-</code></pre>
+This will repeat 2 times</code></pre>
+        </assertResponse>
+    </step>
 
+    <step type='http'>
+<pre><code>GET / HTTP/1.1
+Host: localhost:7777</code></pre>
 
-<pre><code data-test-id='repeat'
-           data-test-step='3'
-           data-test-type='http'>
-GET / HTTP/1.1
-Host: localhost:7777
-</code></pre>
-
-<pre><code data-test-id='repeat'
-           data-test-verify-step='3'
-           data-test-ignore-lines='["^Date"]'>
-HTTP/1.1 200 OK
-Date: Thu, 01 Jan 2015 02:30:31 GMT
+        <assertResponse>
+<pre><code>HTTP/1.1 200 OK
 Connection: close
+Date: <volatile>Thu, 01 Jan 2015 02:30:31 GMT</volatile>
 Transfer-Encoding: chunked
 
-This will repeat 2 times
-</code></pre>
+This will repeat 2 times</code></pre>
+        </assertResponse>
+    </step>
 
+    <step type='http'>
+<pre><code>GET / HTTP/1.1
+Host: localhost:7777</code></pre>
 
-<pre><code data-test-id='repeat'
-           data-test-step='4'
-           data-test-type='http'>
-GET / HTTP/1.1
-Host: localhost:7777
-</code></pre>
-
-<pre><code data-test-id='repeat'
-           data-test-verify-step='4'
-           data-test-ignore-lines='["^Date"]'>
-HTTP/1.1 200 OK
-Date: Thu, 01 Jan 2015 02:30:31 GMT
+        <assertResponse>
+<pre><code>HTTP/1.1 200 OK
 Connection: close
+Date: <volatile>Thu, 01 Jan 2015 02:30:31 GMT</volatile>
 Transfer-Encoding: chunked
 
-Then this will return
-</code></pre>
+Then this will return</code></pre>
+        </assertResponse>
+    </step>
 
-<code class='hidden'
-      data-test-id='repeat'
-      data-test-step='5'
-      data-test-type='http'>
-DELETE /imposters/7777 HTTP/1.1
-Host: localhost:<%= port %>
-</code>
+    <step type='http'>
+<code class='hidden'>DELETE /imposters/7777 HTTP/1.1
+Host: localhost:<%= port %></code>
+    </step>
+</testScenario>

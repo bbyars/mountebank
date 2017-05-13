@@ -83,14 +83,12 @@ function format (response) {
     return result;
 }
 
-// TODO: text, sets result
-function runStep (step) {
+function runStep (spec) {
     var deferred = Q.defer(),
-        spec = parse(step.text);
+        requestSpec = parse(spec.requestText);
 
-    httpClient.responseFor(spec).done(function (response) {
-        step.result = format(response);
-        deferred.resolve(step);
+    httpClient.responseFor(requestSpec).done(function (response) {
+        deferred.resolve(format(response));
     });
 
     return deferred.promise;

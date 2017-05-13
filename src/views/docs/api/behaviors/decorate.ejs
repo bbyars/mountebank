@@ -36,8 +36,8 @@ command line switch.  The <code>decorate</code> behavior supports an elegant way
 to the responses.  Let's add the current timestamp to each response.  We'll pass in a stringified version
 of the following JavaScript function:</p>
 
-<pre><code>
-function (request, response) {
+<testScenario name='decorate'>
+<pre><code>function (request, response) {
     var pad = function (number) {
             return (number &lt; 10) ? '0' + number : number.toString();
         },
@@ -45,13 +45,10 @@ function (request, response) {
         time = pad(now.getHours()) + ':' + pad(now.getMinutes()) + ':' + pad(now.getSeconds());
 
     response.body = response.body.replace('${TIME}', time);
-}
-</code></pre>
+}</code></pre>
 
-<pre><code data-test-id='decorate'
-           data-test-step='1'
-           data-test-type='http'>
-POST /imposters HTTP/1.1
+    <step type='http'>
+<pre><code>POST /imposters HTTP/1.1
 Host: localhost:<%= port %>
 Accept: application/json
 Content-Type: application/json
@@ -73,28 +70,24 @@ Content-Type: application/json
       ]
     }
   ]
-}
-</code></pre>
+}</code></pre>
+    </step>
 
 <p>Now we can call the imposter to get the current time.</p>
 
-<pre><code data-test-id='decorate'
-           data-test-step='2'
-           data-test-type='http'>
-GET / HTTP/1.1
-Host: localhost:5545
-</code></pre>
+    <step type='http'>
+<pre><code>GET / HTTP/1.1
+Host: localhost:5545</code></pre>
 
-<pre><code data-test-id='decorate'
-           data-test-verify-step='2'
-           data-test-ignore-lines='["^Date", "^The time"]'>
-HTTP/1.1 200 OK
-Date: Thu, 01 Jan 2015 02:30:31 GMT
+        <assertResponse>
+<pre><code>HTTP/1.1 200 OK
 Connection: close
+Date: <volatile>Thu, 01 Jan 2015 02:30:31 GMT</volatile>
 Transfer-Encoding: chunked
 
-The time is <strong class='highlight1'>16:43:02</strong>
-</code></pre>
+The time is <volatile><strong class='highlight1'>16:43:02</strong></volatile></code></pre>
+        </assertResponse>
+    </step>
 
 <h3 id='add-custom-header'>Add a custom header to a proxied response</h3>
 
@@ -105,16 +98,12 @@ simulate your testing scenario.  In this example, we'll proxy to the
 We'll augment the proxied response with a custom header.  Here's the decorator function, passed
 into the imposter creation as a string:</p>
 
-<pre><code>
-function (request, response) {
+<pre><code>function (request, response) {
     response.headers['X-Test'] = 'True';
-}
-</code></pre>
+}</code></pre>
 
-<pre><code data-test-id='decorate'
-           data-test-step='3'
-           data-test-type='http'>
-POST /imposters HTTP/1.1
+    <step type='http'>
+<pre><code>POST /imposters HTTP/1.1
 Host: localhost:<%= port %>
 Accept: application/json
 Content-Type: application/json
@@ -126,9 +115,7 @@ Content-Type: application/json
     {
       "responses": [
         {
-          "proxy": {
-            "to": "http://localhost:5545"
-          },
+          "proxy": { "to": "http://localhost:5545" },
           "_behaviors": {
             "decorate": "function (request, response) { <strong class='highlight1'>response.headers['X-Test'] = 'True';</strong> }"
           }
@@ -136,40 +123,33 @@ Content-Type: application/json
       ]
     }
   ]
-}
-</code></pre>
+}</code></pre>
+    </step>
 
 <p>Now we should get the custom header back:</p>
 
-<pre><code data-test-id='decorate'
-           data-test-step='4'
-           data-test-type='http'>
-GET /test HTTP/1.1
-Host: localhost:7545
-</code></pre>
+    <step type='http'>
+<pre><code>GET /test HTTP/1.1
+Host: localhost:7545</code></pre>
 
-<pre><code data-test-id='decorate'
-           data-test-verify-step='4'
-           data-test-ignore-lines='["^Date", "^The time"]'>
-HTTP/1.1 200 OK
-Date: Thu, 01 Jan 2015 02:30:31 GMT
+        <assertResponse>
+<pre><code>HTTP/1.1 200 OK
 Connection: close
+Date: <volatile>Thu, 01 Jan 2015 02:30:31 GMT</volatile>
 Transfer-Encoding: chunked
 <strong class='highlight1'>X-Test: True</strong>
 
-The time is 17:16:23
-</code></pre>
+The time is <volatile>17:16:23</volatile></code></pre>
+        </assertResponse>
+    </step>
 
-<code class='hidden' data-test-id='decorate'
-                     data-test-step='5'
-                     data-test-type='http'>
-DELETE /imposters/5545 HTTP/1.1
-Host: localhost:<%= port %>
-</code>
+    <step type='http'>
+<code class='hidden'>DELETE /imposters/5545 HTTP/1.1
+Host: localhost:<%= port %></code>
+    </step>
 
-<code class='hidden' data-test-id='decorate'
-                     data-test-step='6'
-                     data-test-type='http'>
-DELETE /imposters/7545 HTTP/1.1
-Host: localhost:<%= port %>
-</code>
+    <step type='http'>
+<code class='hidden'>DELETE /imposters/7545 HTTP/1.1
+Host: localhost:<%= port %></code>
+    </step>
+</testScenario>

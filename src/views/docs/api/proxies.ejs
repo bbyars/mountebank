@@ -126,10 +126,9 @@ the proxy response, relying on mountebank's first-match policy to automatically 
 response in the new stub the next time a request matches the predicates. Imagine the following
 <code>stubs</code> array, set by us when we create the imposter:</p>
 
-<code class='hidden' data-test-id='modes example'
-                     data-test-step='1'
-                     data-test-type='http'>
-POST /imposters HTTP/1.1
+<testScenario name='modes'>
+    <step type='http'>
+<code class='hidden'>POST /imposters HTTP/1.1
 Host: localhost:<%= port %>
 Accept: application/json
 Content-Type: application/json
@@ -137,13 +136,11 @@ Content-Type: application/json
 {
   "port": 2001,
   "protocol": "http"
-}
-</code>
+}</code>
+    </step>
 
-<pre><code data-test-id='modes example'
-           data-test-step='2'
-           data-test-type='http'>
-<div class='hidden'>POST /imposters HTTP/1.1
+    <step type='http'>
+<pre><code><div class='hidden'>POST /imposters HTTP/1.1
 Host: localhost:<%= port %>
 Accept: application/json
 Content-Type: application/json
@@ -161,43 +158,34 @@ Content-Type: application/json
   }]
 }]<div class='hidden'>
 }</div>
-</code></pre>
+</code></pre></step>
 
 <p>When we issue an HTTP call to <code>/test</code>, the stub will proxy all of the request
 details to http://origin-server.com/test, and save off the response in a new stub in front of the
 stub with the <code>proxy</code> response:</p>
 
-<code class='hidden' data-test-id='modes example'
-                     data-test-step='3'
-                     data-test-type='http'>
-GET /test HTTP/1.1
-Host: localhost:2000
-</code>
+    <step type='http'>
+<code class='hidden'>GET /test HTTP/1.1
+Host: localhost:2000</code>
+    </step>
 
-<code class='hidden' data-test-id='modes example'
-                     data-test-step='4'
-                     data-test-type='http'>
-DELETE /imposters/2001 HTTP/1.1
+    <step type='http'>
+<code class='hidden''>DELETE /imposters/2001 HTTP/1.1
 Host: localhost:<%= port %>
-Accept: application/json
-</code>
+Accept: application/json</code>
+    </step>
 
-<code class='hidden' data-test-id='modes example'
-                     data-test-step='5'
-                     data-test-type='http'>
-DELETE /imposters/2000 HTTP/1.1
+    <step type='http'>
+<code class='hidden'>DELETE /imposters/2000 HTTP/1.1
 Host: localhost:<%= port %>
-Accept: application/json
-</code>
+Accept: application/json</code>
 
-<pre><code data-test-id='modes example'
-           data-test-verify-step='5'
-           data-test-ignore-lines='["Date", "requestFrom", "timestamp", "proxyResponseTime", "Content-Length"]'>
-<div class='hidden'>HTTP/1.1 200 OK
+        <assertResponse>
+<pre><code><div class='hidden'>HTTP/1.1 200 OK
 Access-Control-Allow-Origin: *
 Content-Type: application/json; charset=utf-8
-Content-Length: 2112
-Date: Thu, 11 May 2017 03:02:02 GMT
+Content-Length: <volatile>2112</volatile>
+Date: <volatile>Thu, 11 May 2017 03:02:02 GMT</volatile>
 Connection: keep-alive
 
 {
@@ -206,7 +194,7 @@ Connection: keep-alive
   "numberOfRequests": 1,
   "requests": [
     {
-      "requestFrom": "::ffff:127.0.0.1:61075",
+      "requestFrom": "<volatile>::ffff:127.0.0.1:61075</volatile>",
       "method": "GET",
       "path": "/test",
       "query": {},
@@ -216,7 +204,7 @@ Connection: keep-alive
         "Connection": "keep-alive"
       },
       "body": "",
-      "timestamp": "2017-05-11T02:27:41.725Z"
+      "timestamp": "<volatile>2017-05-11T02:27:41.725Z</volatile>"
     }
   ],</div>
 "stubs": [
@@ -227,12 +215,12 @@ Connection: keep-alive
         "statusCode": 200,
         "headers": {
           "Connection": "close",
-          "Date": "Thu, 11 May 2017 03:02:02 GMT",
+          "Date": "<volatile>Thu, 11 May 2017 03:02:02 GMT</volatile>",
           "Transfer-Encoding": "chunked"
         },
         "body": "",
         "_mode": "text",
-        "_proxyResponseTime": 9
+        "_proxyResponseTime": <volatile>9</volatile>
       }
     }]
   }</strong>,
@@ -248,9 +236,9 @@ Connection: keep-alive
     ]<div class='hidden'>,
       "matches": [
         {
-          "timestamp": "2017-05-11T03:02:02.945Z",
+          "timestamp": "<volatile>2017-05-11T03:02:02.945Z</volatile>",
           "request": {
-            "requestFrom": "::ffff:127.0.0.1:61227",
+            "requestFrom": "<volatile>::ffff:127.0.0.1:61227</volatile>",
             "method": "GET",
             "path": "/test",
             "query": {},
@@ -265,7 +253,7 @@ Connection: keep-alive
             "statusCode": 200,
             "headers": {
               "Connection": "close",
-              "Date": "Thu, 11 May 2017 03:02:02 GMT",
+              "Date": "<volatile>Thu, 11 May 2017 03:02:02 GMT</volatile>",
               "Transfer-Encoding": "chunked"
             },
             "body": "",
@@ -276,12 +264,13 @@ Connection: keep-alive
     }</div>
   ]<div class='hidden'>,
   "_links": {
-    "self": {
-      "href": "http://localhost:2525/imposters/2000"
-    }
+    "self": { "href": "http://localhost:2525/imposters/2000" }
   }
 }</div>
 </code></pre>
+        </assertResponse>
+    </step>
+</testScenario>
 
 <p>We'll look at how the predicate gets generated shortly. What's important to note
 at this point is that, because of mountebank's first-match policy on stubs, the next

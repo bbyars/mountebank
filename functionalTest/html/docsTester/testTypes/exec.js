@@ -19,18 +19,16 @@ function execute (command) {
     return deferred.promise;
 }
 
-// TODO: text, sets result
 function runStep (step) {
     var deferred = Q.defer(),
         filename = 'test-' + nextTestId;
 
-    fs.writeFileSync(filename, step.text, { mode: 484 /* 0744 */});
+    fs.writeFileSync(filename, step.requestText, { mode: 484 /* 0744 */});
     nextTestId += 1;
 
     execute('sh ./' + filename).done(function (stdout) {
-        step.result = stdout;
         fs.unlinkSync(filename);
-        deferred.resolve(step);
+        deferred.resolve(stdout);
     }, function (reason) {
         console.log('Error executing following command: ' + step.text);
         deferred.reject(reason);
