@@ -129,8 +129,8 @@ but easier to script.</p>
 both imposters, which are identified by the port number on the URL:</p>
 
     <step type='exec'>
-<pre><code>curl -X DELETE http://localhost:2525/imposters/4545
-curl -X DELETE http://localhost:2525/imposters/5555</code></pre>
+<pre><code>curl -X DELETE http://localhost:<change to='<%= port %>'>2525</change>/imposters/4545
+curl -X DELETE http://localhost:<change to='<%= port %>'>2525</change>/imposters/5555</code></pre>
     </step>
 </testScenario>
 

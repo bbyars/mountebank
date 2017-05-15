@@ -686,12 +686,12 @@ Connection: keep-alive
   "logs": [
     {
       "level": "info",
-      "message": "[mb:2525] mountebank v1.11.0 now taking orders - point your browser to http://localhost:2525 for help",
+      "message": "[mb:<%= port %>] mountebank v1.11.0 now taking orders - point your browser to http://localhost:<%= port %> for help",
       "timestamp": "<volatile>2015-10-20T03:33:23.018Z</volatile>"
     },
     {
       "level": "warn",
-      "message": "[mb:2525] Running with --allowInjection set. See http://localhost:2525/docs/security for security info",
+      "message": "[mb:<%= port %>] Running with --allowInjection set. See http://localhost:<%= port %>/docs/security for security info",
       "timestamp": "<volatile>2015-10-20T03:33:23.019Z</volatile>"
     }
   ]
