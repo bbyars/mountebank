@@ -344,51 +344,74 @@ Host: localhost:<%= port %></code>
 Host: localhost:<%= port %></code>
     </step>
 
-
-
 <p>The <a href='/docs/api/xpath'><code>xpath</code></a> and
 <a href='/docs/api/jsonpath'><code>jsonpath</code></a> predicate parameters work
 by limiting the scope of the generated predicate to the matching value in the
 proxied request. If the selector matches multiple values in the proxied request,
 they will all be part of the generated predicate, using standard predicate
 <a href='/docs/api/predicates#array-match'>array matching rules</a>. For example,
-imagine a request reaching the following stub with an XML body of
-"&lt;doc&gt;&lt;number&gt;1&lt;/number&gt;&lt;number&gt;2&lt;/number&gt;&lt;number&gt;3&lt;/number&gt;&lt;/doc&gt;"
-</p>
+following stub will look for <code>number</code> tags in the XML body:</p>
 
-<pre><code>
-"stubs": [{
+    <step type='http'>
+<pre><code><div class='hidden'>POST /imposters HTTP/1.1
+Host: localhost:<%= port %>
+Accept: application/json
+Content-Type: application/json
+
+{
+  "port": 3000,
+  "protocol": "http",
+</div>"stubs": [{
   "responses": [{
     "proxy": {
-      "to": "http://origin-server.com",
-      "mode": "proxyOnce",
+      "to": "<change to='http://localhost:3001'>http://origin-server.com</change>",
       <strong class='highlight1'>"predicateGenerators": [{
         "matches": { "body": true },
         "xpath": { "selector": "//number" }
       }]</strong>
     }
   }]
-}]
-</code></pre>
+}]<div class='hidden'>}</div></code></pre>
+    </step>
+
+<p>We'll send it the following XML body:</p>
+
+    <step type='http'>
+<pre><code><div class='hidden'>POST / HTTP/1.1
+Host: localhost:3000
+
+</div>&lt;doc&gt;
+  &lt;number&gt;1&lt;/number&gt;
+  &lt;number&gt;2&lt;/number&gt;
+  &lt;number&gt;3&lt;/number&gt;
+&lt;/doc&gt;</code></pre>
+    </step>
 
 <p>Rather than matching the entire body, the generated predicate will require all three
 values matching the xpath selector in the original proxied request to be present (in any
 order):</p>
 
-<pre><code>
-"stubs": [
+<code class='hidden'>GET /imposters/3000 HTTP/1.1
+Host: localhost:<%= port %></code>
+
+        <assertResponse partial='true'>
+<pre><code><div class='hidden'>{
+</div>"stubs": [
   {
     <strong class='highlight1'>"predicates": [{
       "deepEquals": { "body": ["1", "2", "3"] },
       "xpath": { "selector": "//number" }
     }]</strong>,
-    "responses": [{ "is": { ...saved response } }]
+    "responses": [{
+      "is": { <change to=''><strong class='highlight2'>...</strong> }</change><div class='hidden'>
+        "_proxyResponseTime": <volatile>5</volatile>
+      }</div>
+    }]
   },
   {
     "responses": [{
       "proxy": {
-        "to": "http://origin-server.com",
-        "mode": "proxyOnce",
+        "to": "<change to='http://localhost:3001'>http://origin-server.com</change>",
         "predicateGenerators": [{
           "matches": { "body": true },
           "xpath": { "selector": "//number" }
@@ -396,8 +419,12 @@ order):</p>
       }
     }]
   }
-]
-</code></pre>
+]<div class='hidden'>{</div></code></pre>
+
+    <step type='http'>
+<code class='hidden'>DELETE /imposters/3000
+Host: localhost:<%= port %></code>
+    </step>
 
     <step type='http'>
 <code class='hidden'>DELETE /imposters/3001
