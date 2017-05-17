@@ -233,109 +233,46 @@ Host: localhost:3000</code>
 <code class='hidden'>GET /imposters/3000 HTTP/1.1
 Host: localhost:<%= port %></code>
 
-        <assertResponse>
-<pre><code><div class='hidden'>HTTP/1.1 200 OK
-Access-Control-Allow-Origin: *
-Vary: Accept
-Content-Type: application/json; charset=utf-8
-Content-Length: <volatile>2378</volatile>
-Date: <volatile>Tue, 16 May 2017 02:42:51 GMT</volatile>
-Connection: keep-alive
-
-{
-  "protocol": "http",
-  "port": 3000,
-  "numberOfRequests": 1,
-  "requests": [
+        <assertResponse partial='true'>
+<pre><code>{
+  "stubs": [
     {
-      "requestFrom": "<volatile>::ffff:127.0.0.1:53308</volatile>",
-      "method": "GET",
-      "path": "/test",
-      "query": {
-        "q": "mountebank",
-        "page": "1"
-      },
-      "headers": {
-        "accept": "application/json",
-        "Host": "localhost:3000",
-        "Connection": "keep-alive"
-      },
-      "body": "",
-      "timestamp": "<volatile>2017-05-16T02:42:51.636Z</volatile>"
-    }
-  ],
-</div>"stubs": [
-  {
-    "predicates": [{
-      "caseSensitive": true,
-      "deepEquals": {
-        "query": {
-          "q": "mountebank",
-          "page": "1"
-        }
-      }
-    }],
-    "responses": [{
-      "is": {
-        "statusCode": 200,
-        "headers": {
-          "Connection": "close",
-          "Date": "<volatile>Tue, 16 May 2017 02:42:51 GMT</volatile>",
-          "Transfer-Encoding": "chunked"
-        },
-        "body": "",
-        "_mode": "text",
-        "_proxyResponseTime": <volatile>5</volatile>
-      }
-    }]
-  },
-  {
-    "responses": [{
-      "proxy": {
-        "to": "http://localhost:3001",
-        "predicateGenerators": [{
-          "matches": { "query": true },
-          "caseSensitive": true
-        }],
-        "mode": "proxyOnce"
-      }
-    }]<div class='hidden'>,
-      "matches": [
-        {
-          "timestamp": "<volatile>2017-05-16T02:42:51.642Z</volatile>",
-          "request": {
-            "requestFrom": "<volatile>::ffff:127.0.0.1:53308</volatile>",
-            "method": "GET",
-            "path": "/test",
-            "query": {
-              "q": "mountebank",
-              "page": "1"
-            },
-            "headers": {
-              "accept": "application/json",
-              "Host": "localhost:3000",
-              "Connection": "keep-alive"
-            },
-            "body": ""
-          },
-          "response": {
-            "statusCode": 200,
-            "headers": {
-              "Connection": "close",
-              "Date": "<volatile>Tue, 16 May 2017 02:42:51 GMT</volatile>",
-              "Transfer-Encoding": "chunked"
-            },
-            "body": "",
-            "_mode": "text"
+      "predicates": [{
+        "caseSensitive": true,
+        "deepEquals": {
+          "query": {
+            "q": "mountebank",
+            "page": "1"
           }
         }
-      ]
-</div>  }
-]<div class='hidden'>,
-  "_links": {
-    "self": { "href": "http://localhost:2525/imposters/3000" }
-  }
-}</div></code></pre>
+      }],
+      "responses": [{
+        "is": {
+          "statusCode": 200,
+          "headers": {
+            "Connection": "close",
+            "Date": "<volatile>Tue, 16 May 2017 02:42:51 GMT</volatile>",
+            "Transfer-Encoding": "chunked"
+          },
+          "body": "",
+          "_mode": "text",
+          "_proxyResponseTime": <volatile>5</volatile>
+        }
+      }]
+    },
+    {
+      "responses": [{
+        "proxy": {
+          "to": "http://localhost:3001",
+          "predicateGenerators": [{
+            "matches": { "query": true },
+            "caseSensitive": true
+          }]
+        }
+      }]
+    }
+  ]
+}</code></pre>
         </assertResponse>
     </step>
 

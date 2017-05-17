@@ -104,12 +104,12 @@ function normalizeJSONSubstrings (text) {
     return text;
 }
 
-function lines (text) {
+function linesOf (text) {
     return text.replace(/\r/g, '').split('\n');
 }
 
 function collectVolatileLines (responseElement) {
-    var responseLines = lines(responseElement.text());
+    var responseLines = linesOf(responseElement.text());
 
     return responseElement.subElements('volatile').map(function (volatileElement) {
         var index = responseLines.findIndex(function (line) {
@@ -134,7 +134,7 @@ function collectVolatileLines (responseElement) {
  */
 function replaceVolatileData (text, volatileLines) {
     return volatileLines.reduce(function (accumulator, volatileLinePattern) {
-        var textLines = lines(accumulator),
+        var textLines = linesOf(accumulator),
             lineIndex = textLines.findIndex(function (line) {
                 // Skip ones that have already been replaced
                 return !/VOLATILE/.test(line) && volatileLinePattern.test(line);
@@ -148,9 +148,38 @@ function replaceVolatileData (text, volatileLines) {
     }, text);
 }
 
-function normalize (text, assertElement) {
-    var normalizedJSON = normalizeJSONSubstrings(text || '');
-    return replaceVolatileData(normalizedJSON, collectVolatileLines(assertElement)).trim();
+function isPartialComparison (responseElement) {
+    return responseElement.attributeValue('partial') === 'true';
+}
+
+function limitToPartialLines (text, responseElement) {
+    if (!isPartialComparison(responseElement)) {
+        return text;
+    }
+
+    var responseLines = linesOf(responseElement.text().trim()),
+        textLines = linesOf(text.trim()),
+        matchedLines = [];
+
+    responseLines.forEach(function (responseLine) {
+        var matchIndex = textLines.findIndex(function (textLine) {
+            return responseLine.trim() === textLine.trim();
+        });
+        if (matchIndex >= 0) {
+            textLines.splice(matchIndex, 1);
+            matchedLines.push(responseLine);
+        }
+    });
+    return matchedLines.join('\n');
+}
+
+function normalize (text, responseElement) {
+    var trimmed = (text || '').trim(),
+        normalizedJSON = normalizeJSONSubstrings(trimmed),
+        normalizedVolatility = replaceVolatileData(normalizedJSON, collectVolatileLines(responseElement)),
+        partialLimited = limitToPartialLines(normalizedVolatility, responseElement);
+
+    return partialLimited;
 }
 
 /*
@@ -161,13 +190,13 @@ function normalize (text, assertElement) {
  */
 function createStepSpecFrom (stepElement) {
     var stepSpec = stepElement.attributes,
-        assertElements = stepElement.subElements('assertResponse');
+        responseElements = stepElement.subElements('assertResponse');
 
     stepSpec.requestText = processChangeCommands(stepElement);
-    if (assertElements.length > 0) {
-        stepSpec.expectedResponse = processChangeCommands(assertElements[0]);
+    if (responseElements.length > 0) {
+        stepSpec.expectedResponse = processChangeCommands(responseElements[0]);
         stepSpec.normalize = function (text) {
-            return normalize(text, stepElement, assertElements[0]);
+            return normalize(text, responseElements[0]);
         };
     }
     return stepSpec;
