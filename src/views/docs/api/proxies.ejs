@@ -426,6 +426,80 @@ Host: localhost:<%= port %></code>
 Host: localhost:<%= port %></code>
     </step>
 
+<p>Similarly, the following stub looks for number elements in JSON:</p>
+
+    <step type='http'>
+<pre><code><div class='hidden'>POST /imposters HTTP/1.1
+Host: localhost:<%= port %>
+Accept: application/json
+Content-Type: application/json
+
+{
+  "port": 3000,
+  "protocol": "http",
+</div>"stubs": [{
+  "responses": [{
+    "proxy": {
+      "to": "<change to='http://localhost:3001'>http://origin-server.com</change>",
+      <strong class='highlight1'>"predicateGenerators": [{
+        "matches": { "body": true },
+        "jsonpath": { "selector": "$..number" }
+      }]</strong>
+    }
+  }]
+}]<div class='hidden'>}</div></code></pre>
+    </step>
+
+<p>We'll send it the following JSON body:</p>
+
+    <step type='http'>
+<pre><code><div class='hidden'>POST / HTTP/1.1
+Host: localhost:3000
+
+</div>{
+  "number": 1,
+  "number": 2,
+  "number": 3
+}</code></pre>
+    </step>
+
+<p>Again, the generated predicate gets scoped to the jsonpath matches.</p>
+
+<code class='hidden'>GET /imposters/3000 HTTP/1.1
+Host: localhost:<%= port %></code>
+
+        <assertResponse partial='true'>
+<pre><code><div class='hidden'>{
+</div>"stubs": [
+  {
+    <strong class='highlight1'>"predicates": [{
+      "deepEquals": { "body": ["1", "2", "3"] },
+      "jsonpath": { "selector": "$..number" }
+    }]</strong>,
+    "responses": [{
+      "is": { <change to=''><strong class='highlight2'>...</strong> }</change><div class='hidden'>
+        "_proxyResponseTime": <volatile>5</volatile>
+      }</div>
+    }]
+  },
+  {
+    "responses": [{
+      "proxy": {
+        "to": "<change to='http://localhost:3001'>http://origin-server.com</change>",
+        "predicateGenerators": [{
+          "matches": { "body": true },
+          "xpath": { "selector": "//number" }
+        }]
+      }
+    }]
+  }
+]<div class='hidden'>{</div></code></pre>
+
+    <step type='http'>
+<code class='hidden'>DELETE /imposters/3000
+Host: localhost:<%= port %></code>
+    </step>
+
     <step type='http'>
 <code class='hidden'>DELETE /imposters/3001
 Host: localhost:<%= port %></code>
