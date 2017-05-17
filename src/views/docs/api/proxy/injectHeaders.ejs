@@ -1,92 +1,77 @@
-<p>First let's create a mirror imposter so we can see what headers are sent.  This imposter just takes the request
+<p>The <code>injectHeaders</code> field allows you to modify the request headers before
+passing them on to the downstream service. To demonstrate, let's create a mirror imposter
+so we can see what headers are sent. This imposter just takes the request
 headers it receives and sends them back in the response:</p>
 
-<pre><code data-test-id='proxy example'
-           data-test-step='18'
-           data-test-type='http'>
-POST /imposters HTTP/1.1
+<testScenario name='injectHeaders'>
+    <step type='http'>
+<pre><code>POST /imposters HTTP/1.1
 Host: localhost:<%= port %>
-        Accept: application/json
 Content-Type: application/json
 
 {
   "port": 7002,
   "protocol": "http",
   "name": "Mirror",
-  "stubs": [
-    {
-      "responses": [
-        {
-          "is": {
-            "body": "The body."
-          },
-          "_behaviors": {
-            "decorate": "function (req, res) { res.headers = req.headers; }"
-          }
-        }
-      ]
-    }
-  ]
-}
-</code></pre>
+  "stubs": [{
+    "responses": [{
+      "is": { "body": "The body." },
+      "_behaviors": {
+        "decorate": "function (req, res) { res.headers = req.headers; }"
+      }
+    }]
+  }]
+}</code></pre>
+    </step>
 
-<p>Now, let's set up another imposter that will proxy requests to the mirror imposter.  We'll also set up the inject
-headers field to insert some custom headers in the outgoing request:</p>
+<p>Now let's set up another imposter that will proxy requests to the mirror imposter.
+We'll also set up the inject headers field to insert some custom headers in the outgoing request:</p>
 
-<pre><code data-test-id='proxy example'
-           data-test-step='19'
-           data-test-type='http'>
-POST /imposters HTTP/1.1
+    <step type='http'>
+<pre><code>POST /imposters HTTP/1.1
 Host: localhost:<%= port %>
-        Accept: application/json
 Content-Type: application/json
 
 {
   "port": 7001,
   "protocol": "http",
   "name": "Inject Headers",
-  "stubs": [
-    {
-      "responses": [
-        {
-          "proxy": {
-            "to": "http://localhost:7002",
-            "mode": "proxyAlways",
-            "injectHeaders": {
-               "X-My-Custom-Header-One": "my first value",
-               "X-My-Custom-Header-Two": "my second value"
-            }
-          }
-        }
-      ]
-    }
-  ]
-}
-</code></pre>
+  "stubs": [{
+    "responses": [{
+      "proxy": {
+        "to": "http://localhost:7002",
+        <strong class='highlight1'>"injectHeaders": {
+           "X-My-Custom-Header-One": "my first value",
+           "X-My-Custom-Header-Two": "my second value"
+        }</strong>
+      }
+    }]
+  }]
+}</code></pre>
+    </step>
 
 <p>Then we send a request to our proxy imposter:</p>
 
-<pre><code data-test-id='proxy example'
-           data-test-step='20'
-           data-test-type='http'>
-GET / HTTP/1.1
-Host: localhost:7001
-</code></pre>
+    <step type='http'>
+<pre><code>GET / HTTP/1.1
+Host: localhost:7001</code></pre>
 
-<pre><code data-test-id='proxy example'
-           data-test-verify-step='20'
-           data-test-ignore-lines='["^Date"]'>
-HTTP/1.1 200 OK
+        <assertResponse>
+<pre><code>HTTP/1.1 200 OK
 Accept: application/json
 Host: localhost:7002
 Connection: keep-alive
-Date: Thu, 09 Jan 2014 02:30:31 GMT
-X-My-Custom-Header-One: my first value
-X-My-Custom-Header-Two: my second value
+<strong class='highlight1'>X-My-Custom-Header-One: my first value
+X-My-Custom-Header-Two: my second value</strong>
+Date: <volatile>Thu, 09 Jan 2014 02:30:31 GMT</volatile>
 Transfer-Encoding: chunked
 
 The body.
 </code></pre>
+        </assertResponse>
+    </step>
 
-<p>Now we can see that the X-My-Custom-Header-One and Two headers were returned back to us, reflected back from the mirror imposter
-after being injected into the <i>outgoing</i> request.</p>
+<p>Now we can see that the X-My-Custom-Header-One and Two headers were returned
+back to us, reflected back from the mirror imposter after being injected into
+the <i>outgoing</i> request.</p>
+</testScenario>

@@ -1,0 +1,256 @@
+<p>The <code>mode</code> defines the behavior of the <code>proxy</code>. The default
+<code>proxyOnce</code> mode is simpler; it always creates a new stub in front of the stub with
+the proxy response, relying on mountebank's first-match policy to automatically replay the saved
+response in the new stub the next time a request matches the predicates. Imagine the following
+<code>stubs</code> array, set by us when we create the imposter:</p>
+
+<ul class='bullet-list'>
+    <li><code>proxyOnce</code> - ensures that the same request (defined
+        by the predicates) is never proxied twice. mountebank only records
+        one response for each request, and automatically replays that response the next
+        time the request predicates match.</li>
+    <li><code>proxyAlways</code> - All calls will be proxied, allowing multiple responses
+        to be saved for the same logical request. You have to explicitly tell mountebank
+        to replay those responses.</li>
+</ul>
+
+<testScenario name='modes'>
+    <step type='http'>
+<code class='hidden'>POST /imposters HTTP/1.1
+Host: localhost:<%= port %>
+Accept: application/json
+Content-Type: application/json
+
+{
+  "port": 2001,
+  "protocol": "http"
+}</code>
+    </step>
+
+    <step type='http'>
+<pre><code><div class='hidden'>POST /imposters HTTP/1.1
+Host: localhost:<%= port %>
+Accept: application/json
+Content-Type: application/json
+
+{
+  "port": 2000,
+  "protocol": "http",
+</div>"stubs": [{
+  "responses": [{
+    "proxy": {
+      "to": "<change to='http://localhost:2001'>http://origin-server.com</change>",
+      "mode": "proxyOnce",
+      "predicateGenerators": [{ "matches": { "path": true } }]
+    }
+  }]
+}]<div class='hidden'>
+}</div></code></pre>
+    </step>
+
+<p>When we issue an HTTP call to <code>/test</code>, the stub will proxy all of the request
+details to http://origin-server.com/test, and save off the response in a new stub in front of the
+stub with the <code>proxy</code> response:</p>
+
+    <step type='http'>
+<code class='hidden'>GET /test HTTP/1.1
+Host: localhost:2000</code>
+    </step>
+
+    <step type='http'>
+<code class='hidden''>DELETE /imposters/2001 HTTP/1.1
+Host: localhost:<%= port %>
+Accept: application/json</code>
+    </step>
+
+    <step type='http'>
+<code class='hidden'>DELETE /imposters/2000 HTTP/1.1
+Host: localhost:<%= port %>
+Accept: application/json</code>
+
+        <assertResponse>
+<pre><code><div class='hidden'>HTTP/1.1 200 OK
+Access-Control-Allow-Origin: *
+Content-Type: application/json; charset=utf-8
+Content-Length: <volatile>2112</volatile>
+Date: <volatile>Thu, 11 May 2017 03:02:02 GMT</volatile>
+Connection: keep-alive
+
+{
+  "protocol": "http",
+  "port": 2000,
+  "numberOfRequests": 1,
+  "requests": [
+    {
+      "requestFrom": "<volatile>::ffff:127.0.0.1:61075</volatile>",
+      "method": "GET",
+      "path": "/test",
+      "query": {},
+      "headers": {
+        "accept": "application/json",
+        "Host": "localhost:2000",
+        "Connection": "keep-alive"
+      },
+      "body": "",
+      "timestamp": "<volatile>2017-05-11T02:27:41.725Z</volatile>"
+    }
+  ],</div>
+"stubs": [
+  <strong class='highlight1'>{
+    "predicates": [{ "deepEquals": { "path": "/test" } } ],
+    "responses": [{
+      "is": {
+        "statusCode": 200,
+        "headers": {
+          "Connection": "close",
+          "Date": "<volatile>Thu, 11 May 2017 03:02:02 GMT</volatile>",
+          "Transfer-Encoding": "chunked"
+        },
+        "body": "",
+        "_mode": "text",
+        "_proxyResponseTime": <volatile>9</volatile>
+      }
+    }]
+  }</strong>,
+  {
+    "responses": [
+      {
+        "proxy": {
+          "to": "http://localhost:2001",
+          "mode": "proxyOnce",
+          "predicateGenerators": [{ "matches": { "path": true } }]
+        }
+      }
+    ]<div class='hidden'>,
+      "matches": [
+        {
+          "timestamp": "<volatile>2017-05-11T03:02:02.945Z</volatile>",
+          "request": {
+            "requestFrom": "<volatile>::ffff:127.0.0.1:61227</volatile>",
+            "method": "GET",
+            "path": "/test",
+            "query": {},
+            "headers": {
+              "accept": "application/json",
+              "Host": "localhost:2000",
+              "Connection": "keep-alive"
+            },
+            "body": ""
+          },
+          "response": {
+            "statusCode": 200,
+            "headers": {
+              "Connection": "close",
+              "Date": "<volatile>Thu, 11 May 2017 03:02:02 GMT</volatile>",
+              "Transfer-Encoding": "chunked"
+            },
+            "body": "",
+            "_mode": "text"
+          }
+        }
+      ]
+    }</div>
+  ]<div class='hidden'>,
+  "_links": {
+    "self": { "href": "http://localhost:<%= port %>/imposters/2000" }
+  }
+}</div>
+</code></pre>
+        </assertResponse>
+    </step>
+</testScenario>
+
+<p>We'll look at how the predicate gets generated shortly. What's important to note
+at this point is that, because of mountebank's first-match policy on stubs, the next
+time the imposter receives a request to <code>/test</code>, the saved predicates on the
+newly created stub will match, and the recorded response will be replayed.  If
+the imposter receives a call to <code>/different-path</code>, then it will proxy again,
+creating a new stub, because the <code>path</code> is different.</p>
+
+<p>The <code>proxyAlways</code> mode saves stubs <em>behind</em> the <code>proxy</code>
+stub.  This allows you to record a richer set of interactions with the origin server,
+but requires you to save off the imposter representation and remove or reorder the
+<code>proxy</code> stubs to replay those interactions. The easiest way to do that is with
+the <a href='/docs/commandLine#replay'><code>mb replay</code></a> command.</p>
+
+<p>Let's say you had the following <code>stubs</code> array:</p>
+
+<pre><code>
+"stubs": [
+  {
+    "responses": [
+      {
+        "proxy": {
+          "to": "http://origin-server.com",
+          "mode": "proxyAlways",
+          "predicateGenerators": [{ "matches": { "path": true } }]
+        }
+      }
+    ]
+  },
+  {
+    "predicates": [{ "equals": { "path": "/test" } }],
+    "responses": [{ "is": { "body": "first response" } }]
+  }
+]
+</code></pre>
+
+<p>Every time we send a request to <code>/test</code>, it will
+be proxied to http://origin-server.com/test.  Since a predicate matching a <code>path</code>
+of <code>/test</code> already exists on another stub, the proxied response is added to the
+existing stub's <code>responses</code> array.</p>
+
+<pre><code>
+"stubs": [
+  {
+    "responses": [
+      {
+        "proxy": {
+          "to": "http://origin-server.com",
+          "mode": "proxyAlways",
+          "predicateGenerators": [{ "matches": { "path": true } }]
+        }
+      }
+    ]
+  },
+  {
+    "predicates": [{ "equals": { "path": "/test" } }],
+    "responses": [
+      { "is": { "body": "first response" } },
+      <strong class='highlight1'>{ "is": { ...saved response } }</strong>
+    ]
+  }
+]
+</code></pre>
+
+<p>If no existing stub's predicates matched the request, a new stub will be created at the
+end of the <code>stubs</code> array.</p>
+
+<h2>Examples</h2>
+
+<p>Our examples will proxy to the following origin server.  To help
+us keep track of the imposters in the logs, we'll set the <code>name</code>
+field.  We're using <a href='/docs/api/injection'>injection</a> to return the
+number of times the proxy has been called to the user.</p>
+
+<pre><code data-test-id='proxy example'
+           data-test-step='1'
+           data-test-type='http'>
+POST /imposters HTTP/1.1
+Host: localhost:<%= port %>
+Accept: application/json
+Content-Type: application/json
+
+{
+  "port": 7575,
+  "protocol": "http",
+  "name": "origin",
+  "stubs": [
+    {
+      "responses": [{
+        "inject": "function (request, state) { state.calls = state.calls || 0; return { body: 'call ' + ++state.calls }; }"
+      }]
+    }
+  ]
+}
+</code></pre>
