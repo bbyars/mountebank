@@ -180,7 +180,7 @@ array takes the following fields:</p>
 <code>predicateGenerators</code> array generates an object in
 the newly created stub's <code>predicates</code> array. You can decide how strictly
 you want the generated predicates to match object fields. The following example
-matches the root <code>query</code> field:</p>
+matches the root <code>query</code> field in its entirety:</p>
 
 <testScenario name='predicate-generators'>
     <step type='http'>
@@ -214,15 +214,14 @@ Content-Type: application/json
       }]</strong>
     }
   }]
-}]<div class='hidden'>
-}</div></code></pre>
+}]<div class='hidden'>}</div></code></pre>
     </step>
 
 <p>This will generate a <code>deepEquals</code> predicate at the same level, which requires
 that all keys and values in the querystring match (although the order can be different).
 We added the <code>caseSensitive</code> parameter, which will also require the cases of the
 query keys and values to match. If the incoming request is to <code>/test?q=mountebank&page=1</code>,
-the following stub will be generating:</p>
+the following stub will be generating (the saved response is elided for clarity):</p>
 
     <step type='http'>
 <code class='hidden'>GET /test?q=mountebank&page=1 HTTP/1.1
@@ -267,23 +266,85 @@ Host: localhost:<%= port %></code>
         </assertResponse>
     </step>
 
-<p>We could have also specified only the query key we cared about:</p>
+    <step type='http'>
+<code class='hidden'>DELETE /imposters/3000
+Host: localhost:<%= port %></code>
+    </step>
 
-<pre><code>
-"stubs": [{
+<p>Just as with predicates, we could have also specified only the query key we cared about:</p>
+
+    <step type='http'>
+<pre><code><div class='hidden'>POST /imposters HTTP/1.1
+Host: localhost:<%= port %>
+Accept: application/json
+Content-Type: application/json
+
+{
+  "port": 3000,
+  "protocol": "http",
+</div>"stubs": [{
   "responses": [{
     "proxy": {
-      "to": "http://origin-server.com",
-      "mode": "proxyOnce",
-      predicateGenerators": [{
+      "to": "<change to='http://localhost:3001'>http://origin-server.com</change>",
+      "predicateGenerators": [{
         "matches": {
           <strong class='highlight1'>"query": { "q": "mountebank" }</strong>
         }
       }]
     }
   }]
-}]
-</code></pre>
+}]<div class='hidden'>}</div></code></pre>
+    </step>
+
+<p>The same request to <code>/test?q=mountebank&page=1</code> now generates a more
+limited predicate:</p>
+
+    <step type='http'>
+<code class='hidden'>GET /test?q=mountebank&page=1 HTTP/1.1
+Host: localhost:3000</code>
+    </step>
+
+    <step type='http'>
+<code class='hidden'>GET /imposters/3000 HTTP/1.1
+Host: localhost:<%= port %></code>
+
+        <assertResponse partial='true'>
+<pre><code><div class='hidden'>{
+</div>"stubs": [
+  {
+    <strong class='highlight1'>"predicates": [{
+      "equals": {
+        "query": { "q": "mountebank" }
+      }
+    }]</strong>,
+    "responses": [{
+      "is": { <change to=''><strong class='highlight2'>...</strong> }</change><div class='hidden'>
+        "_proxyResponseTime": <volatile>5</volatile>
+      }</div>
+    }]
+  },
+  {
+    "responses": [{
+      "proxy": {
+        "to": "<change to='http://localhost:3001'>http://origin-server.com</change>",
+        "predicateGenerators": [{
+          "matches": {
+            "query": { "q": "mountebank" }
+          }
+        }]
+      }
+    }]
+  }
+]<div class='hidden'>}</div></code></pre>
+        </assertResponse>
+    </step>
+
+    <step type='http'>
+<code class='hidden'>DELETE /imposters/3000
+Host: localhost:<%= port %></code>
+    </step>
+
+
 
 <p>The <a href='/docs/api/xpath'><code>xpath</code></a> and
 <a href='/docs/api/jsonpath'><code>jsonpath</code></a> predicate parameters work
@@ -337,11 +398,6 @@ order):</p>
   }
 ]
 </code></pre>
-
-    <step type='http'>
-<code class='hidden'>DELETE /imposters/3000
-Host: localhost:<%= port %></code>
-    </step>
 
     <step type='http'>
 <code class='hidden'>DELETE /imposters/3001
