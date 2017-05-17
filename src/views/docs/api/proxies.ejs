@@ -234,45 +234,36 @@ Host: localhost:3000</code>
 Host: localhost:<%= port %></code>
 
         <assertResponse partial='true'>
-<pre><code>{
-  "stubs": [
-    {
-      "predicates": [{
-        "caseSensitive": true,
-        "deepEquals": {
-          "query": {
-            "q": "mountebank",
-            "page": "1"
-          }
+<pre><code><div class='hidden'>{
+</div>"stubs": [
+  {
+    <strong class='highlight1'>"predicates": [{
+      "caseSensitive": true,
+      "deepEquals": {
+        "query": {
+          "q": "mountebank",
+          "page": "1"
         }
-      }],
-      "responses": [{
-        "is": {
-          "statusCode": 200,
-          "headers": {
-            "Connection": "close",
-            "Date": "<volatile>Tue, 16 May 2017 02:42:51 GMT</volatile>",
-            "Transfer-Encoding": "chunked"
-          },
-          "body": "",
-          "_mode": "text",
-          "_proxyResponseTime": <volatile>5</volatile>
-        }
-      }]
-    },
-    {
-      "responses": [{
-        "proxy": {
-          "to": "http://localhost:3001",
-          "predicateGenerators": [{
-            "matches": { "query": true },
-            "caseSensitive": true
-          }]
-        }
-      }]
-    }
-  ]
-}</code></pre>
+      }
+    }]</strong>,
+    "responses": [{
+      "is": { <change to=''><strong class='highlight2'>...</strong> }</change><div class='hidden'>
+        "_proxyResponseTime": <volatile>5</volatile>
+      }</div>
+    }]
+  },
+  {
+    "responses": [{
+      "proxy": {
+        "to": "<change to='http://localhost:3001'>http://origin-server.com</change>",
+        "predicateGenerators": [{
+          "matches": { "query": true },
+          "caseSensitive": true
+        }]
+      }
+    }]
+  }
+]<div class='hidden'>}</div></code></pre>
         </assertResponse>
     </step>
 
