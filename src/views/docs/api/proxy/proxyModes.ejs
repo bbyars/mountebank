@@ -32,14 +32,14 @@ Content-Type: application/json
     </step>
 
     <step type='http'>
-<pre><code><div class='hidden'>POST /imposters HTTP/1.1
+<pre><code><span class='hidden'>POST /imposters HTTP/1.1
 Host: localhost:<%= port %>
 Content-Type: application/json
 
 {
   "port": 2000,
   "protocol": "http",
-</div>"stubs": [{
+</span>"stubs": [{
   "responses": [{
     "proxy": {
       "to": "<change to='http://localhost:2001'>http://origin-server.com</change>",
@@ -47,8 +47,7 @@ Content-Type: application/json
       "predicateGenerators": [{ "matches": { "path": true } }]
     }
   }]
-}]<div class='hidden'>
-}</div></code></pre>
+}]<span class='hidden'>}</span></code></pre>
     </step>
 
 <p>When we issue an HTTP call to <code>/test</code>, the stub will proxy all of the request
@@ -61,7 +60,7 @@ Host: localhost:2000</code>
     </step>
 
     <step type='http'>
-<code class='hidden''>DELETE /imposters/2001 HTTP/1.1
+<code class='hidden'>DELETE /imposters/2001 HTTP/1.1
 Host: localhost:<%= port %>
 Accept: application/json</code>
     </step>
@@ -72,8 +71,8 @@ Host: localhost:<%= port %>
 Accept: application/json</code>
 
         <assertResponse partial='true'>
-<pre><code><div class='hidden'>{
-</div>"stubs": [
+<pre><code><span class='hidden'>{
+</span>"stubs": [
   {
     "predicates": [{ "deepEquals": { "path": "/test" } } ],
     "responses": [<strong class='highlight1'>{
@@ -92,7 +91,7 @@ Accept: application/json</code>
       }
     }]
   }
-]<div class='hidden'>}</div></code></pre>
+]<span class='hidden'>}</span></code></pre>
         </assertResponse>
     </step>
 </testScenario>
@@ -132,14 +131,14 @@ Content-Type: application/json
     </step>
 
     <step type='http'>
-<pre><code><div class='hidden'>POST /imposters HTTP/1.1
+<pre><code><span class='hidden'>POST /imposters HTTP/1.1
 Host: localhost:<%= port %>
 Content-Type: application/json
 
 {
   "port": 4000,
   "protocol": "http",
-</div>"stubs": [{
+</span>"stubs": [{
   "responses": [{
     "proxy": {
       "to": "<change to='http://localhost:4001'>http://origin-server.com</change>",
@@ -147,7 +146,7 @@ Content-Type: application/json
       "predicateGenerators": [{ "matches": { "path": true } }]
     }
   }]
-}]<div class='hidden'>}</div></code></pre>
+}]<span class='hidden'>}</span></code></pre>
     </step>
 
 <p>Every time we send a request to <code>/test</code>, it will
@@ -166,8 +165,8 @@ Host: localhost:<%= port %>
 Accept: application/json</code>
 
         <assertResponse partial='true'>
-<pre><code><div class='hidden'>{
-</div>"stubs": [
+<pre><code><span class='hidden'>{
+</span>"stubs": [
   {
     "responses": [
       {
@@ -188,7 +187,7 @@ Accept: application/json</code>
       }
     }</strong>]
   }
-]<div class='hidden'>}</div></code></pre>
+]<span class='hidden'>}</span></code></pre>
         </assertResponse>
     </step>
 
@@ -209,8 +208,8 @@ Host: localhost:<%= port %>
 Accept: application/json</code>
 
         <assertResponse partial='true'>
-<pre><code><div class='hidden'>{
-</div>"stubs": [
+<pre><code><span class='hidden'>{
+</span>"stubs": [
   {
     "responses": [
       {
@@ -239,7 +238,7 @@ Accept: application/json</code>
       }</strong>
     ]
   }
-]<div class='hidden'>}</div></code></pre>
+]<span class='hidden'>}</span></code></pre>
         </assertResponse>
     </step>
 
@@ -264,7 +263,7 @@ and sending the payload in a call <a href='/docs/api/overview#put-imposters'>
 been removed. Only the saved responses will be used.</p>
 
     <step type='http'>
-<code class='hidden''>DELETE /imposters/4000 HTTP/1.1
+<code class='hidden'>DELETE /imposters/4000 HTTP/1.1
 Host: localhost:<%= port %>
 Accept: application/json</code>
     </step>
@@ -326,8 +325,8 @@ Host: localhost:<%= port %>
 Accept: application/json</code>
 
         <assertResponse partial='true'>
-<pre><code><div class='hidden'>{
-</div>"stubs": [
+<pre><code><span class='hidden'>{
+</span>"stubs": [
   {
     "predicates": [{ "deepEquals": { "path": "/test" } }],
     "responses": [
@@ -345,18 +344,18 @@ Accept: application/json</code>
       }
     ]
   }
-]<div class='hidden'>}</div></code></pre>
+]<span class='hidden'>}</span></code></pre>
         </assertResponse>
     </step>
 
     <step type='http'>
-<code class='hidden''>DELETE /imposters/4000 HTTP/1.1
+<code class='hidden'>DELETE /imposters/4000 HTTP/1.1
 Host: localhost:<%= port %>
 Accept: application/json</code>
     </step>
 
     <step type='http'>
-<code class='hidden''>DELETE /imposters/4001 HTTP/1.1
+<code class='hidden'>DELETE /imposters/4001 HTTP/1.1
 Host: localhost:<%= port %>
 Accept: application/json</code>
     </step>

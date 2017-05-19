@@ -74,7 +74,7 @@ Content-Type: application/json
     </step>
 
     <step type='http'>
-<pre><code><div class='hidden'>POST /imposters HTTP/1.1
+<pre><code><span class='hidden'>POST /imposters HTTP/1.1
 Host: localhost:<%= port %>
 Accept: application/json
 Content-Type: application/json
@@ -82,7 +82,7 @@ Content-Type: application/json
 {
   "port": 3000,
   "protocol": "http",
-</div>"stubs": [{
+</span>"stubs": [{
   "responses": [{
     "proxy": {
       "to": "<change to='http://localhost:3001'>http://origin-server.com</change>",
@@ -92,7 +92,7 @@ Content-Type: application/json
       }]</strong>
     }
   }]
-}]<div class='hidden'>}</div></code></pre>
+}]<span class='hidden'>}</span></code></pre>
     </step>
 
 <p>This will generate a <code>deepEquals</code> predicate at the same level, which requires
@@ -111,8 +111,8 @@ Host: localhost:3000</code>
 Host: localhost:<%= port %></code>
 
         <assertResponse partial='true'>
-<pre><code><div class='hidden'>{
-</div>"stubs": [
+<pre><code><span class='hidden'>{
+</span>"stubs": [
   {
     <strong class='highlight1'>"predicates": [{
       "caseSensitive": true,
@@ -124,9 +124,9 @@ Host: localhost:<%= port %></code>
       }
     }]</strong>,
     "responses": [{
-      "is": { <change to=''><strong class='highlight2'>...</strong> }</change><div class='hidden'>
+      "is": { <change to=''><strong class='highlight2'>...</strong> }</change><span class='hidden'>
         "_proxyResponseTime": <volatile>5</volatile>
-      }</div>
+      }</span>
     }]
   },
   {
@@ -140,7 +140,7 @@ Host: localhost:<%= port %></code>
       }
     }]
   }
-]<div class='hidden'>}</div></code></pre>
+]<span class='hidden'>}</span></code></pre>
         </assertResponse>
     </step>
 
@@ -152,7 +152,7 @@ Host: localhost:<%= port %></code>
 <p>Just as with predicates, we could have also specified only the query key we cared about:</p>
 
     <step type='http'>
-<pre><code><div class='hidden'>POST /imposters HTTP/1.1
+<pre><code><span class='hidden'>POST /imposters HTTP/1.1
 Host: localhost:<%= port %>
 Accept: application/json
 Content-Type: application/json
@@ -160,7 +160,7 @@ Content-Type: application/json
 {
   "port": 3000,
   "protocol": "http",
-</div>"stubs": [{
+</span>"stubs": [{
   "responses": [{
     "proxy": {
       "to": "<change to='http://localhost:3001'>http://origin-server.com</change>",
@@ -171,7 +171,7 @@ Content-Type: application/json
       }]
     }
   }]
-}]<div class='hidden'>}</div></code></pre>
+}]<span class='hidden'>}</span></code></pre>
     </step>
 
 <p>The same request to <code>/test?q=mountebank&page=1</code> now generates a more
@@ -187,8 +187,8 @@ Host: localhost:3000</code>
 Host: localhost:<%= port %></code>
 
         <assertResponse partial='true'>
-<pre><code><div class='hidden'>{
-</div>"stubs": [
+<pre><code><span class='hidden'>{
+</span>"stubs": [
   {
     <strong class='highlight1'>"predicates": [{
       "equals": {
@@ -196,9 +196,9 @@ Host: localhost:<%= port %></code>
       }
     }]</strong>,
     "responses": [{
-      "is": { <change to=''><strong class='highlight2'>...</strong> }</change><div class='hidden'>
+      "is": { <change to=''><strong class='highlight2'>...</strong> }</change><span class='hidden'>
         "_proxyResponseTime": <volatile>5</volatile>
-      }</div>
+      }</span>
     }]
   },
   {
@@ -213,7 +213,7 @@ Host: localhost:<%= port %></code>
       }
     }]
   }
-]<div class='hidden'>}</div></code></pre>
+]<span class='hidden'>}</span></code></pre>
         </assertResponse>
     </step>
 
@@ -231,7 +231,7 @@ they will all be part of the generated predicate, using standard predicate
 following stub will look for <code>number</code> tags in the XML body:</p>
 
     <step type='http'>
-<pre><code><div class='hidden'>POST /imposters HTTP/1.1
+<pre><code><span class='hidden'>POST /imposters HTTP/1.1
 Host: localhost:<%= port %>
 Accept: application/json
 Content-Type: application/json
@@ -239,7 +239,7 @@ Content-Type: application/json
 {
   "port": 3000,
   "protocol": "http",
-</div>"stubs": [{
+</span>"stubs": [{
   "responses": [{
     "proxy": {
       "to": "<change to='http://localhost:3001'>http://origin-server.com</change>",
@@ -249,16 +249,16 @@ Content-Type: application/json
       }]</strong>
     }
   }]
-}]<div class='hidden'>}</div></code></pre>
+}]<span class='hidden'>}</span></code></pre>
     </step>
 
 <p>We'll send it the following XML body:</p>
 
     <step type='http'>
-<pre><code><div class='hidden'>POST / HTTP/1.1
+<pre><code><span class='hidden'>POST / HTTP/1.1
 Host: localhost:3000
 
-</div>&lt;doc&gt;
+</span>&lt;doc&gt;
   &lt;number&gt;1&lt;/number&gt;
   &lt;number&gt;2&lt;/number&gt;
   &lt;number&gt;3&lt;/number&gt;
@@ -269,21 +269,20 @@ Host: localhost:3000
 values matching the xpath selector in the original proxied request to be present (in any
 order):</p>
 
+    <step type='http'>
 <code class='hidden'>GET /imposters/3000 HTTP/1.1
 Host: localhost:<%= port %></code>
 
         <assertResponse partial='true'>
-<pre><code><div class='hidden'>{
-</div>"stubs": [
+<pre><code><span class='hidden'>{
+</span>"stubs": [
   {
     <strong class='highlight1'>"predicates": [{
-      "deepEquals": { "body": ["1", "2", "3"] },
-      "xpath": { "selector": "//number" }
+      "xpath": { "selector": "//number" },
+      "deepEquals": { "body": ["1", "2", "3"] }
     }]</strong>,
     "responses": [{
-      "is": { <change to=''><strong class='highlight2'>...</strong> }</change><div class='hidden'>
-        "_proxyResponseTime": <volatile>5</volatile>
-      }</div>
+      "is": { <change to='"statusCode": 200'><strong class='highlight2'>...</strong></change> }
     }]
   },
   {
@@ -297,7 +296,9 @@ Host: localhost:<%= port %></code>
       }
     }]
   }
-]<div class='hidden'>{</div></code></pre>
+]<span class='hidden'>}</span></code></pre>
+        </assertResponse>
+    </step>
 
     <step type='http'>
 <code class='hidden'>DELETE /imposters/3000
@@ -307,7 +308,7 @@ Host: localhost:<%= port %></code>
 <p>Similarly, the following stub looks for number elements in JSON:</p>
 
     <step type='http'>
-<pre><code><div class='hidden'>POST /imposters HTTP/1.1
+<pre><code><span class='hidden'>POST /imposters HTTP/1.1
 Host: localhost:<%= port %>
 Accept: application/json
 Content-Type: application/json
@@ -315,7 +316,7 @@ Content-Type: application/json
 {
   "port": 3000,
   "protocol": "http",
-</div>"stubs": [{
+</span>"stubs": [{
   "responses": [{
     "proxy": {
       "to": "<change to='http://localhost:3001'>http://origin-server.com</change>",
@@ -325,39 +326,38 @@ Content-Type: application/json
       }]</strong>
     }
   }]
-}]<div class='hidden'>}</div></code></pre>
+}]<span class='hidden'>}</span></code></pre>
     </step>
 
 <p>We'll send it the following JSON body:</p>
 
     <step type='http'>
-<pre><code><div class='hidden'>POST / HTTP/1.1
+<pre><code><span class='hidden'>POST / HTTP/1.1
 Host: localhost:3000
 
-</div>{
-  "number": 1,
-  "number": 2,
-  "number": 3
-}</code></pre>
+</span>[
+  { "number": 1 },
+  { "number": 2 },
+  { "number": 3 }
+]</code></pre>
     </step>
 
 <p>Again, the generated predicate gets scoped to the jsonpath matches.</p>
 
+    <step type='http'>
 <code class='hidden'>GET /imposters/3000 HTTP/1.1
 Host: localhost:<%= port %></code>
 
         <assertResponse partial='true'>
-<pre><code><div class='hidden'>{
-</div>"stubs": [
+<pre><code><span class='hidden'>{
+</span>"stubs": [
   {
     <strong class='highlight1'>"predicates": [{
-      "deepEquals": { "body": ["1", "2", "3"] },
-      "jsonpath": { "selector": "$..number" }
+      "jsonpath": { "selector": "$..number" },
+      "deepEquals": { "body": [1, 2, 3] }
     }]</strong>,
     "responses": [{
-      "is": { <change to=''><strong class='highlight2'>...</strong> }</change><div class='hidden'>
-        "_proxyResponseTime": <volatile>5</volatile>
-      }</div>
+      "is": { <change to='"statusCode": 200'><strong class='highlight2'>...</strong></change> }
     }]
   },
   {
@@ -366,12 +366,14 @@ Host: localhost:<%= port %></code>
         "to": "<change to='http://localhost:3001'>http://origin-server.com</change>",
         "predicateGenerators": [{
           "matches": { "body": true },
-          "xpath": { "selector": "//number" }
+          "jsonpath": { "selector": "$..number" }
         }]
       }
     }]
   }
-]<div class='hidden'>{</div></code></pre>
+]<span class='hidden'>}</span></code></pre>
+        </assertResponse>
+    </step>
 
     <step type='http'>
 <code class='hidden'>DELETE /imposters/3000

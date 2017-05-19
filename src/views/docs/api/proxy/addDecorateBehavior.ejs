@@ -17,7 +17,7 @@ Content-Type: application/json
       "is": { "body": "downstream service response" }
     }]
   }]
-}</code></pre>
+}</code>
     </step>
 
 <p>We'll decorate our saved responses with the following JavaScript function:</p>
@@ -30,21 +30,21 @@ Content-Type: application/json
 configuration:</p>
 
     <step type='http'>
-<pre><code><div class='hidden'>POST /imposters HTTP/1.1
+<pre><code><span class='hidden'>POST /imposters HTTP/1.1
 Host: localhost:<%= port %>
 Content-Type: application/json
 
 {
   "port": 5000,
   "protocol": "http",
-</div>"stubs": [{
+</span>"stubs": [{
   "responses": [{
     "proxy": {
       "to": "<change to='http://localhost:5002'>http://origin-server.com</change>",
       <strong class='highlight1'>"addDecorateBehavior": "function (request, response) { response.body = response.body + ' DECORATED!'; }"</strong>
     }
   }]
-}]<div class='hidden'>}</div></code></pre>
+}]<span class='hidden'>}</span></code></pre>
     </step>
 
 <p>Next we'll send a request to our proxy imposter to create a new saved response. Notice
@@ -69,12 +69,12 @@ downstream service response</code></pre>
 behavior. </p>
 
     <step type='http'>
-<div class='hidden'><pre><code>GET /imposters/5000 HTTP/1.1
-Host: localhost:<%= port %></code></pre></div>
+<code class='hidden'>GET /imposters/5000 HTTP/1.1
+Host: localhost:<%= port %></code>
 
         <assertResponse partial='true'>
-<pre><code><div class='hidden'>{
-</div>"stubs": [
+<pre><code><span class='hidden'>{
+</span>"stubs": [
   {
     "predicates": [],
     "responses": [{
@@ -96,7 +96,7 @@ Host: localhost:<%= port %></code></pre></div>
       }
     }]
   }
-]<div class='hidden'>}</div></code></pre>
+]<span class='hidden'>}</span></code></pre>
         </assertResponse>
     </step>
 

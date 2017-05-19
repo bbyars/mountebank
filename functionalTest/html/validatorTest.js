@@ -6,9 +6,9 @@ var assert = require('assert'),
     Q = require('q'),
     httpClient = require('../api/http/baseHttpClient').create('http'),
     currentVersion = require('../../package.json').version,
-    promiseIt = require('../testHelpers').promiseIt;
+    promiseIt = require('../testHelpers').promiseIt,
+    util = require('util');
 
-// TODO: Strip bespoke tags
 function assertValid (path, html) {
     var deferred = Q.defer();
 
@@ -33,6 +33,22 @@ function assertValid (path, html) {
     return deferred.promise;
 }
 
+function removeKnownErrorsFrom (html) {
+    var docsTestFrameworkTags = ['testScenario', 'step', 'volatile', 'assertResponse', 'change'],
+        result = html;
+
+    // ignore errors for webkit attributes on search box
+    result = result.replace("results='5' autosave='mb' ", '');
+
+    docsTestFrameworkTags.forEach(function (tagName) {
+        var pattern = util.format('<\/?%s[^>]*>', tagName),
+            regex = new RegExp(pattern, 'g');
+        result = result.replace(regex, '');
+    });
+
+    return result;
+}
+
 function getHTML (path) {
     var spec = {
         port: api.port,
@@ -44,8 +60,7 @@ function getHTML (path) {
     return httpClient.responseFor(spec).then(function (response) {
         assert.strictEqual(response.statusCode, 200, 'Status code for ' + path + ': ' + response.statusCode);
 
-        // ignore errors for webkit attributes on search box
-        return Q(response.body.replace("results='5' autosave='mb' ", ''));
+        return Q(removeKnownErrorsFrom(response.body));
     });
 }
 
