@@ -128,9 +128,16 @@ response. Setting the <code>addWaitBehavior</code> flag will add that latency to
   </div>
   <div>
     <input id='proxy-inject-headers' name='proxy-inject-headers' type="checkbox" />
-    <label for='proxy-inject-headers'>injectHeaders</label>
+    <label for='proxy-inject-headers'>Changing the proxied request headers with injectHeaders</label>
     <section>
       <% include proxy/injectHeaders %>
+    </section>
+  </div>
+  <div>
+    <input id='proxy-add-wait-behavior' name='proxy-add-wait-behavior' type="checkbox" />
+    <label for='proxy-add-wait-behavior'>Adding latency to the saved responses with addWaitBehavior</label>
+    <section>
+      <% include proxy/addWaitBehavior %>
     </section>
   </div>
 </section>
