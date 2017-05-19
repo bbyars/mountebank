@@ -158,9 +158,9 @@ function setDifference (partialExpectedLines, actualLines) {
     // Track index in closure to ensure two equivalent lines in partialExpected don't match
     // the same line in actual. The lines have to match in order.
     partialExpectedLines.forEach(function (expectedLine, index) {
-        var matchedIndex = actualLines.findIndex(function (actualLine, index) {
+        var matchedIndex = actualLines.findIndex(function (actualLine, matchIndex) {
             // Allow comma at end because the actual JSON could include additional elements we don't care about
-            return index > lastIndex &&
+            return matchIndex > lastIndex &&
                 (expectedLine.trim() === actualLine.trim() || expectedLine.trim() + ',' === actualLine.trim());
         });
         if (matchedIndex < 0) {
@@ -168,7 +168,7 @@ function setDifference (partialExpectedLines, actualLines) {
                 index: index,
                 missingLine: expectedLine,
                 previous: partialExpectedLines.slice(Math.max(0, index - 10), index).join('\n'),
-                next:partialExpectedLines.slice(index + 1, Math.min(partialExpectedLines.length - 1, index + 5)).join('\n')
+                next: partialExpectedLines.slice(index + 1, Math.min(partialExpectedLines.length - 1, index + 5)).join('\n')
             });
         }
         else {
