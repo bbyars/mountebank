@@ -1,10 +1,9 @@
 <p>Let's create a text-based imposter with multiple stubs.  Binary imposters
 cannot use the <code>matches</code> predicate.</p>
 
-<pre><code data-test-id='tcp matches example'
-           data-test-step='1'
-           data-test-type='http'>
-POST /imposters HTTP/1.1
+<testScenario name='tcp matches example'>
+    <step type='http'>
+<pre><code>POST /imposters HTTP/1.1
 Host: localhost:<%= port %>
 Accept: application/json
 Content-Type: application/json
@@ -30,41 +29,36 @@ Content-Type: application/json
       "predicates": [{ "matches": { "data": "second\\s+request" } }]
     }</strong>
   ]
-}
-</code></pre>
+}</code></pre>
+    </step>
 
 <p>The first stub requires a case-sensitive match on a string starting with
 "first", followed by a non-word character, followed by "second":</p>
 
-<pre><code data-test-id='tcp matches example'
-           data-test-step='2'
-           data-test-type='exec'>
-echo '<strong class='highlight1'>first second</strong>' | nc localhost 4550
-</code></pre>
+    <step type='exec'>
+<pre><code>echo '<strong class='highlight1'>first second</strong>' | nc localhost 4550</code></pre>
 
-<pre><code data-test-id='tcp matches example'
-           data-test-verify-step='2'>
-<strong class='highlight1'>first response</strong>
-</code></pre>
+        <assertResponse>
+<pre><code><strong class='highlight1'>first response</strong></code></pre>
+        </assertResponse>
+    </step>
 
 <p>The second stub is not case-sensitive.</p>
 
-<pre><code data-test-id='tcp matches example'
-           data-test-step='3'
-           data-test-type='exec'>
-echo '<strong class='highlight2'>Second Request</strong>' | nc localhost 4550
-</code></pre>
+    <step type='exec'>
+<pre><code>echo '<strong class='highlight2'>Second Request</strong>' | nc localhost 4550</code></pre>
 
-<pre><code data-test-id='tcp matches example'
-           data-test-verify-step='3'>
-<strong class='highlight2'>second response</strong>
-</code></pre>
+        <assertResponse>
+<pre><code><strong class='highlight2'>second response</strong></code></pre>
+        </assertResponse>
+    </step>
 
 <p>The third stub will never run, since it matches the same requests as the
 second stub.  mountebank always chooses the first stub that matches based on
 the order you add them to the <code>stubs</code> array when creating the
 imposter.</p>
 
+    <step type='http'>
 <code class='hidden' data-test-id='tcp matches example'
                      data-test-step='4'
                      data-test-type='http'>
@@ -73,16 +67,13 @@ Host: localhost:<%= port %>
 Accept: application/json
 </code>
 
-<code class='hidden' data-test-id='tcp matches example'
-                     data-test-verify-step='4'
-                     data-test-type='http'
-                     data-test-ignore-lines='["^Date", "requestFrom", "timestamp", "Content-Length"]'>
-HTTP/1.1 200 OK
+        <assertResponse>
+<code class='hidden'>HTTP/1.1 200 OK
 Access-Control-Allow-Origin: *
 Vary: Accept
 Content-Type: application/json; charset=utf-8
-Content-Length: 1966
-Date: Sun, 26 Jan 2014 17:20:10 GMT
+Content-Length: <volatile>1966</volatile>
+Date: <volatile>Sun, 26 Jan 2014 17:20:10 GMT</volatile>
 Connection: keep-alive
 
 {
@@ -92,103 +83,66 @@ Connection: keep-alive
   "mode": "text",
   "requests": [
     {
-      "requestFrom": "::1:60162",
+      "requestFrom": "<volatile>::1:60162</volatile>",
       "data": "first second\n",
-      "timestamp": "2014-01-26T17:20:10.022Z"
+      "timestamp": "<volatile>2014-01-26T17:20:10.022Z</volatile>"
     },
     {
-      "requestFrom": "::1:60171",
+      "requestFrom": "<volatile>::1:60171</volatile>",
       "data": "Second Request\n",
-      "timestamp": "2014-01-26T17:20:10.043Z"
+      "timestamp": "<volatile>2014-01-26T17:20:10.043Z</volatile>"
     }
   ],
   "stubs": [
     {
-      "responses": [
-        {
-          "is": {
-            "data": "first response"
-          }
-        }
-      ],
+      "responses": [{ "is": { "data": "first response" } }],
       "predicates": [
         {
-          "matches": {
-            "data": "^first\\Wsecond"
-          },
+          "matches": { "data": "^first\\Wsecond" },
           "caseSensitive": true
         }
       ],
       "matches": [
         {
-          "timestamp": "2014-01-26T17:20:10.102Z",
+          "timestamp": "<volatile>2014-01-26T17:20:10.102Z</volatile>",
           "request": {
-            "requestFrom": "::1:60162",
+            "requestFrom": "<volatile>::1:60162</volatile>",
             "data": "first second\n"
           },
-          "response": {
-            "data": "first response"
-          }
+          "response": { "data": "first response" }
         }
       ]
     },
     {
-      "responses": [
-        {
-          "is": {
-            "data": "second response"
-          }
-        }
-      ],
-      "predicates": [
-        {
-          "matches": {
-            "data": "second\\s+request"
-          }
-        }
-      ],
+      "responses": [{ "is": { "data": "second response" } }],
+      "predicates": [{ "matches": { "data": "second\\s+request" } }],
       "matches": [
         {
-          "timestamp": "2014-01-26T17:20:10.117Z",
+          "timestamp": "<volatile>2014-01-26T17:20:10.117Z</volatile>",
           "request": {
-            "requestFrom": "::1:60171",
+            "requestFrom": "<volatile>::1:60171</volatile>",
             "data": "Second Request\n"
           },
-          "response": {
-            "data": "second response"
-          }
+          "response": { "data": "second response" }
         }
       ]
     },
     {
-      "responses": [
-        {
-          "is": {
-            "data": "third response"
-          }
-        }
-      ],
-      "predicates": [
-        {
-          "matches": {
-            "data": "second\\s+request"
-          }
-        }
-      ]
+      "responses": [{ "is": { "data": "third response" } }],
+      "predicates": [{ "matches": { "data": "second\\s+request" } }]
     }
   ],
   "_links": {
-    "self": {
-      "href": "http://localhost:<%= port %>/imposters/4550"
-    }
+    "self": { "href": "http://localhost:<%= port %>/imposters/4550" }
   }
 }
 </code>
+        </assertResponse>
+    </step>
 
-<code class='hidden' data-test-id='tcp matches example'
-                     data-test-step='5'
-                     data-test-type='http'>
-DELETE /imposters/4550 HTTP/1.1
+    <step type='http'>
+<code class='hidden'>DELETE /imposters/4550 HTTP/1.1
 Host: localhost:<%= port %>
-Accept: application/json
-</code>
+Accept: application/json</code>
+    </step>
+</testScenario>

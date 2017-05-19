@@ -37,17 +37,14 @@ that are not XML documents.  He also counsels avoiding the temptation to use it 
 
 <p>You can send the parameter without namespaces...</p>
 
-<pre><code>
-{
+<pre><code>{
   "equals": { "body": "Harry Potter" },
   "xpath": { "selector": "//title" }
-}
-</code></pre>
+}</code></pre>
 
 <p>...or with namespaces:</p>
 
-<pre><code>
-{
+<pre><code>{
   "equals": { "body": "Harry Potter" },
   "xpath": {
     "selector": "//a:title"
@@ -55,8 +52,7 @@ that are not XML documents.  He also counsels avoiding the temptation to use it 
       "a": "http://example.com/book"
     }
   }
-}
-</code></pre>
+}</code></pre>
 
 <p>The xpath parameter follows the same semantics as those obeyed for multi-valued keys described on the
 <a href='/docs/api/predicates'>main predicates page</a>, like those observed when a querystring has
@@ -72,10 +68,9 @@ demonstrate various ways to use the <code>xpath</code> parameter.  Where applica
 <code>comment</code> field is added to the JSON to explain what's going on.  Like all superfluous
 fields, mountebank will ignore it.</p>
 
-<pre><code data-test-id='xpath example'
-           data-test-step='1'
-           data-test-type='http'>
-POST /imposters HTTP/1.1
+<testScenario name='xpath'>
+    <step type='http'>
+<pre><code>POST /imposters HTTP/1.1
 Host: localhost:<%= port %>
 Accept: application/json
 Content-Type: application/json
@@ -167,8 +162,8 @@ Content-Type: application/json
       ]
     }</strong>
   ]
-}
-</code></pre>
+}</code></pre>
+    </step>
 
 <p>The first predicate uses an xpath selector to navigate to all <code>title</code> elements
 within the XML document within the <code>body</code> field.  If <code>body</code> turns out not
@@ -181,10 +176,8 @@ or not match if <code>exists</code> is false.<p>
 <p>Note that in the example below, there are multiple nodes matching the xpath selector.  With all
 predicates except <code>deepEquals</code>, it's sufficient that <i>any</i> of them match.</p>
 
-<pre><code data-test-id='xpath example'
-           data-test-step='2'
-           data-test-type='http'>
-POST / HTTP/1.1
+    <step type='http'>
+<pre><code>POST / HTTP/1.1
 Host: localhost:4545
 
 &lt;books xmlns:isbn=&quot;http://schemas.isbn.org/ns/1999/basic.dtd&quot;&gt;
@@ -200,28 +193,24 @@ Host: localhost:4545
     &lt;title&gt;The Hobbit&lt;/title&gt;
     &lt;isbn:summary&gt;A dragon and short people&lt;/isbn:summary&gt;
   &lt;/book&gt;
-&lt;/books&gt;
-</code></pre>
+&lt;/books&gt;</code></pre>
 
-<pre><code data-test-id='xpath example'
-           data-test-verify-step='2'
-           data-test-ignore-lines='["^Date"]'>
-HTTP/1.1 200 OK
+        <assertResponse>
+<pre><code>HTTP/1.1 200 OK
 Connection: close
-Date: Thu, 09 Jan 2014 02:30:31 GMT
+Date: <volatile>Thu, 09 Jan 2014 02:30:31 GMT</volatile>
 Transfer-Encoding: chunked
 
-<strong class='highlight1'>Basic xpath usage</strong>
-</code></pre>
+<strong class='highlight1'>Basic xpath usage</strong></code></pre>
+        </assertResponse>
+    </step>
 
 <p>The XML document above also would match the second stub's predicates, but mountebank
 always uses the first stub that matches.  To test the second stub, we'll namespace the
 <code>title</code> nodes to get past the first stub.</p>
 
-<pre><code data-test-id='xpath example'
-           data-test-step='3'
-           data-test-type='http'>
-POST / HTTP/1.1
+    <step type='http'>
+<pre><code>POST / HTTP/1.1
 Host: localhost:4545
 
 &lt;books xmlns:isbn=&quot;http://schemas.isbn.org/ns/1999/basic.dtd&quot;&gt;
@@ -237,28 +226,24 @@ Host: localhost:4545
     &lt;isbn:title&gt;The Hobbit&lt;/isbn:title&gt;
     &lt;isbn:summary&gt;A dragon and short people&lt;/isbn:summary&gt;
   &lt;/book&gt;
-&lt;/books&gt;
-</code></pre>
+&lt;/books&gt;</code></pre>
 
-<pre><code data-test-id='xpath example'
-           data-test-verify-step='3'
-           data-test-ignore-lines='["^Date"]'>
-HTTP/1.1 200 OK
+        <assertResponse>
+<pre><code>HTTP/1.1 200 OK
 Connection: close
-Date: Thu, 09 Jan 2014 02:30:31 GMT
+Date: <volatile>Thu, 09 Jan 2014 02:30:31 GMT</volatile>
 Transfer-Encoding: chunked
 
-<strong class='highlight2'>xpath with namespaces</strong>
-</code></pre>
+<strong class='highlight2'>xpath with namespaces</strong></code></pre>
+        </assertResponse>
+    </step>
 
 <p>The third stub will only match on a <code>first</code> attribute, and expects one
 to be set to true and two to be set to false.  In the interests of providing an unbiased
 presentation, we'll simply denote which book was first published with this attribute.</p>
 
-<pre><code data-test-id='xpath example'
-           data-test-step='4'
-           data-test-type='http'>
-POST / HTTP/1.1
+    <step type='http'>
+<pre><code>POST / HTTP/1.1
 Host: localhost:4545
 
 &lt;books count=&quot;3&quot; xmlns:isbn=&quot;http://schemas.isbn.org/ns/1999/basic.dtd&quot;&gt;
@@ -274,26 +259,23 @@ Host: localhost:4545
     &lt;title <strong class='highlight3'>first=&quot;true&quot;</strong>&gt;The Hobbit&lt;/title&gt;
     &lt;isbn:summary&gt;A dragon and short people&lt;/isbn:summary&gt;
   &lt;/book&gt;
-&lt;/books&gt;
-</code></pre>
+&lt;/books&gt;</code></pre>
 
-<pre><code data-test-id='xpath example'
-           data-test-verify-step='4'
-           data-test-ignore-lines='["^Date"]'>
-HTTP/1.1 200 OK
+        <assertResponse>
+<pre><code>HTTP/1.1 200 OK
 Connection: close
-Date: Thu, 09 Jan 2014 02:30:31 GMT
+Date: <volatile>Thu, 09 Jan 2014 02:30:31 GMT</volatile>
 Transfer-Encoding: chunked
 
-<strong class='highlight3'>xpath with attributes and the quirks of deepEquals</strong>
-</code></pre>
+<strong class='highlight3'>xpath with attributes and the quirks of deepEquals</strong></code></pre>
+        </assertResponse>
+    </step>
 
-<code class='hidden' data-test-id='xpath example'
-                     data-test-step='5'
-                     data-test-type='http'>
-DELETE /imposters/4545 HTTP/1.1
+    <step type='http'>
+<code class='hidden'>DELETE /imposters/4545 HTTP/1.1
 Host: localhost:<%= port %>
-Accept: application/json
-</code>
+Accept: application/json</code>
+    </step>
+</testScenario>
 
 <% include ../../_footer %>

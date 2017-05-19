@@ -1,0 +1,114 @@
+<p>A <a href='/docs/api/behaviors#behavior-decorate'><code>decorate</code> behavior</a> on a
+<code>proxy</code> response affects the proxy response itself, not the saved response
+that the proxy creates. If you want to add a <code>decorate</code> behavior on the saved
+response, you do so with the <code>addDecorateBehavior</code> field.</p>
+
+<testScenario name='decorateBehavior'>
+    <step type='http'>
+<code class='hidden'>POST /imposters HTTP/1.1
+Host: localhost:<%= port %>
+Content-Type: application/json
+
+{
+  "port": 5002,
+  "protocol": "http",
+  "stubs": [{
+    "responses": [{
+      "is": { "body": "downstream service response" }
+    }]
+  }]
+}</code>
+    </step>
+
+<p>We'll decorate our saved responses with the following JavaScript function:</p>
+
+<pre><code>function (request, response) {
+  response.body = response.body + ' DECORATED!';
+}</code></pre>
+
+<p>Add that function in the <code>addDecorateBehavior</code> field of the proxy
+configuration:</p>
+
+    <step type='http'>
+<pre><code><span class='hidden'>POST /imposters HTTP/1.1
+Host: localhost:<%= port %>
+Content-Type: application/json
+
+{
+  "port": 5000,
+  "protocol": "http",
+</span>"stubs": [{
+  "responses": [{
+    "proxy": {
+      "to": "<change to='http://localhost:5002'>http://origin-server.com</change>",
+      <strong class='highlight1'>"addDecorateBehavior": "function (request, response) { response.body = response.body + ' DECORATED!'; }"</strong>
+    }
+  }]
+}]<span class='hidden'>}</span></code></pre>
+    </step>
+
+<p>Next we'll send a request to our proxy imposter to create a new saved response. Notice
+that the decorator doesn't affect the proxied response (to do that, we'd have to add the
+same function as a <code>decorate</code> behavior on the <code>proxy</code> response too):</p>
+
+    <step type='http'>
+<pre><code>GET / HTTP/1.1
+Host: <change to='localhost:5000'>origin-server.com</change></code></pre>
+
+        <assertResponse>
+<pre><code>HTTP/1.1 200 OK
+Connection: close
+Date: <volatile>Fri, 19 May 2017 19:39:02 GMT</volatile>
+Transfer-Encoding: chunked
+
+downstream service response</code></pre>
+        </assertResponse>
+    </step>
+
+<p>If you look at the imposter configuration, you'll notice the new <code>decorate</code>
+behavior. </p>
+
+    <step type='http'>
+<code class='hidden'>GET /imposters/5000 HTTP/1.1
+Host: localhost:<%= port %></code>
+
+        <assertResponse partial='true'>
+<pre><code><span class='hidden'>{
+</span>"stubs": [
+  {
+    "predicates": [],
+    "responses": [{
+      "is": {
+        "body": "downstream service response"<change to=''>,</change>
+        <change to=''>...</change>
+      },
+      <strong class='highlight1'>"_behaviors": {
+        "decorate": "function (request, response) { response.body = response.body + ' DECORATED!'; }"
+      }</strong>
+    }]
+  },
+  {
+    "responses": [{
+      "proxy": {
+        "to": "<change to='http://localhost:5002'>http://origin-server.com</change>",
+        "addDecorateBehavior": "function (request, response) { response.body = response.body + ' DECORATED!'; }",
+        "mode": "proxyOnce"
+      }
+    }]
+  }
+]<span class='hidden'>}</span></code></pre>
+        </assertResponse>
+    </step>
+
+    <step type='http'>
+<code class='hidden'>DELETE /imposters/5002 HTTP/1.1
+Host: localhost:<%= port %>
+Accept: application/json</code>
+    </step>
+
+    <step type='http'>
+<code class='hidden'>DELETE /imposters/5000 HTTP/1.1
+Host: localhost:<%= port %>
+Accept: application/json</code>
+    </step>
+</testScenario>

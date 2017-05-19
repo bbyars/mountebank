@@ -1,0 +1,95 @@
+<p>Every response saves the time it took to call the downstream service in the
+<code>_proxyResponseTime</code> field. You can tell mountebank to automatically
+translate that into a <a href='/docs/api/behaviors#behavior-wait'>wait behavior</a>,
+which will add the same latency to the saved response. This is a useful technique
+during performance testing, where you want to virtualize downstream services but
+still want realistic latencies.</p>
+
+<testScenario name='waitBehavior'>
+    <step type='http'>
+<code class='hidden'>POST /imposters HTTP/1.1
+Host: localhost:<%= port %>
+Content-Type: application/json
+
+{
+  "port": 6001,
+  "protocol": "http"
+}</code>
+    </step>
+
+<p>Let's create the following proxy configuration:</p>
+
+    <step type='http'>
+<pre><code><span class='hidden'>POST /imposters HTTP/1.1
+Host: localhost:<%= port %>
+Content-Type: application/json
+
+{
+  "port": 6000,
+  "protocol": "http",
+</span>"stubs": [{
+  "responses": [{
+    "proxy": {
+      "to": "<change to='http://localhost:6001'>http://origin-server.com</change>",
+      <strong class='highlight1'>"addWaitBehavior": true</strong>
+    }
+  }]
+}]<span class='hidden'>}</span></code></pre>
+    </step>
+
+<p>Next we'll send a request to our proxy imposter to create a new saved response:</p>
+
+    <step type='http'>
+<pre><code>GET / HTTP/1.1
+Host: <change to='localhost:6000'>origin-server.com</change></code></pre>
+    </step>
+
+<p>If you look at the imposter configuration, you'll notice the new <code>wait</code>
+behavior. The value will be the same as the <code>_proxyResponseTime</code> field, which
+means that the saved response will add the same latency as the real service.</p>
+
+    <step type='http'>
+<code class='hidden'>GET /imposters/6000 HTTP/1.1
+Host: localhost:<%= port %></code>
+
+        <assertResponse partial='true'>
+<pre><code><span class='hidden'>{
+</span>"stubs": [
+  {
+    "predicates": [],
+    "responses": [{
+      "is": {
+        "statusCode": 200,
+        <change to=''>...</change>
+        <strong class='highlight2'>"_proxyResponseTime": <volatile>219</volatile></strong>
+      },
+      <strong class='highlight1'>"_behaviors": {
+        "wait": <volatile>219</volatile>
+      }</strong>
+    }]
+  },
+  {
+    "responses": [{
+      "proxy": {
+        "to": "<change to='http://localhost:6001'>http://origin-server.com</change>",
+        "addWaitBehavior": true,
+        "mode": "proxyOnce"
+      }
+    }]
+  }
+]<span class='hidden'>}</span></code></pre>
+        </assertResponse>
+    </step>
+
+    <step type='http'>
+<code class='hidden'>DELETE /imposters/6001 HTTP/1.1
+Host: localhost:<%= port %>
+Accept: application/json</code>
+    </step>
+
+    <step type='http'>
+<code class='hidden'>DELETE /imposters/6000 HTTP/1.1
+Host: localhost:<%= port %>
+Accept: application/json</code>
+    </step>
+</testScenario>

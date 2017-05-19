@@ -16,7 +16,8 @@ function select (selector, possibleJSON, logger) {
     var JSONPath = require('jsonpath-plus');
 
     try {
-        var result = JSONPath.eval(JSON.parse(possibleJSON), selector);
+        var json = (typeof possibleJSON === 'object') ? possibleJSON : JSON.parse(possibleJSON),
+            result = JSONPath.eval(json, selector);
         if (typeof result === 'string') {
             return result;
         }

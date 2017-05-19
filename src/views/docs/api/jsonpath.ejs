@@ -56,10 +56,9 @@ description = 'Using JsonPath in mountebank predicates'
     <code>comment</code> field is added to the JSON to explain what's going on.  Like all superfluous
     fields, mountebank will ignore it.</p>
 
-<pre><code data-test-id='jsonpath example'
-           data-test-step='1'
-           data-test-type='http'>
-POST /imposters HTTP/1.1
+<testScenario name='jsonpath'>
+    <step type='http'>
+<pre><code>POST /imposters HTTP/1.1
 Host: localhost:<%= port %>
 Accept: application/json
 Content-Type: application/json
@@ -68,79 +67,54 @@ Content-Type: application/json
     "port": 4545,
     "protocol": "http",
     "stubs": [<strong class='highlight1'>{
-        "responses": [{
-            "is": {
-                "body": "Basic jsonpath usage"
-            }
-        }],
-        "predicates": [{
-            "equals": {
-                "body": "Catcher in the Rye"
-            },
-            "jsonpath": {
-                "selector": "$..title"
-            },
+        "responses": [{ "is": { "body": "Basic jsonpath usage" } }],
+        "predicates": [
+          {
+            "equals": { "body": "Catcher in the Rye" },
+            "jsonpath": { "selector": "$..title" },
             "caseSensitive": true,
             "comment": "case sensitivity applies to the selector as well as the value"
-        },{
-            "equals": {
-                "body": "RYE"
-            },
-            "jsonpath": {
-                "selector": "$..TITLE"
-            },
+          },
+          {
+            "equals": { "body": "RYE" },
+            "jsonpath": { "selector": "$..TITLE" },
             "except": "CATCHER IN THE ",
             "comment": "The except regular expression is removed from the value before matching"
-        },{
-            "matches": {
-                "body": "^Catcher"
-            },
-            "jsonpath": {
-                "selector": "$..title"
-            }
-        },{
-            "exists": {
-                "body": true
-            },
-            "jsonpath": {
-                "selector": "$..title"
-            },
+          },
+          {
+            "matches": { "body": "^Catcher" },
+            "jsonpath": { "selector": "$..title" }
+          },
+          {
+            "exists": { "body": true },
+            "jsonpath": { "selector": "$..title" },
             "comment": "body must exist (e.g. be empty) AND the JSONPath must match at least one node"
-        },{
-            "exists": {
-                "body": false
-            },
-            "jsonpath": {
-                "selector": "$..publisher"
-            },
+          },
+          {
+            "exists": { "body": false },
+            "jsonpath": { "selector": "$..publisher" },
             "comment": "body must not exist (e.g. be empty) OR the JSONPath must not match any nodes"
-        }]
+          }
+        ]
     }</strong>,<strong class='highlight2'>{
         "responses": [{
-            "is": {
-                "body": "JSONPath with attributes and the quirks of deepEquals"
-            }
+            "is": { "body": "JSONPath with attributes and the quirks of deepEquals" }
         }],
-        "predicates": [{
-            "deepEquals": {
-                "body": "Robert Cecil Martin"
-            },
-            "jsonpath": {
-                "selector": "$.book[1].author"
-            },
+        "predicates": [
+          {
+            "deepEquals": { "body": "Robert Cecil Martin" },
+            "jsonpath": { "selector": "$.book[1].author" },
             "comment": "deepEquals expects a string when there is only one match"
-        },{
-            "deepEquals": {
-                "body": ["J. K. Rowling", "Robert Cecil Martin", "Dr. Seuss"]
-            },
-            "jsonpath": {
-                "selector": "$.book..author"
-            },
+          },
+          {
+            "deepEquals": { "body": ["J. K. Rowling", "Robert Cecil Martin", "Dr. Seuss"] },
+            "jsonpath": { "selector": "$.book..author" },
             "comment": "Use an array for deepEquals when there are multiple matches"
-        }]
+          }
+        ]
     }</strong>]
-}
-</code></pre>
+}</code></pre>
+    </step>
 
 <p>The first predicate uses an jsonpath selector to navigate to all <code>title</code> elements
     within the JSON within the <code>body</code> field.  If <code>body</code> turns out not
@@ -153,86 +127,84 @@ Content-Type: application/json
 <p>Note that in the example below, there are multiple nodes matching the jsonpath selector.  With all
     predicates except <code>deepEquals</code>, it's sufficient that <i>any</i> of them match.</p>
 
-<pre><code data-test-id='jsonpath example'
-           data-test-step='2'
-           data-test-type='http'>
-POST / HTTP/1.1
+    <step type='http'>
+<pre><code>POST / HTTP/1.1
 Host: localhost:4545
 
 {
-    "book":[{
+    "book":[
+      {
         "title": "Game of Thrones",
         "isbn:summary": "Dragons and political intrigue",
         "author": "George R.R. Martin"
-    },
-    {
+      },
+      {
         <strong class='highlight1'>"title": "Catcher in the Rye"</strong>,
         "isbn:summary": "It is a book",
         "author": "J. D. Salinger"
-    },
-    {
+      },
+      {
         "title": "Notes from the Underground",
         "isbn:summary": "The world's first existentialist novel",
         "author":"Fyodor Dostoyevsky"
-    }]
-}
-</code></pre>
+      }
+    ]
+}</code></pre>
 
-<pre><code data-test-id='jsonpath example'
-           data-test-verify-step='2'
-           data-test-ignore-lines='["^Date"]'>
-HTTP/1.1 200 OK
+        <assertResponse>
+<pre><code>HTTP/1.1 200 OK
 Connection: close
-Date: Thu, 09 Jan 2014 02:30:31 GMT
+Date: <volatile>Thu, 09 Jan 2014 02:30:31 GMT</volatile>
 Transfer-Encoding: chunked
 
-<strong class='highlight1'>Basic jsonpath usage</strong>
-</code></pre>
+<strong class='highlight1'>Basic jsonpath usage</strong></code></pre>
+        </assertResponse>
+    </step>
 
 <p>To test the second stub, we'll use deep equals to get a specific <code>title</code>
-    node dependant on what book we are looking at. We can also use deep equals to get
-    all the corresponding nodes.</p>
+node dependant on what book we are looking at. We can also use deep equals to get
+all the corresponding nodes.</p>
 
-<pre><code data-test-id='jsonpath example'
-           data-test-step='3'
-           data-test-type='http'>
-POST / HTTP/1.1
+    <step type='http'>
+<pre><code>POST / HTTP/1.1
 Host: localhost:4545
 
 {
-    "book":[{
+    "book":[
+      {
         <strong class='highlight2'>"title": "Harry Potter"</strong>,
         "isbn:summary": "Wizards and Magic",
-        "author": "J. K. Rowling"},
-    {
+        "author": "J. K. Rowling"
+      },
+      {
         "title": "Clean Code",
         "isbn:summary": "Technological bible",
-        "author": "Robert Cecil Martin"},
-    {
+        "author": "Robert Cecil Martin"
+      },
+      {
         "title": "The Cat in the Hat",
         "isbn:summary": "Childhood classic",
         "author":"Dr. Seuss"
-    }]
-}
-</code></pre>
+      }
+    ]
+}</code></pre>
 
-<pre><code data-test-id='jsonpath example'
-           data-test-verify-step='3'
-           data-test-ignore-lines='["^Date"]'>
-HTTP/1.1 200 OK
+        <assertResponse>
+<pre><code>HTTP/1.1 200 OK
 Connection: close
-Date: Thu, 09 Jan 2014 02:30:31 GMT
+Date: <volatile>Thu, 09 Jan 2014 02:30:31 GMT</volatile>
 Transfer-Encoding: chunked
 
-<strong class='highlight2'>JSONPath with attributes and the quirks of deepEquals</strong>
-    </code></pre>
+<strong class='highlight2'>JSONPath with attributes and the quirks of deepEquals</strong></code></pre>
+        </assertResponse>
+    </step>
 
-<code class='hidden' data-test-id='jsonpath example'
-      data-test-step='4'
-      data-test-type='http'>
-DELETE /imposters/4545 HTTP/1.1
+    <step type='http'>
+<code class='hidden'>DELETE /imposters/4545 HTTP/1.1
 Host: localhost:<%= port %>
-Accept: application/json
-</code>
+Accept: application/json</code>
+    </step>
+
+</testScenario>
 
 <% include ../../_footer %>
