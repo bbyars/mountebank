@@ -243,6 +243,112 @@ Accept: application/json</code>
         </assertResponse>
     </step>
 
+<p>This configuration allows you to capture as rich a set of data as your downstream
+system provides and play it back with the appropriate predicates. The only additional
+complexity with <code>proxyAlways</code> is that <em>you have to explicitly switch to
+replay mode.</em> Conceptually, replaying is as simple as removing the proxies. The easiest
+way to do that is by using the <a href='/docs/commandLine'><code>mb replay</code></a>
+command, passing in the same command line options you used to start mountebank. If,
+for example, we had previously started mountebank on port 3535 with injection enabled,
+we could switch to replay mode with the following call:</p>
+
+<pre><code>mb replay --allowInjection -port 3535</code></pre>
+
+<p class='info-icon'>As always, there's more than one way to do it. You can instead use the API,
+retrieving all imposters with a call to
+<a href='/docs/api/overview#get-imposters'><code>GET /imposters?replayabe=true&removeProxies=true</code></a>
+and sending the payload in a call <a href='/docs/api/overview#put-imposters'>
+<code>PUT /imposters</code></a>.</p>
+
+<p>Now if we look at the imposter configuration, you'll notice that the proxy has
+been removed. Only the saved responses will be used.</p>
+
+    <step type='http'>
+<code class='hidden''>DELETE /imposters/4000 HTTP/1.1
+Host: localhost:<%= port %>
+Accept: application/json</code>
+    </step>
+
+    <step type='http'>
+<code class='hidden'>POST /imposters HTTP/1.1
+Host: localhost:<%= port %>
+Accept: application/json
+
+{
+  "protocol": "http",
+  "port": 4000,
+  "stubs": [
+    {
+      "predicates": [
+        {
+          "deepEquals": {
+            "path": "/test"
+          }
+        }
+      ],
+      "responses": [
+        {
+          "is": {
+            "statusCode": 200,
+            "headers": {
+              "Connection": "close",
+              "Date": "Fri, 19 May 2017 01:09:42 GMT",
+              "Transfer-Encoding": "chunked"
+            },
+            "body": "Request number 1",
+            "_mode": "text",
+            "_proxyResponseTime": 14
+          }
+        },
+        {
+          "is": {
+            "statusCode": 200,
+            "headers": {
+              "Connection": "close",
+              "Date": "Fri, 19 May 2017 01:09:42 GMT",
+              "Transfer-Encoding": "chunked"
+            },
+            "body": "Request number 2",
+            "_mode": "text",
+            "_proxyResponseTime": 4
+          }
+        }
+      ]
+    }
+  ]
+}</code>
+        </assertResponse>
+    </step>
+
+    <step type='http'>
+<code class='hidden'>GET /imposters/4000 HTTP/1.1
+Host: localhost:<%= port %>
+Accept: application/json</code>
+
+        <assertResponse partial='true'>
+<pre><code><div class='hidden'>{
+</div>"stubs": [
+  {
+    "predicates": [{ "deepEquals": { "path": "/test" } }],
+    "responses": [
+      {
+        "is": {
+          "body": "Request number 1",
+          <change to='"_mode": "text"'>...</change>
+        }
+      },
+      {
+        "is": {
+          "body": "Request number 2",
+          <change to='"_mode": "text"'>...</change>
+        }
+      }
+    ]
+  }
+]<div class='hidden'>}</div></code></pre>
+        </assertResponse>
+    </step>
+
     <step type='http'>
 <code class='hidden''>DELETE /imposters/4000 HTTP/1.1
 Host: localhost:<%= port %>
@@ -254,8 +360,5 @@ Accept: application/json</code>
 Host: localhost:<%= port %>
 Accept: application/json</code>
     </step>
-
-<p></p>
-
 
 </testScenario>
