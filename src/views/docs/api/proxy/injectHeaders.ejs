@@ -74,4 +74,16 @@ The body.
 <p>Now we can see that the X-My-Custom-Header-One and Two headers were returned
 back to us, reflected back from the mirror imposter after being injected into
 the <i>outgoing</i> request.</p>
+
+    <step type='http'>
+<code class='hidden''>DELETE /imposters/7001 HTTP/1.1
+Host: localhost:<%= port %>
+Accept: application/json</code>
+    </step>
+
+    <step type='http'>
+<code class='hidden''>DELETE /imposters/7002 HTTP/1.1
+Host: localhost:<%= port %>
+Accept: application/json</code>
+    </step>
 </testScenario>

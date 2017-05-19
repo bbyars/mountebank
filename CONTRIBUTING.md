@@ -244,6 +244,9 @@ avoid problems of dynamic data, the following transformations are applied before
 * You can wrap any data that differs from response to response in a `volatile` tag, as shown
 with the `Date` header above
 * If you want to display something other than what's tested, you can use the `change` element
+* If you don't want to document the entire response to focus in on the key elements, you can set
+the `partial` attribute on the `assertResponse` element to `true`. The proxies page makes heavy
+use of this feature.
 
 You can see an example using the `change` element on the [getting started](http://www.mbtest.org/docs/gettingStarted)
 page. The docs indicate that the default port is 2525, and so it intentionally displays all the

@@ -3,7 +3,8 @@
 var api = require('../../api/api').create(),
     jsdom = require('jsdom'),
     DocsTestScenario = require('./docsTestScenario'),
-    Q = require('q');
+    Q = require('q'),
+    assert = require('assert');
 
 /**
  * All DOM parsing happens here, including processing the special HTML tags
@@ -70,16 +71,6 @@ function processChangeCommands (element) {
     });
     return codeElement.text();
 }
-//
-// function processIgnoreCommands (element, accumulator) {
-//    var ignores = element.getElementsByTagName('ignore');
-//
-//    accumulator.jsonpathsToIgnore = [];
-//    for (var i = 0; i < ignores.length; i += 1) {
-//        result.jsonpathsToIgnore.push(getAttribute(ignores[i], 'jsonpath'));
-//        ignores[i].textContent = '';
-//    }
-// }
 
 function normalizeJSON (possibleJSON) {
     try {
@@ -148,38 +139,44 @@ function replaceVolatileData (text, volatileLines) {
     }, text);
 }
 
+function normalize (text, responseElement) {
+    var trimmed = (text || '').trim(),
+        normalizedJSON = normalizeJSONSubstrings(trimmed),
+        normalizedVolatility = replaceVolatileData(normalizedJSON, collectVolatileLines(responseElement));
+
+    return normalizedVolatility;
+}
+
 function isPartialComparison (responseElement) {
     return responseElement.attributeValue('partial') === 'true';
 }
 
-function limitToPartialLines (text, responseElement) {
-    if (!isPartialComparison(responseElement)) {
-        return text;
-    }
+function setDifference (partialExpectedLines, actualLines) {
+    var difference = [],
+        lastIndex = -1;
 
-    var responseLines = linesOf(responseElement.text().trim()),
-        textLines = linesOf(text.trim()),
-        matchedLines = [];
-
-    responseLines.forEach(function (responseLine) {
-        var matchIndex = textLines.findIndex(function (textLine) {
-            return responseLine.trim() === textLine.trim();
+    // Track index in closure to ensure two equivalent lines in partialExpected don't match
+    // the same line in actual. The lines have to match in order.
+    partialExpectedLines.forEach(function (expectedLine, index) {
+        var matchedIndex = actualLines.findIndex(function (actualLine, index) {
+            // Allow comma at end because the actual JSON could include additional elements we don't care about
+            return index > lastIndex &&
+                (expectedLine.trim() === actualLine.trim() || expectedLine.trim() + ',' === actualLine.trim());
         });
-        if (matchIndex >= 0) {
-            textLines.splice(matchIndex, 1);
-            matchedLines.push(responseLine);
+        if (matchedIndex < 0) {
+            difference.push({
+                index: index,
+                missingLine: expectedLine,
+                previous: partialExpectedLines.slice(Math.max(0, index - 10), index).join('\n'),
+                next:partialExpectedLines.slice(index + 1, Math.min(partialExpectedLines.length - 1, index + 5)).join('\n')
+            });
+        }
+        else {
+            lastIndex = matchedIndex;
         }
     });
-    return matchedLines.join('\n');
-}
 
-function normalize (text, responseElement) {
-    var trimmed = (text || '').trim(),
-        normalizedJSON = normalizeJSONSubstrings(trimmed),
-        normalizedVolatility = replaceVolatileData(normalizedJSON, collectVolatileLines(responseElement)),
-        partialLimited = limitToPartialLines(normalizedVolatility, responseElement);
-
-    return partialLimited;
+    return difference;
 }
 
 /*
@@ -193,10 +190,22 @@ function createStepSpecFrom (stepElement) {
         responseElements = stepElement.subElements('assertResponse');
 
     stepSpec.requestText = processChangeCommands(stepElement);
+    stepSpec.assertValid = function () {};
+
     if (responseElements.length > 0) {
-        stepSpec.expectedResponse = processChangeCommands(responseElements[0]);
-        stepSpec.normalize = function (text) {
-            return normalize(text, responseElements[0]);
+        var responseElement = responseElements[0],
+            expectedResponse = processChangeCommands(responseElement);
+
+        stepSpec.assertValid = function (actualResponse, failureMessage) {
+            var actual = normalize(actualResponse, responseElement),
+                expected = normalize(expectedResponse, responseElement);
+
+            if (isPartialComparison(responseElement)) {
+                assert.deepEqual(setDifference(linesOf(expected), linesOf(actual)), [], failureMessage);
+            }
+            else {
+                assert.strictEqual(actual, expected, failureMessage);
+            }
         };
     }
     return stepSpec;
