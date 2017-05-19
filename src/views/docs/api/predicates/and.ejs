@@ -1,9 +1,8 @@
 <p>The <code>and</code> predicate matches if all of its sub-predicates match.</p>
 
-<pre><code data-test-id='tcp and example'
-           data-test-step='1'
-           data-test-type='http'>
-POST /imposters HTTP/1.1
+<testScenario name='tcp and example'>
+    <step type='http'>
+<pre><code>POST /imposters HTTP/1.1
 Host: localhost:<%= port %>
 Accept: application/json
 Content-Type: application/json
@@ -26,43 +25,38 @@ Content-Type: application/json
       ]
     }</strong>
   ]
-}
-</code></pre>
+}</code></pre>
+    </step>
 
 <p>The first request matches all sub-predicates, triggering the stub response:</p>
 
-<pre><code data-test-id='tcp and example'
-           data-test-step='2'
-           data-test-type='exec'>
-echo '<strong class='highlight1'>start middle end</strong>' | nc localhost 4554
-</code></pre>
+    <step type='exec'>
+<pre><code>echo '<strong class='highlight1'>start middle end</strong>' | nc localhost 4554</code></pre>
 
-<pre><code data-test-id='tcp and example'
-           data-test-verify-step='2'>
-<strong class='highlight1'>matches</strong>
-</code></pre>
+        <assertResponse>
+<pre><code><strong class='highlight1'>matches</strong></code></pre>
+        </assertResponse>
+    </step>
 
-<p>The stub matches two of the three sub-predicates, which is not enough to match
+    <p>The stub matches two of the three sub-predicates, which is not enough to match
 the <code>and</code> predicate.</p>
 
 <p>The stub does not match none of the sub-predicates match...</p>
 
-<pre><code data-test-id='tcp and example'
-           data-test-step='5'
-           data-test-type='exec'>
-echo '<strong class='highlight1'>start end</strong>' | nc localhost 4554
-</code></pre>
+    <step type='exec'>
+<pre><code>echo '<strong class='highlight1'>start end</strong>' | nc localhost 4554</code></pre>
 
 <p>No response is sent.</p>
 
-<pre><code data-test-id='tcp and example'
-           data-test-verify-step='5'>
+        <assertResponse>
+<pre><code>
 </code></pre>
+        </assertResponse>
+    </step>
 
-<code class='hidden' data-test-id='tcp and example'
-                     data-test-step='6'
-                     data-test-type='http'>
-DELETE /imposters/4554 HTTP/1.1
+    <step type='http'>
+<code class='hidden'>DELETE /imposters/4554 HTTP/1.1
 Host: localhost:<%= port %>
-Accept: application/json
-</code>
+Accept: application/json</code>
+    </step>
+</testScenario>

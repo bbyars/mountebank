@@ -2,7 +2,7 @@
 
 var Q = require('q'),
     util = require('util'),
-    httpClient = require('../../api/http/baseHttpClient').create('http');
+    httpClient = require('../../../api/http/baseHttpClient').create('http');
 
 function parseHeader (line) {
     var parts = line.split(':');
@@ -83,13 +83,12 @@ function format (response) {
     return result;
 }
 
-function runStep (step) {
+function runStep (spec) {
     var deferred = Q.defer(),
-        spec = parse(step.execute);
+        requestSpec = parse(spec.requestText);
 
-    httpClient.responseFor(spec).done(function (response) {
-        step.result = format(response);
-        deferred.resolve(step);
+    httpClient.responseFor(requestSpec).done(function (response) {
+        deferred.resolve(format(response));
     });
 
     return deferred.promise;
