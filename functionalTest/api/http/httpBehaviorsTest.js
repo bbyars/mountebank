@@ -300,6 +300,39 @@ var assert = require('assert'),
                 });
             });
 
+            promiseIt('should repeat with JSON key of repeat (issue #237)', function () {
+                var stub = {
+                        responses: [
+                            {
+                                is: { body: 'This should repeat 2 times' },
+                                _behaviors: { repeat: 2 }
+                            },
+                            { is: { body: 'Then you should see this' } }
+                        ],
+                        predicates: [{
+                            equals: {
+                                body: { repeat: true }
+                            }
+                        }]
+                    },
+                    request = { protocol: protocol, port: port, stubs: [stub], name: this.name };
+
+                return api.post('/imposters', request).then(function (response) {
+                    assert.strictEqual(response.statusCode, 201, response.body);
+                    return client.post('/', { repeat: true }, port);
+                }).then(function (response) {
+                    assert.deepEqual(response.body, 'This should repeat 2 times', 'first try');
+                    return client.post('/', { repeat: true }, port);
+                }).then(function (response) {
+                    assert.deepEqual(response.body, 'This should repeat 2 times', 'second try');
+                    return client.post('/', { repeat: true }, port);
+                }).then(function (response) {
+                    assert.deepEqual(response.body, 'Then you should see this', 'third try');
+                }).finally(function () {
+                    return api.del('/imposters');
+                });
+            });
+
             promiseIt('should support shell transforms', function () {
                 var stub = {
                         responses: [{
