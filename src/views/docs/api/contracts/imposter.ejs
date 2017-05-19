@@ -90,8 +90,18 @@
 <span id='imposter-stubs-responses-proxy-predicateGenerators'><%- indent(12) %>&quot;predicateGenerators&quot;: [
               {
                 &quot;matches&quot;: {
-                  &quot;method&quot;: true,
                   &quot;path&quot;: true
+                },
+                &quot;caseSensitive&quot;: true,
+                &quot;except&quot;: &quot;^The^&quot;,
+                &quot;jsonpath&quot;: {
+                    &quot;selector&quot;: &quot;$..book&quot;
+                },
+                &quot;xpath&quot;: {
+                    &quot;selector&quot;: &quot;//book/@title&quot;,
+                    &quot;ns&quot;: {
+                        &quot;isbn&quot;: &quot;http://schemas.isbn.org/ns/1999/basic.dtd&quot;
+                    }
                 }
               }
             ],</span>
@@ -110,8 +120,8 @@
             &quot;body&quot;: &quot;value&quot;,</span>
 <span id='imposter-stubs-predicates-equals-caseSensitive'><%- indent(12) %>&quot;caseSensitive&quot;: true,</span>
 <span id='imposter-stubs-predicates-equals-except'><%- indent(12) %>&quot;except&quot;: &quot;^The &quot;,</span>
-<span id='imposter-stubs-predicates-equals-jsonpath'><%- indent(12) %>&quot;json&quot;: {
-              &quot;selector&quot;: &quot;//book/@title&quot;
+<span id='imposter-stubs-predicates-equals-jsonpath'><%- indent(12) %>&quot;jsonpath&quot;: {
+              &quot;selector&quot;: &quot;$..book&quot;
             },</span>
 <span id='imposter-stubs-predicates-equals-xpath'><%- indent(12) %>&quot;xpath&quot;: {
               &quot;selector&quot;: &quot;//book/@title&quot;,
