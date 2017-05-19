@@ -96,19 +96,21 @@ predicate parameters:</p>
     <td><code>xpath</code></td>
     <td><code>null</code></td>
     <td>Defines an object containing a <code>selector</code> string and, optionally, an
-    <code>ns</code> object field that defines a namespace map.</td>
+    <code>ns</code> object field that defines a namespace map.  The predicate's
+    scope is limited to the selected value in the request field.</td>
   </tr>
   <tr>
     <td><code>jsonpath</code></td>
     <td><code>null</code></td>
-    <td>Defines an object containing a <code>selector</code> string</td>
+    <td>Defines an object containing a <code>selector</code> string.  The predicate's
+    scope is limited to the selected value in the request field.</td>
   </tr>
 </table>
 
 <p>See the <code>equals</code> example below to see the <code>caseSensitive</code> and
 <code>except</code> parameters in action.  See the <a href='/docs/api/xpath'>xpath page</a>
 for <code>xpath</code> examples. See the <a href='/docs/api/jsonpath'>jsonpath page</a>
-  or <code>jsonpath</code> examples. </p>
+for <code>jsonpath</code> examples.</p>
 
 <p>Almost all predicates are scoped to a request field; see the protocol pages linked to from
 the sidebar to see the request fields.  <code>inject</code> is the sole exception.  It takes
@@ -125,11 +127,107 @@ mountebank recommends that you stay away from <code>matches</code> if you're dea
 In mountebank's experience, <code>contains</code> is the most useful predicate for binary
 imposters, as even binary RPC data generally contains strings representing method names.</p>
 
+<h2 id='array-match'>Matching arrays</h2>
+
 <p>On occasion you may encounter multi-valued keys.  This can be the case with querystrings
-that have repeating keys, for example <code>?key=first&amp;key=second</code>.  In those cases,
-<code>deepEquals</code> will require all the values (in any order) to match.  All other
-predicates will match if any value matches, so an <code>equals</code> predicate
+and HTTP headers that have repeating keys, for example <code>?key=first&amp;key=second</code>.
+In those cases, <code>deepEquals</code> will require all the values (in any order) to match.
+All other predicates will match if any value matches, so an <code>equals</code> predicate
 will match with the value of <code>second</code> in the example above.</p>
+
+<p><a href='/docs/api/json'>JSON predicates</a> are also allowed, for example, to match HTTP
+bodies. When the body contains an array, the logic above still applies: <code>deepEquals</code>
+requires all values to match, and other predicates will match if any value in the array
+matches.</p>
+
+<p>You also have the option of specifying an array in the predicate definition. If you do so,
+then <em>all</em> fields in the predicate array must match (in any order). Most predicates
+will match even if there are additional fields in the actual request array; <code>deepEquals</code>
+requires the array lengths to be equal. The following example shows this with a querystring:</p>
+
+<testScenario name='array'>
+    <step type='http'>
+<pre><code>POST /imposters HTTP/1.1
+Host: localhost:<%= port %>
+Accept: application/json
+Content-Type: application/json
+
+{
+  "port": 3333,
+  "protocol": "http",
+  "stubs": [
+    {
+      "predicates": [{
+        "equals": {
+          "query": { "key": <strong class='highlight2'>["first", "second"]</strong> }
+        }
+      }],
+      "responses": [{
+        "is": {
+          "body": <strong class='highlight1'>"Entire array matched"</strong>
+        }
+      }]
+    },
+    {
+      "predicates": [{
+        "equals": {
+          "query": { "key": <strong class='highlight3'>"first"</strong> }
+        }
+      }],
+      "responses": [{
+        "is": {
+          "body": <strong class='highlight4'>"A field in the array matched"</strong>
+        }
+      }]
+    }
+  ]
+}</code></pre>
+    </step>
+
+<p>We'll call the imposter with a multi-valued query key, which mountebank recognizes as an array.</p>
+
+    <step type='http'>
+<pre><code>GET /path<strong class='highlight2'>?key=second&key=first</strong>&key=third HTTP/1.1
+Host: localhost:3333</code></pre>
+
+<p>Since both keys match, we get our expected response from the first stub.</p>
+
+        <assertResponse>
+<pre><code>HTTP/1.1 200 OK
+Connection: close
+Date: <volatile>Sat, 06 May 2017 02:30:31 GMT</volatile>
+Transfer-Encoding: chunked
+
+<strong class='highlight1'>Entire array matched</strong></code></pre>
+        </assertResponse>
+    </step>
+
+<p>Notice that the order of the keys doesn't matter. If the request is missing either array value,
+our predicate no longer matches.</p>
+
+    <step type='http'>
+<pre><code>GET /path?<strong class='highlight3'>key=first</strong>&key=third HTTP/1.1
+Host: localhost:3333</code></pre>
+
+<p>In this case, our second stub matches, because it does <em>not</em> use an array predicate, and
+one of the actual array values in the request matches the predicate definition</p>
+
+        <assertResponse>
+<pre><code>HTTP/1.1 200 OK
+Connection: close
+Date: <volatile>Sat, 06 May 2017 02:30:31 GMT</volatile>
+Transfer-Encoding: chunked
+
+<strong class='highlight4'>A field in the array matched</strong></code></pre>
+        </assertResponse>
+    </step>
+
+    <step type='http'>
+<code class='hidden'>DELETE /imposters/3333 HTTP/1.1
+Host: localhost:<%= port %>
+Accept: application/json</code>
+    </step>
+</testScenario>
 
 <h2>Matching XML or JSON</h2>
 

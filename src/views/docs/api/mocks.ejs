@@ -9,12 +9,13 @@ description = 'Using mountebank to verify network calls were made'
 
 <p><a href='http://martinfowler.com/articles/mocksArentStubs.html'>Mocks</a> are a type
 of test double that allow you to verify a call was made without relying on the server
-response.  mountebank supports mocking through the <code>requests</code> element on
-an imposter.  The fields saved for each request depends on the protocol, and are documented
-in the protocol pages linked to from the sidebar.</p>
+response.  mountebank enables mocking through the <code>requests</code> element on
+an imposter. The fields saved for each request depends on the protocol, and are documented
+in the protocol pages linked to from the sidebar. It is up to the client code to
+implement the mock verification using the <code>requests</code> array.</p>
 
-<p class='warning-icon'>Note, the <code>--mock</code> command line flag must be set to enable mock verification.
-Mocking requires mountebank to remember information about each request to each imposter.
+<p class='warning-icon'>Note, the <code>--mock</code> command line flag must be set to enable mock
+verification. Mocking requires mountebank to remember information about each request to each imposter.
 For long-running instances of mountebank, this represents a memory leak, so this functionality
 is turned off by default.</p>
 
@@ -26,10 +27,9 @@ that the application sent an SMTP request without actually sending an email.</p>
 
 <p>First let's create an imposter:</p>
 
-<pre><code data-test-id='example'
-           data-test-step='1'
-           data-test-type='http'>
-POST /imposters HTTP/1.1
+<testScenario name='example'>
+    <step type='http'>
+<pre><code>POST /imposters HTTP/1.1
 Host: localhost:<%= port %>
 Accept: application/json
 Content-Type: application/json
@@ -37,41 +37,13 @@ Content-Type: application/json
 {
   "port": 4545,
   "protocol": "smtp"
-}
-</code></pre>
-
-<pre><code data-test-id='example'
-           data-test-verify-step='1'
-           data-test-ignore-lines='["^Date"]'>
-HTTP/1.1 201 Created
-Access-Control-Allow-Origin: *
-Location: http://localhost:<%= port %>/imposters/4545
-Content-Type: application/json; charset=utf-8
-Content-Length: 190
-Date: Sun, 05 Jan 2014 16:28:40 GMT
-Connection: keep-alive
-
-{
-  "protocol": "smtp",
-  "port": 4545,
-  "numberOfRequests": 0,
-  "requests": [],
-  "stubs": [],
-  "_links": {
-    "self": {
-      "href": "http://localhost:<%= port %>/imposters/4545"
-    }
-  }
-}
-</code></pre>
+}</code></pre>
+    </step>
 
 <p>Now make the following SMTP request in your application:</p>
 
-<pre><code data-test-id='example'
-           data-test-step='2'
-           data-test-type='smtp'
-           data-test-port='4545'>
-From: "Customer Service" &lt;customer-service@company.com&gt;
+    <step type='smtp' port='4545'>
+<pre><code>From: "Customer Service" &lt;customer-service@company.com&gt;
 To: "Customer" &lt;customer@domain.com&gt;
 Subject: Thank you for your order
 
@@ -79,42 +51,35 @@ Hello Customer,
 Thank you for your order from company.com.  Your order will
 be shipped shortly.
 
-Your friendly customer service department.
-</code></pre>
+Your friendly customer service department.</code></pre>
+    </step>
 
 <p>You can verify the call by making either a <code>GET</code> or
 <code>DELETE</code> call to the imposter:</p>
 
-<pre><code data-test-id='example'
-           data-test-step='3'
-           data-test-type='http'>
-GET /imposters/4545 HTTP/1.1
+    <step type='http'>
+<pre><code>GET /imposters/4545 HTTP/1.1
 Host: localhost:<%= port %>
-Accept: application/json
-</code></pre>
+Accept: application/json</code></pre>
 
-<pre><code data-test-id='example'
-           data-test-verify-step='3'
-           data-test-ignore-lines='["^Date", "Content-Length", "requestFrom", "timestamp"]'>
-HTTP/1.1 200 OK
+        <assertResponse>
+<pre><code>HTTP/1.1 200 OK
 Access-Control-Allow-Origin: *
 Vary: Accept
 Content-Type: application/json; charset=utf-8
-Content-Length: 976
-Date: Thu, 09 Jan 2014 02:30:31 GMT
+Content-Length: 991
+Date: <volatile>Thu, 09 Jan 2014 02:30:31 GMT</volatile>
 Connection: keep-alive
 
 {
   "protocol": "smtp",
   "port": 4545,
   "numberOfRequests": 1,
-  "requests": [
+  <strong class='highlight1'>"requests": [
     {
-      "requestFrom": "::ffff:127.0.0.1",
+      "requestFrom": "<volatile>::ffff:127.0.0.1</volatile>",
       "envelopeFrom": "customer-service@company.com",
-      "envelopeTo": [
-        "customer@domain.com"
-      ],
+      "envelopeTo": ["customer@domain.com"],
       "from": {
         "address": "customer-service@company.com",
         "name": "Customer Service"
@@ -134,27 +99,25 @@ Connection: keep-alive
       "text": "Hello Customer,\nThank you for your order from company.com.  Your order will\nbe shipped shortly.\n\nYour friendly customer service department.",
       "html": "",
       "attachments": [],
-      "timestamp": "2015-01-09T02:30:31.850Z"
+      "timestamp": "<volatile>2015-01-09T02:30:31.850Z</volatile>"
     }
-  ],
+  ]</strong>,
   "stubs": [],
   "_links": {
-    "self": {
-      "href": "http://localhost:<%= port %>/imposters/4545"
-    }
+    "self": { "href": "http://localhost:<%= port %>/imposters/4545" }
   }
-}
-</code></pre>
+}</code></pre>
+        </assertResponse>
+    </step>
 
-<p>Now you can use the <code>requests</code> element in your test code to validate
+    <p>Now you can use the <code>requests</code> element in your test code to validate
 the application sent the correct information.</p>
 
-<code class='hidden' data-test-id='example'
-                     data-test-step='4'
-                     data-test-type='http'>
-DELETE /imposters/4545 HTTP/1.1
+    <step type='http'>
+<code class='hidden'>DELETE /imposters/4545 HTTP/1.1
 Host: localhost:<%= port %>
-Accept: application/json
-</code>
+Accept: application/json</code>
+    </step>
+</testScenario>
 
 <% include ../../_footer %>

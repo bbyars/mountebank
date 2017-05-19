@@ -6,10 +6,9 @@ See the <a href='/docs/api/injection'>injection page</a> for details.</p>
 <p>The execution will have access to a node.js environment.  The following example uses
 node's <code>Buffer</code> object to decode base64 to a byte array.</p>
 
-<pre><code data-test-id='tcp inject example'
-           data-test-step='1'
-           data-test-type='http'>
-POST /imposters HTTP/1.1
+<testScenario name='tcp inject example'>
+    <step type='http'>
+<pre><code>POST /imposters HTTP/1.1
 Host: localhost:<%= port %>
 Accept: application/json
 Content-Type: application/json
@@ -32,44 +31,37 @@ Content-Type: application/json
       }]
     }</strong>
   ]
-}
-</code></pre>
+}</code></pre>
+    </step>
 
 <p>The first stub matches if the third byte is greater than 100.  The request we're
 sending is an encoding <code>[99, 100, 101]:</code></p>
 
-<pre><code data-test-id='tcp inject example'
-           data-test-step='2'
-           data-test-type='exec'>
-echo '<strong class='highlight1'>Y2Rl</strong>' | base64 --decode | nc localhost 4555
-</code></pre>
+    <step type='exec'>
+<pre><code>echo '<strong class='highlight1'>Y2Rl</strong>' | base64 --decode | nc localhost 4555</code></pre>
 
-<pre><code data-test-id='tcp inject example'
-           data-test-verify-step='2'>
-<strong class='highlight1'>first response</strong>
-</code></pre>
+        <assertResponse>
+<pre><code><strong class='highlight1'>first response</strong></code></pre>
+        </assertResponse>
+    </step>
 
 <p>The logs will also show the injected log output.  The second predicate has to
 match a request originating from localhost with the third byte less than or equal
 to 100.  We're sending <code>[98, 99, 100]</code>:</p>
 
-<pre><code data-test-id='tcp inject example'
-           data-test-step='3'
-           data-test-type='exec'>
-echo '<strong class='highlight1'>YmNk</strong>' | base64 --decode | nc localhost 4555
-</code></pre>
+    <step type='exec'>
+<pre><code>echo '<strong class='highlight1'>YmNk</strong>' | base64 --decode | nc localhost 4555</code></pre>
 
 <p>...giving the response:</p>
 
-<pre><code data-test-id='tcp inject example'
-           data-test-verify-step='3'>
-second response
-</code></pre>
+        <assertResponse>
+<pre><code>second response</code></pre>
+        </assertResponse>
+    </step>
 
-<code class='hidden' data-test-id='tcp inject example'
-                     data-test-step='4  '
-                     data-test-type='http'>
-DELETE /imposters/4555 HTTP/1.1
+    <step type='http'>
+<code class='hidden'>DELETE /imposters/4555 HTTP/1.1
 Host: localhost:<%= port %>
-Accept: application/json
-</code>
+Accept: application/json</code>
+    </step>
+</testScenario>

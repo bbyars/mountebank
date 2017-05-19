@@ -1,9 +1,8 @@
 <p>Let's create an HTTP imposter with multiple stubs:</p>
 
-<pre><code data-test-id='http deepEquals example'
-           data-test-step='1'
-           data-test-type='http'>
-POST /imposters HTTP/1.1
+<testScenario name='http deepEquals example'>
+    <step type='http'>
+<pre><code>POST /imposters HTTP/1.1
 Host: localhost:<%= port %>
 Accept: application/json
 Content-Type: application/json
@@ -42,87 +41,72 @@ Content-Type: application/json
       }]
     }</strong>
   ]
-}
-</code></pre>
+}</code></pre>
+    </step>
 
 <p>The first predicate matches only a request without a querystring.</p>
 
-<pre><code data-test-id='http deepEquals example'
-           data-test-step='2'
-           data-test-type='http'>
-GET /test HTTP/1.1
-Host: localhost:4556
-</code></pre>
+    <step type='http'>
+<pre><code>GET /test HTTP/1.1
+Host: localhost:4556</code></pre>
 
-<pre><code data-test-id='http deepEquals example'
-           data-test-verify-step='2'
-           data-test-ignore-lines='["^Date"]'>
-HTTP/1.1 200 OK
+        <assertResponse>
+<pre><code>HTTP/1.1 200 OK
 Connection: close
-Date: Thu, 09 Jan 2014 02:30:31 GMT
+Date: <volatile>Thu, 09 Jan 2014 02:30:31 GMT</volatile>
 Transfer-Encoding: chunked
 
-<strong class='highlight1'>first</strong>
-</code></pre>
+<strong class='highlight1'>first</strong></code></pre>
+        </assertResponse>
+    </step>
 
 <p>The second stub matches only if the exact querystring is sent.</p>
 
-<pre><code data-test-id='http deepEquals example'
-           data-test-step='3'
-           data-test-type='http'>
-GET /test?<strong class='highlight2'>First=1</strong> HTTP/1.1
-Host: localhost:4556
-</code></pre>
+    <step type='http'>
+<pre><code>GET /test?<strong class='highlight2'>First=1</strong> HTTP/1.1
+Host: localhost:4556</code></pre>
 
-<pre><code data-test-id='http deepEquals example'
-           data-test-verify-step='3'
-           data-test-ignore-lines='["^Date"]'>
-HTTP/1.1 200 OK
+        <assertResponse>
+<pre><code>HTTP/1.1 200 OK
 Connection: close
-Date: Thu, 09 Jan 2014 02:30:31 GMT
+Date: <volatile>Thu, 09 Jan 2014 02:30:31 GMT</volatile>
 Transfer-Encoding: chunked
 
-<strong class='highlight2'>second</strong>
-</code></pre>
+<strong class='highlight2'>second</strong></code></pre>
+        </assertResponse>
+    </step>
 
 <p>The third stub matches only if both query keys are sent.</p>
 
-<pre><code data-test-id='http deepEquals example'
-           data-test-step='4'
-           data-test-type='http'>
-GET /test?<strong class='highlight3'>Second=2&amp;First=1</strong> HTTP/1.1
-Host: localhost:4556
-</code></pre>
+    <step type='http'>
+<pre><code>GET /test?<strong class='highlight3'>Second=2&amp;First=1</strong> HTTP/1.1
+Host: localhost:4556</code></pre>
 
-<pre><code data-test-id='http deepEquals example'
-           data-test-verify-step='4'
-           data-test-ignore-lines='["^Date"]'>
-HTTP/1.1 200 OK
+        <assertResponse>
+<pre><code>HTTP/1.1 200 OK
 Connection: close
-Date: Thu, 09 Jan 2014 02:30:31 GMT
+Date: <volatile>Thu, 09 Jan 2014 02:30:31 GMT</volatile>
 Transfer-Encoding: chunked
 
-<strong class='highlight3'>third</strong>
-</code></pre>
+<strong class='highlight3'>third</strong></code></pre>
+        </assertResponse>
+    </step>
 
 <p>Any additional query parameters will trigger the default HTTP response.</p>
 
-<pre><code data-test-id='http deepEquals example'
-           data-test-step='5'
-           data-test-type='http'>
-GET /test?Second=2&amp;First=1&amp;Third=3 HTTP/1.1
-Host: localhost:4556
-</code></pre>
+    <step type='http'>
+<pre><code>GET /test?Second=2&amp;First=1&amp;Third=3 HTTP/1.1
+Host: localhost:4556</code></pre>
 
-<pre><code data-test-id='http deepEquals example'
-           data-test-verify-step='5'
-           data-test-ignore-lines='["^Date"]'>
-HTTP/1.1 200 OK
+        <assertResponse>
+<pre><code>HTTP/1.1 200 OK
 Connection: close
-Date: Thu, 09 Jan 2014 02:30:31 GMT
-Transfer-Encoding: chunked
-</code></pre>
+Date: <volatile>Thu, 09 Jan 2014 02:30:31 GMT</volatile>
+Transfer-Encoding: chunked</code></pre>
+        </assertResponse>
+    </step>
 
+    <step type='http'>
 <code class='hidden' data-test-id='http deepEquals example'
                      data-test-step='6'
                      data-test-type='http'>
@@ -131,16 +115,13 @@ Host: localhost:<%= port %>
 Accept: application/json
 </code>
 
-<code class='hidden' data-test-id='http deepEquals example'
-                     data-test-verify-step='6'
-                     data-test-type='http'
-                     data-test-ignore-lines='["^Date", "requestFrom", "timestamp", "Content-Length"]'>
-HTTP/1.1 200 OK
+        <assertResponse>
+<code class='hidden'>HTTP/1.1 200 OK
 Access-Control-Allow-Origin: *
 Vary: Accept
 Content-Type: application/json; charset=utf-8
-Content-Length: 4672
-Date: Sun, 26 Jan 2014 16:34:18 GMT
+Content-Length: <volatile>4672</volatile>
+Date: <volatile>Sun, 26 Jan 2014 16:34:18 GMT</volatile>
 Connection: keep-alive
 
 {
@@ -149,7 +130,7 @@ Connection: keep-alive
   "numberOfRequests": 4,
   "requests": [
     {
-      "requestFrom": "::ffff:127.0.0.1:60438",
+      "requestFrom": "<volatile>::ffff:127.0.0.1:60438</volatile>",
       "method": "GET",
       "path": "/test",
       "query": {},
@@ -159,25 +140,23 @@ Connection: keep-alive
         "Connection": "keep-alive"
       },
       "body": "",
-      "timestamp": "2014-01-26T16:34:18.022Z"
+      "timestamp": "<volatile>2014-01-26T16:34:18.022Z</volatile>"
     },
     {
-      "requestFrom": "::ffff:127.0.0.1:60449",
+      "requestFrom": "<volatile>::ffff:127.0.0.1:60449</volatile>",
       "method": "GET",
       "path": "/test",
-      "query": {
-        "First": "1"
-      },
+      "query": { "First": "1" },
       "headers": {
         "accept": "application/json",
         "Host": "localhost:4556",
         "Connection": "keep-alive"
       },
       "body": "",
-      "timestamp": "2014-01-26T16:34:18.044Z"
+      "timestamp": "<volatile>2014-01-26T16:34:18.044Z</volatile>"
     },
     {
-      "requestFrom": "::ffff:127.0.0.1:60459",
+      "requestFrom": "<volatile>::ffff:127.0.0.1:60459</volatile>",
       "method": "GET",
       "path": "/test",
       "query": {
@@ -190,10 +169,10 @@ Connection: keep-alive
         "Connection": "keep-alive"
       },
       "body": "",
-      "timestamp": "2014-01-26T16:34:18.076Z"
+      "timestamp": "<volatile>2014-01-26T16:34:18.076Z</volatile>"
     },
     {
-      "requestFrom": "::ffff:127.0.0.1:60462",
+      "requestFrom": "<volatile>::ffff:127.0.0.1:60462</volatile>",
       "method": "GET",
       "path": "/test",
       "query": {
@@ -207,30 +186,18 @@ Connection: keep-alive
         "Connection": "keep-alive"
       },
       "body": "",
-      "timestamp": "2014-01-26T16:34:18.080Z"
+      "timestamp": "<volatile>2014-01-26T16:34:18.080Z</volatile>"
     }
   ],
   "stubs": [
     {
-      "responses": [
-        {
-          "is": {
-            "body": "first"
-          }
-        }
-      ],
-      "predicates": [
-        {
-          "deepEquals": {
-            "query": {}
-          }
-        }
-      ],
+      "responses": [{ "is": { "body": "first" } }],
+      "predicates": [{ "deepEquals": { "query": {} } }],
       "matches": [
         {
-          "timestamp": "2014-01-26T16:34:18.336Z",
+          "timestamp": "<volatile>2014-01-26T16:34:18.336Z</volatile>",
           "request": {
-            "requestFrom": "::ffff:127.0.0.1:60438",
+            "requestFrom": "<volatile>::ffff:127.0.0.1:60438</volatile>",
             "method": "GET",
             "path": "/test",
             "query": {},
@@ -243,9 +210,7 @@ Connection: keep-alive
           },
           "response": {
             "statusCode": 200,
-            "headers": {
-              "Connection": "close"
-            },
+            "headers": { "Connection": "close" },
             "body": "first",
             "_mode": "text"
           }
@@ -253,32 +218,16 @@ Connection: keep-alive
       ]
     },
     {
-      "responses": [
-        {
-          "is": {
-            "body": "second"
-          }
-        }
-      ],
-      "predicates": [
-        {
-          "deepEquals": {
-            "query": {
-              "first": "1"
-            }
-          }
-        }
-      ],
+      "responses": [{ "is": { "body": "second" } }],
+      "predicates": [{ "deepEquals": { "query": { "first": "1" } } }],
       "matches": [
         {
-          "timestamp": "2014-01-26T16:34:18.342Z",
+          "timestamp": "<volatile>2014-01-26T16:34:18.342Z</volatile>",
           "request": {
-            "requestFrom": "::ffff:127.0.0.1:60449",
+            "requestFrom": "<volatile>::ffff:127.0.0.1:60449</volatile>",
             "method": "GET",
             "path": "/test",
-            "query": {
-              "First": "1"
-            },
+            "query": { "First": "1" },
             "headers": {
               "accept": "application/json",
               "Host": "localhost:4556",
@@ -288,9 +237,7 @@ Connection: keep-alive
           },
           "response": {
             "statusCode": 200,
-            "headers": {
-              "Connection": "close"
-            },
+            "headers": { "Connection": "close" },
             "body": "second",
             "_mode": "text"
           }
@@ -298,15 +245,8 @@ Connection: keep-alive
       ]
     },
     {
-      "responses": [
-        {
-          "is": {
-            "body": "third"
-          }
-        }
-      ],
-      "predicates": [
-        {
+      "responses": [{ "is": { "body": "third" } }],
+      "predicates": [{
           "deepEquals": {
             "query": {
               "first": "1",
@@ -317,9 +257,9 @@ Connection: keep-alive
       ],
       "matches": [
         {
-          "timestamp": "2014-01-26T16:34:18.345Z",
+          "timestamp": "<volatile>2014-01-26T16:34:18.345Z</volatile>",
           "request": {
-            "requestFrom": "::ffff:127.0.0.1:60459)",
+            "requestFrom": "<volatile>::ffff:127.0.0.1:60459</volatile>",
             "method": "GET",
             "path": "/test",
             "query": {
@@ -335,9 +275,7 @@ Connection: keep-alive
           },
           "response": {
             "statusCode": 200,
-            "headers": {
-              "Connection": "close"
-            },
+            "headers": { "Connection": "close" },
             "body": "third",
             "_mode": "text"
           }
@@ -346,17 +284,16 @@ Connection: keep-alive
     }
   ],
   "_links": {
-    "self": {
-      "href": "http://localhost:<%= port %>/imposters/4556"
-    }
+    "self": { "href": "http://localhost:<%= port %>/imposters/4556" }
   }
 }
 </code>
+        </assertResponse>
+    </step>
 
-<code class='hidden' data-test-id='http deepEquals example'
-                     data-test-step='7'
-                     data-test-type='http'>
-DELETE /imposters/4556 HTTP/1.1
+    <step type='http'>
+<code class='hidden'>DELETE /imposters/4556 HTTP/1.1
 Host: localhost:<%= port %>
-Accept: application/json
-</code>
+Accept: application/json</code>
+    </step>
+</testScenario>
