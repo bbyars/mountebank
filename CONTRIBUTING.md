@@ -5,7 +5,7 @@ contributing to mountebank. The good news is contributing is an easy process. In
 make a difference without writing a single line of code. I am grateful for all of the following contributions:
 
 * Submitting an issue, either through github or the [support page](http://www.mbtest.org/support)
-* Comment on existing issues
+* Commenting on existing issues
 * Answer questions in the [support forum](https://groups.google.com/forum/#!forum/mountebank-discuss)
 * Letting me know that you're using mountebank and how you're using it. It's surprisingly hard to find
 that out with open source projects, and provides healthy motivation. Feel free to email at
@@ -35,7 +35,7 @@ as rewarding an experience as possible.
 ## Designing mountebank
 
 The code in mountebank is now a few years old, and maintaining consistency of design vision
-is key to keeping it maintainable. The following describe key concepts:
+is key to keeping the code maintainable. The following describe key concepts:
 
 ### API changes
 
@@ -52,7 +52,7 @@ is, I hope, friendly for users, but a bit unfriendly for maintainers. I'd love h
 ### Protocol Agnosticism
 
 Most of mountebank is protocol-agnostic, and I consider central to its design. In general, every file
-outside fo the protocol folders (http, tcp, etc) should _not_ reference any of the request or response fields
+outside of the protocol folders (http, tcp, etc) should _not_ reference any of the request or response fields
 (like http bodies). Instead, they should accept generic object structures and deal with them appropriately.
 This includes all of the core logic in mountebank, including predicates, behaviors, and response resolution.
 To help myself maintain that mentality, I often write unit tests that use a different request or response
@@ -152,11 +152,6 @@ There are several linting tools run locally as well:
 * eslint - I have a strict set of rules. Feel free to suggest changes if they interfere with your ability
 to get changes committed, but if not I'd prefer to keep the style consistent.
 * custom code that looks for unused packages and `only` calls left in the codebase
-* A custom `shonkwrapCheck` test, that makes some verifications of the `npm-shrinkwrap.json` file.
-Unfortunately, the standard `npm shrinkwrap` command doesn't work if you want to install mountebank
-behind a repository manager (see [this issue](https://github.com/bbyars/mountebank/issues/141)), which
-makes adding package dependencies to mountebank (or upgrading versions) clumsy. My general workflow
-is to update `package.json`, delete `npm-shrinkwrap.json`, run `npm install`, and then run `node_modules/.bin/shonkwrap`.
 
 ## Testing mountebank
 
@@ -199,7 +194,8 @@ as a separate tool.
 
 You start by writing the docs, with the examples, in the appropriate file in `src/views/docs`.
 Wrap a series of steps in a `testScenario` tag with a `name` attribute to disambiguate it from
-other scenarios on the same page. A step is a request/response pair, where the response is optional,
+other scenarios on the same page (multiple test scenarios on the same page are run in parallel).
+A step is a request/response pair, where the response is optional,
 and is wrapped within a `step` tag. The request and response must be within a `code` element, and
 are usually also wrapped in a `pre` block if they are meant to be visible on the page. To validate
 the response, wrap the response `code` block within an `assertResponse` code block.
@@ -245,8 +241,8 @@ avoid problems of dynamic data, the following transformations are applied before
 with the `Date` header above
 * If you want to display something other than what's tested, you can use the `change` element
 * If you don't want to document the entire response to focus in on the key elements, you can set
-the `partial` attribute on the `assertResponse` element to `true`. The proxies page makes heavy
-use of this feature.
+the `partial` attribute on the `assertResponse` element to `true`. The
+[proxies page](http://www.mbtest.org/docs/api/proxies) makes heavy use of this feature.
 
 You can see an example using the `change` element on the [getting started](http://www.mbtest.org/docs/gettingStarted)
 page. The docs indicate that the default port is 2525, and so it intentionally displays all the
@@ -322,7 +318,7 @@ I use [nvm](https://github.com/creationix/nvm) to install different versions of 
 ### The Continuous Integration Pipeline
 
 Looking at the [README](https://github.com/bbyars/mountebank#build-status) will show that I have a complex CI pipeline.
-Currently it involves Travis CI, Appveyor, and Snap CI, although I may add or remove from that list as I continue to
+Currently it involves Travis CI and Appveyor, although I may add or remove from that list as I continue to
 try and improve the pipeline.  At the moment, a commit will trigger a Travis CI build, which in turn triggers the other
 CI systems through API calls, ensuring a consistent version throughout.  I've had bugs in different operating systems,
 in different versions of node, and in the packages available for download.  The CI system tests as many of those combinations

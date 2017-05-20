@@ -91,7 +91,7 @@ you can contact me directly at brandon.byars@gmail.com.
 |npm                    | v7.8        |[![Build Status][travis-badge]][travis] | (not tested)                         | [![Build Status][travis-badge]][travis] | [![Build status][appveyor-badge]][appveyor] |
 |npm                    | v6.10 (LTS) |[![Build Status][travis-badge]][travis] | (not tested)                         | [![Build Status][travis-badge]][travis] | [![Build status][appveyor-badge]][appveyor] |
 |npm                    | v4.4        |[![Build Status][travis-badge]][travis] | (not tested)                         | [![Build Status][travis-badge]][travis] | [![Build status][appveyor-badge]][appveyor] |
-|OS package             | v6.10       |[![Build Status][travis-badge]][travis] | [![Build Status][snap-badge]][snap]  | [![Build Status][travis-badge]][travis] | N/A                                         |
+|OS package             | v6.10       |[![Build Status][travis-badge]][travis] | (not tested                          | [![Build Status][travis-badge]][travis] | N/A                                         |
 |Self-contained archive | v6.10       |[![Build Status][travis-badge]][travis] | (not tested)                         | [![Build Status][travis-badge]][travis] | [![Build status][appveyor-badge]][appveyor] |
 |(Performance)          | v6.10       |[![Build Status][travis-badge]][travis] | (not tested)                         | (not tested)                            | (not tested)                                |
 
@@ -133,5 +133,3 @@ Feel free to reach me at brandon.byars@gmail.com.
 [travis]: https://travis-ci.org/bbyars/mountebank
 [appveyor-badge]: https://ci.appveyor.com/api/projects/status/acfhg44px95s4pk5?svg=true
 [appveyor]: https://ci.appveyor.com/project/bbyars/mountebank
-[snap-badge]: https://img.shields.io/snap-ci/bbyars/mountebank/master.svg
-[snap]: https://snap-ci.com/bbyars/mountebank/branch/master
