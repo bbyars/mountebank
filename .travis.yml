@@ -61,9 +61,21 @@ matrix:
         - NODE_VERSION=7.10.0
         - MB_RUN_WEB_TESTS=true
     - os: linux
-      sudo: false
+      dist: trusty
+      sudo: required
+      addons:
+        sonarqube:
+          organization: github-bbyars
+        token:
+          secure: "CwfsPXI4jWc9BHAidZ/EoIJv0bLVStwTe0Du6Jgr9dYcMiXF5RGn0/TfJqNoR16ANrfoQPA01QyCQC/p8+eaeUaTB84JknHd8ksIzJ2KwxtFQY2J+k5RpuqZA/0tz8FYhtREpjJkF7kGVpzMLh1s/ldCoHhK1K9/tVCKyqRcMEs="
+      jdk:
+        - oraclejdk8
       env:
         - NODE_VERSION=7.10.0
+        - SONAR=true
+      cache:
+        directories:
+        - '$HOME/.sonar/cache'
     - os: linux
       sudo: false
       env:
@@ -93,3 +105,5 @@ script:
   - echo "MB_DEPLOY - $MB_DEPLOY"
   - echo "MB_PUBLISH - $MB_PUBLISH"
   - ./build $MB_GRUNT_TASK
+  - [[ "$SONAR" = "true" ]] && sonar-scanner
+
