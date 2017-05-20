@@ -2,6 +2,19 @@
 # gives a lot more control over testing packaging options
 language: ruby
 
+#dist: trusty
+
+addons:
+  sonarqube:
+    organization: "github-bbyars"
+    token:
+      secure: "CwfsPXI4jWc9BHAidZ/EoIJv0bLVStwTe0Du6Jgr9dYcMiXF5RGn0/TfJqNoR16ANrfoQPA01QyCQC/p8+eaeUaTB84JknHd8ksIzJ2KwxtFQY2J+k5RpuqZA/0tz8FYhtREpjJkF7kGVpzMLh1s/ldCoHhK1K9/tVCKyqRcMEs="
+jdk:
+  - oraclejdk8
+cache:
+  directories:
+    - '$HOME/.sonar/cache'
+
 env:
   global:
     - MB_SLOW_TEST_TIMEOUT=6000
@@ -63,19 +76,9 @@ matrix:
     - os: linux
       dist: trusty
       sudo: required
-      addons:
-        sonarqube:
-          organization: github-bbyars
-        token:
-          secure: "CwfsPXI4jWc9BHAidZ/EoIJv0bLVStwTe0Du6Jgr9dYcMiXF5RGn0/TfJqNoR16ANrfoQPA01QyCQC/p8+eaeUaTB84JknHd8ksIzJ2KwxtFQY2J+k5RpuqZA/0tz8FYhtREpjJkF7kGVpzMLh1s/ldCoHhK1K9/tVCKyqRcMEs="
-      jdk:
-        - oraclejdk8
       env:
         - NODE_VERSION=7.10.0
         - SONAR=true
-      cache:
-        directories:
-        - '$HOME/.sonar/cache'
     - os: linux
       sudo: false
       env:
