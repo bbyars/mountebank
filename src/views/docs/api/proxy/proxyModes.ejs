@@ -263,6 +263,56 @@ and sending the payload in a call <a href='/docs/api/overview#put-imposters'>
 been removed. Only the saved responses will be used.</p>
 
     <step type='http'>
+<code class='hidden'>GET /imposters/4000?replayable=true&removeProxies=true
+Host: localhost: <%= port %>
+Accept: application/json</code>
+
+        <assertResponse>
+<code class='hidden'>HTTP/1.1 200 OK
+Access-Control-Allow-Origin: *
+Vary: Accept
+Content-Type: application/json; charset=utf-8
+Content-Length: 869
+Date: <volatile>Sat, 20 May 2017 14:43:12 GMT</volatile>
+Connection: keep-alive
+
+{
+  "protocol": "http",
+  "port": 4000,
+  "stubs": [{
+    "predicates": [{ "deepEquals": { "path": "/test" } }],
+    "responses": [
+      {
+        "is": {
+          "statusCode": 200,
+          "headers": {
+            "Connection": "close",
+            "Date": "<volatile>Sat, 20 May 2017 14:43:12 GMT</volatile>",
+            "Transfer-Encoding": "chunked"
+          },
+          "body": "Request number 1",
+          "_mode": "text"
+        }
+      },
+      {
+        "is": {
+          "statusCode": 200,
+          "headers": {
+            "Connection": "close",
+            "Date": "<volatile>Sat, 20 May 2017 14:43:12 GMT</volatile>",
+            "Transfer-Encoding": "chunked"
+          },
+          "body": "Request number 2",
+          "_mode": "text"
+        }
+      }
+    ]
+  }]
+}</code>
+        </assertResponse>
+    </step>
+
+    <step type='http'>
 <code class='hidden'>DELETE /imposters/4000 HTTP/1.1
 Host: localhost:<%= port %>
 Accept: application/json</code>
@@ -359,5 +409,4 @@ Accept: application/json</code>
 Host: localhost:<%= port %>
 Accept: application/json</code>
     </step>
-
 </testScenario>

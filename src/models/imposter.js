@@ -56,10 +56,17 @@ function create (Protocol, request) {
             }
 
             function removeNonEssentialInformationFrom (result) {
+                var helpers = require('../util/helpers');
                 result.stubs.forEach(function (stub) {
+                    /* eslint-disable no-underscore-dangle */
                     if (stub.matches) {
                         delete stub.matches;
                     }
+                    stub.responses.forEach(function (response) {
+                        if (helpers.defined(response.is) && helpers.defined(response.is._proxyResponseTime)) {
+                            delete response.is._proxyResponseTime;
+                        }
+                    });
                 });
                 delete result.numberOfRequests;
                 delete result.requests;
