@@ -376,7 +376,7 @@ var assert = require('assert'),
             promiseIt('should handle null values in deepEquals predicate (issue #229)', function () {
                 var stub = {
                         predicates: [{ deepEquals: { body: { field: null } } }],
-                        responses: [{ is: { body: 'Matched' } }]
+                        responses: [{ is: { body: 'SUCCESS' } }]
                     },
                     request = { protocol: protocol, port: port, stubs: [stub], name: this.name };
 
@@ -384,7 +384,7 @@ var assert = require('assert'),
                     assert.strictEqual(201, response.statusCode, JSON.stringify(response.body, null, 2));
                     return client.post('/', { field: null }, port);
                 }).then(function (response) {
-                    assert.strictEqual(response.body, 'Matched');
+                    assert.strictEqual(response.body, 'SUCCESS');
                 }).finally(function () {
                     return api.del('/imposters');
                 });
@@ -404,6 +404,23 @@ var assert = require('assert'),
                 return api.post('/imposters', request).then(function (response) {
                     assert.strictEqual(response.statusCode, 201);
                     return client.post('/', xml, port);
+                }).then(function (response) {
+                    assert.strictEqual(response.body, 'SUCCESS');
+                }).finally(function () {
+                    return api.del('/imposters');
+                });
+            });
+
+            promiseIt('should support matches predicate on uppercase JSON key (issue #228)', function () {
+                var stub = {
+                        predicates: [{ matches: { body: { Key: '^Value' } } }],
+                        responses: [{ is: { body: 'SUCCESS' } }]
+                    },
+                    request = { protocol: protocol, port: port, stubs: [stub], name: this.name };
+
+                return api.post('/imposters', request).then(function (response) {
+                    assert.strictEqual(response.statusCode, 201);
+                    return client.post('/', { Key: 'Value' }, port);
                 }).then(function (response) {
                     assert.strictEqual(response.body, 'SUCCESS');
                 }).finally(function () {

@@ -102,7 +102,7 @@ describe('predicates', function () {
             assert.ok(!predicates.evaluate(predicate, request));
         });
 
-        it('should be case insensitive for object keys by default (issue 169)', function () {
+        it('should be case insensitive for object keys by default (issue #169)', function () {
             var predicate = { matches: { headers: { field: 'end$' } } },
                 request = { headers: { FIELD: 'begin middle end' } };
             assert.ok(predicates.evaluate(predicate, request));

@@ -140,25 +140,29 @@ function normalize (obj, config, encoding, withSelectors) {
     return transformAll(obj);
 }
 
-function tryJSON (value) {
+function tryJSON (value, predicateConfig) {
     try {
-        return JSON.parse(value);
+        var json = JSON.parse(value);
+        if (predicateConfig) {
+            json = normalize(json, predicateConfig, 'utf8', true);
+        }
+        return json;
     }
     catch (e) {
         return value;
     }
 }
 
-function testPredicate (predicate, expected, actual) {
+function testPredicate (expected, actual, predicateConfig, predicateFn) {
     var helpers = require('../util/helpers');
     if (!helpers.defined(actual)) {
         actual = '';
     }
     if (typeof expected === 'object') {
-        return predicateSatisfied(expected, actual, predicate);
+        return predicateSatisfied(expected, actual, predicateConfig, predicateFn);
     }
     else {
-        return predicate(expected, actual);
+        return predicateFn(expected, actual);
     }
 }
 
@@ -166,10 +170,10 @@ function bothArrays (expected, actual) {
     return Array.isArray(actual) && Array.isArray(expected);
 }
 
-function allExpectedArrayValuesMatchActualArray (predicate, expectedArray, actualArray) {
+function allExpectedArrayValuesMatchActualArray (expectedArray, actualArray, predicateConfig, predicateFn) {
     return expectedArray.every(function (expectedValue) {
         return actualArray.some(function (actualValue) {
-            return testPredicate(predicate, expectedValue, actualValue);
+            return testPredicate(expectedValue, actualValue, predicateConfig, predicateFn);
         });
     });
 }
@@ -178,9 +182,9 @@ function onlyActualIsArray (expected, actual) {
     return Array.isArray(actual) && !Array.isArray(expected);
 }
 
-function expectedMatchesAtLeastOneValueInActualArray (predicate, expected, actualArray) {
+function expectedMatchesAtLeastOneValueInActualArray (expected, actualArray, predicateConfig, predicateFn) {
     return actualArray.some(function (actual) {
-        return testPredicate(predicate, expected, actual);
+        return testPredicate(expected, actual, predicateConfig, predicateFn);
     });
 }
 
@@ -189,22 +193,24 @@ function expectedLeftOffArraySyntaxButActualIsArrayOfObjects (expected, actual, 
     return !Array.isArray(expected[fieldName]) && !helpers.defined(actual[fieldName]) && Array.isArray(actual);
 }
 
-function predicateSatisfied (expected, actual, predicate) {
+function predicateSatisfied (expected, actual, predicateConfig, predicateFn) {
     if (!actual) {
         return false;
     }
 
     // Support predicates that reach into fields encoded in JSON strings (e.g. HTTP bodies)
     if (typeof actual === 'string') {
-        actual = tryJSON(actual);
+        actual = tryJSON(actual, predicateConfig);
     }
 
     return Object.keys(expected).every(function (fieldName) {
         if (bothArrays(expected[fieldName], actual[fieldName])) {
-            return allExpectedArrayValuesMatchActualArray(predicate, expected[fieldName], actual[fieldName]);
+            return allExpectedArrayValuesMatchActualArray(
+                expected[fieldName], actual[fieldName], predicateConfig, predicateFn);
         }
         else if (onlyActualIsArray(expected[fieldName], actual[fieldName])) {
-            return expectedMatchesAtLeastOneValueInActualArray(predicate, expected[fieldName], actual[fieldName]);
+            return expectedMatchesAtLeastOneValueInActualArray(
+                expected[fieldName], actual[fieldName], predicateConfig, predicateFn);
         }
         else if (expectedLeftOffArraySyntaxButActualIsArrayOfObjects(expected, actual, fieldName)) {
             // This is a little confusing, but predated the ability for users to specify an
@@ -215,13 +221,13 @@ function predicateSatisfied (expected, actual, predicate) {
             //     { examples: '[{ "key": "first" }, { "different": true }, { "key": "third" }]' }
             // We expect that the "key" field in the predicate definition matches any object key
             // in the actual array
-            return expectedMatchesAtLeastOneValueInActualArray(predicate, expected, actual);
+            return expectedMatchesAtLeastOneValueInActualArray(expected, actual, predicateConfig, predicateFn);
         }
         else if (typeof expected[fieldName] === 'object') {
-            return predicateSatisfied(expected[fieldName], actual[fieldName], predicate);
+            return predicateSatisfied(expected[fieldName], actual[fieldName], predicateConfig, predicateFn);
         }
         else {
-            return testPredicate(predicate, expected[fieldName], actual[fieldName]);
+            return testPredicate(expected[fieldName], actual[fieldName], predicateConfig, predicateFn);
         }
     });
 }
@@ -231,7 +237,7 @@ function create (operator, predicateFn) {
         var expected = normalize(predicate[operator], predicate, encoding, false),
             actual = normalize(request, predicate, encoding, true);
 
-        return predicateSatisfied(expected, actual, predicateFn);
+        return predicateSatisfied(expected, actual, predicate, predicateFn);
     };
 }
 
@@ -243,7 +249,8 @@ function deepEquals (predicate, request, encoding) {
     return Object.keys(expected).every(function (fieldName) {
         // Support predicates that reach into fields encoded in JSON strings (e.g. HTTP bodies)
         if (typeof expected[fieldName] === 'object' && typeof actual[fieldName] === 'string') {
-            actual[fieldName] = normalize(forceStrings(tryJSON(actual[fieldName])), predicate, encoding, false);
+            var possibleJSON = tryJSON(actual[fieldName], predicate);
+            actual[fieldName] = normalize(forceStrings(possibleJSON), predicate, encoding, false);
         }
         return stringify(expected[fieldName]) === stringify(actual[fieldName]);
     });
@@ -266,7 +273,7 @@ function matches (predicate, request, encoding) {
         throw errors.ValidationError('the matches predicate is not allowed in binary mode');
     }
 
-    return predicateSatisfied(expected, actual, function (a, b) { return new RegExp(a, options).test(b); });
+    return predicateSatisfied(expected, actual, clone, function (a, b) { return new RegExp(a, options).test(b); });
 }
 
 function not (predicate, request, encoding, logger) {

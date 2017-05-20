@@ -219,5 +219,35 @@ describe('predicates', function () {
                 request = { examples: '[{ "key": "first" }, { "key": "second" }]' };
             assert.ok(predicates.evaluate(predicate, request));
         });
+
+        it('#matches should support upper case object key in JSON body (issue #228)', function () {
+            var predicate = { matches: { body: { Key: '^Value' } } },
+                request = { body: '{ "Key": "Value" }' };
+            assert.ok(predicates.evaluate(predicate, request));
+        });
+
+        it('#matches should support case-insensitive key matching in JSON body', function () {
+            var predicate = { matches: { body: { KEY: '^Value' } } },
+                request = { body: '{ "Key": "Value" }' };
+            assert.ok(predicates.evaluate(predicate, request));
+        });
+
+        it('#matches should support case sensitive key matching in JSON body is case sensitive configured', function () {
+            var predicate = { matches: { body: { KEY: '^Value' } }, caseSensitive: true },
+                request = { body: '{ "Key": "Value" }' };
+            assert.ok(!predicates.evaluate(predicate, request));
+        });
+
+        it('#deepEquals should support case-insensitive key in JSON body', function () {
+            var predicate = { deepEquals: { body: { KEY: 'Value' } } },
+                request = { body: '{ "Key": "value" }' };
+            assert.ok(predicates.evaluate(predicate, request));
+        });
+
+        it('#deepEquals should support case-sensitive key in JSON body if case sensitive configured', function () {
+            var predicate = { deepEquals: { body: { KEY: 'Value' } }, caseSensitive: true },
+                request = { body: '{ "Key": "value" }' };
+            assert.ok(!predicates.evaluate(predicate, request));
+        });
     });
 });
