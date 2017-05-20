@@ -373,6 +373,23 @@ var assert = require('assert'),
                 });
             });
 
+            promiseIt('should handle null values in deepEquals predicate (issue #229)', function () {
+                var stub = {
+                        predicates: [{ deepEquals: { body: { field: null } } }],
+                        responses: [{ is: { body: 'Matched' } }]
+                    },
+                    request = { protocol: protocol, port: port, stubs: [stub], name: this.name };
+
+                return api.post('/imposters', request).then(function (response) {
+                    assert.strictEqual(201, response.statusCode, JSON.stringify(response.body, null, 2));
+                    return client.post('/', { field: null }, port);
+                }).then(function (response) {
+                    assert.strictEqual(response.body, 'Matched');
+                }).finally(function () {
+                    return api.del('/imposters');
+                });
+            });
+
             promiseIt('should support array predicates with xpath', function () {
                 var stub = {
                         responses: [{ is: { body: 'SUCCESS' } }],

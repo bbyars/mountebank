@@ -33,6 +33,9 @@ function forceStrings (obj) {
             if (Array.isArray(obj[key])) {
                 result[key] = obj[key].map(forceStrings);
             }
+            else if (obj[key] === null) {
+                result[key] = 'null';
+            }
             else if (typeof obj[key] === 'object') {
                 result[key] = forceStrings(obj[key]);
             }
