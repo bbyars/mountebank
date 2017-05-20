@@ -31,7 +31,9 @@
     "Stephen Tkac",
     "Gabriel Kohen",
     "Kevin Pouget <kpouget@altair.com>",
-    "Agnibrata Nayak"
+    "Agnibrata Nayak",
+    "Nassim Kirouane <nassim.kirouane@inovia-team.com>",
+    "Jamie Geddes <jamie@clumsypenguin.com>"
   ],
   "description": "Over the wire test doubles",
   "homepage": "http://www.mbtest.org",
