@@ -247,11 +247,11 @@ system provides and play it back with the appropriate predicates. The only addit
 complexity with <code>proxyAlways</code> is that <em>you have to explicitly switch to
 replay mode.</em> Conceptually, replaying is as simple as removing the proxies. The easiest
 way to do that is by using the <a href='/docs/commandLine'><code>mb replay</code></a>
-command, passing in the same command line options you used to start mountebank. If,
-for example, we had previously started mountebank on port 3535 with injection enabled,
+command, passing in the port if you're using a nonstandard port for running <code>mb</code>. If,
+for example, we had previously started mountebank on port 3535,
 we could switch to replay mode with the following call:</p>
 
-<pre><code>mb replay --allowInjection -port 3535</code></pre>
+<pre><code>mb replay --port 3535</code></pre>
 
 <p class='info-icon'>As always, there's more than one way to do it. You can instead use the API,
 retrieving all imposters with a call to
