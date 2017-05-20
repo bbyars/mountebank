@@ -23,7 +23,7 @@ matrix:
         - NODE_VERSION=6.10.3
         - MB_GRUNT_TASK='test:tarball:x64 deploy:s3 jsdoc deploy:docs'
         # FIREBASE_TOKEN
-        - secure: "oR1zfGWOPS3lHeLj4A7VEn7AqksoErEF94nekwB/R7bFyV81Eaa6LMgnv/u20At1a1SXUFBO/nWFH5TuZWNRScbxpZB3g1GfXQva1RYsOeHOwzbVJFVyAat4p0Om5czU/NT4jCTXu8bUrHnq0GIwVtFpa1rjqEuw94pvOxa20/0="
+        - secure: "uplPVyZC7fd3aMDXh46+IrjXCaA7r0VRZplnhSOzATtgZQjSlqHdgLGCXOw+j14oLgsyMNe5AHy9B9TV2xxt6ZDpKNoeAdk2vxPJpVatXD6Cs9jypuiDRq0Nlf8PiBPARucBK6qyR/YF8WvrG+MxahzB373j13YBQ/7rojugnaE="
     - os: linux
       sudo: true
       env:

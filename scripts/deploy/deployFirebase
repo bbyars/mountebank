@@ -6,12 +6,9 @@ VERSION=$1
 
 echo "Deploying to Firebase..."
 
-npm install -g firebase-tools@^2.1
 cp firebase.json docs/mountebank/$VERSION
 
 (
 cd docs/mountebank/$VERSION
-ls -al
-echo $FIREBASE_TOKEN
-firebase deploy --token "$FIREBASE_TOKEN"
+../../../node_modules/.bin/firebase deploy --token "$FIREBASE_TOKEN"
 )

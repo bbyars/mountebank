@@ -89,6 +89,7 @@
   "devDependencies": {
     "codeclimate-test-reporter": "^0.4.1",
     "coveralls": "~2.13.0",
+    "firebase-tools": "^3.9.0",
     "fs-extra": "~3.0.0",
     "grunt": "^1.0.1",
     "grunt-cli": "^1.2.0",
@@ -108,7 +109,9 @@
     "w3cjs": "~0.3.0"
   },
   "greenkeeper": {
-    "ignore": ["mailparser"]
+    "ignore": [
+      "mailparser"
+    ]
   },
   "engines": {
     "node": ">=4.0"
