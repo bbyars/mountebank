@@ -66,9 +66,9 @@ source developers, and they are legion.
 
 mountebank is used by a large number of companies and I think it's important to convey my best guess as to what
 the feature roadmap is. I've adopted github tools to manage the roadmap. Specifically, the
-[projects](https://github.com/bbyars/mountebank/projects) page shows the features by release. The release names
-match the versions I show in the [milestones](https://github.com/bbyars/mountebank/milestones) page, which
-gives expected dates.
+[Roadmap project](https://github.com/bbyars/mountebank/projects/9) page shows the features by release. I generally
+re-prioritize and update the ETAs each release. I'm in the middle of writing the mountebank book at the moment too,
+so please be patient.
 
 Visit the [Google group](https://groups.google.com/forum/#!forum/mountebank-discuss)
 for any support questions.  Don't be shy!
