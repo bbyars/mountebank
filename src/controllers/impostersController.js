@@ -183,7 +183,7 @@ function create (protocols, imposters, Imposter, logger) {
         var Q = require('q'),
             requestImposters = request.body.imposters || [],
             validationPromises = requestImposters.map(function (imposter) {
-                return validate(imposter, logger);
+                return validate(imposter);
             });
 
         logger.debug(requestDetails(request));
