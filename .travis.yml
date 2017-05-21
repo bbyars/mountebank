@@ -96,5 +96,5 @@ script:
   - echo "MB_DEPLOY - $MB_DEPLOY"
   - echo "MB_PUBLISH - $MB_PUBLISH"
   - ./build $MB_GRUNT_TASK
-  - test "$SONAR" = "true" && scripts/sonar
+  - if [[ "$SONAR" = "true" ]]; then scripts/sonar; fi
 
