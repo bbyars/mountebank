@@ -82,11 +82,19 @@ function orderIndependent (possibleArray) {
     }
 }
 
+function transformObject (obj, transform) {
+    Object.keys(obj).forEach(function (key) {
+        obj[key] = transform(obj[key]);
+    });
+    return obj;
+}
+
 function selectXPath (config, caseTransform, encoding, text) {
     var xpath = require('./xpath'),
         combinators = require('../util/combinators'),
-        ns = normalize(config.ns, {}, 'utf8'),
+        ns = transformObject(config.ns || {}, caseTransform),
         selectFn = combinators.curry(xpath.select, caseTransform(config.selector), ns, text);
+
     return orderIndependent(select('xpath', selectFn, encoding));
 }
 
