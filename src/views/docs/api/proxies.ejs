@@ -48,12 +48,6 @@ in newly created <code>predicates</code>.</p>
         recorded. See <a href='#modes'>below</a> for details.</td>
   </tr>
   <tr>
-    <td><code>injectHeaders</code></td>
-    <td><code>{}</code></td>
-    <td>object</td>
-    <td>Key-value pairs of headers to inject into the proxied <i>request</i>./td>
-  </tr>
-  <tr>
     <td><code>addWaitBehavior</code></td>
     <td><code>false</code></td>
     <td>boolean</td>
@@ -72,7 +66,8 @@ in newly created <code>predicates</code>.</p>
 </table>
 
 <p>http and https proxies add three additional optional parameters for situations where the
-origin server expects to use mutual authentication and will request a client certificate:</p>
+origin server expects to use mutual authentication and will request a client certificate, or
+for when you need to change the proxied request headers:</p>
 
 <table>
   <tr>
@@ -98,6 +93,12 @@ origin server expects to use mutual authentication and will request a client cer
     <td><code>ALL</code></td>
     <td>A valid cipher (see <a href='http://openssl.cs.utah.edu/docs/apps/ciphers.html'>this page</a> for formats)</td>
     <td>For older (and insecure) https servers, this field allows you to override the cipher used to commuicate</td>
+  </tr>
+  <tr>
+    <td><code>injectHeaders</code></td>
+    <td><code>{}</code></td>
+    <td>object</td>
+    <td>Key-value pairs of headers to inject into the proxied <i>request</i>.</td>
   </tr>
 </table>
 
@@ -126,13 +127,6 @@ response. Setting the <code>addWaitBehavior</code> flag will add that latency to
     </section>
   </div>
   <div>
-    <input id='proxy-inject-headers' name='proxy-inject-headers' type="checkbox" />
-    <label for='proxy-inject-headers'>Changing the proxied request headers with injectHeaders</label>
-    <section>
-      <% include proxy/injectHeaders %>
-    </section>
-  </div>
-  <div>
     <input id='proxy-add-wait-behavior' name='proxy-add-wait-behavior' type="checkbox" />
     <label for='proxy-add-wait-behavior'>Adding latency to the saved responses with addWaitBehavior</label>
     <section>
@@ -144,6 +138,13 @@ response. Setting the <code>addWaitBehavior</code> flag will add that latency to
     <label for='proxy-add-decorate-behavior'>Decorating saved responses with addDecorateBehavior</label>
     <section>
       <% include proxy/addDecorateBehavior %>
+    </section>
+  </div>
+  <div>
+    <input id='proxy-inject-headers' name='proxy-inject-headers' type="checkbox" />
+    <label for='proxy-inject-headers'>Changing the proxied request headers with injectHeaders</label>
+    <section>
+      <% include proxy/injectHeaders %>
     </section>
   </div>
 </section>
