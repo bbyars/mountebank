@@ -91,6 +91,10 @@ function create (logger) {
             return true;
         }
 
+        if (contentType === 'application/pdf') {
+            return true;
+        }
+
         return ['audio', 'image', 'video'].some(function (typeName) {
             return contentType.indexOf(typeName) === 0;
         });
