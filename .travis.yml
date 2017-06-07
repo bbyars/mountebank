@@ -42,8 +42,6 @@ jobs:
         - secure: "BQunTTpCSGjhIYiBAXKxuuOluJIhKXdW/94GCsPlK1N8Ln20/nj/0U4qnSH7yASWQWssVG4ttm/cAbjfi+3DS4KDLtBGK1i3IoM+cJ2ADCeG7BHsqJDB0f9JyAkULjIRdkqilzR/tyD+w78pPHd7QbfplLvqUcnt7HVxw9lp4PY="
         # NPM_API_KEY
         - secure: "IEfctrje4QulHyavIMZYnxljU4XvpMnLR8TzCU8ozeQbdoIOq3/WqBl53Mou2Ie65YAbcMNfLmAvXWgNiKR2jE+K9tOyXsIj+Wbrr4b6X1FHqjkTLw8OCcLFD7kO/aptEOzsTZWbpJKao3mtcshHWWiFeeRDANYK6QMSYwoVNLc="
-        # SNAPCI_API_KEY
-        - secure: "AuiPAwCsw2q2xCu765d+jWdM7Hf0bKRfjN0Uwofv1ONUSWvbHDVbfK5GcJqGWvE0surDovgmWdPr9nUJxyUVQ4ONOWn3afQXvrBqXPoPjPuhXhnYNwa1HuH2GmpbL6WnmEJJCvqgw6KUVW3YJeUO+IUVQdfgkJxBYBXAuzkZ+oA="
     - script: ./build test:tarball:x64 dist:tarball:x86 deploy:s3 coveralls codeclimate
       os: linux
       sudo: false
