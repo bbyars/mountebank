@@ -12,38 +12,31 @@ jobs:
   include:
 # Test stage
     - stage: test
-      script: ./build trigger:appveyor
+      script: ./build trigger:appveyor waitFor:appveyor
       os: linux
       sudo: false
     - script: ./build test:pkg deploy:s3
       os: osx
       sudo: true
-      env:
-        - NODE_VERSION=6.10.3
     - script: ./build test:tarball:x64 deploy:s3 jsdoc deploy:docs
       os: osx
       sudo: false
       env:
-        - NODE_VERSION=6.10.3
         # FIREBASE_TOKEN
         - secure: "uplPVyZC7fd3aMDXh46+IrjXCaA7r0VRZplnhSOzATtgZQjSlqHdgLGCXOw+j14oLgsyMNe5AHy9B9TV2xxt6ZDpKNoeAdk2vxPJpVatXD6Cs9jypuiDRq0Nlf8PiBPARucBK6qyR/YF8WvrG+MxahzB373j13YBQ/7rojugnaE="
     - script: ./build test:performance
       os: linux
       sudo: true
-      env:
-        - NODE_VERSION=6.10.3
     - script: ./build test:npm dist:zip:x64 dist:zip:x86 deploy:s3
       os: linux
       sudo: false
       env:
-        - NODE_VERSION=6.10.3
         # APPVEYOR_API_TOKEN
         - secure: "A4hhAF4npjjpiV+X6u1dt4sHYUDLyB+0mIdovXSbR/eh1jTn1ZnaCwZD8G248N+yf5Kj1jTsUUzT4mxkWSO9uzxA93W7CimLH7iBjPVyOEemuXBlBqxPJAAweB6BhiGpiuPZk2SeC0SVa+gwC+KL3oy/PW4dz8Q5ytL/IE9b3/o="
     - script: ./build test:deb dist:package:rpm deploy:s3
       os: linux
       sudo: true
       env:
-        - NODE_VERSION=6.10.3
         - MB_INSTALL_RPM=true
         # HEROKU_API_KEY
         - secure: "BQunTTpCSGjhIYiBAXKxuuOluJIhKXdW/94GCsPlK1N8Ln20/nj/0U4qnSH7yASWQWssVG4ttm/cAbjfi+3DS4KDLtBGK1i3IoM+cJ2ADCeG7BHsqJDB0f9JyAkULjIRdkqilzR/tyD+w78pPHd7QbfplLvqUcnt7HVxw9lp4PY="
@@ -55,7 +48,6 @@ jobs:
       os: linux
       sudo: false
       env:
-        - NODE_VERSION=6.10.3
         # CODECLIMATE_REPO_TOKEN
         - secure: "jjJxl1G93oo4cZScpkizdmq142IkK749Ul/4CrpyIwOB80xVVOD/DWyFelCxQ0F/nOt150YOAc1w9UHI8fgY1goAk6cHP/ipzkZ9NIO4x/SjUl0XkWTW7T/riGzn6R+SbjRmWJwbszp4wmwIQj8lAekvYlmvMOR1QpNzBJ4K4x4="
     - script: ./build
@@ -94,6 +86,7 @@ jobs:
       sudo: false
 
 install:
+  - export NODE_VERSION=${NODE_VERSION:-6.10.3} # Default node version = LTS version
   - rm -rf ~/.nvm
   - git clone https://github.com/creationix/nvm.git ~/.nvm
   - source ~/.nvm/nvm.sh
