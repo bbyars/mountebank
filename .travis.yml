@@ -15,6 +15,9 @@ jobs:
       script: ./build trigger:appveyor waitFor:appveyor
       os: linux
       sudo: false
+      env:
+        # APPVEYOR_API_TOKEN
+        - secure: "A4hhAF4npjjpiV+X6u1dt4sHYUDLyB+0mIdovXSbR/eh1jTn1ZnaCwZD8G248N+yf5Kj1jTsUUzT4mxkWSO9uzxA93W7CimLH7iBjPVyOEemuXBlBqxPJAAweB6BhiGpiuPZk2SeC0SVa+gwC+KL3oy/PW4dz8Q5ytL/IE9b3/o="
     - script: ./build test:pkg deploy:s3
       os: osx
       sudo: true
@@ -30,9 +33,6 @@ jobs:
     - script: ./build test:npm dist:zip:x64 dist:zip:x86 deploy:s3
       os: linux
       sudo: false
-      env:
-        # APPVEYOR_API_TOKEN
-        - secure: "A4hhAF4npjjpiV+X6u1dt4sHYUDLyB+0mIdovXSbR/eh1jTn1ZnaCwZD8G248N+yf5Kj1jTsUUzT4mxkWSO9uzxA93W7CimLH7iBjPVyOEemuXBlBqxPJAAweB6BhiGpiuPZk2SeC0SVa+gwC+KL3oy/PW4dz8Q5ytL/IE9b3/o="
     - script: ./build test:deb dist:package:rpm deploy:s3
       os: linux
       sudo: true
