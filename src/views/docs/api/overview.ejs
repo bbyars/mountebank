@@ -89,40 +89,31 @@ exists for those who aspire to the
 <a href='http://martinfowler.com/articles/richardsonMaturityModel.html'>upper echelons of REST</a>,
 though they may be disappointed at the lack of URLs for relationships.</p>
 
-<pre><code data-test-id='home'
-           data-test-step='1'
-           data-test-type='http'>
-GET / HTTP/1.1
+<testScenario name='home'>
+    <step type='http'>
+<pre><code>GET / HTTP/1.1
 Host: localhost:<%= port %>
-Accept: application/json
-</code></pre>
+Accept: application/json</code></pre>
 
-<pre><code data-test-id='home'
-           data-test-verify-step='1'
-           data-test-ignore-lines='["^Date"]'>
-HTTP/1.1 200 OK
+        <assertResponse>
+<pre><code>HTTP/1.1 200 OK
 Access-Control-Allow-Origin: *
 Vary: Accept
 Content-Type: application/json; charset=utf-8
 Content-Length: 226
-Date: Sun, 05 Jan 2014 16:16:08 GMT
+Date: <volatile>Sun, 05 Jan 2014 16:16:08 GMT</volatile>
 Connection: keep-alive
 
 {
   "_links": {
-    "imposters": {
-      "href": "http://localhost:<%= port %>/imposters"
-    },
-    "config": {
-      "href": "http://localhost:<%= port %>/config"
-    },
-    "logs": {
-      "href": "http://localhost:<%= port %>/logs"
-    }
+    "imposters": { "href": "http://localhost:<%= port %>/imposters" },
+    "config": { "href": "http://localhost:<%= port %>/config" },
+    "logs": { "href": "http://localhost:<%= port %>/logs" }
   }
-}
-</code></pre>
-
+}</code></pre>
+        </assertResponse>
+    </step>
+</testScenario>
 
 <h3 id='post-imposters'>Create a single imposter</h3>
 
@@ -148,10 +139,9 @@ port.  However, the port is not required, and if you do not include it in the
 request, mountebank will randomly assign one for you and return the port number
 in the response.</p>
 
-<pre><code data-test-id='imposters'
-           data-test-step='1'
-           data-test-type='http'>
-POST /imposters HTTP/1.1
+<testScenario name='imposters'>
+    <step type='http'>
+<pre><code>POST /imposters HTTP/1.1
 Host: localhost:<%= port %>
 Accept: application/json
 Content-Type: application/json
@@ -159,18 +149,15 @@ Content-Type: application/json
 {
   "port": 4545,
   "protocol": "http"
-}
-</code></pre>
+}</code></pre>
 
-<pre><code data-test-id='imposters'
-           data-test-verify-step='1'
-           data-test-ignore-lines='["^Date"]'>
-HTTP/1.1 201 Created
+        <assertResponse>
+<pre><code>HTTP/1.1 201 Created
 Access-Control-Allow-Origin: *
 Location: http://localhost:<%= port %>/imposters/4545
 Content-Type: application/json; charset=utf-8
 Content-Length: 190
-Date: Sun, 05 Jan 2014 16:28:40 GMT
+Date: <volatile>Sun, 05 Jan 2014 16:28:40 GMT</volatile>
 Connection: keep-alive
 
 {
@@ -180,23 +167,21 @@ Connection: keep-alive
   "requests": [],
   "stubs": [],
   "_links": {
-    "self": {
-      "href": "http://localhost:<%= port %>/imposters/4545"
-    }
+    "self": { "href": "http://localhost:<%= port %>/imposters/4545" }
   }
-}
-</code></pre>
+}</code></pre>
+        </assertResponse>
+    </step>
 
 <p>You would also create any <a href='/docs/api/stubs'>stubs</a> in the <code>POST</code> call.
-Imposters are not mutable through the API once created.  The expected use case is that they are
-setup for a single test run and destroyed at the completion of the test.  The
+Imposters are not mutable through the API once created. A common use case is that they are
+setup for a single test run and destroyed at the completion of the test. The
 <a href='/docs/examples'>examples</a> page links to demonstrations of this pattern in multiple
 languages and for multiple protocols.</p>
 
 <p>mountebank expects you to configure your application under test to point to the imposter.  In
 the case above, that would mean that your application has an http dependency configured to
-http://localhost:4545.  To retrieve a list of all imposters, simply issue a <code>GET</code>:</p>
-
+http://localhost:4545. To retrieve a list of all imposters, simply issue a <code>GET</code>:</p>
 
 <h3 id='get-imposter'>Get a single imposter</h3>
 
@@ -244,23 +229,19 @@ http://localhost:4545.  To retrieve a list of all imposters, simply issue a <cod
   </tr>
 </table>
 
-<pre><code data-test-id='imposters'
-           data-test-step='2'
-           data-test-type='http'>
-GET /imposters/4545 HTTP/1.1
+    <step type='http'>
+<pre><code>GET /imposters/4545 HTTP/1.1
 Host: localhost:<%= port %>
 Accept: application/json
 </code></pre>
 
-<pre><code data-test-id='imposters'
-           data-test-verify-step='2'
-           data-test-ignore-lines='["^Date"]'>
-HTTP/1.1 200 OK
+        <assertResponse>
+<pre><code>HTTP/1.1 200 OK
 Access-Control-Allow-Origin: *
 Vary: Accept
 Content-Type: application/json; charset=utf-8
 Content-Length: 190
-Date: Sun, 05 Jan 2014 16:59:33 GMT
+Date: <volatile>Sun, 05 Jan 2014 16:59:33 GMT</volatile>
 Connection: keep-alive
 
 {
@@ -270,12 +251,11 @@ Connection: keep-alive
   "requests": [],
   "stubs": [],
   "_links": {
-    "self": {
-      "href": "http://localhost:<%= port %>/imposters/4545"
-    }
+    "self": { "href": "http://localhost:<%= port %>/imposters/4545" }
   }
-}
-</code></pre>
+}</code></pre>
+        </assertResponse>
+    </step>
 
 <p>Had we set the <code>replayable</code> query parameter, the
 <a href='/docs/api/mocks'><code>requests</code> array</a> and
@@ -284,32 +264,27 @@ the <a href='/docs/api/stubs#matches-array'><code>matches</code> array</a> would
 regardless of whether we ran <code>mb</code> with the <code>--debug</code> command line parameter or
 not.  None of those fields are used during the creation of an imposter.</p>
 
-<pre><code data-test-id='imposters'
-           data-test-step='3'
-           data-test-type='http'>
-GET /imposters/4545?replayable=true HTTP/1.1
+    <step type='http'>
+<pre><code>GET /imposters/4545?replayable=true HTTP/1.1
 Host: localhost:<%= port %>
-Accept: application/json
-</code></pre>
+Accept: application/json</code></pre>
 
-<pre><code data-test-id='imposters'
-           data-test-verify-step='3'
-           data-test-ignore-lines='["^Date"]'>
-HTTP/1.1 200 OK
+        <assertResponse>
+<pre><code>HTTP/1.1 200 OK
 Access-Control-Allow-Origin: *
 Vary: Accept
 Content-Type: application/json; charset=utf-8
 Content-Length: 55
-Date: Sun, 05 Jan 2014 16:59:33 GMT
+Date: <volatile>Sun, 05 Jan 2014 16:59:33 GMT</volatile>
 Connection: keep-alive
 
 {
   "protocol": "http",
   "port": 4545,
   "stubs": []
-}
-</code></pre>
-
+}</code></pre>
+        </assertResponse>
+    </step>
 
 <h3 id='delete-imposter'>Delete a single imposter</h3>
 
@@ -350,22 +325,17 @@ at the <code>requests</code> array for <a href='/docs/api/mocks'>mock verificati
   </tr>
 </table>
 
-<pre><code data-test-id='imposters'
-           data-test-step='4'
-           data-test-type='http'>
-DELETE /imposters/4545 HTTP/1.1
+    <step type='http'>
+<pre><code>DELETE /imposters/4545 HTTP/1.1
 Host: localhost:<%= port %>
-Accept: application/json
-</code></pre>
+Accept: application/json</code></pre>
 
-<pre><code data-test-id='imposters'
-           data-test-verify-step='4'
-           data-test-ignore-lines='["^Date"]'>
-HTTP/1.1 200 OK
+        <assertResponse>
+<pre><code>HTTP/1.1 200 OK
 Access-Control-Allow-Origin: *
 Content-Type: application/json; charset=utf-8
 Content-Length: 190
-Date: Sun, 05 Jan 2014 16:59:33 GMT
+Date: <volatile>Sun, 05 Jan 2014 16:59:33 GMT</volatile>
 Connection: keep-alive
 
 {
@@ -375,13 +345,12 @@ Connection: keep-alive
   "requests": [],
   "stubs": [],
   "_links": {
-    "self": {
-      "href": "http://localhost:<%= port %>/imposters/4545"
-    }
+    "self": { "href": "http://localhost:<%= port %>/imposters/4545" }
   }
 }
 </code></pre>
-
+        </assertResponse>
+    </step>
 
 <h3 id='put-imposters'>Overwrite all imposters with a new set of imposters</h3>
 
@@ -402,10 +371,8 @@ flag.</p>
 array is the same as what's needed to <a href='#post-imposters'>create a single imposter</a>,
 the parameters for which vary by protocol.  View the protocol pages on the left for details.</p>
 
-<pre><code data-test-id='imposters'
-           data-test-step='5'
-           data-test-type='http'>
-PUT /imposters HTTP/1.1
+    <step type='http'>
+<pre><code>PUT /imposters HTTP/1.1
 Host: localhost:<%= port %>
 Content-Type: application/json
 
@@ -425,17 +392,15 @@ Content-Type: application/json
       "port": 4548
     }
   ]
-}
-</code></pre>
+}</code></pre>
 
-<pre><code data-test-id='imposters'
-           data-test-verify-step='5'
-           data-test-ignore-lines='["^Date"]'>
+        <assertResponse>
+<pre><code>
 HTTP/1.1 200 OK
 Access-Control-Allow-Origin: *
 Content-Type: application/json; charset=utf-8
 Content-Length: 619
-Date: Sun, 05 Jan 2014 16:59:33 GMT
+Date: <volatile>Sun, 05 Jan 2014 16:59:33 GMT</volatile>
 Connection: keep-alive
 
 {
@@ -445,9 +410,7 @@ Connection: keep-alive
       "port": 4546,
       "numberOfRequests": 0,
       "_links": {
-        "self": {
-          "href": "http://localhost:<%= port %>/imposters/4546"
-        }
+        "self": { "href": "http://localhost:<%= port %>/imposters/4546" }
       }
     },
     {
@@ -455,9 +418,7 @@ Connection: keep-alive
       "port": 4547,
       "numberOfRequests": 0,
       "_links": {
-        "self": {
-          "href": "http://localhost:<%= port %>/imposters/4547"
-        }
+        "self": { "href": "http://localhost:<%= port %>/imposters/4547" }
       }
     },
     {
@@ -465,15 +426,13 @@ Connection: keep-alive
       "port": 4548,
       "numberOfRequests": 0,
       "_links": {
-        "self": {
-          "href": "http://localhost:<%= port %>/imposters/4548"
-        }
+        "self": { "href": "http://localhost:<%= port %>/imposters/4548" }
       }
     }
   ]
-}
-</code></pre>
-
+}</code></pre>
+        </assertResponse>
+    </step>
 
 <h3 id='get-imposters'>Get a list of all imposters</h3>
 
@@ -513,23 +472,18 @@ either <a href='#get-imposter'>get the single imposter</a> or use the
   </tr>
 </table>
 
-<pre><code data-test-id='imposters'
-           data-test-step='6'
-           data-test-type='http'>
-GET /imposters HTTP/1.1
+    <step type='http'>
+<pre><code>GET /imposters HTTP/1.1
 Host: localhost:<%= port %>
-Accept: application/json
-</code></pre>
+Accept: application/json</code></pre>
 
-<pre><code data-test-id='imposters'
-           data-test-verify-step='6'
-           data-test-ignore-lines='["^Date"]'>
-HTTP/1.1 200 OK
+        <assertResponse>
+<pre><code>HTTP/1.1 200 OK
 Access-Control-Allow-Origin: *
 Vary: Accept
 Content-Type: application/json; charset=utf-8
 Content-Length: 619
-Date: Sun, 05 Jan 2014 16:58:25 GMT
+Date: <volatile>Sun, 05 Jan 2014 16:58:25 GMT</volatile>
 Connection: keep-alive
 
 {
@@ -539,9 +493,7 @@ Connection: keep-alive
       "port": 4546,
       "numberOfRequests": 0,
       "_links": {
-        "self": {
-          "href": "http://localhost:<%= port %>/imposters/4546"
-        }
+        "self": { "href": "http://localhost:<%= port %>/imposters/4546" }
       }
     },
     {
@@ -549,9 +501,7 @@ Connection: keep-alive
       "port": 4547,
       "numberOfRequests": 0,
       "_links": {
-        "self": {
-          "href": "http://localhost:<%= port %>/imposters/4547"
-        }
+        "self": { "href": "http://localhost:<%= port %>/imposters/4547" }
       }
     },
     {
@@ -559,15 +509,13 @@ Connection: keep-alive
       "port": 4548,
       "numberOfRequests": 0,
       "_links": {
-        "self": {
-          "href": "http://localhost:<%= port %>/imposters/4548"
-        }
+        "self": { "href": "http://localhost:<%= port %>/imposters/4548" }
       }
     }
   ]
-}
-</code></pre>
-
+}</code></pre>
+        </assertResponse>
+    </step>
 
 <h3 id='delete-imposters'>Delete all imposters</h3>
 
@@ -605,22 +553,17 @@ to <a href='#put-imposters'>mass create</a> the same imposters in the future.</p
   </tr>
 </table>
 
-<pre><code data-test-id='imposters'
-           data-test-step='7'
-           data-test-type='http'>
-DELETE /imposters HTTP/1.1
+    <step type='http'>
+<pre><code>DELETE /imposters HTTP/1.1
 Host: localhost:<%= port %>
-Accept: application/json
-</code></pre>
+Accept: application/json</code></pre>
 
-<pre><code data-test-id='imposters'
-           data-test-verify-step='7'
-           data-test-ignore-lines='["^Date"]'>
-HTTP/1.1 200 OK
+        <assertResponse>
+<pre><code>HTTP/1.1 200 OK
 Access-Control-Allow-Origin: *
 Content-Type: application/json; charset=utf-8
 Content-Length: 277
-Date: Sun, 05 Jan 2014 16:58:25 GMT
+Date: <volatile>Sun, 05 Jan 2014 16:58:25 GMT</volatile>
 Connection: keep-alive
 
 {
@@ -642,9 +585,9 @@ Connection: keep-alive
       "stubs": []
     }
   ]
-}
-</code></pre>
-
+}</code></pre>
+        </assertResponse>
+    </step>
 
 <h3 id='get-config'>Get mountebank configuration and process information</h3>
 
@@ -655,38 +598,49 @@ Connection: keep-alive
 <p>If you want to know about the environment mountebank is running it, this resource will give you
 what you need.  It describes the version, command line flags, and process information.</p>
 
-<pre><code>
-GET /config HTTP/1.1
+    <step type='http'>
+<pre><code>GET /config HTTP/1.1
 Host: localhost:<%= port %>
-Accept: application/json
-</code></pre>
+Accept: application/json</code></pre>
 
-<pre><code>
+        <assertResponse>
+<pre><code>HTTP/1.1 200 OK
+Access-Control-Allow-Origin: *
+Vary: Accept
+Content-Type: application/json; charset=utf-8
+Content-Length: <volatile>550</volatile>
+Date: <volatile>Sat, 13 May 2017 23:41:31 GMT</volatile>
+Connection: keep-alive
+
 {
-  "version": "1.4.1",
+  "version": "<%= version %>",
   "options": {
-    "port": 2525,
-    "pidfile": "mb.pid",
-    "logfile": "mb.log",
-    "loglevel": "info",
-    "configfile": "",
+    "help": false,
+    "noParse": false,
+    "nologfile": false,
     "allowInjection": true,
+    "localOnly": false,
     "mock": true,
-    "debug": true
+    "debug": true,
+    "port": <%= port %>,
+    "pidfile": "mb-grunt.pid",
+    "logfile": "mb-grunt.log",
+    "loglevel": "info",
+    "ipWhitelist": ["*"]
   },
   "process": {
-    "nodeVersion": "v4.2.0",
-    "architecture": "x64",
-    "platform": "darwin",
-    "rss": 55255040,
-    "heapTotal": 37113600,
-    "heapUsed": 23185680,
-    "uptime": 3.718,
-    "cwd": "/Users/bbyars/Dropbox/src/mountebank"
+    "nodeVersion": <volatile>"v5.8.0"</volatile>,
+    "architecture": <volatile>"x64"</volatile>,
+    "platform": <volatile>"darwin"</volatile>,
+    "rss": <volatile>43393024</volatile>,
+    "heapTotal": <volatile>32266016</volatile>,
+    "heapUsed": <volatile>20060904</volatile>,
+    "uptime": <volatile>69.108</volatile>,
+    "cwd": <volatile>"/Users/bbyars/src/mountebank"</volatile>
   }
-}
-</code></pre>
-
+}</code></pre>
+        </assertResponse>
+    </step>
 
 <h3 id='get-logs'>Get the logs</h3>
 
@@ -714,28 +668,37 @@ Accept: application/json
   </tr>
 </table>
 
-<pre><code>
-  GET /logs HTTP/1.1
-  Host: localhost:<%= port %>
-  Accept: application/json
-</code></pre>
+    <step type='http'>
+<pre><code>GET /logs?startIndex=0&endIndex=1 HTTP/1.1
+Host: localhost:<%= port %>
+Accept: application/json</code></pre>
 
-<pre><code>
+        <assertResponse>
+<pre><code>HTTP/1.1 200 OK
+Access-Control-Allow-Origin: *
+Vary: Accept
+Content-Type: application/json; charset=utf-8
+Content-Length: <volatile>5249</volatile>
+Date: <volatile>Sat, 13 May 2017 23:45:07 GMT</volatile>
+Connection: keep-alive
+
 {
   "logs": [
     {
       "level": "info",
-      "message": "[mb:2525] mountebank v1.4.1 (node v4.2.0) now taking orders - point your browser to http://localhost:2525 for help",
-      "timestamp": "2015-10-20T03:33:23.018Z"
+      "message": "[mb:<%= port %>] mountebank v<%= version %> now taking orders - point your browser to http://localhost:<%= port %> for help",
+      "timestamp": "<volatile>2015-10-20T03:33:23.018Z</volatile>"
     },
     {
-      "level": "info",
-      "message": "[mb:2525] GET /logs",
-      "timestamp": "2015-10-20T03:33:25.429Z"
+      "level": "warn",
+      "message": "[mb:<%= port %>] Running with --allowInjection set. See http://localhost:<%= port %>/docs/security for security info",
+      "timestamp": "<volatile>2015-10-20T03:33:23.019Z</volatile>"
     }
   ]
-}
-</code></pre>
+}</code></pre>
+        </assertResponse>
+    </step>
+</testScenario>
 
 <p>In the rare scenario where mountebank is hosted on a different server and you need access to the logs,
 they are accessible through this endpoint.</p>

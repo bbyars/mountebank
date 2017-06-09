@@ -69,12 +69,12 @@ function create (options) {
         }));
     }
 
-    function addDryRunErrors (stub, encoding, errors, logger, imposterState) {
+    function addDryRunErrors (stub, encoding, errors, logger) {
         var Q = require('q'),
             deferred = Q.defer();
 
         try {
-            dryRun(stub, encoding, logger, imposterState).done(deferred.resolve, function (reason) {
+            dryRun(stub, encoding, logger).done(deferred.resolve, function (reason) {
                 reason.source = reason.source || JSON.stringify(stub);
                 errors.push(reason);
                 deferred.resolve();
@@ -141,7 +141,7 @@ function create (options) {
         });
     }
 
-    function errorsForStub (stub, encoding, logger, imposterState) {
+    function errorsForStub (stub, encoding, logger) {
         var errors = [],
             Q = require('q'),
             util = require('util'),
@@ -163,7 +163,7 @@ function create (options) {
             deferred.resolve(errors);
         }
         else {
-            addDryRunErrors(stub, encoding, errors, logger, imposterState).done(function () {
+            addDryRunErrors(stub, encoding, errors, logger).done(function () {
                 deferred.resolve(errors);
             });
         }

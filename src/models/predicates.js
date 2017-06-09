@@ -33,6 +33,9 @@ function forceStrings (obj) {
             if (Array.isArray(obj[key])) {
                 result[key] = obj[key].map(forceStrings);
             }
+            else if (obj[key] === null) {
+                result[key] = 'null';
+            }
             else if (typeof obj[key] === 'object') {
                 result[key] = forceStrings(obj[key]);
             }
@@ -79,11 +82,19 @@ function orderIndependent (possibleArray) {
     }
 }
 
+function transformObject (obj, transform) {
+    Object.keys(obj).forEach(function (key) {
+        obj[key] = transform(obj[key]);
+    });
+    return obj;
+}
+
 function selectXPath (config, caseTransform, encoding, text) {
     var xpath = require('./xpath'),
         combinators = require('../util/combinators'),
-        ns = normalize(config.ns, {}, 'utf8'),
+        ns = transformObject(config.ns || {}, caseTransform),
         selectFn = combinators.curry(xpath.select, caseTransform(config.selector), ns, text);
+
     return orderIndependent(select('xpath', selectFn, encoding));
 }
 
@@ -137,54 +148,94 @@ function normalize (obj, config, encoding, withSelectors) {
     return transformAll(obj);
 }
 
-function tryJSON (value) {
+function tryJSON (value, predicateConfig) {
     try {
-        return JSON.parse(value);
+        var json = JSON.parse(value);
+        if (predicateConfig) {
+            json = normalize(json, predicateConfig, 'utf8', true);
+        }
+        return json;
     }
     catch (e) {
         return value;
     }
 }
 
-function predicateSatisfied (expected, actual, predicate) {
+function testPredicate (expected, actual, predicateConfig, predicateFn) {
+    var helpers = require('../util/helpers');
+    if (!helpers.defined(actual)) {
+        actual = '';
+    }
+    if (typeof expected === 'object') {
+        return predicateSatisfied(expected, actual, predicateConfig, predicateFn);
+    }
+    else {
+        return predicateFn(expected, actual);
+    }
+}
+
+function bothArrays (expected, actual) {
+    return Array.isArray(actual) && Array.isArray(expected);
+}
+
+function allExpectedArrayValuesMatchActualArray (expectedArray, actualArray, predicateConfig, predicateFn) {
+    return expectedArray.every(function (expectedValue) {
+        return actualArray.some(function (actualValue) {
+            return testPredicate(expectedValue, actualValue, predicateConfig, predicateFn);
+        });
+    });
+}
+
+function onlyActualIsArray (expected, actual) {
+    return Array.isArray(actual) && !Array.isArray(expected);
+}
+
+function expectedMatchesAtLeastOneValueInActualArray (expected, actualArray, predicateConfig, predicateFn) {
+    return actualArray.some(function (actual) {
+        return testPredicate(expected, actual, predicateConfig, predicateFn);
+    });
+}
+
+function expectedLeftOffArraySyntaxButActualIsArrayOfObjects (expected, actual, fieldName) {
+    var helpers = require('../util/helpers');
+    return !Array.isArray(expected[fieldName]) && !helpers.defined(actual[fieldName]) && Array.isArray(actual);
+}
+
+function predicateSatisfied (expected, actual, predicateConfig, predicateFn) {
     if (!actual) {
         return false;
     }
 
+    // Support predicates that reach into fields encoded in JSON strings (e.g. HTTP bodies)
+    if (typeof actual === 'string') {
+        actual = tryJSON(actual, predicateConfig);
+    }
+
     return Object.keys(expected).every(function (fieldName) {
-        var helpers = require('../util/helpers');
-
-        var test = function (value) {
-            if (!helpers.defined(value)) {
-                value = '';
-            }
-            if (typeof expected[fieldName] === 'object') {
-                return predicateSatisfied(expected[fieldName], value, predicate);
-            }
-            else {
-                return predicate(expected[fieldName], value);
-            }
-        };
-
-        // Support predicates that reach into fields encoded in JSON strings (e.g. HTTP bodies)
-        if (!helpers.defined(actual[fieldName]) && typeof actual === 'string') {
-            actual = tryJSON(actual);
+        if (bothArrays(expected[fieldName], actual[fieldName])) {
+            return allExpectedArrayValuesMatchActualArray(
+                expected[fieldName], actual[fieldName], predicateConfig, predicateFn);
         }
-
-        if (Array.isArray(actual[fieldName])) {
-            return actual[fieldName].some(test);
+        else if (onlyActualIsArray(expected[fieldName], actual[fieldName])) {
+            return expectedMatchesAtLeastOneValueInActualArray(
+                expected[fieldName], actual[fieldName], predicateConfig, predicateFn);
         }
-        else if (!helpers.defined(actual[fieldName]) && Array.isArray(actual)) {
-            // support array of objects in JSON
-            return actual.some(function (element) {
-                return predicateSatisfied(expected, element, predicate);
-            });
+        else if (expectedLeftOffArraySyntaxButActualIsArrayOfObjects(expected, actual, fieldName)) {
+            // This is a little confusing, but predated the ability for users to specify an
+            // array for the expected values and is left for backwards compatibility.
+            // The predicate might be:
+            //     { equals: { examples: { key: 'third' } } }
+            // and the request might be
+            //     { examples: '[{ "key": "first" }, { "different": true }, { "key": "third" }]' }
+            // We expect that the "key" field in the predicate definition matches any object key
+            // in the actual array
+            return expectedMatchesAtLeastOneValueInActualArray(expected, actual, predicateConfig, predicateFn);
         }
         else if (typeof expected[fieldName] === 'object') {
-            return predicateSatisfied(expected[fieldName], actual[fieldName], predicate);
+            return predicateSatisfied(expected[fieldName], actual[fieldName], predicateConfig, predicateFn);
         }
         else {
-            return test(actual[fieldName]);
+            return testPredicate(expected[fieldName], actual[fieldName], predicateConfig, predicateFn);
         }
     });
 }
@@ -194,7 +245,7 @@ function create (operator, predicateFn) {
         var expected = normalize(predicate[operator], predicate, encoding, false),
             actual = normalize(request, predicate, encoding, true);
 
-        return predicateSatisfied(expected, actual, predicateFn);
+        return predicateSatisfied(expected, actual, predicate, predicateFn);
     };
 }
 
@@ -206,7 +257,8 @@ function deepEquals (predicate, request, encoding) {
     return Object.keys(expected).every(function (fieldName) {
         // Support predicates that reach into fields encoded in JSON strings (e.g. HTTP bodies)
         if (typeof expected[fieldName] === 'object' && typeof actual[fieldName] === 'string') {
-            actual[fieldName] = normalize(forceStrings(tryJSON(actual[fieldName])), predicate, encoding, false);
+            var possibleJSON = tryJSON(actual[fieldName], predicate);
+            actual[fieldName] = normalize(forceStrings(possibleJSON), predicate, encoding, false);
         }
         return stringify(expected[fieldName]) === stringify(actual[fieldName]);
     });
@@ -229,7 +281,7 @@ function matches (predicate, request, encoding) {
         throw errors.ValidationError('the matches predicate is not allowed in binary mode');
     }
 
-    return predicateSatisfied(expected, actual, function (a, b) { return new RegExp(a, options).test(b); });
+    return predicateSatisfied(expected, actual, clone, function (a, b) { return new RegExp(a, options).test(b); });
 }
 
 function not (predicate, request, encoding, logger) {

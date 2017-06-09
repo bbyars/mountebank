@@ -71,10 +71,9 @@ a RESTful endpoint that creates a customer the first time it's called and return
 the second time it's called because the email already exists.  We add a second stub that returns a
 404 on any request that isn't a <code>POST</code> to <code>/customers/123</code></p>
 
-<pre><code data-test-id='example'
-           data-test-step='1'
-           data-test-type='http'>
-POST /imposters HTTP/1.1
+<testScenario name='example'>
+    <step type='http'>
+<pre><code>POST /imposters HTTP/1.1
 Host: localhost:<%= port %>
 Accept: application/json
 Content-Type: application/json
@@ -117,91 +116,76 @@ Content-Type: application/json
     {
       "responses": [
         {
-          "is": {
-            "statusCode": 404
-          }
+          "is": { "statusCode": 404 }
         }
       ]
     }
   ]
-}
-</code></pre>
+}</code></pre>
+    </step>
 
 <p>Let's assume the application under test makes the initial call...</p>
 
-<pre><code data-test-id='example'
-           data-test-step='2'
-           data-test-type='http'>
-POST /customers/123 HTTP/1.1
+    <step type='http'>
+<pre><code>POST /customers/123 HTTP/1.1
 Host: localhost:4545
 Accept: application/xml
 Content-Type: application/xml
 
 &lt;customer&gt;
   &lt;email&gt;customer@test.com&lt;/email&gt;
-&lt;/customer&gt;
-</code></pre>
+&lt;/customer&gt;</code></pre>
 
-<pre><code data-test-id='example'
-           data-test-verify-step='2'
-           data-test-ignore-lines='["^Date"]'>
-HTTP/1.1 201 Created
+        <assertResponse>
+<pre><code>HTTP/1.1 201 Created
 Location: http://localhost:4545/customers/123
 Content-Type: application/xml
 Connection: close
-Date: Thu, 09 Jan 2014 02:30:31 GMT
+Date: <volatile>Thu, 09 Jan 2014 02:30:31 GMT</volatile>
 Transfer-Encoding: chunked
 
-&lt;customer&gt;&lt;email&gt;customer@test.com&lt;/email&gt;&lt;/customer&gt;
-</code></pre>
+&lt;customer&gt;&lt;email&gt;customer@test.com&lt;/email&gt;&lt;/customer&gt;</code></pre>
+        </assertResponse>
+    </step>
 
 <p>...and the second call:</p>
 
-<pre><code data-test-id='example'
-           data-test-step='3'
-           data-test-type='http'>
-POST /customers/123 HTTP/1.1
+    <step type='http'>
+<pre><code>POST /customers/123 HTTP/1.1
 Host: localhost:4545
 Accept: application/xml
 Content-Type: application/xml
 
 &lt;customer&gt;
   &lt;email&gt;customer@test.com&lt;/email&gt;
-&lt;/customer&gt;
-</code></pre>
+&lt;/customer&gt;</code></pre>
 
-<pre><code data-test-id='example'
-           data-test-verify-step='3'
-           data-test-ignore-lines='["^Date"]'>
-HTTP/1.1 400 Bad Request
+        <assertResponse>
+<pre><code>HTTP/1.1 400 Bad Request
 Content-Type: application/xml
 Connection: close
-Date: Thu, 09 Jan 2014 02:30:31 GMT
+Date: <volatile>Thu, 09 Jan 2014 02:30:31 GMT</volatile>
 Transfer-Encoding: chunked
 
-&lt;error&gt;email already exists&lt;/error&gt;
-</code></pre>
+&lt;error&gt;email already exists&lt;/error&gt;</code></pre>
+        </assertResponse>
+    </step>
 
 <p>Now let's see the <code>matches</code> elements that mountebank
 has saved for you:</p>
 
-<pre><code data-test-id='example'
-           data-test-step='4'
-           data-test-type='http'>
-GET /imposters/4545 HTTP/1.1
+    <step type='http'>
+<pre><code>GET /imposters/4545 HTTP/1.1
 Host: localhost:<%= port %>
-Accept: application/json
-</code></pre>
+Accept: application/json</code></pre>
 
-<pre><code data-test-id='example'
-           data-test-verify-step='4'
-           data-test-ignore-lines='["^Date", "timestamp", "requestFrom", "Content-Length"]'>
-HTTP/1.1 200 OK
+        <assertResponse>
+<pre><code>HTTP/1.1 200 OK
 Access-Control-Allow-Origin: *
 Vary: Accept
 Content-Type: application/json; charset=utf-8
-Content-Length: 3721
-Date: Thu, 09 Jan 2014 02:30:31 GMT
+Content-Length: <volatile>3856</volatile>
+Date: <volatile>Thu, 09 Jan 2014 02:30:31 GMT</volatile>
 Connection: keep-alive
 
 {
@@ -210,6 +194,7 @@ Connection: keep-alive
   "numberOfRequests": 2,
   "requests": [
     {
+      "requestFrom": "<volatile>::ffff:127.0.0.1:60523</volatile>",
       "method": "POST",
       "path": "/customers/123",
       "query": {},
@@ -221,10 +206,10 @@ Connection: keep-alive
         "Transfer-Encoding": "chunked"
       },
       "body": "&lt;customer&gt;\n  &lt;email&gt;customer@test.com&lt;/email&gt;\n&lt;/customer&gt;",
-      "timestamp": "2014-01-09T02:30:31.022Z"
+      "timestamp": "<volatile>2014-01-09T02:30:31.022Z</volatile>"
     },
     {
-      "requestFrom": "::ffff:127.0.0.1:60523",
+      "requestFrom": "<volatile>::ffff:127.0.0.1:60523</volatile>",
       "method": "POST",
       "path": "/customers/123",
       "query": {},
@@ -236,7 +221,7 @@ Connection: keep-alive
         "Transfer-Encoding": "chunked"
       },
       "body": "&lt;customer&gt;\n  &lt;email&gt;customer@test.com&lt;/email&gt;\n&lt;/customer&gt;",
-      "timestamp": "2014-01-09T02:30:31.043Z"
+      "timestamp": "<volatile>2014-01-09T02:30:31.043Z</volatile>"
     }
   ],
   "stubs": [
@@ -272,9 +257,9 @@ Connection: keep-alive
       ],
       "matches": [
         {
-          "timestamp": "2014-01-06T04:31:44.584Z",
+          "timestamp": "<volatile>2014-01-06T04:31:44.584Z</volatile>",
           "request": {
-            "requestFrom": "::ffff:127.0.0.1:60524",
+            "requestFrom": "<volatile>::ffff:127.0.0.1:60524</volatile>",
             "method": "POST",
             "path": "/customers/123",
             "query": {},
@@ -299,9 +284,9 @@ Connection: keep-alive
           }
         },
         {
-          "timestamp": "2014-01-06T04:31:44.587Z",
+          "timestamp": "<volatile>2014-01-06T04:31:44.587Z</volatile>",
           "request": {
-            "requestFrom": "::ffff:127.0.0.1:60523",
+            "requestFrom": "<volatile>::ffff:127.0.0.1:60523</volatile>",
             "method": "POST",
             "path": "/customers/123",
             "query": {},
@@ -329,9 +314,7 @@ Connection: keep-alive
     {
       "responses": [
         {
-          "is": {
-            "statusCode": 404
-          }
+          "is": { "statusCode": 404 }
         }
       ]
     }
@@ -341,14 +324,15 @@ Connection: keep-alive
       "href": "http://localhost:<%= port %>/imposters/4545"
     }
   }
-}
-</code></pre>
+}</code></pre>
+        </assertResponse>
+    </step>
 
-<code class='hidden' data-test-id='example'
-                     data-test-step='5'
-                     data-test-type='http'>
-DELETE /imposters/4545 HTTP/1.1
-Host: localhost:<%= port %>
-</code>
+    <step type='http'>
+
+<code class='hidden'>DELETE /imposters/4545 HTTP/1.1
+Host: localhost:<%= port %></code>
+    </step>
+</testScenario>
 
 <% include ../../_footer %>

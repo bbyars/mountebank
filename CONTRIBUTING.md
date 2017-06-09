@@ -5,7 +5,7 @@ contributing to mountebank. The good news is contributing is an easy process. In
 make a difference without writing a single line of code. I am grateful for all of the following contributions:
 
 * Submitting an issue, either through github or the [support page](http://www.mbtest.org/support)
-* Comment on existing issues
+* Commenting on existing issues
 * Answer questions in the [support forum](https://groups.google.com/forum/#!forum/mountebank-discuss)
 * Letting me know that you're using mountebank and how you're using it. It's surprisingly hard to find
 that out with open source projects, and provides healthy motivation. Feel free to email at
@@ -35,7 +35,7 @@ as rewarding an experience as possible.
 ## Designing mountebank
 
 The code in mountebank is now a few years old, and maintaining consistency of design vision
-is key to keeping it maintainable. The following describe key concepts:
+is key to keeping the code maintainable. The following describe key concepts:
 
 ### API changes
 
@@ -52,7 +52,7 @@ is, I hope, friendly for users, but a bit unfriendly for maintainers. I'd love h
 ### Protocol Agnosticism
 
 Most of mountebank is protocol-agnostic, and I consider central to its design. In general, every file
-outside fo the protocol folders (http, tcp, etc) should _not_ reference any of the request or response fields
+outside of the protocol folders (http, tcp, etc) should _not_ reference any of the request or response fields
 (like http bodies). Instead, they should accept generic object structures and deal with them appropriately.
 This includes all of the core logic in mountebank, including predicates, behaviors, and response resolution.
 To help myself maintain that mentality, I often write unit tests that use a different request or response
@@ -146,17 +146,13 @@ You are welcome to fix any tech debt that you see in SaaS dashboards:
 * [Codacy](https://www.codacy.com/app/brandonbyars/mountebank/dashboard)
 * [Bithound](https://www.bithound.io/github/bbyars/mountebank/master)
 * [Test Coverage](https://codeclimate.com/github/bbyars/mountebank/coverage)
+* [SonarQube](https://sonarqube.com/dashboard?id=mountebank)
 
 There are several linting tools run locally as well:
 
 * eslint - I have a strict set of rules. Feel free to suggest changes if they interfere with your ability
 to get changes committed, but if not I'd prefer to keep the style consistent.
 * custom code that looks for unused packages and `only` calls left in the codebase
-* A custom `shonkwrapCheck` test, that makes some verifications of the `npm-shrinkwrap.json` file.
-Unfortunately, the standard `npm shrinkwrap` command doesn't work if you want to install mountebank
-behind a repository manager (see [this issue](https://github.com/bbyars/mountebank/issues/141)), which
-makes adding package dependencies to mountebank (or upgrading versions) clumsy. My general workflow
-is to update `package.json`, delete `npm-shrinkwrap.json`, run `npm install`, and then run `node_modules/.bin/shonkwrap`.
 
 ## Testing mountebank
 
@@ -189,38 +185,89 @@ enough that I consider it to be an entirely different type of test, described ne
 
 ### Documentation tests
 
-The `functionalTest/html/docsIntegrityTest.js` file crawls the website and looks for HTML code
-blocks with certain attributes. It then executes those code examples and validates that the
-documented results are correct. At first I wrote these tests as a check on my own laziness;
+The `functionalTest/html/docsIntegrityTest.js` file crawls the website and looks for special HTML
+tags that indicate the code blocks within are meant to be executed and validated.
+At first I wrote these tests as a check on my own laziness;
 I know from experience how hard it is to keep the docs up-to-date. They proved quite useful,
-however, as a kind of BDD style outside-in description of the behavior. They're also painful
-to create and maintain.
+however, as a kind of BDD style outside-in description of the behavior, motivating me to rewrite
+the framework to make it easier to maintain. I'd like in the future to open source the docs tester
+as a separate tool.
 
 You start by writing the docs, with the examples, in the appropriate file in `src/views/docs`.
-The examples are wrapped in `pre` and `code` HTML blocks, and the `code` block uses special
-HTML attributes:
+Wrap a series of steps in a `testScenario` tag with a `name` attribute to disambiguate it from
+other scenarios on the same page (multiple test scenarios on the same page are run in parallel).
+A step is a request/response pair, where the response is optional,
+and is wrapped within a `step` tag. The request and response must be within a `code` element, and
+are usually also wrapped in a `pre` block if they are meant to be visible on the page. To validate
+the response, wrap the response `code` block within an `assertResponse` code block.
 
-* `data-test-id` defines the test scenario. All steps in a scenario are run sequentially.
-* `data-test-step` defines the sequence within a scenario. For example, step 1 is run
-before step 2
-* `data-test-type` defines how the example is executed. There are four types supported:
-  * `http` is the most common one, representing HTTP requests and responses.
-  * `exec` is used for command line executions, like on the [getting started](http://www.mbtest.org/docs/gettingStarted)
-  page
-  * `smtp` is used for SMTP examples, as on the [mock verification](http://www.mbtest.org/docs/api/mocks) page
-  * `file` is used to create and delete a file, as on the lookup examples on the
-  [behavior](http://www.mbtest.org/docs/api/behaviors) page. The filename is provided with the
-  `data-test-filename` attribute. To delete the file, leave the `code` block empty.
-* `data-test-verify-step` references the `data-test-step` and validates that the response
-(HTTP or command line) is as expected. The response generated by the referenced step must
-be textually equivalent to what's in this `code` block
-* `data-test-ignore-lines` provides an array of regular expressions. Every line matching
-that pattern is ignored in the verification. For HTTP responses, for example, every
-verification uses `data-test-ignore-lines='["^Date"]'` at a minimum to ignore the `Date`
-header, which will never match since it changes with every run.
+The simplest example is on the overview page, documenting the hypermedia on the root path of the API.
+You can see the [actual documentation](http://www.mbtest.org/docs/api/overview#get-home) on the website.
+It makes a request to `GET /` and validates the response headers and JSON body:
 
-I will often comment out all files except the one I'm troubleshooting in
-`functionalTest/html/docsIntegrityTest.js`.
+````xml
+<testScenario name='home'>
+    <step type='http'>
+<pre><code>GET / HTTP/1.1
+Host: localhost:<%= port %>
+Accept: application/json</code></pre>
+
+        <assertResponse>
+<pre><code>HTTP/1.1 200 OK
+Access-Control-Allow-Origin: *
+Vary: Accept
+Content-Type: application/json; charset=utf-8
+Content-Length: 226
+Date: <volatile>Sun, 05 Jan 2014 16:16:08 GMT</volatile>
+Connection: keep-alive
+
+{
+  "_links": {
+    "imposters": { "href": "http://localhost:<%= port %>/imposters" },
+    "config": { "href": "http://localhost:<%= port %>/config" },
+    "logs": { "href": "http://localhost:<%= port %>/logs" }
+  }
+}</code></pre>
+        </assertResponse>
+    </step>
+</testScenario>
+````
+
+The actual response is string-compared to the expected response provided in the `assertResponse` code
+block. To make the expected responses both easier to read from a documentation standpoint and
+avoid problems of dynamic data, the following transformations are applied before the comparison:
+
+* Any JSON listed is normalized, so you don't have to worry about whitespace within JSON
+* You can wrap any data that differs from response to response in a `volatile` tag, as shown
+with the `Date` header above
+* If you want to display something other than what's tested, you can use the `change` element
+* If you don't want to document the entire response to focus in on the key elements, you can set
+the `partial` attribute on the `assertResponse` element to `true`. The
+[proxies page](http://www.mbtest.org/docs/api/proxies) makes heavy use of this feature.
+
+You can see an example using the `change` element on the [getting started](http://www.mbtest.org/docs/gettingStarted)
+page. The docs indicate that the default port is 2525, and so it intentionally displays all the
+example requests with that port, even though it may use a different port during test execution:
+
+ ````xml
+     <step type='exec'>
+ <pre><code>curl -X DELETE http://localhost:<change to='<%= port %>'>2525</change>/imposters/4545
+ curl -X DELETE http://localhost:<change to='<%= port %>'>2525</change>/imposters/5555</code></pre>
+     </step>
+ ````
+
+The two examples just shown include two types of steps. The following are supported:
+
+* `http` is the most common one, representing HTTP requests and responses.
+* `exec` is used for command line executions like the one shown above
+* `smtp` is used for SMTP examples, as on the [mock verification](http://www.mbtest.org/docs/api/mocks) page.
+It expects a `port` attribute indicating the port of the imposter smtp service
+* `file` is used to create and delete a file, as on the lookup examples on the
+  [behavior](http://www.mbtest.org/docs/api/behaviors) page. It expects a `filename` attribute. If
+   the `delete` attribute is set to "true", the file is deleted.
+
+As the doc tests get unwieldy to work with at times, I will often comment out all files except the
+one I'm troubleshooting in `functionalTest/html/docsIntegrityTest.js`.
 
 ### Performance tests
 
@@ -272,7 +319,7 @@ I use [nvm](https://github.com/creationix/nvm) to install different versions of 
 ### The Continuous Integration Pipeline
 
 Looking at the [README](https://github.com/bbyars/mountebank#build-status) will show that I have a complex CI pipeline.
-Currently it involves Travis CI, Appveyor, and Snap CI, although I may add or remove from that list as I continue to
+Currently it involves Travis CI and Appveyor, although I may add or remove from that list as I continue to
 try and improve the pipeline.  At the moment, a commit will trigger a Travis CI build, which in turn triggers the other
 CI systems through API calls, ensuring a consistent version throughout.  I've had bugs in different operating systems,
 in different versions of node, and in the packages available for download.  The CI system tests as many of those combinations

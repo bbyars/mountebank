@@ -49,163 +49,76 @@ function create (proxy, postProcess) {
         return deferred.promise;
     }
 
-    // Function is taken from xpath.js to handle xml namespaces
-    function nodeValue (node) {
-        if (node.nodeType === node.TEXT_NODE) {
-            return node.nodeValue;
+    function selectionValue (nodes) {
+        var helpers = require('../util/helpers');
+        if (!helpers.defined(nodes)) {
+            return '';
         }
-        else if (node.nodeType === node.ATTRIBUTE_NODE) {
-            return node.value;
-        }
-        else if (node.firstChild) {
-         // Converting to a string allows exists to return true if the node exists,
-         // even if there's no data
-            return node.firstChild.data + '';
+        else if (!Array.isArray(nodes)) {
+            return nodes; // booleans and counts
         }
         else {
-            return node.data + '';
+            return (nodes.length === 1) ? nodes[0] : nodes;
         }
     }
 
-    function xpathValue (request, value, field, predicate, predicates) {
-        var reqBody = (request.body).toString();
-        predicate.deepEquals = {};
-        if (reqBody !== '') {
-            var xpath = require('xpath');
-            var dom = require('xmldom').DOMParser;
-            var doc = new dom().parseFromString(request.body);
-            var savePath = value.xpath.selector;
-            var ns = value.xpath.ns;
-            if (typeof ns !== 'undefined') {
-                var selectFn = xpath.useNamespaces(ns || {}),
-                    result = selectFn(savePath, doc),
-                    title = result.map(nodeValue);
-            }
-            else {
-                title = xpath.select(savePath, doc);
-            }
-            if (title.length > 1) {
-                for (var i = 0; i < title.length; i += 1) {
-                    predicate.deepEquals.body = title[i].toString();
-                    predicate.xpath = value.xpath;
-                }
-                predicate = multiplePathValues(predicate, field, title);
-                for (var j = 1; j < title.length; j += 1) {
-                    predicates.push(predicate[j - 1]);
-                }
-            }
-            else {
-                predicate.deepEquals.body = title.toString();
-                predicate.xpath = value.xpath;
-            }
-        }
-        return predicates;
+    function xpathValue (xpathConfig, possibleXML, logger) {
+        var xpath = require('./xpath'),
+            nodes = xpath.select(xpathConfig.selector, xpathConfig.ns, possibleXML, logger);
+        return selectionValue(nodes);
     }
 
-    function multiplePathValues (predicate, field, title) {
-        var i, buildPredicate = [], storePredicate = [], finalPredicate = [];
-        for (i = 0; i < title.length; i += 1) {
-            buildPredicate.push(predicate);
-        }
-
-        buildPredicate.forEach(function (storeObject, j) {
-            storeObject.deepEquals.body = title[j].toString();
-            storePredicate.push(JSON.parse(JSON.stringify(storeObject)));
-        });
-
-        if (field === 'jsonpath') {
-            storePredicate.forEach(function (jsonpathObject, t) {
-                jsonpathObject.jsonpath.selector = (jsonpathObject.jsonpath.selector).replace('*', t);
-                predicate.jsonpath = jsonpathObject.jsonpath;
-                finalPredicate.push(JSON.parse(JSON.stringify(jsonpathObject)));
-            });
-            return finalPredicate;
-        }
-        else {
-            storePredicate.forEach(function (xpathObject, t) {
-                xpathObject.xpath.selector = xpathObject.xpath.selector + '[' + (t + 1) + ']';
-                predicate.xpath = xpathObject.xpath;
-                finalPredicate.push(JSON.parse(JSON.stringify(xpathObject)));
-            });
-            return finalPredicate;
-        }
+    function jsonpathValue (jsonpathConfig, possibleJSON, logger) {
+        var jsonpath = require('./jsonpath'),
+            nodes = jsonpath.select(jsonpathConfig.selector, possibleJSON, logger);
+        return selectionValue(nodes);
     }
 
-    function jsonpathValue (request, value, field, predicate, predicates) {
-        var reqBody = (request.body).toString();
-        predicate.deepEquals = {};
-        if (reqBody !== '') {
-            var parseJson = require('parse-json');
-            var jsonPath = require('jsonpath-plus');
-            var jsonDoc = parseJson(reqBody);
-            var savePath = value.jsonpath.selector;
-            var title = jsonPath(savePath, jsonDoc);
-            if (title.length > 1) {
-                for (var i = 0; i < title.length; i += 1) {
-                    predicate.deepEquals.body = title[i].toString();
-                    predicate.jsonpath = value.jsonpath;
-                }
-                predicate = multiplePathValues(predicate, field, title);
-                for (var j = 1; j < title.length; j += 1) {
-                    predicates.push(predicate[j - 1]);
-                }
-            }
-            else {
-                predicate.deepEquals.body = title.toString();
-                predicate.jsonpath = value.jsonpath;
-            }
-        }
-        return predicates;
-    }
-
-
-    function buildEquals (request, matchers) {
+    function buildEquals (request, matchers, valueOf) {
         var result = {};
         Object.keys(matchers).forEach(function (key) {
             if (typeof request[key] === 'object') {
-                result[key] = buildEquals(request[key], matchers[key]);
+                result[key] = buildEquals(request[key], matchers[key], valueOf);
             }
             else {
-                result[key] = request[key];
+                result[key] = valueOf(request[key]);
             }
         });
         return result;
     }
 
-    function predicatesFor (request, matchers) {
+    function predicatesFor (request, matchers, logger) {
         var predicates = [];
 
         matchers.forEach(function (matcher) {
-            var basePredicate = {};
+            var basePredicate = {},
+                valueOf = function (field) { return field; };
 
             // Add parameters
             Object.keys(matcher).forEach(function (key) {
                 if (key !== 'matches') {
                     basePredicate[key] = matcher[key];
                 }
+                if (key === 'xpath') {
+                    valueOf = function (field) { return xpathValue(matcher.xpath, field, logger); };
+                }
+                else if (key === 'jsonpath') {
+                    valueOf = function (field) { return jsonpathValue(matcher.jsonpath, field, logger); };
+                }
             });
 
             Object.keys(matcher.matches).forEach(function (fieldName) {
                 var helpers = require('../util/helpers'),
-                    value = matcher.matches[fieldName],
+                    matcherValue = matcher.matches[fieldName],
                     predicate = helpers.clone(basePredicate);
 
-                if (value === true) {
+                if (matcherValue === true) {
                     predicate.deepEquals = {};
-                    predicate.deepEquals[fieldName] = request[fieldName];
-                }
-                else if ((fieldName === 'body') && (value !== true)) {
-                    var fnMap = {
-                        xpath: xpathValue,
-                        jsonpath: jsonpathValue
-                    };
-                    Object.keys(value).forEach(function (field) {
-                        fnMap[field](request, value, field, predicate, predicates);
-                    });
+                    predicate.deepEquals[fieldName] = valueOf(request[fieldName]);
                 }
                 else {
                     predicate.equals = {};
-                    predicate.equals[fieldName] = buildEquals(request[fieldName], value);
+                    predicate.equals[fieldName] = buildEquals(request[fieldName], matcherValue, valueOf);
                 }
 
                 predicates.push(predicate);
@@ -225,8 +138,8 @@ function create (proxy, postProcess) {
         return i;
     }
 
-    function indexOfStubToAddResponseTo (responseConfig, request, stubs) {
-        var predicates = predicatesFor(request, responseConfig.proxy.predicateGenerators || []),
+    function indexOfStubToAddResponseTo (responseConfig, request, stubs, logger) {
+        var predicates = predicatesFor(request, responseConfig.proxy.predicateGenerators || [], logger),
             stringify = require('json-stable-stringify');
 
         for (var index = stubIndexFor(responseConfig, stubs) + 1; index < stubs.length; index += 1) {
@@ -237,8 +150,8 @@ function create (proxy, postProcess) {
         return -1;
     }
 
-    function canAddResponseToExistingStub (responseConfig, request, stubs) {
-        return indexOfStubToAddResponseTo(responseConfig, request, stubs) >= 0;
+    function canAddResponseToExistingStub (responseConfig, request, stubs, logger) {
+        return indexOfStubToAddResponseTo(responseConfig, request, stubs, logger) >= 0;
     }
 
     function newIsResponse (response, addWaitBehavior, addDecorateBehavior) {
@@ -258,15 +171,15 @@ function create (proxy, postProcess) {
         return result;
     }
 
-    function addNewResponse (responseConfig, request, response, stubs) {
+    function addNewResponse (responseConfig, request, response, stubs, logger) {
         var stubResponse = newIsResponse(response, responseConfig.proxy.addWaitBehavior, responseConfig.proxy.addDecorateBehavior),
-            responseIndex = indexOfStubToAddResponseTo(responseConfig, request, stubs);
+            responseIndex = indexOfStubToAddResponseTo(responseConfig, request, stubs, logger);
 
         stubs[responseIndex].responses.push(stubResponse);
     }
 
-    function addNewStub (responseConfig, request, response, stubs) {
-        var predicates = predicatesFor(request, responseConfig.proxy.predicateGenerators || []),
+    function addNewStub (responseConfig, request, response, stubs, logger) {
+        var predicates = predicatesFor(request, responseConfig.proxy.predicateGenerators || [], logger),
             stubResponse = newIsResponse(response, responseConfig.proxy.addWaitBehavior, responseConfig.proxy.addDecorateBehavior),
             newStub = { predicates: predicates, responses: [stubResponse] },
             index = responseConfig.proxy.mode === 'proxyAlways' ? stubs.length : stubIndexFor(responseConfig, stubs);
@@ -274,16 +187,16 @@ function create (proxy, postProcess) {
         stubs.splice(index, 0, newStub);
     }
 
-    function recordProxyResponse (responseConfig, request, response, stubs) {
+    function recordProxyResponse (responseConfig, request, response, stubs, logger) {
         if (['proxyOnce', 'proxyAlways'].indexOf(responseConfig.proxy.mode) < 0) {
             responseConfig.proxy.mode = 'proxyOnce';
         }
 
         if (responseConfig.proxy.mode === 'proxyAlways' && canAddResponseToExistingStub(responseConfig, request, stubs)) {
-            addNewResponse(responseConfig, request, response, stubs);
+            addNewResponse(responseConfig, request, response, stubs, logger);
         }
         else {
-            addNewStub(responseConfig, request, response, stubs);
+            addNewStub(responseConfig, request, response, stubs, logger);
         }
     }
 
@@ -303,7 +216,7 @@ function create (proxy, postProcess) {
             // Run behaviors here to persist decorated response
             return Q(behaviors.execute(request, response, responseConfig._behaviors, logger));
         }).then(function (response) {
-            recordProxyResponse(responseConfig, request, response, stubs);
+            recordProxyResponse(responseConfig, request, response, stubs, logger);
             return Q(response);
         });
     }

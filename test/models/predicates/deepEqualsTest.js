@@ -165,5 +165,11 @@ describe('predicates', function () {
                 request = { query: { key: ['second', 'first'] }, field: 'true' };
             assert.ok(predicates.evaluate(predicate, request));
         });
+
+        it('should be true if equal with null object value', function () {
+            var predicate = { deepEquals: { field: null } },
+                request = { field: null };
+            assert.ok(predicates.evaluate(predicate, request));
+        });
     });
 });

@@ -6,7 +6,6 @@ var Q = require('q'),
     version = process.env.MB_VERSION || thisPackage.version,
     hasTriggerRights = process.env.MB_DEPLOY === 'true',
     appveyor = require('./ci/appveyor'),
-    snapci = require('./ci/snapci'),
     travis = require('./ci/travis');
 
 function getCurrentCommitId () {
@@ -73,21 +72,6 @@ module.exports = function (grunt) {
             if (status !== 'success') {
                 grunt.warn('Build failed');
             }
-            done();
-        }, function (error) {
-            grunt.warn(error);
-        });
-    });
-
-    grunt.registerTask('trigger:snapci', 'Trigger Snap CI build for latest commit', function () {
-        if (!hasTriggerRights) {
-            return;
-        }
-
-        var done = this.async();
-
-        snapci.triggerBuild(version).done(function (result) {
-            console.log('Snap CI build successfully triggered for ' + version + ' => ' + result.counter);
             done();
         }, function (error) {
             grunt.warn(error);

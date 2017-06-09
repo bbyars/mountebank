@@ -1,9 +1,8 @@
 <p>Let's create an HTTP imposter with multiple stubs:</p>
 
-<pre><code data-test-id='http equals example'
-           data-test-step='1'
-           data-test-type='http'>
-POST /imposters HTTP/1.1
+<testScenario name='http equals example'>
+    <step type='http'>
+<pre><code>POST /imposters HTTP/1.1
 Host: localhost:<%= port %>
 Accept: application/json
 Content-Type: application/json
@@ -48,8 +47,8 @@ Content-Type: application/json
       "predicates": [{ "equals": { "method": "PUT" } }]
     }</strong>
   ]
-}
-</code></pre>
+}</code></pre>
+    </step>
 
 <p>The first predicate is the most complex, and the request has to match all of the
 specified request fields.  We have the option of putting multiple fields under one
@@ -62,76 +61,65 @@ compared in a case-sensitive manner, after stripping away the regular expression
 
 <p>The order of the query parameters and header fields does not matter.</p>
 
-<pre><code data-test-id='http equals example'
-           data-test-step='2'
-           data-test-type='http'>
-<strong class='highlight1'>POST /test?Second=2&amp;First=1</strong> HTTP/1.1
+    <step type='http'>
+<pre><code><strong class='highlight1'>POST /test?Second=2&amp;First=1</strong> HTTP/1.1
 Host: localhost:4545
 <strong class='highlight1'>accept: text/plain</strong>
 
-<strong class='highlight1'>hello, world!</strong>
-</code></pre>
+<strong class='highlight1'>hello, world!</strong></code></pre>
 
-<pre><code data-test-id='http equals example'
-           data-test-verify-step='2'
-           data-test-ignore-lines='["^Date"]'>
-HTTP/1.1 <strong class='highlight1'>400</strong> Bad Request
+        <assertResponse>
+<pre><code>HTTP/1.1 <strong class='highlight1'>400</strong> Bad Request
 Connection: close
-Date: Thu, 09 Jan 2014 02:30:31 GMT
-Transfer-Encoding: chunked
-</code></pre>
+Date: <volatile>Thu, 09 Jan 2014 02:30:31 GMT</volatile>
+Transfer-Encoding: chunked</code></pre>
+        </assertResponse>
+    </step>
 
 <p>The second stub matches if the header changes.</p>
 
-<pre><code data-test-id='http equals example'
-           data-test-step='3'
-           data-test-type='http'>
-POST /test?Second=2&amp;First=1 HTTP/1.1
+    <step type='http'>
+<pre><code>POST /test?Second=2&amp;First=1 HTTP/1.1
 Host: localhost:4545
 <strong class='highlight2'>Accept: application/xml</strong>
 
-"hello, world!"
-</code></pre>
+"hello, world!"</code></pre>
 
-<pre><code data-test-id='http equals example'
-           data-test-verify-step='3'
-           data-test-ignore-lines='["^Date"]'>
-HTTP/1.1 <strong class='highlight2'>406</strong> Not Acceptable
+        <assertResponse>
+<pre><code>HTTP/1.1 <strong class='highlight2'>406</strong> Not Acceptable
 Connection: close
-Date: Thu, 09 Jan 2014 02:30:31 GMT
-Transfer-Encoding: chunked
-</code></pre>
+Date: <volatile>Thu, 09 Jan 2014 02:30:31 GMT</volatile>
+Transfer-Encoding: chunked</code></pre>
+        </assertResponse>
+    </step>
 
 <p>The third stub matches on a <code>PUT</code>.</p>
 
-<pre><code data-test-id='http equals example'
-           data-test-step='4'
-           data-test-type='http'>
-<strong class='highlight3'>PUT</strong> /test?Second=2&amp;First=1 HTTP/1.1
+    <step type='http'>
+<pre><code><strong class='highlight3'>PUT</strong> /test?Second=2&amp;First=1 HTTP/1.1
 Host: localhost:4545
 Accept: application/json
 
-"hello, world!"
-</code></pre>
+"hello, world!"</code></pre>
 
-<pre><code data-test-id='http equals example'
-           data-test-verify-step='4'
-           data-test-ignore-lines='["^Date"]'>
+        <assertResponse>
+<pre><code>
 HTTP/1.1 <strong class='highlight3'>405</strong> Method Not Allowed
 Connection: close
-Date: Thu, 09 Jan 2014 02:30:31 GMT
+Date: <volatile>Thu, 09 Jan 2014 02:30:31 GMT</volatile>
 Transfer-Encoding: chunked
 </code></pre>
+        </assertResponse>
+    </step>
 
 <p>The fourth stub will never run, since it matches the same requests as the
 third stub.  mountebank always chooses the first stub that matches based on
 the order you add them to the <code>stubs</code> array when creating the
 imposter.</p>
 
-<code class='hidden' data-test-id='http equals example'
-                     data-test-step='5'
-                     data-test-type='http'>
-DELETE /imposters/4545 HTTP/1.1
+    <step type='http'>
+<code class='hidden'>DELETE /imposters/4545 HTTP/1.1
 Host: localhost:<%= port %>
-Accept: application/json
-</code>
+Accept: application/json</code>
+    </step>
+</testScenario>

@@ -1,0 +1,412 @@
+<p>The <code>mode</code> defines the behavior of the proxy.</p>
+
+<ul class='bullet-list'>
+  <li><code>proxyOnce</code> - ensures that the same request (defined
+      by the predicates) is never proxied twice. mountebank only records
+      one response for each request, and automatically replays that response the next
+      time the request predicates match.</li>
+  <li><code>proxyAlways</code> - All calls will be proxied, allowing multiple responses
+      to be saved for the same logical request. You have to explicitly tell mountebank
+      to replay those responses.</li>
+</ul>
+
+<h3>proxyOnce</h3>
+
+<p>The default <code>proxyOnce</code> mode is simpler; it always creates a new
+stub in front of the stub with the proxy response, relying on mountebank's first-match
+policy to automatically replay the saved response in the new stub the next time a request
+matches the predicates. Imagine the following <code>stubs</code> array, set by us when we
+create the imposter:</p>
+
+<testScenario name='proxyOnce'>
+    <step type='http'>
+<code class='hidden'>POST /imposters HTTP/1.1
+Host: localhost:<%= port %>
+Content-Type: application/json
+
+{
+  "port": 2001,
+  "protocol": "http",
+  "stubs": [{ "responses": [{ "is": { "body": "Downstream service response" } }] }]
+}</code>
+    </step>
+
+    <step type='http'>
+<pre><code><span class='hidden'>POST /imposters HTTP/1.1
+Host: localhost:<%= port %>
+Content-Type: application/json
+
+{
+  "port": 2000,
+  "protocol": "http",
+</span>"stubs": [{
+  "responses": [{
+    "proxy": {
+      "to": "<change to='http://localhost:2001'>http://origin-server.com</change>",
+      <strong class='highlight1'>"mode": "proxyOnce"</strong>,
+      "predicateGenerators": [{ "matches": { "path": true } }]
+    }
+  }]
+}]<span class='hidden'>}</span></code></pre>
+    </step>
+
+<p>When we issue an HTTP call to <code>/test</code>, the stub will proxy all of the request
+details to http://origin-server.com/test, and save off the response in a new stub in front of the
+stub with the <code>proxy</code> response:</p>
+
+    <step type='http'>
+<code class='hidden'>GET /test HTTP/1.1
+Host: localhost:2000</code>
+    </step>
+
+    <step type='http'>
+<code class='hidden'>DELETE /imposters/2001 HTTP/1.1
+Host: localhost:<%= port %>
+Accept: application/json</code>
+    </step>
+
+    <step type='http'>
+<code class='hidden'>DELETE /imposters/2000 HTTP/1.1
+Host: localhost:<%= port %>
+Accept: application/json</code>
+
+        <assertResponse partial='true'>
+<pre><code><span class='hidden'>{
+</span>"stubs": [
+  {
+    "predicates": [{ "deepEquals": { "path": "/test" } } ],
+    "responses": [<strong class='highlight1'>{
+      "is": {
+        "body": "Downstream service response",
+        <change to='"_mode": "text"'>...</change>
+      }
+    }</strong>]
+  },
+  {
+    "responses": [{
+      "proxy": {
+        "to": "http://localhost:2001",
+        "mode": "proxyOnce",
+        "predicateGenerators": [{ "matches": { "path": true } }]
+      }
+    }]
+  }
+]<span class='hidden'>}</span></code></pre>
+        </assertResponse>
+    </step>
+</testScenario>
+
+<p>Because of mountebank's first-match policy on stubs, the next
+time the imposter receives a request to <code>/test</code>, the saved predicates on the
+newly created stub will match, and the recorded response will be replayed.  If
+the imposter receives a call to <code>/different-path</code>, then it will proxy again,
+creating a new stub, because the <code>path</code> is different.</p>
+
+<h3>proxyAlways</h3>
+
+<p>The <code>proxyAlways</code> mode saves stubs <em>behind</em> the <code>proxy</code>
+stub. This allows you to record a richer set of interactions with the origin server
+because it can record multiple responses for the same logical request (as defined by
+the predicates). The consequence is that it requires you to save off the imposter representation
+and remove or reorder the <code>proxy</code> stubs to replay those interactions. The easiest
+way to do that is with the <a href='/docs/commandLine#replay'><code>mb replay</code></a> command.</p>
+
+<p>Let's say you had the following <code>stubs</code> array:</p>
+
+<testScenario name='proxyAlways'>
+    <step type='http'>
+<code class='hidden'>POST /imposters HTTP/1.1
+Host: localhost:<%= port %>
+Content-Type: application/json
+
+{
+  "port": 4001,
+  "protocol": "http",
+  "stubs": [{
+    "responses": [{
+      "inject": "function (req, state) { state.count = state.count || 0; state.count +=1; return { body: 'Request number ' + state.count }; }"
+    }]
+  }]
+}</code>
+    </step>
+
+    <step type='http'>
+<pre><code><span class='hidden'>POST /imposters HTTP/1.1
+Host: localhost:<%= port %>
+Content-Type: application/json
+
+{
+  "port": 4000,
+  "protocol": "http",
+</span>"stubs": [{
+  "responses": [{
+    "proxy": {
+      "to": "<change to='http://localhost:4001'>http://origin-server.com</change>",
+      <strong class='highlight1'>"mode": "proxyAlways"</strong>,
+      "predicateGenerators": [{ "matches": { "path": true } }]
+    }
+  }]
+}]<span class='hidden'>}</span></code></pre>
+    </step>
+
+<p>Every time we send a request to <code>/test</code>, it will
+be proxied to http://origin-server.com/test. The first time we do that, just like the
+<code>proxyOnce</code> example, it will add a new stub. The difference is that the
+new stub will be created at the end of the array:</p>
+
+    <step type='http'>
+<code class='hidden'>GET /test HTTP/1.1
+Host: localhost:4000</code>
+    </step>
+
+    <step type='http'>
+<code class='hidden'>GET /imposters/4000 HTTP/1.1
+Host: localhost:<%= port %>
+Accept: application/json</code>
+
+        <assertResponse partial='true'>
+<pre><code><span class='hidden'>{
+</span>"stubs": [
+  {
+    "responses": [
+      {
+        "proxy": {
+          "to": "<change to='http://localhost:4001'>http://origin-server.com</change>",
+          "mode": "proxyAlways",
+          "predicateGenerators": [{ "matches": { "path": true } }]
+        }
+      }
+    ]
+  },
+  {
+    "predicates": [{ "deepEquals": { "path": "/test" } }],
+    "responses": [<strong class='highlight1'>{
+      "is": {
+        "body": "Request number 1",
+        <change to='"_mode": "text"'>...</change>
+      }
+    }</strong>]
+  }
+]<span class='hidden'>}</span></code></pre>
+        </assertResponse>
+    </step>
+
+<p>Because the proxy occurs before the new stub, the next request will continue to use
+the <code>proxy</code> response. This allow us to capture multiple responses for the
+same logical request. If we once again send a request to the <code>/test</code> path,
+since a stub with the predicate already exists, the response will be added to the
+existing stub:</p>
+
+    <step type='http'>
+<code class='hidden'>GET /test HTTP/1.1
+Host: localhost:4000</code>
+    </step>
+
+    <step type='http'>
+<code class='hidden'>GET /imposters/4000 HTTP/1.1
+Host: localhost:<%= port %>
+Accept: application/json</code>
+
+        <assertResponse partial='true'>
+<pre><code><span class='hidden'>{
+</span>"stubs": [
+  {
+    "responses": [
+      {
+        "proxy": {
+          "to": "<change to='http://localhost:4001'>http://origin-server.com</change>",
+          "mode": "proxyAlways",
+          "predicateGenerators": [{ "matches": { "path": true } }]
+        }
+      }
+    ]
+  },
+  {
+    "predicates": [{ "deepEquals": { "path": "/test" } }],
+    "responses": [
+      {
+        "is": {
+          "body": "Request number 1",
+          <change to='"_mode": "text"'>...</change>
+        }
+      },
+      <strong class='highlight1'>{
+        "is": {
+          "body": "Request number 2",
+          <change to='"_mode": "text"'>...</change>
+        }
+      }</strong>
+    ]
+  }
+]<span class='hidden'>}</span></code></pre>
+        </assertResponse>
+    </step>
+
+<p>This configuration allows you to capture as rich a set of data as your downstream
+system provides and play it back with the appropriate predicates. The only additional
+complexity with <code>proxyAlways</code> is that <em>you have to explicitly switch to
+replay mode.</em> Conceptually, replaying is as simple as removing the proxies. The easiest
+way to do that is by using the <a href='/docs/commandLine'><code>mb replay</code></a>
+command, passing in the port if you're using a nonstandard port for running <code>mb</code>. If,
+for example, we had previously started mountebank on port 3535,
+we could switch to replay mode with the following call:</p>
+
+<pre><code>mb replay --port 3535</code></pre>
+
+<p class='info-icon'>As always, there's more than one way to do it. You can instead use the API,
+retrieving all imposters with a call to
+<a href='/docs/api/overview#get-imposters'><code>GET /imposters?replayabe=true&removeProxies=true</code></a>
+and sending the payload in a call <a href='/docs/api/overview#put-imposters'>
+<code>PUT /imposters</code></a>.</p>
+
+<p>Now if we look at the imposter configuration, you'll notice that the proxy has
+been removed. Only the saved responses will be used.</p>
+
+    <step type='http'>
+<code class='hidden'>GET /imposters/4000?replayable=true&removeProxies=true
+Host: localhost: <%= port %>
+Accept: application/json</code>
+
+        <assertResponse>
+<code class='hidden'>HTTP/1.1 200 OK
+Access-Control-Allow-Origin: *
+Vary: Accept
+Content-Type: application/json; charset=utf-8
+Content-Length: 869
+Date: <volatile>Sat, 20 May 2017 14:43:12 GMT</volatile>
+Connection: keep-alive
+
+{
+  "protocol": "http",
+  "port": 4000,
+  "stubs": [{
+    "predicates": [{ "deepEquals": { "path": "/test" } }],
+    "responses": [
+      {
+        "is": {
+          "statusCode": 200,
+          "headers": {
+            "Connection": "close",
+            "Date": "<volatile>Sat, 20 May 2017 14:43:12 GMT</volatile>",
+            "Transfer-Encoding": "chunked"
+          },
+          "body": "Request number 1",
+          "_mode": "text"
+        }
+      },
+      {
+        "is": {
+          "statusCode": 200,
+          "headers": {
+            "Connection": "close",
+            "Date": "<volatile>Sat, 20 May 2017 14:43:12 GMT</volatile>",
+            "Transfer-Encoding": "chunked"
+          },
+          "body": "Request number 2",
+          "_mode": "text"
+        }
+      }
+    ]
+  }]
+}</code>
+        </assertResponse>
+    </step>
+
+    <step type='http'>
+<code class='hidden'>DELETE /imposters/4000 HTTP/1.1
+Host: localhost:<%= port %>
+Accept: application/json</code>
+    </step>
+
+    <step type='http'>
+<code class='hidden'>POST /imposters HTTP/1.1
+Host: localhost:<%= port %>
+Accept: application/json
+
+{
+  "protocol": "http",
+  "port": 4000,
+  "stubs": [
+    {
+      "predicates": [
+        {
+          "deepEquals": {
+            "path": "/test"
+          }
+        }
+      ],
+      "responses": [
+        {
+          "is": {
+            "statusCode": 200,
+            "headers": {
+              "Connection": "close",
+              "Date": "Fri, 19 May 2017 01:09:42 GMT",
+              "Transfer-Encoding": "chunked"
+            },
+            "body": "Request number 1",
+            "_mode": "text",
+            "_proxyResponseTime": 14
+          }
+        },
+        {
+          "is": {
+            "statusCode": 200,
+            "headers": {
+              "Connection": "close",
+              "Date": "Fri, 19 May 2017 01:09:42 GMT",
+              "Transfer-Encoding": "chunked"
+            },
+            "body": "Request number 2",
+            "_mode": "text",
+            "_proxyResponseTime": 4
+          }
+        }
+      ]
+    }
+  ]
+}</code>
+        </assertResponse>
+    </step>
+
+    <step type='http'>
+<code class='hidden'>GET /imposters/4000 HTTP/1.1
+Host: localhost:<%= port %>
+Accept: application/json</code>
+
+        <assertResponse partial='true'>
+<pre><code><span class='hidden'>{
+</span>"stubs": [
+  {
+    "predicates": [{ "deepEquals": { "path": "/test" } }],
+    "responses": [
+      {
+        "is": {
+          "body": "Request number 1",
+          <change to='"_mode": "text"'>...</change>
+        }
+      },
+      {
+        "is": {
+          "body": "Request number 2",
+          <change to='"_mode": "text"'>...</change>
+        }
+      }
+    ]
+  }
+]<span class='hidden'>}</span></code></pre>
+        </assertResponse>
+    </step>
+
+    <step type='http'>
+<code class='hidden'>DELETE /imposters/4000 HTTP/1.1
+Host: localhost:<%= port %>
+Accept: application/json</code>
+    </step>
+
+    <step type='http'>
+<code class='hidden'>DELETE /imposters/4001 HTTP/1.1
+Host: localhost:<%= port %>
+Accept: application/json</code>
+    </step>
+</testScenario>

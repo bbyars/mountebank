@@ -89,10 +89,9 @@ replaced. We'll look at the following examples:</p>
 
 <p>The following example shows multiple regular expression matches on request fields to copy into the response.</p>
 
-<pre><code data-test-id='copy-regex'
-           data-test-step='1'
-           data-test-type='http'>
-POST /imposters HTTP/1.1
+<testScenario name='copy-regex'>
+    <step type='http'>
+<pre><code>POST /imposters HTTP/1.1
 Host: localhost:<%= port %>
 Accept: application/json
 Content-Type: application/json
@@ -138,8 +137,8 @@ Content-Type: application/json
       ]
     }
   ]
-}
-</code></pre>
+}</code></pre>
+    </step>
 
 <p>This example shows off many of the options of the <code>copy</code> behavior. For example,
 we can plug tokens into any of the response fields (including the <code>statusCode</code>), and
@@ -149,43 +148,36 @@ regular expression to capture the <code>name</code> query parameter. It also sho
 request fields using an array of <code>copy</code> configurations. Let's see what happens when we
 craft a request to match all of those selectors:</p>
 
-<pre><code data-test-id='copy-regex'
-           data-test-step='2'
-           data-test-type='http'>
-GET /statusCode/<strong class='highlight1'>400</strong>?ignore=this&<strong class='highlight3'>name=mountebank</strong> HTTP/1.1
+    <step type='http'>
+<pre><code>GET /statusCode/<strong class='highlight1'>400</strong>?ignore=this&<strong class='highlight3'>name=mountebank</strong> HTTP/1.1
 Host: localhost:8585
-X-REQUEST: <strong class='highlight2'>Header value</strong>
-</code></pre>
+X-REQUEST: <strong class='highlight2'>Header value</strong></code></pre>
 
-<pre><code data-test-id='copy-regex'
-           data-test-verify-step='2'
-           data-test-ignore-lines='["^Date"]'>
-HTTP/1.1 <strong class='highlight1'>400</strong> Bad Request
-Date: Thu, 28 Dec 2016 11:37:31 GMT
+        <assertResponse>
+<pre><code>HTTP/1.1 <strong class='highlight1'>400</strong> Bad Request
 X-Test: <strong class='highlight2'>Header value</strong>
 Connection: close
+Date: <volatile>Thu, 28 Dec 2016 11:37:31 GMT</volatile>
 Transfer-Encoding: chunked
 
-The request name was <strong class='highlight3'>mountebank</strong>. Hello, <strong class='highlight3'>mountebank</strong>!
-</code></pre>
+The request name was <strong class='highlight3'>mountebank</strong>. Hello, <strong class='highlight3'>mountebank</strong>!</code></pre>
+        </assertResponse>
+    </step>
 
-<code class='hidden'
-      data-test-id='copy-regex'
-      data-test-step='3'
-      data-test-type='http'>
-DELETE /imposters/8585 HTTP/1.1
-Host: localhost:<%= port %>
-</code>
+    <step type='http'>
+<code class='hidden'>DELETE /imposters/8585 HTTP/1.1
+Host: localhost:<%= port %></code>
+    </step>
+</testScenario>
 
 <h3 id='copy-xpath-replacement'>xpath</h3>
 
 <p>The following example shows a simple namespaced xpath match to grab the first <code>title</code> field in
 an XML document and copy it into the <code>BOOK</code> response token.</p>
 
-<pre><code data-test-id='copy-xpath'
-           data-test-step='1'
-           data-test-type='http'>
-POST /imposters HTTP/1.1
+<testScenario name='copy-xpath'>
+    <step type='http'>
+<pre><code>POST /imposters HTTP/1.1
 Host: localhost:<%= port %>
 Accept: application/json
 Content-Type: application/json
@@ -217,17 +209,15 @@ Content-Type: application/json
       ]
     }
   ]
-}
-</code></pre>
+}</code></pre>
+    </step>
 
 <p>The <code>ns</code> object map is optional and can be ignored if your xpath selector doesn't depend on
 namespaces. It doesn't matter how many <code>name</code> elements exist in the XML. Without using indexed
 tokens, only the first match will be used:</p>
 
-<pre><code data-test-id='copy-xpath'
-           data-test-step='2'
-           data-test-type='http'>
-POST /names HTTP/1.1
+    <step type='http'>
+<pre><code>POST /names HTTP/1.1
 Host: localhost:8586
 
 &lt;books xmlns:isbn=&quot;http://schemas.isbn.org/ns/1999/basic.dtd&quot;&gt;
@@ -243,37 +233,32 @@ Host: localhost:8586
     &lt;isbn:title&gt;The Hobbit&lt;/isbn:title&gt;
     &lt;isbn:summary&gt;A dragon and short people&lt;/isbn:summary&gt;
   &lt;/book&gt;
-&lt;/books&gt;
-</code></pre>
+&lt;/books&gt;</code></pre>
 
-<pre><code data-test-id='copy-xpath'
-           data-test-verify-step='2'
-           data-test-ignore-lines='["^Date"]'>
-HTTP/1.1 200 OK
-Date: Thu, 28 Dec 2016 11:37:31 GMT
+        <assertResponse>
+<pre><code>HTTP/1.1 200 OK
 Connection: close
+Date: <volatile>Thu, 28 Dec 2016 11:37:31 GMT</volatile>
 Transfer-Encoding: chunked
 
-Have you read <strong class='highlight1'>Game of Thrones</strong>?
-</code></pre>
+Have you read <strong class='highlight1'>Game of Thrones</strong>?</code></pre>
+        </assertResponse>
+    </step>
 
-<code class='hidden'
-      data-test-id='copy-xpath'
-      data-test-step='3'
-      data-test-type='http'>
-DELETE /imposters/8586 HTTP/1.1
-Host: localhost:<%= port %>
-</code>
+    <step type='http'>
+<code class='hidden'>DELETE /imposters/8586 HTTP/1.1
+Host: localhost:<%= port %></code>
+    </step>
+</testScenario>
 
-<h3 id='copy-jsonpath-replacement'>xpath</h3>
+<h3 id='copy-jsonpath-replacement'>jsonpath</h3>
 
 <p>The following example translates the XML example above into JSON. To make it more interesting,
 we'll show it using the <code>tcp</code> protocol</p>
 
-<pre><code data-test-id='copy-jsonpath'
-           data-test-step='1'
-           data-test-type='http'>
-POST /imposters HTTP/1.1
+<testScenario name='copy-jsonpath'>
+    <step type='http'>
+<pre><code>POST /imposters HTTP/1.1
 Host: localhost:<%= port %>
 Accept: application/json
 Content-Type: application/json
@@ -302,15 +287,13 @@ Content-Type: application/json
       ]
     }
   ]
-}
-</code></pre>
+}</code></pre>
+    </step>
 
 <p>Again, by default only the first match will be used:</p>
 
-<pre><code data-test-id='copy-jsonpath'
-           data-test-step='2'
-           data-test-type='exec'>
-echo '{
+    <step type='exec'>
+<pre><code>echo '{
   "books": [
     {
       "title": "<strong class='highlight1'>Game of Thrones</strong>",
@@ -325,21 +308,18 @@ echo '{
       "summary": "A dragon and short people"
     }
   ]
-}' | nc localhost 8587
-</code></pre>
+}' | nc localhost 8587</code></pre>
 
-<pre><code data-test-id='copy-jsonpath'
-           data-test-verify-step='2'>
-Have you read <strong class='highlight1'>Game of Thrones</strong>?
-</code></pre>
+        <assertResponse>
+<pre><code>Have you read <strong class='highlight1'>Game of Thrones</strong>?</code></pre>
+        </assertResponse>
+    </step>
 
-<code class='hidden'
-      data-test-id='copy-jsonpath'
-      data-test-step='3'
-      data-test-type='http'>
-DELETE /imposters/8587 HTTP/1.1
-Host: localhost:<%= port %>
-</code>
+    <step type='http'>
+<code>DELETE /imposters/8587 HTTP/1.1
+Host: localhost:<%= port %></code>
+    </step>
+</testScenario>
 
 <h3 id='copy-indexed-replacement'>Indexed replacements</h3>
 
@@ -347,10 +327,9 @@ Host: localhost:<%= port %>
 show that the same approach works for multiple selection methods, we'll show it for both
 regular expressions and jsonpath:</p>
 
-<pre><code data-test-id='copy-indexed'
-           data-test-step='1'
-           data-test-type='http'>
-POST /imposters HTTP/1.1
+<testScenario name='copy-indexed'>
+    <step type='http'>
+<pre><code>POST /imposters HTTP/1.1
 Host: localhost:<%= port %>
 Accept: application/json
 Content-Type: application/json
@@ -389,8 +368,8 @@ Content-Type: application/json
       ]
     }
   ]
-}
-</code></pre>
+}</code></pre>
+    </step>
 
 <p>Note the mismatched indexes between the two selection methods. This is because we use the standard regular
 expression semantics around matched groups, which is that the first element in the matches will be the entire
@@ -398,10 +377,8 @@ matched expression, the second element will be the first parenthesized match gro
 <code>${SUMMARY}[0]</code> and <code>${SUMMARY}</code> will be treated identically.   We'll
 trigger the substitutions with the following request:</p>
 
-<pre><code data-test-id='copy-indexed'
-           data-test-step='2'
-           data-test-type='http'>
-POST /?books=<strong class='highlight2'>Game%20of%20Thrones</strong>,<strong class='highlight2'>Harry%20Potter</strong>,<strong class='highlight2'>The%20Hobbit</strong> HTTP/1.1
+    <step type='http'>
+<pre><code>POST /?books=<strong class='highlight2'>Game%20of%20Thrones</strong>,<strong class='highlight2'>Harry%20Potter</strong>,<strong class='highlight2'>The%20Hobbit</strong> HTTP/1.1
 Host: localhost:8588
 
 {
@@ -419,26 +396,22 @@ Host: localhost:8588
       "summary": "<strong class='highlight1'>A dragon and short people</strong>"
     }
   ]
-}
-</code></pre>
+}</code></pre>
 
-<pre><code data-test-id='copy-indexed'
-           data-test-verify-step='2'
-           data-test-ignore-lines='["^Date"]'>
-HTTP/1.1 200 OK
-Date: Thu, 28 Dec 2016 11:37:31 GMT
+        <assertResponse>
+<pre><code>HTTP/1.1 200 OK
 Connection: close
+Date: <volatile>Thu, 28 Dec 2016 11:37:31 GMT</volatile>
 Transfer-Encoding: chunked
 
 <strong class='highlight2'>Game of Thrones</strong>: <strong class='highlight1'>Dragons and political intrigue</strong>
 <strong class='highlight2'>Harry Potter</strong>: <strong class='highlight1'>Dragons and a boy wizard</strong>
-<strong class='highlight2'>The Hobbit</strong>: <strong class='highlight1'>A dragon and short people</strong>
-</code></pre>
+<strong class='highlight2'>The Hobbit</strong>: <strong class='highlight1'>A dragon and short people</strong></code></pre>
+        </assertResponse>
+    </step>
 
-<code class='hidden'
-      data-test-id='copy-indexed'
-      data-test-step='3'
-      data-test-type='http'>
-DELETE /imposters/8588 HTTP/1.1
-Host: localhost:<%= port %>
-</code>
+    <step type='http'>
+<code class='hidden'>DELETE /imposters/8588 HTTP/1.1
+Host: localhost:<%= port %></code>
+    </step>
+</testScenario>

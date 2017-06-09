@@ -211,6 +211,19 @@ describe('predicates', function () {
             assert.ok(predicates.evaluate(predicate, request));
         });
 
+        it('#equals should be true if caseSensitive and namespace has capital letters in URL', function () {
+            var predicate = {
+                    equals: { field: 'Harry Potter' },
+                    caseSensitive: true,
+                    xpath: {
+                        selector: '//bookml:title/text()',
+                        ns: { bookml: 'http://EXAMPLE.COM/book' }
+                    }
+                },
+                request = { field: '<book xmlns:bookml="http://EXAMPLE.COM/book"><bookml:title>Harry Potter</bookml:title></book>' };
+            assert.ok(predicates.evaluate(predicate, request));
+        });
+
         it('#endsWith should be false if aliased namespace match does not end with predicate', function () {
             var predicate = {
                     endsWith: { field: 'Harry' },

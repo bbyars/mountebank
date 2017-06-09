@@ -8,74 +8,89 @@ env:
     # AWS_ACCESS_KEY
     - secure: "H0iUwBPOwRf3+5HGqAXWU65dJIA+4SUltehM3+jiTXsqkxeHux3WqVOouaLlw2n8WaG9y1KMXEZzed6L8p8A3I6V2M+Y1n8qNYT8y/HjCTw4d3U0tiG6ef1ysIChdBOdlwXJT5GPLlLT0y+R4IgPfHd3DMx/aiEgT3O4gGZEchs="
 
-# Roughly ordered slowest to fastest to kick off the slow jobs first,
-# except include nodes that trigger other CIs in first 5 since they start in parallel
-matrix:
+jobs:
   include:
-    - os: osx
-      sudo: true
-      env:
-        - NODE_VERSION=6.10.1
-        - MB_GRUNT_TASK='test:pkg deploy:s3'
-    - os: osx
+# Test stage
+    - stage: test
+      script: ./build test:npm dist:zip:x64 dist:zip:x86 deploy:s3 trigger:appveyor
+      os: linux
       sudo: false
       env:
-        - NODE_VERSION=6.10.1
-        - MB_GRUNT_TASK='test:tarball:x64 deploy:s3'
-    - os: linux
-      sudo: true
-      env:
-        - NODE_VERSION=6.10.1
-        - MB_GRUNT_TASK=test:performance
-    - os: linux
-      sudo: false
-      env:
-        - NODE_VERSION=6.10.1
-        - MB_GRUNT_TASK='test:npm dist:zip:x64 dist:zip:x86 deploy:s3 trigger:appveyor'
         # APPVEYOR_API_TOKEN
         - secure: "A4hhAF4npjjpiV+X6u1dt4sHYUDLyB+0mIdovXSbR/eh1jTn1ZnaCwZD8G248N+yf5Kj1jTsUUzT4mxkWSO9uzxA93W7CimLH7iBjPVyOEemuXBlBqxPJAAweB6BhiGpiuPZk2SeC0SVa+gwC+KL3oy/PW4dz8Q5ytL/IE9b3/o="
-    - os: linux
+    - script: ./build test:pkg deploy:s3
+      os: osx
+      sudo: true
+    - script: ./build test:tarball:x64 deploy:s3 jsdoc deploy:docs
+      os: osx
+      sudo: false
+      env:
+        # FIREBASE_TOKEN
+        - secure: "uplPVyZC7fd3aMDXh46+IrjXCaA7r0VRZplnhSOzATtgZQjSlqHdgLGCXOw+j14oLgsyMNe5AHy9B9TV2xxt6ZDpKNoeAdk2vxPJpVatXD6Cs9jypuiDRq0Nlf8PiBPARucBK6qyR/YF8WvrG+MxahzB373j13YBQ/7rojugnaE="
+    - script: ./build test:performance
+      os: linux
+      sudo: true
+    - script: ./build test:deb dist:package:rpm deploy:s3
+      os: linux
       sudo: true
       env:
-        - NODE_VERSION=6.10.1
         - MB_INSTALL_RPM=true
-        - MB_GRUNT_TASK='test:deb dist:package:rpm deploy:s3 trigger:snapci deploy:heroku deploy:npm'
+    - script: ./build test:tarball:x64 dist:tarball:x86 deploy:s3 coveralls codeclimate
+      os: linux
+      sudo: false
+      env:
+        # CODECLIMATE_REPO_TOKEN
+        - secure: "jjJxl1G93oo4cZScpkizdmq142IkK749Ul/4CrpyIwOB80xVVOD/DWyFelCxQ0F/nOt150YOAc1w9UHI8fgY1goAk6cHP/ipzkZ9NIO4x/SjUl0XkWTW7T/riGzn6R+SbjRmWJwbszp4wmwIQj8lAekvYlmvMOR1QpNzBJ4K4x4="
+    - script: ./build
+      os: linux
+      sudo: false
+      env:
+        - NODE_VERSION=7.10.0
+        - MB_RUN_WEB_TESTS=true
+    - script: ./build
+      os: linux
+      sudo: false
+      env:
+        - NODE_VERSION=7.10.0
+        - SONAR=true
+        # SONARQUBE_LOGIN
+        - secure: "B+dWqZwbOPbtHlDmvKbIFfL/6YqStww4H8ljoteRHTqrgn3qc+GWdgELBm3ErPJHSyF9WxxA3pirJ6DFEeKxeCfYKeswFiF5Hm/WtBjiZ2k2DDGui9+NsEorHiQpCKY9rsY2H3fSwdTyx0TqVTPda//TGIqWSQEvKIaM4zG3lE8="
+    - script: ./build
+      os: linux
+      sudo: false
+      env:
+        - NODE_VERSION=4.4
+    - script: ./build
+      os: osx
+      sudo: false
+      env:
+        - NODE_VERSION=4.4
+    - script: ./build
+      os: osx
+      sudo: false
+      env:
+        - NODE_VERSION=7.10.0
+# Windows stage
+    - stage: windows
+      script: ./build waitFor:appveyor
+      os: linux
+      sudo: false
+      env:
+        # APPVEYOR_API_TOKEN
+        - secure: "A4hhAF4npjjpiV+X6u1dt4sHYUDLyB+0mIdovXSbR/eh1jTn1ZnaCwZD8G248N+yf5Kj1jTsUUzT4mxkWSO9uzxA93W7CimLH7iBjPVyOEemuXBlBqxPJAAweB6BhiGpiuPZk2SeC0SVa+gwC+KL3oy/PW4dz8Q5ytL/IE9b3/o="
+# Deploy stage
+    - stage: deploy
+      script: ./build deploy:heroku deploy:npm
+      os: linux
+      sudo: false
+      env:
         # HEROKU_API_KEY
         - secure: "BQunTTpCSGjhIYiBAXKxuuOluJIhKXdW/94GCsPlK1N8Ln20/nj/0U4qnSH7yASWQWssVG4ttm/cAbjfi+3DS4KDLtBGK1i3IoM+cJ2ADCeG7BHsqJDB0f9JyAkULjIRdkqilzR/tyD+w78pPHd7QbfplLvqUcnt7HVxw9lp4PY="
         # NPM_API_KEY
         - secure: "IEfctrje4QulHyavIMZYnxljU4XvpMnLR8TzCU8ozeQbdoIOq3/WqBl53Mou2Ie65YAbcMNfLmAvXWgNiKR2jE+K9tOyXsIj+Wbrr4b6X1FHqjkTLw8OCcLFD7kO/aptEOzsTZWbpJKao3mtcshHWWiFeeRDANYK6QMSYwoVNLc="
-        # SNAPCI_API_KEY
-        - secure: "AuiPAwCsw2q2xCu765d+jWdM7Hf0bKRfjN0Uwofv1ONUSWvbHDVbfK5GcJqGWvE0surDovgmWdPr9nUJxyUVQ4ONOWn3afQXvrBqXPoPjPuhXhnYNwa1HuH2GmpbL6WnmEJJCvqgw6KUVW3YJeUO+IUVQdfgkJxBYBXAuzkZ+oA="
-    - os: linux
-      sudo: false
-      env:
-        - NODE_VERSION=6.10.1
-        - MB_GRUNT_TASK='test:tarball:x64 dist:tarball:x86 deploy:s3 coveralls codeclimate'
-        # CODECLIMATE_REPO_TOKEN
-        - secure: "jjJxl1G93oo4cZScpkizdmq142IkK749Ul/4CrpyIwOB80xVVOD/DWyFelCxQ0F/nOt150YOAc1w9UHI8fgY1goAk6cHP/ipzkZ9NIO4x/SjUl0XkWTW7T/riGzn6R+SbjRmWJwbszp4wmwIQj8lAekvYlmvMOR1QpNzBJ4K4x4="
-    - os: linux
-      sudo: false
-      env:
-        - NODE_VERSION=7.8.0
-        - MB_RUN_WEB_TESTS=true
-    - os: linux
-      sudo: false
-      env:
-        - NODE_VERSION=7.8.0
-    - os: linux
-      sudo: false
-      env:
-        - NODE_VERSION=4.4
-    - os: osx
-      sudo: false
-      env:
-        - NODE_VERSION=4.4
-    - os: osx
-      sudo: false
-      env:
-        - NODE_VERSION=7.8.0
 
 install:
+  - export NODE_VERSION=${NODE_VERSION:-6.10.3} # Default node version = LTS version
   - rm -rf ~/.nvm
   - git clone https://github.com/creationix/nvm.git ~/.nvm
   - source ~/.nvm/nvm.sh
@@ -91,3 +106,5 @@ script:
   - echo "MB_DEPLOY - $MB_DEPLOY"
   - echo "MB_PUBLISH - $MB_PUBLISH"
   - ./build $MB_GRUNT_TASK
+  - if [[ "$SONAR" = "true" ]]; then scripts/sonar; fi
+

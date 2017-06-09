@@ -135,6 +135,19 @@ describe('imposter', function () {
             });
         });
 
+        promiseIt('replayable JSON should remove _proxyResponseTime fields', function () {
+            server.stubs = mock().returns([{ responses: [{ is: { body: 'body', _proxyResponseTime: 3 } }] }]);
+            server.port = 3535;
+
+            return Imposter.create(Protocol, {}).then(function (imposter) {
+                assert.deepEqual(imposter.toJSON({ replayable: true }), {
+                    protocol: 'http',
+                    port: 3535,
+                    stubs: [{ responses: [{ is: { body: 'body' } }] }]
+                });
+            });
+        });
+
         promiseIt('should remove proxies from responses if asked', function () {
             server.stubs = mock().returns([
                 {

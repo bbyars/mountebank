@@ -1,0 +1,387 @@
+<p>Recording a rich set of test data through proxying requires also capturing the
+appropriate predicates from the request, so that saved responses are only replayed
+when the requests are similar. The <code>predicateGenerators</code> field defines the
+template for the generated predicates. Each object in the <code>predicateGenerators</code>
+array takes the following fields:</p>
+
+<table>
+  <tr>
+    <th>Parameter</th>
+    <th style='min-width: 4em;'>Default</th>
+    <th>Type</th>
+    <th>Description</th>
+  </tr>
+  <tr>
+    <td><code>matches</code></td>
+    <td><code>{}</code></td>
+    <td>object</td>
+    <td>The fields that need to be equal in subsequent requests to replay the saved response.
+    Set the field value <code>true</code> to generate a predicate based on it. Nested fields,
+    as in JSON fields or HTTP headers, are supported as well, as long as the leaf keys have
+    a <code>true</code> value. If you set the parent object key (e.g. <code>query</code>)
+    to <code>true</code>, the generated predicate will use <code>deepEquals</code>,
+    requiring the entire object graph to match.</td>
+  </tr>
+  <tr>
+    <td><code>caseSensitive</code></td>
+    <td><code>false</code></td>
+    <td>boolean</td>
+    <td>Determines if the match is case sensitive or not.  This includes keys for objects
+    such as query parameters.</td>
+  </tr>
+  <tr>
+    <td><code>except</code></td>
+    <td><code>""</code></td>
+    <td>string</td>
+    <td>Defines a regular expression that is stripped out of the request field
+    before matching.</td>
+  </tr>
+  <tr>
+    <td><code>xpath</code></td>
+    <td><code>null</code></td>
+    <td>object</td>
+    <td>Defines an object containing a <code>selector</code> string and, optionally, an
+    <code>ns</code> object field that defines a namespace map. The predicate's
+    scope is limited to the selected value in the request field.</td>
+  </tr>
+  <tr>
+    <td><code>jsonpath</code></td>
+    <td><code>null</code></td>
+    <td>object</td>
+    <td>Defines an object containing a <code>selector</code> string. The predicate's
+    scope is limited to the selected value in the request field.</td>
+  </tr>
+</table>
+
+<p>With the exception of <code>matches</code>, the fields correspond to the standard
+<a href='/docs/api/predicates'>predicate parameters</a>. Each object in the
+<code>predicateGenerators</code> array generates an object in
+the newly created stub's <code>predicates</code> array. You can decide how strictly
+you want the generated predicates to match object fields. The following example
+matches the root <code>query</code> field in its entirety:</p>
+
+<testScenario name='predicate-generators'>
+    <step type='http'>
+<code class='hidden'>POST /imposters HTTP/1.1
+Host: localhost:<%= port %>
+Accept: application/json
+Content-Type: application/json
+
+{
+  "port": 3001,
+  "protocol": "http"
+}</code>
+    </step>
+
+    <step type='http'>
+<pre><code><span class='hidden'>POST /imposters HTTP/1.1
+Host: localhost:<%= port %>
+Accept: application/json
+Content-Type: application/json
+
+{
+  "port": 3000,
+  "protocol": "http",
+</span>"stubs": [{
+  "responses": [{
+    "proxy": {
+      "to": "<change to='http://localhost:3001'>http://origin-server.com</change>",
+      <strong class='highlight1'>"predicateGenerators": [{
+        "matches": { "query": true },
+        "caseSensitive": true
+      }]</strong>
+    }
+  }]
+}]<span class='hidden'>}</span></code></pre>
+    </step>
+
+<p>This will generate a <code>deepEquals</code> predicate at the same level, which requires
+that all keys and values in the querystring match (although the order can be different).
+We added the <code>caseSensitive</code> parameter, which will also require the cases of the
+query keys and values to match. If the incoming request is to <code>/test?q=mountebank&page=1</code>,
+the following stub will be generating (the saved response is elided for clarity):</p>
+
+    <step type='http'>
+<code class='hidden'>GET /test?q=mountebank&page=1 HTTP/1.1
+Host: localhost:3000</code>
+    </step>
+
+    <step type='http'>
+<code class='hidden'>GET /imposters/3000 HTTP/1.1
+Host: localhost:<%= port %></code>
+
+        <assertResponse partial='true'>
+<pre><code><span class='hidden'>{
+</span>"stubs": [
+  {
+    <strong class='highlight1'>"predicates": [{
+      "caseSensitive": true,
+      "deepEquals": {
+        "query": {
+          "q": "mountebank",
+          "page": "1"
+        }
+      }
+    }]</strong>,
+    "responses": [{
+      "is": { <change to=''><strong class='highlight2'>...</strong> }</change><span class='hidden'>
+        "_proxyResponseTime": <volatile>5</volatile>
+      }</span>
+    }]
+  },
+  {
+    "responses": [{
+      "proxy": {
+        "to": "<change to='http://localhost:3001'>http://origin-server.com</change>",
+        "predicateGenerators": [{
+          "matches": { "query": true },
+          "caseSensitive": true
+        }]
+      }
+    }]
+  }
+]<span class='hidden'>}</span></code></pre>
+        </assertResponse>
+    </step>
+
+    <step type='http'>
+<code class='hidden'>DELETE /imposters/3000
+Host: localhost:<%= port %></code>
+    </step>
+
+<p>Just as with predicates, we could have also specified only the query key we cared about:</p>
+
+    <step type='http'>
+<pre><code><span class='hidden'>POST /imposters HTTP/1.1
+Host: localhost:<%= port %>
+Accept: application/json
+Content-Type: application/json
+
+{
+  "port": 3000,
+  "protocol": "http",
+</span>"stubs": [{
+  "responses": [{
+    "proxy": {
+      "to": "<change to='http://localhost:3001'>http://origin-server.com</change>",
+      "predicateGenerators": [{
+        "matches": {
+          <strong class='highlight1'>"query": { "q": "mountebank" }</strong>
+        }
+      }]
+    }
+  }]
+}]<span class='hidden'>}</span></code></pre>
+    </step>
+
+<p>The same request to <code>/test?q=mountebank&page=1</code> now generates a more
+limited predicate:</p>
+
+    <step type='http'>
+<code class='hidden'>GET /test?q=mountebank&page=1 HTTP/1.1
+Host: localhost:3000</code>
+    </step>
+
+    <step type='http'>
+<code class='hidden'>GET /imposters/3000 HTTP/1.1
+Host: localhost:<%= port %></code>
+
+        <assertResponse partial='true'>
+<pre><code><span class='hidden'>{
+</span>"stubs": [
+  {
+    <strong class='highlight1'>"predicates": [{
+      "equals": {
+        "query": { "q": "mountebank" }
+      }
+    }]</strong>,
+    "responses": [{
+      "is": { <change to=''><strong class='highlight2'>...</strong> }</change><span class='hidden'>
+        "_proxyResponseTime": <volatile>5</volatile>
+      }</span>
+    }]
+  },
+  {
+    "responses": [{
+      "proxy": {
+        "to": "<change to='http://localhost:3001'>http://origin-server.com</change>",
+        "predicateGenerators": [{
+          "matches": {
+            "query": { "q": "mountebank" }
+          }
+        }]
+      }
+    }]
+  }
+]<span class='hidden'>}</span></code></pre>
+        </assertResponse>
+    </step>
+
+    <step type='http'>
+<code class='hidden'>DELETE /imposters/3000
+Host: localhost:<%= port %></code>
+    </step>
+
+<p>The <a href='/docs/api/xpath'><code>xpath</code></a> and
+<a href='/docs/api/jsonpath'><code>jsonpath</code></a> predicate parameters work
+by limiting the scope of the generated predicate to the matching value in the
+proxied request. If the selector matches multiple values in the proxied request,
+they will all be part of the generated predicate, using standard predicate
+<a href='/docs/api/predicates#array-match'>array matching rules</a>. For example,
+following stub will look for <code>number</code> tags in the XML body:</p>
+
+    <step type='http'>
+<pre><code><span class='hidden'>POST /imposters HTTP/1.1
+Host: localhost:<%= port %>
+Accept: application/json
+Content-Type: application/json
+
+{
+  "port": 3000,
+  "protocol": "http",
+</span>"stubs": [{
+  "responses": [{
+    "proxy": {
+      "to": "<change to='http://localhost:3001'>http://origin-server.com</change>",
+      <strong class='highlight1'>"predicateGenerators": [{
+        "matches": { "body": true },
+        "xpath": { "selector": "//number" }
+      }]</strong>
+    }
+  }]
+}]<span class='hidden'>}</span></code></pre>
+    </step>
+
+<p>We'll send it the following XML body:</p>
+
+    <step type='http'>
+<pre><code><span class='hidden'>POST / HTTP/1.1
+Host: localhost:3000
+
+</span>&lt;doc&gt;
+  &lt;number&gt;1&lt;/number&gt;
+  &lt;number&gt;2&lt;/number&gt;
+  &lt;number&gt;3&lt;/number&gt;
+&lt;/doc&gt;</code></pre>
+    </step>
+
+<p>Rather than matching the entire body, the generated predicate will require all three
+values matching the xpath selector in the original proxied request to be present (in any
+order):</p>
+
+    <step type='http'>
+<code class='hidden'>GET /imposters/3000 HTTP/1.1
+Host: localhost:<%= port %></code>
+
+        <assertResponse partial='true'>
+<pre><code><span class='hidden'>{
+</span>"stubs": [
+  {
+    <strong class='highlight1'>"predicates": [{
+      "xpath": { "selector": "//number" },
+      "deepEquals": { "body": ["1", "2", "3"] }
+    }]</strong>,
+    "responses": [{
+      "is": { <change to='"statusCode": 200'><strong class='highlight2'>...</strong></change> }
+    }]
+  },
+  {
+    "responses": [{
+      "proxy": {
+        "to": "<change to='http://localhost:3001'>http://origin-server.com</change>",
+        "predicateGenerators": [{
+          "matches": { "body": true },
+          "xpath": { "selector": "//number" }
+        }]
+      }
+    }]
+  }
+]<span class='hidden'>}</span></code></pre>
+        </assertResponse>
+    </step>
+
+    <step type='http'>
+<code class='hidden'>DELETE /imposters/3000
+Host: localhost:<%= port %></code>
+    </step>
+
+<p>Similarly, the following stub looks for number elements in JSON:</p>
+
+    <step type='http'>
+<pre><code><span class='hidden'>POST /imposters HTTP/1.1
+Host: localhost:<%= port %>
+Accept: application/json
+Content-Type: application/json
+
+{
+  "port": 3000,
+  "protocol": "http",
+</span>"stubs": [{
+  "responses": [{
+    "proxy": {
+      "to": "<change to='http://localhost:3001'>http://origin-server.com</change>",
+      <strong class='highlight1'>"predicateGenerators": [{
+        "matches": { "body": true },
+        "jsonpath": { "selector": "$..number" }
+      }]</strong>
+    }
+  }]
+}]<span class='hidden'>}</span></code></pre>
+    </step>
+
+<p>We'll send it the following JSON body:</p>
+
+    <step type='http'>
+<pre><code><span class='hidden'>POST / HTTP/1.1
+Host: localhost:3000
+
+</span>[
+  { "number": 1 },
+  { "number": 2 },
+  { "number": 3 }
+]</code></pre>
+    </step>
+
+<p>Again, the generated predicate gets scoped to the jsonpath matches.</p>
+
+    <step type='http'>
+<code class='hidden'>GET /imposters/3000 HTTP/1.1
+Host: localhost:<%= port %></code>
+
+        <assertResponse partial='true'>
+<pre><code><span class='hidden'>{
+</span>"stubs": [
+  {
+    <strong class='highlight1'>"predicates": [{
+      "jsonpath": { "selector": "$..number" },
+      "deepEquals": { "body": [1, 2, 3] }
+    }]</strong>,
+    "responses": [{
+      "is": { <change to='"statusCode": 200'><strong class='highlight2'>...</strong></change> }
+    }]
+  },
+  {
+    "responses": [{
+      "proxy": {
+        "to": "<change to='http://localhost:3001'>http://origin-server.com</change>",
+        "predicateGenerators": [{
+          "matches": { "body": true },
+          "jsonpath": { "selector": "$..number" }
+        }]
+      }
+    }]
+  }
+]<span class='hidden'>}</span></code></pre>
+        </assertResponse>
+    </step>
+
+    <step type='http'>
+<code class='hidden'>DELETE /imposters/3000
+Host: localhost:<%= port %></code>
+    </step>
+
+    <step type='http'>
+<code class='hidden'>DELETE /imposters/3001
+Host: localhost:<%= port %></code>
+    </step>
+</testScenario>

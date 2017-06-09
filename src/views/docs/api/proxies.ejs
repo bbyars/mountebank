@@ -8,15 +8,10 @@ description = 'Using mountebank to record and playback through proxying to a rea
 <h1>Proxies</h1>
 
 <p>Proxies are one of the most powerful features of mountebank, rivaled only by the
-mighty <a href='/docs/api/injection'>injection.</a>  Each proxied response is recorded,
-either as an entirely new stub in the imposter's <code>stubs</code> array, or as a
-new response in the stub's <code>responses</code> array.  Proxies allow you to define
-the fields which should be included in newly created <code>predicates</code>.  The
-<code>proxy</code> will ensure that the proxied request data for those fields are
-filled in.</p>
-
-<p class='info-icon'>Use the <a href='/docs/commandLine#replay'><code>mb replay</code></a> command to
-    automatically remove the proxies, switching from record mode to replay mode.</p>
+mighty <a href='/docs/api/injection'>injection.</a>  Proxies support record/replay
+behavior to easily capture a rich set of test data for your test scenarios.
+Each proxy definition allows you to define the the fields which should be included
+in newly created <code>predicates</code>.</p>
 
 <p><code>proxy</code> response types take the following parameters:</p>
 
@@ -31,42 +26,33 @@ filled in.</p>
     <td><code>to</code></td>
     <td>required</td>
     <td>A URL without the path (e.g. http://someserver:3000 or tcp://someserver:3000)</td>
-    <td>Defines the origin server that the stub should proxy to.</td>
-  </tr>
-  <tr>
-    <td><code>mode</code></td>
-    <td><code>proxyOnce</code></td>
-    <td>string, one of <code>proxyOnce</code> or <code>proxyAlways</code>.</td>
-    <td>Defines the replay behavior of the proxy.  <code>proxyOnce</code>
-    always records the proxied call in the <code>stubs</code> array in
-    front of itself, so the same call is never proxied twice.  <code>proxyAlways</code>
-    saves the proxied call <em>after</em> itself in the <code>stubs</code>
-    array.  This allows you to capture different responses for the same call.
-    You can later replay <code>proxyAlways</code> stubs by issuing a <code>GET</code>
-    or <code>DELETE</code> to the imposter with the <code>removeProxies</code> and
-    <code>replayable</code> query params, and re-<code>POST</code>ing the imposter.</td>
+    <td>Defines the origin server that the request should proxy to.</td>
   </tr>
   <tr>
     <td><code>predicateGenerators</code></td>
     <td><code>[]</code></td>
     <td>array</td>
-    <td>An array of objects that defines how the predicates for new stubs are created.</td>
+    <td>An array of objects that defines how the predicates for new stubs are created. Each object in
+    the array defines the fields to generate predicates from. See <a href='#proxy-predicate-generators'>below</a>
+    for examples.</td>
   </tr>
   <tr>
-    <td><code>injectHeaders</code></td>
-    <td><code>{}</code></td>
-    <td>object</td>
-    <td>Key-value pairs of headers to inject into the proxied <i>request</i>.  This is useful when the behavior of
-    the system being proxied can be altered with appropriate headers (e.g. pointing REST links back to mountebank
-    for further proxying). You can also use this to pass along an 'Accept-Encoding: identity' header to prevent
-    the proxy from sending back compressed data. Existing headers will be overwritten if they match the injected headers.</td>
+    <td><code>mode</code></td>
+    <td><code>proxyOnce</code></td>
+    <td>string, one of <code>proxyOnce</code> or <code>proxyAlways</code>.</td>
+    <td>Defines the replay behavior of the proxy. The default <code>proxyOnce</code> mode
+        doesn't require you to explicitly do anything to replay the proxied responses. The
+        <code>proxyAlways</code> mode requires you to run the
+        <a href='/docs/commandLine'><code>mb replay</code></a> command (or equivalent) to
+        switch from record mode to replay mode, but allows a richer set of data to be
+        recorded. See <a href='#proxy-modes'>below</a> for details.</td>
   </tr>
   <tr>
     <td><code>addWaitBehavior</code></td>
     <td><code>false</code></td>
     <td>boolean</td>
     <td>If true, mountebank will add a <a href='/docs/api/behaviors#behavior-wait'><code>wait</code></a>
-    behavior to the response with the same latency that the proxied call took. This is useful in load
+    behavior to the response with the same latency that the proxied call took. This is useful in performance
     testing scenarios where you want to simulate the actual latency of downstream services that you're
     virtualizing.</td>
   </tr>
@@ -75,12 +61,13 @@ filled in.</p>
     <td><code>null</code></td>
     <td>string, JavaScript</td>
     <td>If defined, mountebank will add a <a href='/docs/api/behaviors#behavior-decorate'><code>decorate</code></a>
-    behavior to the response.</td>
+    behavior to the saved response.</td>
   </tr>
 </table>
 
 <p>http and https proxies add three additional optional parameters for situations where the
-origin server expects to use mutual authentication and will request a client certificate:</p>
+origin server expects to use mutual authentication and will request a client certificate, or
+for when you need to change the proxied request headers:</p>
 
 <table>
   <tr>
@@ -107,210 +94,55 @@ origin server expects to use mutual authentication and will request a client cer
     <td>A valid cipher (see <a href='http://openssl.cs.utah.edu/docs/apps/ciphers.html'>this page</a> for formats)</td>
     <td>For older (and insecure) https servers, this field allows you to override the cipher used to commuicate</td>
   </tr>
+  <tr>
+    <td><code>injectHeaders</code></td>
+    <td><code>{}</code></td>
+    <td>object</td>
+    <td>Key-value pairs of headers to inject into the proxied <i>request</i>.</td>
+  </tr>
 </table>
 
-<p>It is occasionally useful to capture how long the original proxied request takes.  mountebank
+<p>It is occasionally useful to capture how long the original proxied request takes. mountebank
 stores the number of milliseconds for the request in the <code>_proxyResponseTime</code> field in the
-response.</p>
+response. Setting the <code>addWaitBehavior</code> flag will add that latency to the saved response.</p>
 
-<p class='info-icon'>Note, if you use a corporate proxy, then setting the standard shell
+<p class='info-icon'>Note, if you use a corporate proxy, then the standard shell
 <code>http_proxy</code> or <code>https_proxy</code> environment variables will be honored.</p>
-
-<h2>Understanding proxy behavior</h2>
-
-<p>The <code>mode</code> and <code>predicateGenerators</code> parameters define the behavior of
-the <code>proxy</code>.  The default <code>proxyOnce</code> mode is simpler; it always
-creates a new stub.  Imagine the following <code>stubs</code> array, set by us when
-we create the imposter:</p>
-
-<pre><code>
-"stubs": [
-  {
-    "responses": [
-      {
-        "proxy": {
-          "to": "http://origin-server.com",
-          "mode": "proxyOnce",
-          "predicateGenerators": [
-            {
-              "matches": {
-                "method": true,
-                "path": true,
-                "query": true
-              }
-            }
-          ]
-        }
-      }
-    ]
-  }
-]
-</code></pre>
-
-<p>When we issue a <code>GET</code> to <code>/test?q=mountebank</code>, the stub
-will proxy to http://origin-server.com/test?q=mountebank, and save
-off the response in a new stub in front of the <code>proxy</code> response:</p>
-
-<pre><code>
-"stubs": [
-  {
-    "predicates": [{
-      "deepEquals': {
-        "method": "GET",
-        "path": "/test",
-        "query": { "q": "mountebank" }
-      }
-    }],
-    "responses": [
-      { "is": ...saved response }
-    ]
-  }
-  {
-    "responses": [
-      {
-        "proxy": {
-          "to": "http://origin-server.com",
-          "mode": "proxyOnce",
-          "predicateGenerators": [
-            {
-              "matches": {
-                "method": true,
-                "path": true,
-                "query": true
-              }
-            }
-          ]
-        }
-      }
-    ]
-  }
-]
-</code></pre>
-
-<p>Because of mountebank's first-match policy on stubs, the next time the imposter
-receives a <code>GET /test?q=mountebank</code> request, the saved predicates on the
-newly created stub will match, and the recorded response will be replayed.  If
-the imposter receives a <code>GET /test?q=mountebank&amp;sort=descending</code>, then
-it will proxy again, creating a new stub, because the querystring is different.</p>
-
-<p>The <code>proxyAlways</code> mode saves stubs behind the <code>proxy</code>
-stub.  This allows you to record a richer set of interactions with the origin server,
-but requires you to save off the imposter representation and remove or reorder the
-<code>proxy</code> to replay those interactions.</p>
-
-<p>Let's say you had the following <code>stubs</code> array:</p>
-
-<pre><code>
-"stubs": [
-  {
-    "responses": [
-      {
-        "proxy": {
-          "to": "http://origin-server.com",
-          "mode": "proxyAlways",
-          "predicateGenerators": [
-            { "matches": { "path": true } }
-          ]
-        }
-      }
-    ]
-  },
-  {
-    "predicates": [
-      { "equals": { "path": "/test" } }
-    ],
-    "responses": [
-      { "is": { "body": "first response" } }
-    ]
-  }
-]
-</code></pre>
-
-<p>The next time we send a request to <code>/test</code>, the request will still
-be proxied to http://origin-server.com/test.  Since the predicate that we would
-normally create already exists after the <code>proxy</code> stub, the proxied
-response instead gets added to an existing stub's <code>responses</code> array.</p>
-
-<pre><code>
-"stubs": [
-  {
-    "responses": [
-      {
-        "proxy": {
-          "to": "http://origin-server.com",
-          "mode": "proxyAlways",
-          "predicateGenerators": [
-            { "matches": { "path": true } }
-          ]
-        }
-      }
-    ]
-  },
-  {
-    "predicates": [
-      { "deepEquals": { "path": "/test" } }
-    ],
-    "responses": [
-      { "is": { "body": "first response" } },
-      { "is": { ...saved response } }
-    ]
-  }
-]
-</code></pre>
-
-<p><code>predicateGenerators</code> accept the same predicate parameters as
-<a href='/docs/api/predicates'>predicates</a>: <code>caseSensitive</code> and
-<code>except</code>.</p>
-
-<h2>Examples</h2>
-
-<p>Our examples will proxy to the following origin server.  To help
-us keep track of the imposters in the logs, we'll set the <code>name</code>
-field.  We're using <a href='/docs/api/injection'>injection</a> to return the
-number of times the proxy has been called to the user.</p>
-
-<pre><code data-test-id='proxy example'
-           data-test-step='1'
-           data-test-type='http'>
-POST /imposters HTTP/1.1
-Host: localhost:<%= port %>
-Accept: application/json
-Content-Type: application/json
-
-{
-  "port": 7575,
-  "protocol": "http",
-  "name": "origin",
-  "stubs": [
-    {
-      "responses": [{
-        "inject": "function (request, state) { state.calls = state.calls || 0; return { body: 'call ' + ++state.calls }; }"
-      }]
-    }
-  ]
-}
-</code></pre>
 
 <p>Select the behavior of the proxy below for a relevant example:</p>
 
 <section class="accordion">
   <div>
-    <input id='proxy-once' name='proxy-once' type="checkbox" />
-    <label for='proxy-once'>proxyOnce</label>
+    <input id='proxy-predicate-generators' name='proxy-predicate-generators' type="checkbox" />
+    <label for='proxy-predicate-generators'>Understanding predicateGenerators</label>
     <section>
-      <% include proxy/proxyOnce %>
+      <% include proxy/predicateGenerators %>
     </section>
   </div>
   <div>
-    <input id='proxy-always' name='proxy-always' type="checkbox" />
-    <label for='proxy-always'>proxyAlways</label>
+    <input id='proxy-modes' name='proxy-modes' type="checkbox" />
+    <label for='proxy-modes'>Understanding proxy modes</label>
     <section>
-      <% include proxy/proxyAlways %>
+      <% include proxy/proxyModes %>
+    </section>
+  </div>
+  <div>
+    <input id='proxy-add-wait-behavior' name='proxy-add-wait-behavior' type="checkbox" />
+    <label for='proxy-add-wait-behavior'>Adding latency to the saved responses with addWaitBehavior</label>
+    <section>
+      <% include proxy/addWaitBehavior %>
+    </section>
+  </div>
+  <div>
+    <input id='proxy-add-decorate-behavior' name='proxy-decorate-wait-behavior' type="checkbox" />
+    <label for='proxy-add-decorate-behavior'>Decorating saved responses with addDecorateBehavior</label>
+    <section>
+      <% include proxy/addDecorateBehavior %>
     </section>
   </div>
   <div>
     <input id='proxy-inject-headers' name='proxy-inject-headers' type="checkbox" />
-    <label for='proxy-inject-headers'>injectHeaders</label>
+    <label for='proxy-inject-headers'>Changing the proxied request headers with injectHeaders</label>
     <section>
       <% include proxy/injectHeaders %>
     </section>
