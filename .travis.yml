@@ -47,12 +47,11 @@ jobs:
       env:
         - NODE_VERSION=7.10.0
         - MB_RUN_WEB_TESTS=true
-    - script: ./build
+    - script: ./build default sonar
       os: linux
       sudo: false
       env:
         - NODE_VERSION=7.10.0
-        - SONAR=true
         # SONARQUBE_LOGIN
         - secure: "B+dWqZwbOPbtHlDmvKbIFfL/6YqStww4H8ljoteRHTqrgn3qc+GWdgELBm3ErPJHSyF9WxxA3pirJ6DFEeKxeCfYKeswFiF5Hm/WtBjiZ2k2DDGui9+NsEorHiQpCKY9rsY2H3fSwdTyx0TqVTPda//TGIqWSQEvKIaM4zG3lE8="
     - script: ./build
@@ -106,5 +105,4 @@ script:
   - echo "MB_DEPLOY - $MB_DEPLOY"
   - echo "MB_PUBLISH - $MB_PUBLISH"
   - ./build $MB_GRUNT_TASK
-  - if [[ "$SONAR" = "true" ]]; then scripts/sonar; fi
 

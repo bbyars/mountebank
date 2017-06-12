@@ -147,5 +147,17 @@ module.exports = function (grunt) {
         });
     });
 
+    grunt.registerTask('sonar', 'Run SonarQube', function () {
+        var done = this.async(),
+            command = 'scripts/sonar';
+
+        exec(command, function (error, stdout, stderr) {
+            if (stdout) { console.log(stdout); }
+            if (stderr) { console.log(stderr); }
+            if (error) { throw error; }
+            done();
+        });
+    });
+
     grunt.registerTask('codeclimate', 'Send coverage results to codeclimate', ['coverage', '_codeclimate']);
 };
