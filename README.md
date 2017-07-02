@@ -1,5 +1,16 @@
 # Welcome, friend
 
+mountebank is the only open source service virtualization tool that competes with the commercial offerings
+in terms of protocol diversity, capability, and performance. Here's what
+[Capital One wrote](https://medium.com/capital-one-developers/moving-one-of-capital-ones-largest-customer-facing-apps-to-aws-668d797af6fc)
+about their mobile cloud migration:
+
+>In fact, halfway through we discovered our corporate mocking software couldn’t handle the
+>sheer amount of performance testing we were running as part of this effort (_we completely crushed
+>some pretty industrial enterprise software in the process_). As a result, we made the call to move
+>the entire program over to a Mountebank OSS-based solution with a custom provision to give us the ability
+>to expand/shrink our mocking needs on demand.
+
 mountebank is the first open source tool to provide cross-platform, multi-protocol test doubles over the wire.
 Just point your application to mountebank instead of the real dependency,
 and test like you would with traditional stubs and mocks.
@@ -42,7 +53,6 @@ After installing and running, view the docs in your browser at <http://localhost
 You can always learn more and support mountebank development by buying the book:
 
 [![Testing Microservices with Mountebank](https://images.manning.com/255/340/resize/book/d/b083e59-69bc-477f-b97f-33a701366637/Byars-Mountebank-MEAP-HI.png)](https://www.manning.com/books/testing-microservices-with-mountebank)
-
 
 ## Goals
 
