@@ -12,7 +12,8 @@ jobs:
   include:
 # Test stage
     - stage: test
-      script: ./build test:npm dist:zip:x64 dist:zip:x86 deploy:s3 trigger:appveyor
+      # Note that the appveyor build number is copied to S3 to be used in the next stage
+      script: ./build test:npm dist:zip:x64 dist:zip:x86 trigger:appveyor deploy:s3
       os: linux
       sudo: false
       env:
@@ -71,7 +72,7 @@ jobs:
         - NODE_VERSION=7.10.0
 # Windows stage
     - stage: windows
-      script: ./build waitFor:appveyor
+      script: ./build verify:windows
       os: linux
       sudo: false
       env:

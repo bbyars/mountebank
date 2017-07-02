@@ -106,4 +106,8 @@ module.exports = function (grunt) {
         ['dist', 'version', 'dist:package:deb', 'install:deb', 'test', 'uninstall:deb']);
     grunt.registerTask('test:rpm', 'Run tests against Red Hat package',
         ['download:rpm', 'install:rpm', 'test', 'uninstall:rpm']);
+
+    // Second stage
+    grunt.registerTask('verify:windows', 'Wait for the appveyor build to finish',
+        ['download:appveyor', 'waitFor:appveyor']);
 };
