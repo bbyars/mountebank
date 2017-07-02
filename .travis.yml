@@ -1,6 +1,7 @@
 # OSX agents don't have nvm pre-installed, and installing it manually
 # gives a lot more control over testing packaging options
 language: ruby
+cache: bundler
 
 env:
   global:
