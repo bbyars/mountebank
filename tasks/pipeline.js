@@ -46,7 +46,7 @@ module.exports = function (grunt) {
 
     grunt.registerTask('waitFor:appveyor', 'Wait for appveyor build to finish', function () {
         var done = this.async(),
-            buildNumber = fs.readFileSync('dist/appveyor-' + version + 'txt'),
+            buildNumber = fs.readFileSync('dist/appveyor-' + version + '.txt'),
             timeout = 10 * 60 * 1000,
             interval = 3000,
             start = new Date(),
