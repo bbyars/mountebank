@@ -190,6 +190,12 @@ describe('predicates', function () {
             assert.ok(!predicates.evaluate(predicate, request));
         });
 
+        it('#exists should be true if JSON array key exists', function () {
+            var predicate = { exists: { field: { key: true } } },
+                request = { field: '{"key": []}' };
+            assert.ok(predicates.evaluate(predicate, request));
+        });
+
         it('#equals should be true if matches key for any object in array', function () {
             var predicate = { equals: { examples: { key: 'third' } } },
                 request = { examples: '[{ "key": "first" }, { "different": true }, { "key": "third" }]' };

@@ -217,8 +217,13 @@ function predicateSatisfied (expected, actual, predicateConfig, predicateFn) {
                 expected[fieldName], actual[fieldName], predicateConfig, predicateFn);
         }
         else if (onlyActualIsArray(expected[fieldName], actual[fieldName])) {
-            return expectedMatchesAtLeastOneValueInActualArray(
-                expected[fieldName], actual[fieldName], predicateConfig, predicateFn);
+            if (predicateConfig.exists && expected[fieldName]) {
+                return true;
+            }
+            else {
+                return expectedMatchesAtLeastOneValueInActualArray(
+                    expected[fieldName], actual[fieldName], predicateConfig, predicateFn);
+            }
         }
         else if (expectedLeftOffArraySyntaxButActualIsArrayOfObjects(expected, actual, fieldName)) {
             // This is a little confusing, but predated the ability for users to specify an
