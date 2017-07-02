@@ -37,40 +37,35 @@ jobs:
       sudo: true
       env:
         - MB_INSTALL_RPM=true
-    - script: ./build test:tarball:x64 dist:tarball:x86 deploy:s3 coveralls codeclimate
+    - script: ./build test:tarball:x64 dist:tarball:x86 deploy:s3 coveralls codeclimate sonar
       os: linux
       sudo: false
       env:
         # CODECLIMATE_REPO_TOKEN
         - secure: "jjJxl1G93oo4cZScpkizdmq142IkK749Ul/4CrpyIwOB80xVVOD/DWyFelCxQ0F/nOt150YOAc1w9UHI8fgY1goAk6cHP/ipzkZ9NIO4x/SjUl0XkWTW7T/riGzn6R+SbjRmWJwbszp4wmwIQj8lAekvYlmvMOR1QpNzBJ4K4x4="
-    - script: ./build
-      os: linux
-      sudo: false
-      env:
-        - NODE_VERSION=7.10.0
-        - MB_RUN_WEB_TESTS=true
-    - script: ./build default sonar
-      os: linux
-      sudo: false
-      env:
-        - NODE_VERSION=7.10.0
         # SONARQUBE_LOGIN
         - secure: "B+dWqZwbOPbtHlDmvKbIFfL/6YqStww4H8ljoteRHTqrgn3qc+GWdgELBm3ErPJHSyF9WxxA3pirJ6DFEeKxeCfYKeswFiF5Hm/WtBjiZ2k2DDGui9+NsEorHiQpCKY9rsY2H3fSwdTyx0TqVTPda//TGIqWSQEvKIaM4zG3lE8="
     - script: ./build
       os: linux
       sudo: false
       env:
-        - NODE_VERSION=4.4
+        - NODE_VERSION=8
+        - MB_RUN_WEB_TESTS=true
+    - script: ./build
+      os: linux
+      sudo: false
+      env:
+        - NODE_VERSION=4
     - script: ./build
       os: osx
       sudo: false
       env:
-        - NODE_VERSION=4.4
+        - NODE_VERSION=4
     - script: ./build
       os: osx
       sudo: false
       env:
-        - NODE_VERSION=7.10.0
+        - NODE_VERSION=8
 # Windows stage
     - stage: windows
       script: ./build verify:windows
@@ -91,7 +86,7 @@ jobs:
         - secure: "IEfctrje4QulHyavIMZYnxljU4XvpMnLR8TzCU8ozeQbdoIOq3/WqBl53Mou2Ie65YAbcMNfLmAvXWgNiKR2jE+K9tOyXsIj+Wbrr4b6X1FHqjkTLw8OCcLFD7kO/aptEOzsTZWbpJKao3mtcshHWWiFeeRDANYK6QMSYwoVNLc="
 
 install:
-  - export NODE_VERSION=${NODE_VERSION:-6.10.3} # Default node version = LTS version
+  - export NODE_VERSION=${NODE_VERSION:-6} # Default node version = LTS version
   - rm -rf ~/.nvm
   - git clone https://github.com/creationix/nvm.git ~/.nvm
   - source ~/.nvm/nvm.sh
