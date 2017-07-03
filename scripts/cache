@@ -20,7 +20,8 @@ if [ "$COMMAND" = "save" ]; then
     else
         echo "Saving cache..."
         echo "node_modules => dist/$CACHE_FILENAME"
-        tar czvf dist/$CACHE_FILENAME node_modules
+        mkdir -p dist
+        tar czf dist/$CACHE_FILENAME node_modules
         # Relies on deploy:s3 task to upload at end of build
     fi
 elif [ "$COMMAND" = "restore" ]; then

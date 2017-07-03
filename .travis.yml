@@ -45,23 +45,23 @@ jobs:
         - secure: "jjJxl1G93oo4cZScpkizdmq142IkK749Ul/4CrpyIwOB80xVVOD/DWyFelCxQ0F/nOt150YOAc1w9UHI8fgY1goAk6cHP/ipzkZ9NIO4x/SjUl0XkWTW7T/riGzn6R+SbjRmWJwbszp4wmwIQj8lAekvYlmvMOR1QpNzBJ4K4x4="
         # SONARQUBE_LOGIN
         - secure: "B+dWqZwbOPbtHlDmvKbIFfL/6YqStww4H8ljoteRHTqrgn3qc+GWdgELBm3ErPJHSyF9WxxA3pirJ6DFEeKxeCfYKeswFiF5Hm/WtBjiZ2k2DDGui9+NsEorHiQpCKY9rsY2H3fSwdTyx0TqVTPda//TGIqWSQEvKIaM4zG3lE8="
-    - script: ./build default cache
+    - script: ./build default cache deploy:s3
       os: linux
       sudo: false
       env:
         - NODE_VERSION=8
         - MB_RUN_WEB_TESTS=true
-    - script: ./build default cache
+    - script: ./build default cache deploy:s3
       os: linux
       sudo: false
       env:
         - NODE_VERSION=4
-    - script: ./build default cache
+    - script: ./build default cache deploy:s3
       os: osx
       sudo: false
       env:
         - NODE_VERSION=4
-    - script: ./build default cache
+    - script: ./build default cache deploy:s3
       os: osx
       sudo: false
       env:
