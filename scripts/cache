@@ -26,7 +26,7 @@ if [ "$COMMAND" = "save" ]; then
 elif [ "$COMMAND" = "restore" ]; then
     MB_MAJOR_VERSION=`echo $MB_VERSION | cut -d. -f1`
     MB_MINOR_VERSION=`echo $MB_VERSION | cut -d. -f2`
-    MB_S3_DIR=v$(MB_MAJOR_VERSION).$(MB_MINOR_VERSION)
+    MB_S3_DIR=v$MB_MAJOR_VERSION.$MB_MINOR_VERSION
     MB_S3_URL=https://s3.amazonaws.com/mountebank/$MB_S3_DIR/$CACHE_FILENAME
 
     set +x
