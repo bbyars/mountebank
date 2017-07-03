@@ -9,7 +9,6 @@
 #   * node version
 #   * package.json version (hash is simple but forces additional cache misses for non dependency changes)
 CACHE_FILENAME=cache-$(uname)-node$(node -v)-mb-$(md5sum package.json | cut -f1 -d' ').tar.gz
-echo "cache filename: $CACHE_FILENAME"
 
 # commands are [save, restore]
 COMMAND=${1:-save}
@@ -19,19 +18,18 @@ if [ "$COMMAND" = "save" ]; then
     if [ -e $CACHE_FILENAME ]; then
         echo "Cache hit, no need to recache"
     else
-        echo 'node_modules => $CACHE_FILENAME'
-        tar czf dist/$CACHE_FILENAME node_modules > /dev/null
+        echo "Saving cache..."
+        echo "node_modules => dist/$CACHE_FILENAME"
+        tar czvf dist/$CACHE_FILENAME node_modules
         # Relies on deploy:s3 task to upload at end of build
     fi
 elif [ "$COMMAND" = "restore" ]; then
     MB_S3_DIR=$(cat package.json | grep '"version"' | sed -E -e 's/.*"version": "([0-9]+)\.([0-9]+)\.[^"]+",/v\1.\2/')
     MB_S3_URL=https://s3.amazonaws.com/mountebank/$MB_S3_DIR/$CACHE_FILENAME
 
-    set +x
     echo "Trying to download $MB_S3_URL"
     wget $MB_S3_URL
     CACHE_EXISTS=$?
-    set -x
     if [ $CACHE_EXISTS -eq 0 ]; then
         echo "Cache hit, untarring"
         tar xzf $CACHE_FILENAME
