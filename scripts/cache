@@ -12,7 +12,7 @@ CACHE_FILENAME=cache-$(uname)-node$(node -v)-mb-$(md5sum package.json | cut -f1 
 echo "cache filename: $CACHE_FILENAME"
 
 # commands are [save, restore]
-COMMAND=${1:save}
+COMMAND=${1:-save}
 
 if [ "$COMMAND" = "save" ]; then
     # If the file already exists; we had a cache hit up front so no need to re-upload
