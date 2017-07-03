@@ -34,6 +34,8 @@ elif [ "$COMMAND" = "restore" ]; then
     if [ $CACHE_EXISTS -eq 0 ]; then
         echo "Cache hit, untarring"
         tar xzf $CACHE_FILENAME
+        ls -al
+        ls -al node_modules
     else
         echo "Cache miss"
     fi
