@@ -24,9 +24,7 @@ if [ "$COMMAND" = "save" ]; then
         # Relies on deploy:s3 task to upload at end of build
     fi
 elif [ "$COMMAND" = "restore" ]; then
-    MB_MAJOR_VERSION=`echo $MB_VERSION | cut -d. -f1`
-    MB_MINOR_VERSION=`echo $MB_VERSION | cut -d. -f2`
-    MB_S3_DIR=v$MB_MAJOR_VERSION.$MB_MINOR_VERSION
+    MB_S3_DIR=$(cat package.json | grep '"version"' | sed -E -e 's/.*"version": "([0-9]+)\.([0-9]+)\.[^"]+",/v\1.\2/')
     MB_S3_URL=https://s3.amazonaws.com/mountebank/$MB_S3_DIR/$CACHE_FILENAME
 
     set +x
@@ -37,5 +35,7 @@ elif [ "$COMMAND" = "restore" ]; then
     if [ $CACHE_EXISTS -eq 0 ]; then
         echo "Cache hit, untarring"
         tar xzf $CACHE_FILENAME
+    else
+        echo "Cache miss"
     fi
 fi
