@@ -23,7 +23,7 @@ if [ "$COMMAND" = "save" ]; then
         tar czf dist/$CACHE_FILENAME node_modules > /dev/null
         # Relies on deploy:s3 task to upload at end of build
     fi
-elsif [ "$COMMAND" = "restore" ]; then
+elif [ "$COMMAND" = "restore" ]; then
     MB_MAJOR_VERSION=`echo $MB_VERSION | cut -d. -f1`
     MB_MINOR_VERSION=`echo $MB_VERSION | cut -d. -f2`
     MB_S3_DIR=v$(MB_MAJOR_VERSION).$(MB_MINOR_VERSION)
