@@ -14,13 +14,13 @@ jobs:
 # Test stage
     - stage: test
       # Note that the appveyor build number is copied to S3 to be used in the next stage
-      script: ./build test:npm dist:zip:x64 dist:zip:x86 trigger:appveyor deploy:s3
+      script: ./build test:npm dist:zip:x64 dist:zip:x86 trigger:appveyor cache deploy:s3
       os: linux
       sudo: false
       env:
         # APPVEYOR_API_TOKEN
         - secure: "A4hhAF4npjjpiV+X6u1dt4sHYUDLyB+0mIdovXSbR/eh1jTn1ZnaCwZD8G248N+yf5Kj1jTsUUzT4mxkWSO9uzxA93W7CimLH7iBjPVyOEemuXBlBqxPJAAweB6BhiGpiuPZk2SeC0SVa+gwC+KL3oy/PW4dz8Q5ytL/IE9b3/o="
-    - script: ./build test:pkg deploy:s3
+    - script: ./build test:pkg cache deploy:s3
       os: osx
       sudo: true
     - script: ./build test:tarball:x64 deploy:s3 jsdoc deploy:docs
@@ -45,23 +45,23 @@ jobs:
         - secure: "jjJxl1G93oo4cZScpkizdmq142IkK749Ul/4CrpyIwOB80xVVOD/DWyFelCxQ0F/nOt150YOAc1w9UHI8fgY1goAk6cHP/ipzkZ9NIO4x/SjUl0XkWTW7T/riGzn6R+SbjRmWJwbszp4wmwIQj8lAekvYlmvMOR1QpNzBJ4K4x4="
         # SONARQUBE_LOGIN
         - secure: "B+dWqZwbOPbtHlDmvKbIFfL/6YqStww4H8ljoteRHTqrgn3qc+GWdgELBm3ErPJHSyF9WxxA3pirJ6DFEeKxeCfYKeswFiF5Hm/WtBjiZ2k2DDGui9+NsEorHiQpCKY9rsY2H3fSwdTyx0TqVTPda//TGIqWSQEvKIaM4zG3lE8="
-    - script: ./build
+    - script: ./build default cache
       os: linux
       sudo: false
       env:
         - NODE_VERSION=8
         - MB_RUN_WEB_TESTS=true
-    - script: ./build
+    - script: ./build default cache
       os: linux
       sudo: false
       env:
         - NODE_VERSION=4
-    - script: ./build
+    - script: ./build default cache
       os: osx
       sudo: false
       env:
         - NODE_VERSION=4
-    - script: ./build
+    - script: ./build default cache
       os: osx
       sudo: false
       env:

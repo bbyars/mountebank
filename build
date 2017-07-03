@@ -11,6 +11,11 @@ if [ -n "$TRAVIS_BUILD_NUMBER" -a -z "$IS_PUBLISHED_VERSION" ]; then
     MB_VERSION="$MB_VERSION-beta.$TRAVIS_BUILD_NUMBER"
 fi
 
+# Try to restore npm cache on Travis to save time
+if [ -n "$TRAVIS_BUILD_NUMBER" ]; then
+    scripts/cache restore
+fi
+
 npm install
 node_modules/.bin/shonkwrap
 

@@ -1,0 +1,35 @@
+#!/bin/sh
+
+# If on Mac:
+#    brew install md5sha1sum
+# Can also use built in md5, which has identical hashes but different stdout format
+
+# Create separate caches by:
+#   * O/S (in case of native node modules
+#   * node version
+#   * package.json version (hash is simple but forces additional cache misses for non dependency changes)
+CACHE_FILENAME=cache-$(uname)-node$(node -v)-mb-$(md5sum package.json).tar.gz
+
+# commands are [save, restore]
+COMMAND=${1:save}
+
+if [ "$COMMAND" = "save" ]; then
+    # If the file already exists; we had a cache hit up front so no need to re-upload
+    if [ ! -e $CACHE_FILENAME ]; then
+        echo 'node_modules => $CACHE_FILENAME'
+        tar czf dist/$CACHE_FILENAME node_modules > /dev/null
+        # Relies on deploy:s3 task to upload at end of build
+    fi
+elsif [ "$COMMAND" = "restore" ]; then
+    MB_MAJOR_VERSION=`echo $MB_VERSION | cut -d. -f1`
+    MB_MINOR_VERSION=`echo $MB_VERSION | cut -d. -f2`
+    MB_S3_DIR=v$(MB_MAJOR_VERSION).$(MB_MINOR_VERSION)
+
+    set +x
+    wget https://s3.amazonaws.com/mountebank/$MB_S3_DIR/$CACHE_FILENAME
+    CACHE_EXISTS=$?
+    set -x
+    if [ $CACHE_EXISTS -eq 0 ]; then
+        tar xzf $CACHE_FILENAME
+    fi
+fi
