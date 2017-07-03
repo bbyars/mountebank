@@ -8,14 +8,17 @@
 #   * O/S (in case of native node modules
 #   * node version
 #   * package.json version (hash is simple but forces additional cache misses for non dependency changes)
-CACHE_FILENAME=cache-$(uname)-node$(node -v)-mb-$(md5sum package.json).tar.gz
+CACHE_FILENAME=cache-$(uname)-node$(node -v)-mb-$(md5sum package.json | cut -f1 -d' ').tar.gz
+echo "cache filename: $CACHE_FILENAME"
 
 # commands are [save, restore]
 COMMAND=${1:save}
 
 if [ "$COMMAND" = "save" ]; then
     # If the file already exists; we had a cache hit up front so no need to re-upload
-    if [ ! -e $CACHE_FILENAME ]; then
+    if [ -e $CACHE_FILENAME ]; then
+        echo "Cache hit, no need to recache"
+    else
         echo 'node_modules => $CACHE_FILENAME'
         tar czf dist/$CACHE_FILENAME node_modules > /dev/null
         # Relies on deploy:s3 task to upload at end of build
@@ -24,12 +27,15 @@ elsif [ "$COMMAND" = "restore" ]; then
     MB_MAJOR_VERSION=`echo $MB_VERSION | cut -d. -f1`
     MB_MINOR_VERSION=`echo $MB_VERSION | cut -d. -f2`
     MB_S3_DIR=v$(MB_MAJOR_VERSION).$(MB_MINOR_VERSION)
+    MB_S3_URL=https://s3.amazonaws.com/mountebank/$MB_S3_DIR/$CACHE_FILENAME
 
     set +x
-    wget https://s3.amazonaws.com/mountebank/$MB_S3_DIR/$CACHE_FILENAME
+    echo "Trying to download $MB_S3_URL"
+    wget $MB_S3_URL
     CACHE_EXISTS=$?
     set -x
     if [ $CACHE_EXISTS -eq 0 ]; then
+        echo "Cache hit, untarring"
         tar xzf $CACHE_FILENAME
     fi
 fi
