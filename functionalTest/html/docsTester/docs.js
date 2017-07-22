@@ -1,7 +1,7 @@
 'use strict';
 
 var api = require('../../api/api').create(),
-    jsdom = require('jsdom'),
+    jsdom = require('jsdom/lib/old-api.js'),
     DocsTestScenario = require('./docsTestScenario'),
     Q = require('q'),
     assert = require('assert');
