@@ -33,7 +33,9 @@
     "Kevin Pouget <kpouget@altair.com>",
     "Agnibrata Nayak",
     "Nassim Kirouane <nassim.kirouane@inovia-team.com>",
-    "Jamie Geddes <jamie@clumsypenguin.com>"
+    "Jamie Geddes <jamie@clumsypenguin.com>",
+    "Louis Celier <louis.celier@matters.tech>",
+    "Simon Roberts <simon.roberts2@anz.com>"
   ],
   "description": "Over the wire test doubles",
   "homepage": "http://www.mbtest.org",
