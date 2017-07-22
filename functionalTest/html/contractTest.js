@@ -2,7 +2,7 @@
 
 var assert = require('assert'),
     api = require('../api/api').create(),
-    jsdom = require('jsdom/lib/old-api.js'),
+    jsdom = require('jsdom'),
     Q = require('q'),
     promiseIt = require('../testHelpers').promiseIt,
     timeout = parseInt(process.env.MB_SLOW_TEST_TIMEOUT || 3000);
