@@ -1,7 +1,7 @@
 {
   "name": "mountebank",
   "preferGlobal": true,
-  "version": "1.11.0",
+  "version": "1.12.0",
   "author": "Brandon Byars <brandon.byars@gmail.com>",
   "contributors": [
     "Jason Reid <jason@jasonreid.com>",
@@ -74,7 +74,7 @@
     "ejs": "~2.5.1",
     "errorhandler": "^1.0.0",
     "express": "~4.15.0",
-    "http-proxy-agent": "^1.0.0",
+    "http-proxy-agent": "^2.0.0",
     "https-proxy-agent": "2.0.0",
     "json-stable-stringify": "~1.0.0",
     "jsonpath-plus": "^0.16.0",
@@ -90,7 +90,7 @@
     "codeclimate-test-reporter": "^0.4.1",
     "coveralls": "~2.13.0",
     "firebase-tools": "^3.9.0",
-    "fs-extra": "~3.0.0",
+    "fs-extra": "~4.0.0",
     "grunt": "^1.0.1",
     "grunt-cli": "^1.2.0",
     "grunt-contrib-csslint": "~2.0.0",
@@ -114,6 +114,6 @@
     ]
   },
   "engines": {
-    "node": ">=4.0"
+    "node": ">=4.8.4"
   }
 }
