@@ -3,6 +3,8 @@ passing them on to the downstream service. To demonstrate, let's create a mirror
 so we can see what headers are sent. This imposter just takes the request
 headers it receives and sends them back in the response:</p>
 
+<p class='info-icon'><code>injectHeaders</code> only work for http/s proxies</p>
+
 <testScenario name='injectHeaders'>
     <step type='http'>
 <pre><code>POST /imposters HTTP/1.1

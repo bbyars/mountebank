@@ -17,10 +17,11 @@ environment:
   matrix:
     # Appveyor doesn't give us a way of explicitly defining each node in the matrix like Travis does,
     # so we'll encode the information in a single environment variable and decode it in the install section
-    - MB_APPVEYOR_CONFIG: "NODE_VERSION=6.10.3|MB_GRUNT_TASK=test:zip"
-    - MB_APPVEYOR_CONFIG: "NODE_VERSION=4.4|MB_GRUNT_TASK=default|MB_SKIP_x86=true"
-    - MB_APPVEYOR_CONFIG: "NODE_VERSION=6.10.3|MB_GRUNT_TASK=default|MB_SKIP_x86=true"
-    - MB_APPVEYOR_CONFIG: "NODE_VERSION=7.10.0|MB_GRUNT_TASK=default|MB_SKIP_x86=true"
+    - MB_APPVEYOR_CONFIG: "NODE_VERSION=4|MB_GRUNT_TASK=default|MB_SKIP_x86=true"
+    - MB_APPVEYOR_CONFIG: "NODE_VERSION=8|MB_GRUNT_TASK=default|MB_SKIP_x86=true"
+# Run this one last because it depends on the travis job completing
+# This is a race condition; consider moving to separate travis phase (has time tradeoffs)
+    - MB_APPVEYOR_CONFIG: "NODE_VERSION=6|MB_GRUNT_TASK=test:zip"
 
 cache:
   - node_modules -> package.json

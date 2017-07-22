@@ -6,8 +6,8 @@ var Q = require('q'),
     version = process.env.MB_VERSION || thisPackage.version,
     hasTriggerRights = process.env.MB_DEPLOY === 'true',
     appveyor = require('./ci/appveyor'),
-    snapci = require('./ci/snapci'),
-    travis = require('./ci/travis');
+    travis = require('./ci/travis'),
+    fs = require('fs');
 
 function getCurrentCommitId () {
     var deferred = Q.defer();
@@ -33,7 +33,10 @@ module.exports = function (grunt) {
         getCurrentCommitId().then(function (commitId) {
             return appveyor.triggerBuild(commitId, version);
         }).done(function (result) {
-            process.env.MB_APPVEYOR_BUILD_NUMBER = result.version;
+            // We have to save off the Appveyor build number in the dist directory to get
+            // copied to S3 for the next stage to be able to read it; no data persistence
+            // between TravisCI stages
+            fs.writeFileSync('dist/appveyor-' + version + '.txt', result.version);
             console.log('Appveyor build successfully triggered for ' + version + ' => ' + result.version);
             done();
         }, function (error) {
@@ -43,6 +46,7 @@ module.exports = function (grunt) {
 
     grunt.registerTask('waitFor:appveyor', 'Wait for appveyor build to finish', function () {
         var done = this.async(),
+            buildNumber = fs.readFileSync('dist/appveyor-' + version + '.txt'),
             timeout = 10 * 60 * 1000,
             interval = 3000,
             start = new Date(),
@@ -61,33 +65,19 @@ module.exports = function (grunt) {
                 }
                 else {
                     return Q.delay(interval).then(function () {
-                        return appveyor.getBuildStatus(process.env.MB_APPVEYOR_BUILD_NUMBER);
+                        return appveyor.getBuildStatus(buildNumber);
                     }).then(spinWait, deferred.reject);
                 }
 
                 return deferred.promise;
             };
 
+        console.log('Checking Appveyor build ' + buildNumber);
         return spinWait('queued').then(function (status) {
             console.log('Appveyor status: ' + status);
             if (status !== 'success') {
                 grunt.warn('Build failed');
             }
-            done();
-        }, function (error) {
-            grunt.warn(error);
-        });
-    });
-
-    grunt.registerTask('trigger:snapci', 'Trigger Snap CI build for latest commit', function () {
-        if (!hasTriggerRights) {
-            return;
-        }
-
-        var done = this.async();
-
-        snapci.triggerBuild(version).done(function (result) {
-            console.log('Snap CI build successfully triggered for ' + version + ' => ' + result.counter);
             done();
         }, function (error) {
             grunt.warn(error);

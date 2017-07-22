@@ -434,12 +434,12 @@ input[type=search] {
 #tail {
     position: relative;
     left: 52.8em;
+    z-index: 10;
 }
 
 #logs {
     position: relative;
     top: -2.5em;
-    z-index: -1;
 }
 
 .debug {

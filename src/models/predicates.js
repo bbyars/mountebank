@@ -82,11 +82,19 @@ function orderIndependent (possibleArray) {
     }
 }
 
+function transformObject (obj, transform) {
+    Object.keys(obj).forEach(function (key) {
+        obj[key] = transform(obj[key]);
+    });
+    return obj;
+}
+
 function selectXPath (config, caseTransform, encoding, text) {
     var xpath = require('./xpath'),
         combinators = require('../util/combinators'),
-        ns = normalize(config.ns, {}, 'utf8'),
+        ns = transformObject(config.ns || {}, caseTransform),
         selectFn = combinators.curry(xpath.select, caseTransform(config.selector), ns, text);
+
     return orderIndependent(select('xpath', selectFn, encoding));
 }
 
@@ -209,8 +217,13 @@ function predicateSatisfied (expected, actual, predicateConfig, predicateFn) {
                 expected[fieldName], actual[fieldName], predicateConfig, predicateFn);
         }
         else if (onlyActualIsArray(expected[fieldName], actual[fieldName])) {
-            return expectedMatchesAtLeastOneValueInActualArray(
-                expected[fieldName], actual[fieldName], predicateConfig, predicateFn);
+            if (predicateConfig.exists && expected[fieldName]) {
+                return true;
+            }
+            else {
+                return expectedMatchesAtLeastOneValueInActualArray(
+                    expected[fieldName], actual[fieldName], predicateConfig, predicateFn);
+            }
         }
         else if (expectedLeftOffArraySyntaxButActualIsArrayOfObjects(expected, actual, fieldName)) {
             // This is a little confusing, but predated the ability for users to specify an
