@@ -3,8 +3,6 @@
 language: ruby
 cache:
   bundler: true
-  directories:
-  - node_modules # NPM packages
 
 env:
   global:
