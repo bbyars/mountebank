@@ -208,6 +208,12 @@ describe('predicates', function () {
             assert.ok(!predicates.evaluate(predicate, request));
         });
 
+        it('#equals should be true if null value for key matches', function () {
+            var predicate = { equals: { json: { key: null } } },
+                request = { json: '{ "key": null }' };
+            assert.ok(predicates.evaluate(predicate, request));
+        });
+
         it('#deepEquals should be true if all objects in an array have fields equaling predicate', function () {
             var predicate = { deepEquals: { examples: [{ key: 'first' }, { key: 'second' }] } },
                 request = { examples: '[{ "key": "first" }, { "key": "second" }]' };
