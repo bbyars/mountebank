@@ -40,7 +40,7 @@ matrix:
         # HEROKU_API_KEY
         - secure: "BQunTTpCSGjhIYiBAXKxuuOluJIhKXdW/94GCsPlK1N8Ln20/nj/0U4qnSH7yASWQWssVG4ttm/cAbjfi+3DS4KDLtBGK1i3IoM+cJ2ADCeG7BHsqJDB0f9JyAkULjIRdkqilzR/tyD+w78pPHd7QbfplLvqUcnt7HVxw9lp4PY="
         # NPM_API_KEY
-        - secure: "IEfctrje4QulHyavIMZYnxljU4XvpMnLR8TzCU8ozeQbdoIOq3/WqBl53Mou2Ie65YAbcMNfLmAvXWgNiKR2jE+K9tOyXsIj+Wbrr4b6X1FHqjkTLw8OCcLFD7kO/aptEOzsTZWbpJKao3mtcshHWWiFeeRDANYK6QMSYwoVNLc="
+        - secure: "rbsxzVplwPSOy0bUJ0pl3EVhcQbRgLHKiZwV+1dkNKQ9xRXkTXjDAlCfAp0JXd7+Dpb6QorKbLKaBZcZP/PwFBvYZf1lkQbFU5Gv7Fnc0h5GwYVEOhdkK9wCWeEuVwxc0RkaX6PirDxWv8GfhCBdmvJMZ6BlAmBxp/079JzrTyw="
     - os: linux
       sudo: false
       env:
