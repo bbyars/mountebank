@@ -17,12 +17,23 @@
   </tr>
 </table>
 
-<p>The <code>shellTransform</code> behavior plays the same role as the <code>decorate</code> behavior,
-enabling transformation of the response. Since it allows shelling out to another application,
+<p>The <code>shellTransform</code> behavior plays a similar role as the <code>decorate</code> behavior,
+enabling a programmatic transformation of the response. However, there are a couple of important
+differences:</p>
+
+<ul class='bullet-list'>
+  <li>The <code>shellTransform</code> behavior can apply a sequenced series of transformations, and</li>
+  <li>You don't have to write the transformation logic in JavaScript.</li>
+</ul>
+
+<p>The <code>shellTransform</code> behavior serves as a way of adding "middleware" to the response
+transformation. Each shell command can represent a single transformation, and they will be executed
+in order. Since it allows shelling out to another application,
 the <a href='/docs/commandLine'>--allowInjection</a> flag must be passed in to <code>mb</code> on startup.
-mountebank will pass the shell command two parameters: a JSON representation of the request and a
+mountebank will pass each shell command two parameters: a JSON representation of the request and a
 JSON representation of the response. The application should write to stdout a JSON representation of
-the transformed response.</p>
+the transformed response, which will be passed to the next shell command in the list, or returned
+over the wire if not more transformations are needed.</p>
 
 <p>We'll show a simple example of shelling out to plug in response values based on an external data source.</p>
 
@@ -31,18 +42,18 @@ the transformed response.</p>
 <p>At times you may find it convenient to use an external data store to fill in dynamic values based on
 data coming in from the request. You can combine an <code>is</code> canned response with a
 <code>shellTransform</code> behavior to achieve this, regardless of what the external data source is.
-For this example, we'll assume it's a simple comma-delimited file mapping customer ids to names. We'll
+For this example, we'll assume it's a simple pipe-delimited file mapping customer ids to names. We'll
 save it as <code>names.csv</code> in the directory we run <code>mb</code> from.</p>
 
-<p class='info-icon'>Note that this example would more easily be satisfied by the <code>lookup</code>
-behavior.</p>
+<p class='info-icon'>Note that, by reformatting the file, this example would more easily be satisfied
+by the <code>lookup</code> behavior.</p>
 
 <testScenario name='shellTransform'>
-    <step type='file' filename='names.csv'>
-<pre><code>123,Frodo Baggins
-234,Samwise Gamgee
-345,Gandalf the White
-456,Smeagol</code></pre>
+    <step type='file' filename='names.txt'>
+<pre><code>123|Frodo Baggins
+234|Samwise Gamgee
+345|Gandalf the White
+456|Smeagol</code></pre>
     </step>
 
 <p>We expect the incoming http request to specify the id in the URL, and we want to represent the name
@@ -64,7 +75,7 @@ Content-Type: application/json
         {
           "is": { "body": "Hello, <strong class='highlight1'>${YOU}!</strong>" },
           "_behaviors": {
-            "shellTransform": "node addName.js"
+            "shellTransform": ["node addName.js"]
           }
         }
       ]
@@ -88,11 +99,11 @@ will look something like <br />
     response = JSON.parse(process.argv[3]),
     requestId = request.path.replace('/accounts/', ''),
     fs = require('fs'),
-    mappings = fs.readFileSync('names.csv', { encoding: 'utf8' }),
+    mappings = fs.readFileSync('names.txt', { encoding: 'utf8' }),
     lines = mappings.split('\n');
 
 for (var i = 0; i &lt; lines.length; i += 1) {
-    var fields = lines[i].split(','),
+    var fields = lines[i].split('|'),
         id = fields[0],
         name = fields[1];
 
@@ -141,6 +152,6 @@ Hello, <strong class='highlight1'>Smeagol!</strong></code></pre>
 Host: localhost:<%= port %></code>
     </step>
 
-    <step type='file' filename='names.csv' delete='true'><code></code></step>
+    <step type='file' filename='names.txt' delete='true'><code></code></step>
     <step type='file' filename='addName.js' delete='true'><code></code></step>
 </testScenario>
