@@ -13,7 +13,7 @@ describe('behaviors', function () {
             var request = { isDryRun: true },
                 response = { data: 'ORIGINAL' },
                 logger = Logger.create(),
-                config = { shellTransform: 'echo Should not reach here' };
+                config = { shellTransform: ['echo Should not reach here'] };
 
             return behaviors.execute(request, response, config, logger).then(function (actualResponse) {
                 assert.deepEqual(actualResponse, { data: 'ORIGINAL' });
@@ -27,7 +27,7 @@ describe('behaviors', function () {
                 shellFn = function exec () {
                     console.log(JSON.stringify({ data: 'CHANGED' }));
                 },
-                config = { shellTransform: 'node shellTransformTest.js' };
+                config = { shellTransform: ['node shellTransformTest.js'] };
 
             fs.writeFileSync('shellTransformTest.js', util.format('%s\nexec();', shellFn.toString()));
 
@@ -50,7 +50,7 @@ describe('behaviors', function () {
                     shellResponse.requestData = shellRequest.data;
                     console.log(JSON.stringify(shellResponse));
                 },
-                config = { shellTransform: 'node shellTransformTest.js' };
+                config = { shellTransform: ['node shellTransformTest.js'] };
 
             fs.writeFileSync('shellTransformTest.js', util.format('%s\nexec();', shellFn.toString()));
 
@@ -65,7 +65,7 @@ describe('behaviors', function () {
             var request = {},
                 response = {},
                 logger = Logger.create(),
-                config = { shellTransform: 'fileDoesNotExist' };
+                config = { shellTransform: ['fileDoesNotExist'] };
 
             return behaviors.execute(request, response, config, logger).then(function () {
                 assert.fail('Promise resolved, should have been rejected');
@@ -83,7 +83,7 @@ describe('behaviors', function () {
                     console.error('BOOM!!!');
                     process.exit(1);
                 },
-                config = { shellTransform: 'node shellTransformTest.js' };
+                config = { shellTransform: ['node shellTransformTest.js'] };
 
             fs.writeFileSync('shellTransformTest.js', util.format('%s\nexec();', shellFn.toString()));
 
@@ -104,7 +104,7 @@ describe('behaviors', function () {
                 shellFn = function exec () {
                     console.log('This is not JSON');
                 },
-                config = { shellTransform: 'node shellTransformTest.js' };
+                config = { shellTransform: ['node shellTransformTest.js'] };
 
             fs.writeFileSync('shellTransformTest.js', util.format('%s\nexec();', shellFn.toString()));
 
@@ -117,12 +117,12 @@ describe('behaviors', function () {
             });
         });
 
-        it('should not be valid if not a string', function () {
-            var errors = behaviors.validate({ shellTransform: {} });
+        it('should not be valid if not an array', function () {
+            var errors = behaviors.validate({ shellTransform: 'string' });
             assert.deepEqual(errors, [{
                 code: 'bad data',
-                message: 'shellTransform behavior "shellTransform" field must be a string, representing the path to a command line application',
-                source: { shellTransform: {} }
+                message: 'shellTransform behavior "shellTransform" field must be an array',
+                source: { shellTransform: 'string' }
             }]);
         });
     });

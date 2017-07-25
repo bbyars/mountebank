@@ -525,7 +525,7 @@ describe('dryRunValidator', function () {
         promiseIt('should not be valid for shellTransform if injections are disallowed', function () {
             var request = {
                     stubs: [{
-                        responses: [{ is: {}, _behaviors: { shellTransform: 'command' } }]
+                        responses: [{ is: {}, _behaviors: { shellTransform: ['command'] } }]
                     }]
                 },
                 validator = Validator.create({

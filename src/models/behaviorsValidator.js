@@ -147,10 +147,12 @@ function create () {
                     errors.push(exceptions.ValidationError(
                         util.format('%s behavior "%s" field %s', key, field, message),
                         { source: subConfig || config }));
-                };
+                },
+                spec = {};
 
             if (validationSpec[key]) {
-                addErrorsFor(config, '', validationSpec[key], addErrorFn);
+                spec[key] = validationSpec[key];
+                addErrorsFor(config, '', spec, addErrorFn);
             }
         });
 

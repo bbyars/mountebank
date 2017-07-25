@@ -34,7 +34,11 @@ function create (Protocol, request) {
     var Q = require('q'),
         deferred = Q.defer(),
         domain = require('domain').create(),
-        errorHandler = createErrorHandler(deferred, request.port);
+        errorHandler = createErrorHandler(deferred, request.port),
+        compatibility = require('./compatibility');
+
+    compatibility.upcast(request);
+    console.log(JSON.stringify(request, null, 4));
 
     domain.on('error', errorHandler);
     domain.run(function () {

@@ -6,10 +6,10 @@
   </tr>
   <tr>
     <td><code>shellTransform</code></td>
-    <td>A string</td>
-    <td>The path of a command line application. The application should accept the JSON-encoded
-        <code>request</code> and <code>response</code> as arguments and print out the transformed
-        <code>response</code> to <code>stdout</code>.
+    <td>An array of strings</td>
+    <td>Each array element represents the path of a command line application. The application should
+        accept the JSON-encoded <code>request</code> and <code>response</code> as arguments and print
+        out the transformed <code>response</code> to <code>stdout</code>.
 
     <p class='warning-icon'>The <code><a href='/docs/commandLine'>--allowInjection</a></code> command
       line flag must be set to support this behavior.</p>

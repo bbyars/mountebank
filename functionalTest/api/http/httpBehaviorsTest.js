@@ -333,7 +333,9 @@ var assert = require('assert'),
                 });
             });
 
-            promiseIt('should support shell transforms', function () {
+            promiseIt('should support shell transform without array for backwards compatibility', function () {
+                // The string version of the shellTransform behavior is left for backwards
+                // compatibility. It changed in v1.13.0 to accept an array.
                 var stub = {
                         responses: [{
                             is: { body: 'Hello, {YOU}!' },
@@ -355,6 +357,43 @@ var assert = require('assert'),
                     assert.strictEqual(response.body, 'Hello, mountebank!');
                 }).finally(function () {
                     fs.unlinkSync('shellTransformTest.js');
+                    return api.del('/imposters');
+                });
+            });
+
+            promiseIt('should support array of shell transforms in order', function () {
+                var stub = {
+                        responses: [{
+                            is: { body: 1 },
+                            _behaviors: {
+                                shellTransform: ['node double.js', 'node increment.js']
+                            }
+                        }]
+                    },
+                    stubs = [stub],
+                    request = { protocol: protocol, port: port, stubs: stubs, name: this.name },
+                    doubleFn = function double () {
+                        var response = JSON.parse(process.argv[3]);
+                        response.body *= 2;
+                        console.log(JSON.stringify(response));
+                    },
+                    incrementFn = function increment () {
+                        var response = JSON.parse(process.argv[3]);
+                        response.body += 1;
+                        console.log(JSON.stringify(response));
+                    };
+
+                fs.writeFileSync('double.js', util.format('%s\ndouble();', doubleFn.toString()));
+                fs.writeFileSync('increment.js', util.format('%s\nincrement();', incrementFn.toString()));
+
+                return api.post('/imposters', request).then(function (response) {
+                    assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body, null, 2));
+                    return client.get('/', port);
+                }).then(function (response) {
+                    assert.strictEqual(response.body, '3');
+                }).finally(function () {
+                    fs.unlinkSync('double.js');
+                    fs.unlinkSync('increment.js');
                     return api.del('/imposters');
                 });
             });
@@ -604,7 +643,7 @@ var assert = require('assert'),
                                 _behaviors: {
                                     wait: 300,
                                     repeat: 2,
-                                    shellTransform: 'node shellTransformTest.js',
+                                    shellTransform: ['node shellTransformTest.js'],
                                     decorate: decorator.toString(),
                                     copy: [{
                                         from: { query: 'punctuation' },
