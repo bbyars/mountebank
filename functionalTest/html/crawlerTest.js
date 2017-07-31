@@ -23,7 +23,7 @@ if (process.env.MB_AIRPLANE_MODE !== 'true' && process.env.MB_RUN_WEB_TESTS === 
             // Added 50x codes to make test less brittle - those have been ephemeral errors, as
             // long as they're not part of the mb site itself
             return [200, 301, 302, 999].indexOf(statusCode) >= 0 ||
-                ([500, 503].indexOf(statusCode) >= 0 && isLocalLink(link));
+                ([500, 502, 503].indexOf(statusCode) >= 0 && isLocalLink(link));
         };
 
     describe('The mountebank website', function () {
