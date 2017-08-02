@@ -91,7 +91,7 @@
   "devDependencies": {
     "codeclimate-test-reporter": "^0.4.1",
     "coveralls": "~2.13.0",
-    "firebase-tools": "^3.9.0",
+    "firebase-tools": "^3.9.2",
     "fs-extra": "~4.0.0",
     "grunt": "^1.0.1",
     "grunt-cli": "^1.2.0",
