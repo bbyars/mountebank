@@ -427,6 +427,23 @@ var assert = require('assert'),
                     return api.del('/imposters');
                 });
             });
+
+            promiseIt('should support predicate matching with null value (issue #262)', function () {
+                var stub = {
+                        predicates: [{ equals: { body: { version: null } } }],
+                        responses: [{ is: { body: 'SUCCESS' } }]
+                    },
+                    request = { protocol: protocol, port: port, stubs: [stub], name: this.name };
+
+                return api.post('/imposters', request).then(function (response) {
+                    assert.strictEqual(response.statusCode, 201);
+                    return client.post('/', { version: null }, port);
+                }).then(function (response) {
+                    assert.strictEqual(response.body, 'SUCCESS');
+                }).finally(function () {
+                    return api.del('/imposters');
+                });
+            });
         });
     });
 });

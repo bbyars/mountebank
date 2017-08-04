@@ -5,6 +5,10 @@
  * @module
  */
 
+function isNonNullObject (o) {
+    return typeof o === 'object' && o !== null;
+}
+
 function sortObjects (a, b) {
     var stringify = require('json-stable-stringify');
 
@@ -36,7 +40,7 @@ function forceStrings (obj) {
             else if (obj[key] === null) {
                 result[key] = 'null';
             }
-            else if (typeof obj[key] === 'object') {
+            else if (isNonNullObject(obj[key])) {
                 result[key] = forceStrings(obj[key]);
             }
             else if (['boolean', 'number'].indexOf(typeof obj[key]) >= 0) {
@@ -132,7 +136,7 @@ function normalize (obj, config, encoding, withSelectors) {
                 // and xpath selections isn't important
                 return o.map(transformAll).sort(sortObjects);
             }
-            else if (typeof o === 'object') {
+            else if (isNonNullObject(o)) {
                 return Object.keys(o).reduce(function (result, key) {
                     result[keyCaseTransform(key)] = transformAll(o[key]);
                     return result;
@@ -166,7 +170,7 @@ function testPredicate (expected, actual, predicateConfig, predicateFn) {
     if (!helpers.defined(actual)) {
         actual = '';
     }
-    if (typeof expected === 'object') {
+    if (isNonNullObject(expected)) {
         return predicateSatisfied(expected, actual, predicateConfig, predicateFn);
     }
     else {
@@ -217,8 +221,13 @@ function predicateSatisfied (expected, actual, predicateConfig, predicateFn) {
                 expected[fieldName], actual[fieldName], predicateConfig, predicateFn);
         }
         else if (onlyActualIsArray(expected[fieldName], actual[fieldName])) {
-            return expectedMatchesAtLeastOneValueInActualArray(
-                expected[fieldName], actual[fieldName], predicateConfig, predicateFn);
+            if (predicateConfig.exists && expected[fieldName]) {
+                return true;
+            }
+            else {
+                return expectedMatchesAtLeastOneValueInActualArray(
+                    expected[fieldName], actual[fieldName], predicateConfig, predicateFn);
+            }
         }
         else if (expectedLeftOffArraySyntaxButActualIsArrayOfObjects(expected, actual, fieldName)) {
             // This is a little confusing, but predated the ability for users to specify an
@@ -231,7 +240,7 @@ function predicateSatisfied (expected, actual, predicateConfig, predicateFn) {
             // in the actual array
             return expectedMatchesAtLeastOneValueInActualArray(expected, actual, predicateConfig, predicateFn);
         }
-        else if (typeof expected[fieldName] === 'object') {
+        else if (isNonNullObject(expected[fieldName])) {
             return predicateSatisfied(expected[fieldName], actual[fieldName], predicateConfig, predicateFn);
         }
         else {
@@ -256,7 +265,7 @@ function deepEquals (predicate, request, encoding) {
 
     return Object.keys(expected).every(function (fieldName) {
         // Support predicates that reach into fields encoded in JSON strings (e.g. HTTP bodies)
-        if (typeof expected[fieldName] === 'object' && typeof actual[fieldName] === 'string') {
+        if (isNonNullObject(expected[fieldName]) && typeof actual[fieldName] === 'string') {
             var possibleJSON = tryJSON(actual[fieldName], predicate);
             actual[fieldName] = normalize(forceStrings(possibleJSON), predicate, encoding, false);
         }

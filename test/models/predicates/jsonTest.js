@@ -190,6 +190,12 @@ describe('predicates', function () {
             assert.ok(!predicates.evaluate(predicate, request));
         });
 
+        it('#exists should be true if JSON array key exists', function () {
+            var predicate = { exists: { field: { key: true } } },
+                request = { field: '{"key": []}' };
+            assert.ok(predicates.evaluate(predicate, request));
+        });
+
         it('#equals should be true if matches key for any object in array', function () {
             var predicate = { equals: { examples: { key: 'third' } } },
                 request = { examples: '[{ "key": "first" }, { "different": true }, { "key": "third" }]' };
@@ -200,6 +206,12 @@ describe('predicates', function () {
             var predicate = { equals: { examples: { key: true } } },
                 request = { examples: '[{ "key": "first" }, { "different": true }, { "key": "third" }]' };
             assert.ok(!predicates.evaluate(predicate, request));
+        });
+
+        it('#equals should be true if null value for key matches', function () {
+            var predicate = { equals: { json: { key: null } } },
+                request = { json: '{ "key": null }' };
+            assert.ok(predicates.evaluate(predicate, request));
         });
 
         it('#deepEquals should be true if all objects in an array have fields equaling predicate', function () {

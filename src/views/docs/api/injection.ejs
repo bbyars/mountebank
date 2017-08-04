@@ -367,4 +367,15 @@ Accept: application/json</code>
     </step>
 </testScenario>
 
+<h2 id='including-modules'>Including other npm modules</h2>
+
+<p>It is entirely possible to include other npm modules in your injection scripts.
+However, you will need to install the module globally to ensure your injection function
+can access it. For example, if you wanted to use the <code>underscore</code> module,
+you'd first have to install it on the machine running mountebank:</p>
+
+<pre><code>npm install -g underscore</code></pre>
+
+<p>At that point, you can simply <code>require</code> it into your function.</p>
+
 <% include ../../_footer %>

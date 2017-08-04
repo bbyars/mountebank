@@ -33,66 +33,54 @@ var fromSchema = {
     },
     validations = {
         wait: {
-            wait: {
-                _required: true,
-                _allowedTypes: { string: {}, number: { nonNegativeInteger: true } }
-            }
+            _required: true,
+            _allowedTypes: { string: {}, number: { nonNegativeInteger: true } }
         },
         repeat: {
-            repeat: {
-                _required: true,
-                _allowedTypes: { number: { positiveInteger: true } }
-            }
+            _required: true,
+            _allowedTypes: { number: { positiveInteger: true } }
         },
-        copy: {
-            copy: [{
+        copy: [{
+            from: fromSchema,
+            into: intoSchema,
+            using: usingSchema
+        }],
+        lookup: [{
+            key: {
+                _required: true,
+                _allowedTypes: { object: {} },
                 from: fromSchema,
-                into: intoSchema,
                 using: usingSchema
-            }]
-        },
-        lookup: {
-            lookup: [{
-                key: {
-                    _required: true,
+            },
+            fromDataSource: {
+                _required: true,
+                _allowedTypes: { object: { singleKeyOnly: true, enum: ['csv'] } },
+                csv: {
+                    _required: false,
                     _allowedTypes: { object: {} },
-                    from: fromSchema,
-                    using: usingSchema
-                },
-                fromDataSource: {
-                    _required: true,
-                    _allowedTypes: { object: { singleKeyOnly: true, enum: ['csv'] } },
-                    csv: {
-                        _required: false,
-                        _allowedTypes: { object: {} },
-                        path: {
-                            _required: true,
-                            _allowedTypes: { string: {} },
-                            _additionalContext: 'the path to the CSV file'
-                        },
-                        keyColumn: {
-                            _required: true,
-                            _allowedTypes: { string: {} },
-                            _additionalContext: 'the column header to select against the "key" field'
-                        }
+                    path: {
+                        _required: true,
+                        _allowedTypes: { string: {} },
+                        _additionalContext: 'the path to the CSV file'
+                    },
+                    keyColumn: {
+                        _required: true,
+                        _allowedTypes: { string: {} },
+                        _additionalContext: 'the column header to select against the "key" field'
                     }
-                },
-                into: intoSchema
-            }]
-        },
-        shellTransform: {
-            shellTransform: {
-                _required: true,
-                _allowedTypes: { string: {} },
-                _additionalContext: 'the path to a command line application'
-            }
-        },
+                }
+            },
+            into: intoSchema
+        }],
+        shellTransform: [{
+            _required: true,
+            _allowedTypes: { string: {} },
+            _additionalContext: 'the path to a command line application'
+        }],
         decorate: {
-            decorate: {
-                _required: true,
-                _allowedTypes: { string: {} },
-                _additionalContext: 'a JavaScript function'
-            }
+            _required: true,
+            _allowedTypes: { string: {} },
+            _additionalContext: 'a JavaScript function'
         }
     };
 
@@ -157,49 +145,58 @@ function quoteForShell (obj) {
     }
 }
 
+function execShell (command, request, response, logger) {
+    var Q = require('q'),
+        deferred = Q.defer(),
+        util = require('util'),
+        exec = require('child_process').exec,
+        fullCommand = util.format('%s %s %s', command, quoteForShell(request), quoteForShell(response));
+
+    logger.debug('Shelling out to %s', command);
+    logger.debug(fullCommand);
+
+    exec(fullCommand, function (error, stdout, stderr) {
+        if (error) {
+            if (stderr) {
+                logger.error(stderr);
+            }
+            deferred.reject(error.message);
+        }
+        else {
+            logger.debug("Shell returned '%s'", stdout);
+            try {
+                deferred.resolve(Q(JSON.parse(stdout)));
+            }
+            catch (err) {
+                deferred.reject(util.format("Shell command returned invalid JSON: '%s'", stdout));
+            }
+        }
+    });
+    return deferred.promise;
+}
+
 /**
  * Runs the response through a shell function, passing the JSON in as stdin and using
  * stdout as the new response
  * @param {Object} request - Will be the first arg to the command
  * @param {Object} responsePromise - The promise chain for building the response, which will be the second arg
- * @param {string} command - The shell command to execute
+ * @param {string} commandArray - The list of shell commands to execute, in order
  * @param {Object} logger - The mountebank logger, useful in debugging
  * @returns {Object}
  */
-function shellTransform (request, responsePromise, command, logger) {
+function shellTransform (request, responsePromise, commandArray, logger) {
     if (request.isDryRun) {
         return responsePromise;
     }
 
-    return responsePromise.then(function (response) {
-        var Q = require('q'),
-            deferred = Q.defer(),
-            util = require('util'),
-            exec = require('child_process').exec,
-            fullCommand = util.format('%s %s %s', command, quoteForShell(request), quoteForShell(response));
-
-        logger.debug('Shelling out to %s', command);
-        logger.debug(fullCommand);
-
-        exec(fullCommand, function (error, stdout, stderr) {
-            if (error) {
-                if (stderr) {
-                    logger.error(stderr);
-                }
-                deferred.reject(error.message);
-            }
-            else {
-                logger.debug("Shell returned '%s'", stdout);
-                try {
-                    deferred.resolve(Q(JSON.parse(stdout)));
-                }
-                catch (err) {
-                    deferred.reject(util.format("Shell command returned invalid JSON: '%s'", stdout));
-                }
-            }
+    // Run them all in sequence
+    var result = responsePromise;
+    commandArray.forEach(function (command) {
+        result = result.then(function (response) {
+            return execShell(command, request, response, logger);
         });
-        return deferred.promise;
     });
+    return result;
 }
 
 /**

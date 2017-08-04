@@ -57,7 +57,7 @@ describe('tcp imposter', function () {
                             _behaviors: {
                                 wait: 300,
                                 repeat: 2,
-                                shellTransform: 'node shellTransformTest.js',
+                                shellTransform: ['node shellTransformTest.js'],
                                 decorate: decorator.toString(),
                                 copy: [{
                                     from: 'data',

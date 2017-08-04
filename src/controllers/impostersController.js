@@ -56,7 +56,10 @@ function create (protocols, imposters, Imposter, logger) {
     function validate (request) {
         var Q = require('q'),
             errors = [],
-            valid = Q({ isValid: false, errors: errors });
+            valid = Q({ isValid: false, errors: errors }),
+            compatibility = require('../models/compatibility');
+
+        compatibility.upcast(request);
 
         validatePort(request.port, errors);
         validateProtocol(request.protocol, errors);

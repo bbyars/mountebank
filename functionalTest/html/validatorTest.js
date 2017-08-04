@@ -14,7 +14,11 @@ function assertValid (path, html) {
 
     w3cjs.validate({
         input: html,
-        callback: function (response) {
+        callback: function (error, response) {
+            if (error) {
+                console.log('w3cjs error on ' + path);
+                assert.fail(error);
+            }
             var errors = (response.messages || []).filter(function (message) {
                 return message.type === 'error';
             }).map(function (message) {
