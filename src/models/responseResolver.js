@@ -194,7 +194,7 @@ function create (proxy, postProcess) {
         var mountebank = require('../mountebank');
         var saveFile = mountebank.saveImpostersFile;
         var saveFileFlag = mountebank.saveImpostersFileFlag;
-        var serverPort = (mountebank.serverPort).toString();
+        var serverPort = mountebank.serverPort;
         var imposterStored;
         if ((saveFileFlag) && (saveFile !== undefined)) {
             var makeString = saveFile.toString();
