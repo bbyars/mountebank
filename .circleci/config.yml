@@ -1,7 +1,7 @@
 version: 2.0
 
 jobs:
-  nodev4-ubuntu:
+  build:
     working_directory: ~/mountebank
     docker:
       - image: circleci/node:4
@@ -34,10 +34,10 @@ workflows:
   version: 2
   test-and-deploy:
     jobs:
-      - nodev4-ubuntu
+      - build
       - deploy-test:
           requires:
-            - nodev4-ubuntu
+            - build
           filters:
             branches:
               only: master
