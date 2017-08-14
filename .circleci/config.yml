@@ -9,12 +9,11 @@ jobs:
       - checkout
       - restore_cache:
           key: dependency-cache-{{ checksum "package.json" }}
-      - run: npm install
+      - run: ./circlebuild
       - save_cache:
           key: dependency-cache-{{ checksum "package.json" }}
           paths:
             - node_modules
-      - run: echo "<<<DONE>>>"
   deploy-test:
     docker:
       - image: circleci/ruby:2.2
