@@ -1,0 +1,51 @@
+version: 2.0
+
+jobs:
+  nodev4-ubuntu:
+    working_directory: ~/mountebank
+    docker:
+      - image: circleci/node:4
+    steps:
+      - checkout
+      - restore_cache:
+          key: dependency-cache-{{ checksum "package.json" }}
+      - run: npm install
+      - save_cache:
+          key: dependency-cache-{{ checksum "package.json" }}
+          paths:
+            - node_modules
+      - run: echo "<<<DONE>>>"
+  deploy-test:
+    docker:
+      - image: circleci/ruby:2.2
+    steps:
+      - checkout
+      - run: bundle install --without development
+      - run: echo "<<<DONE>>>"
+  deploy-prod:
+    docker:
+      - image: circleci/ruby:2.2
+    steps:
+      - checkout
+      - run: bundle install --without development
+      - run: echo "<<<DONE>>>"
+
+workflows:
+  version: 2
+  test-and-deploy:
+    jobs:
+      - nodev4-ubuntu
+      - deploy-test:
+          requires:
+            - nodev4-ubuntu
+          filters:
+            branches:
+              only: master
+      - deploy-prod:
+          type: approval
+          requires:
+            - deploy-test
+          filters:
+            branches:
+              only: master
+
