@@ -13,6 +13,4 @@ if [ -z "$IS_PUBLISHED_VERSION" ]; then
 fi
 
 npm install
-node_modules/.bin/shonkwrap
-
-MB_PORT=3535 MB_VERSION=$MB_VERSION node_modules/grunt-cli/bin/grunt "$@"
+MB_PORT=3535 MB_VERSION=$MB_VERSION MB_SLOW_TEST_TIMEOUT=6000 node_modules/grunt-cli/bin/grunt "$@"

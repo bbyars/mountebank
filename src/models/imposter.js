@@ -38,7 +38,6 @@ function create (Protocol, request) {
         compatibility = require('./compatibility');
 
     compatibility.upcast(request);
-    console.log(JSON.stringify(request, null, 4));
 
     domain.on('error', errorHandler);
     domain.run(function () {
