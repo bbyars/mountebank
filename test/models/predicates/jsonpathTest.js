@@ -128,7 +128,7 @@ describe('predicates', function () {
             assert.ok(predicates.evaluate(predicate, request));
         });
 
-        xit('#deepEquals should return a string if looking at an index of 1 item', function () {
+        it('#deepEquals should return a string if looking at an index of 1 item', function () {
             var predicate = {
                     deepEquals: { field: 'value' },
                     jsonpath: { selector: '$..title[0].attribute' }

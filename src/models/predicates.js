@@ -102,17 +102,26 @@ function selectXPath (config, caseTransform, encoding, text) {
     return orderIndependent(select('xpath', selectFn, encoding));
 }
 
+function tryJSON (value, predicateConfig) {
+    try {
+        return normalize(JSON.parse(value), predicateConfig, 'utf8', false, false, true);
+    }
+    catch (e) {
+        return value;
+    }
+}
+
 function selectJSONPath (config, caseTransform, encoding, predicateConfig, stringTransform, text) {
     /* eslint max-params: [2, 8] */
     var jsonpath = require('./jsonpath'),
         combinators = require('../util/combinators'),
-        possibleJSON = stringTransform(tryJSON(text, predicateConfig)),
+        possibleJSON = stringTransform(tryJSON(text, predicateConfig, true)),
         selectFn = combinators.curry(jsonpath.select, caseTransform(config.selector), possibleJSON);
 
     return orderIndependent(select('jsonpath', selectFn, encoding));
 }
 
-function normalize (obj, config, encoding, withSelectors, shouldForceStrings) {
+function normalize (obj, config, encoding, withSelectors, shouldForceStrings, avoidSort) {
     /* eslint complexity: [2, 9] */
     var combinators = require('../util/combinators'),
         lowerCaser = function (text) { return text.toLowerCase(); },
@@ -137,12 +146,16 @@ function normalize (obj, config, encoding, withSelectors, shouldForceStrings) {
                 // sort to provide deterministic comparison for deepEquals,
                 // where the order in the array for multi-valued querystring keys
                 // and xpath selections isn't important
-                return o.map(transformAll).sort(sortObjects);
+                var result = o.map(transformAll);
+                if (!avoidSort) {
+                    result = result.sort(sortObjects);
+                }
+                return result;
             }
             else if (isNonNullObject(o)) {
-                return Object.keys(o).reduce(function (result, key) {
-                    result[keyCaseTransform(key)] = transformAll(o[key]);
-                    return result;
+                return Object.keys(o).reduce(function (transformed, key) {
+                    transformed[keyCaseTransform(key)] = transformAll(o[key]);
+                    return transformed;
                 }, {});
             }
             else if (typeof o === 'string') {
@@ -153,19 +166,6 @@ function normalize (obj, config, encoding, withSelectors, shouldForceStrings) {
         };
 
     return transformAll(obj);
-}
-
-function tryJSON (value, predicateConfig) {
-    try {
-        var json = JSON.parse(value);
-        if (predicateConfig) {
-            json = normalize(json, predicateConfig, 'utf8', false);
-        }
-        return json;
-    }
-    catch (e) {
-        return value;
-    }
 }
 
 function testPredicate (expected, actual, predicateConfig, predicateFn) {
