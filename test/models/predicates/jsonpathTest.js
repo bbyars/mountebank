@@ -128,7 +128,7 @@ describe('predicates', function () {
             assert.ok(predicates.evaluate(predicate, request));
         });
 
-        it('#deepEquals should return a string if looking at an index of 1 item', function () {
+        xit('#deepEquals should return a string if looking at an index of 1 item', function () {
             var predicate = {
                     deepEquals: { field: 'value' },
                     jsonpath: { selector: '$..title[0].attribute' }
@@ -226,6 +226,24 @@ describe('predicates', function () {
                 },
                 request = { field: JSON.stringify({ title: 'value' }) };
             assert.ok(!predicates.evaluate(predicate, request));
+        });
+
+        it('#deepEquals should be true if boolean value matches', function () {
+            var predicate = {
+                    deepEquals: { field: false },
+                    jsonpath: { selector: '$..active' }
+                },
+                request = { field: '{ "active": false }' };
+            assert.ok(predicates.evaluate(predicate, request));
+        });
+
+        it('#equals should be true if boolean value matches', function () {
+            var predicate = {
+                    equals: { field: false },
+                    jsonpath: { selector: '$..active' }
+                },
+                request = { field: '{ "active": false }' };
+            assert.ok(predicates.evaluate(predicate, request));
         });
     });
 });

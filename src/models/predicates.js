@@ -102,15 +102,18 @@ function selectXPath (config, caseTransform, encoding, text) {
     return orderIndependent(select('xpath', selectFn, encoding));
 }
 
-function selectJSONPath (config, caseTransform, encoding, text) {
+function selectJSONPath (config, caseTransform, encoding, predicateConfig, stringTransform, text) {
+    /* eslint max-params: [2, 8] */
     var jsonpath = require('./jsonpath'),
         combinators = require('../util/combinators'),
-        selectFn = combinators.curry(jsonpath.select, caseTransform(config.selector), text);
+        possibleJSON = stringTransform(tryJSON(text, predicateConfig)),
+        selectFn = combinators.curry(jsonpath.select, caseTransform(config.selector), possibleJSON);
+
     return orderIndependent(select('jsonpath', selectFn, encoding));
 }
 
-function normalize (obj, config, encoding, withSelectors) {
-    /* eslint complexity: [2, 8] */
+function normalize (obj, config, encoding, withSelectors, shouldForceStrings) {
+    /* eslint complexity: [2, 9] */
     var combinators = require('../util/combinators'),
         lowerCaser = function (text) { return text.toLowerCase(); },
         caseTransform = config.caseSensitive ? combinators.identity : lowerCaser,
@@ -122,7 +125,7 @@ function normalize (obj, config, encoding, withSelectors) {
         encodeTransform = encoding === 'base64' ? encoder : combinators.identity,
         xpathSelector = combinators.curry(selectXPath, config.xpath, caseTransform, encoding),
         xpathTransform = withSelectors && config.xpath ? xpathSelector : combinators.identity,
-        jsonPathSelector = combinators.curry(selectJSONPath, config.jsonpath, caseTransform, encoding),
+        jsonPathSelector = combinators.curry(selectJSONPath, config.jsonpath, caseTransform, encoding, config, shouldForceStrings ? forceStrings : combinators.identity),
         jsonPathTransform = withSelectors && config.jsonpath ? jsonPathSelector : combinators.identity,
         transform = combinators.compose(jsonPathTransform, xpathTransform, exceptTransform, caseTransform, encodeTransform),
         transformAll = function (o) {
@@ -156,7 +159,7 @@ function tryJSON (value, predicateConfig) {
     try {
         var json = JSON.parse(value);
         if (predicateConfig) {
-            json = normalize(json, predicateConfig, 'utf8', true);
+            json = normalize(json, predicateConfig, 'utf8', false);
         }
         return json;
     }
@@ -260,7 +263,7 @@ function create (operator, predicateFn) {
 
 function deepEquals (predicate, request, encoding) {
     var expected = normalize(forceStrings(predicate.deepEquals), predicate, encoding, false),
-        actual = normalize(forceStrings(request), predicate, encoding, true),
+        actual = normalize(forceStrings(request), predicate, encoding, true, true),
         stringify = require('json-stable-stringify');
 
     return Object.keys(expected).every(function (fieldName) {
