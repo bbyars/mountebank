@@ -23,7 +23,7 @@ module.exports = function (grunt) {
         rimraf.sync('dist');
         fs.mkdirSync('dist');
         fs.mkdirSync('dist/mountebank');
-        ['bin', 'src', 'package.json', 'npm-shrinkwrap.json', 'releases.json', 'README.md', 'LICENSE'].forEach(function (source) {
+        ['bin', 'src', 'package.json', 'package-lock.json', 'releases.json', 'README.md', 'LICENSE'].forEach(function (source) {
             fs.copySync(source, 'dist/mountebank/' + source);
         });
         rimraf.sync('dist/mountebank/src/public/images/sources');
