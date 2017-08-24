@@ -8,22 +8,11 @@ var exec = require('child_process').exec,
 function execute (command) {
     var deferred = Q.defer();
 
-    console.log('*************');
-    console.log(command);
-    console.log('*************');
     exec(command, function (error, stdout) {
         if (error) {
-            console.log('XXXXXXXXXXXXX');
-            console.log(command);
-            console.log(error);
-            console.log('XXXXXXXXXXXXX');
             deferred.reject(error);
         }
         else {
-            console.log('=============');
-            console.log(command);
-            console.log(stdout);
-            console.log('=============');
             deferred.resolve(stdout);
         }
     });
