@@ -40,6 +40,10 @@ describe('combinators', function () {
                 triple = function (i) { return i * 3; };
             assert.strictEqual(combinators.compose(increment, double, triple)(1), 7);
         });
+
+        it('should be identity if no functions passed in', function () {
+            assert.strictEqual(combinators.compose()(5), 5);
+        });
     });
 
     describe('#curry', function () {

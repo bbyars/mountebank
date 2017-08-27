@@ -79,7 +79,7 @@ function orderIndependent (possibleArray) {
     var util = require('util');
 
     if (util.isArray(possibleArray)) {
-        return possibleArray.sort();
+        return possibleArray.sort(sortObjects);
     }
     else {
         return possibleArray;
@@ -93,79 +93,133 @@ function transformObject (obj, transform) {
     return obj;
 }
 
-function selectXPath (config, caseTransform, encoding, text) {
+function selectXPath (config, encoding, text) {
     var xpath = require('./xpath'),
         combinators = require('../util/combinators'),
-        ns = transformObject(config.ns || {}, caseTransform),
-        selectFn = combinators.curry(xpath.select, caseTransform(config.selector), ns, text);
+        selectFn = combinators.curry(xpath.select, config.selector, config.ns, text);
 
     return orderIndependent(select('xpath', selectFn, encoding));
 }
 
+function selectTransform (config, options) {
+    var combinators = require('../util/combinators'),
+        helpers = require('../util/helpers'),
+        cloned = helpers.clone(config);
+
+    if (config.jsonpath) {
+        var stringTransform = options.shouldForceStrings ? forceStrings : combinators.identity;
+
+        if (!cloned.caseSensitive) {
+            cloned.jsonpath.selector = cloned.jsonpath.selector.toLowerCase();
+        }
+        return combinators.curry(selectJSONPath, cloned.jsonpath, options.encoding, config, stringTransform);
+    }
+    else if (config.xpath) {
+        if (!cloned.caseSensitive) {
+            cloned.xpath.ns = transformObject(cloned.xpath.ns || {}, lowercase);
+            cloned.xpath.selector = cloned.xpath.selector.toLowerCase();
+        }
+        return combinators.curry(selectXPath, cloned.xpath, options.encoding);
+    }
+    else {
+        return combinators.identity;
+    }
+}
+
+function lowercase (text) {
+    return text.toLowerCase();
+}
+
+function caseTransform (config) {
+    var combinators = require('../util/combinators');
+    return config.caseSensitive ? combinators.identity : lowercase;
+}
+
+function exceptTransform (config) {
+    var combinators = require('../util/combinators'),
+        exceptRegexOptions = config.caseSensitive ? 'g' : 'gi';
+
+    if (config.except) {
+        return function (text) { return text.replace(new RegExp(config.except, exceptRegexOptions), ''); };
+    }
+    else {
+        return combinators.identity;
+    }
+}
+
+function encodingTransform (encoding) {
+    var combinators = require('../util/combinators');
+    if (encoding === 'base64') {
+        return function (text) { return new Buffer(text, 'base64').toString(); };
+    }
+    else {
+        return combinators.identity;
+    }
+}
+
 function tryJSON (value, predicateConfig) {
     try {
-        return normalize(JSON.parse(value), predicateConfig, 'utf8', false, false, true);
+        var keyCaseTransform = predicateConfig.keyCaseSensitive === false ? lowercase : caseTransform(predicateConfig),
+            valueTransforms = [exceptTransform(predicateConfig), caseTransform(predicateConfig)];
+
+        // We can't call normalize because we want to avoid the array sort transform,
+        // which will mess up indexed selectors like $..title[1]
+        return transformAll(JSON.parse(value), [keyCaseTransform], valueTransforms, []);
     }
     catch (e) {
         return value;
     }
 }
 
-function selectJSONPath (config, caseTransform, encoding, predicateConfig, stringTransform, text) {
-    /* eslint max-params: [2, 8] */
+function selectJSONPath (config, encoding, predicateConfig, stringTransform, text) {
     var jsonpath = require('./jsonpath'),
         combinators = require('../util/combinators'),
-        possibleJSON = stringTransform(tryJSON(text, predicateConfig, true)),
-        selectFn = combinators.curry(jsonpath.select, caseTransform(config.selector), possibleJSON);
+        possibleJSON = stringTransform(tryJSON(text, predicateConfig)),
+        selectFn = combinators.curry(jsonpath.select, config.selector, possibleJSON);
 
     return orderIndependent(select('jsonpath', selectFn, encoding));
 }
 
-function normalize (obj, config, encoding, withSelectors, shouldForceStrings, avoidSort) {
-    /* eslint complexity: [2, 9] */
+function transformAll (obj, keyTransforms, valueTransforms, arrayTransforms) {
     var combinators = require('../util/combinators'),
-        lowerCaser = function (text) { return text.toLowerCase(); },
-        caseTransform = config.caseSensitive ? combinators.identity : lowerCaser,
-        keyCaseTransform = config.keyCaseSensitive === false ? lowerCaser : caseTransform,
-        exceptRegexOptions = config.caseSensitive ? 'g' : 'gi',
-        exceptionRemover = function (text) { return text.replace(new RegExp(config.except, exceptRegexOptions), ''); },
-        exceptTransform = config.except ? exceptionRemover : combinators.identity,
-        encoder = function (text) { return new Buffer(text, 'base64').toString(); },
-        encodeTransform = encoding === 'base64' ? encoder : combinators.identity,
-        xpathSelector = combinators.curry(selectXPath, config.xpath, caseTransform, encoding),
-        xpathTransform = withSelectors && config.xpath ? xpathSelector : combinators.identity,
-        jsonPathSelector = combinators.curry(selectJSONPath, config.jsonpath, caseTransform, encoding, config, shouldForceStrings ? forceStrings : combinators.identity),
-        jsonPathTransform = withSelectors && config.jsonpath ? jsonPathSelector : combinators.identity,
-        transform = combinators.compose(jsonPathTransform, xpathTransform, exceptTransform, caseTransform, encodeTransform),
-        transformAll = function (o) {
-            if (!o) {
-                return o;
-            }
+        apply = function (fns) { return combinators.compose.apply(this, fns); };
 
-            if (Array.isArray(o)) {
-                // sort to provide deterministic comparison for deepEquals,
-                // where the order in the array for multi-valued querystring keys
-                // and xpath selections isn't important
-                var result = o.map(transformAll);
-                if (!avoidSort) {
-                    result = result.sort(sortObjects);
-                }
-                return result;
-            }
-            else if (isNonNullObject(o)) {
-                return Object.keys(o).reduce(function (transformed, key) {
-                    transformed[keyCaseTransform(key)] = transformAll(o[key]);
-                    return transformed;
-                }, {});
-            }
-            else if (typeof o === 'string') {
-                return transform(o);
-            }
+    if (Array.isArray(obj)) {
+        return apply(arrayTransforms)(obj.map(function (element) {
+            return transformAll(element, keyTransforms, valueTransforms, arrayTransforms);
+        }));
+    }
+    else if (isNonNullObject(obj)) {
+        return Object.keys(obj).reduce(function (result, key) {
+            result[apply(keyTransforms)(key)] = transformAll(obj[key], keyTransforms, valueTransforms, arrayTransforms);
+            return result;
+        }, {});
+    }
+    else if (typeof obj === 'string') {
+        return apply(valueTransforms)(obj);
+    }
+    else {
+        return obj;
+    }
+}
 
-            return o;
-        };
+function normalize (obj, config, options) {
+    var keyCaseTransform = config.keyCaseSensitive === false ? lowercase : caseTransform(config),
+        sortTransform = function (array) { return array.sort(sortObjects); },
+        transforms = [];
 
-    return transformAll(obj);
+    if (options.withSelectors) {
+        transforms.push(selectTransform(config, options));
+    }
+
+    transforms.push(exceptTransform(config));
+    transforms.push(caseTransform(config));
+    transforms.push(encodingTransform(options.encoding));
+
+    // sort to provide deterministic comparison for deepEquals,
+    // where the order in the array for multi-valued querystring keys
+    // and xpath selections isn't important
+    return transformAll(obj, [keyCaseTransform], transforms, [sortTransform]);
 }
 
 function testPredicate (expected, actual, predicateConfig, predicateFn) {
@@ -254,23 +308,23 @@ function predicateSatisfied (expected, actual, predicateConfig, predicateFn) {
 
 function create (operator, predicateFn) {
     return function (predicate, request, encoding) {
-        var expected = normalize(predicate[operator], predicate, encoding, false),
-            actual = normalize(request, predicate, encoding, true);
+        var expected = normalize(predicate[operator], predicate, { encoding: encoding }),
+            actual = normalize(request, predicate, { encoding: encoding, withSelectors: true });
 
         return predicateSatisfied(expected, actual, predicate, predicateFn);
     };
 }
 
 function deepEquals (predicate, request, encoding) {
-    var expected = normalize(forceStrings(predicate.deepEquals), predicate, encoding, false),
-        actual = normalize(forceStrings(request), predicate, encoding, true, true),
+    var expected = normalize(forceStrings(predicate.deepEquals), predicate, { encoding: encoding }),
+        actual = normalize(forceStrings(request), predicate, { encoding: encoding, withSelectors: true, shouldForceStrings: true }),
         stringify = require('json-stable-stringify');
 
     return Object.keys(expected).every(function (fieldName) {
         // Support predicates that reach into fields encoded in JSON strings (e.g. HTTP bodies)
         if (isNonNullObject(expected[fieldName]) && typeof actual[fieldName] === 'string') {
             var possibleJSON = tryJSON(actual[fieldName], predicate);
-            actual[fieldName] = normalize(forceStrings(possibleJSON), predicate, encoding, false);
+            actual[fieldName] = normalize(forceStrings(possibleJSON), predicate, { encoding: encoding });
         }
         return stringify(expected[fieldName]) === stringify(actual[fieldName]);
     });
@@ -284,8 +338,8 @@ function matches (predicate, request, encoding) {
     var caseSensitive = predicate.caseSensitive ? true : false, // convert to boolean even if undefined
         helpers = require('../util/helpers'),
         clone = helpers.merge(predicate, { caseSensitive: true, keyCaseSensitive: caseSensitive }),
-        expected = normalize(predicate.matches, clone, encoding, false),
-        actual = normalize(request, clone, encoding, true),
+        expected = normalize(predicate.matches, clone, { encoding: encoding }),
+        actual = normalize(request, clone, { encoding: encoding, withSelectors: true }),
         options = caseSensitive ? '' : 'i',
         errors = require('../util/errors');
 

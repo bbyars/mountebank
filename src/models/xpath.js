@@ -54,7 +54,7 @@ function select (selector, ns, possibleXML, logger) {
         DOMParser = require('xmldom').DOMParser,
         parser = new DOMParser({
             errorHandler: function (level, message) {
-                var warn = logger.warn || function () {};
+                var warn = (logger || {}).warn || function () {};
                 warn('%s (source: %s)', message, JSON.stringify(possibleXML));
             }
         }),

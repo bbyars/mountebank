@@ -14,6 +14,15 @@ describe('predicates', function () {
             assert.ok(!predicates.evaluate(predicate, request));
         });
 
+        it('#equals should be false if field is empty', function () {
+            var predicate = {
+                    equals: { field: 'VALUE' },
+                    xpath: { selector: '//title' }
+                },
+                request = { field: '' };
+            assert.ok(!predicates.evaluate(predicate, request));
+        });
+
         it('#equals should be true if value in provided xpath expression', function () {
             var predicate = {
                     equals: { field: 'VALUE' },
@@ -400,6 +409,15 @@ describe('predicates', function () {
                     xpath: { selector: '//book' }
                 },
                 request = { field: '<books><book><title>Game of Thrones</title></book></books>' };
+            assert.ok(predicates.evaluate(predicate, request));
+        });
+
+        it('should support array predicates', function () {
+            var predicate = {
+                    equals: { field: ['first', 'third', 'second'] },
+                    xpath: { selector: '//value' }
+                },
+                request = { field: '<values><value>first</value><value>second</value><value>third</value></values>' };
             assert.ok(predicates.evaluate(predicate, request));
         });
     });

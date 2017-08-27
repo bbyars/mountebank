@@ -402,7 +402,7 @@ var assert = require('assert'),
                     request = { protocol: protocol, port: port, stubs: [stub], name: this.name };
 
                 return api.post('/imposters', request).then(function (response) {
-                    assert.strictEqual(response.statusCode, 201);
+                    assert.strictEqual(response.statusCode, 201, response.body);
                     return client.post('/', xml, port);
                 }).then(function (response) {
                     assert.strictEqual(response.body, 'SUCCESS');
