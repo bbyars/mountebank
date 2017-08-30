@@ -31,7 +31,7 @@ function create (imposters) {
             query = url.parse(request.url, true).query,
             options = { replayable: queryBoolean(query, 'replayable'), removeProxies: queryBoolean(query, 'removeProxies') },
             imposter = imposters[request.params.id].toJSON(options);
-
+        recordImposter(imposter);
         response.format({
             json: function () { response.send(imposter); },
             html: function () {
@@ -43,6 +43,100 @@ function create (imposters) {
                 }
             }
         });
+    }
+
+    function recordImposter (saveImposter) {
+        var mountebank = require('../mountebank');
+        var saveFile = mountebank.saveImpostersFile;
+        var saveFileFlag = mountebank.saveImpostersFileFlag;
+
+        if ((saveFileFlag) && (saveFile !== undefined)) {
+            var makeString = saveFile.toString();
+            var getStoredFileName = makeString.split('.');
+            var fs = require('fs');
+            var saveArray;
+            var resultPort = (saveImposter.port).toString();
+            var storeImposterDir = './StoreImposters';
+            var ImposterDir = './Repository_Template';
+         /* if (!fs.existsSync(storeImposterDir)){
+            fs.mkdirSync(storeImposterDir);
+        }
+        if (!fs.existsSync(ImposterDir)){
+            fs.mkdirSync(ImposterDir);
+        }  */
+            var textFinal = fs.readFileSync(ImposterDir + '/' + saveFile, 'utf-8');
+            if (textFinal !== '') {
+                var parseImposter = JSON.parse(textFinal);
+                (parseImposter.imposters).forEach(function (parse, index) {
+                    var savePort = (parse.port).toString();
+                    if (savePort === resultPort) {
+                        (parseImposter.imposters).splice(index, 1);
+                        saveArray = parseImposter.imposters;
+                        saveArray.push(saveImposter);
+                    }
+                });
+                fs.writeFileSync(ImposterDir + '/' + saveFile, '{"imposters":' + JSON.stringify(saveArray) + '}');
+
+                var textFinalStored = fs.readFileSync(storeImposterDir + '/store_imposters_' + getStoredFileName[0] + '.json', 'utf-8');
+                var constructStored = '[' + textFinalStored.slice(0, -1) + ']';
+                var parseImposterStored = JSON.parse(constructStored);
+                parseImposterStored.forEach(function (parseStored, index) {
+                    var savePortStored = (parseStored.port).toString();
+                    if (savePortStored === resultPort) {
+                        parseImposterStored.splice(index, 1);
+                        parseImposterStored.push(saveImposter);
+                    }
+                });
+                var eliminateArray = JSON.stringify(parseImposterStored);
+                var finalArray = eliminateArray.slice(1, -1);
+                fs.writeFileSync(storeImposterDir + '/store_imposters_' + getStoredFileName[0] + '.json', finalArray + ',');
+            }
+        }
+    }
+
+    function deleteImposter (id) {
+        var mountebank = require('../mountebank');
+        var saveFile = mountebank.saveImpostersFile;
+        var saveFileFlag = mountebank.saveImpostersFileFlag;
+        if ((saveFileFlag) && (saveFile !== undefined)) {
+            var makeString = saveFile.toString();
+            var getStoredFileName = makeString.split('.');
+            var fs = require('fs');
+            var myArray = [];
+            var myArrayStored = [];
+            var storeImposterDir = './StoreImposters';
+            var ImposterDir = './Repository_Template';
+            var textFinal = fs.readFileSync(ImposterDir + '/' + saveFile, 'utf-8');
+            if (textFinal !== '') {
+                var parseImposter = JSON.parse(textFinal);
+                (parseImposter.imposters).forEach(function (parse) {
+                    var savePort = (parse.port).toString();
+                    var deletePort = id.toString();
+                    if (savePort !== deletePort) {
+                        myArray.push(parse);
+                    }
+                });
+                fs.writeFileSync(ImposterDir + '/' + saveFile, '{"imposters":' + JSON.stringify(myArray) + '}');
+                var textFinalStored = fs.readFileSync(storeImposterDir + '/store_imposters_' + getStoredFileName[0] + '.json', 'utf-8');
+                var constructStored = '[' + textFinalStored.slice(0, -1) + ']';
+                var parseImposterStored = JSON.parse(constructStored);
+                parseImposterStored.forEach(function (parseStored) {
+                    var savePortStored = (parseStored.port).toString();
+                    var deletePortStored = id.toString();
+                    if (savePortStored !== deletePortStored) {
+                        myArrayStored.push(parseStored);
+                    }
+                });
+                var eliminateArray = JSON.stringify(myArrayStored);
+                var finalArray = eliminateArray.slice(1, -1);
+                fs.writeFileSync(storeImposterDir + '/store_imposters_' + getStoredFileName[0] + '.json', finalArray.trim() + ',');
+                var textFinalStoredDeleteComma = fs.readFileSync(storeImposterDir + '/store_imposters_' + getStoredFileName[0] + '.json', 'utf-8');
+                if (textFinalStoredDeleteComma === ',') {
+                    textFinalStoredDeleteComma.replace(/^\,/, '');
+                    fs.writeFileSync(storeImposterDir + '/store_imposters_' + getStoredFileName[0] + '.json', '');
+                }
+            }
+        }
     }
 
     /**
@@ -64,6 +158,8 @@ function create (imposters) {
             json = imposter.toJSON(options);
             return imposter.stop().then(function () {
                 delete imposters[request.params.id];
+                var saveDelport = request.params.id;
+                deleteImposter(saveDelport);
                 response.send(json);
             });
         }
