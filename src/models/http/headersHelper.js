@@ -38,8 +38,20 @@ function headerNameFor (headerName, headers) {
     }
 }
 
+function getJar (headers) {
+    return {
+        get: function (header) {
+            return headers[headerNameFor(header, headers)];
+        },
+        set: function (header, value) {
+            headers[headerNameFor(header, headers)] = value;
+        }
+    };
+}
+
 module.exports = {
     headersFor: headersFor,
     hasHeader: hasHeader,
-    headerNameFor: headerNameFor
+    headerNameFor: headerNameFor,
+    getJar: getJar
 };

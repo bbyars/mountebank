@@ -6,7 +6,8 @@ var assert = require('assert'),
     port = api.port + 1,
     mb = require('../../mb').create(port + 1),
     timeout = parseInt(process.env.MB_SLOW_TEST_TIMEOUT || 4000),
-    BaseHttpClient = require('./baseHttpClient');
+    BaseHttpClient = require('./baseHttpClient'),
+    headersHelper = require('../../../src/models/http/headersHelper');
 
 ['http', 'https'].forEach(function (protocol) {
     var client = BaseHttpClient.create(protocol);
@@ -23,6 +24,86 @@ var assert = require('assert'),
                     return client.get('/first', response.body.port);
                 }).then(function (response) {
                     assert.strictEqual(response.statusCode, 200);
+                }).finally(function () {
+                    return api.del('/imposters');
+                });
+            });
+
+            promiseIt('should not support CORS preflight requests if "allowCORS" option is disabled', function () {
+                var request = { protocol: protocol, name: this.name };
+
+                return api.post('/imposters', request).then(function (response) {
+                    assert.strictEqual(response.statusCode, 201);
+                    return client.responseFor({
+                        method: 'OPTIONS',
+                        path: '/',
+                        headers: {
+                            'Access-Control-Request-Method': 'PUT',
+                            'Access-Control-Request-Headers': 'X-Custom-Header',
+                            Origin: 'localhost:8080'
+                        },
+                        port: response.body.port
+                    });
+                }).then(function (response) {
+                    var headersJar = headersHelper.getJar(response.headers);
+
+                    assert.strictEqual(response.statusCode, 200);
+
+                    assert.ok(!headersJar.get('access-control-allow-headers'));
+                    assert.ok(!headersJar.get('access-control-allow-methods'));
+                    assert.ok(!headersJar.get('access-control-allow-origin'));
+                }).finally(function () {
+                    return api.del('/imposters');
+                });
+            });
+
+            promiseIt('should support CORS preflight requests if "allowCORS" option is enabled', function () {
+                var request = { protocol: protocol, name: this.name, allowCORS: true };
+
+                return api.post('/imposters', request).then(function (response) {
+                    assert.strictEqual(response.statusCode, 201);
+                    return client.responseFor({
+                        method: 'OPTIONS',
+                        path: '/',
+                        headers: {
+                            'Access-Control-Request-Method': 'PUT',
+                            'Access-Control-Request-Headers': 'X-Custom-Header',
+                            Origin: 'localhost:8080'
+                        },
+                        port: response.body.port
+                    });
+                }).then(function (response) {
+                    var headersJar = headersHelper.getJar(response.headers);
+
+                    assert.strictEqual(response.statusCode, 200);
+
+                    assert.equal(headersJar.get('access-control-allow-headers'), 'X-Custom-Header');
+                    assert.equal(headersJar.get('access-control-allow-methods'), 'PUT');
+                    assert.equal(headersJar.get('access-control-allow-origin'), 'localhost:8080');
+                }).finally(function () {
+                    return api.del('/imposters');
+                });
+            });
+
+            promiseIt('should not handle non-preflight requests when "allowCORS" is enabled', function () {
+                var request = { protocol: protocol, name: this.name, allowCORS: true };
+
+                return api.post('/imposters', request).then(function (response) {
+                    assert.strictEqual(response.statusCode, 201);
+                    return client.responseFor({
+                        method: 'OPTIONS',
+                        path: '/',
+                        // Missing the necessary headers.
+                        port: response.body.port
+                    });
+                }).then(function (response) {
+                    var headersJar = headersHelper.getJar(response.headers);
+
+                    assert.strictEqual(response.statusCode, 200);
+
+                    assert.ok(!headersJar.get('access-control-allow-headers'));
+                    assert.ok(!headersJar.get('access-control-allow-methods'));
+                    assert.ok(!headersJar.get('access-control-allow-origin'));
                 }).finally(function () {
                     return api.del('/imposters');
                 });

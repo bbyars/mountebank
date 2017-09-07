@@ -64,6 +64,13 @@ description = 'The HTTP protocol support by mountebank'
     <td>The default response to send if no predicate matches. Also represents the default values
         that get merged into a response that doesn't specify every field</td>
   </tr>
+  <tr>
+    <td><code>allowCORS</code></td>
+    <td>boolean</td>
+    <td>No</td>
+    <td>false</td>
+    <td>If true, mountebank will allow all CORS preflight requests on the imposter.</td>
+  </tr>
 </table>
 
 <p>http and https imposters prevent keepalive connections by default because they can lead
