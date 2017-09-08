@@ -200,6 +200,7 @@ function create (proxy, postProcess) {
         }
     }
 
+    // TODO: HTTP-specific, any way to move out of here?
     function addInjectedHeadersTo (request, headersToInject) {
         Object.keys(headersToInject || {}).forEach(function (key) {
             request.headers[key] = headersToInject[key];

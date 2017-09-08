@@ -76,7 +76,8 @@ function create (logger, encoding) {
 
         function log (direction, what) {
             logger.debug('Proxy %s %s %s %s %s',
-                originalRequest.requestFrom, direction, JSON.stringify(format(what)), direction, socketName(proxyDestination));
+                originalRequest.requestFrom, direction, JSON.stringify(format(what)), direction,
+                socketName(connectionInfoFor(proxyDestination)));
         }
 
         var Q = require('q'),

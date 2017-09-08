@@ -113,15 +113,13 @@ function create (resolver, recordMatches, encoding) {
      */
     function resolve (request, logger, imposterState) {
         var stub = findFirstMatch(request, logger, imposterState) || { statefulResponses: [{ is: {} }] },
-            responseConfig = stub.statefulResponses.shift(),
-            Q = require('q'),
-            deferred = Q.defer();
+            responseConfig = stub.statefulResponses.shift();
 
         logger.debug('generating response from ' + JSON.stringify(responseConfig));
 
         stub.statefulResponses.push(responseConfig);
 
-        resolver.resolve(responseConfig, request, logger, stubs, imposterState).done(function (response) {
+        return resolver.resolve(responseConfig, request, logger, stubs, imposterState).then(function (response) {
             var match = {
                 timestamp: new Date().toJSON(),
                 request: request,
@@ -131,10 +129,8 @@ function create (resolver, recordMatches, encoding) {
                 stub.matches = stub.matches || [];
                 stub.matches.push(match);
             }
-            deferred.resolve(response);
-        }, deferred.reject);
-
-        return deferred.promise;
+            return response;
+        });
     }
 
     return {
