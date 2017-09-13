@@ -3,7 +3,7 @@
 var assert = require('assert'),
     headersHelper = require('../../../src/models/http/headersHelper');
 
-describe.only('headersHelper', function () {
+describe('headersHelper', function () {
     describe('#getJar', function () {
         describe('#get', function () {
             it('should search for the header with case-insensity', function () {
