@@ -92,6 +92,13 @@ switch in <code>curl</code>).  Alternatively, you may pass in the key pair yours
     <td>The default response to send if no predicate matches. Also represents the default values
         that get merged into a response that doesn't specify every field</td>
   </tr>
+  <tr>
+    <td><code>allowCORS</code></td>
+    <td>boolean</td>
+    <td>No</td>
+    <td>false</td>
+    <td>If true, mountebank will allow all CORS preflight requests on the imposter.</td>
+  </tr>
 </table>
 
 <p>See the <a href='/docs/protocols/http'>http</a> page for examples.  Just be sure
