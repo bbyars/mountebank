@@ -191,6 +191,13 @@ function create (protocols, imposters, Imposter, logger) {
 
         logger.debug(requestDetails(request));
 
+        if (!('imposters' in request.body)) {
+            respondWithValidationErrors(response, [
+                exceptions.ValidationError("'imposters' is a required field")
+            ]);
+            return Q(false);
+        }
+
         return Q.all(validationPromises).then(function (validations) {
             var isValid = validations.every(function (validation) {
                 return validation.isValid;
@@ -198,7 +205,7 @@ function create (protocols, imposters, Imposter, logger) {
 
             if (isValid) {
                 return deleteAllImposters().then(function () {
-                    var creationPromises = request.body.imposters.map(function (imposter) {
+                    var creationPromises = requestImposters.map(function (imposter) {
                         return Imposter.create(protocols[imposter.protocol], imposter);
                     });
 

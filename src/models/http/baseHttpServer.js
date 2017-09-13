@@ -21,7 +21,7 @@ function setup (protocolName, createBaseServer) {
      */
     function createServer (logger, options) {
 
-        function postProcess (stubResponse) {
+        function postProcess (stubResponse, request) {
             /* eslint complexity: 0 */
             var headersHelper = require('./headersHelper'),
                 defaultResponse = options.defaultResponse || {},
@@ -32,11 +32,26 @@ function setup (protocolName, createBaseServer) {
                     body: stubResponse.body || defaultResponse.body || '',
                     _mode: stubResponse._mode || defaultResponse._mode || 'text'
                 },
+                responseHeaders = headersHelper.getJar(response.headers),
                 encoding = response._mode === 'binary' ? 'base64' : 'utf8';
 
             if (typeof response.body === 'object') {
                 // Support JSON response bodies
                 response.body = JSON.stringify(response.body, null, 4);
+            }
+
+            if (options.allowCORS) {
+                var requestHeaders = headersHelper.getJar(request.headers),
+                    isCrossOriginPreflight = request.method === 'OPTIONS' &&
+                        requestHeaders.get('Access-Control-Request-Headers') &&
+                        requestHeaders.get('Access-Control-Request-Method') &&
+                        requestHeaders.get('Origin');
+
+                if (isCrossOriginPreflight) {
+                    responseHeaders.set('Access-Control-Allow-Headers', requestHeaders.get('Access-Control-Request-Headers'));
+                    responseHeaders.set('Access-Control-Allow-Methods', requestHeaders.get('Access-Control-Request-Method'));
+                    responseHeaders.set('Access-Control-Allow-Origin', requestHeaders.get('Origin'));
+                }
             }
 
             if (!headersHelper.hasHeader('Connection', response.headers)) {
@@ -53,6 +68,7 @@ function setup (protocolName, createBaseServer) {
                 response.headers[headersHelper.headerNameFor('Content-Length', response.headers)] =
                     Buffer.byteLength(response.body, encoding);
             }
+
             return response;
         }
 

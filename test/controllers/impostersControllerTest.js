@@ -285,12 +285,35 @@ describe('ImpostersController', function () {
             };
         });
 
+        promiseIt('should return a 400 if the "imposters" key is not present', function () {
+            var existingImposter = { stop: mock() },
+                imposters = { 0: existingImposter },
+                controller = Controller.create({ http: Protocol }, imposters, {}, logger);
+
+            request.body = {};
+
+            return controller.put(request, response).then(function () {
+                assert.strictEqual(response.statusCode, 400);
+                assert.deepEqual(response.body, {
+                    errors: [{
+                        code: 'bad data',
+                        message: "'imposters' is a required field"
+                    }]
+                });
+
+                assert.deepEqual(imposters, { 0: existingImposter });
+            });
+        });
+
         promiseIt('should return an empty array if no imposters provided', function () {
-            var controller = Controller.create({ http: Protocol }, {}, {}, logger);
+            var existingImposter = { stop: mock() },
+                imposters = { 0: existingImposter },
+                controller = Controller.create({ http: Protocol }, imposters, {}, logger);
             request.body = { imposters: [] };
 
             return controller.put(request, response).then(function () {
                 assert.deepEqual(response.body, { imposters: [] });
+                assert.deepEqual(imposters, {});
             });
         });
 
