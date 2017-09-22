@@ -170,5 +170,19 @@ describe('ImposterController', function () {
                 assert.ok(imposter.toJSON.wasCalledWith({ replayable: false, removeProxies: false }), imposter.toJSON.message());
             });
         });
+
+        promiseIt('should delete requests recorded with the imposter', function () {
+            var response = FakeResponse.create(),
+                imposter = {
+                    toJSON: mock().returns('JSON'),
+                    deleteRequests: mock()
+                },
+                controller = Controller.create({ 1: imposter });
+
+            return controller.deleteRequests({ url: '/imposters/1/requests', params: { id: 1 } }, response).then(function () {
+                assert(imposter.deleteRequests.wasCalled());
+            });
+        });
+
     });
 });

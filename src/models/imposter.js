@@ -115,12 +115,17 @@ function create (Protocol, request) {
                 return result;
             }
 
+            function deleteRequests() {
+                server.deleteRequests();
+            }
+
             deferred.resolve({
                 port: server.port,
                 url: url,
                 toJSON: toJSON,
                 addStub: server.addStub,
-                stop: server.close
+                stop: server.close,
+                deleteRequests: deleteRequests
             });
         });
     });

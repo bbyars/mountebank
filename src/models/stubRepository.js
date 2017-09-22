@@ -104,6 +104,21 @@ function create (resolver, recordMatches, encoding) {
     }
 
     /**
+     * Deletes the proxy request and responses for this imposter
+     * Brings the imposter back to "newly created state" i.e.
+     * num_requests = 0.
+     * 
+     * Does not touch the stubbed requests.
+     */
+    function deleteRequests() {
+    
+        // TODO: should this delegate to resolver?
+        if(stubs[0] && stubs[0].responses[0].proxy) {
+            stubs.splice(1);
+        }
+    }
+
+    /**
      * Finds the right stub for a request and generates a response
      * @memberOf module:models/stubRepository#
      * @param {Object} request - The protocol request
@@ -136,7 +151,8 @@ function create (resolver, recordMatches, encoding) {
     return {
         stubs: getStubs,
         addStub: addStub,
-        resolve: resolve
+        resolve: resolve,
+        deleteRequests: deleteRequests
     };
 }
 

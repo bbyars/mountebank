@@ -127,6 +127,10 @@ function implement (implementation, recordRequests, debug, baseLogger) {
                 stubs: server.stubs,
                 metadata: metadata,
                 port: actualPort,
+                deleteRequests: function() {
+                    numRequests = 0;
+                    server.deleteRequests();
+                },
                 close: function () {
                     var closeDeferred = Q.defer();
                     server.close(function () {
