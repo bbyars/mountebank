@@ -90,7 +90,7 @@
   },
   "devDependencies": {
     "codeclimate-test-reporter": "^0.4.1",
-    "coveralls": "~2.13.0",
+    "coveralls": "~3.0.0",
     "firebase-tools": "^3.9.0",
     "fs-extra": "~4.0.0",
     "grunt": "^1.0.1",
