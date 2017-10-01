@@ -127,7 +127,7 @@ function implement (implementation, recordRequests, debug, baseLogger) {
                 stubs: server.stubs,
                 metadata: metadata,
                 port: actualPort,
-                deleteRequests: function() {
+                deleteRequests: function () {
                     numRequests = 0;
                     server.deleteRequests();
                 },

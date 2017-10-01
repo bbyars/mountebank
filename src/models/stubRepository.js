@@ -107,13 +107,12 @@ function create (resolver, recordMatches, encoding) {
      * Deletes the proxy request and responses for this imposter
      * Brings the imposter back to "newly created state" i.e.
      * num_requests = 0.
-     * 
+     *
      * Does not touch the stubbed requests.
      */
-    function deleteRequests() {
-    
+    function deleteRequests () {
         // TODO: should this delegate to resolver?
-        if(stubs[0] && stubs[0].responses[0].proxy) {
+        if (stubs[0] && stubs[0].responses[0].proxy) {
             stubs.splice(1);
         }
     }

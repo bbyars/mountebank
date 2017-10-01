@@ -45,18 +45,16 @@ function create (imposters) {
         });
     }
 
-    function deleteRequests(request, response) {
+    function deleteRequests (request, response) {
         var Q = require('q'),
-        imposter = imposters[request.params.id],
-        json = {},
-        url = require('url'),
-        query = url.parse(request.url, true).query,
-        options = { replayable: false, removeProxies: false };
-        
+            imposter = imposters[request.params.id],
+            json = {},
+            options = { replayable: false, removeProxies: false };
+
         if (imposter) {
             imposter.deleteRequests();
             imposter = imposter.toJSON(options);
-            
+
             response.format({
                 json: function () { response.send(imposter); },
                 html: function () {

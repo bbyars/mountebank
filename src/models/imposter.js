@@ -115,7 +115,7 @@ function create (Protocol, request) {
                 return result;
             }
 
-            function deleteRequests() {
+            function deleteRequests () {
                 server.deleteRequests();
             }
 
