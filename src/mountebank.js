@@ -103,6 +103,8 @@ function create (options) {
     app.put('/imposters', impostersController.put);
     app.get('/imposters/:id', validateImposterExists, imposterController.get);
     app.delete('/imposters/:id', imposterController.del);
+    app.delete('/imposters/:id/requests', imposterController.deleteRequests);
+    
     app.get('/logs', logsController.get);
     app.get('/config', configController.get);
     app.get('/feed', feedController.getFeed);

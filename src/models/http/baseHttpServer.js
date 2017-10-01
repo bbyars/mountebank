@@ -103,7 +103,8 @@ function setup (protocolName, createBaseServer) {
                 metadata: baseServer.metadata,
                 addStub: stubs.addStub,
                 state: {},
-                stubs: stubs.stubs
+                stubs: stubs.stubs,
+                deleteRequests: stubs.deleteRequests
             }),
             server = baseServer.createNodeServer();
 

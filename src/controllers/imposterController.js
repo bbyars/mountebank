@@ -45,6 +45,36 @@ function create (imposters) {
         });
     }
 
+    function deleteRequests(request, response) {
+        var Q = require('q'),
+        imposter = imposters[request.params.id],
+        json = {},
+        url = require('url'),
+        query = url.parse(request.url, true).query,
+        options = { replayable: false, removeProxies: false };
+        
+        if (imposter) {
+            imposter.deleteRequests();
+            imposter = imposter.toJSON(options);
+            
+            response.format({
+                json: function () { response.send(imposter); },
+                html: function () {
+                    if (request.headers['x-requested-with']) {
+                        response.render('_imposter', { imposter: imposter });
+                    }
+                    else {
+                        response.render('imposter', { imposter: imposter });
+                    }
+                }
+            });
+            return Q(true);
+        }
+        else {
+            response.send(json);
+            return Q(true);
+        }
+    }
     /**
      * The function responding to DELETE /imposters/:port
      * @memberOf module:controllers/imposterController#
@@ -75,7 +105,8 @@ function create (imposters) {
 
     return {
         get: get,
-        del: del
+        del: del,
+        deleteRequests: deleteRequests
     };
 }
 
