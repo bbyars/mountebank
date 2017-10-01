@@ -102,7 +102,7 @@ function stringify (filename, includeFile) {
             stringify: stringify,
             inject: stringify       // backwards compatibility
         }),
-        jsonString = JSON.stringify(rendered);
+        jsonString = JSON.stringify(rendered.trim());
 
     // get rid of the surrounding quotes because it makes the templates more natural to quote them there
     return jsonString.substring(1, jsonString.length - 1);
