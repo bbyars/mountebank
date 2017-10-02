@@ -93,7 +93,6 @@ you can contact me directly at brandon.byars@gmail.com.
 [![Test Coverage][codeclimate-coverage-badge]][codeclimate-coverage]
 [![Codacy Badge][codacy-badge]][codacy]
 [![Code Climate][codeclimate-badge]][codeclimate]
-[![Greenkeeper badge][greenkeeper-badge]][greenkeeper]
 [![bitHound Overall Score][bithound-badge]][bithound]
 
 |                       |Node Version |Ubuntu 12.04                            |CentOS 6.7                            |OS X Mavericks                           |Windows Server 2012                          |
@@ -133,12 +132,8 @@ Feel free to reach me at brandon.byars@gmail.com.
 [codeclimate]: https://codeclimate.com/github/bbyars/mountebank
 [codeclimate-coverage-badge]: https://codeclimate.com/github/bbyars/mountebank/badges/coverage.svg
 [codeclimate-coverage]: https://codeclimate.com/github/bbyars/mountebank/coverage
-[coveralls-badge]: https://coveralls.io/repos/bbyars/mountebank/badge.png?branch=master
-[coveralls]: https://coveralls.io/r/bbyars/mountebank?branch=master
 [codacy-badge]: https://www.codacy.com/project/badge/c030a6aebe274e21b4ce11a74e01fa12
 [codacy]: https://www.codacy.com/public/brandonbyars/mountebank
-[greenkeeper-badge]: https://badges.greenkeeper.io/bbyars/mountebank.svg
-[greenkeeper]: https://greenkeeper.io/
 [travis-badge]: https://travis-ci.org/bbyars/mountebank.png
 [travis]: https://travis-ci.org/bbyars/mountebank
 [appveyor-badge]: https://ci.appveyor.com/api/projects/status/acfhg44px95s4pk5?svg=true

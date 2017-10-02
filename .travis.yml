@@ -46,7 +46,7 @@ matrix:
     - os: linux
       sudo: false
       env:
-        - MB_GRUNT_TASK='test:tarball:x64 dist:tarball:x86 deploy:s3 coveralls codeclimate sonar'
+        - MB_GRUNT_TASK='test:tarball:x64 dist:tarball:x86 deploy:s3 codeclimate sonar'
         # CODECLIMATE_REPO_TOKEN
         - secure: "jjJxl1G93oo4cZScpkizdmq142IkK749Ul/4CrpyIwOB80xVVOD/DWyFelCxQ0F/nOt150YOAc1w9UHI8fgY1goAk6cHP/ipzkZ9NIO4x/SjUl0XkWTW7T/riGzn6R+SbjRmWJwbszp4wmwIQj8lAekvYlmvMOR1QpNzBJ4K4x4="
         # SONARQUBE_LOGIN

@@ -80,7 +80,6 @@ module.exports = function (grunt) {
                 'grunt',
                 'mocha',
                 'istanbul',
-                'coveralls',
                 'grunt-cli',
                 'jsdoc',
                 'grunt-contrib-csslint',
@@ -118,19 +117,6 @@ module.exports = function (grunt) {
             if (stderr) { console.log(stderr); }
             if (error) { throw error; }
             console.log('Coverage report at coverage/lcov-report/index.html');
-            done();
-        });
-    });
-
-    grunt.registerTask('coveralls', 'Send coverage output to coveralls.io', function () {
-        var done = this.async(),
-            mocha = 'node_modules/.bin/istanbul cover node_modules/.bin/_mocha --report lcovonly test/**/*.js -- -R spec',
-            command = mocha + ' && cat coverage/lcov.info | node_modules/coveralls/bin/coveralls.js';
-
-        exec(command, function (error, stdout, stderr) {
-            if (stdout) { console.log(stdout); }
-            if (stderr) { console.log(stderr); }
-            if (error) { throw error; }
             done();
         });
     });

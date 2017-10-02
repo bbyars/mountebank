@@ -14,7 +14,6 @@ module.exports = function (grunt) {
     grunt.loadNpmTasks('grunt-css');
 
     grunt.initConfig({
-        pkg: grunt.file.readJSON('package.json'), // needed for coveralls
         mochaTest: {
             unit: {
                 options: {
