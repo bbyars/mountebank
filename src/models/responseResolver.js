@@ -159,7 +159,7 @@ function create (proxy, postProcess) {
         var addBehaviors = {};
 
         if (addWaitBehavior && response._proxyResponseTime) { // eslint-disable-line no-underscore-dangle
-            addBehaviors.wait = response._proxyResponseTime;  // eslint-disable-line no-underscore-dangle
+            addBehaviors.wait = response._proxyResponseTime; // eslint-disable-line no-underscore-dangle
         }
         if (addDecorateBehavior) {
             addBehaviors.decorate = addDecorateBehavior;

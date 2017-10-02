@@ -41,25 +41,25 @@ function scopeFor (port, name) {
  * @returns {Object} The protocol server implementation
  */
 function createServer (options, recordRequests, debug) {
-            // This is an async operation, so we use a deferred
+    // This is an async operation, so we use a deferred
     var Q = require('q'),
         baseLogger = require('winston'),
         net = require('net'),
         deferred = Q.defer(),
-            // track the number of requests even if recordRequests = false
+        // track the number of requests even if recordRequests = false
         numRequests = 0,
-            // and an array to record all requests for mock verification
+        // and an array to record all requests for mock verification
         requests = [],
-            // set up a logger with the correct log prefix
+        // set up a logger with the correct log prefix
         logger = require('../../util/scopedLogger').create(baseLogger, scopeFor(options.port)),
-            // create the protocol-specific proxy (here we're reusing tcp's proxy)
+        // create the protocol-specific proxy (here we're reusing tcp's proxy)
         proxy = require('../tcp/tcpProxy').create(logger, 'utf8'),
-            // create the response resolver, which contains the strategies for resolving is, proxy, and inject stubs
-            // the postProcess parameter is used to fill in defaults for the response that were not passed by the user
+        // create the response resolver, which contains the strategies for resolving is, proxy, and inject stubs
+        // the postProcess parameter is used to fill in defaults for the response that were not passed by the user
         resolver = require('../responseResolver').create(proxy, postProcess),
-            // create the repository which matches the appropriate stub to respond with
+        // create the repository which matches the appropriate stub to respond with
         stubs = require('../stubRepository').create(resolver, debug, 'utf8'),
-            // and create the actual server using node.js's net module
+        // and create the actual server using node.js's net module
         server = net.createServer();
 
     // we need to respond to new connections
@@ -152,7 +152,7 @@ function initialize (allowInjection, recordRequests, debug) {
 
                 return DryRunValidator.create({
                     StubRepository: StubRepository,
-                        // This is the request that will be 'dry run' through the validator
+                    // This is the request that will be 'dry run' through the validator
                     testRequest: {
                         requestFrom: '',
                         data: ''

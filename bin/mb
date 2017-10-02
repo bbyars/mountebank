@@ -100,7 +100,7 @@ function stringify (filename, includeFile) {
         rendered = ejs.render(contents, {
             filename: filename,
             stringify: stringify,
-            inject: stringify       // backwards compatibility
+            inject: stringify // backwards compatibility
         }),
         jsonString = JSON.stringify(rendered.trim());
 
@@ -136,7 +136,7 @@ function loadConfig (options, server) {
         parsedContents = options.noParse ? configContents : ejs.render(configContents, {
             filename: options.configfile,
             stringify: stringify,
-            inject: stringify       // backwards compatibility
+            inject: stringify // backwards compatibility
         }),
         json = JSON.parse(parsedContents),
         imposters = json.imposters;

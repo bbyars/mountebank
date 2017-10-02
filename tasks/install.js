@@ -7,7 +7,7 @@ var fs = require('fs-extra'),
     util = require('util'),
     thisPackage = require('../package.json'),
     version = process.env.MB_VERSION || thisPackage.version,
-// parent directory to avoid interaction with project node_modules
+    // parent directory to avoid interaction with project node_modules
     testDir = '../.mb-test-dir';
 
 function bitness () {
