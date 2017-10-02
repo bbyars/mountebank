@@ -75,7 +75,7 @@
     "csv-parse": "^1.2.0",
     "ejs": "~2.5.1",
     "errorhandler": "^1.0.0",
-    "express": "~4.15.0",
+    "express": "~4.16.1",
     "http-proxy-agent": "^2.0.0",
     "https-proxy-agent": "2.1.0",
     "json-stable-stringify": "~1.0.0",
@@ -86,10 +86,10 @@
     "winston": "~2.3.0",
     "xmldom": "^0.1.19",
     "xpath": "0.0.24",
-    "yargs": "7.1.0"
+    "yargs": "9.0.1"
   },
   "devDependencies": {
-    "codeclimate-test-reporter": "^0.4.1",
+    "codeclimate-test-reporter": "^0.5.0",
     "coveralls": "~2.13.0",
     "firebase-tools": "^3.9.0",
     "fs-extra": "~4.0.0",
@@ -108,11 +108,6 @@
     "rimraf": "^2.4.3",
     "time-grunt": "^1.2.2",
     "w3cjs": "~0.4.0"
-  },
-  "greenkeeper": {
-    "ignore": [
-      "mailparser"
-    ]
   },
   "engines": {
     "node": ">=4.8.4"
