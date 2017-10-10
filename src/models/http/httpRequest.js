@@ -29,7 +29,7 @@ function transform (request) {
         parts = url.parse(request.url, true),
         headersHelper = require('./headersHelper');
 
-    var headers = headersHelper.headersFor(request.rawHeaders)
+    var headers = headersHelper.headersFor(request.rawHeaders);
 
     var transformed = {
         requestFrom: helpers.socketName(request.socket),
@@ -40,7 +40,7 @@ function transform (request) {
         body: request.body
     };
 
-    if (request.body && headers['Content-Type'] == "application/x-www-form-urlencoded") {
+    if (request.body && headers['Content-Type'] === 'application/x-www-form-urlencoded') {
         transformed.form = queryString.parse(request.body);
     }
 

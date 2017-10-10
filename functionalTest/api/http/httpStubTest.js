@@ -451,10 +451,10 @@ var assert = require('assert'),
                     port: port,
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'Content-Type': 'application/x-www-form-urlencoded'
                     },
                     body: 'firstname=ruud&lastname=mountebank'
-                }
+                };
 
                 var stub = {
                         predicates: [{ deepEquals: { form: { firstname: 'ruud', lastname: 'mountebank' } } }],
