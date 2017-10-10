@@ -31,20 +31,20 @@ function transform (request) {
 
     var headers = headersHelper.headersFor(request.rawHeaders)
 
-    var form = {};
-    if (request.body && headers['Content-Type'] == "application/x-www-form-urlencoded") {
-        form = queryString.parse(request.body);
-    }
-
-    return {
+    var transformed = {
         requestFrom: helpers.socketName(request.socket),
         method: request.method,
         path: parts.pathname,
         query: parts.query,
         headers: headers,
-        body: request.body,
-        form: form
+        body: request.body
     };
+
+    if (request.body && headers['Content-Type'] == "application/x-www-form-urlencoded") {
+        transformed.form = queryString.parse(request.body);
+    }
+
+    return transformed;
 }
 
 /**
