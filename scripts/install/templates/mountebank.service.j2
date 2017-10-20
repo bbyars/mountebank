@@ -1,0 +1,21 @@
+[Unit]
+Description=Mountebank mocking service
+Documentation=https://mbtest.org
+After=network.target firewalld.service
+
+[Service]
+Type=simple
+User={{ mountebank_user }}
+# default mountebank install puts it in /usr/local/bin/
+ExecStart=/usr/local/bin/mb --port {{ mountebank_port }} --logfile /var/log/mountebank/mountebank.log
+ExecReload=/usr/local/bin/mb restart
+ExecStop=/usr/local/bin/mb stop
+WorkingDirectory=/home/{{ mountebank_user }}
+TimeoutStartSec=0
+# kill all of the processes in the cgroup started by mountebank
+KillMode=control-group
+Restart=on-failure
+RestartSec=60
+
+[Install]
+WantedBy=multi-user.target
