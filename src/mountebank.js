@@ -148,10 +148,15 @@ function create (options) {
         });
     });
 
-    function portStored (saveImpostersFile, saveImpostersFileFlag) {
+    function portStored (saveImpostersFile, saveImpostersFileFlag, impDirectory) {
         var fs = require('fs');
         var portStore = [];
-        var ImposterDir = './Repository_Template';
+        if (impDirectory === null) {
+            var ImposterDir = './Repository_Template';
+        }
+        else {
+            ImposterDir = impDirectory;
+        }
         if (fs.existsSync(ImposterDir + '/' + saveImpostersFile) === true) {
             var textFinal = fs.readFileSync(ImposterDir + '/' + saveImpostersFile, 'utf-8');
             if ((saveImpostersFileFlag) && (textFinal !== '')) {
@@ -175,12 +180,23 @@ function create (options) {
     }
 
     function saveImposterFile () {
+        var parsePath = path.parse(options.savefile);
+        var getDirName = parsePath.dir;
+        var lastExtName = parsePath.base;
         if ((options.savefile === true) && (options.savefile !== undefined)) {
             var saveImpostersFile = 'mb.json';
             module.exports.saveImpostersFile = saveImpostersFile;
             var saveImpostersFileFlag = 'true';
             module.exports.saveImpostersFileFlag = saveImpostersFileFlag;
-            portStored(saveImpostersFile, saveImpostersFileFlag);
+            portStored(saveImpostersFile, saveImpostersFileFlag, null);
+        }
+        else if (getDirName !== '') {
+            saveImpostersFile = lastExtName;
+            module.exports.saveImpostersFile = lastExtName;
+            module.exports.ImposterDir = getDirName;
+            saveImpostersFileFlag = 'true';
+            module.exports.saveImpostersFileFlag = saveImpostersFileFlag;
+            portStored(saveImpostersFile, saveImpostersFileFlag, getDirName);
         }
 
         else if ((options.savefile !== true) && (options.savefile !== undefined) && (options.savefile !== 'mb.json')) {
@@ -188,7 +204,7 @@ function create (options) {
             module.exports.saveImpostersFile = saveImpostersFile;
             saveImpostersFileFlag = 'true';
             module.exports.saveImpostersFileFlag = saveImpostersFileFlag;
-            portStored(saveImpostersFile, saveImpostersFileFlag);
+            portStored(saveImpostersFile, saveImpostersFileFlag, null);
         }
         else if ((options.savefile).localeCompare('mb.json') === 0) {
             module.exports.saveImpostersFileFlag = 'false';
@@ -207,6 +223,7 @@ function create (options) {
         server = app.listen(options.port, host, function () {
             logger.info('mountebank v%s now taking orders - point your browser to http://localhost:%s for help',
                 thisPackage.version, options.port);
+            // invert dependency of the export of the serverPort
             var serverPort;
             serverPort = JSON.stringify(options.port);
             module.exports.serverPort = serverPort;

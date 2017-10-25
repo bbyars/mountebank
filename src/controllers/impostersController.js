@@ -56,10 +56,7 @@ function create (protocols, imposters, Imposter, logger) {
     function validate (request) {
         var Q = require('q'),
             errors = [],
-            valid = Q({ isValid: false, errors: errors }),
-            compatibility = require('../models/compatibility');
-
-        compatibility.upcast(request);
+            valid = Q({ isValid: false, errors: errors });
 
         validatePort(request.port, errors);
         validateProtocol(request.protocol, errors);
@@ -120,14 +117,17 @@ function create (protocols, imposters, Imposter, logger) {
         });
     }
 
+
     function saveAllImposter (allImposters) {
-        // var request = require('request');
+        var request = require('request');
         var fs = require('fs');
+        var path = require('path');
         var mountebank = require('../mountebank');
         var saveFile = mountebank.saveImpostersFile;
         var saveFileFlag = mountebank.saveImpostersFileFlag;
-        // var serverPort = (mountebank.serverPort).toString();
-        var imposterStored;
+        var saveInDirectory = mountebank.ImposterDir;
+        var serverPort = (mountebank.serverPort).toString();
+        var imposterStored, joinPath;
         if ((saveFileFlag) && (saveFile !== undefined)) {
             var makeString = saveFile.toString();
             var getStoredFileName = makeString.split('.');
@@ -137,10 +137,19 @@ function create (protocols, imposters, Imposter, logger) {
                 var saveArray = [];
                 var replayablePort;
                 var storeImposterDir = './StoreImposters';
-                var ImposterDir = './Repository_Template';
+                console.log('check the Imposter direct here ---> ' + mountebank.ImposterDir);
+                    // var ImposterDir = './Repository_Template';
+                if ((saveInDirectory !== undefined)) {
+                    joinPath = path.join(saveInDirectory, saveFile);
+                }
+                else {
+                    saveInDirectory = '';
+                    joinPath = path.join(saveInDirectory, saveFile);
+                }
+
                 saveBody.forEach(function (saveImposter) {
                     replayablePort = (saveImposter.port).toString();
-                    var textFinal = fs.readFileSync(ImposterDir + '/' + saveFile, 'utf-8');
+                    var textFinal = fs.readFileSync(joinPath, 'utf-8');
                     if ((textFinal !== '') && (textFinal !== undefined)) {
                         var parseImposter = JSON.parse(textFinal);
                         (parseImposter.imposters).forEach(function (parse, index) {
@@ -151,7 +160,7 @@ function create (protocols, imposters, Imposter, logger) {
                                 saveArray.push(saveImposter);
                             }
                         });
-                        fs.writeFileSync(ImposterDir + '/' + saveFile, '{"imposters":' + JSON.stringify(saveArray) + '}');
+                        fs.writeFileSync(joinPath, '{"imposters":' + JSON.stringify(saveArray) + '}');
 
                         var textFinalStored = fs.readFileSync(storeImposterDir + '/store_imposters_' + getStoredFileName[0] + '.json', 'utf-8');
                         var constructStored = '[' + textFinalStored.slice(0, -1) + ']';
@@ -175,26 +184,37 @@ function create (protocols, imposters, Imposter, logger) {
 
     function saveImposter (imposter) {
         var fs = require('fs');
+        var path = require('path');
         var mountebank = require('../mountebank');
         var saveFile = mountebank.saveImpostersFile;
         var saveFileFlag = mountebank.saveImpostersFileFlag;
+        var saveInDirectory = mountebank.ImposterDir;
+        var joinPath;
+        console.log('check the Imposter direct here saveInDirectory---> ' + saveInDirectory);
+        console.log('check the Imposter direct here saveFile ---> ' + saveFile);
         if ((saveFileFlag) && (saveFile !== undefined)) {
             var makeString = saveFile.toString();
             var getStoredFileName = makeString.split('.');
             var storeImposterDir = './StoreImposters';
-            var ImposterDir = './Repository_Template';
+
+            if ((saveInDirectory !== undefined)) {
+                joinPath = path.join(saveInDirectory, saveFile);
+            }
+            else {
+                saveInDirectory = '';
+                joinPath = path.join(saveInDirectory, saveFile);
+            }
 
             if (!fs.existsSync(storeImposterDir)) {
                 fs.mkdirSync(storeImposterDir);
             }
-            if (!fs.existsSync(ImposterDir)) {
-                fs.mkdirSync(ImposterDir);
-            }
 
             fs.appendFileSync(storeImposterDir + '/store_imposters_' + getStoredFileName[0] + '.json', imposter.trim() + ',');
             var text = fs.readFileSync(storeImposterDir + '/store_imposters_' + getStoredFileName[0] + '.json', 'utf-8');
-            fs.writeFileSync(ImposterDir + '/' + saveFile, '{"imposters":[' + text.slice(0, -1) + ']}');
-            var textFinal = fs.readFileSync(ImposterDir + '/' + saveFile, 'utf-8');
+            console.log('write files');
+            fs.writeFileSync('abc123.json', '{"imposters":[' + text.slice(0, -1) + ']}');
+            fs.writeFileSync(joinPath, '{"imposters":[' + text.slice(0, -1) + ']}');
+            var textFinal = fs.readFileSync(joinPath, 'utf-8');
             var parseImposter = JSON.parse(textFinal);
             var myArray = [];
             var portCollection = [];
@@ -206,10 +226,11 @@ function create (protocols, imposters, Imposter, logger) {
                     portCollection.push(savePort);
                 }
             });
-            fs.writeFileSync(ImposterDir + '/' + saveFile, '{"imposters":' + JSON.stringify(myArray) + '}');
+            fs.writeFileSync(joinPath, '{"imposters":' + JSON.stringify(myArray) + '}');
         }
 
     }
+
     /**
      * The function responding to POST /imposters
      * @memberOf module:controllers/impostersController#
@@ -245,11 +266,14 @@ function create (protocols, imposters, Imposter, logger) {
         });
     }
 
+
     function deleteAllimposter (id) {
         var mountebank = require('../mountebank');
         var saveFile = mountebank.saveImpostersFile;
         var saveFileFlag = mountebank.saveImpostersFileFlag;
-
+        var saveInDirectory = mountebank.ImposterDir;
+        var path = require('path');
+        var joinPath;
         if ((saveFileFlag) && (saveFile !== undefined)) {
             var makeString = saveFile.toString();
             var getStoredFileName = makeString.split('.');
@@ -257,8 +281,15 @@ function create (protocols, imposters, Imposter, logger) {
             var myArray = [];
             var myArrayStored = [];
             var storeImposterDir = './StoreImposters';
-            var ImposterDir = './Repository_Template';
-            var textFinal = fs.readFileSync(ImposterDir + '/' + saveFile, 'utf-8');
+            if ((saveInDirectory !== undefined)) {
+                joinPath = path.join(saveInDirectory, saveFile);
+            }
+            else {
+                saveInDirectory = '';
+                joinPath = path.join(saveInDirectory, saveFile);
+            }
+
+            var textFinal = fs.readFileSync(joinPath, 'utf-8');
             if (textFinal !== '') {
                 var parseImposter = JSON.parse(textFinal);
                 (parseImposter.imposters).forEach(function (parse) {
@@ -268,7 +299,7 @@ function create (protocols, imposters, Imposter, logger) {
                         myArray.push(parse);
                     }
                 });
-                fs.writeFileSync(ImposterDir + '/' + saveFile, '{"imposters":' + JSON.stringify(myArray) + '}');
+                fs.writeFileSync(joinPath, '{"imposters":' + JSON.stringify(myArray) + '}');
                 var textFinalStored = fs.readFileSync(storeImposterDir + '/store_imposters_' + getStoredFileName[0] + '.json', 'utf-8');
                 var constructStored = '[' + textFinalStored.slice(0, -1) + ']';
                 var parseImposterStored = JSON.parse(constructStored);
@@ -291,7 +322,6 @@ function create (protocols, imposters, Imposter, logger) {
         }
     }
 
-
     /**
      * The function responding to DELETE /imposters
      * @memberOf module:controllers/impostersController#
@@ -312,7 +342,6 @@ function create (protocols, imposters, Imposter, logger) {
             id = id.port;
             deleteAllimposter(id);
         });
-
         return deleteAllImposters().then(function () {
             response.send({ imposters: json });
         });
@@ -331,7 +360,6 @@ function create (protocols, imposters, Imposter, logger) {
             validationPromises = requestImposters.map(function (imposter) {
                 return validate(imposter);
             });
-
         logger.debug(requestDetails(request));
         if (request.body.imposters !== undefined) {
             return Q.all(validationPromises).then(function (validations) {
@@ -346,7 +374,6 @@ function create (protocols, imposters, Imposter, logger) {
                             saveImposter(storePutImposters);
                             return Imposter.create(protocols[imposter.protocol], imposter);
                         });
-
                         return Q.all(creationPromises);
                     }).then(function (allImposters) {
                         var json = allImposters.map(function (imposter) {

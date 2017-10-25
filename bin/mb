@@ -261,7 +261,6 @@ var aliases = {
         d: 'debug',
         i: 'allowInjection',
         l: 'localOnly',
-        si: 'saveImposters',
         m: 'mock',
         p: 'port',
         r: 'removeProxies',
@@ -430,7 +429,8 @@ var argv = yargs
             .wrap(null)
             .options({
                 port: options.port,
-                savefile: options.savefile,
+                // add default for savefile per bbyars request
+                savefile: options.savefile || 'mb.json',
                 removeProxies: options.removeProxies
             })
             .example('mb save --savefile config.json --removeProxies --port 3000',

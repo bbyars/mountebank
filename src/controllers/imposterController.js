@@ -31,6 +31,7 @@ function create (imposters) {
             query = url.parse(request.url, true).query,
             options = { replayable: queryBoolean(query, 'replayable'), removeProxies: queryBoolean(query, 'removeProxies') },
             imposter = imposters[request.params.id].toJSON(options);
+        // possibly unncessary for GET operation, per bbyars request it is not altering any state
         recordImposter(imposter);
         response.format({
             json: function () { response.send(imposter); },
@@ -49,7 +50,9 @@ function create (imposters) {
         var mountebank = require('../mountebank');
         var saveFile = mountebank.saveImpostersFile;
         var saveFileFlag = mountebank.saveImpostersFileFlag;
-
+        var saveInDirectory = mountebank.ImposterDir;
+        var path = require('path');
+        var joinPath;
         if ((saveFileFlag) && (saveFile !== undefined)) {
             var makeString = saveFile.toString();
             var getStoredFileName = makeString.split('.');
@@ -57,14 +60,14 @@ function create (imposters) {
             var saveArray;
             var resultPort = (saveImposter.port).toString();
             var storeImposterDir = './StoreImposters';
-            var ImposterDir = './Repository_Template';
-         /* if (!fs.existsSync(storeImposterDir)){
-            fs.mkdirSync(storeImposterDir);
-        }
-        if (!fs.existsSync(ImposterDir)){
-            fs.mkdirSync(ImposterDir);
-        }  */
-            var textFinal = fs.readFileSync(ImposterDir + '/' + saveFile, 'utf-8');
+            if ((saveInDirectory !== undefined)) {
+                joinPath = path.join(saveInDirectory, saveFile);
+            }
+            else {
+                saveInDirectory = '';
+                joinPath = path.join(saveInDirectory, saveFile);
+            }
+            var textFinal = fs.readFileSync(joinPath, 'utf-8');
             if (textFinal !== '') {
                 var parseImposter = JSON.parse(textFinal);
                 (parseImposter.imposters).forEach(function (parse, index) {
@@ -75,7 +78,7 @@ function create (imposters) {
                         saveArray.push(saveImposter);
                     }
                 });
-                fs.writeFileSync(ImposterDir + '/' + saveFile, '{"imposters":' + JSON.stringify(saveArray) + '}');
+                fs.writeFileSync(joinPath, '{"imposters":' + JSON.stringify(saveArray) + '}');
 
                 var textFinalStored = fs.readFileSync(storeImposterDir + '/store_imposters_' + getStoredFileName[0] + '.json', 'utf-8');
                 var constructStored = '[' + textFinalStored.slice(0, -1) + ']';
@@ -98,6 +101,9 @@ function create (imposters) {
         var mountebank = require('../mountebank');
         var saveFile = mountebank.saveImpostersFile;
         var saveFileFlag = mountebank.saveImpostersFileFlag;
+        var saveInDirectory = mountebank.ImposterDir;
+        var path = require('path');
+        var joinPath;
         if ((saveFileFlag) && (saveFile !== undefined)) {
             var makeString = saveFile.toString();
             var getStoredFileName = makeString.split('.');
@@ -105,8 +111,14 @@ function create (imposters) {
             var myArray = [];
             var myArrayStored = [];
             var storeImposterDir = './StoreImposters';
-            var ImposterDir = './Repository_Template';
-            var textFinal = fs.readFileSync(ImposterDir + '/' + saveFile, 'utf-8');
+            if ((saveInDirectory !== undefined)) {
+                joinPath = path.join(saveInDirectory, saveFile);
+            }
+            else {
+                saveInDirectory = '';
+                joinPath = path.join(saveInDirectory, saveFile);
+            }
+            var textFinal = fs.readFileSync(joinPath, 'utf-8');
             if (textFinal !== '') {
                 var parseImposter = JSON.parse(textFinal);
                 (parseImposter.imposters).forEach(function (parse) {
@@ -116,7 +128,7 @@ function create (imposters) {
                         myArray.push(parse);
                     }
                 });
-                fs.writeFileSync(ImposterDir + '/' + saveFile, '{"imposters":' + JSON.stringify(myArray) + '}');
+                fs.writeFileSync(joinPath, '{"imposters":' + JSON.stringify(myArray) + '}');
                 var textFinalStored = fs.readFileSync(storeImposterDir + '/store_imposters_' + getStoredFileName[0] + '.json', 'utf-8');
                 var constructStored = '[' + textFinalStored.slice(0, -1) + ']';
                 var parseImposterStored = JSON.parse(constructStored);
