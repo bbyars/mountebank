@@ -17,6 +17,7 @@ function createTestRequest () {
         path: '/',
         query: {},
         headers: {},
+        form: {},
         body: ''
     };
 }
@@ -24,17 +25,26 @@ function createTestRequest () {
 function transform (request) {
     var helpers = require('../../util/helpers'),
         url = require('url'),
+        queryString = require('query-string'),
         parts = url.parse(request.url, true),
         headersHelper = require('./headersHelper');
 
-    return {
+    var headers = headersHelper.headersFor(request.rawHeaders);
+
+    var transformed = {
         requestFrom: helpers.socketName(request.socket),
         method: request.method,
         path: parts.pathname,
         query: parts.query,
-        headers: headersHelper.headersFor(request.rawHeaders),
+        headers: headers,
         body: request.body
     };
+
+    if (request.body && headers['Content-Type'] === 'application/x-www-form-urlencoded') {
+        transformed.form = queryString.parse(request.body);
+    }
+
+    return transformed;
 }
 
 /**

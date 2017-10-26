@@ -82,6 +82,7 @@
     "jsonpath-plus": "^0.16.0",
     "mailparser": "~0.6.1",
     "q": "~1.5.0",
+    "query-string": "^5.0.0",
     "simplesmtp": "~0.3.16",
     "winston": "~2.3.0",
     "xmldom": "^0.1.19",
