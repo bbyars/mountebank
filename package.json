@@ -73,21 +73,21 @@
   "dependencies": {
     "cors": "~2.8.4",
     "csv-parse": "^2.0.0",
-    "ejs": "~2.5.1",
+    "ejs": "~2.5.7",
     "errorhandler": "^1.0.0",
-    "express": "~4.16.1",
+    "express": "~4.16.2",
     "http-proxy-agent": "^2.0.0",
     "https-proxy-agent": "2.1.0",
     "json-stable-stringify": "~1.0.0",
     "jsonpath-plus": "^0.16.0",
     "mailparser": "~0.6.1",
-    "q": "~1.5.0",
-    "query-string": "^5.0.0",
+    "q": "~1.5.1",
+    "query-string": "^5.0.1",
     "simplesmtp": "~0.3.16",
-    "winston": "~2.3.0",
+    "winston": "~2.4.0",
     "xmldom": "^0.1.19",
     "xpath": "0.0.24",
-    "yargs": "9.0.1"
+    "yargs": "10.0.3"
   },
   "devDependencies": {
     "codeclimate-test-reporter": "^0.5.0",
