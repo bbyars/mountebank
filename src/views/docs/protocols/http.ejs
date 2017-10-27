@@ -118,6 +118,13 @@ field and explicitly set the <code>Connection</code> header to <code>keep-alive<
       <td>The request body</td>
       <td>string</td>
   </tr>
+  <tr>
+      <td><code>form</code></td>
+      <td>Form-encoded key-value pairs in the body. Supports key-specific predicates. For example,
+        with a body of <code>firstname=bob&lastname=smith</code>, you could set a predicate on
+        just <code>lastname</code>.</td>
+      <td>object</td>
+  </tr>
 </table>
 
 <h2>HTTP Responses</h2>
