@@ -7,7 +7,7 @@ describe('predicates', function () {
     describe('#exists', function () {
         it('should return true for integer request field if exists is true', function () {
             var predicate = { exists: { field: true } },
-                request = { field: 10 };
+                request = { field: 0 };
             assert.ok(predicates.evaluate(predicate, request));
         });
 
@@ -37,7 +37,7 @@ describe('predicates', function () {
 
         it('should return false for integer request field if exists is false', function () {
             var predicate = { exists: { field: false } },
-                request = { field: 10 };
+                request = { field: 0 };
             assert.ok(!predicates.evaluate(predicate, request));
         });
 
