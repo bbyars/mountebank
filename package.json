@@ -35,7 +35,12 @@
     "Nassim Kirouane <nassim.kirouane@inovia-team.com>",
     "Jamie Geddes <jamie@clumsypenguin.com>",
     "Louis Celier <louis.celier@matters.tech>",
-    "Simon Roberts <simon.roberts2@anz.com>"
+    "Simon Roberts <simon.roberts2@anz.com>",
+    "Amy Martin",
+    "Ruud Kamphuis",
+    "Karl Brown <kabrown@thoughtworks.com>",
+    "Sahejpreet Singh",
+    "Mario Lamontagne"
   ],
   "description": "Over the wire test doubles",
   "homepage": "http://www.mbtest.org",
