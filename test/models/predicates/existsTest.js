@@ -22,7 +22,7 @@ describe('predicates', function () {
                 request = { field: 'nonempty' };
             assert.ok(predicates.evaluate(predicate, request));
         });
-        
+
         it('should return false for empty string request field if exists is true', function () {
             var predicate = { exists: { field: true } },
                 request = { field: '' };
@@ -46,7 +46,7 @@ describe('predicates', function () {
                 request = { field: {} };
             assert.ok(!predicates.evaluate(predicate, request));
         });
-        
+
         it('should return false for non empty string request field if exists is false', function () {
             var predicate = { exists: { field: false } },
                 request = { field: 'nonempty' };
