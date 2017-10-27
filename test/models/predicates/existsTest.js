@@ -5,27 +5,63 @@ var assert = require('assert'),
 
 describe('predicates', function () {
     describe('#exists', function () {
-        it('should return true for non empty request field if exists is true', function () {
+        it('should return true for integer request field if exists is true', function () {
+            var predicate = { exists: { field: true } },
+                request = { field: 10 };
+            assert.ok(predicates.evaluate(predicate, request));
+        });
+
+        it('should return true for object request field if exists is true', function () {
+            var predicate = { exists: { field: true } },
+                request = { field: {} };
+            assert.ok(predicates.evaluate(predicate, request));
+        });
+
+        it('should return true for non empty string request field if exists is true', function () {
             var predicate = { exists: { field: true } },
                 request = { field: 'nonempty' };
             assert.ok(predicates.evaluate(predicate, request));
         });
-
-        it('should return false for empty request field if exists is true', function () {
+        
+        it('should return false for empty string request field if exists is true', function () {
             var predicate = { exists: { field: true } },
                 request = { field: '' };
             assert.ok(!predicates.evaluate(predicate, request));
         });
 
-        it('should return false for non empty request field if exists is false', function () {
+        it('should return false for undefined request field if exists is true', function () {
+            var predicate = { exists: { field: true } },
+                request = { field: undefined };
+            assert.ok(!predicates.evaluate(predicate, request));
+        });
+
+        it('should return false for integer request field if exists is false', function () {
+            var predicate = { exists: { field: false } },
+                request = { field: 10 };
+            assert.ok(!predicates.evaluate(predicate, request));
+        });
+
+        it('should return false for object request field if exists is false', function () {
+            var predicate = { exists: { field: false } },
+                request = { field: {} };
+            assert.ok(!predicates.evaluate(predicate, request));
+        });
+        
+        it('should return false for non empty string request field if exists is false', function () {
             var predicate = { exists: { field: false } },
                 request = { field: 'nonempty' };
             assert.ok(!predicates.evaluate(predicate, request));
         });
 
-        it('should return true for empty request field if exists is false', function () {
+        it('should return true for empty string request field if exists is false', function () {
             var predicate = { exists: { field: false } },
                 request = { field: '' };
+            assert.ok(predicates.evaluate(predicate, request));
+        });
+
+        it('should return true for undefined request field if exists is false', function () {
+            var predicate = { exists: { field: false } },
+                request = { field: undefined };
             assert.ok(predicates.evaluate(predicate, request));
         });
 

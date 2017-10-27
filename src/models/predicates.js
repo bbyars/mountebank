@@ -397,7 +397,7 @@ var predicates = {
     startsWith: create('startsWith', function (expected, actual) { return actual.indexOf(expected) === 0; }),
     endsWith: create('endsWith', function (expected, actual) { return actual.indexOf(expected, actual.length - expected.length) >= 0; }),
     matches: matches,
-    exists: create('exists', function (expected, actual) { return expected ? actual.length > 0 : actual.length === 0; }),
+    exists: create('exists', function (expected, actual) { return expected ? (actual !== undefined && actual !== '') : (actual === undefined || actual === ''); }),
     not: not,
     or: or,
     and: and,
