@@ -50,6 +50,15 @@ description = 'The TCP protocol support provided by mountebank, which allows cus
     <td>Included in the logs, useful when multiple imposters are set up.</td>
   </tr>
   <tr>
+    <td><code>recordRequests</code></td>
+    <td><code>true</code> or <code>false</code></td>
+    <td>No</td>
+    <td>false</td>
+    <td>Adds <a href='/docs/api/mocks'>mock verification</a> support by remembering the requests
+        made to this imposter.  Note that this represents a memory leak for any long running
+        <code>mb</code> process, as requests are never forgotten.</td>
+  </tr>
+  <tr>
     <td><code>stubs</code></td>
     <td>A stub request.</td>
     <td>No</td>
