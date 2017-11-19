@@ -324,6 +324,15 @@ strong {
     height: auto;
 }
 
+.accordion a{
+    text-decoration: none;
+    outline: none;
+}
+
+section.expanded {
+    height: auto;
+}
+
 /* fontawesome icons used */
 .feed-icon:before {
     content: "\f09e";
