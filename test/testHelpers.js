@@ -19,5 +19,6 @@ promiseIt.only = function (what, test) {
 };
 
 module.exports = {
-    promiseIt: promiseIt
+    promiseIt: promiseIt,
+    jquery: require('../src/public/scripts/jquery/1.11.0/jquery.min.js')
 };

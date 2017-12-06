@@ -113,36 +113,46 @@ response. Setting the <code>addWaitBehavior</code> flag will add that latency to
 
 <section class="accordion">
   <div>
-    <input id='proxy-predicate-generators' name='proxy-predicate-generators' type="checkbox" />
-    <label for='proxy-predicate-generators'>Understanding predicateGenerators</label>
+    <a class='section-toggler'
+       id='proxy-predicate-generators' name='proxy-predicate-generators' href='#proxy-predicate-generators'>
+      <label for='proxy-predicate-generators'>Understanding predicateGenerators</label>
+    </a>
     <section>
       <% include proxy/predicateGenerators %>
     </section>
   </div>
   <div>
-    <input id='proxy-modes' name='proxy-modes' type="checkbox" />
-    <label for='proxy-modes'>Understanding proxy modes</label>
+    <a class='section-toggler'
+       id='proxy-modes' name='proxy-modes' href='#proxy-modes'>
+      <label for='proxy-modes'>Understanding proxy modes</label>
+    </a>
     <section>
       <% include proxy/proxyModes %>
     </section>
   </div>
   <div>
-    <input id='proxy-add-wait-behavior' name='proxy-add-wait-behavior' type="checkbox" />
-    <label for='proxy-add-wait-behavior'>Adding latency to the saved responses with addWaitBehavior</label>
+    <a class='section-toggler'
+       id='proxy-add-wait-behavior' name='proxy-add-wait-behavior' href='#proxy-add-wait-behavior'>
+      <label for='proxy-add-wait-behavior'>Adding latency to the saved responses with addWaitBehavior</label>
+    </a>
     <section>
       <% include proxy/addWaitBehavior %>
     </section>
   </div>
   <div>
-    <input id='proxy-add-decorate-behavior' name='proxy-decorate-wait-behavior' type="checkbox" />
-    <label for='proxy-add-decorate-behavior'>Decorating saved responses with addDecorateBehavior</label>
+    <a class='section-toggler'
+       id='proxy-add-decorate-behavior' name='proxy-add-decorate-behavior' href='#proxy-add-decorate-behavior'>
+      <label for='proxy-add-decorate-behavior'>Decorating saved responses with addDecorateBehavior</label>
+    </a>
     <section>
       <% include proxy/addDecorateBehavior %>
     </section>
   </div>
   <div>
-    <input id='proxy-inject-headers' name='proxy-inject-headers' type="checkbox" />
-    <label for='proxy-inject-headers'>Changing the proxied request headers with injectHeaders</label>
+    <a class='section-toggler'
+       id='proxy-inject-headers' name='proxy-inject-headers' href='#proxy-inject-headers'>
+      <label for='proxy-inject-headers'>Changing the proxied request headers with injectHeaders</label>
+    </a>
     <section>
       <% include proxy/injectHeaders %>
     </section>
