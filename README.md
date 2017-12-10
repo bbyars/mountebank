@@ -56,7 +56,7 @@ After installing and running, view the docs in your browser at <http://localhost
 
 You can always learn more and support mountebank development by buying the book:
 
-[![Testing Microservices with Mountebank](https://images.manning.com/255/340/resize/book/d/b083e59-69bc-477f-b97f-33a701366637/Byars-Mountebank-MEAP-HI.png)](https://www.manning.com/books/testing-microservices-with-mountebank)
+[![Testing Microservices with Mountebank](https://images.manning.com/255/340/resize/book/d/b083e59-69bc-477f-b97f-33a701366637/Byars-Mountebank-MEAP-HI.png)](https://livebook.manning.com/#!/book/testing-microservices-with-mountebank/chapter-1/v-8/1)
 
 ## Goals
 
