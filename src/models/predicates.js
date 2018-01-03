@@ -26,7 +26,7 @@ function sortObjects (a, b) {
 }
 
 function forceStrings (obj) {
-    if (typeof obj !== 'object') {
+    if (!isNonNullObject(obj)) {
         return obj;
     }
     else if (Array.isArray(obj)) {
