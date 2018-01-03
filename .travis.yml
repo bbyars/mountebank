@@ -54,7 +54,7 @@ matrix:
     - os: linux
       sudo: false
       env:
-        - NODE_VERSION=8
+        - NODE_VERSION=6
         - MB_RUN_WEB_TESTS=true
     - os: linux
       sudo: false
@@ -67,10 +67,10 @@ matrix:
     - os: osx
       sudo: false
       env:
-        - NODE_VERSION=8
+        - NODE_VERSION=6
 
 install:
-  - export NODE_VERSION=${NODE_VERSION:-6} # Default node version = LTS version
+  - export NODE_VERSION=${NODE_VERSION:-8} # Default node version = LTS version
   - rm -rf ~/.nvm
   - git clone https://github.com/creationix/nvm.git ~/.nvm
   - source ~/.nvm/nvm.sh
