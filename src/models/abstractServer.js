@@ -28,7 +28,7 @@ function implement (implementation, recordRequests, debug, baseLogger) {
      * @returns {Object} - The interface for all protocols
      */
     function create (options) {
-        options.recordRequests = recordRequests;
+        options.recordRequests = options.recordRequests || recordRequests;
         options.debug = debug;
 
         function scopeFor (port) {
@@ -88,7 +88,7 @@ function implement (implementation, recordRequests, debug, baseLogger) {
                 implementation.Request.createFrom(request).then(function (simpleRequest) {
                     logger.debug('%s => %s', clientName, JSON.stringify(server.formatRequest(simpleRequest)));
                     numRequests += 1;
-                    if (recordRequests) {
+                    if (options.recordRequests) {
                         var recordedRequest = helpers.clone(simpleRequest);
                         recordedRequest.timestamp = new Date().toJSON();
                         requests.push(recordedRequest);
