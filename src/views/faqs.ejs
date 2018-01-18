@@ -59,7 +59,7 @@ description = 'Frequently asked questions about using mountebank'
         to make all <code>Connection</code> headers as <code>Keep-Alive</code>. As long as you set up each <code>mb</code>
         instance with the same configuration, you can run multiple instances behind a load balancer. Given a
         reasonable hardware setup, organizations have reported managing 200-250 TPS per instance. A common
-        strategy is to set up a <a href='/docs/api/proxies'>proxy</a> in <code>proxyAlways</code> mode
+        strategy is to set up a <a href='/docs/api/proxies'>proxy</a> in <code>proxyAlways</code> or <code>proxyTransparent</code> mode
         and to capture the downstream latency by using the <code>addWaitBehavior</code> field to the proxy.
         When you replay the saved responses, they will add the perform with roughly the same latency the
         downstream services had.</dd>
