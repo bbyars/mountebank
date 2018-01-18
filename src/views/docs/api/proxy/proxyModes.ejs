@@ -444,7 +444,7 @@ Host: localhost:<%= port %>
     </step>
 
     <p>Every time we send a request to <code>/test</code>, it will
-        be proxied to http://origin-server.com/test. There will be no stub created off the back of the request.
+        be proxied to http://origin-server.com/test. There will be no stub created off the back of the request.</p>
 
     <step type='http'>
         <code class='hidden'>GET /imposters/4000 HTTP/1.1
@@ -469,4 +469,3 @@ Host: localhost:<%= port %>
         </assertResponse>
     </step>
 </testScenario>
-
