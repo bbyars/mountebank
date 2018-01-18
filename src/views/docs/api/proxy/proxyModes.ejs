@@ -427,10 +427,10 @@ Accept: application/json</code>
     <step type='http'>
 <pre><code><span class='hidden'>POST /imposters HTTP/1.1
 Host: localhost:<%= port %>
-            Content-Type: application/json
+Content-Type: application/json
 
 {
-  "port": 4000,
+  "port": 5001,
   "protocol": "http",
 </span>"stubs": [{
   "responses": [{
@@ -447,7 +447,7 @@ Host: localhost:<%= port %>
         be proxied to http://origin-server.com/test. There will be no stub created off the back of the request.</p>
 
     <step type='http'>
-        <code class='hidden'>GET /imposters/4000 HTTP/1.1
+        <code class='hidden'>GET /imposters/5001 HTTP/1.1
             Host: localhost:<%= port %>
             Accept: application/json</code>
 
