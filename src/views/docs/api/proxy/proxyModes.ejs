@@ -6,8 +6,9 @@
       one response for each request, and automatically replays that response the next
       time the request predicates match.</li>
   <li><code>proxyAlways</code> - All calls will be proxied, allowing multiple responses
-      to be saved for the same logical request. You have to explicitly tell mountebank
-      to replay those responses.</li>
+        to be saved for the same logical request. You have to explicitly tell mountebank
+        to replay those responses.</li>
+  <li><code>proxyTransparent</code> - All calls will be proxied, but will not be recorded.</li>
 </ul>
 
 <h3>proxyOnce</h3>
@@ -410,3 +411,62 @@ Host: localhost:<%= port %>
 Accept: application/json</code>
     </step>
 </testScenario>
+
+
+
+
+<h3>proxyTransparent</h3>
+
+<p>The <code>proxyTransparent</code> mode does not save stubs <em>behind</em> the <code>proxy</code>
+    stub and simply proxies the requests transparently.</p>
+
+<p>Let's say you had the following <code>stubs</code> array:</p>
+
+<testScenario name='proxyTransparent'>
+
+    <step type='http'>
+<pre><code><span class='hidden'>POST /imposters HTTP/1.1
+Host: localhost:<%= port %>
+            Content-Type: application/json
+
+{
+  "port": 4000,
+  "protocol": "http",
+</span>"stubs": [{
+  "responses": [{
+    "proxy": {
+      "to": "<change to='http://localhost:4001'>http://origin-server.com</change>",
+      <strong class='highlight1'>"mode": "proxyTransparent"</strong>,
+      "predicateGenerators": [{ "matches": { "path": true } }]
+    }
+  }]
+}]<span class='hidden'>}</span></code></pre>
+    </step>
+
+    <p>Every time we send a request to <code>/test</code>, it will
+        be proxied to http://origin-server.com/test. There will be no stub created off the back of the request.
+
+    <step type='http'>
+        <code class='hidden'>GET /imposters/4000 HTTP/1.1
+            Host: localhost:<%= port %>
+            Accept: application/json</code>
+
+        <assertResponse partial='true'>
+<pre><code><span class='hidden'>{
+</span>"stubs": [
+  {
+    "responses": [
+      {
+        "proxy": {
+          "to": "<change to='http://localhost:4001'>http://origin-server.com</change>",
+          "mode": "proxyTransparent",
+          "predicateGenerators": [{ "matches": { "path": true } }]
+        }
+      }
+    ]
+  }
+]<span class='hidden'>}</span></code></pre>
+        </assertResponse>
+    </step>
+</testScenario>
+

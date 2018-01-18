@@ -39,13 +39,13 @@ in newly created <code>predicates</code>.</p>
   <tr>
     <td><code>mode</code></td>
     <td><code>proxyOnce</code></td>
-    <td>string, one of <code>proxyOnce</code> or <code>proxyAlways</code>.</td>
+    <td>string, one of <code>proxyOnce</code>, <code>proxyAlways</code> or <code>proxyTransparent</code>.</td>
     <td>Defines the replay behavior of the proxy. The default <code>proxyOnce</code> mode
         doesn't require you to explicitly do anything to replay the proxied responses. The
         <code>proxyAlways</code> mode requires you to run the
         <a href='/docs/commandLine'><code>mb replay</code></a> command (or equivalent) to
         switch from record mode to replay mode, but allows a richer set of data to be
-        recorded. See <a href='#proxy-modes'>below</a> for details.</td>
+        recorded. The <code>proxyTransparent</code> mode proxies the request but does not record any data. See <a href='#proxy-modes'>below</a> for details.</td>
   </tr>
   <tr>
     <td><code>addWaitBehavior</code></td>
