@@ -188,6 +188,11 @@ function create (proxy, postProcess) {
     }
 
     function recordProxyResponse (responseConfig, request, response, stubs, logger) {
+        // proxyTransparent prevents the request from being recorded, and always transparently issues the request.
+        if ('proxyTransparent' == responseConfig.proxy.mode) {
+            return;
+        }
+
         if (['proxyOnce', 'proxyAlways'].indexOf(responseConfig.proxy.mode) < 0) {
             responseConfig.proxy.mode = 'proxyOnce';
         }
