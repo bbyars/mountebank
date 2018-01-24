@@ -236,10 +236,8 @@ strong {
 .highlight4 {
     color: orangered;
 }
-/*
- * Accordion adapted from http://tympanus.net/codrops/2012/02/21/accordion-with-css3/
- */
-.accordion label {
+
+a.section-toggler {
     font-family: 'Berkshire Swash', Helvetica, sans-serif;
     padding: 5px 20px;
     position: relative;
@@ -263,74 +261,21 @@ strong {
         0 0 0 1px rgba(155,155,155,0.3),
         1px 0 0 0 rgba(255,255,255,0.9) inset,
         0 2px 2px rgba(0,0,0,0.1);
-}
-
-.accordion label:hover{
-    background: #fff;
-}
-
-.accordion input:checked + label,
-.accordion input:checked + label:hover {
-    background: #c6e1ec;
-    color: #3d7489;
-    text-shadow: 0 1px 1px rgba(255,255,255, 0.6);
-    box-shadow:
-        0 0 0 1px rgba(155,155,155,0.3),
-        0 2px 2px rgba(0,0,0,0.1);
-}
-
-.accordion label:hover:after,
-.accordion input:checked + label:hover:after {
-    content: '';
-    position: absolute;
-    width: 24px;
-    height: 24px;
-    right: 13px;
-    top: 7px;
-    background: transparent url(../images/arrow_down.png) no-repeat center center;
-}
-
-.accordion input:checked + label:hover:after{
-    background-image: url(../images/arrow_up.png);
-}
-
-.accordion input {
-    display: none;
-}
-
-.accordion section {
-    margin-top: -1px;
-    overflow: hidden;
-    height: 0;
-    position: relative;
-    z-index: 10;
-    -webkit-transition: height 0.3s ease-in-out, box-shadow 0.6s linear;
-    -moz-transition: height 0.3s ease-in-out, box-shadow 0.6s linear;
-    -o-transition: height 0.3s ease-in-out, box-shadow 0.6s linear;
-    -ms-transition: height 0.3s ease-in-out, box-shadow 0.6s linear;
-    transition: height 0.3s ease-in-out, box-shadow 0.6s linear;
-}
-
-.accordion input:checked ~ section {
-    -webkit-transition: height 0.5s ease-in-out, box-shadow 0.1s linear;
-    -moz-transition: height 0.5s ease-in-out, box-shadow 0.1s linear;
-    -o-transition: height 0.5s ease-in-out, box-shadow 0.1s linear;
-    -ms-transition: height 0.5s ease-in-out, box-shadow 0.1s linear;
-    transition: height 0.5s ease-in-out, box-shadow 0.1s linear;
-    box-shadow: 0 0 0 1px rgba(155,155,155,0.3);
-}
-
-.accordion input:checked ~ section {
-    height: auto;
-}
-
-.accordion a{
     text-decoration: none;
     outline: none;
 }
 
+a.section-toggler:hover{
+    background: #fff;
+}
+
+.accordion section {
+    display: none;
+}
+
 section.expanded {
     height: auto;
+    display: block;
 }
 
 /* fontawesome icons used */

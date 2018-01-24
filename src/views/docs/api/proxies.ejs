@@ -45,7 +45,8 @@ in newly created <code>predicates</code>.</p>
         <code>proxyAlways</code> mode requires you to run the
         <a href='/docs/commandLine'><code>mb replay</code></a> command (or equivalent) to
         switch from record mode to replay mode, but allows a richer set of data to be
-        recorded. The <code>proxyTransparent</code> mode proxies the request but does not record any data. See <a href='#proxy-modes'>below</a> for details.</td>
+        recorded. The <code>proxyTransparent</code> mode proxies the request but does not record any data.
+        See <a href='#proxy-modes'>below</a> for details.</td>
   </tr>
   <tr>
     <td><code>addWaitBehavior</code></td>
@@ -111,11 +112,11 @@ response. Setting the <code>addWaitBehavior</code> flag will add that latency to
 
 <p>Select the behavior of the proxy below for a relevant example:</p>
 
-<section class="accordion">
+<section class='accordion'>
   <div>
     <a class='section-toggler'
        id='proxy-predicate-generators' name='proxy-predicate-generators' href='#proxy-predicate-generators'>
-      <label for='proxy-predicate-generators'>Understanding predicateGenerators</label>
+      Understanding predicateGenerators
     </a>
     <section>
       <% include proxy/predicateGenerators %>
@@ -124,7 +125,7 @@ response. Setting the <code>addWaitBehavior</code> flag will add that latency to
   <div>
     <a class='section-toggler'
        id='proxy-modes' name='proxy-modes' href='#proxy-modes'>
-      <label for='proxy-modes'>Understanding proxy modes</label>
+      Understanding proxy modes
     </a>
     <section>
       <% include proxy/proxyModes %>
@@ -133,7 +134,7 @@ response. Setting the <code>addWaitBehavior</code> flag will add that latency to
   <div>
     <a class='section-toggler'
        id='proxy-add-wait-behavior' name='proxy-add-wait-behavior' href='#proxy-add-wait-behavior'>
-      <label for='proxy-add-wait-behavior'>Adding latency to the saved responses with addWaitBehavior</label>
+      Adding latency to the saved responses with addWaitBehavior
     </a>
     <section>
       <% include proxy/addWaitBehavior %>
@@ -142,7 +143,7 @@ response. Setting the <code>addWaitBehavior</code> flag will add that latency to
   <div>
     <a class='section-toggler'
        id='proxy-add-decorate-behavior' name='proxy-add-decorate-behavior' href='#proxy-add-decorate-behavior'>
-      <label for='proxy-add-decorate-behavior'>Decorating saved responses with addDecorateBehavior</label>
+      Decorating saved responses with addDecorateBehavior
     </a>
     <section>
       <% include proxy/addDecorateBehavior %>
@@ -151,7 +152,7 @@ response. Setting the <code>addWaitBehavior</code> flag will add that latency to
   <div>
     <a class='section-toggler'
        id='proxy-inject-headers' name='proxy-inject-headers' href='#proxy-inject-headers'>
-      <label for='proxy-inject-headers'>Changing the proxied request headers with injectHeaders</label>
+      Changing the proxied request headers with injectHeaders
     </a>
     <section>
       <% include proxy/injectHeaders %>
