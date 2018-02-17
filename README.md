@@ -26,7 +26,7 @@ and record-playback through proxying.
 
 ![how it works](https://github.com/bbyars/mountebank/blob/master/src/public/images/overview.gif?raw=true)
 
-See [getting started](http://www.mbtest.org/docs/gettingStarted) guide for more information.
+See [getting started](https://www.mbtest.org/docs/gettingStarted) guide for more information.
 
 ## Install and Run
 
@@ -36,13 +36,13 @@ Install:
 
     npm install -g mountebank
 
-Billions of other install options are [also available](http://www.mbtest.org/docs/install) with no platform dependencies.
+Billions of other install options are [also available](https://www.mbtest.org/docs/install) with no platform dependencies.
 
 Run:
 
     mb
 
-There are a number of [command line options](http://www.mbtest.org/docs/commandLine) if you need
+There are a number of [command line options](https://www.mbtest.org/docs/commandLine) if you need
 to customize mountebank.
 
 ### Mountebank as a system daemon
@@ -52,7 +52,7 @@ You can also configure mountebank to run as a unix system daemon. A sample ansib
 ## Learn More
 
 After installing and running, view the docs in your browser at <http://localhost:2525>, or visit the
-[public site](http://www.mbtest.org/).
+[public site](https://www.mbtest.org/).
 
 You can always learn more and support mountebank development by buying the book:
 
