@@ -14,7 +14,8 @@ an imposter. The fields saved for each request depends on the protocol, and are 
 in the protocol pages linked to from the sidebar. It is up to the client code to
 implement the mock verification using the <code>requests</code> array.</p>
 
-<p class='warning-icon'>Note, the <code>--mock</code> command line flag must be set to enable mock
+<p class='warning-icon'>Note, you must configure the imposter to record requests by setting the
+<code>recordRequests</code> field to true to enable mock
 verification. Mocking requires mountebank to remember information about each request to each imposter.
 For long-running instances of mountebank, this represents a memory leak, so this functionality
 is turned off by default.</p>
@@ -36,7 +37,8 @@ Content-Type: application/json
 
 {
   "port": 4545,
-  "protocol": "smtp"
+  "protocol": "smtp",
+  "recordRequests": true
 }</code></pre>
     </step>
 
