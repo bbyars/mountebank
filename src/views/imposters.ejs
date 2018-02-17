@@ -12,23 +12,16 @@ description = 'Information about the currently running imposters'
 
 <h1>Imposters</h1>
 
-<p>As this UI is horrible incomplete, you may want to check out the one created by
-<a href='http://donhenton.github.io/mountebank-UI/public_html/index.html#/'>Don Henton</a>.</p>
-
-<p><em>This page is under construction.  mountebank intends to drop the current implementation -
-essentially jquery soup - in favor of a single page app.  However, mountebank has some
-pressing time commitments elsewhere at the moment.  If you would like to help, mountebank promises
-you his undying gratitude...</em></p>
-
-<p>mountebank is a man of few words, preferring demonstrations to oration.  For those who wish to
-learn the <a href='/docs/api/overview'>API</a> by example, you've come to the right place.  Create
-an imposter below, and let mountebank build the API call for you.  It all starts with the green
-plus sign.</p>
+<p><em>This page is intended to host a single page app providing a user interface to both explore the
+mountebank API, and to use mountebank without having to use the API. That's no small effort and
+unlikely to get prioritized. If you'd like to take on the task, mountebank will offer you his
+undying gratitude. In the meantime, you may explore other UIs, like the one created by
+<a href='http://donhenton.github.io/mountebank-UI/public_html/index.html#/'>Don Henton</a>.</em></p>
 
 <% if (heroku) { -%>
 <p>This page is hosted on heroku, and while it will accept imposter creation requests, the ports that the
 imposters bind to are not exposed to the outside world.  However, running <code>mb</code> will spin up
-this website locally, and you should feel free to learn the API through the UI.</p>
+this website locally.</p>
 <% } -%>
 
 <table id='imposters'>
