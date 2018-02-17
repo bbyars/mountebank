@@ -85,6 +85,7 @@ function create () {
     }
 
     function addTypeErrors (fieldSpec, path, field, config, addErrorFn) {
+        /* eslint complexity: 0 */
         var util = require('util'),
             helpers = require('../util/helpers'),
             fieldType = typeof field,

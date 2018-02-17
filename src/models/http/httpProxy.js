@@ -44,6 +44,7 @@ function create (logger) {
     }
 
     function getProxyRequest (baseUrl, originalRequest, proxyOptions) {
+        /* eslint complexity: 0 */
         var helpers = require('../../util/helpers'),
             headersHelper = require('./headersHelper'),
             url = require('url'),
