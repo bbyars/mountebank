@@ -40,7 +40,10 @@
     "Ruud Kamphuis",
     "Karl Brown <kabrown@thoughtworks.com>",
     "Sahejpreet Singh",
-    "Mario Lamontagne"
+    "Mario Lamontagne",
+    "Diogo Moura <diogo.moura@just-eat.com>",
+    "Prasanna Venkatesan <mail.prasanna.v@gmail.com>",
+    "Sean Hussey <sean@seanhussey.com>"
   ],
   "description": "Over the wire test doubles",
   "homepage": "http://www.mbtest.org",
