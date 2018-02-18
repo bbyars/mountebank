@@ -28,3 +28,6 @@ ratings:
   - "bin/mb"
   - "build"
   - "scripts/**/*"
+  - "test/**/*"
+  - "performanceTest/**/*"
+  - "functionalTest/**/*"
