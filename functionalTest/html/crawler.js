@@ -8,6 +8,14 @@ var jsdom = require('jsdom'),
     httpsClient = require('../api/http/baseHttpClient').create('https'),
     whitelistPatterns = ['https://s3.amazonaws.com', '^#'];
 
+function isProtocolAgnostic (href) {
+    return href.indexOf('//') === 0;
+}
+
+function isLocal (href) {
+    return href.indexOf('/') === 0;
+}
+
 function parseLinksFrom (window) {
     // console.log(jsdom.serializeDocument(window.document));
     var links = [],
@@ -15,7 +23,10 @@ function parseLinksFrom (window) {
     for (var i = 0; i < anchorTags.length; i += 1) {
         var href = anchorTags[i].attributes.href ? anchorTags[i].attributes.href.value : null;
         if (href) {
-            if (href.indexOf('/') === 0) {
+            if (isProtocolAgnostic(href)) {
+                href = 'http:' + href;
+            }
+            if (isLocal(href)) {
                 href = 'http://localhost:' + api.port + href;
             }
             links.push(href);

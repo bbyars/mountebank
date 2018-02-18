@@ -19,6 +19,27 @@ plugins:
     enabled: true
   shellcheck:
     enabled: true
+checks:
+  argument-count:
+    enabled: false
+  complex-logic:
+    enabled: false
+  file-lines:
+    enabled: false
+  method-complexity:
+    enabled: false
+  method-count:
+    enabled: false
+  method-lines:
+    enabled: false
+  nested-control-flow:
+    enabled: false
+  return-statements:
+    enabled: false
+  similar-code:
+    enabled: false
+  identical-code:
+    enabled: false
 exclude_patterns:
   - Gemfile.lock
   - "src/**.js"
@@ -27,6 +48,3 @@ exclude_patterns:
   - "bin/mb"
   - "build"
   - "scripts/**/*"
-  - "test/**/*"
-  - "performanceTest/**/*"
-  - "functionalTest/**/*"
