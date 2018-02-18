@@ -1,5 +1,5 @@
-
-engines:
+version: 2
+plugins:
   bundler-audit:
     enabled: true
   csslint:
@@ -19,8 +19,7 @@ engines:
     enabled: true
   shellcheck:
     enabled: true
-ratings:
-  paths:
+exclude_patterns:
   - Gemfile.lock
   - "src/**.js"
   - "**.css"
