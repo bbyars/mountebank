@@ -156,9 +156,20 @@ function create (options) {
         });
     }
 
-    var host = options.localOnly ? 'localhost' : undefined,
-        connections = {},
-        server = app.listen(options.port, host, function () {
+    function hostname () {
+        if (options.localOnly) {
+            return 'localhost';
+        }
+        else if (options.host) {
+            return options.host;
+        }
+        else {
+            return undefined;
+        }
+    }
+
+    var connections = {},
+        server = app.listen(options.port, hostname(), function () {
             logger.info('mountebank v%s now taking orders - point your browser to http://localhost:%s for help',
                 thisPackage.version, options.port);
             logger.debug('config: ' + JSON.stringify({

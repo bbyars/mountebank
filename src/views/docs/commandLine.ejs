@@ -34,6 +34,12 @@ description = 'Command line parameters for starting mountebank'
     <td><code>2525</code></td>
   </tr>
   <tr>
+    <td><code>--host mbserver.local</code></td>
+    <td>The hostname to bind the main mountebank server on. Overridden if you also set the
+    <code>--localOnly</code> flag, as that forces a binding to localhost.</td>
+    <td><em>all hosts</em></td>
+  </tr>
+  <tr>
     <td><code>--configfile imposters.ejs</code></td>
     <td>If present, mountebank will load the contents of the specified file.  See
     <a href='#config-file'>below</a> for details.</td>

@@ -259,6 +259,7 @@ function serverAt (options) {
 
 var aliases = {
         d: 'debug',
+        h: 'host',
         i: 'allowInjection',
         l: 'localOnly',
         m: 'mock',
@@ -273,6 +274,13 @@ var aliases = {
             nargs: 1,
             type: 'number',
             alias: aliases.p,
+            global: false
+        },
+        host: {
+            description: 'the hostname to bind the mountebank server to; overriden if you also set the --localonly flag',
+            nargs: 1,
+            type: 'string',
+            alias: aliases.h,
             global: false
         },
         configfile: {
@@ -372,6 +380,7 @@ var aliases = {
     },
     startOptions = {
         port: options.port,
+        host: options.host,
         configfile: options.configfile,
         noParse: options.noParse,
         pidfile: options.pidfile,
