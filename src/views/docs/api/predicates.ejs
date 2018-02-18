@@ -158,13 +158,25 @@ Content-Type: application/json
   "stubs": [
     {
       "predicates": [{
-        "equals": {
-          "query": { "key": <strong class='highlight2'>["first", "second"]</strong> }
+        "<strong class='highlight1'>deepEquals</strong>": {
+          "query": { "key": <strong class='highlight1'>["first", "second"]</strong> }
         }
       }],
       "responses": [{
         "is": {
           "body": <strong class='highlight1'>"Entire array matched"</strong>
+        }
+      }]
+    },
+    {
+      "predicates": [{
+        "<strong class='highlight2'>equals</strong>": {
+          "query": { "key": <strong class='highlight2'>["first", "second"]</strong> }
+        }
+      }],
+      "responses": [{
+        "is": {
+          "body": <strong class='highlight2'>"Subset of array matched"</strong>
         }
       }]
     },
@@ -176,7 +188,7 @@ Content-Type: application/json
       }],
       "responses": [{
         "is": {
-          "body": <strong class='highlight4'>"A field in the array matched"</strong>
+          "body": <strong class='highlight3'>"A field in the array matched"</strong>
         }
       }]
     }
@@ -184,7 +196,27 @@ Content-Type: application/json
 }</code></pre>
     </step>
 
-<p>We'll call the imposter with a multi-valued query key, which mountebank recognizes as an array.</p>
+<p>First let's call the imposter matching both keys in the <code>deepEquals</code> predicate. For it
+to match, no other keys must be present, although the order does not matter.</p>
+
+    <step type='http'>
+<pre><code>GET /path<strong class='highlight1'>?key=second&key=first</strong> HTTP/1.1
+Host: localhost:3333</code></pre>
+
+<p>Since both keys match and there are no extraneous keys, we get our expected response from the first stub.</p>
+
+        <assertResponse>
+<pre><code>HTTP/1.1 200 OK
+Connection: close
+Date: <volatile>Sat, 06 May 2017 02:30:31 GMT</volatile>
+Transfer-Encoding: chunked
+
+<strong class='highlight1'>Entire array matched</strong></code></pre>
+        </assertResponse>
+    </step>
+
+<p>If we add a third key not specified by the predicate, it no longer matches the <code>deepEquals</code>
+predicate. It does, however, match the <code>equals</code> predicate, which supports matching a subset of arrays.</p>
 
     <step type='http'>
 <pre><code>GET /path<strong class='highlight2'>?key=second&key=first</strong>&key=third HTTP/1.1
@@ -198,18 +230,17 @@ Connection: close
 Date: <volatile>Sat, 06 May 2017 02:30:31 GMT</volatile>
 Transfer-Encoding: chunked
 
-<strong class='highlight1'>Entire array matched</strong></code></pre>
+<strong class='highlight2'>Subset of array matched</strong></code></pre>
         </assertResponse>
     </step>
 
-<p>Notice that the order of the keys doesn't matter. If the request is missing either array value,
-our predicate no longer matches.</p>
+<p>If the request is missing either array value specified in the predicate, it no longer matches.</p>
 
     <step type='http'>
 <pre><code>GET /path?<strong class='highlight3'>key=first</strong>&key=third HTTP/1.1
 Host: localhost:3333</code></pre>
 
-<p>In this case, our second stub matches, because it does <em>not</em> use an array predicate, and
+<p>In this case, our third stub matches, because it does <em>not</em> use an array predicate, and
 one of the actual array values in the request matches the predicate definition</p>
 
         <assertResponse>
@@ -218,7 +249,7 @@ Connection: close
 Date: <volatile>Sat, 06 May 2017 02:30:31 GMT</volatile>
 Transfer-Encoding: chunked
 
-<strong class='highlight4'>A field in the array matched</strong></code></pre>
+<strong class='highlight3'>A field in the array matched</strong></code></pre>
         </assertResponse>
     </step>
 
