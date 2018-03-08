@@ -3,7 +3,7 @@
 mountebank is the only open source service virtualization tool that competes with the commercial offerings
 in terms of protocol diversity, capability, and performance. Here's what
 [Capital One wrote](https://medium.com/capital-one-developers/moving-one-of-capital-ones-largest-customer-facing-apps-to-aws-668d797af6fc)
-about their mobile cloud migration:
+about their mobile cloud migration (emphasis theirs):
 
 >In fact, halfway through we discovered our corporate mocking software couldn’t handle the
 >sheer amount of performance testing we were running as part of this effort (_we completely crushed

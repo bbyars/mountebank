@@ -68,7 +68,7 @@ Many development decisions implicitly frame a tradeoff between the developers of
 recognize such a tradeoff, I always favor the users.  Here are a few examples, maybe you can think of more, or inform
 me of ways to overcome these tradeoffs in a mutually agreeable manner:
 
-* I stick to ES5 instead of ES6 to maintain compatibility with older versions of node
+* I've delayed upgrading to ES2015 to keep track with the node LTS schedule, to ensure old versions are still supported
 * The build and CI infrastructure is quite complex and slow, but I'd prefer that over releasing flaky software
 * I aim for fairly comprehensive error handling with useful error messages to help users out
 * Windows support can be painful at times, but it is a core platform for mountebank
