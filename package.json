@@ -1,7 +1,7 @@
 {
   "name": "mountebank",
   "preferGlobal": true,
-  "version": "1.15.0",
+  "version": "1.14.1",
   "author": "Brandon Byars <brandon.byars@gmail.com>",
   "contributors": [
     "Jason Reid <jason@jasonreid.com>",
@@ -43,7 +43,8 @@
     "Mario Lamontagne",
     "Diogo Moura <diogo.moura@just-eat.com>",
     "Prasanna Venkatesan <mail.prasanna.v@gmail.com>",
-    "Sean Hussey <sean@seanhussey.com>"
+    "Sean Hussey <sean@seanhussey.com>",
+    "Ed Thome <ethome@thoughtworks.com>"
   ],
   "description": "Over the wire test doubles",
   "homepage": "http://www.mbtest.org",
