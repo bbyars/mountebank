@@ -2,7 +2,6 @@ version: 2.0
 
 jobs:
   build:
-    working_directory: ~/mountebank
     docker:
       - image: circleci/node:4
     steps:
@@ -14,37 +13,3 @@ jobs:
           key: dependency-cache-{{ checksum "package.json" }}
           paths:
             - node_modules
-  deploy-test:
-    docker:
-      - image: circleci/ruby:2.2
-    steps:
-      - checkout
-      - run: bundle install --without development
-      - run: echo "<<<DONE>>>"
-  deploy-prod:
-    docker:
-      - image: circleci/ruby:2.2
-    steps:
-      - checkout
-      - run: bundle install --without development
-      - run: echo "<<<DONE>>>"
-
-workflows:
-  version: 2
-  test-and-deploy:
-    jobs:
-      - build
-      - deploy-test:
-          requires:
-            - build
-          filters:
-            branches:
-              only: master
-      - deploy-prod:
-          type: approval
-          requires:
-            - deploy-test
-          filters:
-            branches:
-              only: master
-
