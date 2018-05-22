@@ -4,7 +4,5 @@ if [ -z "$MB_VERSION" ]; then
     MB_VERSION=`cat package.json | grep '"version"' | sed -E -e 's/.*"version": "([^"]*)",/\1/'`
 fi
 
-which nc
-
-#npm install
-#MB_PORT=3535 MB_VERSION=$MB_VERSION node_modules/grunt-cli/bin/grunt "$@"
+npm install
+MB_PORT=3535 MB_VERSION=$MB_VERSION node_modules/grunt-cli/bin/grunt "$@"
