@@ -1,4 +1,8 @@
 #!/usr/bin/env sh
 
+if [ -z "$MB_VERSION" ]; then
+    MB_VERSION=`cat package.json | grep '"version"' | sed -E -e 's/.*"version": "([^"]*)",/\1/'`
+fi
+
 npm install
-ls -al node_modules
+MB_PORT=3535 MB_VERSION=$MB_VERSION node_modules/grunt-cli/bin/grunt "$@"

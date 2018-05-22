@@ -12,6 +12,5 @@ if [ -n "$TRAVIS_BUILD_NUMBER" -a -z "$IS_PUBLISHED_VERSION" ]; then
 fi
 
 npm install
-#node_modules/.bin/shonkwrap
 
 MB_PORT=3535 MB_VERSION=$MB_VERSION node_modules/grunt-cli/bin/grunt "$@"
