@@ -1,7 +1,7 @@
 {
   "name": "mountebank",
   "preferGlobal": true,
-  "version": "1.14.1",
+  "version": "1.15.0",
   "author": "Brandon Byars <brandon.byars@gmail.com>",
   "contributors": [
     "Jason Reid <jason@jasonreid.com>",
