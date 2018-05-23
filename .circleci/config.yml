@@ -25,11 +25,11 @@ jobs:
       - checkout
       - ls -al dist
 
-  workflows:
-    version: 2
-    full_build:
-      jobs:
-        - commit
-        - package
-            requires:
-              - commit
+workflows:
+  version: 2
+  full_build:
+    jobs:
+      - build
+      - package
+          requires:
+            - build
