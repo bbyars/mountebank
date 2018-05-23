@@ -28,9 +28,6 @@ module.exports = function (grunt) {
         });
         rimraf.sync('dist/mountebank/src/public/images/sources');
 
-        // removing devDependencies so the standard npm install (without --production) is smooth
-        // in all cases.  The jsdom dependency gets tricky otherwise, since we need different versions
-        // based on different versions of node
         delete newPackage.devDependencies;
         delete newPackage.devDependenciesBasedOnNodeVersion;
         fs.writeFileSync('dist/mountebank/package.json', JSON.stringify(newPackage, null, 2));

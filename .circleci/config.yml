@@ -8,8 +8,28 @@ jobs:
       - checkout
       - restore_cache:
           key: dependency-cache-{{ checksum "package.json" }}
-      - run: ./circlebuild
+      - run: ./circlebuild default dist
       - save_cache:
           key: dependency-cache-{{ checksum "package.json" }}
           paths:
             - node_modules
+      - persist_to_workplace:
+          root: dist
+          paths:
+            - dist
+
+  package:
+    docker:
+      - image: circleci/node:8.9.4-stretch
+    steps:
+      - checkout
+      - ls -al dist
+
+  workflows:
+    version: 2
+    full_build:
+      jobs:
+        - commit
+        - package
+            requires:
+              - commit
