@@ -25,7 +25,7 @@ jobs:
       - checkout
       - attach_workspace:
           at: dist
-      - ls -al dist
+      - run: ls -al dist
 
 workflows:
   version: 2
