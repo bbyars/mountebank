@@ -17,29 +17,29 @@ function validateDocs (page) {
     });
 }
 
-describe.only('docs', function () {
+describe('docs', function () {
     this.timeout(timeout);
-    //[
-    //    '/docs/api/overview',
-    //    '/docs/api/mocks',
-    //    '/docs/api/proxies',
-    //    '/docs/api/injection',
-    //    '/docs/api/xpath',
-    //    '/docs/api/json',
-    //    '/docs/protocols/https',
-    //    '/docs/protocols/http',
-    //    '/docs/api/jsonpath'
-    //].forEach(function (page) {
-    //    validateDocs(page);
-    //});
+    [
+        '/docs/api/overview',
+        '/docs/api/mocks',
+        '/docs/api/proxies',
+        '/docs/api/injection',
+        '/docs/api/xpath',
+        '/docs/api/json',
+        '/docs/protocols/https',
+        '/docs/protocols/http',
+        '/docs/api/jsonpath'
+    ].forEach(function (page) {
+        validateDocs(page);
+    });
 
     if (!isWindows) {
         [
-            '/docs/gettingStarted'//,
-            //'/docs/api/predicates',
-            //'/docs/api/behaviors',
-            //'/docs/api/stubs',
-            //'/docs/protocols/tcp'
+            '/docs/gettingStarted',
+            '/docs/api/predicates',
+            '/docs/api/behaviors',
+            '/docs/api/stubs',
+            '/docs/protocols/tcp'
         ].forEach(function (page) {
             validateDocs(page);
         });

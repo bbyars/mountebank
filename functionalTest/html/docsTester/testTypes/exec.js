@@ -21,6 +21,10 @@ function execute (command) {
 
 function ensureOSCompatibility (command) {
     // On CircleCI image, netcat requires the -q1 parameter to end after receiving stdin
+    // This feels ugly to do the replacement here, but I prefer it over doing the replacement
+    // directly in the views because I want people to be able to copy the command from the
+    // public site and run on their machines, and the variant without the -q is the most portable
+    // even though the public site is hosted on linux
     if (require('os').platform() === 'linux') {
         return command.replace('| nc ', '| nc -q1 ');
     }
@@ -34,17 +38,10 @@ function runStep (step) {
     var deferred = Q.defer(),
         filename = 'test-' + nextTestId;
 
-console.log('========================' + new Date() + '========================');
-console.log('writing ' + filename + ':\n' + step.requestText);
     fs.writeFileSync(filename, ensureOSCompatibility(step.requestText), { mode: 484 /* 0744 */});
     nextTestId += 1;
 
-console.log('========================' + new Date() + '========================');
-console.log('executing ' + filename);
-
     execute('sh ./' + filename).done(function (stdout) {
-console.log('========================' + new Date() + '========================');
-console.log('got result from ' + filename + ': ' + stdout);
         fs.unlinkSync(filename);
         deferred.resolve(stdout);
     }, function (reason) {
