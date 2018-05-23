@@ -5,4 +5,4 @@ if [ -z "$MB_VERSION" ]; then
 fi
 
 npm install
-MB_PORT=3535 MB_VERSION=$MB_VERSION node_modules/grunt-cli/bin/grunt "$@"
+MB_SLOW_TEST_TIMEOUT=6000 MB_PORT=3535 MB_VERSION=$MB_VERSION node_modules/grunt-cli/bin/grunt "$@"
