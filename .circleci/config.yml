@@ -13,16 +13,18 @@ jobs:
           key: dependency-cache-{{ checksum "package.json" }}
           paths:
             - node_modules
-      - persist_to_workplace:
+      - persist_to_workspace:
           root: dist
           paths:
-            - dist
+            - .
 
   package:
     docker:
       - image: circleci/node:8.9.4-stretch
     steps:
       - checkout
+      - attach_workspace:
+          - at: dist
       - ls -al dist
 
 workflows:
