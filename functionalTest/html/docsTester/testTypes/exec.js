@@ -19,13 +19,24 @@ function execute (command) {
     return deferred.promise;
 }
 
+function ensureOSCompatibility (command) {
+    // On CircleCI image, netcat requires the -q1 parameter to end after receiving stdin
+    if (require('os').platform() === 'linux') {
+        return command.replace('| nc ', '| nc -q1 ');
+    }
+    else {
+        // Mac netcat doesn't support the -q parameter
+        return command;
+    }
+}
+
 function runStep (step) {
     var deferred = Q.defer(),
         filename = 'test-' + nextTestId;
 
 console.log('========================' + new Date() + '========================');
 console.log('writing ' + filename + ':\n' + step.requestText);
-    fs.writeFileSync(filename, step.requestText, { mode: 484 /* 0744 */});
+    fs.writeFileSync(filename, ensureOSCompatibility(step.requestText), { mode: 484 /* 0744 */});
     nextTestId += 1;
 
 console.log('========================' + new Date() + '========================');
