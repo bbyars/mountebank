@@ -23,10 +23,17 @@ function runStep (step) {
     var deferred = Q.defer(),
         filename = 'test-' + nextTestId;
 
+console.log('========================');
+console.log('writing ' + filename + ':\n' + step.requestText);
     fs.writeFileSync(filename, step.requestText, { mode: 484 /* 0744 */});
     nextTestId += 1;
 
+console.log('========================');
+console.log('executing ' + filename);
+
     execute('sh ./' + filename).done(function (stdout) {
+console.log('========================');
+console.log('got result: ' + stdout);
         fs.unlinkSync(filename);
         deferred.resolve(stdout);
     }, function (reason) {

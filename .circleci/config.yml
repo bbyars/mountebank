@@ -3,7 +3,7 @@ version: 2.0
 jobs:
   build:
     docker:
-      - image: bbyars/mountebank-base-build:v1
+      - image: circleci/node:8.9.4-stretch
     steps:
       - checkout
       - restore_cache:
