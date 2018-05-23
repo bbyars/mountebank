@@ -30,6 +30,6 @@ workflows:
   full_build:
     jobs:
       - build
-      - package
+      - package:
           requires:
             - build
