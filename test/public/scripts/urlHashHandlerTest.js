@@ -2,11 +2,11 @@
 
 var assert = require('assert'),
     mock = require('../../mock').mock,
-    jsdom = require('jsdom');
+    JSDOM = require('jsdom').JSDOM;
 
 function initJQuery (htmlDocument) {
-    var document = global.document = jsdom.jsdom(htmlDocument),
-        window = document.defaultView;
+    var window = new JSDOM(htmlDocument).window;
+    global.document = window.document;
     global.$ = require('../../testHelpers').jquery(window);
     return window;
 }
