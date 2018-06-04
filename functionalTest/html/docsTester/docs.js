@@ -1,7 +1,7 @@
 'use strict';
 
 var api = require('../../api/api').create(),
-    jsdom = require('jsdom'),
+    JSDOM = require('jsdom').JSDOM,
     DocsTestScenario = require('./docsTestScenario'),
     Q = require('q'),
     assert = require('assert');
@@ -14,17 +14,12 @@ function getDOM (endpoint) {
     var deferred = Q.defer(),
         url = api.url + endpoint;
 
-    jsdom.env({
-        url: url,
-        done: function (errors, window) {
-            if (errors) {
-                deferred.reject(errors);
-            }
-            else {
-                deferred.resolve(window);
-            }
-        }
+    JSDOM.fromURL(url).then(function (dom) {
+        deferred.resolve(dom.window);
+    }).catch(function (errors) {
+        deferred.reject(errors);
     });
+
     return deferred.promise;
 }
 

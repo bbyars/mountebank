@@ -1,6 +1,6 @@
 'use strict';
 
-var jsdom = require('jsdom'),
+var JSDOM = require('jsdom').JSDOM,
     api = require('../api/api').create(),
     Q = require('q'),
     url = require('url'),
@@ -17,7 +17,6 @@ function isLocal (href) {
 }
 
 function parseLinksFrom (window) {
-    // console.log(jsdom.serializeDocument(window.document));
     var links = [],
         anchorTags = window.document.getElementsByTagName('a');
     for (var i = 0; i < anchorTags.length; i += 1) {
@@ -47,17 +46,13 @@ function getLinksFrom (baseUrl, html) {
         return Q([]);
     }
 
-    jsdom.env({
-        html: html,
-        done: function (errors, window) {
-            if (errors) {
-                deferred.reject(errors);
-            }
-            else {
-                deferred.resolve(parseLinksFrom(window));
-            }
-        }
-    });
+    try {
+        var window = new JSDOM(html).window;
+        deferred.resolve(parseLinksFrom(window));
+    }
+    catch (errors) {
+        deferred.reject(errors);
+    }
 
     return deferred.promise;
 }
