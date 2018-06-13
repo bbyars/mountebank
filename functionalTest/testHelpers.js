@@ -18,6 +18,16 @@ promiseIt.only = function (what, test) {
     it.only(what, wrap(test, { name: what }));
 };
 
+// Allow loading a module from the source directory even when we're testing a
+// distribution rather than a checkout from git
+function fromSrc (modulePath) {
+    var path = require('path'),
+        mbPath = process.env.MB_EXECUTABLE || path.join(__dirname, '/../bin/mb');
+
+    return path.join(path.dirname(mbPath), '../src', modulePath);
+}
+
 module.exports = {
-    promiseIt: promiseIt
+    promiseIt: promiseIt,
+    fromSrc: fromSrc
 };
