@@ -25,15 +25,15 @@ jobs:
             - Gruntfile.js
             - node_modules
             - scripts
+            - .circlebuild
 
   package:
     docker:
       - image: circleci/node:8.9.4-stretch
     steps:
-      - checkout
       - attach_workspace:
           at: .
-      - run: tree
+      - run: ls -al
 
   performance:
     docker:
