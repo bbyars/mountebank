@@ -14,9 +14,17 @@ jobs:
           paths:
             - node_modules
       - persist_to_workspace:
-          root: dist
+        # Ignore src; use dist for all downstream jobs, but keep enough to run tests
+          root: .
           paths:
-            - .
+            - functionalTest
+            - performanceTest
+            - test
+            - tasks
+            - dist
+            - Gruntfile.js
+            - node_modules
+            - scripts
 
   package:
     docker:
@@ -24,8 +32,18 @@ jobs:
     steps:
       - checkout
       - attach_workspace:
-          at: dist
-      - run: ls -al dist
+          at: .
+      - run: tree
+
+  performance:
+    docker:
+      - image: circleci/node:8.9.4-stretch
+    environment:
+      - MB_EXECUTABLE: dist/mountebank/bin/mb
+    steps:
+      - attach_workspace:
+          at: .
+      - run: ./circlebuild test:performance
 
 workflows:
   version: 2
@@ -33,5 +51,8 @@ workflows:
     jobs:
       - build
       - package:
+          requires:
+            - build
+      - performance:
           requires:
             - build
