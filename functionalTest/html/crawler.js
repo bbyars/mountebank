@@ -98,7 +98,6 @@ function create () {
     }
 
     function crawl (startingUrl, referrer) {
-        console.log('Crawling "' + referrer + '" => "' + startingUrl + '"');
         if (isWhitelisted(startingUrl)) {
             return Q(true);
         }
@@ -112,7 +111,9 @@ function create () {
         }
         else {
             pages.hits[startingUrl] = { from: [referrer] };
+            console.log('     Crawling ' + startingUrl + '...');
             return getResponseFor(startingUrl).then(function (response) {
+                console.log('     ...got ' + response.statusCode);
                 pages.hits[startingUrl].statusCode = response.statusCode;
                 pages.hits[startingUrl].contentType = response.headers['content-type'];
 
