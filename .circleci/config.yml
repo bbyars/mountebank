@@ -43,7 +43,7 @@ jobs:
     steps:
       - attach_workspace:
           at: .
-      - run: ./circlebuild test:performance
+      - run: node_modules/mocha/bin/_mocha performanceTest/**/*.js
 
 workflows:
   version: 2
