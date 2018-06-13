@@ -56,14 +56,6 @@ matrix:
       env:
         - NODE_VERSION=6
         - MB_RUN_WEB_TESTS=true
-    - os: linux
-      sudo: false
-      env:
-        - NODE_VERSION=4
-    - os: osx
-      sudo: false
-      env:
-        - NODE_VERSION=4
     - os: osx
       sudo: false
       env:
