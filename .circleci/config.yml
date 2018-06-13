@@ -8,7 +8,7 @@ jobs:
       - checkout
       - restore_cache:
           key: dependency-cache-{{ checksum "package.json" }}
-      - run: ./circlebuild default dist
+      - run: ./circlebuild lint test dist version
       - save_cache:
           key: dependency-cache-{{ checksum "package.json" }}
           paths:
@@ -33,7 +33,7 @@ jobs:
     steps:
       - attach_workspace:
           at: .
-      - run: ls -al
+      - run: ls -al dist dist/mountebank
 
   performance:
     docker:

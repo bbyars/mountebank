@@ -29,7 +29,6 @@ module.exports = function (grunt) {
         rimraf.sync('dist/mountebank/src/public/images/sources');
 
         delete newPackage.devDependencies;
-        delete newPackage.devDependenciesBasedOnNodeVersion;
         fs.writeFileSync('dist/mountebank/package.json', JSON.stringify(newPackage, null, 2));
 
         run('npm', ['install', '--production'], { cwd: 'dist/mountebank' }).done(function () {
