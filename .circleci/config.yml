@@ -39,7 +39,7 @@ jobs:
     docker:
       - image: circleci/node:8.9.4-stretch
     environment:
-      - MB_EXECUTABLE: dist/mountebank/bin/mb
+      - MB_EXECUTABLE: ~/project/dist/mountebank/bin/mb
     steps:
       - attach_workspace:
           at: .
