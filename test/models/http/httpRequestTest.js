@@ -89,6 +89,29 @@ describe('HttpRequest', function () {
             return promise;
         });
 
+        promiseIt('should transform form for application/x-www-form-urlencoded;charset=UTF-8', function () {
+            request.rawHeaders = [
+                'Content-Type', 'application/x-www-form-urlencoded;charset=UTF-8',
+                'Host', '127.0.0.1:8000'
+            ];
+
+            var promise = httpRequest.createFrom(container).then(function (mbRequest) {
+                assert.deepEqual(mbRequest.headers, {
+                    'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
+                    Host: '127.0.0.1:8000'
+                });
+                assert.deepEqual(mbRequest.form, {
+                    firstname: 'ruud',
+                    lastname: 'mountebank'
+                });
+            });
+
+            request.emit('data', 'firstname=ruud&lastname=mountebank');
+            request.emit('end');
+
+            return promise;
+        });
+
         promiseIt('should set path and query from request url', function () {
             request.url = 'http://localhost/path?key=value';
 

@@ -40,11 +40,16 @@ function transform (request) {
         body: request.body
     };
 
-    if (request.body && headers['Content-Type'] === 'application/x-www-form-urlencoded') {
+    if (request.body && isForm(headers['Content-Type'])) {
         transformed.form = queryString.parse(request.body);
     }
 
     return transformed;
+}
+
+function isForm (contentType) {
+    return contentType === 'application/x-www-form-urlencoded' ||
+        contentType === 'application/x-www-form-urlencoded;charset=UTF-8';
 }
 
 /**
