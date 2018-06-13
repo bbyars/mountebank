@@ -98,6 +98,7 @@ function create () {
     }
 
     function crawl (startingUrl, referrer) {
+        console.log('Crawling "' + referrer + '" => "' + startingUrl + '"');
         if (isWhitelisted(startingUrl)) {
             return Q(true);
         }
