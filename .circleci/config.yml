@@ -39,12 +39,10 @@ jobs:
     docker:
       - image: circleci/node:8.9.4-stretch
     environment:
-      - MB_EXECUTABLE: $CIRCLE_WORKING_DIRECTORY/dist/mountebank/bin/mb
+      - MB_EXECUTABLE: /home/circleci/project/dist/mountebank/bin/mb
     steps:
       - attach_workspace:
           at: .
-      - run: pwd
-      - run: echo $MB_EXECUTABLE
       - run: node_modules/mocha/bin/_mocha performanceTest/**/*.js
 
 workflows:
