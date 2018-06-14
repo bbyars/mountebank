@@ -21,6 +21,8 @@ function getMemoryUsedForFiftyThousandRequests (mbPort) {
     }
 
     return client.post('/imposters', request, mbPort).then(function (response) {
+        console.log('Initiated imposter:');
+        console.log(JSON.stringify(response.body, null, 2));
         assert.strictEqual(response.statusCode, 201);
         return client.get('/config', mbPort);
     }).then(function (response) {
