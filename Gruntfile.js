@@ -102,9 +102,9 @@ module.exports = function (grunt) {
     grunt.registerTask('test:pkg', 'Run tests against OSX pkg file',
         ['dist', 'version', 'dist:package:osxpkg', 'install:pkg', 'test']);
     grunt.registerTask('test:deb', 'Run tests against Debian package',
-        ['dist', 'version', 'dist:package:deb', 'install:deb', 'test', 'uninstall:deb']);
+        ['dist:package:deb', 'install:deb', 'test:functional']);
     grunt.registerTask('test:rpm', 'Run tests against Red Hat package',
-        ['download:rpm', 'install:rpm', 'test', 'uninstall:rpm']);
+        ['download:rpm', 'install:rpm', 'test:functional', 'uninstall:rpm']);
 
     // Second stage
     grunt.registerTask('verify:windows', 'Wait for the appveyor build to finish',
