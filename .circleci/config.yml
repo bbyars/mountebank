@@ -33,7 +33,7 @@ jobs:
 
   package-tarball:
     docker:
-      - image: bbyars/mountebank-base-build:v1
+      - image: circleci/ruby:2.4.4-stretch-node
     environment:
       - MB_SLOW_TEST_TIMEOUT: 6000
       - MB_PORT: 3535
@@ -41,7 +41,7 @@ jobs:
       - attach_workspace:
           at: .
       - run: ruby -v
-      - run: sudo bundle install --without development
+      - run: bundle install --without development
       - run: node_modules/grunt-cli/bin/grunt test:tarball:x64 deploy:s3
 
   package-npm:
