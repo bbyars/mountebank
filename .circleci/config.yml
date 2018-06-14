@@ -8,7 +8,7 @@ jobs:
       - checkout
       - restore_cache:
           key: dependency-cache-{{ checksum "package.json" }}
-      - run: ./circlebuild lint test dist version
+      - run: ./circlebuild lint test dist version jsdoc deploy:docs
       - save_cache:
           key: dependency-cache-{{ checksum "package.json" }}
           paths:
@@ -31,7 +31,7 @@ jobs:
 
   package-tarball:
     docker:
-      - image: circleci/node:8.9.4-stretch
+      - image: bbyars/mountebank-base-build:v1
     environment:
       - MB_SLOW_TEST_TIMEOUT: 6000
       - MB_PORT: 3535
@@ -64,14 +64,6 @@ jobs:
           at: .
       - run: node_modules/grunt-cli/bin/grunt test:performance
 
-  docs:
-    docker:
-      - image: circleci/node:8.9.4-stretch
-    steps:
-      - attach_workspace:
-          at: .
-      - run: node_modules/grunt-cli/bin/grunt jsdoc deploy:docs
-
 workflows:
   version: 2
   full_build:
@@ -97,14 +89,6 @@ workflows:
             tags:
               only: /^v.*/
       - performance:
-          requires:
-            - build
-          filters:
-            branches:
-              only: master
-            tags:
-              only: /^v.*/
-      - docs:
           requires:
             - build
           filters:
