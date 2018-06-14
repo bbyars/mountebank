@@ -41,7 +41,7 @@ jobs:
       - attach_workspace:
           at: .
       - run: ruby -v
-      - run: bundle install --without development
+      - run: sudo bundle install --without development
       - run: node_modules/grunt-cli/bin/grunt test:tarball:x64 deploy:s3
 
   package-npm:
