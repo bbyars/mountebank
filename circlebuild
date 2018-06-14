@@ -1,7 +1,14 @@
 #!/usr/bin/env sh
 
+IS_PUBLISHED_VERSION=`git describe --tags --exact-match 2>/dev/null`
+
 if [ -z "$MB_VERSION" ]; then
     MB_VERSION=`cat package.json | grep '"version"' | sed -E -e 's/.*"version": "([^"]*)",/\1/'`
+fi
+
+# We don't set the version suffix on tagged (published) builds
+if [ -n "$CIRCLE_BUILD_NUM" -a -z "$IS_PUBLISHED_VERSION" ]; then
+    MB_VERSION="$MB_VERSION-beta.$CIRCLE_BUILD_NUM"
 fi
 
 npm install

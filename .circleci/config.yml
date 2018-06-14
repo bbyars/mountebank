@@ -27,13 +27,17 @@ jobs:
             - scripts
             - circlebuild
 
-  package:
+  package-tarball:
     docker:
       - image: circleci/node:8.9.4-stretch
+    environment:
+      - MB_SLOW_TEST_TIMEOUT: 6000
+      - MB_PORT: 3535
     steps:
       - attach_workspace:
           at: .
-      - run: ls -al dist dist/mountebank
+      - run: node_modules/grunt-cli/bin/grunt test:tarball:x64
+      - run: ls -al dist
 
   performance:
     docker:
@@ -43,14 +47,15 @@ jobs:
     steps:
       - attach_workspace:
           at: .
-      - run: node_modules/mocha/bin/_mocha performanceTest/**/*.js
+      - run: node_modules/grunt-cli/bin/grunt test:performance
+      #- run: node_modules/mocha/bin/_mocha performanceTest/**/*.js
 
 workflows:
   version: 2
   full_build:
     jobs:
       - build
-      - package:
+      - package-tarball:
           requires:
             - build
       - performance:

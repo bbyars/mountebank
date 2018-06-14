@@ -94,7 +94,7 @@ module.exports = function (grunt) {
 
     // Package-specific testing
     grunt.registerTask('test:tarball:x64', 'Run tests against packaged tarball',
-        ['dist', 'version', 'dist:tarball:x64', 'install:tarball:x64', 'test']);
+        ['dist:tarball:x64', 'install:tarball:x64', 'test']);
     grunt.registerTask('test:zip', 'Run tests against packaged zipfile',
         ['download:zip', 'install:zip', 'test']);
     grunt.registerTask('test:npm', 'Run tests against npm package',

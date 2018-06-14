@@ -5,8 +5,7 @@ var fs = require('fs-extra'),
     https = require('https'),
     os = require('os'),
     util = require('util'),
-    thisPackage = require('../package.json'),
-    version = process.env.MB_VERSION || thisPackage.version,
+    version = require('./version').getVersion(),
     versionMajorMinor = version.replace(/\.\d+(-beta\.\d+)?$/, ''),
     urlPrefix = 'https://s3.amazonaws.com/mountebank/v' + versionMajorMinor;
 

@@ -3,8 +3,7 @@
 var fs = require('fs-extra'),
     os = require('os'),
     rimraf = require('rimraf'),
-    thisPackage = require('../package.json'),
-    version = process.env.MB_VERSION || thisPackage.version,
+    version = require('./version').getVersion(),
     run = require('./run').run;
 
 module.exports = function (grunt) {
