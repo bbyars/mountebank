@@ -7,7 +7,7 @@ var assert = require('assert'),
     promiseIt = require('./../functionalTest/testHelpers').promiseIt,
     port = api.port + 1,
     mb = require('../functionalTest/mb').create(port + 1),
-    numRequests = 25000;
+    numRequests = 15000;
 
 function getMemoryUsedForFiftyThousandRequests (mbPort) {
     var stub = { responses: [{ is: { statusCode: 400 } }] },
