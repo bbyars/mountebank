@@ -44,6 +44,16 @@ jobs:
       - run: bundle install --without development
       - run: node_modules/grunt-cli/bin/grunt test:tarball:x64 deploy:s3
 
+  package-zip:
+    docker:
+      - image: circleci/ruby:2.4.4-stretch-node
+    steps:
+      - attach_workspace:
+          at: .
+      - run: ruby -v
+      - run: bundle install --without development
+      - run: node_modules/grunt-cli/bin/grunt dist:zip:x64 dist:zip:x86 trigger:appveyor deploy:s3
+
   package-npm:
     docker:
       - image: circleci/node:8.9.4-stretch
