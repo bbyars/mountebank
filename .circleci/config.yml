@@ -73,10 +73,39 @@ workflows:
   version: 2
   full_build:
     jobs:
-      - build
+      - build:
+          filters:
+            tags:
+              only: /^v.*/
       - package-tarball:
           requires:
             - build
+          filters:
+            branches:
+              only: master
+            tags:
+              only: /^v.*/
+      - package-npm:
+          requires:
+            - build
+          filters:
+            branches:
+              only: master
+            tags:
+              only: /^v.*/
       - performance:
           requires:
             - build
+          filters:
+            branches:
+              only: master
+            tags:
+              only: /^v.*/
+      - docs:
+          requires:
+            - build
+          filters:
+            branches:
+              only: master
+            tags:
+              only: /^v.*/
