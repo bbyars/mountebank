@@ -16,7 +16,7 @@ function getMemoryUsedForFiftyThousandRequests (mbPort) {
         originalProcess;
 
     // I run out of memory in the test process with 1,000,000
-    for (var i = 0; i < 50000; i += 1) {
+    for (var i = 0; i < 500; i += 1) {
         allRequests[i] = requestFn;
     }
 
