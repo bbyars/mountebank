@@ -26,6 +26,7 @@ jobs:
             - node_modules
             - scripts
             - circlebuild
+            - firebase.json
 
   package-tarball:
     docker:
@@ -36,7 +37,18 @@ jobs:
     steps:
       - attach_workspace:
           at: .
-      - run: node_modules/grunt-cli/bin/grunt test:tarball:x64
+      - run: node_modules/grunt-cli/bin/grunt test:tarball:x64 deploy:s3
+
+  package-npm:
+    docker:
+      - image: circleci/node:8.9.4-stretch
+    environment:
+      - MB_SLOW_TEST_TIMEOUT: 6000
+      - MB_PORT: 3535
+    steps:
+      - attach_workspace:
+          at: .
+      - run: node_modules/grunt-cli/bin/grunt test:npm
       - run: ls -al dist
 
   performance:
@@ -48,7 +60,14 @@ jobs:
       - attach_workspace:
           at: .
       - run: node_modules/grunt-cli/bin/grunt test:performance
-      #- run: node_modules/mocha/bin/_mocha performanceTest/**/*.js
+
+  docs:
+    docker:
+      - image: circleci/node:8.9.4-stretch
+    steps:
+      - attach_workspace:
+          at: .
+      - run: node_modules/grunt-cli/bin/grunt jsdoc deploy:docs
 
 workflows:
   version: 2

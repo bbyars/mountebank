@@ -18,12 +18,12 @@ matrix:
       sudo: true
       env:
         - MB_GRUNT_TASK='test:pkg deploy:s3'
-    - os: osx
-      sudo: false
-      env:
-        - MB_GRUNT_TASK='test:tarball:x64 deploy:s3 jsdoc deploy:docs'
+    #- os: osx
+    #  sudo: false
+    #  env:
+    #    - MB_GRUNT_TASK='test:tarball:x64 deploy:s3 jsdoc deploy:docs'
         # FIREBASE_TOKEN
-        - secure: "uplPVyZC7fd3aMDXh46+IrjXCaA7r0VRZplnhSOzATtgZQjSlqHdgLGCXOw+j14oLgsyMNe5AHy9B9TV2xxt6ZDpKNoeAdk2vxPJpVatXD6Cs9jypuiDRq0Nlf8PiBPARucBK6qyR/YF8WvrG+MxahzB373j13YBQ/7rojugnaE="
+    #    - secure: "uplPVyZC7fd3aMDXh46+IrjXCaA7r0VRZplnhSOzATtgZQjSlqHdgLGCXOw+j14oLgsyMNe5AHy9B9TV2xxt6ZDpKNoeAdk2vxPJpVatXD6Cs9jypuiDRq0Nlf8PiBPARucBK6qyR/YF8WvrG+MxahzB373j13YBQ/7rojugnaE="
     - os: linux
       sudo: true
       env:

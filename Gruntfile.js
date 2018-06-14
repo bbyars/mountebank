@@ -98,7 +98,7 @@ module.exports = function (grunt) {
     grunt.registerTask('test:zip', 'Run tests against packaged zipfile',
         ['download:zip', 'install:zip', 'test']);
     grunt.registerTask('test:npm', 'Run tests against npm package',
-        ['dist', 'version', 'dist:npm', 'install:npm', 'test']);
+        ['dist:npm', 'install:npm', 'test:functional']);
     grunt.registerTask('test:pkg', 'Run tests against OSX pkg file',
         ['dist', 'version', 'dist:package:osxpkg', 'install:pkg', 'test']);
     grunt.registerTask('test:deb', 'Run tests against Debian package',
