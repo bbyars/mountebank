@@ -84,6 +84,14 @@ workflows:
           filters:
             tags:
               only: /^v.*/
+      - package-zip:
+          requires:
+            - build
+          filters:
+            branches:
+              only: master
+            tags:
+              only: /^v.*/
       - package-tarball:
           requires:
             - build
