@@ -8,7 +8,8 @@ var assert = require('assert'),
     port = api.port + 1,
     mb = require('../functionalTest/mb').create(port + 1),
     numRequests = 15000,
-    memThreshold = 3000;
+    baselineMemory = 3000,
+    minIncreasedMemory = 200;
 
 function getMemoryUsedForFiftyThousandRequests (mbPort) {
     var stub = { responses: [{ is: { statusCode: 400 } }] },
@@ -48,7 +49,7 @@ describe('mb', function () {
                 return getMemoryUsedForFiftyThousandRequests(mb.port);
             }).then(function (memoryUsed) {
                 console.log('memory usage for ' + numRequests + ' requests with --mock: ' + memoryUsed);
-                assert.ok(memoryUsed > memThreshold + 100, 'Memory used: ' + memoryUsed);
+                assert.ok(memoryUsed > baselineMemory + minIncreasedMemory, 'Memory used: ' + memoryUsed);
             }).finally(function () {
                 return mb.stop();
             });
@@ -61,7 +62,7 @@ describe('mb', function () {
                 return getMemoryUsedForFiftyThousandRequests(mb.port);
             }).then(function (memoryUsed) {
                 console.log('default memory usage with for ' + numRequests + ' requests: ' + memoryUsed);
-                assert.ok(memoryUsed < memThreshold - 100, 'Memory used: ' + memoryUsed);
+                assert.ok(memoryUsed < baselineMemory, 'Memory used: ' + memoryUsed);
             }).finally(function () {
                 return mb.stop();
             });
