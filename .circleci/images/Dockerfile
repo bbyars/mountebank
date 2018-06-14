@@ -2,12 +2,14 @@ FROM circleci/node:8.9.4-stretch
 
 MAINTAINER Brandon Byars <brandon.byars@gmail.com>
 
-RUN sudo apt-get update
-RUN sudo apt-get install -y ruby-full
-RUN sudo apt-get install -y rpm
-RUN sudo rm -rf /var/lib/apt/lists/*
+USER root
 
-RUN sudo gem install bundler
+RUN apt-get update
+RUN apt-get install -y ruby-full
+RUN apt-get install -y rpm
+RUN rm -rf /var/lib/apt/lists/*
+
+RUN gem install bundler
 
 CMD ["/bin/sh"]
 
