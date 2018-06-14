@@ -16,7 +16,7 @@ module.exports = function (grunt) {
 
     grunt.registerTask('dist', 'Create trimmed down distribution directory', function () {
         var done = this.async(),
-            newPackage = JSON.parse(JSON.stringify(thisPackage)),
+            newPackage = JSON.parse(JSON.stringify(require('../package.json'))),
             failed = failTask('dist');
 
         rimraf.sync('dist');
@@ -26,6 +26,7 @@ module.exports = function (grunt) {
             fs.copySync(source, 'dist/mountebank/' + source);
         });
         rimraf.sync('dist/mountebank/src/public/images/sources');
+
 
         delete newPackage.devDependencies;
         fs.writeFileSync('dist/mountebank/package.json', JSON.stringify(newPackage, null, 2));
