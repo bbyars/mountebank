@@ -7,7 +7,7 @@ var assert = require('assert'),
     promiseIt = require('./../functionalTest/testHelpers').promiseIt,
     port = api.port + 1,
     mb = require('../functionalTest/mb').create(port + 1),
-    numRequests = 50000;
+    numRequests = 25000;
 
 function getMemoryUsedForFiftyThousandRequests (mbPort) {
     var stub = { responses: [{ is: { statusCode: 400 } }] },
@@ -27,7 +27,7 @@ function getMemoryUsedForFiftyThousandRequests (mbPort) {
     }).then(function (response) {
         originalProcess = response.body.process;
 
-        // Using Q.all above 10,000 requests gives me an ETIMEDOUT
+        // Using Q.all above a certain requests threshold gives me an ETIMEDOUT
         return allRequests.reduce(Q.when, Q(true));
     }).then(function () {
         return client.get('/config', mbPort);
