@@ -8,7 +8,7 @@ var assert = require('assert'),
     timeout = parseInt(process.env.MB_SLOW_TEST_TIMEOUT || 4000),
     BaseHttpClient = require('./baseHttpClient'),
     fromSrc = require('../../testHelpers').fromSrc,
-    headersHelper = require(fromSrc('models/http/headersHelper'));
+    headersHelper = require(fromSrc('src/models/http/headersHelper'));
 
 ['http', 'https'].forEach(function (protocol) {
     var client = BaseHttpClient.create(protocol);

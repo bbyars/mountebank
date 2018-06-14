@@ -2,7 +2,7 @@
 
 var Q = require('q'),
     fromSrc = require('../../testHelpers').fromSrc,
-    helpers = require(fromSrc('util/helpers'));
+    helpers = require(fromSrc('src/util/helpers'));
 
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 

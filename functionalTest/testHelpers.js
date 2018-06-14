@@ -31,10 +31,10 @@ function fromSrc (modulePath) {
     var path = require('path');
 
     if (runningLocally()) {
-        return path.join(__dirname, '../src', modulePath);
+        return path.join(__dirname, '..', modulePath);
     }
     else {
-        return path.join(__dirname, '../dist/mountebank/src', modulePath);
+        return path.join(__dirname, '../dist/mountebank', modulePath);
     }
 }
 

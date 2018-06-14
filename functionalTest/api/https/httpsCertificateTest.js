@@ -11,8 +11,8 @@ var assert = require('assert'),
     key = fs.readFileSync(path.join(__dirname, '/cert/key.pem'), 'utf8'),
     cert = fs.readFileSync(path.join(__dirname, '/cert/cert.pem'), 'utf8'),
     fromSrc = require('../../testHelpers').fromSrc,
-    defaultKey = fs.readFileSync(fromSrc('models/https/cert/mb-key.pem'), 'utf8'),
-    defaultCert = fs.readFileSync(fromSrc('models/https/cert/mb-cert.pem'), 'utf8');
+    defaultKey = fs.readFileSync(fromSrc('src/models/https/cert/mb-key.pem'), 'utf8'),
+    defaultCert = fs.readFileSync(fromSrc('src/models/https/cert/mb-cert.pem'), 'utf8');
 
 describe('https imposter', function () {
     this.timeout(timeout);

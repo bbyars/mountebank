@@ -7,7 +7,7 @@ var assert = require('assert'),
     port = api.port + 1,
     timeout = parseInt(process.env.MB_SLOW_TEST_TIMEOUT || 2000),
     fromSrc = require('../../testHelpers').fromSrc,
-    helpers = require(fromSrc('util/helpers'));
+    helpers = require(fromSrc('src/util/helpers'));
 
 ['http', 'https'].forEach(function (protocol) {
     var client = BaseHttpClient.create(protocol);

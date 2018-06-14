@@ -2,7 +2,7 @@
 
 var assert = require('assert'),
     fromSrc = require('../../testHelpers').fromSrc,
-    TcpProxy = require(fromSrc('models/tcp/tcpProxy')),
+    TcpProxy = require(fromSrc('src/models/tcp/tcpProxy')),
     api = require('../api').create(),
     promiseIt = require('../../testHelpers').promiseIt,
     port = api.port + 1,

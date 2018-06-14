@@ -2,7 +2,7 @@
 
 var assert = require('assert'),
     fromSrc = require('../../testHelpers').fromSrc,
-    HttpProxy = require(fromSrc('models/http/httpProxy')),
+    HttpProxy = require(fromSrc('src/models/http/httpProxy')),
     api = require('../api').create(),
     promiseIt = require('../../testHelpers').promiseIt,
     port = api.port + 1,
