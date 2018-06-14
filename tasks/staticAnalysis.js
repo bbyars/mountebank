@@ -3,8 +3,7 @@
 var fs = require('fs-extra'),
     path = require('path'),
     exec = require('child_process').exec,
-    os = require('os'),
-    thisPackage = require('../package.json');
+    os = require('os');
 
 function exclude (exclusions, file) {
     return (exclusions || []).some(function (exclusion) {
@@ -62,7 +61,8 @@ module.exports = function (grunt) {
     });
 
     grunt.registerTask('deadCheck', 'Check for unused dependencies in package.json', function () {
-        var dependencies = Object.keys(thisPackage.dependencies).concat(Object.keys(thisPackage.devDependencies)),
+        var thisPackage = require('../package.json'),
+            dependencies = Object.keys(thisPackage.dependencies).concat(Object.keys(thisPackage.devDependencies)),
             usedCount = {},
             dependencyCheck = function (file) {
                 var contents = fs.readFileSync(file, 'utf8');
