@@ -7,6 +7,8 @@ RUN sudo apt-get install -y ruby-full
 RUN sudo apt-get install -y rpm
 RUN sudo rm -rf /var/lib/apt/lists/*
 
+RUN sudo gem install bundler
+
 CMD ["/bin/sh"]
 
 # docker build -t=bbyars/mountebank-base-build:v1 .
