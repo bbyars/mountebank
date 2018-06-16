@@ -64,6 +64,16 @@ jobs:
       - run: bundle install --without development
       - run: node_modules/grunt-cli/bin/grunt test:deb
 
+  package-rpm:
+    docker:
+      - image: bbyars/mountebank-centos:latest
+    steps:
+      - attach_workspace:
+          at: .
+      - run: ruby -v
+      - run: bundle install --without development
+      - run: node_modules/grunt-cli/bin/grunt test:rpm
+
   package-npm:
     docker:
       - image: circleci/node:8.9.4-stretch
