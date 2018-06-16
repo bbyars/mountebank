@@ -40,11 +40,24 @@ function transform (request) {
         body: request.body
     };
 
-    if (request.body && headers['Content-Type'] === 'application/x-www-form-urlencoded') {
+    if (request.body && isUrlEncodedForm(headers['Content-Type'])) {
         transformed.form = queryString.parse(request.body);
     }
 
     return transformed;
+}
+
+function isUrlEncodedForm (contentType) {
+    if (!contentType) {
+        return false;
+    }
+
+    var index = contentType.indexOf(';');
+    var type = index !== -1 ?
+        contentType.substr(0, index).trim() :
+        contentType.trim();
+
+    return type === 'application/x-www-form-urlencoded';
 }
 
 /**

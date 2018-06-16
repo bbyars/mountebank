@@ -67,14 +67,26 @@ describe('HttpRequest', function () {
         });
 
         promiseIt('should transform form', function () {
+            return shouldTransformForm('application/x-www-form-urlencoded');
+        });
+
+        promiseIt('should transform form for application/x-www-form-urlencoded;charset=UTF-8', function () {
+            return shouldTransformForm('application/x-www-form-urlencoded;charset=UTF-8');
+        });
+
+        promiseIt('should transform form for application/x-www-form-urlencoded; charset=UTF-8', function () {
+            return shouldTransformForm('application/x-www-form-urlencoded; charset=UTF-8');
+        });
+
+        function shouldTransformForm (contentType) {
             request.rawHeaders = [
-                'Content-Type', 'application/x-www-form-urlencoded',
+                'Content-Type', contentType,
                 'Host', '127.0.0.1:8000'
             ];
 
             var promise = httpRequest.createFrom(container).then(function (mbRequest) {
                 assert.deepEqual(mbRequest.headers, {
-                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'Content-Type': contentType,
                     Host: '127.0.0.1:8000'
                 });
                 assert.deepEqual(mbRequest.form, {
@@ -87,7 +99,7 @@ describe('HttpRequest', function () {
             request.emit('end');
 
             return promise;
-        });
+        }
 
         promiseIt('should set path and query from request url', function () {
             request.url = 'http://localhost/path?key=value';
