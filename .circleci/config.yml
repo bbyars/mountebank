@@ -128,6 +128,14 @@ workflows:
               only: master
             tags:
               only: /^v.*/
+      - package-rpm:
+          requires:
+            - build
+          filters:
+            branches:
+              only: master
+            tags:
+              only: /^v.*/
       - package-npm:
           requires:
             - build
