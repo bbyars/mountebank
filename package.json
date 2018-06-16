@@ -81,7 +81,7 @@
   ],
   "dependencies": {
     "cors": "~2.8.4",
-    "csv-parse": "^1.2.0",
+    "csv-parse": "^2.4.0",
     "ejs": "~2.5.7",
     "errorhandler": "^1.0.0",
     "express": "~4.16.2",
@@ -112,13 +112,13 @@
     "grunt-mountebank": "1.0.5",
     "istanbul": "^0.4.0",
     "jsdoc": "^3.5.5",
-    "jsdom": "~9.12.0",
+    "jsdom": "~11.11.0",
     "mocha": "~4.0.1",
     "rimraf": "^2.6.2",
     "time-grunt": "^1.2.2",
     "w3cjs": "~0.4.0"
   },
   "engines": {
-    "node": ">=4.8.4"
+    "node": ">=6"
   }
 }

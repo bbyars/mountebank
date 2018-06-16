@@ -94,17 +94,17 @@ module.exports = function (grunt) {
 
     // Package-specific testing
     grunt.registerTask('test:tarball:x64', 'Run tests against packaged tarball',
-        ['dist', 'version', 'dist:tarball:x64', 'install:tarball:x64', 'test']);
+        ['dist:tarball:x64', 'install:tarball:x64', 'test:functional']);
     grunt.registerTask('test:zip', 'Run tests against packaged zipfile',
         ['download:zip', 'install:zip', 'test']);
     grunt.registerTask('test:npm', 'Run tests against npm package',
-        ['dist', 'version', 'dist:npm', 'install:npm', 'test']);
+        ['dist:npm', 'install:npm', 'test:functional']);
     grunt.registerTask('test:pkg', 'Run tests against OSX pkg file',
         ['dist', 'version', 'dist:package:osxpkg', 'install:pkg', 'test']);
     grunt.registerTask('test:deb', 'Run tests against Debian package',
-        ['dist', 'version', 'dist:package:deb', 'install:deb', 'test', 'uninstall:deb']);
+        ['dist:package:deb', 'install:deb', 'test:functional']);
     grunt.registerTask('test:rpm', 'Run tests against Red Hat package',
-        ['download:rpm', 'install:rpm', 'test', 'uninstall:rpm']);
+        ['download:rpm', 'install:rpm', 'test:functional', 'uninstall:rpm']);
 
     // Second stage
     grunt.registerTask('verify:windows', 'Wait for the appveyor build to finish',

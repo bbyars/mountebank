@@ -18,22 +18,22 @@ matrix:
       sudo: true
       env:
         - MB_GRUNT_TASK='test:pkg deploy:s3'
-    - os: osx
-      sudo: false
-      env:
-        - MB_GRUNT_TASK='test:tarball:x64 deploy:s3 jsdoc deploy:docs'
+    #- os: osx
+    #  sudo: false
+    #  env:
+    #    - MB_GRUNT_TASK='test:tarball:x64 deploy:s3 jsdoc deploy:docs'
         # FIREBASE_TOKEN
-        - secure: "uplPVyZC7fd3aMDXh46+IrjXCaA7r0VRZplnhSOzATtgZQjSlqHdgLGCXOw+j14oLgsyMNe5AHy9B9TV2xxt6ZDpKNoeAdk2vxPJpVatXD6Cs9jypuiDRq0Nlf8PiBPARucBK6qyR/YF8WvrG+MxahzB373j13YBQ/7rojugnaE="
-    - os: linux
-      sudo: true
-      env:
-        - MB_GRUNT_TASK=test:performance
-    - os: linux
-      sudo: false
-      env:
-        - MB_GRUNT_TASK='test:npm dist:zip:x64 dist:zip:x86 trigger:appveyor deploy:s3'
+    #    - secure: "uplPVyZC7fd3aMDXh46+IrjXCaA7r0VRZplnhSOzATtgZQjSlqHdgLGCXOw+j14oLgsyMNe5AHy9B9TV2xxt6ZDpKNoeAdk2vxPJpVatXD6Cs9jypuiDRq0Nlf8PiBPARucBK6qyR/YF8WvrG+MxahzB373j13YBQ/7rojugnaE="
+    #- os: linux
+    #  sudo: true
+    #  env:
+    #    - MB_GRUNT_TASK=test:performance
+    #- os: linux
+    #  sudo: false
+    #  env:
+    #    - MB_GRUNT_TASK='test:npm dist:zip:x64 dist:zip:x86 trigger:appveyor deploy:s3'
         # APPVEYOR_API_TOKEN
-        - secure: "A4hhAF4npjjpiV+X6u1dt4sHYUDLyB+0mIdovXSbR/eh1jTn1ZnaCwZD8G248N+yf5Kj1jTsUUzT4mxkWSO9uzxA93W7CimLH7iBjPVyOEemuXBlBqxPJAAweB6BhiGpiuPZk2SeC0SVa+gwC+KL3oy/PW4dz8Q5ytL/IE9b3/o="
+    #    - secure: "A4hhAF4npjjpiV+X6u1dt4sHYUDLyB+0mIdovXSbR/eh1jTn1ZnaCwZD8G248N+yf5Kj1jTsUUzT4mxkWSO9uzxA93W7CimLH7iBjPVyOEemuXBlBqxPJAAweB6BhiGpiuPZk2SeC0SVa+gwC+KL3oy/PW4dz8Q5ytL/IE9b3/o="
     - os: linux
       sudo: true
       env:
@@ -56,14 +56,6 @@ matrix:
       env:
         - NODE_VERSION=6
         - MB_RUN_WEB_TESTS=true
-    - os: linux
-      sudo: false
-      env:
-        - NODE_VERSION=4
-    - os: osx
-      sudo: false
-      env:
-        - NODE_VERSION=4
     - os: osx
       sudo: false
       env:

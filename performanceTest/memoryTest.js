@@ -6,7 +6,10 @@ var assert = require('assert'),
     client = require('./../functionalTest/api/http/baseHttpClient').create('http'),
     promiseIt = require('./../functionalTest/testHelpers').promiseIt,
     port = api.port + 1,
-    mb = require('../functionalTest/mb').create(port + 1);
+    mb = require('../functionalTest/mb').create(port + 1),
+    numRequests = 15000,
+    baselineMemory = 3000,
+    minIncreasedMemory = 200;
 
 function getMemoryUsedForFiftyThousandRequests (mbPort) {
     var stub = { responses: [{ is: { statusCode: 400 } }] },
@@ -16,7 +19,7 @@ function getMemoryUsedForFiftyThousandRequests (mbPort) {
         originalProcess;
 
     // I run out of memory in the test process with 1,000,000
-    for (var i = 0; i < 50000; i += 1) {
+    for (var i = 0; i < numRequests; i += 1) {
         allRequests[i] = requestFn;
     }
 
@@ -26,12 +29,12 @@ function getMemoryUsedForFiftyThousandRequests (mbPort) {
     }).then(function (response) {
         originalProcess = response.body.process;
 
-        // Using Q.all above 10,000 requests gives me an ETIMEDOUT
+        // Using Q.all above a certain requests threshold gives me an ETIMEDOUT
         return allRequests.reduce(Q.when, Q(true));
     }).then(function () {
         return client.get('/config', mbPort);
     }).then(function (response) {
-        return (response.body.process.rss - originalProcess.rss) / 1000000;
+        return (response.body.process.rss - originalProcess.rss) / numRequests;
     }).finally(function () {
         return client.del('/imposters/' + port, mbPort);
     });
@@ -45,8 +48,8 @@ describe('mb', function () {
             return mb.start(['--mock']).then(function () {
                 return getMemoryUsedForFiftyThousandRequests(mb.port);
             }).then(function (memoryUsed) {
-                console.log('memory usage for 50,000 requests with --mock: ' + memoryUsed);
-                assert.ok(memoryUsed > 75, 'Memory used: ' + memoryUsed);
+                console.log('memory usage for ' + numRequests + ' requests with --mock: ' + memoryUsed);
+                assert.ok(memoryUsed > baselineMemory + minIncreasedMemory, 'Memory used: ' + memoryUsed);
             }).finally(function () {
                 return mb.stop();
             });
@@ -58,8 +61,8 @@ describe('mb', function () {
             return mb.start().then(function () {
                 return getMemoryUsedForFiftyThousandRequests(mb.port);
             }).then(function (memoryUsed) {
-                console.log('default memory usage with for 50,000 requests: ' + memoryUsed);
-                assert.ok(memoryUsed < 125, 'Memory used: ' + memoryUsed);
+                console.log('default memory usage with for ' + numRequests + ' requests: ' + memoryUsed);
+                assert.ok(memoryUsed < baselineMemory, 'Memory used: ' + memoryUsed);
             }).finally(function () {
                 return mb.stop();
             });

@@ -2,8 +2,7 @@
 
 var Q = require('q'),
     exec = require('child_process').exec,
-    thisPackage = require('../package.json'),
-    version = process.env.MB_VERSION || thisPackage.version,
+    version = require('./version').getVersion(),
     hasTriggerRights = process.env.MB_DEPLOY === 'true',
     appveyor = require('./ci/appveyor'),
     travis = require('./ci/travis'),

@@ -8,30 +8,129 @@ jobs:
       - checkout
       - restore_cache:
           key: dependency-cache-{{ checksum "package.json" }}
-      - run: ./circlebuild default dist
+      - run: ./circlebuild lint test dist version jsdoc deploy:docs
       - save_cache:
           key: dependency-cache-{{ checksum "package.json" }}
           paths:
             - node_modules
       - persist_to_workspace:
-          root: dist
+        # Ignore src; use dist for all downstream jobs, but keep enough to run tests
+          root: .
           paths:
-            - .
+            - functionalTest
+            - performanceTest
+            - test
+            - tasks
+            - dist
+            - Gruntfile.js
+            - node_modules
+            - scripts
+            - circlebuild
+            - firebase.json
+            - .jsdoc
+            - Gemfile
+            - Gemfile.lock
 
-  package:
+  package-tarball:
+    docker:
+      - image: circleci/ruby:2.4.4-stretch-node
+    environment:
+      - MB_SLOW_TEST_TIMEOUT: 6000
+      - MB_PORT: 3535
+    steps:
+      - attach_workspace:
+          at: .
+      - run: ruby -v
+      - run: bundle install --without development
+      - run: node_modules/grunt-cli/bin/grunt test:tarball:x64 deploy:s3
+
+  package-zip:
+    docker:
+      - image: circleci/ruby:2.4.4-stretch-node
+    steps:
+      - attach_workspace:
+          at: .
+      - run: ruby -v
+      - run: bundle install --without development
+      - run: node_modules/grunt-cli/bin/grunt dist:zip:x64 dist:zip:x86 trigger:appveyor deploy:s3
+
+  package-deb:
+    docker:
+      - image: circleci/ruby:2.4.4-stretch-node
+    steps:
+      - attach_workspace:
+          at: .
+      - run: ruby -v
+      - run: bundle install --without development
+      - run: node_modules/grunt-cli/bin/grunt test:deb
+
+  package-npm:
     docker:
       - image: circleci/node:8.9.4-stretch
+    environment:
+      - MB_SLOW_TEST_TIMEOUT: 6000
+      - MB_PORT: 3535
     steps:
-      - checkout
       - attach_workspace:
-          at: dist
+          at: .
+      - run: node_modules/grunt-cli/bin/grunt test:npm
       - run: ls -al dist
+
+  performance:
+    docker:
+      - image: circleci/node:8.9.4-stretch
+    environment:
+      - MB_EXECUTABLE: /home/circleci/project/dist/mountebank/bin/mb
+    steps:
+      - attach_workspace:
+          at: .
+      - run: node_modules/grunt-cli/bin/grunt test:performance
 
 workflows:
   version: 2
   full_build:
     jobs:
-      - build
-      - package:
+      - build:
+          filters:
+            tags:
+              only: /^v.*/
+      - package-zip:
           requires:
             - build
+          filters:
+            branches:
+              only: master
+            tags:
+              only: /^v.*/
+      - package-tarball:
+          requires:
+            - build
+          filters:
+            branches:
+              only: master
+            tags:
+              only: /^v.*/
+      - package-deb:
+          requires:
+            - build
+          filters:
+            branches:
+              only: master
+            tags:
+              only: /^v.*/
+      - package-npm:
+          requires:
+            - build
+          filters:
+            branches:
+              only: master
+            tags:
+              only: /^v.*/
+      - performance:
+          requires:
+            - build
+          filters:
+            branches:
+              only: master
+            tags:
+              only: /^v.*/

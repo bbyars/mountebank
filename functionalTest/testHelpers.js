@@ -18,6 +18,27 @@ promiseIt.only = function (what, test) {
     it.only(what, wrap(test, { name: what }));
 };
 
+function runningLocally () {
+    var path = require('path'),
+        fs = require('fs');
+
+    return fs.existsSync(path.join(__dirname, '../src'));
+}
+
+// Allow loading a module from the source directory even when we're testing a
+// distribution rather than a checkout from git (which is how CircleCI runs)
+function fromSrc (modulePath) {
+    var path = require('path');
+
+    if (runningLocally()) {
+        return path.join(__dirname, '..', modulePath);
+    }
+    else {
+        return path.join(__dirname, '../dist/mountebank', modulePath);
+    }
+}
+
 module.exports = {
-    promiseIt: promiseIt
+    promiseIt: promiseIt,
+    fromSrc: fromSrc
 };

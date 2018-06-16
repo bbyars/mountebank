@@ -5,8 +5,7 @@ var fs = require('fs-extra'),
     os = require('os'),
     path = require('path'),
     util = require('util'),
-    thisPackage = require('../package.json'),
-    version = process.env.MB_VERSION || thisPackage.version,
+    version = require('./version').getVersion(),
     // parent directory to avoid interaction with project node_modules
     testDir = '../.mb-test-dir';
 

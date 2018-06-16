@@ -3,8 +3,7 @@
 var fs = require('fs-extra'),
     os = require('os'),
     rimraf = require('rimraf'),
-    thisPackage = require('../package.json'),
-    version = process.env.MB_VERSION || thisPackage.version,
+    version = require('./version').getVersion(),
     run = require('./run').run;
 
 module.exports = function (grunt) {
@@ -17,7 +16,7 @@ module.exports = function (grunt) {
 
     grunt.registerTask('dist', 'Create trimmed down distribution directory', function () {
         var done = this.async(),
-            newPackage = JSON.parse(JSON.stringify(thisPackage)),
+            newPackage = JSON.parse(JSON.stringify(require('../package.json'))),
             failed = failTask('dist');
 
         rimraf.sync('dist');
@@ -28,8 +27,8 @@ module.exports = function (grunt) {
         });
         rimraf.sync('dist/mountebank/src/public/images/sources');
 
+
         delete newPackage.devDependencies;
-        delete newPackage.devDependenciesBasedOnNodeVersion;
         fs.writeFileSync('dist/mountebank/package.json', JSON.stringify(newPackage, null, 2));
 
         run('npm', ['install', '--production'], { cwd: 'dist/mountebank' }).done(function () {
