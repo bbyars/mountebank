@@ -3,7 +3,6 @@
 var Q = require('q'),
     exec = require('child_process').exec,
     version = require('./version').getVersion(),
-    hasTriggerRights = process.env.MB_DEPLOY === 'true',
     appveyor = require('./ci/appveyor'),
     travis = require('./ci/travis'),
     fs = require('fs');
@@ -23,10 +22,6 @@ function getCurrentCommitId () {
 
 module.exports = function (grunt) {
     grunt.registerTask('trigger:appveyor', 'Trigger Appveyor build for same commit', function () {
-        if (!hasTriggerRights) {
-            return;
-        }
-
         var done = this.async();
 
         getCurrentCommitId().then(function (commitId) {

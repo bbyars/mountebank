@@ -14,22 +14,9 @@ jobs:
           paths:
             - node_modules
       - persist_to_workspace:
-        # Ignore src; use dist for all downstream jobs, but keep enough to run tests
           root: .
           paths:
-            - functionalTest
-            - performanceTest
-            - test
-            - tasks
-            - dist
-            - Gruntfile.js
-            - node_modules
-            - scripts
-            - circlebuild
-            - firebase.json
-            - .jsdoc
-            - Gemfile
-            - Gemfile.lock
+            - .
 
   package-tarball:
     docker:
@@ -96,6 +83,14 @@ jobs:
           at: .
       - run: node_modules/grunt-cli/bin/grunt test:performance
 
+  windows:
+    docker:
+      - image: circleci/node:8.9.4-stretch
+    steps:
+      - attach_workspace:
+          at: .
+      - run: node_modules/grunt-cli/bin/grunt verify:windows
+
   deploy:
     docker:
       - image: circleci/node:8.9.4-stretch
@@ -115,6 +110,14 @@ workflows:
       - package-zip:
           requires:
             - build
+          filters:
+            branches:
+              only: master
+            tags:
+              only: /^v.*/
+      - windows:
+          requires:
+            - package-zip
           filters:
             branches:
               only: master
@@ -167,7 +170,6 @@ workflows:
             - package-deb
             - package-rpm
             - package-npm
-            - performance
           filters:
             branches:
               only: master
