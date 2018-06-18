@@ -121,7 +121,6 @@ function create (options) {
         '/license',
         '/faqs',
         '/thoughtworks',
-        '/docs/examples',
         '/docs/gettingStarted',
         '/docs/install',
         '/docs/glossary',
