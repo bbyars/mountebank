@@ -189,7 +189,8 @@ workflows:
             - package-tarball
             - package-deb
             - package-rpm
-            - package-npm
+            - nodev6
+            - nodev10
           filters:
             branches:
               only: master
