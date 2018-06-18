@@ -10,7 +10,7 @@ jobs:
       - checkout
       - restore_cache:
           key: dependency-cache-{{ checksum "package.json" }}
-      - run: ./circlebuild lint test dist version jsdoc deploy:docs codeclimate sonar
+      - run: ./build lint test dist version trigger:travis jsdoc deploy:docs codeclimate sonar
       - save_cache:
           key: dependency-cache-{{ checksum "package.json" }}
           paths:
@@ -63,7 +63,11 @@ jobs:
           at: .
       - run: ruby -v
       - run: bundle install --without development
-      - run: node_modules/grunt-cli/bin/grunt dist:zip:x64 dist:zip:x86 trigger:appveyor deploy:s3
+      - run: node_modules/grunt-cli/bin/grunt dist:zip:x64 dist:zip:x86 deploy:s3 trigger:appveyor
+      - persist_to_workspace:
+          root: .
+          paths:
+            - appveyor-*.txt
 
   package-deb:
     docker:
@@ -101,7 +105,19 @@ jobs:
     steps:
       - attach_workspace:
           at: .
-      - run: node_modules/grunt-cli/bin/grunt verify:windows
+      - run: ls -al
+      - run: ls -al dist
+      - run: node_modules/grunt-cli/bin/grunt waitfor:windows
+
+  osx:
+    docker:
+      - image: circleci/node:8.9.4-stretch
+    steps:
+      - attach_workspace:
+          at: .
+      - run: ls -al
+      - run: ls -al dist
+      - run: node_modules/grunt-cli/bin/grunt waitfor:travis
 
   deploy:
     docker:
@@ -117,6 +133,14 @@ workflows:
     jobs:
       - build:
           filters:
+            tags:
+              only: /^v.*/
+      - osx:
+          requires:
+            - build
+          filters:
+            branches:
+              only: master
             tags:
               only: /^v.*/
       - package-zip:

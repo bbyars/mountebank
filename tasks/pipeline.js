@@ -27,10 +27,8 @@ module.exports = function (grunt) {
         getCurrentCommitId().then(function (commitId) {
             return appveyor.triggerBuild(commitId, version);
         }).done(function (result) {
-            // We have to save off the Appveyor build number in the dist directory to get
-            // copied to S3 for the next stage to be able to read it; no data persistence
-            // between TravisCI stages
-            fs.writeFileSync('dist/appveyor-' + version + '.txt', result.version);
+            // We have to save off the Appveyor build number for the next CI stage
+            fs.writeFileSync('appveyor-' + version + '.txt', result.version);
             console.log('Appveyor build successfully triggered for ' + version + ' => ' + result.version);
             done();
         }, function (error) {
@@ -40,7 +38,7 @@ module.exports = function (grunt) {
 
     grunt.registerTask('waitFor:appveyor', 'Wait for appveyor build to finish', function () {
         var done = this.async(),
-            buildNumber = fs.readFileSync('dist/appveyor-' + version + '.txt'),
+            buildNumber = fs.readFileSync('appveyor-' + version + '.txt'),
             timeout = 10 * 60 * 1000,
             interval = 3000,
             start = new Date(),
@@ -82,7 +80,8 @@ module.exports = function (grunt) {
         var done = this.async();
 
         return travis.triggerBuild(version).then(function (result) {
-            process.env.MB_TRAVIS_BUILD_NUMBER = result;
+            // We have to save off the Appveyor build number for the next CI stage
+            fs.writeFileSync('travis-' + version + '.txt', result);
             console.log('Travis CI build successfully triggered for ' + version + ' => ' + result);
             done();
         }, function (error) {
@@ -92,6 +91,7 @@ module.exports = function (grunt) {
 
     grunt.registerTask('waitFor:travis', 'Wait for Travis build to finish', function () {
         var done = this.async(),
+            buildNumber = fs.readFileSync('travis-' + version + '.txt'),
             timeout = 10 * 60 * 1000,
             interval = 3000,
             start = new Date(),
@@ -111,7 +111,7 @@ module.exports = function (grunt) {
                 }
                 else {
                     return Q.delay(interval).then(function () {
-                        return travis.getBuildStatus(process.env.MB_TRAVIS_BUILD_NUMBER);
+                        return travis.getBuildStatus(buildNumber);
                     }).then(spinWait, deferred.reject);
                 }
 

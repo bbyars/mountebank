@@ -58,13 +58,4 @@ module.exports = function (grunt) {
         }
         download(rpmFile, 'dist/' + rpmFile).done(this.async(), grunt.warn);
     });
-
-    grunt.registerTask('download:appveyor', 'Download the appveyor build number', function () {
-        var appveyorFile = util.format('appveyor-%s.txt', version);
-
-        if (!fs.existsSync('dist')) {
-            fs.mkdirSync('dist');
-        }
-        download(appveyorFile, 'dist/' + appveyorFile).done(this.async(), grunt.warn);
-    });
 };

@@ -53,7 +53,7 @@ function responseFor (options) {
     return deferred.promise;
 }
 
-function triggerBuild () {
+function triggerBuild (version) {
     return responseFor({
         method: 'POST',
         path: '/repo/bbyars%2Fmountebank/requests',
@@ -66,7 +66,8 @@ function triggerBuild () {
                 config: {
                     env: {
                         global: {
-                            MB_TEST: 'yes'
+                            MB_TEST: 'yes',
+                            MB_VERSION: version
                         }
                     }
                 }
