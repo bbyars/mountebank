@@ -98,7 +98,7 @@ function create () {
     }
 
     function crawl (startingUrl, referrer) {
-        var serverUrl = startingUrl.replace('#.*$', '');
+        var serverUrl = startingUrl.replace(/#.*$/, '');
         if (isWhitelisted(serverUrl)) {
             return Q(true);
         }
