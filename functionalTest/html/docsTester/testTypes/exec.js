@@ -3,6 +3,7 @@
 var exec = require('child_process').exec,
     Q = require('q'),
     fs = require('fs'),
+    path = require('path'),
     nextTestId = 1;
 
 function execute (command) {
@@ -19,26 +20,24 @@ function execute (command) {
     return deferred.promise;
 }
 
-function ensureOSCompatibility (command) {
-    // On CircleCI image, netcat requires the -q1 parameter to end after receiving stdin
+function usePortableNetcat (command) {
+    // On CircleCI image, netcat requires the -q1 parameter to end after receiving stdin.
+    // Faster machines don't need it.
+    // I could not find a centos version of netcat that has the -q parameter, nor does
+    // the Mac version have the -q parameter. The -w1 parameter, which is cross-OS, did not
+    // work. The only solution I found was to use the node port of netcat and use it :(
     // This feels ugly to do the replacement here, but I prefer it over doing the replacement
     // directly in the views because I want people to be able to copy the command from the
     // public site and run on their machines, and the variant without the -q is the most portable
-    // even though the public site is hosted on linux
-    if (require('os').platform() === 'linux') {
-        return command.replace('| nc ', '| nc -w1 ');
-    }
-    else {
-        // Mac netcat doesn't support the -q parameter
-        return command;
-    }
+    var netcatPath = path.join(__dirname, '../../../../node_modules/.bin/nc');
+    return command.replace('| nc ', '| ' + netcatPath + ' -q1 ');
 }
 
 function runStep (step) {
     var deferred = Q.defer(),
         filename = 'test-' + nextTestId;
 
-    fs.writeFileSync(filename, ensureOSCompatibility(step.requestText), { mode: 484 /* 0744 */});
+    fs.writeFileSync(filename, usePortableNetcat(step.requestText), { mode: 484 /* 0744 */});
     nextTestId += 1;
 
     execute('sh ./' + filename).done(function (stdout) {

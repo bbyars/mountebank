@@ -85,7 +85,8 @@ module.exports = function (grunt) {
                 'grunt-contrib-csslint',
                 'shonkwrap',
                 'codeclimate-test-reporter',
-                'firebase-tools'
+                'firebase-tools',
+                'nc'
             ];
 
         dependencies.forEach(function (dependency) {
