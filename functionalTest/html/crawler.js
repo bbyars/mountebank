@@ -111,9 +111,8 @@ function create () {
         }
         else {
             pages.hits[startingUrl] = { from: [referrer] };
-            console.log('     Crawling ' + startingUrl + '...');
             return getResponseFor(startingUrl).then(function (response) {
-                console.log('     ...got ' + response.statusCode);
+                console.log(response.statusCode + ': ' + startingUrl);
                 pages.hits[startingUrl].statusCode = response.statusCode;
                 pages.hits[startingUrl].contentType = response.headers['content-type'];
 
@@ -124,7 +123,7 @@ function create () {
                 })).then(function () {
                     return Q(pages);
                 });
-            });
+            }, function () { console.log('ERROR with ' + startingUrl); });
         }
     }
 
