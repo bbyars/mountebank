@@ -126,7 +126,7 @@ module.exports = function (grunt) {
         fs.mkdirSync(testDir);
         fs.copySync('dist/' + rpm, path.join(testDir, rpm));
 
-        run('sudo', ['yum', '--nogpgcheck', 'localinstall', rpm], { cwd: testDir }).done(function () {
+        run('sudo', ['yum', '-y', '--nogpgcheck', 'localinstall', rpm], { cwd: testDir }).done(function () {
             setExecutableTo('mb');
             done();
         }, failTask('install:rpm'));
