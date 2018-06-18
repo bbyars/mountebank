@@ -98,7 +98,11 @@ function create () {
     }
 
     function crawl (startingUrl, referrer) {
-        var serverUrl = startingUrl.replace(/#.*$/, '');
+        var serverUrl = startingUrl.replace(/#.*$/, '').trim();
+
+        if (serverUrl === '') {
+            return Q(true);
+        }
         if (isWhitelisted(serverUrl)) {
             return Q(true);
         }
@@ -113,7 +117,6 @@ function create () {
         else {
             pages.hits[serverUrl] = { from: [referrer] };
             return getResponseFor(serverUrl).then(function (response) {
-                console.log(response.statusCode + ': ' + serverUrl);
                 pages.hits[serverUrl].statusCode = response.statusCode;
                 pages.hits[serverUrl].contentType = response.headers['content-type'];
 
