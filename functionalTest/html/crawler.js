@@ -98,32 +98,33 @@ function create () {
     }
 
     function crawl (startingUrl, referrer) {
-        if (isWhitelisted(startingUrl)) {
+        var serverUrl = startingUrl.replace('#.*$', '');
+        if (isWhitelisted(serverUrl)) {
             return Q(true);
         }
-        else if (isBadLink(startingUrl)) {
-            addError(startingUrl, referrer);
+        else if (isBadLink(serverUrl)) {
+            addError(serverUrl, referrer);
             return Q(true);
         }
-        else if (alreadyCrawled(startingUrl)) {
-            addReferrer(startingUrl, referrer);
+        else if (alreadyCrawled(serverUrl)) {
+            addReferrer(serverUrl, referrer);
             return Q(true);
         }
         else {
-            pages.hits[startingUrl] = { from: [referrer] };
-            return getResponseFor(startingUrl).then(function (response) {
-                console.log(response.statusCode + ': ' + startingUrl);
-                pages.hits[startingUrl].statusCode = response.statusCode;
-                pages.hits[startingUrl].contentType = response.headers['content-type'];
+            pages.hits[serverUrl] = { from: [referrer] };
+            return getResponseFor(serverUrl).then(function (response) {
+                console.log(response.statusCode + ': ' + serverUrl);
+                pages.hits[serverUrl].statusCode = response.statusCode;
+                pages.hits[serverUrl].contentType = response.headers['content-type'];
 
-                return getLinksFrom(startingUrl, response.body);
+                return getLinksFrom(serverUrl, response.body);
             }).then(function (links) {
                 return Q.all(links.map(function (link) {
-                    return crawl(link, startingUrl);
+                    return crawl(link, serverUrl);
                 })).then(function () {
                     return Q(pages);
                 });
-            }, function () { console.log('ERROR with ' + startingUrl); });
+            }, function (e) { console.log('ERROR with ' + serverUrl); console.log(e); });
         }
     }
 
