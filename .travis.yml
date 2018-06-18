@@ -18,12 +18,12 @@ matrix:
       sudo: true
       env:
         - MB_GRUNT_TASK='test:pkg deploy:s3'
-    #- os: osx
-    #  sudo: false
-    #  env:
-    #    - MB_GRUNT_TASK='test:tarball:x64 deploy:s3 jsdoc deploy:docs'
+    - os: osx
+      sudo: false
+      env:
+        - MB_GRUNT_TASK='test:tarball:x64 deploy:s3 jsdoc deploy:docs'
         # FIREBASE_TOKEN
-    #    - secure: "uplPVyZC7fd3aMDXh46+IrjXCaA7r0VRZplnhSOzATtgZQjSlqHdgLGCXOw+j14oLgsyMNe5AHy9B9TV2xxt6ZDpKNoeAdk2vxPJpVatXD6Cs9jypuiDRq0Nlf8PiBPARucBK6qyR/YF8WvrG+MxahzB373j13YBQ/7rojugnaE="
+        - secure: "uplPVyZC7fd3aMDXh46+IrjXCaA7r0VRZplnhSOzATtgZQjSlqHdgLGCXOw+j14oLgsyMNe5AHy9B9TV2xxt6ZDpKNoeAdk2vxPJpVatXD6Cs9jypuiDRq0Nlf8PiBPARucBK6qyR/YF8WvrG+MxahzB373j13YBQ/7rojugnaE="
     #- os: linux
     #  sudo: true
     #  env:
@@ -34,27 +34,27 @@ matrix:
     #    - MB_GRUNT_TASK='test:npm dist:zip:x64 dist:zip:x86 trigger:appveyor deploy:s3'
         # APPVEYOR_API_TOKEN
     #    - secure: "A4hhAF4npjjpiV+X6u1dt4sHYUDLyB+0mIdovXSbR/eh1jTn1ZnaCwZD8G248N+yf5Kj1jTsUUzT4mxkWSO9uzxA93W7CimLH7iBjPVyOEemuXBlBqxPJAAweB6BhiGpiuPZk2SeC0SVa+gwC+KL3oy/PW4dz8Q5ytL/IE9b3/o="
-    - os: linux
-      sudo: true
-      env:
-        - MB_INSTALL_RPM=true
-        - MB_GRUNT_TASK='test:deb dist:package:rpm deploy:s3 deploy:heroku deploy:npm'
-        # HEROKU_API_KEY
-        - secure: "ltbqkzvcWWP/ZpJ7uzlwDEgi6msDY5Jh3RcbbrSkkuOUiEVQbOSaBbi8Qu46uW39b5HTZoPb0U143lMMGmOWoREZfi+bg/wDcefQE0fnZpca09L9z9FpGgQSHDkasFxxznqTO/rrW/4E9CCzZWlhvE2BY3ay8kmuxS5BxHZp8Xk="
+    #- os: linux
+    #  sudo: true
+    #  env:
+    #    - MB_INSTALL_RPM=true
+    #    - MB_GRUNT_TASK='test:deb dist:package:rpm deploy:s3 deploy:heroku deploy:npm'
+    #    # HEROKU_API_KEY
+    #    - secure: "ltbqkzvcWWP/ZpJ7uzlwDEgi6msDY5Jh3RcbbrSkkuOUiEVQbOSaBbi8Qu46uW39b5HTZoPb0U143lMMGmOWoREZfi+bg/wDcefQE0fnZpca09L9z9FpGgQSHDkasFxxznqTO/rrW/4E9CCzZWlhvE2BY3ay8kmuxS5BxHZp8Xk="
         # NPM_API_KEY
-        - secure: "rbsxzVplwPSOy0bUJ0pl3EVhcQbRgLHKiZwV+1dkNKQ9xRXkTXjDAlCfAp0JXd7+Dpb6QorKbLKaBZcZP/PwFBvYZf1lkQbFU5Gv7Fnc0h5GwYVEOhdkK9wCWeEuVwxc0RkaX6PirDxWv8GfhCBdmvJMZ6BlAmBxp/079JzrTyw="
-    - os: linux
-      sudo: false
-      env:
-        - MB_GRUNT_TASK='test:tarball:x64 dist:tarball:x86 deploy:s3 codeclimate sonar'
+    #    - secure: "rbsxzVplwPSOy0bUJ0pl3EVhcQbRgLHKiZwV+1dkNKQ9xRXkTXjDAlCfAp0JXd7+Dpb6QorKbLKaBZcZP/PwFBvYZf1lkQbFU5Gv7Fnc0h5GwYVEOhdkK9wCWeEuVwxc0RkaX6PirDxWv8GfhCBdmvJMZ6BlAmBxp/079JzrTyw="
+    #- os: linux
+    #  sudo: false
+    #  env:
+    #    - MB_GRUNT_TASK='test:tarball:x64 dist:tarball:x86 deploy:s3 codeclimate sonar'
         # CODECLIMATE_REPO_TOKEN
-        - secure: "jjJxl1G93oo4cZScpkizdmq142IkK749Ul/4CrpyIwOB80xVVOD/DWyFelCxQ0F/nOt150YOAc1w9UHI8fgY1goAk6cHP/ipzkZ9NIO4x/SjUl0XkWTW7T/riGzn6R+SbjRmWJwbszp4wmwIQj8lAekvYlmvMOR1QpNzBJ4K4x4="
+    #    - secure: "jjJxl1G93oo4cZScpkizdmq142IkK749Ul/4CrpyIwOB80xVVOD/DWyFelCxQ0F/nOt150YOAc1w9UHI8fgY1goAk6cHP/ipzkZ9NIO4x/SjUl0XkWTW7T/riGzn6R+SbjRmWJwbszp4wmwIQj8lAekvYlmvMOR1QpNzBJ4K4x4="
         # SONARQUBE_LOGIN
-        - secure: "B+dWqZwbOPbtHlDmvKbIFfL/6YqStww4H8ljoteRHTqrgn3qc+GWdgELBm3ErPJHSyF9WxxA3pirJ6DFEeKxeCfYKeswFiF5Hm/WtBjiZ2k2DDGui9+NsEorHiQpCKY9rsY2H3fSwdTyx0TqVTPda//TGIqWSQEvKIaM4zG3lE8="
+    #    - secure: "B+dWqZwbOPbtHlDmvKbIFfL/6YqStww4H8ljoteRHTqrgn3qc+GWdgELBm3ErPJHSyF9WxxA3pirJ6DFEeKxeCfYKeswFiF5Hm/WtBjiZ2k2DDGui9+NsEorHiQpCKY9rsY2H3fSwdTyx0TqVTPda//TGIqWSQEvKIaM4zG3lE8="
     - os: linux
       sudo: false
       env:
-        - NODE_VERSION=6
+        - NODE_VERSION=6 #Need 6 and 10
         - MB_RUN_WEB_TESTS=true
     - os: osx
       sudo: false

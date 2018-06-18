@@ -8,7 +8,7 @@ jobs:
       - checkout
       - restore_cache:
           key: dependency-cache-{{ checksum "package.json" }}
-      - run: ./circlebuild lint test dist version jsdoc deploy:docs
+      - run: ./circlebuild lint test dist version jsdoc deploy:docs codeclimate sonar
       - save_cache:
           key: dependency-cache-{{ checksum "package.json" }}
           paths:
@@ -42,7 +42,7 @@ jobs:
           at: .
       - run: ruby -v
       - run: bundle install --without development
-      - run: node_modules/grunt-cli/bin/grunt test:tarball:x64 deploy:s3
+      - run: node_modules/grunt-cli/bin/grunt dist:tarball:x86 test:tarball:x64 deploy:s3
 
   package-zip:
     docker:
@@ -96,6 +96,14 @@ jobs:
           at: .
       - run: node_modules/grunt-cli/bin/grunt test:performance
 
+  deploy:
+    docker:
+      - image: circleci/node:8.9.4-stretch
+    steps:
+      - attach_workspace:
+          at: .
+      - run: node_modules/grunt-cli/bin/grunt deploy:heroku deploy:npm
+
 workflows:
   version: 2
   full_build:
@@ -147,6 +155,19 @@ workflows:
       - performance:
           requires:
             - build
+          filters:
+            branches:
+              only: master
+            tags:
+              only: /^v.*/
+      - deploy:
+          requires:
+            - package-zip
+            - package-tarball
+            - package-deb
+            - package-rpm
+            - package-npm
+            - performance
           filters:
             branches:
               only: master
