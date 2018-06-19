@@ -11,9 +11,9 @@ if [ -n "$CIRCLE_BUILD_NUM" -a -z "$IS_PUBLISHED_VERSION" ]; then
     MB_VERSION="$MB_VERSION-beta.$CIRCLE_BUILD_NUM"
 fi
 
-# Pass between workflow jobs
-echo "export MB_VERSION=$MB_VERSION" > env.sh
-chmod +x env.sh
+# Pass version between workflow jobs
+echo "MB_VERSION=$MB_VERSION node_modules/grunt-cli/bin/grunt \"$@\"" > run.sh
+chmod +x run.sh
 
 npm install
-MB_SLOW_TEST_TIMEOUT=6000 MB_PORT=3535 MB_VERSION=$MB_VERSION node_modules/grunt-cli/bin/grunt "$@"
+MB_SLOW_TEST_TIMEOUT=6000 MB_PORT=3535 ./run.sh "$@"
