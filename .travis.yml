@@ -1,12 +1,17 @@
 # OSX agents don't have nvm pre-installed, and installing it manually
 # gives a lot more control over testing packaging options
-language: node_js
+language: ruby
+cache:
+  bundler: true
 
 env:
   global:
+    - MB_SLOW_TEST_TIMEOUT=6000
     # AWS_ACCESS_KEY
     - secure: "H0iUwBPOwRf3+5HGqAXWU65dJIA+4SUltehM3+jiTXsqkxeHux3WqVOouaLlw2n8WaG9y1KMXEZzed6L8p8A3I6V2M+Y1n8qNYT8y/HjCTw4d3U0tiG6ef1ysIChdBOdlwXJT5GPLlLT0y+R4IgPfHd3DMx/aiEgT3O4gGZEchs="
 
+# Roughly ordered slowest to fastest to kick off the slow jobs first,
+# except include nodes that trigger other CIs in first 5 since they start in parallel
 matrix:
   include:
     - os: osx
@@ -17,14 +22,19 @@ matrix:
       sudo: false
       env:
         - MB_GRUNT_TASK='test:tarball:x64 deploy:s3'
+    - os: osx
+      sudo: false
 
 install:
+  - export NODE_VERSION=${NODE_VERSION:-8} # Default node version = LTS version
+  - rm -rf ~/.nvm
+  - git clone https://github.com/creationix/nvm.git ~/.nvm
+  - source ~/.nvm/nvm.sh
+  - nvm install $NODE_VERSION
+  - node --version
   # AWS_ACCESS_KEY will not be set on pull requests or improperly configured runs triggered through the API
   - if [ -n "$AWS_ACCESS_KEY" ]; then export MB_DEPLOY=true; else export MB_DEPLOY=false; fi
-  - if [ -n "$AWS_ACCESS_KEY" -a -n "`git describe --tags --exact-match 2>/dev/null`" ]; then export MB_PUBLISH=true; else export MB_PUBLISH=false; fi
 
 script:
-  - node --version
   - echo "MB_DEPLOY - $MB_DEPLOY"
-  - echo "MB_PUBLISH - $MB_PUBLISH"
   - ./build $MB_GRUNT_TASK
