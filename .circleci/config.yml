@@ -29,6 +29,7 @@ jobs:
     steps:
       - attach_workspace:
           at: .
+      - run: ./env.sh
       - run: node_modules/grunt-cli/bin/grunt test
 
   nodev10:
@@ -40,6 +41,7 @@ jobs:
     steps:
       - attach_workspace:
           at: .
+      - run: ./env.sh
       - run: node_modules/grunt-cli/bin/grunt test
 
   package-tarball:
@@ -51,6 +53,7 @@ jobs:
     steps:
       - attach_workspace:
           at: .
+      - run: ./env.sh
       - run: ruby -v
       - run: bundle install --without development
       - run: node_modules/grunt-cli/bin/grunt dist:tarball:x86 test:tarball:x64 deploy:s3
@@ -61,6 +64,7 @@ jobs:
     steps:
       - attach_workspace:
           at: .
+      - run: ./env.sh
       - run: ruby -v
       - run: bundle install --without development
       - run: node_modules/grunt-cli/bin/grunt dist:zip:x64 dist:zip:x86 deploy:s3 trigger:appveyor
@@ -75,6 +79,7 @@ jobs:
     steps:
       - attach_workspace:
           at: .
+      - run: ./env.sh
       - run: ruby -v
       - run: bundle install --without development
       - run: node_modules/grunt-cli/bin/grunt test:deb
@@ -85,6 +90,7 @@ jobs:
     steps:
       - attach_workspace:
           at: .
+      - run: ./env.sh
       - run: ruby -v
       - run: bundle install --without development
       - run: node_modules/grunt-cli/bin/grunt test:rpm
@@ -97,6 +103,7 @@ jobs:
     steps:
       - attach_workspace:
           at: .
+      - run: ./env.sh
       - run: node_modules/grunt-cli/bin/grunt test:performance
 
   windows:
@@ -105,6 +112,7 @@ jobs:
     steps:
       - attach_workspace:
           at: .
+      - run: ./env.sh
       - run: ls -al
       - run: ls -al dist
       - run: node_modules/grunt-cli/bin/grunt waitFor:windows
@@ -115,6 +123,7 @@ jobs:
     steps:
       - attach_workspace:
           at: .
+      - run: ./env.sh
       - run: ls -al
       - run: ls -al dist
       - run: node_modules/grunt-cli/bin/grunt waitFor:travis
@@ -125,6 +134,7 @@ jobs:
     steps:
       - attach_workspace:
           at: .
+      - run: ./env.sh
       - run: node_modules/grunt-cli/bin/grunt deploy:heroku deploy:npm
 
 workflows:
@@ -214,7 +224,6 @@ workflows:
             - package-deb
             - package-rpm
             - nodev6
-            - nodev10
           filters:
             branches:
               only: master
