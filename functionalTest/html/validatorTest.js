@@ -5,8 +5,7 @@ var assert = require('assert'),
     api = require('../api/api').create(),
     Q = require('q'),
     httpClient = require('../api/http/baseHttpClient').create('http'),
-    fromSrc = require('../testHelpers').fromSrc,
-    currentVersion = require(fromSrc('package.json')).version,
+    currentVersion = require('../../package.json').version,
     promiseIt = require('../testHelpers').promiseIt,
     util = require('util');
 

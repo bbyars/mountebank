@@ -1,8 +1,7 @@
 'use strict';
 
 var assert = require('assert'),
-    fromSrc = require('../../testHelpers').fromSrc,
-    HttpProxy = require(fromSrc('src/models/http/httpProxy')),
+    HttpProxy = require('../../../src/models/http/httpProxy'),
     api = require('../api').create(),
     promiseIt = require('../../testHelpers').promiseIt,
     port = api.port + 1,

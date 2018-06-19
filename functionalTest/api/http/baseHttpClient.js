@@ -1,8 +1,7 @@
 'use strict';
 
 var Q = require('q'),
-    fromSrc = require('../../testHelpers').fromSrc,
-    helpers = require(fromSrc('src/util/helpers'));
+    helpers = require('../../../src/util/helpers');
 
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 
