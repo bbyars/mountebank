@@ -30,6 +30,7 @@ jobs:
       - attach_workspace:
           at: .
       - run: ./env.sh
+      - run: echo "Using version $MB_VERSION"
       - run: node_modules/grunt-cli/bin/grunt test
 
   nodev10:
@@ -42,6 +43,7 @@ jobs:
       - attach_workspace:
           at: .
       - run: ./env.sh
+      - run: echo "Using version $MB_VERSION"
       - run: node_modules/grunt-cli/bin/grunt test
 
   package-tarball:
@@ -54,6 +56,7 @@ jobs:
       - attach_workspace:
           at: .
       - run: ./env.sh
+      - run: echo "Using version $MB_VERSION"
       - run: ruby -v
       - run: bundle install --without development
       - run: node_modules/grunt-cli/bin/grunt dist:tarball:x86 test:tarball:x64 deploy:s3
@@ -65,6 +68,7 @@ jobs:
       - attach_workspace:
           at: .
       - run: ./env.sh
+      - run: echo "Using version $MB_VERSION"
       - run: ruby -v
       - run: bundle install --without development
       - run: node_modules/grunt-cli/bin/grunt dist:zip:x64 dist:zip:x86 deploy:s3 trigger:appveyor
@@ -80,6 +84,7 @@ jobs:
       - attach_workspace:
           at: .
       - run: ./env.sh
+      - run: echo "Using version $MB_VERSION"
       - run: ruby -v
       - run: bundle install --without development
       - run: node_modules/grunt-cli/bin/grunt test:deb
@@ -91,6 +96,7 @@ jobs:
       - attach_workspace:
           at: .
       - run: ./env.sh
+      - run: echo "Using version $MB_VERSION"
       - run: ruby -v
       - run: bundle install --without development
       - run: node_modules/grunt-cli/bin/grunt test:rpm
@@ -104,6 +110,7 @@ jobs:
       - attach_workspace:
           at: .
       - run: ./env.sh
+      - run: echo "Using version $MB_VERSION"
       - run: node_modules/grunt-cli/bin/grunt test:performance
 
   windows:
@@ -113,9 +120,8 @@ jobs:
       - attach_workspace:
           at: .
       - run: ./env.sh
-      - run: ls -al
-      - run: ls -al dist
-      - run: node_modules/grunt-cli/bin/grunt waitFor:windows
+      - run: echo "Using version $MB_VERSION"
+      - run: node_modules/grunt-cli/bin/grunt waitFor:appveyor
 
   osx:
     docker:
@@ -124,8 +130,7 @@ jobs:
       - attach_workspace:
           at: .
       - run: ./env.sh
-      - run: ls -al
-      - run: ls -al dist
+      - run: echo "Using version $MB_VERSION"
       - run: node_modules/grunt-cli/bin/grunt waitFor:travis
 
   deploy:
@@ -135,6 +140,7 @@ jobs:
       - attach_workspace:
           at: .
       - run: ./env.sh
+      - run: echo "Using version $MB_VERSION"
       - run: node_modules/grunt-cli/bin/grunt deploy:heroku deploy:npm
 
 workflows:
@@ -224,6 +230,7 @@ workflows:
             - package-deb
             - package-rpm
             - nodev6
+            - nodev10
           filters:
             branches:
               only: master
