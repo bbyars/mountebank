@@ -29,9 +29,7 @@ jobs:
     steps:
       - attach_workspace:
           at: .
-      - run: ./env.sh
-      - run: echo "Using version $MB_VERSION"
-      - run: node_modules/grunt-cli/bin/grunt test
+      - run: ./run.sh test
 
   nodev10:
     docker:
@@ -42,9 +40,7 @@ jobs:
     steps:
       - attach_workspace:
           at: .
-      - run: ./env.sh
-      - run: echo "Using version $MB_VERSION"
-      - run: node_modules/grunt-cli/bin/grunt test
+      - run: ./run.sh test
 
   package-tarball:
     docker:
@@ -55,11 +51,9 @@ jobs:
     steps:
       - attach_workspace:
           at: .
-      - run: ./env.sh
-      - run: echo "Using version $MB_VERSION"
       - run: ruby -v
       - run: bundle install --without development
-      - run: node_modules/grunt-cli/bin/grunt dist:tarball:x86 test:tarball:x64 deploy:s3
+      - run: ./run.sh dist:tarball:x86 test:tarball:x64 deploy:s3
 
   package-zip:
     docker:
@@ -67,11 +61,9 @@ jobs:
     steps:
       - attach_workspace:
           at: .
-      - run: ./env.sh
-      - run: echo "Using version $MB_VERSION"
       - run: ruby -v
       - run: bundle install --without development
-      - run: node_modules/grunt-cli/bin/grunt dist:zip:x64 dist:zip:x86 deploy:s3 trigger:appveyor
+      - run: ./run.sh dist:zip:x64 dist:zip:x86 deploy:s3 trigger:appveyor
       - persist_to_workspace:
           root: .
           paths:
@@ -83,11 +75,9 @@ jobs:
     steps:
       - attach_workspace:
           at: .
-      - run: ./env.sh
-      - run: echo "Using version $MB_VERSION"
       - run: ruby -v
       - run: bundle install --without development
-      - run: node_modules/grunt-cli/bin/grunt test:deb
+      - run: ./run.sh test:deb
 
   package-rpm:
     docker:
@@ -95,11 +85,9 @@ jobs:
     steps:
       - attach_workspace:
           at: .
-      - run: ./env.sh
-      - run: echo "Using version $MB_VERSION"
       - run: ruby -v
       - run: bundle install --without development
-      - run: node_modules/grunt-cli/bin/grunt test:rpm
+      - run: ./run.sh test:rpm
 
   performance:
     docker:
@@ -109,9 +97,7 @@ jobs:
     steps:
       - attach_workspace:
           at: .
-      - run: ./env.sh
-      - run: echo "Using version $MB_VERSION"
-      - run: node_modules/grunt-cli/bin/grunt test:performance
+      - run: ./run.sh test:performance
 
   windows:
     docker:
@@ -119,9 +105,7 @@ jobs:
     steps:
       - attach_workspace:
           at: .
-      - run: ./env.sh
-      - run: echo "Using version $MB_VERSION"
-      - run: node_modules/grunt-cli/bin/grunt waitFor:appveyor
+      - run: ./run.sh waitFor:appveyor
 
   osx:
     docker:
@@ -129,9 +113,7 @@ jobs:
     steps:
       - attach_workspace:
           at: .
-      - run: ./env.sh
-      - run: echo "Using version $MB_VERSION"
-      - run: node_modules/grunt-cli/bin/grunt waitFor:travis
+      - run: ./run.sh waitFor:travis
 
   deploy:
     docker:
@@ -139,9 +121,7 @@ jobs:
     steps:
       - attach_workspace:
           at: .
-      - run: ./env.sh
-      - run: echo "Using version $MB_VERSION"
-      - run: node_modules/grunt-cli/bin/grunt deploy:heroku deploy:npm
+      - run: ./run.sh deploy:heroku deploy:npm
 
 workflows:
   version: 2
