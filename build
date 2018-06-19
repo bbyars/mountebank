@@ -12,7 +12,7 @@ if [ -n "$CIRCLE_BUILD_NUM" -a -z "$IS_PUBLISHED_VERSION" ]; then
 fi
 
 # Pass version between workflow jobs
-echo "MB_VERSION=$MB_VERSION node_modules/grunt-cli/bin/grunt \"$@\"" > run.sh
+echo "MB_VERSION=$MB_VERSION node_modules/grunt-cli/bin/grunt \"\$@\"" > run.sh
 chmod +x run.sh
 
 npm install
