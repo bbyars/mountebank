@@ -45,6 +45,7 @@ jobs:
       - attach_workspace:
           at: .
       - run: ln -s dist/mountebank/src src
+      - run: ln -s dist/mountebank/package.json package.json
       - run: node_modules/grunt-cli/bin/grunt test
 
   nodev10:
@@ -57,6 +58,7 @@ jobs:
       - attach_workspace:
           at: .
       - run: ln -s dist/mountebank/src src
+      - run: ln -s dist/mountebank/package.json package.json
       - run: node_modules/grunt-cli/bin/grunt test
 
   package-tarball:
@@ -71,6 +73,7 @@ jobs:
       - run: ruby -v
       - run: bundle install --without development
       - run: ln -s dist/mountebank/src src
+      - run: ln -s dist/mountebank/package.json package.json
       - run: node_modules/grunt-cli/bin/grunt dist:tarball:x86 test:tarball:x64 deploy:s3
 
   package-zip:
@@ -85,6 +88,7 @@ jobs:
       - run: ruby -v
       - run: bundle install --without development
       - run: ln -s dist/mountebank/src src
+      - run: ln -s dist/mountebank/package.json package.json
       - run: node_modules/grunt-cli/bin/grunt dist:zip:x64 dist:zip:x86 deploy:s3 trigger:appveyor
       - persist_to_workspace:
           root: .
@@ -103,6 +107,7 @@ jobs:
       - run: ruby -v
       - run: bundle install --without development
       - run: ln -s dist/mountebank/src src
+      - run: ln -s dist/mountebank/package.json package.json
       - run: node_modules/grunt-cli/bin/grunt test:deb
 
   package-rpm:
@@ -117,6 +122,7 @@ jobs:
       - run: ruby -v
       - run: bundle install --without development
       - run: ln -s dist/mountebank/src src
+      - run: ln -s dist/mountebank/package.json package.json
       - run: node_modules/grunt-cli/bin/grunt test:rpm
 
   performance:
@@ -128,6 +134,7 @@ jobs:
       - attach_workspace:
           at: .
       - run: ln -s dist/mountebank/src src
+      - run: ln -s dist/mountebank/package.json package.json
       - run: node_modules/grunt-cli/bin/grunt test:performance
 
   windows:
@@ -155,6 +162,7 @@ jobs:
       - run: ruby -v
       - run: bundle install --without development
       - run: ln -s dist/mountebank/src src
+      - run: ln -s dist/mountebank/package.json package.json
       - run: node_modules/grunt-cli/bin/grunt deploy:heroku deploy:npm
 
 workflows:
