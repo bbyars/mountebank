@@ -66,6 +66,21 @@ jobs:
       - run: ln -s dist/mountebank/bin bin
       - run: node_modules/grunt-cli/bin/grunt test
 
+  package-source:
+    docker:
+      - image: circleci/ruby:2.4.4-stretch-node
+    environment:
+      - MB_SLOW_TEST_TIMEOUT: 6000
+      - MB_PORT: 3535
+    steps:
+      - attach_workspace:
+          at: .
+      - run: ruby -v
+      - run: bundle install --without development
+      - run: ln -s dist/mountebank/src src
+      - run: ln -s dist/mountebank/package.json package.json
+      - run: node_modules/grunt-cli/bin/grunt test:npm deploy:s3
+
   package-tarball:
     docker:
       - image: circleci/ruby:2.4.4-stretch-node
@@ -113,7 +128,7 @@ jobs:
       - run: bundle install --without development
       - run: ln -s dist/mountebank/src src
       - run: ln -s dist/mountebank/package.json package.json
-      - run: node_modules/grunt-cli/bin/grunt test:deb
+      - run: node_modules/grunt-cli/bin/grunt test:deb deploy:s3
 
   package-rpm:
     docker:
@@ -128,7 +143,7 @@ jobs:
       - run: bundle install --without development
       - run: ln -s dist/mountebank/src src
       - run: ln -s dist/mountebank/package.json package.json
-      - run: node_modules/grunt-cli/bin/grunt test:rpm
+      - run: node_modules/grunt-cli/bin/grunt test:rpm deploy:s3
 
   performance:
     docker:
@@ -179,6 +194,14 @@ workflows:
             tags:
               only: /^v.*/
       - osx:
+          requires:
+            - build
+          filters:
+            branches:
+              only: master
+            tags:
+              only: /^v.*/
+      - package-source:
           requires:
             - build
           filters:
@@ -252,6 +275,7 @@ workflows:
               only: /^v.*/
       - deploy:
           requires:
+            - package-source
             - package-zip
             - package-tarball
             - package-deb
