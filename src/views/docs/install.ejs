@@ -48,7 +48,7 @@ var versionPath = encodeURIComponent(version);
     <td>
       <ul>
         <li><a href="https://s3.amazonaws.com/mountebank/v<%= versionWithoutPatch %>/mountebank-v<%= versionPath %>.pkg">pkg</a></li>
-        <li><a href="https://s3.amazonaws.com/mountebank/v<%= versionWithoutPatch %>/mountebank-<%= versionPath %>-1.x86_64.rpm">rpm</a></li>
+        <li><a href="https://s3.amazonaws.com/mountebank/v<%= versionWithoutPatch %>/mountebank-<%= versionPath.replace('-beta', '_beta') %>-1.x86_64.rpm">rpm</a></li>
         <li><a href="https://s3.amazonaws.com/mountebank/v<%= versionWithoutPatch %>/mountebank_<%= versionPath %>_amd64.deb">deb</a></li>
       </ul>
     </td>
