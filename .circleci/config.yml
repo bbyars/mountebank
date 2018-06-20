@@ -34,6 +34,9 @@ jobs:
             - Gemfile
             - Gemfile.lock
             - Procfile
+            # Needed for triggering Appveyor build
+            - .git
+            - travis-*.txt
 
   nodev6:
     docker:
@@ -46,6 +49,7 @@ jobs:
           at: .
       - run: ln -s dist/mountebank/src src
       - run: ln -s dist/mountebank/package.json package.json
+      - run: ln -s dist/mountebank/bin bin
       - run: node_modules/grunt-cli/bin/grunt test
 
   nodev10:
@@ -59,6 +63,7 @@ jobs:
           at: .
       - run: ln -s dist/mountebank/src src
       - run: ln -s dist/mountebank/package.json package.json
+      - run: ln -s dist/mountebank/bin bin
       - run: node_modules/grunt-cli/bin/grunt test
 
   package-tarball:
