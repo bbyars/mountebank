@@ -160,7 +160,7 @@ jobs:
 
   deploy:
     docker:
-      - image: circleci/node:8.9.4-stretch
+      - image: circleci/ruby:2.4.4-stretch-node
     steps:
       - attach_workspace:
           at: .

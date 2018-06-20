@@ -7,8 +7,6 @@ cache:
 env:
   global:
     - MB_SLOW_TEST_TIMEOUT=6000
-    # AWS_ACCESS_KEY
-    - secure: "H0iUwBPOwRf3+5HGqAXWU65dJIA+4SUltehM3+jiTXsqkxeHux3WqVOouaLlw2n8WaG9y1KMXEZzed6L8p8A3I6V2M+Y1n8qNYT8y/HjCTw4d3U0tiG6ef1ysIChdBOdlwXJT5GPLlLT0y+R4IgPfHd3DMx/aiEgT3O4gGZEchs="
 
 # Roughly ordered slowest to fastest to kick off the slow jobs first,
 # except include nodes that trigger other CIs in first 5 since they start in parallel
@@ -31,9 +29,6 @@ install:
   - nvm install $NODE_VERSION
   - node --version
   - bundle install --without development
-  # AWS_ACCESS_KEY will not be set on pull requests or improperly configured runs triggered through the API
-  - if [ -n "$AWS_ACCESS_KEY" ]; then export MB_DEPLOY=true; else export MB_DEPLOY=false; fi
 
 script:
-  - echo "MB_DEPLOY - $MB_DEPLOY"
   - ./build $MB_GRUNT_TASK
