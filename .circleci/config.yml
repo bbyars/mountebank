@@ -75,7 +75,6 @@ jobs:
     steps:
       - attach_workspace:
           at: .
-      - run: ruby -v
       - run: bundle install --without development
       - run: ln -s dist/mountebank/src src
       - run: ln -s dist/mountebank/package.json package.json
@@ -90,7 +89,6 @@ jobs:
     steps:
       - attach_workspace:
           at: .
-      - run: ruby -v
       - run: bundle install --without development
       - run: ln -s dist/mountebank/src src
       - run: ln -s dist/mountebank/package.json package.json
@@ -105,7 +103,6 @@ jobs:
     steps:
       - attach_workspace:
           at: .
-      - run: ruby -v
       - run: bundle install --without development
       - run: ln -s dist/mountebank/src src
       - run: ln -s dist/mountebank/package.json package.json
@@ -124,7 +121,6 @@ jobs:
     steps:
       - attach_workspace:
           at: .
-      - run: ruby -v
       - run: bundle install --without development
       - run: ln -s dist/mountebank/src src
       - run: ln -s dist/mountebank/package.json package.json
@@ -139,11 +135,15 @@ jobs:
     steps:
       - attach_workspace:
           at: .
-      - run: ruby -v
       - run: bundle install --without development
       - run: ln -s dist/mountebank/src src
       - run: ln -s dist/mountebank/package.json package.json
-      - run: node_modules/grunt-cli/bin/grunt test:rpm deploy:s3
+      - run: node_modules/grunt-cli/bin/grunt test:rpm
+      # Can't use dpl on centos; refactor with non-dpl based script
+      - persist_to_workspace:
+          root: .
+          paths:
+            - dist/*.rpm
 
   performance:
     docker:
@@ -179,11 +179,11 @@ jobs:
     steps:
       - attach_workspace:
           at: .
-      - run: ruby -v
+      - run: ls -al dist
       - run: bundle install --without development
       - run: ln -s dist/mountebank/src src
       - run: ln -s dist/mountebank/package.json package.json
-      - run: node_modules/grunt-cli/bin/grunt deploy:heroku deploy:npm
+      - run: node_modules/grunt-cli/bin/grunt deploy:s3 deploy:heroku deploy:npm
 
 workflows:
   version: 2
