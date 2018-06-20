@@ -17,13 +17,11 @@ matrix:
     - os: osx
       sudo: true
       env:
-        - MB_GRUNT_TASK='test:pkg deploy:s3'
+        - MB_GRUNT_TASK='dist version test:pkg deploy:s3'
     - os: osx
       sudo: false
       env:
-        - MB_GRUNT_TASK='test:tarball:x64 deploy:s3'
-    - os: osx
-      sudo: false
+        - MB_GRUNT_TASK='dist version test:tarball:x64 deploy:s3'
 
 install:
   - export NODE_VERSION=${NODE_VERSION:-8} # Default node version = LTS version
@@ -32,6 +30,7 @@ install:
   - source ~/.nvm/nvm.sh
   - nvm install $NODE_VERSION
   - node --version
+  - bundle install --without development
   # AWS_ACCESS_KEY will not be set on pull requests or improperly configured runs triggered through the API
   - if [ -n "$AWS_ACCESS_KEY" ]; then export MB_DEPLOY=true; else export MB_DEPLOY=false; fi
 
