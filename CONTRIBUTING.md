@@ -318,10 +318,8 @@ I use [nvm](https://github.com/creationix/nvm) to install different versions of 
 
 ### The Continuous Integration Pipeline
 
-Looking at the [README](https://github.com/bbyars/mountebank#build-status) will show that I have a complex CI pipeline.
-Currently it involves Travis CI and Appveyor, although I may add or remove from that list as I continue to
-try and improve the pipeline.  At the moment, a commit will trigger a Travis CI build, which in turn triggers the other
-CI systems through API calls, ensuring a consistent version throughout.  I've had bugs in different operating systems,
+The pipeline is orchestrated in CircleCI, although it uses TravisCI and Appveyor for OSX and Windows tests.
+I've had bugs in different operating systems,
 in different versions of node, and in the packages available for download.  The CI system tests as many of those combinations
 as I reasonably can.
 

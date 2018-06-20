@@ -94,19 +94,15 @@ you can contact me directly at brandon.byars@gmail.com.
 
 ## Build Status
 
+[![CircleCI](https://circleci.com/gh/bbyars/mountebank.svg?style=svg)](https://circleci.com/gh/bbyars/mountebank)
 [![Test Coverage][codeclimate-coverage-badge]][codeclimate-coverage]
 [![Codacy Badge][codacy-badge]][codacy]
 [![Code Climate][codeclimate-badge]][codeclimate]
 [![bitHound Overall Score][bithound-badge]][bithound]
 
-|                       |Node Version |Ubuntu 12.04                            |CentOS 6.7                            |OS X Mavericks                           |Windows Server 2012                          |
-|-----------------------|:-----------:|:--------------------------------------:|:------------------------------------:|:---------------------------------------:|:-------------------------------------------:|
-|npm                    | v8          |[![Build Status][travis-badge]][travis] | (not tested)                         | [![Build Status][travis-badge]][travis] | [![Build status][appveyor-badge]][appveyor] |
-|npm                    | v6 (LTS)    |[![Build Status][travis-badge]][travis] | (not tested)                         | [![Build Status][travis-badge]][travis] | [![Build status][appveyor-badge]][appveyor] |
-|npm                    | v4          |[![Build Status][travis-badge]][travis] | (not tested)                         | [![Build Status][travis-badge]][travis] | [![Build status][appveyor-badge]][appveyor] |
-|OS package             | v6          |[![Build Status][travis-badge]][travis] | (not tested                          | [![Build Status][travis-badge]][travis] | N/A                                         |
-|Self-contained archive | v6          |[![Build Status][travis-badge]][travis] | (not tested)                         | [![Build Status][travis-badge]][travis] | [![Build status][appveyor-badge]][appveyor] |
-|(Performance)          | v6          |[![Build Status][travis-badge]][travis] | (not tested)                         | (not tested)                            | (not tested)                                |
+For cross-OS compatibility, mountebank uses TravisCI, Appveyor, and CircleCI. Only CircleCI runs on commit
+(TravisCI and Appveyor are triggered in the CircleCI pipeline), and you can view the success of the TravisCI
+and Appveyor builds in CircleCI as the "osx" and "windows" jobs, respectively.
 
 ## Building
 
