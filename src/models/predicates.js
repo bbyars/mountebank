@@ -182,7 +182,7 @@ function selectJSONPath (config, encoding, predicateConfig, stringTransform, tex
 
 function transformAll (obj, keyTransforms, valueTransforms, arrayTransforms) {
     var combinators = require('../util/combinators'),
-        apply = function (fns) { return combinators.compose.apply(this, fns); };
+        apply = function (fns) { return combinators.compose.apply(null, fns); };
 
     if (Array.isArray(obj)) {
         return apply(arrayTransforms)(obj.map(function (element) {

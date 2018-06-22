@@ -31,10 +31,10 @@ $(document).ready(function () {
                 events.location = baseHref + href;
                 track = true;
             }
-            else if (href.match(/^https?\:/i) && !isThisDomain) {
+            else if (href.match(/^https?:/i) && !isThisDomain) {
                 events.category = 'external';
                 events.action = 'click';
-                events.label = href.replace(/^https?\:\/\//i, '');
+                events.label = href.replace(/^https?:\/\//i, '');
                 events.nonInteraction = true;
                 events.location = href;
                 track = true;

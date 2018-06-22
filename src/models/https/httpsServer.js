@@ -20,7 +20,7 @@ function initialize (logger, allowInjection, recordRequests, debug) {
             metadata = {
                 key: options.key || fs.readFileSync(path.join(__dirname, '/cert/mb-key.pem'), 'utf8'),
                 cert: options.cert || fs.readFileSync(path.join(__dirname, '/cert/mb-cert.pem'), 'utf8'),
-                mutualAuth: !!options.mutualAuth
+                mutualAuth: Boolean(options.mutualAuth)
             },
             createNodeServer = function () {
                 // client certs will not reject the request.  It does set the request.client.authorized variable

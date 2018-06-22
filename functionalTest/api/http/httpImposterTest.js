@@ -195,7 +195,7 @@ var assert = require('assert'),
                     var stubs = JSON.stringify(response.body.stubs),
                         withTimeRemoved = stubs.replace(/"timestamp":"[^"]+"/g, '"timestamp":"NOW"'),
                         withClientPortRemoved = withTimeRemoved.replace(
-                            /"requestFrom":"[a-f:\.\d]+"/g, '"requestFrom":"HERE"'),
+                            /"requestFrom":"[a-f:.\d]+"/g, '"requestFrom":"HERE"'),
                         actualWithoutEphemeralData = JSON.parse(withClientPortRemoved),
                         requestHeaders = { accept: 'application/json', Host: 'localhost:' + port, Connection: 'keep-alive' };
 

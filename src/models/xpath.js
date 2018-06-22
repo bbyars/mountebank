@@ -34,10 +34,10 @@ function nodeValue (node) {
     else if (node.firstChild) {
         // Converting to a string allows exists to return true if the node exists,
         // even if there's no data
-        return node.firstChild.data + '';
+        return String(node.firstChild.data);
     }
     else {
-        return node.data + '';
+        return String(node.data);
     }
 }
 

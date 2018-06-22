@@ -61,7 +61,7 @@ function create () {
     }
 
     function addMissingFieldError (fieldSpec, path, addErrorFn) {
-        /* eslint-disable no-underscore-dangle */
+        // eslint-disable-next-line no-underscore-dangle
         if (fieldSpec._required) {
             addErrorFn(path, 'required');
         }
@@ -89,11 +89,11 @@ function create () {
         var util = require('util'),
             helpers = require('../util/helpers'),
             fieldType = typeof field,
-            allowedTypes = Object.keys(fieldSpec._allowedTypes),
-            typeSpec = fieldSpec._allowedTypes[fieldType];
+            allowedTypes = Object.keys(fieldSpec._allowedTypes), // eslint-disable-line no-underscore-dangle
+            typeSpec = fieldSpec._allowedTypes[fieldType]; // eslint-disable-line no-underscore-dangle
 
         if (!helpers.defined(typeSpec)) {
-            addErrorFn(path, typeErrorMessageFor(allowedTypes, fieldSpec._additionalContext));
+            addErrorFn(path, typeErrorMessageFor(allowedTypes, fieldSpec._additionalContext)); // eslint-disable-line no-underscore-dangle
         }
         else {
             if (typeSpec.singleKeyOnly && !hasExactlyOneKey(field)) {

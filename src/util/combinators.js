@@ -26,7 +26,7 @@ function curry (fn) {
         var nextArgs = Array.prototype.slice.call(arguments),
             allArgs = args.concat(nextArgs);
 
-        return fn.apply(this, allArgs);
+        return fn.apply(null, allArgs);
     };
 }
 

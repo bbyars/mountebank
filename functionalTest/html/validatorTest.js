@@ -45,7 +45,7 @@ function removeKnownErrorsFrom (html) {
     result = result.replace("results='5' autosave='mb' ", '');
 
     docsTestFrameworkTags.forEach(function (tagName) {
-        var pattern = util.format('<\/?%s[^>]*>', tagName),
+        var pattern = util.format('</?%s[^>]*>', tagName),
             regex = new RegExp(pattern, 'g');
         result = result.replace(regex, '');
     });
