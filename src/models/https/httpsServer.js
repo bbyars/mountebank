@@ -7,12 +7,13 @@
 
 /**
  * Initializes the https protocol
+ * @param {object} logger - the base logger
  * @param {boolean} allowInjection - The --allowInjection command line parameter
  * @param {boolean} recordRequests - The --mock command line parameter
  * @param {boolean} debug - The --debug command line parameter
  * @returns {Object} - The protocol implementation
  */
-function initialize (allowInjection, recordRequests, debug) {
+function initialize (logger, allowInjection, recordRequests, debug) {
     var createBaseServer = function (options) {
         var path = require('path'),
             fs = require('fs'),
@@ -38,7 +39,7 @@ function initialize (allowInjection, recordRequests, debug) {
             createNodeServer: createNodeServer
         };
     };
-    return require('../http/baseHttpServer').setup('https', createBaseServer).initialize(allowInjection, recordRequests, debug);
+    return require('../http/baseHttpServer').setup('https', createBaseServer).initialize(logger, allowInjection, recordRequests, debug);
 }
 
 module.exports = {

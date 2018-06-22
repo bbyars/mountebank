@@ -52,11 +52,12 @@ function createServer () {
 
 /**
  * Initializes the smtp protocol
+ * @param {object} logger - the base logger
  * @param {boolean} recordRequests - The --mock command line parameter
  * @param {boolean} debug - The --debug command line parameter
  * @returns {Object}
  */
-function initialize (recordRequests, debug) {
+function initialize (logger, recordRequests, debug) {
     var implementation = {
             protocolName: 'smtp',
             createServer: createServer,
@@ -74,8 +75,7 @@ function initialize (recordRequests, debug) {
                     }
                 };
             }
-        },
-        logger = require('winston');
+        };
 
     return {
         name: implementation.protocolName,

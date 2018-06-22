@@ -117,18 +117,18 @@ function createServer (logger, options) {
 
 /**
  * Initializes the tcp protocol
+ * @param {object} logger - the base logger
  * @param {boolean} allowInjection - The --allowInjection command line parameter
  * @param {boolean} recordRequests - The --mock command line parameter
  * @param {boolean} debug - The --debug command line parameter
  * @returns {Object} - The protocol implementation
  */
-function initialize (allowInjection, recordRequests, debug) {
+function initialize (logger, allowInjection, recordRequests, debug) {
     var implementation = {
             protocolName: 'tcp',
             createServer: createServer,
             Request: require('./tcpRequest')
         },
-        logger = require('winston'),
         TcpValidator = require('./tcpValidator'),
         combinators = require('../../util/combinators'),
         AbstractServer = require('../abstractServer');

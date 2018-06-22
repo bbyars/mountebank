@@ -35,15 +35,15 @@ function scopeFor (port, name) {
 
 /**
  * Spins up a server listening on a socket
+ * @param {object} baseLogger - the base logger
  * @param {Object} options - the JSON request body for the imposter create request
  * @param {boolean} recordRequests - The --mock command line parameter
  * @param {boolean} debug - The --debug command line parameter
  * @returns {Object} The protocol server implementation
  */
-function createServer (options, recordRequests, debug) {
+function createServer (baseLogger, options, recordRequests, debug) {
     // This is an async operation, so we use a deferred
     var Q = require('q'),
-        baseLogger = require('winston'),
         net = require('net'),
         deferred = Q.defer(),
         // track the number of requests even if recordRequests = false
@@ -128,19 +128,20 @@ function createServer (options, recordRequests, debug) {
 
 /**
  * Creates the core protocol interface - all protocols must implement
+ * @param {object} logger - the base logger
  * @param {boolean} allowInjection - represents the command line --allowInjection parameter
  * @param {boolean} recordRequests - represents the command line --mock parameter
  * @param {boolean} debug - represents the command line --debug parameter
  * @returns {Object} The server factory
  */
-function initialize (allowInjection, recordRequests, debug) {
+function initialize (logger, allowInjection, recordRequests, debug) {
     return {
         // The name of the protocol, used in JSON representation of imposters
         name: 'foo',
 
         // The creation method, called in imposter.js.  The request JSON object gets passed in
         create: function (request) {
-            return createServer(request, recordRequests, debug);
+            return createServer(logger, request, recordRequests, debug);
         },
 
         // The validator used when creating imposters

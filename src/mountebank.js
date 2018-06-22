@@ -39,6 +39,14 @@ function create (options) {
         FeedController = require('./controllers/feedController'),
         Imposter = require('./models/imposter'),
         winston = require('winston'),
+        format = winston.format,
+        consoleFormat = format.printf(info => `${info.level}: ${info.message}`),
+        winstonLogger = winston.createLogger({
+            level: options.loglevel,
+            transports: [new winston.transports.Console({
+                format: format.combine(format.colorize(), format.splat(), consoleFormat)
+            })]
+        }),
         thisPackage = require('../package.json'),
         releases = require('../releases.json'),
         ScopedLogger = require('./util/scopedLogger'),
@@ -48,13 +56,13 @@ function create (options) {
         app = express(),
         imposters = options.imposters || {},
         protocols = {
-            tcp: require('./models/tcp/tcpServer').initialize(options.allowInjection, options.mock, options.debug),
-            http: require('./models/http/httpServer').initialize(options.allowInjection, options.mock, options.debug),
-            https: require('./models/https/httpsServer').initialize(options.allowInjection, options.mock, options.debug),
-            smtp: require('./models/smtp/smtpServer').initialize(options.mock, options.debug),
-            foo: require('./models/foo/fooServer').initialize(options.allowInjection, options.mock, options.debug)
+            tcp: require('./models/tcp/tcpServer').initialize(winstonLogger, options.allowInjection, options.mock, options.debug),
+            http: require('./models/http/httpServer').initialize(winstonLogger, options.allowInjection, options.mock, options.debug),
+            https: require('./models/https/httpsServer').initialize(winstonLogger, options.allowInjection, options.mock, options.debug),
+            smtp: require('./models/smtp/smtpServer').initialize(winstonLogger, options.mock, options.debug),
+            foo: require('./models/foo/fooServer').initialize(winstonLogger, options.allowInjection, options.mock, options.debug)
         },
-        logger = ScopedLogger.create(winston, util.format('[mb:%s] ', options.port)),
+        logger = ScopedLogger.create(winstonLogger, util.format('[mb:%s] ', options.port)),
         homeController = HomeController.create(releases),
         impostersController = ImpostersController.create(protocols, imposters, Imposter, logger),
         imposterController = ImposterController.create(imposters),
@@ -65,19 +73,14 @@ function create (options) {
         localIPs = ['::ffff:127.0.0.1', '::1', '127.0.0.1'],
         allowedIPs = localIPs.concat(options.ipWhitelist);
 
-    logger.remove(logger.transports.Console);
-    if (process.stdout.isTTY) {
-        logger.add(logger.transports.Console, { colorize: true, level: options.loglevel });
-    }
     if (!options.nologfile) {
         initializeLogfile(options.logfile);
-        logger.add(logger.transports.File, {
+        winstonLogger.add(new winston.transports.File({
             filename: options.logfile,
-            timestamp: true,
-            level: options.loglevel,
             maxsize: 10000000,
-            maxFiles: 1
-        });
+            maxFiles: 1,
+            format: format.combine(format.timestamp(), format.splat(), format.json())
+        }));
     }
 
     app.use(middleware.useAbsoluteUrls(options.port));

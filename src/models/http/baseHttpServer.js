@@ -130,12 +130,13 @@ function setup (protocolName, createBaseServer) {
      * Initializes the http/s server.  I'm certainly not in love with the layers of creation
      * (setup -> initialize -> create)
      * @memberOf module:models/http/baseHttpServer#
+     * @param {object} baseLogger - the base logger
      * @param {boolean} allowInjection - The --allowInjection command line parameter
      * @param {boolean} recordRequests - The --mock command line parameter
      * @param {boolean} debug - The --debug command line parameter
      * @returns {Object}
      */
-    function initialize (allowInjection, recordRequests, debug) {
+    function initialize (baseLogger, allowInjection, recordRequests, debug) {
         var implementation = {
             protocolName: protocolName,
             createServer: createServer,
@@ -144,7 +145,7 @@ function setup (protocolName, createBaseServer) {
 
         return {
             name: protocolName,
-            create: require('../abstractServer').implement(implementation, recordRequests, debug, require('winston')).create,
+            create: require('../abstractServer').implement(implementation, recordRequests, debug, baseLogger).create,
             Validator: {
                 create: function () {
                     return require('../dryRunValidator').create({

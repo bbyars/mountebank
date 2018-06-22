@@ -93,7 +93,7 @@
     "q": "2.0.3",
     "query-string": "6.1.0",
     "simplesmtp": "0.3.35",
-    "winston": "^2.4.3",
+    "winston": "3.0.0",
     "xmldom": "0.1.27",
     "xpath": "0.0.27",
     "yargs": "11.1.0"
