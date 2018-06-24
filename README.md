@@ -94,11 +94,11 @@ you can contact me directly at brandon.byars@gmail.com.
 
 ## Build Status
 
-[![CircleCI](https://circleci.com/gh/bbyars/mountebank.svg?style=svg)](https://circleci.com/gh/bbyars/mountebank) [![Greenkeeper badge](https://badges.greenkeeper.io/bbyars/mountebank.svg)](https://greenkeeper.io/)
+[![CircleCI](https://circleci.com/gh/bbyars/mountebank.svg?style=svg)](https://circleci.com/gh/bbyars/mountebank)
+[![Greenkeeper badge](https://badges.greenkeeper.io/bbyars/mountebank.svg)](https://greenkeeper.io/)
 [![Test Coverage][codeclimate-coverage-badge]][codeclimate-coverage]
-[![Codacy Badge][codacy-badge]][codacy]
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/c030a6aebe274e21b4ce11a74e01fa12)](https://www.codacy.com/app/brandonbyars/mountebank?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=bbyars/mountebank&amp;utm_campaign=Badge_Grade)
 [![Code Climate][codeclimate-badge]][codeclimate]
-[![bitHound Overall Score][bithound-badge]][bithound]
 
 For cross-OS compatibility, mountebank uses TravisCI, Appveyor, and CircleCI. Only CircleCI runs on commit
 (TravisCI and Appveyor are triggered in the CircleCI pipeline), and you can view the success of the TravisCI
@@ -126,14 +126,10 @@ Feel free to reach me at brandon.byars@gmail.com.
 
 [npm-badge]: https://nodei.co/npm/mountebank.png?downloads=true&downloadRank=true&stars=true
 [npm]: https://www.npmjs.com/package/mountebank
-[bithound-badge]: https://www.bithound.io/github/bbyars/mountebank/badges/score.svg
-[bithound]: https://www.bithound.io/github/bbyars/mountebank
 [codeclimate-badge]: https://codeclimate.com/github/bbyars/mountebank/badges/gpa.svg
 [codeclimate]: https://codeclimate.com/github/bbyars/mountebank
 [codeclimate-coverage-badge]: https://codeclimate.com/github/bbyars/mountebank/badges/coverage.svg
 [codeclimate-coverage]: https://codeclimate.com/github/bbyars/mountebank/coverage
-[codacy-badge]: https://www.codacy.com/project/badge/c030a6aebe274e21b4ce11a74e01fa12
-[codacy]: https://www.codacy.com/public/brandonbyars/mountebank
 [travis-badge]: https://travis-ci.org/bbyars/mountebank.png
 [travis]: https://travis-ci.org/bbyars/mountebank
 [appveyor-badge]: https://ci.appveyor.com/api/projects/status/acfhg44px95s4pk5?svg=true
