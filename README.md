@@ -94,7 +94,7 @@ you can contact me directly at brandon.byars@gmail.com.
 
 ## Build Status
 
-[![CircleCI](https://circleci.com/gh/bbyars/mountebank.svg?style=svg)](https://circleci.com/gh/bbyars/mountebank)
+[![CircleCI](https://circleci.com/gh/bbyars/mountebank.svg?style=svg)](https://circleci.com/gh/bbyars/mountebank) [![Greenkeeper badge](https://badges.greenkeeper.io/bbyars/mountebank.svg)](https://greenkeeper.io/)
 [![Test Coverage][codeclimate-coverage-badge]][codeclimate-coverage]
 [![Codacy Badge][codacy-badge]][codacy]
 [![Code Climate][codeclimate-badge]][codeclimate]
