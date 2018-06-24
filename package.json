@@ -96,7 +96,7 @@
     "winston": "3.0.0",
     "xmldom": "0.1.27",
     "xpath": "0.0.27",
-    "yargs": "10.0.3"
+    "yargs": "11.0.0"
   },
   "devDependencies": {
     "codeclimate-test-reporter": "^0.5.0",
@@ -106,7 +106,7 @@
     "grunt-cli": "^1.2.0",
     "grunt-contrib-csslint": "~2.0.0",
     "grunt-css": "^0.5.4",
-    "grunt-eslint": "^20.2.0",
+    "grunt-eslint": "^21.0.0",
     "grunt-jsdoc": "^2.2.1",
     "grunt-mocha-test": "~0.13.3",
     "grunt-mountebank": "1.0.5",
