@@ -100,9 +100,10 @@ you can contact me directly at brandon.byars@gmail.com.
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/c030a6aebe274e21b4ce11a74e01fa12)](https://www.codacy.com/app/brandonbyars/mountebank?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=bbyars/mountebank&amp;utm_campaign=Badge_Grade)
 [![Code Climate][codeclimate-badge]][codeclimate]
 
-For cross-OS compatibility, mountebank uses TravisCI, Appveyor, and CircleCI. Only CircleCI runs on commit
-(TravisCI and Appveyor are triggered in the CircleCI pipeline), and you can view the success of the TravisCI
-and Appveyor builds in CircleCI as the "osx" and "windows" jobs, respectively.
+For cross-OS compatibility, mountebank uses [TravisCI](https://travis-ci.org/bbyars/mountebank),
+[Appveyor](https://ci.appveyor.com/project/bbyars/mountebank), and [CircleCI](https://circleci.com/gh/bbyars/mountebank).
+Only CircleCI runs on commit (TravisCI and Appveyor are triggered in the CircleCI pipeline), and you can view the success of the TravisCI
+and Appveyor builds in [CircleCI](https://circleci.com/gh/bbyars/mountebank) as the "osx" and "windows" jobs, respectively.
 
 ## Building
 
