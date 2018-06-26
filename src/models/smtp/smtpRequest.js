@@ -17,11 +17,11 @@ function addressValues (addresses) {
     return addresses.map(address => address.value[0]);
 }
 
-function transform (request, email) {
+function transform (session, email) {
     return {
-        requestFrom: request.remoteAddress,
-        envelopeFrom: request.from,
-        envelopeTo: request.to,
+        requestFrom: session.remoteAddress,
+        envelopeFrom: session.envelope.mailFrom.address,
+        envelopeTo: session.envelope.rcptTo.map(value => value.address),
         from: email.from.value[0],
         to: addressValues(email.to),
         cc: addressValues(email.cc),
@@ -30,8 +30,8 @@ function transform (request, email) {
         priority: email.priority || 'normal',
         references: email.references || [],
         inReplyTo: email.inReplyTo || [],
-        text: email.text,
-        html: email.html || '',
+        text: email.text.trim(),
+        html: (email.html || '').trim(),
         attachments: email.attachments || []
     };
 }
@@ -46,12 +46,12 @@ function createFrom (request) {
         deferred = Q.defer();
 
     const simpleParser = require('mailparser2').simpleParser2;
-    simpleParser(request, (err, mail) => {
+    simpleParser(request.source, (err, mail) => {
         if (err) {
             deferred.reject(err);
         }
         else {
-            deferred.resolve(transform(request, mail));
+            deferred.resolve(transform(request.session, mail));
         }
     });
 

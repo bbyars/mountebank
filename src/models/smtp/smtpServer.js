@@ -6,6 +6,21 @@
  */
 
 function createServer () {
+    function createSMTPServer (server) {
+        const SMTPServer = require('smtp-server').SMTPServer;
+        return new SMTPServer({
+            disableReverseLookup: true,
+            authOptional: true,
+            onConnect (session, callback) {
+                server.emit('connection', session);
+                return callback();
+            },
+            onData (stream, session, callback) {
+                server.emit('request', session, { session: session, source: stream, callback: callback });
+            }
+        });
+    }
+
     var combinators = require('../../util/combinators'),
         inherit = require('../../util/inherit'),
         result = inherit.from(require('events').EventEmitter, {
@@ -16,33 +31,25 @@ function createServer () {
             },
             formatRequest: combinators.identity,
             formatResponse: combinators.noop,
-            respond: function (smtpRequest, originalRequest) { originalRequest.accept(); },
+            respond: function (smtpRequest, originalRequest) { originalRequest.callback(); },
             metadata: combinators.constant({}),
             addStub: combinators.noop,
             state: {},
             stubs: function () { return []; }
         }),
-        requestHandler = function (request) {
-            result.emit('request', { remoteAddress: request.remoteAddress }, request);
-        },
-        server = require('simplesmtp').createSimpleServer({ disableDNSValidation: true }, requestHandler);
-
-    server.server.SMTPServer.on('connect', function (raiSocket) {
-        result.emit('connection', raiSocket.socket);
-    });
+        server = createSMTPServer(result);
 
     result.close = function (callback) {
-        server.server.end(combinators.noop);
+        server.close(combinators.noop);
         callback();
     };
 
     result.listen = function (port) {
-        /* eslint-disable no-underscore-dangle */
         var Q = require('q'),
             deferred = Q.defer();
 
         server.listen(port, function () {
-            deferred.resolve(server.server.SMTPServer._server.address().port);
+            deferred.resolve(server.server.address().port);
         });
         return deferred.promise;
     };

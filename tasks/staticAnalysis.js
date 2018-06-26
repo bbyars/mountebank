@@ -68,13 +68,13 @@ module.exports = function (grunt) {
                 var contents = fs.readFileSync(file, 'utf8');
 
                 dependencies.forEach(function (dependency) {
-                    if (contents.indexOf("require('" + dependency + "')") >= 0 ||
+                    if (contents.indexOf("require('" + dependency) >= 0 ||
                         contents.indexOf("loadNpmTasks('" + dependency + "')") >= 0) {
                         usedCount[dependency] += 1;
                     }
                 });
             },
-            exclusions = ['node_modules', '.git', '.DS_Store', '.idea', 'images', 'dist', 'mountebank.iml', 'mb.log', '*.pid'],
+            exclusions = ['node_modules', 'docs', '.git', '.DS_Store', '.idea', 'images', 'dist', 'mountebank.iml', 'mb.log', '*.pid', 'package-lock.json'],
             errors = [],
             whitelist = [
                 'grunt',

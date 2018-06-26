@@ -53,19 +53,24 @@ function implement (implementation, recordRequests, debug, baseLogger) {
             var helpers = require('../util/helpers'),
                 name = helpers.socketName(socket);
 
-            connections[name] = socket;
             logger.debug('%s ESTABLISHED', name);
 
-            socket.on('error', function (error) {
-                logger.error('%s transmission error X=> %s', name, JSON.stringify(error));
-            });
+            if (socket.on) {
+                connections[name] = socket;
 
-            socket.on('end', function () { logger.debug('%s LAST-ACK', name); });
+                socket.on('error', function (error) {
+                    logger.error('%s transmission error X=> %s', name, JSON.stringify(error));
+                });
 
-            socket.on('close', function () {
-                logger.debug('%s CLOSED', name);
-                delete connections[name];
-            });
+                socket.on('end', function () {
+                    logger.debug('%s LAST-ACK', name);
+                });
+
+                socket.on('close', function () {
+                    logger.debug('%s CLOSED', name);
+                    delete connections[name];
+                });
+            }
         });
 
         server.on('request', function (socket, request, testCallback) {
