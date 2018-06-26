@@ -1,21 +1,30 @@
 'use strict';
 
 var assert = require('assert'),
-    events = require('events'),
     SmtpRequest = require('../../../src/models/smtp/smtpRequest'),
-    promiseIt = require('../../testHelpers').promiseIt,
-    inherit = require('../../../src/util/inherit');
+    promiseIt = require('../../testHelpers').promiseIt;
 
 describe('smtpRequest', function () {
     describe('#createFrom', function () {
         promiseIt('should parse SMTP data', function () {
-            var request = inherit.from(events.EventEmitter, {
-                remoteAddress: 'RemoteAddress',
-                from: 'EnvelopeFrom',
-                to: 'EnvelopeTo'
-            });
+            let stream = new require('stream').Readable();
+            stream.remoteAddress = 'RemoteAddress';
+            stream.from = 'EnvelopeFrom';
+            stream.to = 'EnvelopeTo';
+            stream._read = function noop () {}; // eslint-disable-line no-underscore-dangle
+            stream.push('From: From <from@mb.org>\r\n');
+            stream.push('To: To1 <to1@mb.org>\r\n');
+            stream.push('To: To2 <to2@mb.org>\r\n');
+            stream.push('CC: CC1 <cc1@mb.org>\r\n');
+            stream.push('CC: CC2 <cc2@mb.org>\r\n');
+            stream.push('BCC: BCC1 <bcc1@mb.org>\r\n');
+            stream.push('BCC: BCC2 <bcc2@mb.org>\r\n');
+            stream.push('Subject: Subject\r\n');
+            stream.push('\r\nBody');
+            stream.push(null);
 
-            var promise = SmtpRequest.createFrom(request).then(function (smtpRequest) {
+            return SmtpRequest.createFrom(stream).then(function (smtpRequest) {
+                console.log(JSON.stringify(smtpRequest, null, 4));
                 assert.deepEqual(smtpRequest, {
                     requestFrom: 'RemoteAddress',
                     envelopeFrom: 'EnvelopeFrom',
@@ -33,19 +42,6 @@ describe('smtpRequest', function () {
                     attachments: []
                 });
             });
-
-            request.emit('data', 'From: From <from@mb.org>\r\n');
-            request.emit('data', 'To: To1 <to1@mb.org>\r\n');
-            request.emit('data', 'To: To2 <to2@mb.org>\r\n');
-            request.emit('data', 'CC: CC1 <cc1@mb.org>\r\n');
-            request.emit('data', 'CC: CC2 <cc2@mb.org>\r\n');
-            request.emit('data', 'BCC: BCC1 <bcc1@mb.org>\r\n');
-            request.emit('data', 'BCC: BCC2 <bcc2@mb.org>\r\n');
-            request.emit('data', 'Subject: Subject\r\n');
-            request.emit('data', '\r\nBody');
-            request.emit('end');
-
-            return promise;
         });
     });
 });

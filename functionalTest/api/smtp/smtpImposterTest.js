@@ -42,6 +42,8 @@ describe('smtp imposter', function () {
                     envelopeTo: ['envelopeTo2@mb.org'],
                     from: '"From 2" <from2@mb.org>',
                     to: ['"To 2" <to2@mb.org>'],
+                    cc: ['"CC 2" <cc2@mb.org>'],
+                    bcc: ['"BCC 2" <bcc2@mb.org>'],
                     subject: 'subject 2',
                     text: 'text 2'
                 }, port);
@@ -82,8 +84,8 @@ describe('smtp imposter', function () {
                         envelopeTo: ['envelopeTo2@mb.org'],
                         from: { address: 'from2@mb.org', name: 'From 2' },
                         to: [{ address: 'to2@mb.org', name: 'To 2' }],
-                        cc: [],
-                        bcc: [],
+                        cc: [{ address: 'cc2@mb.org', name: 'CC 2' }],
+                        bcc: [{ address: 'bcc2@mb.org', name: 'BCC 2' }],
                         subject: 'subject 2',
                         priority: 'normal',
                         references: [],

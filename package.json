@@ -89,7 +89,7 @@
     "https-proxy-agent": "^2.2.1",
     "json-stable-stringify": "1.0.1",
     "jsonpath-plus": "^0.16.0",
-    "mailparser": "0.6.1",
+    "mailparser2": "^1.0.0",
     "q": "2.0.3",
     "query-string": "6.1.0",
     "simplesmtp": "0.3.35",
@@ -121,10 +121,5 @@
   },
   "engines": {
     "node": ">=6"
-  },
-  "greenkeeper": {
-    "ignore": [
-      "mailparser"
-    ]
   }
 }
