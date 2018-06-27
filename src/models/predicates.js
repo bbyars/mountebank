@@ -109,9 +109,12 @@ function selectTransform (config, options) {
     if (config.jsonpath) {
         var stringTransform = options.shouldForceStrings ? forceStrings : combinators.identity;
 
-        if (!cloned.caseSensitive) {
+        // use keyCaseSensitive instead of caseSensitive to help "matches" predicates too
+        // see https://github.com/bbyars/mountebank/issues/361
+        if (!cloned.keyCaseSensitive) {
             cloned.jsonpath.selector = cloned.jsonpath.selector.toLowerCase();
         }
+
         return combinators.curry(selectJSONPath, cloned.jsonpath, options.encoding, config, stringTransform);
     }
     else if (config.xpath) {
@@ -204,6 +207,11 @@ function transformAll (obj, keyTransforms, valueTransforms, arrayTransforms) {
 }
 
 function normalize (obj, config, options) {
+    // Needed to solve a tricky case conversion for "matches" predicates with jsonpath/xpath parameters
+    if (typeof config.keyCaseSensitive === 'undefined') {
+        config.keyCaseSensitive = config.caseSensitive;
+    }
+
     var keyCaseTransform = config.keyCaseSensitive === false ? lowercase : caseTransform(config),
         sortTransform = function (array) { return array.sort(sortObjects); },
         transforms = [];

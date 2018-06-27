@@ -420,5 +420,14 @@ describe('predicates', function () {
                 request = { field: '<values><value>first</value><value>second</value><value>third</value></values>' };
             assert.ok(predicates.evaluate(predicate, request));
         });
+
+        it('#matches without case sensitivity should maintain selector to match XML (test for issue #361, already worked)', function () {
+            var predicate = {
+                    matches: { body: '111\\.222\\.333\\.*' },
+                    xpath: { selector: '/ipAddress' }
+                },
+                request = { body: '<ipAddress>111.222.333.456</ipAddress>' };
+            assert.ok(predicates.evaluate(predicate, request));
+        });
     });
 });

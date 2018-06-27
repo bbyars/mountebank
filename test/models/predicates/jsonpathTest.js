@@ -245,5 +245,14 @@ describe('predicates', function () {
                 request = { field: '{ "active": false }' };
             assert.ok(predicates.evaluate(predicate, request));
         });
+
+        it('#matches without case sensitivity should maintain selector to match JSON (issue #361)', function () {
+            var predicate = {
+                    matches: { body: '111\\.222\\.333\\.*' },
+                    jsonpath: { selector: '$.ipAddress' }
+                },
+                request = { body: '{ "ipAddress": "111.222.333.456" }' };
+            assert.ok(predicates.evaluate(predicate, request));
+        });
     });
 });
