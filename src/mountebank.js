@@ -126,7 +126,7 @@ function create (options) {
         '/thoughtworks',
         '/docs/gettingStarted',
         '/docs/install',
-        '/docs/glossary',
+        '/docs/mentalModel',
         '/docs/commandLine',
         '/docs/clientLibraries',
         '/docs/security',

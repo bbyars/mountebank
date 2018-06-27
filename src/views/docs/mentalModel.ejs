@@ -1,14 +1,19 @@
 <%
-title = 'glossary'
-description = 'Key terms used in mountebank'
+title = 'mental model'
+description = 'A mental model of how mountebank works'
 %>
 
 <% include ../_header %>
 
-<h1>Lexicon</h1>
+<h1>Mental model</h1>
 
-<p>mountebank exposes a considerable amount of power with only a few concepts, but knowing
-what those concepts represent can greatly help in learning how to use the tool.</p>
+<p><a href='https://www.manning.com/'>Manning Publishing</a> has been kind enough to help diagram
+    the following mental model, describing how mountebank works:</p>
+
+<a href='https://www.manning.com/books/testing-microservices-with-mountebank'>
+    <img src='https://freecontent.manning.com/wp-content/uploads/mentalmodel-testing-microservices-with-mountebank.png'
+  style='width: 50em' />
+</a>
 
 <dl>
   <dt>imposter</dt>
@@ -35,7 +40,7 @@ what those concepts represent can greatly help in learning how to use the tool.<
   one <em>response type</em>.</dd>
 
   <dt>stub behavior</dt>
-  <dd>Adds additional cross-cutting behavior to a response, for example by adding latency to the
+  <dd>Adds additional post-processing to a response, for example by adding latency to the
   response or augmenting the response with more information.  A <em>response</em> can have zero
   or more <em>behaviors</em>, but only one of each type of <em>behavior</em>.</dd>
 
