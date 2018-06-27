@@ -7,7 +7,11 @@ function wrap (wrappedLogger, logger) {
         wrappedLogger[level] = function () {
             var args = Array.prototype.slice.call(arguments);
             args[0] = wrappedLogger.scopePrefix + args[0];
-            logger[level].apply(logger, args);
+
+            // Format here rather than use winston's splat formatter
+            // to get rid of inconsistent "meta" log elements
+            var message = require('util').format.apply(null, args);
+            logger[level](message);
         };
     });
 }

@@ -44,7 +44,7 @@ function create (options) {
         winstonLogger = winston.createLogger({
             level: options.loglevel,
             transports: [new winston.transports.Console({
-                format: format.combine(format.colorize(), format.splat(), consoleFormat)
+                format: format.combine(format.colorize(), consoleFormat)
             })]
         }),
         thisPackage = require('../package.json'),
@@ -79,7 +79,7 @@ function create (options) {
             filename: options.logfile,
             maxsize: 10000000,
             maxFiles: 1,
-            format: format.combine(format.timestamp(), format.splat(), format.json())
+            format: format.combine(format.timestamp(), format.json())
         }));
     }
 

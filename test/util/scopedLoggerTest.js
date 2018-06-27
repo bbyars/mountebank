@@ -13,7 +13,7 @@ describe('scopedLogger', function () {
 
                 scopedLogger[level]('log %s', level);
 
-                assert.ok(logger[level].wasCalledWith('[prefix] log %s', level), logger[level].message());
+                assert.ok(logger[level].wasCalledWith(`[prefix] log ${level}`), logger[level].message());
             });
         });
 
