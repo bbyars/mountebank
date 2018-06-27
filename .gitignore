@@ -6,14 +6,8 @@ mb*.log
 /dist/
 !scripts/dist/
 mountebank.iml
-REFERENCES
 TODO
 request.txt
 /docs
-CREDENTIALS.md
 /coverage
-~$build-pipeline.xlsx
-Mountebank_Performance Test Results.docx
-npm-shrinkwrap.json
 troubleshooting/
-run.sh
