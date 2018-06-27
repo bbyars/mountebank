@@ -6,7 +6,7 @@ make a difference without writing a single line of code. I am grateful for all o
 
 * Submitting an issue, either through github or the [support page](http://www.mbtest.org/support)
 * Commenting on existing issues
-* Answer questions in the [support forum](https://groups.google.com/forum/#!forum/mountebank-discuss)
+* Answering questions in the [support forum](https://groups.google.com/forum/#!forum/mountebank-discuss)
 * Letting me know that you're using mountebank and how you're using it. It's surprisingly hard to find
 that out with open source projects, and provides healthy motivation. Feel free to email at
 brandon.byars@gmail.com
@@ -16,7 +16,8 @@ brandon.byars@gmail.com
 * Telling your friends about mountebank
 * Starring and forking the repo. Open source is a popularity contest, and the number of stars and forks matter.
 * Convincing your company to let me announce that they're using mountebank, including letting me put their logo
-on a web page (I will never announce a company's usage of mountebank without their express permission).
+on a web page (I will never announce a company's usage of mountebank without their express permission or a
+pre-existing public writeup).
 * Writing a client library that hides the REST API under a language-specific API
 * Writing a build plugin for (maven, gradle, MSBuild, rake, gulp, etc)
 
@@ -68,7 +69,6 @@ Many development decisions implicitly frame a tradeoff between the developers of
 recognize such a tradeoff, I always favor the users.  Here are a few examples, maybe you can think of more, or inform
 me of ways to overcome these tradeoffs in a mutually agreeable manner:
 
-* I've delayed upgrading to ES2015 to keep track with the node LTS schedule, to ensure old versions are still supported
 * The build and CI infrastructure is quite complex and slow, but I'd prefer that over releasing flaky software
 * I aim for fairly comprehensive error handling with useful error messages to help users out
 * Windows support can be painful at times, but it is a core platform for mountebank
@@ -123,8 +123,8 @@ Instead prefer modules that return object literals.  If you need a creation func
 too proud about.  Although I'm of mixed opinion on this, I've tended to capitalize objects with a `create`
 method to emulate the style for standard JavaScript constructors.
 
-I have not used ES6 because it's not fully available on node 4, which is the lowest version of node
-supported by mountebank.
+The code was written using ES4 and left that way for a long time to support node v4 and earlier.
+Now that node v4 is no longer supported, prefer using ES2015 features.
 
 ### Requiring Packages
 
@@ -144,7 +144,6 @@ You are welcome to fix any tech debt that you see in SaaS dashboards:
 
 * [Code Climate](https://codeclimate.com/github/bbyars/mountebank)
 * [Codacy](https://www.codacy.com/app/brandonbyars/mountebank/dashboard)
-* [Bithound](https://www.bithound.io/github/bbyars/mountebank/master)
 * [Test Coverage](https://codeclimate.com/github/bbyars/mountebank/coverage)
 * [SonarQube](https://sonarqube.com/dashboard?id=mountebank)
 
@@ -328,7 +327,7 @@ have a link to the artifacts for that prerelease version.
 
 ## Releasing mountebank
 
-Very few of you will have to worry about this, but in case you're curious, here's the process. Travis.ci does most
+Very few of you will have to worry about this, but in case you're curious, here's the process. CircleCI does most
 of the heavy lifting.
 
 * Make sure the previous builds pass across all operating systems, install types, and node versions
@@ -347,4 +346,4 @@ of the heavy lifting.
 
 The source documentation is always available at [Firebase](https://mountebank.firebaseapp.com/).
 
-I'm also available via Skype or something similar for questions.  Feel free to reach me at brandon.byars@gmail.com
+I'm also available for questions.  Feel free to reach me at brandon.byars@gmail.com
