@@ -91,7 +91,7 @@
     "jsonpath-plus": "^0.16.0",
     "mailparser2": "^1.0.0",
     "nodemailer": "^4.6.7",
-    "q": "2.0.3",
+    "q": "1.5.1",
     "query-string": "6.1.0",
     "smtp-server": "^3.4.6",
     "winston": "3.0.0",
@@ -122,5 +122,10 @@
   },
   "engines": {
     "node": ">=6"
+  },
+  "greenkeeper": {
+    "ignore": [
+      "q"
+    ]
   }
 }

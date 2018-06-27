@@ -11,14 +11,13 @@ var assert = require('assert'),
     baselineMemory = 3000,
     minIncreasedMemory = 200;
 
-function getMemoryUsedForFiftyThousandRequests (mbPort) {
+function getMemoryUsedForManyRequests (mbPort) {
     var stub = { responses: [{ is: { statusCode: 400 } }] },
         request = { protocol: 'http', port: port, stubs: [stub] },
         requestFn = function () { return client.get('/', port); },
         allRequests = [],
         originalProcess;
 
-    // I run out of memory in the test process with 1,000,000
     for (var i = 0; i < numRequests; i += 1) {
         allRequests[i] = requestFn;
     }
@@ -29,7 +28,7 @@ function getMemoryUsedForFiftyThousandRequests (mbPort) {
     }).then(function (response) {
         originalProcess = response.body.process;
 
-        // Using Q.all above a certain requests threshold gives me an ETIMEDOUT
+        // Using Q.all above a certain requests threshold gives me an ETIMEDOUT or other errors
         return allRequests.reduce(Q.when, Q(true));
     }).then(function () {
         return client.get('/config', mbPort);
@@ -46,7 +45,7 @@ describe('mb', function () {
     describe('when remembering requests', function () {
         promiseIt('should increase memory usage with number of requests', function () {
             return mb.start(['--mock']).then(function () {
-                return getMemoryUsedForFiftyThousandRequests(mb.port);
+                return getMemoryUsedForManyRequests(mb.port);
             }).then(function (memoryUsed) {
                 console.log('memory usage for ' + numRequests + ' requests with --mock: ' + memoryUsed);
                 assert.ok(memoryUsed > baselineMemory + minIncreasedMemory, 'Memory used: ' + memoryUsed);
@@ -59,7 +58,7 @@ describe('mb', function () {
     describe('when not remembering requests', function () {
         promiseIt('should not leak memory', function () {
             return mb.start().then(function () {
-                return getMemoryUsedForFiftyThousandRequests(mb.port);
+                return getMemoryUsedForManyRequests(mb.port);
             }).then(function (memoryUsed) {
                 console.log('default memory usage with for ' + numRequests + ' requests: ' + memoryUsed);
                 assert.ok(memoryUsed < baselineMemory, 'Memory used: ' + memoryUsed);
