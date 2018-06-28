@@ -4,7 +4,6 @@ var Q = require('q'),
     fs = require('fs'),
     path = require('path'),
     spawn = require('child_process').spawn,
-    exec = require('child_process').exec,
     httpClient = require('./api/http/baseHttpClient').create('http'),
     headers = { connection: 'close' },
     isWindows = require('os').platform().indexOf('win') === 0,
@@ -83,7 +82,7 @@ function create (port) {
         else {
             process.nextTick(() => { deferred.resolve(); });
         }
-        return deferred.promise
+        return deferred.promise;
     }
 
     function restart (args) {
@@ -99,15 +98,15 @@ function create (port) {
     function execCommand (command, args) {
         var deferred = Q.defer(),
             mbArgs = [command, '--port', port].concat(args || []),
-            mb,
+            mbCommand,
             stdout = '',
             stderr = '';
 
-        mb = spawnMb(mbArgs);
-        mb.on('error', deferred.reject);
-        mb.stdout.on('data', function (chunk) { stdout += chunk; });
-        mb.stderr.on('data', function (chunk) { stderr += chunk; });
-        mb.on('close', function (exitCode) {
+        mbCommand = spawnMb(mbArgs);
+        mbCommand.on('error', deferred.reject);
+        mbCommand.stdout.on('data', function (chunk) { stdout += chunk; });
+        mbCommand.stderr.on('data', function (chunk) { stderr += chunk; });
+        mbCommand.on('close', function (exitCode) {
             deferred.resolve({
                 exitCode: exitCode,
                 stdout: stdout,
