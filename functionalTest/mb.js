@@ -58,10 +58,11 @@ function spawnMb (args) {
 
 function create (port) {
 
+    var mb;
+
     function start (args) {
         var deferred = Q.defer(),
-            mbArgs = ['restart', '--port', port, '--logfile', logfile, '--pidfile', pidfile].concat(args || []),
-            mb;
+            mbArgs = ['restart', '--port', port, '--logfile', logfile, '--pidfile', pidfile].concat(args || []);
 
         whenFullyInitialized('start', deferred.resolve);
         mb = spawnMb(mbArgs);
@@ -71,21 +72,18 @@ function create (port) {
     }
 
     function stop () {
-        var deferred = Q.defer(),
-            command = mbPath + ' stop --pidfile ' + pidfile;
-
-        if (isWindows && mbPath.indexOf('.cmd') < 0) {
-            command = 'node ' + command;
+        var deferred = Q.defer();
+        if (mb) {
+            mb.on('exit', () => {
+                mb = null;
+                deferred.resolve();
+            });
+            mb.kill();
         }
-        exec(command, function (error, stdout, stderr) {
-            if (error) { throw error; }
-            if (stdout) { console.log(stdout); }
-            if (stderr) { console.error(stderr); }
-
-            whenFullyInitialized('stop', deferred.resolve);
-        });
-
-        return deferred.promise;
+        else {
+            process.nextTick(() => { deferred.resolve(); });
+        }
+        return deferred.promise
     }
 
     function restart (args) {
