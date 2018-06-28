@@ -4,6 +4,7 @@ var Q = require('q'),
     fs = require('fs'),
     path = require('path'),
     spawn = require('child_process').spawn,
+    exec = require('child_process').exec,
     httpClient = require('./api/http/baseHttpClient').create('http'),
     headers = { connection: 'close' },
     isWindows = require('os').platform().indexOf('win') === 0,
@@ -57,11 +58,10 @@ function spawnMb (args) {
 
 function create (port) {
 
-    var mb;
-
     function start (args) {
         var deferred = Q.defer(),
-            mbArgs = ['restart', '--port', port, '--logfile', logfile, '--pidfile', pidfile].concat(args || []);
+            mbArgs = ['restart', '--port', port, '--logfile', logfile, '--pidfile', pidfile].concat(args || []),
+            mb;
 
         whenFullyInitialized('start', deferred.resolve);
         mb = spawnMb(mbArgs);
@@ -71,17 +71,20 @@ function create (port) {
     }
 
     function stop () {
-        var deferred = Q.defer();
-        if (mb) {
-            mb.on('exit', () => {
-                mb = null;
-                deferred.resolve();
-            });
-            mb.kill();
+        var deferred = Q.defer(),
+            command = mbPath + ' stop --pidfile ' + pidfile;
+
+        if (isWindows && mbPath.indexOf('.cmd') < 0) {
+            command = 'node ' + command;
         }
-        else {
-            process.nextTick(() => { deferred.resolve(); });
-        }
+        exec(command, function (error, stdout, stderr) {
+            if (error) { throw error; }
+            if (stdout) { console.log(stdout); }
+            if (stderr) { console.error(stderr); }
+
+            whenFullyInitialized('stop', deferred.resolve);
+        });
+
         return deferred.promise;
     }
 
@@ -98,15 +101,15 @@ function create (port) {
     function execCommand (command, args) {
         var deferred = Q.defer(),
             mbArgs = [command, '--port', port].concat(args || []),
-            mbCommand,
+            mb,
             stdout = '',
             stderr = '';
 
-        mbCommand = spawnMb(mbArgs);
-        mbCommand.on('error', deferred.reject);
-        mbCommand.stdout.on('data', function (chunk) { stdout += chunk; });
-        mbCommand.stderr.on('data', function (chunk) { stderr += chunk; });
-        mbCommand.on('close', function (exitCode) {
+        mb = spawnMb(mbArgs);
+        mb.on('error', deferred.reject);
+        mb.stdout.on('data', function (chunk) { stdout += chunk; });
+        mb.stderr.on('data', function (chunk) { stderr += chunk; });
+        mb.on('close', function (exitCode) {
             deferred.resolve({
                 exitCode: exitCode,
                 stdout: stdout,

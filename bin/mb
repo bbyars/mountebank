@@ -168,6 +168,13 @@ function serverAt (options) {
 
             process.on('SIGINT', shutdown);
             process.on('SIGTERM', shutdown);
+            process.on('exit', () => {
+                // For Windows, which doesn't register signal handlers
+                // Can't use shutdown because no async is allowed in exit handler
+                if (fs.existsSync(options.pidfile)) {
+                    fs.unlinkSync(options.pidfile);
+                }
+            });
 
             return loadConfig(options, server);
         }).then(function () {
