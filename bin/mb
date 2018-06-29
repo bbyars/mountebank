@@ -168,13 +168,6 @@ function serverAt (options) {
 
             process.on('SIGINT', shutdown);
             process.on('SIGTERM', shutdown);
-            process.on('exit', () => {
-                // For Windows, which doesn't register signal handlers
-                // Can't use shutdown because no async is allowed in exit handler
-                if (fs.existsSync(options.pidfile)) {
-                    fs.unlinkSync(options.pidfile);
-                }
-            });
 
             return loadConfig(options, server);
         }).then(function () {
@@ -201,8 +194,18 @@ function serverAt (options) {
             waitForClose = function () {
                 var elapsedTime = new Date() - startTime;
 
-                if (!fs.existsSync(options.pidfile) || elapsedTime > timeout) {
+                if (!fs.existsSync(options.pidfile)) {
                     deferred.resolve();
+                }
+                else if (elapsedTime > timeout) {
+                    try {
+                        // For Windows, which doesn't register signal handlers
+                        fs.unlinkSync(options.pidfile);
+                    }
+                    catch (err) { /* ignore */ }
+                    finally {
+                        deferred.resolve();
+                    }
                 }
                 else {
                     setTimeout(waitForClose, 100);
