@@ -45,10 +45,6 @@ Run:
 There are a number of [command line options](https://www.mbtest.org/docs/commandLine) if you need
 to customize mountebank.
 
-### Mountebank as a system daemon
-
-You can also configure mountebank to run as a unix system daemon. A sample ansible playbook and systemd configuration file is available [here](https://github.com/bbyars/mountebank/tree/master/scripts/install) (Tested on RHEL7 and Centos7).
-
 ## Learn More
 
 After installing and running, view the docs in your browser at <http://localhost:2525>, or visit the
