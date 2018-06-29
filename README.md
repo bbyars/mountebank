@@ -45,10 +45,6 @@ Run:
 There are a number of [command line options](https://www.mbtest.org/docs/commandLine) if you need
 to customize mountebank.
 
-### Mountebank as a system daemon
-
-You can also configure mountebank to run as a unix system daemon. A sample ansible playbook and systemd configuration file is available [here](https://github.com/bbyars/mountebank/tree/master/scripts/install) (Tested on RHEL7 and Centos7).
-
 ## Learn More
 
 After installing and running, view the docs in your browser at <http://localhost:2525>, or visit the
@@ -56,7 +52,7 @@ After installing and running, view the docs in your browser at <http://localhost
 
 You can always learn more and support mountebank development by buying the book:
 
-[![Testing Microservices with Mountebank](https://images.manning.com/255/340/resize/book/d/b083e59-69bc-477f-b97f-33a701366637/Byars-Mountebank-MEAP-HI.png)](https://livebook.manning.com/#!/book/testing-microservices-with-mountebank/chapter-1/v-8/1)
+[![Testing Microservices with Mountebank](https://images.manning.com/255/340/resize/book/d/b083e59-69bc-477f-b97f-33a701366637/Byars-Mountebank-MEAP-HI.png)](https://www.manning.com/books/testing-microservices-with-mountebank?a_aid=mb&a_bid=ee3288f4)
 
 ## Goals
 
