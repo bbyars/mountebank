@@ -113,7 +113,7 @@
     "grunt-eslint": "^21.0.0",
     "grunt-jsdoc": "^2.2.1",
     "grunt-mocha-test": "~0.13.3",
-    "grunt-mountebank": "1.0.6",
+    "grunt-mountebank": "1.0.7",
     "istanbul": "0.4.5",
     "jsdoc": "^3.5.5",
     "jsdom": "~11.11.0",
