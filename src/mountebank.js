@@ -195,6 +195,10 @@ function create (options) {
                     delete connections[name];
                 });
 
+                socket.on('error', error => {
+                    logger.error('%s transmission error X=> %s', name, JSON.stringify(error))
+                });
+
                 if (!isAllowedConnection(socket.address().address)) {
                     logger.warn('Blocking incoming connection from %s. Add to --ipWhitelist to allow',
                         socket.address().address);

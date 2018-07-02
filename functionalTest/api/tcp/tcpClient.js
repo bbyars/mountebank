@@ -5,7 +5,7 @@ var net = require('net'),
 
 function send (message, serverPort, timeout) {
     var deferred = Q.defer(),
-        socket = net.createConnection({ port: serverPort }, function () { socket.write(message); });
+        socket = net.createConnection({ port: serverPort }, () => { socket.write(message); });
 
     if (!serverPort) {
         throw Error('you forgot to pass the port again');
@@ -15,7 +15,7 @@ function send (message, serverPort, timeout) {
     socket.once('data', deferred.resolve);
 
     if (timeout) {
-        setTimeout(function () { deferred.resolve(''); }, timeout);
+        setTimeout(() => { deferred.resolve(''); }, timeout);
     }
 
     return deferred.promise;
@@ -27,7 +27,8 @@ function fireAndForget (message, serverPort) {
 
     // Attempt to avoid race conditions where the subsequent test code
     // gets ahead of the server's ability to record the request
-    setTimeout(deferred.resolve, 150);
+    setTimeout(() => { deferred.resolve(''); }, 150);
+    socket.on('error', deferred.reject);
     return deferred.promise;
 }
 
