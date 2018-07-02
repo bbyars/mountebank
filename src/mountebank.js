@@ -196,7 +196,7 @@ function create (options) {
                 });
 
                 socket.on('error', error => {
-                    logger.error('%s transmission error X=> %s', name, JSON.stringify(error))
+                    logger.error('%s transmission error X=> %s', name, JSON.stringify(error));
                 });
 
                 if (!isAllowedConnection(socket.address().address)) {
