@@ -20,7 +20,7 @@ environment:
     - MB_APPVEYOR_CONFIG: "NODE_VERSION=8|MB_GRUNT_TASK=default|MB_SKIP_x86=true"
 # Run this one last because it depends on the travis job completing
 # This is a race condition; consider moving to separate travis phase (has time tradeoffs)
-    - MB_APPVEYOR_CONFIG: "NODE_VERSION=6|MB_GRUNT_TASK=test:zip"
+#    - MB_APPVEYOR_CONFIG: "NODE_VERSION=6|MB_GRUNT_TASK=test:zip"
 
 cache:
   - node_modules -> package.json
@@ -39,6 +39,7 @@ install:
 
 build_script:
   - node --version && npm --version
-  - build.bat %MB_GRUNT_TASK%
+  - build.bat test:functionalHttp test:functionalHttps test:functionalSmtp test:functionalTcp
+  - build.bat test:functionalApi test:functionalCli test:functionalHtml
 
 test: off

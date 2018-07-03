@@ -1,13 +1,17 @@
 'use strict';
 
 var Q = require('q'),
-    helpers = require('../../../src/util/helpers');
+    helpers = require('../../../src/util/helpers'),
+    agents = {
+        http: new require('http').Agent({ keepAlive: true }),
+        https: new require('https').Agent({ keepAlive: true })
+    };
 
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 
 function create (protocol) {
     var driver = require(protocol),
-        agent = new driver.Agent({ keepAlive: true });
+        agent = agents[protocol];
 
     function optionsFor (spec) {
         var defaults = {
@@ -39,7 +43,7 @@ function create (protocol) {
                 packets.push(chunk);
             });
 
-            response.on('end', function () {
+            response.once('end', function () {
                 var buffer = Buffer.concat(packets),
                     contentType = response.headers['content-type'] || '';
 
@@ -48,11 +52,15 @@ function create (protocol) {
                 if (contentType.indexOf('application/json') === 0) {
                     response.body = JSON.parse(response.body);
                 }
+                agent.destroy();
                 deferred.resolve(response);
             });
         });
 
-        request.on('error', deferred.reject);
+        request.once('error', err => {
+            agent.destroy();
+            deferred.reject(err);
+        });
 
         if (spec.body) {
             if (typeof spec.body === 'object') {
