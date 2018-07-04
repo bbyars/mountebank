@@ -6,8 +6,6 @@ os:
   - Windows Server 2012
 
 platform:
-  # As far as I can tell, Win32 is actually 64-bit!!!
-  #- Win32
   - x64
 
 environment:
@@ -15,12 +13,8 @@ environment:
     MB_SLOW_TEST_TIMEOUT: 45000
 
   matrix:
-    # Appveyor doesn't give us a way of explicitly defining each node in the matrix like Travis does,
-    # so we'll encode the information in a single environment variable and decode it in the install section
-    - MB_APPVEYOR_CONFIG: "NODE_VERSION=8|MB_GRUNT_TASK=default|MB_SKIP_x86=true"
-# Run this one last because it depends on the travis job completing
-# This is a race condition; consider moving to separate travis phase (has time tradeoffs)
-#    - MB_APPVEYOR_CONFIG: "NODE_VERSION=6|MB_GRUNT_TASK=test:zip"
+    - MB_APPVEYOR_CONFIG: "NODE_VERSION=8|MB_PORT=3535"
+    - MB_APPVEYOR_CONFIG: "NODE_VERSION=6|MB_INSTALL_ZIP=true|MB_EXECUTABLE=..\.mb-test-dir\mountebank-vMB_VERSION-win-x64\mb.cmd|MB_PORT=3535"
 
 cache:
   - node_modules -> package.json
@@ -30,12 +24,18 @@ init:
 
 install:
   - ps: |
+          $version = Get-ChildItem env:MB_VERSION
           ForEach ($var in (Get-ChildItem env:MB_APPVEYOR_CONFIG).Value.Split("|")) {
               $key = $var.Split("=")[0]
-              $value = $var.Split("=")[1];
+              $value = $var.Split("=")[1].Replace("MB_VERSION", $version.Value);
               Set-Item env:$key $value
           }
   - ps: Install-Product node $env:NODE_VERSION
+  # This is part of the Windows hack working around ECONNRESET errors by splitting up the test runs
+  # I'd prefer just setting the MB_GRUNT_TASK in the matrix and passing that to build.bat
+  - call npm install
+  - if %MB_INSTALL_ZIP%=="true" (echo Installing zipfile...)
+  - if %MB_INSTALL_ZIP%=="true" (node node_modules\grunt-cli\bin\grunt download:zip install:zip)
 
 build_script:
   - node --version && npm --version
