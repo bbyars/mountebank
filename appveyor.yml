@@ -33,12 +33,17 @@ install:
   - ps: Install-Product node $env:NODE_VERSION
   # This is part of the Windows hack working around ECONNRESET errors by splitting up the test runs
   # I'd prefer just setting the MB_GRUNT_TASK in the matrix and passing that to build.bat
-  - call npm install
-  - if %MB_INSTALL_ZIP%=="true" (echo Installing zipfile...)
-  - if %MB_INSTALL_ZIP%=="true" (node node_modules\grunt-cli\bin\grunt download:zip install:zip)
+  - ps: npm install
+  - ps: |
+          $install = Get-ChildItem env:_MB_INSTALL_ZIP
+          if ($install -eq "true") {
+              echo Installing zipfile...
+              node node_modules\grunt-cli\bin\grunt download:zip install:zip
+          }
 
 build_script:
   - node --version && npm --version
+  - echo Using %MB_EXECUTABLE%
   - build.bat test:functionalHttp test:functionalHttps test:functionalSmtp test:functionalTcp
   - build.bat test:functionalApi test:functionalCli test:functionalHtml
 
