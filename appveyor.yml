@@ -14,7 +14,7 @@ environment:
 
   matrix:
     - MB_APPVEYOR_CONFIG: "NODE_VERSION=8|MB_PORT=3535"
-    - MB_APPVEYOR_CONFIG: "NODE_VERSION=6|MB_INSTALL_ZIP=true|MB_EXECUTABLE=..\.mb-test-dir\mountebank-vMB_VERSION-win-x64\mb.cmd|MB_PORT=3535"
+    - MB_APPVEYOR_CONFIG: "NODE_VERSION=6|MB_INSTALL_ZIP=true|MB_EXECUTABLE=..\\.mb-test-dir\\mountebank-vMB_VERSION-win-x64\\mb.cmd|MB_PORT=3535"
 
 cache:
   - node_modules -> package.json
