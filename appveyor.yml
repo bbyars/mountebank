@@ -35,8 +35,7 @@ install:
   # I'd prefer just setting the MB_GRUNT_TASK in the matrix and passing that to build.bat
   - call npm install
   - ps: |
-          $install = Get-ChildItem env:_MB_INSTALL_ZIP
-          if ($install -eq "true") {
+          if (Test-Path env:MB_INSTALL_ZIP) {
               echo Installing zipfile...
               node node_modules\grunt-cli\bin\grunt download:zip install:zip
           }
