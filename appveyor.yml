@@ -33,7 +33,7 @@ install:
   - ps: Install-Product node $env:NODE_VERSION
   # This is part of the Windows hack working around ECONNRESET errors by splitting up the test runs
   # I'd prefer just setting the MB_GRUNT_TASK in the matrix and passing that to build.bat
-  - ps: npm install
+  - call npm install
   - ps: |
           $install = Get-ChildItem env:_MB_INSTALL_ZIP
           if ($install -eq "true") {
