@@ -29,7 +29,7 @@ function create (logfile) {
 
         response.format({
             json: function () { response.send({ logs: logs }); },
-            html: function () { response.render('logs', { logs: logs }); }
+            html: function () { response.render('logs', { logs: logs, escape: require('escape-html') }); }
         });
     }
 
