@@ -189,7 +189,10 @@ workflows:
   version: 2
   full_build:
     jobs:
-      - build
+      - build:
+          filters:
+            tags:
+              only: /^v.*/
       - osx:
           requires:
             - build
