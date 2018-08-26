@@ -2,6 +2,14 @@
 
 IS_PUBLISHED_VERSION=`git describe --tags --exact-match 2>/dev/null`
 
+if [ -n "$CIRCLE_BUILD_NUM" ]; then
+    if [ -n "$IS_PUBLISHED_VERSION" ]; then
+        echo "export publish=true" > build.properties
+    else
+        echo "export publish=false" > build.properties
+    fi
+fi
+
 if [ -z "$MB_VERSION" ]; then
     MB_VERSION=`cat package.json | grep '"version"' | sed -E -e 's/.*"version": "([^"]*)",/\1/'`
 fi

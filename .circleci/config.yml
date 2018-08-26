@@ -37,6 +37,7 @@ jobs:
             # Needed for triggering Appveyor build
             - .git
             - travis-*.txt
+            - build.properties
 
   nodev6:
     docker:
@@ -180,6 +181,8 @@ jobs:
       - attach_workspace:
           at: .
       - run: ls -al dist
+      - run: if [ -n "`grep publish=true build.properties`" ]; then export MB_PUBLISH=true; else export MB_PUBLISH=false; fi
+      - run: echo "MB_PUBLISH=$MB_PUBLISH"
       - run: bundle install --without development
       - run: ln -s dist/mountebank/src src
       - run: ln -s dist/mountebank/package.json package.json
