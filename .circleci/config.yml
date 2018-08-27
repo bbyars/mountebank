@@ -181,7 +181,8 @@ jobs:
       - attach_workspace:
           at: .
       - run: ls -al dist
-      - run: if [ -n "`grep publish=true build.properties`" ]; then export MB_PUBLISH=true; else export MB_PUBLISH=false; fi
+        # $BASH_ENV workaround due to env var isolation: https://discuss.circleci.com/t/exporting-environment-variables-from-sourced-scripts/4564/4
+      - run: if [ -n "`grep publish=true build.properties`" ]; then echo export MB_PUBLISH=true >> "$BASH_ENV"; else echo export MB_PUBLISH=false >> "$BASH_ENV"; fi
       - run: echo "MB_PUBLISH=$MB_PUBLISH"
       - run: bundle install --without development
       - run: ln -s dist/mountebank/src src
