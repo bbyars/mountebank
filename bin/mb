@@ -2,7 +2,7 @@
 
 'use strict';
 
-var mountebank = require('../src/mountebank'),
+const mountebank = require('../src/mountebank'),
     fs = require('fs'),
     path = require('path'),
     http = require('http'),
@@ -10,13 +10,13 @@ var mountebank = require('../src/mountebank'),
     ejs = require('ejs'),
     yargs = require('yargs');
 
-function error (message) {
-    console.error(message + '\n');
+const error = message => {
+    console.error(`${message}\n`);
     yargs.showHelp();
     process.exit(1);
-}
+};
 
-function processExists (pid) {
+const processExists = pid => {
     try {
         // "As a special case, signal 0 can be used to test existence of process"
         // https://nodejs.org/api/process.html#process_process_kill_pid_signal
@@ -26,14 +26,12 @@ function processExists (pid) {
     catch (e) {
         return false;
     }
-}
+};
 
-function shouldLoadConfigFile (options) {
-    return typeof options.configfile !== 'undefined';
-}
+const shouldLoadConfigFile = options => typeof options.configfile !== 'undefined';
 
-function putConfig (options, body) {
-    var deferred = Q.defer(),
+const putConfig = (options, body) => {
+    const deferred = Q.defer(),
         requestOptions = {
             method: 'PUT',
             path: '/imposters',
@@ -44,11 +42,12 @@ function putConfig (options, body) {
                 Connection: 'close'
             }
         },
-        request = http.request(requestOptions, function (response) {
+
+        request = http.request(requestOptions, response => {
             response.body = '';
             response.setEncoding('utf8');
-            response.on('data', function (chunk) { response.body += chunk; });
-            response.on('end', function () {
+            response.on('data', chunk => { response.body += chunk; });
+            response.on('end', () => {
                 response.body = JSON.parse(response.body);
                 deferred.resolve(response);
             });
@@ -59,10 +58,10 @@ function putConfig (options, body) {
     request.write(body);
     request.end();
     return deferred.promise;
-}
+};
 
-function getConfig (options) {
-    var deferred = Q.defer(),
+const getConfig = options => {
+    const deferred = Q.defer(),
         requestOptions = {
             method: 'GET',
             path: '/imposters?replayable=true',
@@ -72,18 +71,17 @@ function getConfig (options) {
                 'Content-Type': 'application/json',
                 Connection: 'close'
             }
-        },
-        request;
+        };
 
     if (options.removeProxies) {
         requestOptions.path += '&removeProxies=true';
     }
 
-    request = http.request(requestOptions, function (response) {
+    const request = http.request(requestOptions, response => {
         response.body = '';
         response.setEncoding('utf8');
-        response.on('data', function (chunk) { response.body += chunk; });
-        response.on('end', function () {
+        response.on('data', chunk => { response.body += chunk; });
+        response.on('end', () => {
             deferred.resolve(response);
         });
     });
@@ -92,10 +90,10 @@ function getConfig (options) {
 
     request.end();
     return deferred.promise;
-}
+};
 
-function stringify (filename, includeFile) {
-    var resolvedPath = path.join(path.dirname(filename), includeFile),
+const stringify = (filename, includeFile) => {
+    const resolvedPath = path.join(path.dirname(filename), includeFile),
         contents = fs.readFileSync(resolvedPath, 'utf8'),
         rendered = ejs.render(contents, {
             filename: filename,
@@ -106,54 +104,43 @@ function stringify (filename, includeFile) {
 
     // get rid of the surrounding quotes because it makes the templates more natural to quote them there
     return jsonString.substring(1, jsonString.length - 1);
-}
+};
 
-function getContentsOrExit (file, server) {
+const getContentsOrExit = (file, server) => {
     try {
         return fs.readFileSync(file, 'utf8');
     }
     catch (e) {
-        var message = 'No such file: ' + file;
-        if (e.code !== 'ENOENT') {
-            message = e;
-
-        }
-
-        server.close(function () { });
+        const message = e.code !== 'ENOENT' ? e : `No such file: ${file}`;
+        server.close(() => { });
         console.error(message);
         process.exit(1);
-
         return '';
     }
-}
+};
 
-function loadConfig (options, server) {
+const loadConfig = (options, server) => {
     if (!shouldLoadConfigFile(options)) {
         return Q(true);
     }
 
-    var configContents = getContentsOrExit(options.configfile, server),
+    const configContents = getContentsOrExit(options.configfile, server),
         parsedContents = options.noParse ? configContents : ejs.render(configContents, {
             filename: options.configfile,
             stringify: stringify,
             inject: stringify // backwards compatibility
         }),
         json = JSON.parse(parsedContents),
-        imposters = json.imposters;
-
-    if (!imposters) {
-        // Assume they left off the outer imposters array
-        imposters = [json];
-    }
+        // [json] Assume they left off the outer imposters array
+        imposters = json.imposters || [json];
 
     return putConfig(options, JSON.stringify({ imposters: imposters }));
-}
+};
 
-function serverAt (options) {
-
-    function start () {
-        mountebank.create(options).then(function (server) {
-            var shutdown = function shutdown () {
+const serverAt = options => {
+    const start = () => {
+        mountebank.create(options).then(server => {
+            const shutdown = () => {
                 server.close(function () {
                     try {
                         if (fs.existsSync(options.pidfile)) {
@@ -170,30 +157,29 @@ function serverAt (options) {
             process.on('SIGTERM', shutdown);
 
             return loadConfig(options, server);
-        }).then(function () {
+        }).then(() => {
             // Useful for build plugins that need to wait for mb to be fully initialized
             // They can wait for the pidfile to be written
             fs.writeFileSync(options.pidfile, process.pid.toString());
         }).done();
-    }
+    };
 
-    function stop () {
+    const stop = () => {
         if (!fs.existsSync(options.pidfile)) {
             return Q(true);
         }
 
-        var pid = fs.readFileSync(options.pidfile);
+        const pid = fs.readFileSync(options.pidfile);
         if (!processExists(pid)) {
             fs.unlinkSync(options.pidfile);
             return Q(true);
         }
 
-        var deferred = Q.defer(),
+        const deferred = Q.defer(),
             startTime = new Date(),
             timeout = 1000,
-            waitForClose = function () {
-                var elapsedTime = new Date() - startTime;
-
+            waitForClose = () => {
+                const elapsedTime = new Date() - startTime;
                 if (!fs.existsSync(options.pidfile)) {
                     deferred.resolve();
                 }
@@ -215,16 +201,14 @@ function serverAt (options) {
         process.kill(pid);
         waitForClose();
         return deferred.promise;
-    }
+    };
 
-    function restart () {
-        stop().then(start).done();
-    }
+    const restart = () => stop().then(start).done();
 
-    function save () {
-        getConfig(options).then(function (response) {
+    const save = () => {
+        getConfig(options).then(response => {
             fs.writeFileSync(options.savefile, response.body);
-        }).catch(function (err) {
+        }).catch(err => {
             if (err.code === 'ECONNREFUSED') {
                 console.error('No mb process running on port ' + options.port);
             }
@@ -233,12 +217,12 @@ function serverAt (options) {
             }
             process.exit(1);
         }).done();
-    }
+    };
 
-    function replay () {
+    const replay = () => {
         options.removeProxies = true;
 
-        getConfig(options).then(function (response) {
+        getConfig(options).then(response => {
             if (response.statusCode !== 200) {
                 console.error('Received status code ' + response.statusCode);
                 console.error(response.body);
@@ -247,7 +231,7 @@ function serverAt (options) {
             else {
                 putConfig(options, response.body);
             }
-        }).catch(function (err) {
+        }).catch(err => {
             if (err.code === 'ECONNREFUSED') {
                 console.error('No mb process running on port ' + options.port);
             }
@@ -256,18 +240,18 @@ function serverAt (options) {
             }
             process.exit(1);
         }).done();
-    }
+    };
 
     return {
         start: start,
-        stop: function () { stop().done(function () { process.exit(); }); },
+        stop: () => { stop().done(() => { process.exit(); }); },
         restart: restart,
         save: save,
         replay: replay
     };
-}
+};
 
-var aliases = {
+const aliases = {
         d: 'debug',
         h: 'host',
         i: 'allowInjection',
@@ -405,9 +389,9 @@ var aliases = {
         heroku: options.heroku
     };
 
-var argv = yargs
+const argv = yargs
     .usage('Usage: mb [command=start] [options...]')
-    .command('start', 'Starts the server (default command)', function (startYargs) {
+    .command('start', 'Starts the server (default command)', startYargs => {
         startYargs
             .usage('Usage: mb [start] [options...]')
             .help('help')
@@ -419,7 +403,7 @@ var argv = yargs
                 'Starts on port 2525 with the given ip whitelist')
             .epilog('Note on the last example that start is assumed if no command is specified\n\nFor more information, see http://www.mbtest.org/docs/commandLine');
     })
-    .command('stop', 'Stops the server', function (stopYargs) {
+    .command('stop', 'Stops the server', stopYargs => {
         stopYargs
             .usage('Usage: mb stop [--pidfile file.pid]')
             .help('help')
@@ -429,7 +413,7 @@ var argv = yargs
             .example('mb stop --pidfile test.pid', 'Stops the process identified in test.pid')
             .epilog('For more information, see http://www.mbtest.org/docs/commandLine');
     })
-    .command('restart', "Stops the server if it's running and restarts it", function (restartYargs) {
+    .command('restart', "Stops the server if it's running and restarts it", restartYargs => {
         restartYargs
             .usage('Usage: mb restart [options...]')
             .help('help')
@@ -440,7 +424,7 @@ var argv = yargs
             .example('mb restart --pidfile test.pid', 'Stops the process identified in test.pid and restarts on port 2525')
             .epilog('The port does not have to match the currently running instance, but the pidfile must match\n\nFor more information, see http://www.mbtest.org/docs/commandLine');
     })
-    .command('save', 'Saves current imposter configuration to a config file', function (saveYargs) {
+    .command('save', 'Saves current imposter configuration to a config file', saveYargs => {
         saveYargs
             .usage('Usage: mb save [options...]\n\nSaves a snapshot of your configuration, including new responses created by proxies')
             .help('help')
@@ -457,7 +441,7 @@ var argv = yargs
     })
     .command('replay',
         'Switches from record mode to replay by removing proxies',
-        function (replayYargs) {
+        replayYargs => {
             replayYargs
                 .usage('Usage: mb replay [--port 3000]')
                 .help('help')
@@ -473,44 +457,44 @@ var argv = yargs
     .epilog('mb help [command] provides more details\n\nFor more information, see http://www.mbtest.org/docs/commandLine')
     .argv;
 
-function fixAliases () {
-    Object.keys(argv).forEach(function (key) {
+const fixAliases = () => {
+    Object.keys(argv).forEach(key => {
         if (aliases[key]) {
             argv[aliases[key]] = argv[key];
             delete argv[key];
         }
     });
-}
+};
 
 // Unfortunately, while yargs defaults correctly when the command is present, I couldn't
 // figure out how to make it default when the command is absent, which I need to default to start.
 // You can set what yargs considers to be the default command by .command(['start', '*']), but
 // that changes the help docs in ways I don't want.
-function fixDefaults () {
+const fixDefaults = () => {
     if (argv._.length === 0) {
-        Object.keys(startOptions).forEach(function (key) {
+        Object.keys(startOptions).forEach(key => {
             if (typeof argv[key] === 'undefined') {
                 argv[key] = startOptions[key].default;
             }
         });
     }
-}
+};
 
-function fixIPWhitelist (command) {
+const fixIPWhitelist = command => {
     if (command === 'start' || command === 'restart') {
         argv.ipWhitelist = argv.ipWhitelist.split('|');
     }
-}
+};
 
 // Prevent noise from being logged
-function removeNoise () {
+const removeNoise = () => {
     delete argv._;
     delete argv.$0;
     delete argv.version;
-}
+};
 
 try {
-    var command = argv._.length === 0 ? 'start' : argv._[0],
+    const command = argv._.length === 0 ? 'start' : argv._[0],
         server = serverAt(argv);
 
     fixAliases();
@@ -538,7 +522,7 @@ try {
             yargs.showHelp();
             break;
         default:
-            error("Invalid command '" + command + "'.");
+            error(`Invalid command '${command}'.`);
             break;
     }
 }
