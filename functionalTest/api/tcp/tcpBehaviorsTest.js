@@ -19,7 +19,7 @@ describe('tcp imposter', () => {
                     protocol: 'tcp',
                     port: originServerPort,
                     stubs: [originServerStub],
-                    name: requestName + ' ORIGIN'
+                    name: `${requestName} ORIGIN`
                 },
                 decorator = (request, response) => {
                     response.data += ' DECORATED';
@@ -29,7 +29,7 @@ describe('tcp imposter', () => {
                     _behaviors: { decorate: decorator.toString() }
                 },
                 proxyStub = { responses: [proxyResponse] },
-                proxyRequest = { protocol: 'tcp', port, stubs: [proxyStub], name: requestName + ' PROXY' };
+                proxyRequest = { protocol: 'tcp', port, stubs: [proxyStub], name: `${requestName} PROXY` };
 
             return api.post('/imposters', originServerRequest).then(() => api.post('/imposters', proxyRequest)).then(() => tcp.send('request', port)).then(response => {
                 assert.strictEqual(response.toString(), 'ORIGIN DECORATED');

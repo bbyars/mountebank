@@ -64,7 +64,7 @@ function createServer (baseLogger, options, recordRequests, debug) {
 
     // we need to respond to new connections
     server.on('connection', function (socket) {
-        socket.on('data', function (data) {
+        socket.on('data', data => {
             // This will be the request API interface used by stubs, etc.
             var helpers = require('../../util/helpers'),
                 request = {

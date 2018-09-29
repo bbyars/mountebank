@@ -24,10 +24,8 @@ describe('tcp imposter', () => {
         promiseIt('should provide access to all requests', () => {
             const request = { protocol: 'tcp', port, name: requestName };
 
-            return api.post('/imposters', request).then(() => tcp.fireAndForget('first', port)).then(() => tcp.fireAndForget('second', port)).then(() => api.get('/imposters/' + port)).then(response => {
-                const requests = response.body.requests.map(function (recordedRequest) {
-                    return recordedRequest.data;
-                });
+            return api.post('/imposters', request).then(() => tcp.fireAndForget('first', port)).then(() => tcp.fireAndForget('second', port)).then(() => api.get(`/imposters/${port}`)).then(response => {
+                const requests = response.body.requests.map(recordedRequest => recordedRequest.data);
                 assert.deepEqual(requests, ['first', 'second']);
             }).finally(() => api.del('/imposters'));
         });
@@ -37,7 +35,7 @@ describe('tcp imposter', () => {
                 second = { responses: [{ is: { data: '2' } }] },
                 request = { protocol: 'tcp', port, stubs: [first, second], name: requestName };
 
-            return api.post('/imposters', request).then(() => api.get('/imposters/' + port)).then(response => {
+            return api.post('/imposters', request).then(() => api.get(`/imposters/${port}`)).then(response => {
                 assert.strictEqual(response.statusCode, 200);
                 assert.deepEqual(response.body.stubs, [
                     { responses: [{ is: { data: '1' } }] },
@@ -49,7 +47,7 @@ describe('tcp imposter', () => {
         promiseIt('should reflect default mode', () => {
             const request = { protocol: 'tcp', port, name: requestName };
 
-            return api.post('/imposters', request).then(() => api.get('/imposters/' + port)).then(response => {
+            return api.post('/imposters', request).then(() => api.get(`/imposters/${port}`)).then(response => {
                 assert.strictEqual(response.statusCode, 200);
                 assert.deepEqual(response.body, {
                     protocol: 'tcp',
@@ -60,7 +58,7 @@ describe('tcp imposter', () => {
                     requests: [],
                     stubs: [],
                     _links: {
-                        self: { href: api.url + '/imposters/' + port }
+                        self: { href: `${api.url}/imposters/${port}` }
                     }
                 });
             }).finally(() => api.del('/imposters'));
@@ -70,7 +68,7 @@ describe('tcp imposter', () => {
             const stub = { responses: [{ is: { data: '1' } }, { is: { data: '2' } }] },
                 request = { protocol: 'tcp', port, stubs: [stub], name: requestName };
 
-            return api.post('/imposters', request).then(() => tcp.send('first', port)).then(() => tcp.send('second', port)).then(() => api.get('/imposters/' + port)).then(response => {
+            return api.post('/imposters', request).then(() => tcp.send('first', port)).then(() => tcp.send('second', port)).then(() => api.get(`/imposters/${port}`)).then(response => {
                 const stubs = JSON.stringify(response.body.stubs),
                     withTimeRemoved = stubs.replace(/"timestamp":"[^"]+"/g, '"timestamp":"NOW"'),
                     withClientPortRemoved = withTimeRemoved.replace(/"requestFrom":"[a-f:.\d]+"/g, '"requestFrom":"HERE"'),

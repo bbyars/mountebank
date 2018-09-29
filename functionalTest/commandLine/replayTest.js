@@ -5,7 +5,8 @@ const assert = require('assert'),
     client = require('../api/http/baseHttpClient').create('http'),
     mb = require('../mb').create(api.port + 1),
     promiseIt = require('../testHelpers').promiseIt,
-    timeout = parseInt(process.env.MB_SLOW_TEST_TIMEOUT || 4000);
+    timeout = parseInt(process.env.MB_SLOW_TEST_TIMEOUT || 4000),
+    requestName = 'some request name';
 
 describe('mb replay', () => {
     promiseIt('should remove proxies', () => {
@@ -14,7 +15,7 @@ describe('mb replay', () => {
                 state.count = state.count || 0;
                 state.count += 1;
                 return {
-                    body: state.count + '. ' + request.path
+                    body: `${state.count}. ${request.path}`
                 };
             },
             originServerStub = { responses: [{ inject: originServerFn.toString() }] },
@@ -22,16 +23,16 @@ describe('mb replay', () => {
                 protocol: 'http',
                 port: originServerPort,
                 stubs: [originServerStub],
-                name: this.name + ' origin server'
+                name: `${requestName} origin server`
             },
             proxyPort = mb.port + 2,
             proxyDefinition = {
-                to: 'http://localhost:' + originServerPort,
+                to: `http://localhost:${originServerPort}`,
                 mode: 'proxyAlways',
                 predicateGenerators: [{ matches: { path: true } }]
             },
             proxyStub = { responses: [{ proxy: proxyDefinition }] },
-            proxyRequest = { protocol: 'http', port: proxyPort, stubs: [proxyStub], name: this.name + ' proxy' };
+            proxyRequest = { protocol: 'http', port: proxyPort, stubs: [proxyStub], name: `${requestName} proxy` };
 
         return mb.start(['--allowInjection']).then(() => mb.post('/imposters', originServerRequest)).then(response => {
             assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body));
@@ -39,7 +40,7 @@ describe('mb replay', () => {
         }).then(response => {
             assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body));
             return client.get('/first', proxyPort);
-        }).then(() => client.get('/second', proxyPort)).then(() => client.get('/first', proxyPort)).then(() => mb.replay()).then(() => mb.get('/imposters/' + proxyPort)).then(response => {
+        }).then(() => client.get('/second', proxyPort)).then(() => client.get('/first', proxyPort)).then(() => mb.replay()).then(() => mb.get(`/imposters/${proxyPort}`)).then(response => {
             assert.strictEqual(response.body.stubs.length, 2, JSON.stringify(response.body.stubs, null, 2));
 
             const stubs = response.body.stubs,

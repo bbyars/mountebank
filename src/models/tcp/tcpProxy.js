@@ -54,7 +54,7 @@ function create (logger, encoding) {
             deferred = Q.defer(),
             start = new Date();
 
-        socket.on('data', function (data) {
+        socket.on('data', data => {
             packets.push(data);
         });
         socket.on('end', function () {
@@ -93,7 +93,7 @@ function create (logger, encoding) {
                 deferred.resolve(response);
             });
 
-            proxiedRequest.once('error', function (error) {
+            proxiedRequest.once('error', error => {
                 var errors = require('../../util/errors');
 
                 if (error.code === 'ENOTFOUND') {

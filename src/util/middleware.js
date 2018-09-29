@@ -15,8 +15,8 @@ function useAbsoluteUrls (port) {
     return function (request, response, next) {
         const setHeaderOriginal = response.setHeader,
             sendOriginal = response.send,
-            host = request.headers.host || 'localhost:' + port,
-            absolutize = function (link) { return 'http://' + host + link; };
+            host = request.headers.host || `localhost:${port}`,
+            absolutize = link => 'http://' + host + link;
 
         response.setHeader = function () {
             const args = Array.prototype.slice.call(arguments);

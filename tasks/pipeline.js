@@ -26,12 +26,12 @@ module.exports = function (grunt) {
 
         getCurrentCommitId().then(function (commitId) {
             return appveyor.triggerBuild(commitId, version);
-        }).done(function (result) {
+        }).done(result => {
             // We have to save off the Appveyor build number for the next CI stage
             fs.writeFileSync('appveyor-' + version + '.txt', result.version);
             console.log('Appveyor build successfully triggered for ' + version + ' => ' + result.version);
             done();
-        }, function (error) {
+        }, error => {
             grunt.warn(error);
         });
     });
@@ -69,7 +69,7 @@ module.exports = function (grunt) {
                 grunt.warn('Build failed');
             }
             done();
-        }, function (error) {
+        }, error => {
             grunt.warn(error);
         });
     });
@@ -77,12 +77,12 @@ module.exports = function (grunt) {
     grunt.registerTask('trigger:travis', 'Trigger Travis build for latest commit', () => {
         const done = this.async();
 
-        return travis.triggerBuild(version).then(function (result) {
+        return travis.triggerBuild(version).then(result => {
             // We have to save off the Appveyor build number for the next CI stage
             fs.writeFileSync('travis-' + version + '.txt', result);
             console.log('Travis CI build successfully triggered for ' + version + ' => ' + result);
             done();
-        }, function (error) {
+        }, error => {
             grunt.warn(error);
         });
     });
@@ -120,7 +120,7 @@ module.exports = function (grunt) {
                 grunt.warn('Build failed');
             }
             done();
-        }, function (error) {
+        }, error => {
             grunt.warn(error);
         });
     });

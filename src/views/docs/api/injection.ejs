@@ -171,7 +171,7 @@ Content-Type: application/json
   "protocol": "http",
   "name": "origin",
   "stubs": [{
-    "responses": [{ "inject": "function (request, state, logger) {\n    logger.info('origin called');\n    state.requests = state.requests || 0;\n    state.requests += 1;\n    return {\n      headers: {\n        'Content-Type': 'application/json'\n      },\n      body: JSON.stringify({ count: state.requests })\n    };\n}" }]
+    "responses": [{ "inject": "(request, state, logger) => {\n    logger.info('origin called');\n    state.requests = state.requests || 0;\n    state.requests += 1;\n    return {\n      headers: {\n        'Content-Type': 'application/json'\n      },\n      body: JSON.stringify({ count: state.requests })\n    };\n}" }]
   }]
 }</code></pre>
     </step>
@@ -180,7 +180,7 @@ Content-Type: application/json
 uses the <code>state</code> parameter, and sets the <code>requests</code>
 field on it to return how many times it's been called:</p>
 
-<pre><code>function (request, state, logger) {
+<pre><code>(request, state, logger) => {
     logger.info('origin called');
     state.requests = state.requests || 0;
     state.requests += 1;

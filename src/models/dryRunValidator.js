@@ -74,7 +74,7 @@ function create (options) {
             deferred = Q.defer();
 
         try {
-            dryRun(stub, encoding, logger).done(deferred.resolve, function (reason) {
+            dryRun(stub, encoding, logger).done(deferred.resolve, reason => {
                 reason.source = reason.source || JSON.stringify(stub);
                 errors.push(reason);
                 deferred.resolve();

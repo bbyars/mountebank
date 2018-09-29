@@ -43,7 +43,7 @@ module.exports = function (grunt) {
                 const contents = fs.readFileSync(file, 'utf8'),
                     lines = contents.split(os.EOL);
 
-                lines.forEach(function (line) {
+                lines.forEach(line => {
                     const accidentalOnlyErrors = line.match(/(describe|[Ii]t)\.only\(/) || [];
 
                     errors = errors.concat(accidentalOnlyErrors.map(() => file + ' appears to have been left with a mocha .only() call\n\t' + line));

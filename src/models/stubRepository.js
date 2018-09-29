@@ -23,7 +23,7 @@ function create (resolver, recordMatches, encoding) {
     function trueForAll (list, predicate) {
         // we call map before calling every so we make sure to call every
         // predicate during dry run validation rather than short-circuiting
-        return list.map(predicate).every(function (result) { return result; });
+        return list.map(predicate).every(result => result);
     }
 
     function findFirstMatch (request, logger, imposterState) {

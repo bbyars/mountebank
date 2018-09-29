@@ -5,7 +5,7 @@
 // tests harder to fix when they failed because I'd
 // miss the assertion message.
 function wrap (test, that) {
-    return function (done) {
+    return done => {
         test.apply(that, []).done(() => { done(); }, done);
     };
 }

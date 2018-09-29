@@ -1,15 +1,15 @@
 'use strict';
 
-var exec = require('child_process').exec,
+const exec = require('child_process').exec,
     Q = require('q'),
     fs = require('fs'),
-    path = require('path'),
-    nextTestId = 1;
+    path = require('path');
+let nextTestId = 1;
 
-function execute (command) {
-    var deferred = Q.defer();
+const execute = command => {
+    const deferred = Q.defer();
 
-    exec(command, function (error, stdout) {
+    exec(command, (error, stdout) => {
         if (error) {
             deferred.reject(error);
         }
@@ -18,9 +18,9 @@ function execute (command) {
         }
     });
     return deferred.promise;
-}
+};
 
-function usePortableNetcat (command) {
+const usePortableNetcat = command => {
     // On CircleCI image, netcat requires the -q1 parameter to end after receiving stdin.
     // Faster machines don't need it.
     // I could not find a centos version of netcat that has the -q parameter, nor does
@@ -29,28 +29,26 @@ function usePortableNetcat (command) {
     // This feels ugly to do the replacement here, but I prefer it over doing the replacement
     // directly in the views because I want people to be able to copy the command from the
     // public site and run on their machines, and the variant without the -q is the most portable
-    var netcatPath = path.join(__dirname, '../../../../node_modules/.bin/nc');
-    return command.replace('| nc ', '| ' + netcatPath + ' -q1 ');
-}
+    const netcatPath = path.join(__dirname, '../../../../node_modules/.bin/nc');
+    return command.replace('| nc ', `| ${netcatPath} -q1 `);
+};
 
-function runStep (step) {
-    var deferred = Q.defer(),
-        filename = 'test-' + nextTestId;
+const runStep = step => {
+    const deferred = Q.defer(),
+        filename = `test-${nextTestId}`;
 
     fs.writeFileSync(filename, usePortableNetcat(step.requestText), { mode: 484 /* 0744 */});
     nextTestId += 1;
 
-    execute('sh ./' + filename).done(function (stdout) {
+    execute(`sh ./${filename}`).done(stdout => {
         fs.unlinkSync(filename);
         deferred.resolve(stdout);
-    }, function (reason) {
-        console.log('Error executing following command: ' + step.text);
+    }, reason => {
+        console.log(`Error executing following command: ${step.text}`);
         deferred.reject(reason);
     });
 
     return deferred.promise;
-}
-
-module.exports = {
-    runStep: runStep
 };
+
+module.exports = { runStep };

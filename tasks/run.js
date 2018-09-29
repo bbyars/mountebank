@@ -21,11 +21,11 @@ function run (command, args, options) {
 
     proc = spawn(command, args, options);
 
-    proc.stdout.on('data', function (data) {
+    proc.stdout.on('data', data => {
         console.log(data.toString('utf8').trim());
     });
 
-    proc.stderr.on('data', function (data) {
+    proc.stderr.on('data', data => {
         console.error(data.toString('utf8').trim());
         if (data.toString('utf8').indexOf('npm ERR!') >= 0) {
             // Hack; dpl returns 0 exit code on npm publish failure

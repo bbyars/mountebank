@@ -61,7 +61,7 @@ module.exports = function (grunt) {
         run('tar', ['czf', filename, 'mountebank'], { cwd: 'dist' }).done(this.async(), failTask('dist:npm'));
     });
 
-    grunt.registerTask('dist:package', 'Create OS-specific package', function (type) {
+    grunt.registerTask('dist:package', 'Create OS-specific package', type => {
         run('scripts/dist/createPackage', [os.platform(), type, version]).done(this.async(), failTask('dist:package'));
     });
 };

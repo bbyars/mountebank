@@ -629,7 +629,7 @@ describe('responseResolver', () => {
 
             return resolver.resolve(responseConfig, {}, logger, []).then(() => {
                 assert.fail('should not have resolved');
-            }, function (error) {
+            }, error => {
                 assert.strictEqual(error.message, 'invalid response injection');
                 logger.error.assertLogged('injection X=> Error: BOOM!!!');
             });
@@ -730,7 +730,7 @@ describe('responseResolver', () => {
 
             return resolver.resolve(responseConfig, request, logger, []).then(() => {
                 assert.fail('Promise resolved, should have been rejected');
-            }, function (error) {
+            }, error => {
                 assert.equal(error.message, 'invalid wait injection');
             });
         });
@@ -786,7 +786,7 @@ describe('responseResolver', () => {
 
             return resolver.resolve(responseConfig, {}, logger, []).then(() => {
                 assert.fail('should not have resolved');
-            }, function (error) {
+            }, error => {
                 assert.strictEqual(error.message, 'each response object must have only one response type');
             });
         });

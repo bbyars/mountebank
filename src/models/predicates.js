@@ -188,9 +188,7 @@ function transformAll (obj, keyTransforms, valueTransforms, arrayTransforms) {
         apply = function (fns) { return combinators.compose.apply(null, fns); };
 
     if (Array.isArray(obj)) {
-        return apply(arrayTransforms)(obj.map(function (element) {
-            return transformAll(element, keyTransforms, valueTransforms, arrayTransforms);
-        }));
+        return apply(arrayTransforms)(obj.map(element => transformAll(element, keyTransforms, valueTransforms, arrayTransforms)));
     }
     else if (isNonNullObject(obj)) {
         return Object.keys(obj).reduce(function (result, key) {

@@ -394,7 +394,7 @@ function selectRowFromCSV (csvConfig, keyValue, logger) {
         pipe = inputStream.pipe(parser),
         deferred = Q.defer();
 
-    inputStream.on('error', function (e) {
+    inputStream.on('error', e => {
         logger.error('Cannot read ' + csvConfig.path + ': ' + e);
         deferred.resolve({});
     });
@@ -468,7 +468,7 @@ function lookup (originalRequest, responsePromise, lookupArray, logger) {
                 });
             });
         return Q.all(lookupPromises).then(function () { return Q(response); });
-    }).catch(function (error) {
+    }).catch(error => {
         logger.error(error);
     });
 }
@@ -489,19 +489,19 @@ function execute (request, response, behaviors, logger) {
     var Q = require('q'),
         combinators = require('../util/combinators'),
         waitFn = behaviors.wait ?
-            function (result) { return wait(request, result, behaviors.wait, logger); } :
+            result => wait(request, result, behaviors.wait, logger) :
             combinators.identity,
         copyFn = behaviors.copy ?
-            function (result) { return copy(request, result, behaviors.copy, logger); } :
+            result => copy(request, result, behaviors.copy, logger) :
             combinators.identity,
         lookupFn = behaviors.lookup ?
-            function (result) { return lookup(request, result, behaviors.lookup, logger); } :
+            result => lookup(request, result, behaviors.lookup, logger) :
             combinators.identity,
         shellTransformFn = behaviors.shellTransform ?
-            function (result) { return shellTransform(request, result, behaviors.shellTransform, logger); } :
+            result => shellTransform(request, result, behaviors.shellTransform, logger) :
             combinators.identity,
         decorateFn = behaviors.decorate ?
-            function (result) { return decorate(request, result, behaviors.decorate, logger); } :
+            result => decorate(request, result, behaviors.decorate, logger) :
             combinators.identity;
 
     logger.debug('using stub response behavior ' + JSON.stringify(behaviors));

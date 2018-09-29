@@ -13,7 +13,7 @@ const assert = require('assert'),
 
 function getMemoryUsedForManyRequests (mbPort) {
     const stub = { responses: [{ is: { statusCode: 400 } }] },
-        request = { protocol: 'http', port: port, stubs: [stub] },
+        request = { protocol: 'http', port, stubs: [stub] },
         requestFn = function () { return client.get('/', port); },
         allRequests = [];
     let originalProcess;
@@ -35,7 +35,7 @@ function getMemoryUsedForManyRequests (mbPort) {
     }).then(function (response) {
         return (response.body.process.rss - originalProcess.rss) / numRequests;
     }).finally(function () {
-        return client.del('/imposters/' + port, mbPort);
+        return client.del(`/imposters/${port}`, mbPort);
     });
 }
 

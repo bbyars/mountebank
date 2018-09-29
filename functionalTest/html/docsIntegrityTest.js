@@ -1,6 +1,6 @@
 'use strict';
 
-var Q = require('q'),
+const Q = require('q'),
     promiseIt = require('../testHelpers').promiseIt,
     docs = require('./docsTester/docs'),
     isWindows = require('os').platform().indexOf('win') === 0,
@@ -9,7 +9,7 @@ var Q = require('q'),
 function validateDocs (page) {
     promiseIt(page + ' should be up-to-date', function () {
         return docs.getScenarios(page).then(function (testScenarios) {
-            var tests = Object.keys(testScenarios).map(function (testName) {
+            const tests = Object.keys(testScenarios).map(function (testName) {
                 return testScenarios[testName].assertValid();
             });
             return Q.all(tests);

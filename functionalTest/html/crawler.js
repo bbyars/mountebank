@@ -8,37 +8,31 @@ const JSDOM = require('jsdom').JSDOM,
     httpsClient = require('../api/http/baseHttpClient').create('https'),
     whitelistPatterns = ['https://s3.amazonaws.com', '^#'];
 
-function isProtocolAgnostic (href) {
-    return href.indexOf('//') === 0;
-}
+const isProtocolAgnostic = href => href.indexOf('//') === 0;
 
-function isLocal (href) {
-    return href.indexOf('/') === 0;
-}
+const isLocal = href => href.indexOf('/') === 0;
 
-function parseLinksFrom (window) {
+const parseLinksFrom = window => {
     const links = [],
         anchorTags = window.document.getElementsByTagName('a');
     for (let i = 0; i < anchorTags.length; i += 1) {
         let href = anchorTags[i].attributes.href ? anchorTags[i].attributes.href.value : null;
         if (href) {
             if (isProtocolAgnostic(href)) {
-                href = 'http:' + href;
+                href = `http:${href}`;
             }
             if (isLocal(href)) {
-                href = 'http://localhost:' + api.port + href;
+                href = `http://localhost:${api.port}${href}`;
             }
             links.push(href);
         }
     }
     return links;
-}
+};
 
-function isExternalPage (baseUrl) {
-    return baseUrl.indexOf('http://localhost') < 0;
-}
+const isExternalPage = baseUrl => baseUrl.indexOf('http://localhost') < 0;
 
-function getLinksFrom (baseUrl, html) {
+const getLinksFrom = (baseUrl, html) => {
     const deferred = Q.defer();
 
     if (isExternalPage(baseUrl)) {
@@ -55,15 +49,11 @@ function getLinksFrom (baseUrl, html) {
     }
 
     return deferred.promise;
-}
+};
 
-function isWhitelisted (href) {
-    return whitelistPatterns.some(function (pattern) {
-        return new RegExp(pattern, 'i').test(href);
-    });
-}
+const isWhitelisted = href => whitelistPatterns.some(pattern => new RegExp(pattern, 'i').test(href));
 
-function getResponseFor (href) {
+const getResponseFor = href => {
     const parts = url.parse(href),
         client = parts.protocol === 'https:' ? httpsClient : httpClient,
         defaultPort = parts.protocol === 'https:' ? 443 : 80,
@@ -76,28 +66,20 @@ function getResponseFor (href) {
         };
 
     return client.responseFor(spec);
-}
+};
 
-function isBadLink (href) {
-    return href.indexOf('http') < 0;
-}
+const isBadLink = href => href.indexOf('http') < 0;
 
-function create () {
+const create = () => {
     const pages = { errors: [], hits: {} };
 
-    function alreadyCrawled (href) {
-        return pages.hits[href];
-    }
+    const alreadyCrawled = href => pages.hits[href];
 
-    function addReferrer (href, referrer) {
-        pages.hits[href].from.push(referrer);
-    }
+    const addReferrer = (href, referrer) => pages.hits[href].from.push(referrer);
 
-    function addError (href, referrer) {
-        pages.errors.push({ href: href, referrer: referrer });
-    }
+    const addError = (href, referrer) => pages.errors.push({ href: href, referrer: referrer });
 
-    function crawl (startingUrl, referrer) {
+    const crawl = (startingUrl, referrer) => {
         const serverUrl = startingUrl.replace(/#.*$/, '').trim();
 
         if (serverUrl === '') {
@@ -121,19 +103,13 @@ function create () {
                 pages.hits[serverUrl].contentType = response.headers['content-type'];
 
                 return getLinksFrom(serverUrl, response.body);
-            }).then(function (links) {
-                return Q.all(links.map(function (link) {
-                    return crawl(link, serverUrl);
-                })).then(() => Q(pages));
-            }, function (e) { console.log('ERROR with ' + serverUrl); console.log(e); });
+            }).then(
+                links => Q.all(links.map(link => crawl(link, serverUrl))).then(() => Q(pages)),
+                e => { console.log(`ERROR with ${serverUrl}`); console.log(e); });
         }
-    }
-
-    return {
-        crawl: crawl
     };
-}
 
-module.exports = {
-    create: create
+    return { crawl };
 };
+
+module.exports = { create };

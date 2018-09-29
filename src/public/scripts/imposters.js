@@ -214,7 +214,7 @@ function buildJSON () {
 }
 
 function addImposterRow (port) {
-    ajax({ url: '/imposters/' + port, type: 'GET', dataType: 'html' }).done(function (xhr) {
+    ajax({ url: `/imposters/${port}`, type: 'GET', dataType: 'html' }).done(function (xhr) {
         $('#imposters tr:last').before(xhr.responseText);
         updateLinks();
     });

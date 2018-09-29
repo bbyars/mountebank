@@ -1,9 +1,9 @@
 'use strict';
 
-var fs = require('fs'),
+const fs = require('fs'),
     Q = require('q');
 
-function runStep (config) {
+const runStep = config => {
     if (config.delete === 'true') {
         fs.unlinkSync(config.filename);
     }
@@ -11,8 +11,6 @@ function runStep (config) {
         fs.writeFileSync(config.filename, config.requestText);
     }
     return Q(config);
-}
-
-module.exports = {
-    runStep: runStep
 };
+
+module.exports = { runStep };

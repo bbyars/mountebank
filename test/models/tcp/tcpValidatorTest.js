@@ -11,7 +11,7 @@ describe('httpValidator', () => {
             const request = {},
                 validator = Validator.create();
 
-            return validator.validate(request).then(function (result) {
+            return validator.validate(request).then(result => {
                 assert.deepEqual(result, {
                     isValid: true,
                     errors: []
@@ -24,7 +24,7 @@ describe('httpValidator', () => {
                 const request = { mode: value },
                     validator = Validator.create();
 
-                return validator.validate(request).then(function (result) {
+                return validator.validate(request).then(result => {
                     assert.deepEqual(result, {
                         isValid: true,
                         errors: []
@@ -37,7 +37,7 @@ describe('httpValidator', () => {
             const request = { mode: 'TEXT' },
                 validator = Validator.create();
 
-            return validator.validate(request).then(function (result) {
+            return validator.validate(request).then(result => {
                 assert.deepEqual(result, {
                     isValid: false,
                     errors: [{

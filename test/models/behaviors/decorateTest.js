@@ -14,7 +14,7 @@ describe('behaviors', () => {
                 fn = function (req, responseToDecorate) { responseToDecorate.key = 'CHANGED'; },
                 config = { decorate: fn.toString() };
 
-            return behaviors.execute(request, response, config, logger).then(function (actualResponse) {
+            return behaviors.execute(request, response, config, logger).then(actualResponse => {
                 assert.deepEqual(actualResponse, { key: 'CHANGED' });
             });
         });
@@ -26,7 +26,7 @@ describe('behaviors', () => {
                 fn = () => ({ newKey: 'NEW-VALUE' }),
                 config = { decorate: fn.toString() };
 
-            return behaviors.execute(request, response, config, logger).then(function (actualResponse) {
+            return behaviors.execute(request, response, config, logger).then(actualResponse => {
                 assert.deepEqual(actualResponse, { newKey: 'NEW-VALUE' });
             });
         });
@@ -52,7 +52,7 @@ describe('behaviors', () => {
 
             return behaviors.execute(request, response, config, logger).then(() => {
                 assert.fail('should have rejected');
-            }, function (error) {
+            }, error => {
                 assert.ok(error.message.indexOf('invalid decorator injection') >= 0);
                 logger.error.assertLogged(fn.toString());
             });

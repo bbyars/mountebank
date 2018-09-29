@@ -40,7 +40,7 @@ function formatLogEntry (logEntry) {
     }
 
     function getLatestLogEntries () {
-      $.getJSON('/logs?startIndex=' + nextIndex, function (json) {
+      $.getJSON('/logs?startIndex=' + nextIndex, json => {
         var logs = json.logs;
         for (var i = 0; i < logs.length; i++) {
           $('#logs code').append(formatLogEntry(logs[i]) + '\n');

@@ -40,7 +40,7 @@ describe('smtp imposter', () => {
                 bcc: ['"BCC 2" <bcc2@mb.org>'],
                 subject: 'subject 2',
                 text: 'text 2'
-            }, port)).then(() => api.get('/imposters/' + port)).then(response => {
+            }, port)).then(() => api.get(`/imposters/${port}`)).then(response => {
                 const requests = response.body.requests;
                 requests.forEach(request => {
                     if (request.requestFrom) {
@@ -100,7 +100,7 @@ describe('smtp imposter', () => {
                 return api.post('/imposters', request);
             }).then(response => {
                 assert.strictEqual(response.statusCode, 201, 'Delete did not free up port');
-            }).finally(() => api.del('/imposters/' + port));
+            }).finally(() => api.del(`/imposters/${port}`));
         });
     });
 }).timeout(timeout);

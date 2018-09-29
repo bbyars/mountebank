@@ -3,7 +3,7 @@
 const net = require('net'),
     Q = require('q');
 
-function send (message, serverPort, timeout) {
+const send = (message, serverPort, timeout) => {
     const deferred = Q.defer(),
         socket = net.createConnection({ port: serverPort }, () => { socket.write(message); });
 
@@ -19,9 +19,9 @@ function send (message, serverPort, timeout) {
     }
 
     return deferred.promise;
-}
+};
 
-function fireAndForget (message, serverPort) {
+const fireAndForget = (message, serverPort) => {
     const deferred = Q.defer(),
         socket = net.createConnection({ port: serverPort }, () => { socket.write(message); });
 
@@ -30,9 +30,6 @@ function fireAndForget (message, serverPort) {
     setTimeout(() => { deferred.resolve(''); }, 150);
     socket.on('error', deferred.reject);
     return deferred.promise;
-}
-
-module.exports = {
-    send: send,
-    fireAndForget: fireAndForget
 };
+
+module.exports = { send, fireAndForget };

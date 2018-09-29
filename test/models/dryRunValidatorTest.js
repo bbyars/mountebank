@@ -27,7 +27,7 @@ describe('dryRunValidator', () => {
             const request = {},
                 validator = Validator.create({ StubRepository: StubRepository, testRequest: testRequest });
 
-            return validator.validate(request, Logger.create()).then(function (result) {
+            return validator.validate(request, Logger.create()).then(result => {
                 assert.deepEqual(result, {
                     isValid: true,
                     errors: []
@@ -39,7 +39,7 @@ describe('dryRunValidator', () => {
             const request = { stubs: [{}] },
                 validator = Validator.create({ StubRepository: StubRepository, testRequest: testRequest });
 
-            return validator.validate(request, Logger.create()).then(function (result) {
+            return validator.validate(request, Logger.create()).then(result => {
                 assert.deepEqual(result, {
                     isValid: false,
                     errors: [{
@@ -55,7 +55,7 @@ describe('dryRunValidator', () => {
             const request = { stubs: [] },
                 validator = Validator.create({ StubRepository: StubRepository, testRequest: testRequest });
 
-            return validator.validate(request, Logger.create()).then(function (result) {
+            return validator.validate(request, Logger.create()).then(result => {
                 assert.deepEqual(result, {
                     isValid: true,
                     errors: []
@@ -67,7 +67,7 @@ describe('dryRunValidator', () => {
             const request = { stubs: [{ responses: [{ is: { statusCode: 400 } }] }] },
                 validator = Validator.create({ StubRepository: StubRepository, testRequest: testRequest });
 
-            return validator.validate(request, Logger.create()).then(function (result) {
+            return validator.validate(request, Logger.create()).then(result => {
                 assert.deepEqual(result, {
                     isValid: true,
                     errors: []
@@ -89,7 +89,7 @@ describe('dryRunValidator', () => {
                 },
                 validator = Validator.create({ StubRepository: StubRepository, testRequest: testRequest });
 
-            return validator.validate(request, Logger.create()).then(function (result) {
+            return validator.validate(request, Logger.create()).then(result => {
                 assert.deepEqual(result, {
                     isValid: true,
                     errors: []
@@ -110,7 +110,7 @@ describe('dryRunValidator', () => {
                     allowInjection: true
                 });
 
-            return validator.validate(request, Logger.create()).then(function (result) {
+            return validator.validate(request, Logger.create()).then(result => {
                 assert.deepEqual(result, {
                     isValid: true,
                     errors: []
@@ -130,7 +130,7 @@ describe('dryRunValidator', () => {
                     allowInjection: true
                 });
 
-            return validator.validate(request, Logger.create()).then(function (result) {
+            return validator.validate(request, Logger.create()).then(result => {
                 assert.deepEqual(result, {
                     isValid: true,
                     errors: []
@@ -153,7 +153,7 @@ describe('dryRunValidator', () => {
                     allowInjection: true
                 });
 
-            return validator.validate(request, Logger.create()).then(function (result) {
+            return validator.validate(request, Logger.create()).then(result => {
                 assert.deepEqual(result, {
                     isValid: true,
                     errors: []
@@ -173,7 +173,7 @@ describe('dryRunValidator', () => {
                     allowInjection: false
                 });
 
-            return validator.validate(request, Logger.create()).then(function (result) {
+            return validator.validate(request, Logger.create()).then(result => {
                 assert.deepEqual(result, {
                     isValid: false,
                     errors: [{
@@ -198,7 +198,7 @@ describe('dryRunValidator', () => {
                     allowInjection: false
                 });
 
-            return validator.validate(request, Logger.create()).then(function (result) {
+            return validator.validate(request, Logger.create()).then(result => {
                 assert.deepEqual(result, {
                     isValid: false,
                     errors: [{
@@ -225,7 +225,7 @@ describe('dryRunValidator', () => {
                     allowInjection: false
                 });
 
-            return validator.validate(request, Logger.create()).then(function (result) {
+            return validator.validate(request, Logger.create()).then(result => {
                 assert.deepEqual(result, {
                     isValid: false,
                     errors: [{
@@ -245,7 +245,7 @@ describe('dryRunValidator', () => {
                 },
                 validator = Validator.create({ StubRepository: StubRepository, testRequest: testRequest });
 
-            return validator.validate(request, Logger.create()).then(function (result) {
+            return validator.validate(request, Logger.create()).then(result => {
                 assert.deepEqual(result, {
                     isValid: true,
                     errors: []
@@ -262,7 +262,7 @@ describe('dryRunValidator', () => {
                 },
                 validator = Validator.create({ StubRepository: StubRepository, testRequest: testRequest });
 
-            return validator.validate(request, Logger.create()).then(function (result) {
+            return validator.validate(request, Logger.create()).then(result => {
                 assert.deepEqual(result, {
                     isValid: false,
                     errors: [{
@@ -283,7 +283,7 @@ describe('dryRunValidator', () => {
                 },
                 validator = Validator.create({ StubRepository: StubRepository, testRequest: testRequest });
 
-            return validator.validate(request, Logger.create()).then(function (result) {
+            return validator.validate(request, Logger.create()).then(result => {
                 assert.deepEqual(result, {
                     isValid: false,
                     errors: [{
@@ -308,7 +308,7 @@ describe('dryRunValidator', () => {
                 },
                 validator = Validator.create({ StubRepository: StubRepository, testRequest: testRequest });
 
-            return validator.validate(request, Logger.create()).then(function (result) {
+            return validator.validate(request, Logger.create()).then(result => {
                 assert.deepEqual(result, {
                     isValid: false,
                     errors: [{
@@ -330,7 +330,7 @@ describe('dryRunValidator', () => {
                 },
                 validator = Validator.create({ StubRepository: StubRepository, testRequest: testRequest });
 
-            return validator.validate(request, Logger.create()).then(function (result) {
+            return validator.validate(request, Logger.create()).then(result => {
                 assert.deepEqual(result, {
                     isValid: false,
                     errors: [{
@@ -351,7 +351,7 @@ describe('dryRunValidator', () => {
                 },
                 validator = Validator.create({ StubRepository: StubRepository, testRequest: testRequest });
 
-            return validator.validate(request, Logger.create()).then(function (result) {
+            return validator.validate(request, Logger.create()).then(result => {
                 assert.deepEqual(result, {
                     isValid: false,
                     errors: [{
@@ -374,7 +374,7 @@ describe('dryRunValidator', () => {
                 },
                 validator = Validator.create({ StubRepository: StubRepository, testRequest: testRequest });
 
-            return validator.validate(request, Logger.create()).then(function (result) {
+            return validator.validate(request, Logger.create()).then(result => {
                 assert.deepEqual(result, {
                     isValid: false,
                     errors: [{
@@ -395,7 +395,7 @@ describe('dryRunValidator', () => {
                 },
                 validator = Validator.create({ StubRepository: StubRepository, testRequest: testRequest });
 
-            return validator.validate(request, Logger.create()).then(function (result) {
+            return validator.validate(request, Logger.create()).then(result => {
                 assert.deepEqual(result, {
                     isValid: false,
                     errors: [{
@@ -417,7 +417,7 @@ describe('dryRunValidator', () => {
                 }] }] },
                 validator = Validator.create({ StubRepository: StubRepository, testRequest: testRequest });
 
-            return validator.validate(request, Logger.create()).then(function (result) {
+            return validator.validate(request, Logger.create()).then(result => {
                 assert.deepEqual(result, {
                     isValid: false,
                     errors: [
@@ -447,7 +447,7 @@ describe('dryRunValidator', () => {
                     allowInjection: true
                 });
 
-            return validator.validate(request, Logger.create()).then(function (result) {
+            return validator.validate(request, Logger.create()).then(result => {
                 assert.deepEqual(result, {
                     isValid: true,
                     errors: []
@@ -467,7 +467,7 @@ describe('dryRunValidator', () => {
                     allowInjection: false
                 });
 
-            return validator.validate(request, Logger.create()).then(function (result) {
+            return validator.validate(request, Logger.create()).then(result => {
                 assert.deepEqual(result, {
                     isValid: false,
                     errors: [{
@@ -492,7 +492,7 @@ describe('dryRunValidator', () => {
                     allowInjection: false
                 });
 
-            return validator.validate(request, Logger.create()).then(function (result) {
+            return validator.validate(request, Logger.create()).then(result => {
                 assert.deepEqual(result, {
                     isValid: false,
                     errors: [{
@@ -517,7 +517,7 @@ describe('dryRunValidator', () => {
                     allowInjection: true
                 });
 
-            return validator.validate(request, Logger.create()).then(function (result) {
+            return validator.validate(request, Logger.create()).then(result => {
                 assert.ok(result.isValid);
             });
         });
@@ -534,7 +534,7 @@ describe('dryRunValidator', () => {
                     allowInjection: false
                 });
 
-            return validator.validate(request, Logger.create()).then(function (result) {
+            return validator.validate(request, Logger.create()).then(result => {
                 assert.deepEqual(result, {
                     isValid: false,
                     errors: [{
@@ -562,7 +562,7 @@ describe('dryRunValidator', () => {
                     allowInjection: false
                 });
 
-            return validator.validate(request, Logger.create()).then(function (result) {
+            return validator.validate(request, Logger.create()).then(result => {
                 assert.deepEqual(result, {
                     isValid: false,
                     errors: [{

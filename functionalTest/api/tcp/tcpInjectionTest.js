@@ -27,7 +27,7 @@ describe('tcp imposter', () => {
         });
 
         promiseIt('should allow synchronous javascript injection for responses', () => {
-            const fn = request => ({ data: request.data + ' INJECTED' }),
+            const fn = request => ({ data: `${request.data} INJECTED` }),
                 stub = { responses: [{ inject: fn.toString() }] },
                 request = { protocol: 'tcp', port, stubs: [stub], name: requestName };
 
@@ -65,7 +65,7 @@ describe('tcp imposter', () => {
                     protocol: 'http',
                     port: originServerPort,
                     stubs: [originServerStub],
-                    name: requestName + ' origin'
+                    name: `${requestName} origin`
                 },
                 fn = (request, state, logger, callback) => {
                     const net = require('net'),
@@ -74,9 +74,9 @@ describe('tcp imposter', () => {
                             port: '$PORT'
                         },
                         socket = net.connect(options, () => {
-                            socket.end(request.data + '\n');
+                            socket.end(`${request.data}\n`);
                         });
-                    socket.once('data', function (data) {
+                    socket.once('data', data => {
                         callback({ data: data });
                     });
                     // No return value!!!
@@ -96,7 +96,7 @@ describe('tcp imposter', () => {
 
         promiseIt('should allow binary requests extending beyond a single packet using endOfRequestResolver', () => {
             // We'll simulate a protocol that has a 4 byte message length at byte 0 indicating how many bytes follow
-            const getRequest = function (length) {
+            const getRequest = length => {
                     const buffer = new Buffer(length + 4);
                     buffer.writeUInt32LE(length, 0);
 
@@ -108,7 +108,7 @@ describe('tcp imposter', () => {
                 largeRequest = getRequest(100000),
                 responseBuffer = new Buffer([0, 1, 2, 3]),
                 stub = { responses: [{ is: { data: responseBuffer.toString('base64') } }] },
-                resolver = function (requestData) {
+                resolver = requestData => {
                     const messageLength = requestData.readUInt32LE(0);
                     return requestData.length === messageLength + 4;
                 },
@@ -125,7 +125,7 @@ describe('tcp imposter', () => {
                 assert.strictEqual(response.statusCode, 201);
 
                 return tcp.send(largeRequest, port);
-            }).then(() => api.get('/imposters/' + port)).then(response => {
+            }).then(() => api.get(`/imposters/${port}`)).then(response => {
                 assert.strictEqual(response.body.requests.length, 1);
                 assert.strictEqual(response.body.requests[0].data, largeRequest.toString('base64'));
             }).finally(() => api.del('/imposters'));
@@ -134,9 +134,9 @@ describe('tcp imposter', () => {
         promiseIt('should allow text requests extending beyond a single packet using endOfRequestResolver', () => {
             // We'll simulate HTTP
             // The last 'x' is added because new Array(5).join('x') creates 'xxxx' in JavaScript...
-            const largeRequest = 'Content-Length: 100000\n\n' + new Array(100000).join('x') + 'x',
+            const largeRequest = `Content-Length: 100000\n\n${new Array(100000).join('x')}x`,
                 stub = { responses: [{ is: { data: 'success' } }] },
-                resolver = function (requestData) {
+                resolver = requestData => {
                     const bodyLength = parseInt(/Content-Length: (\d+)/.exec(requestData)[1]),
                         body = /\n\n(.*)/.exec(requestData)[1];
 
@@ -155,7 +155,7 @@ describe('tcp imposter', () => {
                 assert.strictEqual(response.statusCode, 201);
 
                 return tcp.send(largeRequest, port);
-            }).then(() => api.get('/imposters/' + port)).then(response => {
+            }).then(() => api.get(`/imposters/${port}`)).then(response => {
                 assert.strictEqual(response.body.requests.length, 1);
                 assert.strictEqual(response.body.requests[0].data, largeRequest);
             }).finally(() => api.del('/imposters'));

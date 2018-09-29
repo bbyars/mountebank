@@ -1,30 +1,28 @@
 'use strict';
 
-var Q = require('q'),
+const Q = require('q'),
     util = require('util'),
     smtpClient = require('../../../api/smtp/smtpClient');
 
-function camelCase (key) {
-    return key.substring(0, 1).toLowerCase() + key.substring(1);
-}
+const camelCase = key => key.substring(0, 1).toLowerCase() + key.substring(1);
 
-function parseHeader (line) {
-    var parts = line.split(':');
+const parseHeader = line => {
+    const parts = line.split(':');
     return {
         key: camelCase(parts[0].trim()),
         value: parts.slice(1).join(':').trim()
     };
-}
+};
 
-function parse (text) {
-    var lines = text.split('\n'),
+const parse = text => {
+    const lines = text.split('\n'),
         message = { to: [], cc: [], bcc: [] };
 
     for (var i = 0; i < lines.length; i += 1) {
         if (lines[i].trim() === '') {
             break;
         }
-        var header = parseHeader(lines[i]);
+        const header = parseHeader(lines[i]);
         if (util.isArray(message[header.key])) {
             message[header.key].push(header.value);
         }
@@ -34,10 +32,10 @@ function parse (text) {
     }
     message.text = lines.slice(i).join('\n').trim();
     return message;
-}
+};
 
-function runStep (step) {
-    var deferred = Q.defer(),
+const runStep = step => {
+    const deferred = Q.defer(),
         message = parse(step.requestText);
 
     smtpClient.send(message, step.port).done(() => {
@@ -45,8 +43,6 @@ function runStep (step) {
     });
 
     return deferred.promise;
-}
-
-module.exports = {
-    runStep: runStep
 };
+
+module.exports = { runStep };

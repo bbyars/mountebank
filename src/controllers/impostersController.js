@@ -142,7 +142,7 @@ function create (protocols, imposters, Imposter, logger) {
                     response.setHeader('Location', imposter.url);
                     response.statusCode = 201;
                     response.send(imposter.toJSON());
-                }, function (error) {
+                }, error => {
                     respondWithCreationError(response, error);
                 });
             }
@@ -218,7 +218,7 @@ function create (protocols, imposters, Imposter, logger) {
                         imposters[imposter.port] = imposter;
                     });
                     response.send({ imposters: json });
-                }, function (error) {
+                }, error => {
                     respondWithCreationError(response, error);
                 });
             }

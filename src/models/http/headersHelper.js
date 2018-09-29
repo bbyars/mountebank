@@ -19,16 +19,12 @@ function headersFor (rawHeaders) {
 }
 
 function hasHeader (headerName, headers) {
-    return Object.keys(headers).some(function (header) {
-        return header.toLowerCase() === headerName.toLowerCase();
-    });
+    return Object.keys(headers).some(header => header.toLowerCase() === headerName.toLowerCase());
 }
 
 function headerNameFor (headerName, headers) {
     var helpers = require('../../util/helpers'),
-        result = Object.keys(headers).find(function (header) {
-            return header.toLowerCase() === headerName.toLowerCase();
-        });
+        result = Object.keys(headers).find(header => header.toLowerCase() === headerName.toLowerCase());
 
     if (!helpers.defined(result)) {
         return headerName;
@@ -40,9 +36,7 @@ function headerNameFor (headerName, headers) {
 
 function getJar (headers) {
     return {
-        get: function (header) {
-            return headers[headerNameFor(header, headers)];
-        },
+        get: header => headers[headerNameFor(header, headers)],
         set: function (header, value) {
             headers[headerNameFor(header, headers)] = value;
         }

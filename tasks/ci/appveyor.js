@@ -19,7 +19,7 @@ function responseFor (options) {
     const request = https.request(options, response => {
         const packets = [];
 
-        response.on('data', function (data) {
+        response.on('data', data => {
             packets.push(data);
         });
 

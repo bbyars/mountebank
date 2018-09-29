@@ -50,7 +50,7 @@ function spawnMb (args) {
     }
 
     result = spawn(command, args);
-    result.stderr.on('data', function (data) {
+    result.stderr.on('data', data => {
         console.log(data.toString('utf8'));
     });
     return result;
@@ -137,7 +137,7 @@ function create (port) {
 
     return {
         port,
-        url: 'http://localhost:' + port,
+        url: `http://localhost:${port}`,
         start: start,
         restart: restart,
         stop: stop,

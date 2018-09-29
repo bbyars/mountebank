@@ -1,16 +1,16 @@
 'use strict';
 
-var Q = require('q');
+const Q = require('q');
 
-function create (endpoint, id) {
-    var steps = [];
+const create = (endpoint, id) => {
+    const steps = [];
 
-    function addStep (stepSpec) {
-        var step = {
+    const addStep = stepSpec => {
+        const step = {
             assertValid: stepSpec.assertValid,
             execute: () => {
-                var runner = require('./testTypes/' + stepSpec.type);
-                return runner.runStep(stepSpec).then(function (actualResponse) {
+                const runner = require(`./testTypes/${stepSpec.type}`);
+                return runner.runStep(stepSpec).then(actualResponse => {
                     step.actualResponse = actualResponse;
                     return Q(true);
                 });
@@ -18,15 +18,15 @@ function create (endpoint, id) {
         };
 
         steps.push(step);
-    }
+    };
 
-    function assertValid () {
-        var stepExecutions = steps.map(function (step) { return step.execute; }),
+    const assertValid = () => {
+        const stepExecutions = steps.map(step => step.execute),
             chainedExecutions = stepExecutions.reduce(Q.when, Q());
 
         return chainedExecutions.then(() => {
-            steps.forEach(function (step, stepIndex) {
-                var util = require('util'),
+            steps.forEach((step, stepIndex) => {
+                const util = require('util'),
                     failureMessage = util.format(
                         '%s %s step %s failed; below is the actual result\n' +
                         '-----------\n' +
@@ -36,14 +36,9 @@ function create (endpoint, id) {
                 step.assertValid(step.actualResponse, failureMessage);
             });
         });
-    }
-
-    return {
-        addStep: addStep,
-        assertValid: assertValid
     };
-}
 
-module.exports = {
-    create: create
+    return { addStep, assertValid };
 };
+
+module.exports = { create };

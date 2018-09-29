@@ -105,9 +105,9 @@ describe('tcp imposter', () => {
         promiseIt('should allow proxy stubs', () => {
             const proxyPort = port + 1,
                 proxyStub = { responses: [{ is: { data: 'PROXIED' } }] },
-                proxyRequest = { protocol: 'tcp', port: proxyPort, stubs: [proxyStub], name: requestName + ' PROXY' },
-                stub = { responses: [{ proxy: { to: 'tcp://localhost:' + proxyPort } }] },
-                request = { protocol: 'tcp', port, stubs: [stub], name: requestName + ' MAIN' };
+                proxyRequest = { protocol: 'tcp', port: proxyPort, stubs: [proxyStub], name: `${requestName} PROXY` },
+                stub = { responses: [{ proxy: { to: `tcp://localhost:${proxyPort}` } }] },
+                request = { protocol: 'tcp', port, stubs: [stub], name: `${requestName} MAIN` };
 
             return api.post('/imposters', proxyRequest).then(() => api.post('/imposters', request)).then(() => tcp.send('request', port)).then(response => {
                 assert.strictEqual(response.toString(), 'PROXIED');
@@ -129,7 +129,7 @@ describe('tcp imposter', () => {
 
         promiseIt('should split each packet into a separate request by default', () => {
             // max 64k packet size, likely to hit max on the loopback interface
-            const largeRequest = new Array(65537).join('1') + '2',
+            const largeRequest = `${new Array(65537).join('1')}2`,
                 stub = { responses: [{ is: { data: 'success' } }] },
                 request = {
                     protocol: 'tcp',
@@ -143,11 +143,9 @@ describe('tcp imposter', () => {
                 assert.strictEqual(response.statusCode, 201);
 
                 return tcp.send(largeRequest, port);
-            }).then(() => api.get('/imposters/' + port)).then(response => {
+            }).then(() => api.get(`/imposters/${port}`)).then(response => {
                 const requests = response.body.requests,
-                    dataLength = requests.reduce(function (sum, recordedRequest) {
-                        return sum + recordedRequest.data.length;
-                    }, 0);
+                    dataLength = requests.reduce((sum, recordedRequest) => sum + recordedRequest.data.length, 0);
                 assert.ok(requests.length > 1);
                 assert.strictEqual(65537, dataLength);
             }).finally(() => api.del('/imposters'));

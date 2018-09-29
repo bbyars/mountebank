@@ -58,7 +58,7 @@ function implement (implementation, recordRequests, debug, baseLogger) {
             if (socket.on) {
                 connections[name] = socket;
 
-                socket.on('error', function (error) {
+                socket.on('error', error => {
                     logger.error('%s transmission error X=> %s', name, JSON.stringify(error));
                 });
 
@@ -77,7 +77,7 @@ function implement (implementation, recordRequests, debug, baseLogger) {
             var domain = require('domain').create(),
                 helpers = require('../util/helpers'),
                 clientName = helpers.socketName(socket),
-                errorHandler = function (error) {
+                errorHandler = error => {
                     var exceptions = require('../util/errors');
                     logger.error('%s X=> %s', clientName, JSON.stringify(exceptions.details(error)));
                     server.errorHandler(exceptions.details(error), request);

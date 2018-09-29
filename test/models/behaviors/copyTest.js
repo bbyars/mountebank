@@ -19,7 +19,7 @@ describe('behaviors', () => {
                     }]
                 };
 
-            return behaviors.execute(request, response, config, logger).then(function (actualResponse) {
+            return behaviors.execute(request, response, config, logger).then(actualResponse => {
                 assert.deepEqual(actualResponse, { data: 'Hello, mountebank' });
             });
         });
@@ -40,7 +40,7 @@ describe('behaviors', () => {
                     }]
                 };
 
-            return behaviors.execute(request, response, config, logger).then(function (actualResponse) {
+            return behaviors.execute(request, response, config, logger).then(actualResponse => {
                 assert.deepEqual(actualResponse, { data: 'Hello, mountebank' });
             });
         });
@@ -61,7 +61,7 @@ describe('behaviors', () => {
                     }]
                 };
 
-            return behaviors.execute(request, response, config, logger).then(function (actualResponse) {
+            return behaviors.execute(request, response, config, logger).then(actualResponse => {
                 assert.deepEqual(actualResponse, { data: 'Hello, mountebank' });
             });
         });
@@ -81,7 +81,7 @@ describe('behaviors', () => {
                     }]
                 };
 
-            return behaviors.execute(request, response, config, logger).then(function (actualResponse) {
+            return behaviors.execute(request, response, config, logger).then(actualResponse => {
                 assert.deepEqual(actualResponse, { data: 'Hello, ${you}' });
             });
         });
@@ -98,7 +98,7 @@ describe('behaviors', () => {
                     }]
                 };
 
-            return behaviors.execute(request, response, config, logger).then(function (actualResponse) {
+            return behaviors.execute(request, response, config, logger).then(actualResponse => {
                 assert.deepEqual(actualResponse, { outer: { inner: 'Hello, mountebank' } });
             });
         });
@@ -115,7 +115,7 @@ describe('behaviors', () => {
                     }]
                 };
 
-            return behaviors.execute(request, response, config, logger).then(function (actualResponse) {
+            return behaviors.execute(request, response, config, logger).then(actualResponse => {
                 assert.deepEqual(actualResponse, { data: 'mountebank', outer: { inner: 'Hello, mountebank' } });
             });
         });
@@ -132,7 +132,7 @@ describe('behaviors', () => {
                     }]
                 };
 
-            return behaviors.execute(request, response, config, logger).then(function (actualResponse) {
+            return behaviors.execute(request, response, config, logger).then(actualResponse => {
                 assert.deepEqual(actualResponse, { data: 'Hello, mountebank' });
             });
         });
@@ -149,7 +149,7 @@ describe('behaviors', () => {
                     }]
                 };
 
-            return behaviors.execute(request, response, config, logger).then(function (actualResponse) {
+            return behaviors.execute(request, response, config, logger).then(actualResponse => {
                 assert.deepEqual(actualResponse, { data: 'Hello, mountebank' });
             });
         });
@@ -166,7 +166,7 @@ describe('behaviors', () => {
                     }]
                 };
 
-            return behaviors.execute(request, response, config, logger).then(function (actualResponse) {
+            return behaviors.execute(request, response, config, logger).then(actualResponse => {
                 assert.deepEqual(actualResponse, { data: 'Year 2016, Month 12, Day 29: 2016-12-29' });
             });
         });
@@ -183,7 +183,7 @@ describe('behaviors', () => {
                     }]
                 };
 
-            return behaviors.execute(request, response, config, logger).then(function (actualResponse) {
+            return behaviors.execute(request, response, config, logger).then(actualResponse => {
                 assert.deepEqual(actualResponse, { data: 'Grabbed the first' });
             });
         });
@@ -200,7 +200,7 @@ describe('behaviors', () => {
                     }]
                 };
 
-            return behaviors.execute(request, response, config, logger).then(function (actualResponse) {
+            return behaviors.execute(request, response, config, logger).then(actualResponse => {
                 assert.deepEqual(actualResponse, { data: 'Hello, mountebank' });
             });
         });
@@ -217,7 +217,7 @@ describe('behaviors', () => {
                     }]
                 };
 
-            return behaviors.execute(request, response, config, logger).then(function (actualResponse) {
+            return behaviors.execute(request, response, config, logger).then(actualResponse => {
                 assert.deepEqual(actualResponse, { data: 'Hello, ${you}' });
             });
         });
@@ -234,7 +234,7 @@ describe('behaviors', () => {
                     }]
                 };
 
-            return behaviors.execute(request, response, config, logger).then(function (actualResponse) {
+            return behaviors.execute(request, response, config, logger).then(actualResponse => {
                 assert.deepEqual(actualResponse, { data: 'Hello, ${you}' });
                 logger.warn.assertLogged('[xmldom error]\tinvalid doc source\n@#[line:undefined,col:undefined] (source: "")');
             });
@@ -252,7 +252,7 @@ describe('behaviors', () => {
                     }]
                 };
 
-            return behaviors.execute(request, response, config, logger).then(function (actualResponse) {
+            return behaviors.execute(request, response, config, logger).then(actualResponse => {
                 assert.deepEqual(actualResponse, { data: 'Hello, mountebank' });
             });
         });
@@ -269,7 +269,7 @@ describe('behaviors', () => {
                     }]
                 };
 
-            return behaviors.execute(request, response, config, logger).then(function (actualResponse) {
+            return behaviors.execute(request, response, config, logger).then(actualResponse => {
                 assert.deepEqual(actualResponse, { data: 'Hello, mountebank' });
             });
         });
@@ -290,7 +290,7 @@ describe('behaviors', () => {
                     }]
                 };
 
-            return behaviors.execute(request, response, config, logger).then(function (actualResponse) {
+            return behaviors.execute(request, response, config, logger).then(actualResponse => {
                 assert.deepEqual(actualResponse, { data: 'Hello, mountebank' });
             });
         });
@@ -307,7 +307,7 @@ describe('behaviors', () => {
                     }]
                 };
 
-            return behaviors.execute(request, response, config, logger).then(function (actualResponse) {
+            return behaviors.execute(request, response, config, logger).then(actualResponse => {
                 assert.deepEqual(actualResponse, { data: '3, 2, 1' });
             });
         });
@@ -324,7 +324,7 @@ describe('behaviors', () => {
                     }]
                 };
 
-            return behaviors.execute(request, response, config, logger).then(function (actualResponse) {
+            return behaviors.execute(request, response, config, logger).then(actualResponse => {
                 assert.deepEqual(actualResponse, { data: 'Hello, ${you}' });
                 logger.warn.assertLogged('Cannot parse as JSON: "mountebank"');
             });
@@ -342,7 +342,7 @@ describe('behaviors', () => {
                     }]
                 };
 
-            return behaviors.execute(request, response, config, logger).then(function (actualResponse) {
+            return behaviors.execute(request, response, config, logger).then(actualResponse => {
                 assert.deepEqual(actualResponse, { data: 'Hello, mountebank' });
             });
         });
@@ -359,7 +359,7 @@ describe('behaviors', () => {
                     }]
                 };
 
-            return behaviors.execute(request, response, config, logger).then(function (actualResponse) {
+            return behaviors.execute(request, response, config, logger).then(actualResponse => {
                 assert.deepEqual(actualResponse, { data: 'Hello, ${you}' });
             });
         });
@@ -376,7 +376,7 @@ describe('behaviors', () => {
                     }]
                 };
 
-            return behaviors.execute(request, response, config, logger).then(function (actualResponse) {
+            return behaviors.execute(request, response, config, logger).then(actualResponse => {
                 assert.deepEqual(actualResponse, { data: '3, 2, 1' });
             });
         });

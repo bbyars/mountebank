@@ -6,14 +6,15 @@ const assert = require('assert'),
     port = api.port + 1,
     Q = require('q'),
     isWindows = require('os').platform().indexOf('win') === 0,
-    client = require('./http/baseHttpClient').create('http');
+    client = require('./http/baseHttpClient').create('http'),
+    requestName = 'some request name';
 
 describe('POST /imposters', () => {
 
     promiseIt('should return create new imposter with consistent hypermedia', () => {
         let createdBody, imposterPath;
 
-        return api.post('/imposters', { protocol: 'http', port, name: this.name }).then(response => {
+        return api.post('/imposters', { protocol: 'http', port, name: requestName }).then(response => {
             createdBody = response.body;
 
             assert.strictEqual(response.statusCode, 201);
@@ -26,15 +27,15 @@ describe('POST /imposters', () => {
         }).finally(() => api.del(imposterPath));
     });
 
-    promiseIt('should create imposter at provided port', () => api.post('/imposters', { protocol: 'http', port, name: this.name }).then(() => api.get('/', port)).then(response => {
+    promiseIt('should create imposter at provided port', () => api.post('/imposters', { protocol: 'http', port, name: requestName }).then(() => api.get('/', port)).then(response => {
         assert.strictEqual(response.statusCode, 200, JSON.stringify(response.body));
-    }).finally(() => api.del('/imposters/' + port)));
+    }).finally(() => api.del(`/imposters/${port}`)));
 
     promiseIt('should return 400 on invalid input', () => api.post('/imposters', {}).then(response => {
         assert.strictEqual(response.statusCode, 400);
     }));
 
-    promiseIt('should return 400 on port conflict', () => api.post('/imposters', { protocol: 'http', port: api.port, name: this.name }).then(response => {
+    promiseIt('should return 400 on port conflict', () => api.post('/imposters', { protocol: 'http', port: api.port, name: requestName }).then(response => {
         assert.strictEqual(response.statusCode, 400);
     }));
 
@@ -53,7 +54,7 @@ describe('POST /imposters', () => {
         if (isWindows) {
             return Q(true); // no sudo required
         }
-        return api.post('/imposters', { protocol: 'http', port: 90, name: this.name }).then(response => {
+        return api.post('/imposters', { protocol: 'http', port: 90, name: requestName }).then(response => {
             assert.strictEqual(response.statusCode, 403);
         });
     });
@@ -65,9 +66,9 @@ describe('DELETE /imposters', () => {
         assert.deepEqual(response.body, { imposters: [] });
     }));
 
-    it('deletes all imposters and returns replayable body', function (done) {
-        const firstImposter = { protocol: 'http', port, name: this.name + '1' },
-            secondImposter = { protocol: 'http', port: port + 1, name: this.name + '2' };
+    it('deletes all imposters and returns replayable body', done => {
+        const firstImposter = { protocol: 'http', port, name: `${requestName}1` },
+            secondImposter = { protocol: 'http', port: port + 1, name: `${requestName}2` };
 
         return api.post('/imposters', firstImposter).then(response => {
             assert.strictEqual(response.statusCode, 201);
@@ -98,7 +99,7 @@ describe('DELETE /imposters', () => {
         }).done(() => {
             assert.fail('did not close socket');
             done();
-        }, function (error) {
+        }, error => {
             assert.strictEqual(error.code, 'ECONNREFUSED');
             done();
         });
@@ -108,13 +109,13 @@ describe('DELETE /imposters', () => {
         const isImposter = {
                 protocol: 'http',
                 port, name:
-                this.name + '-is',
+                `${requestName}-is`,
                 stubs: [{ responses: [{ is: { body: 'Hello, World!' } }] }]
             },
             proxyImposter = {
                 protocol: 'http',
                 port: port + 1,
-                name: this.name + '-proxy',
+                name: `${requestName}-proxy`,
                 stubs: [{ responses: [{ proxy: { to: 'http://www.google.com' } }] }]
             };
 
@@ -135,7 +136,7 @@ describe('DELETE /imposters', () => {
                         numberOfRequests: 0,
                         requests: [],
                         stubs: isImposter.stubs,
-                        _links: { self: { href: 'http://localhost:' + api.port + '/imposters/' + isImposter.port } }
+                        _links: { self: { href: `http://localhost:${api.port}/imposters/${isImposter.port}` } }
                     },
                     {
                         protocol: 'http',
@@ -144,7 +145,7 @@ describe('DELETE /imposters', () => {
                         numberOfRequests: 0,
                         requests: [],
                         stubs: [],
-                        _links: { self: { href: 'http://localhost:' + api.port + '/imposters/' + proxyImposter.port } }
+                        _links: { self: { href: `http://localhost:${api.port}/imposters/${proxyImposter.port }` } }
                     }
                 ]
             });
@@ -156,9 +157,9 @@ describe('PUT /imposters', () => {
     promiseIt('creates all imposters provided when no imposters previously exist', () => {
         const request = {
             imposters: [
-                { protocol: 'http', port, name: this.name + '1' },
-                { protocol: 'http', port: port + 1, name: this.name + '2' },
-                { protocol: 'http', port: port + 2, name: this.name + '3' }
+                { protocol: 'http', port, name: `${requestName}1` },
+                { protocol: 'http', port: port + 1, name: `${requestName}2` },
+                { protocol: 'http', port: port + 2, name: `${requestName}3` }
             ]
         };
 
@@ -180,9 +181,9 @@ describe('PUT /imposters', () => {
         const postRequest = { protocol: 'smtp', port: port },
             putRequest = {
                 imposters: [
-                    { protocol: 'http', port, name: this.name + '1' },
-                    { protocol: 'http', port: port + 1, name: this.name + '2' },
-                    { protocol: 'http', port: port + 2, name: this.name + '3' }
+                    { protocol: 'http', port, name: `${requestName}1` },
+                    { protocol: 'http', port: port + 1, name: `${requestName}2` },
+                    { protocol: 'http', port: port + 2, name: `${requestName}3` }
                 ]
             };
 

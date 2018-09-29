@@ -19,10 +19,10 @@ describe('http proxy', () => {
             const proxyRequest = { protocol: 'http', port, name: requestName },
                 request = { path: '/PATH', method: 'POST', body: 'BODY', headers: { 'X-Key': 'TRUE' } };
 
-            return api.post('/imposters', proxyRequest).then(() => proxy.to('http://localhost:' + port, request, {})).then(response => {
+            return api.post('/imposters', proxyRequest).then(() => proxy.to(`http://localhost:${port}`, request, {})).then(response => {
                 assert.strictEqual(response.statusCode, 200, 'did not get a 200 from proxy');
 
-                return api.get('/imposters/' + port);
+                return api.get(`/imposters/${port}`);
             }).then(response => {
                 const requests = response.body.requests;
                 assert.strictEqual(requests.length, 1);
@@ -40,7 +40,7 @@ describe('http proxy', () => {
             return api.post('/imposters', request).then(response => {
                 assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body));
 
-                return proxy.to('http://localhost:' + port, { path: '/', method: 'GET', headers: {} }, {});
+                return proxy.to(`http://localhost:${port}`, { path: '/', method: 'GET', headers: {} }, {});
             }).then(response => {
                 assert.strictEqual(response.statusCode, 400);
                 assert.strictEqual(response.body, 'ERROR');
@@ -54,7 +54,7 @@ describe('http proxy', () => {
             return api.post('/imposters', request).then(response => {
                 assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body));
 
-                return proxy.to('https://localhost:' + port, { path: '/', method: 'GET', headers: {} }, {});
+                return proxy.to(`https://localhost:${port}`, { path: '/', method: 'GET', headers: {} }, {});
             }).then(response => {
                 assert.strictEqual(response.statusCode, 400);
                 assert.strictEqual(response.body, 'ERROR');
@@ -64,14 +64,14 @@ describe('http proxy', () => {
         promiseIt('should update the host header to the origin server', () => {
             const stub = {
                     responses: [{ is: { statusCode: 400, body: 'ERROR' } }],
-                    predicates: [{ equals: { headers: { host: 'localhost:' + port } } }]
+                    predicates: [{ equals: { headers: { host: `localhost:${port}` } } }]
                 },
                 request = { protocol: 'http', port, stubs: [stub], name: requestName };
 
             return api.post('/imposters', request).then(response => {
                 assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body));
 
-                return proxy.to('http://localhost:' + port, { path: '/', method: 'GET', headers: { host: 'www.mbtest.org' } }, {});
+                return proxy.to(`http://localhost:${port}`, { path: '/', method: 'GET', headers: { host: 'www.mbtest.org' } }, {});
             }).then(response => {
                 assert.strictEqual(response.statusCode, 400);
                 assert.strictEqual(response.body, 'ERROR');
@@ -85,7 +85,7 @@ describe('http proxy', () => {
             return api.post('/imposters', request).then(response => {
                 assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body));
 
-                return proxy.to('http://localhost:' + port, { path: '/', method: 'GET', headers: {} }, {});
+                return proxy.to(`http://localhost:${port}`, { path: '/', method: 'GET', headers: {} }, {});
             }).then(response => {
                 assert.strictEqual(response.body, 'ORIGIN');
                 assert.ok(response._proxyResponseTime > 230); // eslint-disable-line no-underscore-dangle
@@ -95,7 +95,7 @@ describe('http proxy', () => {
         if (!airplaneMode) {
             promiseIt('should gracefully deal with DNS errors', () => proxy.to('http://no.such.domain', { path: '/', method: 'GET', headers: {} }, {}).then(() => {
                 assert.fail('should not have resolved promise');
-            }, function (reason) {
+            }, reason => {
                 assert.deepEqual(reason, {
                     code: 'invalid proxy',
                     message: 'Cannot resolve "http://no.such.domain"'
@@ -104,7 +104,7 @@ describe('http proxy', () => {
 
             promiseIt('should gracefully deal with bad urls', () => proxy.to('1 + 2', { path: '/', method: 'GET', headers: {} }, {}).then(() => {
                 assert.fail('should not have resolved promise');
-            }, function (reason) {
+            }, reason => {
                 assert.deepEqual(reason, {
                     code: 'invalid proxy',
                     message: 'Unable to connect to "1 + 2"'
@@ -113,8 +113,8 @@ describe('http proxy', () => {
         }
 
 
-        ['application/octet-stream', 'audio/mpeg', 'audio/mp4', 'image/gif', 'image/jpeg', 'video/avi', 'video/mpeg'].forEach(function (mimeType) {
-            promiseIt('should base64 encode ' + mimeType + ' responses', () => {
+        ['application/octet-stream', 'audio/mpeg', 'audio/mp4', 'image/gif', 'image/jpeg', 'video/avi', 'video/mpeg'].forEach(mimeType => {
+            promiseIt(`should base64 encode ${mimeType} responses`, () => {
                 const buffer = new Buffer([0, 1, 2, 3]),
                     stub = {
                         responses: [{
@@ -130,7 +130,7 @@ describe('http proxy', () => {
                 return api.post('/imposters', request).then(response => {
                     assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body));
 
-                    return proxy.to('http://localhost:' + port, { path: '/', method: 'GET', headers: {} }, {});
+                    return proxy.to(`http://localhost:${port}`, { path: '/', method: 'GET', headers: {} }, {});
                 }).then(response => {
                     assert.strictEqual(response.body, buffer.toString('base64'));
                     assert.strictEqual(response._mode, 'binary');

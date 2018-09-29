@@ -15,7 +15,7 @@ describe('behaviors', () => {
                 logger = Logger.create(),
                 config = { shellTransform: ['echo Should not reach here'] };
 
-            return behaviors.execute(request, response, config, logger).then(function (actualResponse) {
+            return behaviors.execute(request, response, config, logger).then(actualResponse => {
                 assert.deepEqual(actualResponse, { data: 'ORIGINAL' });
             });
         });
@@ -31,7 +31,7 @@ describe('behaviors', () => {
 
             fs.writeFileSync('shellTransformTest.js', util.format('%s\nexec();', shellFn.toString()));
 
-            return behaviors.execute(request, response, config, logger).then(function (actualResponse) {
+            return behaviors.execute(request, response, config, logger).then(actualResponse => {
                 assert.deepEqual(actualResponse, { data: 'CHANGED' });
             }).finally(() => {
                 fs.unlinkSync('shellTransformTest.js');
@@ -54,7 +54,7 @@ describe('behaviors', () => {
 
             fs.writeFileSync('shellTransformTest.js', util.format('%s\nexec();', shellFn.toString()));
 
-            return behaviors.execute(request, response, config, logger).then(function (actualResponse) {
+            return behaviors.execute(request, response, config, logger).then(actualResponse => {
                 assert.deepEqual(actualResponse, { data: 'UNCHANGED', requestData: 'FROM REQUEST' });
             }).finally(() => {
                 fs.unlinkSync('shellTransformTest.js');
@@ -69,7 +69,7 @@ describe('behaviors', () => {
 
             return behaviors.execute(request, response, config, logger).then(() => {
                 assert.fail('Promise resolved, should have been rejected');
-            }, function (error) {
+            }, error => {
                 // Error message is OS-dependent
                 assert.ok(error.indexOf('fileDoesNotExist') >= 0, error);
             });
@@ -89,7 +89,7 @@ describe('behaviors', () => {
 
             return behaviors.execute(request, response, config, logger).then(() => {
                 assert.fail('Promise resolved, should have been rejected');
-            }, function (error) {
+            }, error => {
                 assert.ok(error.indexOf('Command failed') >= 0, error);
                 assert.ok(error.indexOf('BOOM!!!') >= 0, error);
             }).finally(() => {
@@ -110,7 +110,7 @@ describe('behaviors', () => {
 
             return behaviors.execute(request, response, config, logger).then(() => {
                 assert.fail('Promise resolved, should have been rejected');
-            }, function (error) {
+            }, error => {
                 assert.ok(error.indexOf('Shell command returned invalid JSON') >= 0, error);
             }).finally(() => {
                 fs.unlinkSync('shellTransformTest.js');

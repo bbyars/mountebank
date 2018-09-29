@@ -243,7 +243,7 @@ mb --configfile templates/imposters.ejs --allowInjection
 
 <p>templates/originServerResponse.ejs</p>
 <pre><code>
-function (request, state, logger) {
+(request, state, logger) => {
     logger.info('origin called');
     state.requests = state.requests || 0;
     state.requests += 1;

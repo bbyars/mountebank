@@ -3,30 +3,30 @@
 const Q = require('q');
 const SMTPConnection = require('nodemailer/lib/smtp-connection');
 
-function addressOf (email) {
+const addressOf = email => {
     if (email.indexOf('<') < 0) {
         return email;
     }
     return (/<([^>]+)>/).exec(email)[1];
-}
+};
 
-function messageText (message) {
+const messageText = message => {
     let result = `From: ${message.from}`;
-    message.to.forEach(function (address) { result += `\r\nTo: ${address}`; });
-    message.cc.forEach(function (address) { result += `\r\nCc: ${address}`; });
-    message.bcc.forEach(function (address) { result += `\r\nBcc: ${address}`; });
+    message.to.forEach(address => { result += `\r\nTo: ${address}`; });
+    message.cc.forEach(address => { result += `\r\nCc: ${address}`; });
+    message.bcc.forEach(address => { result += `\r\nBcc: ${address}`; });
     result += `\r\nSubject: ${message.subject}`;
     result += `\r\n\r\n${message.text}`;
     return result;
-}
+};
 
-function send (message, port) {
+const send = (message, port) => {
     if (!port) {
         throw Error('you forgot to pass the port again');
     }
 
     let deferred = Q.defer();
-    let connection = new SMTPConnection({ port: port });
+    let connection = new SMTPConnection({ port });
 
     message.cc = message.cc || [];
     message.bcc = message.bcc || [];
@@ -49,7 +49,7 @@ function send (message, port) {
     });
 
     return deferred.promise;
-}
+};
 
 module.exports = {
     send: send

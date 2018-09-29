@@ -82,19 +82,15 @@ if (process.env.MB_AIRPLANE_MODE !== 'true' && process.env.MB_RUN_WEB_TESTS === 
             return api.get('/sitemap').then(response => {
                 assert.strictEqual(response.statusCode, 200);
 
-                const siteLinks = response.body.split('\n').map(function (link) {
-                        return link.replace('http://www.mbtest.org', '');
-                    }).filter(function (path) {
+                const siteLinks = response.body.split('\n').map(link => link.replace('http://www.mbtest.org', '')).filter(path =>
                         // save time by only checking latest releases, others should be immutable
-                        return path !== '' &&
+                        path !== '' &&
                                blacklist.indexOf(path) < 0 &&
-                               (path.indexOf('/releases/') < 0 || path.indexOf(currentVersion) > 0);
-                    }),
-                    tests = siteLinks.map(function (link) {
-                        return getHTML(link).then(function (html) {
-                            return assertValid(link, html);
-                        });
-                    });
+                               (path.indexOf('/releases/') < 0 || path.indexOf(currentVersion) > 0)
+                    ),
+                    tests = siteLinks.map(link => getHTML(link).then(function (html) {
+                        return assertValid(link, html);
+                    }));
 
                 return Q.all(tests);
             });

@@ -19,8 +19,8 @@ describe('https imposter', () => {
         const request = {
             protocol: 'https',
             port,
-            key: key,
-            cert: cert,
+            key,
+            cert,
             name: requestName
         };
 
@@ -58,8 +58,8 @@ describe('https imposter', () => {
                 path: '/',
                 port,
                 agent: false,
-                key: key,
-                cert: cert
+                key,
+                cert
             });
         }).then(response => {
             assert.strictEqual(response.statusCode, 200);
@@ -72,19 +72,19 @@ describe('https imposter', () => {
                 protocol: 'https',
                 port: originServerPort,
                 stubs: [{ responses: [{ is: { body: 'origin server' } }] }],
-                name: requestName + ' origin',
+                name: `${requestName} origin`,
                 mutualAuth: true
             },
             proxy = {
-                to: 'https://localhost:' + originServerPort,
-                key: key,
-                cert: cert
+                to: `https://localhost:${originServerPort}`,
+                key,
+                cert
             },
             proxyRequest = {
                 protocol: 'https',
                 port,
                 stubs: [{ responses: [{ proxy: proxy }] }],
-                name: requestName + ' proxy'
+                name: `${requestName} proxy`
             };
 
         return api.post('/imposters', originServerRequest).then(response => {

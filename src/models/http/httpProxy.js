@@ -158,7 +158,7 @@ function create (logger) {
             deferred.resolve(response);
         });
 
-        proxiedRequest.once('error', function (error) {
+        proxiedRequest.once('error', error => {
             var errors = require('../../util/errors');
 
             if (error.code === 'ENOTFOUND') {

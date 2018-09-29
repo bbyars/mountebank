@@ -14,7 +14,7 @@ describe('behaviors', () => {
                 start = new Date(),
                 config = { wait: 1000 };
 
-            return behaviors.execute(request, response, config, logger).then(function (actualResponse) {
+            return behaviors.execute(request, response, config, logger).then(actualResponse => {
                 const time = new Date() - start;
                 assert.ok(time < 50, 'Took ' + time + ' milliseconds');
                 assert.deepEqual(actualResponse, { key: 'value' });
@@ -28,7 +28,7 @@ describe('behaviors', () => {
                 start = new Date(),
                 config = { wait: 100 };
 
-            return behaviors.execute(request, response, config, logger).then(function (actualResponse) {
+            return behaviors.execute(request, response, config, logger).then(actualResponse => {
                 const time = new Date() - start;
                 assert.ok(time > 90, 'Took ' + time + ' milliseconds'); // allows for approximate timing
                 assert.deepEqual(actualResponse, { key: 'value' });
@@ -43,7 +43,7 @@ describe('behaviors', () => {
                 start = new Date(),
                 config = { wait: fn.toString() };
 
-            return behaviors.execute(request, response, config, logger).then(function (actualResponse) {
+            return behaviors.execute(request, response, config, logger).then(actualResponse => {
                 const time = new Date() - start;
                 assert.ok(time > 90, 'Took ' + time + ' milliseconds'); // allows for approximate timing
                 assert.deepEqual(actualResponse, { key: 'value' });
@@ -59,7 +59,7 @@ describe('behaviors', () => {
 
             return behaviors.execute(request, response, config, logger).then(() => {
                 assert.fail('should have rejected');
-            }, function (error) {
+            }, error => {
                 assert.ok(error.message.indexOf('invalid wait injection') >= 0);
                 logger.error.assertLogged(fn.toString());
             });
@@ -72,7 +72,7 @@ describe('behaviors', () => {
                 start = new Date(),
                 config = { wait: '100' };
 
-            return behaviors.execute(request, response, config, logger).then(function (actualResponse) {
+            return behaviors.execute(request, response, config, logger).then(actualResponse => {
                 const time = new Date() - start;
                 assert.ok(time > 90, 'Took ' + time + ' milliseconds'); // allows for approximate timing
                 assert.deepEqual(actualResponse, { key: 'value' });

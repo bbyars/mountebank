@@ -127,7 +127,7 @@ describe('mb command line', () => {
     if (process.env.MB_AIRPLANE_MODE !== 'true') {
         promiseIt('should allow removing proxies during save', () => {
             const proxyStub = { responses: [{ proxy: { to: 'https://google.com' } }] },
-                proxyRequest = { protocol: 'http', port: port + 1, stubs: [proxyStub], name: requestName + ' proxy' };
+                proxyRequest = { protocol: 'http', port: port + 1, stubs: [proxyStub], name: `${requestName} proxy` };
             let expected;
 
             return mb.start().then(() => mb.post('/imposters', proxyRequest)).then(response => {
@@ -136,7 +136,7 @@ describe('mb command line', () => {
             }).then(() => mb.get('/imposters?replayable=true&removeProxies=true')).then(response => {
                 expected = response.body;
                 return mb.save(['--removeProxies']);
-            }).then(function (result) {
+            }).then(result => {
                 assert.strictEqual(result.exitCode, 0);
                 assert.ok(fs.existsSync('mb.json'));
                 assert.deepEqual(expected, JSON.parse(fs.readFileSync('mb.json')));
