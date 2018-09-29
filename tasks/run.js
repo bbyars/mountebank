@@ -33,7 +33,7 @@ function run (command, args, options) {
         }
     });
 
-    proc.on('close', function (exitCode) {
+    proc.on('close', exitCode => {
         if (exitCode === 0 && !npmFailure) {
             deferred.resolve();
         }

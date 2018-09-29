@@ -2,7 +2,7 @@
 
 /* global Q */
 
-var predicateExplanations = {
+const predicateExplanations = {
     equals: 'a request field must match exactly',
     deepEquals: 'a request object graph must match exactly',
     contains: 'a request field must contain a substring',
@@ -16,17 +16,17 @@ var predicateExplanations = {
     inject: 'passes the entire request to an injected JavaScript function'
 };
 
-var responsesExplanations = {
+const responsesExplanations = {
     is: 'a canned response that you provide',
     proxy: 'a response that comes from a downstream system',
     inject: 'determines the response from a JavaScript function'
 };
 
-var predicateGenerator = {
+const predicateGenerator = {
     // Quite ugly - context is expected to be set when the predicate dialog opens
     context: null,
     generateTcp: function () {
-        var type = $('select', predicateGenerator.context).val(),
+        const type = $('select', predicateGenerator.context).val(),
             field = $('#tcpRequestField').val(),
             value = $('#tcpRequestValue').val(),
             predicate = {},
@@ -41,7 +41,7 @@ var predicateGenerator = {
 };
 
 function explain (cell, explanations) {
-    var select = $('select', cell),
+    const select = $('select', cell),
         explanation = $('span', cell);
 
     select.on('change', function () {
@@ -54,17 +54,17 @@ function explain (cell, explanations) {
     select.trigger('change');
 }
 
-var StubList = {
+const StubList = {
     create: function () {
         function forEachRow (fn) {
-            var rows = $('#stubs tr');
-            for (var i = 2; i < rows.length - 1; i += 1) {
+            const rows = $('#stubs tr');
+            for (let i = 2; i < rows.length - 1; i += 1) {
                 fn(rows[i]);
             }
         }
 
         function add () {
-            var index = $('#stubs tr').length - 3,
+            const index = $('#stubs tr').length - 3,
                 row = $('#stubs tr.template').clone(),
                 predicatesCell = $('td', row)[1],
                 responsesCell = $('td', row)[2];
@@ -74,9 +74,9 @@ var StubList = {
             explain(predicatesCell, predicateExplanations);
             explain(responsesCell, responsesExplanations);
 
-            var link = $('a', predicatesCell);
+            const link = $('a', predicatesCell);
             link.click(function () {
-                var protocol = $('#protocol').val();
+                let protocol = $('#protocol').val();
                 if (protocol === 'https') {
                     protocol = 'http';
                 }
@@ -93,10 +93,10 @@ var StubList = {
         }
 
         function toJSON () {
-            var json = [];
+            const json = [];
 
             forEachRow(function (row) {
-                var stub = {},
+                const stub = {},
                     predicatesCell = $('td', row)[1],
                     predicates = JSON.parse($('code', predicatesCell).text()),
                     responsesCell = $('td', row)[2],
@@ -122,7 +122,7 @@ var StubList = {
     }
 };
 
-var stubs = StubList.create();
+const stubs = StubList.create();
 
 function ajax (settings) {
     // Convert jQuery's broken promises to Q's and return xhr regardless of success or failure
@@ -138,8 +138,8 @@ function ajax (settings) {
 }
 
 function setRequest (verb, path, json) {
-    var domain = window.location.href.replace('http://', '').split('/')[0],
-        requestText = verb + ' ' + path + '\n' +
+    const domain = window.location.href.replace('http://', '').split('/')[0];
+    let requestText = verb + ' ' + path + '\n' +
             'Host: ' + domain + '\n' +
             'Accept: application/json';
     if (json) {
@@ -150,7 +150,7 @@ function setRequest (verb, path, json) {
 }
 
 function setResponse (xhr) {
-    var response = 'HTTP/1.1 ' + xhr.status + ' ' + xhr.statusText + '\n' +
+    const response = 'HTTP/1.1 ' + xhr.status + ' ' + xhr.statusText + '\n' +
         xhr.getAllResponseHeaders() + '\n' +
         xhr.responseText;
     $('#api-response').text(response);
@@ -166,7 +166,7 @@ function updateLinks () {
     $('a').off('click');
 
     $('#imposters a').on('click', function () {
-        var link = $(this),
+        const link = $(this),
             row = link.closest('tr'),
             imposter = (row.attr('id') || '').replace('imposter-', ''),
             url = '/imposters/' + imposter,
@@ -194,7 +194,7 @@ function updateLinks () {
 }
 
 function buildJSON () {
-    var json = { protocol: $('#protocol').val() };
+    const json = { protocol: $('#protocol').val() };
 
     if ($('#port').val()) {
         json.port = parseInt($('#port').val());
@@ -225,7 +225,7 @@ function createImposter () {
         if (xhr.status === 201) {
             $('form').trigger('reset');
             stubs.reset();
-            var port = JSON.parse(xhr.responseText).port;
+            const port = JSON.parse(xhr.responseText).port;
             addImposterRow(port);
         }
     });

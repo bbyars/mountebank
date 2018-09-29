@@ -111,7 +111,7 @@ module.exports = function (grunt) {
         const done = this.async(),
             command = 'node_modules/.bin/istanbul cover node_modules/.bin/grunt mochaTest:unit';
 
-        exec(command, function (error, stdout, stderr) {
+        exec(command, (error, stdout, stderr) => {
             if (stdout) { console.log(stdout); }
             if (stderr) { console.log(stderr); }
             if (error) { throw error; }
@@ -124,7 +124,7 @@ module.exports = function (grunt) {
         const done = this.async(),
             command = 'node_modules/.bin/codeclimate-test-reporter < coverage/lcov.info';
 
-        exec(command, function (error, stdout, stderr) {
+        exec(command, (error, stdout, stderr) => {
             if (stdout) { console.log(stdout); }
             if (stderr) { console.log(stderr); }
             if (error) { throw error; }
@@ -136,7 +136,7 @@ module.exports = function (grunt) {
         const done = this.async(),
             command = 'scripts/sonar';
 
-        exec(command, function (error, stdout, stderr) {
+        exec(command, (error, stdout, stderr) => {
             if (stdout) { console.log(stdout); }
             if (stderr) { console.log(stderr); }
             if (error) { throw error; }

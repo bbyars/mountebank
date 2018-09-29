@@ -12,27 +12,27 @@ process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
  * @param {Object} logger - The logger
  * @returns {Object}
  */
-function create (logger) {
-    function toUrl (path, query) {
-        var querystring = require('querystring'),
+const create = logger => {
+    const toUrl = (path, query) => {
+        const querystring = require('querystring'),
             tail = querystring.stringify(query);
 
         if (tail === '') {
             return path;
         }
-        return path + '?' + tail;
-    }
+        return `${path}?${tail}`;
+    };
 
-    function hostnameFor (protocol, host, port) {
-        var result = host;
+    const hostnameFor = (protocol, host, port) => {
+        let result = host;
         if ((protocol === 'http:' && port !== 80) || (protocol === 'https:' && port !== 443)) {
-            result += ':' + port;
+            result += `:${port}`;
         }
         return result;
-    }
+    };
 
-    function setProxyAgent (parts, options) {
-        var HttpProxyAgent = require('http-proxy-agent'),
+    const setProxyAgent = (parts, options) => {
+        const HttpProxyAgent = require('http-proxy-agent'),
             HttpsProxyAgent = require('https-proxy-agent');
 
         if (process.env.http_proxy && parts.protocol === 'http:') {
@@ -41,11 +41,11 @@ function create (logger) {
         else if (process.env.https_proxy && parts.protocol === 'https:') {
             options.agent = new HttpsProxyAgent(process.env.https_proxy);
         }
-    }
+    };
 
-    function getProxyRequest (baseUrl, originalRequest, proxyOptions) {
+    const getProxyRequest = (baseUrl, originalRequest, proxyOptions) => {
         /* eslint complexity: 0 */
-        var helpers = require('../../util/helpers'),
+        const helpers = require('../../util/helpers'),
             headersHelper = require('./headersHelper'),
             url = require('url'),
             parts = url.parse(baseUrl),
@@ -73,15 +73,15 @@ function create (logger) {
             options.headers['Content-Length'] = Buffer.byteLength(originalRequest.body);
         }
 
-        var proxiedRequest = protocol.request(options);
+        const proxiedRequest = protocol.request(options);
         if (originalRequest.body) {
             proxiedRequest.write(originalRequest.body);
         }
         return proxiedRequest;
-    }
+    };
 
-    function isBinaryResponse (headers) {
-        var contentEncoding = headers['content-encoding'] || '',
+    const isBinaryResponse = headers => {
+        const contentEncoding = headers['content-encoding'] || '',
             contentType = headers['content-type'] || '';
 
         if (contentEncoding.indexOf('gzip') >= 0) {
@@ -92,27 +92,25 @@ function create (logger) {
             return true;
         }
 
-        return ['audio', 'image', 'video'].some(function (typeName) {
-            return contentType.indexOf(typeName) === 0;
-        });
-    }
+        return ['audio', 'image', 'video'].some(typeName => contentType.indexOf(typeName) === 0);
+    };
 
-    function proxy (proxiedRequest) {
-        var Q = require('q'),
+    const proxy = proxiedRequest => {
+        const Q = require('q'),
             deferred = Q.defer(),
             start = new Date();
 
         proxiedRequest.end();
 
-        proxiedRequest.once('response', function (response) {
-            var packets = [];
+        proxiedRequest.once('response', response => {
+            const packets = [];
 
-            response.on('data', function (chunk) {
+            response.on('data', chunk => {
                 packets.push(chunk);
             });
 
-            response.on('end', function () {
-                var body = Buffer.concat(packets),
+            response.on('end', () => {
+                const body = Buffer.concat(packets),
                     mode = isBinaryResponse(response.headers) ? 'binary' : 'text',
                     encoding = mode === 'binary' ? 'base64' : 'utf8',
                     headersHelper = require('./headersHelper'),
@@ -128,7 +126,7 @@ function create (logger) {
         });
 
         return deferred.promise;
-    }
+    };
 
     /**
      * Proxies an http/s request to a destination
@@ -140,32 +138,32 @@ function create (logger) {
      * @param {string} [options.key] - The private key, in case the destination requires mutual authentication
      * @returns {Object} - Promise resolving to the response
      */
-    function to (proxyDestination, originalRequest, options) {
+    const to = (proxyDestination, originalRequest, options) => {
 
-        function log (direction, what) {
+        const log = (direction, what) => {
             logger.debug('Proxy %s %s %s %s %s',
                 originalRequest.requestFrom, direction, JSON.stringify(what), direction, proxyDestination);
-        }
+        };
 
-        var Q = require('q'),
+        const Q = require('q'),
             deferred = Q.defer(),
             proxiedRequest = getProxyRequest(proxyDestination, originalRequest, options);
 
         log('=>', originalRequest);
 
-        proxy(proxiedRequest).done(function (response) {
+        proxy(proxiedRequest).done(response => {
             log('<=', response);
             deferred.resolve(response);
         });
 
         proxiedRequest.once('error', error => {
-            var errors = require('../../util/errors');
+            const errors = require('../../util/errors');
 
             if (error.code === 'ENOTFOUND') {
-                deferred.reject(errors.InvalidProxyError('Cannot resolve ' + JSON.stringify(proxyDestination)));
+                deferred.reject(errors.InvalidProxyError(`Cannot resolve ${JSON.stringify(proxyDestination)}`));
             }
             else if (error.code === 'ECONNREFUSED' || error.code === 'ECONNRESET') {
-                deferred.reject(errors.InvalidProxyError('Unable to connect to ' + JSON.stringify(proxyDestination)));
+                deferred.reject(errors.InvalidProxyError(`Unable to connect to ${JSON.stringify(proxyDestination)}`));
             }
             else {
                 deferred.reject(error);
@@ -173,13 +171,9 @@ function create (logger) {
         });
 
         return deferred.promise;
-    }
-
-    return {
-        to: to
     };
-}
 
-module.exports = {
-    create: create
+    return { to };
 };
+
+module.exports = { create };

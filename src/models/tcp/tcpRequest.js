@@ -22,7 +22,7 @@ function createTestRequest () {
  * @returns {Object} - A promise resolving to the mountebank tcp request
  */
 function createFrom (request) {
-    var Q = require('q'),
+    const Q = require('q'),
         helpers = require('../../util/helpers');
 
     return Q({
@@ -33,5 +33,5 @@ function createFrom (request) {
 
 module.exports = {
     createTestRequest: createTestRequest,
-    createFrom: createFrom
+    createFrom
 };

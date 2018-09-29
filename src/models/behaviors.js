@@ -6,7 +6,7 @@
  */
 
 // The following schemas are used by both the lookup and copy behaviors and should be kept consistent
-var fromSchema = {
+const fromSchema = {
         _required: true,
         _allowedTypes: {
             string: {},
@@ -90,7 +90,7 @@ var fromSchema = {
  * @returns {Object} The array of errors
  */
 function validate (config) {
-    var validator = require('./behaviorsValidator').create();
+    const validator = require('./behaviorsValidator').create();
     return validator.validate(config, validations);
 }
 
@@ -108,11 +108,11 @@ function wait (request, responsePromise, millisecondsOrFn, logger) {
         return responsePromise;
     }
 
-    var util = require('util'),
+    const util = require('util'),
         fn = util.format('(%s)()', millisecondsOrFn),
-        milliseconds = parseInt(millisecondsOrFn),
         Q = require('q'),
         exceptions = require('../util/errors');
+    let milliseconds = parseInt(millisecondsOrFn);
 
     if (isNaN(milliseconds)) {
         try {
@@ -131,7 +131,7 @@ function wait (request, responsePromise, millisecondsOrFn, logger) {
 }
 
 function quoteForShell (obj) {
-    var json = JSON.stringify(obj),
+    const json = JSON.stringify(obj),
         isWindows = require('os').platform().indexOf('win') === 0,
         util = require('util');
 
@@ -146,7 +146,7 @@ function quoteForShell (obj) {
 }
 
 function execShell (command, request, response, logger) {
-    var Q = require('q'),
+    const Q = require('q'),
         deferred = Q.defer(),
         util = require('util'),
         exec = require('child_process').exec,
@@ -155,7 +155,7 @@ function execShell (command, request, response, logger) {
     logger.debug('Shelling out to %s', command);
     logger.debug(fullCommand);
 
-    exec(fullCommand, function (error, stdout, stderr) {
+    exec(fullCommand, (error, stdout, stderr) => {
         if (error) {
             if (stderr) {
                 logger.error(stderr);
@@ -190,11 +190,9 @@ function shellTransform (request, responsePromise, commandArray, logger) {
     }
 
     // Run them all in sequence
-    var result = responsePromise;
+    let result = responsePromise;
     commandArray.forEach(function (command) {
-        result = result.then(function (response) {
-            return execShell(command, request, response, logger);
-        });
+        result = result.then(response => execShell(command, request, response, logger));
     });
     return result;
 }
@@ -212,8 +210,8 @@ function decorate (originalRequest, responsePromise, fn, logger) {
         return responsePromise;
     }
 
-    return responsePromise.then(function (response) {
-        var Q = require('q'),
+    return responsePromise.then(response => {
+        const Q = require('q'),
             helpers = require('../util/helpers'),
             request = helpers.clone(originalRequest),
             injected = '(' + fn + ')(request, response, logger);',
@@ -222,7 +220,7 @@ function decorate (originalRequest, responsePromise, fn, logger) {
         try {
             // Support functions that mutate response in place and those
             // that return a new response
-            var result = eval(injected);
+            let result = eval(injected);
             if (!result) {
                 result = response;
             }
@@ -251,11 +249,11 @@ function getKeyIgnoringCase (obj, expectedKey) {
 
 function getFrom (obj, from) {
     if (typeof from === 'object') {
-        var keys = Object.keys(from);
+        const keys = Object.keys(from);
         return getFrom(obj[keys[0]], from[keys[0]]);
     }
     else {
-        var result = obj[getKeyIgnoringCase(obj, from)],
+        const result = obj[getKeyIgnoringCase(obj, from)],
             util = require('util');
 
         // Some request fields, like query parameters, can be multi-valued
@@ -269,7 +267,7 @@ function getFrom (obj, from) {
 }
 
 function regexFlags (options) {
-    var result = '';
+    let result = '';
     if (options && options.ignoreCase) {
         result += 'i';
     }
@@ -280,7 +278,7 @@ function regexFlags (options) {
 }
 
 function getMatches (selectionFn, selector, logger) {
-    var matches = selectionFn();
+    const matches = selectionFn();
 
     if (matches && matches.length > 0) {
         return matches;
@@ -292,22 +290,22 @@ function getMatches (selectionFn, selector, logger) {
 }
 
 function regexValue (from, config, logger) {
-    var regex = new RegExp(config.using.selector, regexFlags(config.using.options)),
-        selectionFn = function () { return regex.exec(from); };
+    const regex = new RegExp(config.using.selector, regexFlags(config.using.options)),
+        selectionFn = () => regex.exec(from);
     return getMatches(selectionFn, regex, logger);
 }
 
 function xpathValue (from, config, logger) {
-    var selectionFn = function () {
-        var xpath = require('./xpath');
+    const selectionFn = () => {
+        const xpath = require('./xpath');
         return xpath.select(config.using.selector, config.using.ns, from, logger);
     };
     return getMatches(selectionFn, config.using.selector, logger);
 }
 
 function jsonpathValue (from, config, logger) {
-    var selectionFn = function () {
-        var jsonpath = require('./jsonpath');
+    const selectionFn = () => {
+        const jsonpath = require('./jsonpath');
         return jsonpath.select(config.using.selector, from, logger);
     };
     return getMatches(selectionFn, config.using.selector, logger);
@@ -335,10 +333,10 @@ function globalObjectReplace (obj, replacer) {
 }
 
 function replaceArrayValuesIn (response, token, values, logger) {
-    var replacer = function (field) {
+    const replacer = function (field) {
         values.forEach(function (replacement, index) {
             // replace ${TOKEN}[1] with indexed element
-            var util = require('util'),
+            const util = require('util'),
                 indexedToken = util.format('%s[%s]', token, index);
             field = globalStringReplace(field, indexedToken, replacement, logger);
         });
@@ -361,11 +359,11 @@ function replaceArrayValuesIn (response, token, values, logger) {
  * @returns {Object}
  */
 function copy (originalRequest, responsePromise, copyArray, logger) {
-    return responsePromise.then(function (response) {
-        var Q = require('q');
+    return responsePromise.then(response => {
+        const Q = require('q');
 
         copyArray.forEach(function (copyConfig) {
-            var from = getFrom(originalRequest, copyConfig.from),
+            const from = getFrom(originalRequest, copyConfig.from),
                 using = copyConfig.using || {},
                 fnMap = { regex: regexValue, xpath: xpathValue, jsonpath: jsonpathValue },
                 values = fnMap[using.method](from, copyConfig, logger);
@@ -377,7 +375,7 @@ function copy (originalRequest, responsePromise, copyArray, logger) {
 }
 
 function createRowObject (headers, rowArray) {
-    var row = {};
+    const row = {};
     rowArray.forEach(function (value, index) {
         row[headers[index]] = value;
     });
@@ -385,14 +383,14 @@ function createRowObject (headers, rowArray) {
 }
 
 function selectRowFromCSV (csvConfig, keyValue, logger) {
-    var fs = require('fs'),
+    const fs = require('fs'),
         Q = require('q'),
         helpers = require('../util/helpers'),
-        headers,
         inputStream = fs.createReadStream(csvConfig.path),
         parser = require('csv-parse')({ delimiter: ',' }),
         pipe = inputStream.pipe(parser),
         deferred = Q.defer();
+    let headers;
 
     inputStream.on('error', e => {
         logger.error('Cannot read ' + csvConfig.path + ': ' + e);
@@ -404,14 +402,14 @@ function selectRowFromCSV (csvConfig, keyValue, logger) {
             headers = rowArray;
         }
         else {
-            var row = createRowObject(headers, rowArray);
+            const row = createRowObject(headers, rowArray);
             if (row[csvConfig.keyColumn].localeCompare(keyValue) === 0) {
                 deferred.resolve(row);
             }
         }
     });
 
-    pipe.on('end', function () {
+    pipe.on('end', () => {
         deferred.resolve({});
     });
 
@@ -419,7 +417,7 @@ function selectRowFromCSV (csvConfig, keyValue, logger) {
 }
 
 function lookupRow (lookupConfig, originalRequest, logger) {
-    var Q = require('q'),
+    const Q = require('q'),
         from = getFrom(originalRequest, lookupConfig.key.from),
         fnMap = { regex: regexValue, xpath: xpathValue, jsonpath: jsonpathValue },
         keyValues = fnMap[lookupConfig.key.using.method](from, lookupConfig.key, logger),
@@ -434,13 +432,13 @@ function lookupRow (lookupConfig, originalRequest, logger) {
 }
 
 function replaceObjectValuesIn (response, token, values, logger) {
-    var replacer = function (field) {
+    const replacer = function (field) {
         Object.keys(values).forEach(function (key) {
-            var util = require('util');
+            const util = require('util');
 
             // replace ${TOKEN}["key"] and ${TOKEN}['key'] and ${TOKEN}[key]
             ['"', "'", ''].forEach(function (quoteChar) {
-                var quoted = util.format('%s[%s%s%s]', token, quoteChar, key, quoteChar);
+                const quoted = util.format('%s[%s%s%s]', token, quoteChar, key, quoteChar);
                 field = globalStringReplace(field, quoted, values[key], logger);
             });
         });
@@ -460,14 +458,14 @@ function replaceObjectValuesIn (response, token, values, logger) {
  * @returns {Object}
  */
 function lookup (originalRequest, responsePromise, lookupArray, logger) {
-    return responsePromise.then(function (response) {
-        var Q = require('q'),
+    return responsePromise.then(response => {
+        const Q = require('q'),
             lookupPromises = lookupArray.map(function (lookupConfig) {
                 return lookupRow(lookupConfig, originalRequest, logger).then(function (row) {
                     replaceObjectValuesIn(response, lookupConfig.into, row, logger);
                 });
             });
-        return Q.all(lookupPromises).then(function () { return Q(response); });
+        return Q.all(lookupPromises).then(() => Q(response));
     }).catch(error => {
         logger.error(error);
     });
@@ -486,7 +484,7 @@ function execute (request, response, behaviors, logger) {
         return require('q')(response);
     }
 
-    var Q = require('q'),
+    const Q = require('q'),
         combinators = require('../util/combinators'),
         waitFn = behaviors.wait ?
             result => wait(request, result, behaviors.wait, logger) :

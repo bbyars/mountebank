@@ -9,7 +9,7 @@ const fs = require('fs-extra'),
 module.exports = function (grunt) {
 
     function failTask (task) {
-        return function (exitCode) {
+        return exitCode => {
             grunt.warn(task + ' failed', exitCode);
         };
     }

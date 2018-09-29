@@ -163,7 +163,7 @@ function json (log) {
     return function (request, response, next) {
         request.body = '';
         request.setEncoding('utf8');
-        request.on('data', function (chunk) {
+        request.on('data', chunk => {
             request.body += chunk;
         });
         request.on('end', function () {

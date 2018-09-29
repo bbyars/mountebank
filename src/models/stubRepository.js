@@ -18,7 +18,7 @@ function create (resolver, recordMatches, encoding) {
      * @memberOf module:models/stubRepository#
      * @type {Array}
      */
-    var stubs = [];
+    const stubs = [];
 
     function trueForAll (list, predicate) {
         // we call map before calling every so we make sure to call every
@@ -27,13 +27,13 @@ function create (resolver, recordMatches, encoding) {
     }
 
     function findFirstMatch (request, logger, imposterState) {
-        var helpers = require('../util/helpers');
+        const helpers = require('../util/helpers');
 
         if (stubs.length === 0) {
             return undefined;
         }
-        var matches = stubs.filter(stub => {
-            var stubPredicates = stub.predicates || [],
+        const matches = stubs.filter(stub => {
+            const stubPredicates = stub.predicates || [],
                 predicates = require('./predicates');
 
             return trueForAll(stubPredicates, function (predicate) {
@@ -64,14 +64,13 @@ function create (resolver, recordMatches, encoding) {
     }
 
     function repeatTransform (responses) {
-        var result = [],
-            response,
-            repeats;
+        const result = [];
+        let response, repeats;
 
-        for (var i = 0; i < responses.length; i += 1) {
+        for (let i = 0; i < responses.length; i += 1) {
             response = responses[i];
             repeats = repeatsFor(response);
-            for (var j = 0; j < repeats; j += 1) {
+            for (let j = 0; j < repeats; j += 1) {
                 result.push(response);
             }
         }
@@ -94,7 +93,7 @@ function create (resolver, recordMatches, encoding) {
      * @returns {Object} - The stubs
      */
     function getStubs () {
-        var helpers = require('../util/helpers'),
+        const helpers = require('../util/helpers'),
             result = helpers.clone(stubs);
 
         result.forEach(stub => {
@@ -126,15 +125,15 @@ function create (resolver, recordMatches, encoding) {
      * @returns {Object} - Promise resolving to the response
      */
     function resolve (request, logger, imposterState) {
-        var stub = findFirstMatch(request, logger, imposterState) || { statefulResponses: [{ is: {} }] },
+        const stub = findFirstMatch(request, logger, imposterState) || { statefulResponses: [{ is: {} }] },
             responseConfig = stub.statefulResponses.shift();
 
         logger.debug('generating response from ' + JSON.stringify(responseConfig));
 
         stub.statefulResponses.push(responseConfig);
 
-        return resolver.resolve(responseConfig, request, logger, stubs, imposterState).then(function (response) {
-            var match = {
+        return resolver.resolve(responseConfig, request, logger, stubs, imposterState).then(response => {
+            const match = {
                 timestamp: new Date().toJSON(),
                 request: request,
                 response: response
@@ -151,10 +150,10 @@ function create (resolver, recordMatches, encoding) {
         stubs: getStubs,
         addStub: addStub,
         resolve: resolve,
-        deleteRequests: deleteRequests
+        deleteRequests
     };
 }
 
 module.exports = {
-    create: create
+    create
 };

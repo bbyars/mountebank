@@ -5,9 +5,9 @@
  * @module
  */
 
-function addressValues (addresses) {
+const addressValues = addresses => {
     // mailparser sometimes returns an array, sometimes an object, so we have to normalize
-    var util = require('util');
+    const util = require('util');
     if (!addresses) {
         addresses = [];
     }
@@ -15,34 +15,32 @@ function addressValues (addresses) {
         addresses = [addresses];
     }
     return addresses.map(address => address.value[0]);
-}
+};
 
-function transform (session, email) {
-    return {
-        requestFrom: session.remoteAddress,
-        envelopeFrom: session.envelope.mailFrom.address,
-        envelopeTo: session.envelope.rcptTo.map(value => value.address),
-        from: email.from.value[0],
-        to: addressValues(email.to),
-        cc: addressValues(email.cc),
-        bcc: addressValues(email.bcc),
-        subject: email.subject,
-        priority: email.priority || 'normal',
-        references: email.references || [],
-        inReplyTo: email.inReplyTo || [],
-        text: email.text.trim(),
-        html: (email.html || '').trim(),
-        attachments: email.attachments || []
-    };
-}
+const transform = (session, email) => ({
+    requestFrom: session.remoteAddress,
+    envelopeFrom: session.envelope.mailFrom.address,
+    envelopeTo: session.envelope.rcptTo.map(value => value.address),
+    from: email.from.value[0],
+    to: addressValues(email.to),
+    cc: addressValues(email.cc),
+    bcc: addressValues(email.bcc),
+    subject: email.subject,
+    priority: email.priority || 'normal',
+    references: email.references || [],
+    inReplyTo: email.inReplyTo || [],
+    text: email.text.trim(),
+    html: (email.html || '').trim(),
+    attachments: email.attachments || []
+});
 
 /**
  * Transforms the raw SMTP request into the mountebank request
  * @param {Object} request - The raw SMTP request
  * @returns {Object}
  */
-function createFrom (request) {
-    var Q = require('q'),
+const createFrom = request => {
+    const Q = require('q'),
         deferred = Q.defer();
 
     const simpleParser = require('mailparser2').simpleParser2;
@@ -56,8 +54,6 @@ function createFrom (request) {
     });
 
     return deferred.promise;
-}
-
-module.exports = {
-    createFrom: createFrom
 };
+
+module.exports = { createFrom };

@@ -21,9 +21,9 @@
  * @returns {Function}
  */
 function curry (fn) {
-    var args = Array.prototype.slice.call(arguments, 1);
+    const args = Array.prototype.slice.call(arguments, 1);
     return function () {
-        var nextArgs = Array.prototype.slice.call(arguments),
+        const nextArgs = Array.prototype.slice.call(arguments),
             allArgs = args.concat(nextArgs);
 
         return fn.apply(null, allArgs);
@@ -41,7 +41,7 @@ function curry (fn) {
  * @returns {Function} A single function that represents the composition of the functions provided
  */
 function compose () {
-    var args = Array.prototype.slice.call(arguments).reverse();
+    const args = Array.prototype.slice.call(arguments).reverse();
     return function (obj) { return args.reduce(function (result, F) { return F(result); }, obj); };
 }
 

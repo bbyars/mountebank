@@ -8,7 +8,7 @@
 
 function initializeLogfile (filename) {
     // Ensure new logfile on startup so the /logs only shows for this process
-    var path = require('path'),
+    const path = require('path'),
         fs = require('fs'),
         extension = path.extname(filename),
         pattern = new RegExp(extension + '$'),
@@ -25,7 +25,7 @@ function initializeLogfile (filename) {
  * @returns {Object} An object with a close method to stop the server
  */
 function create (options) {
-    var Q = require('q'),
+    const Q = require('q'),
         express = require('express'),
         cors = require('cors'),
         errorHandler = require('errorhandler'),
@@ -170,7 +170,7 @@ function create (options) {
         }
     }
 
-    var connections = {},
+    const connections = {},
         server = app.listen(options.port, hostname(), function () {
             logger.info('mountebank v%s now taking orders - point your browser to http://localhost:%s for help',
                 thisPackage.version, options.port);
@@ -187,8 +187,8 @@ function create (options) {
                     options.port);
             }
 
-            server.on('connection', function (socket) {
-                var name = helpers.socketName(socket);
+            server.on('connection', socket => {
+                const name = helpers.socketName(socket);
                 connections[name] = socket;
 
                 socket.on('close', function () {
@@ -207,14 +207,14 @@ function create (options) {
             });
 
             deferred.resolve({
-                close: function (callback) {
+                close: callback => {
                     server.close(function () {
                         logger.info('Adios - see you soon?');
                         callback();
                     });
 
                     // Force kill any open connections to prevent process hanging
-                    Object.keys(connections).forEach(function (socket) {
+                    Object.keys(connections).forEach(socket => {
                         connections[socket].destroy();
                     });
                 }
@@ -225,5 +225,5 @@ function create (options) {
 }
 
 module.exports = {
-    create: create
+    create
 };

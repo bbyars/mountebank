@@ -17,12 +17,12 @@
  * @returns {Object}
  */
 function create (options) {
-    var exceptions = require('../util/errors');
+    const exceptions = require('../util/errors');
 
     function stubForResponse (originalStub, response, withPredicates) {
         // Each dry run only validates the first response, so we
         // explode the number of stubs to dry run each response separately
-        var helpers = require('../util/helpers'),
+        const helpers = require('../util/helpers'),
             clonedStub = helpers.clone(originalStub),
             clonedResponse = helpers.clone(response);
         clonedStub.responses = [clonedResponse];
@@ -39,7 +39,7 @@ function create (options) {
 
     function dryRun (stub, encoding, logger) {
         // Need a well-formed proxy response in case a behavior decorator expects certain fields to exist
-        var Q = require('q'),
+        const Q = require('q'),
             combinators = require('../util/combinators'),
             dryRunProxy = { to: function () { return Q(options.testProxyResponse); } },
             dryRunLogger = {
@@ -49,28 +49,24 @@ function create (options) {
                 error: logger.error
             },
             resolver = require('./responseResolver').create(dryRunProxy, combinators.identity),
-            stubsToValidateWithPredicates = stub.responses.map(function (response) {
-                return stubForResponse(stub, response, true);
-            }),
-            stubsToValidateWithoutPredicates = stub.responses.map(function (response) {
-                return stubForResponse(stub, response, false);
-            }),
+            stubsToValidateWithPredicates = stub.responses.map(response => stubForResponse(stub, response, true)),
+            stubsToValidateWithoutPredicates = stub.responses.map(response => stubForResponse(stub, response, false)),
             stubsToValidate = stubsToValidateWithPredicates.concat(stubsToValidateWithoutPredicates),
             dryRunRepositories = stubsToValidate.map(function (stubToValidate) {
-                var stubRepository = options.StubRepository.create(resolver, false, encoding);
+                const stubRepository = options.StubRepository.create(resolver, false, encoding);
                 stubRepository.addStub(stubToValidate);
                 return stubRepository;
             });
 
         return Q.all(dryRunRepositories.map(function (stubRepository) {
-            var testRequest = options.testRequest;
+            const testRequest = options.testRequest;
             testRequest.isDryRun = true;
             return stubRepository.resolve(testRequest, dryRunLogger, {});
         }));
     }
 
     function addDryRunErrors (stub, encoding, errors, logger) {
-        var Q = require('q'),
+        const Q = require('q'),
             deferred = Q.defer();
 
         try {
@@ -92,8 +88,8 @@ function create (options) {
     }
 
     function hasStubInjection (stub) {
-        var hasResponseInjections = stub.responses.some(function (response) {
-                var hasDecorator = response._behaviors && response._behaviors.decorate,
+        const hasResponseInjections = stub.responses.some(response => {
+                const hasDecorator = response._behaviors && response._behaviors.decorate,
                     hasWaitFunction = response._behaviors && typeof response._behaviors.wait === 'string';
 
                 return response.inject || hasDecorator || hasWaitFunction;
@@ -101,16 +97,12 @@ function create (options) {
             hasPredicateInjections = Object.keys(stub.predicates || {}).some(function (predicate) {
                 return stub.predicates[predicate].inject;
             }),
-            hasAddDecorateBehaviorInProxy = stub.responses.some(function (response) {
-                return response.proxy && response.proxy.addDecorateBehavior;
-            });
+            hasAddDecorateBehaviorInProxy = stub.responses.some(response => response.proxy && response.proxy.addDecorateBehavior);
         return hasResponseInjections || hasPredicateInjections || hasAddDecorateBehaviorInProxy;
     }
 
     function hasShellExecution (stub) {
-        return stub.responses.some(function (response) {
-            return response._behaviors && response._behaviors.shellTransform;
-        });
+        return stub.responses.some(response => response._behaviors && response._behaviors.shellTransform);
     }
 
     function addStubInjectionErrors (stub, errors) {
@@ -135,14 +127,14 @@ function create (options) {
     }
 
     function addBehaviorErrors (stub, errors) {
-        stub.responses.forEach(function (response) {
-            var behaviors = require('./behaviors');
+        stub.responses.forEach(response => {
+            const behaviors = require('./behaviors');
             addAllTo(errors, behaviors.validate(response._behaviors));
         });
     }
 
     function errorsForStub (stub, encoding, logger) {
-        var errors = [],
+        const errors = [],
             Q = require('q'),
             util = require('util'),
             deferred = Q.defer();
@@ -172,7 +164,7 @@ function create (options) {
     }
 
     function errorsForRequest (request) {
-        var errors = [],
+        const errors = [],
             hasRequestInjection = request.endOfRequestResolver && request.endOfRequestResolver.inject;
 
         if (!options.allowInjection && hasRequestInjection) {
@@ -191,7 +183,7 @@ function create (options) {
      * @returns {Object} Promise resolving to an object containing isValid and an errors array
      */
     function validate (request, logger) {
-        var stubs = request.stubs || [],
+        const stubs = request.stubs || [],
             encoding = request.mode === 'binary' ? 'base64' : 'utf8',
             validationPromises = stubs.map(stub => errorsForStub(stub, encoding, logger)),
             Q = require('q'),
@@ -203,7 +195,7 @@ function create (options) {
         }
 
         Q.all(validationPromises).done(function (errorsForAllStubs) {
-            var allErrors = errorsForAllStubs.reduce(function (stubErrors, accumulator) {
+            const allErrors = errorsForAllStubs.reduce(function (stubErrors, accumulator) {
                 return accumulator.concat(stubErrors);
             }, []);
             deferred.resolve({ isValid: allErrors.length === 0, errors: allErrors });
@@ -218,5 +210,5 @@ function create (options) {
 }
 
 module.exports = {
-    create: create
+    create
 };

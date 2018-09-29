@@ -15,7 +15,7 @@ description = 'All past releases of mountebank, saved for posterity'
     <th>Version</th>
     <th>Release Date</th>
   </tr>
-<% releases.forEach(function (release) { %>
+<% releases.forEach(release => { %>
   <tr>
     <td><a href='/releases/<%= release.version %>'><%= release.version %></a></td>
     <td><%= release.date %></td>

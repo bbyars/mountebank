@@ -8,17 +8,17 @@
 /**
  * Creates the imposter controller
  * @param {Object} imposters - the map of ports to imposters
- * @returns {{get: get, del: del}}
+ * @returns {{get, del}}
  */
-function create (imposters) {
-    function queryBoolean (query, key) {
+const create = imposters => {
+    const queryBoolean = (query, key) => {
         const helpers = require('../util/helpers');
 
         if (!helpers.defined(query[key])) {
             return false;
         }
         return query[key].toLowerCase() === 'true';
-    }
+    };
 
     /**
      * The function responding to GET /imposters/:port
@@ -26,15 +26,15 @@ function create (imposters) {
      * @param {Object} request - the HTTP request
      * @param {Object} response - the HTTP response
      */
-    function get (request, response) {
+    const get = (request, response) => {
         const url = require('url'),
             query = url.parse(request.url, true).query,
             options = { replayable: queryBoolean(query, 'replayable'), removeProxies: queryBoolean(query, 'removeProxies') },
             imposter = imposters[request.params.id].toJSON(options);
 
         response.format({
-            json: function () { response.send(imposter); },
-            html: function () {
+            json: () => { response.send(imposter); },
+            html: () => {
                 if (request.headers['x-requested-with']) {
                     response.render('_imposter', { imposter: imposter });
                 }
@@ -43,9 +43,9 @@ function create (imposters) {
                 }
             }
         });
-    }
+    };
 
-    function deleteRequests (request, response) {
+    const deleteRequests = (request, response) => {
         const Q = require('q'),
             json = {},
             options = { replayable: false, removeProxies: false };
@@ -56,8 +56,8 @@ function create (imposters) {
             imposter = imposter.toJSON(options);
 
             response.format({
-                json: function () { response.send(imposter); },
-                html: function () {
+                json: () => { response.send(imposter); },
+                html: () => {
                     if (request.headers['x-requested-with']) {
                         response.render('_imposter', { imposter: imposter });
                     }
@@ -72,7 +72,7 @@ function create (imposters) {
             response.send(json);
             return Q(true);
         }
-    }
+    };
     /**
      * The function responding to DELETE /imposters/:port
      * @memberOf module:controllers/imposterController#
@@ -80,7 +80,7 @@ function create (imposters) {
      * @param {Object} response - the HTTP response
      * @returns {Object} A promise for testing
      */
-    function del (request, response) {
+    const del = (request, response) => {
         const Q = require('q'),
             imposter = imposters[request.params.id],
             url = require('url'),
@@ -90,7 +90,7 @@ function create (imposters) {
 
         if (imposter) {
             json = imposter.toJSON(options);
-            return imposter.stop().then(function () {
+            return imposter.stop().then(() => {
                 delete imposters[request.params.id];
                 response.send(json);
             });
@@ -99,15 +99,9 @@ function create (imposters) {
             response.send(json);
             return Q(true);
         }
-    }
-
-    return {
-        get: get,
-        del: del,
-        deleteRequests: deleteRequests
     };
-}
 
-module.exports = {
-    create: create
+    return { get, del, deleteRequests };
 };
+
+module.exports = { create };

@@ -10,7 +10,7 @@
 
 function createErrorHandler (deferred, port) {
     return function errorHandler (error) {
-        var errors = require('../util/errors');
+        const errors = require('../util/errors');
 
         if (error.errno === 'EADDRINUSE') {
             deferred.reject(errors.ResourceConflictError('Port ' + port + ' is already in use'));
@@ -31,7 +31,7 @@ function createErrorHandler (deferred, port) {
  * @returns {Object}
  */
 function create (Protocol, request) {
-    var Q = require('q'),
+    const Q = require('q'),
         deferred = Q.defer(),
         domain = require('domain').create(),
         errorHandler = createErrorHandler(deferred, request.port),
@@ -40,10 +40,10 @@ function create (Protocol, request) {
     compatibility.upcast(request);
 
     domain.on('error', errorHandler);
-    domain.run(function () {
+    domain.run(() => {
         Protocol.create(request).done(function (server) {
 
-            var url = '/imposters/' + server.port;
+            const url = '/imposters/' + server.port;
 
             if (request.stubs) {
                 request.stubs.forEach(server.addStub);
@@ -59,13 +59,13 @@ function create (Protocol, request) {
             }
 
             function removeNonEssentialInformationFrom (result) {
-                var helpers = require('../util/helpers');
+                const helpers = require('../util/helpers');
                 result.stubs.forEach(stub => {
                     /* eslint-disable no-underscore-dangle */
                     if (stub.matches) {
                         delete stub.matches;
                     }
-                    stub.responses.forEach(function (response) {
+                    stub.responses.forEach(response => {
                         if (helpers.defined(response.is) && helpers.defined(response.is._proxyResponseTime)) {
                             delete response.is._proxyResponseTime;
                         }
@@ -78,9 +78,7 @@ function create (Protocol, request) {
 
             function removeProxiesFrom (result) {
                 result.stubs.forEach(stub => {
-                    stub.responses = stub.responses.filter(function (response) {
-                        return !response.hasOwnProperty('proxy');
-                    });
+                    stub.responses = stub.responses.filter(response => !response.hasOwnProperty('proxy'));
                 });
                 result.stubs = result.stubs.filter(stub => stub.responses.length > 0);
             }
@@ -89,7 +87,7 @@ function create (Protocol, request) {
                 // I consider the order of fields represented important.  They won't matter for parsing,
                 // but it makes a nicer user experience for developers viewing the JSON to keep the most
                 // relevant information at the top
-                var result = {
+                const result = {
                     protocol: Protocol.name,
                     port: server.port,
                     numberOfRequests: server.numberOfRequests()
@@ -123,7 +121,7 @@ function create (Protocol, request) {
                 toJSON: toJSON,
                 addStub: server.addStub,
                 stop: server.close,
-                deleteRequests: deleteRequests
+                deleteRequests
             });
         });
     });
@@ -132,5 +130,5 @@ function create (Protocol, request) {
 }
 
 module.exports = {
-    create: create
+    create
 };

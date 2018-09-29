@@ -7,7 +7,7 @@ const run = require('./run').run,
 module.exports = function (grunt) {
 
     function failTask (task) {
-        return function (exitCode) {
+        return exitCode => {
             grunt.warn(task + ' failed', exitCode);
         };
     }

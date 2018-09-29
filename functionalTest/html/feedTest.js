@@ -7,17 +7,17 @@ const assert = require('assert'),
     xpath = require('xpath'),
     DOMParser = require('xmldom').DOMParser;
 
-function entryCount (body) {
+const entryCount = body => {
     const doc = new DOMParser().parseFromString(body),
         select = xpath.useNamespaces({ atom: 'http://www.w3.org/2005/Atom' });
     return select('count(//atom:entry)', doc);
-}
+};
 
-function getNextLink (body) {
+const getNextLink = body => {
     const doc = new DOMParser().parseFromString(body),
         select = xpath.useNamespaces({ atom: 'http://www.w3.org/2005/Atom' });
     return select('//atom:link[@rel="next"]/@href', doc)[0].value;
-}
+};
 
 describe('the feed', () => {
     promiseIt('should default to page 1 with 10 entries', () => httpClient.get('/feed', api.port).then(response => {

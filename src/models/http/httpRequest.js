@@ -10,33 +10,31 @@
  * Returns the request that will be used during dry run validation
  * @returns {Object}
  */
-function createTestRequest () {
-    return {
-        requestFrom: '',
-        method: 'GET',
-        path: '/',
-        query: {},
-        headers: {},
-        form: {},
-        body: ''
-    };
-}
+const createTestRequest = () => ({
+    requestFrom: '',
+    method: 'GET',
+    path: '/',
+    query: {},
+    headers: {},
+    form: {},
+    body: ''
+});
 
-function transform (request) {
-    var helpers = require('../../util/helpers'),
+const transform = request => {
+    const helpers = require('../../util/helpers'),
         url = require('url'),
         queryString = require('query-string'),
         parts = url.parse(request.url, true),
         headersHelper = require('./headersHelper');
 
-    var headers = headersHelper.headersFor(request.rawHeaders);
+    const headers = headersHelper.headersFor(request.rawHeaders);
 
-    var transformed = {
+    const transformed = {
         requestFrom: helpers.socketName(request.socket),
         method: request.method,
         path: parts.pathname,
         query: parts.query,
-        headers: headers,
+        headers,
         body: request.body
     };
 
@@ -45,38 +43,35 @@ function transform (request) {
     }
 
     return transformed;
-}
+};
 
-function isUrlEncodedForm (contentType) {
+const isUrlEncodedForm = contentType => {
     if (!contentType) {
         return false;
     }
 
-    var index = contentType.indexOf(';');
-    var type = index !== -1 ?
+    const index = contentType.indexOf(';');
+    const type = index !== -1 ?
         contentType.substr(0, index).trim() :
         contentType.trim();
 
     return type === 'application/x-www-form-urlencoded';
-}
+};
 
 /**
  * Creates the API-friendly http/s request
  * @param {Object} container - An object containing the raw http/s request
  * @returns {Object} - Promise resolving to the simplified request
  */
-function createFrom (container) {
-    var Q = require('q'),
+const createFrom = container => {
+    const Q = require('q'),
         deferred = Q.defer(),
         request = container.request;
     request.body = '';
     request.setEncoding('utf8');
-    request.on('data', function (chunk) { request.body += chunk; });
-    request.on('end', function () { deferred.resolve(transform(request)); });
+    request.on('data', chunk => { request.body += chunk; });
+    request.on('end', () => { deferred.resolve(transform(request)); });
     return deferred.promise;
-}
-
-module.exports = {
-    createTestRequest: createTestRequest,
-    createFrom: createFrom
 };
+
+module.exports = { createTestRequest, createFrom };

@@ -54,7 +54,7 @@ describe('AbstractServer', function () {
         promiseIt('should log when the server is closed', function () {
             const Server = AbstractServer.implement(implementation, true, false, logger);
             implementation.protocolName = 'test';
-            baseServer.close = function (callback) { callback(); };
+            baseServer.close = callback => { callback(); };
 
             return Server.create({ port: 3000 }).then(function (server) {
                 server.close();
@@ -162,7 +162,7 @@ describe('AbstractServer', function () {
 
             return Server.create({ port: 3000 }).then(function (server) {
                 baseServer.listeners('request')[0]({}, {}, function () {
-                    server.requests.forEach(function (request) {
+                    server.requests.forEach(request => {
                         if (request.timestamp) {
                             request.timestamp = 'NOW';
                         }

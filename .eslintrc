@@ -42,7 +42,7 @@
         "no-array-constructor": 2,
         "no-bitwise": 2,
         "no-caller": 2,
-        "no-confusing-arrow": 2,
+        "no-confusing-arrow": 1,
         "no-empty-pattern": 2,
         "no-eq-null": 2,
         "no-extend-native": 2,

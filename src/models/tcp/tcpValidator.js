@@ -6,7 +6,7 @@
  */
 
 function validateMode (request) {
-    var errors = [],
+    const errors = [],
         exceptions = require('../../util/errors');
 
     if (request.mode && ['text', 'binary'].indexOf(request.mode) < 0) {

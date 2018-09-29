@@ -3,8 +3,8 @@
 // Adapted from http://www.blastam.com/blog/index.php/2013/03/how-to-track-downloads-in-google-analytics-v2/
 
 $(document).ready(function () {
-    var filetypes = /\.(zip|gz|pkg|rpm|deb)$/i,
-        baseHref = '';
+    const filetypes = /\.(zip|gz|pkg|rpm|deb)$/i;
+    let baseHref = '';
 
     if ($('base').attr('href') !== undefined) {
         baseHref = $('base').attr('href');
@@ -13,17 +13,16 @@ $(document).ready(function () {
     $('a').on('click', function () {
         /* eslint complexity: 0 */
         try {
-            var element = $(this),
-                track = false,
+            const element = $(this),
                 href = element.attr('href'),
                 domains = document.domain.split('.').reverse(),
                 isThisDomain = href.match(domains[1] + '.' + domains[0]),
                 events = [];
-
+            let track = false;
             events.value = 0;
 
             if (href.match(filetypes)) {
-                var extension = (/[.]/.exec(href)) ? /[^.]+$/.exec(href) : undefined;
+                const extension = (/[.]/.exec(href)) ? /[^.]+$/.exec(href) : undefined;
                 events.category = 'download';
                 events.action = 'click-' + extension[0];
                 events.label = href.replace(/ /g, '-');

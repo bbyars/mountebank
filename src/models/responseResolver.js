@@ -12,10 +12,10 @@
  * @returns {Object}
  */
 function create (proxy, postProcess) {
-    var injectState = {};
+    const injectState = {};
 
     function inject (request, fn, logger, imposterState) {
-        var Q = require('q'),
+        const Q = require('q'),
             helpers = require('../util/helpers'),
             deferred = Q.defer(),
             scope = helpers.clone(request),
@@ -23,13 +23,13 @@ function create (proxy, postProcess) {
             exceptions = require('../util/errors');
 
         if (request.isDryRun === true) {
-            Q.delay(1).then(function () {
+            Q.delay(1).then(() => {
                 deferred.resolve({});
             });
         }
         else {
             try {
-                var response = eval(injected);
+                const response = eval(injected);
                 if (helpers.defined(response)) {
                     deferred.resolve(response);
                 }
@@ -50,7 +50,7 @@ function create (proxy, postProcess) {
     }
 
     function selectionValue (nodes) {
-        var helpers = require('../util/helpers');
+        const helpers = require('../util/helpers');
         if (!helpers.defined(nodes)) {
             return '';
         }
@@ -63,19 +63,19 @@ function create (proxy, postProcess) {
     }
 
     function xpathValue (xpathConfig, possibleXML, logger) {
-        var xpath = require('./xpath'),
+        const xpath = require('./xpath'),
             nodes = xpath.select(xpathConfig.selector, xpathConfig.ns, possibleXML, logger);
         return selectionValue(nodes);
     }
 
     function jsonpathValue (jsonpathConfig, possibleJSON, logger) {
-        var jsonpath = require('./jsonpath'),
+        const jsonpath = require('./jsonpath'),
             nodes = jsonpath.select(jsonpathConfig.selector, possibleJSON, logger);
         return selectionValue(nodes);
     }
 
     function buildEquals (request, matchers, valueOf) {
-        var result = {};
+        const result = {};
         Object.keys(matchers).forEach(function (key) {
             if (typeof request[key] === 'object') {
                 result[key] = buildEquals(request[key], matchers[key], valueOf);
@@ -88,11 +88,11 @@ function create (proxy, postProcess) {
     }
 
     function predicatesFor (request, matchers, logger) {
-        var predicates = [];
+        const predicates = [];
 
         matchers.forEach(function (matcher) {
-            var basePredicate = {},
-                valueOf = function (field) { return field; };
+            const basePredicate = {};
+            let valueOf = function (field) { return field; };
 
             // Add parameters
             Object.keys(matcher).forEach(function (key) {
@@ -108,7 +108,7 @@ function create (proxy, postProcess) {
             });
 
             Object.keys(matcher.matches).forEach(function (fieldName) {
-                var helpers = require('../util/helpers'),
+                const helpers = require('../util/helpers'),
                     matcherValue = matcher.matches[fieldName],
                     predicate = helpers.clone(basePredicate);
 
@@ -130,7 +130,7 @@ function create (proxy, postProcess) {
 
     function stubIndexFor (responseConfig, stubs) {
         for (var i = 0; i < stubs.length; i += 1) {
-            var stub = stubs[i];
+            const stub = stubs[i];
             if (stub.responses.indexOf(responseConfig) >= 0) {
                 break;
             }
@@ -139,10 +139,10 @@ function create (proxy, postProcess) {
     }
 
     function indexOfStubToAddResponseTo (responseConfig, request, stubs, logger) {
-        var predicates = predicatesFor(request, responseConfig.proxy.predicateGenerators || [], logger),
+        const predicates = predicatesFor(request, responseConfig.proxy.predicateGenerators || [], logger),
             stringify = require('json-stable-stringify');
 
-        for (var index = stubIndexFor(responseConfig, stubs) + 1; index < stubs.length; index += 1) {
+        for (let index = stubIndexFor(responseConfig, stubs) + 1; index < stubs.length; index += 1) {
             if (stringify(predicates) === stringify(stubs[index].predicates)) {
                 return index;
             }
@@ -155,8 +155,8 @@ function create (proxy, postProcess) {
     }
 
     function newIsResponse (response, addWaitBehavior, addDecorateBehavior) {
-        var result = { is: response };
-        var addBehaviors = {};
+        const result = { is: response };
+        const addBehaviors = {};
 
         if (addWaitBehavior && response._proxyResponseTime) { // eslint-disable-line no-underscore-dangle
             addBehaviors.wait = response._proxyResponseTime; // eslint-disable-line no-underscore-dangle
@@ -172,14 +172,14 @@ function create (proxy, postProcess) {
     }
 
     function addNewResponse (responseConfig, request, response, stubs, logger) {
-        var stubResponse = newIsResponse(response, responseConfig.proxy.addWaitBehavior, responseConfig.proxy.addDecorateBehavior),
+        const stubResponse = newIsResponse(response, responseConfig.proxy.addWaitBehavior, responseConfig.proxy.addDecorateBehavior),
             responseIndex = indexOfStubToAddResponseTo(responseConfig, request, stubs, logger);
 
         stubs[responseIndex].responses.push(stubResponse);
     }
 
     function addNewStub (responseConfig, request, response, stubs, logger) {
-        var predicates = predicatesFor(request, responseConfig.proxy.predicateGenerators || [], logger),
+        const predicates = predicatesFor(request, responseConfig.proxy.predicateGenerators || [], logger),
             stubResponse = newIsResponse(response, responseConfig.proxy.addWaitBehavior, responseConfig.proxy.addDecorateBehavior),
             newStub = { predicates: predicates, responses: [stubResponse] },
             index = responseConfig.proxy.mode === 'proxyAlways' ? stubs.length : stubIndexFor(responseConfig, stubs);
@@ -213,22 +213,22 @@ function create (proxy, postProcess) {
     }
 
     function proxyAndRecord (responseConfig, request, logger, stubs) {
-        var Q = require('q'),
+        const Q = require('q'),
             behaviors = require('./behaviors');
 
         addInjectedHeadersTo(request, responseConfig.proxy.injectHeaders);
 
-        return proxy.to(responseConfig.proxy.to, request, responseConfig.proxy).then(function (response) {
+        return proxy.to(responseConfig.proxy.to, request, responseConfig.proxy).then(response =>
             // Run behaviors here to persist decorated response
-            return Q(behaviors.execute(request, response, responseConfig._behaviors, logger));
-        }).then(function (response) {
+            Q(behaviors.execute(request, response, responseConfig._behaviors, logger))
+        ).then(response => {
             recordProxyResponse(responseConfig, request, response, stubs, logger);
             return Q(response);
         });
     }
 
     function processResponse (responseConfig, request, logger, stubs, imposterState) {
-        var Q = require('q'),
+        const Q = require('q'),
             helpers = require('../util/helpers'),
             exceptions = require('../util/errors');
 
@@ -264,7 +264,7 @@ function create (proxy, postProcess) {
      * @returns {Object} - Promise resolving to the response
      */
     function resolve (responseConfig, request, logger, stubs, imposterState) {
-        var Q = require('q'),
+        const Q = require('q'),
             exceptions = require('../util/errors'),
             helpers = require('../util/helpers'),
             behaviors = require('./behaviors');
@@ -274,7 +274,7 @@ function create (proxy, postProcess) {
                 { source: responseConfig }));
         }
 
-        return processResponse(responseConfig, helpers.clone(request), logger, stubs, imposterState).then(function (response) {
+        return processResponse(responseConfig, helpers.clone(request), logger, stubs, imposterState).then(response => {
             // We may have already run the behaviors in the proxy call to persist the decorated response
             // in the new stub. If so, we need to ensure we don't re-run it
             if (responseConfig.proxy) {
@@ -283,9 +283,7 @@ function create (proxy, postProcess) {
             else {
                 return Q(behaviors.execute(request, response, responseConfig._behaviors, logger));
             }
-        }).then(function (response) {
-            return Q(postProcess(response, request));
-        });
+        }).then(response => Q(postProcess(response, request)));
     }
 
     return {
@@ -294,5 +292,5 @@ function create (proxy, postProcess) {
 }
 
 module.exports = {
-    create: create
+    create
 };

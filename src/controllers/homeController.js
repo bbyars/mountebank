@@ -10,18 +10,16 @@
  * @param {Object} releases - The releases.json file
  * @returns {Object} The controller
  */
-function create (releases) {
-    function createNotice (release) {
+const create = releases => {
+    const createNotice = release => {
         const date = require('../util/date');
         return {
             version: release.version,
             when: date.howLongAgo(release.date)
         };
-    }
+    };
 
-    function isRecent (notice) {
-        return notice.when !== '';
-    }
+    const isRecent = notice => notice.when !== '';
 
     /**
      * The function that responds to GET /
@@ -29,7 +27,7 @@ function create (releases) {
      * @param {Object} request - the HTTP request
      * @param {Object} response - the HTTP response
      */
-    function get (request, response) {
+    const get = (request, response) => {
         const hypermedia = {
                 _links: {
                     imposters: { href: '/imposters' },
@@ -46,17 +44,12 @@ function create (releases) {
         }
 
         response.format({
-            json: function () { response.send(hypermedia); },
-            html: function () { response.render('index', { notices: viewNotices }); }
+            json: () => { response.send(hypermedia); },
+            html: () => { response.render('index', { notices: viewNotices }); }
         });
-    }
-
-    return {
-        get: get
     };
 
-}
-
-module.exports = {
-    create: create
+    return { get };
 };
+
+module.exports = { create };

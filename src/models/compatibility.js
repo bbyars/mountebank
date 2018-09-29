@@ -10,7 +10,7 @@
 
 function upcastShellTransformToArray (request) {
     (request.stubs || []).forEach(stub => {
-        (stub.responses || []).forEach(function (response) {
+        (stub.responses || []).forEach(response => {
             if (response._behaviors && response._behaviors.shellTransform &&
                 typeof response._behaviors.shellTransform === 'string') {
                 response._behaviors.shellTransform = [response._behaviors.shellTransform];

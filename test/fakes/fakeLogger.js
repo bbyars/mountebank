@@ -13,7 +13,7 @@ function create () {
         logger[level] = function () {
             logger.calls[level].push(util.format.apply(logger, arguments));
         };
-        logger[level].assertLogged = function (message) {
+        logger[level].assertLogged = message => {
             assert.ok(logger.calls[level].some(function (entry) {
                 return entry.indexOf(message) >= 0;
             }), JSON.stringify(logger.calls, null, 4));
@@ -24,5 +24,5 @@ function create () {
 }
 
 module.exports = {
-    create: create
+    create
 };

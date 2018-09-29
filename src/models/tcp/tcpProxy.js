@@ -22,7 +22,7 @@ function create (logger, encoding) {
 
     function connectionInfoFor (proxyDestination) {
         if (typeof proxyDestination === 'string') {
-            var url = require('url'),
+            const url = require('url'),
                 parts = url.parse(proxyDestination),
                 errors = require('../../util/errors');
 
@@ -40,7 +40,7 @@ function create (logger, encoding) {
     }
 
     function getProxyRequest (proxyDestination, originalRequest) {
-        var buffer = new Buffer(originalRequest.data, encoding),
+        const buffer = new Buffer(originalRequest.data, encoding),
             net = require('net'),
             socket = net.connect(connectionInfoFor(proxyDestination), function () {
                 socket.write(buffer, function () { socket.end(); });
@@ -49,7 +49,7 @@ function create (logger, encoding) {
     }
 
     function proxy (socket) {
-        var packets = [],
+        const packets = [],
             Q = require('q'),
             deferred = Q.defer(),
             start = new Date();
@@ -80,21 +80,21 @@ function create (logger, encoding) {
                 socketName(connectionInfoFor(proxyDestination)));
         }
 
-        var Q = require('q'),
-            deferred = Q.defer(),
-            proxiedRequest;
+        const Q = require('q'),
+            deferred = Q.defer();
+        let proxiedRequest;
 
         try {
             proxiedRequest = getProxyRequest(proxyDestination, originalRequest);
             log('=>', originalRequest);
 
-            proxy(proxiedRequest).done(function (response) {
+            proxy(proxiedRequest).done(response => {
                 log('<=', response);
                 deferred.resolve(response);
             });
 
             proxiedRequest.once('error', error => {
-                var errors = require('../../util/errors');
+                const errors = require('../../util/errors');
 
                 if (error.code === 'ENOTFOUND') {
                     deferred.reject(errors.InvalidProxyError('Cannot resolve ' + JSON.stringify(proxyDestination)));
@@ -120,5 +120,5 @@ function create (logger, encoding) {
 }
 
 module.exports = {
-    create: create
+    create
 };

@@ -28,7 +28,7 @@
                 const stubResponse = {
                         statusCode: response.statusCode,
                         headers: response.headers,
-                        body: body
+                        body
                     };
                 logger.info('Successfully proxied: ' + JSON.stringify(stubResponse));
                 state.requests[cacheKey] = stubResponse;

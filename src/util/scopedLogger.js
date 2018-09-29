@@ -5,12 +5,12 @@
 function wrap (wrappedLogger, logger) {
     ['debug', 'info', 'warn', 'error'].forEach(function (level) {
         wrappedLogger[level] = function () {
-            var args = Array.prototype.slice.call(arguments);
+            const args = Array.prototype.slice.call(arguments);
             args[0] = wrappedLogger.scopePrefix + args[0];
 
             // Format here rather than use winston's splat formatter
             // to get rid of inconsistent "meta" log elements
-            var message = require('util').format.apply(null, args);
+            const message = require('util').format.apply(null, args);
             logger[level](message);
         };
     });
@@ -27,7 +27,7 @@ function create (logger, scope) {
         return scopeText.indexOf('[') === 0 ? scopeText : '[' + scopeText + '] ';
     }
 
-    var inherit = require('./inherit'),
+    const inherit = require('./inherit'),
         wrappedLogger = inherit.from(logger, {
             scopePrefix: formatScope(scope),
             withScope: function (nestedScopePrefix) {
@@ -44,5 +44,5 @@ function create (logger, scope) {
 }
 
 module.exports = {
-    create: create
+    create
 };
