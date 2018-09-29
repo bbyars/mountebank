@@ -1,10 +1,10 @@
 'use strict';
 
-var net = require('net'),
+const net = require('net'),
     Q = require('q');
 
 function send (message, serverPort, timeout) {
-    var deferred = Q.defer(),
+    const deferred = Q.defer(),
         socket = net.createConnection({ port: serverPort }, () => { socket.write(message); });
 
     if (!serverPort) {
@@ -22,8 +22,8 @@ function send (message, serverPort, timeout) {
 }
 
 function fireAndForget (message, serverPort) {
-    var deferred = Q.defer(),
-        socket = net.createConnection({ port: serverPort }, function () { socket.write(message); });
+    const deferred = Q.defer(),
+        socket = net.createConnection({ port: serverPort }, () => { socket.write(message); });
 
     // Attempt to avoid race conditions where the subsequent test code
     // gets ahead of the server's ability to record the request

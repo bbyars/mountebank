@@ -9,7 +9,7 @@
  */
 
 function upcastShellTransformToArray (request) {
-    (request.stubs || []).forEach(function (stub) {
+    (request.stubs || []).forEach(stub => {
         (stub.responses || []).forEach(function (response) {
             if (response._behaviors && response._behaviors.shellTransform &&
                 typeof response._behaviors.shellTransform === 'string') {

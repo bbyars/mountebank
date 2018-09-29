@@ -11,7 +11,7 @@
  * @returns {Object} The controller
  */
 function create (releases, options) {
-    var helpers = require('../util/helpers'),
+    const helpers = require('../util/helpers'),
         feedReleases = helpers.clone(releases);
 
     // Init once since we hope many consumers poll the heroku feed and we don't have monitoring
@@ -22,7 +22,7 @@ function create (releases, options) {
     }
 
     function releaseFilenameFor (version) {
-        var path = require('path');
+        const path = require('path');
         return path.join(__dirname, '/../views/', releaseViewFor(version));
     }
 
@@ -33,7 +33,7 @@ function create (releases, options) {
      * @param {Object} response - The HTTP response
      */
     function getFeed (request, response) {
-        var fs = require('fs'),
+        const fs = require('fs'),
             ejs = require('ejs'),
             page = parseInt(request.query.page || '1'),
             nextPage = page + 1,
@@ -49,7 +49,7 @@ function create (releases, options) {
         // I'd prefer putting this as an include in the view, but EJS doesn't support dynamic includes
         if (!feedReleases[0].view) {
             feedReleases.forEach(function (release) {
-                var contents = fs.readFileSync(releaseFilenameFor(release.version), { encoding: 'utf8' });
+                const contents = fs.readFileSync(releaseFilenameFor(release.version), { encoding: 'utf8' });
                 release.view = ejs.render(contents, {
                     host: request.headers.host,
                     releaseMajorMinor: release.version.replace(/^v(\d+\.\d+).*/, '$1'),
@@ -79,7 +79,7 @@ function create (releases, options) {
      * @param {Object} response - The HTTP response
      */
     function getRelease (request, response) {
-        var fs = require('fs'),
+        const fs = require('fs'),
             version = request.params.version,
             config = {
                 host: request.headers.host,

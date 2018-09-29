@@ -24,7 +24,7 @@ description = 'Information about a specific mountebank imposter'
 
 <h2>Stubs</h2>
 
-<% imposter.stubs.forEach(function (stub) { -%>
+<% imposter.stubs.forEach(stub => { -%>
   <pre><code>
     <%= JSON.stringify(stub, null, 2) %>
   </code></pre>

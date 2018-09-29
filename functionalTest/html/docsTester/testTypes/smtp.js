@@ -40,7 +40,7 @@ function runStep (step) {
     var deferred = Q.defer(),
         message = parse(step.requestText);
 
-    smtpClient.send(message, step.port).done(function () {
+    smtpClient.send(message, step.port).done(() => {
         deferred.resolve({});
     });
 

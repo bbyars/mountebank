@@ -8,7 +8,7 @@ function create (endpoint, id) {
     function addStep (stepSpec) {
         var step = {
             assertValid: stepSpec.assertValid,
-            execute: function () {
+            execute: () => {
                 var runner = require('./testTypes/' + stepSpec.type);
                 return runner.runStep(stepSpec).then(function (actualResponse) {
                     step.actualResponse = actualResponse;
@@ -24,7 +24,7 @@ function create (endpoint, id) {
         var stepExecutions = steps.map(function (step) { return step.execute; }),
             chainedExecutions = stepExecutions.reduce(Q.when, Q());
 
-        return chainedExecutions.then(function () {
+        return chainedExecutions.then(() => {
             steps.forEach(function (step, stepIndex) {
                 var util = require('util'),
                     failureMessage = util.format(

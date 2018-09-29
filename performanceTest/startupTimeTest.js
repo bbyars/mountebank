@@ -1,6 +1,6 @@
 'use strict';
 
-var Q = require('q'),
+const Q = require('q'),
     assert = require('assert'),
     api = require('./../functionalTest/api/api').create(),
     promiseIt = require('./../functionalTest/testHelpers').promiseIt,
@@ -14,11 +14,11 @@ describe('mb', function () {
     // were at the top of each module, recursively loading all dependencies on startup.
     // The solution is to localize the require calls.
     promiseIt('should consistently start up quickly no matter how many packages are installed', function () {
-        var RUNS = 500,
-            restartSequence = Q(true),
+        const RUNS = 500,
             start = new Date();
+        let restartSequence = Q(true);
 
-        for (var i = 0; i < RUNS; i += 1) {
+        for (let i = 0; i < RUNS; i += 1) {
             restartSequence = restartSequence.then(function () {
                 process.stdout.write('.');
                 return mb.restart();
@@ -26,7 +26,7 @@ describe('mb', function () {
         }
 
         return restartSequence.then(function () {
-            var milliseconds = new Date() - start,
+            const milliseconds = new Date() - start,
                 seconds = milliseconds / 1000,
                 millisecondsPer = milliseconds / RUNS;
             console.log('Took ' + seconds + ' seconds, averaging ' + millisecondsPer + ' ms per restart');

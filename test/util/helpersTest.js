@@ -1,24 +1,24 @@
 'use strict';
 
-var assert = require('assert'),
+const assert = require('assert'),
     helpers = require('../../src/util/helpers');
 
-describe('helpers', function () {
-    describe('#socketName', function () {
-        it('should concatenate host and port for a normal socket', function () {
-            var name = helpers.socketName({ remoteAddress: 'address', remotePort: 'port' });
+describe('helpers', () => {
+    describe('#socketName', () => {
+        it('should concatenate host and port for a normal socket', () => {
+            const name = helpers.socketName({ remoteAddress: 'address', remotePort: 'port' });
             assert.strictEqual(name, 'address:port');
         });
 
-        it('should just use host if port is undefined', function () {
-            var name = helpers.socketName({ remoteAddress: 'address' });
+        it('should just use host if port is undefined', () => {
+            const name = helpers.socketName({ remoteAddress: 'address' });
             assert.strictEqual(name, 'address');
         });
     });
 
-    describe('#clone', function () {
-        it('should return a deep copy', function () {
-            var original = {
+    describe('#clone', () => {
+        it('should return a deep copy', () => {
+            const original = {
                 level: 1,
                 key: {
                     level: 2,
@@ -26,15 +26,15 @@ describe('helpers', function () {
                 }
             };
 
-            var clone = helpers.clone(original);
+            const clone = helpers.clone(original);
             assert.ok(clone !== original);
             assert.deepEqual(clone, original);
         });
     });
 
-    describe('#merge', function () {
-        it('should deep merge two object', function () {
-            var first = {
+    describe('#merge', () => {
+        it('should deep merge two object', () => {
+            const first = {
                     first: 1,
                     second: { third: 3 }
                 },
@@ -43,7 +43,7 @@ describe('helpers', function () {
                     fifth: { sixth: 6 }
                 };
 
-            var merged = helpers.merge(first, second);
+            const merged = helpers.merge(first, second);
 
             assert.deepEqual(merged, {
                 first: 1,
@@ -53,11 +53,11 @@ describe('helpers', function () {
             });
         });
 
-        it('should use second parameter for conflict resolution', function () {
-            var defaults = { onlyInDefault: 1, inBoth: 1 },
+        it('should use second parameter for conflict resolution', () => {
+            const defaults = { onlyInDefault: 1, inBoth: 1 },
                 overrides = { onlyInOverrides: 2, inBoth: 2 };
 
-            var merged = helpers.merge(defaults, overrides);
+            const merged = helpers.merge(defaults, overrides);
 
             assert.deepEqual(merged, {
                 onlyInDefault: 1,
@@ -66,8 +66,8 @@ describe('helpers', function () {
             });
         });
 
-        it('should not change state of either parameter', function () {
-            var first = { one: 1 },
+        it('should not change state of either parameter', () => {
+            const first = { one: 1 },
                 second = { two: 2 };
 
             helpers.merge(first, second);
@@ -76,11 +76,11 @@ describe('helpers', function () {
             assert.deepEqual(second, { two: 2 });
         });
 
-        it('should be able to handle null values', function () {
-            var defaults = { onlyInDefault: 1, inBoth: 1 },
+        it('should be able to handle null values', () => {
+            const defaults = { onlyInDefault: 1, inBoth: 1 },
                 overrides = { onlyInOverrides: 2, inBoth: null };
 
-            var merged = helpers.merge(defaults, overrides);
+            const merged = helpers.merge(defaults, overrides);
 
             assert.deepEqual(merged, {
                 onlyInDefault: 1,

@@ -12,7 +12,7 @@
  */
 function create (releases) {
     function createNotice (release) {
-        var date = require('../util/date');
+        const date = require('../util/date');
         return {
             version: release.version,
             when: date.howLongAgo(release.date)
@@ -30,7 +30,7 @@ function create (releases) {
      * @param {Object} response - the HTTP response
      */
     function get (request, response) {
-        var hypermedia = {
+        const hypermedia = {
                 _links: {
                     imposters: { href: '/imposters' },
                     config: { href: '/config' },

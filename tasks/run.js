@@ -1,6 +1,6 @@
 'use strict';
 
-var spawn = require('child_process').spawn,
+const spawn = require('child_process').spawn,
     os = require('os'),
     Q = require('q');
 
@@ -9,9 +9,8 @@ function isWindows () {
 }
 
 function run (command, args, options) {
-    var deferred = Q.defer(),
-        npmFailure = false,
-        proc;
+    const deferred = Q.defer();
+    let npmFailure = false, proc;
 
     if (isWindows()) {
         // spawn on Windows requires an exe

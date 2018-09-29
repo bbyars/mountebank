@@ -1,27 +1,27 @@
 'use strict';
 
-var assert = require('assert'),
+const assert = require('assert'),
     StubRepository = require('../../src/models/stubRepository'),
     mock = require('../mock').mock,
     promiseIt = require('../testHelpers').promiseIt,
     Q = require('q');
 
-describe('stubRepository', function () {
-    describe('#resolve', function () {
+describe('stubRepository', () => {
+    describe('#resolve', () => {
 
-        promiseIt('should call resolve with default response if no match', function () {
-            var resolver = mock().returns(Q()),
+        promiseIt('should call resolve with default response if no match', () => {
+            const resolver = mock().returns(Q()),
                 stubs = StubRepository.create({ resolve: resolver }),
                 logger = { debug: mock() },
                 request = { field: 'value' };
 
-            return stubs.resolve(request, logger).then(function () {
+            return stubs.resolve(request, logger).then(() => {
                 assert.ok(resolver.wasCalledWith({ is: {} }, request, logger, []), resolver.message());
             });
         });
 
-        promiseIt('should always match if no predicate', function () {
-            var resolver = mock().returns(Q()),
+        promiseIt('should always match if no predicate', () => {
+            const resolver = mock().returns(Q()),
                 stubs = StubRepository.create({ resolve: resolver }),
                 logger = { debug: mock() },
                 request = { field: 'value' },
@@ -29,13 +29,13 @@ describe('stubRepository', function () {
 
             stubs.addStub(stub);
 
-            return stubs.resolve(request, logger).then(function () {
+            return stubs.resolve(request, logger).then(() => {
                 assert.ok(resolver.wasCalledWith('first stub', request, logger, [stub]), resolver.message());
             });
         });
 
-        promiseIt('should return first match', function () {
-            var resolver = mock().returns(Q()),
+        promiseIt('should return first match', () => {
+            const resolver = mock().returns(Q()),
                 stubs = StubRepository.create({ resolve: resolver }),
                 logger = { debug: mock() },
                 request = { field: '2' },
@@ -47,13 +47,13 @@ describe('stubRepository', function () {
             stubs.addStub(secondStub);
             stubs.addStub(thirdStub);
 
-            return stubs.resolve(request, logger).then(function () {
+            return stubs.resolve(request, logger).then(() => {
                 assert.ok(resolver.wasCalledWith('second stub'), resolver.message());
             });
         });
 
-        promiseIt('should return responses in order, looping around', function () {
-            var resolver = mock().returns(Q()),
+        promiseIt('should return responses in order, looping around', () => {
+            const resolver = mock().returns(Q()),
                 stubs = StubRepository.create({ resolve: resolver }),
                 logger = { debug: mock() },
                 request = { field: 'value' },
@@ -61,19 +61,19 @@ describe('stubRepository', function () {
 
             stubs.addStub(stub);
 
-            return stubs.resolve(request, logger).then(function () {
+            return stubs.resolve(request, logger).then(() => {
                 assert.ok(resolver.wasCalledWith('first response'), resolver.message());
                 return stubs.resolve(request, logger);
-            }).then(function () {
+            }).then(() => {
                 assert.ok(resolver.wasCalledWith('second response'), resolver.message());
                 return stubs.resolve(request, logger);
-            }).then(function () {
+            }).then(() => {
                 assert.ok(resolver.wasCalledWith('first response'), resolver.message());
             });
         });
 
-        promiseIt('should record matches', function () {
-            var resolver = mock().returns(Q()),
+        promiseIt('should record matches', () => {
+            const resolver = mock().returns(Q()),
                 stubs = StubRepository.create({ resolve: resolver }, true),
                 logger = { debug: mock() },
                 matchingRequest = { field: 'value' },
@@ -82,16 +82,14 @@ describe('stubRepository', function () {
 
             stubs.addStub(stub);
 
-            return stubs.resolve(matchingRequest, logger).then(function () {
-                return stubs.resolve(mismatchingRequest, logger);
-            }).then(function () {
+            return stubs.resolve(matchingRequest, logger).then(() => stubs.resolve(mismatchingRequest, logger)).then(() => {
                 assert.strictEqual(stub.matches.length, 1);
                 assert.deepEqual(stub.matches[0].request, matchingRequest);
             });
         });
 
-        promiseIt('should not record matches if recordMatches is false', function () {
-            var resolver = mock().returns(Q()),
+        promiseIt('should not record matches if recordMatches is false', () => {
+            const resolver = mock().returns(Q()),
                 stubs = StubRepository.create({ resolve: resolver }, false),
                 logger = { debug: mock() },
                 matchingRequest = { field: 'value' },
@@ -100,15 +98,13 @@ describe('stubRepository', function () {
 
             stubs.addStub(stub);
 
-            return stubs.resolve(matchingRequest, logger).then(function () {
-                return stubs.resolve(mismatchingRequest, logger);
-            }).then(function () {
+            return stubs.resolve(matchingRequest, logger).then(() => stubs.resolve(mismatchingRequest, logger)).then(() => {
                 assert.ok(!stub.hasOwnProperty('matches'));
             });
         });
 
-        promiseIt('should return a repeat response only a set number of times', function () {
-            var resolver = mock().returns(Q()),
+        promiseIt('should return a repeat response only a set number of times', () => {
+            const resolver = mock().returns(Q()),
                 stubs = StubRepository.create({ resolve: resolver }, false),
                 logger = { debug: mock() },
                 request = { field: 'value' },
@@ -119,24 +115,24 @@ describe('stubRepository', function () {
 
             stubs.addStub(stub);
 
-            return stubs.resolve(request, logger).then(function () {
+            return stubs.resolve(request, logger).then(() => {
                 assert.ok(resolver.wasCalledWith({ is: { body: 'first response' }, _behaviors: { repeat: 2 } },
                     request, logger, [stub]), resolver.message());
 
                 return stubs.resolve(request, logger);
-            }).then(function () {
+            }).then(() => {
                 assert.ok(resolver.wasCalledWith({ is: { body: 'first response' }, _behaviors: { repeat: 2 } },
                     request, logger, [stub]), resolver.message());
 
                 return stubs.resolve(request, logger);
-            }).then(function () {
+            }).then(() => {
                 assert.ok(resolver.wasCalledWith({ is: { body: 'second response' } },
                     request, logger, [stub]), resolver.message());
             });
         });
 
-        promiseIt('should loop back around after repeats are exhausted', function () {
-            var resolver = mock().returns(Q()),
+        promiseIt('should loop back around after repeats are exhausted', () => {
+            const resolver = mock().returns(Q()),
                 stubs = StubRepository.create({ resolve: resolver }, false),
                 logger = { debug: mock() },
                 request = { field: 'value' },
@@ -146,16 +142,16 @@ describe('stubRepository', function () {
 
             stubs.addStub(stub);
 
-            return stubs.resolve(request, logger).then(function () {
+            return stubs.resolve(request, logger).then(() => {
                 assert.ok(resolver.wasCalledWith(firstResponse), resolver.message());
                 return stubs.resolve(request, logger);
-            }).then(function () {
+            }).then(() => {
                 assert.ok(resolver.wasCalledWith(secondResponse), resolver.message());
                 return stubs.resolve(request, logger);
-            }).then(function () {
+            }).then(() => {
                 assert.ok(resolver.wasCalledWith(secondResponse), resolver.message());
                 return stubs.resolve(request, logger);
-            }).then(function () {
+            }).then(() => {
                 assert.ok(resolver.wasCalledWith(firstResponse), resolver.message());
             });
         });

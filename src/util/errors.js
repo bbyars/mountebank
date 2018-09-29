@@ -6,7 +6,7 @@
  */
 
 function createError (code, message, options) {
-    var inherit = require('./inherit'),
+    const inherit = require('./inherit'),
         result = inherit.from(Error, {
             code: code,
             message: message
@@ -35,7 +35,7 @@ function createWithMessage (code, message) {
 // Produces a JSON.stringify-able Error object
 // (because message is on the prototype, it doesn't show by default)
 function details (error) {
-    var helpers = require('./helpers'),
+    const helpers = require('./helpers'),
         prototypeProperties = {};
 
     ['message', 'name', 'stack'].forEach(function (key) {

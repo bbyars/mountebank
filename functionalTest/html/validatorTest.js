@@ -1,6 +1,6 @@
 'use strict';
 
-var assert = require('assert'),
+const assert = require('assert'),
     w3cjs = require('w3cjs'),
     api = require('../api/api').create(),
     Q = require('q'),
@@ -10,7 +10,7 @@ var assert = require('assert'),
     util = require('util');
 
 function assertValid (path, html) {
-    var deferred = Q.defer();
+    const deferred = Q.defer();
 
     w3cjs.validate({
         input: html,
@@ -19,7 +19,7 @@ function assertValid (path, html) {
                 console.log('w3cjs error on ' + path);
                 assert.fail(error);
             }
-            var errors = (response.messages || []).filter(function (message) {
+            const errors = (response.messages || []).filter(function (message) {
                 return message.type === 'error';
             }).map(function (message) {
                 return {
@@ -38,14 +38,14 @@ function assertValid (path, html) {
 }
 
 function removeKnownErrorsFrom (html) {
-    var docsTestFrameworkTags = ['testScenario', 'step', 'volatile', 'assertResponse', 'change'],
-        result = html;
+    const docsTestFrameworkTags = ['testScenario', 'step', 'volatile', 'assertResponse', 'change'];
+    let result = html;
 
     // ignore errors for webkit attributes on search box
     result = result.replace("results='5' autosave='mb' ", '');
 
     docsTestFrameworkTags.forEach(function (tagName) {
-        var pattern = util.format('</?%s[^>]*>', tagName),
+        const pattern = util.format('</?%s[^>]*>', tagName),
             regex = new RegExp(pattern, 'g');
         result = result.replace(regex, '');
     });
@@ -54,14 +54,14 @@ function removeKnownErrorsFrom (html) {
 }
 
 function getHTML (path) {
-    var spec = {
+    const spec = {
         port: api.port,
         method: 'GET',
         path: path,
         headers: { accept: 'text/html' }
     };
 
-    return httpClient.responseFor(spec).then(function (response) {
+    return httpClient.responseFor(spec).then(response => {
         assert.strictEqual(response.statusCode, 200, 'Status code for ' + path + ': ' + response.statusCode);
 
         return Q(removeKnownErrorsFrom(response.body));
@@ -72,17 +72,17 @@ function getHTML (path) {
 // MB_RUN_WEB_TESTS because these are slow, occasionally fragile, and there's
 // no value running them with every node in the build matrix
 if (process.env.MB_AIRPLANE_MODE !== 'true' && process.env.MB_RUN_WEB_TESTS === 'true') {
-    describe('all pages in the mountebank website', function () {
+    describe('all pages in the mountebank website', () => {
         this.timeout(60000);
 
-        promiseIt('should be valid html', function () {
+        promiseIt('should be valid html', () => {
             // feed isn't html and is tested elsewhere; support has non-valid Google HTML embedded
-            var blacklist = ['/feed', '/support', '/imposters', '/logs'];
+            const blacklist = ['/feed', '/support', '/imposters', '/logs'];
 
-            return api.get('/sitemap').then(function (response) {
+            return api.get('/sitemap').then(response => {
                 assert.strictEqual(response.statusCode, 200);
 
-                var siteLinks = response.body.split('\n').map(function (link) {
+                const siteLinks = response.body.split('\n').map(function (link) {
                         return link.replace('http://www.mbtest.org', '');
                     }).filter(function (path) {
                         // save time by only checking latest releases, others should be immutable

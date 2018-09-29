@@ -1,7 +1,7 @@
 'use strict';
 
 if (process.env.MB_AIRPLANE_MODE !== 'true' && process.env.MB_RUN_WEB_TESTS === 'true') {
-    var assert = require('assert'),
+    const assert = require('assert'),
         api = require('../api/api').create(),
         crawler = require('./crawler'),
         promiseIt = require('../testHelpers').promiseIt,
@@ -26,14 +26,12 @@ if (process.env.MB_AIRPLANE_MODE !== 'true' && process.env.MB_RUN_WEB_TESTS === 
                 ([500, 502, 503].indexOf(statusCode) >= 0 && isLocalLink(link));
         };
 
-    describe('The mountebank website', function () {
-        this.timeout(180000);
-
-        promiseIt('should have no dead links and a valid sitemap', function () {
-            var crawlResults;
+    describe('The mountebank website', () => {
+        promiseIt('should have no dead links and a valid sitemap', () => {
+            let crawlResults;
             return crawler.create().crawl(api.url + '/', '').then(function (result) {
                 // Validate no broken links
-                var errors = { misses: {} };
+                const errors = { misses: {} };
                 errors.errors = result.errors;
                 Object.keys(result.hits).forEach(function (link) {
                     if (!expectedStatusCode(link, result.hits[link].statusCode) ||
@@ -46,8 +44,8 @@ if (process.env.MB_AIRPLANE_MODE !== 'true' && process.env.MB_RUN_WEB_TESTS === 
 
                 crawlResults = result;
                 return api.get('/sitemap');
-            }).then(function (response) {
-                var siteLinks = Object.keys(crawlResults.hits).filter(function (link) {
+            }).then(response => {
+                const siteLinks = Object.keys(crawlResults.hits).filter(function (link) {
                         return isLocalLink(link) && link.indexOf('#') < 0 && link.indexOf('?') < 0;
                     }).map(function (link) {
                         return link.replace(api.url, 'http://www.mbtest.org');
@@ -60,5 +58,5 @@ if (process.env.MB_AIRPLANE_MODE !== 'true' && process.env.MB_RUN_WEB_TESTS === 
                 assert.deepEqual(linksNotInSitemap, [], JSON.stringify(linksNotInSitemap));
             });
         });
-    });
+    }).timeout(180000);
 }

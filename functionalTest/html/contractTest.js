@@ -1,6 +1,6 @@
 'use strict';
 
-var assert = require('assert'),
+const assert = require('assert'),
     api = require('../api/api').create(),
     JSDOM = require('jsdom').JSDOM,
     Q = require('q'),
@@ -9,7 +9,7 @@ var assert = require('assert'),
 
 
 function getDOM (endpoint) {
-    var deferred = Q.defer(),
+    const deferred = Q.defer(),
         url = api.url + endpoint;
 
     JSDOM.fromURL(url).then(function (dom) {
@@ -36,13 +36,10 @@ function assertJSON (json) {
     }
 }
 
-describe('contracts', function () {
-    this.timeout(timeout);
+describe('contracts', () => {
     ['home', 'imposters', 'imposter', 'config', 'logs'].forEach(function (contractType) {
-        promiseIt(contractType + ' contract should be valid JSON', function () {
-            return getJSONFor(contractType).then(function (json) {
-                assertJSON(json);
-            });
-        });
+        promiseIt(contractType + ' contract should be valid JSON', () => getJSONFor(contractType).then(function (json) {
+            assertJSON(json);
+        }));
     });
-});
+}).timeout(timeout);

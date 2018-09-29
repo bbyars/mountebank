@@ -141,7 +141,7 @@ const serverAt = options => {
     const start = () => {
         mountebank.create(options).then(server => {
             const shutdown = () => {
-                server.close(function () {
+                server.close(() => {
                     try {
                         if (fs.existsSync(options.pidfile)) {
                             fs.unlinkSync(options.pidfile);

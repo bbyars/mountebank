@@ -18,7 +18,7 @@ function from (proto, obj) {
     obj = obj || {};
     function F () {}
     F.prototype = proto;
-    var result = new F();
+    const result = new F();
     Object.keys(obj).forEach(function (key) {
         result[key] = obj[key];
     });

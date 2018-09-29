@@ -1,10 +1,10 @@
 'use strict';
 
-var util = require('util'),
+const util = require('util'),
     assert = require('assert');
 
 function create () {
-    var logger = { calls: {} };
+    const logger = { calls: {} };
     logger.toString = function () { return JSON.stringify(logger.calls, null, 4); };
 
 

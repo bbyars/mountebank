@@ -1,6 +1,6 @@
 'use strict';
 
-var Q = require('q'),
+const Q = require('q'),
     fs = require('fs'),
     path = require('path'),
     spawn = require('child_process').spawn,
@@ -13,9 +13,9 @@ var Q = require('q'),
     logfile = 'mb-test.log';
 
 function whenFullyInitialized (operation, callback) {
-    var count = 0,
+    let count = 0,
         pidfileMustExist = operation === 'start',
-        spinWait = function () {
+        spinWait = () => {
             count += 1;
             if (count > 20) {
                 console.log('ERROR: mb ' + operation + ' not initialized after 2 seconds');
@@ -33,8 +33,8 @@ function whenFullyInitialized (operation, callback) {
 }
 
 function spawnMb (args) {
-    var command = mbPath,
-        result;
+    let command = mbPath;
+    let result;
 
     if (isWindows) {
         args.unshift(mbPath);
@@ -59,19 +59,18 @@ function spawnMb (args) {
 function create (port) {
 
     function start (args) {
-        var deferred = Q.defer(),
-            mbArgs = ['restart', '--port', port, '--logfile', logfile, '--pidfile', pidfile].concat(args || []),
-            mb;
+        const deferred = Q.defer(),
+            mbArgs = ['restart', '--port', port, '--logfile', logfile, '--pidfile', pidfile].concat(args || []);
 
         whenFullyInitialized('start', deferred.resolve);
-        mb = spawnMb(mbArgs);
+        const mb = spawnMb(mbArgs);
         mb.on('error', deferred.reject);
 
         return deferred.promise;
     }
 
     function stop () {
-        var deferred = Q.defer(),
+        let deferred = Q.defer(),
             command = mbPath + ' stop --pidfile ' + pidfile;
 
         if (isWindows && mbPath.indexOf('.cmd') < 0) {
@@ -93,22 +92,19 @@ function create (port) {
         // The start function relies on whenFullyInitialized to wait for the pidfile to already exist
         // If it already does exist, and you're expecting mb restart to kill it, the function will
         // return before you're ready for it
-        return stop(args).then(function () {
-            return start(args);
-        });
+        return stop(args).then(() => start(args));
     }
 
     function execCommand (command, args) {
-        var deferred = Q.defer(),
+        let deferred = Q.defer(),
             mbArgs = [command, '--port', port].concat(args || []),
-            mb,
             stdout = '',
-            stderr = '';
+            stderr = '',
+            mb = spawnMb(mbArgs);
 
-        mb = spawnMb(mbArgs);
         mb.on('error', deferred.reject);
-        mb.stdout.on('data', function (chunk) { stdout += chunk; });
-        mb.stderr.on('data', function (chunk) { stderr += chunk; });
+        mb.stdout.on('data', chunk => { stdout += chunk; });
+        mb.stderr.on('data', chunk => { stderr += chunk; });
         mb.on('close', function (exitCode) {
             deferred.resolve({
                 exitCode: exitCode,
@@ -132,15 +128,15 @@ function create (port) {
     // the connection: close header on Windows or we end up with
     // ECONNRESET errors
     function get (endpoint) {
-        return httpClient.responseFor({ method: 'GET', path: endpoint, port: port, headers: headers });
+        return httpClient.responseFor({ method: 'GET', path: endpoint, port, headers: headers });
     }
 
     function post (endpoint, body) {
-        return httpClient.responseFor({ method: 'POST', path: endpoint, port: port, body: body, headers: headers });
+        return httpClient.responseFor({ method: 'POST', path: endpoint, port, body: body, headers: headers });
     }
 
     return {
-        port: port,
+        port,
         url: 'http://localhost:' + port,
         start: start,
         restart: restart,

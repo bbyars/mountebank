@@ -87,7 +87,7 @@ function runStep (spec) {
     var deferred = Q.defer(),
         requestSpec = parse(spec.requestText);
 
-    httpClient.responseFor(requestSpec).done(function (response) {
+    httpClient.responseFor(requestSpec).done(response => {
         deferred.resolve(format(response));
     });
 

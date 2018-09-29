@@ -1,17 +1,17 @@
 'use strict';
 
-var assert = require('assert'),
+const assert = require('assert'),
     httpRequest = require('../../../src/models/http/httpRequest'),
     promiseIt = require('../../testHelpers').promiseIt,
     events = require('events'),
     mock = require('../../mock').mock,
     inherit = require('../../../src/util/inherit');
 
-describe('HttpRequest', function () {
-    describe('#createFrom', function () {
-        var request, container;
+describe('HttpRequest', () => {
+    describe('#createFrom', () => {
+        let request, container;
 
-        beforeEach(function () {
+        beforeEach(() => {
             request = inherit.from(events.EventEmitter, {
                 socket: { remoteAddress: '', remotePort: '' },
                 setEncoding: mock(),
@@ -21,10 +21,10 @@ describe('HttpRequest', function () {
             container = { request: request };
         });
 
-        promiseIt('should set requestFrom from socket information', function () {
+        promiseIt('should set requestFrom from socket information', () => {
             request.socket = { remoteAddress: 'HOST', remotePort: 'PORT' };
 
-            var promise = httpRequest.createFrom(container).then(function (mbRequest) {
+            const promise = httpRequest.createFrom(container).then(function (mbRequest) {
                 assert.strictEqual(mbRequest.requestFrom, 'HOST:PORT');
             });
 
@@ -33,10 +33,10 @@ describe('HttpRequest', function () {
             return promise;
         });
 
-        promiseIt('should echo method from original request', function () {
+        promiseIt('should echo method from original request', () => {
             request.method = 'METHOD';
 
-            var promise = httpRequest.createFrom(container).then(function (mbRequest) {
+            const promise = httpRequest.createFrom(container).then(function (mbRequest) {
                 assert.strictEqual(mbRequest.method, 'METHOD');
             });
 
@@ -45,7 +45,7 @@ describe('HttpRequest', function () {
             return promise;
         });
 
-        promiseIt('should transform rawHeaders from original request, keeping case and duplicates', function () {
+        promiseIt('should transform rawHeaders from original request, keeping case and duplicates', () => {
             request.rawHeaders = [
                 'Accept', 'text/plain',
                 'Accept', 'TEXT/html',
@@ -53,7 +53,7 @@ describe('HttpRequest', function () {
                 'Host', '127.0.0.1:8000'
             ];
 
-            var promise = httpRequest.createFrom(container).then(function (mbRequest) {
+            const promise = httpRequest.createFrom(container).then(function (mbRequest) {
                 assert.deepEqual(mbRequest.headers, {
                     Accept: ['text/plain', 'TEXT/html'],
                     accept: '*',
@@ -66,17 +66,11 @@ describe('HttpRequest', function () {
             return promise;
         });
 
-        promiseIt('should transform form', function () {
-            return shouldTransformForm('application/x-www-form-urlencoded');
-        });
+        promiseIt('should transform form', () => shouldTransformForm('application/x-www-form-urlencoded'));
 
-        promiseIt('should transform form for application/x-www-form-urlencoded;charset=UTF-8', function () {
-            return shouldTransformForm('application/x-www-form-urlencoded;charset=UTF-8');
-        });
+        promiseIt('should transform form for application/x-www-form-urlencoded;charset=UTF-8', () => shouldTransformForm('application/x-www-form-urlencoded;charset=UTF-8'));
 
-        promiseIt('should transform form for application/x-www-form-urlencoded; charset=UTF-8', function () {
-            return shouldTransformForm('application/x-www-form-urlencoded; charset=UTF-8');
-        });
+        promiseIt('should transform form for application/x-www-form-urlencoded; charset=UTF-8', () => shouldTransformForm('application/x-www-form-urlencoded; charset=UTF-8'));
 
         function shouldTransformForm (contentType) {
             request.rawHeaders = [
@@ -84,7 +78,7 @@ describe('HttpRequest', function () {
                 'Host', '127.0.0.1:8000'
             ];
 
-            var promise = httpRequest.createFrom(container).then(function (mbRequest) {
+            const promise = httpRequest.createFrom(container).then(function (mbRequest) {
                 assert.deepEqual(mbRequest.headers, {
                     'Content-Type': contentType,
                     Host: '127.0.0.1:8000'
@@ -101,10 +95,10 @@ describe('HttpRequest', function () {
             return promise;
         }
 
-        promiseIt('should set path and query from request url', function () {
+        promiseIt('should set path and query from request url', () => {
             request.url = 'http://localhost/path?key=value';
 
-            var promise = httpRequest.createFrom(container).then(function (mbRequest) {
+            const promise = httpRequest.createFrom(container).then(function (mbRequest) {
                 assert.strictEqual(mbRequest.path, '/path');
                 assert.deepEqual(mbRequest.query, { key: 'value' });
             });
@@ -114,8 +108,8 @@ describe('HttpRequest', function () {
             return promise;
         });
 
-        promiseIt('should set body from data events', function () {
-            var promise = httpRequest.createFrom(container).then(function (mbRequest) {
+        promiseIt('should set body from data events', () => {
+            const promise = httpRequest.createFrom(container).then(function (mbRequest) {
                 assert.strictEqual(mbRequest.body, '12');
             });
 

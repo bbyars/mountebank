@@ -4,12 +4,12 @@
 
 function toEpochWithoutTime (text) {
     // be sure to exclude time so we get accurate text
-    var dateTextWithoutTime = new Date(Date.parse(text)).toDateString();
+    const dateTextWithoutTime = new Date(Date.parse(text)).toDateString();
     return Date.parse(dateTextWithoutTime);
 }
 
 function sameMonth (firstEpoch, secondEpoch) {
-    var first = new Date(firstEpoch),
+    const first = new Date(firstEpoch),
         second = new Date(secondEpoch);
 
     return first.getFullYear() === second.getFullYear() && first.getMonth() === second.getMonth();
@@ -22,7 +22,7 @@ function sameMonth (firstEpoch, secondEpoch) {
  * @returns {string}
  */
 function howLongAgo (thenText, testNowText) {
-    var nowText = testNowText ? testNowText : new Date(Date.now()).toISOString(), // testNow is just for testing purposes
+    const nowText = testNowText ? testNowText : new Date(Date.now()).toISOString(), // testNow is just for testing purposes
         then = toEpochWithoutTime(thenText),
         now = toEpochWithoutTime(nowText),
         millisecondsInDay = 24 * 60 * 60 * 1000,

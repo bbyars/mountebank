@@ -1,14 +1,14 @@
 'use strict';
 
-var assert = require('assert'),
+const assert = require('assert'),
     promiseIt = require('../../testHelpers').promiseIt,
     behaviors = require('../../../src/models/behaviors'),
     Logger = require('../../fakes/fakeLogger');
 
-describe('behaviors', function () {
-    describe('#copy', function () {
-        promiseIt('should support copying regex match from request', function () {
-            var request = { data: 'My name is mountebank' },
+describe('behaviors', () => {
+    describe('#copy', () => {
+        promiseIt('should support copying regex match from request', () => {
+            const request = { data: 'My name is mountebank' },
                 response = { data: 'Hello, ${you}' },
                 logger = Logger.create(),
                 config = {
@@ -24,8 +24,8 @@ describe('behaviors', function () {
             });
         });
 
-        promiseIt('should support copying regex match from request with ignoreCase', function () {
-            var request = { data: 'My name is mountebank' },
+        promiseIt('should support copying regex match from request with ignoreCase', () => {
+            const request = { data: 'My name is mountebank' },
                 response = { data: 'Hello, ${you}' },
                 logger = Logger.create(),
                 config = {
@@ -45,8 +45,8 @@ describe('behaviors', function () {
             });
         });
 
-        promiseIt('should support copying regex match from request with multiline', function () {
-            var request = { data: 'First line\nMy name is mountebank\nThird line' },
+        promiseIt('should support copying regex match from request with multiline', () => {
+            const request = { data: 'First line\nMy name is mountebank\nThird line' },
                 response = { data: 'Hello, ${you}' },
                 logger = Logger.create(),
                 config = {
@@ -66,8 +66,8 @@ describe('behaviors', function () {
             });
         });
 
-        promiseIt('should not replace if regex does not match', function () {
-            var request = { data: 'My name is mountebank' },
+        promiseIt('should not replace if regex does not match', () => {
+            const request = { data: 'My name is mountebank' },
                 response = { data: 'Hello, ${you}' },
                 logger = Logger.create(),
                 config = {
@@ -86,8 +86,8 @@ describe('behaviors', function () {
             });
         });
 
-        promiseIt('should support copying regex match into object response field', function () {
-            var request = { data: 'My name is mountebank' },
+        promiseIt('should support copying regex match into object response field', () => {
+            const request = { data: 'My name is mountebank' },
                 response = { outer: { inner: 'Hello, ${you}' } },
                 logger = Logger.create(),
                 config = {
@@ -103,8 +103,8 @@ describe('behaviors', function () {
             });
         });
 
-        promiseIt('should support copying regex match into all response fields', function () {
-            var request = { data: 'My name is mountebank' },
+        promiseIt('should support copying regex match into all response fields', () => {
+            const request = { data: 'My name is mountebank' },
                 response = { data: '${you}', outer: { inner: 'Hello, ${you}' } },
                 logger = Logger.create(),
                 config = {
@@ -120,8 +120,8 @@ describe('behaviors', function () {
             });
         });
 
-        promiseIt('should support copying regex match from object request field', function () {
-            var request = { data: { name: 'My name is mountebank', other: 'ignore' } },
+        promiseIt('should support copying regex match from object request field', () => {
+            const request = { data: { name: 'My name is mountebank', other: 'ignore' } },
                 response = { data: 'Hello, ${you}' },
                 logger = Logger.create(),
                 config = {
@@ -137,8 +137,8 @@ describe('behaviors', function () {
             });
         });
 
-        promiseIt('should support copying regex match from object request field ignoring case of key', function () {
-            var request = { data: { name: 'My name is mountebank', other: 'ignore' } },
+        promiseIt('should support copying regex match from object request field ignoring case of key', () => {
+            const request = { data: { name: 'My name is mountebank', other: 'ignore' } },
                 response = { data: 'Hello, ${you}' },
                 logger = Logger.create(),
                 config = {
@@ -154,8 +154,8 @@ describe('behaviors', function () {
             });
         });
 
-        promiseIt('should support copying regex indexed groups from request', function () {
-            var request = { name: 'The date is 2016-12-29' },
+        promiseIt('should support copying regex indexed groups from request', () => {
+            const request = { name: 'The date is 2016-12-29' },
                 response = { data: 'Year ${DATE}[1], Month ${DATE}[2], Day ${DATE}[3]: ${DATE}' },
                 logger = Logger.create(),
                 config = {
@@ -171,8 +171,8 @@ describe('behaviors', function () {
             });
         });
 
-        promiseIt('should default to first value in multi-valued request field', function () {
-            var request = { data: ['first', 'second', 'third'] },
+        promiseIt('should default to first value in multi-valued request field', () => {
+            const request = { data: ['first', 'second', 'third'] },
                 response = { data: 'Grabbed the ${num}' },
                 logger = Logger.create(),
                 config = {
@@ -188,8 +188,8 @@ describe('behaviors', function () {
             });
         });
 
-        promiseIt('should support copying xpath match into response', function () {
-            var request = { field: '<doc><name>mountebank</name></doc>' },
+        promiseIt('should support copying xpath match into response', () => {
+            const request = { field: '<doc><name>mountebank</name></doc>' },
                 response = { data: 'Hello, ${you}' },
                 logger = Logger.create(),
                 config = {
@@ -205,8 +205,8 @@ describe('behaviors', function () {
             });
         });
 
-        promiseIt('should ignore xpath if does not match', function () {
-            var request = { field: '<doc><name>mountebank</name></doc>' },
+        promiseIt('should ignore xpath if does not match', () => {
+            const request = { field: '<doc><name>mountebank</name></doc>' },
                 response = { data: 'Hello, ${you}' },
                 logger = Logger.create(),
                 config = {
@@ -222,8 +222,8 @@ describe('behaviors', function () {
             });
         });
 
-        promiseIt('should ignore xpath if field is not xml', function () {
-            var request = { field: '' },
+        promiseIt('should ignore xpath if field is not xml', () => {
+            const request = { field: '' },
                 response = { data: 'Hello, ${you}' },
                 logger = Logger.create(),
                 config = {
@@ -240,8 +240,8 @@ describe('behaviors', function () {
             });
         });
 
-        promiseIt('should support replacing token with xml attribute', function () {
-            var request = { field: '<doc><tool name="mountebank">Service virtualization</tool></doc>' },
+        promiseIt('should support replacing token with xml attribute', () => {
+            const request = { field: '<doc><tool name="mountebank">Service virtualization</tool></doc>' },
                 response = { data: 'Hello, ${you}' },
                 logger = Logger.create(),
                 config = {
@@ -257,8 +257,8 @@ describe('behaviors', function () {
             });
         });
 
-        promiseIt('should support replacing token with xml direct text', function () {
-            var request = { field: '<doc><name>mountebank</name></doc>' },
+        promiseIt('should support replacing token with xml direct text', () => {
+            const request = { field: '<doc><name>mountebank</name></doc>' },
                 response = { data: 'Hello, ${you}' },
                 logger = Logger.create(),
                 config = {
@@ -274,8 +274,8 @@ describe('behaviors', function () {
             });
         });
 
-        promiseIt('should support replacing token with namespaced xml field', function () {
-            var request = { field: '<doc xmlns:mb="http://example.com/mb"><mb:name>mountebank</mb:name></doc>' },
+        promiseIt('should support replacing token with namespaced xml field', () => {
+            const request = { field: '<doc xmlns:mb="http://example.com/mb"><mb:name>mountebank</mb:name></doc>' },
                 response = { data: 'Hello, ${you}' },
                 logger = Logger.create(),
                 config = {
@@ -295,8 +295,8 @@ describe('behaviors', function () {
             });
         });
 
-        promiseIt('should support multiple indexed xpath matches into response', function () {
-            var request = { field: '<doc><num>3</num><num>2</num><num>1</num></doc>' },
+        promiseIt('should support multiple indexed xpath matches into response', () => {
+            const request = { field: '<doc><num>3</num><num>2</num><num>1</num></doc>' },
                 response = { data: '${NUM}, ${NUM}[1], ${NUM}[2]' },
                 logger = Logger.create(),
                 config = {
@@ -312,8 +312,8 @@ describe('behaviors', function () {
             });
         });
 
-        promiseIt('should ignore jsonpath selector if field is not json', function () {
-            var request = { field: 'mountebank' },
+        promiseIt('should ignore jsonpath selector if field is not json', () => {
+            const request = { field: 'mountebank' },
                 response = { data: 'Hello, ${you}' },
                 logger = Logger.create(),
                 config = {
@@ -330,8 +330,8 @@ describe('behaviors', function () {
             });
         });
 
-        promiseIt('should support replacing token with jsonpath selector', function () {
-            var request = { field: JSON.stringify({ name: 'mountebank' }) },
+        promiseIt('should support replacing token with jsonpath selector', () => {
+            const request = { field: JSON.stringify({ name: 'mountebank' }) },
                 response = { data: 'Hello, ${you}' },
                 logger = Logger.create(),
                 config = {
@@ -347,8 +347,8 @@ describe('behaviors', function () {
             });
         });
 
-        promiseIt('should not replace token if jsonpath selector does not match', function () {
-            var request = { field: JSON.stringify({ name: 'mountebank' }) },
+        promiseIt('should not replace token if jsonpath selector does not match', () => {
+            const request = { field: JSON.stringify({ name: 'mountebank' }) },
                 response = { data: 'Hello, ${you}' },
                 logger = Logger.create(),
                 config = {
@@ -364,8 +364,8 @@ describe('behaviors', function () {
             });
         });
 
-        promiseIt('should support replacing multiple indexed tokens with jsonpath selector', function () {
-            var request = { field: JSON.stringify({ numbers: [{ key: 3 }, { key: 2 }, { key: 1 }] }) },
+        promiseIt('should support replacing multiple indexed tokens with jsonpath selector', () => {
+            const request = { field: JSON.stringify({ numbers: [{ key: 3 }, { key: 2 }, { key: 1 }] }) },
                 response = { data: '${NUM}, ${NUM}[1], ${NUM}[2]' },
                 logger = Logger.create(),
                 config = {
@@ -381,8 +381,8 @@ describe('behaviors', function () {
             });
         });
 
-        it('should not be valid if not an array', function () {
-            var errors = behaviors.validate({
+        it('should not be valid if not an array', () => {
+            const errors = behaviors.validate({
                 copy: {}
             });
             assert.deepEqual(errors, [{
@@ -392,8 +392,8 @@ describe('behaviors', function () {
             }]);
         });
 
-        it('should not be valid if missing "from" field', function () {
-            var config = { into: 'TOKEN', using: { method: 'regex', selector: '.*' } },
+        it('should not be valid if missing "from" field', () => {
+            const config = { into: 'TOKEN', using: { method: 'regex', selector: '.*' } },
                 errors = behaviors.validate({ copy: [config] });
             assert.deepEqual(errors, [{
                 code: 'bad data',
@@ -402,8 +402,8 @@ describe('behaviors', function () {
             }]);
         });
 
-        it('should not be valid if "from" field is not a string or an object', function () {
-            var config = { from: 0, into: 'TOKEN', using: { method: 'regex', selector: '.*' } },
+        it('should not be valid if "from" field is not a string or an object', () => {
+            const config = { from: 0, into: 'TOKEN', using: { method: 'regex', selector: '.*' } },
                 errors = behaviors.validate({ copy: [config] });
             assert.deepEqual(errors, [{
                 code: 'bad data',
@@ -412,8 +412,8 @@ describe('behaviors', function () {
             }]);
         });
 
-        it('should not be valid if "from" object field has zero keys', function () {
-            var config = {
+        it('should not be valid if "from" object field has zero keys', () => {
+            const config = {
                     from: {},
                     into: 'TOKEN',
                     using: { method: 'regex', selector: '.*' }
@@ -426,8 +426,8 @@ describe('behaviors', function () {
             }]);
         });
 
-        it('should not be valid if "from" object field has multiple keys', function () {
-            var config = {
+        it('should not be valid if "from" object field has multiple keys', () => {
+            const config = {
                     from: { first: 'first', second: 'second' },
                     into: 'TOKEN',
                     using: { method: 'regex', selector: '.*' }
@@ -440,8 +440,8 @@ describe('behaviors', function () {
             }]);
         });
 
-        it('should not be valid if missing "into" field', function () {
-            var config = { from: 'field', using: { method: 'regex', selector: '.*' } },
+        it('should not be valid if missing "into" field', () => {
+            const config = { from: 'field', using: { method: 'regex', selector: '.*' } },
                 errors = behaviors.validate({ copy: [config] });
             assert.deepEqual(errors, [{
                 code: 'bad data',
@@ -450,8 +450,8 @@ describe('behaviors', function () {
             }]);
         });
 
-        it('should not be valid if "into" field is not a string', function () {
-            var config = { from: 'field', into: 0, using: { method: 'regex', selector: '.*' } },
+        it('should not be valid if "into" field is not a string', () => {
+            const config = { from: 'field', into: 0, using: { method: 'regex', selector: '.*' } },
                 errors = behaviors.validate({ copy: [config] });
             assert.deepEqual(errors, [{
                 code: 'bad data',
@@ -460,8 +460,8 @@ describe('behaviors', function () {
             }]);
         });
 
-        it('should not be valid if missing "using" field', function () {
-            var config = { from: 'field', into: 'TOKEN' },
+        it('should not be valid if missing "using" field', () => {
+            const config = { from: 'field', into: 'TOKEN' },
                 errors = behaviors.validate({ copy: [config] });
             assert.deepEqual(errors, [{
                 code: 'bad data',
@@ -470,8 +470,8 @@ describe('behaviors', function () {
             }]);
         });
 
-        it('should not be valid if "using.method" field is missing', function () {
-            var config = { from: 'field', into: 'TOKEN', using: { selector: '.*' } },
+        it('should not be valid if "using.method" field is missing', () => {
+            const config = { from: 'field', into: 'TOKEN', using: { selector: '.*' } },
                 errors = behaviors.validate({ copy: [config] });
             assert.deepEqual(errors, [{
                 code: 'bad data',
@@ -480,8 +480,8 @@ describe('behaviors', function () {
             }]);
         });
 
-        it('should not be valid if "using.method" field is not supported', function () {
-            var config = { from: 'field', into: 'TOKEN', using: { method: 'INVALID', selector: '.*' } },
+        it('should not be valid if "using.method" field is not supported', () => {
+            const config = { from: 'field', into: 'TOKEN', using: { method: 'INVALID', selector: '.*' } },
                 errors = behaviors.validate({ copy: [config] });
             assert.deepEqual(errors, [{
                 code: 'bad data',
@@ -490,8 +490,8 @@ describe('behaviors', function () {
             }]);
         });
 
-        it('should not be valid if "using.selector" field is missing', function () {
-            var config = { from: 'field', into: 'TOKEN', using: { method: 'regex' } },
+        it('should not be valid if "using.selector" field is missing', () => {
+            const config = { from: 'field', into: 'TOKEN', using: { method: 'regex' } },
                 errors = behaviors.validate({ copy: [config] });
             assert.deepEqual(errors, [{
                 code: 'bad data',

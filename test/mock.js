@@ -1,7 +1,7 @@
 'use strict';
 
 function mock () {
-    var wasCalled = false,
+    let wasCalled = false,
         actualArguments = [],
         message = '',
         slice = Array.prototype.slice,
@@ -28,21 +28,17 @@ function mock () {
         return stubFunction;
     };
 
-    stubFunction.wasCalled = function () {
-        return wasCalled;
-    };
+    stubFunction.wasCalled = () => wasCalled;
 
-    stubFunction.wasCalledWith = function () {
-        var expected = slice.call(arguments),
+    stubFunction.wasCalledWith = () => {
+        const expected = slice.call(arguments),
             actual = actualArguments.slice(0, expected.length); // allow matching only first few params
         setMessage(expected, actualArguments);
 
         return wasCalled && JSON.stringify(actual) === JSON.stringify(expected);
     };
 
-    stubFunction.message = function () {
-        return message;
-    };
+    stubFunction.message = () => message;
 
     return stubFunction;
 }

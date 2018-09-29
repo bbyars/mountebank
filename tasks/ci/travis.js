@@ -1,6 +1,6 @@
 'use strict';
 
-var Q = require('q'),
+const Q = require('q'),
     https = require('https'),
     apiToken = process.env.TRAVIS_API_TOKEN;
 
@@ -9,22 +9,22 @@ function responseFor (options) {
         throw new Error('TRAVIS_API_TOKEN environment variable must be set');
     }
 
-    var deferred = Q.defer();
+    const deferred = Q.defer();
 
     options.hostname = 'api.travis-ci.org';
     options.headers = options.headers || {};
     options.headers.Authorization = 'token ' + apiToken;
     options.headers.Accept = 'application/vnd.travis-ci.2+json';
 
-    var request = https.request(options, function (response) {
-        var packets = [];
+    const request = https.request(options, response => {
+        const packets = [];
 
         response.on('data', function (data) {
             packets.push(data);
         });
 
-        response.on('end', function () {
-            var contentType = response.headers['content-type'] || '';
+        response.on('end', () => {
+            const contentType = response.headers['content-type'] || '';
 
             response.body = Buffer.concat(packets).toString('utf8');
             if (contentType.indexOf('json') >= 0) {
@@ -73,7 +73,7 @@ function triggerBuild (version) {
                 }
             }
         }
-    }).then(function (response) {
+    }).then(response => {
         if (response.statusCode !== 201 && response.statusCode !== 202) {
             console.error('Status code of POST /repo/bbyars%2Fmountebank/requests: ' + response.statusCode);
             throw response.body;
@@ -83,7 +83,7 @@ function triggerBuild (version) {
             method: 'GET',
             path: '/repos/bbyars/mountebank/builds'
         });
-    }).then(function (response) {
+    }).then(response => {
         if (response.statusCode !== 200) {
             console.error('Status code of GET /repos/bbyars/mountebank/builds: ' + response.statusCode);
             throw response.body;
@@ -101,7 +101,7 @@ function getBuildStatus (buildNumber) {
     return responseFor({
         method: 'GET',
         path: '/repos/bbyars/mountebank/builds?number=' + buildNumber
-    }).then(function (response) {
+    }).then(response => {
         if (response.statusCode !== 200) {
             console.error('Status code of GET /repos/bbyars/mountebank/builds?number=' + buildNumber + ': ' + response.statusCode);
             throw response.body;

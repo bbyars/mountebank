@@ -1,6 +1,6 @@
 'use strict';
 
-var assert = require('assert'),
+const assert = require('assert'),
     api = require('./api').create(),
     promiseIt = require('../testHelpers').promiseIt,
     port = api.port + 1,
@@ -8,92 +8,74 @@ var assert = require('assert'),
     isWindows = require('os').platform().indexOf('win') === 0,
     client = require('./http/baseHttpClient').create('http');
 
-describe('POST /imposters', function () {
+describe('POST /imposters', () => {
 
-    promiseIt('should return create new imposter with consistent hypermedia', function () {
-        var createdBody, imposterPath;
+    promiseIt('should return create new imposter with consistent hypermedia', () => {
+        let createdBody, imposterPath;
 
-        return api.post('/imposters', { protocol: 'http', port: port, name: this.name }).then(function (response) {
+        return api.post('/imposters', { protocol: 'http', port, name: this.name }).then(response => {
             createdBody = response.body;
 
             assert.strictEqual(response.statusCode, 201);
             assert.strictEqual(response.headers.location, response.body._links.self.href);
 
             return api.get(response.headers.location);
-        }).then(function (response) {
+        }).then(response => {
             assert.strictEqual(response.statusCode, 200);
             assert.deepEqual(response.body, createdBody);
-        }).finally(function () {
-            return api.del(imposterPath);
-        });
+        }).finally(() => api.del(imposterPath));
     });
 
-    promiseIt('should create imposter at provided port', function () {
-        return api.post('/imposters', { protocol: 'http', port: port, name: this.name }).then(function () {
-            return api.get('/', port);
-        }).then(function (response) {
-            assert.strictEqual(response.statusCode, 200, JSON.stringify(response.body));
-        }).finally(function () {
-            return api.del('/imposters/' + port);
-        });
-    });
+    promiseIt('should create imposter at provided port', () => api.post('/imposters', { protocol: 'http', port, name: this.name }).then(() => api.get('/', port)).then(response => {
+        assert.strictEqual(response.statusCode, 200, JSON.stringify(response.body));
+    }).finally(() => api.del('/imposters/' + port)));
 
-    promiseIt('should return 400 on invalid input', function () {
-        return api.post('/imposters', {}).then(function (response) {
-            assert.strictEqual(response.statusCode, 400);
-        });
-    });
+    promiseIt('should return 400 on invalid input', () => api.post('/imposters', {}).then(response => {
+        assert.strictEqual(response.statusCode, 400);
+    }));
 
-    promiseIt('should return 400 on port conflict', function () {
-        return api.post('/imposters', { protocol: 'http', port: api.port, name: this.name }).then(function (response) {
-            assert.strictEqual(response.statusCode, 400);
-        });
-    });
+    promiseIt('should return 400 on port conflict', () => api.post('/imposters', { protocol: 'http', port: api.port, name: this.name }).then(response => {
+        assert.strictEqual(response.statusCode, 400);
+    }));
 
-    promiseIt('should return 400 on invalid JSON', function () {
-        return api.post('/imposters', 'invalid').then(function (response) {
-            assert.strictEqual(response.statusCode, 400);
-            assert.deepEqual(response.body, {
-                errors: [{
-                    code: 'invalid JSON',
-                    message: 'Unable to parse body as JSON',
-                    source: 'invalid'
-                }]
-            });
+    promiseIt('should return 400 on invalid JSON', () => api.post('/imposters', 'invalid').then(response => {
+        assert.strictEqual(response.statusCode, 400);
+        assert.deepEqual(response.body, {
+            errors: [{
+                code: 'invalid JSON',
+                message: 'Unable to parse body as JSON',
+                source: 'invalid'
+            }]
         });
-    });
+    }));
 
-    promiseIt('should return 403 when does not have permission to bind to port', function () {
+    promiseIt('should return 403 when does not have permission to bind to port', () => {
         if (isWindows) {
             return Q(true); // no sudo required
         }
-        return api.post('/imposters', { protocol: 'http', port: 90, name: this.name }).then(function (response) {
+        return api.post('/imposters', { protocol: 'http', port: 90, name: this.name }).then(response => {
             assert.strictEqual(response.statusCode, 403);
         });
     });
 });
 
-describe('DELETE /imposters', function () {
-    promiseIt('returns 200 with empty array if no imposters had been created', function () {
-        return api.del('/imposters').then(function (response) {
-            assert.strictEqual(response.statusCode, 200);
-            assert.deepEqual(response.body, { imposters: [] });
-        });
-    });
+describe('DELETE /imposters', () => {
+    promiseIt('returns 200 with empty array if no imposters had been created', () => api.del('/imposters').then(response => {
+        assert.strictEqual(response.statusCode, 200);
+        assert.deepEqual(response.body, { imposters: [] });
+    }));
 
     it('deletes all imposters and returns replayable body', function (done) {
-        var firstImposter = { protocol: 'http', port: port, name: this.name + '1' },
+        const firstImposter = { protocol: 'http', port, name: this.name + '1' },
             secondImposter = { protocol: 'http', port: port + 1, name: this.name + '2' };
 
-        return api.post('/imposters', firstImposter).then(function (response) {
+        return api.post('/imposters', firstImposter).then(response => {
             assert.strictEqual(response.statusCode, 201);
             return api.post('/imposters', secondImposter);
-        }).then(function (response) {
+        }).then(response => {
             assert.strictEqual(response.statusCode, 201);
             return client.get('/', firstImposter.port);
-        }).then(function () {
-            return api.del('/imposters');
-        }).then(function (response) {
+        }).then(() => api.del('/imposters')).then(response => {
             assert.strictEqual(response.statusCode, 200);
             assert.deepEqual(response.body, {
                 imposters: [
@@ -113,7 +95,7 @@ describe('DELETE /imposters', function () {
             });
 
             return client.get('/', firstImposter.port);
-        }).done(function () {
+        }).done(() => {
             assert.fail('did not close socket');
             done();
         }, function (error) {
@@ -122,10 +104,10 @@ describe('DELETE /imposters', function () {
         });
     });
 
-    promiseIt('supports returning a non-replayable body with proxies removed', function () {
-        var isImposter = {
+    promiseIt('supports returning a non-replayable body with proxies removed', () => {
+        const isImposter = {
                 protocol: 'http',
-                port: port, name:
+                port, name:
                 this.name + '-is',
                 stubs: [{ responses: [{ is: { body: 'Hello, World!' } }] }]
             },
@@ -136,13 +118,13 @@ describe('DELETE /imposters', function () {
                 stubs: [{ responses: [{ proxy: { to: 'http://www.google.com' } }] }]
             };
 
-        return api.post('/imposters', isImposter).then(function (response) {
+        return api.post('/imposters', isImposter).then(response => {
             assert.strictEqual(response.statusCode, 201);
             return api.post('/imposters', proxyImposter);
-        }).then(function (response) {
+        }).then(response => {
             assert.strictEqual(response.statusCode, 201);
             return api.del('/imposters?removeProxies=true&replayable=false');
-        }).then(function (response) {
+        }).then(response => {
             assert.strictEqual(response.statusCode, 200);
             assert.deepEqual(response.body, {
                 imposters: [
@@ -170,58 +152,54 @@ describe('DELETE /imposters', function () {
     });
 });
 
-describe('PUT /imposters', function () {
-    promiseIt('creates all imposters provided when no imposters previously exist', function () {
-        var request = {
+describe('PUT /imposters', () => {
+    promiseIt('creates all imposters provided when no imposters previously exist', () => {
+        const request = {
             imposters: [
-                { protocol: 'http', port: port, name: this.name + '1' },
+                { protocol: 'http', port, name: this.name + '1' },
                 { protocol: 'http', port: port + 1, name: this.name + '2' },
                 { protocol: 'http', port: port + 2, name: this.name + '3' }
             ]
         };
 
-        return api.put('/imposters', request).then(function (response) {
+        return api.put('/imposters', request).then(response => {
             assert.strictEqual(response.statusCode, 200);
             return client.get('/', port);
-        }).then(function (response) {
+        }).then(response => {
             assert.strictEqual(response.statusCode, 200);
             return client.get('/', port + 1);
-        }).then(function (response) {
+        }).then(response => {
             assert.strictEqual(response.statusCode, 200);
             return client.get('/', port + 2);
-        }).then(function (response) {
+        }).then(response => {
             assert.strictEqual(response.statusCode, 200);
-        }).finally(function () {
-            return api.del('/imposters');
-        });
+        }).finally(() => api.del('/imposters'));
     });
 
-    promiseIt('overwrites previous imposters', function () {
-        var postRequest = { protocol: 'smtp', port: port },
+    promiseIt('overwrites previous imposters', () => {
+        const postRequest = { protocol: 'smtp', port: port },
             putRequest = {
                 imposters: [
-                    { protocol: 'http', port: port, name: this.name + '1' },
+                    { protocol: 'http', port, name: this.name + '1' },
                     { protocol: 'http', port: port + 1, name: this.name + '2' },
                     { protocol: 'http', port: port + 2, name: this.name + '3' }
                 ]
             };
 
-        return api.post('/imposters', postRequest).then(function (response) {
+        return api.post('/imposters', postRequest).then(response => {
             assert.strictEqual(response.statusCode, 201);
             return api.put('/imposters', putRequest);
-        }).then(function (response) {
+        }).then(response => {
             assert.strictEqual(response.statusCode, 200);
             return client.get('/', port);
-        }).then(function (response) {
+        }).then(response => {
             assert.strictEqual(response.statusCode, 200);
             return client.get('/', port + 1);
-        }).then(function (response) {
+        }).then(response => {
             assert.strictEqual(response.statusCode, 200);
             return client.get('/', port + 2);
-        }).then(function (response) {
+        }).then(response => {
             assert.strictEqual(response.statusCode, 200);
-        }).finally(function () {
-            return api.del('/imposters');
-        });
+        }).finally(() => api.del('/imposters'));
     });
 });

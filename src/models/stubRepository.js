@@ -32,7 +32,7 @@ function create (resolver, recordMatches, encoding) {
         if (stubs.length === 0) {
             return undefined;
         }
-        var matches = stubs.filter(function (stub) {
+        var matches = stubs.filter(stub => {
             var stubPredicates = stub.predicates || [],
                 predicates = require('./predicates');
 
@@ -97,7 +97,7 @@ function create (resolver, recordMatches, encoding) {
         var helpers = require('../util/helpers'),
             result = helpers.clone(stubs);
 
-        result.forEach(function (stub) {
+        result.forEach(stub => {
             delete stub.statefulResponses;
         });
         return result;

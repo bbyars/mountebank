@@ -1,6 +1,6 @@
 'use strict';
 
-var port = process.env.MB_PORT || 2525;
+const port = process.env.MB_PORT || 2525;
 
 module.exports = function (grunt) {
 

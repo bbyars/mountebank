@@ -44,9 +44,7 @@ function subElements (parentElement, tagName) {
             attributeValue: function (attributeName) {
                 return attributes[attributeName] ? attributes[attributeName] : '';
             },
-            text: function () {
-                return element.textContent.trim();
-            },
+            text: () => element.textContent.trim(),
             setText: function (newText) {
                 element.textContent = newText;
             }
@@ -185,7 +183,7 @@ function createStepSpecFrom (stepElement) {
         responseElements = stepElement.subElements('assertResponse');
 
     stepSpec.requestText = processChangeCommands(stepElement);
-    stepSpec.assertValid = function () {};
+    stepSpec.assertValid = () => {};
 
     if (responseElements.length > 0) {
         var responseElement = responseElements[0],

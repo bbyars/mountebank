@@ -1,12 +1,12 @@
 'use strict';
 
-var assert = require('assert'),
+const assert = require('assert'),
     SmtpRequest = require('../../../src/models/smtp/smtpRequest'),
     promiseIt = require('../../testHelpers').promiseIt;
 
-describe('smtpRequest', function () {
-    describe('#createFrom', function () {
-        promiseIt('should parse SMTP data', function () {
+describe('smtpRequest', () => {
+    describe('#createFrom', () => {
+        promiseIt('should parse SMTP data', () => {
             let session = {
                     remoteAddress: 'RemoteAddress',
                     envelope: {

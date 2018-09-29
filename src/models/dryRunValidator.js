@@ -193,7 +193,7 @@ function create (options) {
     function validate (request, logger) {
         var stubs = request.stubs || [],
             encoding = request.mode === 'binary' ? 'base64' : 'utf8',
-            validationPromises = stubs.map(function (stub) { return errorsForStub(stub, encoding, logger); }),
+            validationPromises = stubs.map(stub => errorsForStub(stub, encoding, logger)),
             Q = require('q'),
             deferred = Q.defer();
 

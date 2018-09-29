@@ -81,7 +81,7 @@ function createServer (baseLogger, options, recordRequests, debug) {
             }
 
             // let's resolve any stubs (don't worry - there are defaults if no stubs are defined)
-            return stubs.resolve(request, logger).then(function (stubResponse) {
+            return stubs.resolve(request, logger).then(stubResponse => {
                 var buffer = new Buffer(stubResponse.data, 'utf8');
 
                 // This writes the response

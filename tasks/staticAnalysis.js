@@ -1,6 +1,6 @@
 'use strict';
 
-var fs = require('fs-extra'),
+const fs = require('fs-extra'),
     path = require('path'),
     exec = require('child_process').exec,
     os = require('os');
@@ -22,7 +22,7 @@ function include (filetype, file) {
 
 function forEachFileIn (dir, fileCallback, options) {
     fs.readdirSync(dir).forEach(function (file) {
-        var filePath = path.join(dir, file);
+        const filePath = path.join(dir, file);
 
         if (!exclude(options.exclude, filePath)) {
             if (fs.lstatSync(filePath).isDirectory()) {
@@ -37,18 +37,16 @@ function forEachFileIn (dir, fileCallback, options) {
 
 module.exports = function (grunt) {
 
-    grunt.registerTask('jsCheck', 'Run JavaScript checks not covered by eslint', function () {
-        var errors = [],
+    grunt.registerTask('jsCheck', 'Run JavaScript checks not covered by eslint', () => {
+        let errors = [],
             jsCheck = function (file) {
-                var contents = fs.readFileSync(file, 'utf8'),
+                const contents = fs.readFileSync(file, 'utf8'),
                     lines = contents.split(os.EOL);
 
                 lines.forEach(function (line) {
-                    var accidentalOnlyErrors = line.match(/(describe|[Ii]t)\.only\(/) || [];
+                    const accidentalOnlyErrors = line.match(/(describe|[Ii]t)\.only\(/) || [];
 
-                    errors = errors.concat(accidentalOnlyErrors.map(function () {
-                        return file + ' appears to have been left with a mocha .only() call\n\t' + line;
-                    }));
+                    errors = errors.concat(accidentalOnlyErrors.map(() => file + ' appears to have been left with a mocha .only() call\n\t' + line));
                 });
             },
             exclusions = ['node_modules', 'dist', 'staticAnalysis.js', 'testHelpers.js', '*.pid', 'jquery', 'docs'];
@@ -60,12 +58,12 @@ module.exports = function (grunt) {
         }
     });
 
-    grunt.registerTask('deadCheck', 'Check for unused dependencies in package.json', function () {
-        var thisPackage = require('../package.json'),
+    grunt.registerTask('deadCheck', 'Check for unused dependencies in package.json', () => {
+        const thisPackage = require('../package.json'),
             dependencies = Object.keys(thisPackage.dependencies).concat(Object.keys(thisPackage.devDependencies)),
             usedCount = {},
             dependencyCheck = function (file) {
-                var contents = fs.readFileSync(file, 'utf8');
+                const contents = fs.readFileSync(file, 'utf8');
 
                 dependencies.forEach(function (dependency) {
                     if (contents.indexOf("require('" + dependency) >= 0 ||
@@ -109,8 +107,8 @@ module.exports = function (grunt) {
         }
     });
 
-    grunt.registerTask('coverage', 'Generate code coverage', function () {
-        var done = this.async(),
+    grunt.registerTask('coverage', 'Generate code coverage', () => {
+        const done = this.async(),
             command = 'node_modules/.bin/istanbul cover node_modules/.bin/grunt mochaTest:unit';
 
         exec(command, function (error, stdout, stderr) {
@@ -122,8 +120,8 @@ module.exports = function (grunt) {
         });
     });
 
-    grunt.registerTask('_codeclimate', 'Send coverage results to codeclimate', function () {
-        var done = this.async(),
+    grunt.registerTask('_codeclimate', 'Send coverage results to codeclimate', () => {
+        const done = this.async(),
             command = 'node_modules/.bin/codeclimate-test-reporter < coverage/lcov.info';
 
         exec(command, function (error, stdout, stderr) {
@@ -134,8 +132,8 @@ module.exports = function (grunt) {
         });
     });
 
-    grunt.registerTask('sonar', 'Run SonarQube', function () {
-        var done = this.async(),
+    grunt.registerTask('sonar', 'Run SonarQube', () => {
+        const done = this.async(),
             command = 'scripts/sonar';
 
         exec(command, function (error, stdout, stderr) {

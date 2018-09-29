@@ -12,7 +12,7 @@
  * @returns {Object}
  */
 function create (version, options) {
-    var helpers = require('../util/helpers'),
+    const helpers = require('../util/helpers'),
         publicOptions = helpers.clone(options);
 
     delete publicOptions.heroku;
@@ -25,7 +25,7 @@ function create (version, options) {
      * @param {Object} response - The HTTP response
      */
     function get (request, response) {
-        var config = {
+        const config = {
             version: version,
             options: publicOptions,
             process: {

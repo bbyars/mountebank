@@ -60,7 +60,7 @@ function create (Protocol, request) {
 
             function removeNonEssentialInformationFrom (result) {
                 var helpers = require('../util/helpers');
-                result.stubs.forEach(function (stub) {
+                result.stubs.forEach(stub => {
                     /* eslint-disable no-underscore-dangle */
                     if (stub.matches) {
                         delete stub.matches;
@@ -77,14 +77,12 @@ function create (Protocol, request) {
             }
 
             function removeProxiesFrom (result) {
-                result.stubs.forEach(function (stub) {
+                result.stubs.forEach(stub => {
                     stub.responses = stub.responses.filter(function (response) {
                         return !response.hasOwnProperty('proxy');
                     });
                 });
-                result.stubs = result.stubs.filter(function (stub) {
-                    return stub.responses.length > 0;
-                });
+                result.stubs = result.stubs.filter(stub => stub.responses.length > 0);
             }
 
             function toJSON (options) {

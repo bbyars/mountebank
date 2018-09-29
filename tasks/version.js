@@ -1,6 +1,6 @@
 'use strict';
 
-var fs = require('fs'),
+const fs = require('fs'),
     path = require('path');
 
 function runningLocally () {

@@ -12,7 +12,7 @@
  */
 function create (imposters) {
     function queryBoolean (query, key) {
-        var helpers = require('../util/helpers');
+        const helpers = require('../util/helpers');
 
         if (!helpers.defined(query[key])) {
             return false;
@@ -27,7 +27,7 @@ function create (imposters) {
      * @param {Object} response - the HTTP response
      */
     function get (request, response) {
-        var url = require('url'),
+        const url = require('url'),
             query = url.parse(request.url, true).query,
             options = { replayable: queryBoolean(query, 'replayable'), removeProxies: queryBoolean(query, 'removeProxies') },
             imposter = imposters[request.params.id].toJSON(options);
@@ -46,10 +46,10 @@ function create (imposters) {
     }
 
     function deleteRequests (request, response) {
-        var Q = require('q'),
-            imposter = imposters[request.params.id],
+        const Q = require('q'),
             json = {},
             options = { replayable: false, removeProxies: false };
+        let imposter = imposters[request.params.id];
 
         if (imposter) {
             imposter.deleteRequests();
@@ -81,12 +81,12 @@ function create (imposters) {
      * @returns {Object} A promise for testing
      */
     function del (request, response) {
-        var Q = require('q'),
+        const Q = require('q'),
             imposter = imposters[request.params.id],
-            json = {},
             url = require('url'),
             query = url.parse(request.url, true).query,
             options = { replayable: queryBoolean(query, 'replayable'), removeProxies: queryBoolean(query, 'removeProxies') };
+        let json = {};
 
         if (imposter) {
             json = imposter.toJSON(options);

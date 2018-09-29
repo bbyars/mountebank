@@ -1,14 +1,14 @@
 'use strict';
 
-var assert = require('assert'),
+const assert = require('assert'),
     mock = require('../mock').mock,
     Logger = require('../../src/util/scopedLogger');
 
-describe('scopedLogger', function () {
-    describe('#create', function () {
+describe('scopedLogger', () => {
+    describe('#create', () => {
         ['debug', 'info', 'warn', 'error'].forEach(function (level) {
-            it('should prefix protocol name and port to all ' + level + ' calls', function () {
-                var logger = { debug: mock(), info: mock(), warn: mock(), error: mock() },
+            it('should prefix protocol name and port to all ' + level + ' calls', () => {
+                const logger = { debug: mock(), info: mock(), warn: mock(), error: mock() },
                     scopedLogger = Logger.create(logger, 'prefix');
 
                 scopedLogger[level]('log %s', level);
@@ -17,8 +17,8 @@ describe('scopedLogger', function () {
             });
         });
 
-        it('should allow nested scopes', function () {
-            var logger = { debug: mock() },
+        it('should allow nested scopes', () => {
+            const logger = { debug: mock() },
                 scopedLogger = Logger.create(logger, 'prefix').withScope('nested');
 
             scopedLogger.debug('log');
@@ -26,8 +26,8 @@ describe('scopedLogger', function () {
             assert.ok(logger.debug.wasCalledWith('[prefix] nested log'), logger.debug.message());
         });
 
-        it('should allow changing scope', function () {
-            var logger = { debug: mock() },
+        it('should allow changing scope', () => {
+            const logger = { debug: mock() },
                 scopedLogger = Logger.create(logger, 'original');
 
             scopedLogger.changeScope('changed');

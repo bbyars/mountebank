@@ -44,7 +44,7 @@ function createServer (logger, options) {
                 var clientName = helpers.socketName(originalRequest.socket),
                     scopedLogger = logger.withScope(clientName);
 
-                return stubs.resolve(tcpRequest, scopedLogger, this.state).then(function (stubResponse) {
+                return stubs.resolve(tcpRequest, scopedLogger, this.state).then(stubResponse => {
                     var buffer = ensureBuffer(stubResponse.data);
 
                     if (buffer.length > 0) {

@@ -1,6 +1,6 @@
 'use strict';
 
-var JSDOM = require('jsdom').JSDOM,
+const JSDOM = require('jsdom').JSDOM,
     api = require('../api/api').create(),
     Q = require('q'),
     url = require('url'),
@@ -17,10 +17,10 @@ function isLocal (href) {
 }
 
 function parseLinksFrom (window) {
-    var links = [],
+    const links = [],
         anchorTags = window.document.getElementsByTagName('a');
-    for (var i = 0; i < anchorTags.length; i += 1) {
-        var href = anchorTags[i].attributes.href ? anchorTags[i].attributes.href.value : null;
+    for (let i = 0; i < anchorTags.length; i += 1) {
+        let href = anchorTags[i].attributes.href ? anchorTags[i].attributes.href.value : null;
         if (href) {
             if (isProtocolAgnostic(href)) {
                 href = 'http:' + href;
@@ -39,7 +39,7 @@ function isExternalPage (baseUrl) {
 }
 
 function getLinksFrom (baseUrl, html) {
-    var deferred = Q.defer();
+    const deferred = Q.defer();
 
     if (isExternalPage(baseUrl)) {
         // Don't crawl the internet
@@ -47,7 +47,7 @@ function getLinksFrom (baseUrl, html) {
     }
 
     try {
-        var window = new JSDOM(html).window;
+        const window = new JSDOM(html).window;
         deferred.resolve(parseLinksFrom(window));
     }
     catch (errors) {
@@ -64,7 +64,7 @@ function isWhitelisted (href) {
 }
 
 function getResponseFor (href) {
-    var parts = url.parse(href),
+    const parts = url.parse(href),
         client = parts.protocol === 'https:' ? httpsClient : httpClient,
         defaultPort = parts.protocol === 'https:' ? 443 : 80,
         spec = {
@@ -83,7 +83,7 @@ function isBadLink (href) {
 }
 
 function create () {
-    var pages = { errors: [], hits: {} };
+    const pages = { errors: [], hits: {} };
 
     function alreadyCrawled (href) {
         return pages.hits[href];
@@ -98,7 +98,7 @@ function create () {
     }
 
     function crawl (startingUrl, referrer) {
-        var serverUrl = startingUrl.replace(/#.*$/, '').trim();
+        const serverUrl = startingUrl.replace(/#.*$/, '').trim();
 
         if (serverUrl === '') {
             return Q(true);
@@ -116,7 +116,7 @@ function create () {
         }
         else {
             pages.hits[serverUrl] = { from: [referrer] };
-            return getResponseFor(serverUrl).then(function (response) {
+            return getResponseFor(serverUrl).then(response => {
                 pages.hits[serverUrl].statusCode = response.statusCode;
                 pages.hits[serverUrl].contentType = response.headers['content-type'];
 
@@ -124,9 +124,7 @@ function create () {
             }).then(function (links) {
                 return Q.all(links.map(function (link) {
                     return crawl(link, serverUrl);
-                })).then(function () {
-                    return Q(pages);
-                });
+                })).then(() => Q(pages));
             }, function (e) { console.log('ERROR with ' + serverUrl); console.log(e); });
         }
     }

@@ -1,6 +1,6 @@
 'use strict';
 
-var assert = require('assert'),
+const assert = require('assert'),
     Q = require('q'),
     api = require('./../functionalTest/api/api').create(),
     client = require('./../functionalTest/api/http/baseHttpClient').create('http'),
@@ -12,13 +12,13 @@ var assert = require('assert'),
     minIncreasedMemory = 200;
 
 function getMemoryUsedForManyRequests (mbPort) {
-    var stub = { responses: [{ is: { statusCode: 400 } }] },
+    const stub = { responses: [{ is: { statusCode: 400 } }] },
         request = { protocol: 'http', port: port, stubs: [stub] },
         requestFn = function () { return client.get('/', port); },
-        allRequests = [],
-        originalProcess;
+        allRequests = [];
+    let originalProcess;
 
-    for (var i = 0; i < numRequests; i += 1) {
+    for (let i = 0; i < numRequests; i += 1) {
         allRequests[i] = requestFn;
     }
 

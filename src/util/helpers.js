@@ -17,7 +17,7 @@ function defined (obj) {
  * @returns {string}
  */
 function socketName (socket) {
-    var result = socket.remoteAddress;
+    let result = socket.remoteAddress;
     if (socket.remotePort) {
         result += ':' + socket.remotePort;
     }
@@ -41,7 +41,7 @@ function clone (obj) {
  * @returns {Object}
  */
 function merge (defaults, overrides) {
-    var result = clone(defaults);
+    const result = clone(defaults);
     Object.keys(overrides).forEach(function (key) {
         if (typeof overrides[key] === 'object' && overrides[key] !== null) {
             result[key] = merge(result[key] || {}, overrides[key]);

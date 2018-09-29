@@ -1,6 +1,6 @@
 'use strict';
 
-var fs = require('fs-extra'),
+const fs = require('fs-extra'),
     os = require('os'),
     rimraf = require('rimraf'),
     version = require('./version').getVersion(),
@@ -14,8 +14,8 @@ module.exports = function (grunt) {
         };
     }
 
-    grunt.registerTask('dist', 'Create trimmed down distribution directory', function () {
-        var done = this.async(),
+    grunt.registerTask('dist', 'Create trimmed down distribution directory', () => {
+        const done = this.async(),
             newPackage = JSON.parse(JSON.stringify(require('../package.json'))),
             failed = failTask('dist');
 
@@ -31,15 +31,15 @@ module.exports = function (grunt) {
         delete newPackage.devDependencies;
         fs.writeFileSync('dist/mountebank/package.json', JSON.stringify(newPackage, null, 2));
 
-        run('npm', ['install', '--production'], { cwd: 'dist/mountebank' }).done(function () {
+        run('npm', ['install', '--production'], { cwd: 'dist/mountebank' }).done(() => {
             // Switch tests to use the mb from the dist directory to test what actually gets published
             process.env.MB_EXECUTABLE = 'dist/mountebank/bin/mb';
             done();
         }, failed);
     });
 
-    grunt.registerTask('version', 'Set the version number', function () {
-        var newPackage = require('../dist/mountebank/package.json');
+    grunt.registerTask('version', 'Set the version number', () => {
+        const newPackage = require('../dist/mountebank/package.json');
 
         newPackage.version = version;
         console.log('Using version ' + version);
@@ -55,8 +55,8 @@ module.exports = function (grunt) {
         run('scripts/dist/createWindowsZip', [arch, version]).done(this.async(), failTask('dist:zip'));
     });
 
-    grunt.registerTask('dist:npm', 'Create npm tarball', function () {
-        var filename = 'mountebank-v' + version + '-npm.tar.gz';
+    grunt.registerTask('dist:npm', 'Create npm tarball', () => {
+        const filename = 'mountebank-v' + version + '-npm.tar.gz';
 
         run('tar', ['czf', filename, 'mountebank'], { cwd: 'dist' }).done(this.async(), failTask('dist:npm'));
     });

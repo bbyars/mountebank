@@ -114,7 +114,7 @@ function create (options) {
     app.get('/releases', feedController.getReleases);
     app.get('/releases/:version', feedController.getRelease);
 
-    app.get('/sitemap', function (request, response) {
+    app.get('/sitemap', (request, response) => {
         response.type('text/plain');
         response.render('sitemap', { releases: releases });
     });
@@ -147,7 +147,7 @@ function create (options) {
         '/docs/protocols/tcp',
         '/docs/protocols/smtp'
     ].forEach(function (endpoint) {
-        app.get(endpoint, function (request, response) {
+        app.get(endpoint, (request, response) => {
             response.render(endpoint.substring(1));
         });
     });

@@ -91,7 +91,7 @@ function setup (protocolName, createBaseServer) {
                     var helpers = require('../../util/helpers'),
                         scopedLogger = logger.withScope(helpers.socketName(container.request.socket));
 
-                    return stubs.resolve(httpRequest, scopedLogger, this.state).then(function (stubResponse) {
+                    return stubs.resolve(httpRequest, scopedLogger, this.state).then(stubResponse => {
                         var mode = stubResponse._mode ? stubResponse._mode : 'text',
                             encoding = mode === 'binary' ? 'base64' : 'utf8';
 
@@ -110,7 +110,7 @@ function setup (protocolName, createBaseServer) {
 
         server.on('connection', function (socket) { result.emit('connection', socket); });
 
-        server.on('request', function (request, response) {
+        server.on('request', (request, response) => {
             var container = { request: request, response: response };
             result.emit('request', request.socket, container);
         });
