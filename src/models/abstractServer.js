@@ -20,26 +20,26 @@
  * @param {Object} baseLogger - The logger
  * @returns {Object}
  */
-function implement (implementation, recordRequests, debug, baseLogger) {
+const implement = (implementation, recordRequests, debug, baseLogger) => {
     /**
      * Creates the protocol-specific server
      * @memberOf module:models/abstractServer#
      * @param {Object} options - The startup options
      * @returns {Object} - The interface for all protocols
      */
-    function create (options) {
+    const create = options => {
         options.recordRequests = options.recordRequests || recordRequests;
         options.debug = debug;
 
-        function scopeFor (port) {
+        const scopeFor = port => {
             const util = require('util');
             let scope = util.format('%s:%s', implementation.protocolName, port);
 
             if (options.name) {
-                scope += ' ' + options.name;
+                scope += ` ${options.name}`;
             }
             return scope;
-        }
+        };
 
         let numRequests = 0;
         const Q = require('q'),
@@ -62,18 +62,18 @@ function implement (implementation, recordRequests, debug, baseLogger) {
                     logger.error('%s transmission error X=> %s', name, JSON.stringify(error));
                 });
 
-                socket.on('end', function () {
+                socket.on('end', () => {
                     logger.debug('%s LAST-ACK', name);
                 });
 
-                socket.on('close', function () {
+                socket.on('close', () => {
                     logger.debug('%s CLOSED', name);
                     delete connections[name];
                 });
             }
         });
 
-        server.on('request', function (socket, request, testCallback) {
+        server.on('request', (socket, request, testCallback) => {
             const domain = require('domain').create(),
                 helpers = require('../util/helpers'),
                 clientName = helpers.socketName(socket),
@@ -89,8 +89,8 @@ function implement (implementation, recordRequests, debug, baseLogger) {
             logger.info('%s => %s', clientName, server.formatRequestShort(request));
 
             domain.on('error', errorHandler);
-            domain.run(function () {
-                implementation.Request.createFrom(request).then(function (simpleRequest) {
+            domain.run(() => {
+                implementation.Request.createFrom(request).then(simpleRequest => {
                     logger.debug('%s => %s', clientName, JSON.stringify(server.formatRequest(simpleRequest)));
                     numRequests += 1;
                     if (options.recordRequests) {
@@ -110,7 +110,7 @@ function implement (implementation, recordRequests, debug, baseLogger) {
             });
         });
 
-        server.listen(options.port || 0).done(function (actualPort) {
+        server.listen(options.port || 0).done(actualPort => {
             const metadata = server.metadata(options);
             if (options.name) {
                 metadata.name = options.name;
@@ -126,19 +126,19 @@ function implement (implementation, recordRequests, debug, baseLogger) {
              * This is the interface for all protocols
              */
             deferred.resolve({
-                numberOfRequests: function () { return numRequests; },
+                numberOfRequests: () => numRequests,
                 requests,
                 addStub: server.addStub,
                 stubs: server.stubs,
                 metadata,
                 port: actualPort,
-                deleteRequests: function () {
+                deleteRequests: () => {
                     numRequests = 0;
                     server.deleteRequests();
                 },
-                close: function () {
+                close: () => {
                     const closeDeferred = Q.defer();
-                    server.close(function () {
+                    server.close(() => {
                         logger.info('Ciao for now');
                         closeDeferred.resolve();
                     });
@@ -151,13 +151,11 @@ function implement (implementation, recordRequests, debug, baseLogger) {
         });
 
         return deferred.promise;
-    }
+    };
 
     return {
         create
     };
-}
-
-module.exports = {
-    implement: implement
 };
+
+module.exports = { implement };

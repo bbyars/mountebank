@@ -8,21 +8,19 @@
  * @module
  */
 
-function createErrorHandler (deferred, port) {
-    return function errorHandler (error) {
-        const errors = require('../util/errors');
+const createErrorHandler = (deferred, port) => error => {
+    const errors = require('../util/errors');
 
-        if (error.errno === 'EADDRINUSE') {
-            deferred.reject(errors.ResourceConflictError('Port ' + port + ' is already in use'));
-        }
-        else if (error.errno === 'EACCES') {
-            deferred.reject(errors.InsufficientAccessError());
-        }
-        else {
-            deferred.reject(error);
-        }
-    };
-}
+    if (error.errno === 'EADDRINUSE') {
+        deferred.reject(errors.ResourceConflictError(`Port ${port} is already in use`));
+    }
+    else if (error.errno === 'EACCES') {
+        deferred.reject(errors.InsufficientAccessError());
+    }
+    else {
+        deferred.reject(error);
+    }
+};
 
 /**
  * Create the imposter
@@ -30,7 +28,7 @@ function createErrorHandler (deferred, port) {
  * @param {Object} request - the parsed imposter JSON
  * @returns {Object}
  */
-function create (Protocol, request) {
+const create = (Protocol, request) => {
     const Q = require('q'),
         deferred = Q.defer(),
         domain = require('domain').create(),
@@ -41,24 +39,24 @@ function create (Protocol, request) {
 
     domain.on('error', errorHandler);
     domain.run(() => {
-        Protocol.create(request).done(function (server) {
+        Protocol.create(request).done(server => {
 
-            const url = '/imposters/' + server.port;
+            const url = `/imposters/${server.port}`;
 
             if (request.stubs) {
                 request.stubs.forEach(server.addStub);
             }
 
-            function addDetailsTo (result) {
-                Object.keys(server.metadata).forEach(function (key) {
+            const addDetailsTo = result => {
+                Object.keys(server.metadata).forEach(key => {
                     result[key] = server.metadata[key];
                 });
 
                 result.requests = server.requests;
                 result.stubs = server.stubs();
-            }
+            };
 
-            function removeNonEssentialInformationFrom (result) {
+            const removeNonEssentialInformationFrom = result => {
                 const helpers = require('../util/helpers');
                 result.stubs.forEach(stub => {
                     /* eslint-disable no-underscore-dangle */
@@ -74,16 +72,16 @@ function create (Protocol, request) {
                 delete result.numberOfRequests;
                 delete result.requests;
                 delete result._links;
-            }
+            };
 
-            function removeProxiesFrom (result) {
+            const removeProxiesFrom = result => {
                 result.stubs.forEach(stub => {
                     stub.responses = stub.responses.filter(response => !response.hasOwnProperty('proxy'));
                 });
                 result.stubs = result.stubs.filter(stub => stub.responses.length > 0);
-            }
+            };
 
-            function toJSON (options) {
+            const toJSON = options => {
                 // I consider the order of fields represented important.  They won't matter for parsing,
                 // but it makes a nicer user experience for developers viewing the JSON to keep the most
                 // relevant information at the top
@@ -109,16 +107,14 @@ function create (Protocol, request) {
                 }
 
                 return result;
-            }
+            };
 
-            function deleteRequests () {
-                server.deleteRequests();
-            }
+            const deleteRequests = () => server.deleteRequests();
 
             deferred.resolve({
                 port: server.port,
-                url: url,
-                toJSON: toJSON,
+                url,
+                toJSON,
                 addStub: server.addStub,
                 stop: server.close,
                 deleteRequests
@@ -127,8 +123,6 @@ function create (Protocol, request) {
     });
 
     return deferred.promise;
-}
-
-module.exports = {
-    create
 };
+
+module.exports = { create };

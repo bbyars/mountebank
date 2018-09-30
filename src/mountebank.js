@@ -24,7 +24,7 @@ function initializeLogfile (filename) {
  * @param {object} options - The command line options
  * @returns {Object} An object with a close method to stop the server
  */
-function create (options) {
+const create = options => {
     const Q = require('q'),
         express = require('express'),
         cors = require('cors'),
@@ -171,7 +171,7 @@ function create (options) {
     }
 
     const connections = {},
-        server = app.listen(options.port, hostname(), function () {
+        server = app.listen(options.port, hostname(), () => {
             logger.info('mountebank v%s now taking orders - point your browser to http://localhost:%s for help',
                 thisPackage.version, options.port);
             logger.debug('config: ' + JSON.stringify({
@@ -191,7 +191,7 @@ function create (options) {
                 const name = helpers.socketName(socket);
                 connections[name] = socket;
 
-                socket.on('close', function () {
+                socket.on('close', () => {
                     delete connections[name];
                 });
 
@@ -208,7 +208,7 @@ function create (options) {
 
             deferred.resolve({
                 close: callback => {
-                    server.close(function () {
+                    server.close(() => {
                         logger.info('Adios - see you soon?');
                         callback();
                     });
@@ -222,7 +222,7 @@ function create (options) {
         });
 
     return deferred.promise;
-}
+};
 
 module.exports = {
     create

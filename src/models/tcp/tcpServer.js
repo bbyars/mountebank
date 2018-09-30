@@ -6,18 +6,16 @@
  */
 
 const createServer = (logger, options) => {
-    function postProcess (response) {
+    const postProcess = response => {
         const defaultResponse = options.defaultResponse || {};
         return {
             data: response.data || defaultResponse.data || ''
         };
-    }
+    };
 
     const mode = options.mode ? options.mode : 'text',
         encoding = mode === 'binary' ? 'base64' : 'utf8',
-        ensureBuffer = function (data) {
-            return Buffer.isBuffer(data) ? data : new Buffer(data, encoding);
-        },
+        ensureBuffer = data => Buffer.isBuffer(data) ? data : new Buffer(data, encoding),
         proxy = require('./tcpProxy').create(logger, encoding),
         resolver = require('../responseResolver').create(proxy, postProcess),
         stubs = require('../stubRepository').create(resolver, options.debug, encoding),
@@ -30,17 +28,15 @@ const createServer = (logger, options) => {
             },
             formatRequestShort: request => {
                 if (request.data.length > 20) {
-                    return request.data.toString(encoding).substring(0, 20) + '...';
+                    return `${request.data.toString(encoding).substring(0, 20)}...`;
                 }
                 else {
                     return request.data.toString(encoding);
                 }
             },
-            formatRequest: function (tcpRequest) {
-                return tcpRequest.data.toString(encoding);
-            },
+            formatRequest: tcpRequest => tcpRequest.data.toString(encoding),
             formatResponse: combinators.identity,
-            respond: function (tcpRequest, originalRequest) {
+            respond: (tcpRequest, originalRequest) => {
                 const clientName = helpers.socketName(originalRequest.socket),
                     scopedLogger = logger.withScope(clientName);
 
@@ -54,19 +50,19 @@ const createServer = (logger, options) => {
                     return buffer.toString(encoding);
                 });
             },
-            metadata: function () { return { mode: mode }; },
+            metadata: () => ({ mode }),
             addStub: stubs.addStub,
             state: {},
             stubs: stubs.stubs
         }),
         server = require('net').createServer();
 
-    function isEndOfRequest (requestData) {
+    const isEndOfRequest = requestData => {
         if (!options.endOfRequestResolver || !options.endOfRequestResolver.inject) {
             return true;
         }
 
-        const injected = '(' + options.endOfRequestResolver.inject + ')(requestData, logger)';
+        const injected = `(${options.endOfRequestResolver.inject})(requestData, logger)`;
 
         if (mode === 'text') {
             requestData = requestData.toString('utf8');
@@ -76,18 +72,18 @@ const createServer = (logger, options) => {
             return eval(injected);
         }
         catch (error) {
-            logger.error('injection X=> ' + error);
-            logger.error('    full source: ' + JSON.stringify(injected));
-            logger.error('    requestData: ' + JSON.stringify(requestData));
+            logger.error(`injection X=> ${error}`);
+            logger.error(`    full source: ${JSON.stringify(injected)}`);
+            logger.error(`    requestData: ${JSON.stringify(requestData)}`);
             return false;
         }
-    }
+    };
 
     server.on('connection', socket => {
         let packets = [];
         result.emit('connection', socket);
 
-        socket.on('data', function (data) {
+        socket.on('data', data => {
             packets.push(data);
 
             const requestData = Buffer.concat(packets),
@@ -106,7 +102,7 @@ const createServer = (logger, options) => {
         const Q = require('q'),
             deferred = Q.defer();
 
-        server.listen(port, function () {
+        server.listen(port, () => {
             deferred.resolve(server.address().port);
         });
         return deferred.promise;
@@ -123,7 +119,7 @@ const createServer = (logger, options) => {
  * @param {boolean} debug - The --debug command line parameter
  * @returns {Object} - The protocol implementation
  */
-function initialize (logger, allowInjection, recordRequests, debug) {
+const initialize = (logger, allowInjection, recordRequests, debug) => {
     const implementation = {
             protocolName: 'tcp',
             createServer: createServer,
@@ -138,8 +134,6 @@ function initialize (logger, allowInjection, recordRequests, debug) {
         create: AbstractServer.implement(implementation, recordRequests, debug, logger).create,
         Validator: { create: combinators.curry(TcpValidator.create, allowInjection) }
     };
-}
-
-module.exports = {
-    initialize
 };
+
+module.exports = { initialize };

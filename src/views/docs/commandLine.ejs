@@ -319,7 +319,7 @@ function (request, state, logger, callback) {
             response.on('data', chunk => {
                 body += chunk;
             });
-            response.on('end', function () {
+            response.on('end', () => {
                 var stubResponse = {
                         statusCode: response.statusCode,
                         headers: response.headers,

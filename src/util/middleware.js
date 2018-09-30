@@ -43,7 +43,7 @@ function useAbsoluteUrls (port) {
                         return;
                     }
                     fn(obj);
-                    Object.keys(obj).forEach(function (key) {
+                    Object.keys(obj).forEach(key => {
                         if (obj[key] && typeof obj[key] === 'object') {
                             traverse(obj[key], fn, key);
                         }
@@ -190,11 +190,4 @@ function json (log) {
     };
 }
 
-module.exports = {
-    useAbsoluteUrls: useAbsoluteUrls,
-    createImposterValidator: createImposterValidator,
-    logger: logger,
-    globals: globals,
-    defaultIEtoHTML: defaultIEtoHTML,
-    json: json
-};
+module.exports = { useAbsoluteUrls, createImposterValidator, logger, globals, defaultIEtoHTML, json };

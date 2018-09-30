@@ -114,7 +114,7 @@ function create () {
     }
 
     function addErrorsFor (config, pathPrefix, spec, addErrorFn) {
-        Object.keys(spec).filter(nonMetadata).forEach(function (fieldName) {
+        Object.keys(spec).filter(nonMetadata).forEach(fieldName => {
             const util = require('util'),
                 helpers = require('../util/helpers'),
                 fieldSpec = spec[fieldName],
@@ -142,7 +142,7 @@ function create () {
     function validate (config, validationSpec) {
         const errors = [];
 
-        Object.keys(config || {}).forEach(function (key) {
+        Object.keys(config || {}).forEach(key => {
             const util = require('util'),
                 addErrorFn = function (field, message, subConfig) {
                     errors.push(exceptions.ValidationError(
@@ -161,7 +161,7 @@ function create () {
     }
 
     return {
-        validate: validate
+        validate
     };
 }
 

@@ -9,7 +9,7 @@
  * @param {Object} [obj] - properties to merge into the newly created object as own properties
  * @returns {Object}
  */
-function from (proto, obj) {
+const from = (proto, obj) => {
     // allow either inherit.from(EventEmitter) or inherit.from({key: 'value'})
     if (typeof proto === 'function') {
         proto = new proto();
@@ -19,12 +19,10 @@ function from (proto, obj) {
     function F () {}
     F.prototype = proto;
     const result = new F();
-    Object.keys(obj).forEach(function (key) {
+    Object.keys(obj).forEach(key => {
         result[key] = obj[key];
     });
     return result;
-}
-
-module.exports = {
-    from: from
 };
+
+module.exports = { from };

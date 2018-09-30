@@ -6,7 +6,7 @@
 // miss the assertion message.
 function wrap (test, that) {
     return done => {
-        test.apply(that, []).done(function () { done(); }, done);
+        test.apply(that, []).done(() => { done(); }, done);
     };
 }
 

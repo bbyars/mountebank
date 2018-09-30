@@ -111,7 +111,7 @@ module.exports = function (grunt) {
         }
     });
 
-    grunt.registerTask('setAirplaneMode', function () {
+    grunt.registerTask('setAirplaneMode', () => {
         process.env.MB_AIRPLANE_MODE = 'true';
     });
 

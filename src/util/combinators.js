@@ -42,7 +42,7 @@ function curry (fn) {
  */
 function compose () {
     const args = Array.prototype.slice.call(arguments).reverse();
-    return function (obj) { return args.reduce(function (result, F) { return F(result); }, obj); };
+    return obj => args.reduce((result, F) => F(result), obj);
 }
 
 module.exports = {
@@ -52,17 +52,17 @@ module.exports = {
      * @param {Object} i - The input
      * @returns {Object} Exactly what was passed in
      */
-    identity: function (i) { return i; },
+    identity: i => i,
     /**
      * Ignores its parameters, and instead always returns a constant value
      * @param {Object} k - The constant to return
      * @returns {Function} - A function that will always return the constant
      */
-    constant: function (k) { return function () { return k; }; },
+    constant: k => () => k,
     /**
      * A function that does nothing, occasionally useful to avoid special case logic
      */
-    noop: function () {},
-    compose: compose,
-    curry: curry
+    noop: () => {},
+    compose,
+    curry
 };

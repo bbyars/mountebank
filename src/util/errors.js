@@ -5,46 +5,35 @@
  * @module
  */
 
-function createError (code, message, options) {
+const createError = (code, message, options) => {
     const inherit = require('./inherit'),
-        result = inherit.from(Error, {
-            code: code,
-            message: message
-        });
+        result = inherit.from(Error, { code, message });
 
     if (options) {
-        Object.keys(options).forEach(function (key) {
+        Object.keys(options).forEach(key => {
             result[key] = options[key];
         });
     }
     return result;
-}
+};
 
-function create (code) {
-    return function (message, options) {
-        return createError(code, message, options);
-    };
-}
+const create = code => (message, options) => createError(code, message, options);
 
-function createWithMessage (code, message) {
-    return function (options) {
-        return createError(code, message, options);
-    };
-}
+const createWithMessage = (code, message) => options => createError(code, message, options);
 
 // Produces a JSON.stringify-able Error object
 // (because message is on the prototype, it doesn't show by default)
-function details (error) {
+const details = error => {
     const helpers = require('./helpers'),
         prototypeProperties = {};
 
-    ['message', 'name', 'stack'].forEach(function (key) {
+    ['message', 'name', 'stack'].forEach(key => {
         if (error[key]) {
             prototypeProperties[key] = error[key];
         }
     });
     return helpers.merge(error, prototypeProperties);
-}
+};
 
 module.exports = {
     ValidationError: create('bad data'),
@@ -54,5 +43,5 @@ module.exports = {
     InvalidProxyError: create('invalid proxy'),
     MissingResourceError: create('no such resource'),
     InvalidJSONError: createWithMessage('invalid JSON', 'Unable to parse body as JSON'),
-    details: details
+    details
 };

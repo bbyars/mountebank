@@ -89,10 +89,10 @@ const fromSchema = {
  * @param {Object} config - The behavior configuration
  * @returns {Object} The array of errors
  */
-function validate (config) {
+const validate = config => {
     const validator = require('./behaviorsValidator').create();
     return validator.validate(config, validations);
-}
+};
 
 /**
  * Waits a specified number of milliseconds before sending the response.  Due to the approximate
@@ -237,7 +237,7 @@ function decorate (originalRequest, responsePromise, fn, logger) {
 }
 
 function getKeyIgnoringCase (obj, expectedKey) {
-    return Object.keys(obj).find(function (key) {
+    return Object.keys(obj).find(key => {
         if (key.toLowerCase() === expectedKey.toLowerCase()) {
             return key;
         }
@@ -322,7 +322,7 @@ function globalStringReplace (str, substring, newSubstring, logger) {
 }
 
 function globalObjectReplace (obj, replacer) {
-    Object.keys(obj).forEach(function (key) {
+    Object.keys(obj).forEach(key => {
         if (typeof obj[key] === 'string') {
             obj[key] = replacer(obj[key]);
         }
@@ -333,7 +333,7 @@ function globalObjectReplace (obj, replacer) {
 }
 
 function replaceArrayValuesIn (response, token, values, logger) {
-    const replacer = function (field) {
+    const replacer = field => {
         values.forEach(function (replacement, index) {
             // replace ${TOKEN}[1] with indexed element
             const util = require('util'),
@@ -432,8 +432,8 @@ function lookupRow (lookupConfig, originalRequest, logger) {
 }
 
 function replaceObjectValuesIn (response, token, values, logger) {
-    const replacer = function (field) {
-        Object.keys(values).forEach(function (key) {
+    const replacer = field => {
+        Object.keys(values).forEach(key => {
             const util = require('util');
 
             // replace ${TOKEN}["key"] and ${TOKEN}['key'] and ${TOKEN}[key]
@@ -508,6 +508,6 @@ function execute (request, response, behaviors, logger) {
 }
 
 module.exports = {
-    validate: validate,
+    validate,
     execute: execute
 };
