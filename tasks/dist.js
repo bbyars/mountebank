@@ -9,12 +9,12 @@ const fs = require('fs-extra'),
 module.exports = function (grunt) {
 
     function failTask (task) {
-        return exitCode => {
+        return function (exitCode) {
             grunt.warn(task + ' failed', exitCode);
         };
     }
 
-    grunt.registerTask('dist', 'Create trimmed down distribution directory', () => {
+    grunt.registerTask('dist', 'Create trimmed down distribution directory', function () {
         const done = this.async(),
             newPackage = JSON.parse(JSON.stringify(require('../package.json'))),
             failed = failTask('dist');
@@ -31,14 +31,14 @@ module.exports = function (grunt) {
         delete newPackage.devDependencies;
         fs.writeFileSync('dist/mountebank/package.json', JSON.stringify(newPackage, null, 2));
 
-        run('npm', ['install', '--production'], { cwd: 'dist/mountebank' }).done(() => {
+        run('npm', ['install', '--production'], { cwd: 'dist/mountebank' }).done(function () {
             // Switch tests to use the mb from the dist directory to test what actually gets published
             process.env.MB_EXECUTABLE = 'dist/mountebank/bin/mb';
             done();
         }, failed);
     });
 
-    grunt.registerTask('version', 'Set the version number', () => {
+    grunt.registerTask('version', 'Set the version number', function () {
         const newPackage = require('../dist/mountebank/package.json');
 
         newPackage.version = version;
@@ -55,13 +55,13 @@ module.exports = function (grunt) {
         run('scripts/dist/createWindowsZip', [arch, version]).done(this.async(), failTask('dist:zip'));
     });
 
-    grunt.registerTask('dist:npm', 'Create npm tarball', () => {
+    grunt.registerTask('dist:npm', 'Create npm tarball', function () {
         const filename = 'mountebank-v' + version + '-npm.tar.gz';
 
         run('tar', ['czf', filename, 'mountebank'], { cwd: 'dist' }).done(this.async(), failTask('dist:npm'));
     });
 
-    grunt.registerTask('dist:package', 'Create OS-specific package', type => {
+    grunt.registerTask('dist:package', 'Create OS-specific package', function (type) {
         run('scripts/dist/createPackage', [os.platform(), type, version]).done(this.async(), failTask('dist:package'));
     });
 };

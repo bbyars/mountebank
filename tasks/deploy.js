@@ -12,19 +12,19 @@ module.exports = function (grunt) {
         };
     }
 
-    grunt.registerTask('deploy:s3', 'Deploy artifacts to S3', () => {
+    grunt.registerTask('deploy:s3', 'Deploy artifacts to S3', function () {
         run('scripts/deploy/deployS3', []).done(this.async(), failTask('deploy:s3'));
     });
 
-    grunt.registerTask('deploy:heroku', 'Deploy artifacts to Heroku', () => {
+    grunt.registerTask('deploy:heroku', 'Deploy artifacts to Heroku', function () {
         run('scripts/deploy/deployHeroku', [publish]).done(this.async(), failTask('deploy:heroku'));
     });
 
-    grunt.registerTask('deploy:npm', 'Deploy artifacts to npm', () => {
+    grunt.registerTask('deploy:npm', 'Deploy artifacts to npm', function () {
         run('scripts/deploy/deployNpm', [publish]).done(this.async(), failTask('deploy:npm'));
     });
 
-    grunt.registerTask('deploy:docs', 'Deploy source docs to BitBalloon', () => {
+    grunt.registerTask('deploy:docs', 'Deploy source docs to BitBalloon', function () {
         run('scripts/deploy/deployFirebase', [version]).done(this.async(), failTask('deploy:docs'));
     });
 };

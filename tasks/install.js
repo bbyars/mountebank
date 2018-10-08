@@ -22,7 +22,7 @@ function bitness () {
 module.exports = function (grunt) {
 
     function failTask (task) {
-        return exitCode => {
+        return function (exitCode) {
             grunt.warn(task + ' failed', exitCode);
         };
     }
@@ -41,7 +41,7 @@ module.exports = function (grunt) {
         fs.mkdirSync(testDir);
         fs.copySync('dist/' + tarball, tarballPath);
 
-        run('tar', ['xzf', tarball], { cwd: testDir }).done(() => {
+        run('tar', ['xzf', tarball], { cwd: testDir }).done(function () {
             fs.unlinkSync(tarballPath);
             setExecutableTo(tarballPath.replace('.tar.gz', '') + '/mb');
             done();
@@ -59,13 +59,13 @@ module.exports = function (grunt) {
         fs.removeSync(testDir);
         fs.mkdirSync(testDir);
 
-        run('powershell', ['-command', 'Add-Type', '-assembly', 'System.IO.Compression.FileSystem;', command]).done(() => {
+        run('powershell', ['-command', 'Add-Type', '-assembly', 'System.IO.Compression.FileSystem;', command]).done(function () {
             setExecutableTo(path.resolve(testDir, zipFile.replace('.zip', ''), 'mb.cmd'));
             done();
         }, failTask('install:zip'));
     });
 
-    grunt.registerTask('install:npm', 'Set test executable to mb installed through local npm from tarball', () => {
+    grunt.registerTask('install:npm', 'Set test executable to mb installed through local npm from tarball', function () {
         const done = this.async(),
             tarball = util.format('mountebank-v%s-npm.tar.gz', version);
 
@@ -73,13 +73,13 @@ module.exports = function (grunt) {
         fs.mkdirSync(testDir);
         fs.copySync('dist/' + tarball, path.join(testDir, tarball));
 
-        run('npm', ['install', './' + tarball], { cwd: testDir }).done(() => {
+        run('npm', ['install', './' + tarball], { cwd: testDir }).done(function () {
             setExecutableTo(testDir + '/node_modules/.bin/mb');
             done();
         }, failTask('install:npm'));
     });
 
-    grunt.registerTask('install:pkg', 'Set test executable to mb installed in OSX pkg file', () => {
+    grunt.registerTask('install:pkg', 'Set test executable to mb installed in OSX pkg file', function () {
         const done = this.async(),
             pkg = util.format('mountebank-v%s.pkg', version);
 
@@ -87,13 +87,13 @@ module.exports = function (grunt) {
         fs.mkdirSync(testDir);
         fs.copySync('dist/' + pkg, path.join(testDir, pkg));
 
-        run('sudo', ['installer', '-pkg', pkg, '-target', '/'], { cwd: testDir }).done(() => {
+        run('sudo', ['installer', '-pkg', pkg, '-target', '/'], { cwd: testDir }).done(function () {
             setExecutableTo('mb');
             done();
         }, failTask('install:pkg'));
     });
 
-    grunt.registerTask('install:deb', 'Set test executable to mb installed in Debian file', () => {
+    grunt.registerTask('install:deb', 'Set test executable to mb installed in Debian file', function () {
         const done = this.async(),
             deb = util.format('mountebank_%s_amd64.deb', version);
 
@@ -101,16 +101,16 @@ module.exports = function (grunt) {
         fs.mkdirSync(testDir);
         fs.copySync('dist/' + deb, path.join(testDir, deb));
 
-        run('sudo', ['dpkg', '-i', deb], { cwd: testDir }).done(() => {
+        run('sudo', ['dpkg', '-i', deb], { cwd: testDir }).done(function () {
             setExecutableTo('mb');
             done();
         }, failTask('install:deb'));
     });
 
-    grunt.registerTask('uninstall:deb', 'Verify uninstallation of Debian file', () => {
+    grunt.registerTask('uninstall:deb', 'Verify uninstallation of Debian file', function () {
         const done = this.async();
 
-        run('sudo', ['dpkg', '-r', 'mountebank'], { cwd: testDir }).done(() => {
+        run('sudo', ['dpkg', '-r', 'mountebank'], { cwd: testDir }).done(function () {
             if (fs.existsSync('/usr/local/bin/mb')) {
                 throw new Error('Uninstalling debian package did not remove /usr/local/bin/mb');
             }
@@ -118,7 +118,7 @@ module.exports = function (grunt) {
         }, failTask('uninstall:deb'));
     });
 
-    grunt.registerTask('install:rpm', 'Set test executable to mb installed in Red Hat package', () => {
+    grunt.registerTask('install:rpm', 'Set test executable to mb installed in Red Hat package', function () {
         const done = this.async(),
             rpm = util.format('mountebank-%s-1.x86_64.rpm', version.replace('-', '_'));
 
@@ -126,16 +126,16 @@ module.exports = function (grunt) {
         fs.mkdirSync(testDir);
         fs.copySync('dist/' + rpm, path.join(testDir, rpm));
 
-        run('sudo', ['yum', '-y', '--nogpgcheck', 'localinstall', rpm], { cwd: testDir }).done(() => {
+        run('sudo', ['yum', '-y', '--nogpgcheck', 'localinstall', rpm], { cwd: testDir }).done(function () {
             setExecutableTo('mb');
             done();
         }, failTask('install:rpm'));
     });
 
-    grunt.registerTask('uninstall:rpm', 'Verify uninstallation of Red Hat package', () => {
+    grunt.registerTask('uninstall:rpm', 'Verify uninstallation of Red Hat package', function () {
         const done = this.async();
 
-        run('sudo', ['yum', 'remove', 'mountebank'], { cwd: testDir }).done(() => {
+        run('sudo', ['yum', 'remove', 'mountebank'], { cwd: testDir }).done(function () {
             if (fs.existsSync('/usr/local/bin/mb')) {
                 throw new Error('Uninstalling Red Hat package did not remove /usr/local/bin/mb');
             }

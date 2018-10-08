@@ -37,16 +37,18 @@ function forEachFileIn (dir, fileCallback, options) {
 
 module.exports = function (grunt) {
 
-    grunt.registerTask('jsCheck', 'Run JavaScript checks not covered by eslint', () => {
+    grunt.registerTask('jsCheck', 'Run JavaScript checks not covered by eslint', function () {
         let errors = [],
             jsCheck = function (file) {
                 const contents = fs.readFileSync(file, 'utf8'),
                     lines = contents.split(os.EOL);
 
-                lines.forEach(line => {
+                lines.forEach(function (line) {
                     const accidentalOnlyErrors = line.match(/(describe|[Ii]t)\.only\(/) || [];
 
-                    errors = errors.concat(accidentalOnlyErrors.map(() => file + ' appears to have been left with a mocha .only() call\n\t' + line));
+                    errors = errors.concat(accidentalOnlyErrors.map(function () {
+                        return file + ' appears to have been left with a mocha .only() call\n\t' + line;
+                    }));
                 });
             },
             exclusions = ['node_modules', 'dist', 'staticAnalysis.js', 'testHelpers.js', '*.pid', 'jquery', 'docs'];
@@ -58,7 +60,7 @@ module.exports = function (grunt) {
         }
     });
 
-    grunt.registerTask('deadCheck', 'Check for unused dependencies in package.json', () => {
+    grunt.registerTask('deadCheck', 'Check for unused dependencies in package.json', function () {
         const thisPackage = require('../package.json'),
             dependencies = Object.keys(thisPackage.dependencies).concat(Object.keys(thisPackage.devDependencies)),
             usedCount = {},
@@ -107,11 +109,11 @@ module.exports = function (grunt) {
         }
     });
 
-    grunt.registerTask('coverage', 'Generate code coverage', () => {
+    grunt.registerTask('coverage', 'Generate code coverage', function () {
         const done = this.async(),
             command = 'node_modules/.bin/istanbul cover node_modules/.bin/grunt mochaTest:unit';
 
-        exec(command, (error, stdout, stderr) => {
+        exec(command, function (error, stdout, stderr) {
             if (stdout) { console.log(stdout); }
             if (stderr) { console.log(stderr); }
             if (error) { throw error; }
@@ -120,11 +122,11 @@ module.exports = function (grunt) {
         });
     });
 
-    grunt.registerTask('_codeclimate', 'Send coverage results to codeclimate', () => {
+    grunt.registerTask('_codeclimate', 'Send coverage results to codeclimate', function () {
         const done = this.async(),
             command = 'node_modules/.bin/codeclimate-test-reporter < coverage/lcov.info';
 
-        exec(command, (error, stdout, stderr) => {
+        exec(command, function (error, stdout, stderr) {
             if (stdout) { console.log(stdout); }
             if (stderr) { console.log(stderr); }
             if (error) { throw error; }
@@ -132,11 +134,11 @@ module.exports = function (grunt) {
         });
     });
 
-    grunt.registerTask('sonar', 'Run SonarQube', () => {
+    grunt.registerTask('sonar', 'Run SonarQube', function () {
         const done = this.async(),
             command = 'scripts/sonar';
 
-        exec(command, (error, stdout, stderr) => {
+        exec(command, function (error, stdout, stderr) {
             if (stdout) { console.log(stdout); }
             if (stderr) { console.log(stderr); }
             if (error) { throw error; }

@@ -15,13 +15,13 @@ function download (file, destination) {
         url = urlPrefix + '/' + encodeURIComponent(file);
 
     console.log(url + ' => ' + destination);
-    stream.on('open', () => {
-        https.get(url, response => {
+    stream.on('open', function () {
+        https.get(url, function (response) {
             response.pipe(stream);
             response.on('error', deferred.reject);
         });
     });
-    stream.on('finish', () => {
+    stream.on('finish', function () {
         stream.close(deferred.resolve);
     });
     stream.on('error', deferred.reject);
@@ -50,7 +50,7 @@ module.exports = function (grunt) {
         download(zipFile, 'dist/' + zipFile).done(this.async(), grunt.warn);
     });
 
-    grunt.registerTask('download:rpm', 'Download this version of the rpm', () => {
+    grunt.registerTask('download:rpm', 'Download this version of the rpm', function () {
         const rpmFile = util.format('mountebank-%s-1.x86_64.rpm', version.replace('-', '_'));
 
         if (!fs.existsSync('dist')) {
