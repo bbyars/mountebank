@@ -112,29 +112,26 @@ switch in <code>curl</code>).  Alternatively, you may pass in the key pair yours
   to change the <code>protocol</code> parameter to <code>https</code> during imposter
   creation!</p>
 
-<h2>Using your own certificate</h2>
+<h2>Handling trust</h2>
 
-<p>By default, mountebank will use an internal self-signed certificate.  You can use your
-own by passing it in to the <code>key</code> and <code>cert</code> fields.  The following
-commands will allow you to create your own certificate:</p>
+<p>By default, mountebank will use an internal self-signed certificate.  While this allows you
+to explore the API in a simple zero-config manner, it also means that you need to configure
+your system under test to ignore trust errors. This is A Very Bad Idea. It puts you at risk
+of accidentally leaving that configuration in production, exposing your network to unnecessary risk.</p>
 
-<p>Create a private key:</p>
+<p>There are at least three solutions that are safe for testing and remove the possibility
+of your test strategy causing trust violations in production:</p>
 
-<pre><code>
-openssl genrsa -out test-key.pem 1024
-</code></pre>
-
-<p>Create a Certificate Signing Request (CSR):</p>
-
-<pre><code>
-openssl req -new -key test-key.pem -out test-csr.pem
-</code></pre>
-
-<p>Create a self-signed certificate using the CSR (normally you would send the CSR to a certificate authority for signing):</p>
-
-<pre><code>
-openssl x509 -req -days 3650 -in test-csr.pem -signkey test-key.pem -out test-cert.pem
-</code></pre>
+<ul class='bullet-list'>
+    <li>Test against an http imposter, and trust that the SSL/TLS libraries your system under
+    test is using just work.</li>
+    <li>Create your own self-signed certificate for testing <i>and add it to your local trust store only.</i>
+    Have a look at <a href='https://github.com/FiloSottile/mkcert'>mkcert</a> for a simple way
+    of doing this.</li>
+    <li>Use a real trusted certificate for testing. If you can't have your organization create
+    one for you, <a href='https://letsencrypt.org/'>Let's Encrypt</a> offers a free service
+    to create trusted certificates.</li>
+</ul>
 
 <p>The mutual authentication example below shows including them in your imposter setup.</p>
 

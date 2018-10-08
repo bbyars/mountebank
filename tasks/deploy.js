@@ -24,7 +24,7 @@ module.exports = function (grunt) {
         run('scripts/deploy/deployNpm', [publish]).done(this.async(), failTask('deploy:npm'));
     });
 
-    grunt.registerTask('deploy:docs', 'Deploy source docs to BitBalloon', function () {
+    grunt.registerTask('deploy:docs', 'Deploy source docs', function () {
         run('scripts/deploy/deployFirebase', [version]).done(this.async(), failTask('deploy:docs'));
     });
 };

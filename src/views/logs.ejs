@@ -3,7 +3,7 @@ title = 'logs'
 description = 'Logs of the currently running mb process'
 
 function formatLogEntry (logEntry) {
-  return '<span><span class="' + logEntry.level + '">' + logEntry.level + '</span>: ' + logEntry.message + '</span>';
+  return '<span><span class="' + logEntry.level + '">' + logEntry.level + '</span>: ' + escape(logEntry.message) + '</span>';
 }
 %>
 
