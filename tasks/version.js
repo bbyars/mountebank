@@ -21,6 +21,4 @@ function getVersion () {
     }
 }
 
-module.exports = {
-    getVersion: getVersion
-};
+module.exports = { getVersion };

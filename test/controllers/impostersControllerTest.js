@@ -208,9 +208,7 @@ describe('ImpostersController', () => {
     });
 
     describe('#del', () => {
-        function stopMock () {
-            return mock().returns(Q(true));
-        }
+        const stopMock = () => mock().returns(Q(true));
 
         promiseIt('should delete all imposters', () => {
             const firstImposter = { stop: stopMock(), toJSON: mock().returns('firstJSON') },

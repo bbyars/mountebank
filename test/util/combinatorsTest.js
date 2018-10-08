@@ -29,15 +29,15 @@ describe('combinators', () => {
 
     describe('#compose', () => {
         it('should compose functions', () => {
-            const increment = function (i) { return i + 1; },
-                double = function (j) { return j * 2; };
+            const increment = i => i + 1,
+                double = j => j * 2;
             assert.strictEqual(combinators.compose(increment, double)(2), 5);
         });
 
         it('should compose multiple functions', () => {
-            const increment = function (i) { return i + 1; },
-                double = function (j) { return j * 2; },
-                triple = function (i) { return i * 3; };
+            const increment = i => i + 1,
+                double = j => j * 2,
+                triple = i => i * 3;
             assert.strictEqual(combinators.compose(increment, double, triple)(1), 7);
         });
 
@@ -48,21 +48,21 @@ describe('combinators', () => {
 
     describe('#curry', () => {
         it('should pass curried parameter', () => {
-            const fn = function (param) { return param; },
+            const fn = param => param,
                 curriedFn = combinators.curry(fn, 1);
 
             assert.strictEqual(curriedFn(), 1);
         });
 
         it('should curry multiple parameters', () => {
-            const fn = function (param1, param2) { return param1 + param2; },
+            const fn = (param1, param2) => param1 + param2,
                 curriedFn = combinators.curry(fn, 1, 2);
 
             assert.strictEqual(curriedFn(), 3);
         });
 
         it('should support partial currying', () => {
-            const fn = function (param1, param2) { return param1 + param2; },
+            const fn = (param1, param2) => param1 + param2,
                 curriedFn = combinators.curry(fn, 1);
 
             assert.strictEqual(curriedFn(2), 3);

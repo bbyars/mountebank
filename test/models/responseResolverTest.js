@@ -23,9 +23,7 @@ describe('responseResolver', () => {
         });
 
         promiseIt('should post process the result', () => {
-            const postProcess = function (response, request) {
-                    return response.toUpperCase() + '-' + request.value;
-                },
+            const postProcess = (response, request) => response.toUpperCase() + '-' + request.value,
                 resolver = ResponseResolver.create({}, postProcess),
                 logger = Logger.create(),
                 responseConfig = { is: 'value' };
@@ -659,7 +657,7 @@ describe('responseResolver', () => {
             const mockedResolver = ResponseResolver.create({}, combinators.identity),
                 mockedLogger = Logger.create(),
                 mockedImposterState = { foo: 'bar', counter: 0 },
-                fn = function (request, state, logger, deferred, imposterState) {
+                fn = (request, state, logger, deferred, imposterState) => {
                     imposterState.foo = 'barbar';
                     imposterState.counter += 1;
                     return imposterState.foo + imposterState.counter;

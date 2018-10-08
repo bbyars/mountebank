@@ -6,18 +6,18 @@
  * @module
  */
 
-function initializeLogfile (filename) {
+const initializeLogfile = filename => {
     // Ensure new logfile on startup so the /logs only shows for this process
     const path = require('path'),
         fs = require('fs'),
         extension = path.extname(filename),
-        pattern = new RegExp(extension + '$'),
-        newFilename = filename.replace(pattern, '1' + extension);
+        pattern = new RegExp(`${extension}$`),
+        newFilename = filename.replace(pattern, `1${extension}`);
 
     if (fs.existsSync(filename)) {
         fs.renameSync(filename, newFilename);
     }
-}
+};
 
 /**
  * Creates the mountebank server
@@ -152,13 +152,9 @@ const create = options => {
         });
     });
 
-    function isAllowedConnection (ipAddress) {
-        return allowedIPs.some(function (allowedIP) {
-            return allowedIP === '*' || allowedIP.toLowerCase() === ipAddress.toLowerCase();
-        });
-    }
+    const isAllowedConnection = ipAddress => allowedIPs.some(allowedIP => allowedIP === '*' || allowedIP.toLowerCase() === ipAddress.toLowerCase());
 
-    function hostname () {
+    const hostname = () => {
         if (options.localOnly) {
             return 'localhost';
         }
@@ -168,20 +164,20 @@ const create = options => {
         else {
             return undefined;
         }
-    }
+    };
 
     const connections = {},
         server = app.listen(options.port, hostname(), () => {
             logger.info('mountebank v%s now taking orders - point your browser to http://localhost:%s for help',
                 thisPackage.version, options.port);
-            logger.debug('config: ' + JSON.stringify({
+            logger.debug(`config: ${JSON.stringify({
                 options: options,
                 process: {
                     nodeVersion: process.version,
                     architecture: process.arch,
                     platform: process.platform
                 }
-            }));
+            })}`);
             if (options.allowInjection) {
                 logger.warn('Running with --allowInjection set. See http://localhost:%s/docs/security for security info',
                     options.port);
@@ -224,6 +220,4 @@ const create = options => {
     return deferred.promise;
 };
 
-module.exports = {
-    create
-};
+module.exports = { create };

@@ -11,7 +11,7 @@ describe('behaviors', () => {
             const request = {},
                 response = { key: 'ORIGINAL' },
                 logger = Logger.create(),
-                fn = function (req, responseToDecorate) { responseToDecorate.key = 'CHANGED'; },
+                fn = (req, responseToDecorate) => { responseToDecorate.key = 'CHANGED'; },
                 config = { decorate: fn.toString() };
 
             return behaviors.execute(request, response, config, logger).then(actualResponse => {
@@ -35,7 +35,7 @@ describe('behaviors', () => {
             const request = {},
                 response = { key: 'VALUE' },
                 logger = Logger.create(),
-                fn = function (req, resp, log) { log.info('test entry'); },
+                fn = (req, resp, log) => { log.info('test entry'); },
                 config = { decorate: fn.toString() };
 
             return behaviors.execute(request, response, config, logger).then(() => {

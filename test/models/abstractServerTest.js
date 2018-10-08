@@ -56,7 +56,7 @@ describe('AbstractServer', () => {
             implementation.protocolName = 'test';
             baseServer.close = callback => { callback(); };
 
-            return Server.create({ port: 3000 }).then(function (server) {
+            return Server.create({ port: 3000 }).then(server => {
                 server.close();
                 logger.info.assertLogged('[test:3000] Ciao for now');
             });
@@ -66,7 +66,7 @@ describe('AbstractServer', () => {
             const Server = AbstractServer.implement(implementation, true, false, logger);
             baseServer.addStub = mock();
 
-            return Server.create({ port: 3000 }).then(function (server) {
+            return Server.create({ port: 3000 }).then(server => {
                 server.addStub();
                 assert.ok(baseServer.addStub.wasCalled());
             });
@@ -76,21 +76,18 @@ describe('AbstractServer', () => {
             const Server = AbstractServer.implement(implementation, true, false, logger);
             baseServer.metadata.returns('metadata');
 
-            return Server.create({ port: 3000 }).then(function (server) {
-                assert.strictEqual(server.metadata, 'metadata');
-            });
+            return Server.create({ port: 3000 }).then(server => assert.strictEqual(server.metadata, 'metadata'));
         });
 
         promiseIt('should add options.name to server metadata', () => {
             const Server = AbstractServer.implement(implementation, true, false, logger);
             baseServer.metadata.returns({ key: 'value' });
 
-            return Server.create({ port: 3000, name: 'name' }).then(function (server) {
+            return Server.create({ port: 3000, name: 'name' }).then(server =>
                 assert.deepEqual(server.metadata, {
                     key: 'value',
                     name: 'name'
-                });
-            });
+                }));
         });
 
         promiseIt('should log when connection established', () => {
@@ -160,7 +157,7 @@ describe('AbstractServer', () => {
             const Server = AbstractServer.implement(implementation, true, false, logger);
             implementation.Request.createFrom.returns(Q({ id: 'simple request' }));
 
-            return Server.create({ port: 3000 }).then(function (server) {
+            return Server.create({ port: 3000 }).then(server => {
                 baseServer.listeners('request')[0]({}, {}, () => {
                     server.requests.forEach(request => {
                         if (request.timestamp) {
@@ -177,7 +174,7 @@ describe('AbstractServer', () => {
             const Server = AbstractServer.implement(implementation, false, false, logger);
             implementation.Request.createFrom.returns(Q({ id: 'simple request' }));
 
-            return Server.create({ port: 3000 }).then(function (server) {
+            return Server.create({ port: 3000 }).then(server => {
                 baseServer.listeners('request')[0]({}, {}, () => {
                     assert.deepEqual(server.requests, []);
                 });

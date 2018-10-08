@@ -155,8 +155,8 @@ describe('middleware', () => {
             const log = { info: mock() },
                 middlewareFn = middleware.logger(log, 'TEST');
 
-            ['.js', '.css', '.png', '.ico'].forEach(function (ext) {
-                request = { url: 'file' + ext, headers: { accept: '' } };
+            ['.js', '.css', '.png', '.ico'].forEach(ext => {
+                request = { url: `file${ext}`, headers: { accept: '' } };
                 middlewareFn(request, {}, next);
                 assert(!log.info.wasCalled());
             });

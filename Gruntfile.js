@@ -2,7 +2,7 @@
 
 const port = process.env.MB_PORT || 2525;
 
-module.exports = function (grunt) {
+module.exports = grunt => {
 
     require('time-grunt')(grunt);
 

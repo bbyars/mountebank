@@ -19,8 +19,8 @@ describe('httpValidator', () => {
             });
         });
 
-        ['text', 'binary'].forEach(function (value) {
-            promiseIt('should be valid for ' + value + ' mode', () => {
+        ['text', 'binary'].forEach(value => {
+            promiseIt(`should be valid for ${value} mode`, () => {
                 const request = { mode: value },
                     validator = Validator.create();
 

@@ -24,9 +24,7 @@ describe('HttpRequest', () => {
         promiseIt('should set requestFrom from socket information', () => {
             request.socket = { remoteAddress: 'HOST', remotePort: 'PORT' };
 
-            const promise = httpRequest.createFrom(container).then(function (mbRequest) {
-                assert.strictEqual(mbRequest.requestFrom, 'HOST:PORT');
-            });
+            const promise = httpRequest.createFrom(container).then(mbRequest => assert.strictEqual(mbRequest.requestFrom, 'HOST:PORT'));
 
             request.emit('end');
 
@@ -36,9 +34,7 @@ describe('HttpRequest', () => {
         promiseIt('should echo method from original request', () => {
             request.method = 'METHOD';
 
-            const promise = httpRequest.createFrom(container).then(function (mbRequest) {
-                assert.strictEqual(mbRequest.method, 'METHOD');
-            });
+            const promise = httpRequest.createFrom(container).then(mbRequest => assert.strictEqual(mbRequest.method, 'METHOD'));
 
             request.emit('end');
 
@@ -53,13 +49,11 @@ describe('HttpRequest', () => {
                 'Host', '127.0.0.1:8000'
             ];
 
-            const promise = httpRequest.createFrom(container).then(function (mbRequest) {
-                assert.deepEqual(mbRequest.headers, {
-                    Accept: ['text/plain', 'TEXT/html'],
-                    accept: '*',
-                    Host: '127.0.0.1:8000'
-                });
-            });
+            const promise = httpRequest.createFrom(container).then(mbRequest => assert.deepEqual(mbRequest.headers, {
+                Accept: ['text/plain', 'TEXT/html'],
+                accept: '*',
+                Host: '127.0.0.1:8000'
+            }));
 
             request.emit('end');
 
@@ -78,7 +72,7 @@ describe('HttpRequest', () => {
                 'Host', '127.0.0.1:8000'
             ];
 
-            const promise = httpRequest.createFrom(container).then(function (mbRequest) {
+            const promise = httpRequest.createFrom(container).then(mbRequest => {
                 assert.deepEqual(mbRequest.headers, {
                     'Content-Type': contentType,
                     Host: '127.0.0.1:8000'
@@ -98,7 +92,7 @@ describe('HttpRequest', () => {
         promiseIt('should set path and query from request url', () => {
             request.url = 'http://localhost/path?key=value';
 
-            const promise = httpRequest.createFrom(container).then(function (mbRequest) {
+            const promise = httpRequest.createFrom(container).then(mbRequest => {
                 assert.strictEqual(mbRequest.path, '/path');
                 assert.deepEqual(mbRequest.query, { key: 'value' });
             });
@@ -109,9 +103,7 @@ describe('HttpRequest', () => {
         });
 
         promiseIt('should set body from data events', () => {
-            const promise = httpRequest.createFrom(container).then(function (mbRequest) {
-                assert.strictEqual(mbRequest.body, '12');
-            });
+            const promise = httpRequest.createFrom(container).then(mbRequest => assert.strictEqual(mbRequest.body, '12'));
 
             request.emit('data', '1');
             request.emit('data', '2');

@@ -45,6 +45,4 @@ function run (command, args, options) {
     return deferred.promise;
 }
 
-module.exports = {
-    run: run
-};
+module.exports = { run };

@@ -7,18 +7,16 @@ const assert = require('assert'),
     BaseRepository = require('../../src/models/stubRepository'),
     testRequest = { requestFrom: '', path: '/', query: {}, method: 'GET', headers: {}, body: '' },
     StubRepository = {
-        create: function (proxy) {
-            return BaseRepository.create(proxy, stub => {
-                const response = {
-                    statusCode: stub.statusCode || 200,
-                    headers: stub.headers || {},
-                    body: stub.body || ''
-                };
+        create: proxy => BaseRepository.create(proxy, stub => {
+            const response = {
+                statusCode: stub.statusCode || 200,
+                headers: stub.headers || {},
+                body: stub.body || ''
+            };
 
-                response.headers.connection = 'close';
-                return response;
-            });
-        }
+            response.headers.connection = 'close';
+            return response;
+        })
     };
 
 describe('dryRunValidator', () => {

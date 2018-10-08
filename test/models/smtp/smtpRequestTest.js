@@ -15,7 +15,7 @@ describe('smtpRequest', () => {
                     }
                 },
                 stream = new require('stream').Readable();
-            stream._read = function noop () {}; // eslint-disable-line no-underscore-dangle
+            stream._read = () => {}; // eslint-disable-line no-underscore-dangle
             stream.push('From: From <from@mb.org>\r\n');
             stream.push('To: To1 <to1@mb.org>\r\n');
             stream.push('To: To2 <to2@mb.org>\r\n');
@@ -27,7 +27,7 @@ describe('smtpRequest', () => {
             stream.push('\r\nBody');
             stream.push(null);
 
-            return SmtpRequest.createFrom({ source: stream, session: session }).then(function (smtpRequest) {
+            return SmtpRequest.createFrom({ source: stream, session: session }).then(smtpRequest => {
                 assert.deepEqual(smtpRequest, {
                     requestFrom: 'RemoteAddress',
                     envelopeFrom: 'EnvelopeFrom',

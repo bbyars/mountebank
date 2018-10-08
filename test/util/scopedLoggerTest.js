@@ -6,7 +6,7 @@ const assert = require('assert'),
 
 describe('scopedLogger', () => {
     describe('#create', () => {
-        ['debug', 'info', 'warn', 'error'].forEach(function (level) {
+        ['debug', 'info', 'warn', 'error'].forEach(level => {
             it('should prefix protocol name and port to all ' + level + ' calls', () => {
                 const logger = { debug: mock(), info: mock(), warn: mock(), error: mock() },
                     scopedLogger = Logger.create(logger, 'prefix');

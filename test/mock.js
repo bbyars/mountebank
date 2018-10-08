@@ -8,9 +8,9 @@ function mock () {
         retVal;
 
     function setMessage (expected, actual) {
-        message = '\nExpected call with ' + JSON.stringify(expected);
+        message = `\nExpected call with ${JSON.stringify(expected)}`;
         if (wasCalled) {
-            message += '\nActual called with ' + JSON.stringify(actual);
+            message += `\nActual called with ${JSON.stringify(actual)}`;
         }
         else {
             message += '\nActually never called';
@@ -43,6 +43,4 @@ function mock () {
     return stubFunction;
 }
 
-module.exports = {
-    mock: mock
-};
+module.exports = { mock };
