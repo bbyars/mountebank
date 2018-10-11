@@ -46,6 +46,6 @@ if (process.env.MB_AIRPLANE_MODE !== 'true' && process.env.MB_RUN_WEB_TESTS === 
                 assert.strictEqual(200, response.statusCode);
                 assert.deepEqual(linksNotInSitemap, [], JSON.stringify(linksNotInSitemap));
             });
-        });
-    }).timeout(180000);
+        }).timeout(180000);
+    });
 }
