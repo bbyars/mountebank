@@ -423,19 +423,29 @@ Accept: application/json</code>
 <testScenario name='proxyTransparent'>
 
     <step type='http'>
+<code class='hidden'>POST /imposters HTTP/1.1
+Host: localhost:<%= port %>
+Content-Type: application/json
+
+{
+  "port": 4002,
+  "protocol": "http"
+}</code>
+    </step>
+
+    <step type='http'>
 <pre><code><span class='hidden'>POST /imposters HTTP/1.1
 Host: localhost:<%= port %>
 Content-Type: application/json
 
 {
-  "port": 5001,
+  "port": 5050,
   "protocol": "http",
 </span>"stubs": [{
   "responses": [{
     "proxy": {
-      "to": "<change to='http://localhost:4001'>http://origin-server.com</change>",
-      <strong class='highlight1'>"mode": "proxyTransparent"</strong>,
-      "predicateGenerators": [{ "matches": { "path": true } }]
+      "to": "<change to='http://localhost:4002'>http://origin-server.com</change>",
+      <strong class='highlight1'>"mode": "proxyTransparent"</strong>
     }
   }]
 }]<span class='hidden'>}</span></code></pre>
@@ -445,25 +455,41 @@ Content-Type: application/json
         be proxied to http://origin-server.com/test. There will be no stub created off the back of the request.</p>
 
     <step type='http'>
-        <code class='hidden'>GET /imposters/5001 HTTP/1.1
-            Host: localhost:<%= port %>
-            Accept: application/json</code>
+<code class='hidden'>GET /test HTTP/1.1
+Host: localhost:5050</code>
+    </step>
+
+    <step type='http'>
+<code class='hidden'>GET /imposters/5050 HTTP/1.1
+Host: localhost:<%= port %>
+Accept: application/json</code>
 
         <assertResponse partial='true'>
-<pre><code><span class='hidden'>{
-</span>"stubs": [
+<code class='hidden'>{
+"stubs": [
   {
     "responses": [
       {
         "proxy": {
-          "to": "<change to='http://localhost:4001'>http://origin-server.com</change>",
-          "mode": "proxyTransparent",
-          "predicateGenerators": [{ "matches": { "path": true } }]
+          "to": "<change to='http://localhost:4002'>http://origin-server.com</change>",
+          "mode": "proxyTransparent"
         }
       }
     ]
   }
-]<span class='hidden'>}</span></code></pre>
+]}</code></pre>
         </assertResponse>
+    </step>
+
+    <step type='http'>
+<code class='hidden'>DELETE /imposters/4002 HTTP/1.1
+Host: localhost:<%= port %>
+Accept: application/json</code>
+    </step>
+
+    <step type='http'>
+<code class='hidden'>DELETE /imposters/5050 HTTP/1.1
+Host: localhost:<%= port %>
+Accept: application/json</code>
     </step>
 </testScenario>
