@@ -9,7 +9,7 @@ if (process.env.MB_AIRPLANE_MODE !== 'true' && process.env.MB_RUN_WEB_TESTS === 
             if (!contentType) {
                 return true;
             }
-            return ['text/html', 'application/atom+xml', 'text/plain'].some(function (type) {
+            return ['text/html', 'application/atom+xml', 'text/plain', 'application/octet-stream'].some(function (type) {
                 return contentType.indexOf(type) >= 0;
             });
         },
