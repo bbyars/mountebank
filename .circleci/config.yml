@@ -10,7 +10,7 @@ jobs:
       - checkout
       - restore_cache:
           key: dependency-cache-{{ checksum "package.json" }}
-      - run: ./build lint test dist version trigger:travis jsdoc deploy:docs sonar
+      - run: ./build lint test dist version trigger:travis jsdoc deploy:docs
       - save_cache:
           key: dependency-cache-{{ checksum "package.json" }}
           paths:
