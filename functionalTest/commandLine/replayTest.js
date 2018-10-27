@@ -5,8 +5,7 @@ const assert = require('assert'),
     client = require('../api/http/baseHttpClient').create('http'),
     mb = require('../mb').create(api.port + 1),
     promiseIt = require('../testHelpers').promiseIt,
-    timeout = parseInt(process.env.MB_SLOW_TEST_TIMEOUT || 4000),
-    requestName = 'some request name';
+    timeout = parseInt(process.env.MB_SLOW_TEST_TIMEOUT || 4000);
 
 describe('mb replay', () => {
     promiseIt('should remove proxies', () => {
@@ -23,7 +22,7 @@ describe('mb replay', () => {
                 protocol: 'http',
                 port: originServerPort,
                 stubs: [originServerStub],
-                name: `${requestName} origin server`
+                name: 'origin server'
             },
             proxyPort = mb.port + 2,
             proxyDefinition = {
@@ -32,7 +31,7 @@ describe('mb replay', () => {
                 predicateGenerators: [{ matches: { path: true } }]
             },
             proxyStub = { responses: [{ proxy: proxyDefinition }] },
-            proxyRequest = { protocol: 'http', port: proxyPort, stubs: [proxyStub], name: `${requestName} proxy` };
+            proxyRequest = { protocol: 'http', port: proxyPort, stubs: [proxyStub], name: 'PROXY' };
 
         return mb.start(['--allowInjection']).then(() => mb.post('/imposters', originServerRequest)).then(response => {
             assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body));

@@ -7,8 +7,7 @@ const assert = require('assert'),
     timeout = parseInt(process.env.MB_SLOW_TEST_TIMEOUT || 2000),
     tcp = require('./tcpClient'),
     fs = require('fs'),
-    util = require('util'),
-    requestName = 'some request name';
+    util = require('util');
 
 describe('tcp imposter', () => {
     describe('POST /imposters with stubs', () => {
@@ -19,7 +18,7 @@ describe('tcp imposter', () => {
                     protocol: 'tcp',
                     port: originServerPort,
                     stubs: [originServerStub],
-                    name: `${requestName} ORIGIN`
+                    name: 'ORIGIN'
                 },
                 decorator = (request, response) => {
                     response.data += ' DECORATED';
@@ -29,7 +28,7 @@ describe('tcp imposter', () => {
                     _behaviors: { decorate: decorator.toString() }
                 },
                 proxyStub = { responses: [proxyResponse] },
-                proxyRequest = { protocol: 'tcp', port, stubs: [proxyStub], name: `${requestName} PROXY` };
+                proxyRequest = { protocol: 'tcp', port, stubs: [proxyStub], name: 'PROXY' };
 
             return api.post('/imposters', originServerRequest).then(() => api.post('/imposters', proxyRequest)).then(() => tcp.send('request', port)).then(response => {
                 assert.strictEqual(response.toString(), 'ORIGIN DECORATED');
@@ -65,7 +64,7 @@ describe('tcp imposter', () => {
                     ]
                 },
                 stubs = [stub],
-                request = { protocol: 'tcp', port, stubs: stubs, name: requestName },
+                request = { protocol: 'tcp', port, stubs: stubs },
                 timer = new Date();
 
             fs.writeFileSync('shellTransformTest.js', util.format('%s\nexec();', shellFn.toString()));

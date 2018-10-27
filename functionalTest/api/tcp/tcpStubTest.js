@@ -7,8 +7,7 @@ const assert = require('assert'),
     isWindows = require('os').platform().indexOf('win') === 0,
     timeout = isWindows ? 10000 : parseInt(process.env.MB_SLOW_TEST_TIMEOUT || 2000),
     tcp = require('./tcpClient'),
-    airplaneMode = process.env.MB_AIRPLANE_MODE === 'true',
-    requestName = 'some request name';
+    airplaneMode = process.env.MB_AIRPLANE_MODE === 'true';
 
 describe('tcp imposter', () => {
     describe('POST /imposters with stubs', () => {
@@ -17,7 +16,7 @@ describe('tcp imposter', () => {
                     predicates: [{ equals: { data: 'client' } }],
                     responses: [{ is: { data: 'server' } }]
                 },
-                request = { protocol: 'tcp', port, stubs: [stub], mode: 'text', name: requestName };
+                request = { protocol: 'tcp', port, stubs: [stub], mode: 'text' };
 
             return api.post('/imposters', request).then(response => {
                 assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body));
@@ -31,7 +30,7 @@ describe('tcp imposter', () => {
         promiseIt('should allow binary stub responses', () => {
             const buffer = new Buffer([0, 1, 2, 3]),
                 stub = { responses: [{ is: { data: buffer.toString('base64') } }] },
-                request = { protocol: 'tcp', port, stubs: [stub], mode: 'binary', name: requestName };
+                request = { protocol: 'tcp', port, stubs: [stub], mode: 'binary' };
 
             return api.post('/imposters', request).then(response => {
                 assert.strictEqual(response.statusCode, 201);
@@ -48,7 +47,7 @@ describe('tcp imposter', () => {
                     predicates: [{ equals: { data: 'request' } }],
                     responses: [{ is: { data: 'first' } }, { is: { data: 'second' } }]
                 },
-                request = { protocol: 'tcp', port, stubs: [stub], name: requestName };
+                request = { protocol: 'tcp', port, stubs: [stub] };
 
             return api.post('/imposters', request).then(() => tcp.send('request', port)).then(response => {
                 assert.strictEqual(response.toString(), 'first');
@@ -105,9 +104,9 @@ describe('tcp imposter', () => {
         promiseIt('should allow proxy stubs', () => {
             const proxyPort = port + 1,
                 proxyStub = { responses: [{ is: { data: 'PROXIED' } }] },
-                proxyRequest = { protocol: 'tcp', port: proxyPort, stubs: [proxyStub], name: `${requestName} PROXY` },
+                proxyRequest = { protocol: 'tcp', port: proxyPort, stubs: [proxyStub], name: 'PROXY' },
                 stub = { responses: [{ proxy: { to: `tcp://localhost:${proxyPort}` } }] },
-                request = { protocol: 'tcp', port, stubs: [stub], name: `${requestName} MAIN` };
+                request = { protocol: 'tcp', port, stubs: [stub], name: 'MAIN' };
 
             return api.post('/imposters', proxyRequest).then(() => api.post('/imposters', request)).then(() => tcp.send('request', port)).then(response => {
                 assert.strictEqual(response.toString(), 'PROXIED');
@@ -117,7 +116,7 @@ describe('tcp imposter', () => {
         if (!airplaneMode) {
             promiseIt('should allow proxy stubs to invalid hosts', () => {
                 const stub = { responses: [{ proxy: { to: 'tcp://remotehost:8000' } }] },
-                    request = { protocol: 'tcp', port, stubs: [stub], name: requestName };
+                    request = { protocol: 'tcp', port, stubs: [stub] };
 
                 return api.post('/imposters', request).then(() => tcp.send('request', port)).then(response => {
                     const error = JSON.parse(response).errors[0];
@@ -135,8 +134,7 @@ describe('tcp imposter', () => {
                     protocol: 'tcp',
                     port,
                     stubs: [stub],
-                    mode: 'text',
-                    name: requestName
+                    mode: 'text'
                 };
 
             return api.post('/imposters', request).then(response => {
@@ -161,8 +159,7 @@ describe('tcp imposter', () => {
                     mode: 'text',
                     port,
                     defaultResponse: { data: 'Default response' },
-                    stubs: [stub],
-                    name: requestName
+                    stubs: [stub]
                 };
 
             return api.post('/imposters', request).then(response => {

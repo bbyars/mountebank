@@ -7,8 +7,7 @@ const assert = require('assert'),
     mb = require('../../mb').create(port + 1),
     timeout = parseInt(process.env.MB_SLOW_TEST_TIMEOUT || 4000),
     BaseHttpClient = require('./baseHttpClient'),
-    headersHelper = require('../../../src/models/http/headersHelper'),
-    requestName = 'some request name';
+    headersHelper = require('../../../src/models/http/headersHelper');
 
 ['http', 'https'].forEach(protocol => {
     const client = BaseHttpClient.create(protocol);
@@ -16,7 +15,7 @@ const assert = require('assert'),
     describe(`${protocol} imposter`, () => {
         describe('POST /imposters/:id', () => {
             promiseIt('should auto-assign port if port not provided', () => {
-                const request = { protocol, name: requestName };
+                const request = { protocol };
 
                 return api.post('/imposters', request).then(response => {
                     assert.strictEqual(response.statusCode, 201);
@@ -28,7 +27,7 @@ const assert = require('assert'),
             });
 
             promiseIt('should not support CORS preflight requests if "allowCORS" option is disabled', () => {
-                const request = { protocol, name: requestName };
+                const request = { protocol };
 
                 return api.post('/imposters', request).then(response => {
                     assert.strictEqual(response.statusCode, 201);
@@ -55,7 +54,7 @@ const assert = require('assert'),
             });
 
             promiseIt('should support CORS preflight requests if "allowCORS" option is enabled', () => {
-                const request = { protocol, name: requestName, allowCORS: true };
+                const request = { protocol, allowCORS: true };
 
                 return api.post('/imposters', request).then(response => {
                     assert.strictEqual(response.statusCode, 201);
@@ -82,7 +81,7 @@ const assert = require('assert'),
             });
 
             promiseIt('should not handle non-preflight requests when "allowCORS" is enabled', () => {
-                const request = { protocol, name: requestName, allowCORS: true };
+                const request = { protocol, allowCORS: true };
 
                 return api.post('/imposters', request).then(response => {
                     assert.strictEqual(response.statusCode, 201);
@@ -105,7 +104,7 @@ const assert = require('assert'),
             });
 
             promiseIt('should default content type to json if not provided', () => {
-                const request = { port, protocol, name: requestName };
+                const request = { port, protocol };
 
                 return api.post('/imposters', request, true).then(response => {
                     assert.strictEqual(response.statusCode, 201);
@@ -118,7 +117,7 @@ const assert = require('assert'),
 
         describe('GET /imposters/:id', () => {
             promiseIt('should provide access to all requests', () => {
-                const imposterRequest = { protocol, port, name: requestName };
+                const imposterRequest = { protocol, port };
 
                 return api.post('/imposters', imposterRequest).then(() => client.get('/first', port)
                 ).then(() => client.get('/second', port)
@@ -131,7 +130,7 @@ const assert = require('assert'),
             });
 
             promiseIt('should save headers in case-sensitive way', () => {
-                const imposterRequest = { protocol, port, name: requestName };
+                const imposterRequest = { protocol, port };
 
                 return api.post('/imposters', imposterRequest).then(() => client.responseFor({
                     method: 'GET',
@@ -152,7 +151,7 @@ const assert = require('assert'),
             promiseIt('should return list of stubs in order', () => {
                 const first = { responses: [{ is: { body: '1' } }] },
                     second = { responses: [{ is: { body: '2' } }] },
-                    request = { protocol, port, stubs: [first, second], name: requestName };
+                    request = { protocol, port, stubs: [first, second] };
 
                 return api.post('/imposters', request).then(() => api.get(`/imposters/${port}`)
                 ).then(response => {
@@ -167,7 +166,7 @@ const assert = require('assert'),
 
             promiseIt('should record matches against stubs', () => {
                 const stub = { responses: [{ is: { body: '1' } }, { is: { body: '2' } }] },
-                    request = { protocol, port, stubs: [stub], name: requestName };
+                    request = { protocol, port, stubs: [stub] };
 
                 return api.post('/imposters', request).then(() => client.get('/first?q=1', port)
                 ).then(() => client.get('/second?q=2', port)
@@ -225,7 +224,7 @@ const assert = require('assert'),
 
             promiseIt('should not record matches against stubs if --debug flag is missing', () => {
                 const stub = { responses: [{ is: { body: '1' } }, { is: { body: '2' } }] },
-                    request = { protocol, port, stubs: [stub], name: requestName };
+                    request = { protocol, port, stubs: [stub] };
 
                 return mb.start().then(() => mb.post('/imposters', request)
                 ).then(() => client.get('/first?q=1', port)
@@ -238,7 +237,7 @@ const assert = require('assert'),
 
             promiseIt('should record numberOfRequests even if --mock flag is missing', () => {
                 const stub = { responses: [{ is: { body: 'SUCCESS' } }] },
-                    request = { protocol, port, stubs: [stub], name: requestName };
+                    request = { protocol, port, stubs: [stub] };
 
                 return mb.start().then(() => mb.post('/imposters', request)
                 ).then(() => client.get('/', port)
@@ -256,7 +255,7 @@ const assert = require('assert'),
 
         describe('DELETE /imposters/:id', () => {
             promiseIt('should shutdown server at that port', () => {
-                const request = { protocol, port, name: requestName };
+                const request = { protocol, port };
 
                 return api.post('/imposters', request).then(response => api.del(response.headers.location)
                 ).then(response => {
@@ -274,7 +273,7 @@ const assert = require('assert'),
                 const imposter = {
                     protocol: 'http',
                     port: port + 1,
-                    name: requestName,
+                    name: 'impoter',
                     stubs: [{ responses: [
                         { proxy: { to: 'http://www.google.com' } },
                         { is: { body: 'Hello, World!' } }

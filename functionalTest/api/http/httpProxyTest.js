@@ -6,8 +6,7 @@ const assert = require('assert'),
     promiseIt = require('../../testHelpers').promiseIt,
     port = api.port + 1,
     timeout = parseInt(process.env.MB_SLOW_TEST_TIMEOUT || 3000),
-    airplaneMode = process.env.MB_AIRPLANE_MODE === 'true',
-    requestName = 'some request name';
+    airplaneMode = process.env.MB_AIRPLANE_MODE === 'true';
 
 describe('http proxy', () => {
     const noOp = () => {},
@@ -16,7 +15,7 @@ describe('http proxy', () => {
 
     describe('#to', () => {
         promiseIt('should send same request information to proxied url', () => {
-            const proxyRequest = { protocol: 'http', port, name: requestName },
+            const proxyRequest = { protocol: 'http', port },
                 request = { path: '/PATH', method: 'POST', body: 'BODY', headers: { 'X-Key': 'TRUE' } };
 
             return api.post('/imposters', proxyRequest).then(() => proxy.to(`http://localhost:${port}`, request, {})).then(response => {
@@ -35,7 +34,7 @@ describe('http proxy', () => {
 
         promiseIt('should return proxied result', () => {
             const stub = { responses: [{ is: { statusCode: 400, body: 'ERROR' } }] },
-                request = { protocol: 'http', port, stubs: [stub], name: requestName };
+                request = { protocol: 'http', port, stubs: [stub] };
 
             return api.post('/imposters', request).then(response => {
                 assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body));
@@ -49,7 +48,7 @@ describe('http proxy', () => {
 
         promiseIt('should proxy to https', () => {
             const stub = { responses: [{ is: { statusCode: 400, body: 'ERROR' } }] },
-                request = { protocol: 'https', port, stubs: [stub], name: requestName };
+                request = { protocol: 'https', port, stubs: [stub] };
 
             return api.post('/imposters', request).then(response => {
                 assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body));
@@ -66,7 +65,7 @@ describe('http proxy', () => {
                     responses: [{ is: { statusCode: 400, body: 'ERROR' } }],
                     predicates: [{ equals: { headers: { host: `localhost:${port}` } } }]
                 },
-                request = { protocol: 'http', port, stubs: [stub], name: requestName };
+                request = { protocol: 'http', port, stubs: [stub] };
 
             return api.post('/imposters', request).then(response => {
                 assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body));
@@ -80,7 +79,7 @@ describe('http proxy', () => {
 
         promiseIt('should capture response time to origin server', () => {
             const stub = { responses: [{ is: { body: 'ORIGIN' }, _behaviors: { wait: 250 } }] },
-                request = { protocol: 'http', port, stubs: [stub], name: requestName };
+                request = { protocol: 'http', port, stubs: [stub] };
 
             return api.post('/imposters', request).then(response => {
                 assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body));
@@ -125,7 +124,7 @@ describe('http proxy', () => {
                             }
                         }]
                     },
-                    request = { protocol: 'http', port, stubs: [stub], name: requestName };
+                    request = { protocol: 'http', port, stubs: [stub] };
 
                 return api.post('/imposters', request).then(response => {
                     assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body));

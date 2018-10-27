@@ -5,8 +5,7 @@ const assert = require('assert'),
     tcp = require('./tcpClient'),
     promiseIt = require('../../testHelpers').promiseIt,
     port = api.port + 1,
-    timeout = parseInt(process.env.MB_SLOW_TEST_TIMEOUT || 4000),
-    requestName = 'some request name';
+    timeout = parseInt(process.env.MB_SLOW_TEST_TIMEOUT || 4000);
 
 describe('tcp imposter', () => {
     describe('POST /imposters with injections', () => {
@@ -29,7 +28,7 @@ describe('tcp imposter', () => {
         promiseIt('should allow synchronous javascript injection for responses', () => {
             const fn = request => ({ data: `${request.data} INJECTED` }),
                 stub = { responses: [{ inject: fn.toString() }] },
-                request = { protocol: 'tcp', port, stubs: [stub], name: requestName };
+                request = { protocol: 'tcp', port, stubs: [stub] };
 
             return api.post('/imposters', request).then(() => tcp.send('request', port)).then(response => {
                 assert.strictEqual(response.toString(), 'request INJECTED');
@@ -43,7 +42,7 @@ describe('tcp imposter', () => {
                     return { data: state.calls.toString() };
                 },
                 stub = { responses: [{ inject: fn.toString() }] },
-                request = { protocol: 'tcp', port, stubs: [stub], name: requestName };
+                request = { protocol: 'tcp', port, stubs: [stub] };
 
             return api.post('/imposters', request).then(response => {
                 assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body));
@@ -65,7 +64,7 @@ describe('tcp imposter', () => {
                     protocol: 'http',
                     port: originServerPort,
                     stubs: [originServerStub],
-                    name: `${requestName} origin`
+                    name: 'origin'
                 },
                 fn = (request, state, logger, callback) => {
                     const net = require('net'),
@@ -117,7 +116,6 @@ describe('tcp imposter', () => {
                     port,
                     stubs: [stub],
                     mode: 'binary',
-                    name: requestName,
                     endOfRequestResolver: { inject: resolver.toString() }
                 };
 
@@ -147,7 +145,6 @@ describe('tcp imposter', () => {
                     port,
                     stubs: [stub],
                     mode: 'text',
-                    name: requestName,
                     endOfRequestResolver: { inject: resolver.toString() }
                 };
 

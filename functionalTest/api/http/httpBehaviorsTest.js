@@ -7,8 +7,7 @@ const assert = require('assert'),
     port = api.port + 1,
     timeout = parseInt(process.env.MB_SLOW_TEST_TIMEOUT || 2000),
     fs = require('fs'),
-    util = require('util'),
-    requestName = 'some request name';
+    util = require('util');
 
 ['http', 'https'].forEach(protocol => {
     const client = BaseHttpClient.create(protocol);
@@ -23,7 +22,7 @@ const assert = require('assert'),
                         }]
                     },
                     stubs = [stub],
-                    request = { protocol, port, stubs: stubs, name: requestName };
+                    request = { protocol, port, stubs: stubs };
                 let timer;
 
                 return api.post('/imposters', request).then(response => {
@@ -48,7 +47,7 @@ const assert = require('assert'),
                         }]
                     },
                     stubs = [stub],
-                    request = { protocol, port, stubs: stubs, name: requestName };
+                    request = { protocol, port, stubs: stubs };
                 let timer;
 
                 return api.post('/imposters', request).then(response => {
@@ -75,7 +74,7 @@ const assert = require('assert'),
                         }]
                     },
                     stubs = [stub],
-                    request = { protocol, port, stubs: stubs, name: requestName };
+                    request = { protocol, port, stubs: stubs };
 
                 return api.post('/imposters', request).then(response => {
                     assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body, null, 2));
@@ -99,7 +98,7 @@ const assert = require('assert'),
                         }]
                     },
                     stubs = [stub],
-                    request = { protocol, port, stubs: stubs, name: requestName };
+                    request = { protocol, port, stubs: stubs };
 
                 return api.post('/imposters', request).then(response => {
                     assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body, null, 2));
@@ -121,7 +120,7 @@ const assert = require('assert'),
                         }]
                     },
                     stubs = [stub],
-                    request = { protocol, port, stubs: stubs, name: requestName };
+                    request = { protocol, port, stubs: stubs };
 
                 return api.post('/imposters', request).then(response => {
                     assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body, null, 2));
@@ -142,7 +141,7 @@ const assert = require('assert'),
                         }]
                     },
                     stubs = [stub],
-                    request = { protocol, port, stubs: stubs, name: requestName };
+                    request = { protocol, port, stubs: stubs };
 
                 return api.post('/imposters', request).then(response => {
                     assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body, null, 2));
@@ -172,7 +171,7 @@ const assert = require('assert'),
                         }]
                     },
                     stubs = [stub],
-                    request = { protocol, port, stubs: stubs, name: requestName };
+                    request = { protocol, port, stubs: stubs };
 
                 return api.post('/imposters', request).then(response => {
                     assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body, null, 2));
@@ -191,7 +190,7 @@ const assert = require('assert'),
                         }]
                     },
                     stubs = [stub],
-                    request = { protocol, port, stubs: stubs, name: requestName };
+                    request = { protocol, port, stubs: stubs };
 
                 return api.post('/imposters', request).then(response => {
                     assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body, null, 2));
@@ -216,7 +215,7 @@ const assert = require('assert'),
                             { is: { body: 'third response' } }
                         ]
                     },
-                    request = { protocol, port, stubs: [stub], name: requestName };
+                    request = { protocol, port, stubs: [stub] };
 
                 return api.post('/imposters', request).then(response => {
                     assert.strictEqual(response.statusCode, 201, response.body);
@@ -262,7 +261,7 @@ const assert = require('assert'),
                             { is: { body: 'second response' } }
                         ]
                     },
-                    request = { protocol, port, stubs: [stub], name: requestName };
+                    request = { protocol, port, stubs: [stub] };
 
                 return api.post('/imposters', request).then(response => {
                     assert.strictEqual(response.statusCode, 201, response.body);
@@ -293,7 +292,7 @@ const assert = require('assert'),
                             }
                         }]
                     },
-                    request = { protocol, port, stubs: [stub], name: requestName };
+                    request = { protocol, port, stubs: [stub] };
 
                 return api.post('/imposters', request).then(response => {
                     assert.strictEqual(response.statusCode, 201, response.body);
@@ -319,7 +318,7 @@ const assert = require('assert'),
                         }]
                     },
                     stubs = [stub],
-                    request = { protocol, port, stubs: stubs, name: requestName },
+                    request = { protocol, port, stubs: stubs },
                     shellFn = function exec () {
                         console.log(process.argv[3].replace('{YOU}', 'mountebank'));
                     };
@@ -347,7 +346,7 @@ const assert = require('assert'),
                         }]
                     },
                     stubs = [stub],
-                    request = { protocol, port, stubs: stubs, name: requestName },
+                    request = { protocol, port, stubs: stubs },
                     doubleFn = function double () {
                         const response = JSON.parse(process.argv[3]);
                         response.body *= 2;
@@ -409,7 +408,7 @@ const assert = require('assert'),
                             }
                         }]
                     },
-                    request = { protocol, port, stubs: [stub], name: requestName };
+                    request = { protocol, port, stubs: [stub] };
 
                 return api.post('/imposters', request).then(response => {
                     assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body, null, 2));
@@ -443,7 +442,7 @@ const assert = require('assert'),
                             }
                         }]
                     },
-                    request = { protocol, port, stubs: [stub], name: requestName };
+                    request = { protocol, port, stubs: [stub] };
 
                 return api.post('/imposters', request).then(response => {
                     assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body, null, 2));
@@ -466,7 +465,7 @@ const assert = require('assert'),
                             }
                         }]
                     },
-                    request = { protocol, port, stubs: [stub], name: requestName };
+                    request = { protocol, port, stubs: [stub] };
 
                 return api.post('/imposters', request).then(response => {
                     assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body, null, 2));
@@ -502,7 +501,7 @@ const assert = require('assert'),
                             }
                         }]
                     },
-                    request = { protocol, port, stubs: [stub], name: requestName };
+                    request = { protocol, port, stubs: [stub] };
 
                 fs.writeFileSync('lookupTest.csv',
                     'name,code,occupation,location\n' +
@@ -548,7 +547,7 @@ const assert = require('assert'),
                             }
                         }]
                     },
-                    request = { protocol, port, stubs: [stub], name: requestName };
+                    request = { protocol, port, stubs: [stub] };
 
                 fs.writeFileSync('lookupTest.csv',
                     'name,occupation,location\n' +
@@ -580,7 +579,7 @@ const assert = require('assert'),
                             }
                         }]
                     },
-                    request = { protocol, port, stubs: [stub], name: requestName };
+                    request = { protocol, port, stubs: [stub] };
 
                 fs.writeFileSync('lookupTest.csv',
                     'name,occupation,location\n' +
@@ -628,7 +627,7 @@ const assert = require('assert'),
                         ]
                     },
                     stubs = [stub],
-                    request = { protocol, port, stubs: stubs, name: requestName },
+                    request = { protocol, port, stubs: stubs },
                     timer = new Date();
 
                 fs.writeFileSync('shellTransformTest.js', util.format('%s\nexec();', shellFn.toString()));

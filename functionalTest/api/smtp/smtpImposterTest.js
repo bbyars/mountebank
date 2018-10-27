@@ -5,13 +5,12 @@ const assert = require('assert'),
     client = require('./smtpClient'),
     promiseIt = require('../../testHelpers').promiseIt,
     port = api.port + 1,
-    timeout = parseInt(process.env.MB_SLOW_TEST_TIMEOUT || 2000),
-    requestName = 'some request name';
+    timeout = parseInt(process.env.MB_SLOW_TEST_TIMEOUT || 2000);
 
 describe('smtp imposter', () => {
     describe('POST /imposters/:id', () => {
         promiseIt('should auto-assign port if port not provided', () => {
-            const request = { protocol: 'smtp', name: requestName };
+            const request = { protocol: 'smtp' };
 
             return api.post('/imposters', request).then(response => {
                 assert.strictEqual(response.statusCode, 201);
@@ -22,7 +21,7 @@ describe('smtp imposter', () => {
 
     describe('GET /imposters/:id', () => {
         promiseIt('should provide access to all requests', () => {
-            const imposterRequest = { protocol: 'smtp', port, name: requestName };
+            const imposterRequest = { protocol: 'smtp', port };
 
             return api.post('/imposters', imposterRequest).then(() => client.send({
                 envelopeFrom: 'envelopeFrom1@mb.org',
@@ -92,7 +91,7 @@ describe('smtp imposter', () => {
 
     describe('DELETE /imposters/:id should shutdown server at that port', () => {
         promiseIt('should shutdown server at that port', () => {
-            const request = { protocol: 'smtp', port, name: requestName };
+            const request = { protocol: 'smtp', port };
 
             return api.post('/imposters', request).then(response => api.del(response.headers.location)).then(response => {
                 assert.strictEqual(response.statusCode, 200, JSON.stringify(response.body));

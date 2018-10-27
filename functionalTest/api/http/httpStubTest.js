@@ -6,8 +6,7 @@ const assert = require('assert'),
     promiseIt = require('../../testHelpers').promiseIt,
     port = api.port + 1,
     timeout = parseInt(process.env.MB_SLOW_TEST_TIMEOUT || 2000),
-    helpers = require('../../../src/util/helpers'),
-    requestName = 'some request name';
+    helpers = require('../../../src/util/helpers');
 
 ['http', 'https'].forEach(protocol => {
     const client = BaseHttpClient.create(protocol);
@@ -27,7 +26,7 @@ const assert = require('assert'),
                             }
                         }]
                     },
-                    request = { protocol, port, stubs: [stub], name: requestName };
+                    request = { protocol, port, stubs: [stub] };
 
                 return api.post('/imposters', request).then(response => {
                     assert.strictEqual(response.statusCode, 201);
@@ -42,7 +41,7 @@ const assert = require('assert'),
 
             promiseIt('should allow a sequence of stubs as a circular buffer', () => {
                 const stub = { responses: [{ is: { statusCode: 400 } }, { is: { statusCode: 405 } }] },
-                    request = { protocol, port, stubs: [stub], name: requestName };
+                    request = { protocol, port, stubs: [stub] };
 
                 return api.post('/imposters', request).then(() => client.get('/test', port)).then(response => {
                     assert.strictEqual(response.statusCode, 400);
@@ -90,7 +89,7 @@ const assert = require('assert'),
                             { exists: { body: true } }
                         ]
                     },
-                    request = { protocol, port, stubs: [stub], name: requestName };
+                    request = { protocol, port, stubs: [stub] };
 
                 return api.post('/imposters', request).then(() => {
                     const options = helpers.merge(spec, { path: '/', body: 'TEST' });
@@ -143,7 +142,7 @@ const assert = require('assert'),
                         predicates: [{ deepEquals: { query: { equals: 'true', contains: false } } }]
                     },
                     stubs = [stubWithEmptyObjectPredicate, stubWithPredicateKeywordInObject, stubWithTwoKeywordsInObject],
-                    request = { protocol, port, stubs: stubs, name: requestName };
+                    request = { protocol, port, stubs: stubs };
 
                 return api.post('/imposters', request).then(response => {
                     assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body, null, 2));
@@ -168,7 +167,7 @@ const assert = require('assert'),
             promiseIt('should support sending binary response', () => {
                 const buffer = new Buffer([0, 1, 2, 3]),
                     stub = { responses: [{ is: { body: buffer.toString('base64'), _mode: 'binary' } }] },
-                    request = { protocol, port, stubs: [stub], name: requestName };
+                    request = { protocol, port, stubs: [stub] };
 
                 return api.post('/imposters', request).then(response => {
                     assert.strictEqual(response.statusCode, 201);
@@ -201,7 +200,7 @@ const assert = require('assert'),
                             }
                         ]
                     },
-                    request = { protocol, port, stubs: [stub], name: requestName };
+                    request = { protocol, port, stubs: [stub] };
 
                 return api.post('/imposters', request).then(response => {
                     assert.strictEqual(response.statusCode, 201);
@@ -231,7 +230,7 @@ const assert = require('assert'),
                             { matches: { body: { key: '^v' } } }
                         ]
                     },
-                    request = { protocol, port, stubs: [stub], name: requestName };
+                    request = { protocol, port, stubs: [stub] };
 
                 return api.post('/imposters', request).then(response => {
                     assert.strictEqual(response.statusCode, 201);
@@ -250,7 +249,7 @@ const assert = require('assert'),
                         predicates: [{ equals: { path: '/' } }]
                     },
                     defaultResponse = { statusCode: 404, body: 'Not found' },
-                    request = { protocol, port, defaultResponse: defaultResponse, stubs: [stub], name: requestName };
+                    request = { protocol, port, defaultResponse: defaultResponse, stubs: [stub] };
 
                 return api.post('/imposters', request).then(response => {
                     assert.strictEqual(response.statusCode, 201, response.body);
@@ -272,7 +271,7 @@ const assert = require('assert'),
             promiseIt('should support keepalive connections', () => {
                 const stub = { responses: [{ is: { body: 'Success' } }] },
                     defaultResponse = { headers: { CONNECTION: 'Keep-Alive' } }, // tests case-sensitivity of header match
-                    request = { protocol, port, defaultResponse: defaultResponse, stubs: [stub], name: requestName };
+                    request = { protocol, port, defaultResponse: defaultResponse, stubs: [stub] };
 
                 return api.post('/imposters', request).then(response => {
                     assert.strictEqual(response.statusCode, 201, response.body);
@@ -285,7 +284,7 @@ const assert = require('assert'),
 
             promiseIt('should support sending multiple values back for same header', () => {
                 const stub = { responses: [{ is: { headers: { 'Set-Cookie': ['first', 'second'] } } }] },
-                    request = { protocol, port, stubs: [stub], name: requestName };
+                    request = { protocol, port, stubs: [stub] };
 
                 return api.post('/imposters', request).then(response => {
                     assert.strictEqual(response.statusCode, 201, response.body);
@@ -300,7 +299,7 @@ const assert = require('assert'),
                         headers: { 'Content-Type': 'application/json' },
                         body: { _links: { self: '/products/123' } }
                     } }] },
-                    request = { protocol, port, stubs: [stub], name: requestName };
+                    request = { protocol, port, stubs: [stub] };
 
                 return api.post('/imposters', request).then(response => {
                     assert.strictEqual(response.statusCode, 201, response.body);
@@ -321,7 +320,7 @@ const assert = require('assert'),
                             }
                         }]
                     },
-                    request = { protocol, port, stubs: [stub], name: requestName };
+                    request = { protocol, port, stubs: [stub] };
 
                 return api.post('/imposters', request).then(response => {
                     assert.strictEqual(response.statusCode, 201, response.body);
@@ -334,7 +333,7 @@ const assert = require('assert'),
             promiseIt('should handle JSON null values', () => {
                 // https://github.com/bbyars/mountebank/issues/209
                 const stub = { responses: [{ is: { body: { name: 'test', type: null } } }] },
-                    request = { protocol, port, stubs: [stub], name: requestName };
+                    request = { protocol, port, stubs: [stub] };
 
                 return api.post('/imposters', request).then(response => {
                     assert.strictEqual(response.statusCode, 201, response.body);
@@ -349,7 +348,7 @@ const assert = require('assert'),
                         predicates: [{ deepEquals: { body: { field: null } } }],
                         responses: [{ is: { body: 'SUCCESS' } }]
                     },
-                    request = { protocol, port, stubs: [stub], name: requestName };
+                    request = { protocol, port, stubs: [stub] };
 
                 return api.post('/imposters', request).then(response => {
                     assert.strictEqual(201, response.statusCode, JSON.stringify(response.body, null, 2));
@@ -368,7 +367,7 @@ const assert = require('assert'),
                         }]
                     },
                     xml = '<values><value>first</value><value>second</value><value>third</value></values>',
-                    request = { protocol, port, stubs: [stub], name: requestName };
+                    request = { protocol, port, stubs: [stub] };
 
                 return api.post('/imposters', request).then(response => {
                     assert.strictEqual(response.statusCode, 201, response.body);
@@ -383,7 +382,7 @@ const assert = require('assert'),
                         predicates: [{ matches: { body: { Key: '^Value' } } }],
                         responses: [{ is: { body: 'SUCCESS' } }]
                     },
-                    request = { protocol, port, stubs: [stub], name: requestName };
+                    request = { protocol, port, stubs: [stub] };
 
                 return api.post('/imposters', request).then(response => {
                     assert.strictEqual(response.statusCode, 201);
@@ -398,7 +397,7 @@ const assert = require('assert'),
                         predicates: [{ equals: { body: { version: null } } }],
                         responses: [{ is: { body: 'SUCCESS' } }]
                     },
-                    request = { protocol, port, stubs: [stub], name: requestName };
+                    request = { protocol, port, stubs: [stub] };
 
                 return api.post('/imposters', request).then(response => {
                     assert.strictEqual(response.statusCode, 201);
@@ -423,7 +422,7 @@ const assert = require('assert'),
                         predicates: [{ deepEquals: { form: { firstname: 'ruud', lastname: 'mountebank' } } }],
                         responses: [{ is: { body: 'SUCCESS' } }]
                     },
-                    request = { protocol, port, stubs: [stub], name: requestName };
+                    request = { protocol, port, stubs: [stub] };
 
                 return api.post('/imposters', request).then(response => {
                     assert.strictEqual(response.statusCode, 201);

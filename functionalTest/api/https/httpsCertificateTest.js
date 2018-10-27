@@ -11,8 +11,7 @@ const assert = require('assert'),
     key = fs.readFileSync(path.join(__dirname, '/cert/key.pem'), 'utf8'),
     cert = fs.readFileSync(path.join(__dirname, '/cert/cert.pem'), 'utf8'),
     defaultKey = fs.readFileSync(path.join(__dirname, '../../../src/models/https/cert/mb-key.pem'), 'utf8'),
-    defaultCert = fs.readFileSync(path.join(__dirname, '../../../src/models/https/cert/mb-cert.pem'), 'utf8'),
-    requestName = 'some request name';
+    defaultCert = fs.readFileSync(path.join(__dirname, '../../../src/models/https/cert/mb-cert.pem'), 'utf8');
 
 describe('https imposter', () => {
     promiseIt('should support sending key/cert pair during imposter creation', () => {
@@ -20,8 +19,7 @@ describe('https imposter', () => {
             protocol: 'https',
             port,
             key,
-            cert,
-            name: requestName
+            cert
         };
 
         return api.post('/imposters', request).then(response => {
@@ -35,7 +33,7 @@ describe('https imposter', () => {
     });
 
     promiseIt('should default key/cert pair during imposter creation if not provided', () => {
-        const request = { protocol: 'https', port, name: requestName };
+        const request = { protocol: 'https', port };
 
         return api.post('/imposters', request).then(response => {
             assert.strictEqual(response.statusCode, 201);
@@ -48,7 +46,7 @@ describe('https imposter', () => {
     });
 
     promiseIt('should work with mutual auth', () => {
-        const request = { protocol: 'https', port, mutualAuth: true, name: requestName };
+        const request = { protocol: 'https', port, mutualAuth: true };
 
         return api.post('/imposters', request).then(response => {
             assert.strictEqual(response.statusCode, 201);
@@ -72,7 +70,7 @@ describe('https imposter', () => {
                 protocol: 'https',
                 port: originServerPort,
                 stubs: [{ responses: [{ is: { body: 'origin server' } }] }],
-                name: `${requestName} origin`,
+                name: 'origin',
                 mutualAuth: true
             },
             proxy = {
@@ -84,7 +82,7 @@ describe('https imposter', () => {
                 protocol: 'https',
                 port,
                 stubs: [{ responses: [{ proxy: proxy }] }],
-                name: `${requestName} proxy`
+                name: 'proxy'
             };
 
         return api.post('/imposters', originServerRequest).then(response => {

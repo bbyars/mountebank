@@ -5,13 +5,12 @@ const assert = require('assert'),
     tcp = require('../tcp/tcpClient'),
     promiseIt = require('../../testHelpers').promiseIt,
     port = api.port + 1,
-    timeout = parseInt(process.env.MB_SLOW_TEST_TIMEOUT || 2000),
-    requestName = 'some request name';
+    timeout = parseInt(process.env.MB_SLOW_TEST_TIMEOUT || 2000);
 
 describe('foo imposter', () => {
     describe('POST /imposters/:id', () => {
         promiseIt('should auto-assign port if port not provided', () => {
-            const request = { protocol: 'foo', name: requestName };
+            const request = { protocol: 'foo' };
 
             return api.post('/imposters', request).then(response => {
                 assert.strictEqual(response.statusCode, 201);
@@ -22,7 +21,7 @@ describe('foo imposter', () => {
 
     describe('GET /imposters/:id', () => {
         promiseIt('should provide access to all requests', () => {
-            const imposterRequest = { protocol: 'foo', port, name: requestName };
+            const imposterRequest = { protocol: 'foo', port };
 
             return api.post('/imposters', imposterRequest).then(() => tcp.fireAndForget('first', port)
             ).then(() => tcp.fireAndForget('second', port)
@@ -36,7 +35,7 @@ describe('foo imposter', () => {
         promiseIt('should return list of stubs in order', () => {
             const first = { responses: [{ is: { data: '1' } }] },
                 second = { responses: [{ is: { data: '2' } }] },
-                request = { protocol: 'foo', port, stubs: [first, second], name: requestName };
+                request = { protocol: 'foo', port, stubs: [first, second] };
 
             return api.post('/imposters', request).then(() => api.get(`/imposters/${port}`)
             ).then(response => {
@@ -50,7 +49,7 @@ describe('foo imposter', () => {
 
         promiseIt('should record matches against stubs', () => {
             const stub = { responses: [{ is: { data: '1' } }, { is: { data: '2' } }] },
-                request = { protocol: 'foo', port, stubs: [stub], name: requestName };
+                request = { protocol: 'foo', port, stubs: [stub] };
 
             return api.post('/imposters', request).then(() => tcp.send('first', port)
             ).then(() => tcp.send('second', port)

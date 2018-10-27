@@ -8,8 +8,7 @@ const assert = require('assert'),
     isWindows = require('os').platform().indexOf('win') === 0,
     net = require('net'),
     timeout = isWindows ? 10000 : parseInt(process.env.MB_SLOW_TEST_TIMEOUT || 3000),
-    airplaneMode = process.env.MB_AIRPLANE_MODE === 'true',
-    requestName = 'some request name';
+    airplaneMode = process.env.MB_AIRPLANE_MODE === 'true';
 
 describe('tcp proxy', () => {
     const noOp = () => {},
@@ -18,7 +17,7 @@ describe('tcp proxy', () => {
     describe('#to', () => {
         promiseIt('should send same request information to proxied socket', () => {
             const stub = { responses: [{ is: { data: 'howdy!' } }] },
-                request = { protocol: 'tcp', port, stubs: [stub], name: requestName },
+                request = { protocol: 'tcp', port, stubs: [stub] },
                 proxy = TcpProxy.create(logger, 'utf8');
 
             return api.post('/imposters', request).then(() => proxy.to(`tcp://localhost:${port}`, { data: 'hello, world!' })).then(response => {
@@ -28,7 +27,7 @@ describe('tcp proxy', () => {
 
         promiseIt('should support old proxy syntax for backwards compatibility', () => {
             const stub = { responses: [{ is: { data: 'howdy!' } }] },
-                request = { protocol: 'tcp', port, stubs: [stub], name: requestName },
+                request = { protocol: 'tcp', port, stubs: [stub] },
                 proxy = TcpProxy.create(logger, 'utf8');
 
             return api.post('/imposters', request).then(() => proxy.to({ host: 'localhost', port }, { data: 'hello, world!' })).then(response => {
@@ -39,7 +38,7 @@ describe('tcp proxy', () => {
         promiseIt('should proxy binary data', () => {
             const buffer = new Buffer([0, 1, 2, 3]),
                 stub = { responses: [{ is: { data: buffer.toString('base64') } }] },
-                request = { protocol: 'tcp', port, stubs: [stub], mode: 'binary', name: requestName },
+                request = { protocol: 'tcp', port, stubs: [stub], mode: 'binary' },
                 proxy = TcpProxy.create(logger, 'base64');
 
             return api.post('/imposters', request).then(() => proxy.to(`tcp://localhost:${port}`, { data: buffer })).then(response => {
@@ -67,7 +66,7 @@ describe('tcp proxy', () => {
 
         promiseIt('should capture response time to origin server', () => {
             const stub = { responses: [{ is: { data: 'howdy!' } }] },
-                request = { protocol: 'tcp', port, stubs: [stub], name: requestName },
+                request = { protocol: 'tcp', port, stubs: [stub] },
                 proxy = TcpProxy.create(logger, 'utf8');
 
             return api.post('/imposters', request).then(() => proxy.to(`tcp://localhost:${port}`, { data: 'hello, world!' })).then(response => {

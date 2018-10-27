@@ -5,8 +5,7 @@ const assert = require('assert'),
     BaseHttpClient = require('./baseHttpClient'),
     promiseIt = require('../../testHelpers').promiseIt,
     port = api.port + 1,
-    timeout = parseInt(process.env.MB_SLOW_TEST_TIMEOUT || 4000),
-    requestName = 'some request name';
+    timeout = parseInt(process.env.MB_SLOW_TEST_TIMEOUT || 4000);
 
 ['http', 'https'].forEach(protocol => {
     const client = BaseHttpClient.create(protocol);
@@ -20,7 +19,7 @@ const assert = require('assert'),
                         predicates: [{ inject: fn.toString() }],
                         responses: [{ is: { body: 'MATCHED' } }]
                     },
-                    request = { protocol, port, stubs: [stub], name: requestName };
+                    request = { protocol, port, stubs: [stub] };
 
                 return api.post('/imposters', request).then(response => {
                     assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body));
@@ -46,7 +45,7 @@ const assert = require('assert'),
                         predicates: [{ inject: 'return true;' }],
                         responses: [{ is: { body: 'MATCHED' } }]
                     },
-                    request = { protocol, port, stubs: [stub], name: requestName };
+                    request = { protocol, port, stubs: [stub] };
 
                 return api.post('/imposters', request).then(response => {
                     assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body));
@@ -56,7 +55,7 @@ const assert = require('assert'),
             promiseIt('should allow synchronous javascript injection for responses', () => {
                 const fn = request => ({ body: `${request.method} INJECTED` }),
                     stub = { responses: [{ inject: fn.toString() }] },
-                    request = { protocol, port, stubs: [stub], name: requestName };
+                    request = { protocol, port, stubs: [stub] };
 
                 return api.post('/imposters', request).then(() => client.get('/', port)).then(response => {
                     assert.strictEqual(response.body, 'GET INJECTED');
@@ -68,7 +67,7 @@ const assert = require('assert'),
             promiseIt('should not validate a bad response injection', () => {
                 const fn = () => { throw new Error('BOOM'); },
                     stub = { responses: [{ inject: fn.toString() }] },
-                    request = { protocol, port, stubs: [stub], name: requestName };
+                    request = { protocol, port, stubs: [stub] };
 
                 return api.post('/imposters', request).then(response => {
                     assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body));
@@ -82,7 +81,7 @@ const assert = require('assert'),
                         return { body: state.calls.toString() };
                     },
                     stub = { responses: [{ inject: fn.toString() }] },
-                    request = { protocol, port, stubs: [stub], name: requestName };
+                    request = { protocol, port, stubs: [stub] };
 
                 return api.post('/imposters', request).then(response => {
                     assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body));
@@ -101,7 +100,7 @@ const assert = require('assert'),
                 // https://github.com/bbyars/mountebank/issues/134
                 const fn = () => ({ body: process.env.USER || 'test' }),
                     stub = { responses: [{ inject: fn.toString() }] },
-                    request = { protocol, port, stubs: [stub], name: requestName };
+                    request = { protocol, port, stubs: [stub] };
 
                 return api.post('/imposters', request).then(response => {
                     assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body));
@@ -142,7 +141,7 @@ const assert = require('assert'),
                             // No return value!!!
                         },
                         stub = { responses: [{ inject: fn.toString() }] },
-                        request = { protocol, port, stubs: [stub], name: requestName };
+                        request = { protocol, port, stubs: [stub] };
 
                     return api.post('/imposters', request).then(response => {
                         assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body));

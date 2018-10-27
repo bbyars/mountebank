@@ -6,14 +6,13 @@ const assert = require('assert'),
     promiseIt = require('../testHelpers').promiseIt,
     port = api.port + 1,
     mb = require('../mb').create(port + 1),
-    timeout = parseInt(process.env.MB_SLOW_TEST_TIMEOUT || 4000),
-    requestName = 'some request name';
+    timeout = parseInt(process.env.MB_SLOW_TEST_TIMEOUT || 4000);
 
 describe('mb without --allowInjection', () => {
     promiseIt('should return a 400 if response injection is used', () => {
         const fn = request => ({ body: `${request.method} INJECTED` }),
             stub = { responses: [{ inject: fn.toString() }] },
-            request = { protocol: 'http', port, stubs: [stub], name: requestName };
+            request = { protocol: 'http', port, stubs: [stub] };
 
         return mb.start().then(() => mb.post('/imposters', request)).then(response => {
             assert.strictEqual(response.statusCode, 400);
@@ -27,7 +26,7 @@ describe('mb without --allowInjection', () => {
                 predicates: [{ inject: fn.toString() }],
                 responses: [{ is: { body: 'Hello, World! ' } }]
             },
-            request = { protocol: 'http', port, stubs: [stub], name: requestName };
+            request = { protocol: 'http', port, stubs: [stub] };
 
         return mb.start().then(() => mb.post('/imposters', request)).then(response => {
             assert.strictEqual(response.statusCode, 400);
@@ -43,7 +42,6 @@ describe('mb without --allowInjection', () => {
                 port,
                 stubs: [stub],
                 mode: 'text',
-                name: requestName,
                 endOfRequestResolver: { inject: resolver.toString() }
             };
 
@@ -56,7 +54,7 @@ describe('mb without --allowInjection', () => {
     promiseIt('should return a 400 if a decorate behavior is used', () => {
         const fn = response => response,
             stub = { responses: [{ is: { body: 'Hello, World! ' }, _behaviors: { decorate: fn.toString() } }] },
-            request = { protocol: 'http', port, stubs: [stub], name: requestName };
+            request = { protocol: 'http', port, stubs: [stub] };
 
         return mb.start().then(() => mb.post('/imposters', request)).then(response => {
             assert.strictEqual(response.statusCode, 400);
@@ -67,7 +65,7 @@ describe('mb without --allowInjection', () => {
     promiseIt('should return a 400 if a wait behavior function is used', () => {
         const fn = () => 1000,
             stub = { responses: [{ is: { body: 'Hello, World! ' }, _behaviors: { wait: fn.toString() } }] },
-            request = { protocol: 'http', port, stubs: [stub], name: requestName };
+            request = { protocol: 'http', port, stubs: [stub] };
 
         return mb.start().then(() => mb.post('/imposters', request)).then(response => {
             assert.strictEqual(response.statusCode, 400);
@@ -77,7 +75,7 @@ describe('mb without --allowInjection', () => {
 
     promiseIt('should allow a wait behavior that directly specifies latency', () => {
         const stub = { responses: [{ is: { body: 'Hello, World! ' }, _behaviors: { wait: 100 } }] },
-            request = { protocol: 'http', port, stubs: [stub], name: requestName };
+            request = { protocol: 'http', port, stubs: [stub] };
 
         return mb.start().then(() => mb.post('/imposters', request)).then(response => {
             assert.strictEqual(response.statusCode, 201);
@@ -86,7 +84,7 @@ describe('mb without --allowInjection', () => {
 
     promiseIt('should return a 400 if a shellTransform behavior is used', () => {
         const stub = { responses: [{ is: {}, _behaviors: { shellTransform: 'command' } }] },
-            request = { protocol: 'http', port, stubs: [stub], name: requestName };
+            request = { protocol: 'http', port, stubs: [stub] };
 
         return mb.start().then(() => mb.post('/imposters', request)).then(response => {
             assert.strictEqual(response.statusCode, 400);
@@ -100,7 +98,7 @@ describe('mb without --allowInjection', () => {
                 addDecorateBehavior: '(request, response) => { response.body = ""; }'
             },
             stub = { responses: [{ proxy: proxy }] },
-            request = { protocol: 'http', port, stubs: [stub], name: requestName };
+            request = { protocol: 'http', port, stubs: [stub] };
 
         return mb.start().then(() => mb.post('/imposters', request)).then(response => {
             assert.strictEqual(response.statusCode, 400);

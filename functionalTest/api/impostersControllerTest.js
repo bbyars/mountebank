@@ -6,15 +6,14 @@ const assert = require('assert'),
     port = api.port + 1,
     Q = require('q'),
     isWindows = require('os').platform().indexOf('win') === 0,
-    client = require('./http/baseHttpClient').create('http'),
-    requestName = 'some request name';
+    client = require('./http/baseHttpClient').create('http');
 
 describe('POST /imposters', () => {
 
     promiseIt('should return create new imposter with consistent hypermedia', () => {
         let createdBody, imposterPath;
 
-        return api.post('/imposters', { protocol: 'http', port, name: requestName }).then(response => {
+        return api.post('/imposters', { protocol: 'http', port }).then(response => {
             createdBody = response.body;
 
             assert.strictEqual(response.statusCode, 201);
@@ -27,7 +26,7 @@ describe('POST /imposters', () => {
         }).finally(() => api.del(imposterPath));
     });
 
-    promiseIt('should create imposter at provided port', () => api.post('/imposters', { protocol: 'http', port, name: requestName }).then(() => api.get('/', port)).then(response => {
+    promiseIt('should create imposter at provided port', () => api.post('/imposters', { protocol: 'http', port }).then(() => api.get('/', port)).then(response => {
         assert.strictEqual(response.statusCode, 200, JSON.stringify(response.body));
     }).finally(() => api.del(`/imposters/${port}`)));
 
@@ -35,7 +34,7 @@ describe('POST /imposters', () => {
         assert.strictEqual(response.statusCode, 400);
     }));
 
-    promiseIt('should return 400 on port conflict', () => api.post('/imposters', { protocol: 'http', port: api.port, name: requestName }).then(response => {
+    promiseIt('should return 400 on port conflict', () => api.post('/imposters', { protocol: 'http', port: api.port }).then(response => {
         assert.strictEqual(response.statusCode, 400);
     }));
 
@@ -54,7 +53,7 @@ describe('POST /imposters', () => {
         if (isWindows) {
             return Q(true); // no sudo required
         }
-        return api.post('/imposters', { protocol: 'http', port: 90, name: requestName }).then(response => {
+        return api.post('/imposters', { protocol: 'http', port: 90 }).then(response => {
             assert.strictEqual(response.statusCode, 403);
         });
     });
@@ -67,8 +66,8 @@ describe('DELETE /imposters', () => {
     }));
 
     it('deletes all imposters and returns replayable body', done => {
-        const firstImposter = { protocol: 'http', port, name: `${requestName}1` },
-            secondImposter = { protocol: 'http', port: port + 1, name: `${requestName}2` };
+        const firstImposter = { protocol: 'http', port, name: 'imposter 1' },
+            secondImposter = { protocol: 'http', port: port + 1, name: 'imposter 1' };
 
         return api.post('/imposters', firstImposter).then(response => {
             assert.strictEqual(response.statusCode, 201);
@@ -109,13 +108,13 @@ describe('DELETE /imposters', () => {
         const isImposter = {
                 protocol: 'http',
                 port, name:
-                `${requestName}-is`,
+                'imposter-is',
                 stubs: [{ responses: [{ is: { body: 'Hello, World!' } }] }]
             },
             proxyImposter = {
                 protocol: 'http',
                 port: port + 1,
-                name: `${requestName}-proxy`,
+                name: 'imposter-proxy',
                 stubs: [{ responses: [{ proxy: { to: 'http://www.google.com' } }] }]
             };
 
@@ -157,9 +156,9 @@ describe('PUT /imposters', () => {
     promiseIt('creates all imposters provided when no imposters previously exist', () => {
         const request = {
             imposters: [
-                { protocol: 'http', port, name: `${requestName}1` },
-                { protocol: 'http', port: port + 1, name: `${requestName}2` },
-                { protocol: 'http', port: port + 2, name: `${requestName}3` }
+                { protocol: 'http', port, name: 'imposter 1' },
+                { protocol: 'http', port: port + 1, name: 'imposter 2' },
+                { protocol: 'http', port: port + 2, name: 'imposter 3' }
             ]
         };
 
@@ -181,9 +180,9 @@ describe('PUT /imposters', () => {
         const postRequest = { protocol: 'smtp', port: port },
             putRequest = {
                 imposters: [
-                    { protocol: 'http', port, name: `${requestName}1` },
-                    { protocol: 'http', port: port + 1, name: `${requestName}2` },
-                    { protocol: 'http', port: port + 2, name: `${requestName}3` }
+                    { protocol: 'http', port, name: 'imposter 1' },
+                    { protocol: 'http', port: port + 1, name: 'imposter 2' },
+                    { protocol: 'http', port: port + 2, name: 'imposter 3' }
                 ]
             };
 

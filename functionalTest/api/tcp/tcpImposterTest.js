@@ -5,13 +5,12 @@ const assert = require('assert'),
     tcp = require('./tcpClient'),
     promiseIt = require('../../testHelpers').promiseIt,
     port = api.port + 1,
-    timeout = parseInt(process.env.MB_SLOW_TEST_TIMEOUT || 2000),
-    requestName = 'some request name';
+    timeout = parseInt(process.env.MB_SLOW_TEST_TIMEOUT || 2000);
 
 describe('tcp imposter', () => {
     describe('POST /imposters/:id', () => {
         promiseIt('should auto-assign port if port not provided', () => {
-            const request = { protocol: 'tcp', name: requestName };
+            const request = { protocol: 'tcp' };
 
             return api.post('/imposters', request).then(response => {
                 assert.strictEqual(response.statusCode, 201);
@@ -22,7 +21,7 @@ describe('tcp imposter', () => {
 
     describe('GET /imposters/:id', () => {
         promiseIt('should provide access to all requests', () => {
-            const request = { protocol: 'tcp', port, name: requestName };
+            const request = { protocol: 'tcp', port };
 
             return api.post('/imposters', request).then(() => tcp.fireAndForget('first', port)).then(() => tcp.fireAndForget('second', port)).then(() => api.get(`/imposters/${port}`)).then(response => {
                 const requests = response.body.requests.map(recordedRequest => recordedRequest.data);
@@ -33,7 +32,7 @@ describe('tcp imposter', () => {
         promiseIt('should return list of stubs in order', () => {
             const first = { responses: [{ is: { data: '1' } }] },
                 second = { responses: [{ is: { data: '2' } }] },
-                request = { protocol: 'tcp', port, stubs: [first, second], name: requestName };
+                request = { protocol: 'tcp', port, stubs: [first, second] };
 
             return api.post('/imposters', request).then(() => api.get(`/imposters/${port}`)).then(response => {
                 assert.strictEqual(response.statusCode, 200);
@@ -45,7 +44,7 @@ describe('tcp imposter', () => {
         });
 
         promiseIt('should reflect default mode', () => {
-            const request = { protocol: 'tcp', port, name: requestName };
+            const request = { protocol: 'tcp', port, name: 'imposter' };
 
             return api.post('/imposters', request).then(() => api.get(`/imposters/${port}`)).then(response => {
                 assert.strictEqual(response.statusCode, 200);
@@ -66,7 +65,7 @@ describe('tcp imposter', () => {
 
         promiseIt('should record matches against stubs', () => {
             const stub = { responses: [{ is: { data: '1' } }, { is: { data: '2' } }] },
-                request = { protocol: 'tcp', port, stubs: [stub], name: requestName };
+                request = { protocol: 'tcp', port, stubs: [stub] };
 
             return api.post('/imposters', request).then(() => tcp.send('first', port)).then(() => tcp.send('second', port)).then(() => api.get(`/imposters/${port}`)).then(response => {
                 const stubs = JSON.stringify(response.body.stubs),

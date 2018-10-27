@@ -12,8 +12,7 @@ const assert = require('assert'),
     smtp = require('../api/smtp/smtpClient'),
     http = BaseHttpClient.create('http'),
     https = BaseHttpClient.create('https'),
-    fs = require('fs'),
-    requestName = 'some request name';
+    fs = require('fs');
 
 describe('mb command line', () => {
     // I normally advocate separating the data needed for the assertions from the test setup,
@@ -127,7 +126,7 @@ describe('mb command line', () => {
     if (process.env.MB_AIRPLANE_MODE !== 'true') {
         promiseIt('should allow removing proxies during save', () => {
             const proxyStub = { responses: [{ proxy: { to: 'https://google.com' } }] },
-                proxyRequest = { protocol: 'http', port: port + 1, stubs: [proxyStub], name: `${requestName} proxy` };
+                proxyRequest = { protocol: 'http', port: port + 1, stubs: [proxyStub], name: 'PROXY' };
             let expected;
 
             return mb.start().then(() => mb.post('/imposters', proxyRequest)).then(response => {

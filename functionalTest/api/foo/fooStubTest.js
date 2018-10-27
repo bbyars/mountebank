@@ -5,8 +5,7 @@ const assert = require('assert'),
     promiseIt = require('../../testHelpers').promiseIt,
     port = api.port + 1,
     timeout = parseInt(process.env.MB_SLOW_TEST_TIMEOUT || 2000),
-    tcp = require('../tcp/tcpClient'),
-    requestName = 'some request name';
+    tcp = require('../tcp/tcpClient');
 
 describe('foo imposter', () => {
     describe('POST /imposters with stubs', () => {
@@ -15,7 +14,7 @@ describe('foo imposter', () => {
                     predicates: [{ equals: { data: 'client' } }],
                     responses: [{ is: { data: 'server' } }]
                 },
-                request = { protocol: 'foo', port, stubs: [stub], name: requestName };
+                request = { protocol: 'foo', port, stubs: [stub] };
 
             return api.post('/imposters', request).then(response => {
                 assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body));
@@ -30,7 +29,7 @@ describe('foo imposter', () => {
                     predicates: [{ equals: { data: 'request' } }],
                     responses: [{ is: { data: 'first' } }, { is: { data: 'second' } }]
                 },
-                request = { protocol: 'foo', port, stubs: [stub], name: requestName };
+                request = { protocol: 'foo', port, stubs: [stub] };
 
             return api.post('/imposters', request).then(() => tcp.send('request', port)
             ).then(response => {
@@ -75,10 +74,10 @@ describe('foo imposter', () => {
                     protocol: 'foo',
                     port: originServerPort,
                     stubs: [originServerStub],
-                    name: `${requestName} ORIGIN`
+                    name: 'ORIGIN'
                 },
                 proxyStub = { responses: [{ proxy: { to: { host: 'localhost', port: originServerPort } } }] },
-                proxyRequest = { protocol: 'foo', port, stubs: [proxyStub], name: `${requestName} PROXY` };
+                proxyRequest = { protocol: 'foo', port, stubs: [proxyStub], name: 'PROXY' };
 
             return api.post('/imposters', originServerRequest).then(() => api.post('/imposters', proxyRequest)
             ).then(() => tcp.send('request', port)

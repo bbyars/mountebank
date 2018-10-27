@@ -9,14 +9,13 @@ const assert = require('assert'),
     port = api.port + 1,
     isWindows = require('os').platform().indexOf('win') === 0,
     timeout = isWindows ? 10000 : parseInt(process.env.MB_SLOW_TEST_TIMEOUT || 2000),
-    airplaneMode = process.env.MB_AIRPLANE_MODE === 'true',
-    requestName = 'some request name';
+    airplaneMode = process.env.MB_AIRPLANE_MODE === 'true';
 
 describe('http proxy stubs', () => {
     if (!airplaneMode) {
         promiseIt('should allow proxy stubs to invalid domains', () => {
             const stub = { responses: [{ proxy: { to: 'http://invalid.domain' } }] },
-                request = { protocol: 'http', port, stubs: [stub], name: requestName };
+                request = { protocol: 'http', port, stubs: [stub] };
 
             return api.post('/imposters', request).then(() => client.get('/', port)).then(response => {
                 assert.strictEqual(response.statusCode, 500);
@@ -33,10 +32,10 @@ describe('http proxy stubs', () => {
                 protocol: 'http',
                 port: originServerPort,
                 stubs: [originServerStub],
-                name: `${requestName} origin`
+                name: 'origin'
             },
             proxyStub = { responses: [{ proxy: { to: `http://localhost:${originServerPort}` } }] },
-            proxyRequest = { protocol: 'http', port, stubs: [proxyStub], name: `${requestName} proxy` };
+            proxyRequest = { protocol: 'http', port, stubs: [proxyStub], name: 'proxy' };
 
         return api.post('/imposters', originServerRequest).then(() => api.post('/imposters', proxyRequest)).then(response => {
             assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body, null, 2));
@@ -63,7 +62,7 @@ describe('http proxy stubs', () => {
                 protocol: 'http',
                 port: originServerPort,
                 stubs: [originServerStub],
-                name: `${requestName} origin server`
+                name: 'origin server'
             },
             proxyDefinition = {
                 to: `http://localhost:${originServerPort}`,
@@ -78,7 +77,7 @@ describe('http proxy stubs', () => {
                 ]
             },
             proxyStub = { responses: [{ proxy: proxyDefinition }] },
-            proxyRequest = { protocol: 'http', port, stubs: [proxyStub], name: `${requestName} proxy` };
+            proxyRequest = { protocol: 'http', port, stubs: [proxyStub], name: 'proxy' };
 
         return api.post('/imposters', originServerRequest).then(() => api.post('/imposters', proxyRequest)).then(response => {
             assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body, null, 2));
@@ -120,7 +119,7 @@ describe('http proxy stubs', () => {
                 protocol: 'http',
                 port: originServerPort,
                 stubs: [originServerStub],
-                name: `${requestName} origin server`
+                name: 'origin server'
             },
             proxyDefinition = {
                 to: `http://localhost:${originServerPort}`,
@@ -128,7 +127,7 @@ describe('http proxy stubs', () => {
                 predicateGenerators: [{ matches: { path: true } }]
             },
             proxyStub = { responses: [{ proxy: proxyDefinition }] },
-            proxyRequest = { protocol: 'http', port, stubs: [proxyStub], name: `${requestName} proxy` };
+            proxyRequest = { protocol: 'http', port, stubs: [proxyStub], name: 'proxy' };
 
         return api.post('/imposters', originServerRequest).then(() => api.post('/imposters', proxyRequest)).then(response => {
             assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body));
@@ -157,7 +156,7 @@ describe('http proxy stubs', () => {
                 protocol: 'http',
                 port: originServerPort,
                 stubs: [originServerStub],
-                name: `${requestName} origin server`
+                name: 'origin server'
             },
             proxyDefinition = {
                 to: `http://localhost:${originServerPort}`,
@@ -165,7 +164,7 @@ describe('http proxy stubs', () => {
                 predicateGenerators: [{ matches: { query: true } }]
             },
             proxyStub = { responses: [{ proxy: proxyDefinition }] },
-            proxyRequest = { protocol: 'http', port, stubs: [proxyStub], name: `${requestName} proxy` };
+            proxyRequest = { protocol: 'http', port, stubs: [proxyStub], name: 'proxy' };
 
         return api.post('/imposters', originServerRequest).then(() => api.post('/imposters', proxyRequest)).then(response => {
             assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body));
@@ -199,7 +198,7 @@ describe('http proxy stubs', () => {
                 protocol: 'http',
                 port: originServerPort,
                 stubs: [originServerStub],
-                name: `${requestName} origin server`
+                name: 'origin server'
             },
             proxyDefinition = {
                 to: `http://localhost:${originServerPort}`,
@@ -207,7 +206,7 @@ describe('http proxy stubs', () => {
                 predicateGenerators: [{ matches: { query: { first: true } } }]
             },
             proxyStub = { responses: [{ proxy: proxyDefinition }] },
-            proxyRequest = { protocol: 'http', port, stubs: [proxyStub], name: `${requestName} proxy` };
+            proxyRequest = { protocol: 'http', port, stubs: [proxyStub], name: 'proxy' };
 
         return api.post('/imposters', originServerRequest).then(() => api.post('/imposters', proxyRequest)).then(response => {
             assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body));
@@ -234,7 +233,7 @@ describe('http proxy stubs', () => {
                 protocol: 'http',
                 port: originServerPort,
                 stubs: [originServerStub],
-                name: `${requestName} origin`
+                name: 'origin'
             },
             shellFn = function exec () {
                 console.log(process.argv[3].replace('${SALUTATION}', 'Hello'));
@@ -255,7 +254,7 @@ describe('http proxy stubs', () => {
                 }
             },
             proxyStub = { responses: [proxyResponse] },
-            proxyRequest = { protocol: 'http', port, stubs: [proxyStub], name: `${requestName} proxy` };
+            proxyRequest = { protocol: 'http', port, stubs: [proxyStub], name: 'proxy' };
 
         fs.writeFileSync('shellTransformTest.js', util.format('%s\nexec();', shellFn.toString()));
 
@@ -282,13 +281,13 @@ describe('http proxy stubs', () => {
                 protocol: 'http',
                 port: originServerPort,
                 stubs: [originServerStub],
-                name: `${requestName} origin`
+                name: 'origin'
             },
             proxyStub = { responses: [{ proxy: {
                 to: `http://localhost:${originServerPort}`,
                 addWaitBehavior: true
             } }] },
-            proxyRequest = { protocol: 'http', port, stubs: [proxyStub], name: `${requestName} proxy` };
+            proxyRequest = { protocol: 'http', port, stubs: [proxyStub], name: 'proxy' };
 
         return api.post('/imposters', originServerRequest).then(() => api.post('/imposters', proxyRequest)).then(response => {
             assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body, null, 2));
@@ -317,7 +316,7 @@ describe('http proxy stubs', () => {
                 protocol: 'http',
                 port: originServerPort,
                 stubs: [originServerStub],
-                name: `${requestName} origin server`
+                name: 'origin server'
             },
             proxyDefinition = {
                 to: `http://localhost:${originServerPort}`,
@@ -325,7 +324,7 @@ describe('http proxy stubs', () => {
                 predicateGenerators: [{ matches: { path: true } }]
             },
             proxyStub = { responses: [{ proxy: proxyDefinition }] },
-            proxyRequest = { protocol: 'http', port, stubs: [proxyStub], name: `${requestName} proxy` };
+            proxyRequest = { protocol: 'http', port, stubs: [proxyStub], name: 'proxy' };
 
         return api.post('/imposters', originServerRequest).then(() => api.post('/imposters', proxyRequest)).then(response => {
             assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body));
@@ -422,11 +421,11 @@ describe('http proxy stubs', () => {
                 protocol: 'http',
                 port: originServerPort,
                 stubs: [originServerStub],
-                name: `${requestName} origin`
+                name: 'origin'
             },
             proxyResponse = { proxy: { to: `http://localhost:${originServerPort}` } },
             proxyStub = { responses: [proxyResponse] },
-            proxyRequest = { protocol: 'http', port, stubs: [proxyStub], name: `${requestName} proxy` };
+            proxyRequest = { protocol: 'http', port, stubs: [proxyStub], name: 'proxy' };
 
         return api.post('/imposters', originServerRequest).then(() => api.post('/imposters', proxyRequest)).then(response => {
             assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body, null, 2));
@@ -443,7 +442,7 @@ describe('http proxy stubs', () => {
                 protocol: 'http',
                 port: originServerPort,
                 stubs: [originServerStub],
-                name: `${requestName} origin`
+                name: 'origin'
             },
             decorator = (request, response) => {
                 response.body += ' decorated';
@@ -452,7 +451,7 @@ describe('http proxy stubs', () => {
                 proxy: { to: `http://localhost:${originServerPort}` },
                 _behaviors: { decorate: decorator.toString() }
             }] },
-            proxyRequest = { protocol: 'http', port, stubs: [proxyStub], name: `${requestName} proxy` };
+            proxyRequest = { protocol: 'http', port, stubs: [proxyStub], name: 'proxy' };
 
         return api.post('/imposters', originServerRequest).then(response => {
             assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body, null, 2));
@@ -471,7 +470,7 @@ describe('http proxy stubs', () => {
     if (!airplaneMode) {
         promiseIt('should support http proxy to https server', () => {
             const proxyStub = { responses: [{ proxy: { to: 'https://google.com' } }] },
-                proxyRequest = { protocol: 'http', port, stubs: [proxyStub], name: `${requestName} proxy` };
+                proxyRequest = { protocol: 'http', port, stubs: [proxyStub], name: 'proxy' };
 
             return api.post('/imposters', proxyRequest).then(response => {
                 assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body, null, 2));
@@ -487,7 +486,7 @@ describe('http proxy stubs', () => {
 
         promiseIt('should maintain case of headers from origin', () => {
             const proxyStub = { responses: [{ proxy: { to: 'http://google.com' } }] },
-                proxyRequest = { protocol: 'http', port, stubs: [proxyStub], name: `${requestName} proxy` },
+                proxyRequest = { protocol: 'http', port, stubs: [proxyStub], name: 'proxy' },
                 isUpperCase = header => header[0] === header[0].toUpperCase();
 
             return api.post('/imposters', proxyRequest).then(response => {
@@ -547,7 +546,7 @@ describe('http proxy stubs', () => {
                 protocol: 'http',
                 port: originServerPort,
                 stubs: [originServerStub],
-                name: `${requestName} origin`
+                name: 'origin'
             },
             proxyStub = { responses: [{ proxy: {
                 to: `http://localhost:${originServerPort}`,
@@ -560,7 +559,7 @@ describe('http proxy stubs', () => {
                     }
                 }]
             } }] },
-            proxyRequest = { protocol: 'http', port, stubs: [proxyStub], name: `${requestName} proxy` };
+            proxyRequest = { protocol: 'http', port, stubs: [proxyStub], name: 'proxy' };
 
         return api.post('/imposters', originServerRequest).then(response => {
             assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body, null, 2));
@@ -586,7 +585,7 @@ describe('http proxy stubs', () => {
                 protocol: 'http',
                 port: originServerPort,
                 stubs: [originServerStub],
-                name: `${requestName} origin`
+                name: 'origin'
             },
             decorator = (request, response) => {
                 response.body += ' decorated';
@@ -594,7 +593,7 @@ describe('http proxy stubs', () => {
             proxyStub = { responses: [{
                 proxy: { to: `http://localhost:${originServerPort}`, addDecorateBehavior: decorator.toString() }
             }] },
-            proxyRequest = { protocol: 'http', port, stubs: [proxyStub], name: `${requestName} proxy` };
+            proxyRequest = { protocol: 'http', port, stubs: [proxyStub], name: 'proxy' };
 
         return api.post('/imposters', originServerRequest).then(response => {
             assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body, null, 2));
