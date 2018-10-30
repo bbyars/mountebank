@@ -1,6 +1,6 @@
 'use strict';
 
-var fs = require('fs-extra'),
+const fs = require('fs-extra'),
     os = require('os'),
     rimraf = require('rimraf'),
     version = require('./version').getVersion(),
@@ -15,7 +15,7 @@ module.exports = function (grunt) {
     }
 
     grunt.registerTask('dist', 'Create trimmed down distribution directory', function () {
-        var done = this.async(),
+        const done = this.async(),
             newPackage = JSON.parse(JSON.stringify(require('../package.json'))),
             failed = failTask('dist');
 
@@ -39,7 +39,7 @@ module.exports = function (grunt) {
     });
 
     grunt.registerTask('version', 'Set the version number', function () {
-        var newPackage = require('../dist/mountebank/package.json');
+        const newPackage = require('../dist/mountebank/package.json');
 
         newPackage.version = version;
         console.log('Using version ' + version);
@@ -56,7 +56,7 @@ module.exports = function (grunt) {
     });
 
     grunt.registerTask('dist:npm', 'Create npm tarball', function () {
-        var filename = 'mountebank-v' + version + '-npm.tar.gz';
+        const filename = 'mountebank-v' + version + '-npm.tar.gz';
 
         run('tar', ['czf', filename, 'mountebank'], { cwd: 'dist' }).done(this.async(), failTask('dist:npm'));
     });

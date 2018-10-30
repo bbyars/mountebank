@@ -2,18 +2,18 @@
 
 /** @module */
 
-function toEpochWithoutTime (text) {
+const toEpochWithoutTime = text => {
     // be sure to exclude time so we get accurate text
-    var dateTextWithoutTime = new Date(Date.parse(text)).toDateString();
+    const dateTextWithoutTime = new Date(Date.parse(text)).toDateString();
     return Date.parse(dateTextWithoutTime);
-}
+};
 
-function sameMonth (firstEpoch, secondEpoch) {
-    var first = new Date(firstEpoch),
+const sameMonth = (firstEpoch, secondEpoch) => {
+    const first = new Date(firstEpoch),
         second = new Date(secondEpoch);
 
     return first.getFullYear() === second.getFullYear() && first.getMonth() === second.getMonth();
-}
+};
 
 /**
  * Translates the distance between two dates within a month of each other to human readable text
@@ -21,8 +21,8 @@ function sameMonth (firstEpoch, secondEpoch) {
  * @param {string} testNowText - Ignore, used for testing purposes only.
  * @returns {string}
  */
-function howLongAgo (thenText, testNowText) {
-    var nowText = testNowText ? testNowText : new Date(Date.now()).toISOString(), // testNow is just for testing purposes
+const howLongAgo = (thenText, testNowText) => {
+    const nowText = testNowText ? testNowText : new Date(Date.now()).toISOString(), // testNow is just for testing purposes
         then = toEpochWithoutTime(thenText),
         now = toEpochWithoutTime(nowText),
         millisecondsInDay = 24 * 60 * 60 * 1000,
@@ -46,8 +46,6 @@ function howLongAgo (thenText, testNowText) {
     else {
         return '';
     }
-}
-
-module.exports = {
-    howLongAgo: howLongAgo
 };
+
+module.exports = { howLongAgo };

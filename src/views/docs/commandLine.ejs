@@ -243,7 +243,7 @@ mb --configfile templates/imposters.ejs --allowInjection
 
 <p>templates/originServerResponse.ejs</p>
 <pre><code>
-function (request, state, logger) {
+(request, state, logger) => {
     logger.info('origin called');
     state.requests = state.requests || 0;
     state.requests += 1;
@@ -313,17 +313,17 @@ function (request, state, logger, callback) {
             path: request.path,
             headers: request.headers
         },
-        httpRequest = http.request(options, function (response) {
+        httpRequest = http.request(options, response => {
             var body = '';
             response.setEncoding('utf8');
-            response.on('data', function (chunk) {
+            response.on('data', chunk => {
                 body += chunk;
             });
-            response.on('end', function () {
+            response.on('end', () => {
                 var stubResponse = {
                         statusCode: response.statusCode,
                         headers: response.headers,
-                        body: body
+                        body
                     };
                 logger.info('Successfully proxied: ' + JSON.stringify(stubResponse));
                 state.requests[cacheKey] = stubResponse;

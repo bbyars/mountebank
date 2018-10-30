@@ -171,7 +171,7 @@ Content-Type: application/json
   "protocol": "http",
   "name": "origin",
   "stubs": [{
-    "responses": [{ "inject": "function (request, state, logger) {\n    logger.info('origin called');\n    state.requests = state.requests || 0;\n    state.requests += 1;\n    return {\n      headers: {\n        'Content-Type': 'application/json'\n      },\n      body: JSON.stringify({ count: state.requests })\n    };\n}" }]
+    "responses": [{ "inject": "(request, state, logger) => {\n    logger.info('origin called');\n    state.requests = state.requests || 0;\n    state.requests += 1;\n    return {\n      headers: {\n        'Content-Type': 'application/json'\n      },\n      body: JSON.stringify({ count: state.requests })\n    };\n}" }]
   }]
 }</code></pre>
     </step>
@@ -180,7 +180,7 @@ Content-Type: application/json
 uses the <code>state</code> parameter, and sets the <code>requests</code>
 field on it to return how many times it's been called:</p>
 
-<pre><code>function (request, state, logger) {
+<pre><code>(request, state, logger) => {
     logger.info('origin called');
     state.requests = state.requests || 0;
     state.requests += 1;
@@ -210,7 +210,7 @@ Content-Type: application/json
       "responses": [{ "inject": "function (request, state) {\n    var count = state.requests ? Object.keys(state.requests).length : 0,\n        util = require('util');\n\n    return {\n        body: util.format('There have been %s proxied calls', count)\n    };\n}" }]
     },
     {
-      "responses": [{ "inject": "function (request, state, logger, callback) {\n    var cacheKey = request.method + ' ' + request.path;\n\n    if (typeof state.requests === 'undefined') {\n        state.requests = {};\n    }\n\n    if (state.requests[cacheKey]) {\n        logger.info('Using previous response');\n        callback(state.requests[cacheKey]);\n    }\n\n    var http = require('http'),\n        options = {\n            method: request.method,\n            hostname: 'localhost',\n            port: 5555,\n            path: request.path,\n            headers: request.headers\n        },\n        httpRequest = http.request(options, function (response) {\n            var body = '';\n            response.setEncoding('utf8');\n            response.on('data', function (chunk) {\n                body += chunk;\n            });\n            response.on('end', function () {\n                var stubResponse = {\n                        statusCode: response.statusCode,\n                        headers: response.headers,\n                        body: body\n                    };\n                logger.info('Successfully proxied: ' + JSON.stringify(stubResponse));\n                state.requests[cacheKey] = stubResponse;\n                callback(stubResponse);\n            });\n        });\n    httpRequest.end();\n}" }]
+      "responses": [{ "inject": "function (request, state, logger, callback) {\n    var cacheKey = request.method + ' ' + request.path;\n\n    if (typeof state.requests === 'undefined') {\n        state.requests = {};\n    }\n\n    if (state.requests[cacheKey]) {\n        logger.info('Using previous response');\n        callback(state.requests[cacheKey]);\n    }\n\n    var http = require('http'),\n        options = {\n            method: request.method,\n            hostname: 'localhost',\n            port: 5555,\n            path: request.path,\n            headers: request.headers\n        },\n        httpRequest = http.request(options, response => {\n            var body = '';\n            response.setEncoding('utf8');\n            response.on('data', chunk => {\n                body += chunk;\n            });\n            response.on('end', () => {\n                var stubResponse = {\n                        statusCode: response.statusCode,\n                        headers: response.headers,\n                        body: body\n                    };\n                logger.info('Successfully proxied: ' + JSON.stringify(stubResponse));\n                state.requests[cacheKey] = stubResponse;\n                callback(stubResponse);\n            });\n        });\n    httpRequest.end();\n}" }]
     }
   ]
 }</code></pre>
@@ -256,17 +256,17 @@ that takes advantage of the runtime environment.</p>
             path: request.path,
             headers: request.headers
         },
-        httpRequest = http.request(options, function (response) {
+        httpRequest = http.request(options, response => {
             var body = '';
             response.setEncoding('utf8');
-            response.on('data', function (chunk) {
+            response.on('data', chunk => {
                 body += chunk;
             });
-            response.on('end', function () {
+            response.on('end', () => {
                 var stubResponse = {
                         statusCode: response.statusCode,
                         headers: response.headers,
-                        body: body
+                        body
                     };
                 logger.info('Successfully proxied: ' + JSON.stringify(stubResponse));
                 state.requests[cacheKey] = stubResponse;

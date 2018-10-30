@@ -1,36 +1,36 @@
 'use strict';
 
-var assert = require('assert'),
+const assert = require('assert'),
     predicates = require('../../../src/models/predicates');
 
-describe('predicates', function () {
-    describe('treating strings as json', function () {
-        it('#equals should be false if field does not equal given value', function () {
-            var predicate = { equals: { field: { key: 'VALUE' } } },
+describe('predicates', () => {
+    describe('treating strings as json', () => {
+        it('#equals should be false if field does not equal given value', () => {
+            const predicate = { equals: { field: { key: 'VALUE' } } },
                 request = { field: 'KEY: VALUE' };
             assert.ok(!predicates.evaluate(predicate, request));
         });
 
-        it('#equals should be true if JSON string value equals JSON predicate', function () {
-            var predicate = { equals: { field: { key: 'VALUE' } } },
+        it('#equals should be true if JSON string value equals JSON predicate', () => {
+            const predicate = { equals: { field: { key: 'VALUE' } } },
                 request = { field: '{ "key": "VALUE" }' };
             assert.ok(predicates.evaluate(predicate, request));
         });
 
-        it('#equals should be false if JSON string value does not equal JSON predicate', function () {
-            var predicate = { equals: { field: { key: 'VALUE' } } },
+        it('#equals should be false if JSON string value does not equal JSON predicate', () => {
+            const predicate = { equals: { field: { key: 'VALUE' } } },
                 request = { field: 'Not value' };
             assert.ok(!predicates.evaluate(predicate, request));
         });
 
-        it('#equals should be true if JSON string value equals JSON predicate except for case', function () {
-            var predicate = { equals: { field: { KEY: 'value' } } },
+        it('#equals should be true if JSON string value equals JSON predicate except for case', () => {
+            const predicate = { equals: { field: { KEY: 'value' } } },
                 request = { field: '{ "key": "VALUE" }' };
             assert.ok(predicates.evaluate(predicate, request));
         });
 
-        it('#equals should not be true if JSON string value case different and caseSensitive is true', function () {
-            var predicate = {
+        it('#equals should not be true if JSON string value case different and caseSensitive is true', () => {
+            const predicate = {
                     equals: { field: { KEY: 'value' } },
                     caseSensitive: true
                 },
@@ -38,8 +38,8 @@ describe('predicates', function () {
             assert.ok(!predicates.evaluate(predicate, request));
         });
 
-        it('#equals should equal if case-sensitive predicate matches, stripping out the exception', function () {
-            var predicate = {
+        it('#equals should equal if case-sensitive predicate matches, stripping out the exception', () => {
+            const predicate = {
                     equals: { field: { key: 'VE' } },
                     caseSensitive: true,
                     except: 'ALU'
@@ -48,8 +48,8 @@ describe('predicates', function () {
             assert.ok(predicates.evaluate(predicate, request));
         });
 
-        it('#equals should not equal if case-sensitive predicate matches, but stripped values differ', function () {
-            var predicate = {
+        it('#equals should not equal if case-sensitive predicate matches, but stripped values differ', () => {
+            const predicate = {
                     equals: { field: { key: 'V' } },
                     caseSensitive: true,
                     except: 'ALU'
@@ -58,26 +58,26 @@ describe('predicates', function () {
             assert.ok(!predicates.evaluate(predicate, request));
         });
 
-        it('#deepEquals should be false if field is not JSON and JSON predicate used', function () {
-            var predicate = { deepEquals: { field: { key: 'VALUE' } } },
+        it('#deepEquals should be false if field is not JSON and JSON predicate used', () => {
+            const predicate = { deepEquals: { field: { key: 'VALUE' } } },
                 request = { field: '"key": "VALUE"' };
             assert.ok(!predicates.evaluate(predicate, request));
         });
 
-        it('#deepEquals should equal value in provided JSON attribute', function () {
-            var predicate = { deepEquals: { field: { key: 'VALUE' } } },
+        it('#deepEquals should equal value in provided JSON attribute', () => {
+            const predicate = { deepEquals: { field: { key: 'VALUE' } } },
                 request = { field: '{"key": "VALUE"}' };
             assert.ok(predicates.evaluate(predicate, request));
         });
 
-        it('#deepEquals should be false if value in provided JSON predicate does not equal', function () {
-            var predicate = { deepEquals: { field: { key: 'test' } } },
+        it('#deepEquals should be false if value in provided JSON predicate does not equal', () => {
+            const predicate = { deepEquals: { field: { key: 'test' } } },
                 request = { field: '{ "key": "VALUE"}' };
             assert.ok(!predicates.evaluate(predicate, request));
         });
 
-        it('#deepEquals should be true if all values in a JSON predicate match are present', function () {
-            var predicate = {
+        it('#deepEquals should be true if all values in a JSON predicate match are present', () => {
+            const predicate = {
                     deepEquals: {
                         field: {
                             key: 'value',
@@ -89,8 +89,8 @@ describe('predicates', function () {
             assert.ok(predicates.evaluate(predicate, request));
         });
 
-        it('#deepEquals should be false if some values in a multi-value JSON predicate match are missing', function () {
-            var predicate = {
+        it('#deepEquals should be false if some values in a multi-value JSON predicate match are missing', () => {
+            const predicate = {
                     deepEquals: {
                         field: {
                             key: 'value',
@@ -102,20 +102,20 @@ describe('predicates', function () {
             assert.ok(!predicates.evaluate(predicate, request));
         });
 
-        it('#deepEquals should be true if all array values in a JSON predicate match are present regardless of order', function () {
-            var predicate = { deepEquals: { field: { key: [2, 1, 3] } } },
+        it('#deepEquals should be true if all array values in a JSON predicate match are present regardless of order', () => {
+            const predicate = { deepEquals: { field: { key: [2, 1, 3] } } },
                 request = { field: '{"key": [3, 1, 2] }' };
             assert.ok(predicates.evaluate(predicate, request));
         });
 
-        it('#contains should be true if JSON value contains predicate', function () {
-            var predicate = { contains: { field: { key: 'alu' } } },
+        it('#contains should be true if JSON value contains predicate', () => {
+            const predicate = { contains: { field: { key: 'alu' } } },
                 request = { field: '{ "key": "VALUE" }' };
             assert.ok(predicates.evaluate(predicate, request));
         });
 
-        it('#contains should be false if JSON value does not contain predicate', function () {
-            var predicate = {
+        it('#contains should be false if JSON value does not contain predicate', () => {
+            const predicate = {
                     contains: { field: { key: 'VALUE' } },
                     caseSensitive: true
                 },
@@ -123,141 +123,141 @@ describe('predicates', function () {
             assert.ok(!predicates.evaluate(predicate, request));
         });
 
-        it('#startsWith should be true if JSON field starts with value', function () {
-            var predicate = { startsWith: { field: { key: 'Harry' } } },
+        it('#startsWith should be true if JSON field starts with value', () => {
+            const predicate = { startsWith: { field: { key: 'Harry' } } },
                 request = { field: '{"key": "Harry Potter"}' };
             assert.ok(predicates.evaluate(predicate, request));
         });
 
-        it('#startsWith should be false if JSON field does not start with value', function () {
-            var predicate = { startsWith: { field: { key: 'Potter' } } },
+        it('#startsWith should be false if JSON field does not start with value', () => {
+            const predicate = { startsWith: { field: { key: 'Potter' } } },
                 request = { field: '{"key":"Harry Potter"}' };
             assert.ok(!predicates.evaluate(predicate, request));
         });
 
-        it('#endsWith should be true if JSON field ends with predicate', function () {
-            var predicate = { endsWith: { field: { key: 'Potter' } } },
+        it('#endsWith should be true if JSON field ends with predicate', () => {
+            const predicate = { endsWith: { field: { key: 'Potter' } } },
                 request = { field: '{"key": "Harry Potter"}' };
             assert.ok(predicates.evaluate(predicate, request));
         });
 
-        it('#endsWith should be false if JSON field does not end with predicate', function () {
-            var predicate = { endsWith: { field: { key: 'Harry' } } },
+        it('#endsWith should be false if JSON field does not end with predicate', () => {
+            const predicate = { endsWith: { field: { key: 'Harry' } } },
                 request = { field: '{"key": "Harry Potter"}' };
             assert.ok(!predicates.evaluate(predicate, request));
         });
 
-        it('#equals should be true if any array element equals the predicate value', function () {
-            var predicate = { equals: { field: { key: 'Second' } } },
+        it('#equals should be true if any array element equals the predicate value', () => {
+            const predicate = { equals: { field: { key: 'Second' } } },
                 request = { field: '{"key": ["First", "Second", "Third"] }' };
             assert.ok(predicates.evaluate(predicate, request));
         });
 
-        it('#equals should be false if no array elements match the predicate value', function () {
+        it('#equals should be false if no array elements match the predicate value', () => {
             // despite namespace aliases matching, urls do not
-            var predicate = { equals: { field: { key: 'Second' } } },
+            const predicate = { equals: { field: { key: 'Second' } } },
                 request = { field: '{"key": ["first", "third"] }' };
             assert.ok(!predicates.evaluate(predicate, request));
         });
 
-        it('#matches should be false if field is not JSON', function () {
-            var predicate = { matches: { field: { key: 'VALUE' } } },
+        it('#matches should be false if field is not JSON', () => {
+            const predicate = { matches: { field: { key: 'VALUE' } } },
                 request = { field: '"key": "value"' };
             assert.ok(!predicates.evaluate(predicate, request));
         });
 
-        it('#matches should be true if selected JSON value matches regex', function () {
-            var predicate = { matches: { field: { key: '^v' } } },
+        it('#matches should be true if selected JSON value matches regex', () => {
+            const predicate = { matches: { field: { key: '^v' } } },
                 request = { field: '{"key": "Value"}' };
             assert.ok(predicates.evaluate(predicate, request));
         });
 
-        it('#matches should be false if selected JSON value does not match regex', function () {
-            var predicate = { matches: { field: { key: 'v$' } } },
+        it('#matches should be false if selected JSON value does not match regex', () => {
+            const predicate = { matches: { field: { key: 'v$' } } },
                 request = { field: '{"key":"value"}' };
             assert.ok(!predicates.evaluate(predicate, request));
         });
 
-        it('#exists should be true if JSON key exists', function () {
-            var predicate = { exists: { field: { key: true } } },
+        it('#exists should be true if JSON key exists', () => {
+            const predicate = { exists: { field: { key: true } } },
                 request = { field: '{"key":"exists"}' };
             assert.ok(predicates.evaluate(predicate, request));
         });
 
-        it('#exists should be false if JSON key does not exist', function () {
-            var predicate = { exists: { field: { key: true } } },
+        it('#exists should be false if JSON key does not exist', () => {
+            const predicate = { exists: { field: { key: true } } },
                 request = { field: '{}' };
             assert.ok(!predicates.evaluate(predicate, request));
         });
 
-        it('#exists should be true if JSON array key exists', function () {
-            var predicate = { exists: { field: { key: true } } },
+        it('#exists should be true if JSON array key exists', () => {
+            const predicate = { exists: { field: { key: true } } },
                 request = { field: '{"key": []}' };
             assert.ok(predicates.evaluate(predicate, request));
         });
 
-        it('#equals should be true if matches key for any object in array', function () {
-            var predicate = { equals: { examples: { key: 'third' } } },
+        it('#equals should be true if matches key for any object in array', () => {
+            const predicate = { equals: { examples: { key: 'third' } } },
                 request = { examples: '[{ "key": "first" }, { "different": true }, { "key": "third" }]' };
             assert.ok(predicates.evaluate(predicate, request));
         });
 
-        it('#equals should be false if all keys in an array do not match', function () {
-            var predicate = { equals: { examples: { key: true } } },
+        it('#equals should be false if all keys in an array do not match', () => {
+            const predicate = { equals: { examples: { key: true } } },
                 request = { examples: '[{ "key": "first" }, { "different": true }, { "key": "third" }]' };
             assert.ok(!predicates.evaluate(predicate, request));
         });
 
-        it('#equals should be true if null value for key matches', function () {
-            var predicate = { equals: { json: { key: null } } },
+        it('#equals should be true if null value for key matches', () => {
+            const predicate = { equals: { json: { key: null } } },
                 request = { json: '{ "key": null }' };
             assert.ok(predicates.evaluate(predicate, request));
         });
 
-        it('#deepEquals should be true if all objects in an array have fields equaling predicate', function () {
-            var predicate = { deepEquals: { examples: [{ key: 'first' }, { key: 'second' }] } },
+        it('#deepEquals should be true if all objects in an array have fields equaling predicate', () => {
+            const predicate = { deepEquals: { examples: [{ key: 'first' }, { key: 'second' }] } },
                 request = { examples: '[{ "key": "first" }, { "key": "second" }]' };
             assert.ok(predicates.evaluate(predicate, request));
         });
 
-        it('#deepEquals should be false if missing an object in an array in request', function () {
-            var predicate = { deepEquals: { examples: [{ key: 'first' }, { key: 'second' }] } },
+        it('#deepEquals should be false if missing an object in an array in request', () => {
+            const predicate = { deepEquals: { examples: [{ key: 'first' }, { key: 'second' }] } },
                 request = { examples: '[{ "key": "first" }, { "different": true }, { "key": "second" }]' };
             assert.ok(!predicates.evaluate(predicate, request));
         });
 
-        it('#deepEquals should be true if all objects in an array have fields equaling predicate regardless of order', function () {
-            var predicate = { deepEquals: { examples: [{ key: 'second' }, { key: 'first' }] } },
+        it('#deepEquals should be true if all objects in an array have fields equaling predicate regardless of order', () => {
+            const predicate = { deepEquals: { examples: [{ key: 'second' }, { key: 'first' }] } },
                 request = { examples: '[{ "key": "first" }, { "key": "second" }]' };
             assert.ok(predicates.evaluate(predicate, request));
         });
 
-        it('#matches should support upper case object key in JSON body (issue #228)', function () {
-            var predicate = { matches: { body: { Key: '^Value' } } },
+        it('#matches should support upper case object key in JSON body (issue #228)', () => {
+            const predicate = { matches: { body: { Key: '^Value' } } },
                 request = { body: '{ "Key": "Value" }' };
             assert.ok(predicates.evaluate(predicate, request));
         });
 
-        it('#matches should support case-insensitive key matching in JSON body', function () {
-            var predicate = { matches: { body: { KEY: '^Value' } } },
+        it('#matches should support case-insensitive key matching in JSON body', () => {
+            const predicate = { matches: { body: { KEY: '^Value' } } },
                 request = { body: '{ "Key": "Value" }' };
             assert.ok(predicates.evaluate(predicate, request));
         });
 
-        it('#matches should support case sensitive key matching in JSON body is case sensitive configured', function () {
-            var predicate = { matches: { body: { KEY: '^Value' } }, caseSensitive: true },
+        it('#matches should support case sensitive key matching in JSON body is case sensitive configured', () => {
+            const predicate = { matches: { body: { KEY: '^Value' } }, caseSensitive: true },
                 request = { body: '{ "Key": "Value" }' };
             assert.ok(!predicates.evaluate(predicate, request));
         });
 
-        it('#deepEquals should support case-insensitive key in JSON body', function () {
-            var predicate = { deepEquals: { body: { KEY: 'Value' } } },
+        it('#deepEquals should support case-insensitive key in JSON body', () => {
+            const predicate = { deepEquals: { body: { KEY: 'Value' } } },
                 request = { body: '{ "Key": "value" }' };
             assert.ok(predicates.evaluate(predicate, request));
         });
 
-        it('#deepEquals should support case-sensitive key in JSON body if case sensitive configured', function () {
-            var predicate = { deepEquals: { body: { KEY: 'Value' } }, caseSensitive: true },
+        it('#deepEquals should support case-sensitive key in JSON body if case sensitive configured', () => {
+            const predicate = { deepEquals: { body: { KEY: 'Value' } }, caseSensitive: true },
                 request = { body: '{ "Key": "value" }' };
             assert.ok(!predicates.evaluate(predicate, request));
         });

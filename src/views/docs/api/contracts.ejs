@@ -4,7 +4,7 @@ description = 'Contract specifications and descriptions'
 
 function indent (spaces) {
   var result = '';
-  for (var i = 0; i < spaces - 2; i++) {
+  for (let i = 0; i < spaces - 2; i++) {
     result += ' ';
   }
   return " <a title='Click to pin documentation on the right' class='thumbtack-icon'></a>" + result;
@@ -99,7 +99,7 @@ are only meaningful in the response; they will be ignored in any requests.</p>
 
     function contractType () {
       var query = location.search.substring(1).split('&');
-      for (var i = 0; i < query.length; i++) {
+      for (let i = 0; i < query.length; i++) {
         var key = query[i].split('=')[0],
             value = query[i].split('=')[1];
         if (key === 'type') {

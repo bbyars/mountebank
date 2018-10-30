@@ -11,7 +11,7 @@
  * @param {Function} createBaseServer - The function to create the http or https server
  * @returns {Object}
  */
-function setup (protocolName, createBaseServer) {
+const setup = (protocolName, createBaseServer) => {
     /**
      * Creates the http/s server, opening up the socket
      * @memberOf module:models/http/baseHttpServer#
@@ -19,11 +19,11 @@ function setup (protocolName, createBaseServer) {
      * @param {Object} options - Creation options
      * @returns {Object}
      */
-    function createServer (logger, options) {
+    const createServer = (logger, options) => {
 
-        function postProcess (stubResponse, request) {
+        const postProcess = (stubResponse, request) => {
             /* eslint complexity: 0 */
-            var headersHelper = require('./headersHelper'),
+            const headersHelper = require('./headersHelper'),
                 defaultResponse = options.defaultResponse || {},
                 defaultHeaders = defaultResponse.headers || {},
                 response = {
@@ -41,7 +41,7 @@ function setup (protocolName, createBaseServer) {
             }
 
             if (options.allowCORS) {
-                var requestHeaders = headersHelper.getJar(request.headers),
+                const requestHeaders = headersHelper.getJar(request.headers),
                     isCrossOriginPreflight = request.method === 'OPTIONS' &&
                         requestHeaders.get('Access-Control-Request-Headers') &&
                         requestHeaders.get('Access-Control-Request-Method') &&
@@ -70,29 +70,27 @@ function setup (protocolName, createBaseServer) {
             }
 
             return response;
-        }
+        };
 
-        var combinators = require('../../util/combinators'),
+        const combinators = require('../../util/combinators'),
             proxy = require('./httpProxy').create(logger),
             resolver = require('../responseResolver').create(proxy, postProcess),
             stubs = require('../stubRepository').create(resolver, options.debug, 'utf8'),
             baseServer = createBaseServer(options),
             result = require('../../util/inherit').from(require('events').EventEmitter, {
-                errorHandler: function (error, container) {
+                errorHandler: (error, container) => {
                     container.response.writeHead(500, { 'content-type': 'application/json' });
                     container.response.end(JSON.stringify({ errors: [error] }), 'utf8');
                 },
-                formatRequestShort: function (container) {
-                    return container.request.method + ' ' + container.request.url;
-                },
+                formatRequestShort: container => `${container.request.method} ${container.request.url}`,
                 formatRequest: combinators.identity,
                 formatResponse: combinators.identity,
-                respond: function (httpRequest, container) {
-                    var helpers = require('../../util/helpers'),
+                respond: (httpRequest, container) => {
+                    const helpers = require('../../util/helpers'),
                         scopedLogger = logger.withScope(helpers.socketName(container.request.socket));
 
-                    return stubs.resolve(httpRequest, scopedLogger, this.state).then(function (stubResponse) {
-                        var mode = stubResponse._mode ? stubResponse._mode : 'text',
+                    return stubs.resolve(httpRequest, scopedLogger, this.state).then(stubResponse => {
+                        const mode = stubResponse._mode ? stubResponse._mode : 'text',
                             encoding = mode === 'binary' ? 'base64' : 'utf8';
 
                         container.response.writeHead(stubResponse.statusCode, stubResponse.headers);
@@ -108,23 +106,23 @@ function setup (protocolName, createBaseServer) {
             }),
             server = baseServer.createNodeServer();
 
-        server.on('connection', function (socket) { result.emit('connection', socket); });
+        server.on('connection', socket => { result.emit('connection', socket); });
 
-        server.on('request', function (request, response) {
-            var container = { request: request, response: response };
+        server.on('request', (request, response) => {
+            const container = { request: request, response: response };
             result.emit('request', request.socket, container);
         });
 
-        result.close = function (callback) { server.close(callback); };
+        result.close = callback => { server.close(callback); };
 
-        result.listen = function (port) {
-            var deferred = require('q').defer();
-            server.listen(port, function () { deferred.resolve(server.address().port); });
+        result.listen = port => {
+            const deferred = require('q').defer();
+            server.listen(port, () => { deferred.resolve(server.address().port); });
             return deferred.promise;
         };
 
         return result;
-    }
+    };
 
     /**
      * Initializes the http/s server.  I'm certainly not in love with the layers of creation
@@ -136,8 +134,8 @@ function setup (protocolName, createBaseServer) {
      * @param {boolean} debug - The --debug command line parameter
      * @returns {Object}
      */
-    function initialize (baseLogger, allowInjection, recordRequests, debug) {
-        var implementation = {
+    const initialize = (baseLogger, allowInjection, recordRequests, debug) => {
+        const implementation = {
             protocolName: protocolName,
             createServer: createServer,
             Request: require('./httpRequest')
@@ -147,27 +145,21 @@ function setup (protocolName, createBaseServer) {
             name: protocolName,
             create: require('../abstractServer').implement(implementation, recordRequests, debug, baseLogger).create,
             Validator: {
-                create: function () {
-                    return require('../dryRunValidator').create({
-                        StubRepository: require('../stubRepository'),
-                        testRequest: require('./httpRequest').createTestRequest(),
-                        testProxyResponse: {
-                            statusCode: 200,
-                            headers: {},
-                            body: ''
-                        },
-                        allowInjection: allowInjection
-                    });
-                }
+                create: () => require('../dryRunValidator').create({
+                    StubRepository: require('../stubRepository'),
+                    testRequest: require('./httpRequest').createTestRequest(),
+                    testProxyResponse: {
+                        statusCode: 200,
+                        headers: {},
+                        body: ''
+                    },
+                    allowInjection: allowInjection
+                })
             }
         };
-    }
-
-    return {
-        initialize: initialize
     };
-}
 
-module.exports = {
-    setup: setup
+    return { initialize };
 };
+
+module.exports = { setup };

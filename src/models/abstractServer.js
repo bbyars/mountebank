@@ -20,37 +20,37 @@
  * @param {Object} baseLogger - The logger
  * @returns {Object}
  */
-function implement (implementation, recordRequests, debug, baseLogger) {
+const implement = (implementation, recordRequests, debug, baseLogger) => {
     /**
      * Creates the protocol-specific server
      * @memberOf module:models/abstractServer#
      * @param {Object} options - The startup options
      * @returns {Object} - The interface for all protocols
      */
-    function create (options) {
+    const create = options => {
         options.recordRequests = options.recordRequests || recordRequests;
         options.debug = debug;
 
-        function scopeFor (port) {
-            var util = require('util'),
-                scope = util.format('%s:%s', implementation.protocolName, port);
+        const scopeFor = port => {
+            const util = require('util');
+            let scope = util.format('%s:%s', implementation.protocolName, port);
 
             if (options.name) {
-                scope += ' ' + options.name;
+                scope += ` ${options.name}`;
             }
             return scope;
-        }
+        };
 
-        var Q = require('q'),
+        let numRequests = 0;
+        const Q = require('q'),
             deferred = Q.defer(),
             requests = [],
-            numRequests = 0,
             logger = require('../util/scopedLogger').create(baseLogger, scopeFor(options.port)),
             server = implementation.createServer(logger, options),
             connections = {};
 
-        server.on('connection', function (socket) {
-            var helpers = require('../util/helpers'),
+        server.on('connection', socket => {
+            const helpers = require('../util/helpers'),
                 name = helpers.socketName(socket);
 
             logger.debug('%s ESTABLISHED', name);
@@ -58,27 +58,27 @@ function implement (implementation, recordRequests, debug, baseLogger) {
             if (socket.on) {
                 connections[name] = socket;
 
-                socket.on('error', function (error) {
+                socket.on('error', error => {
                     logger.error('%s transmission error X=> %s', name, JSON.stringify(error));
                 });
 
-                socket.on('end', function () {
+                socket.on('end', () => {
                     logger.debug('%s LAST-ACK', name);
                 });
 
-                socket.on('close', function () {
+                socket.on('close', () => {
                     logger.debug('%s CLOSED', name);
                     delete connections[name];
                 });
             }
         });
 
-        server.on('request', function (socket, request, testCallback) {
-            var domain = require('domain').create(),
+        server.on('request', (socket, request, testCallback) => {
+            const domain = require('domain').create(),
                 helpers = require('../util/helpers'),
                 clientName = helpers.socketName(socket),
-                errorHandler = function (error) {
-                    var exceptions = require('../util/errors');
+                errorHandler = error => {
+                    const exceptions = require('../util/errors');
                     logger.error('%s X=> %s', clientName, JSON.stringify(exceptions.details(error)));
                     server.errorHandler(exceptions.details(error), request);
                     if (testCallback) {
@@ -89,17 +89,17 @@ function implement (implementation, recordRequests, debug, baseLogger) {
             logger.info('%s => %s', clientName, server.formatRequestShort(request));
 
             domain.on('error', errorHandler);
-            domain.run(function () {
-                implementation.Request.createFrom(request).then(function (simpleRequest) {
+            domain.run(() => {
+                implementation.Request.createFrom(request).then(simpleRequest => {
                     logger.debug('%s => %s', clientName, JSON.stringify(server.formatRequest(simpleRequest)));
                     numRequests += 1;
                     if (options.recordRequests) {
-                        var recordedRequest = helpers.clone(simpleRequest);
+                        const recordedRequest = helpers.clone(simpleRequest);
                         recordedRequest.timestamp = new Date().toJSON();
                         requests.push(recordedRequest);
                     }
                     return server.respond(simpleRequest, request);
-                }).done(function (response) {
+                }).done(response => {
                     if (response) {
                         logger.debug('%s <= %s', clientName, JSON.stringify(server.formatResponse(response)));
                     }
@@ -110,8 +110,8 @@ function implement (implementation, recordRequests, debug, baseLogger) {
             });
         });
 
-        server.listen(options.port || 0).done(function (actualPort) {
-            var metadata = server.metadata(options);
+        server.listen(options.port || 0).done(actualPort => {
+            const metadata = server.metadata(options);
             if (options.name) {
                 metadata.name = options.name;
             }
@@ -126,23 +126,23 @@ function implement (implementation, recordRequests, debug, baseLogger) {
              * This is the interface for all protocols
              */
             deferred.resolve({
-                numberOfRequests: function () { return numRequests; },
-                requests: requests,
+                numberOfRequests: () => numRequests,
+                requests,
                 addStub: server.addStub,
                 stubs: server.stubs,
-                metadata: metadata,
+                metadata,
                 port: actualPort,
-                deleteRequests: function () {
+                deleteRequests: () => {
                     numRequests = 0;
                     server.deleteRequests();
                 },
-                close: function () {
-                    var closeDeferred = Q.defer();
-                    server.close(function () {
+                close: () => {
+                    const closeDeferred = Q.defer();
+                    server.close(() => {
                         logger.info('Ciao for now');
                         closeDeferred.resolve();
                     });
-                    Object.keys(connections).forEach(function (socket) {
+                    Object.keys(connections).forEach(socket => {
                         connections[socket].destroy();
                     });
                     return closeDeferred.promise;
@@ -151,13 +151,11 @@ function implement (implementation, recordRequests, debug, baseLogger) {
         });
 
         return deferred.promise;
-    }
+    };
 
     return {
-        create: create
+        create
     };
-}
-
-module.exports = {
-    implement: implement
 };
+
+module.exports = { implement };

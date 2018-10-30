@@ -1,22 +1,22 @@
 'use strict';
 
-var assert = require('assert'),
+const assert = require('assert'),
     mock = require('../mock').mock,
     Imposter = require('../../src/models/imposter'),
     Q = require('q'),
     promiseIt = require('../testHelpers').promiseIt;
 
-describe('imposter', function () {
-    describe('#create', function () {
-        var Protocol, metadata, server;
+describe('imposter', () => {
+    describe('#create', () => {
+        let Protocol, metadata, server;
 
-        beforeEach(function () {
+        beforeEach(() => {
             metadata = {};
             server = {
                 requests: [],
                 addStub: mock(),
                 stubs: mock().returns([]),
-                metadata: metadata,
+                metadata,
                 state: { foo: 'bar' },
                 numberOfRequests: mock().returns(0)
             };
@@ -27,18 +27,18 @@ describe('imposter', function () {
             };
         });
 
-        promiseIt('should return url', function () {
+        promiseIt('should return url', () => {
             server.port = 3535;
 
-            return Imposter.create(Protocol, {}).then(function (imposter) {
+            return Imposter.create(Protocol, {}).then(imposter => {
                 assert.strictEqual(imposter.url, '/imposters/3535');
             });
         });
 
-        promiseIt('should return trimmed down JSON for lists', function () {
+        promiseIt('should return trimmed down JSON for lists', () => {
             server.port = 3535;
 
-            return Imposter.create(Protocol, {}).then(function (imposter) {
+            return Imposter.create(Protocol, {}).then(imposter => {
                 assert.deepEqual(imposter.toJSON({ list: true }), {
                     protocol: 'http',
                     port: 3535,
@@ -48,10 +48,10 @@ describe('imposter', function () {
             });
         });
 
-        promiseIt('should return full JSON representation by default', function () {
+        promiseIt('should return full JSON representation by default', () => {
             server.port = 3535;
 
-            return Imposter.create(Protocol, {}).then(function (imposter) {
+            return Imposter.create(Protocol, {}).then(imposter => {
                 assert.deepEqual(imposter.toJSON(), {
                     protocol: 'http',
                     port: 3535,
@@ -63,11 +63,11 @@ describe('imposter', function () {
             });
         });
 
-        promiseIt('should add protocol metadata to JSON representation', function () {
+        promiseIt('should add protocol metadata to JSON representation', () => {
             server.port = 3535;
             metadata.key = 'value';
 
-            return Imposter.create(Protocol, {}).then(function (imposter) {
+            return Imposter.create(Protocol, {}).then(imposter => {
                 assert.deepEqual(imposter.toJSON(), {
                     protocol: 'http',
                     port: 3535,
@@ -80,11 +80,11 @@ describe('imposter', function () {
             });
         });
 
-        promiseIt('should provide replayable JSON representation', function () {
+        promiseIt('should provide replayable JSON representation', () => {
             server.port = 3535;
             metadata.key = 'value';
 
-            return Imposter.create(Protocol, {}).then(function (imposter) {
+            return Imposter.create(Protocol, {}).then(imposter => {
                 assert.deepEqual(imposter.toJSON({ replayable: true }), {
                     protocol: 'http',
                     port: 3535,
@@ -94,17 +94,17 @@ describe('imposter', function () {
             });
         });
 
-        promiseIt('should create protocol server on provided port with options', function () {
+        promiseIt('should create protocol server on provided port with options', () => {
             server.port = 3535;
 
-            return Imposter.create(Protocol, { key: 'value' }).then(function () {
+            return Imposter.create(Protocol, { key: 'value' }).then(() => {
                 assert(Protocol.create.wasCalledWith({ key: 'value' }));
             });
         });
 
-        promiseIt('should return list of stubs', function () {
+        promiseIt('should return list of stubs', () => {
             server.stubs = mock().returns([{ responses: ['FIRST'] }, { responses: ['SECOND'] }]);
-            return Imposter.create(Protocol, {}).then(function (imposter) {
+            return Imposter.create(Protocol, {}).then(imposter => {
                 assert.deepEqual(imposter.toJSON().stubs, [
                     { responses: ['FIRST'] },
                     { responses: ['SECOND'] }
@@ -112,7 +112,7 @@ describe('imposter', function () {
             });
         });
 
-        promiseIt('replayable JSON should remove stub matches', function () {
+        promiseIt('replayable JSON should remove stub matches', () => {
             server.stubs = mock().returns([
                 {
                     responses: ['FIRST'],
@@ -125,7 +125,7 @@ describe('imposter', function () {
             ]);
             server.port = 3535;
 
-            return Imposter.create(Protocol, {}).then(function (imposter) {
+            return Imposter.create(Protocol, {}).then(imposter => {
                 assert.deepEqual(imposter.toJSON({ replayable: true }), {
                     protocol: 'http',
                     port: 3535,
@@ -135,11 +135,11 @@ describe('imposter', function () {
             });
         });
 
-        promiseIt('replayable JSON should remove _proxyResponseTime fields', function () {
+        promiseIt('replayable JSON should remove _proxyResponseTime fields', () => {
             server.stubs = mock().returns([{ responses: [{ is: { body: 'body', _proxyResponseTime: 3 } }] }]);
             server.port = 3535;
 
-            return Imposter.create(Protocol, {}).then(function (imposter) {
+            return Imposter.create(Protocol, {}).then(imposter => {
                 assert.deepEqual(imposter.toJSON({ replayable: true }), {
                     protocol: 'http',
                     port: 3535,
@@ -148,7 +148,7 @@ describe('imposter', function () {
             });
         });
 
-        promiseIt('should remove proxies from responses if asked', function () {
+        promiseIt('should remove proxies from responses if asked', () => {
             server.stubs = mock().returns([
                 {
                     responses: [
@@ -163,7 +163,7 @@ describe('imposter', function () {
                     ]
                 }
             ]);
-            return Imposter.create(Protocol, {}).then(function (imposter) {
+            return Imposter.create(Protocol, {}).then(imposter => {
                 assert.deepEqual(imposter.toJSON({ removeProxies: true }).stubs, [
                     {
                         responses: [
@@ -180,7 +180,7 @@ describe('imposter', function () {
             });
         });
 
-        promiseIt('should remove empty stubs after proxy removal', function () {
+        promiseIt('should remove empty stubs after proxy removal', () => {
             server.stubs = mock().returns([
                 {
                     responses: [
@@ -195,7 +195,7 @@ describe('imposter', function () {
                     ]
                 }
             ]);
-            return Imposter.create(Protocol, {}).then(function (imposter) {
+            return Imposter.create(Protocol, {}).then(imposter => {
                 assert.deepEqual(imposter.toJSON({ removeProxies: true }).stubs, [
                     {
                         responses: [

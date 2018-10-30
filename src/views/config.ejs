@@ -12,7 +12,7 @@ description = 'The version, command line parameters, and process information abo
     <td>version</td>
     <td><%= version %></td>
   </tr>
-<% Object.keys(options).forEach(function (key) { %>
+<% Object.keys(options).forEach(key =>{ %>
   <tr>
     <td><%= key %></td>
     <td><%= options[key] %></td>

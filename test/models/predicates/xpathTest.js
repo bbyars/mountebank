@@ -1,12 +1,12 @@
 'use strict';
 
-var assert = require('assert'),
+const assert = require('assert'),
     predicates = require('../../../src/models/predicates');
 
-describe('predicates', function () {
-    describe('xpath', function () {
-        it('#equals should be false if field is not XML', function () {
-            var predicate = {
+describe('predicates', () => {
+    describe('xpath', () => {
+        it('#equals should be false if field is not XML', () => {
+            const predicate = {
                     equals: { field: 'VALUE' },
                     xpath: { selector: '//title' }
                 },
@@ -14,8 +14,8 @@ describe('predicates', function () {
             assert.ok(!predicates.evaluate(predicate, request));
         });
 
-        it('#equals should be false if field is empty', function () {
-            var predicate = {
+        it('#equals should be false if field is empty', () => {
+            const predicate = {
                     equals: { field: 'VALUE' },
                     xpath: { selector: '//title' }
                 },
@@ -23,8 +23,8 @@ describe('predicates', function () {
             assert.ok(!predicates.evaluate(predicate, request));
         });
 
-        it('#equals should be true if value in provided xpath expression', function () {
-            var predicate = {
+        it('#equals should be true if value in provided xpath expression', () => {
+            const predicate = {
                     equals: { field: 'VALUE' },
                     xpath: { selector: '//title' }
                 },
@@ -32,8 +32,8 @@ describe('predicates', function () {
             assert.ok(predicates.evaluate(predicate, request));
         });
 
-        it('#equals should be false if value provided xpath expression does not equal', function () {
-            var predicate = {
+        it('#equals should be false if value provided xpath expression does not equal', () => {
+            const predicate = {
                     equals: { field: 'NOT VALUE' },
                     xpath: { selector: '//title' }
                 },
@@ -41,8 +41,8 @@ describe('predicates', function () {
             assert.ok(!predicates.evaluate(predicate, request));
         });
 
-        it('#equals should use case-insensitive xpath selector by default', function () {
-            var predicate = {
+        it('#equals should use case-insensitive xpath selector by default', () => {
+            const predicate = {
                     equals: { field: 'VALUE' },
                     xpath: { selector: '//Title' }
                 },
@@ -50,8 +50,8 @@ describe('predicates', function () {
             assert.ok(predicates.evaluate(predicate, request));
         });
 
-        it('#equals should not equal if case-sensitive xpath selector does not match', function () {
-            var predicate = {
+        it('#equals should not equal if case-sensitive xpath selector does not match', () => {
+            const predicate = {
                     equals: { field: 'value' },
                     xpath: { selector: '//Title' },
                     caseSensitive: true
@@ -60,8 +60,8 @@ describe('predicates', function () {
             assert.ok(!predicates.evaluate(predicate, request));
         });
 
-        it('#equals should equal if case-sensitive xpath selector matches', function () {
-            var predicate = {
+        it('#equals should equal if case-sensitive xpath selector matches', () => {
+            const predicate = {
                     equals: { field: 'value' },
                     xpath: { selector: '//Title' },
                     caseSensitive: true
@@ -70,8 +70,8 @@ describe('predicates', function () {
             assert.ok(predicates.evaluate(predicate, request));
         });
 
-        it('#equals should equal if case-sensitive xpath selector matches, stripping out the exception', function () {
-            var predicate = {
+        it('#equals should equal if case-sensitive xpath selector matches, stripping out the exception', () => {
+            const predicate = {
                     equals: { field: 've' },
                     xpath: { selector: '//Title' },
                     caseSensitive: true,
@@ -81,8 +81,8 @@ describe('predicates', function () {
             assert.ok(predicates.evaluate(predicate, request));
         });
 
-        it('#equals should not equal if case-sensitive xpath selector matches, but stripped values differ', function () {
-            var predicate = {
+        it('#equals should not equal if case-sensitive xpath selector matches, but stripped values differ', () => {
+            const predicate = {
                     equals: { field: 'v' },
                     xpath: { selector: '//Title' },
                     caseSensitive: true,
@@ -92,8 +92,8 @@ describe('predicates', function () {
             assert.ok(!predicates.evaluate(predicate, request));
         });
 
-        it('#deepEquals should be false if field is not XML and xpath selector used', function () {
-            var predicate = {
+        it('#deepEquals should be false if field is not XML and xpath selector used', () => {
+            const predicate = {
                     deepEquals: { field: 'VALUE' },
                     xpath: { selector: '//title' }
                 },
@@ -101,8 +101,8 @@ describe('predicates', function () {
             assert.ok(!predicates.evaluate(predicate, request));
         });
 
-        it('#deepEquals should equal value in provided xpath attribute', function () {
-            var predicate = {
+        it('#deepEquals should equal value in provided xpath attribute', () => {
+            const predicate = {
                     deepEquals: { field: 'VALUE' },
                     xpath: { selector: '//title/@href' }
                 },
@@ -110,8 +110,8 @@ describe('predicates', function () {
             assert.ok(predicates.evaluate(predicate, request));
         });
 
-        it('#deepEquals should be false if value in provided xpath attribute expression does not equal', function () {
-            var predicate = {
+        it('#deepEquals should be false if value in provided xpath attribute expression does not equal', () => {
+            const predicate = {
                     deepEquals: { field: 'NOT VALUE' },
                     xpath: { selector: '//title/@attr' }
                 },
@@ -119,8 +119,8 @@ describe('predicates', function () {
             assert.ok(!predicates.evaluate(predicate, request));
         });
 
-        it('#deepEquals should be true if all values in a multi-value selector match are present', function () {
-            var predicate = {
+        it('#deepEquals should be true if all values in a multi-value selector match are present', () => {
+            const predicate = {
                     deepEquals: { field: ['first', 'second'] },
                     xpath: { selector: '//title' }
                 },
@@ -128,8 +128,8 @@ describe('predicates', function () {
             assert.ok(predicates.evaluate(predicate, request));
         });
 
-        it('#deepEquals should be false if some values in a multi-value selector match are missing', function () {
-            var predicate = {
+        it('#deepEquals should be false if some values in a multi-value selector match are missing', () => {
+            const predicate = {
                     deepEquals: { field: ['first', 'second'] },
                     xpath: { selector: '//title' }
                 },
@@ -137,8 +137,8 @@ describe('predicates', function () {
             assert.ok(!predicates.evaluate(predicate, request));
         });
 
-        it('#deepEquals should be true if values in a multi-value selector match are out of order', function () {
-            var predicate = {
+        it('#deepEquals should be true if values in a multi-value selector match are out of order', () => {
+            const predicate = {
                     deepEquals: { field: ['first', 'second'] },
                     xpath: { selector: '//title' }
                 },
@@ -146,8 +146,8 @@ describe('predicates', function () {
             assert.ok(predicates.evaluate(predicate, request));
         });
 
-        it('#contains should be true if direct text value contains predicate', function () {
-            var predicate = {
+        it('#contains should be true if direct text value contains predicate', () => {
+            const predicate = {
                     contains: { field: 'value' },
                     xpath: { selector: '//title/text()' }
                 },
@@ -155,8 +155,8 @@ describe('predicates', function () {
             assert.ok(predicates.evaluate(predicate, request));
         });
 
-        it('#contains should be false if direct text value does not contain predicate', function () {
-            var predicate = {
+        it('#contains should be false if direct text value does not contain predicate', () => {
+            const predicate = {
                     contains: { field: 'VALUE' },
                     xpath: { selector: '//title/text()' },
                     caseSensitive: true
@@ -165,8 +165,8 @@ describe('predicates', function () {
             assert.ok(!predicates.evaluate(predicate, request));
         });
 
-        it('#startsWith should be true if direct namespaced xpath selection starts with value', function () {
-            var predicate = {
+        it('#startsWith should be true if direct namespaced xpath selection starts with value', () => {
+            const predicate = {
                     startsWith: { field: 'Harry' },
                     xpath: { selector: '//*[local-name(.)="title" and namespace-uri(.)="myns"]' }
                 },
@@ -174,8 +174,8 @@ describe('predicates', function () {
             assert.ok(predicates.evaluate(predicate, request));
         });
 
-        it('#startsWith should be false if direct namespaced xpath selection does not start with value', function () {
-            var predicate = {
+        it('#startsWith should be false if direct namespaced xpath selection does not start with value', () => {
+            const predicate = {
                     startsWith: { field: 'Potter' },
                     xpath: { selector: '//*[local-name(.)="title" and namespace-uri(.)="myns"]' }
                 },
@@ -183,8 +183,8 @@ describe('predicates', function () {
             assert.ok(!predicates.evaluate(predicate, request));
         });
 
-        it('#startsWith should be false if direct namespaced xpath selection does not match', function () {
-            var predicate = {
+        it('#startsWith should be false if direct namespaced xpath selection does not match', () => {
+            const predicate = {
                     startsWith: { field: 'Harry' },
                     xpath: { selector: '//*[local-name(.)="title" and namespace-uri(.)="myns"]' }
                 },
@@ -192,8 +192,8 @@ describe('predicates', function () {
             assert.ok(!predicates.evaluate(predicate, request));
         });
 
-        it('#endsWith should be true if aliased namespace match endsWith predicate', function () {
-            var predicate = {
+        it('#endsWith should be true if aliased namespace match endsWith predicate', () => {
+            const predicate = {
                     endsWith: { field: 'Potter' },
                     xpath: {
                         selector: '//bookml:title/text()',
@@ -206,8 +206,8 @@ describe('predicates', function () {
             assert.ok(predicates.evaluate(predicate, request));
         });
 
-        it('#endsWith should be true if aliased namespace match but has capital letters in URL', function () {
-            var predicate = {
+        it('#endsWith should be true if aliased namespace match but has capital letters in URL', () => {
+            const predicate = {
                     endsWith: { field: 'Potter' },
                     xpath: {
                         selector: '//bookml:title/text()',
@@ -220,8 +220,8 @@ describe('predicates', function () {
             assert.ok(predicates.evaluate(predicate, request));
         });
 
-        it('#equals should be true if caseSensitive and namespace has capital letters in URL', function () {
-            var predicate = {
+        it('#equals should be true if caseSensitive and namespace has capital letters in URL', () => {
+            const predicate = {
                     equals: { field: 'Harry Potter' },
                     caseSensitive: true,
                     xpath: {
@@ -233,8 +233,8 @@ describe('predicates', function () {
             assert.ok(predicates.evaluate(predicate, request));
         });
 
-        it('#endsWith should be false if aliased namespace match does not end with predicate', function () {
-            var predicate = {
+        it('#endsWith should be false if aliased namespace match does not end with predicate', () => {
+            const predicate = {
                     endsWith: { field: 'Harry' },
                     xpath: {
                         selector: '//bookml:title/text()',
@@ -247,8 +247,8 @@ describe('predicates', function () {
             assert.ok(!predicates.evaluate(predicate, request));
         });
 
-        it('#equals should be true if any matched node equals the predicate value', function () {
-            var predicate = {
+        it('#equals should be true if any matched node equals the predicate value', () => {
+            const predicate = {
                     equals: { field: 'Second' },
                     xpath: {
                         selector: '//a:child',
@@ -268,9 +268,9 @@ describe('predicates', function () {
             assert.ok(predicates.evaluate(predicate, request));
         });
 
-        it('#equals should be false if no nodes match the selector', function () {
+        it('#equals should be false if no nodes match the selector', () => {
             // despite namespace aliases matching, urls do not
-            var predicate = {
+            const predicate = {
                     equals: { field: 'Second' },
                     xpath: {
                         selector: '//a:child',
@@ -290,8 +290,8 @@ describe('predicates', function () {
             assert.ok(!predicates.evaluate(predicate, request));
         });
 
-        it('#matches should be false if field is not XML', function () {
-            var predicate = {
+        it('#matches should be false if field is not XML', () => {
+            const predicate = {
                     matches: { field: 'VALUE' },
                     xpath: { selector: '//title' }
                 },
@@ -299,8 +299,8 @@ describe('predicates', function () {
             assert.ok(!predicates.evaluate(predicate, request));
         });
 
-        it('#matches should be true if selected value matches regex', function () {
-            var predicate = {
+        it('#matches should be true if selected value matches regex', () => {
+            const predicate = {
                     matches: { field: '^v' },
                     xpath: { selector: '//title' }
                 },
@@ -308,8 +308,8 @@ describe('predicates', function () {
             assert.ok(predicates.evaluate(predicate, request));
         });
 
-        it('#matches should be false if selected value does not match regex', function () {
-            var predicate = {
+        it('#matches should be false if selected value does not match regex', () => {
+            const predicate = {
                     matches: { field: 'v$' },
                     xpath: { selector: '//title' }
                 },
@@ -317,9 +317,9 @@ describe('predicates', function () {
             assert.ok(!predicates.evaluate(predicate, request));
         });
 
-        it('should throw an error if encoding is base64', function () {
+        it('should throw an error if encoding is base64', () => {
             try {
-                var predicate = {
+                const predicate = {
                         equals: { field: 'dGVzdA==' },
                         xpath: { selector: 'dGVzdA==' }
                     },
@@ -333,8 +333,8 @@ describe('predicates', function () {
             }
         });
 
-        it('#exists should be true if xpath selector has at least one result', function () {
-            var predicate = {
+        it('#exists should be true if xpath selector has at least one result', () => {
+            const predicate = {
                     exists: { field: true },
                     xpath: { selector: '//title' }
                 },
@@ -342,8 +342,8 @@ describe('predicates', function () {
             assert.ok(predicates.evaluate(predicate, request));
         });
 
-        it('#exists should be false if xpath selector does not match', function () {
-            var predicate = {
+        it('#exists should be false if xpath selector does not match', () => {
+            const predicate = {
                     exists: { field: true },
                     xpath: { selector: '//title' }
                 },
@@ -351,9 +351,9 @@ describe('predicates', function () {
             assert.ok(!predicates.evaluate(predicate, request));
         });
 
-        it('should throw error if xpath selector is malformed', function () {
+        it('should throw error if xpath selector is malformed', () => {
             try {
-                var predicate = {
+                const predicate = {
                         equals: { field: 'value' },
                         xpath: { selector: '=*INVALID*=' }
                     },
@@ -367,8 +367,8 @@ describe('predicates', function () {
             }
         });
 
-        it('should accept numbers using count()', function () {
-            var predicate = {
+        it('should accept numbers using count()', () => {
+            const predicate = {
                     equals: { field: 2 },
                     xpath: { selector: 'count(//title)' }
                 },
@@ -376,8 +376,8 @@ describe('predicates', function () {
             assert.ok(predicates.evaluate(predicate, request));
         });
 
-        it('should accept booleans returning false', function () {
-            var predicate = {
+        it('should accept booleans returning false', () => {
+            const predicate = {
                     equals: { field: false },
                     xpath: { selector: 'boolean(//title)' }
                 },
@@ -385,8 +385,8 @@ describe('predicates', function () {
             assert.ok(predicates.evaluate(predicate, request));
         });
 
-        it('should return true if node exists even if no data in the node (issue #163)', function () {
-            var predicate = {
+        it('should return true if node exists even if no data in the node (issue #163)', () => {
+            const predicate = {
                     exists: { field: true },
                     xpath: { selector: '//book' }
                 },
@@ -394,8 +394,8 @@ describe('predicates', function () {
             assert.ok(predicates.evaluate(predicate, request));
         });
 
-        it('should return false if node does not exist (issue #163)', function () {
-            var predicate = {
+        it('should return false if node does not exist (issue #163)', () => {
+            const predicate = {
                     exists: { field: true },
                     xpath: { selector: '//book' }
                 },
@@ -403,8 +403,8 @@ describe('predicates', function () {
             assert.ok(!predicates.evaluate(predicate, request));
         });
 
-        it('should return true if node exists with child node data (issue #163)', function () {
-            var predicate = {
+        it('should return true if node exists with child node data (issue #163)', () => {
+            const predicate = {
                     exists: { field: true },
                     xpath: { selector: '//book' }
                 },
@@ -412,8 +412,8 @@ describe('predicates', function () {
             assert.ok(predicates.evaluate(predicate, request));
         });
 
-        it('should support array predicates', function () {
-            var predicate = {
+        it('should support array predicates', () => {
+            const predicate = {
                     equals: { field: ['first', 'third', 'second'] },
                     xpath: { selector: '//value' }
                 },
@@ -421,8 +421,8 @@ describe('predicates', function () {
             assert.ok(predicates.evaluate(predicate, request));
         });
 
-        it('#matches without case sensitivity should maintain selector to match XML (test for issue #361, already worked)', function () {
-            var predicate = {
+        it('#matches without case sensitivity should maintain selector to match XML (test for issue #361, already worked)', () => {
+            const predicate = {
                     matches: { body: '111\\.222\\.333\\.*' },
                     xpath: { selector: '/ipAddress' }
                 },

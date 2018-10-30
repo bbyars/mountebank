@@ -1,12 +1,12 @@
 'use strict';
 
-var assert = require('assert'),
+const assert = require('assert'),
     compatibility = require('../../src/models/compatibility');
 
-describe('compatibility', function () {
-    describe('#upcast', function () {
-        it('should change string shellTransform to array', function () {
-            var request = {
+describe('compatibility', () => {
+    describe('#upcast', () => {
+        it('should change string shellTransform to array', () => {
+            const request = {
                 stubs: [{
                     responses: [{
                         _behaviors: { shellTransform: 'command' }

@@ -9,7 +9,7 @@ description = 'Information about a specific mountebank imposter'
 
 <h2>Requests</h2>
 
-<% imposter.requests.forEach(function (request) { -%>
+<% imposter.requests.forEach(request => { -%>
   <pre><code>
     <%= request.method %> <%= request.path %> HTTP/1.1
 <% Object.keys(request.headers).forEach(function (name) { -%>
@@ -24,7 +24,7 @@ description = 'Information about a specific mountebank imposter'
 
 <h2>Stubs</h2>
 
-<% imposter.stubs.forEach(function (stub) { -%>
+<% imposter.stubs.forEach(stub => { -%>
   <pre><code>
     <%= JSON.stringify(stub, null, 2) %>
   </code></pre>

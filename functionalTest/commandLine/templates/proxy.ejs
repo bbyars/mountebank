@@ -1,5 +1,5 @@
-function (request, state, logger, callback) {
-    var cacheKey = request.method + ' ' + request.path;
+(request, state, logger, callback) => {
+    const cacheKey = request.method + ' ' + request.path;
 
     if (typeof state.requests === 'undefined') {
         state.requests = {};
@@ -10,7 +10,7 @@ function (request, state, logger, callback) {
         callback(state.requests[cacheKey]);
     }
 
-    var http = require('http'),
+    const http = require('http'),
         options = {
             method: request.method,
             hostname: 'localhost',
@@ -18,17 +18,17 @@ function (request, state, logger, callback) {
             path: request.path,
             headers: request.headers
         },
-        httpRequest = http.request(options, function (response) {
-            var body = '';
+        httpRequest = http.request(options, response => {
+            let body = '';
             response.setEncoding('utf8');
-            response.on('data', function (chunk) {
+            response.on('data', (chunk) => {
                 body += chunk;
             });
-            response.on('end', function () {
-                var stubResponse = {
+            response.on('end', () => {
+                const stubResponse = {
                         statusCode: response.statusCode,
                         headers: response.headers,
-                        body: body
+                        body
                     };
                 logger.info('Successfully proxied: ' + JSON.stringify(stubResponse));
                 state.requests[cacheKey] = stubResponse;

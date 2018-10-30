@@ -27,7 +27,7 @@ Content-Type: application/json
     {
       "responses": [{ "is": { "data": "c2Vjb25kIHJlc3BvbnNl" } }],
       "predicates": [{
-        "inject": "function (request) { return new Buffer(request.data, 'base64')[2] &lt;= 100; }"
+        "inject": "request => { return new Buffer(request.data, 'base64')[2] &lt;= 100; }"
       }]
     }</strong>
   ]
