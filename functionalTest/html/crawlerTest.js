@@ -9,7 +9,7 @@ if (process.env.MB_AIRPLANE_MODE !== 'true' && process.env.MB_RUN_WEB_TESTS === 
             if (!contentType) {
                 return true;
             }
-            return ['text/html', 'application/atom+xml', 'text/plain'].some(type => contentType.indexOf(type) >= 0);
+            return ['text/html', 'application/atom+xml', 'text/plain', 'application/octet-stream'].some(type => contentType.indexOf(type) >= 0);
         },
         isLocalLink = link => link.indexOf(api.url) === 0,
         expectedStatusCode = (link, statusCode) =>
