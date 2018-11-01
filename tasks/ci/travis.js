@@ -13,7 +13,7 @@ const responseFor = options => {
 
     options.hostname = 'api.travis-ci.org';
     options.headers = options.headers || {};
-    options.headers.Authorization = `token${apiToken}`;
+    options.headers.Authorization = `token ${apiToken}`;
     options.headers.Accept = 'application/vnd.travis-ci.2+json';
 
     const request = https.request(options, response => {
