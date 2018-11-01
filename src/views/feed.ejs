@@ -17,7 +17,7 @@
     <uri>http://<%= host %></uri>
   </author>
 
-<% releases.forEach(function (release) { %>
+<% releases.forEach(release => { %>
   <entry>
     <title>mountebank <%= release.version %> release</title>
     <id>http://<%= host %>/releases/<%= release.version %></id>

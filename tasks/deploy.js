@@ -1,13 +1,13 @@
 'use strict';
 
-var run = require('./run').run,
+const run = require('./run').run,
     publish = process.env.MB_PUBLISH === 'true',
     version = require('./version').getVersion();
 
 module.exports = function (grunt) {
 
     function failTask (task) {
-        return function (exitCode) {
+        return exitCode => {
             grunt.warn(task + ' failed', exitCode);
         };
     }
@@ -24,7 +24,7 @@ module.exports = function (grunt) {
         run('scripts/deploy/deployNpm', [publish]).done(this.async(), failTask('deploy:npm'));
     });
 
-    grunt.registerTask('deploy:docs', 'Deploy source docs to BitBalloon', function () {
+    grunt.registerTask('deploy:docs', 'Deploy source docs', function () {
         run('scripts/deploy/deployFirebase', [version]).done(this.async(), failTask('deploy:docs'));
     });
 };

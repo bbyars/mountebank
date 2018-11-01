@@ -1,8 +1,8 @@
 'use strict';
 
-var port = process.env.MB_PORT || 2525;
+const port = process.env.MB_PORT || 2525;
 
-module.exports = function (grunt) {
+module.exports = grunt => {
 
     require('time-grunt')(grunt);
 
@@ -111,7 +111,7 @@ module.exports = function (grunt) {
         }
     });
 
-    grunt.registerTask('setAirplaneMode', function () {
+    grunt.registerTask('setAirplaneMode', () => {
         process.env.MB_AIRPLANE_MODE = 'true';
     });
 

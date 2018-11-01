@@ -13,13 +13,13 @@
  */
 function useAbsoluteUrls (port) {
     return function (request, response, next) {
-        var setHeaderOriginal = response.setHeader,
+        const setHeaderOriginal = response.setHeader,
             sendOriginal = response.send,
-            host = request.headers.host || 'localhost:' + port,
-            absolutize = function (link) { return 'http://' + host + link; };
+            host = request.headers.host || `localhost:${port}`,
+            absolutize = link => 'http://' + host + link;
 
         response.setHeader = function () {
-            var args = Array.prototype.slice.call(arguments);
+            const args = Array.prototype.slice.call(arguments);
 
             if (args[0] && args[0].toLowerCase() === 'location') {
                 args[1] = absolutize(args[1]);
@@ -28,7 +28,7 @@ function useAbsoluteUrls (port) {
         };
 
         response.send = function () {
-            var args = Array.prototype.slice.call(arguments),
+            const args = Array.prototype.slice.call(arguments),
                 body = args[0],
                 changeLinks = function (obj) {
                     if (obj._links) {
@@ -43,7 +43,7 @@ function useAbsoluteUrls (port) {
                         return;
                     }
                     fn(obj);
-                    Object.keys(obj).forEach(function (key) {
+                    Object.keys(obj).forEach(key => {
                         if (obj[key] && typeof obj[key] === 'object') {
                             traverse(obj[key], fn, key);
                         }
@@ -67,7 +67,7 @@ function useAbsoluteUrls (port) {
  */
 function createImposterValidator (imposters) {
     return function validateImposterExists (request, response, next) {
-        var errors = require('./errors'),
+        const errors = require('./errors'),
             imposter = imposters[request.params.id];
 
         if (imposter) {
@@ -90,7 +90,7 @@ function createImposterValidator (imposters) {
  */
 function logger (log, format) {
     function shouldLog (request) {
-        var isStaticAsset = (['.js', '.css', '.gif', '.png', '.ico'].some(function (fileType) {
+        const isStaticAsset = (['.js', '.css', '.gif', '.png', '.ico'].some(function (fileType) {
                 return request.url.indexOf(fileType) >= 0;
             })),
             isHtmlRequest = (request.headers.accept || '').indexOf('html') >= 0,
@@ -101,7 +101,7 @@ function logger (log, format) {
 
     return function (request, response, next) {
         if (shouldLog(request)) {
-            var message = format.replace(':method', request.method).replace(':url', request.url);
+            const message = format.replace(':method', request.method).replace(':url', request.url);
             log.info(message);
         }
         next();
@@ -116,9 +116,9 @@ function logger (log, format) {
  */
 function globals (vars) {
     return function (request, response, next) {
-        var originalRender = response.render;
+        const originalRender = response.render;
         response.render = function () {
-            var args = Array.prototype.slice.call(arguments),
+            const args = Array.prototype.slice.call(arguments),
                 variables = args[1] || {};
 
             Object.keys(vars).forEach(function (name) {
@@ -163,11 +163,11 @@ function json (log) {
     return function (request, response, next) {
         request.body = '';
         request.setEncoding('utf8');
-        request.on('data', function (chunk) {
+        request.on('data', chunk => {
             request.body += chunk;
         });
         request.on('end', function () {
-            var errors = require('./errors');
+            const errors = require('./errors');
 
             if (request.body === '') {
                 next();
@@ -190,11 +190,4 @@ function json (log) {
     };
 }
 
-module.exports = {
-    useAbsoluteUrls: useAbsoluteUrls,
-    createImposterValidator: createImposterValidator,
-    logger: logger,
-    globals: globals,
-    defaultIEtoHTML: defaultIEtoHTML,
-    json: json
-};
+module.exports = { useAbsoluteUrls, createImposterValidator, logger, globals, defaultIEtoHTML, json };

@@ -4,20 +4,9 @@
 // Many times I'd forget to add the errback, making
 // tests harder to fix when they failed because I'd
 // miss the assertion message.
-function wrap (test, that) {
-    return function (done) {
-        test.apply(that, []).done(function () { done(); }, done);
-    };
-}
+const wrap = (test, that) => done => test.apply(that, []).done(() => { done(); }, done);
+const promiseIt = (what, test) => it(what, wrap(test, { name: what }));
 
-function promiseIt (what, test) {
-    it(what, wrap(test, { name: what }));
-}
+promiseIt.only = (what, test) => it.only(what, wrap(test, { name: what }));
 
-promiseIt.only = function (what, test) {
-    it.only(what, wrap(test, { name: what }));
-};
-
-module.exports = {
-    promiseIt: promiseIt
-};
+module.exports = { promiseIt };

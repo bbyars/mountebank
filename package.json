@@ -1,7 +1,7 @@
 {
   "name": "mountebank",
   "preferGlobal": true,
-  "version": "1.15.0",
+  "version": "1.16.0",
   "author": "Brandon Byars <brandon.byars@gmail.com>",
   "contributors": [
     "Jason Reid <jason@jasonreid.com>",
@@ -47,7 +47,8 @@
     "Ed Thome <ethome@thoughtworks.com>",
     "Franz Wong <franzwong@gmail.com>",
     "Mario Giampietri <mario.giampietri@gmail.com>",
-    "leogtzr <leogutierrezramirez@gmail.com>"
+    "leogtzr <leogutierrezramirez@gmail.com>",
+    "Simon Brunning <simon@brunningonline.net>"
   ],
   "description": "Over the wire test doubles",
   "homepage": "http://www.mbtest.org",
@@ -87,6 +88,7 @@
     "csv-parse": "2.5.0",
     "ejs": "^2.6.1",
     "errorhandler": "1.5.0",
+    "escape-html": "^1.0.3",
     "express": "^4.16.3",
     "http-proxy-agent": "^2.1.0",
     "https-proxy-agent": "^2.2.1",
@@ -105,7 +107,7 @@
   "devDependencies": {
     "codeclimate-test-reporter": "^0.5.0",
     "firebase-tools": "^4.0.0",
-    "fs-extra": "6.0.1",
+    "fs-extra": "7.0.0",
     "grunt": "^1.0.3",
     "grunt-cli": "^1.2.0",
     "grunt-contrib-csslint": "~2.0.0",
@@ -116,7 +118,7 @@
     "grunt-mountebank": "1.0.7",
     "istanbul": "0.4.5",
     "jsdoc": "^3.5.5",
-    "jsdom": "~11.12.0",
+    "jsdom": "~12.0.0",
     "mocha": "5.2.0",
     "nc": "^1.0.2",
     "rimraf": "^2.6.2",

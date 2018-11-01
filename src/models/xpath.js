@@ -5,8 +5,8 @@
  * @module
  */
 
-function xpathSelect (selectFn, selector, doc) {
-    var errors = require('../util/errors'),
+const xpathSelect = (selectFn, selector, doc) => {
+    const errors = require('../util/errors'),
         helpers = require('../util/helpers');
 
     if (!helpers.defined(doc)) {
@@ -22,9 +22,9 @@ function xpathSelect (selectFn, selector, doc) {
             inner: e
         });
     }
-}
+};
 
-function nodeValue (node) {
+const nodeValue = node => {
     if (node.nodeType === node.TEXT_NODE) {
         return node.nodeValue;
     }
@@ -39,7 +39,7 @@ function nodeValue (node) {
     else {
         return String(node.data);
     }
-}
+};
 
 /**
  * Returns xpath value(s) from given xml
@@ -49,19 +49,19 @@ function nodeValue (node) {
  * @param {Object} logger - Optional, used to log XML parsing errors
  * @returns {Object}
  */
-function select (selector, ns, possibleXML, logger) {
-    var xpath = require('xpath'),
+const select = (selector, ns, possibleXML, logger) => {
+    const xpath = require('xpath'),
         DOMParser = require('xmldom').DOMParser,
         parser = new DOMParser({
-            errorHandler: function (level, message) {
-                var warn = (logger || {}).warn || function () {};
+            errorHandler: (level, message) => {
+                const warn = (logger || {}).warn || (() => {});
                 warn('%s (source: %s)', message, JSON.stringify(possibleXML));
             }
         }),
         doc = parser.parseFromString(possibleXML),
         selectFn = xpath.useNamespaces(ns || {}),
-        result = xpathSelect(selectFn, selector, doc),
-        nodeValues;
+        result = xpathSelect(selectFn, selector, doc);
+    let nodeValues;
 
     if (['number', 'boolean'].indexOf(typeof result) >= 0) {
         return result;
@@ -75,8 +75,6 @@ function select (selector, ns, possibleXML, logger) {
     else {
         return nodeValues;
     }
-}
-
-module.exports = {
-    select: select
 };
+
+module.exports = { select };

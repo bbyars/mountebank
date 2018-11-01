@@ -1,33 +1,31 @@
 'use strict';
 
-var assert = require('assert'),
+const assert = require('assert'),
     Validator = require('../../src/models/dryRunValidator'),
     promiseIt = require('../testHelpers').promiseIt,
     Logger = require('../fakes/fakeLogger'),
     BaseRepository = require('../../src/models/stubRepository'),
     testRequest = { requestFrom: '', path: '/', query: {}, method: 'GET', headers: {}, body: '' },
     StubRepository = {
-        create: function (proxy) {
-            return BaseRepository.create(proxy, function (stub) {
-                var response = {
-                    statusCode: stub.statusCode || 200,
-                    headers: stub.headers || {},
-                    body: stub.body || ''
-                };
+        create: proxy => BaseRepository.create(proxy, stub => {
+            const response = {
+                statusCode: stub.statusCode || 200,
+                headers: stub.headers || {},
+                body: stub.body || ''
+            };
 
-                response.headers.connection = 'close';
-                return response;
-            });
-        }
+            response.headers.connection = 'close';
+            return response;
+        })
     };
 
-describe('dryRunValidator', function () {
-    describe('#validate', function () {
-        promiseIt('should be valid for an empty request', function () {
-            var request = {},
+describe('dryRunValidator', () => {
+    describe('#validate', () => {
+        promiseIt('should be valid for an empty request', () => {
+            const request = {},
                 validator = Validator.create({ StubRepository: StubRepository, testRequest: testRequest });
 
-            return validator.validate(request, Logger.create()).then(function (result) {
+            return validator.validate(request, Logger.create()).then(result => {
                 assert.deepEqual(result, {
                     isValid: true,
                     errors: []
@@ -35,11 +33,11 @@ describe('dryRunValidator', function () {
             });
         });
 
-        promiseIt('should not be valid for a missing responses field', function () {
-            var request = { stubs: [{}] },
+        promiseIt('should not be valid for a missing responses field', () => {
+            const request = { stubs: [{}] },
                 validator = Validator.create({ StubRepository: StubRepository, testRequest: testRequest });
 
-            return validator.validate(request, Logger.create()).then(function (result) {
+            return validator.validate(request, Logger.create()).then(result => {
                 assert.deepEqual(result, {
                     isValid: false,
                     errors: [{
@@ -51,11 +49,11 @@ describe('dryRunValidator', function () {
             });
         });
 
-        promiseIt('should be valid for an empty stubs list', function () {
-            var request = { stubs: [] },
+        promiseIt('should be valid for an empty stubs list', () => {
+            const request = { stubs: [] },
                 validator = Validator.create({ StubRepository: StubRepository, testRequest: testRequest });
 
-            return validator.validate(request, Logger.create()).then(function (result) {
+            return validator.validate(request, Logger.create()).then(result => {
                 assert.deepEqual(result, {
                     isValid: true,
                     errors: []
@@ -63,11 +61,11 @@ describe('dryRunValidator', function () {
             });
         });
 
-        promiseIt('should be valid for valid stub', function () {
-            var request = { stubs: [{ responses: [{ is: { statusCode: 400 } }] }] },
+        promiseIt('should be valid for valid stub', () => {
+            const request = { stubs: [{ responses: [{ is: { statusCode: 400 } }] }] },
                 validator = Validator.create({ StubRepository: StubRepository, testRequest: testRequest });
 
-            return validator.validate(request, Logger.create()).then(function (result) {
+            return validator.validate(request, Logger.create()).then(result => {
                 assert.deepEqual(result, {
                     isValid: true,
                     errors: []
@@ -75,8 +73,8 @@ describe('dryRunValidator', function () {
             });
         });
 
-        promiseIt('should be valid for a valid predicate', function () {
-            var request = {
+        promiseIt('should be valid for a valid predicate', () => {
+            const request = {
                     stubs: [{
                         responses: [{ is: { body: 'test' } }],
                         predicates: [
@@ -89,7 +87,7 @@ describe('dryRunValidator', function () {
                 },
                 validator = Validator.create({ StubRepository: StubRepository, testRequest: testRequest });
 
-            return validator.validate(request, Logger.create()).then(function (result) {
+            return validator.validate(request, Logger.create()).then(result => {
                 assert.deepEqual(result, {
                     isValid: true,
                     errors: []
@@ -97,10 +95,10 @@ describe('dryRunValidator', function () {
             });
         });
 
-        promiseIt('should be valid for a well formed predicate inject if injections are allowed', function () {
-            var request = {
+        promiseIt('should be valid for a well formed predicate inject if injections are allowed', () => {
+            const request = {
                     stubs: [{
-                        predicates: [{ inject: 'function () { return true; }' }],
+                        predicates: [{ inject: '() => { return true; }' }],
                         responses: [{ is: { body: 'Matched' } }]
                     }]
                 },
@@ -110,7 +108,7 @@ describe('dryRunValidator', function () {
                     allowInjection: true
                 });
 
-            return validator.validate(request, Logger.create()).then(function (result) {
+            return validator.validate(request, Logger.create()).then(result => {
                 assert.deepEqual(result, {
                     isValid: true,
                     errors: []
@@ -118,10 +116,10 @@ describe('dryRunValidator', function () {
             });
         });
 
-        promiseIt('should be true for a well formed response inject if injections are allowed', function () {
-            var request = {
+        promiseIt('should be true for a well formed response inject if injections are allowed', () => {
+            const request = {
                     stubs: [{
-                        responses: [{ inject: 'function () { return {}; }' }]
+                        responses: [{ inject: '() => { return {}; }' }]
                     }]
                 },
                 validator = Validator.create({
@@ -130,7 +128,7 @@ describe('dryRunValidator', function () {
                     allowInjection: true
                 });
 
-            return validator.validate(request, Logger.create()).then(function (result) {
+            return validator.validate(request, Logger.create()).then(result => {
                 assert.deepEqual(result, {
                     isValid: true,
                     errors: []
@@ -138,8 +136,8 @@ describe('dryRunValidator', function () {
             });
         });
 
-        promiseIt('should be true for a well formed decorator behavior if injections are allowed', function () {
-            var decorator = function (request, response) {
+        promiseIt('should be true for a well formed decorator behavior if injections are allowed', () => {
+            const decorator = (request, response) => {
                     response.body = 'Hello';
                 },
                 request = {
@@ -153,7 +151,7 @@ describe('dryRunValidator', function () {
                     allowInjection: true
                 });
 
-            return validator.validate(request, Logger.create()).then(function (result) {
+            return validator.validate(request, Logger.create()).then(result => {
                 assert.deepEqual(result, {
                     isValid: true,
                     errors: []
@@ -161,10 +159,10 @@ describe('dryRunValidator', function () {
             });
         });
 
-        promiseIt('should not be valid for response injection if injections are disallowed', function () {
-            var request = {
+        promiseIt('should not be valid for response injection if injections are disallowed', () => {
+            const request = {
                     stubs: [{
-                        responses: [{ inject: 'function () { return {}; }' }]
+                        responses: [{ inject: '() => { return {}; }' }]
                     }]
                 },
                 validator = Validator.create({
@@ -173,7 +171,7 @@ describe('dryRunValidator', function () {
                     allowInjection: false
                 });
 
-            return validator.validate(request, Logger.create()).then(function (result) {
+            return validator.validate(request, Logger.create()).then(result => {
                 assert.deepEqual(result, {
                     isValid: false,
                     errors: [{
@@ -185,10 +183,10 @@ describe('dryRunValidator', function () {
             });
         });
 
-        promiseIt('should not be valid for predicate injections if allowInjection is false', function () {
-            var request = {
+        promiseIt('should not be valid for predicate injections if allowInjection is false', () => {
+            const request = {
                     stubs: [{
-                        predicates: [{ inject: 'function () { return true; }' }],
+                        predicates: [{ inject: '() => { return true; }' }],
                         responses: [{ is: { body: 'Matched' } }]
                     }]
                 },
@@ -198,7 +196,7 @@ describe('dryRunValidator', function () {
                     allowInjection: false
                 });
 
-            return validator.validate(request, Logger.create()).then(function (result) {
+            return validator.validate(request, Logger.create()).then(result => {
                 assert.deepEqual(result, {
                     isValid: false,
                     errors: [{
@@ -210,8 +208,8 @@ describe('dryRunValidator', function () {
             });
         });
 
-        promiseIt('should be false for a well formed decorator behavior if injections are not allowed', function () {
-            var decorator = function (request, response) {
+        promiseIt('should be false for a well formed decorator behavior if injections are not allowed', () => {
+            const decorator = (request, response) => {
                     response.body = 'Hello';
                 },
                 request = {
@@ -225,7 +223,7 @@ describe('dryRunValidator', function () {
                     allowInjection: false
                 });
 
-            return validator.validate(request, Logger.create()).then(function (result) {
+            return validator.validate(request, Logger.create()).then(result => {
                 assert.deepEqual(result, {
                     isValid: false,
                     errors: [{
@@ -237,15 +235,15 @@ describe('dryRunValidator', function () {
             });
         });
 
-        promiseIt('should be valid with a valid proxy response', function () {
-            var request = {
+        promiseIt('should be valid with a valid proxy response', () => {
+            const request = {
                     stubs: [{
                         responses: [{ proxy: { to: 'http://google.com' } }]
                     }]
                 },
                 validator = Validator.create({ StubRepository: StubRepository, testRequest: testRequest });
 
-            return validator.validate(request, Logger.create()).then(function (result) {
+            return validator.validate(request, Logger.create()).then(result => {
                 assert.deepEqual(result, {
                     isValid: true,
                     errors: []
@@ -253,8 +251,8 @@ describe('dryRunValidator', function () {
             });
         });
 
-        promiseIt('should not be valid if any stub is invalid', function () {
-            var request = {
+        promiseIt('should not be valid if any stub is invalid', () => {
+            const request = {
                     stubs: [
                         { responses: [{ is: { statusCode: 400 } }] },
                         {}
@@ -262,7 +260,7 @@ describe('dryRunValidator', function () {
                 },
                 validator = Validator.create({ StubRepository: StubRepository, testRequest: testRequest });
 
-            return validator.validate(request, Logger.create()).then(function (result) {
+            return validator.validate(request, Logger.create()).then(result => {
                 assert.deepEqual(result, {
                     isValid: false,
                     errors: [{
@@ -274,8 +272,8 @@ describe('dryRunValidator', function () {
             });
         });
 
-        promiseIt('should detect an invalid predicate', function () {
-            var request = {
+        promiseIt('should detect an invalid predicate', () => {
+            const request = {
                     stubs: [{
                         responses: [{}],
                         predicates: [{ invalidPredicate: { path: '/test' } }]
@@ -283,7 +281,7 @@ describe('dryRunValidator', function () {
                 },
                 validator = Validator.create({ StubRepository: StubRepository, testRequest: testRequest });
 
-            return validator.validate(request, Logger.create()).then(function (result) {
+            return validator.validate(request, Logger.create()).then(result => {
                 assert.deepEqual(result, {
                     isValid: false,
                     errors: [{
@@ -296,8 +294,8 @@ describe('dryRunValidator', function () {
             });
         });
 
-        promiseIt('should detect an invalid predicate mixed with valid predicates', function () {
-            var request = {
+        promiseIt('should detect an invalid predicate mixed with valid predicates', () => {
+            const request = {
                     stubs: [{
                         responses: [{}],
                         predicates: [
@@ -308,7 +306,7 @@ describe('dryRunValidator', function () {
                 },
                 validator = Validator.create({ StubRepository: StubRepository, testRequest: testRequest });
 
-            return validator.validate(request, Logger.create()).then(function (result) {
+            return validator.validate(request, Logger.create()).then(result => {
                 assert.deepEqual(result, {
                     isValid: false,
                     errors: [{
@@ -321,8 +319,8 @@ describe('dryRunValidator', function () {
             });
         });
 
-        promiseIt('should detect a malformed predicate', function () {
-            var request = {
+        promiseIt('should detect a malformed predicate', () => {
+            const request = {
                     stubs: [{
                         responses: [{}],
                         predicates: [{ headers: [{ exists: 'Test' }] }]
@@ -330,7 +328,7 @@ describe('dryRunValidator', function () {
                 },
                 validator = Validator.create({ StubRepository: StubRepository, testRequest: testRequest });
 
-            return validator.validate(request, Logger.create()).then(function (result) {
+            return validator.validate(request, Logger.create()).then(result => {
                 assert.deepEqual(result, {
                     isValid: false,
                     errors: [{
@@ -343,15 +341,15 @@ describe('dryRunValidator', function () {
             });
         });
 
-        promiseIt('should reject unrecognized response resolver', function () {
-            var request = {
+        promiseIt('should reject unrecognized response resolver', () => {
+            const request = {
                     stubs: [{
                         responses: [{ invalid: 'INVALID' }]
                     }]
                 },
                 validator = Validator.create({ StubRepository: StubRepository, testRequest: testRequest });
 
-            return validator.validate(request, Logger.create()).then(function (result) {
+            return validator.validate(request, Logger.create()).then(result => {
                 assert.deepEqual(result, {
                     isValid: false,
                     errors: [{
@@ -363,8 +361,8 @@ describe('dryRunValidator', function () {
             });
         });
 
-        promiseIt('should not be valid if any response is invalid', function () {
-            var request = {
+        promiseIt('should not be valid if any response is invalid', () => {
+            const request = {
                     stubs: [{
                         responses: [
                             { is: { statusCode: 400 } },
@@ -374,7 +372,7 @@ describe('dryRunValidator', function () {
                 },
                 validator = Validator.create({ StubRepository: StubRepository, testRequest: testRequest });
 
-            return validator.validate(request, Logger.create()).then(function (result) {
+            return validator.validate(request, Logger.create()).then(result => {
                 assert.deepEqual(result, {
                     isValid: false,
                     errors: [{
@@ -386,8 +384,8 @@ describe('dryRunValidator', function () {
             });
         });
 
-        promiseIt('should not be valid if any response is invalid even if the predicates are false during dry run', function () {
-            var request = {
+        promiseIt('should not be valid if any response is invalid even if the predicates are false during dry run', () => {
+            const request = {
                     stubs: [{
                         responses: [{ invalid: true }],
                         predicates: [{ equals: { path: '/does-not-match' } }]
@@ -395,7 +393,7 @@ describe('dryRunValidator', function () {
                 },
                 validator = Validator.create({ StubRepository: StubRepository, testRequest: testRequest });
 
-            return validator.validate(request, Logger.create()).then(function (result) {
+            return validator.validate(request, Logger.create()).then(result => {
                 assert.deepEqual(result, {
                     isValid: false,
                     errors: [{
@@ -407,8 +405,8 @@ describe('dryRunValidator', function () {
             });
         });
 
-        promiseIt('should add behavior validation errors', function () {
-            var request = { stubs: [{ responses: [{
+        promiseIt('should add behavior validation errors', () => {
+            const request = { stubs: [{ responses: [{
                     is: { statusCode: 400 },
                     _behaviors: {
                         wait: -1,
@@ -417,7 +415,7 @@ describe('dryRunValidator', function () {
                 }] }] },
                 validator = Validator.create({ StubRepository: StubRepository, testRequest: testRequest });
 
-            return validator.validate(request, Logger.create()).then(function (result) {
+            return validator.validate(request, Logger.create()).then(result => {
                 assert.deepEqual(result, {
                     isValid: false,
                     errors: [
@@ -436,10 +434,10 @@ describe('dryRunValidator', function () {
             });
         });
 
-        promiseIt('should allow functions as wait behavior if injections allowed', function () {
-            var request = { stubs: [{ responses: [{
+        promiseIt('should allow functions as wait behavior if injections allowed', () => {
+            const request = { stubs: [{ responses: [{
                     is: { statusCode: 400 },
-                    _behaviors: { wait: 'function () { return 1000; }' }
+                    _behaviors: { wait: '() => { return 1000; }' }
                 }] }] },
                 validator = Validator.create({
                     StubRepository: StubRepository,
@@ -447,7 +445,7 @@ describe('dryRunValidator', function () {
                     allowInjection: true
                 });
 
-            return validator.validate(request, Logger.create()).then(function (result) {
+            return validator.validate(request, Logger.create()).then(result => {
                 assert.deepEqual(result, {
                     isValid: true,
                     errors: []
@@ -455,10 +453,10 @@ describe('dryRunValidator', function () {
             });
         });
 
-        promiseIt('should not allow functions as wait behavior if injections not allowed', function () {
-            var response = {
+        promiseIt('should not allow functions as wait behavior if injections not allowed', () => {
+            const response = {
                     is: { statusCode: 400 },
-                    _behaviors: { wait: 'function () { return 1000; }' }
+                    _behaviors: { wait: '() => { return 1000; }' }
                 },
                 request = { stubs: [{ responses: [response] }] },
                 validator = Validator.create({
@@ -467,7 +465,7 @@ describe('dryRunValidator', function () {
                     allowInjection: false
                 });
 
-            return validator.validate(request, Logger.create()).then(function (result) {
+            return validator.validate(request, Logger.create()).then(result => {
                 assert.deepEqual(result, {
                     isValid: false,
                     errors: [{
@@ -479,8 +477,8 @@ describe('dryRunValidator', function () {
             });
         });
 
-        promiseIt('should be false for a well formed endOfRequestResolver if injections are not allowed', function () {
-            var endOfRequestResolver = function () { return true; },
+        promiseIt('should be false for a well formed endOfRequestResolver if injections are not allowed', () => {
+            const endOfRequestResolver = () => true,
                 request = {
                     protocol: 'tcp',
                     stubs: [{ responses: [{ is: { data: 'test' } }] }],
@@ -492,7 +490,7 @@ describe('dryRunValidator', function () {
                     allowInjection: false
                 });
 
-            return validator.validate(request, Logger.create()).then(function (result) {
+            return validator.validate(request, Logger.create()).then(result => {
                 assert.deepEqual(result, {
                     isValid: false,
                     errors: [{
@@ -504,8 +502,8 @@ describe('dryRunValidator', function () {
             });
         });
 
-        promiseIt('should be true for a well formed endOfRequestResolver if injections are allowed', function () {
-            var endOfRequestResolver = function () { return true; },
+        promiseIt('should be true for a well formed endOfRequestResolver if injections are allowed', () => {
+            const endOfRequestResolver = () => true,
                 request = {
                     protocol: 'tcp',
                     stubs: [{ responses: [{ is: { data: 'test' } }] }],
@@ -517,13 +515,13 @@ describe('dryRunValidator', function () {
                     allowInjection: true
                 });
 
-            return validator.validate(request, Logger.create()).then(function (result) {
+            return validator.validate(request, Logger.create()).then(result => {
                 assert.ok(result.isValid);
             });
         });
 
-        promiseIt('should not be valid for shellTransform if injections are disallowed', function () {
-            var request = {
+        promiseIt('should not be valid for shellTransform if injections are disallowed', () => {
+            const request = {
                     stubs: [{
                         responses: [{ is: {}, _behaviors: { shellTransform: ['command'] } }]
                     }]
@@ -534,7 +532,7 @@ describe('dryRunValidator', function () {
                     allowInjection: false
                 });
 
-            return validator.validate(request, Logger.create()).then(function (result) {
+            return validator.validate(request, Logger.create()).then(result => {
                 assert.deepEqual(result, {
                     isValid: false,
                     errors: [{
@@ -546,10 +544,10 @@ describe('dryRunValidator', function () {
             });
         });
 
-        promiseIt('should not be valid for proxy addDecorateBehavior if injections are disallowed', function () {
-            var proxy = {
+        promiseIt('should not be valid for proxy addDecorateBehavior if injections are disallowed', () => {
+            const proxy = {
                     to: 'http://google.com',
-                    addDecorateBehavior: 'function (request, response) { response.body = ""; }'
+                    addDecorateBehavior: '(request, response) => { response.body = ""; }'
                 },
                 request = {
                     stubs: [{
@@ -562,7 +560,7 @@ describe('dryRunValidator', function () {
                     allowInjection: false
                 });
 
-            return validator.validate(request, Logger.create()).then(function (result) {
+            return validator.validate(request, Logger.create()).then(result => {
                 assert.deepEqual(result, {
                     isValid: false,
                     errors: [{
