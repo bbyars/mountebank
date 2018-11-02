@@ -504,7 +504,7 @@ describe('http proxy stubs', () => {
             const mirrorPort = port + 2;
 
             const proxyStub = { responses: [{ proxy: { to: `http://localhost:${mirrorPort}`,
-                    injectHeaders: { 'X-Forwarded-Host': 'http://www.google.com', 'Host': 'colbert' } } }] },
+                    injectHeaders: { 'X-Forwarded-Host': 'http://www.google.com', Host: 'colbert' } } }] },
                 proxyStubRequest = { protocol: 'http', port: proxyPort, stubs: [proxyStub], name: 'proxy stub' },
                 mirrorStub = { responses: [{ is: { body: '' }, _behaviors: {
                     decorate: ((request, response) => { response.headers = request.headers; }).toString() } }] },
@@ -518,7 +518,7 @@ describe('http proxy stubs', () => {
                 return client.get('/', proxyPort);
             }).then(response => {
                 assert.equal(response.headers['x-forwarded-host'], 'http://www.google.com');
-                assert.equal(response.headers['host'], 'colbert');
+                assert.equal(response.headers.host, 'colbert');
             }).finally(() => api.del('/imposters'));
         });
     }
