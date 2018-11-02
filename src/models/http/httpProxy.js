@@ -63,7 +63,10 @@ const create = logger => {
                 ciphers: proxyOptions.ciphers || 'ALL',
                 rejectUnauthorized: false
             };
-        options.headers.host = hostnameFor(parts.protocol, parts.hostname, options.port);
+        // Only set host header if not overridden via injectHeaders (issue #388)
+        if (!proxyOptions.injectHeaders || !headersHelper.hasHeader('host', proxyOptions.injectHeaders)) {
+            options.headers.host = hostnameFor(parts.protocol, parts.hostname, options.port);
+        }
         setProxyAgent(parts, options);
 
         // Avoid implicit chunked encoding (issue #132)
