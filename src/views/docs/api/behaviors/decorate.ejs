@@ -37,7 +37,7 @@ to the responses.  Let's add the current timestamp to each response.  We'll pass
 of the following JavaScript function:</p>
 
 <testScenario name='decorate'>
-<pre><code>function (request, response) {
+<pre><code>(request, response) => {
     var pad = function (number) {
             return (number &lt; 10) ? '0' + number : number.toString();
         },
@@ -64,7 +64,7 @@ Content-Type: application/json
             "body": "The time is <strong class='highlight1'>${TIME}</strong>"
           },
           "_behaviors": {
-            "decorate": "function (request, response) { var pad = function (number) { return (number &lt; 10) ? '0' + number : number.toString(); }, now = new Date(), time = pad(now.getHours()) + ':' + pad(now.getMinutes()) + ':' + pad(now.getSeconds()); response.body = response.body.replace('${TIME}', time); }"
+            "decorate": "(request, response) => { var pad = function (number) { return (number &lt; 10) ? '0' + number : number.toString(); }, now = new Date(), time = pad(now.getHours()) + ':' + pad(now.getMinutes()) + ':' + pad(now.getSeconds()); response.body = response.body.replace('${TIME}', time); }"
           }
         }
       ]
@@ -98,7 +98,7 @@ simulate your testing scenario.  In this example, we'll proxy to the
 We'll augment the proxied response with a custom header.  Here's the decorator function, passed
 into the imposter creation as a string:</p>
 
-<pre><code>function (request, response) {
+<pre><code>(request, response) => {
     response.headers['X-Test'] = 'True';
 }</code></pre>
 
@@ -117,7 +117,7 @@ Content-Type: application/json
         {
           "proxy": { "to": "http://localhost:5545" },
           "_behaviors": {
-            "decorate": "function (request, response) { <strong class='highlight1'>response.headers['X-Test'] = 'True';</strong> }"
+            "decorate": "(request, response) => { <strong class='highlight1'>response.headers['X-Test'] = 'True';</strong> }"
           }
         }
       ]

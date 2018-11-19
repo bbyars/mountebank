@@ -6,26 +6,26 @@
  * @module
  */
 
-function initializeLogfile (filename) {
+const initializeLogfile = filename => {
     // Ensure new logfile on startup so the /logs only shows for this process
-    var path = require('path'),
+    const path = require('path'),
         fs = require('fs'),
         extension = path.extname(filename),
-        pattern = new RegExp(extension + '$'),
-        newFilename = filename.replace(pattern, '1' + extension);
+        pattern = new RegExp(`${extension}$`),
+        newFilename = filename.replace(pattern, `1${extension}`);
 
     if (fs.existsSync(filename)) {
         fs.renameSync(filename, newFilename);
     }
-}
+};
 
 /**
  * Creates the mountebank server
  * @param {object} options - The command line options
  * @returns {Object} An object with a close method to stop the server
  */
-function create (options) {
-    var Q = require('q'),
+const create = options => {
+    const Q = require('q'),
         express = require('express'),
         cors = require('cors'),
         errorHandler = require('errorhandler'),
@@ -114,7 +114,7 @@ function create (options) {
     app.get('/releases', feedController.getReleases);
     app.get('/releases/:version', feedController.getRelease);
 
-    app.get('/sitemap', function (request, response) {
+    app.get('/sitemap', (request, response) => {
         response.type('text/plain');
         response.render('sitemap', { releases: releases });
     });
@@ -146,19 +146,15 @@ function create (options) {
         '/docs/protocols/https',
         '/docs/protocols/tcp',
         '/docs/protocols/smtp'
-    ].forEach(function (endpoint) {
-        app.get(endpoint, function (request, response) {
+    ].forEach(endpoint => {
+        app.get(endpoint, (request, response) => {
             response.render(endpoint.substring(1));
         });
     });
 
-    function isAllowedConnection (ipAddress) {
-        return allowedIPs.some(function (allowedIP) {
-            return allowedIP === '*' || allowedIP.toLowerCase() === ipAddress.toLowerCase();
-        });
-    }
+    const isAllowedConnection = ipAddress => allowedIPs.some(allowedIP => allowedIP === '*' || allowedIP.toLowerCase() === ipAddress.toLowerCase());
 
-    function hostname () {
+    const hostname = () => {
         if (options.localOnly) {
             return 'localhost';
         }
@@ -168,30 +164,30 @@ function create (options) {
         else {
             return undefined;
         }
-    }
+    };
 
-    var connections = {},
-        server = app.listen(options.port, hostname(), function () {
+    const connections = {},
+        server = app.listen(options.port, hostname(), () => {
             logger.info('mountebank v%s now taking orders - point your browser to http://localhost:%s for help',
                 thisPackage.version, options.port);
-            logger.debug('config: ' + JSON.stringify({
+            logger.debug(`config: ${JSON.stringify({
                 options: options,
                 process: {
                     nodeVersion: process.version,
                     architecture: process.arch,
                     platform: process.platform
                 }
-            }));
+            })}`);
             if (options.allowInjection) {
                 logger.warn('Running with --allowInjection set. See http://localhost:%s/docs/security for security info',
                     options.port);
             }
 
-            server.on('connection', function (socket) {
-                var name = helpers.socketName(socket);
+            server.on('connection', socket => {
+                const name = helpers.socketName(socket);
                 connections[name] = socket;
 
-                socket.on('close', function () {
+                socket.on('close', () => {
                     delete connections[name];
                 });
 
@@ -207,14 +203,14 @@ function create (options) {
             });
 
             deferred.resolve({
-                close: function (callback) {
-                    server.close(function () {
+                close: callback => {
+                    server.close(() => {
                         logger.info('Adios - see you soon?');
                         callback();
                     });
 
                     // Force kill any open connections to prevent process hanging
-                    Object.keys(connections).forEach(function (socket) {
+                    Object.keys(connections).forEach(socket => {
                         connections[socket].destroy();
                     });
                 }
@@ -222,8 +218,6 @@ function create (options) {
         });
 
     return deferred.promise;
-}
-
-module.exports = {
-    create: create
 };
+
+module.exports = { create };

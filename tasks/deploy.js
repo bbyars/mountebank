@@ -1,13 +1,13 @@
 'use strict';
 
-var run = require('./run').run,
+const run = require('./run').run,
     publish = process.env.MB_PUBLISH === 'true',
     version = require('./version').getVersion();
 
 module.exports = function (grunt) {
 
     function failTask (task) {
-        return function (exitCode) {
+        return exitCode => {
             grunt.warn(task + ' failed', exitCode);
         };
     }

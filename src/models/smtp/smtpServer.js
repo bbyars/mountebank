@@ -5,8 +5,8 @@
  * @module
  */
 
-function createServer () {
-    function createSMTPServer (server) {
+const createServer = () => {
+    const createSMTPServer = server => {
         const SMTPServer = require('smtp-server').SMTPServer;
         return new SMTPServer({
             disableReverseLookup: true,
@@ -19,43 +19,43 @@ function createServer () {
                 server.emit('request', session, { session: session, source: stream, callback: callback });
             }
         });
-    }
+    };
 
-    var combinators = require('../../util/combinators'),
+    const combinators = require('../../util/combinators'),
         inherit = require('../../util/inherit'),
         result = inherit.from(require('events').EventEmitter, {
             errorHandler: require('../../util/combinators').noop,
-            formatRequestShort: function (request) {
-                var util = require('util');
+            formatRequestShort: request => {
+                const util = require('util');
                 return util.format('Envelope from: %s to: %s', request.from, JSON.stringify(request.to));
             },
             formatRequest: combinators.identity,
             formatResponse: combinators.noop,
-            respond: function (smtpRequest, originalRequest) { originalRequest.callback(); },
+            respond: (smtpRequest, originalRequest) => { originalRequest.callback(); },
             metadata: combinators.constant({}),
             addStub: combinators.noop,
             state: {},
-            stubs: function () { return []; }
+            stubs: () => []
         }),
         server = createSMTPServer(result);
 
-    result.close = function (callback) {
+    result.close = callback => {
         server.close(combinators.noop);
         callback();
     };
 
-    result.listen = function (port) {
-        var Q = require('q'),
+    result.listen = port => {
+        const Q = require('q'),
             deferred = Q.defer();
 
-        server.listen(port, function () {
+        server.listen(port, () => {
             deferred.resolve(server.server.address().port);
         });
         return deferred.promise;
     };
 
     return result;
-}
+};
 
 /**
  * Initializes the smtp protocol
@@ -64,24 +64,22 @@ function createServer () {
  * @param {boolean} debug - The --debug command line parameter
  * @returns {Object}
  */
-function initialize (logger, recordRequests, debug) {
-    var implementation = {
+const initialize = (logger, recordRequests, debug) => {
+    const implementation = {
             protocolName: 'smtp',
             createServer: createServer,
             Request: require('./smtpRequest')
         },
         noOpValidator = {
-            create: function () {
-                return {
-                    validate: function () {
-                        var Q = require('q');
-                        return Q({
-                            isValid: true,
-                            errors: []
-                        });
-                    }
-                };
-            }
+            create: () => ({
+                validate: () => {
+                    const Q = require('q');
+                    return Q({
+                        isValid: true,
+                        errors: []
+                    });
+                }
+            })
         };
 
     return {
@@ -89,8 +87,6 @@ function initialize (logger, recordRequests, debug) {
         create: require('../abstractServer').implement(implementation, recordRequests, debug, logger).create,
         Validator: noOpValidator
     };
-}
-
-module.exports = {
-    initialize: initialize
 };
+
+module.exports = { initialize };

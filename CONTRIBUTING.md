@@ -287,7 +287,7 @@ this section, but if you're like me, you may find the tips below helpful:
   to a single context or a single function.  This works on both `describe` blocks and on `it` functions.
   You'll notice that I use a `promiseIt` function for my asynchronous tests, which just wraps the `it`
   function with promise resolution and error handling.  `promiseIt` also accepts an `only` function, so you
-  can do `promiseIt.only('test description', function () {/*...*/});`
+  can do `promiseIt.only('test description', () => {/*...*/});`
 * Debugging asynchronous code is hard.  I'm not too proud to use `console.log`, and neither should you be.
 * The functional tests require a running instance of `mb`.  If you're struggling with a particular test,
   and you've isolated it using the `only` function, you may want to run `mb` with the `--loglevel debug`

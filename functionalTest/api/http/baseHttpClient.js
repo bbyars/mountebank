@@ -1,26 +1,26 @@
 'use strict';
 
-var Q = require('q'),
+const Q = require('q'),
     helpers = require('../../../src/util/helpers');
 
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 
-function create (protocol) {
-    var driver = require(protocol),
+const create = protocol => {
+    const driver = require(protocol),
         agent = new driver.Agent({ keepAlive: true });
 
-    function optionsFor (spec) {
-        var defaults = {
+    const optionsFor = spec => {
+        const defaults = {
             hostname: 'localhost',
             headers: { accept: 'application/json' },
             rejectUnauthorized: false
         };
 
         return helpers.merge(defaults, spec);
-    }
+    };
 
-    function responseFor (spec) {
-        var deferred = Q.defer(),
+    const responseFor = spec => {
+        const deferred = Q.defer(),
             options = optionsFor(spec);
 
         if (!options.port) {
@@ -32,15 +32,13 @@ function create (protocol) {
         }
 
         options.agent = agent;
-        var request = driver.request(options, function (response) {
-            var packets = [];
+        const request = driver.request(options, response => {
+            const packets = [];
 
-            response.on('data', function (chunk) {
-                packets.push(chunk);
-            });
+            response.on('data', chunk => packets.push(chunk));
 
-            response.on('end', function () {
-                var buffer = Buffer.concat(packets),
+            response.on('end', () => {
+                const buffer = Buffer.concat(packets),
                     contentType = response.headers['content-type'] || '';
 
                 response.body = spec.mode === 'binary' ? buffer : buffer.toString('utf8');
@@ -64,33 +62,14 @@ function create (protocol) {
         }
         request.end();
         return deferred.promise;
-    }
-
-    function get (path, port) {
-        return responseFor({ method: 'GET', path: path, port: port });
-    }
-
-    function post (path, body, port) {
-        return responseFor({ method: 'POST', path: path, port: port, body: body });
-    }
-
-    function del (path, port) {
-        return responseFor({ method: 'DELETE', path: path, port: port });
-    }
-
-    function put (path, body, port) {
-        return responseFor({ method: 'PUT', path: path, port: port, body: body });
-    }
-
-    return {
-        get: get,
-        post: post,
-        del: del,
-        put: put,
-        responseFor: responseFor
     };
-}
 
-module.exports = {
-    create: create
+    const get = (path, port) => responseFor({ method: 'GET', path, port });
+    const post = (path, body, port) => responseFor({ method: 'POST', path, port, body });
+    const del = (path, port) => responseFor({ method: 'DELETE', path, port });
+    const put = (path, body, port) => responseFor({ method: 'PUT', path, port, body });
+
+    return { get, post, del, put, responseFor };
 };
+
+module.exports = { create };

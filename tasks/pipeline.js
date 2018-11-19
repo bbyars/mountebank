@@ -1,6 +1,6 @@
 'use strict';
 
-var Q = require('q'),
+const Q = require('q'),
     exec = require('child_process').exec,
     version = require('./version').getVersion(),
     appveyor = require('./ci/appveyor'),
@@ -8,7 +8,7 @@ var Q = require('q'),
     fs = require('fs');
 
 function getCurrentCommitId () {
-    var deferred = Q.defer();
+    const deferred = Q.defer();
     exec('git rev-parse HEAD', function (error, stdout) {
         if (error) {
             deferred.reject(error);
@@ -22,7 +22,7 @@ function getCurrentCommitId () {
 
 module.exports = function (grunt) {
     grunt.registerTask('trigger:appveyor', 'Trigger Appveyor build for same commit', function () {
-        var done = this.async();
+        const done = this.async();
 
         getCurrentCommitId().then(function (commitId) {
             return appveyor.triggerBuild(commitId, version);
@@ -37,13 +37,13 @@ module.exports = function (grunt) {
     });
 
     grunt.registerTask('waitFor:appveyor', 'Wait for appveyor build to finish', function () {
-        var done = this.async(),
+        const done = this.async(),
             buildNumber = fs.readFileSync('appveyor-' + version + '.txt'),
             timeout = 10 * 60 * 1000,
             interval = 3000,
             start = new Date(),
             spinWait = function (status) {
-                var deferred = Q.defer(),
+                const deferred = Q.defer(),
                     elapsedTime = new Date() - start;
 
                 process.stdout.write('.');
@@ -57,7 +57,7 @@ module.exports = function (grunt) {
                 }
                 else {
                     return Q.delay(interval).then(function () {
-                        return appveyor.getBuildStatus(buildNumber);
+                        appveyor.getBuildStatus(buildNumber);
                     }).then(spinWait, deferred.reject);
                 }
 
@@ -77,7 +77,7 @@ module.exports = function (grunt) {
     });
 
     grunt.registerTask('trigger:travis', 'Trigger Travis build for latest commit', function () {
-        var done = this.async();
+        const done = this.async();
 
         return travis.triggerBuild(version).then(function (result) {
             // We have to save off the Appveyor build number for the next CI stage
@@ -90,13 +90,13 @@ module.exports = function (grunt) {
     });
 
     grunt.registerTask('waitFor:travis', 'Wait for Travis build to finish', function () {
-        var done = this.async(),
+        const done = this.async(),
             buildNumber = fs.readFileSync('travis-' + version + '.txt'),
             timeout = 10 * 60 * 1000,
             interval = 3000,
             start = new Date(),
             spinWait = function (status) {
-                var deferred = Q.defer(),
+                const deferred = Q.defer(),
                     elapsedTime = new Date() - start;
 
                 // process.stdout.write('.');
@@ -111,7 +111,7 @@ module.exports = function (grunt) {
                 }
                 else {
                     return Q.delay(interval).then(function () {
-                        return travis.getBuildStatus(buildNumber);
+                        travis.getBuildStatus(buildNumber);
                     }).then(spinWait, deferred.reject);
                 }
 

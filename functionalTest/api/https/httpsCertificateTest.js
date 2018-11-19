@@ -1,6 +1,6 @@
 'use strict';
 
-var assert = require('assert'),
+const assert = require('assert'),
     api = require('../api').create(),
     promiseIt = require('../../testHelpers').promiseIt,
     port = api.port + 1,
@@ -13,97 +13,86 @@ var assert = require('assert'),
     defaultKey = fs.readFileSync(path.join(__dirname, '../../../src/models/https/cert/mb-key.pem'), 'utf8'),
     defaultCert = fs.readFileSync(path.join(__dirname, '../../../src/models/https/cert/mb-cert.pem'), 'utf8');
 
-describe('https imposter', function () {
-    this.timeout(timeout);
-
-    promiseIt('should support sending key/cert pair during imposter creation', function () {
-        var request = {
+describe('https imposter', () => {
+    promiseIt('should support sending key/cert pair during imposter creation', () => {
+        const request = {
             protocol: 'https',
-            port: port,
-            key: key,
-            cert: cert,
-            name: this.name
+            port,
+            key,
+            cert
         };
 
-        return api.post('/imposters', request).then(function (response) {
+        return api.post('/imposters', request).then(response => {
             assert.strictEqual(response.statusCode, 201);
             assert.strictEqual(response.body.key, key);
             assert.strictEqual(response.body.cert, cert);
             return client.get('/', port);
-        }).then(function (response) {
+        }).then(response => {
             assert.strictEqual(response.statusCode, 200);
-        }).finally(function () {
-            return api.del('/imposters');
-        });
+        }).finally(() => api.del('/imposters'));
     });
 
-    promiseIt('should default key/cert pair during imposter creation if not provided', function () {
-        var request = { protocol: 'https', port: port, name: this.name };
+    promiseIt('should default key/cert pair during imposter creation if not provided', () => {
+        const request = { protocol: 'https', port };
 
-        return api.post('/imposters', request).then(function (response) {
+        return api.post('/imposters', request).then(response => {
             assert.strictEqual(response.statusCode, 201);
             assert.strictEqual(response.body.key, defaultKey);
             assert.strictEqual(response.body.cert, defaultCert);
             return client.get('/', port);
-        }).then(function (response) {
+        }).then(response => {
             assert.strictEqual(response.statusCode, 200);
-        }).finally(function () {
-            return api.del('/imposters');
-        });
+        }).finally(() => api.del('/imposters'));
     });
 
-    promiseIt('should work with mutual auth', function () {
-        var request = { protocol: 'https', port: port, mutualAuth: true, name: this.name };
+    promiseIt('should work with mutual auth', () => {
+        const request = { protocol: 'https', port, mutualAuth: true };
 
-        return api.post('/imposters', request).then(function (response) {
+        return api.post('/imposters', request).then(response => {
             assert.strictEqual(response.statusCode, 201);
             assert.strictEqual(response.body.mutualAuth, true);
             return client.responseFor({
                 method: 'GET',
                 path: '/',
-                port: port,
+                port,
                 agent: false,
-                key: key,
-                cert: cert
+                key,
+                cert
             });
-        }).then(function (response) {
+        }).then(response => {
             assert.strictEqual(response.statusCode, 200);
-        }).finally(function () {
-            return api.del('/imposters');
-        });
+        }).finally(() => api.del('/imposters'));
     });
 
-    promiseIt('should support proxying to origin server requiring mutual auth', function () {
-        var originServerPort = port + 1,
+    promiseIt('should support proxying to origin server requiring mutual auth', () => {
+        const originServerPort = port + 1,
             originServerRequest = {
                 protocol: 'https',
                 port: originServerPort,
                 stubs: [{ responses: [{ is: { body: 'origin server' } }] }],
-                name: this.name + ' origin',
+                name: 'origin',
                 mutualAuth: true
             },
             proxy = {
-                to: 'https://localhost:' + originServerPort,
-                key: key,
-                cert: cert
+                to: `https://localhost:${originServerPort}`,
+                key,
+                cert
             },
             proxyRequest = {
                 protocol: 'https',
-                port: port,
+                port,
                 stubs: [{ responses: [{ proxy: proxy }] }],
-                name: this.name + ' proxy'
+                name: 'proxy'
             };
 
-        return api.post('/imposters', originServerRequest).then(function (response) {
+        return api.post('/imposters', originServerRequest).then(response => {
             assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body, null, 2));
             return api.post('/imposters', proxyRequest);
-        }).then(function (response) {
+        }).then(response => {
             assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body, null, 2));
             return client.get('/', port);
-        }).then(function (response) {
+        }).then(response => {
             assert.strictEqual(response.body, 'origin server');
-        }).finally(function () {
-            return api.del('/imposters');
-        });
+        }).finally(() => api.del('/imposters'));
     });
-});
+}).timeout(timeout);

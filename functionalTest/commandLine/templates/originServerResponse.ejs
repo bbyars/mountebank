@@ -1,4 +1,4 @@
-function (request, state, logger) {
+(request, state, logger) => {
     logger.info('origin called');
     state.requests = state.requests || 0;
     state.requests += 1;

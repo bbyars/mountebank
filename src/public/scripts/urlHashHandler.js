@@ -2,33 +2,30 @@
 
 var module = module || {};
 
-function toggleExpandedOnSection (element) {
+const toggleExpandedOnSection = element => {
     $(element).siblings('section').toggleClass('expanded');
-}
+};
 
-function addSectionClickHandler () {
-    $('.section-toggler').on('click', function (event) {
+const addSectionClickHandler = () => {
+    $('.section-toggler').on('click', event => {
         toggleExpandedOnSection(event.currentTarget);
     });
-}
+};
 
-function hashLocationHandler (window) {
-    var hashLocation = window.location.hash;
+const hashLocationHandler = window => {
+    const hashLocation = window.location.hash;
     if (hashLocation) {
-        var $section = $(hashLocation);
+        const $section = $(hashLocation);
         if ($section.length > 0) {
             $section.trigger('click');
             $(window).scrollTop($section.parent().offset().top);
         }
     }
-}
+};
 
 $(document).ready(addSectionClickHandler);
-$(document).ready(function () {
+$(document).ready(() => {
     hashLocationHandler(window);
 });
 
-module.exports = {
-    toggleExpandedOnSection: toggleExpandedOnSection,
-    hashLocationHandler: hashLocationHandler
-};
+module.exports = { toggleExpandedOnSection, hashLocationHandler };

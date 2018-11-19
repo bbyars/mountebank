@@ -1,24 +1,21 @@
 'use strict';
 
-var Q = require('q'),
+const Q = require('q'),
     promiseIt = require('../testHelpers').promiseIt,
     docs = require('./docsTester/docs'),
     isWindows = require('os').platform().indexOf('win') === 0,
     timeout = parseInt(process.env.MB_SLOW_TEST_TIMEOUT || 3000);
 
-function validateDocs (page) {
-    promiseIt(page + ' should be up-to-date', function () {
-        return docs.getScenarios(page).then(function (testScenarios) {
-            var tests = Object.keys(testScenarios).map(function (testName) {
-                return testScenarios[testName].assertValid();
-            });
+const validateDocs = page => {
+    promiseIt(`${page} should be up-to-date`, () =>
+        docs.getScenarios(page).then(testScenarios => {
+            const tests = Object.keys(testScenarios).map(testName => testScenarios[testName].assertValid());
             return Q.all(tests);
-        });
-    });
-}
+        })
+    ).timeout(timeout);
+};
 
-describe('docs', function () {
-    this.timeout(timeout);
+describe('docs', () => {
     [
         '/docs/api/overview',
         '/docs/api/mocks',
@@ -29,7 +26,7 @@ describe('docs', function () {
         '/docs/protocols/https',
         '/docs/protocols/http',
         '/docs/api/jsonpath'
-    ].forEach(function (page) {
+    ].forEach(page => {
         validateDocs(page);
     });
 
@@ -40,7 +37,7 @@ describe('docs', function () {
             '/docs/api/behaviors',
             '/docs/api/stubs',
             '/docs/protocols/tcp'
-        ].forEach(function (page) {
+        ].forEach(page => {
             validateDocs(page);
         });
     }

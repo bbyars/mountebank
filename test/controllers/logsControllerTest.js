@@ -1,18 +1,18 @@
 'use strict';
 
-var Controller = require('../../src/controllers/logsController'),
+const Controller = require('../../src/controllers/logsController'),
     assert = require('assert'),
     fs = require('fs'),
     FakeResponse = require('../fakes/fakeResponse');
 
-describe('logsController', function () {
-    describe('#get', function () {
-        after(function () {
+describe('logsController', () => {
+    describe('#get', () => {
+        after(() => {
             fs.unlinkSync('logsControllerTest.log');
         });
 
-        it('should return full contents of logfile as JSON array by default', function () {
-            var response = FakeResponse.create(),
+        it('should return full contents of logfile as JSON array by default', () => {
+            const response = FakeResponse.create(),
                 controller = Controller.create('logsControllerTest.log');
 
             fs.writeFileSync('logsControllerTest.log', '{"key": "first"}\n{"key": "second"}\n');
@@ -26,8 +26,8 @@ describe('logsController', function () {
             });
         });
 
-        it('should return entries starting with startIndex', function () {
-            var response = FakeResponse.create(),
+        it('should return entries starting with startIndex', () => {
+            const response = FakeResponse.create(),
                 controller = Controller.create('logsControllerTest.log');
 
             fs.writeFileSync('logsControllerTest.log', '{"key": "first"}\n{"key": "second"}\n{"key": "third"}');
@@ -41,8 +41,8 @@ describe('logsController', function () {
             });
         });
 
-        it('should return entries starting with startIndex and ending with endIndex', function () {
-            var response = FakeResponse.create(),
+        it('should return entries starting with startIndex and ending with endIndex', () => {
+            const response = FakeResponse.create(),
                 controller = Controller.create('logsControllerTest.log');
 
             fs.writeFileSync('logsControllerTest.log', '{"key": "first"}\n{"key": "second"}\n{"key": "third"}');

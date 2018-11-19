@@ -1,12 +1,12 @@
 'use strict';
 
-var assert = require('assert'),
+const assert = require('assert'),
     behaviors = require('../../../src/models/behaviors');
 
-describe('behaviors', function () {
-    describe('#repeat', function () {
-        it('should not be valid if it is less than 0', function () {
-            var errors = behaviors.validate({ repeat: 0 });
+describe('behaviors', () => {
+    describe('#repeat', () => {
+        it('should not be valid if it is less than 0', () => {
+            const errors = behaviors.validate({ repeat: 0 });
             assert.deepEqual(errors, [{
                 code: 'bad data',
                 message: 'repeat behavior "repeat" field must be an integer greater than 0',
@@ -14,8 +14,8 @@ describe('behaviors', function () {
             }]);
         });
 
-        it('should not be valid if boolean', function () {
-            var errors = behaviors.validate({ repeat: true });
+        it('should not be valid if boolean', () => {
+            const errors = behaviors.validate({ repeat: true });
             assert.deepEqual(errors, [{
                 code: 'bad data',
                 message: 'repeat behavior "repeat" field must be a number',
