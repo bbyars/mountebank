@@ -2,30 +2,29 @@
 
 // Adapted from http://www.blastam.com/blog/index.php/2013/03/how-to-track-downloads-in-google-analytics-v2/
 
-$(document).ready(function () {
-    var filetypes = /\.(zip|gz|pkg|rpm|deb)$/i,
-        baseHref = '';
+$(document).ready(() => {
+    const filetypes = /\.(zip|gz|pkg|rpm|deb)$/i;
+    let baseHref = '';
 
     if ($('base').attr('href') !== undefined) {
         baseHref = $('base').attr('href');
     }
 
-    $('a').on('click', function () {
+    $('a').on('click', () => {
         /* eslint complexity: 0 */
         try {
-            var element = $(this),
-                track = false,
+            const element = $(this),
                 href = element.attr('href'),
                 domains = document.domain.split('.').reverse(),
-                isThisDomain = href.match(domains[1] + '.' + domains[0]),
+                isThisDomain = href.match(`${domains[1]}.${domains[0]}`),
                 events = [];
-
+            let track = false;
             events.value = 0;
 
             if (href.match(filetypes)) {
-                var extension = (/[.]/.exec(href)) ? /[^.]+$/.exec(href) : undefined;
+                const extension = (/[.]/.exec(href)) ? /[^.]+$/.exec(href) : undefined;
                 events.category = 'download';
-                events.action = 'click-' + extension[0];
+                events.action = `click-${extension[0]}`;
                 events.label = href.replace(/ /g, '-');
                 events.nonInteraction = false;
                 events.location = baseHref + href;
@@ -44,7 +43,7 @@ $(document).ready(function () {
                 /* global _gaq */
                 _gaq.push(['_trackEvent', events.category, events.action, events.label, events.value, events.nonInteraction]);
                 if (element.attr('target') === undefined || element.attr('target').toLowerCase() !== '_blank') {
-                    setTimeout(function () {
+                    setTimeout(() => {
                         location.href = events.location;
                     }, 400);
                     return false;

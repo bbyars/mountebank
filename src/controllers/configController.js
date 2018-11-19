@@ -11,8 +11,8 @@
  * @param {Object} options - The command line options used to start mb
  * @returns {Object}
  */
-function create (version, options) {
-    var helpers = require('../util/helpers'),
+const create = (version, options) => {
+    const helpers = require('../util/helpers'),
         publicOptions = helpers.clone(options);
 
     delete publicOptions.heroku;
@@ -24,9 +24,9 @@ function create (version, options) {
      * @param {Object} request - The HTTP request
      * @param {Object} response - The HTTP response
      */
-    function get (request, response) {
-        var config = {
-            version: version,
+    const get = (request, response) => {
+        const config = {
+            version,
             options: publicOptions,
             process: {
                 nodeVersion: process.version,
@@ -41,16 +41,12 @@ function create (version, options) {
         };
 
         response.format({
-            json: function () { response.send(config); },
-            html: function () { response.render('config', config); }
+            json: () => response.send(config),
+            html: () => response.render('config', config)
         });
-    }
-
-    return {
-        get: get
     };
-}
 
-module.exports = {
-    create: create
+    return { get };
 };
+
+module.exports = { create };

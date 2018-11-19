@@ -11,11 +11,9 @@
  * @param {Object} response - The response returned by the stub
  * @returns {Object} - The response we will send back
  */
-function postProcess (response) {
-    return {
-        data: response.data || 'foo'
-    };
-}
+const postProcess = response => ({
+    data: response.data || 'foo'
+});
 
 /**
  * Used to get consistent logging look & feel
@@ -23,15 +21,15 @@ function postProcess (response) {
  * @param {string} [name] - The name of the imposter
  * @returns {string}
  */
-function scopeFor (port, name) {
-    var util = require('util'),
-        scope = util.format('foo:%s', port);
+const scopeFor = (port, name) => {
+    const util = require('util');
+    let scope = util.format('foo:%s', port);
 
     if (name) {
         scope += ' ' + name;
     }
     return scope;
-}
+};
 
 /**
  * Spins up a server listening on a socket
@@ -41,14 +39,12 @@ function scopeFor (port, name) {
  * @param {boolean} debug - The --debug command line parameter
  * @returns {Object} The protocol server implementation
  */
-function createServer (baseLogger, options, recordRequests, debug) {
+const createServer = (baseLogger, options, recordRequests, debug) => {
     // This is an async operation, so we use a deferred
-    var Q = require('q'),
+    const Q = require('q'),
         net = require('net'),
         deferred = Q.defer(),
-        // track the number of requests even if recordRequests = false
-        numRequests = 0,
-        // and an array to record all requests for mock verification
+        // an array to record all requests for mock verification
         requests = [],
         // set up a logger with the correct log prefix
         logger = require('../../util/scopedLogger').create(baseLogger, scopeFor(options.port)),
@@ -61,12 +57,14 @@ function createServer (baseLogger, options, recordRequests, debug) {
         stubs = require('../stubRepository').create(resolver, debug, 'utf8'),
         // and create the actual server using node.js's net module
         server = net.createServer();
+    // track the number of requests even if recordRequests = false
+    let numRequests = 0;
 
     // we need to respond to new connections
-    server.on('connection', function (socket) {
-        socket.on('data', function (data) {
+    server.on('connection', socket => {
+        socket.on('data', data => {
             // This will be the request API interface used by stubs, etc.
-            var helpers = require('../../util/helpers'),
+            const helpers = require('../../util/helpers'),
                 request = {
                     requestFrom: helpers.socketName(socket),
                     data: data.toString('utf8')
@@ -75,14 +73,14 @@ function createServer (baseLogger, options, recordRequests, debug) {
             // remember the request for mock verification, unless told not to
             numRequests += 1;
             if (recordRequests) {
-                var recordedRequest = helpers.clone(request);
+                const recordedRequest = helpers.clone(request);
                 recordedRequest.timestamp = new Date().toJSON();
                 requests.push(recordedRequest);
             }
 
             // let's resolve any stubs (don't worry - there are defaults if no stubs are defined)
-            return stubs.resolve(request, logger).then(function (stubResponse) {
-                var buffer = new Buffer(stubResponse.data, 'utf8');
+            return stubs.resolve(request, logger).then(stubResponse => {
+                const buffer = new Buffer(stubResponse.data, 'utf8');
 
                 // This writes the response
                 socket.write(buffer);
@@ -91,9 +89,9 @@ function createServer (baseLogger, options, recordRequests, debug) {
     });
 
     // Bind the socket to a port (the || 0 bit auto-selects a port if one isn't provided)
-    server.listen(options.port || 0, function () {
+    server.listen(options.port || 0, () => {
         // Some basic bookkeeping...
-        var actualPort = server.address().port,
+        const actualPort = server.address().port,
             metadata = {};
 
         if (options.name) {
@@ -109,14 +107,14 @@ function createServer (baseLogger, options, recordRequests, debug) {
         // This resolves the promise, allowing execution to continue after we're listening on a socket
         // The object we resolve with defines the core imposter API expected in imposter.js
         deferred.resolve({
-            numberOfRequests: function () { return numRequests; },
-            requests: requests,
+            numberOfRequests: () => numRequests,
+            requests,
             addStub: stubs.addStub,
             stubs: stubs.stubs,
             state: {},
-            metadata: metadata,
+            metadata,
             port: actualPort,
-            close: function () {
+            close: () => {
                 server.close();
                 logger.info('Ciao for now');
             }
@@ -124,7 +122,7 @@ function createServer (baseLogger, options, recordRequests, debug) {
     });
 
     return deferred.promise;
-}
+};
 
 /**
  * Creates the core protocol interface - all protocols must implement
@@ -134,38 +132,32 @@ function createServer (baseLogger, options, recordRequests, debug) {
  * @param {boolean} debug - represents the command line --debug parameter
  * @returns {Object} The server factory
  */
-function initialize (logger, allowInjection, recordRequests, debug) {
-    return {
-        // The name of the protocol, used in JSON representation of imposters
-        name: 'foo',
+const initialize = (logger, allowInjection, recordRequests, debug) => ({
+    // The name of the protocol, used in JSON representation of imposters
+    name: 'foo',
 
-        // The creation method, called in imposter.js.  The request JSON object gets passed in
-        create: function (request) {
-            return createServer(logger, request, recordRequests, debug);
-        },
+    // The creation method, called in imposter.js.  The request JSON object gets passed in
+    create: request => createServer(logger, request, recordRequests, debug),
 
-        // The validator used when creating imposters
-        // If you don't have any protocol-specific validation, the DryRunValidator will suffice
-        Validator: {
-            create: function () {
-                var DryRunValidator = require('../dryRunValidator'),
-                    StubRepository = require('../stubRepository');
+    // The validator used when creating imposters
+    // If you don't have any protocol-specific validation, the DryRunValidator will suffice
+    Validator: {
+        create: () => {
+            const DryRunValidator = require('../dryRunValidator'),
+                StubRepository = require('../stubRepository');
 
-                return DryRunValidator.create({
-                    StubRepository: StubRepository,
-                    // This is the request that will be 'dry run' through the validator
-                    testRequest: {
-                        requestFrom: '',
-                        data: ''
-                    },
-                    allowInjection: allowInjection
-                });
-            }
+            return DryRunValidator.create({
+                StubRepository: StubRepository,
+                // This is the request that will be 'dry run' through the validator
+                testRequest: {
+                    requestFrom: '',
+                    data: ''
+                },
+                allowInjection: allowInjection
+            });
         }
-    };
-}
+    }
+});
 
-module.exports = {
-    // This will be called in mountebank.js when you register the protocol there
-    initialize: initialize
-};
+// This will be called in mountebank.js when you register the protocol there
+module.exports = { initialize };

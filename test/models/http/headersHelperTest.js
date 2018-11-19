@@ -1,13 +1,13 @@
 'use strict';
 
-var assert = require('assert'),
+const assert = require('assert'),
     headersHelper = require('../../../src/models/http/headersHelper');
 
-describe('headersHelper', function () {
-    describe('#getJar', function () {
-        describe('#get', function () {
-            it('should search for the header with case-insensity', function () {
-                var request = {
+describe('headersHelper', () => {
+    describe('#getJar', () => {
+        describe('#get', () => {
+            it('should search for the header with case-insensity', () => {
+                const request = {
                         headers: {
                             'My-First-header': 'first-value',
                             'my-Second-Header': 'second-value'
@@ -19,8 +19,8 @@ describe('headersHelper', function () {
                 assert.equal(headersJar.get('my-SECOND-header'), 'second-value');
             });
 
-            it('should return undefined if the header is not present', function () {
-                var request = {
+            it('should return undefined if the header is not present', () => {
+                const request = {
                         headers: {
                             'My-First-header': 'first-value',
                             'my-Second-Header': 'second-value'
@@ -32,9 +32,9 @@ describe('headersHelper', function () {
             });
         });
 
-        describe('#set', function () {
-            it('should not change the casing if the header exists', function () {
-                var request = {
+        describe('#set', () => {
+            it('should not change the casing if the header exists', () => {
+                const request = {
                         headers: {
                             'My-First-header': 'first-value',
                             'my-Second-Header': 'second-value'
@@ -46,8 +46,8 @@ describe('headersHelper', function () {
                 assert.equal(request.headers['My-First-header'], 'new-value');
             });
 
-            it('should keep the casing intact for new headers', function () {
-                var request = {
+            it('should keep the casing intact for new headers', () => {
+                const request = {
                         headers: {
                             'My-First-header': 'first-value',
                             'my-Second-Header': 'second-value'

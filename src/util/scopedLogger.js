@@ -2,19 +2,19 @@
 
 /** @module */
 
-function wrap (wrappedLogger, logger) {
-    ['debug', 'info', 'warn', 'error'].forEach(function (level) {
+const wrap = (wrappedLogger, logger) => {
+    ['debug', 'info', 'warn', 'error'].forEach(level => {
         wrappedLogger[level] = function () {
-            var args = Array.prototype.slice.call(arguments);
+            const args = Array.prototype.slice.call(arguments);
             args[0] = wrappedLogger.scopePrefix + args[0];
 
             // Format here rather than use winston's splat formatter
             // to get rid of inconsistent "meta" log elements
-            var message = require('util').format.apply(null, args);
+            const message = require('util').format.apply(null, args);
             logger[level](message);
         };
     });
-}
+};
 
 /**
  * Returns a logger that prefixes each message of the given logger with a given scope
@@ -22,18 +22,14 @@ function wrap (wrappedLogger, logger) {
  * @param {string} scope - The prefix for all log messages
  * @returns {Object}
  */
-function create (logger, scope) {
-    function formatScope (scopeText) {
-        return scopeText.indexOf('[') === 0 ? scopeText : '[' + scopeText + '] ';
-    }
+const create = (logger, scope) => {
+    const formatScope = scopeText => scopeText.indexOf('[') === 0 ? scopeText : `[${scopeText}] `;
 
-    var inherit = require('./inherit'),
+    const inherit = require('./inherit'),
         wrappedLogger = inherit.from(logger, {
             scopePrefix: formatScope(scope),
-            withScope: function (nestedScopePrefix) {
-                return create(logger, wrappedLogger.scopePrefix + nestedScopePrefix + ' ');
-            },
-            changeScope: function (newScope) {
+            withScope: nestedScopePrefix => create(logger, `${wrappedLogger.scopePrefix}${nestedScopePrefix} `),
+            changeScope: newScope => {
                 wrappedLogger.scopePrefix = formatScope(newScope);
                 wrap(wrappedLogger, logger);
             }
@@ -41,8 +37,6 @@ function create (logger, scope) {
 
     wrap(wrappedLogger, logger);
     return wrappedLogger;
-}
-
-module.exports = {
-    create: create
 };
+
+module.exports = { create };

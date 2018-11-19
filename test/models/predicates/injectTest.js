@@ -1,25 +1,25 @@
 'use strict';
 
-var assert = require('assert'),
+const assert = require('assert'),
     predicates = require('../../../src/models/predicates'),
     util = require('util');
 
 describe('predicates', function () {
     describe('#inject', function () {
         it('should return true if injected function returns true', function () {
-            var predicate = { inject: 'function () { return true; }' },
+            const predicate = { inject: 'function () { return true; }' },
                 request = {};
             assert.ok(predicates.evaluate(predicate, request));
         });
 
         it('should return false if injected function returns false', function () {
-            var predicate = { inject: 'function () { return false; }' },
+            const predicate = { inject: 'function () { return false; }' },
                 request = {};
             assert.ok(!predicates.evaluate(predicate, request));
         });
 
         it('should return true if injected function matches request', function () {
-            var fn = function (obj) {
+            const fn = function (obj) {
                     return obj.path === '/' && obj.method === 'GET';
                 },
                 predicate = { inject: fn.toString() },
@@ -28,10 +28,10 @@ describe('predicates', function () {
         });
 
         it('should log injection exceptions', function () {
-            var errorsLogged = [],
+            const errorsLogged = [],
                 logger = {
                     error: function () {
-                        var message = util.format.apply(this, Array.prototype.slice.call(arguments));
+                        const message = util.format.apply(this, Array.prototype.slice.call(arguments));
                         errorsLogged.push(message);
                     }
                 },
@@ -49,13 +49,13 @@ describe('predicates', function () {
         });
 
         it('should allow changing the state in the injection', function () {
-            var mockedImposterState = { foo: 'bar' },
+            const mockedImposterState = { foo: 'bar' },
                 expectedImposterState = { foo: 'barbar' },
                 mockedLogger = {
                     error: function () {
                     }
                 };
-            var fn = function (request, logger, imposterState) {
+            const fn = function (request, logger, imposterState) {
                     imposterState.foo = 'barbar';
                     return true;
                 },
@@ -66,7 +66,7 @@ describe('predicates', function () {
         });
 
         it('should not run injection during dry run validation', function () {
-            var fn = function () { throw new Error('BOOM!'); },
+            const fn = function () { throw new Error('BOOM!'); },
                 predicate = { inject: fn.toString() },
                 request = { isDryRun: true };
             assert.ok(predicates.evaluate(predicate, request));

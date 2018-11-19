@@ -1,86 +1,86 @@
 'use strict';
 
-var assert = require('assert'),
+const assert = require('assert'),
     promiseIt = require('../../testHelpers').promiseIt,
     behaviors = require('../../../src/models/behaviors'),
     Logger = require('../../fakes/fakeLogger');
 
-describe('behaviors', function () {
-    describe('#wait', function () {
-        promiseIt('should not execute during dry run', function () {
-            var request = { isDryRun: true },
+describe('behaviors', () => {
+    describe('#wait', () => {
+        promiseIt('should not execute during dry run', () => {
+            const request = { isDryRun: true },
                 response = { key: 'value' },
                 logger = Logger.create(),
                 start = new Date(),
                 config = { wait: 1000 };
 
-            return behaviors.execute(request, response, config, logger).then(function (actualResponse) {
-                var time = new Date() - start;
+            return behaviors.execute(request, response, config, logger).then(actualResponse => {
+                const time = new Date() - start;
                 assert.ok(time < 50, 'Took ' + time + ' milliseconds');
                 assert.deepEqual(actualResponse, { key: 'value' });
             });
         });
 
-        promiseIt('should wait specified number of milliseconds', function () {
-            var request = {},
+        promiseIt('should wait specified number of milliseconds', () => {
+            const request = {},
                 response = { key: 'value' },
                 logger = Logger.create(),
                 start = new Date(),
                 config = { wait: 100 };
 
-            return behaviors.execute(request, response, config, logger).then(function (actualResponse) {
-                var time = new Date() - start;
+            return behaviors.execute(request, response, config, logger).then(actualResponse => {
+                const time = new Date() - start;
                 assert.ok(time > 90, 'Took ' + time + ' milliseconds'); // allows for approximate timing
                 assert.deepEqual(actualResponse, { key: 'value' });
             });
         });
 
-        promiseIt('should allow function to specify latency', function () {
-            var request = {},
+        promiseIt('should allow function to specify latency', () => {
+            const request = {},
                 response = { key: 'value' },
                 logger = Logger.create(),
-                fn = function () { return 100; },
+                fn = () => 100,
                 start = new Date(),
                 config = { wait: fn.toString() };
 
-            return behaviors.execute(request, response, config, logger).then(function (actualResponse) {
-                var time = new Date() - start;
+            return behaviors.execute(request, response, config, logger).then(actualResponse => {
+                const time = new Date() - start;
                 assert.ok(time > 90, 'Took ' + time + ' milliseconds'); // allows for approximate timing
                 assert.deepEqual(actualResponse, { key: 'value' });
             });
         });
 
-        promiseIt('should log error and reject function if function throws error', function () {
-            var request = {},
+        promiseIt('should log error and reject function if function throws error', () => {
+            const request = {},
                 response = { key: 'value' },
                 logger = Logger.create(),
-                fn = function () { throw Error('BOOM!!!'); },
+                fn = () => { throw Error('BOOM!!!'); },
                 config = { wait: fn.toString() };
 
-            return behaviors.execute(request, response, config, logger).then(function () {
+            return behaviors.execute(request, response, config, logger).then(() => {
                 assert.fail('should have rejected');
-            }, function (error) {
+            }, error => {
                 assert.ok(error.message.indexOf('invalid wait injection') >= 0);
                 logger.error.assertLogged(fn.toString());
             });
         });
 
-        promiseIt('should treat a string as milliseconds if it can be parsed as a number', function () {
-            var request = {},
+        promiseIt('should treat a string as milliseconds if it can be parsed as a number', () => {
+            const request = {},
                 response = { key: 'value' },
                 logger = Logger.create(),
                 start = new Date(),
                 config = { wait: '100' };
 
-            return behaviors.execute(request, response, config, logger).then(function (actualResponse) {
-                var time = new Date() - start;
+            return behaviors.execute(request, response, config, logger).then(actualResponse => {
+                const time = new Date() - start;
                 assert.ok(time > 90, 'Took ' + time + ' milliseconds'); // allows for approximate timing
                 assert.deepEqual(actualResponse, { key: 'value' });
             });
         });
 
-        it('should not be valid if below zero', function () {
-            var errors = behaviors.validate({ wait: -1 });
+        it('should not be valid if below zero', () => {
+            const errors = behaviors.validate({ wait: -1 });
             assert.deepEqual(errors, [{
                 code: 'bad data',
                 message: 'wait behavior "wait" field must be an integer greater than or equal to 0',
@@ -88,13 +88,13 @@ describe('behaviors', function () {
             }]);
         });
 
-        it('should be valid if a string is passed in for the function', function () {
-            var errors = behaviors.validate({ wait: 'function () {}' });
+        it('should be valid if a string is passed in for the function', () => {
+            const errors = behaviors.validate({ wait: '() => {}' });
             assert.deepEqual(errors, []);
         });
 
-        it('should not be valid if a boolean is passed in', function () {
-            var errors = behaviors.validate({ wait: true });
+        it('should not be valid if a boolean is passed in', () => {
+            const errors = behaviors.validate({ wait: true });
             assert.deepEqual(errors, [{
                 code: 'bad data',
                 message: 'wait behavior "wait" field must be a string or a number',

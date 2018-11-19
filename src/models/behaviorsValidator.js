@@ -1,10 +1,10 @@
 'use strict';
 
 function create () {
-    var exceptions = require('../util/errors');
+    const exceptions = require('../util/errors');
 
     function hasExactlyOneKey (obj) {
-        var keys = Object.keys(obj);
+        const keys = Object.keys(obj);
         return keys.length === 1;
     }
 
@@ -20,11 +20,11 @@ function create () {
     }
 
     function typeErrorMessageFor (allowedTypes, additionalContext) {
-        var util = require('util'),
-            spellings = { number: 'a', object: 'an', string: 'a' },
-            message = util.format('must be %s %s', spellings[allowedTypes[0]], allowedTypes[0]);
+        const util = require('util'),
+            spellings = { number: 'a', object: 'an', string: 'a' };
+        let message = util.format('must be %s %s', spellings[allowedTypes[0]], allowedTypes[0]);
 
-        for (var i = 1; i < allowedTypes.length; i += 1) {
+        for (let i = 1; i < allowedTypes.length; i += 1) {
             message += util.format(' or %s %s', spellings[allowedTypes[i]], allowedTypes[i]);
         }
         if (additionalContext) {
@@ -68,7 +68,7 @@ function create () {
     }
 
     function addArrayErrors (fieldSpec, path, field, addErrorFn) {
-        var util = require('util');
+        const util = require('util');
 
         if (!util.isArray(field)) {
             addErrorFn(path, 'must be an array');
@@ -76,7 +76,7 @@ function create () {
         else {
             field.forEach(function (subConfig) {
                 // Scope error message to array element instead of entire array
-                var newAddErrorFn = function (fieldName, message) {
+                const newAddErrorFn = function (fieldName, message) {
                     return addErrorFn(fieldName, message, subConfig);
                 };
                 addErrorsFor(subConfig, '', fieldSpec[0], newAddErrorFn);
@@ -86,7 +86,7 @@ function create () {
 
     function addTypeErrors (fieldSpec, path, field, config, addErrorFn) {
         /* eslint complexity: 0 */
-        var util = require('util'),
+        const util = require('util'),
             helpers = require('../util/helpers'),
             fieldType = typeof field,
             allowedTypes = Object.keys(fieldSpec._allowedTypes), // eslint-disable-line no-underscore-dangle
@@ -114,8 +114,8 @@ function create () {
     }
 
     function addErrorsFor (config, pathPrefix, spec, addErrorFn) {
-        Object.keys(spec).filter(nonMetadata).forEach(function (fieldName) {
-            var util = require('util'),
+        Object.keys(spec).filter(nonMetadata).forEach(fieldName => {
+            const util = require('util'),
                 helpers = require('../util/helpers'),
                 fieldSpec = spec[fieldName],
                 path = pathFor(pathPrefix, fieldName),
@@ -140,10 +140,10 @@ function create () {
      * @returns {Object} The array of errors
      */
     function validate (config, validationSpec) {
-        var errors = [];
+        const errors = [];
 
-        Object.keys(config || {}).forEach(function (key) {
-            var util = require('util'),
+        Object.keys(config || {}).forEach(key => {
+            const util = require('util'),
                 addErrorFn = function (field, message, subConfig) {
                     errors.push(exceptions.ValidationError(
                         util.format('%s behavior "%s" field %s', key, field, message),
@@ -161,10 +161,10 @@ function create () {
     }
 
     return {
-        validate: validate
+        validate
     };
 }
 
 module.exports = {
-    create: create
+    create
 };

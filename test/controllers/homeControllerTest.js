@@ -1,13 +1,13 @@
 'use strict';
 
-var Controller = require('../../src/controllers/homeController'),
+const Controller = require('../../src/controllers/homeController'),
     assert = require('assert'),
     FakeResponse = require('../fakes/fakeResponse');
 
-describe('homeController', function () {
-    describe('#get', function () {
-        it('should return base hypermedia', function () {
-            var response = FakeResponse.create(),
+describe('homeController', () => {
+    describe('#get', () => {
+        it('should return base hypermedia', () => {
+            const response = FakeResponse.create(),
                 controller = Controller.create([]);
 
             controller.get({}, response);

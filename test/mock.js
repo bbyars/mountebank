@@ -1,16 +1,16 @@
 'use strict';
 
 function mock () {
-    var wasCalled = false,
+    let wasCalled = false,
         actualArguments = [],
         message = '',
         slice = Array.prototype.slice,
         retVal;
 
     function setMessage (expected, actual) {
-        message = '\nExpected call with ' + JSON.stringify(expected);
+        message = `\nExpected call with ${JSON.stringify(expected)}`;
         if (wasCalled) {
-            message += '\nActual called with ' + JSON.stringify(actual);
+            message += `\nActual called with ${JSON.stringify(actual)}`;
         }
         else {
             message += '\nActually never called';
@@ -28,25 +28,19 @@ function mock () {
         return stubFunction;
     };
 
-    stubFunction.wasCalled = function () {
-        return wasCalled;
-    };
+    stubFunction.wasCalled = () => wasCalled;
 
-    stubFunction.wasCalledWith = function () {
-        var expected = slice.call(arguments),
+    stubFunction.wasCalledWith = () => {
+        const expected = slice.call(arguments),
             actual = actualArguments.slice(0, expected.length); // allow matching only first few params
         setMessage(expected, actualArguments);
 
         return wasCalled && JSON.stringify(actual) === JSON.stringify(expected);
     };
 
-    stubFunction.message = function () {
-        return message;
-    };
+    stubFunction.message = () => message;
 
     return stubFunction;
 }
 
-module.exports = {
-    mock: mock
-};
+module.exports = { mock };
