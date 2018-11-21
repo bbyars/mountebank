@@ -31,8 +31,7 @@ describe('foo imposter', () => {
                 },
                 request = { protocol: 'foo', port, stubs: [stub] };
 
-            return api.post('/imposters', request).then(() => tcp.send('request', port)
-            ).then(response => {
+            return api.post('/imposters', request).then(() => tcp.send('request', port)).then(response => {
                 assert.strictEqual(response.toString(), 'first');
                 return tcp.send('request', port);
             }).then(response => {
@@ -79,11 +78,12 @@ describe('foo imposter', () => {
                 proxyStub = { responses: [{ proxy: { to: { host: 'localhost', port: originServerPort } } }] },
                 proxyRequest = { protocol: 'foo', port, stubs: [proxyStub], name: 'PROXY' };
 
-            return api.post('/imposters', originServerRequest).then(() => api.post('/imposters', proxyRequest)
-            ).then(() => tcp.send('request', port)
-            ).then(response => {
-                assert.strictEqual(response.toString(), 'PROXIED');
-            }).finally(() => api.del('/imposters'));
+            return api.post('/imposters', originServerRequest).then(() => api.post('/imposters', proxyRequest))
+                .then(() => tcp.send('request', port))
+                .then(response => {
+                    assert.strictEqual(response.toString(), 'PROXIED');
+                })
+                .finally(() => api.del('/imposters'));
         }).timeout(timeout);
     });
 });
