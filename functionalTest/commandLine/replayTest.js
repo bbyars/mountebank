@@ -47,5 +47,5 @@ describe('mb replay', () => {
 
             assert.deepEqual(responses, [['1. /first', '3. /first'], ['2. /second']]);
         }).finally(() => mb.stop());
-    });
-}).timeout(timeout);
+    }).timeout(timeout);
+});

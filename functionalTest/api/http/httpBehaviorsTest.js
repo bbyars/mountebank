@@ -36,7 +36,7 @@ const assert = require('assert'),
                     // Occasionally there's some small inaccuracies
                     assert.ok(time >= 990, `actual time: ${time}`);
                 }).finally(() => api.del('/imposters'));
-            });
+            }).timeout(timeout);
 
             promiseIt('should add latency when using behaviors.wait as a function', () => {
                 const fn = () => 1000,
@@ -61,7 +61,7 @@ const assert = require('assert'),
                     // Occasionally there's some small inaccuracies
                     assert.ok(time >= 990, `actual time: ${time}`);
                 }).finally(() => api.del('/imposters'));
-            });
+            }).timeout(timeout);
 
             promiseIt('should support post-processing when using behaviors.decorate', () => {
                 const decorator = (request, response) => {
@@ -82,7 +82,7 @@ const assert = require('assert'),
                 }).then(response => {
                     assert.strictEqual(response.body, `the year is ${new Date().getFullYear()}`);
                 }).finally(() => api.del('/imposters'));
-            });
+            }).timeout(timeout);
 
             promiseIt('should fix content-length if set and adjusted using decoration (issue #155)', () => {
                 const decorator = (request, response) => {
@@ -107,7 +107,7 @@ const assert = require('assert'),
                     assert.strictEqual(response.body, 'length-8');
                     assert.strictEqual(response.headers['content-length'], '8');
                 }).finally(() => api.del('/imposters'));
-            });
+            }).timeout(timeout);
 
             promiseIt('should support using request parameters during decorating', () => {
                 const decorator = (request, response) => {
@@ -128,7 +128,7 @@ const assert = require('assert'),
                 }).then(response => {
                     assert.strictEqual(response.body, 'the path is /test');
                 }).finally(() => api.del('/imposters'));
-            });
+            }).timeout(timeout);
 
             promiseIt('should support using request parameters during decorating multiple times (issue #173)', () => {
                 const decorator = (request, response) => {
@@ -156,7 +156,7 @@ const assert = require('assert'),
                 }).then(response => {
                     assert.strictEqual(response.body, 'request 300');
                 }).finally(() => api.del('/imposters'));
-            });
+            }).timeout(timeout);
 
             promiseIt('should support decorate functions that return a value', () => {
                 const decorator = (request, response) => {
@@ -179,7 +179,7 @@ const assert = require('assert'),
                 }).then(response => {
                     assert.strictEqual(response.body, 'This is a clone');
                 }).finally(() => api.del('/imposters'));
-            });
+            }).timeout(timeout);
 
             promiseIt('should not validate the decorate JavaScript function', () => {
                 const decorator = "response.body = 'This should not work';",
@@ -195,7 +195,7 @@ const assert = require('assert'),
                 return api.post('/imposters', request).then(response => {
                     assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body, null, 2));
                 }).finally(() => api.del('/imposters'));
-            });
+            }).timeout(timeout);
 
             promiseIt('should repeat if behavior set and loop around responses with same repeat behavior (issue #165)', () => {
                 const stub = {
@@ -246,7 +246,7 @@ const assert = require('assert'),
                     assert.strictEqual(response.body, 'first response');
                     return client.get('/', port);
                 }).finally(() => api.del('/imposters'));
-            });
+            }).timeout(timeout);
 
             promiseIt('should repeat consistently with headers (issue #158)', () => {
                 const stub = {
@@ -275,7 +275,7 @@ const assert = require('assert'),
                 }).then(response => {
                     assert.deepEqual(response.body, 'second response', 'third try');
                 }).finally(() => api.del('/imposters'));
-            });
+            }).timeout(timeout);
 
             promiseIt('should repeat with JSON key of repeat (issue #237)', () => {
                 const stub = {
@@ -306,7 +306,7 @@ const assert = require('assert'),
                 }).then(response => {
                     assert.deepEqual(response.body, 'Then you should see this', 'third try');
                 }).finally(() => api.del('/imposters'));
-            });
+            }).timeout(timeout);
 
             promiseIt('should support shell transform without array for backwards compatibility', () => {
                 // The string version of the shellTransform behavior is left for backwards
@@ -334,7 +334,7 @@ const assert = require('assert'),
                     fs.unlinkSync('shellTransformTest.js');
                     return api.del('/imposters');
                 });
-            });
+            }).timeout(timeout);
 
             promiseIt('should support array of shell transforms in order', () => {
                 const stub = {
@@ -371,7 +371,7 @@ const assert = require('assert'),
                     fs.unlinkSync('increment.js');
                     return api.del('/imposters');
                 });
-            });
+            }).timeout(timeout);
 
             promiseIt('should support copying from request fields using regex', () => {
                 const stub = {
@@ -423,7 +423,7 @@ const assert = require('assert'),
                     assert.strictEqual(response.headers['x-test'], 'header value');
                     assert.strictEqual(response.body, 'HERE');
                 }).finally(() => api.del('/imposters'));
-            });
+            }).timeout(timeout);
 
             promiseIt('should support copying from request fields using xpath', () => {
                 const stub = {
@@ -450,7 +450,7 @@ const assert = require('assert'),
                 }).then(response => {
                     assert.strictEqual(response.body, 'Hello, mountebank! Good to see you, mountebank.');
                 }).finally(() => api.del('/imposters'));
-            });
+            }).timeout(timeout);
 
             promiseIt('should support copying from request fields using jsonpath', () => {
                 const stub = {
@@ -473,7 +473,7 @@ const assert = require('assert'),
                 }).then(response => {
                     assert.strictEqual(response.body, 'Hello, mountebank! Good to see you, mountebank.');
                 }).finally(() => api.del('/imposters'));
-            });
+            }).timeout(timeout);
 
             promiseIt('should support lookup from CSV file keyed by regex', () => {
                 const stub = {
@@ -525,7 +525,7 @@ const assert = require('assert'),
                     fs.unlinkSync('lookupTest.csv');
                     return api.del('/imposters');
                 });
-            });
+            }).timeout(timeout);
 
             promiseIt('should support lookup from CSV file keyed by xpath', () => {
                 const stub = {
@@ -564,7 +564,7 @@ const assert = require('assert'),
                     fs.unlinkSync('lookupTest.csv');
                     return api.del('/imposters');
                 });
-            });
+            }).timeout(timeout);
 
             promiseIt('should support lookup from CSV file keyed by jsonpath', () => {
                 const stub = {
@@ -596,7 +596,7 @@ const assert = require('assert'),
                     fs.unlinkSync('lookupTest.csv');
                     return api.del('/imposters');
                 });
-            });
+            }).timeout(timeout);
 
             promiseIt('should compose multiple behaviors together', () => {
                 const shellFn = function exec () {
@@ -651,7 +651,7 @@ const assert = require('assert'),
                     fs.unlinkSync('shellTransformTest.js');
                     return api.del('/imposters');
                 });
-            });
+            }).timeout(timeout);
         });
-    }).timeout(timeout);
+    });
 });

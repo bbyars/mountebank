@@ -22,7 +22,7 @@ describe('foo imposter', () => {
             }).then(response => {
                 assert.strictEqual(response.toString(), 'server');
             }).finally(() => api.del('/imposters'));
-        });
+        }).timeout(timeout);
 
         promiseIt('should allow a sequence of stubs as a circular buffer', () => {
             const stub = {
@@ -44,7 +44,7 @@ describe('foo imposter', () => {
             }).then(response => {
                 assert.strictEqual(response.toString(), 'second');
             }).finally(() => api.del('/imposters'));
-        });
+        }).timeout(timeout);
 
         promiseIt('should only return stubbed response if matches complex predicate', () => {
             const stub = {
@@ -65,7 +65,7 @@ describe('foo imposter', () => {
             }).then(response => {
                 assert.strictEqual(response.toString(), 'MATCH');
             }).finally(() => api.del('/imposters'));
-        });
+        }).timeout(timeout);
 
         promiseIt('should allow proxy stubs', () => {
             const originServerPort = port + 1,
@@ -84,6 +84,6 @@ describe('foo imposter', () => {
             ).then(response => {
                 assert.strictEqual(response.toString(), 'PROXIED');
             }).finally(() => api.del('/imposters'));
-        });
+        }).timeout(timeout);
     });
-}).timeout(timeout);
+});

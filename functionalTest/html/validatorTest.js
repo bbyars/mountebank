@@ -87,6 +87,6 @@ if (process.env.MB_AIRPLANE_MODE !== 'true' && process.env.MB_RUN_WEB_TESTS === 
 
                 return Q.all(tests);
             });
-        });
-    }).timeout(60000);
+        }).timeout(60000);
+    });
 }

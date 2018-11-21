@@ -16,21 +16,23 @@ describe('foo imposter', () => {
                 assert.strictEqual(response.statusCode, 201);
                 assert.ok(response.body.port > 0);
             }).finally(() => api.del('/imposters'));
-        });
+        }).timeout(timeout);
     });
 
     describe('GET /imposters/:id', () => {
         promiseIt('should provide access to all requests', () => {
             const imposterRequest = { protocol: 'foo', port };
 
-            return api.post('/imposters', imposterRequest).then(() => tcp.fireAndForget('first', port)
-            ).then(() => tcp.fireAndForget('second', port)
-            ).then(() => api.get(`/imposters/${port}`)
-            ).then(response => {
-                const requests = response.body.requests.map(request => request.data);
-                assert.deepEqual(requests, ['first', 'second']);
-            }).finally(() => api.del('/imposters'));
-        });
+            return api.post('/imposters', imposterRequest)
+                .then(() => tcp.fireAndForget('first', port))
+                .then(() => tcp.fireAndForget('second', port))
+                .then(() => api.get(`/imposters/${port}`))
+                .then(response => {
+                    const requests = response.body.requests.map(request => request.data);
+                    assert.deepEqual(requests, ['first', 'second']);
+                })
+                .finally(() => api.del('/imposters'));
+        }).timeout(timeout);
 
         promiseIt('should return list of stubs in order', () => {
             const first = { responses: [{ is: { data: '1' } }] },
@@ -45,7 +47,7 @@ describe('foo imposter', () => {
                     { responses: [{ is: { data: '2' } }] }
                 ]);
             }).finally(() => api.del('/imposters'));
-        });
+        }).timeout(timeout);
 
         promiseIt('should record matches against stubs', () => {
             const stub = { responses: [{ is: { data: '1' } }, { is: { data: '2' } }] },
@@ -76,6 +78,6 @@ describe('foo imposter', () => {
                     ]
                 }]);
             }).finally(() => api.del('/imposters'));
-        });
+        }).timeout(timeout);
     });
-}).timeout(timeout);
+});

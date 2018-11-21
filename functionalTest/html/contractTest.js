@@ -37,6 +37,6 @@ describe('contracts', () => {
     ['home', 'imposters', 'imposter', 'config', 'logs'].forEach(contractType => {
         promiseIt(`${contractType} contract should be valid JSON`, () => getJSONFor(contractType).then(json => {
             assertJSON(json);
-        }));
+        })).timeout(timeout);
     });
-}).timeout(timeout);
+});

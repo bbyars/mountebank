@@ -38,7 +38,7 @@ const assert = require('assert'),
                 }).then(response => {
                     assert.strictEqual(response.body, 'MATCHED');
                 }).finally(() => api.del('/imposters'));
-            });
+            }).timeout(timeout);
 
             promiseIt('should not validate a bad predicate injection', () => {
                 const stub = {
@@ -50,7 +50,7 @@ const assert = require('assert'),
                 return api.post('/imposters', request).then(response => {
                     assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body));
                 }).finally(() => api.del('/imposters'));
-            });
+            }).timeout(timeout);
 
             promiseIt('should allow synchronous javascript injection for responses', () => {
                 const fn = request => ({ body: `${request.method} INJECTED` }),
@@ -62,7 +62,7 @@ const assert = require('assert'),
                     assert.strictEqual(response.statusCode, 200);
                     assert.strictEqual(response.headers.connection, 'close');
                 }).finally(() => api.del('/imposters'));
-            });
+            }).timeout(timeout);
 
             promiseIt('should not validate a bad response injection', () => {
                 const fn = () => { throw new Error('BOOM'); },
@@ -72,7 +72,7 @@ const assert = require('assert'),
                 return api.post('/imposters', request).then(response => {
                     assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body));
                 }).finally(() => api.del('/imposters'));
-            });
+            }).timeout(timeout);
 
             promiseIt('should allow javascript injection to keep state between requests', () => {
                 const fn = (request, state) => {
@@ -94,7 +94,7 @@ const assert = require('assert'),
                 }).then(response => {
                     assert.deepEqual(response.body, '2');
                 }).finally(() => api.del('/imposters'));
-            });
+            }).timeout(timeout);
 
             promiseIt('should allow access to the global process object', () => {
                 // https://github.com/bbyars/mountebank/issues/134
@@ -108,7 +108,7 @@ const assert = require('assert'),
                 }).then(response => {
                     assert.strictEqual(response.body, process.env.USER || 'test');
                 }).finally(() => api.del('/imposters'));
-            });
+            }).timeout(timeout);
 
             if (process.env.MB_AIRPLANE_MODE !== 'true') {
                 promiseIt('should allow asynchronous injection', () => {
@@ -159,8 +159,8 @@ const assert = require('assert'),
                             assert.ok(response.headers.location.indexOf('google.') >= 0, response.headers.location);
                         }
                     }).finally(() => api.del('/imposters'));
-                });
+                }).timeout(timeout);
             }
         });
-    }).timeout(timeout);
+    });
 });

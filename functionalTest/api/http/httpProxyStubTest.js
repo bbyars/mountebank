@@ -22,7 +22,7 @@ describe('http proxy stubs', () => {
                 assert.strictEqual(response.body.errors[0].code, 'invalid proxy');
                 assert.strictEqual(response.body.errors[0].message, 'Cannot resolve "http://invalid.domain"');
             }).finally(() => api.del('/imposters'));
-        });
+        }).timeout(timeout);
     }
 
     promiseIt('should reflect default mode after first proxy if no mode passed in', () => {
@@ -46,7 +46,7 @@ describe('http proxy stubs', () => {
         }).then(response => {
             assert.strictEqual(response.body.stubs[1].responses[0].proxy.mode, 'proxyOnce', response.body);
         }).finally(() => api.del('/imposters'));
-    });
+    }).timeout(timeout);
 
     promiseIt('should record new stubs in order in front of proxy resolver using proxyOnce mode', () => {
         const originServerPort = port + 1,
@@ -103,7 +103,7 @@ describe('http proxy stubs', () => {
         }).then(response => {
             assert.strictEqual(response.body.stubs.length, 4);
         }).finally(() => api.del('/imposters'));
-    });
+    }).timeout(timeout);
 
     promiseIt('should record new stubs with multiple responses behind proxy resolver in proxyAlways mode', () => {
         const originServerPort = port + 1,
@@ -140,7 +140,7 @@ describe('http proxy stubs', () => {
 
             assert.deepEqual(responses, [['1. /first', '3. /first'], ['2. /second']]);
         }).finally(() => api.del('/imposters'));
-    });
+    }).timeout(timeout);
 
     promiseIt('should match entire object graphs', () => {
         const originServerPort = port + 1,
@@ -182,7 +182,7 @@ describe('http proxy stubs', () => {
             assert.strictEqual(response.body, '1. {"first":"1","second":"2"}');
             return api.del(`/imposters/${originServerPort}`);
         }).finally(() => api.del('/imposters'));
-    });
+    }).timeout(timeout);
 
     promiseIt('should match sub-objects', () => {
         const originServerPort = port + 1,
@@ -224,7 +224,7 @@ describe('http proxy stubs', () => {
             assert.strictEqual(response.body, '1. {"first":"1","second":"2"}');
             return api.del(`/imposters/${originServerPort}`);
         }).finally(() => api.del('/imposters'));
-    });
+    }).timeout(timeout);
 
     promiseIt('should persist behaviors from origin server', () => {
         const originServerPort = port + 1,
@@ -272,7 +272,7 @@ describe('http proxy stubs', () => {
             fs.unlinkSync('shellTransformTest.js');
             return api.del('/imposters');
         });
-    });
+    }).timeout(timeout);
 
     promiseIt('should support adding latency to saved responses based on how long the origin server took to respond', () => {
         const originServerPort = port + 1,
@@ -300,7 +300,7 @@ describe('http proxy stubs', () => {
             // eslint-disable-next-line no-underscore-dangle
             assert.strictEqual(stubResponse._behaviors.wait, stubResponse.is._proxyResponseTime, JSON.stringify(stubResponse, null, 4));
         }).finally(() => api.del('/imposters'));
-    });
+    }).timeout(timeout);
 
     promiseIt('should support retrieving replayable JSON with proxies removed for later playback', () => {
         const originServerPort = port + 1,
@@ -404,7 +404,7 @@ describe('http proxy stubs', () => {
                 ]
             });
         }).finally(() => api.del('/imposters'));
-    });
+    }).timeout(timeout);
 
     promiseIt('should support returning binary data from origin server based on content encoding', () => {
         const buffer = new Buffer([0, 1, 2, 3]),
@@ -433,7 +433,7 @@ describe('http proxy stubs', () => {
         }).then(response => {
             assert.deepEqual(response.body.toJSON().data, [0, 1, 2, 3]);
         }).finally(() => api.del('/imposters'));
-    });
+    }).timeout(timeout);
 
     promiseIt('should persist decorated proxy responses and only run decorator once', () => {
         const originServerPort = port + 1,
@@ -465,7 +465,7 @@ describe('http proxy stubs', () => {
         }).then(response => {
             assert.strictEqual(response.body.stubs[0].responses[0].is.body, 'origin server decorated');
         }).finally(() => api.del('/imposters'));
-    });
+    }).timeout(timeout);
 
     if (!airplaneMode) {
         promiseIt('should support http proxy to https server', () => {
@@ -482,7 +482,7 @@ describe('http proxy stubs', () => {
                 // https://www.google.com.br in Brasil, google.ca in Canada, etc
                 assert.ok(response.headers.location.indexOf('google.') >= 0, response.headers.location);
             }).finally(() => api.del('/imposters'));
-        });
+        }).timeout(timeout);
 
         promiseIt('should maintain case of headers from origin', () => {
             const proxyStub = { responses: [{ proxy: { to: 'http://google.com' } }] },
@@ -497,7 +497,7 @@ describe('http proxy stubs', () => {
                     assert.ok(isUpperCase(response.rawHeaders[i]), `${response.rawHeaders[i]} is not upper-case`);
                 }
             }).finally(() => api.del('/imposters'));
-        });
+        }).timeout(timeout);
 
         promiseIt('should inject proxy headers if specified', () => {
             const proxyPort = port + 1;
@@ -520,7 +520,7 @@ describe('http proxy stubs', () => {
                 assert.equal(response.headers['x-forwarded-host'], 'http://www.google.com');
                 assert.equal(response.headers.host, 'colbert');
             }).finally(() => api.del('/imposters'));
-        });
+        }).timeout(timeout);
     }
 
     promiseIt('should not default to chunked encoding on proxied request (issue #132)', () => {
@@ -577,7 +577,7 @@ describe('http proxy stubs', () => {
         }).then(response => {
             assert.strictEqual(response.body, 'Encoding: content-length');
         }).finally(() => api.del('/imposters'));
-    });
+    }).timeout(timeout);
 
     promiseIt('should add decorate behaviors to newly created response', () => {
         const originServerPort = port + 1,
@@ -608,5 +608,5 @@ describe('http proxy stubs', () => {
         }).then(response => {
             assert.strictEqual(response.body, 'origin server decorated');
         }).finally(() => api.del('/imposters'));
-    });
-}).timeout(timeout);
+    }).timeout(timeout);
+});

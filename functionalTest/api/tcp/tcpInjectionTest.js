@@ -23,7 +23,7 @@ describe('tcp imposter', () => {
             }).then(response => {
                 assert.strictEqual(response.toString(), 'MATCHED');
             }).finally(() => api.del('/imposters'));
-        });
+        }).timeout(timeout);
 
         promiseIt('should allow synchronous javascript injection for responses', () => {
             const fn = request => ({ data: `${request.data} INJECTED` }),
@@ -33,7 +33,7 @@ describe('tcp imposter', () => {
             return api.post('/imposters', request).then(() => tcp.send('request', port)).then(response => {
                 assert.strictEqual(response.toString(), 'request INJECTED');
             }).finally(() => api.del('/imposters'));
-        });
+        }).timeout(timeout);
 
         promiseIt('should allow javascript injection to keep state between requests', () => {
             const fn = (request, state) => {
@@ -55,7 +55,7 @@ describe('tcp imposter', () => {
             }).then(response => {
                 assert.deepEqual(response.toString(), '2');
             }).finally(() => api.del('/imposters'));
-        });
+        }).timeout(timeout);
 
         promiseIt('should allow asynchronous injection', () => {
             const originServerPort = port + 1,
@@ -91,7 +91,7 @@ describe('tcp imposter', () => {
             }).then(response => {
                 assert.strictEqual(response.toString().indexOf('HTTP/1.1'), 0);
             }).finally(() => api.del('/imposters'));
-        });
+        }).timeout(timeout);
 
         promiseIt('should allow binary requests extending beyond a single packet using endOfRequestResolver', () => {
             // We'll simulate a protocol that has a 4 byte message length at byte 0 indicating how many bytes follow
@@ -127,7 +127,7 @@ describe('tcp imposter', () => {
                 assert.strictEqual(response.body.requests.length, 1);
                 assert.strictEqual(response.body.requests[0].data, largeRequest.toString('base64'));
             }).finally(() => api.del('/imposters'));
-        });
+        }).timeout(timeout);
 
         promiseIt('should allow text requests extending beyond a single packet using endOfRequestResolver', () => {
             // We'll simulate HTTP
@@ -156,6 +156,6 @@ describe('tcp imposter', () => {
                 assert.strictEqual(response.body.requests.length, 1);
                 assert.strictEqual(response.body.requests[0].data, largeRequest);
             }).finally(() => api.del('/imposters'));
-        });
+        }).timeout(timeout);
     });
-}).timeout(timeout);
+});

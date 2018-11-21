@@ -16,7 +16,7 @@ describe('tcp imposter', () => {
                 assert.strictEqual(response.statusCode, 201);
                 assert.ok(response.body.port > 0);
             }).finally(() => api.del('/imposters'));
-        });
+        }).timeout(timeout);
     });
 
     describe('GET /imposters/:id', () => {
@@ -27,7 +27,7 @@ describe('tcp imposter', () => {
                 const requests = response.body.requests.map(recordedRequest => recordedRequest.data);
                 assert.deepEqual(requests, ['first', 'second']);
             }).finally(() => api.del('/imposters'));
-        });
+        }).timeout(timeout);
 
         promiseIt('should return list of stubs in order', () => {
             const first = { responses: [{ is: { data: '1' } }] },
@@ -41,7 +41,7 @@ describe('tcp imposter', () => {
                     { responses: [{ is: { data: '2' } }] }
                 ]);
             }).finally(() => api.del('/imposters'));
-        });
+        }).timeout(timeout);
 
         promiseIt('should reflect default mode', () => {
             const request = { protocol: 'tcp', port, name: 'imposter' };
@@ -61,7 +61,7 @@ describe('tcp imposter', () => {
                     }
                 });
             }).finally(() => api.del('/imposters'));
-        });
+        }).timeout(timeout);
 
         promiseIt('should record matches against stubs', () => {
             const stub = { responses: [{ is: { data: '1' } }, { is: { data: '2' } }] },
@@ -89,6 +89,6 @@ describe('tcp imposter', () => {
                     ]
                 }]);
             }).finally(() => api.del('/imposters'));
-        });
+        }).timeout(timeout);
     });
-}).timeout(timeout);
+});

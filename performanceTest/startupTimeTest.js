@@ -30,5 +30,5 @@ describe('mb', () => {
             console.log(`Took ${seconds} seconds, averaging ${millisecondsPer} ms per restart`);
             assert.ok(millisecondsPer < 800, `Averaged ${millisecondsPer}; should be under 500 (added buffer for CI determinism)`);
         }).finally(() => mb.stop());
-    });
-}).timeout(450000);
+    }).timeout(450000);
+});

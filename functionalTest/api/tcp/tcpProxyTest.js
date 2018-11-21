@@ -23,7 +23,7 @@ describe('tcp proxy', () => {
             return api.post('/imposters', request).then(() => proxy.to(`tcp://localhost:${port}`, { data: 'hello, world!' })).then(response => {
                 assert.deepEqual(response.data.toString(), 'howdy!');
             }).finally(() => api.del('/imposters'));
-        });
+        }).timeout(timeout);
 
         promiseIt('should support old proxy syntax for backwards compatibility', () => {
             const stub = { responses: [{ is: { data: 'howdy!' } }] },
@@ -33,7 +33,7 @@ describe('tcp proxy', () => {
             return api.post('/imposters', request).then(() => proxy.to({ host: 'localhost', port }, { data: 'hello, world!' })).then(response => {
                 assert.deepEqual(response.data.toString(), 'howdy!');
             }).finally(() => api.del('/imposters'));
-        });
+        }).timeout(timeout);
 
         promiseIt('should proxy binary data', () => {
             const buffer = new Buffer([0, 1, 2, 3]),
@@ -44,7 +44,7 @@ describe('tcp proxy', () => {
             return api.post('/imposters', request).then(() => proxy.to(`tcp://localhost:${port}`, { data: buffer })).then(response => {
                 assert.deepEqual(new Buffer(response.data, 'base64').toJSON().data, [0, 1, 2, 3]);
             }).finally(() => api.del('/imposters'));
-        });
+        }).timeout(timeout);
 
         promiseIt('should wait for remote socket to end before returning', () => {
             const server = net.createServer(client => {
@@ -62,7 +62,7 @@ describe('tcp proxy', () => {
             }).finally(() => {
                 server.close();
             });
-        });
+        }).timeout(timeout);
 
         promiseIt('should capture response time to origin server', () => {
             const stub = { responses: [{ is: { data: 'howdy!' } }] },
@@ -73,7 +73,7 @@ describe('tcp proxy', () => {
                 assert.deepEqual(response.data.toString(), 'howdy!');
                 assert.ok(response._proxyResponseTime >= 0); // eslint-disable-line no-underscore-dangle
             }).finally(() => api.del('/imposters'));
-        });
+        }).timeout(timeout);
 
         if (!airplaneMode) {
             promiseIt('should gracefully deal with DNS errors', () => {
@@ -87,7 +87,7 @@ describe('tcp proxy', () => {
                         message: 'Cannot resolve "tcp://no.such.domain:80"'
                     });
                 });
-            });
+            }).timeout(timeout);
         }
 
         promiseIt('should gracefully deal with non listening ports', () => {
@@ -101,7 +101,7 @@ describe('tcp proxy', () => {
                     message: 'Unable to connect to "tcp://localhost:18000"'
                 });
             });
-        });
+        }).timeout(timeout);
 
         promiseIt('should reject non-tcp protocols', () => {
             const proxy = TcpProxy.create(logger, 'utf8');
@@ -115,6 +115,6 @@ describe('tcp proxy', () => {
                     source: 'http://localhost:80'
                 });
             });
-        });
+        }).timeout(timeout);
     });
-}).timeout(timeout);
+});

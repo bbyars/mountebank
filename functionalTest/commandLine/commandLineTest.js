@@ -8,7 +8,8 @@ const assert = require('assert'),
     isWindows = require('os').platform().indexOf('win') === 0,
     BaseHttpClient = require('../api/http/baseHttpClient'),
     promiseIt = require('../testHelpers').promiseIt,
-    timeout = parseInt(process.env.MB_SLOW_TEST_TIMEOUT || 3000),
+    baseTimeout = parseInt(process.env.MB_SLOW_TEST_TIMEOUT || 3000),
+    timeout = isWindows ? 2 * baseTimeout : baseTimeout,
     smtp = require('../api/smtp/smtpClient'),
     http = BaseHttpClient.create('http'),
     https = BaseHttpClient.create('https'),
@@ -59,7 +60,7 @@ describe('mb command line', () => {
                 text: 'text 1'
             }, 6565);
         }).finally(() => mb.stop());
-    });
+    }).timeout(timeout);
 
     // This is the response resolver injection example on /docs/api/injection
     promiseIt('should evaluate stringify function in templates when loading configuration files', () => {
@@ -77,7 +78,7 @@ describe('mb command line', () => {
         }).then(response => {
             assert.strictEqual(response.body, 'There have been 2 proxied calls');
         }).finally(() => mb.stop());
-    });
+    }).timeout(timeout);
 
     promiseIt('should evaluate nested stringify functions when loading configuration files', () => {
         const args = ['--configfile', path.join(__dirname, 'nestedStringify/imposters.ejs'), '--allowInjection'];
@@ -85,7 +86,7 @@ describe('mb command line', () => {
         return mb.start(args).then(() => http.get('/', 4542)).then(response => {
             assert.deepEqual(response.body, { success: true });
         }).finally(() => mb.stop());
-    });
+    }).timeout(timeout);
 
     promiseIt('should not render through ejs when --noParse option provided', () => {
         const args = ['--configfile', path.join(__dirname, 'noparse.json'), '--noParse'];
@@ -93,7 +94,7 @@ describe('mb command line', () => {
         return mb.start(args).then(() => http.get('/', 4545)).then(response => {
             assert.strictEqual(response.body, '<% should not render through ejs');
         }).finally(() => mb.stop());
-    });
+    }).timeout(timeout);
 
     promiseIt('should allow saving replayable format', () => {
         const args = ['--configfile', path.join(__dirname, 'imposters/imposters.ejs')];
@@ -107,7 +108,7 @@ describe('mb command line', () => {
             assert.deepEqual(expected, JSON.parse(fs.readFileSync('mb.json')));
             fs.unlinkSync('mb.json');
         }).finally(() => mb.stop());
-    });
+    }).timeout(timeout);
 
     promiseIt('should allow saving to a different config file', () => {
         const args = ['--configfile', path.join(__dirname, 'imposters/imposters.ejs')];
@@ -121,7 +122,7 @@ describe('mb command line', () => {
             assert.deepEqual(expected, JSON.parse(fs.readFileSync('saved.json')));
             fs.unlinkSync('saved.json');
         }).finally(() => mb.stop());
-    });
+    }).timeout(timeout);
 
     if (process.env.MB_AIRPLANE_MODE !== 'true') {
         promiseIt('should allow removing proxies during save', () => {
@@ -141,6 +142,6 @@ describe('mb command line', () => {
                 assert.deepEqual(expected, JSON.parse(fs.readFileSync('mb.json')));
                 fs.unlinkSync('mb.json');
             }).finally(() => mb.stop());
-        });
+        }).timeout(timeout);
     }
-}).timeout(isWindows ? 2 * timeout : timeout);
+});

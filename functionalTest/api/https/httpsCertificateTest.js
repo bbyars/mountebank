@@ -30,7 +30,7 @@ describe('https imposter', () => {
         }).then(response => {
             assert.strictEqual(response.statusCode, 200);
         }).finally(() => api.del('/imposters'));
-    });
+    }).timeout(timeout);
 
     promiseIt('should default key/cert pair during imposter creation if not provided', () => {
         const request = { protocol: 'https', port };
@@ -43,7 +43,7 @@ describe('https imposter', () => {
         }).then(response => {
             assert.strictEqual(response.statusCode, 200);
         }).finally(() => api.del('/imposters'));
-    });
+    }).timeout(timeout);
 
     promiseIt('should work with mutual auth', () => {
         const request = { protocol: 'https', port, mutualAuth: true };
@@ -62,7 +62,7 @@ describe('https imposter', () => {
         }).then(response => {
             assert.strictEqual(response.statusCode, 200);
         }).finally(() => api.del('/imposters'));
-    });
+    }).timeout(timeout);
 
     promiseIt('should support proxying to origin server requiring mutual auth', () => {
         const originServerPort = port + 1,
@@ -94,5 +94,5 @@ describe('https imposter', () => {
         }).then(response => {
             assert.strictEqual(response.body, 'origin server');
         }).finally(() => api.del('/imposters'));
-    });
-}).timeout(timeout);
+    }).timeout(timeout);
+});

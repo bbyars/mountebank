@@ -25,7 +25,7 @@ describe('tcp imposter', () => {
             }).then(response => {
                 assert.strictEqual(response.toString(), 'server');
             }).finally(() => api.del('/imposters'));
-        });
+        }).timeout(timeout);
 
         promiseIt('should allow binary stub responses', () => {
             const buffer = new Buffer([0, 1, 2, 3]),
@@ -40,7 +40,7 @@ describe('tcp imposter', () => {
                 assert.ok(Buffer.isBuffer(response));
                 assert.deepEqual(response.toJSON().data, [0, 1, 2, 3]);
             }).finally(() => api.del('/imposters'));
-        });
+        }).timeout(timeout);
 
         promiseIt('should allow a sequence of stubs as a circular buffer', () => {
             const stub = {
@@ -64,7 +64,7 @@ describe('tcp imposter', () => {
             }).then(response => {
                 assert.strictEqual(response.toString(), 'second');
             }).finally(() => api.del('/imposters'));
-        });
+        }).timeout(timeout);
 
         promiseIt('should only return stubbed response if matches complex predicate', () => {
             const stub = {
@@ -86,7 +86,7 @@ describe('tcp imposter', () => {
             }).then(response => {
                 assert.strictEqual(response.toString(), 'MATCH');
             }).finally(() => api.del('/imposters'));
-        });
+        }).timeout(timeout);
 
         promiseIt('should return 400 if uses matches predicate with binary mode', () => {
             const stub = {
@@ -99,7 +99,7 @@ describe('tcp imposter', () => {
                 assert.strictEqual(response.statusCode, 400);
                 assert.strictEqual(response.body.errors[0].data, 'the matches predicate is not allowed in binary mode');
             }).finally(() => api.del('/imposters'));
-        });
+        }).timeout(timeout);
 
         promiseIt('should allow proxy stubs', () => {
             const proxyPort = port + 1,
@@ -111,7 +111,7 @@ describe('tcp imposter', () => {
             return api.post('/imposters', proxyRequest).then(() => api.post('/imposters', request)).then(() => tcp.send('request', port)).then(response => {
                 assert.strictEqual(response.toString(), 'PROXIED');
             }).finally(() => api.del('/imposters'));
-        });
+        }).timeout(timeout);
 
         if (!airplaneMode) {
             promiseIt('should allow proxy stubs to invalid hosts', () => {
@@ -123,7 +123,7 @@ describe('tcp imposter', () => {
                     assert.strictEqual(error.code, 'invalid proxy');
                     assert.strictEqual(error.message, 'Cannot resolve "tcp://remotehost:8000"');
                 }).finally(() => api.del('/imposters'));
-            });
+            }).timeout(timeout);
         }
 
         promiseIt('should split each packet into a separate request by default', () => {
@@ -147,7 +147,7 @@ describe('tcp imposter', () => {
                 assert.ok(requests.length > 1);
                 assert.strictEqual(65537, dataLength);
             }).finally(() => api.del('/imposters'));
-        });
+        }).timeout(timeout);
 
         promiseIt('should support changing default response for stub', () => {
             const stub = {
@@ -171,6 +171,6 @@ describe('tcp imposter', () => {
             }).then(response => {
                 assert.strictEqual('Default response', response.toString());
             }).finally(() => api.del('/imposters'));
-        });
+        }).timeout(timeout);
     });
-}).timeout(timeout);
+});

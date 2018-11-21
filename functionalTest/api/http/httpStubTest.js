@@ -37,7 +37,7 @@ const assert = require('assert'),
                     assert.strictEqual(response.body, 'test body');
                     assert.strictEqual(response.headers['x-test'], 'test header');
                 }).finally(() => api.del('/imposters'));
-            });
+            }).timeout(timeout);
 
             promiseIt('should allow a sequence of stubs as a circular buffer', () => {
                 const stub = { responses: [{ is: { statusCode: 400 } }, { is: { statusCode: 405 } }] },
@@ -58,7 +58,7 @@ const assert = require('assert'),
                 }).then(response => {
                     assert.strictEqual(response.statusCode, 405);
                 }).finally(() => api.del('/imposters'));
-            });
+            }).timeout(timeout);
 
             promiseIt('should only return stubbed response if matches complex predicate', () => {
                 const spec = {
@@ -126,7 +126,7 @@ const assert = require('assert'),
                 }).then(response => {
                     assert.strictEqual(response.statusCode, 400, 'should have matched');
                 }).finally(() => api.del('/imposters'));
-            });
+            }).timeout(timeout);
 
             promiseIt('should correctly handle deepEquals object predicates', () => {
                 const stubWithEmptyObjectPredicate = {
@@ -162,7 +162,7 @@ const assert = require('assert'),
                 }).then(response => {
                     assert.strictEqual(response.body, '');
                 }).finally(() => api.del('/imposters'));
-            });
+            }).timeout(timeout);
 
             promiseIt('should support sending binary response', () => {
                 const buffer = new Buffer([0, 1, 2, 3]),
@@ -175,7 +175,7 @@ const assert = require('assert'),
                 }).then(response => {
                     assert.deepEqual(response.body.toJSON().data, [0, 1, 2, 3]);
                 }).finally(() => api.del('/imposters'));
-            });
+            }).timeout(timeout);
 
             promiseIt('should support JSON bodies', () => {
                 const stub = {
@@ -218,7 +218,7 @@ const assert = require('assert'),
                 }).then(response => {
                     assert.deepEqual(JSON.parse(response.body), { key: 'second request' });
                 }).finally(() => api.del('/imposters'));
-            });
+            }).timeout(timeout);
 
             promiseIt('should support treating the body as a JSON object for predicate matching', () => {
                 const stub = {
@@ -238,7 +238,7 @@ const assert = require('assert'),
                 }).then(response => {
                     assert.strictEqual(response.body, 'SUCCESS');
                 }).finally(() => api.del('/imposters'));
-            });
+            }).timeout(timeout);
 
             promiseIt('should support changing default response for stub', () => {
                 const stub = {
@@ -266,7 +266,7 @@ const assert = require('assert'),
                     assert.strictEqual(404, response.statusCode);
                     assert.strictEqual('Not found', response.body);
                 }).finally(() => api.del('/imposters'));
-            });
+            }).timeout(timeout);
 
             promiseIt('should support keepalive connections', () => {
                 const stub = { responses: [{ is: { body: 'Success' } }] },
@@ -280,7 +280,7 @@ const assert = require('assert'),
                     assert.strictEqual(response.body, 'Success');
                     assert.strictEqual(response.headers.connection, 'Keep-Alive');
                 }).finally(() => api.del('/imposters'));
-            });
+            }).timeout(timeout);
 
             promiseIt('should support sending multiple values back for same header', () => {
                 const stub = { responses: [{ is: { headers: { 'Set-Cookie': ['first', 'second'] } } }] },
@@ -292,7 +292,7 @@ const assert = require('assert'),
                 }).then(response => {
                     assert.deepEqual(response.headers['set-cookie'], ['first', 'second']);
                 }).finally(() => api.del('/imposters'));
-            });
+            }).timeout(timeout);
 
             promiseIt('should support sending JSON bodies with _links field for canned responses', () => {
                 const stub = { responses: [{ is: {
@@ -307,7 +307,7 @@ const assert = require('assert'),
                 }).then(response => {
                     assert.deepEqual(response.body, { _links: { self: '/products/123' } });
                 }).finally(() => api.del('/imposters'));
-            });
+            }).timeout(timeout);
 
             promiseIt('should correctly set content-length for binary data', () => {
                 // https://github.com/bbyars/mountebank/issues/204
@@ -328,7 +328,7 @@ const assert = require('assert'),
                 }).then(response => {
                     assert.deepEqual(response.headers['content-length'], 639);
                 }).finally(() => api.del('/imposters'));
-            });
+            }).timeout(timeout);
 
             promiseIt('should handle JSON null values', () => {
                 // https://github.com/bbyars/mountebank/issues/209
@@ -341,7 +341,7 @@ const assert = require('assert'),
                 }).then(response => {
                     assert.deepEqual(JSON.parse(response.body), { name: 'test', type: null });
                 }).finally(() => api.del('/imposters'));
-            });
+            }).timeout(timeout);
 
             promiseIt('should handle null values in deepEquals predicate (issue #229)', () => {
                 const stub = {
@@ -356,7 +356,7 @@ const assert = require('assert'),
                 }).then(response => {
                     assert.strictEqual(response.body, 'SUCCESS');
                 }).finally(() => api.del('/imposters'));
-            });
+            }).timeout(timeout);
 
             promiseIt('should support array predicates with xpath', () => {
                 const stub = {
@@ -375,7 +375,7 @@ const assert = require('assert'),
                 }).then(response => {
                     assert.strictEqual(response.body, 'SUCCESS');
                 }).finally(() => api.del('/imposters'));
-            });
+            }).timeout(timeout);
 
             promiseIt('should support matches predicate on uppercase JSON key (issue #228)', () => {
                 const stub = {
@@ -390,7 +390,7 @@ const assert = require('assert'),
                 }).then(response => {
                     assert.strictEqual(response.body, 'SUCCESS');
                 }).finally(() => api.del('/imposters'));
-            });
+            }).timeout(timeout);
 
             promiseIt('should support predicate matching with null value (issue #262)', () => {
                 const stub = {
@@ -405,7 +405,7 @@ const assert = require('assert'),
                 }).then(response => {
                     assert.strictEqual(response.body, 'SUCCESS');
                 }).finally(() => api.del('/imposters'));
-            });
+            }).timeout(timeout);
 
             promiseIt('should support predicate form matching', () => {
                 const spec = {
@@ -430,7 +430,7 @@ const assert = require('assert'),
                 }).then(response => {
                     assert.strictEqual(response.body, 'SUCCESS');
                 }).finally(() => api.del('/imposters'));
-            });
+            }).timeout(timeout);
         });
-    }).timeout(timeout);
+    });
 });

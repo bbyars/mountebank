@@ -43,7 +43,7 @@ describe('mb', () => {
                 console.log(`memory usage for ${numRequests} requests with --mock: ${memoryUsed}`);
                 assert.ok(memoryUsed > baselineMemory + minIncreasedMemory, `Memory used: ${memoryUsed}`);
             }).finally(() => mb.stop())
-        );
+        ).timeout(300000);
     });
 
     describe('when not remembering requests', () => {
@@ -53,6 +53,6 @@ describe('mb', () => {
                 console.log(`default memory usage with for ${numRequests} requests: ${memoryUsed}`);
                 assert.ok(memoryUsed < baselineMemory, `Memory used: ${memoryUsed}`);
             }).finally(() => mb.stop())
-        );
+        ).timeout(300000);
     });
-}).timeout(300000);
+});

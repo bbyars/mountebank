@@ -16,7 +16,7 @@ describe('smtp imposter', () => {
                 assert.strictEqual(response.statusCode, 201);
                 assert.ok(response.body.port > 0);
             }).finally(() => api.del('/imposters'));
-        });
+        }).timeout(timeout);
     });
 
     describe('GET /imposters/:id', () => {
@@ -86,7 +86,7 @@ describe('smtp imposter', () => {
                     }
                 ]);
             }).finally(() => api.del('/imposters'));
-        });
+        }).timeout(timeout);
     });
 
     describe('DELETE /imposters/:id should shutdown server at that port', () => {
@@ -100,6 +100,6 @@ describe('smtp imposter', () => {
             }).then(response => {
                 assert.strictEqual(response.statusCode, 201, 'Delete did not free up port');
             }).finally(() => api.del(`/imposters/${port}`));
-        });
+        }).timeout(timeout);
     });
-}).timeout(timeout);
+});

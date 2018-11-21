@@ -33,7 +33,7 @@ describe('tcp imposter', () => {
             return api.post('/imposters', originServerRequest).then(() => api.post('/imposters', proxyRequest)).then(() => tcp.send('request', port)).then(response => {
                 assert.strictEqual(response.toString(), 'ORIGIN DECORATED');
             }).finally(() => api.del('/imposters'));
-        });
+        }).timeout(timeout);
 
         promiseIt('should compose multiple behaviors together', () => {
             const shellFn = function exec () {
@@ -88,6 +88,6 @@ describe('tcp imposter', () => {
                 fs.unlinkSync('shellTransformTest.js');
                 return api.del('/imposters');
             });
-        });
+        }).timeout(timeout);
     });
-}).timeout(timeout);
+});

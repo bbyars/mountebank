@@ -30,7 +30,7 @@ describe('http proxy', () => {
                 assert.strictEqual(requests[0].body, 'BODY');
                 assert.strictEqual(requests[0].headers['X-Key'], 'TRUE');
             }).finally(() => api.del('/imposters'));
-        });
+        }).timeout(timeout);
 
         promiseIt('should return proxied result', () => {
             const stub = { responses: [{ is: { statusCode: 400, body: 'ERROR' } }] },
@@ -44,7 +44,7 @@ describe('http proxy', () => {
                 assert.strictEqual(response.statusCode, 400);
                 assert.strictEqual(response.body, 'ERROR');
             }).finally(() => api.del('/imposters'));
-        });
+        }).timeout(timeout);
 
         promiseIt('should proxy to https', () => {
             const stub = { responses: [{ is: { statusCode: 400, body: 'ERROR' } }] },
@@ -58,7 +58,7 @@ describe('http proxy', () => {
                 assert.strictEqual(response.statusCode, 400);
                 assert.strictEqual(response.body, 'ERROR');
             }).finally(() => api.del('/imposters'));
-        });
+        }).timeout(timeout);
 
         promiseIt('should update the host header to the origin server', () => {
             const stub = {
@@ -75,7 +75,7 @@ describe('http proxy', () => {
                 assert.strictEqual(response.statusCode, 400);
                 assert.strictEqual(response.body, 'ERROR');
             }).finally(() => api.del('/imposters'));
-        });
+        }).timeout(timeout);
 
         promiseIt('should capture response time to origin server', () => {
             const stub = { responses: [{ is: { body: 'ORIGIN' }, _behaviors: { wait: 250 } }] },
@@ -89,7 +89,7 @@ describe('http proxy', () => {
                 assert.strictEqual(response.body, 'ORIGIN');
                 assert.ok(response._proxyResponseTime > 230); // eslint-disable-line no-underscore-dangle
             }).finally(() => api.del('/imposters'));
-        });
+        }).timeout(timeout);
 
         if (!airplaneMode) {
             promiseIt('should gracefully deal with DNS errors', () => proxy.to('http://no.such.domain', { path: '/', method: 'GET', headers: {} }, {}).then(() => {
@@ -99,7 +99,7 @@ describe('http proxy', () => {
                     code: 'invalid proxy',
                     message: 'Cannot resolve "http://no.such.domain"'
                 });
-            }));
+            })).timeout(timeout);
 
             promiseIt('should gracefully deal with bad urls', () => proxy.to('1 + 2', { path: '/', method: 'GET', headers: {} }, {}).then(() => {
                 assert.fail('should not have resolved promise');
@@ -108,7 +108,7 @@ describe('http proxy', () => {
                     code: 'invalid proxy',
                     message: 'Unable to connect to "1 + 2"'
                 });
-            }));
+            })).timeout(timeout);
         }
 
 
@@ -134,7 +134,7 @@ describe('http proxy', () => {
                     assert.strictEqual(response.body, buffer.toString('base64'));
                     assert.strictEqual(response._mode, 'binary');
                 }).finally(() => api.del('/imposters'));
-            });
+            }).timeout(timeout);
         });
 
         if (!airplaneMode) {
@@ -144,7 +144,7 @@ describe('http proxy', () => {
 
                 // https://www.google.com.br in Brasil, google.ca in Canada, etc
                 assert.ok(response.headers.Location.indexOf('google.') >= 0, response.headers.Location);
-            }));
+            })).timeout(timeout);
         }
     });
-}).timeout(timeout);
+});
