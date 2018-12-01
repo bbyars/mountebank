@@ -57,7 +57,7 @@ module.exports = function (grunt) {
                 }
                 else {
                     return Q.delay(interval).then(function () {
-                        appveyor.getBuildStatus(buildNumber);
+                        return appveyor.getBuildStatus(buildNumber);
                     }).then(spinWait, deferred.reject);
                 }
 
@@ -111,7 +111,7 @@ module.exports = function (grunt) {
                 }
                 else {
                     return Q.delay(interval).then(function () {
-                        travis.getBuildStatus(buildNumber);
+                        return travis.getBuildStatus(buildNumber);
                     }).then(spinWait, deferred.reject);
                 }
 

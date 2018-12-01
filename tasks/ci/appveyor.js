@@ -87,10 +87,6 @@ const getBuildStatus = buildNumber => responseFor({
         throw response.body;
     }
 
-    if (!response.body.build || !response.body.build.status) {
-        console.error('Unexpected undefined');
-        throw response.body;
-    }
     return response.body.build.status;
 });
 

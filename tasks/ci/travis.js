@@ -107,10 +107,6 @@ const getBuildStatus = buildNumber => responseFor({
     if (response.body.builds.length === 0) {
         return 'pending';
     }
-    else if (!response.body.builds[0].state) {
-        console.error('Unexpected undefined');
-        throw response.body;
-    }
     else {
         return response.body.builds[0].state;
     }
