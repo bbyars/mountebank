@@ -104,7 +104,16 @@ const getBuildStatus = buildNumber => responseFor({
         throw response.body;
     }
 
-    return (response.body.builds.length === 0) ? 'pending' : response.body.builds[0].state;
+    if (response.body.builds.length === 0) {
+        return 'pending';
+    }
+    else if (!response.body.builds[0].state) {
+        console.error('Unexpected undefined');
+        throw response.body;
+    }
+    else {
+        return response.body.builds[0].state
+    }
 });
 
 module.exports = { triggerBuild, getBuildStatus };
