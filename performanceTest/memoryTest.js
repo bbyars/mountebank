@@ -8,8 +8,8 @@ const assert = require('assert'),
     port = api.port + 1,
     mb = require('../functionalTest/mb').create(port + 1),
     numRequests = 15000,
-    baselineMemory = 4000,
-    minIncreasedMemory = 200;
+    baselineMemory = 3800,
+    minIncreasedMemory = 150;
 
 const getMemoryUsedForManyRequests = mbPort => {
     const stub = { responses: [{ is: { statusCode: 400 } }] },
@@ -38,21 +38,24 @@ const getMemoryUsedForManyRequests = mbPort => {
 describe('mb', () => {
     describe('when remembering requests', () => {
         promiseIt('should increase memory usage with number of requests', () =>
-            mb.start(['--mock']).then(() => getMemoryUsedForManyRequests(mb.port)
-            ).then(memoryUsed => {
-                console.log(`memory usage for ${numRequests} requests with --mock: ${memoryUsed}`);
-                assert.ok(memoryUsed > baselineMemory + minIncreasedMemory, `Memory used: ${memoryUsed}`);
-            }).finally(() => mb.stop())
+            mb.start(['--mock'])
+                .then(() => getMemoryUsedForManyRequests(mb.port))
+                .then(memoryUsed => {
+                    console.log(`memory usage for ${numRequests} requests with --mock: ${memoryUsed}`);
+                    assert.ok(memoryUsed > baselineMemory + minIncreasedMemory, `Memory used: ${memoryUsed}`);
+                }).finally(() => mb.stop())
         ).timeout(300000);
     });
 
     describe('when not remembering requests', () => {
         promiseIt('should not leak memory', () =>
-            mb.start().then(() => getMemoryUsedForManyRequests(mb.port)
-            ).then(memoryUsed => {
-                console.log(`default memory usage with for ${numRequests} requests: ${memoryUsed}`);
-                assert.ok(memoryUsed < baselineMemory, `Memory used: ${memoryUsed}`);
-            }).finally(() => mb.stop())
+            mb.start()
+                .then(() => getMemoryUsedForManyRequests(mb.port))
+                .then(memoryUsed => {
+                    console.log(`default memory usage with for ${numRequests} requests: ${memoryUsed}`);
+                    assert.ok(memoryUsed < baselineMemory, `Memory used: ${memoryUsed}`);
+                })
+                .finally(() => mb.stop())
         ).timeout(300000);
     });
 });
