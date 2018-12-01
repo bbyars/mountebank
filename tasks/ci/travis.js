@@ -112,7 +112,7 @@ const getBuildStatus = buildNumber => responseFor({
         throw response.body;
     }
     else {
-        return response.body.builds[0].state
+        return response.body.builds[0].state;
     }
 });
 
