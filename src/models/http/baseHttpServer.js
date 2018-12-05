@@ -77,6 +77,7 @@ const setup = (protocolName, createBaseServer) => {
             resolver = require('../responseResolver').create(proxy, postProcess),
             stubs = require('../stubRepository').create(resolver, options.debug, 'utf8'),
             baseServer = createBaseServer(options),
+            state = {},
             result = require('../../util/inherit').from(require('events').EventEmitter, {
                 errorHandler: (error, container) => {
                     container.response.writeHead(500, { 'content-type': 'application/json' });
@@ -89,7 +90,7 @@ const setup = (protocolName, createBaseServer) => {
                     const helpers = require('../../util/helpers'),
                         scopedLogger = logger.withScope(helpers.socketName(container.request.socket));
 
-                    return stubs.resolve(httpRequest, scopedLogger, this.state).then(stubResponse => {
+                    return stubs.resolve(httpRequest, scopedLogger, state).then(stubResponse => {
                         const mode = stubResponse._mode ? stubResponse._mode : 'text',
                             encoding = mode === 'binary' ? 'base64' : 'utf8';
 
@@ -100,7 +101,7 @@ const setup = (protocolName, createBaseServer) => {
                 },
                 metadata: baseServer.metadata,
                 addStub: stubs.addStub,
-                state: {},
+                state: state,
                 stubs: stubs.stubs,
                 deleteRequests: stubs.deleteRequests
             }),

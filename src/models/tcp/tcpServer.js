@@ -22,6 +22,7 @@ const createServer = (logger, options) => {
         inherit = require('../../util/inherit'),
         combinators = require('../../util/combinators'),
         helpers = require('../../util/helpers'),
+        state = {},
         result = inherit.from(require('events').EventEmitter, {
             errorHandler: (error, container) => {
                 container.socket.write(JSON.stringify({ errors: [error] }), 'utf8');
@@ -40,7 +41,7 @@ const createServer = (logger, options) => {
                 const clientName = helpers.socketName(originalRequest.socket),
                     scopedLogger = logger.withScope(clientName);
 
-                return stubs.resolve(tcpRequest, scopedLogger, this.state).then(stubResponse => {
+                return stubs.resolve(tcpRequest, scopedLogger, state).then(stubResponse => {
                     const buffer = ensureBuffer(stubResponse.data);
 
                     if (buffer.length > 0) {
@@ -52,7 +53,7 @@ const createServer = (logger, options) => {
             },
             metadata: () => ({ mode }),
             addStub: stubs.addStub,
-            state: {},
+            state: state,
             stubs: stubs.stubs
         }),
         server = require('net').createServer();
