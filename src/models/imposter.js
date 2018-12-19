@@ -109,7 +109,7 @@ const create = (Protocol, request) => {
                 return result;
             };
 
-            const deleteRequests = () => server.deleteRequests();
+            const resetProxies = () => server.resetProxies();
 
             deferred.resolve({
                 port: server.port,
@@ -117,7 +117,7 @@ const create = (Protocol, request) => {
                 toJSON,
                 addStub: server.addStub,
                 stop: server.close,
-                deleteRequests
+                resetProxies
             });
         });
     });

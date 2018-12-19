@@ -99,20 +99,6 @@ const create = (resolver, recordMatches, encoding) => {
     };
 
     /**
-     * Deletes the proxy request and responses for this imposter
-     * Brings the imposter back to "newly created state" i.e.
-     * num_requests = 0.
-     *
-     * Does not touch the stubbed requests.
-     */
-    const deleteRequests = () => {
-        // TODO: should this delegate to resolver?
-        if (stubs[0] && stubs[0].responses[0].proxy) {
-            stubs.splice(1);
-        }
-    };
-
-    /**
      * Finds the right stub for a request and generates a response
      * @memberOf module:models/stubRepository#
      * @param {Object} request - The protocol request
@@ -138,7 +124,24 @@ const create = (resolver, recordMatches, encoding) => {
         });
     };
 
-    return { stubs: getStubs, addStub, resolve, deleteRequests };
+    /**
+    * Removes the saved proxy responses
+    */
+    const resetProxies = () => {
+        for (let i = stubs.length - 1; i >= 0; i -= 1) {
+            stubs[i].responses = stubs[i].responses.filter(response => {
+                if (!response.is) {
+                    return true;
+                }
+                return typeof response.is._proxyResponseTime === 'undefined'; // eslint-disable-line no-underscore-dangle
+            });
+            if (stubs[i].responses.length === 0) {
+                stubs.splice(i, 1);
+            }
+        }
+    };
+
+    return { stubs: getStubs, addStub, resolve, resetProxies };
 };
 
 module.exports = { create };

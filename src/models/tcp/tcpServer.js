@@ -54,7 +54,8 @@ const createServer = (logger, options) => {
             metadata: () => ({ mode }),
             addStub: stubs.addStub,
             state: state,
-            stubs: stubs.stubs
+            stubs: stubs.stubs,
+            resetProxies: stubs.resetProxies
         }),
         server = require('net').createServer();
 

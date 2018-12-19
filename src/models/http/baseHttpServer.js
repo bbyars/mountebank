@@ -103,7 +103,7 @@ const setup = (protocolName, createBaseServer) => {
                 addStub: stubs.addStub,
                 state: state,
                 stubs: stubs.stubs,
-                deleteRequests: stubs.deleteRequests
+                resetProxies: stubs.resetProxies
             }),
             server = baseServer.createNodeServer();
 

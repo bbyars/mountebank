@@ -45,14 +45,14 @@ const create = imposters => {
         });
     };
 
-    const deleteRequests = (request, response) => {
+    const resetProxies = (request, response) => {
         const Q = require('q'),
             json = {},
             options = { replayable: false, removeProxies: false };
         let imposter = imposters[request.params.id];
 
         if (imposter) {
-            imposter.deleteRequests();
+            imposter.resetProxies();
             imposter = imposter.toJSON(options);
 
             response.format({
@@ -101,7 +101,7 @@ const create = imposters => {
         }
     };
 
-    return { get, del, deleteRequests };
+    return { get, del, resetProxies };
 };
 
 module.exports = { create };

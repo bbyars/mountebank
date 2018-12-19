@@ -57,8 +57,8 @@ help make it right for you.</p>
     <td><a href='/docs/api/contracts?type=imposter'>imposter resource</a></td>
   </tr>
   <tr>
-    <td><a href='#delete-imposter-requests'>Delete saved proxy requests from an imposter</a></td>
-    <td><a href='/docs/api/contracts?type=imposter'>imposter resource</a></td>
+    <td><a href='#delete-proxy-responses'>Delete saved proxy responses from an imposter</a></td>
+    <td>&nbsp;</td>
   </tr>
   <tr>
     <td><a href='#put-imposters'>Overwrite all imposters with a new set of imposters</a></td>
@@ -354,15 +354,16 @@ Connection: keep-alive
         </assertResponse>
     </step>
 
-<h3 id='delete-imposter-requests'>Delete saved proxy requests from an imposter</h3>
+<h3 id='delete-proxy-responses'>Delete saved proxy responses from an imposter</h3>
 
-<pre><code>DELETE /imposters/:port/requests</code></pre>
+<pre><code>DELETE /imposters/:port/savedProxyResponses</code></pre>
 
-<p><b>Contract</b>: <a href='/docs/api/contracts?type=imposter'>imposter resource</a></p>
-
-<p><a href='/docs/api/proxies'>Proxy stubs</a> save all requests made to downstream systems. Usuall
+<p><a href='/docs/api/proxies'>Proxy stubs</a> save all responses returned from downstream systems. Usually
 this is what you want, as they can be played back at a later time without the actual downstream system
 available. However, if you need to clear them but keep the stubs intact, you can do so with this call.<p>
+
+<p class='info-icon'>Note that you can prevent the proxy from saving responses by setting the mode
+to <a href='/docs/api/proxies#proxy-modes'><code>proxyTransparent</code></a>.</p>
 
 <h3 id='put-imposters'>Overwrite all imposters with a new set of imposters</h3>
 

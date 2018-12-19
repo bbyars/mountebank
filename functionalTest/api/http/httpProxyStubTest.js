@@ -609,4 +609,47 @@ describe('http proxy stubs', () => {
             assert.strictEqual(response.body, 'origin server decorated');
         }).finally(() => api.del('/imposters'));
     }).timeout(timeout);
+
+    promiseIt('DELETE /imposters/:id/requests should delete proxy stubs but not other stubs', () => {
+        const originServerPort = port + 1,
+            originServerStub = { responses: [{ is: { body: 'origin server' } }] },
+            originServerRequest = {
+                protocol: 'http',
+                port: originServerPort,
+                stubs: [originServerStub],
+                name: 'origin'
+            },
+            firstStaticStub = {
+                responses: [{ is: { body: 'first stub' } }],
+                predicates: [{ equals: { body: 'fail match so we fall through to proxy' } }]
+            },
+            proxyStub = { responses: [{ proxy: { to: `http://localhost:${originServerPort}`, mode: 'proxyAlways' } }] },
+            secondStaticStub = { responses: [{ is: { body: 'second stub' } }] },
+            proxyRequest = {
+                protocol: 'http',
+                port,
+                stubs: [firstStaticStub, proxyStub, secondStaticStub],
+                name: 'proxy'
+            };
+
+        return api.post('/imposters', originServerRequest)
+            .then(() => api.post('/imposters', proxyRequest))
+            .then(response => {
+                assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body, null, 2));
+                return client.get('/', port);
+            })
+            .then(response => {
+                assert.strictEqual(response.body, 'origin server');
+                return api.del(`/imposters/${port}/requests`);
+            })
+            .then(response => {
+                assert.strictEqual(response.statusCode, 200, JSON.stringify(response.body, null, 2));
+                return api.get(`/imposters/${port}`);
+            })
+            .then(response => {
+                response.body.stubs.forEach(stub => { delete stub.matches; });
+                assert.deepEqual(proxyRequest.stubs, response.body.stubs, JSON.stringify(response.body.stubs, null, 2));
+            })
+            .finally(() => api.del('/imposters'));
+    }).timeout(timeout);
 });

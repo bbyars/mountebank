@@ -132,10 +132,6 @@ const implement = (implementation, recordRequests, debug, baseLogger) => {
                 stubs: server.stubs,
                 metadata,
                 port: actualPort,
-                deleteRequests: () => {
-                    numRequests = 0;
-                    server.deleteRequests();
-                },
                 close: () => {
                     const closeDeferred = Q.defer();
                     server.close(() => {
@@ -146,7 +142,8 @@ const implement = (implementation, recordRequests, debug, baseLogger) => {
                         connections[socket].destroy();
                     });
                     return closeDeferred.promise;
-                }
+                },
+                resetProxies: server.resetProxies
             });
         });
 

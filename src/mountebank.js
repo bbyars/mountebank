@@ -106,7 +106,8 @@ const create = options => {
     app.put('/imposters', impostersController.put);
     app.get('/imposters/:id', validateImposterExists, imposterController.get);
     app.delete('/imposters/:id', imposterController.del);
-    app.delete('/imposters/:id/requests', imposterController.deleteRequests);
+    app.delete('/imposters/:id/savedProxyResponses', imposterController.resetProxies);
+    app.delete('/imposters/:id/requests', imposterController.resetProxies); // deprecated but saved for backwards compatibility
 
     app.get('/logs', logsController.get);
     app.get('/config', configController.get);
