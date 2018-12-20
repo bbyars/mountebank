@@ -77,8 +77,9 @@ const create = options => {
         initializeLogfile(options.logfile);
         winstonLogger.add(new winston.transports.File({
             filename: options.logfile,
-            maxsize: 10000000,
-            maxFiles: 1,
+            maxsize: '20m',
+            maxFiles: 5,
+            tailable: true,
             format: format.combine(format.timestamp(), format.json())
         }));
     }
