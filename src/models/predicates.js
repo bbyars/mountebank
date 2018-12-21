@@ -338,15 +338,23 @@ const matches = (predicate, request, encoding) => {
     return predicateSatisfied(expected, actual, clone, (a, b) => new RegExp(a, options).test(b));
 };
 
-const not = (predicate, request, encoding, logger) => !evaluate(predicate.not, request, encoding, logger);
+function not (predicate, request, encoding, logger, imposterState) {
+    return !evaluate(predicate.not, request, encoding, logger, imposterState);
+}
 
-const evaluateFn = (request, encoding, logger) => subPredicate => evaluate(subPredicate, request, encoding, logger);
+function evaluateFn (request, encoding, logger, imposterState) {
+    return subPredicate => evaluate(subPredicate, request, encoding, logger, imposterState);
+}
 
-const or = (predicate, request, encoding, logger) => predicate.or.some(evaluateFn(request, encoding, logger));
+function or (predicate, request, encoding, logger, imposterState) {
+    return predicate.or.some(evaluateFn(request, encoding, logger, imposterState));
+}
 
-const and = (predicate, request, encoding, logger) => predicate.and.every(evaluateFn(request, encoding, logger));
+function and (predicate, request, encoding, logger, imposterState) {
+    return predicate.and.every(evaluateFn(request, encoding, logger, imposterState));
+}
 
-const inject = (predicate, request, encoding, logger, imposterState) => {
+function inject (predicate, request, encoding, logger, imposterState) {
     const helpers = require('../util/helpers'),
         scope = helpers.clone(request),
         injected = `(${predicate.inject})(scope, logger, imposterState);`,
@@ -366,7 +374,7 @@ const inject = (predicate, request, encoding, logger, imposterState) => {
         logger.error(`    imposterState: ${JSON.stringify(imposterState)}`);
         throw errors.InjectionError('invalid predicate injection', { source: injected, data: error.message });
     }
-};
+}
 
 const predicates = {
     equals: create('equals', (expected, actual) => expected === actual),
@@ -391,7 +399,7 @@ const predicates = {
  * @param {Object} imposterState - The current state for the imposter
  * @returns {boolean}
  */
-const evaluate = (predicate, request, encoding, logger, imposterState) => {
+function evaluate (predicate, request, encoding, logger, imposterState) {
     const predicateFn = Object.keys(predicate).find(key => Object.keys(predicates).indexOf(key) >= 0),
         errors = require('../util/errors');
 
@@ -401,6 +409,6 @@ const evaluate = (predicate, request, encoding, logger, imposterState) => {
     else {
         throw errors.ValidationError('missing predicate', { source: predicate });
     }
-};
+}
 
 module.exports = { evaluate };
