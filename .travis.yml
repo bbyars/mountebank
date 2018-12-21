@@ -30,6 +30,7 @@ install:
   - node --version
   # Temporary hack; latest version of dpl fails s3 build on Travis
   - echo gem \"aws-sdk\" >> Gemfile
+  - echo gem \"mime-types\" >> Gemfile
   - mv Gemfile.lock Gemfile.lock.orig
   - sed -E -e 's/dpl \(1.10.6\)/dpl (1.8.47)/' Gemfile.lock.orig > Gemfile.lock
   - bundle install --without development
