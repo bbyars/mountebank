@@ -8,7 +8,7 @@ const assert = require('assert'),
     port = api.port + 1,
     mb = require('../functionalTest/mb').create(port + 1),
     numRequests = 15000,
-    baselineMemory = 3800,
+    baselineMemory = 3950,
     minIncreasedMemory = 150;
 
 const getMemoryUsedForManyRequests = mbPort => {
