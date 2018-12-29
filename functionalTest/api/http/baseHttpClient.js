@@ -5,11 +5,11 @@ const Q = require('q'),
 
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 
-const create = protocol => {
+function create (protocol) {
     const driver = require(protocol),
         agent = new driver.Agent({ keepAlive: true });
 
-    const optionsFor = spec => {
+    function optionsFor (spec) {
         const defaults = {
             hostname: 'localhost',
             headers: { accept: 'application/json' },
@@ -17,9 +17,9 @@ const create = protocol => {
         };
 
         return helpers.merge(defaults, spec);
-    };
+    }
 
-    const responseFor = spec => {
+    function responseFor (spec) {
         const deferred = Q.defer(),
             options = optionsFor(spec);
 
@@ -62,14 +62,14 @@ const create = protocol => {
         }
         request.end();
         return deferred.promise;
-    };
+    }
 
-    const get = (path, port) => responseFor({ method: 'GET', path, port });
-    const post = (path, body, port) => responseFor({ method: 'POST', path, port, body });
-    const del = (path, port) => responseFor({ method: 'DELETE', path, port });
-    const put = (path, body, port) => responseFor({ method: 'PUT', path, port, body });
+    function get (path, port) { return responseFor({ method: 'GET', path, port }); }
+    function post (path, body, port) { return responseFor({ method: 'POST', path, port, body }); }
+    function del (path, port) { return responseFor({ method: 'DELETE', path, port }); }
+    function put (path, body, port) { return responseFor({ method: 'PUT', path, port, body }); }
 
     return { get, post, del, put, responseFor };
-};
+}
 
 module.exports = { create };

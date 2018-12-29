@@ -6,12 +6,14 @@ const Q = require('q'),
     promiseIt = require('./../functionalTest/testHelpers').promiseIt,
     mb = require('../functionalTest/mb').create(api.port + 1);
 
-describe('mb', () => {
+describe('mb', function () {
+    this.timeout(450000);
+
     // https://github.com/bbyars/mountebank/issues/192
     // Over time, mountebank became slower to start because all the require statements
     // were at the top of each module, recursively loading all dependencies on startup.
     // The solution is to localize the require calls.
-    promiseIt('should consistently start up quickly no matter how many packages are installed', () => {
+    promiseIt('should consistently start up quickly no matter how many packages are installed', function () {
         const RUNS = 500,
             start = new Date();
         let restartSequence = Q(true);
@@ -30,5 +32,5 @@ describe('mb', () => {
             console.log(`Took ${seconds} seconds, averaging ${millisecondsPer} ms per restart`);
             assert.ok(millisecondsPer < 800, `Averaged ${millisecondsPer}; should be under 500 (added buffer for CI determinism)`);
         }).finally(() => mb.stop());
-    }).timeout(450000);
+    });
 });

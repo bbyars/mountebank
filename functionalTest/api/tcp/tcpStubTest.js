@@ -9,9 +9,11 @@ const assert = require('assert'),
     tcp = require('./tcpClient'),
     airplaneMode = process.env.MB_AIRPLANE_MODE === 'true';
 
-describe('tcp imposter', () => {
-    describe('POST /imposters with stubs', () => {
-        promiseIt('should return stubbed response', () => {
+describe('tcp imposter', function () {
+    this.timeout(timeout);
+
+    describe('POST /imposters with stubs', function () {
+        promiseIt('should return stubbed response', function () {
             const stub = {
                     predicates: [{ equals: { data: 'client' } }],
                     responses: [{ is: { data: 'server' } }]
@@ -25,9 +27,9 @@ describe('tcp imposter', () => {
             }).then(response => {
                 assert.strictEqual(response.toString(), 'server');
             }).finally(() => api.del('/imposters'));
-        }).timeout(timeout);
+        });
 
-        promiseIt('should allow binary stub responses', () => {
+        promiseIt('should allow binary stub responses', function () {
             const buffer = new Buffer([0, 1, 2, 3]),
                 stub = { responses: [{ is: { data: buffer.toString('base64') } }] },
                 request = { protocol: 'tcp', port, stubs: [stub], mode: 'binary' };
@@ -40,9 +42,9 @@ describe('tcp imposter', () => {
                 assert.ok(Buffer.isBuffer(response));
                 assert.deepEqual(response.toJSON().data, [0, 1, 2, 3]);
             }).finally(() => api.del('/imposters'));
-        }).timeout(timeout);
+        });
 
-        promiseIt('should allow a sequence of stubs as a circular buffer', () => {
+        promiseIt('should allow a sequence of stubs as a circular buffer', function () {
             const stub = {
                     predicates: [{ equals: { data: 'request' } }],
                     responses: [{ is: { data: 'first' } }, { is: { data: 'second' } }]
@@ -64,9 +66,9 @@ describe('tcp imposter', () => {
             }).then(response => {
                 assert.strictEqual(response.toString(), 'second');
             }).finally(() => api.del('/imposters'));
-        }).timeout(timeout);
+        });
 
-        promiseIt('should only return stubbed response if matches complex predicate', () => {
+        promiseIt('should only return stubbed response if matches complex predicate', function () {
             const stub = {
                     responses: [{ is: { data: 'MATCH' } }],
                     predicates: [
@@ -86,9 +88,9 @@ describe('tcp imposter', () => {
             }).then(response => {
                 assert.strictEqual(response.toString(), 'MATCH');
             }).finally(() => api.del('/imposters'));
-        }).timeout(timeout);
+        });
 
-        promiseIt('should return 400 if uses matches predicate with binary mode', () => {
+        promiseIt('should return 400 if uses matches predicate with binary mode', function () {
             const stub = {
                     responses: [{ is: { data: 'dGVzdA==' } }],
                     predicates: [{ matches: { data: 'dGVzdA==' } }]
@@ -99,9 +101,9 @@ describe('tcp imposter', () => {
                 assert.strictEqual(response.statusCode, 400);
                 assert.strictEqual(response.body.errors[0].data, 'the matches predicate is not allowed in binary mode');
             }).finally(() => api.del('/imposters'));
-        }).timeout(timeout);
+        });
 
-        promiseIt('should allow proxy stubs', () => {
+        promiseIt('should allow proxy stubs', function () {
             const proxyPort = port + 1,
                 proxyStub = { responses: [{ is: { data: 'PROXIED' } }] },
                 proxyRequest = { protocol: 'tcp', port: proxyPort, stubs: [proxyStub], name: 'PROXY' },
@@ -111,10 +113,10 @@ describe('tcp imposter', () => {
             return api.post('/imposters', proxyRequest).then(() => api.post('/imposters', request)).then(() => tcp.send('request', port)).then(response => {
                 assert.strictEqual(response.toString(), 'PROXIED');
             }).finally(() => api.del('/imposters'));
-        }).timeout(timeout);
+        });
 
         if (!airplaneMode) {
-            promiseIt('should allow proxy stubs to invalid hosts', () => {
+            promiseIt('should allow proxy stubs to invalid hosts', function () {
                 const stub = { responses: [{ proxy: { to: 'tcp://remotehost:8000' } }] },
                     request = { protocol: 'tcp', port, stubs: [stub] };
 
@@ -123,10 +125,10 @@ describe('tcp imposter', () => {
                     assert.strictEqual(error.code, 'invalid proxy');
                     assert.strictEqual(error.message, 'Cannot resolve "tcp://remotehost:8000"');
                 }).finally(() => api.del('/imposters'));
-            }).timeout(timeout);
+            });
         }
 
-        promiseIt('should split each packet into a separate request by default', () => {
+        promiseIt('should split each packet into a separate request by default', function () {
             // max 64k packet size, likely to hit max on the loopback interface
             const largeRequest = `${new Array(65537).join('1')}2`,
                 stub = { responses: [{ is: { data: 'success' } }] },
@@ -147,9 +149,9 @@ describe('tcp imposter', () => {
                 assert.ok(requests.length > 1);
                 assert.strictEqual(65537, dataLength);
             }).finally(() => api.del('/imposters'));
-        }).timeout(timeout);
+        });
 
-        promiseIt('should support changing default response for stub', () => {
+        promiseIt('should support changing default response for stub', function () {
             const stub = {
                     responses: [{ is: { data: 'Given response' } }],
                     predicates: [{ equals: { data: 'MATCH ME' } }]
@@ -171,6 +173,6 @@ describe('tcp imposter', () => {
             }).then(response => {
                 assert.strictEqual('Default response', response.toString());
             }).finally(() => api.del('/imposters'));
-        }).timeout(timeout);
+        });
     });
 });

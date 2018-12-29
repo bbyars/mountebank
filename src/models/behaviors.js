@@ -89,10 +89,10 @@ const fromSchema = {
  * @param {Object} config - The behavior configuration
  * @returns {Object} The array of errors
  */
-const validate = config => {
+function validate (config) {
     const validator = require('./behaviorsValidator').create();
     return validator.validate(config, validations);
-};
+}
 
 /**
  * Waits a specified number of milliseconds before sending the response.  Due to the approximate

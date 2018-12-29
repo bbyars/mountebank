@@ -7,10 +7,10 @@ const assert = require('assert'),
     Q = require('q'),
     promiseIt = require('../testHelpers').promiseIt;
 
-describe('ImposterController', () => {
+describe('ImposterController', function () {
 
-    describe('#get', () => {
-        it('should return JSON for imposter at given id', () => {
+    describe('#get', function () {
+        it('should return JSON for imposter at given id', function () {
             const response = FakeResponse.create(),
                 imposters = {
                     1: { toJSON: mock().returns('firstJSON') },
@@ -23,7 +23,7 @@ describe('ImposterController', () => {
             assert.strictEqual(response.body, 'secondJSON');
         });
 
-        it('should return replayable JSON for imposter at given id if replayable querystring set', () => {
+        it('should return replayable JSON for imposter at given id if replayable querystring set', function () {
             const response = FakeResponse.create(),
                 imposters = {
                     1: { toJSON: mock().returns('firstJSON') },
@@ -37,7 +37,7 @@ describe('ImposterController', () => {
             assert.ok(imposters['2'].toJSON.wasCalledWith({ replayable: true, removeProxies: false }), imposters['2'].toJSON.message());
         });
 
-        it('should return removeProxies JSON for imposter at given id if removeProxies querystring set', () => {
+        it('should return removeProxies JSON for imposter at given id if removeProxies querystring set', function () {
             const response = FakeResponse.create(),
                 imposters = {
                     1: { toJSON: mock().returns('firstJSON') },
@@ -51,7 +51,7 @@ describe('ImposterController', () => {
             assert.ok(imposters['2'].toJSON.wasCalledWith({ replayable: false, removeProxies: true }), imposters['2'].toJSON.message());
         });
 
-        it('should return replayable and removeProxies JSON for imposter at given id if both querystring values set', () => {
+        it('should return replayable and removeProxies JSON for imposter at given id if both querystring values set', function () {
             const response = FakeResponse.create(),
                 imposters = {
                     1: { toJSON: mock().returns('firstJSON') },
@@ -65,7 +65,7 @@ describe('ImposterController', () => {
             assert.ok(imposters['2'].toJSON.wasCalledWith({ replayable: true, removeProxies: true }), imposters['2'].toJSON.message());
         });
 
-        it('should return normal JSON for imposter at given id if both replayable and removeProxies querystrings are false', () => {
+        it('should return normal JSON for imposter at given id if both replayable and removeProxies querystrings are false', function () {
             const response = FakeResponse.create(),
                 imposters = {
                     1: { toJSON: mock().returns('firstJSON') },
@@ -80,8 +80,8 @@ describe('ImposterController', () => {
         });
     });
 
-    describe('#del', () => {
-        promiseIt('should stop the imposter', () => {
+    describe('#del', function () {
+        promiseIt('should stop the imposter', function () {
             const response = FakeResponse.create(),
                 imposter = {
                     stop: mock().returns(Q(true)),
@@ -94,7 +94,7 @@ describe('ImposterController', () => {
             });
         });
 
-        promiseIt('should remove the imposter from the list', () => {
+        promiseIt('should remove the imposter from the list', function () {
             const response = FakeResponse.create(),
                 imposters = {
                     1: {
@@ -109,7 +109,7 @@ describe('ImposterController', () => {
             });
         });
 
-        promiseIt('should send request even if no imposter exists', () => {
+        promiseIt('should send request even if no imposter exists', function () {
             const response = FakeResponse.create(),
                 imposters = {},
                 controller = Controller.create(imposters);
@@ -119,7 +119,7 @@ describe('ImposterController', () => {
             });
         });
 
-        promiseIt('should return replayable JSON for imposter at given id if replayable querystring set', () => {
+        promiseIt('should return replayable JSON for imposter at given id if replayable querystring set', function () {
             const response = FakeResponse.create(),
                 imposter = {
                     stop: mock().returns(Q(true)),
@@ -132,7 +132,7 @@ describe('ImposterController', () => {
             });
         });
 
-        promiseIt('should return removeProxies JSON for imposter at given id if removeProxies querystring set', () => {
+        promiseIt('should return removeProxies JSON for imposter at given id if removeProxies querystring set', function () {
             const response = FakeResponse.create(),
                 imposter = {
                     stop: mock().returns(Q(true)),
@@ -145,7 +145,7 @@ describe('ImposterController', () => {
             });
         });
 
-        promiseIt('should return replayable and removeProxies JSON for imposter at given id if both querystring values set', () => {
+        promiseIt('should return replayable and removeProxies JSON for imposter at given id if both querystring values set', function () {
             const response = FakeResponse.create(),
                 imposter = {
                     stop: mock().returns(Q(true)),
@@ -158,7 +158,7 @@ describe('ImposterController', () => {
             });
         });
 
-        promiseIt('should send default JSON for the deleted the imposter if both replayable and removeProxies querystrings are missing', () => {
+        promiseIt('should send default JSON for the deleted the imposter if both replayable and removeProxies querystrings are missing', function () {
             const response = FakeResponse.create(),
                 imposter = {
                     stop: mock().returns(Q(true)),
@@ -171,7 +171,7 @@ describe('ImposterController', () => {
             });
         });
 
-        promiseIt('should delete requests recorded with the imposter', () => {
+        promiseIt('should delete requests recorded with the imposter', function () {
             const response = FakeResponse.create(),
                 imposter = {
                     toJSON: mock().returns('JSON'),

@@ -14,31 +14,31 @@
  * @param {Boolean} allowInjection - Whether injection is allowed or not
  * @returns {{get, post, del, put}}
  */
-const create = (protocols, imposters, Imposter, logger, allowInjection) => {
+function create (protocols, imposters, Imposter, logger, allowInjection) {
     const exceptions = require('../util/errors'),
         helpers = require('../util/helpers');
 
     const queryIsFalse = (query, key) => !helpers.defined(query[key]) || query[key].toLowerCase() !== 'false';
     const queryBoolean = (query, key) => helpers.defined(query[key]) && query[key].toLowerCase() === 'true';
 
-    const deleteAllImposters = () => {
+    function deleteAllImposters () {
         const Q = require('q'),
             ids = Object.keys(imposters),
             promises = ids.map(id => imposters[id].stop());
 
         ids.forEach(id => { delete imposters[id]; });
         return Q.all(promises);
-    };
+    }
 
-    const validatePort = (port, errors) => {
+    function validatePort (port, errors) {
         const portIsValid = !helpers.defined(port) || (port.toString().indexOf('.') === -1 && port > 0 && port < 65536);
 
         if (!portIsValid) {
             errors.push(exceptions.ValidationError("invalid value for 'port'"));
         }
-    };
+    }
 
-    const validateProtocol = (protocol, errors) => {
+    function validateProtocol (protocol, errors) {
         const Protocol = protocols[protocol];
 
         if (!helpers.defined(protocol)) {
@@ -47,9 +47,9 @@ const create = (protocols, imposters, Imposter, logger, allowInjection) => {
         else if (!Protocol) {
             errors.push(exceptions.ValidationError(`the ${protocol} protocol is not yet supported`));
         }
-    };
+    }
 
-    const validate = request => {
+    function validate (request) {
         const Q = require('q'),
             errors = [],
             valid = Q({ isValid: false, errors }),
@@ -73,24 +73,27 @@ const create = (protocols, imposters, Imposter, logger, allowInjection) => {
                 });
             return validator.validate(request, logger, {});
         }
-    };
+    }
 
-    const respondWithValidationErrors = (response, validationErrors) => {
+    function respondWithValidationErrors (response, validationErrors) {
         logger.warn(`error creating imposter: ${JSON.stringify(exceptions.details(validationErrors))}`);
         response.statusCode = 400;
         response.send({ errors: validationErrors });
-    };
+    }
 
-    const respondWithCreationError = (response, error) => {
+    function respondWithCreationError (response, error) {
         logger.warn(`error creating imposter: ${JSON.stringify(exceptions.details(error))}`);
         response.statusCode = (error.code === 'insufficient access') ? 403 : 400;
         response.send({ errors: [error] });
-    };
+    }
 
-    const getJSON = options =>
-        Object.keys(imposters).reduce((accumulator, id) => accumulator.concat(imposters[id].toJSON(options)), []);
+    function getJSON (options) {
+        return Object.keys(imposters).reduce((accumulator, id) => accumulator.concat(imposters[id].toJSON(options)), []);
+    }
 
-    const requestDetails = request => `${helpers.socketName(request.socket)} => ${JSON.stringify(request.body)}`;
+    function requestDetails (request) {
+        return `${helpers.socketName(request.socket)} => ${JSON.stringify(request.body)}`;
+    }
 
     /**
      * The function responding to GET /imposters
@@ -98,7 +101,7 @@ const create = (protocols, imposters, Imposter, logger, allowInjection) => {
      * @param {Object} request - the HTTP request
      * @param {Object} response - the HTTP response
      */
-    const get = (request, response) => {
+    function get (request, response) {
         response.format({
             json: () => {
                 const url = require('url'),
@@ -115,7 +118,7 @@ const create = (protocols, imposters, Imposter, logger, allowInjection) => {
                 response.render('imposters', { imposters: getJSON() });
             }
         });
-    };
+    }
 
     /**
      * The function responding to POST /imposters
@@ -124,7 +127,7 @@ const create = (protocols, imposters, Imposter, logger, allowInjection) => {
      * @param {Object} response - the HTTP response
      * @returns {Object} A promise for testing purposes
      */
-    const post = (request, response) => {
+    function post (request, response) {
         const protocol = request.body.protocol,
             validationPromise = validate(request.body);
 
@@ -148,7 +151,7 @@ const create = (protocols, imposters, Imposter, logger, allowInjection) => {
                 return Q(false);
             }
         });
-    };
+    }
 
     /**
      * The function responding to DELETE /imposters
@@ -157,7 +160,7 @@ const create = (protocols, imposters, Imposter, logger, allowInjection) => {
      * @param {Object} response - the HTTP response
      * @returns {Object} A promise for testing purposes
      */
-    const del = (request, response) => {
+    function del (request, response) {
         const url = require('url'),
             query = url.parse(request.url, true).query,
             options = {
@@ -170,7 +173,7 @@ const create = (protocols, imposters, Imposter, logger, allowInjection) => {
         return deleteAllImposters().then(() => {
             response.send({ imposters: json });
         });
-    };
+    }
 
     /**
      * The function responding to PUT /imposters
@@ -179,7 +182,7 @@ const create = (protocols, imposters, Imposter, logger, allowInjection) => {
      * @param {Object} response - the HTTP response
      * @returns {Object} A promise for testing purposes
      */
-    const put = (request, response) => {
+    function put (request, response) {
         const Q = require('q'),
             requestImposters = request.body.imposters || [],
             validationPromises = requestImposters.map(imposter => validate(imposter));
@@ -216,9 +219,9 @@ const create = (protocols, imposters, Imposter, logger, allowInjection) => {
                 return Q(false);
             }
         });
-    };
+    }
 
     return { get, post, del, put };
-};
+}
 
 module.exports = { create };

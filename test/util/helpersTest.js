@@ -3,21 +3,21 @@
 const assert = require('assert'),
     helpers = require('../../src/util/helpers');
 
-describe('helpers', () => {
-    describe('#socketName', () => {
-        it('should concatenate host and port for a normal socket', () => {
+describe('helpers', function () {
+    describe('#socketName', function () {
+        it('should concatenate host and port for a normal socket', function () {
             const name = helpers.socketName({ remoteAddress: 'address', remotePort: 'port' });
             assert.strictEqual(name, 'address:port');
         });
 
-        it('should just use host if port is undefined', () => {
+        it('should just use host if port is undefined', function () {
             const name = helpers.socketName({ remoteAddress: 'address' });
             assert.strictEqual(name, 'address');
         });
     });
 
-    describe('#clone', () => {
-        it('should return a deep copy', () => {
+    describe('#clone', function () {
+        it('should return a deep copy', function () {
             const original = {
                 level: 1,
                 key: {
@@ -32,8 +32,8 @@ describe('helpers', () => {
         });
     });
 
-    describe('#merge', () => {
-        it('should deep merge two object', () => {
+    describe('#merge', function () {
+        it('should deep merge two object', function () {
             const first = {
                     first: 1,
                     second: { third: 3 }
@@ -53,7 +53,7 @@ describe('helpers', () => {
             });
         });
 
-        it('should use second parameter for conflict resolution', () => {
+        it('should use second parameter for conflict resolution', function () {
             const defaults = { onlyInDefault: 1, inBoth: 1 },
                 overrides = { onlyInOverrides: 2, inBoth: 2 };
 
@@ -66,7 +66,7 @@ describe('helpers', () => {
             });
         });
 
-        it('should not change state of either parameter', () => {
+        it('should not change state of either parameter', function () {
             const first = { one: 1 },
                 second = { two: 2 };
 
@@ -76,7 +76,7 @@ describe('helpers', () => {
             assert.deepEqual(second, { two: 2 });
         });
 
-        it('should be able to handle null values', () => {
+        it('should be able to handle null values', function () {
             const defaults = { onlyInDefault: 1, inBoth: 1 },
                 overrides = { onlyInOverrides: 2, inBoth: null };
 

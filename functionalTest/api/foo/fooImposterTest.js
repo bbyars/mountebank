@@ -7,20 +7,22 @@ const assert = require('assert'),
     port = api.port + 1,
     timeout = parseInt(process.env.MB_SLOW_TEST_TIMEOUT || 2000);
 
-describe('foo imposter', () => {
-    describe('POST /imposters/:id', () => {
-        promiseIt('should auto-assign port if port not provided', () => {
+describe('foo imposter', function () {
+    this.timeout(timeout);
+
+    describe('POST /imposters/:id', function () {
+        promiseIt('should auto-assign port if port not provided', function () {
             const request = { protocol: 'foo' };
 
             return api.post('/imposters', request).then(response => {
                 assert.strictEqual(response.statusCode, 201);
                 assert.ok(response.body.port > 0);
             }).finally(() => api.del('/imposters'));
-        }).timeout(timeout);
+        });
     });
 
-    describe('GET /imposters/:id', () => {
-        promiseIt('should provide access to all requests', () => {
+    describe('GET /imposters/:id', function () {
+        promiseIt('should provide access to all requests', function () {
             const imposterRequest = { protocol: 'foo', port };
 
             return api.post('/imposters', imposterRequest)
@@ -32,9 +34,9 @@ describe('foo imposter', () => {
                     assert.deepEqual(requests, ['first', 'second']);
                 })
                 .finally(() => api.del('/imposters'));
-        }).timeout(timeout);
+        });
 
-        promiseIt('should return list of stubs in order', () => {
+        promiseIt('should return list of stubs in order', function () {
             const first = { responses: [{ is: { data: '1' } }] },
                 second = { responses: [{ is: { data: '2' } }] },
                 request = { protocol: 'foo', port, stubs: [first, second] };
@@ -48,9 +50,9 @@ describe('foo imposter', () => {
                     ]);
                 })
                 .finally(() => api.del('/imposters'));
-        }).timeout(timeout);
+        });
 
-        promiseIt('should record matches against stubs', () => {
+        promiseIt('should record matches against stubs', function () {
             const stub = { responses: [{ is: { data: '1' } }, { is: { data: '2' } }] },
                 request = { protocol: 'foo', port, stubs: [stub] };
 
@@ -80,6 +82,6 @@ describe('foo imposter', () => {
                     }]);
                 })
                 .finally(() => api.del('/imposters'));
-        }).timeout(timeout);
+        });
     });
 });

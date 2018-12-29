@@ -6,7 +6,7 @@
  * @module
  */
 
-const initializeLogfile = filename => {
+function initializeLogfile (filename) {
     // Ensure new logfile on startup so the /logs only shows for this process
     const path = require('path'),
         fs = require('fs'),
@@ -17,14 +17,14 @@ const initializeLogfile = filename => {
     if (fs.existsSync(filename)) {
         fs.renameSync(filename, newFilename);
     }
-};
+}
 
 /**
  * Creates the mountebank server
  * @param {object} options - The command line options
  * @returns {Object} An object with a close method to stop the server
  */
-const create = options => {
+function create (options) {
     const Q = require('q'),
         express = require('express'),
         cors = require('cors'),
@@ -154,9 +154,11 @@ const create = options => {
         });
     });
 
-    const isAllowedConnection = ipAddress => allowedIPs.some(allowedIP => allowedIP === '*' || allowedIP.toLowerCase() === ipAddress.toLowerCase());
+    function isAllowedConnection (ipAddress) {
+        return allowedIPs.some(allowedIP => allowedIP === '*' || allowedIP.toLowerCase() === ipAddress.toLowerCase());
+    }
 
-    const hostname = () => {
+    function hostname () {
         if (options.localOnly) {
             return 'localhost';
         }
@@ -166,7 +168,7 @@ const create = options => {
         else {
             return undefined;
         }
-    };
+    }
 
     const connections = {},
         server = app.listen(options.port, hostname(), () => {
@@ -220,6 +222,6 @@ const create = options => {
         });
 
     return deferred.promise;
-};
+}
 
 module.exports = { create };

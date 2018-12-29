@@ -2,7 +2,7 @@
 
 /** @module */
 
-const wrap = (wrappedLogger, logger) => {
+function wrap (wrappedLogger, logger) {
     ['debug', 'info', 'warn', 'error'].forEach(level => {
         wrappedLogger[level] = function () {
             const args = Array.prototype.slice.call(arguments);
@@ -14,7 +14,7 @@ const wrap = (wrappedLogger, logger) => {
             logger[level](message);
         };
     });
-};
+}
 
 /**
  * Returns a logger that prefixes each message of the given logger with a given scope
@@ -22,8 +22,10 @@ const wrap = (wrappedLogger, logger) => {
  * @param {string} scope - The prefix for all log messages
  * @returns {Object}
  */
-const create = (logger, scope) => {
-    const formatScope = scopeText => scopeText.indexOf('[') === 0 ? scopeText : `[${scopeText}] `;
+function create (logger, scope) {
+    function formatScope (scopeText) {
+        return scopeText.indexOf('[') === 0 ? scopeText : `[${scopeText}] `;
+    }
 
     const inherit = require('./inherit'),
         wrappedLogger = inherit.from(logger, {
@@ -37,6 +39,6 @@ const create = (logger, scope) => {
 
     wrap(wrappedLogger, logger);
     return wrappedLogger;
-};
+}
 
 module.exports = { create };

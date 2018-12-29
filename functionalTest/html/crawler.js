@@ -8,11 +8,15 @@ const JSDOM = require('jsdom').JSDOM,
     httpsClient = require('../api/http/baseHttpClient').create('https'),
     whitelistPatterns = ['https://s3.amazonaws.com', '^#'];
 
-const isProtocolAgnostic = href => href.indexOf('//') === 0;
+function isProtocolAgnostic (href) {
+    return href.indexOf('//') === 0;
+}
 
-const isLocal = href => href.indexOf('/') === 0;
+function isLocal (href) {
+    return href.indexOf('/') === 0;
+}
 
-const parseLinksFrom = window => {
+function parseLinksFrom (window) {
     const links = [],
         anchorTags = window.document.getElementsByTagName('a');
     for (let i = 0; i < anchorTags.length; i += 1) {
@@ -28,11 +32,13 @@ const parseLinksFrom = window => {
         }
     }
     return links;
-};
+}
 
-const isExternalPage = baseUrl => baseUrl.indexOf('http://localhost') < 0;
+function isExternalPage (baseUrl) {
+    return baseUrl.indexOf('http://localhost') < 0;
+}
 
-const getLinksFrom = (baseUrl, html) => {
+function getLinksFrom (baseUrl, html) {
     const deferred = Q.defer();
 
     if (isExternalPage(baseUrl)) {
@@ -49,11 +55,13 @@ const getLinksFrom = (baseUrl, html) => {
     }
 
     return deferred.promise;
-};
+}
 
-const isWhitelisted = href => whitelistPatterns.some(pattern => new RegExp(pattern, 'i').test(href));
+function isWhitelisted (href) {
+    return whitelistPatterns.some(pattern => new RegExp(pattern, 'i').test(href));
+}
 
-const getResponseFor = href => {
+function getResponseFor (href) {
     const parts = url.parse(href),
         client = parts.protocol === 'https:' ? httpsClient : httpClient,
         defaultPort = parts.protocol === 'https:' ? 443 : 80,
@@ -66,20 +74,28 @@ const getResponseFor = href => {
         };
 
     return client.responseFor(spec);
-};
+}
 
-const isBadLink = href => href.indexOf('http') < 0;
+function isBadLink (href) {
+    return href.indexOf('http') < 0;
+}
 
-const create = () => {
+function create () {
     const pages = { errors: [], hits: {} };
 
-    const alreadyCrawled = href => pages.hits[href];
+    function alreadyCrawled (href) {
+        return pages.hits[href];
+    }
 
-    const addReferrer = (href, referrer) => pages.hits[href].from.push(referrer);
+    function addReferrer (href, referrer) {
+        return pages.hits[href].from.push(referrer);
+    }
 
-    const addError = (href, referrer) => pages.errors.push({ href: href, referrer: referrer });
+    function addError (href, referrer) {
+        return pages.errors.push({ href: href, referrer: referrer });
+    }
 
-    const crawl = (startingUrl, referrer) => {
+    function crawl (startingUrl, referrer) {
         const serverUrl = startingUrl.replace(/#.*$/, '').trim();
 
         if (serverUrl === '') {
@@ -107,9 +123,9 @@ const create = () => {
                 links => Q.all(links.map(link => crawl(link, serverUrl))).then(() => Q(pages)),
                 e => { console.log(`ERROR with ${serverUrl}`); console.log(e); });
         }
-    };
+    }
 
     return { crawl };
-};
+}
 
 module.exports = { create };

@@ -6,7 +6,7 @@ const exec = require('child_process').exec,
     path = require('path');
 let nextTestId = 1;
 
-const execute = command => {
+function execute (command) {
     const deferred = Q.defer();
 
     exec(command, (error, stdout) => {
@@ -18,9 +18,9 @@ const execute = command => {
         }
     });
     return deferred.promise;
-};
+}
 
-const usePortableNetcat = command => {
+function usePortableNetcat (command) {
     // On CircleCI image, netcat requires the -q1 parameter to end after receiving stdin.
     // Faster machines don't need it.
     // I could not find a centos version of netcat that has the -q parameter, nor does
@@ -31,9 +31,9 @@ const usePortableNetcat = command => {
     // public site and run on their machines, and the variant without the -q is the most portable
     const netcatPath = path.join(__dirname, '../../../../node_modules/.bin/nc');
     return command.replace('| nc ', `| ${netcatPath} -q1 `);
-};
+}
 
-const runStep = step => {
+function runStep (step) {
     const deferred = Q.defer(),
         filename = `test-${nextTestId}`;
 
@@ -49,6 +49,6 @@ const runStep = step => {
     });
 
     return deferred.promise;
-};
+}
 
 module.exports = { runStep };

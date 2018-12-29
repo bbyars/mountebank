@@ -6,16 +6,18 @@ const Q = require('q'),
     isWindows = require('os').platform().indexOf('win') === 0,
     timeout = parseInt(process.env.MB_SLOW_TEST_TIMEOUT || 3000);
 
-const validateDocs = page => {
-    promiseIt(`${page} should be up-to-date`, () =>
-        docs.getScenarios(page).then(testScenarios => {
+function validateDocs (page) {
+    promiseIt(`${page} should be up-to-date`, function () {
+        return docs.getScenarios(page).then(testScenarios => {
             const tests = Object.keys(testScenarios).map(testName => testScenarios[testName].assertValid());
             return Q.all(tests);
-        })
-    ).timeout(timeout);
-};
+        });
+    });
+}
 
-describe('docs', () => {
+describe('docs', function () {
+    this.timeout(timeout);
+
     [
         '/docs/api/overview',
         '/docs/api/mocks',

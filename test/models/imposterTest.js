@@ -6,8 +6,8 @@ const assert = require('assert'),
     Q = require('q'),
     promiseIt = require('../testHelpers').promiseIt;
 
-describe('imposter', () => {
-    describe('#create', () => {
+describe('imposter', function () {
+    describe('#create', function () {
         let Protocol, metadata, server;
 
         beforeEach(() => {
@@ -27,7 +27,7 @@ describe('imposter', () => {
             };
         });
 
-        promiseIt('should return url', () => {
+        promiseIt('should return url', function () {
             server.port = 3535;
 
             return Imposter.create(Protocol, {}).then(imposter => {
@@ -35,7 +35,7 @@ describe('imposter', () => {
             });
         });
 
-        promiseIt('should return trimmed down JSON for lists', () => {
+        promiseIt('should return trimmed down JSON for lists', function () {
             server.port = 3535;
 
             return Imposter.create(Protocol, {}).then(imposter => {
@@ -48,7 +48,7 @@ describe('imposter', () => {
             });
         });
 
-        promiseIt('should return full JSON representation by default', () => {
+        promiseIt('should return full JSON representation by default', function () {
             server.port = 3535;
 
             return Imposter.create(Protocol, {}).then(imposter => {
@@ -63,7 +63,7 @@ describe('imposter', () => {
             });
         });
 
-        promiseIt('should add protocol metadata to JSON representation', () => {
+        promiseIt('should add protocol metadata to JSON representation', function () {
             server.port = 3535;
             metadata.key = 'value';
 
@@ -80,7 +80,7 @@ describe('imposter', () => {
             });
         });
 
-        promiseIt('should provide replayable JSON representation', () => {
+        promiseIt('should provide replayable JSON representation', function () {
             server.port = 3535;
             metadata.key = 'value';
 
@@ -94,7 +94,7 @@ describe('imposter', () => {
             });
         });
 
-        promiseIt('should create protocol server on provided port with options', () => {
+        promiseIt('should create protocol server on provided port with options', function () {
             server.port = 3535;
 
             return Imposter.create(Protocol, { key: 'value' }).then(() => {
@@ -102,7 +102,7 @@ describe('imposter', () => {
             });
         });
 
-        promiseIt('should return list of stubs', () => {
+        promiseIt('should return list of stubs', function () {
             server.stubs = mock().returns([{ responses: ['FIRST'] }, { responses: ['SECOND'] }]);
             return Imposter.create(Protocol, {}).then(imposter => {
                 assert.deepEqual(imposter.toJSON().stubs, [
@@ -112,7 +112,7 @@ describe('imposter', () => {
             });
         });
 
-        promiseIt('replayable JSON should remove stub matches', () => {
+        promiseIt('replayable JSON should remove stub matches', function () {
             server.stubs = mock().returns([
                 {
                     responses: ['FIRST'],
@@ -135,7 +135,7 @@ describe('imposter', () => {
             });
         });
 
-        promiseIt('replayable JSON should remove _proxyResponseTime fields', () => {
+        promiseIt('replayable JSON should remove _proxyResponseTime fields', function () {
             server.stubs = mock().returns([{ responses: [{ is: { body: 'body', _proxyResponseTime: 3 } }] }]);
             server.port = 3535;
 
@@ -148,7 +148,7 @@ describe('imposter', () => {
             });
         });
 
-        promiseIt('should remove proxies from responses if asked', () => {
+        promiseIt('should remove proxies from responses if asked', function () {
             server.stubs = mock().returns([
                 {
                     responses: [
@@ -180,7 +180,7 @@ describe('imposter', () => {
             });
         });
 
-        promiseIt('should remove empty stubs after proxy removal', () => {
+        promiseIt('should remove empty stubs after proxy removal', function () {
             server.stubs = mock().returns([
                 {
                     responses: [

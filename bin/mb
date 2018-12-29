@@ -10,13 +10,13 @@ const mountebank = require('../src/mountebank'),
     ejs = require('ejs'),
     yargs = require('yargs');
 
-const error = message => {
+function error (message) {
     console.error(`${message}\n`);
     yargs.showHelp();
     process.exit(1);
-};
+}
 
-const processExists = pid => {
+function processExists (pid) {
     try {
         // "As a special case, signal 0 can be used to test existence of process"
         // https://nodejs.org/api/process.html#process_process_kill_pid_signal
@@ -26,11 +26,13 @@ const processExists = pid => {
     catch (e) {
         return false;
     }
-};
+}
 
-const shouldLoadConfigFile = options => typeof options.configfile !== 'undefined';
+function shouldLoadConfigFile (options) {
+    return typeof options.configfile !== 'undefined';
+}
 
-const putConfig = (options, body) => {
+function putConfig (options, body) {
     const deferred = Q.defer(),
         requestOptions = {
             method: 'PUT',
@@ -58,9 +60,9 @@ const putConfig = (options, body) => {
     request.write(body);
     request.end();
     return deferred.promise;
-};
+}
 
-const getConfig = options => {
+function getConfig (options) {
     const deferred = Q.defer(),
         requestOptions = {
             method: 'GET',
@@ -90,9 +92,9 @@ const getConfig = options => {
 
     request.end();
     return deferred.promise;
-};
+}
 
-const stringify = (filename, includeFile) => {
+function stringify (filename, includeFile) {
     const resolvedPath = path.join(path.dirname(filename), includeFile),
         contents = fs.readFileSync(resolvedPath, 'utf8'),
         rendered = ejs.render(contents, {
@@ -104,9 +106,9 @@ const stringify = (filename, includeFile) => {
 
     // get rid of the surrounding quotes because it makes the templates more natural to quote them there
     return jsonString.substring(1, jsonString.length - 1);
-};
+}
 
-const getContentsOrExit = (file, server) => {
+function getContentsOrExit (file, server) {
     try {
         return fs.readFileSync(file, 'utf8');
     }
@@ -117,9 +119,9 @@ const getContentsOrExit = (file, server) => {
         process.exit(1);
         return '';
     }
-};
+}
 
-const loadConfig = (options, server) => {
+function loadConfig (options, server) {
     if (!shouldLoadConfigFile(options)) {
         return Q(true);
     }
@@ -135,12 +137,12 @@ const loadConfig = (options, server) => {
         imposters = json.imposters || [json];
 
     return putConfig(options, JSON.stringify({ imposters: imposters }));
-};
+}
 
-const serverAt = options => {
-    const start = () => {
+function serverAt (options) {
+    function start () {
         mountebank.create(options).then(server => {
-            const shutdown = () => {
+            function shutdown () {
                 server.close(() => {
                     try {
                         if (fs.existsSync(options.pidfile)) {
@@ -151,7 +153,7 @@ const serverAt = options => {
                         process.exit();
                     }
                 });
-            };
+            }
 
             process.on('SIGINT', shutdown);
             process.on('SIGTERM', shutdown);
@@ -162,9 +164,9 @@ const serverAt = options => {
             // They can wait for the pidfile to be written
             fs.writeFileSync(options.pidfile, process.pid.toString());
         }).done();
-    };
+    }
 
-    const stop = () => {
+    function stop () {
         if (!fs.existsSync(options.pidfile)) {
             return Q(true);
         }
@@ -201,11 +203,13 @@ const serverAt = options => {
         process.kill(pid);
         waitForClose();
         return deferred.promise;
-    };
+    }
 
-    const restart = () => stop().then(start).done();
+    function restart () {
+        return stop().then(start).done();
+    }
 
-    const save = () => {
+    function save () {
         getConfig(options).then(response => {
             fs.writeFileSync(options.savefile, response.body);
         }).catch(err => {
@@ -217,9 +221,9 @@ const serverAt = options => {
             }
             process.exit(1);
         }).done();
-    };
+    }
 
-    const replay = () => {
+    function replay () {
         options.removeProxies = true;
 
         getConfig(options).then(response => {
@@ -240,7 +244,7 @@ const serverAt = options => {
             }
             process.exit(1);
         }).done();
-    };
+    }
 
     return {
         start: start,
@@ -249,7 +253,7 @@ const serverAt = options => {
         save: save,
         replay: replay
     };
-};
+}
 
 const aliases = {
         d: 'debug',
@@ -457,20 +461,20 @@ const argv = yargs
     .epilog('mb help [command] provides more details\n\nFor more information, see http://www.mbtest.org/docs/commandLine')
     .argv;
 
-const fixAliases = () => {
+function fixAliases () {
     Object.keys(argv).forEach(key => {
         if (aliases[key]) {
             argv[aliases[key]] = argv[key];
             delete argv[key];
         }
     });
-};
+}
 
 // Unfortunately, while yargs defaults correctly when the command is present, I couldn't
 // figure out how to make it default when the command is absent, which I need to default to start.
 // You can set what yargs considers to be the default command by .command(['start', '*']), but
 // that changes the help docs in ways I don't want.
-const fixDefaults = () => {
+function fixDefaults () {
     if (argv._.length === 0) {
         Object.keys(startOptions).forEach(key => {
             if (typeof argv[key] === 'undefined') {
@@ -478,20 +482,20 @@ const fixDefaults = () => {
             }
         });
     }
-};
+}
 
-const fixIPWhitelist = command => {
+function fixIPWhitelist (command) {
     if (command === 'start' || command === 'restart') {
         argv.ipWhitelist = argv.ipWhitelist.split('|');
     }
-};
+}
 
 // Prevent noise from being logged
-const removeNoise = () => {
+function removeNoise () {
     delete argv._;
     delete argv.$0;
     delete argv.version;
-};
+}
 
 try {
     const command = argv._.length === 0 ? 'start' : argv._[0],

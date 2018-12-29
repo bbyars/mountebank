@@ -10,14 +10,14 @@
  * @param {string} logfile - the path to the logfile
  * @returns {{get: get}}
  */
-const create = logfile => {
+function create (logfile) {
     /**
      * The function that responds to GET /logs
      * @memberOf module:controllers/logsController#
      * @param {Object} request - the HTTP request
      * @param {Object} response - the HTTP response
      */
-    const get = (request, response) => {
+    function get (request, response) {
         const fs = require('fs'),
             json = '[' + fs.readFileSync(logfile).toString().split('\n').join(',').replace(/,$/, '') + ']',
             allLogs = JSON.parse(json),
@@ -31,9 +31,9 @@ const create = logfile => {
             json: () => { response.send({ logs: logs }); },
             html: () => { response.render('logs', { logs: logs, escape: require('escape-html') }); }
         });
-    };
+    }
 
     return { get };
-};
+}
 
 module.exports = { create };

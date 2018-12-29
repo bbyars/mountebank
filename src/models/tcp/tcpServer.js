@@ -5,17 +5,17 @@
  * @module
  */
 
-const createServer = (logger, options) => {
-    const postProcess = response => {
+function createServer (logger, options) {
+    function postProcess (response) {
         const defaultResponse = options.defaultResponse || {};
         return {
             data: response.data || defaultResponse.data || ''
         };
-    };
+    }
 
     const mode = options.mode ? options.mode : 'text',
         encoding = mode === 'binary' ? 'base64' : 'utf8',
-        ensureBuffer = data => Buffer.isBuffer(data) ? data : new Buffer(data, encoding),
+        ensureBuffer = function (data) { return Buffer.isBuffer(data) ? data : new Buffer(data, encoding); },
         proxy = require('./tcpProxy').create(logger, encoding),
         resolver = require('../responseResolver').create(proxy, postProcess),
         stubs = require('../stubRepository').create(resolver, options.debug, encoding),
@@ -59,7 +59,7 @@ const createServer = (logger, options) => {
         }),
         server = require('net').createServer();
 
-    const isEndOfRequest = requestData => {
+    function isEndOfRequest (requestData) {
         if (!options.endOfRequestResolver || !options.endOfRequestResolver.inject) {
             return true;
         }
@@ -79,7 +79,7 @@ const createServer = (logger, options) => {
             logger.error(`    requestData: ${JSON.stringify(requestData)}`);
             return false;
         }
-    };
+    }
 
     server.on('connection', socket => {
         let packets = [];
@@ -111,7 +111,7 @@ const createServer = (logger, options) => {
     };
 
     return result;
-};
+}
 
 /**
  * Initializes the tcp protocol
@@ -121,7 +121,7 @@ const createServer = (logger, options) => {
  * @param {boolean} debug - The --debug command line parameter
  * @returns {Object} - The protocol implementation
  */
-const initialize = (logger, allowInjection, recordRequests, debug) => {
+function initialize (logger, allowInjection, recordRequests, debug) {
     const implementation = {
             protocolName: 'tcp',
             createServer: createServer,
@@ -136,6 +136,6 @@ const initialize = (logger, allowInjection, recordRequests, debug) => {
         testProxyResponse: { data: '' },
         validate: require('./tcpValidator')
     };
-};
+}
 
 module.exports = { initialize };

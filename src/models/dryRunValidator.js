@@ -16,10 +16,10 @@
  * @param {function} options.additionalValidation - A function that performs protocol-specific validation
  * @returns {Object}
  */
-const create = options => {
+function create (options) {
     const exceptions = require('../util/errors');
 
-    const stubForResponse = (originalStub, response, withPredicates) => {
+    function stubForResponse (originalStub, response, withPredicates) {
         // Each dry run only validates the first response, so we
         // explode the number of stubs to dry run each response separately
         const helpers = require('../util/helpers'),
@@ -35,9 +35,9 @@ const create = options => {
         }
 
         return clonedStub;
-    };
+    }
 
-    const dryRun = (stub, encoding, logger) => {
+    function dryRun (stub, encoding, logger) {
         // Need a well-formed proxy response in case a behavior decorator expects certain fields to exist
         const Q = require('q'),
             combinators = require('../util/combinators'),
@@ -63,9 +63,9 @@ const create = options => {
             testRequest.isDryRun = true;
             return stubRepository.resolve(testRequest, dryRunLogger, {});
         }));
-    };
+    }
 
-    const addDryRunErrors = (stub, encoding, errors, logger) => {
+    function addDryRunErrors (stub, encoding, errors, logger) {
         const Q = require('q'),
             deferred = Q.defer();
 
@@ -85,9 +85,9 @@ const create = options => {
         }
 
         return deferred.promise;
-    };
+    }
 
-    const hasStubInjection = stub => {
+    function hasStubInjection (stub) {
         const hasResponseInjections = stub.responses.some(response => {
                 const hasDecorator = response._behaviors && response._behaviors.decorate,
                     hasWaitFunction = response._behaviors && typeof response._behaviors.wait === 'string';
@@ -97,11 +97,13 @@ const create = options => {
             hasPredicateInjections = Object.keys(stub.predicates || {}).some(predicate => stub.predicates[predicate].inject),
             hasAddDecorateBehaviorInProxy = stub.responses.some(response => response.proxy && response.proxy.addDecorateBehavior);
         return hasResponseInjections || hasPredicateInjections || hasAddDecorateBehaviorInProxy;
-    };
+    }
 
-    const hasShellExecution = stub => stub.responses.some(response => response._behaviors && response._behaviors.shellTransform);
+    function hasShellExecution (stub) {
+        return stub.responses.some(response => response._behaviors && response._behaviors.shellTransform);
+    }
 
-    const addStubInjectionErrors = (stub, errors) => {
+    function addStubInjectionErrors (stub, errors) {
         if (options.allowInjection) {
             return;
         }
@@ -114,22 +116,22 @@ const create = options => {
             errors.push(exceptions.InjectionError(
                 'Shell execution is not allowed unless mb is run with the --allowInjection flag', { source: stub }));
         }
-    };
+    }
 
-    const addAllTo = (values, additionalValues) => {
+    function addAllTo (values, additionalValues) {
         additionalValues.forEach(value => {
             values.push(value);
         });
-    };
+    }
 
-    const addBehaviorErrors = (stub, errors) => {
+    function addBehaviorErrors (stub, errors) {
         stub.responses.forEach(response => {
             const behaviors = require('./behaviors');
             addAllTo(errors, behaviors.validate(response._behaviors));
         });
-    };
+    }
 
-    const errorsForStub = (stub, encoding, logger) => {
+    function errorsForStub (stub, encoding, logger) {
         const errors = [],
             Q = require('q'),
             util = require('util'),
@@ -157,9 +159,9 @@ const create = options => {
         }
 
         return deferred.promise;
-    };
+    }
 
-    const errorsForRequest = request => {
+    function errorsForRequest (request) {
         const errors = [],
             hasRequestInjection = request.endOfRequestResolver && request.endOfRequestResolver.inject;
 
@@ -169,7 +171,7 @@ const create = options => {
                 { source: request.endOfRequestResolver }));
         }
         return errors;
-    };
+    }
 
     /**
      * Validates that the imposter creation is syntactically valid
@@ -178,7 +180,7 @@ const create = options => {
      * @param {Object} logger - The logger
      * @returns {Object} Promise resolving to an object containing isValid and an errors array
      */
-    const validate = (request, logger) => {
+    function validate (request, logger) {
         const stubs = request.stubs || [],
             encoding = request.mode === 'binary' ? 'base64' : 'utf8',
             validationPromises = stubs.map(stub => errorsForStub(stub, encoding, logger)),
@@ -196,9 +198,9 @@ const create = options => {
         });
 
         return deferred.promise;
-    };
+    }
 
     return { validate };
-};
+}
 
 module.exports = { create };

@@ -6,9 +6,9 @@ const assert = require('assert'),
     Logger = require('../fakes/fakeLogger'),
     testRequest = { requestFrom: '', path: '/', query: {}, method: 'GET', headers: {}, body: '' };
 
-describe('dryRunValidator', () => {
-    describe('#validate', () => {
-        promiseIt('should be valid for an empty request', () => {
+describe('dryRunValidator', function () {
+    describe('#validate', function () {
+        promiseIt('should be valid for an empty request', function () {
             const request = {},
                 validator = Validator.create({ testRequest });
 
@@ -20,7 +20,7 @@ describe('dryRunValidator', () => {
             });
         });
 
-        promiseIt('should not be valid for a missing responses field', () => {
+        promiseIt('should not be valid for a missing responses field', function () {
             const request = { stubs: [{}] },
                 validator = Validator.create({ testRequest });
 
@@ -36,7 +36,7 @@ describe('dryRunValidator', () => {
             });
         });
 
-        promiseIt('should be valid for an empty stubs list', () => {
+        promiseIt('should be valid for an empty stubs list', function () {
             const request = { stubs: [] },
                 validator = Validator.create({ testRequest });
 
@@ -48,7 +48,7 @@ describe('dryRunValidator', () => {
             });
         });
 
-        promiseIt('should be valid for valid stub', () => {
+        promiseIt('should be valid for valid stub', function () {
             const request = { stubs: [{ responses: [{ is: { statusCode: 400 } }] }] },
                 validator = Validator.create({ testRequest });
 
@@ -60,7 +60,7 @@ describe('dryRunValidator', () => {
             });
         });
 
-        promiseIt('should be valid for a valid predicate', () => {
+        promiseIt('should be valid for a valid predicate', function () {
             const request = {
                     stubs: [{
                         responses: [{ is: { body: 'test' } }],
@@ -82,7 +82,7 @@ describe('dryRunValidator', () => {
             });
         });
 
-        promiseIt('should be valid for a well formed predicate inject if injections are allowed', () => {
+        promiseIt('should be valid for a well formed predicate inject if injections are allowed', function () {
             const request = {
                     stubs: [{
                         predicates: [{ inject: '() => { return true; }' }],
@@ -99,7 +99,7 @@ describe('dryRunValidator', () => {
             });
         });
 
-        promiseIt('should be true for a well formed response inject if injections are allowed', () => {
+        promiseIt('should be true for a well formed response inject if injections are allowed', function () {
             const request = {
                     stubs: [{
                         responses: [{ inject: '() => { return {}; }' }]
@@ -115,7 +115,7 @@ describe('dryRunValidator', () => {
             });
         });
 
-        promiseIt('should be true for a well formed decorator behavior if injections are allowed', () => {
+        promiseIt('should be true for a well formed decorator behavior if injections are allowed', function () {
             const decorator = (request, response) => {
                     response.body = 'Hello';
                 },
@@ -134,7 +134,7 @@ describe('dryRunValidator', () => {
             });
         });
 
-        promiseIt('should not be valid for response injection if injections are disallowed', () => {
+        promiseIt('should not be valid for response injection if injections are disallowed', function () {
             const request = {
                     stubs: [{
                         responses: [{ inject: '() => { return {}; }' }]
@@ -154,7 +154,7 @@ describe('dryRunValidator', () => {
             });
         });
 
-        promiseIt('should not be valid for predicate injections if allowInjection is false', () => {
+        promiseIt('should not be valid for predicate injections if allowInjection is false', function () {
             const request = {
                     stubs: [{
                         predicates: [{ inject: '() => { return true; }' }],
@@ -175,7 +175,7 @@ describe('dryRunValidator', () => {
             });
         });
 
-        promiseIt('should be false for a well formed decorator behavior if injections are not allowed', () => {
+        promiseIt('should be false for a well formed decorator behavior if injections are not allowed', function () {
             const decorator = (request, response) => {
                     response.body = 'Hello';
                 },
@@ -198,7 +198,7 @@ describe('dryRunValidator', () => {
             });
         });
 
-        promiseIt('should be valid with a valid proxy response', () => {
+        promiseIt('should be valid with a valid proxy response', function () {
             const request = {
                     stubs: [{
                         responses: [{ proxy: { to: 'http://google.com' } }]
@@ -214,7 +214,7 @@ describe('dryRunValidator', () => {
             });
         });
 
-        promiseIt('should not be valid if any stub is invalid', () => {
+        promiseIt('should not be valid if any stub is invalid', function () {
             const request = {
                     stubs: [
                         { responses: [{ is: { statusCode: 400 } }] },
@@ -235,7 +235,7 @@ describe('dryRunValidator', () => {
             });
         });
 
-        promiseIt('should detect an invalid predicate', () => {
+        promiseIt('should detect an invalid predicate', function () {
             const request = {
                     stubs: [{
                         responses: [{}],
@@ -257,7 +257,7 @@ describe('dryRunValidator', () => {
             });
         });
 
-        promiseIt('should detect an invalid predicate mixed with valid predicates', () => {
+        promiseIt('should detect an invalid predicate mixed with valid predicates', function () {
             const request = {
                     stubs: [{
                         responses: [{}],
@@ -282,7 +282,7 @@ describe('dryRunValidator', () => {
             });
         });
 
-        promiseIt('should detect a malformed predicate', () => {
+        promiseIt('should detect a malformed predicate', function () {
             const request = {
                     stubs: [{
                         responses: [{}],
@@ -304,7 +304,7 @@ describe('dryRunValidator', () => {
             });
         });
 
-        promiseIt('should reject unrecognized response resolver', () => {
+        promiseIt('should reject unrecognized response resolver', function () {
             const request = {
                     stubs: [{
                         responses: [{ invalid: 'INVALID' }]
@@ -324,7 +324,7 @@ describe('dryRunValidator', () => {
             });
         });
 
-        promiseIt('should not be valid if any response is invalid', () => {
+        promiseIt('should not be valid if any response is invalid', function () {
             const request = {
                     stubs: [{
                         responses: [
@@ -347,7 +347,7 @@ describe('dryRunValidator', () => {
             });
         });
 
-        promiseIt('should not be valid if any response is invalid even if the predicates are false during dry run', () => {
+        promiseIt('should not be valid if any response is invalid even if the predicates are false during dry run', function () {
             const request = {
                     stubs: [{
                         responses: [{ invalid: true }],
@@ -368,7 +368,7 @@ describe('dryRunValidator', () => {
             });
         });
 
-        promiseIt('should add behavior validation errors', () => {
+        promiseIt('should add behavior validation errors', function () {
             const request = { stubs: [{ responses: [{
                     is: { statusCode: 400 },
                     _behaviors: {
@@ -397,7 +397,7 @@ describe('dryRunValidator', () => {
             });
         });
 
-        promiseIt('should allow functions as wait behavior if injections allowed', () => {
+        promiseIt('should allow functions as wait behavior if injections allowed', function () {
             const request = { stubs: [{ responses: [{
                     is: { statusCode: 400 },
                     _behaviors: { wait: '() => { return 1000; }' }
@@ -412,7 +412,7 @@ describe('dryRunValidator', () => {
             });
         });
 
-        promiseIt('should not allow functions as wait behavior if injections not allowed', () => {
+        promiseIt('should not allow functions as wait behavior if injections not allowed', function () {
             const response = {
                     is: { statusCode: 400 },
                     _behaviors: { wait: '() => { return 1000; }' }
@@ -432,7 +432,7 @@ describe('dryRunValidator', () => {
             });
         });
 
-        promiseIt('should be false for a well formed endOfRequestResolver if injections are not allowed', () => {
+        promiseIt('should be false for a well formed endOfRequestResolver if injections are not allowed', function () {
             const endOfRequestResolver = () => true,
                 request = {
                     protocol: 'tcp',
@@ -453,7 +453,7 @@ describe('dryRunValidator', () => {
             });
         });
 
-        promiseIt('should be true for a well formed endOfRequestResolver if injections are allowed', () => {
+        promiseIt('should be true for a well formed endOfRequestResolver if injections are allowed', function () {
             const endOfRequestResolver = () => true,
                 request = {
                     protocol: 'tcp',
@@ -467,7 +467,7 @@ describe('dryRunValidator', () => {
             });
         });
 
-        promiseIt('should not be valid for shellTransform if injections are disallowed', () => {
+        promiseIt('should not be valid for shellTransform if injections are disallowed', function () {
             const request = {
                     stubs: [{
                         responses: [{ is: {}, _behaviors: { shellTransform: ['command'] } }]
@@ -487,7 +487,7 @@ describe('dryRunValidator', () => {
             });
         });
 
-        promiseIt('should not be valid for proxy addDecorateBehavior if injections are disallowed', () => {
+        promiseIt('should not be valid for proxy addDecorateBehavior if injections are disallowed', function () {
             const proxy = {
                     to: 'http://google.com',
                     addDecorateBehavior: '(request, response) => { response.body = ""; }'

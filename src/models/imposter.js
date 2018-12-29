@@ -8,19 +8,21 @@
  * @module
  */
 
-const createErrorHandler = (deferred, port) => error => {
-    const errors = require('../util/errors');
+function createErrorHandler (deferred, port) {
+    return error => {
+        const errors = require('../util/errors');
 
-    if (error.errno === 'EADDRINUSE') {
-        deferred.reject(errors.ResourceConflictError(`Port ${port} is already in use`));
-    }
-    else if (error.errno === 'EACCES') {
-        deferred.reject(errors.InsufficientAccessError());
-    }
-    else {
-        deferred.reject(error);
-    }
-};
+        if (error.errno === 'EADDRINUSE') {
+            deferred.reject(errors.ResourceConflictError(`Port ${port} is already in use`));
+        }
+        else if (error.errno === 'EACCES') {
+            deferred.reject(errors.InsufficientAccessError());
+        }
+        else {
+            deferred.reject(error);
+        }
+    };
+}
 
 /**
  * Create the imposter
@@ -28,7 +30,7 @@ const createErrorHandler = (deferred, port) => error => {
  * @param {Object} request - the parsed imposter JSON
  * @returns {Object}
  */
-const create = (Protocol, request) => {
+function create (Protocol, request) {
     const Q = require('q'),
         deferred = Q.defer(),
         domain = require('domain').create(),
@@ -47,16 +49,16 @@ const create = (Protocol, request) => {
                 request.stubs.forEach(server.addStub);
             }
 
-            const addDetailsTo = result => {
+            function addDetailsTo (result) {
                 Object.keys(server.metadata).forEach(key => {
                     result[key] = server.metadata[key];
                 });
 
                 result.requests = server.requests;
                 result.stubs = server.stubs();
-            };
+            }
 
-            const removeNonEssentialInformationFrom = result => {
+            function removeNonEssentialInformationFrom (result) {
                 const helpers = require('../util/helpers');
                 result.stubs.forEach(stub => {
                     /* eslint-disable no-underscore-dangle */
@@ -72,16 +74,16 @@ const create = (Protocol, request) => {
                 delete result.numberOfRequests;
                 delete result.requests;
                 delete result._links;
-            };
+            }
 
-            const removeProxiesFrom = result => {
+            function removeProxiesFrom (result) {
                 result.stubs.forEach(stub => {
                     stub.responses = stub.responses.filter(response => !response.hasOwnProperty('proxy'));
                 });
                 result.stubs = result.stubs.filter(stub => stub.responses.length > 0);
-            };
+            }
 
-            const toJSON = options => {
+            function toJSON (options) {
                 // I consider the order of fields represented important.  They won't matter for parsing,
                 // but it makes a nicer user experience for developers viewing the JSON to keep the most
                 // relevant information at the top
@@ -107,9 +109,11 @@ const create = (Protocol, request) => {
                 }
 
                 return result;
-            };
+            }
 
-            const resetProxies = () => server.resetProxies();
+            function resetProxies () {
+                return server.resetProxies();
+            }
 
             deferred.resolve({
                 port: server.port,
@@ -123,6 +127,6 @@ const create = (Protocol, request) => {
     });
 
     return deferred.promise;
-};
+}
 
 module.exports = { create };

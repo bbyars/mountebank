@@ -8,9 +8,9 @@ const assert = require('assert'),
     isWindows = require('os').platform().indexOf('win') === 0,
     client = require('./http/baseHttpClient').create('http');
 
-describe('POST /imposters', () => {
+describe('POST /imposters', function () {
 
-    promiseIt('should return create new imposter with consistent hypermedia', () => {
+    promiseIt('should return create new imposter with consistent hypermedia', function () {
         let createdBody, imposterPath;
 
         return api.post('/imposters', { protocol: 'http', port }).then(response => {
@@ -26,30 +26,38 @@ describe('POST /imposters', () => {
         }).finally(() => api.del(imposterPath));
     });
 
-    promiseIt('should create imposter at provided port', () => api.post('/imposters', { protocol: 'http', port }).then(() => api.get('/', port)).then(response => {
-        assert.strictEqual(response.statusCode, 200, JSON.stringify(response.body));
-    }).finally(() => api.del(`/imposters/${port}`)));
+    promiseIt('should create imposter at provided port', function () {
+        return api.post('/imposters', { protocol: 'http', port }).then(() => api.get('/', port)).then(response => {
+            assert.strictEqual(response.statusCode, 200, JSON.stringify(response.body));
+        }).finally(() => api.del(`/imposters/${port}`));
+    });
 
-    promiseIt('should return 400 on invalid input', () => api.post('/imposters', {}).then(response => {
-        assert.strictEqual(response.statusCode, 400);
-    }));
-
-    promiseIt('should return 400 on port conflict', () => api.post('/imposters', { protocol: 'http', port: api.port }).then(response => {
-        assert.strictEqual(response.statusCode, 400);
-    }));
-
-    promiseIt('should return 400 on invalid JSON', () => api.post('/imposters', 'invalid').then(response => {
-        assert.strictEqual(response.statusCode, 400);
-        assert.deepEqual(response.body, {
-            errors: [{
-                code: 'invalid JSON',
-                message: 'Unable to parse body as JSON',
-                source: 'invalid'
-            }]
+    promiseIt('should return 400 on invalid input', function () {
+        return api.post('/imposters', {}).then(response => {
+            assert.strictEqual(response.statusCode, 400);
         });
-    }));
+    });
 
-    promiseIt('should return 403 when does not have permission to bind to port', () => {
+    promiseIt('should return 400 on port conflict', function () {
+        return api.post('/imposters', { protocol: 'http', port: api.port }).then(response => {
+            assert.strictEqual(response.statusCode, 400);
+        });
+    });
+
+    promiseIt('should return 400 on invalid JSON', function () {
+        return api.post('/imposters', 'invalid').then(response => {
+            assert.strictEqual(response.statusCode, 400);
+            assert.deepEqual(response.body, {
+                errors: [{
+                    code: 'invalid JSON',
+                    message: 'Unable to parse body as JSON',
+                    source: 'invalid'
+                }]
+            });
+        });
+    });
+
+    promiseIt('should return 403 when does not have permission to bind to port', function () {
         if (isWindows) {
             return Q(true); // no sudo required
         }
@@ -59,13 +67,15 @@ describe('POST /imposters', () => {
     });
 });
 
-describe('DELETE /imposters', () => {
-    promiseIt('returns 200 with empty array if no imposters had been created', () => api.del('/imposters').then(response => {
-        assert.strictEqual(response.statusCode, 200);
-        assert.deepEqual(response.body, { imposters: [] });
-    }));
+describe('DELETE /imposters', function () {
+    promiseIt('returns 200 with empty array if no imposters had been created', function () {
+        return api.del('/imposters').then(response => {
+            assert.strictEqual(response.statusCode, 200);
+            assert.deepEqual(response.body, { imposters: [] });
+        });
+    });
 
-    it('deletes all imposters and returns replayable body', done => {
+    it('deletes all imposters and returns replayable body', function (done) {
         const firstImposter = { protocol: 'http', port, name: 'imposter 1' },
             secondImposter = { protocol: 'http', port: port + 1, name: 'imposter 1' };
 
@@ -104,7 +114,7 @@ describe('DELETE /imposters', () => {
         });
     });
 
-    promiseIt('supports returning a non-replayable body with proxies removed', () => {
+    promiseIt('supports returning a non-replayable body with proxies removed', function () {
         const isImposter = {
                 protocol: 'http',
                 port, name:
@@ -152,7 +162,7 @@ describe('DELETE /imposters', () => {
     });
 });
 
-describe('PUT /imposters', () => {
+describe('PUT /imposters', function () {
     promiseIt('creates all imposters provided when no imposters previously exist', () => {
         const request = {
             imposters: [
@@ -176,7 +186,7 @@ describe('PUT /imposters', () => {
         }).finally(() => api.del('/imposters'));
     });
 
-    promiseIt('overwrites previous imposters', () => {
+    promiseIt('overwrites previous imposters', function () {
         const postRequest = { protocol: 'smtp', port: port },
             putRequest = {
                 imposters: [

@@ -2,10 +2,10 @@
 
 const Q = require('q');
 
-const create = (endpoint, id) => {
+function create (endpoint, id) {
     const steps = [];
 
-    const addStep = stepSpec => {
+    function addStep (stepSpec) {
         const step = {
             assertValid: stepSpec.assertValid,
             execute: () => {
@@ -18,9 +18,9 @@ const create = (endpoint, id) => {
         };
 
         steps.push(step);
-    };
+    }
 
-    const assertValid = () => {
+    function assertValid () {
         const stepExecutions = steps.map(step => step.execute),
             chainedExecutions = stepExecutions.reduce(Q.when, Q());
 
@@ -36,9 +36,9 @@ const create = (endpoint, id) => {
                 step.assertValid(step.actualResponse, failureMessage);
             });
         });
-    };
+    }
 
     return { addStep, assertValid };
-};
+}
 
 module.exports = { create };

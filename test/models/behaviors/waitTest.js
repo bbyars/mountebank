@@ -5,9 +5,9 @@ const assert = require('assert'),
     behaviors = require('../../../src/models/behaviors'),
     Logger = require('../../fakes/fakeLogger');
 
-describe('behaviors', () => {
-    describe('#wait', () => {
-        promiseIt('should not execute during dry run', () => {
+describe('behaviors', function () {
+    describe('#wait', function () {
+        promiseIt('should not execute during dry run', function () {
             const request = { isDryRun: true },
                 response = { key: 'value' },
                 logger = Logger.create(),
@@ -21,7 +21,7 @@ describe('behaviors', () => {
             });
         });
 
-        promiseIt('should wait specified number of milliseconds', () => {
+        promiseIt('should wait specified number of milliseconds', function () {
             const request = {},
                 response = { key: 'value' },
                 logger = Logger.create(),
@@ -35,7 +35,7 @@ describe('behaviors', () => {
             });
         });
 
-        promiseIt('should allow function to specify latency', () => {
+        promiseIt('should allow function to specify latency', function () {
             const request = {},
                 response = { key: 'value' },
                 logger = Logger.create(),
@@ -50,7 +50,7 @@ describe('behaviors', () => {
             });
         });
 
-        promiseIt('should log error and reject function if function throws error', () => {
+        promiseIt('should log error and reject function if function throws error', function () {
             const request = {},
                 response = { key: 'value' },
                 logger = Logger.create(),
@@ -65,7 +65,7 @@ describe('behaviors', () => {
             });
         });
 
-        promiseIt('should treat a string as milliseconds if it can be parsed as a number', () => {
+        promiseIt('should treat a string as milliseconds if it can be parsed as a number', function () {
             const request = {},
                 response = { key: 'value' },
                 logger = Logger.create(),
@@ -79,7 +79,7 @@ describe('behaviors', () => {
             });
         });
 
-        it('should not be valid if below zero', () => {
+        it('should not be valid if below zero', function () {
             const errors = behaviors.validate({ wait: -1 });
             assert.deepEqual(errors, [{
                 code: 'bad data',
@@ -88,12 +88,12 @@ describe('behaviors', () => {
             }]);
         });
 
-        it('should be valid if a string is passed in for the function', () => {
+        it('should be valid if a string is passed in for the function', function () {
             const errors = behaviors.validate({ wait: '() => {}' });
             assert.deepEqual(errors, []);
         });
 
-        it('should not be valid if a boolean is passed in', () => {
+        it('should not be valid if a boolean is passed in', function () {
             const errors = behaviors.validate({ wait: true });
             assert.deepEqual(errors, [{
                 code: 'bad data',

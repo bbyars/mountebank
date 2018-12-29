@@ -1,10 +1,14 @@
 'use strict';
 
-const add = (current, value) => Array.isArray(current) ? current.concat(value) : [current].concat(value);
+function add (current, value) {
+    return Array.isArray(current) ? current.concat(value) : [current].concat(value);
+}
 
-const arrayifyIfExists = (current, value) => current ? add(current, value) : value;
+function arrayifyIfExists (current, value) {
+    return current ? add(current, value) : value;
+}
 
-const headersFor = rawHeaders => {
+function headersFor (rawHeaders) {
     const result = {};
     for (let i = 0; i < rawHeaders.length; i += 2) {
         const name = rawHeaders[i];
@@ -12,11 +16,13 @@ const headersFor = rawHeaders => {
         result[name] = arrayifyIfExists(result[name], value);
     }
     return result;
-};
+}
 
-const hasHeader = (headerName, headers) => Object.keys(headers).some(header => header.toLowerCase() === headerName.toLowerCase());
+function hasHeader (headerName, headers) {
+    return Object.keys(headers).some(header => header.toLowerCase() === headerName.toLowerCase());
+}
 
-const headerNameFor = (headerName, headers) => {
+function headerNameFor (headerName, headers) {
     const helpers = require('../../util/helpers'),
         result = Object.keys(headers).find(header => header.toLowerCase() === headerName.toLowerCase());
 
@@ -26,13 +32,15 @@ const headerNameFor = (headerName, headers) => {
     else {
         return result;
     }
-};
+}
 
-const getJar = headers => ({
-    get: header => headers[headerNameFor(header, headers)],
-    set: (header, value) => {
-        headers[headerNameFor(header, headers)] = value;
-    }
-});
+function getJar (headers) {
+    return {
+        get: header => headers[headerNameFor(header, headers)],
+        set: (header, value) => {
+            headers[headerNameFor(header, headers)] = value;
+        }
+    };
+}
 
 module.exports = { headersFor, hasHeader, headerNameFor, getJar };

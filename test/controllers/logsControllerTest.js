@@ -5,13 +5,13 @@ const Controller = require('../../src/controllers/logsController'),
     fs = require('fs'),
     FakeResponse = require('../fakes/fakeResponse');
 
-describe('logsController', () => {
-    describe('#get', () => {
+describe('logsController', function () {
+    describe('#get', function () {
         after(() => {
             fs.unlinkSync('logsControllerTest.log');
         });
 
-        it('should return full contents of logfile as JSON array by default', () => {
+        it('should return full contents of logfile as JSON array by default', function () {
             const response = FakeResponse.create(),
                 controller = Controller.create('logsControllerTest.log');
 
@@ -26,7 +26,7 @@ describe('logsController', () => {
             });
         });
 
-        it('should return entries starting with startIndex', () => {
+        it('should return entries starting with startIndex', function () {
             const response = FakeResponse.create(),
                 controller = Controller.create('logsControllerTest.log');
 
@@ -41,7 +41,7 @@ describe('logsController', () => {
             });
         });
 
-        it('should return entries starting with startIndex and ending with endIndex', () => {
+        it('should return entries starting with startIndex and ending with endIndex', function () {
             const response = FakeResponse.create(),
                 controller = Controller.create('logsControllerTest.log');
 

@@ -15,10 +15,12 @@ const assert = require('assert'),
     https = BaseHttpClient.create('https'),
     fs = require('fs');
 
-describe('mb command line', () => {
+describe('mb command line', function () {
+    this.timeout(timeout);
+
     // I normally advocate separating the data needed for the assertions from the test setup,
     // but I wanted this to be a reasonably complex regression test
-    promiseIt('should support complex configuration with --configfile in multiple files', () => {
+    promiseIt('should support complex configuration with --configfile in multiple files', function () {
         const args = ['--configfile', path.join(__dirname, 'imposters/imposters.ejs')];
 
         return mb.start(args).then(() => http.post('/orders', '', 4545)).then(response => {
@@ -60,10 +62,10 @@ describe('mb command line', () => {
                 text: 'text 1'
             }, 6565);
         }).finally(() => mb.stop());
-    }).timeout(timeout);
+    });
 
     // This is the response resolver injection example on /docs/api/injection
-    promiseIt('should evaluate stringify function in templates when loading configuration files', () => {
+    promiseIt('should evaluate stringify function in templates when loading configuration files', function () {
         const args = ['--configfile', path.join(__dirname, 'templates/imposters.ejs'), '--allowInjection'];
 
         return mb.start(args).then(() => http.get('/first', 4546)).then(response => {
@@ -78,25 +80,25 @@ describe('mb command line', () => {
         }).then(response => {
             assert.strictEqual(response.body, 'There have been 2 proxied calls');
         }).finally(() => mb.stop());
-    }).timeout(timeout);
+    });
 
-    promiseIt('should evaluate nested stringify functions when loading configuration files', () => {
+    promiseIt('should evaluate nested stringify functions when loading configuration files', function () {
         const args = ['--configfile', path.join(__dirname, 'nestedStringify/imposters.ejs'), '--allowInjection'];
 
         return mb.start(args).then(() => http.get('/', 4542)).then(response => {
             assert.deepEqual(response.body, { success: true });
         }).finally(() => mb.stop());
-    }).timeout(timeout);
+    });
 
-    promiseIt('should not render through ejs when --noParse option provided', () => {
+    promiseIt('should not render through ejs when --noParse option provided', function () {
         const args = ['--configfile', path.join(__dirname, 'noparse.json'), '--noParse'];
 
         return mb.start(args).then(() => http.get('/', 4545)).then(response => {
             assert.strictEqual(response.body, '<% should not render through ejs');
         }).finally(() => mb.stop());
-    }).timeout(timeout);
+    });
 
-    promiseIt('should allow saving replayable format', () => {
+    promiseIt('should allow saving replayable format', function () {
         const args = ['--configfile', path.join(__dirname, 'imposters/imposters.ejs')];
         let expected;
 
@@ -108,9 +110,9 @@ describe('mb command line', () => {
             assert.deepEqual(expected, JSON.parse(fs.readFileSync('mb.json')));
             fs.unlinkSync('mb.json');
         }).finally(() => mb.stop());
-    }).timeout(timeout);
+    });
 
-    promiseIt('should allow saving to a different config file', () => {
+    promiseIt('should allow saving to a different config file', function () {
         const args = ['--configfile', path.join(__dirname, 'imposters/imposters.ejs')];
         let expected;
 
@@ -122,10 +124,10 @@ describe('mb command line', () => {
             assert.deepEqual(expected, JSON.parse(fs.readFileSync('saved.json')));
             fs.unlinkSync('saved.json');
         }).finally(() => mb.stop());
-    }).timeout(timeout);
+    });
 
     if (process.env.MB_AIRPLANE_MODE !== 'true') {
-        promiseIt('should allow removing proxies during save', () => {
+        promiseIt('should allow removing proxies during save', function () {
             const proxyStub = { responses: [{ proxy: { to: 'https://google.com' } }] },
                 proxyRequest = { protocol: 'http', port: port + 1, stubs: [proxyStub], name: 'PROXY' };
             let expected;
@@ -142,6 +144,6 @@ describe('mb command line', () => {
                 assert.deepEqual(expected, JSON.parse(fs.readFileSync('mb.json')));
                 fs.unlinkSync('mb.json');
             }).finally(() => mb.stop());
-        }).timeout(timeout);
+        });
     }
 });

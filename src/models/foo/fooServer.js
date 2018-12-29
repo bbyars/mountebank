@@ -11,9 +11,11 @@
  * @param {Object} response - The response returned by the stub
  * @returns {Object} - The response we will send back
  */
-const postProcess = response => ({
-    data: response.data || 'foo'
-});
+function postProcess (response) {
+    return {
+        data: response.data || 'foo'
+    };
+}
 
 /**
  * Used to get consistent logging look & feel
@@ -21,7 +23,7 @@ const postProcess = response => ({
  * @param {string} [name] - The name of the imposter
  * @returns {string}
  */
-const scopeFor = (port, name) => {
+function scopeFor (port, name) {
     const util = require('util');
     let scope = util.format('foo:%s', port);
 
@@ -29,7 +31,7 @@ const scopeFor = (port, name) => {
         scope += ' ' + name;
     }
     return scope;
-};
+}
 
 /**
  * Spins up a server listening on a socket
@@ -39,7 +41,7 @@ const scopeFor = (port, name) => {
  * @param {boolean} debug - The --debug command line parameter
  * @returns {Object} The protocol server implementation
  */
-const createServer = (baseLogger, options, recordRequests, debug) => {
+function createServer (baseLogger, options, recordRequests, debug) {
     // This is an async operation, so we use a deferred
     const Q = require('q'),
         net = require('net'),
@@ -122,7 +124,7 @@ const createServer = (baseLogger, options, recordRequests, debug) => {
     });
 
     return deferred.promise;
-};
+}
 
 /**
  * Creates the core protocol interface - all protocols must implement
@@ -132,16 +134,18 @@ const createServer = (baseLogger, options, recordRequests, debug) => {
  * @param {boolean} debug - represents the command line --debug parameter
  * @returns {Object} The server factory
  */
-const initialize = (logger, allowInjection, recordRequests, debug) => ({
-    // The name of the protocol, used in JSON representation of imposters
-    name: 'foo',
+function initialize (logger, allowInjection, recordRequests, debug) {
+    return {
+        // The name of the protocol, used in JSON representation of imposters
+        name: 'foo',
 
-    // The creation method, called in imposter.js.  The request JSON object gets passed in
-    create: request => createServer(logger, request, recordRequests, debug),
+        // The creation method, called in imposter.js.  The request JSON object gets passed in
+        create: request => createServer(logger, request, recordRequests, debug),
 
-    testRequest: { data: '' },
-    testProxyResponse: { data: '' }
-});
+        testRequest: { data: '' },
+        testProxyResponse: { data: '' }
+    };
+}
 
 // This will be called in mountebank.js when you register the protocol there
 module.exports = { initialize };

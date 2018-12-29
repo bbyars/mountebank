@@ -10,7 +10,7 @@
  * @param {Object} options - The command line options used to start mountebank
  * @returns {Object} The controller
  */
-const create = (releases, options) => {
+function create (releases, options) {
     const helpers = require('../util/helpers'),
         feedReleases = helpers.clone(releases);
 
@@ -30,7 +30,7 @@ const create = (releases, options) => {
      * @param {Object} request - The HTTP request
      * @param {Object} response - The HTTP response
      */
-    const getFeed = (request, response) => {
+    function getFeed (request, response) {
         const fs = require('fs'),
             ejs = require('ejs'),
             page = parseInt(request.query.page || '1'),
@@ -58,7 +58,7 @@ const create = (releases, options) => {
 
         response.type('application/atom+xml');
         response.render('feed', config);
-    };
+    }
 
     /**
      * The function that responds to GET /releases
@@ -66,9 +66,9 @@ const create = (releases, options) => {
      * @param {Object} request - The HTTP request
      * @param {Object} response - The HTTP response
      */
-    const getReleases = (request, response) => {
+    function getReleases (request, response) {
         response.render('releases', { releases: feedReleases });
-    };
+    }
 
     /**
      * The function that responds to GET /releases/:version
@@ -76,7 +76,7 @@ const create = (releases, options) => {
      * @param {Object} request - The HTTP request
      * @param {Object} response - The HTTP response
      */
-    const getRelease = (request, response) => {
+    function getRelease (request, response) {
         const fs = require('fs'),
             version = request.params.version,
             config = {
@@ -101,9 +101,9 @@ const create = (releases, options) => {
         else {
             response.status(404).send('No such release');
         }
-    };
+    }
 
     return { getFeed, getReleases, getRelease };
-};
+}
 
 module.exports = { create };

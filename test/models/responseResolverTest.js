@@ -8,9 +8,9 @@ const assert = require('assert'),
     Q = require('q'),
     Logger = require('../fakes/fakeLogger');
 
-describe('responseResolver', () => {
-    describe('#resolve', () => {
-        promiseIt('should resolve "is" without transformation', () => {
+describe('responseResolver', function () {
+    describe('#resolve', function () {
+        promiseIt('should resolve "is" without transformation', function () {
             const proxy = {},
                 postProcess = combinators.identity,
                 resolver = ResponseResolver.create(proxy, postProcess),
@@ -22,7 +22,7 @@ describe('responseResolver', () => {
             });
         });
 
-        promiseIt('should post process the result', () => {
+        promiseIt('should post process the result', function () {
             const postProcess = (response, request) => response.toUpperCase() + '-' + request.value,
                 resolver = ResponseResolver.create({}, postProcess),
                 logger = Logger.create(),
@@ -33,7 +33,7 @@ describe('responseResolver', () => {
             });
         });
 
-        promiseIt('should resolve "proxy" by delegating to the proxy', () => {
+        promiseIt('should resolve "proxy" by delegating to the proxy', function () {
             const proxy = { to: mock().returns(Q('value')) },
                 resolver = ResponseResolver.create(proxy, combinators.identity),
                 logger = Logger.create(),
@@ -48,7 +48,7 @@ describe('responseResolver', () => {
             });
         });
 
-        promiseIt('should default to "proxyOnce" mode', () => {
+        promiseIt('should default to "proxyOnce" mode', function () {
             const proxy = { to: mock().returns(Q('value')) },
                 resolver = ResponseResolver.create(proxy, combinators.identity),
                 logger = Logger.create(),
@@ -59,7 +59,7 @@ describe('responseResolver', () => {
             });
         });
 
-        promiseIt('should change unrecognized mode to "proxyOnce" mode', () => {
+        promiseIt('should change unrecognized mode to "proxyOnce" mode', function () {
             const proxy = { to: mock().returns(Q('value')) },
                 resolver = ResponseResolver.create(proxy, combinators.identity),
                 logger = Logger.create(),
@@ -70,7 +70,7 @@ describe('responseResolver', () => {
             });
         });
 
-        promiseIt('should resolve proxy in proxyOnce mode by adding a new "is" stub to the front of the list', () => {
+        promiseIt('should resolve proxy in proxyOnce mode by adding a new "is" stub to the front of the list', function () {
             const proxy = { to: mock().returns(Q('value')) },
                 resolver = ResponseResolver.create(proxy, combinators.identity),
                 logger = Logger.create(),
@@ -88,7 +88,7 @@ describe('responseResolver', () => {
             });
         });
 
-        promiseIt('should support adding wait behavior to newly created stub', () => {
+        promiseIt('should support adding wait behavior to newly created stub', function () {
             const proxy = { to: mock().returns(Q({ data: 'value', _proxyResponseTime: 100 })) },
                 resolver = ResponseResolver.create(proxy, combinators.identity),
                 logger = Logger.create(),
@@ -107,7 +107,7 @@ describe('responseResolver', () => {
             });
         });
 
-        promiseIt('should support adding wait behavior to newly created response in proxyAlways mode', () => {
+        promiseIt('should support adding wait behavior to newly created response in proxyAlways mode', function () {
             const proxy = { to: mock().returns(Q({ data: 'value', _proxyResponseTime: 100 })) },
                 resolver = ResponseResolver.create(proxy, combinators.identity),
                 logger = Logger.create(),
@@ -131,7 +131,7 @@ describe('responseResolver', () => {
             });
         });
 
-        promiseIt('should support adding decorate behavior to newly created stub', () => {
+        promiseIt('should support adding decorate behavior to newly created stub', function () {
             const decorateFunc = '(request, response) => {}';
             const proxy = { to: mock().returns(Q({ data: 'value' })) },
                 resolver = ResponseResolver.create(proxy, combinators.identity),
@@ -148,7 +148,7 @@ describe('responseResolver', () => {
             });
         });
 
-        promiseIt('should support adding decorate behavior to newly created response in proxyAlways mode', () => {
+        promiseIt('should support adding decorate behavior to newly created response in proxyAlways mode', function () {
             const decorateFunc = '(request, response) => {}';
             const proxy = { to: mock().returns(Q({ data: 'value' })) },
                 resolver = ResponseResolver.create(proxy, combinators.identity),
@@ -171,7 +171,7 @@ describe('responseResolver', () => {
             });
         });
 
-        promiseIt('should resolve "proxy" and remember full objects as "deepEquals" predicates', () => {
+        promiseIt('should resolve "proxy" and remember full objects as "deepEquals" predicates', function () {
             const proxy = { to: mock().returns(Q('value')) },
                 resolver = ResponseResolver.create(proxy, combinators.identity),
                 logger = Logger.create(),
@@ -204,7 +204,7 @@ describe('responseResolver', () => {
             });
         });
 
-        promiseIt('should resolve "proxy" and remember nested keys as "equals" predicates', () => {
+        promiseIt('should resolve "proxy" and remember nested keys as "equals" predicates', function () {
             const proxy = { to: mock().returns(Q('value')) },
                 resolver = ResponseResolver.create(proxy, combinators.identity),
                 logger = Logger.create(),
@@ -231,7 +231,7 @@ describe('responseResolver', () => {
             });
         });
 
-        promiseIt('should add predicate parameters from predicateGenerators', () => {
+        promiseIt('should add predicate parameters from predicateGenerators', function () {
             const proxy = { to: mock().returns(Q('value')) },
                 resolver = ResponseResolver.create(proxy, combinators.identity),
                 logger = Logger.create(),
@@ -265,7 +265,7 @@ describe('responseResolver', () => {
             });
         });
 
-        promiseIt('should add xpath predicate parameter in predicateGenerators with one match', () => {
+        promiseIt('should add xpath predicate parameter in predicateGenerators with one match', function () {
             const proxy = { to: mock().returns(Q('value')) },
                 resolver = ResponseResolver.create(proxy, combinators.identity),
                 logger = Logger.create(),
@@ -297,7 +297,7 @@ describe('responseResolver', () => {
             });
         });
 
-        promiseIt('should add xpath predicate parameter in predicateGenerators with one match and a nested match key', () => {
+        promiseIt('should add xpath predicate parameter in predicateGenerators with one match and a nested match key', function () {
             const proxy = { to: mock().returns(Q('value')) },
                 resolver = ResponseResolver.create(proxy, combinators.identity),
                 logger = Logger.create(),
@@ -329,7 +329,7 @@ describe('responseResolver', () => {
             });
         });
 
-        promiseIt('should add xpath predicate parameter in predicateGenerators with multiple matches', () => {
+        promiseIt('should add xpath predicate parameter in predicateGenerators with multiple matches', function () {
             const proxy = { to: mock().returns(Q('value')) },
                 resolver = ResponseResolver.create(proxy, combinators.identity),
                 logger = Logger.create(),
@@ -372,7 +372,7 @@ describe('responseResolver', () => {
             });
         });
 
-        promiseIt('should add xpath predicate parameter in predicateGenerators even if no xpath match', () => {
+        promiseIt('should add xpath predicate parameter in predicateGenerators even if no xpath match', function () {
             const proxy = { to: mock().returns(Q('value')) },
                 resolver = ResponseResolver.create(proxy, combinators.identity),
                 logger = Logger.create(),
@@ -404,7 +404,7 @@ describe('responseResolver', () => {
             });
         });
 
-        promiseIt('should add xpath predicate parameter in predicateGenerators even if scalar xpath match', () => {
+        promiseIt('should add xpath predicate parameter in predicateGenerators even if scalar xpath match', function () {
             const proxy = { to: mock().returns(Q('value')) },
                 resolver = ResponseResolver.create(proxy, combinators.identity),
                 logger = Logger.create(),
@@ -436,7 +436,7 @@ describe('responseResolver', () => {
             });
         });
 
-        promiseIt('should add xpath predicate parameter in predicateGenerators even if boolean match', () => {
+        promiseIt('should add xpath predicate parameter in predicateGenerators even if boolean match', function () {
             const proxy = { to: mock().returns(Q('value')) },
                 resolver = ResponseResolver.create(proxy, combinators.identity),
                 logger = Logger.create(),
@@ -468,7 +468,7 @@ describe('responseResolver', () => {
             });
         });
 
-        promiseIt('should add jsonpath predicate parameter in predicateGenerators with one match', () => {
+        promiseIt('should add jsonpath predicate parameter in predicateGenerators with one match', function () {
             const proxy = { to: mock().returns(Q('value')) },
                 resolver = ResponseResolver.create(proxy, combinators.identity),
                 logger = Logger.create(),
@@ -500,7 +500,7 @@ describe('responseResolver', () => {
             });
         });
 
-        promiseIt('should add jsonpath predicate parameter in predicateGenerators with multiple matches', () => {
+        promiseIt('should add jsonpath predicate parameter in predicateGenerators with multiple matches', function () {
             const proxy = { to: mock().returns(Q('value')) },
                 resolver = ResponseResolver.create(proxy, combinators.identity),
                 logger = Logger.create(),
@@ -540,7 +540,7 @@ describe('responseResolver', () => {
             });
         });
 
-        promiseIt('should add jsonpath predicate parameter in predicateGenerators with no match', () => {
+        promiseIt('should add jsonpath predicate parameter in predicateGenerators with no match', function () {
             const proxy = { to: mock().returns(Q('value')) },
                 resolver = ResponseResolver.create(proxy, combinators.identity),
                 logger = Logger.create(),
@@ -572,7 +572,7 @@ describe('responseResolver', () => {
             });
         });
 
-        promiseIt('should log warning if request not JSON', () => {
+        promiseIt('should log warning if request not JSON', function () {
             const proxy = { to: mock().returns(Q('value')) },
                 resolver = ResponseResolver.create(proxy, combinators.identity),
                 logger = Logger.create(),
@@ -605,7 +605,7 @@ describe('responseResolver', () => {
             });
         });
 
-        promiseIt('should allow "inject" response', () => {
+        promiseIt('should allow "inject" response', function () {
             const resolver = ResponseResolver.create({}, combinators.identity),
                 logger = Logger.create(),
                 fn = request => request.key + ' injected',
@@ -617,7 +617,7 @@ describe('responseResolver', () => {
             });
         });
 
-        promiseIt('should log injection exceptions', () => {
+        promiseIt('should log injection exceptions', function () {
             const resolver = ResponseResolver.create({}, combinators.identity),
                 logger = Logger.create(),
                 fn = () => {
@@ -633,7 +633,7 @@ describe('responseResolver', () => {
             });
         });
 
-        promiseIt('should allow injection request state across calls to resolve', () => {
+        promiseIt('should allow injection request state across calls to resolve', function () {
             const resolver = ResponseResolver.create({}, combinators.identity),
                 logger = Logger.create(),
                 fn = (request, state) => {
@@ -653,7 +653,7 @@ describe('responseResolver', () => {
         });
 
 
-        promiseIt('should allow injection imposter state across calls to resolve', () => {
+        promiseIt('should allow injection imposter state across calls to resolve', function () {
             const mockedResolver = ResponseResolver.create({}, combinators.identity),
                 mockedLogger = Logger.create(),
                 mockedImposterState = { foo: 'bar', counter: 0 },
@@ -673,7 +673,7 @@ describe('responseResolver', () => {
             });
         });
 
-        promiseIt('should allow wait behavior', () => {
+        promiseIt('should allow wait behavior', function () {
             const start = Date.now();
 
             const resolver = ResponseResolver.create({}, combinators.identity),
@@ -693,7 +693,7 @@ describe('responseResolver', () => {
             });
         });
 
-        promiseIt('should allow wait behavior based on a function', () => {
+        promiseIt('should allow wait behavior based on a function', function () {
             const start = Date.now();
 
             const resolver = ResponseResolver.create({}, combinators.identity),
@@ -714,7 +714,7 @@ describe('responseResolver', () => {
             });
         });
 
-        promiseIt('should reject the promise when the wait function fails', () => {
+        promiseIt('should reject the promise when the wait function fails', function () {
             const resolver = ResponseResolver.create({}, combinators.identity),
                 logger = Logger.create(),
                 fn = () => {
@@ -733,7 +733,7 @@ describe('responseResolver', () => {
             });
         });
 
-        promiseIt('should allow asynchronous injection', () => {
+        promiseIt('should allow asynchronous injection', function () {
             const resolver = ResponseResolver.create({}, combinators.identity),
                 fn = (request, state, logger, callback) => {
                     setTimeout(() => {
@@ -748,7 +748,7 @@ describe('responseResolver', () => {
             });
         });
 
-        promiseIt('should not be able to change state through inject', () => {
+        promiseIt('should not be able to change state through inject', function () {
             const resolver = ResponseResolver.create({}, combinators.identity),
                 logger = Logger.create(),
                 fn = request => {
@@ -763,7 +763,7 @@ describe('responseResolver', () => {
             });
         });
 
-        promiseIt('should not run injection during dry run validation', () => {
+        promiseIt('should not run injection during dry run validation', function () {
             const resolver = ResponseResolver.create({}, combinators.identity),
                 logger = Logger.create(),
                 fn = () => {
@@ -777,7 +777,7 @@ describe('responseResolver', () => {
             });
         });
 
-        promiseIt('should throw error if multiple response types given', () => {
+        promiseIt('should throw error if multiple response types given', function () {
             const resolver = ResponseResolver.create({}, combinators.identity),
                 logger = Logger.create(),
                 responseConfig = { is: 'value', proxy: { to: 'http://www.google.com' } };

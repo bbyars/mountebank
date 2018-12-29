@@ -11,7 +11,7 @@
  * @param {Object} options - The command line options used to start mb
  * @returns {Object}
  */
-const create = (version, options) => {
+function create (version, options) {
     const helpers = require('../util/helpers'),
         publicOptions = helpers.clone(options);
 
@@ -24,7 +24,7 @@ const create = (version, options) => {
      * @param {Object} request - The HTTP request
      * @param {Object} response - The HTTP response
      */
-    const get = (request, response) => {
+    function get (request, response) {
         const config = {
             version,
             options: publicOptions,
@@ -44,9 +44,9 @@ const create = (version, options) => {
             json: () => response.send(config),
             html: () => response.render('config', config)
         });
-    };
+    }
 
     return { get };
-};
+}
 
 module.exports = { create };

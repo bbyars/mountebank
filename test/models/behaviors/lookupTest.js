@@ -6,9 +6,9 @@ const assert = require('assert'),
     Logger = require('../../fakes/fakeLogger'),
     fs = require('fs');
 
-describe('behaviors', () => {
-    describe('#lookup', () => {
-        it('should not be valid if not an array', () => {
+describe('behaviors', function () {
+    describe('#lookup', function () {
+        it('should not be valid if not an array', function () {
             const errors = behaviors.validate({ lookup: {} });
             assert.deepEqual(errors, [{
                 code: 'bad data',
@@ -17,7 +17,7 @@ describe('behaviors', () => {
             }]);
         });
 
-        it('should not be valid if missing "key" field', () => {
+        it('should not be valid if missing "key" field', function () {
             const config = {
                     fromDataSource: { csv: { path: '', keyColumn: '', columnInto: ['key'] } },
                     into: 'TOKEN'
@@ -30,7 +30,7 @@ describe('behaviors', () => {
             }]);
         });
 
-        it('should not be valid if missing "key.from" field', () => {
+        it('should not be valid if missing "key.from" field', function () {
             const config = {
                     key: { using: { method: 'regex', selector: '.*' } },
                     fromDataSource: { csv: { path: '', keyColumn: '', columnInto: ['key'] } },
@@ -44,7 +44,7 @@ describe('behaviors', () => {
             }]);
         });
 
-        it('should not be valid if missing "key.using" field', () => {
+        it('should not be valid if missing "key.using" field', function () {
             const config = {
                     key: { from: 'data' },
                     fromDataSource: { csv: { path: '', keyColumn: '', columnInto: ['key'] } },
@@ -58,7 +58,7 @@ describe('behaviors', () => {
             }]);
         });
 
-        it('should not be valid if "key.using" field is not an object', () => {
+        it('should not be valid if "key.using" field is not an object', function () {
             const config = {
                     key: { from: 'data', using: 'regex' },
                     fromDataSource: { csv: { path: '', keyColumn: '', columnInto: ['key'] } },
@@ -72,7 +72,7 @@ describe('behaviors', () => {
             }]);
         });
 
-        it('should not be valid if "key.using.method" field is missing', () => {
+        it('should not be valid if "key.using.method" field is missing', function () {
             const config = {
                     key: { from: 'data', using: { selector: '.*' } },
                     fromDataSource: { csv: { path: '', keyColumn: '', columnInto: ['key'] } },
@@ -86,7 +86,7 @@ describe('behaviors', () => {
             }]);
         });
 
-        it('should not be valid if "key.using.method" field is not supported', () => {
+        it('should not be valid if "key.using.method" field is not supported', function () {
             const config = {
                     key: { from: 'data', using: { method: 'INVALID', selector: '.*' } },
                     fromDataSource: { csv: { path: '', keyColumn: '', columnInto: ['key'] } },
@@ -100,7 +100,7 @@ describe('behaviors', () => {
             }]);
         });
 
-        it('should not be valid if "key.using.selector" field is missing', () => {
+        it('should not be valid if "key.using.selector" field is missing', function () {
             const config = {
                     key: { from: 'data', using: { method: 'regex' } },
                     fromDataSource: { csv: { path: '', keyColumn: '', columnInto: ['key'] } },
@@ -114,7 +114,7 @@ describe('behaviors', () => {
             }]);
         });
 
-        it('should not be valid if missing "fromDataSource" field', () => {
+        it('should not be valid if missing "fromDataSource" field', function () {
             const config = {
                     key: { from: 'data', using: { method: 'regex', selector: '.*' } },
                     into: 'TOKEN'
@@ -127,7 +127,7 @@ describe('behaviors', () => {
             }]);
         });
 
-        it('should not be valid if "fromDataSource" field is not an object', () => {
+        it('should not be valid if "fromDataSource" field is not an object', function () {
             const config = {
                     key: { from: 'data', using: { method: 'regex', selector: '.*' } },
                     fromDataSource: 'csv',
@@ -141,7 +141,7 @@ describe('behaviors', () => {
             }]);
         });
 
-        it('should not be valid if "fromDataSource" key is not supported', () => {
+        it('should not be valid if "fromDataSource" key is not supported', function () {
             const config = {
                     key: { from: 'data', using: { method: 'regex', selector: '.*' } },
                     fromDataSource: { invalid: {} },
@@ -155,7 +155,7 @@ describe('behaviors', () => {
             }]);
         });
 
-        it('should not be valid if "fromDataSource" object multiple keys', () => {
+        it('should not be valid if "fromDataSource" object multiple keys', function () {
             const config = {
                     key: { from: 'data', using: { method: 'regex', selector: '.*' } },
                     fromDataSource: { sql: {}, csv: { path: '', keyColumn: '', columnInto: ['key'] } },
@@ -169,7 +169,7 @@ describe('behaviors', () => {
             }]);
         });
 
-        it('should not be valid if missing "into" field', () => {
+        it('should not be valid if missing "into" field', function () {
             const config = {
                     key: { from: 'data', using: { method: 'regex', selector: '.*' } },
                     fromDataSource: { csv: { path: '', keyColumn: '', columnInto: ['key'] } }
@@ -182,7 +182,7 @@ describe('behaviors', () => {
             }]);
         });
 
-        describe('csv', () => {
+        describe('csv', function () {
             before(() => {
                 fs.writeFileSync('lookupTest.csv',
                     'name,occupation,location\n' +
@@ -195,7 +195,7 @@ describe('behaviors', () => {
                 fs.unlinkSync('lookupTest.csv');
             });
 
-            promiseIt('should log error and report nothing if file does not exist', () => {
+            promiseIt('should log error and report nothing if file does not exist', function () {
                 const request = { data: 'My name is mountebank' },
                     response = { data: 'Hello, ${you}["occupation"]' },
                     logger = Logger.create(),
@@ -213,7 +213,7 @@ describe('behaviors', () => {
                 });
             });
 
-            promiseIt('should support lookup keyed by regex match from request', () => {
+            promiseIt('should support lookup keyed by regex match from request', function () {
                 const request = { data: 'My name is mountebank' },
                     response = { data: 'Hello, ${you}["occupation"]' },
                     logger = Logger.create(),
@@ -230,7 +230,7 @@ describe('behaviors', () => {
                 });
             });
 
-            promiseIt('should support lookup keyed by regex match from request with ignoreCase', () => {
+            promiseIt('should support lookup keyed by regex match from request with ignoreCase', function () {
                 const request = { data: 'My name is mountebank' },
                     response = { data: "Hello, ${you}['occupation']" },
                     logger = Logger.create(),
@@ -250,7 +250,7 @@ describe('behaviors', () => {
                 });
             });
 
-            promiseIt('should support lookup keyed by regex match from request with multiline', () => {
+            promiseIt('should support lookup keyed by regex match from request with multiline', function () {
                 const request = { data: 'First line\nMy name is mountebank\nThird line' },
                     response = { data: 'Hello, ${you}[occupation]' },
                     logger = Logger.create(),
@@ -270,7 +270,7 @@ describe('behaviors', () => {
                 });
             });
 
-            promiseIt('should not replace if regex does not match', () => {
+            promiseIt('should not replace if regex does not match', function () {
                 const request = { data: 'My name is mountebank' },
                     response = { data: 'Hello, ${you}[occupation]' },
                     logger = Logger.create(),
@@ -290,7 +290,7 @@ describe('behaviors', () => {
                 });
             });
 
-            promiseIt('should support lookup replace keyed by regex match into object response field', () => {
+            promiseIt('should support lookup replace keyed by regex match into object response field', function () {
                 const request = { data: 'My name is mountebank' },
                     response = { outer: { inner: 'Hello, ${you}["occupation"]' } },
                     logger = Logger.create(),
@@ -307,7 +307,7 @@ describe('behaviors', () => {
                 });
             });
 
-            promiseIt('should support lookup replacement into all response fields', () => {
+            promiseIt('should support lookup replacement into all response fields', function () {
                 const request = { data: 'My name is mountebank' },
                     response = { data: '${you}[location]', outer: { inner: 'Hello, ${you}[occupation]' } },
                     logger = Logger.create(),
@@ -324,7 +324,7 @@ describe('behaviors', () => {
                 });
             });
 
-            promiseIt('should support lookup replacement from object request field', () => {
+            promiseIt('should support lookup replacement from object request field', function () {
                 const request = { data: { name: 'My name is mountebank', other: 'ignore' } },
                     response = { data: 'Hello, ${you}[occupation]' },
                     logger = Logger.create(),
@@ -341,7 +341,7 @@ describe('behaviors', () => {
                 });
             });
 
-            promiseIt('should support lookup replacement from object request field ignoring case of key', () => {
+            promiseIt('should support lookup replacement from object request field ignoring case of key', function () {
                 const request = { data: { name: 'My name is mountebank', other: 'ignore' } },
                     response = { data: 'Hello, ${you}[occupation]' },
                     logger = Logger.create(),
@@ -358,7 +358,7 @@ describe('behaviors', () => {
                 });
             });
 
-            promiseIt('should support lookup replacement keyed by regex indexed group from request', () => {
+            promiseIt('should support lookup replacement keyed by regex indexed group from request', function () {
                 const request = { name: 'My name is mountebank' },
                     response = { data: 'Hello, ${you}[occupation]' },
                     logger = Logger.create(),
@@ -379,7 +379,7 @@ describe('behaviors', () => {
                 });
             });
 
-            promiseIt('should default to first value in multi-valued request field', () => {
+            promiseIt('should default to first value in multi-valued request field', function () {
                 const request = { data: ['Brandon', 'mountebank', 'Bob Barker'] },
                     response = { data: 'Hello, ${you}[occupation]' },
                     logger = Logger.create(),
@@ -396,7 +396,7 @@ describe('behaviors', () => {
                 });
             });
 
-            promiseIt('should support lookup keyed by xpath match into response', () => {
+            promiseIt('should support lookup keyed by xpath match into response', function () {
                 const request = { field: '<doc><name>mountebank</name></doc>' },
                     response = { data: 'Hello, ${you}["occupation"]' },
                     logger = Logger.create(),
@@ -413,7 +413,7 @@ describe('behaviors', () => {
                 });
             });
 
-            promiseIt('should ignore xpath if does not match', () => {
+            promiseIt('should ignore xpath if does not match', function () {
                 const request = { field: '<doc><name>mountebank</name></doc>' },
                     response = { data: 'Hello, ${you}[occupation]' },
                     logger = Logger.create(),
@@ -430,7 +430,7 @@ describe('behaviors', () => {
                 });
             });
 
-            promiseIt('should ignore xpath if field is not xml', () => {
+            promiseIt('should ignore xpath if field is not xml', function () {
                 const request = { field: '' },
                     response = { data: 'Hello, ${you}[occupation]' },
                     logger = Logger.create(),
@@ -448,7 +448,7 @@ describe('behaviors', () => {
                 });
             });
 
-            promiseIt('should support lookup keyed by xml attribute', () => {
+            promiseIt('should support lookup keyed by xml attribute', function () {
                 const request = { field: '<doc><tool name="mountebank">Service virtualization</tool></doc>' },
                     response = { data: 'Hello, ${you}[occupation]' },
                     logger = Logger.create(),
@@ -465,7 +465,7 @@ describe('behaviors', () => {
                 });
             });
 
-            promiseIt('should support lookup keyed by xml direct text', () => {
+            promiseIt('should support lookup keyed by xml direct text', function () {
                 const request = { field: '<doc><name>mountebank</name></doc>' },
                     response = { data: 'Hello, ${you}["occupation"]' },
                     logger = Logger.create(),
@@ -482,7 +482,7 @@ describe('behaviors', () => {
                 });
             });
 
-            promiseIt('should support lookup keyed by namespaced xml field', () => {
+            promiseIt('should support lookup keyed by namespaced xml field', function () {
                 const request = { field: '<doc xmlns:mb="http://example.com/mb"><mb:name>mountebank</mb:name></doc>' },
                     response = { data: 'Hello, ${you}[occupation]' },
                     logger = Logger.create(),
@@ -506,7 +506,7 @@ describe('behaviors', () => {
                 });
             });
 
-            promiseIt('should support lookup keyed by indexed xpath match', () => {
+            promiseIt('should support lookup keyed by indexed xpath match', function () {
                 const request = { field: '<doc><name>Bob Barker</name><name>mountebank</name><name>Brandon</name></doc>' },
                     response = { data: 'Hello ${you}[occupation]' },
                     logger = Logger.create(),
@@ -523,7 +523,7 @@ describe('behaviors', () => {
                 });
             });
 
-            promiseIt('should ignore jsonpath selector if field is not json', () => {
+            promiseIt('should ignore jsonpath selector if field is not json', function () {
                 const request = { field: 'mountebank' },
                     response = { data: 'Hello, ${you}[occupation]' },
                     logger = Logger.create(),
@@ -541,7 +541,7 @@ describe('behaviors', () => {
                 });
             });
 
-            promiseIt('should support lookup keyed on jsonpath selector', () => {
+            promiseIt('should support lookup keyed on jsonpath selector', function () {
                 const request = { field: JSON.stringify({ name: 'mountebank' }) },
                     response = { data: 'Hello, ${you}[occupation]' },
                     logger = Logger.create(),
@@ -558,7 +558,7 @@ describe('behaviors', () => {
                 });
             });
 
-            promiseIt('should not replace token if jsonpath selector does not match', () => {
+            promiseIt('should not replace token if jsonpath selector does not match', function () {
                 const request = { field: JSON.stringify({ name: 'mountebank' }) },
                     response = { data: 'Hello, ${you}[occupation]' },
                     logger = Logger.create(),
@@ -575,7 +575,7 @@ describe('behaviors', () => {
                 });
             });
 
-            promiseIt('should support lookup keyed on indexed token with jsonpath selector', () => {
+            promiseIt('should support lookup keyed on indexed token with jsonpath selector', function () {
                 const request = { field: JSON.stringify({
                         people: [{ name: 'mountebank' }, { name: 'Bob Barker' }, { name: 'Brandon' }] }) },
                     response = { data: 'Hello, ${you}[occupation]' },
@@ -593,7 +593,7 @@ describe('behaviors', () => {
                 });
             });
 
-            promiseIt('should not replace if index exceeds options', () => {
+            promiseIt('should not replace if index exceeds options', function () {
                 const request = { field: JSON.stringify({
                         people: [{ name: 'mountebank' }, { name: 'Bob Barker' }, { name: 'Brandon' }] }) },
                     response = { data: 'Hello, ${you}[occupation]' },
@@ -611,7 +611,7 @@ describe('behaviors', () => {
                 });
             });
 
-            promiseIt('should support lookup of value with embedded comma', () => {
+            promiseIt('should support lookup of value with embedded comma', function () {
                 const request = { field: 'The Price Is Right' },
                     response = { data: 'Hello, ${you}[location]' },
                     logger = Logger.create(),
@@ -628,7 +628,7 @@ describe('behaviors', () => {
                 });
             });
 
-            it('should not be valid if "fromDataSource.csv" is not an object', () => {
+            it('should not be valid if "fromDataSource.csv" is not an object', function () {
                 const config = {
                         key: { from: 'data', using: { method: 'regex', selector: '.*' } },
                         fromDataSource: { csv: '' },
@@ -642,7 +642,7 @@ describe('behaviors', () => {
                 }]);
             });
 
-            it('should not be valid if "fromDataSource.csv.path" missing', () => {
+            it('should not be valid if "fromDataSource.csv.path" missing', function () {
                 const config = {
                         key: { from: 'data', using: { method: 'regex', selector: '.*' } },
                         fromDataSource: { csv: { keyColumn: '', columnInto: ['key'] } },
@@ -656,7 +656,7 @@ describe('behaviors', () => {
                 }]);
             });
 
-            it('should not be valid if "fromDataSource.csv.path" is not a string', () => {
+            it('should not be valid if "fromDataSource.csv.path" is not a string', function () {
                 const config = {
                         key: { from: 'data', using: { method: 'regex', selector: '.*' } },
                         fromDataSource: { csv: { path: 0, keyColumn: '', columnInto: ['key'] } },
@@ -670,7 +670,7 @@ describe('behaviors', () => {
                 }]);
             });
 
-            it('should not be valid if "fromDataSource.csv.keyColumn" missing', () => {
+            it('should not be valid if "fromDataSource.csv.keyColumn" missing', function () {
                 const config = {
                         key: { from: 'data', using: { method: 'regex', selector: '.*' } },
                         fromDataSource: { csv: { path: '', columnInto: ['key'] } },
@@ -684,7 +684,7 @@ describe('behaviors', () => {
                 }]);
             });
 
-            it('should not be valid if "fromDataSource.csv.keyColumn" is not a string', () => {
+            it('should not be valid if "fromDataSource.csv.keyColumn" is not a string', function () {
                 const config = {
                         key: { from: 'data', using: { method: 'regex', selector: '.*' } },
                         fromDataSource: { csv: { path: '', keyColumn: 0, columnInto: ['key'] } },

@@ -4,17 +4,19 @@ const Q = require('q'),
     util = require('util'),
     smtpClient = require('../../../api/smtp/smtpClient');
 
-const camelCase = key => key.substring(0, 1).toLowerCase() + key.substring(1);
+function camelCase (key) {
+    return key.substring(0, 1).toLowerCase() + key.substring(1);
+}
 
-const parseHeader = line => {
+function parseHeader (line) {
     const parts = line.split(':');
     return {
         key: camelCase(parts[0].trim()),
         value: parts.slice(1).join(':').trim()
     };
-};
+}
 
-const parse = text => {
+function parse (text) {
     const lines = text.split('\n'),
         message = { to: [], cc: [], bcc: [] };
 
@@ -32,9 +34,9 @@ const parse = text => {
     }
     message.text = lines.slice(i).join('\n').trim();
     return message;
-};
+}
 
-const runStep = step => {
+function runStep (step) {
     const deferred = Q.defer(),
         message = parse(step.requestText);
 
@@ -43,6 +45,6 @@ const runStep = step => {
     });
 
     return deferred.promise;
-};
+}
 
 module.exports = { runStep };

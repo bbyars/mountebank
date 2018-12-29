@@ -5,9 +5,9 @@ const assert = require('assert'),
     behaviors = require('../../../src/models/behaviors'),
     Logger = require('../../fakes/fakeLogger');
 
-describe('behaviors', () => {
-    describe('#decorate', () => {
-        promiseIt('should allow changing the response directly', () => {
+describe('behaviors', function () {
+    describe('#decorate', function () {
+        promiseIt('should allow changing the response directly', function () {
             const request = {},
                 response = { key: 'ORIGINAL' },
                 logger = Logger.create(),
@@ -19,7 +19,7 @@ describe('behaviors', () => {
             });
         });
 
-        promiseIt('should allow returning response', () => {
+        promiseIt('should allow returning response', function () {
             const request = {},
                 response = { key: 'VALUE' },
                 logger = Logger.create(),
@@ -31,7 +31,7 @@ describe('behaviors', () => {
             });
         });
 
-        promiseIt('should allow logging in the decoration function', () => {
+        promiseIt('should allow logging in the decoration function', function () {
             const request = {},
                 response = { key: 'VALUE' },
                 logger = Logger.create(),
@@ -43,7 +43,7 @@ describe('behaviors', () => {
             });
         });
 
-        promiseIt('should log error and reject function if function throws error', () => {
+        promiseIt('should log error and reject function if function throws error', function () {
             const request = {},
                 response = { key: 'value' },
                 logger = Logger.create(),
@@ -58,7 +58,7 @@ describe('behaviors', () => {
             });
         });
 
-        it('should not be valid if not a string', () => {
+        it('should not be valid if not a string', function () {
             const errors = behaviors.validate({ decorate: {} });
             assert.deepEqual(errors, [{
                 code: 'bad data',

@@ -5,7 +5,7 @@
  * @module
  */
 
-const xpathSelect = (selectFn, selector, doc) => {
+function xpathSelect (selectFn, selector, doc) {
     const errors = require('../util/errors'),
         helpers = require('../util/helpers');
 
@@ -22,9 +22,9 @@ const xpathSelect = (selectFn, selector, doc) => {
             inner: e
         });
     }
-};
+}
 
-const nodeValue = node => {
+function nodeValue (node) {
     if (node.nodeType === node.TEXT_NODE) {
         return node.nodeValue;
     }
@@ -39,7 +39,7 @@ const nodeValue = node => {
     else {
         return String(node.data);
     }
-};
+}
 
 /**
  * Returns xpath value(s) from given xml
@@ -49,7 +49,7 @@ const nodeValue = node => {
  * @param {Object} logger - Optional, used to log XML parsing errors
  * @returns {Object}
  */
-const select = (selector, ns, possibleXML, logger) => {
+function select (selector, ns, possibleXML, logger) {
     const xpath = require('xpath'),
         DOMParser = require('xmldom').DOMParser,
         parser = new DOMParser({
@@ -75,6 +75,6 @@ const select = (selector, ns, possibleXML, logger) => {
     else {
         return nodeValues;
     }
-};
+}
 
 module.exports = { select };

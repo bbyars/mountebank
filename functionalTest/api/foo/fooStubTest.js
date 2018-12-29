@@ -7,9 +7,11 @@ const assert = require('assert'),
     timeout = parseInt(process.env.MB_SLOW_TEST_TIMEOUT || 2000),
     tcp = require('../tcp/tcpClient');
 
-describe('foo imposter', () => {
-    describe('POST /imposters with stubs', () => {
-        promiseIt('should return stubbed response', () => {
+describe('foo imposter', function () {
+    this.timeout(timeout);
+
+    describe('POST /imposters with stubs', function () {
+        promiseIt('should return stubbed response', function () {
             const stub = {
                     predicates: [{ equals: { data: 'client' } }],
                     responses: [{ is: { data: 'server' } }]
@@ -22,9 +24,9 @@ describe('foo imposter', () => {
             }).then(response => {
                 assert.strictEqual(response.toString(), 'server');
             }).finally(() => api.del('/imposters'));
-        }).timeout(timeout);
+        });
 
-        promiseIt('should allow a sequence of stubs as a circular buffer', () => {
+        promiseIt('should allow a sequence of stubs as a circular buffer', function () {
             const stub = {
                     predicates: [{ equals: { data: 'request' } }],
                     responses: [{ is: { data: 'first' } }, { is: { data: 'second' } }]
@@ -43,9 +45,9 @@ describe('foo imposter', () => {
             }).then(response => {
                 assert.strictEqual(response.toString(), 'second');
             }).finally(() => api.del('/imposters'));
-        }).timeout(timeout);
+        });
 
-        promiseIt('should only return stubbed response if matches complex predicate', () => {
+        promiseIt('should only return stubbed response if matches complex predicate', function () {
             const stub = {
                     responses: [{ is: { data: 'MATCH' } }],
                     predicates: [
@@ -64,9 +66,9 @@ describe('foo imposter', () => {
             }).then(response => {
                 assert.strictEqual(response.toString(), 'MATCH');
             }).finally(() => api.del('/imposters'));
-        }).timeout(timeout);
+        });
 
-        promiseIt('should allow proxy stubs', () => {
+        promiseIt('should allow proxy stubs', function () {
             const originServerPort = port + 1,
                 originServerStub = { responses: [{ is: { data: 'PROXIED' } }] },
                 originServerRequest = {
@@ -84,6 +86,6 @@ describe('foo imposter', () => {
                     assert.strictEqual(response.toString(), 'PROXIED');
                 })
                 .finally(() => api.del('/imposters'));
-        }).timeout(timeout);
+        });
     });
 });

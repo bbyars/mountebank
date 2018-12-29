@@ -9,8 +9,10 @@ const assert = require('assert'),
     baseTimeout = parseInt(process.env.MB_SLOW_TEST_TIMEOUT || 4000),
     timeout = isWindows ? 2 * baseTimeout : baseTimeout;
 
-describe('mb without --allowInjection', () => {
-    promiseIt('should return a 400 if response injection is used', () => {
+describe('mb without --allowInjection', function () {
+    this.timeout(timeout);
+
+    promiseIt('should return a 400 if response injection is used', function () {
         const fn = request => ({ body: `${request.method} INJECTED` }),
             stub = { responses: [{ inject: fn.toString() }] },
             request = { protocol: 'http', port, stubs: [stub] };
@@ -19,9 +21,9 @@ describe('mb without --allowInjection', () => {
             assert.strictEqual(response.statusCode, 400);
             assert.strictEqual(response.body.errors[0].code, 'invalid injection');
         }).finally(() => mb.stop());
-    }).timeout(timeout);
+    });
 
-    promiseIt('should return a 400 if predicate injection is used', () => {
+    promiseIt('should return a 400 if predicate injection is used', function () {
         const fn = () => true,
             stub = {
                 predicates: [{ inject: fn.toString() }],
@@ -33,9 +35,9 @@ describe('mb without --allowInjection', () => {
             assert.strictEqual(response.statusCode, 400);
             assert.strictEqual(response.body.errors[0].code, 'invalid injection');
         }).finally(() => mb.stop());
-    }).timeout(timeout);
+    });
 
-    promiseIt('should return a 400 if endOfResponseResolver is used', () => {
+    promiseIt('should return a 400 if endOfResponseResolver is used', function () {
         const stub = { responses: [{ is: { data: 'success' } }] },
             resolver = () => true,
             request = {
@@ -50,9 +52,9 @@ describe('mb without --allowInjection', () => {
             assert.strictEqual(response.statusCode, 400);
             assert.strictEqual(response.body.errors[0].code, 'invalid injection');
         }).finally(() => mb.stop());
-    }).timeout(timeout);
+    });
 
-    promiseIt('should return a 400 if a decorate behavior is used', () => {
+    promiseIt('should return a 400 if a decorate behavior is used', function () {
         const fn = response => response,
             stub = { responses: [{ is: { body: 'Hello, World! ' }, _behaviors: { decorate: fn.toString() } }] },
             request = { protocol: 'http', port, stubs: [stub] };
@@ -61,9 +63,9 @@ describe('mb without --allowInjection', () => {
             assert.strictEqual(response.statusCode, 400);
             assert.strictEqual(response.body.errors[0].code, 'invalid injection');
         }).finally(() => mb.stop());
-    }).timeout(timeout);
+    });
 
-    promiseIt('should return a 400 if a wait behavior function is used', () => {
+    promiseIt('should return a 400 if a wait behavior function is used', function () {
         const fn = () => 1000,
             stub = { responses: [{ is: { body: 'Hello, World! ' }, _behaviors: { wait: fn.toString() } }] },
             request = { protocol: 'http', port, stubs: [stub] };
@@ -72,18 +74,18 @@ describe('mb without --allowInjection', () => {
             assert.strictEqual(response.statusCode, 400);
             assert.strictEqual(response.body.errors[0].code, 'invalid injection');
         }).finally(() => mb.stop());
-    }).timeout(timeout);
+    });
 
-    promiseIt('should allow a wait behavior that directly specifies latency', () => {
+    promiseIt('should allow a wait behavior that directly specifies latency', function () {
         const stub = { responses: [{ is: { body: 'Hello, World! ' }, _behaviors: { wait: 100 } }] },
             request = { protocol: 'http', port, stubs: [stub] };
 
         return mb.start().then(() => mb.post('/imposters', request)).then(response => {
             assert.strictEqual(response.statusCode, 201);
         }).finally(() => mb.stop());
-    }).timeout(timeout);
+    });
 
-    promiseIt('should return a 400 if a shellTransform behavior is used', () => {
+    promiseIt('should return a 400 if a shellTransform behavior is used', function () {
         const stub = { responses: [{ is: {}, _behaviors: { shellTransform: 'command' } }] },
             request = { protocol: 'http', port, stubs: [stub] };
 
@@ -91,9 +93,9 @@ describe('mb without --allowInjection', () => {
             assert.strictEqual(response.statusCode, 400);
             assert.strictEqual(response.body.errors[0].code, 'invalid injection');
         }).finally(() => mb.stop());
-    }).timeout(timeout);
+    });
 
-    promiseIt('should return a 400 if a proxy addDecorateBehavior is used', () => {
+    promiseIt('should return a 400 if a proxy addDecorateBehavior is used', function () {
         const proxy = {
                 to: 'http://google.com',
                 addDecorateBehavior: '(request, response) => { response.body = ""; }'
@@ -105,5 +107,5 @@ describe('mb without --allowInjection', () => {
             assert.strictEqual(response.statusCode, 400);
             assert.strictEqual(response.body.errors[0].code, 'invalid injection');
         }).finally(() => mb.stop());
-    }).timeout(timeout);
+    });
 });

@@ -4,9 +4,9 @@ const Controller = require('../../src/controllers/homeController'),
     assert = require('assert'),
     FakeResponse = require('../fakes/fakeResponse');
 
-describe('homeController', () => {
-    describe('#get', () => {
-        it('should return base hypermedia', () => {
+describe('homeController', function () {
+    describe('#get', function () {
+        it('should return base hypermedia', function () {
             const response = FakeResponse.create(),
                 controller = Controller.create([]);
 

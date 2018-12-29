@@ -13,8 +13,8 @@
  * @param {boolean} debug - The --debug command line parameter
  * @returns {Object} - The protocol implementation
  */
-const initialize = (logger, allowInjection, recordRequests, debug) => {
-    const createBaseServer = options => {
+function initialize (logger, allowInjection, recordRequests, debug) {
+    function createBaseServer (options) {
         const path = require('path'),
             fs = require('fs'),
             metadata = {
@@ -38,8 +38,8 @@ const initialize = (logger, allowInjection, recordRequests, debug) => {
             metadata: () => metadata,
             createNodeServer: createNodeServer
         };
-    };
+    }
     return require('../http/baseHttpServer').setup('https', createBaseServer).initialize(logger, allowInjection, recordRequests, debug);
-};
+}
 
 module.exports = { initialize };

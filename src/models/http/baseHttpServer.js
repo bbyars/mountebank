@@ -11,7 +11,7 @@
  * @param {Function} createBaseServer - The function to create the http or https server
  * @returns {Object}
  */
-const setup = (protocolName, createBaseServer) => {
+function setup (protocolName, createBaseServer) {
     /**
      * Creates the http/s server, opening up the socket
      * @memberOf module:models/http/baseHttpServer#
@@ -19,9 +19,9 @@ const setup = (protocolName, createBaseServer) => {
      * @param {Object} options - Creation options
      * @returns {Object}
      */
-    const createServer = (logger, options) => {
+    function createServer (logger, options) {
 
-        const postProcess = (stubResponse, request) => {
+        function postProcess (stubResponse, request) {
             /* eslint complexity: 0 */
             const headersHelper = require('./headersHelper'),
                 defaultResponse = options.defaultResponse || {},
@@ -70,7 +70,7 @@ const setup = (protocolName, createBaseServer) => {
             }
 
             return response;
-        };
+        }
 
         const combinators = require('../../util/combinators'),
             proxy = require('./httpProxy').create(logger),
@@ -123,7 +123,7 @@ const setup = (protocolName, createBaseServer) => {
         };
 
         return result;
-    };
+    }
 
     /**
      * Initializes the http/s server.  I'm certainly not in love with the layers of creation
@@ -135,7 +135,7 @@ const setup = (protocolName, createBaseServer) => {
      * @param {boolean} debug - The --debug command line parameter
      * @returns {Object}
      */
-    const initialize = (baseLogger, allowInjection, recordRequests, debug) => {
+    function initialize (baseLogger, allowInjection, recordRequests, debug) {
         const implementation = {
             protocolName: protocolName,
             createServer: createServer,
@@ -160,9 +160,9 @@ const setup = (protocolName, createBaseServer) => {
                 body: ''
             }
         };
-    };
+    }
 
     return { initialize };
-};
+}
 
 module.exports = { setup };

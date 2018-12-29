@@ -12,9 +12,11 @@ const assert = require('assert'),
 ['http', 'https'].forEach(protocol => {
     const client = BaseHttpClient.create(protocol);
 
-    describe(`${protocol} imposter`, () => {
-        describe('POST /imposters with stubs', () => {
-            promiseIt('should add latency when using behaviors.wait', () => {
+    describe(`${protocol} imposter`, function () {
+        this.timeout(timeout);
+
+        describe('POST /imposters with stubs', function () {
+            promiseIt('should add latency when using behaviors.wait', function () {
                 const stub = {
                         responses: [{
                             is: { body: 'stub' },
@@ -36,9 +38,9 @@ const assert = require('assert'),
                     // Occasionally there's some small inaccuracies
                     assert.ok(time >= 990, `actual time: ${time}`);
                 }).finally(() => api.del('/imposters'));
-            }).timeout(timeout);
+            });
 
-            promiseIt('should add latency when using behaviors.wait as a function', () => {
+            promiseIt('should add latency when using behaviors.wait as a function', function () {
                 const fn = () => 1000,
                     stub = {
                         responses: [{
@@ -61,9 +63,9 @@ const assert = require('assert'),
                     // Occasionally there's some small inaccuracies
                     assert.ok(time >= 990, `actual time: ${time}`);
                 }).finally(() => api.del('/imposters'));
-            }).timeout(timeout);
+            });
 
-            promiseIt('should support post-processing when using behaviors.decorate', () => {
+            promiseIt('should support post-processing when using behaviors.decorate', function () {
                 const decorator = (request, response) => {
                         response.body = response.body.replace('${YEAR}', new Date().getFullYear());
                     },
@@ -82,9 +84,9 @@ const assert = require('assert'),
                 }).then(response => {
                     assert.strictEqual(response.body, `the year is ${new Date().getFullYear()}`);
                 }).finally(() => api.del('/imposters'));
-            }).timeout(timeout);
+            });
 
-            promiseIt('should fix content-length if set and adjusted using decoration (issue #155)', () => {
+            promiseIt('should fix content-length if set and adjusted using decoration (issue #155)', function () {
                 const decorator = (request, response) => {
                         response.body = 'length-8';
                     },
@@ -107,9 +109,9 @@ const assert = require('assert'),
                     assert.strictEqual(response.body, 'length-8');
                     assert.strictEqual(response.headers['content-length'], '8');
                 }).finally(() => api.del('/imposters'));
-            }).timeout(timeout);
+            });
 
-            promiseIt('should support using request parameters during decorating', () => {
+            promiseIt('should support using request parameters during decorating', function () {
                 const decorator = (request, response) => {
                         response.body = response.body.replace('${PATH}', request.path);
                     },
@@ -128,9 +130,9 @@ const assert = require('assert'),
                 }).then(response => {
                     assert.strictEqual(response.body, 'the path is /test');
                 }).finally(() => api.del('/imposters'));
-            }).timeout(timeout);
+            });
 
-            promiseIt('should support using request parameters during decorating multiple times (issue #173)', () => {
+            promiseIt('should support using request parameters during decorating multiple times (issue #173)', function () {
                 const decorator = (request, response) => {
                         response.body = response.body.replace('${id}', request.query.id);
                     },
@@ -156,9 +158,9 @@ const assert = require('assert'),
                 }).then(response => {
                     assert.strictEqual(response.body, 'request 300');
                 }).finally(() => api.del('/imposters'));
-            }).timeout(timeout);
+            });
 
-            promiseIt('should support decorate functions that return a value', () => {
+            promiseIt('should support decorate functions that return a value', function () {
                 const decorator = (request, response) => {
                         const clonedResponse = JSON.parse(JSON.stringify(response));
                         clonedResponse.body = 'This is a clone';
@@ -179,9 +181,9 @@ const assert = require('assert'),
                 }).then(response => {
                     assert.strictEqual(response.body, 'This is a clone');
                 }).finally(() => api.del('/imposters'));
-            }).timeout(timeout);
+            });
 
-            promiseIt('should not validate the decorate JavaScript function', () => {
+            promiseIt('should not validate the decorate JavaScript function', function () {
                 const decorator = "response.body = 'This should not work';",
                     stub = {
                         responses: [{
@@ -195,9 +197,9 @@ const assert = require('assert'),
                 return api.post('/imposters', request).then(response => {
                     assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body, null, 2));
                 }).finally(() => api.del('/imposters'));
-            }).timeout(timeout);
+            });
 
-            promiseIt('should repeat if behavior set and loop around responses with same repeat behavior (issue #165)', () => {
+            promiseIt('should repeat if behavior set and loop around responses with same repeat behavior (issue #165)', function () {
                 const stub = {
                         responses: [
                             {
@@ -246,9 +248,9 @@ const assert = require('assert'),
                     assert.strictEqual(response.body, 'first response');
                     return client.get('/', port);
                 }).finally(() => api.del('/imposters'));
-            }).timeout(timeout);
+            });
 
-            promiseIt('should repeat consistently with headers (issue #158)', () => {
+            promiseIt('should repeat consistently with headers (issue #158)', function () {
                 const stub = {
                         responses: [
                             {
@@ -275,9 +277,9 @@ const assert = require('assert'),
                 }).then(response => {
                     assert.deepEqual(response.body, 'second response', 'third try');
                 }).finally(() => api.del('/imposters'));
-            }).timeout(timeout);
+            });
 
-            promiseIt('should repeat with JSON key of repeat (issue #237)', () => {
+            promiseIt('should repeat with JSON key of repeat (issue #237)', function () {
                 const stub = {
                         responses: [
                             {
@@ -306,9 +308,9 @@ const assert = require('assert'),
                 }).then(response => {
                     assert.deepEqual(response.body, 'Then you should see this', 'third try');
                 }).finally(() => api.del('/imposters'));
-            }).timeout(timeout);
+            });
 
-            promiseIt('should support shell transform without array for backwards compatibility', () => {
+            promiseIt('should support shell transform without array for backwards compatibility', function () {
                 // The string version of the shellTransform behavior is left for backwards
                 // compatibility. It changed in v1.13.0 to accept an array.
                 const stub = {
@@ -334,9 +336,9 @@ const assert = require('assert'),
                     fs.unlinkSync('shellTransformTest.js');
                     return api.del('/imposters');
                 });
-            }).timeout(timeout);
+            });
 
-            promiseIt('should support array of shell transforms in order', () => {
+            promiseIt('should support array of shell transforms in order', function () {
                 const stub = {
                         responses: [{
                             is: { body: 1 },
@@ -371,9 +373,9 @@ const assert = require('assert'),
                     fs.unlinkSync('increment.js');
                     return api.del('/imposters');
                 });
-            }).timeout(timeout);
+            });
 
-            promiseIt('should support copying from request fields using regex', () => {
+            promiseIt('should support copying from request fields using regex', function () {
                 const stub = {
                         responses: [{
                             is: {
@@ -423,9 +425,9 @@ const assert = require('assert'),
                     assert.strictEqual(response.headers['x-test'], 'header value');
                     assert.strictEqual(response.body, 'HERE');
                 }).finally(() => api.del('/imposters'));
-            }).timeout(timeout);
+            });
 
-            promiseIt('should support copying from request fields using xpath', () => {
+            promiseIt('should support copying from request fields using xpath', function () {
                 const stub = {
                         responses: [{
                             is: { body: 'Hello, NAME! Good to see you, NAME.' },
@@ -450,9 +452,9 @@ const assert = require('assert'),
                 }).then(response => {
                     assert.strictEqual(response.body, 'Hello, mountebank! Good to see you, mountebank.');
                 }).finally(() => api.del('/imposters'));
-            }).timeout(timeout);
+            });
 
-            promiseIt('should support copying from request fields using jsonpath', () => {
+            promiseIt('should support copying from request fields using jsonpath', function () {
                 const stub = {
                         responses: [{
                             is: { body: 'Hello, NAME! Good to see you, NAME.' },
@@ -473,9 +475,9 @@ const assert = require('assert'),
                 }).then(response => {
                     assert.strictEqual(response.body, 'Hello, mountebank! Good to see you, mountebank.');
                 }).finally(() => api.del('/imposters'));
-            }).timeout(timeout);
+            });
 
-            promiseIt('should support lookup from CSV file keyed by regex', () => {
+            promiseIt('should support lookup from CSV file keyed by regex', function () {
                 const stub = {
                         responses: [{
                             is: {
@@ -525,9 +527,9 @@ const assert = require('assert'),
                     fs.unlinkSync('lookupTest.csv');
                     return api.del('/imposters');
                 });
-            }).timeout(timeout);
+            });
 
-            promiseIt('should support lookup from CSV file keyed by xpath', () => {
+            promiseIt('should support lookup from CSV file keyed by xpath', function () {
                 const stub = {
                         responses: [{
                             is: { body: "Hello, YOU[name]! How is YOU['location'] today?" },
@@ -564,9 +566,9 @@ const assert = require('assert'),
                     fs.unlinkSync('lookupTest.csv');
                     return api.del('/imposters');
                 });
-            }).timeout(timeout);
+            });
 
-            promiseIt('should support lookup from CSV file keyed by jsonpath', () => {
+            promiseIt('should support lookup from CSV file keyed by jsonpath', function () {
                 const stub = {
                         responses: [{
                             is: { body: 'Hello, YOU["name"]! How is YOU[location] today?' },
@@ -596,9 +598,9 @@ const assert = require('assert'),
                     fs.unlinkSync('lookupTest.csv');
                     return api.del('/imposters');
                 });
-            }).timeout(timeout);
+            });
 
-            promiseIt('should compose multiple behaviors together', () => {
+            promiseIt('should compose multiple behaviors together', function () {
                 const shellFn = function exec () {
                         console.log(process.argv[3].replace('${SALUTATION}', 'Hello'));
                     },
@@ -651,7 +653,7 @@ const assert = require('assert'),
                     fs.unlinkSync('shellTransformTest.js');
                     return api.del('/imposters');
                 });
-            }).timeout(timeout);
+            });
         });
     });
 });

@@ -3,9 +3,9 @@
 const assert = require('assert'),
     compatibility = require('../../src/models/compatibility');
 
-describe('compatibility', () => {
-    describe('#upcast', () => {
-        it('should change string shellTransform to array', () => {
+describe('compatibility', function () {
+    describe('#upcast', function () {
+        it('should change string shellTransform to array', function () {
             const request = {
                 stubs: [{
                     responses: [{

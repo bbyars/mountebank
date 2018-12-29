@@ -8,7 +8,7 @@ const assert = require('assert'),
     timeout = parseInt(process.env.MB_SLOW_TEST_TIMEOUT || 3000);
 
 
-const getDOM = endpoint => {
+function getDOM (endpoint) {
     const deferred = Q.defer(),
         url = api.url + endpoint;
 
@@ -19,24 +19,30 @@ const getDOM = endpoint => {
     });
 
     return deferred.promise;
-};
+}
 
-const getJSONFor = contract =>
-    getDOM('/docs/api/contracts').then(window => Q(window.document.getElementById(`${contract}-specification`).innerHTML.replace(/<[^>]+>/g, '')));
+function getJSONFor (contract) {
+    return getDOM('/docs/api/contracts')
+        .then(window => Q(window.document.getElementById(`${contract}-specification`).innerHTML.replace(/<[^>]+>/g, '')));
+}
 
-const assertJSON = json => {
+function assertJSON (json) {
     try {
         JSON.parse(json);
     }
     catch (e) {
         assert.fail(`${json}\n${e}`);
     }
-};
+}
 
-describe('contracts', () => {
+describe('contracts', function () {
+    this.timeout(timeout);
+
     ['home', 'imposters', 'imposter', 'config', 'logs'].forEach(contractType => {
-        promiseIt(`${contractType} contract should be valid JSON`, () => getJSONFor(contractType).then(json => {
-            assertJSON(json);
-        })).timeout(timeout);
+        promiseIt(`${contractType} contract should be valid JSON`, function () {
+            return getJSONFor(contractType).then(json => {
+                assertJSON(json);
+            });
+        });
     });
 });

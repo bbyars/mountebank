@@ -11,7 +11,7 @@ const assert = require('assert'),
     baselineMemory = 3950,
     minIncreasedMemory = 150;
 
-const getMemoryUsedForManyRequests = mbPort => {
+function getMemoryUsedForManyRequests (mbPort) {
     const stub = { responses: [{ is: { statusCode: 400 } }] },
         request = { protocol: 'http', port, stubs: [stub] },
         requestFn = () => client.get('/', port),
@@ -22,40 +22,45 @@ const getMemoryUsedForManyRequests = mbPort => {
         allRequests[i] = requestFn;
     }
 
-    return client.post('/imposters', request, mbPort).then(response => {
-        assert.strictEqual(response.statusCode, 201);
-        return client.get('/config', mbPort);
-    }).then(response => {
-        originalProcess = response.body.process;
+    return client.post('/imposters', request, mbPort)
+        .then(response => {
+            assert.strictEqual(response.statusCode, 201);
+            return client.get('/config', mbPort);
+        })
+        .then(response => {
+            originalProcess = response.body.process;
 
-        // Using Q.all above a certain requests threshold gives me an ETIMEDOUT or other errors
-        return allRequests.reduce(Q.when, Q(true));
-    }).then(() => client.get('/config', mbPort)
-    ).then(response => (response.body.process.rss - originalProcess.rss) / numRequests
-    ).finally(() => client.del(`/imposters/${port}`, mbPort));
-};
+            // Using Q.all above a certain requests threshold gives me an ETIMEDOUT or other errors
+            return allRequests.reduce(Q.when, Q(true));
+        })
+        .then(() => client.get('/config', mbPort))
+        .then(response => (response.body.process.rss - originalProcess.rss) / numRequests)
+        .finally(() => client.del(`/imposters/${port}`, mbPort));
+}
 
-describe('mb', () => {
-    describe('when remembering requests', () => {
-        promiseIt('should increase memory usage with number of requests', () =>
-            mb.start(['--mock'])
+describe('mb', function () {
+    this.timeout(300000);
+
+    describe('when remembering requests', function () {
+        promiseIt('should increase memory usage with number of requests', function () {
+            return mb.start(['--mock'])
                 .then(() => getMemoryUsedForManyRequests(mb.port))
                 .then(memoryUsed => {
                     console.log(`memory usage for ${numRequests} requests with --mock: ${memoryUsed}`);
                     assert.ok(memoryUsed > baselineMemory + minIncreasedMemory, `Memory used: ${memoryUsed}`);
-                }).finally(() => mb.stop())
-        ).timeout(300000);
+                }).finally(() => mb.stop());
+        });
     });
 
-    describe('when not remembering requests', () => {
-        promiseIt('should not leak memory', () =>
-            mb.start()
+    describe('when not remembering requests', function () {
+        promiseIt('should not leak memory', function () {
+            return mb.start()
                 .then(() => getMemoryUsedForManyRequests(mb.port))
                 .then(memoryUsed => {
                     console.log(`default memory usage with for ${numRequests} requests: ${memoryUsed}`);
                     assert.ok(memoryUsed < baselineMemory, `Memory used: ${memoryUsed}`);
                 })
-                .finally(() => mb.stop())
-        ).timeout(300000);
+                .finally(() => mb.stop());
+        });
     });
 });

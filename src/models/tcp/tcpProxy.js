@@ -11,12 +11,16 @@
  * @param {string} encoding - utf8 or base64, depending on if the destination expects text or binary
  * @returns {Object}
  */
-const create = (logger, encoding) => {
-    const socketName = socket => `${socket.host}:${socket.port}`;
+function create (logger, encoding) {
+    function socketName (socket) {
+        return `${socket.host}:${socket.port}`;
+    }
 
-    const format = request => request.data.toString(encoding);
+    function format (request) {
+        return request.data.toString(encoding);
+    }
 
-    const connectionInfoFor = proxyDestination => {
+    function connectionInfoFor (proxyDestination) {
         if (typeof proxyDestination === 'string') {
             const url = require('url'),
                 parts = url.parse(proxyDestination),
@@ -33,18 +37,18 @@ const create = (logger, encoding) => {
             // left for backwards compatibility prior to version 1.4.1
             return proxyDestination;
         }
-    };
+    }
 
-    const getProxyRequest = (proxyDestination, originalRequest) => {
+    function getProxyRequest (proxyDestination, originalRequest) {
         const buffer = new Buffer(originalRequest.data, encoding),
             net = require('net'),
             socket = net.connect(connectionInfoFor(proxyDestination), () => {
                 socket.write(buffer, () => { socket.end(); });
             });
         return socket;
-    };
+    }
 
-    const proxy = socket => {
+    function proxy (socket) {
         const packets = [],
             Q = require('q'),
             deferred = Q.defer(),
@@ -60,7 +64,7 @@ const create = (logger, encoding) => {
             });
         });
         return deferred.promise;
-    };
+    }
 
     /**
      * Proxies a tcp request to the destination
@@ -68,13 +72,13 @@ const create = (logger, encoding) => {
      * @param {Object} originalRequest - The tcp request to forward
      * @returns {Object} - A promise resolving to the response
      */
-    const to = (proxyDestination, originalRequest) => {
+    function to (proxyDestination, originalRequest) {
 
-        const log = (direction, what) => {
+        function log (direction, what) {
             logger.debug('Proxy %s %s %s %s %s',
                 originalRequest.requestFrom, direction, JSON.stringify(format(what)), direction,
                 socketName(connectionInfoFor(proxyDestination)));
-        };
+        }
 
         const Q = require('q'),
             deferred = Q.defer();
@@ -108,9 +112,9 @@ const create = (logger, encoding) => {
         }
 
         return deferred.promise;
-    };
+    }
 
     return { to };
-};
+}
 
 module.exports = { create };

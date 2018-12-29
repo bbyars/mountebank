@@ -12,7 +12,7 @@
  * @param {Logger} logger - Optional, used to log JSON parsing errors
  * @returns {Object}
  */
-const select = (selector, possibleJSON, logger) => {
+function select (selector, possibleJSON, logger) {
     const JSONPath = require('jsonpath-plus');
 
     try {
@@ -34,6 +34,6 @@ const select = (selector, possibleJSON, logger) => {
         }
         return undefined;
     }
-};
+}
 
 module.exports = { select };

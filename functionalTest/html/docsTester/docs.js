@@ -10,7 +10,7 @@ const api = require('../../api/api').create(),
  * All DOM parsing happens here, including processing the special HTML tags
  */
 
-const getDOM = endpoint => {
+function getDOM (endpoint) {
     const deferred = Q.defer(),
         url = api.url + endpoint;
 
@@ -21,18 +21,18 @@ const getDOM = endpoint => {
     });
 
     return deferred.promise;
-};
+}
 
-const asArray = iterable => {
+function asArray (iterable) {
     const result = [];
     for (let i = 0; i < iterable.length; i += 1) {
         result.push(iterable[i]);
     }
     return result;
-};
+}
 
-const subElements = (parentElement, tagName) =>
-    asArray(parentElement.getElementsByTagName(tagName)).map(element => {
+function subElements (parentElement, tagName) {
+    return asArray(parentElement.getElementsByTagName(tagName)).map(element => {
         const attributes = {};
         element.getAttributeNames().forEach(attributeName => {
             attributes[attributeName] = element.attributes[attributeName].value;
@@ -48,35 +48,36 @@ const subElements = (parentElement, tagName) =>
             }
         };
     });
+}
 
 
 /*
  * Allows you to show different data than what is actually needed for the test
  * Wrap it in <change to='replacement-value'>display-value</change>
  */
-const processChangeCommands = element => {
+function processChangeCommands (element) {
     const codeElement = element.subElements('code')[0],
         substitutions = codeElement.subElements('change');
     substitutions.forEach(changeElement => {
         changeElement.setText(changeElement.attributeValue('to'));
     });
     return codeElement.text();
-};
+}
 
-const normalizeJSON = possibleJSON => {
+function normalizeJSON (possibleJSON) {
     try {
         return JSON.stringify(JSON.parse(possibleJSON), null, 2);
     }
     catch (e) {
         return possibleJSON;
     }
-};
+}
 
 /*
  * Allows you to format the JSON however you want in the docs
  * This function ensures whitespace normalization
  */
-const normalizeJSONSubstrings = text => {
+function normalizeJSONSubstrings (text) {
     // [\S\s] because . doesn't match newlines
     const jsonPattern = /\{[\S\s]*\}/;
     if (jsonPattern.test(text)) {
@@ -84,11 +85,13 @@ const normalizeJSONSubstrings = text => {
         text = text.replace(jsonPattern, prettyPrintedJSON);
     }
     return text;
-};
+}
 
-const linesOf = text => text.replace(/\r/g, '').split('\n');
+function linesOf (text) {
+    return text.replace(/\r/g, '').split('\n');
+}
 
-const collectVolatileLines = responseElement => {
+function collectVolatileLines (responseElement) {
     const responseLines = linesOf(responseElement.text());
 
     return responseElement.subElements('volatile').map(volatileElement => {
@@ -102,7 +105,7 @@ const collectVolatileLines = responseElement => {
 
         return new RegExp(pattern);
     });
-};
+}
 
 /*
  * Allows you to wrap volatile data in <volatile></volatile> tags. It will
@@ -110,8 +113,8 @@ const collectVolatileLines = responseElement => {
  * same line. Comparisons are done by line to make the HTML read better:
  * you can have multiple volatile lines for the same logical pattern
  */
-const replaceVolatileData = (text, volatileLines) =>
-    volatileLines.reduce((accumulator, volatileLinePattern) => {
+function replaceVolatileData (text, volatileLines) {
+    return volatileLines.reduce((accumulator, volatileLinePattern) => {
         const textLines = linesOf(accumulator),
             // Skip ones that have already been replaced
             lineIndex = textLines.findIndex(line => !/VOLATILE/.test(line) && volatileLinePattern.test(line));
@@ -121,18 +124,21 @@ const replaceVolatileData = (text, volatileLines) =>
         }
         return textLines.join('\n');
     }, text);
+}
 
-const normalize = (text, responseElement) => {
+function normalize (text, responseElement) {
     const trimmed = (text || '').trim(),
         normalizedJSON = normalizeJSONSubstrings(trimmed),
         normalizedVolatility = replaceVolatileData(normalizedJSON, collectVolatileLines(responseElement));
 
     return normalizedVolatility;
-};
+}
 
-const isPartialComparison = responseElement => responseElement.attributeValue('partial') === 'true';
+function isPartialComparison (responseElement) {
+    return responseElement.attributeValue('partial') === 'true';
+}
 
-const setDifference = (partialExpectedLines, actualLines) => {
+function setDifference (partialExpectedLines, actualLines) {
     const difference = [];
     let lastIndex = -1;
 
@@ -157,7 +163,7 @@ const setDifference = (partialExpectedLines, actualLines) => {
     });
 
     return difference;
-};
+}
 
 /*
  * Each request is wrapped in a <step type='http'></step> tag
@@ -165,7 +171,7 @@ const setDifference = (partialExpectedLines, actualLines) => {
  * If you want to validate the response for the request, add a
  * <assertResponse</assertResponse> tag around the response text
  */
-const createStepSpecFrom = stepElement => {
+function createStepSpecFrom (stepElement) {
     const stepSpec = stepElement.attributes,
         responseElements = stepElement.subElements('assertResponse');
 
@@ -189,9 +195,9 @@ const createStepSpecFrom = stepElement => {
         };
     }
     return stepSpec;
-};
+}
 
-const createScenarioFrom = (testElement, endpoint) => {
+function createScenarioFrom (testElement, endpoint) {
     const scenarioName = testElement.attributeValue('name'),
         scenario = DocsTestScenario.create(endpoint, scenarioName);
 
@@ -200,12 +206,12 @@ const createScenarioFrom = (testElement, endpoint) => {
     });
 
     return scenario;
-};
+}
 
 /*
  * Each scenario is wrapped in a <testScenario name='scenario-name></testScenario> tag
  */
-const getScenarios = endpoint => {
+function getScenarios (endpoint) {
     const deferred = Q.defer();
 
     getDOM(endpoint).done(window => {
@@ -220,6 +226,6 @@ const getScenarios = endpoint => {
     });
 
     return deferred.promise;
-};
+}
 
 module.exports = { getScenarios };

@@ -12,7 +12,7 @@
  * @param {string} encoding - utf8 or base64
  * @returns {Object}
  */
-const create = (resolver, recordMatches, encoding) => {
+function create (resolver, recordMatches, encoding) {
     /**
      * The list of stubs within this repository
      * @memberOf module:models/stubRepository#
@@ -22,9 +22,11 @@ const create = (resolver, recordMatches, encoding) => {
 
     // we call map before calling every so we make sure to call every
     // predicate during dry run validation rather than short-circuiting
-    const trueForAll = (list, predicate) => list.map(predicate).every(result => result);
+    function trueForAll (list, predicate) {
+        return list.map(predicate).every(result => result);
+    }
 
-    const findFirstMatch = (request, logger, imposterState) => {
+    function findFirstMatch (request, logger, imposterState) {
         const helpers = require('../util/helpers');
 
         if (stubs.length === 0) {
@@ -48,18 +50,18 @@ const create = (resolver, recordMatches, encoding) => {
             }
             return matches[0];
         }
-    };
+    }
 
-    const repeatsFor = response => {
+    function repeatsFor (response) {
         if (response._behaviors && response._behaviors.repeat) {
             return response._behaviors.repeat;
         }
         else {
             return 1;
         }
-    };
+    }
 
-    const repeatTransform = responses => {
+    function repeatTransform (responses) {
         const result = [];
         let response, repeats;
 
@@ -71,24 +73,24 @@ const create = (resolver, recordMatches, encoding) => {
             }
         }
         return result;
-    };
+    }
 
     /**
      * Adds a stub to the repository
      * @memberOf module:models/stubRepository#
      * @param {Object} stub - The stub to add
      */
-    const addStub = stub => {
+    function addStub (stub) {
         stub.statefulResponses = repeatTransform(stub.responses);
         stubs.push(stub);
-    };
+    }
 
     /**
      * Returns the outside representation of the stubs
      * @memberOf module:models/stubRepository#
      * @returns {Object} - The stubs
      */
-    const getStubs = () => {
+    function getStubs () {
         const helpers = require('../util/helpers'),
             result = helpers.clone(stubs);
 
@@ -96,7 +98,7 @@ const create = (resolver, recordMatches, encoding) => {
             delete stub.statefulResponses;
         });
         return result;
-    };
+    }
 
     /**
      * Finds the right stub for a request and generates a response
@@ -106,7 +108,7 @@ const create = (resolver, recordMatches, encoding) => {
      * @param {Object} imposterState - The current state for the imposter
      * @returns {Object} - Promise resolving to the response
      */
-    const resolve = (request, logger, imposterState) => {
+    function resolve (request, logger, imposterState) {
         const stub = findFirstMatch(request, logger, imposterState) || { statefulResponses: [{ is: {} }] },
             responseConfig = stub.statefulResponses.shift();
 
@@ -122,12 +124,12 @@ const create = (resolver, recordMatches, encoding) => {
             }
             return response;
         });
-    };
+    }
 
     /**
     * Removes the saved proxy responses
     */
-    const resetProxies = () => {
+    function resetProxies () {
         for (let i = stubs.length - 1; i >= 0; i -= 1) {
             stubs[i].responses = stubs[i].responses.filter(response => {
                 if (!response.is) {
@@ -139,9 +141,9 @@ const create = (resolver, recordMatches, encoding) => {
                 stubs.splice(i, 1);
             }
         }
-    };
+    }
 
     return { stubs: getStubs, addStub, resolve, resetProxies };
-};
+}
 
 module.exports = { create };

@@ -3,7 +3,7 @@
 const fs = require('fs'),
     Q = require('q');
 
-const runStep = config => {
+function runStep (config) {
     if (config.delete === 'true') {
         fs.unlinkSync(config.filename);
     }
@@ -11,6 +11,6 @@ const runStep = config => {
         fs.writeFileSync(config.filename, config.requestText);
     }
     return Q(config);
-};
+}
 
 module.exports = { runStep };

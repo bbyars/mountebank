@@ -20,18 +20,18 @@
  * @param {Object} baseLogger - The logger
  * @returns {Object}
  */
-const implement = (implementation, recordRequests, debug, baseLogger) => {
+function implement (implementation, recordRequests, debug, baseLogger) {
     /**
      * Creates the protocol-specific server
      * @memberOf module:models/abstractServer#
      * @param {Object} options - The startup options
      * @returns {Object} - The interface for all protocols
      */
-    const create = options => {
+    function create (options) {
         options.recordRequests = options.recordRequests || recordRequests;
         options.debug = debug;
 
-        const scopeFor = port => {
+        function scopeFor (port) {
             const util = require('util');
             let scope = util.format('%s:%s', implementation.protocolName, port);
 
@@ -39,7 +39,7 @@ const implement = (implementation, recordRequests, debug, baseLogger) => {
                 scope += ` ${options.name}`;
             }
             return scope;
-        };
+        }
 
         let numRequests = 0;
         const Q = require('q'),
@@ -148,11 +148,11 @@ const implement = (implementation, recordRequests, debug, baseLogger) => {
         });
 
         return deferred.promise;
-    };
+    }
 
     return {
         create
     };
-};
+}
 
 module.exports = { implement };

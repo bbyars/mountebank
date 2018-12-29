@@ -7,20 +7,22 @@ const assert = require('assert'),
     port = api.port + 1,
     timeout = parseInt(process.env.MB_SLOW_TEST_TIMEOUT || 2000);
 
-describe('smtp imposter', () => {
-    describe('POST /imposters/:id', () => {
-        promiseIt('should auto-assign port if port not provided', () => {
+describe('smtp imposter', function () {
+    this.timeout(timeout);
+
+    describe('POST /imposters/:id', function () {
+        promiseIt('should auto-assign port if port not provided', function () {
             const request = { protocol: 'smtp' };
 
             return api.post('/imposters', request).then(response => {
                 assert.strictEqual(response.statusCode, 201);
                 assert.ok(response.body.port > 0);
             }).finally(() => api.del('/imposters'));
-        }).timeout(timeout);
+        });
     });
 
-    describe('GET /imposters/:id', () => {
-        promiseIt('should provide access to all requests', () => {
+    describe('GET /imposters/:id', function () {
+        promiseIt('should provide access to all requests', function () {
             const imposterRequest = { protocol: 'smtp', port };
 
             return api.post('/imposters', imposterRequest).then(() => client.send({
@@ -86,11 +88,11 @@ describe('smtp imposter', () => {
                     }
                 ]);
             }).finally(() => api.del('/imposters'));
-        }).timeout(timeout);
+        });
     });
 
-    describe('DELETE /imposters/:id should shutdown server at that port', () => {
-        promiseIt('should shutdown server at that port', () => {
+    describe('DELETE /imposters/:id should shutdown server at that port', function () {
+        promiseIt('should shutdown server at that port', function () {
             const request = { protocol: 'smtp', port };
 
             return api.post('/imposters', request).then(response => api.del(response.headers.location)).then(response => {
@@ -100,6 +102,6 @@ describe('smtp imposter', () => {
             }).then(response => {
                 assert.strictEqual(response.statusCode, 201, 'Delete did not free up port');
             }).finally(() => api.del(`/imposters/${port}`));
-        }).timeout(timeout);
+        });
     });
 });

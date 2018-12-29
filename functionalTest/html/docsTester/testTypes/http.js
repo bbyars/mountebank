@@ -4,15 +4,15 @@ const Q = require('q'),
     util = require('util'),
     httpClient = require('../../../api/http/baseHttpClient').create('http');
 
-const parseHeader = line => {
+function parseHeader (line) {
     const parts = line.split(':');
     return {
         key: parts[0].trim(),
         value: parts.slice(1).join(':').trim()
     };
-};
+}
 
-const parse = text => {
+function parse (text) {
     const lines = text.split('\n'),
         firstLineParts = lines[0].split(' '),
         spec = {
@@ -37,9 +37,9 @@ const parse = text => {
 
     spec.body = lines.slice(i).join('\n').trim();
     return spec;
-};
+}
 
-const messageFor = statusCode => {
+function messageFor (statusCode) {
     const codes = {
         200: 'OK',
         201: 'Created',
@@ -55,15 +55,15 @@ const messageFor = statusCode => {
     else {
         throw Error(`unrecognized status code: ${statusCode}`);
     }
-};
+}
 
-const properCase = text => {
+function properCase (text) {
     const parts = text.split('-'),
         properCasedParts = parts.map(name => name.substring(0, 1).toUpperCase() + name.substring(1));
     return properCasedParts.join('-');
-};
+}
 
-const format = response => {
+function format (response) {
     let result = util.format('HTTP/1.1 %s %s', response.statusCode, messageFor(response.statusCode));
     Object.keys(response.headers).forEach(header => {
         result += util.format('\n%s: %s', properCase(header), response.headers[header]);
@@ -78,9 +78,9 @@ const format = response => {
         }
     }
     return result;
-};
+}
 
-const runStep = spec => {
+function runStep (spec) {
     const deferred = Q.defer(),
         requestSpec = parse(spec.requestText);
 
@@ -89,6 +89,6 @@ const runStep = spec => {
     });
 
     return deferred.promise;
-};
+}
 
 module.exports = { runStep };

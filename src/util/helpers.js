@@ -7,27 +7,31 @@
  * @param {Object} obj - the value to test
  * @returns {boolean}
  */
-const defined = obj => typeof obj !== 'undefined';
+function defined (obj) {
+    return typeof obj !== 'undefined';
+}
 
 /**
  * Returns the text used for logging purposes related to this socket
  * @param {Object} socket - the socket
  * @returns {string}
  */
-const socketName = socket => {
+function socketName (socket) {
     let result = socket.remoteAddress;
     if (socket.remotePort) {
         result += `:${socket.remotePort}`;
     }
     return result;
-};
+}
 
 /**
  * Returns a deep clone of obj
  * @param {Object} obj - the object to clone
  * @returns {Object}
  */
-const clone = obj => JSON.parse(JSON.stringify(obj));
+function clone (obj) {
+    return JSON.parse(JSON.stringify(obj));
+}
 
 /**
  * Returns a new object combining the two parameters
@@ -36,7 +40,7 @@ const clone = obj => JSON.parse(JSON.stringify(obj));
  * and overrides, the values for overrides will be used
  * @returns {Object}
  */
-const merge = (defaults, overrides) => {
+function merge (defaults, overrides) {
     const result = clone(defaults);
     Object.keys(overrides).forEach(key => {
         if (typeof overrides[key] === 'object' && overrides[key] !== null) {
@@ -47,6 +51,6 @@ const merge = (defaults, overrides) => {
         }
     });
     return result;
-};
+}
 
 module.exports = { defined, socketName, clone, merge };

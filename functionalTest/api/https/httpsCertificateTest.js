@@ -13,8 +13,10 @@ const assert = require('assert'),
     defaultKey = fs.readFileSync(path.join(__dirname, '../../../src/models/https/cert/mb-key.pem'), 'utf8'),
     defaultCert = fs.readFileSync(path.join(__dirname, '../../../src/models/https/cert/mb-cert.pem'), 'utf8');
 
-describe('https imposter', () => {
-    promiseIt('should support sending key/cert pair during imposter creation', () => {
+describe('https imposter', function () {
+    this.timeout(timeout);
+
+    promiseIt('should support sending key/cert pair during imposter creation', function () {
         const request = {
             protocol: 'https',
             port,
@@ -30,9 +32,9 @@ describe('https imposter', () => {
         }).then(response => {
             assert.strictEqual(response.statusCode, 200);
         }).finally(() => api.del('/imposters'));
-    }).timeout(timeout);
+    });
 
-    promiseIt('should default key/cert pair during imposter creation if not provided', () => {
+    promiseIt('should default key/cert pair during imposter creation if not provided', function () {
         const request = { protocol: 'https', port };
 
         return api.post('/imposters', request).then(response => {
@@ -43,9 +45,9 @@ describe('https imposter', () => {
         }).then(response => {
             assert.strictEqual(response.statusCode, 200);
         }).finally(() => api.del('/imposters'));
-    }).timeout(timeout);
+    });
 
-    promiseIt('should work with mutual auth', () => {
+    promiseIt('should work with mutual auth', function () {
         const request = { protocol: 'https', port, mutualAuth: true };
 
         return api.post('/imposters', request).then(response => {
@@ -62,9 +64,9 @@ describe('https imposter', () => {
         }).then(response => {
             assert.strictEqual(response.statusCode, 200);
         }).finally(() => api.del('/imposters'));
-    }).timeout(timeout);
+    });
 
-    promiseIt('should support proxying to origin server requiring mutual auth', () => {
+    promiseIt('should support proxying to origin server requiring mutual auth', function () {
         const originServerPort = port + 1,
             originServerRequest = {
                 protocol: 'https',
@@ -94,5 +96,5 @@ describe('https imposter', () => {
         }).then(response => {
             assert.strictEqual(response.body, 'origin server');
         }).finally(() => api.del('/imposters'));
-    }).timeout(timeout);
+    });
 });

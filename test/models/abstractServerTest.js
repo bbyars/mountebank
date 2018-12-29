@@ -9,8 +9,8 @@ const assert = require('assert'),
     mock = require('../mock').mock,
     Logger = require('../fakes/fakeLogger');
 
-describe('AbstractServer', () => {
-    describe('#create', () => {
+describe('AbstractServer', function () {
+    describe('#create', function () {
         let logger, implementation, baseServer;
 
         beforeEach(() => {
@@ -32,7 +32,7 @@ describe('AbstractServer', () => {
             };
         });
 
-        promiseIt('should log when the server binds to the port', () => {
+        promiseIt('should log when the server binds to the port', function () {
             const Server = AbstractServer.implement(implementation, true, false, logger);
             implementation.protocolName = 'test';
 
@@ -41,7 +41,7 @@ describe('AbstractServer', () => {
             });
         });
 
-        promiseIt('should auto-assign port if none passed in', () => {
+        promiseIt('should auto-assign port if none passed in', function () {
             const Server = AbstractServer.implement(implementation, true, false, logger);
             baseServer.listen = mock().returns(Q(3000));
             implementation.protocolName = 'test';
@@ -51,7 +51,7 @@ describe('AbstractServer', () => {
             });
         });
 
-        promiseIt('should log when the server is closed', () => {
+        promiseIt('should log when the server is closed', function () {
             const Server = AbstractServer.implement(implementation, true, false, logger);
             implementation.protocolName = 'test';
             baseServer.close = callback => { callback(); };
@@ -62,7 +62,7 @@ describe('AbstractServer', () => {
             });
         });
 
-        promiseIt('should delegate addStub to baseServer', () => {
+        promiseIt('should delegate addStub to baseServer', function () {
             const Server = AbstractServer.implement(implementation, true, false, logger);
             baseServer.addStub = mock();
 
@@ -72,14 +72,14 @@ describe('AbstractServer', () => {
             });
         });
 
-        promiseIt('should delegate to server metadata', () => {
+        promiseIt('should delegate to server metadata', function () {
             const Server = AbstractServer.implement(implementation, true, false, logger);
             baseServer.metadata.returns('metadata');
 
             return Server.create({ port: 3000 }).then(server => assert.strictEqual(server.metadata, 'metadata'));
         });
 
-        promiseIt('should add options.name to server metadata', () => {
+        promiseIt('should add options.name to server metadata', function () {
             const Server = AbstractServer.implement(implementation, true, false, logger);
             baseServer.metadata.returns({ key: 'value' });
 
@@ -90,7 +90,7 @@ describe('AbstractServer', () => {
                 }));
         });
 
-        promiseIt('should log when connection established', () => {
+        promiseIt('should log when connection established', function () {
             const Server = AbstractServer.implement(implementation, true, false, logger),
                 socket = inherit.from(events.EventEmitter, { remoteAddress: 'host', remotePort: 'port' });
             implementation.protocolName = 'test';
@@ -101,7 +101,7 @@ describe('AbstractServer', () => {
             });
         });
 
-        promiseIt('should log socket errors', () => {
+        promiseIt('should log socket errors', function () {
             const Server = AbstractServer.implement(implementation, true, false, logger),
                 socket = inherit.from(events.EventEmitter, { remoteAddress: 'host', remotePort: 'port' });
             implementation.protocolName = 'test';
@@ -113,7 +113,7 @@ describe('AbstractServer', () => {
             });
         });
 
-        promiseIt('should log socket end and close', () => {
+        promiseIt('should log socket end and close', function () {
             const Server = AbstractServer.implement(implementation, true, false, logger),
                 socket = inherit.from(events.EventEmitter, { remoteAddress: 'host', remotePort: 'port' });
             implementation.protocolName = 'test';
@@ -127,7 +127,7 @@ describe('AbstractServer', () => {
             });
         });
 
-        promiseIt('should log short request', () => {
+        promiseIt('should log short request', function () {
             const Server = AbstractServer.implement(implementation, true, false, logger),
                 socket = inherit.from(events.EventEmitter, { remoteAddress: 'host', remotePort: 'port' });
             implementation.protocolName = 'test';
@@ -139,7 +139,7 @@ describe('AbstractServer', () => {
             });
         });
 
-        promiseIt('should log full request', () => {
+        promiseIt('should log full request', function () {
             const Server = AbstractServer.implement(implementation, true, false, logger),
                 socket = inherit.from(events.EventEmitter, { remoteAddress: 'host', remotePort: 'port' });
             implementation.protocolName = 'test';
@@ -153,7 +153,7 @@ describe('AbstractServer', () => {
             });
         });
 
-        promiseIt('should record simplified requests if recordRequests is true', () => {
+        promiseIt('should record simplified requests if recordRequests is true', function () {
             const Server = AbstractServer.implement(implementation, true, false, logger);
             implementation.Request.createFrom.returns(Q({ id: 'simple request' }));
 
@@ -170,7 +170,7 @@ describe('AbstractServer', () => {
             });
         });
 
-        promiseIt('should not record simplified requests if recordRequests is false', () => {
+        promiseIt('should not record simplified requests if recordRequests is false', function () {
             const Server = AbstractServer.implement(implementation, false, false, logger);
             implementation.Request.createFrom.returns(Q({ id: 'simple request' }));
 
@@ -182,7 +182,7 @@ describe('AbstractServer', () => {
             });
         });
 
-        promiseIt('should call the base server to respond', () => {
+        promiseIt('should call the base server to respond', function () {
             const Server = AbstractServer.implement(implementation, true, false, logger);
             implementation.Request.createFrom.returns(Q({ id: 'simple request' }));
 
@@ -194,7 +194,7 @@ describe('AbstractServer', () => {
             });
         });
 
-        promiseIt('should log response', () => {
+        promiseIt('should log response', function () {
             const Server = AbstractServer.implement(implementation, true, false, logger),
                 socket = inherit.from(events.EventEmitter, { remoteAddress: 'host', remotePort: 'port' });
             implementation.protocolName = 'test';
@@ -209,7 +209,7 @@ describe('AbstractServer', () => {
             });
         });
 
-        promiseIt('should log error and call server error handler if respond fails', () => {
+        promiseIt('should log error and call server error handler if respond fails', function () {
             const Server = AbstractServer.implement(implementation, true, false, logger),
                 socket = inherit.from(events.EventEmitter, { remoteAddress: 'host', remotePort: 'port' });
             implementation.protocolName = 'test';

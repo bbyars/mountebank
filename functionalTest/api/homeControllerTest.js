@@ -4,8 +4,8 @@ const assert = require('assert'),
     api = require('./api').create(),
     promiseIt = require('../testHelpers').promiseIt;
 
-describe('GET /', () => {
-    promiseIt('should return correct hypermedia', () => {
+describe('GET /', function () {
+    promiseIt('should return correct hypermedia', function () {
         let links;
 
         return api.get('/').then(response => {

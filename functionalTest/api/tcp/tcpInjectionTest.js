@@ -7,9 +7,11 @@ const assert = require('assert'),
     port = api.port + 1,
     timeout = parseInt(process.env.MB_SLOW_TEST_TIMEOUT || 4000);
 
-describe('tcp imposter', () => {
-    describe('POST /imposters with injections', () => {
-        promiseIt('should allow javascript predicate for matching', () => {
+describe('tcp imposter', function () {
+    this.timeout(timeout);
+
+    describe('POST /imposters with injections', function () {
+        promiseIt('should allow javascript predicate for matching', function () {
             const fn = request => request.data.toString() === 'test',
                 stub = {
                     predicates: [{ inject: fn.toString() }],
@@ -23,9 +25,9 @@ describe('tcp imposter', () => {
             }).then(response => {
                 assert.strictEqual(response.toString(), 'MATCHED');
             }).finally(() => api.del('/imposters'));
-        }).timeout(timeout);
+        });
 
-        promiseIt('should allow synchronous javascript injection for responses', () => {
+        promiseIt('should allow synchronous javascript injection for responses', function () {
             const fn = request => ({ data: `${request.data} INJECTED` }),
                 stub = { responses: [{ inject: fn.toString() }] },
                 request = { protocol: 'tcp', port, stubs: [stub] };
@@ -33,9 +35,9 @@ describe('tcp imposter', () => {
             return api.post('/imposters', request).then(() => tcp.send('request', port)).then(response => {
                 assert.strictEqual(response.toString(), 'request INJECTED');
             }).finally(() => api.del('/imposters'));
-        }).timeout(timeout);
+        });
 
-        promiseIt('should allow javascript injection to keep state between requests', () => {
+        promiseIt('should allow javascript injection to keep state between requests', function () {
             const fn = (request, state) => {
                     if (!state.calls) { state.calls = 0; }
                     state.calls += 1;
@@ -55,9 +57,9 @@ describe('tcp imposter', () => {
             }).then(response => {
                 assert.deepEqual(response.toString(), '2');
             }).finally(() => api.del('/imposters'));
-        }).timeout(timeout);
+        });
 
-        promiseIt('should allow asynchronous injection', () => {
+        promiseIt('should allow asynchronous injection', function () {
             const originServerPort = port + 1,
                 originServerStub = { responses: [{ is: { body: 'origin server' } }] },
                 originServerRequest = {
@@ -91,9 +93,9 @@ describe('tcp imposter', () => {
             }).then(response => {
                 assert.strictEqual(response.toString().indexOf('HTTP/1.1'), 0);
             }).finally(() => api.del('/imposters'));
-        }).timeout(timeout);
+        });
 
-        promiseIt('should allow binary requests extending beyond a single packet using endOfRequestResolver', () => {
+        promiseIt('should allow binary requests extending beyond a single packet using endOfRequestResolver', function () {
             // We'll simulate a protocol that has a 4 byte message length at byte 0 indicating how many bytes follow
             const getRequest = length => {
                     const buffer = new Buffer(length + 4);
@@ -127,9 +129,9 @@ describe('tcp imposter', () => {
                 assert.strictEqual(response.body.requests.length, 1);
                 assert.strictEqual(response.body.requests[0].data, largeRequest.toString('base64'));
             }).finally(() => api.del('/imposters'));
-        }).timeout(timeout);
+        });
 
-        promiseIt('should allow text requests extending beyond a single packet using endOfRequestResolver', () => {
+        promiseIt('should allow text requests extending beyond a single packet using endOfRequestResolver', function () {
             // We'll simulate HTTP
             // The last 'x' is added because new Array(5).join('x') creates 'xxxx' in JavaScript...
             const largeRequest = `Content-Length: 100000\n\n${new Array(100000).join('x')}x`,
@@ -156,6 +158,6 @@ describe('tcp imposter', () => {
                 assert.strictEqual(response.body.requests.length, 1);
                 assert.strictEqual(response.body.requests[0].data, largeRequest);
             }).finally(() => api.del('/imposters'));
-        }).timeout(timeout);
+        });
     });
 });

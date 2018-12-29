@@ -21,8 +21,10 @@ if (process.env.MB_AIRPLANE_MODE !== 'true' && process.env.MB_RUN_WEB_TESTS === 
             [200, 301, 302, 999].indexOf(statusCode) >= 0 ||
                 ([500, 502, 503].indexOf(statusCode) >= 0 && isLocalLink(link));
 
-    describe('The mountebank website', () => {
-        promiseIt('should have no dead links and a valid sitemap', () => {
+    describe('The mountebank website', function () {
+        this.timeout(180000);
+
+        promiseIt('should have no dead links and a valid sitemap', function () {
             let crawlResults;
             return crawler.create().crawl(`${api.url}/`, '').then(result => {
                 // Validate no broken links
@@ -40,12 +42,14 @@ if (process.env.MB_AIRPLANE_MODE !== 'true' && process.env.MB_RUN_WEB_TESTS === 
                 crawlResults = result;
                 return api.get('/sitemap');
             }).then(response => {
-                const siteLinks = Object.keys(crawlResults.hits).filter(link => isLocalLink(link) && link.indexOf('#') < 0 && link.indexOf('?') < 0).map(link => link.replace(api.url, 'http://www.mbtest.org')),
+                const siteLinks = Object.keys(crawlResults.hits)
+                        .filter(link => isLocalLink(link) && link.indexOf('#') < 0 && link.indexOf('?') < 0)
+                        .map(link => link.replace(api.url, 'http://www.mbtest.org')),
                     linksNotInSitemap = siteLinks.filter(link => response.body.indexOf(link) < 0);
 
                 assert.strictEqual(200, response.statusCode);
                 assert.deepEqual(linksNotInSitemap, [], JSON.stringify(linksNotInSitemap));
             });
-        }).timeout(180000);
+        });
     });
 }

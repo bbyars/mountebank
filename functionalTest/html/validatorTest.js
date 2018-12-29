@@ -9,7 +9,7 @@ const assert = require('assert'),
     promiseIt = require('../testHelpers').promiseIt,
     util = require('util');
 
-const assertValid = (path, html) => {
+function assertValid (path, html) {
     const deferred = Q.defer();
 
     w3cjs.validate({
@@ -32,9 +32,9 @@ const assertValid = (path, html) => {
     });
 
     return deferred.promise;
-};
+}
 
-const removeKnownErrorsFrom = html => {
+function removeKnownErrorsFrom (html) {
     const docsTestFrameworkTags = ['testScenario', 'step', 'volatile', 'assertResponse', 'change'];
     let result = html;
 
@@ -48,9 +48,9 @@ const removeKnownErrorsFrom = html => {
     });
 
     return result;
-};
+}
 
-const getHTML = path => {
+function getHTML (path) {
     const spec = {
         port: api.port,
         method: 'GET',
@@ -63,14 +63,16 @@ const getHTML = path => {
 
         return Q(removeKnownErrorsFrom(response.body));
     });
-};
+}
 
 // MB_AIRPLANE_MODE because these require network access
 // MB_RUN_WEB_TESTS because these are slow, occasionally fragile, and there's
 // no value running them with every node in the build matrix
 if (process.env.MB_AIRPLANE_MODE !== 'true' && process.env.MB_RUN_WEB_TESTS === 'true') {
-    describe('all pages in the mountebank website', () => {
-        promiseIt('should be valid html', () => {
+    describe('all pages in the mountebank website', function () {
+        this.timeout(60000);
+
+        promiseIt('should be valid html', function () {
             // feed isn't html and is tested elsewhere; support has non-valid Google HTML embedded
             const blacklist = ['/feed', '/support', '/imposters', '/logs'];
 
@@ -87,6 +89,6 @@ if (process.env.MB_AIRPLANE_MODE !== 'true' && process.env.MB_RUN_WEB_TESTS === 
 
                 return Q.all(tests);
             });
-        }).timeout(60000);
+        });
     });
 }

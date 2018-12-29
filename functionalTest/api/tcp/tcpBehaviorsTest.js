@@ -9,9 +9,11 @@ const assert = require('assert'),
     fs = require('fs'),
     util = require('util');
 
-describe('tcp imposter', () => {
-    describe('POST /imposters with stubs', () => {
-        promiseIt('should support decorating response from origin server', () => {
+describe('tcp imposter', function () {
+    this.timeout(timeout);
+
+    describe('POST /imposters with stubs', function () {
+        promiseIt('should support decorating response from origin server', function () {
             const originServerPort = port + 1,
                 originServerStub = { responses: [{ is: { data: 'ORIGIN' } }] },
                 originServerRequest = {
@@ -33,9 +35,9 @@ describe('tcp imposter', () => {
             return api.post('/imposters', originServerRequest).then(() => api.post('/imposters', proxyRequest)).then(() => tcp.send('request', port)).then(response => {
                 assert.strictEqual(response.toString(), 'ORIGIN DECORATED');
             }).finally(() => api.del('/imposters'));
-        }).timeout(timeout);
+        });
 
-        promiseIt('should compose multiple behaviors together', () => {
+        promiseIt('should compose multiple behaviors together', function () {
             const shellFn = function exec () {
                     console.log(process.argv[3].replace('${SALUTATION}', 'Hello'));
                 },
@@ -88,6 +90,6 @@ describe('tcp imposter', () => {
                 fs.unlinkSync('shellTransformTest.js');
                 return api.del('/imposters');
             });
-        }).timeout(timeout);
+        });
     });
 });

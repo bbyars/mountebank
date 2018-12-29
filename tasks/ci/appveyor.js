@@ -4,7 +4,7 @@ const Q = require('q'),
     https = require('https'),
     apiToken = process.env.APPVEYOR_API_TOKEN;
 
-const responseFor = options => {
+function responseFor (options) {
     if (!apiToken) {
         throw new Error('APPVEYOR_API_TOKEN environment variable must be set');
     }
@@ -51,12 +51,12 @@ const responseFor = options => {
     }
     request.end();
     return deferred.promise;
-};
+}
 
-const triggerBuild = (commitId, version) =>
+function triggerBuild (commitId, version) {
     // From what I can tell, POST /api/builds accepts a full SHA for the commitId IF
     // no environmentVariables are passed, but only an 8 digit SHA with environmentVariables
-    responseFor({
+    return responseFor({
         method: 'POST',
         path: '/api/builds',
         body: {
@@ -76,18 +76,21 @@ const triggerBuild = (commitId, version) =>
 
         return response.body;
     });
+}
 
 
-const getBuildStatus = buildNumber => responseFor({
-    method: 'GET',
-    path: `/api/projects/bbyars/mountebank/build/${buildNumber}`
-}).then(response => {
-    if (response.statusCode !== 200) {
-        console.error(`Status code of GET /api/projects/mountebank/build/${buildNumber}: ${response.statusCode}`);
-        throw response.body;
-    }
+function getBuildStatus (buildNumber) {
+    return responseFor({
+        method: 'GET',
+        path: `/api/projects/bbyars/mountebank/build/${buildNumber}`
+    }).then(response => {
+        if (response.statusCode !== 200) {
+            console.error(`Status code of GET /api/projects/mountebank/build/${buildNumber}: ${response.statusCode}`);
+            throw response.body;
+        }
 
-    return response.body.build.status;
-});
+        return response.body.build.status;
+    });
+}
 
 module.exports = { triggerBuild, getBuildStatus };

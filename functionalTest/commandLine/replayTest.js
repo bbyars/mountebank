@@ -7,8 +7,10 @@ const assert = require('assert'),
     promiseIt = require('../testHelpers').promiseIt,
     timeout = parseInt(process.env.MB_SLOW_TEST_TIMEOUT || 4000);
 
-describe('mb replay', () => {
-    promiseIt('should remove proxies', () => {
+describe('mb replay', function () {
+    this.timeout(timeout);
+
+    promiseIt('should remove proxies', function () {
         const originServerPort = mb.port + 1,
             originServerFn = (request, state) => {
                 state.count = state.count || 0;
@@ -47,5 +49,5 @@ describe('mb replay', () => {
 
             assert.deepEqual(responses, [['1. /first', '3. /first'], ['2. /second']]);
         }).finally(() => mb.stop());
-    }).timeout(timeout);
+    });
 });

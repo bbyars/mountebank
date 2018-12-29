@@ -12,9 +12,9 @@ function initJQuery (htmlDocument) {
     return window;
 }
 
-describe('url-hash-handler', () => {
-    describe('toggleSection', () => {
-        it('should add class expanded to the section', () => {
+describe('url-hash-handler', function () {
+    describe('toggleSection', function () {
+        it('should add class expanded to the section', function () {
             const htmlDocument = '<div>' +
                 '<span id="elementToBeClicked"></span>' +
                 '<section id="sectionToBeChecked"></section>' +
@@ -27,7 +27,7 @@ describe('url-hash-handler', () => {
             assert.equal($sectionToBeChecked.hasClass('expanded'), true);
         });
 
-        it('should remove class expanded from the section', () => {
+        it('should remove class expanded from the section', function () {
             const htmlDocument = '<div>' +
                 '<span id="elementToBeClicked"></span>' +
                 '<section class="expanded" id="sectionToBeChecked"></section>' +
@@ -41,8 +41,8 @@ describe('url-hash-handler', () => {
         });
     });
 
-    describe('hashLocationHandler', () => {
-        it('should click on the section from hash', () => {
+    describe('hashLocationHandler', function () {
+        it('should click on the section from hash', function () {
             const window = initJQuery('<div id="sectionToBeTested"></div>');
             const sectionOnClick = mock();
             $('#sectionToBeTested').on('click', sectionOnClick);

@@ -10,7 +10,7 @@
  * @param {Object} request - The raw tcp request
  * @returns {Object} - A promise resolving to the mountebank tcp request
  */
-const createFrom = request => {
+function createFrom (request) {
     const Q = require('q'),
         helpers = require('../../util/helpers');
 
@@ -18,6 +18,6 @@ const createFrom = request => {
         requestFrom: helpers.socketName(request.socket),
         data: request.data
     });
-};
+}
 
 module.exports = { createFrom };

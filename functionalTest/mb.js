@@ -12,7 +12,7 @@ const Q = require('q'),
     pidfile = 'test.pid',
     logfile = 'mb-test.log';
 
-const whenFullyInitialized = (operation, callback) => {
+function whenFullyInitialized (operation, callback) {
     let count = 0,
         pidfileMustExist = operation === 'start',
         spinWait = () => {
@@ -30,9 +30,9 @@ const whenFullyInitialized = (operation, callback) => {
         };
 
     spinWait();
-};
+}
 
-const spawnMb = args => {
+function spawnMb (args) {
     let command = mbPath;
     let result;
 
@@ -54,10 +54,10 @@ const spawnMb = args => {
         console.log(data.toString('utf8'));
     });
     return result;
-};
+}
 
-const create = port => {
-    const start = args => {
+function create (port) {
+    function start (args) {
         const deferred = Q.defer(),
             mbArgs = ['restart', '--port', port, '--logfile', logfile, '--pidfile', pidfile].concat(args || []);
 
@@ -66,9 +66,9 @@ const create = port => {
         mb.on('error', deferred.reject);
 
         return deferred.promise;
-    };
+    }
 
-    const stop = () => {
+    function stop () {
         let deferred = Q.defer(),
             command = `${mbPath} stop --pidfile ${pidfile}`;
 
@@ -84,15 +84,17 @@ const create = port => {
         });
 
         return deferred.promise;
-    };
+    }
 
     // Can't simply call mb restart
     // The start function relies on whenFullyInitialized to wait for the pidfile to already exist
     // If it already does exist, and you're expecting mb restart to kill it, the function will
     // return before you're ready for it
-    const restart = args => stop(args).then(() => start(args));
+    function restart (args) {
+        return stop(args).then(() => start(args));
+    }
 
-    const execCommand = (command, args) => {
+    function execCommand (command, args) {
         let deferred = Q.defer(),
             mbArgs = [command, '--port', port].concat(args || []),
             stdout = '',
@@ -111,18 +113,29 @@ const create = port => {
         });
 
         return deferred.promise;
-    };
+    }
 
-    const save = args => execCommand('save', args);
-    const replay = args => execCommand('replay', args);
+    function save (args) {
+        return execCommand('save', args);
+    }
+
+    function replay (args) {
+        return execCommand('replay', args);
+    }
+
 
     // After trial and error, I discovered that we have to set
     // the connection: close header on Windows or we end up with
     // ECONNRESET errors
-    const get = endpoint => httpClient.responseFor({ method: 'GET', path: endpoint, port, headers });
-    const post = (endpoint, body) => httpClient.responseFor({ method: 'POST', path: endpoint, port, body, headers });
+    function get (endpoint) {
+        return httpClient.responseFor({ method: 'GET', path: endpoint, port, headers });
+    }
+
+    function post (endpoint, body) {
+        return httpClient.responseFor({ method: 'POST', path: endpoint, port, body, headers });
+    }
 
     return { port, url: `http://localhost:${port}`, start, restart, stop, save, get, post, replay };
-};
+}
 
 module.exports = { create };

@@ -5,10 +5,12 @@
  * @module
  */
 
-const createBaseServer = () => ({
-    metadata: require('../../util/combinators').constant({}),
-    createNodeServer: require('http').createServer
-});
+function createBaseServer () {
+    return {
+        metadata: require('../../util/combinators').constant({}),
+        createNodeServer: require('http').createServer
+    };
+}
 
 module.exports = {
     /**

@@ -3,21 +3,21 @@
 const assert = require('assert'),
     predicates = require('../../../src/models/predicates');
 
-describe('predicates', () => {
-    describe('#not', () => {
-        it('should return true for non empty request field if exists is true', () => {
+describe('predicates', function () {
+    describe('#not', function () {
+        it('should return true for non empty request field if exists is true', function () {
             const predicate = { not: { equals: { field: 'this' } } },
                 request = { field: 'that' };
             assert.ok(predicates.evaluate(predicate, request));
         });
 
-        it('should return false for empty request field if exists is true', () => {
+        it('should return false for empty request field if exists is true', function () {
             const predicate = { not: { equals: { field: 'this' } } },
                 request = { field: 'this' };
             assert.ok(!predicates.evaluate(predicate, request));
         });
 
-        it('should throw exception if invalid sub-predicate', () => {
+        it('should throw exception if invalid sub-predicate', function () {
             try {
                 const predicate = { not: { invalid: { field: 'this' } } },
                     request = { field: 'this' };

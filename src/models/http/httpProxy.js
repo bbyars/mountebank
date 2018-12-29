@@ -12,8 +12,8 @@ process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
  * @param {Object} logger - The logger
  * @returns {Object}
  */
-const create = logger => {
-    const toUrl = (path, query) => {
+function create (logger) {
+    function toUrl (path, query) {
         const querystring = require('querystring'),
             tail = querystring.stringify(query);
 
@@ -21,17 +21,17 @@ const create = logger => {
             return path;
         }
         return `${path}?${tail}`;
-    };
+    }
 
-    const hostnameFor = (protocol, host, port) => {
+    function hostnameFor (protocol, host, port) {
         let result = host;
         if ((protocol === 'http:' && port !== 80) || (protocol === 'https:' && port !== 443)) {
             result += `:${port}`;
         }
         return result;
-    };
+    }
 
-    const setProxyAgent = (parts, options) => {
+    function setProxyAgent (parts, options) {
         const HttpProxyAgent = require('http-proxy-agent'),
             HttpsProxyAgent = require('https-proxy-agent');
 
@@ -41,9 +41,9 @@ const create = logger => {
         else if (process.env.https_proxy && parts.protocol === 'https:') {
             options.agent = new HttpsProxyAgent(process.env.https_proxy);
         }
-    };
+    }
 
-    const getProxyRequest = (baseUrl, originalRequest, proxyOptions) => {
+    function getProxyRequest (baseUrl, originalRequest, proxyOptions) {
         /* eslint complexity: 0 */
         const helpers = require('../../util/helpers'),
             headersHelper = require('./headersHelper'),
@@ -81,9 +81,9 @@ const create = logger => {
             proxiedRequest.write(originalRequest.body);
         }
         return proxiedRequest;
-    };
+    }
 
-    const isBinaryResponse = headers => {
+    function isBinaryResponse (headers) {
         const contentEncoding = headers['content-encoding'] || '',
             contentType = headers['content-type'] || '';
 
@@ -96,9 +96,9 @@ const create = logger => {
         }
 
         return ['audio', 'image', 'video'].some(typeName => contentType.indexOf(typeName) === 0);
-    };
+    }
 
-    const proxy = proxiedRequest => {
+    function proxy (proxiedRequest) {
         const Q = require('q'),
             deferred = Q.defer(),
             start = new Date();
@@ -129,7 +129,7 @@ const create = logger => {
         });
 
         return deferred.promise;
-    };
+    }
 
     /**
      * Proxies an http/s request to a destination
@@ -141,12 +141,12 @@ const create = logger => {
      * @param {string} [options.key] - The private key, in case the destination requires mutual authentication
      * @returns {Object} - Promise resolving to the response
      */
-    const to = (proxyDestination, originalRequest, options) => {
+    function to (proxyDestination, originalRequest, options) {
 
-        const log = (direction, what) => {
+        function log (direction, what) {
             logger.debug('Proxy %s %s %s %s %s',
                 originalRequest.requestFrom, direction, JSON.stringify(what), direction, proxyDestination);
-        };
+        }
 
         const Q = require('q'),
             deferred = Q.defer(),
@@ -174,9 +174,9 @@ const create = logger => {
         });
 
         return deferred.promise;
-    };
+    }
 
     return { to };
-};
+}
 
 module.exports = { create };

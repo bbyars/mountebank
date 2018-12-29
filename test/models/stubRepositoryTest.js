@@ -6,10 +6,10 @@ const assert = require('assert'),
     promiseIt = require('../testHelpers').promiseIt,
     Q = require('q');
 
-describe('stubRepository', () => {
-    describe('#resolve', () => {
+describe('stubRepository', function () {
+    describe('#resolve', function () {
 
-        promiseIt('should call resolve with default response if no match', () => {
+        promiseIt('should call resolve with default response if no match', function () {
             const resolver = mock().returns(Q()),
                 stubs = StubRepository.create({ resolve: resolver }),
                 logger = { debug: mock() },
@@ -20,7 +20,7 @@ describe('stubRepository', () => {
             });
         });
 
-        promiseIt('should always match if no predicate', () => {
+        promiseIt('should always match if no predicate', function () {
             const resolver = mock().returns(Q()),
                 stubs = StubRepository.create({ resolve: resolver }),
                 logger = { debug: mock() },
@@ -34,7 +34,7 @@ describe('stubRepository', () => {
             });
         });
 
-        promiseIt('should return first match', () => {
+        promiseIt('should return first match', function () {
             const resolver = mock().returns(Q()),
                 stubs = StubRepository.create({ resolve: resolver }),
                 logger = { debug: mock() },
@@ -52,7 +52,7 @@ describe('stubRepository', () => {
             });
         });
 
-        promiseIt('should return responses in order, looping around', () => {
+        promiseIt('should return responses in order, looping around', function () {
             const resolver = mock().returns(Q()),
                 stubs = StubRepository.create({ resolve: resolver }),
                 logger = { debug: mock() },
@@ -72,7 +72,7 @@ describe('stubRepository', () => {
             });
         });
 
-        promiseIt('should record matches', () => {
+        promiseIt('should record matches', function () {
             const resolver = mock().returns(Q()),
                 stubs = StubRepository.create({ resolve: resolver }, true),
                 logger = { debug: mock() },
@@ -88,7 +88,7 @@ describe('stubRepository', () => {
             });
         });
 
-        promiseIt('should not record matches if recordMatches is false', () => {
+        promiseIt('should not record matches if recordMatches is false', function () {
             const resolver = mock().returns(Q()),
                 stubs = StubRepository.create({ resolve: resolver }, false),
                 logger = { debug: mock() },
@@ -103,7 +103,7 @@ describe('stubRepository', () => {
             });
         });
 
-        promiseIt('should return a repeat response only a set number of times', () => {
+        promiseIt('should return a repeat response only a set number of times', function () {
             const resolver = mock().returns(Q()),
                 stubs = StubRepository.create({ resolve: resolver }, false),
                 logger = { debug: mock() },
@@ -131,7 +131,7 @@ describe('stubRepository', () => {
             });
         });
 
-        promiseIt('should loop back around after repeats are exhausted', () => {
+        promiseIt('should loop back around after repeats are exhausted', function () {
             const resolver = mock().returns(Q()),
                 stubs = StubRepository.create({ resolve: resolver }, false),
                 logger = { debug: mock() },

@@ -7,9 +7,9 @@ const assert = require('assert'),
     Logger = require('../../fakes/fakeLogger'),
     fs = require('fs');
 
-describe('behaviors', () => {
-    describe('#shellTransform', () => {
-        promiseIt('should not execute during dry run', () => {
+describe('behaviors', function () {
+    describe('#shellTransform', function () {
+        promiseIt('should not execute during dry run', function () {
             const request = { isDryRun: true },
                 response = { data: 'ORIGINAL' },
                 logger = Logger.create(),
@@ -20,7 +20,7 @@ describe('behaviors', () => {
             });
         });
 
-        promiseIt('should return output of command', () => {
+        promiseIt('should return output of command', function () {
             const request = {},
                 response = { data: 'ORIGINAL' },
                 logger = Logger.create(),
@@ -38,7 +38,7 @@ describe('behaviors', () => {
             });
         });
 
-        promiseIt('should pass request and response to shell command', () => {
+        promiseIt('should pass request and response to shell command', function () {
             const request = { data: 'FROM REQUEST' },
                 response = { data: 'UNCHANGED', requestData: '' },
                 logger = Logger.create(),
@@ -61,7 +61,7 @@ describe('behaviors', () => {
             });
         });
 
-        promiseIt('should reject promise if file does not exist', () => {
+        promiseIt('should reject promise if file does not exist', function () {
             const request = {},
                 response = {},
                 logger = Logger.create(),
@@ -75,7 +75,7 @@ describe('behaviors', () => {
             });
         });
 
-        promiseIt('should reject if command returned non-zero status code', () => {
+        promiseIt('should reject if command returned non-zero status code', function () {
             const request = {},
                 response = {},
                 logger = Logger.create(),
@@ -97,7 +97,7 @@ describe('behaviors', () => {
             });
         });
 
-        promiseIt('should reject if command does not return valid JSON', () => {
+        promiseIt('should reject if command does not return valid JSON', function () {
             const request = {},
                 response = {},
                 logger = Logger.create(),
@@ -117,7 +117,7 @@ describe('behaviors', () => {
             });
         });
 
-        it('should not be valid if not an array', () => {
+        it('should not be valid if not an array', function () {
             const errors = behaviors.validate({ shellTransform: 'string' });
             assert.deepEqual(errors, [{
                 code: 'bad data',
