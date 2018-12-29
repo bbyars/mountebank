@@ -130,12 +130,11 @@ function setup (protocolName, createBaseServer) {
      * (setup -> initialize -> create)
      * @memberOf module:models/http/baseHttpServer#
      * @param {object} baseLogger - the base logger
-     * @param {boolean} allowInjection - The --allowInjection command line parameter
      * @param {boolean} recordRequests - The --mock command line parameter
      * @param {boolean} debug - The --debug command line parameter
      * @returns {Object}
      */
-    function initialize (baseLogger, allowInjection, recordRequests, debug) {
+    function initialize (baseLogger, recordRequests, debug) {
         const implementation = {
             protocolName: protocolName,
             createServer: createServer,

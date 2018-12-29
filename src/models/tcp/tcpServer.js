@@ -116,12 +116,11 @@ function createServer (logger, options) {
 /**
  * Initializes the tcp protocol
  * @param {object} logger - the base logger
- * @param {boolean} allowInjection - The --allowInjection command line parameter
  * @param {boolean} recordRequests - The --mock command line parameter
  * @param {boolean} debug - The --debug command line parameter
  * @returns {Object} - The protocol implementation
  */
-function initialize (logger, allowInjection, recordRequests, debug) {
+function initialize (logger, recordRequests, debug) {
     const implementation = {
             protocolName: 'tcp',
             createServer: createServer,

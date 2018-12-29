@@ -129,12 +129,11 @@ function createServer (baseLogger, options, recordRequests, debug) {
 /**
  * Creates the core protocol interface - all protocols must implement
  * @param {object} logger - the base logger
- * @param {boolean} allowInjection - represents the command line --allowInjection parameter
  * @param {boolean} recordRequests - represents the command line --mock parameter
  * @param {boolean} debug - represents the command line --debug parameter
  * @returns {Object} The server factory
  */
-function initialize (logger, allowInjection, recordRequests, debug) {
+function initialize (logger, recordRequests, debug) {
     return {
         // The name of the protocol, used in JSON representation of imposters
         name: 'foo',
