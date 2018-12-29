@@ -145,16 +145,19 @@ const setup = (protocolName, createBaseServer) => {
         return {
             name: protocolName,
             create: require('../abstractServer').implement(implementation, recordRequests, debug, baseLogger).create,
-            Validator: {
-                create: () => require('../dryRunValidator').create({
-                    testRequest: require('./httpRequest').createTestRequest(),
-                    testProxyResponse: {
-                        statusCode: 200,
-                        headers: {},
-                        body: ''
-                    },
-                    allowInjection: allowInjection
-                })
+            testRequest: {
+                requestFrom: '',
+                method: 'GET',
+                path: '/',
+                query: {},
+                headers: {},
+                form: {},
+                body: ''
+            },
+            testProxyResponse: {
+                statusCode: 200,
+                headers: {},
+                body: ''
             }
         };
     };

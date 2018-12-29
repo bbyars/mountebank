@@ -1,51 +1,26 @@
 'use strict';
 
 const assert = require('assert'),
-    Validator = require('../../../src/models/tcp/tcpValidator'),
-    promiseIt = require('../../testHelpers').promiseIt;
+    validator = require('../../../src/models/tcp/tcpValidator');
 
-describe('httpValidator', () => {
+describe('tcpValidator', () => {
 
     describe('#validate', () => {
-        promiseIt('should be valid for missing mode', () => {
-            const request = {},
-                validator = Validator.create();
-
-            return validator.validate(request).then(result => {
-                assert.deepEqual(result, {
-                    isValid: true,
-                    errors: []
-                });
-            });
+        it('should be valid for missing mode', () => {
+            assert.deepEqual(validator.validate({}), []);
         });
 
         ['text', 'binary'].forEach(value => {
-            promiseIt(`should be valid for ${value} mode`, () => {
-                const request = { mode: value },
-                    validator = Validator.create();
-
-                return validator.validate(request).then(result => {
-                    assert.deepEqual(result, {
-                        isValid: true,
-                        errors: []
-                    });
-                });
+            it(`should be valid for ${value} mode`, () => {
+                assert.deepEqual(validator.validate({ mode: value }), []);
             });
         });
 
-        promiseIt('should not be valid for incorrect mode', () => {
-            const request = { mode: 'TEXT' },
-                validator = Validator.create();
-
-            return validator.validate(request).then(result => {
-                assert.deepEqual(result, {
-                    isValid: false,
-                    errors: [{
-                        code: 'bad data',
-                        message: "'mode' must be one of ['text', 'binary']"
-                    }]
-                });
-            });
+        it('should not be valid for incorrect mode', () => {
+            assert.deepEqual(validator.validate({ mode: 'TEXT' }), [{
+                code: 'bad data',
+                message: "'mode' must be one of ['text', 'binary']"
+            }]);
         });
     });
 });

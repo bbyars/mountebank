@@ -64,7 +64,7 @@ const create = options => {
         },
         logger = ScopedLogger.create(winstonLogger, util.format('[mb:%s] ', options.port)),
         homeController = HomeController.create(releases),
-        impostersController = ImpostersController.create(protocols, imposters, Imposter, logger),
+        impostersController = ImpostersController.create(protocols, imposters, Imposter, logger, options.allowInjection),
         imposterController = ImposterController.create(imposters),
         logsController = LogsController.create(options.logfile),
         configController = ConfigController.create(thisPackage.version, options),

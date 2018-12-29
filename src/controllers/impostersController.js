@@ -11,9 +11,10 @@
  * @param {Object} imposters - The map of ports to imposters
  * @param {Object} Imposter - The factory for creating new imposters
  * @param {Object} logger - The logger
+ * @param {Boolean} allowInjection - Whether injection is allowed or not
  * @returns {{get, post, del, put}}
  */
-const create = (protocols, imposters, Imposter, logger) => {
+const create = (protocols, imposters, Imposter, logger, allowInjection) => {
     const exceptions = require('../util/errors'),
         helpers = require('../util/helpers');
 
@@ -63,8 +64,14 @@ const create = (protocols, imposters, Imposter, logger) => {
             return valid;
         }
         else {
-            const imposterState = {};
-            return protocols[request.protocol].Validator.create().validate(request, logger, imposterState);
+            const Protocol = protocols[request.protocol],
+                validator = require('../models/dryRunValidator').create({
+                    testRequest: Protocol.testRequest,
+                    testProxyResponse: Protocol.testProxyResponse,
+                    additionalValidation: Protocol.validate,
+                    allowInjection
+                });
+            return validator.validate(request, logger, {});
         }
     };
 

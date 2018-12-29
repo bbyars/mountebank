@@ -6,20 +6,6 @@
  * @module
  */
 
-/**
- * Returns the request that will be used during dry run validation
- * @returns {Object}
- */
-const createTestRequest = () => ({
-    requestFrom: '',
-    method: 'GET',
-    path: '/',
-    query: {},
-    headers: {},
-    form: {},
-    body: ''
-});
-
 const transform = request => {
     const helpers = require('../../util/helpers'),
         url = require('url'),
@@ -74,4 +60,4 @@ const createFrom = container => {
     return deferred.promise;
 };
 
-module.exports = { createTestRequest, createFrom };
+module.exports = { createFrom };

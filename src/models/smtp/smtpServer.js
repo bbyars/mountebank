@@ -66,26 +66,20 @@ const createServer = () => {
  */
 const initialize = (logger, recordRequests, debug) => {
     const implementation = {
-            protocolName: 'smtp',
-            createServer: createServer,
-            Request: require('./smtpRequest')
-        },
-        noOpValidator = {
-            create: () => ({
-                validate: () => {
-                    const Q = require('q');
-                    return Q({
-                        isValid: true,
-                        errors: []
-                    });
-                }
-            })
-        };
+        protocolName: 'smtp',
+        createServer: createServer,
+        Request: require('./smtpRequest')
+    };
 
     return {
         name: implementation.protocolName,
         create: require('../abstractServer').implement(implementation, recordRequests, debug, logger).create,
-        Validator: noOpValidator
+        testRequest: {
+            from: 'test@test.com',
+            to: ['test@test.com'],
+            subject: 'Test',
+            text: 'Test'
+        }
     };
 };
 

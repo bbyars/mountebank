@@ -139,22 +139,8 @@ const initialize = (logger, allowInjection, recordRequests, debug) => ({
     // The creation method, called in imposter.js.  The request JSON object gets passed in
     create: request => createServer(logger, request, recordRequests, debug),
 
-    // The validator used when creating imposters
-    // If you don't have any protocol-specific validation, the DryRunValidator will suffice
-    Validator: {
-        create: () => {
-            const DryRunValidator = require('../dryRunValidator');
-
-            return DryRunValidator.create({
-                // This is the request that will be 'dry run' through the validator
-                testRequest: {
-                    requestFrom: '',
-                    data: ''
-                },
-                allowInjection: allowInjection
-            });
-        }
-    }
+    testRequest: { data: '' },
+    testProxyResponse: { data: '' }
 });
 
 // This will be called in mountebank.js when you register the protocol there

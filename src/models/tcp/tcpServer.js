@@ -127,14 +127,14 @@ const initialize = (logger, allowInjection, recordRequests, debug) => {
             createServer: createServer,
             Request: require('./tcpRequest')
         },
-        TcpValidator = require('./tcpValidator'),
-        combinators = require('../../util/combinators'),
         AbstractServer = require('../abstractServer');
 
     return {
         name: implementation.protocolName,
         create: AbstractServer.implement(implementation, recordRequests, debug, logger).create,
-        Validator: { create: combinators.curry(TcpValidator.create, allowInjection) }
+        testRequest: { data: 'test' },
+        testProxyResponse: { data: '' },
+        validate: require('./tcpValidator')
     };
 };
 

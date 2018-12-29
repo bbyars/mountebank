@@ -193,16 +193,12 @@ describe('ImpostersController', () => {
         });
 
         promiseIt('should validate with Protocol if there are no common validation failures', () => {
-            Protocol.Validator = {
-                create: mock().returns({
-                    validate: mock().returns(Q({ isValid: false, errors: 'ERRORS' }))
-                })
-            };
+            Protocol.validate = mock().returns(Q(['ERRORS']));
             request.body = { port: 3535, protocol: 'http' };
 
             return controller.post(request, response).then(() => {
                 assert.strictEqual(response.statusCode, 400);
-                assert.deepEqual(response.body, { errors: 'ERRORS' });
+                assert.deepEqual(response.body, { errors: ['ERRORS'] });
             });
         });
     });

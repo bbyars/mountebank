@@ -6,15 +6,6 @@
  */
 
 /**
- * Creates the request used during dry run validation
- * @returns {Object}
- */
-const createTestRequest = () => ({
-    requestFrom: '',
-    data: 'test'
-});
-
-/**
  * Transforms the raw tcp request into a mountebank tcp request
  * @param {Object} request - The raw tcp request
  * @returns {Object} - A promise resolving to the mountebank tcp request
@@ -29,4 +20,4 @@ const createFrom = request => {
     });
 };
 
-module.exports = { createTestRequest, createFrom };
+module.exports = { createFrom };

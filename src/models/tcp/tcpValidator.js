@@ -5,7 +5,7 @@
  * @module
  */
 
-const validateMode = request => {
+function validate (request) {
     const errors = [],
         exceptions = require('../../util/errors');
 
@@ -13,18 +13,6 @@ const validateMode = request => {
         errors.push(exceptions.ValidationError("'mode' must be one of ['text', 'binary']"));
     }
     return errors;
-};
+}
 
-module.exports = {
-    /**
-     * Creates the tcp validator, which wraps dry run validation with some protocol-specific validation
-     * @param {boolean} allowInjection - The --allowInjection command line parameter
-     * @returns {Object}
-     */
-    create: allowInjection => require('../dryRunValidator').create({
-        testRequest: require('./tcpRequest').createTestRequest(),
-        testProxyResponse: { data: '' },
-        allowInjection,
-        additionalValidation: validateMode
-    })
-};
+module.exports = { validate };

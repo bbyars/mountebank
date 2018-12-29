@@ -11,6 +11,7 @@
  * Creates the validator
  * @param {Object} options - Configuration for the validator
  * @param {Object} options.testRequest - The protocol-specific request used for each dry run
+ * @param {Object} options.testProxyResponse - The protocol-specific fake response from a proxy call
  * @param {boolean} options.allowInjection - Whether JavaScript injection is allowed or not
  * @param {function} options.additionalValidation - A function that performs protocol-specific validation
  * @returns {Object}
@@ -185,7 +186,7 @@ const create = options => {
             deferred = Q.defer();
 
         validationPromises.push(Q(errorsForRequest(request)));
-        if (options.additionalValidation) {
+        if (typeof options.additionalValidation === 'function') {
             validationPromises.push(Q(options.additionalValidation(request)));
         }
 
