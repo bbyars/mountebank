@@ -11,7 +11,6 @@
  * Creates the validator
  * @param {Object} options - Configuration for the validator
  * @param {Object} options.testRequest - The protocol-specific request used for each dry run
- * @param {Object} options.StubRepository - The creation function
  * @param {boolean} options.allowInjection - Whether JavaScript injection is allowed or not
  * @param {function} options.additionalValidation - A function that performs protocol-specific validation
  * @returns {Object}
@@ -53,7 +52,7 @@ const create = options => {
             stubsToValidateWithoutPredicates = stub.responses.map(response => stubForResponse(stub, response, false)),
             stubsToValidate = stubsToValidateWithPredicates.concat(stubsToValidateWithoutPredicates),
             dryRunRepositories = stubsToValidate.map(stubToValidate => {
-                const stubRepository = options.StubRepository.create(resolver, false, encoding);
+                const stubRepository = require('./stubRepository').create(resolver, false, encoding);
                 stubRepository.addStub(stubToValidate);
                 return stubRepository;
             });

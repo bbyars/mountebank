@@ -143,11 +143,9 @@ const initialize = (logger, allowInjection, recordRequests, debug) => ({
     // If you don't have any protocol-specific validation, the DryRunValidator will suffice
     Validator: {
         create: () => {
-            const DryRunValidator = require('../dryRunValidator'),
-                StubRepository = require('../stubRepository');
+            const DryRunValidator = require('../dryRunValidator');
 
             return DryRunValidator.create({
-                StubRepository: StubRepository,
                 // This is the request that will be 'dry run' through the validator
                 testRequest: {
                     requestFrom: '',

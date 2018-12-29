@@ -22,7 +22,6 @@ module.exports = {
      * @returns {Object}
      */
     create: allowInjection => require('../dryRunValidator').create({
-        StubRepository: require('../stubRepository'),
         testRequest: require('./tcpRequest').createTestRequest(),
         testProxyResponse: { data: '' },
         allowInjection,

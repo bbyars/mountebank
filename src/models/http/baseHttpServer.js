@@ -147,7 +147,6 @@ const setup = (protocolName, createBaseServer) => {
             create: require('../abstractServer').implement(implementation, recordRequests, debug, baseLogger).create,
             Validator: {
                 create: () => require('../dryRunValidator').create({
-                    StubRepository: require('../stubRepository'),
                     testRequest: require('./httpRequest').createTestRequest(),
                     testProxyResponse: {
                         statusCode: 200,

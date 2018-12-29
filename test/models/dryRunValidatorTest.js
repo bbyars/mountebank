@@ -4,26 +4,13 @@ const assert = require('assert'),
     Validator = require('../../src/models/dryRunValidator'),
     promiseIt = require('../testHelpers').promiseIt,
     Logger = require('../fakes/fakeLogger'),
-    BaseRepository = require('../../src/models/stubRepository'),
-    testRequest = { requestFrom: '', path: '/', query: {}, method: 'GET', headers: {}, body: '' },
-    StubRepository = {
-        create: proxy => BaseRepository.create(proxy, stub => {
-            const response = {
-                statusCode: stub.statusCode || 200,
-                headers: stub.headers || {},
-                body: stub.body || ''
-            };
-
-            response.headers.connection = 'close';
-            return response;
-        })
-    };
+    testRequest = { requestFrom: '', path: '/', query: {}, method: 'GET', headers: {}, body: '' };
 
 describe('dryRunValidator', () => {
     describe('#validate', () => {
         promiseIt('should be valid for an empty request', () => {
             const request = {},
-                validator = Validator.create({ StubRepository: StubRepository, testRequest: testRequest });
+                validator = Validator.create({ testRequest });
 
             return validator.validate(request, Logger.create()).then(result => {
                 assert.deepEqual(result, {
@@ -35,7 +22,7 @@ describe('dryRunValidator', () => {
 
         promiseIt('should not be valid for a missing responses field', () => {
             const request = { stubs: [{}] },
-                validator = Validator.create({ StubRepository: StubRepository, testRequest: testRequest });
+                validator = Validator.create({ testRequest });
 
             return validator.validate(request, Logger.create()).then(result => {
                 assert.deepEqual(result, {
@@ -51,7 +38,7 @@ describe('dryRunValidator', () => {
 
         promiseIt('should be valid for an empty stubs list', () => {
             const request = { stubs: [] },
-                validator = Validator.create({ StubRepository: StubRepository, testRequest: testRequest });
+                validator = Validator.create({ testRequest });
 
             return validator.validate(request, Logger.create()).then(result => {
                 assert.deepEqual(result, {
@@ -63,7 +50,7 @@ describe('dryRunValidator', () => {
 
         promiseIt('should be valid for valid stub', () => {
             const request = { stubs: [{ responses: [{ is: { statusCode: 400 } }] }] },
-                validator = Validator.create({ StubRepository: StubRepository, testRequest: testRequest });
+                validator = Validator.create({ testRequest });
 
             return validator.validate(request, Logger.create()).then(result => {
                 assert.deepEqual(result, {
@@ -85,7 +72,7 @@ describe('dryRunValidator', () => {
                         ]
                     }]
                 },
-                validator = Validator.create({ StubRepository: StubRepository, testRequest: testRequest });
+                validator = Validator.create({ testRequest });
 
             return validator.validate(request, Logger.create()).then(result => {
                 assert.deepEqual(result, {
@@ -102,11 +89,7 @@ describe('dryRunValidator', () => {
                         responses: [{ is: { body: 'Matched' } }]
                     }]
                 },
-                validator = Validator.create({
-                    StubRepository: StubRepository,
-                    testRequest: testRequest,
-                    allowInjection: true
-                });
+                validator = Validator.create({ testRequest, allowInjection: true });
 
             return validator.validate(request, Logger.create()).then(result => {
                 assert.deepEqual(result, {
@@ -122,11 +105,7 @@ describe('dryRunValidator', () => {
                         responses: [{ inject: '() => { return {}; }' }]
                     }]
                 },
-                validator = Validator.create({
-                    StubRepository: StubRepository,
-                    testRequest: testRequest,
-                    allowInjection: true
-                });
+                validator = Validator.create({ testRequest, allowInjection: true });
 
             return validator.validate(request, Logger.create()).then(result => {
                 assert.deepEqual(result, {
@@ -145,11 +124,7 @@ describe('dryRunValidator', () => {
                         responses: [{ is: { statusCode: 400 }, _behaviors: { decorate: decorator.toString() } }]
                     }]
                 },
-                validator = Validator.create({
-                    StubRepository: StubRepository,
-                    testRequest: testRequest,
-                    allowInjection: true
-                });
+                validator = Validator.create({ testRequest, allowInjection: true });
 
             return validator.validate(request, Logger.create()).then(result => {
                 assert.deepEqual(result, {
@@ -165,11 +140,7 @@ describe('dryRunValidator', () => {
                         responses: [{ inject: '() => { return {}; }' }]
                     }]
                 },
-                validator = Validator.create({
-                    StubRepository: StubRepository,
-                    testRequest: testRequest,
-                    allowInjection: false
-                });
+                validator = Validator.create({ testRequest, allowInjection: false });
 
             return validator.validate(request, Logger.create()).then(result => {
                 assert.deepEqual(result, {
@@ -190,11 +161,7 @@ describe('dryRunValidator', () => {
                         responses: [{ is: { body: 'Matched' } }]
                     }]
                 },
-                validator = Validator.create({
-                    StubRepository: StubRepository,
-                    testRequest: testRequest,
-                    allowInjection: false
-                });
+                validator = Validator.create({ testRequest, allowInjection: false });
 
             return validator.validate(request, Logger.create()).then(result => {
                 assert.deepEqual(result, {
@@ -217,11 +184,7 @@ describe('dryRunValidator', () => {
                         responses: [{ is: { statusCode: 400 }, _behaviors: { decorate: decorator.toString() } }]
                     }]
                 },
-                validator = Validator.create({
-                    StubRepository: StubRepository,
-                    testRequest: testRequest,
-                    allowInjection: false
-                });
+                validator = Validator.create({ testRequest, allowInjection: false });
 
             return validator.validate(request, Logger.create()).then(result => {
                 assert.deepEqual(result, {
@@ -241,7 +204,7 @@ describe('dryRunValidator', () => {
                         responses: [{ proxy: { to: 'http://google.com' } }]
                     }]
                 },
-                validator = Validator.create({ StubRepository: StubRepository, testRequest: testRequest });
+                validator = Validator.create({ testRequest });
 
             return validator.validate(request, Logger.create()).then(result => {
                 assert.deepEqual(result, {
@@ -258,7 +221,7 @@ describe('dryRunValidator', () => {
                         {}
                     ]
                 },
-                validator = Validator.create({ StubRepository: StubRepository, testRequest: testRequest });
+                validator = Validator.create({ testRequest });
 
             return validator.validate(request, Logger.create()).then(result => {
                 assert.deepEqual(result, {
@@ -279,7 +242,7 @@ describe('dryRunValidator', () => {
                         predicates: [{ invalidPredicate: { path: '/test' } }]
                     }]
                 },
-                validator = Validator.create({ StubRepository: StubRepository, testRequest: testRequest });
+                validator = Validator.create({ testRequest });
 
             return validator.validate(request, Logger.create()).then(result => {
                 assert.deepEqual(result, {
@@ -304,7 +267,7 @@ describe('dryRunValidator', () => {
                         ]
                     }]
                 },
-                validator = Validator.create({ StubRepository: StubRepository, testRequest: testRequest });
+                validator = Validator.create({ testRequest });
 
             return validator.validate(request, Logger.create()).then(result => {
                 assert.deepEqual(result, {
@@ -326,7 +289,7 @@ describe('dryRunValidator', () => {
                         predicates: [{ headers: [{ exists: 'Test' }] }]
                     }]
                 },
-                validator = Validator.create({ StubRepository: StubRepository, testRequest: testRequest });
+                validator = Validator.create({ testRequest });
 
             return validator.validate(request, Logger.create()).then(result => {
                 assert.deepEqual(result, {
@@ -347,7 +310,7 @@ describe('dryRunValidator', () => {
                         responses: [{ invalid: 'INVALID' }]
                     }]
                 },
-                validator = Validator.create({ StubRepository: StubRepository, testRequest: testRequest });
+                validator = Validator.create({ testRequest });
 
             return validator.validate(request, Logger.create()).then(result => {
                 assert.deepEqual(result, {
@@ -370,7 +333,7 @@ describe('dryRunValidator', () => {
                         ]
                     }]
                 },
-                validator = Validator.create({ StubRepository: StubRepository, testRequest: testRequest });
+                validator = Validator.create({ testRequest });
 
             return validator.validate(request, Logger.create()).then(result => {
                 assert.deepEqual(result, {
@@ -391,7 +354,7 @@ describe('dryRunValidator', () => {
                         predicates: [{ equals: { path: '/does-not-match' } }]
                     }]
                 },
-                validator = Validator.create({ StubRepository: StubRepository, testRequest: testRequest });
+                validator = Validator.create({ testRequest });
 
             return validator.validate(request, Logger.create()).then(result => {
                 assert.deepEqual(result, {
@@ -413,7 +376,7 @@ describe('dryRunValidator', () => {
                         repeat: -1
                     }
                 }] }] },
-                validator = Validator.create({ StubRepository: StubRepository, testRequest: testRequest });
+                validator = Validator.create({ testRequest });
 
             return validator.validate(request, Logger.create()).then(result => {
                 assert.deepEqual(result, {
@@ -439,11 +402,7 @@ describe('dryRunValidator', () => {
                     is: { statusCode: 400 },
                     _behaviors: { wait: '() => { return 1000; }' }
                 }] }] },
-                validator = Validator.create({
-                    StubRepository: StubRepository,
-                    testRequest: testRequest,
-                    allowInjection: true
-                });
+                validator = Validator.create({ testRequest, allowInjection: true });
 
             return validator.validate(request, Logger.create()).then(result => {
                 assert.deepEqual(result, {
@@ -459,11 +418,7 @@ describe('dryRunValidator', () => {
                     _behaviors: { wait: '() => { return 1000; }' }
                 },
                 request = { stubs: [{ responses: [response] }] },
-                validator = Validator.create({
-                    StubRepository: StubRepository,
-                    testRequest: testRequest,
-                    allowInjection: false
-                });
+                validator = Validator.create({ testRequest, allowInjection: false });
 
             return validator.validate(request, Logger.create()).then(result => {
                 assert.deepEqual(result, {
@@ -484,11 +439,7 @@ describe('dryRunValidator', () => {
                     stubs: [{ responses: [{ is: { data: 'test' } }] }],
                     endOfRequestResolver: { inject: endOfRequestResolver.toString() }
                 },
-                validator = Validator.create({
-                    StubRepository: StubRepository,
-                    testRequest: testRequest,
-                    allowInjection: false
-                });
+                validator = Validator.create({ testRequest, allowInjection: false });
 
             return validator.validate(request, Logger.create()).then(result => {
                 assert.deepEqual(result, {
@@ -509,11 +460,7 @@ describe('dryRunValidator', () => {
                     stubs: [{ responses: [{ is: { data: 'test' } }] }],
                     endOfRequestResolver: { inject: endOfRequestResolver.toString() }
                 },
-                validator = Validator.create({
-                    StubRepository: StubRepository,
-                    testRequest: testRequest,
-                    allowInjection: true
-                });
+                validator = Validator.create({ testRequest, allowInjection: true });
 
             return validator.validate(request, Logger.create()).then(result => {
                 assert.ok(result.isValid);
@@ -526,11 +473,7 @@ describe('dryRunValidator', () => {
                         responses: [{ is: {}, _behaviors: { shellTransform: ['command'] } }]
                     }]
                 },
-                validator = Validator.create({
-                    StubRepository: StubRepository,
-                    testRequest: testRequest,
-                    allowInjection: false
-                });
+                validator = Validator.create({ testRequest, allowInjection: false });
 
             return validator.validate(request, Logger.create()).then(result => {
                 assert.deepEqual(result, {
@@ -554,11 +497,7 @@ describe('dryRunValidator', () => {
                         responses: [{ proxy: proxy }]
                     }]
                 },
-                validator = Validator.create({
-                    StubRepository: StubRepository,
-                    testRequest: testRequest,
-                    allowInjection: false
-                });
+                validator = Validator.create({ testRequest, allowInjection: false });
 
             return validator.validate(request, Logger.create()).then(result => {
                 assert.deepEqual(result, {
