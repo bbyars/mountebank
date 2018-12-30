@@ -46,5 +46,6 @@ module.exports = {
     testRequest: { data: '' },
     testProxyResponse: { data: '' },
     postProcess: function (response) { return { data: response.data || 'foo' }; },
-    create: create
+    create: create,
+    Proxy: require('../tcp/tcpProxy')
 };

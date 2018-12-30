@@ -41,7 +41,7 @@ function createFoo (Protocol, creationRequest, baseLogger, recordMatches, record
         compatibility = require('./compatibility'),
         requests = [],
         logger = require('../util/scopedLogger').create(baseLogger, scopeFor(creationRequest.port)),
-        proxy = require('./tcp/tcpProxy').create(logger, 'utf8'),
+        proxy = Protocol.Proxy.create(logger, 'utf8'),
         resolver = require('./responseResolver').create(proxy, Protocol.postProcess),
         stubs = require('./stubRepository').create(resolver, recordMatches, 'utf8');
 
