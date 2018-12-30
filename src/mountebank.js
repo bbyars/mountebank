@@ -60,11 +60,15 @@ function create (options) {
             http: require('./models/http/httpServer').initialize(winstonLogger, options.mock, options.debug),
             https: require('./models/https/httpsServer').initialize(winstonLogger, options.mock, options.debug),
             smtp: require('./models/smtp/smtpServer').initialize(winstonLogger, options.mock, options.debug),
-            foo: require('./models/foo/fooServer').initialize(winstonLogger, options.mock, options.debug)
+            foo: require('./models/foo/fooServer')
         },
         logger = ScopedLogger.create(winstonLogger, util.format('[mb:%s] ', options.port)),
         homeController = HomeController.create(releases),
-        impostersController = ImpostersController.create(protocols, imposters, Imposter, logger, options.allowInjection),
+        impostersController = ImpostersController.create(protocols, imposters, Imposter, logger, {
+            allowInjection: options.allowInjection,
+            recordRequests: options.mock,
+            recordMatches: options.debug
+        }),
         imposterController = ImposterController.create(imposters),
         logsController = LogsController.create(options.logfile),
         configController = ConfigController.create(thisPackage.version, options),

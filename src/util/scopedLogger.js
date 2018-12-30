@@ -14,6 +14,7 @@ function wrap (wrappedLogger, logger) {
             logger[level](message);
         };
     });
+    wrappedLogger.baseLogger = logger;
 }
 
 /**

@@ -8,6 +8,7 @@ const assert = require('assert'),
     promiseIt = require('../testHelpers').promiseIt;
 
 describe('ImpostersController', function () {
+    const config = { allowInjection: false, recordRequests: false, recordMatches: false };
     let response;
 
     beforeEach(() => {
@@ -16,7 +17,7 @@ describe('ImpostersController', function () {
 
     describe('#get', function () {
         it('should send an empty array if no imposters', function () {
-            const controller = Controller.create({}, {});
+            const controller = Controller.create({}, {}, null, null, config);
 
             controller.get({ url: '/imposters' }, response);
 
@@ -26,7 +27,7 @@ describe('ImpostersController', function () {
         it('should send list JSON for all imposters by default', function () {
             const firstImposter = { toJSON: mock().returns('firstJSON') },
                 secondImposter = { toJSON: mock().returns('secondJSON') },
-                controller = Controller.create({}, { 1: firstImposter, 2: secondImposter });
+                controller = Controller.create({}, { 1: firstImposter, 2: secondImposter }, null, null, config);
 
             controller.get({ url: '/imposters' }, response);
 
@@ -38,7 +39,7 @@ describe('ImpostersController', function () {
         it('should send replayable JSON for all imposters if querystring present', function () {
             const firstImposter = { toJSON: mock().returns('firstJSON') },
                 secondImposter = { toJSON: mock().returns('secondJSON') },
-                controller = Controller.create({}, { 1: firstImposter, 2: secondImposter });
+                controller = Controller.create({}, { 1: firstImposter, 2: secondImposter }, null, null, config);
 
             controller.get({ url: '/imposters?replayable=true' }, response);
 
@@ -50,7 +51,7 @@ describe('ImpostersController', function () {
         it('should send replayable and removeProxies JSON for all imposters if querystring present', function () {
             const firstImposter = { toJSON: mock().returns('firstJSON') },
                 secondImposter = { toJSON: mock().returns('secondJSON') },
-                controller = Controller.create({}, { 1: firstImposter, 2: secondImposter });
+                controller = Controller.create({}, { 1: firstImposter, 2: secondImposter }, null, null, config);
 
             controller.get({ url: '/imposters?replayable=true&removeProxies=true' }, response);
 
@@ -80,7 +81,7 @@ describe('ImpostersController', function () {
                 }
             };
             logger = { debug: mock(), warn: mock() };
-            controller = Controller.create({ http: Protocol }, imposters, Imposter, logger);
+            controller = Controller.create({ http: Protocol }, imposters, Imposter, logger, config);
         });
 
         promiseIt('should return a 201 with the Location header set', function () {
@@ -210,7 +211,7 @@ describe('ImpostersController', function () {
             const firstImposter = { stop: stopMock(), toJSON: mock().returns('firstJSON') },
                 secondImposter = { stop: stopMock(), toJSON: mock().returns('secondJSON') },
                 imposters = { 1: firstImposter, 2: secondImposter },
-                controller = Controller.create({}, imposters, {}, {});
+                controller = Controller.create({}, imposters, {}, {}, config);
 
             return controller.del({ url: '/imposters' }, response).then(() => {
                 assert.deepEqual(imposters, {});
@@ -221,7 +222,7 @@ describe('ImpostersController', function () {
             const firstImposter = { stop: stopMock(), toJSON: mock().returns('firstJSON') },
                 secondImposter = { stop: stopMock(), toJSON: mock().returns('secondJSON') },
                 imposters = { 1: firstImposter, 2: secondImposter },
-                controller = Controller.create({}, imposters, {}, {});
+                controller = Controller.create({}, imposters, {}, {}, config);
 
             return controller.del({ url: '/imposters' }, response).then(() => {
                 assert(firstImposter.stop.wasCalled());
@@ -233,7 +234,7 @@ describe('ImpostersController', function () {
             const firstImposter = { stop: stopMock(), toJSON: mock().returns('firstJSON') },
                 secondImposter = { stop: stopMock(), toJSON: mock().returns('secondJSON') },
                 imposters = { 1: firstImposter, 2: secondImposter },
-                controller = Controller.create({}, imposters, {}, {});
+                controller = Controller.create({}, imposters, {}, {}, config);
 
             return controller.del({ url: '/imposters' }, response).then(() => {
                 assert.deepEqual(response.body, { imposters: ['firstJSON', 'secondJSON'] });
@@ -245,7 +246,7 @@ describe('ImpostersController', function () {
         promiseIt('should send default JSON for all imposters if replayable is false on querystring', function () {
             const firstImposter = { stop: stopMock(), toJSON: mock().returns('firstJSON') },
                 secondImposter = { stop: stopMock(), toJSON: mock().returns('secondJSON') },
-                controller = Controller.create({}, { 1: firstImposter, 2: secondImposter });
+                controller = Controller.create({}, { 1: firstImposter, 2: secondImposter }, {}, {}, config);
 
             return controller.del({ url: '/imposters?replayable=false' }, response).then(() => {
                 assert.ok(firstImposter.toJSON.wasCalledWith({ replayable: false, removeProxies: false }), firstImposter.toJSON.message());
@@ -256,7 +257,7 @@ describe('ImpostersController', function () {
         promiseIt('should send removeProxies JSON for all imposters if querystring present', function () {
             const firstImposter = { stop: stopMock(), toJSON: mock().returns('firstJSON') },
                 secondImposter = { stop: stopMock(), toJSON: mock().returns('secondJSON') },
-                controller = Controller.create({}, { 1: firstImposter, 2: secondImposter });
+                controller = Controller.create({}, { 1: firstImposter, 2: secondImposter }, {}, {}, config);
 
             return controller.del({ url: '/imposters?removeProxies=true' }, response).then(() => {
                 assert.ok(firstImposter.toJSON.wasCalledWith({ replayable: true, removeProxies: true }), firstImposter.toJSON.message());
@@ -282,7 +283,7 @@ describe('ImpostersController', function () {
         promiseIt('should return a 400 if the "imposters" key is not present', function () {
             const existingImposter = { stop: mock() },
                 imposters = { 0: existingImposter },
-                controller = Controller.create({ http: Protocol }, imposters, {}, logger);
+                controller = Controller.create({ http: Protocol }, imposters, {}, logger, config);
 
             request.body = {};
 
@@ -302,7 +303,7 @@ describe('ImpostersController', function () {
         promiseIt('should return an empty array if no imposters provided', function () {
             const existingImposter = { stop: mock() },
                 imposters = { 0: existingImposter },
-                controller = Controller.create({ http: Protocol }, imposters, {}, logger);
+                controller = Controller.create({ http: Protocol }, imposters, {}, logger, config);
             request.body = { imposters: [] };
 
             return controller.put(request, response).then(() => {
@@ -323,7 +324,7 @@ describe('ImpostersController', function () {
                         return result;
                     }
                 },
-                controller = Controller.create({ http: Protocol }, {}, Imposter, logger);
+                controller = Controller.create({ http: Protocol }, {}, Imposter, logger, config);
 
             request.body = { imposters: [{ protocol: 'http' }, { protocol: 'http' }] };
 
@@ -348,7 +349,7 @@ describe('ImpostersController', function () {
                         return result;
                     }
                 },
-                controller = Controller.create({ http: Protocol }, imposters, Imposter, logger);
+                controller = Controller.create({ http: Protocol }, imposters, Imposter, logger, config);
 
             request.body = { imposters: [{ protocol: 'http' }, { protocol: 'http' }] };
 
@@ -360,7 +361,7 @@ describe('ImpostersController', function () {
         });
 
         promiseIt('should return a 400 for any invalid imposter', function () {
-            const controller = Controller.create({ http: Protocol }, {}, {}, logger);
+            const controller = Controller.create({ http: Protocol }, {}, {}, logger, config);
 
             request.body = { imposters: [{ protocol: 'http' }, {}] };
 
@@ -391,7 +392,7 @@ describe('ImpostersController', function () {
                         }
                     }
                 },
-                controller = Controller.create({ http: Protocol }, {}, Imposter, logger);
+                controller = Controller.create({ http: Protocol }, {}, Imposter, logger, config);
 
             request.body = { imposters: [{ protocol: 'http' }, { protocol: 'http' }] };
 

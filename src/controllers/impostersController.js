@@ -11,10 +11,13 @@
  * @param {Object} imposters - The map of ports to imposters
  * @param {Object} Imposter - The factory for creating new imposters
  * @param {Object} logger - The logger
- * @param {Boolean} allowInjection - Whether injection is allowed or not
+ * @param {Object} config - CLI configuration
+ * @param {Boolean} config.allowInjection - Whether injection is allowed or not
+ * @param {Boolean} config.recordRequests - Whether we should remember each request
+ * @param {Boolean} config.recordMatches - Whether we should record detailed information about each predicate match
  * @returns {{get, post, del, put}}
  */
-function create (protocols, imposters, Imposter, logger, allowInjection) {
+function create (protocols, imposters, Imposter, logger, config) {
     const exceptions = require('../util/errors'),
         helpers = require('../util/helpers');
 
@@ -69,7 +72,7 @@ function create (protocols, imposters, Imposter, logger, allowInjection) {
                     testRequest: Protocol.testRequest,
                     testProxyResponse: Protocol.testProxyResponse,
                     additionalValidation: Protocol.validate,
-                    allowInjection
+                    allowInjection: config.allowInjection
                 });
             return validator.validate(request, logger, {});
         }
@@ -137,14 +140,26 @@ function create (protocols, imposters, Imposter, logger, allowInjection) {
             const Q = require('q');
 
             if (validation.isValid) {
-                return Imposter.create(protocols[protocol], request.body).then(imposter => {
-                    imposters[imposter.port] = imposter;
-                    response.setHeader('Location', imposter.url);
-                    response.statusCode = 201;
-                    response.send(imposter.toJSON());
-                }, error => {
-                    respondWithCreationError(response, error);
-                });
+                if (protocol === 'foo') {
+                    return Imposter.createFoo(protocols[protocol], request.body, logger.baseLogger, config.recordMatches, config.recordRequests).then(imposter => {
+                        imposters[imposter.port] = imposter;
+                        response.setHeader('Location', imposter.url);
+                        response.statusCode = 201;
+                        response.send(imposter.toJSON());
+                    }, error => {
+                        respondWithCreationError(response, error);
+                    });
+                }
+                else {
+                    return Imposter.create(protocols[protocol], request.body).then(imposter => {
+                        imposters[imposter.port] = imposter;
+                        response.setHeader('Location', imposter.url);
+                        response.statusCode = 201;
+                        response.send(imposter.toJSON());
+                    }, error => {
+                        respondWithCreationError(response, error);
+                    });
+                }
             }
             else {
                 respondWithValidationErrors(response, validation.errors);
