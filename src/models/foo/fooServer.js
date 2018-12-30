@@ -36,7 +36,10 @@ function create (options, logger, responseFn) {
         deferred.resolve({
             port: server.address().port,
             metadata: {},
-            close: () => { server.close(); }
+            close: callback => {
+                server.close();
+                callback();
+            }
         });
     });
 

@@ -140,7 +140,7 @@ function create (protocols, imposters, Imposter, logger, config) {
             const Q = require('q');
 
             if (validation.isValid) {
-                if (protocol === 'foo') {
+                if (protocol === 'foo' || protocol === 'smtp') {
                     return Imposter.createFoo(protocols[protocol], request.body, logger.baseLogger, config.recordMatches, config.recordRequests).then(imposter => {
                         imposters[imposter.port] = imposter;
                         response.setHeader('Location', imposter.url);
@@ -216,7 +216,14 @@ function create (protocols, imposters, Imposter, logger, config) {
 
             if (isValid) {
                 return deleteAllImposters().then(() => {
-                    const creationPromises = requestImposters.map(imposter => Imposter.create(protocols[imposter.protocol], imposter));
+                    const creationPromises = requestImposters.map(imposter => {
+                        if (imposter.protocol === 'foo' || imposter.protocol === 'smtp') {
+                            return Imposter.createFoo(protocols[imposter.protocol], imposter, logger.baseLogger, config.recordMatches, config.recordRequests);
+                        }
+                        else {
+                            return Imposter.create(protocols[imposter.protocol], imposter);
+                        }
+                    });
                     return Q.all(creationPromises);
                 }).then(allImposters => {
                     const json = allImposters.map(imposter => imposter.toJSON({ list: true }));

@@ -59,7 +59,7 @@ function create (options) {
             tcp: require('./models/tcp/tcpServer').initialize(winstonLogger, options.mock, options.debug),
             http: require('./models/http/httpServer').initialize(winstonLogger, options.mock, options.debug),
             https: require('./models/https/httpsServer').initialize(winstonLogger, options.mock, options.debug),
-            smtp: require('./models/smtp/smtpServer').initialize(winstonLogger, options.mock, options.debug),
+            smtp: require('./models/smtp/smtpServer'),
             foo: require('./models/foo/fooServer')
         },
         logger = ScopedLogger.create(winstonLogger, util.format('[mb:%s] ', options.port)),

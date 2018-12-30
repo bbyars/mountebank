@@ -144,8 +144,12 @@ function createFoo (Protocol, creationRequest, baseLogger, recordMatches, record
             }
 
             function stop () {
-                server.close();
-                logger.info('Ciao for now');
+                const stopDeferred = Q.defer();
+                server.close(() => {
+                    logger.info('Ciao for now');
+                    return stopDeferred.resolve({});
+                });
+                return stopDeferred.promise;
             }
 
             return deferred.resolve({

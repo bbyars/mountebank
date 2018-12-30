@@ -12,51 +12,57 @@ const Q = require('q'),
     pidfile = 'test.pid',
     logfile = 'mb-test.log';
 
-function whenFullyInitialized (operation, callback) {
-    let count = 0,
-        pidfileMustExist = operation === 'start',
-        spinWait = () => {
-            count += 1;
-            if (count > 20) {
-                console.log(`ERROR: mb ${operation} not initialized after 2 seconds`);
-                callback({});
-            }
-            else if (fs.existsSync(pidfile) === pidfileMustExist) {
-                callback({});
-            }
-            else {
-                Q.delay(100).done(spinWait);
-            }
-        };
+function create (port, includeStdout) {
 
-    spinWait();
-}
+    function whenFullyInitialized (operation, callback) {
+        let count = 0,
+            pidfileMustExist = operation === 'start',
+            spinWait = () => {
+                count += 1;
+                if (count > 20) {
+                    console.log(`ERROR: mb ${operation} not initialized after 2 seconds`);
+                    callback({});
+                }
+                else if (fs.existsSync(pidfile) === pidfileMustExist) {
+                    callback({});
+                }
+                else {
+                    Q.delay(100).done(spinWait);
+                }
+            };
 
-function spawnMb (args) {
-    let command = mbPath;
-    let result;
-
-    if (isWindows) {
-        args.unshift(mbPath);
-
-        if (mbPath.indexOf('.cmd') >= 0) {
-            // Accommodate the self-contained Windows zip files that ship with mountebank
-            args.unshift('/c');
-            command = 'cmd';
-        }
-        else {
-            command = 'node';
-        }
+        spinWait();
     }
 
-    result = spawn(command, args);
-    result.stderr.on('data', data => {
-        console.log(data.toString('utf8'));
-    });
-    return result;
-}
+    function spawnMb (args) {
+        let command = mbPath;
+        let result;
 
-function create (port) {
+        if (isWindows) {
+            args.unshift(mbPath);
+
+            if (mbPath.indexOf('.cmd') >= 0) {
+                // Accommodate the self-contained Windows zip files that ship with mountebank
+                args.unshift('/c');
+                command = 'cmd';
+            }
+            else {
+                command = 'node';
+            }
+        }
+
+        result = spawn(command, args);
+        result.stderr.on('data', data => {
+            console.log(data.toString('utf8'));
+        });
+        if (includeStdout) {
+            result.stdout.on('data', data => {
+                console.log(data.toString('utf8'));
+            });
+        }
+        return result;
+    }
+
     function start (args) {
         const deferred = Q.defer(),
             mbArgs = ['restart', '--port', port, '--logfile', logfile, '--pidfile', pidfile].concat(args || []);
