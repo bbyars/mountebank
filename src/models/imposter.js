@@ -119,7 +119,6 @@ function create (Protocol, request) {
                 port: server.port,
                 url,
                 toJSON,
-                addStub: server.addStub,
                 stop: server.close,
                 resetProxies
             });
