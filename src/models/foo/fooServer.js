@@ -5,7 +5,7 @@
  * @module
  */
 
-function create (options, responseFn) {
+function create (options, logger, responseFn) {
     const Q = require('q'),
         net = require('net'),
         deferred = Q.defer(),
@@ -19,6 +19,8 @@ function create (options, responseFn) {
                     requestFrom: helpers.socketName(socket),
                     data: data.toString('utf8')
                 };
+
+            logger.info(`${request.requestFrom} => ${request.data}`);
 
             // call mountebank with JSON request
             responseFn(request).done(stubResponse => {

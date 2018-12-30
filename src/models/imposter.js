@@ -64,7 +64,7 @@ function createFoo (Protocol, creationRequest, baseLogger, recordMatches, record
 
     domain.on('error', errorHandler);
     domain.run(() => {
-        Protocol.create(creationRequest, getResponseFor).done(server => {
+        Protocol.create(creationRequest, logger, getResponseFor).done(server => {
             if (creationRequest.port !== server.port) {
                 logger.changeScope(scopeFor(server.port));
             }

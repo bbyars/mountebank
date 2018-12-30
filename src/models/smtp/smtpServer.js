@@ -26,11 +26,9 @@ function implement (recordRequests, debug, baseLogger) {
             deferred = Q.defer(),
             requests = [],
             logger = require('../../util/scopedLogger').create(baseLogger, scopeFor(options.port)),
-            connections = {};
-
-        function createSMTPServer () {
-            const SMTPServer = require('smtp-server').SMTPServer;
-            return new SMTPServer({
+            connections = {},
+            SMTPServer = require('smtp-server').SMTPServer,
+            server = new SMTPServer({
                 disableReverseLookup: true,
                 authOptional: true,
                 onConnect (socket, callback) {
@@ -89,9 +87,6 @@ function implement (recordRequests, debug, baseLogger) {
 
                 }
             });
-        }
-
-        const server = createSMTPServer();
 
         server.listen(options.port || 0, () => {
             const actualPort = server.server.address().port;
