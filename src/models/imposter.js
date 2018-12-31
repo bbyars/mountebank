@@ -40,10 +40,9 @@ function createFoo (Protocol, creationRequest, baseLogger, recordMatches, record
         errorHandler = createErrorHandler(deferred, creationRequest.port),
         compatibility = require('./compatibility'),
         requests = [],
-        logger = require('../util/scopedLogger').create(baseLogger, scopeFor(creationRequest.port)),
-        proxy = Protocol.Proxy.create(logger, 'utf8'),
-        resolver = require('./responseResolver').create(proxy, Protocol.postProcess),
-        stubs = require('./stubRepository').create(resolver, recordMatches, 'utf8');
+        logger = require('../util/scopedLogger').create(baseLogger, scopeFor(creationRequest.port));
+
+    let proxy, resolver, stubs;
 
     // Can set per imposter
     if (creationRequest.recordRequests) {
@@ -69,6 +68,10 @@ function createFoo (Protocol, creationRequest, baseLogger, recordMatches, record
     domain.on('error', errorHandler);
     domain.run(() => {
         Protocol.create(creationRequest, logger, getResponseFor).done(server => {
+            proxy = server.Proxy.create(logger, 'utf8');
+            resolver = require('./responseResolver').create(proxy, server.postProcess);
+            stubs = require('./stubRepository').create(resolver, recordMatches, 'utf8');
+
             if (creationRequest.port !== server.port) {
                 logger.changeScope(scopeFor(server.port));
             }

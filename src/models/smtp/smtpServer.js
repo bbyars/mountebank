@@ -72,7 +72,9 @@ function create (options, logger, responseFn) {
                 Object.keys(connections).forEach(socket => {
                     connections[socket].destroy();
                 });
-            }
+            },
+            Proxy: { create: () => {} },
+            postProcess: function () { return {}; }
         });
     });
 
@@ -88,10 +90,6 @@ module.exports = {
         text: 'Test'
     },
     testProxyResponse: {},
-    postProcess: function () { return {}; },
-    create: create,
-    Proxy: {
-        create: () => {}
-    }
+    create: create
 };
 

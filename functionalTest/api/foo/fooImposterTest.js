@@ -26,7 +26,10 @@ describe('foo imposter', function () {
             const imposterRequest = { protocol: 'foo', port };
 
             return api.post('/imposters', imposterRequest)
-                .then(() => tcp.fireAndForget('first', port))
+                .then(response => {
+                    assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body));
+                    tcp.fireAndForget('first', port);
+                })
                 .then(() => tcp.fireAndForget('second', port))
                 .then(() => api.get(`/imposters/${port}`))
                 .then(response => {

@@ -39,7 +39,9 @@ function create (options, logger, responseFn) {
             close: callback => {
                 server.close();
                 callback();
-            }
+            },
+            postProcess: function (response) { return { data: response.data || 'foo' }; },
+            Proxy: require('../tcp/tcpProxy')
         });
     });
 
@@ -50,7 +52,5 @@ module.exports = {
     name: 'foo',
     testRequest: { data: '' },
     testProxyResponse: { data: '' },
-    postProcess: function (response) { return { data: response.data || 'foo' }; },
-    create: create,
-    Proxy: require('../tcp/tcpProxy')
+    create: create
 };
