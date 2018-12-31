@@ -45,6 +45,10 @@ function createFoo (Protocol, creationRequest, baseLogger, recordMatches, record
         resolver = require('./responseResolver').create(proxy, Protocol.postProcess),
         stubs = require('./stubRepository').create(resolver, recordMatches, 'utf8');
 
+    // Can set per imposter
+    if (creationRequest.recordRequests) {
+        recordRequests = creationRequest.recordRequests;
+    }
     let numberOfRequests = 0;
 
     compatibility.upcast(creationRequest);
