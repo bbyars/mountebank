@@ -24,6 +24,15 @@ function createErrorHandler (deferred, port) {
     };
 }
 
+/**
+ * Create the imposter
+ * @param {Object} Protocol - The protocol factory for creating servers of that protocol
+ * @param {Object} creationRequest - the parsed imposter JSON
+ * @param {Object} baseLogger - the logger
+ * @param {Object} recordMatches - corresponds to the --debug command line flag
+ * @param {Object} recordRequests - corresponds to the --mock command line flag
+ * @returns {Object}
+ */
 function createFoo (Protocol, creationRequest, baseLogger, recordMatches, recordRequests) {
     function scopeFor (port, name) {
         let scope = `${Protocol.name}:${port}`;
@@ -68,8 +77,9 @@ function createFoo (Protocol, creationRequest, baseLogger, recordMatches, record
     domain.on('error', errorHandler);
     domain.run(() => {
         Protocol.create(creationRequest, logger, getResponseFor).done(server => {
-            const postProcess = response =>
-                server.postProcess(response, creationRequest.defaultResponse || {});
+            // Add defaultResponse to postProcess function
+            const postProcess = (response, request) =>
+                server.postProcess(response, request, creationRequest.defaultResponse || {});
 
             proxy = server.proxy;
             resolver = require('./responseResolver').create(proxy, postProcess);

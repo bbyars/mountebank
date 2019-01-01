@@ -57,8 +57,8 @@ function create (options) {
         imposters = options.imposters || {},
         protocols = {
             tcp: require('./models/tcp/tcpServer'),
-            http: require('./models/http/httpServer').initialize(winstonLogger, options.mock, options.debug),
-            https: require('./models/https/httpsServer').initialize(winstonLogger, options.mock, options.debug),
+            http: require('./models/http/httpServer'),
+            https: require('./models/https/httpsServer'),
             smtp: require('./models/smtp/smtpServer'),
             foo: require('./models/foo/fooServer')
         },

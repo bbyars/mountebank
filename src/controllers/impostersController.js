@@ -140,26 +140,14 @@ function create (protocols, imposters, Imposter, logger, config) {
             const Q = require('q');
 
             if (validation.isValid) {
-                if (protocol === 'foo' || protocol === 'smtp' || protocol === 'tcp') {
-                    return Imposter.createFoo(protocols[protocol], request.body, logger.baseLogger, config.recordMatches, config.recordRequests).then(imposter => {
-                        imposters[imposter.port] = imposter;
-                        response.setHeader('Location', imposter.url);
-                        response.statusCode = 201;
-                        response.send(imposter.toJSON());
-                    }, error => {
-                        respondWithCreationError(response, error);
-                    });
-                }
-                else {
-                    return Imposter.create(protocols[protocol], request.body).then(imposter => {
-                        imposters[imposter.port] = imposter;
-                        response.setHeader('Location', imposter.url);
-                        response.statusCode = 201;
-                        response.send(imposter.toJSON());
-                    }, error => {
-                        respondWithCreationError(response, error);
-                    });
-                }
+                return Imposter.createFoo(protocols[protocol], request.body, logger.baseLogger, config.recordMatches, config.recordRequests).then(imposter => {
+                    imposters[imposter.port] = imposter;
+                    response.setHeader('Location', imposter.url);
+                    response.statusCode = 201;
+                    response.send(imposter.toJSON());
+                }, error => {
+                    respondWithCreationError(response, error);
+                });
             }
             else {
                 respondWithValidationErrors(response, validation.errors);
@@ -216,14 +204,9 @@ function create (protocols, imposters, Imposter, logger, config) {
 
             if (isValid) {
                 return deleteAllImposters().then(() => {
-                    const creationPromises = requestImposters.map(imposter => {
-                        if (imposter.protocol === 'foo' || imposter.protocol === 'smtp' || imposter.protocol === 'tcp') {
-                            return Imposter.createFoo(protocols[imposter.protocol], imposter, logger.baseLogger, config.recordMatches, config.recordRequests);
-                        }
-                        else {
-                            return Imposter.create(protocols[imposter.protocol], imposter);
-                        }
-                    });
+                    const creationPromises = requestImposters.map(imposter =>
+                        Imposter.createFoo(protocols[imposter.protocol], imposter, logger.baseLogger, config.recordMatches, config.recordRequests)
+                    );
                     return Q.all(creationPromises);
                 }).then(allImposters => {
                     const json = allImposters.map(imposter => imposter.toJSON({ list: true }));

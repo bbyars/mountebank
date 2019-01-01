@@ -119,7 +119,7 @@ function create (options, logger, responseFn) {
                     connections[socket].destroy();
                 });
             },
-            postProcess: function (response, defaultResponse) {
+            postProcess: function (response, request, defaultResponse) {
                 return {
                     data: response.data || defaultResponse.data || ''
                 };

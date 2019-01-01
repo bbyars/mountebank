@@ -40,7 +40,7 @@ function create (options, logger, responseFn) {
                 server.close();
                 callback();
             },
-            postProcess: function (response, defaultResponse) {
+            postProcess: function (response, request, defaultResponse) {
                 return { data: response.data || defaultResponse.data || 'foo' };
             },
             proxy: require('../tcp/tcpProxy').create(logger, 'utf8'),
