@@ -73,8 +73,9 @@ function create (options, logger, responseFn) {
                     connections[socket].destroy();
                 });
             },
-            Proxy: { create: () => {} },
-            postProcess: function () { return {}; }
+            proxy: {},
+            postProcess: function () { return {}; },
+            encoding: 'utf8'
         });
     });
 
@@ -90,6 +91,7 @@ module.exports = {
         text: 'Test'
     },
     testProxyResponse: {},
-    create: create
+    create: create,
+    validate: undefined
 };
 

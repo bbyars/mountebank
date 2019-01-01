@@ -71,9 +71,9 @@ function createFoo (Protocol, creationRequest, baseLogger, recordMatches, record
             const postProcess = response =>
                 server.postProcess(response, creationRequest.defaultResponse || {});
 
-            proxy = server.Proxy.create(logger, 'utf8');
+            proxy = server.proxy;
             resolver = require('./responseResolver').create(proxy, postProcess);
-            stubs = require('./stubRepository').create(resolver, recordMatches, 'utf8');
+            stubs = require('./stubRepository').create(resolver, recordMatches, server.encoding || 'utf8');
 
             if (creationRequest.port !== server.port) {
                 logger.changeScope(scopeFor(server.port));

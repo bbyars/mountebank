@@ -43,7 +43,8 @@ function create (options, logger, responseFn) {
             postProcess: function (response, defaultResponse) {
                 return { data: response.data || defaultResponse.data || 'foo' };
             },
-            Proxy: require('../tcp/tcpProxy')
+            proxy: require('../tcp/tcpProxy').create(logger, 'utf8'),
+            encoding: 'utf8'
         });
     });
 
@@ -54,5 +55,6 @@ module.exports = {
     name: 'foo',
     testRequest: { data: '' },
     testProxyResponse: { data: '' },
-    create: create
+    create: create,
+    validate: undefined
 };
