@@ -34,7 +34,7 @@ describe('foo imposter', function () {
                 .then(() => api.get(`/imposters/${port}`))
                 .then(response => {
                     const requests = response.body.requests.map(request => request.data);
-                    assert.deepEqual(requests, ['first', 'second']);
+                    assert.deepEqual(requests.sort(), ['first', 'second']);
                 })
                 .finally(() => api.del('/imposters'));
         });

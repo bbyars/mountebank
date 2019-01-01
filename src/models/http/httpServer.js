@@ -21,5 +21,6 @@ module.exports = {
      * @param {boolean} debug - The --debug command line parameter
      * @returns {Object} - The protocol implementation
      */
-    initialize: (logger, allowInjection, mock, debug) => require('./baseHttpServer').setup('http', createBaseServer).initialize(logger, allowInjection, mock, debug)
+    initialize: (logger, allowInjection, mock, debug) =>
+        require('./baseHttpServer').setup('http', createBaseServer).initialize(logger, allowInjection, mock, debug)
 };
