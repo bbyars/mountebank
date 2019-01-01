@@ -40,7 +40,9 @@ function create (options, logger, responseFn) {
                 server.close();
                 callback();
             },
-            postProcess: function (response) { return { data: response.data || 'foo' }; },
+            postProcess: function (response, defaultResponse) {
+                return { data: response.data || defaultResponse.data || 'foo' };
+            },
             Proxy: require('../tcp/tcpProxy')
         });
     });

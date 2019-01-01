@@ -68,8 +68,11 @@ function createFoo (Protocol, creationRequest, baseLogger, recordMatches, record
     domain.on('error', errorHandler);
     domain.run(() => {
         Protocol.create(creationRequest, logger, getResponseFor).done(server => {
+            const postProcess = response =>
+                server.postProcess(response, creationRequest.defaultResponse || {});
+
             proxy = server.Proxy.create(logger, 'utf8');
-            resolver = require('./responseResolver').create(proxy, server.postProcess);
+            resolver = require('./responseResolver').create(proxy, postProcess);
             stubs = require('./stubRepository').create(resolver, recordMatches, 'utf8');
 
             if (creationRequest.port !== server.port) {
