@@ -71,7 +71,7 @@ describe('ImpostersController', function () {
                 toJSON: mock().returns('JSON')
             };
             Imposter = {
-                createFoo: mock().returns(Q(imposter))
+                create: mock().returns(Q(imposter))
             };
             imposters = {};
             Protocol = {
@@ -157,7 +157,7 @@ describe('ImpostersController', function () {
         });
 
         promiseIt('should return a 403 for insufficient access', function () {
-            Imposter.createFoo = mock().returns(Q.reject({
+            Imposter.create = mock().returns(Q.reject({
                 code: 'insufficient access',
                 key: 'value'
             }));
@@ -175,7 +175,7 @@ describe('ImpostersController', function () {
         });
 
         promiseIt('should return a 400 for other protocol creation errors', function () {
-            Imposter.createFoo = mock().returns(Q.reject('ERROR'));
+            Imposter.create = mock().returns(Q.reject('ERROR'));
             request.body = { port: 3535, protocol: 'http' };
 
             return controller.post(request, response).then(() => {
@@ -318,7 +318,7 @@ describe('ImpostersController', function () {
                 secondImposter = { toJSON: mock().returns({ second: true }) },
                 imposters = [firstImposter, secondImposter],
                 Imposter = {
-                    createFoo: () => {
+                    create: () => {
                         const result = imposters[creates];
                         creates += 1;
                         return result;
@@ -343,7 +343,7 @@ describe('ImpostersController', function () {
                 secondImposter = { toJSON: mock().returns({ second: true }), port: 2 },
                 impostersToCreate = [firstImposter, secondImposter],
                 Imposter = {
-                    createFoo: () => {
+                    create: () => {
                         const result = impostersToCreate[creates];
                         creates += 1;
                         return result;
@@ -379,7 +379,7 @@ describe('ImpostersController', function () {
         promiseIt('should return a 403 for insufficient access on any imposter', function () {
             let creates = 0;
             const Imposter = {
-                    createFoo: () => {
+                    create: () => {
                         creates += 1;
                         if (creates === 2) {
                             return Q.reject({
