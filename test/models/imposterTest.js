@@ -51,6 +51,42 @@ describe('imposter', function () {
             });
         });
 
+        promiseIt('should return recordRequests from global parameter', function () {
+            server.port = 3535;
+
+            return Imposter.create(Protocol, {}, logger, false, true).then(imposter => {
+                assert.deepEqual(imposter.toJSON(), {
+                    protocol: 'test',
+                    port: 3535,
+                    numberOfRequests: 0,
+                    recordRequests: true,
+                    requests: [],
+                    stubs: [],
+                    _links: { self: { href: '/imposters/3535' } }
+                });
+            });
+        });
+
+        promiseIt('imposter-specific recordRequests should override global parameter', function () {
+            const request = {
+                protocol: 'test',
+                port: 3535,
+                recordRequests: false
+            };
+
+            return Imposter.create(Protocol, request, logger, false, true).then(imposter => {
+                assert.deepEqual(imposter.toJSON(), {
+                    protocol: 'test',
+                    port: 3535,
+                    numberOfRequests: 0,
+                    recordRequests: false,
+                    requests: [],
+                    stubs: [],
+                    _links: { self: { href: '/imposters/3535' } }
+                });
+            });
+        });
+
         promiseIt('should return full JSON representation by default', function () {
             server.port = 3535;
 
@@ -59,6 +95,7 @@ describe('imposter', function () {
                     protocol: 'test',
                     port: 3535,
                     numberOfRequests: 0,
+                    recordRequests: false,
                     requests: [],
                     stubs: [],
                     _links: { self: { href: '/imposters/3535' } }
@@ -75,6 +112,7 @@ describe('imposter', function () {
                     protocol: 'test',
                     port: 3535,
                     numberOfRequests: 0,
+                    recordRequests: false,
                     requests: [],
                     stubs: [],
                     key: 'value',
@@ -91,6 +129,7 @@ describe('imposter', function () {
                 assert.deepEqual(imposter.toJSON({ replayable: true }), {
                     protocol: 'test',
                     port: 3535,
+                    recordRequests: false,
                     stubs: [],
                     key: 'value'
                 });
@@ -135,6 +174,7 @@ describe('imposter', function () {
                 assert.deepEqual(imposter.toJSON({ replayable: true }), {
                     protocol: 'test',
                     port: 3535,
+                    recordRequests: false,
                     stubs: [{ responses: ['FIRST'] },
                         { responses: ['SECOND'] }]
                 });
@@ -152,6 +192,7 @@ describe('imposter', function () {
                 assert.deepEqual(imposter.toJSON({ replayable: true }), {
                     protocol: 'test',
                     port: 3535,
+                    recordRequests: false,
                     stubs: [{ responses: [{ is: { body: 'body' } }] }]
                 });
             });

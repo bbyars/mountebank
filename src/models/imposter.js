@@ -52,14 +52,14 @@ function create (Protocol, creationRequest, baseLogger, recordMatches, recordReq
         logger = require('../util/scopedLogger').create(baseLogger, scopeFor(creationRequest.port));
 
     let proxy, resolver, stubs;
-
-    // Can set per imposter
-    if (creationRequest.recordRequests) {
-        recordRequests = creationRequest.recordRequests;
-    }
     let numberOfRequests = 0;
 
     compatibility.upcast(creationRequest);
+
+    // Can set per imposter
+    if (typeof creationRequest.recordRequests !== 'undefined') {
+        recordRequests = creationRequest.recordRequests;
+    }
 
     function getResponseFor (request) {
         const helpers = require('../util/helpers');
@@ -100,6 +100,7 @@ function create (Protocol, creationRequest, baseLogger, recordMatches, recordReq
                 if (creationRequest.name) {
                     result.name = creationRequest.name;
                 }
+                result.recordRequests = recordRequests;
 
                 Object.keys(server.metadata).forEach(key => {
                     result[key] = server.metadata[key];

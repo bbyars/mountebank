@@ -53,6 +53,7 @@ describe('tcp imposter', function () {
                 assert.deepEqual(response.body, {
                     protocol: 'tcp',
                     port,
+                    recordRequests: true,
                     numberOfRequests: 0,
                     mode: 'text',
                     name: request.name,

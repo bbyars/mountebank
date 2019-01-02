@@ -93,12 +93,14 @@ describe('DELETE /imposters', function () {
                         protocol: 'http',
                         port: firstImposter.port,
                         name: firstImposter.name,
+                        recordRequests: true,
                         stubs: []
                     },
                     {
                         protocol: 'http',
                         port: secondImposter.port,
                         name: secondImposter.name,
+                        recordRequests: true,
                         stubs: []
                     }
                 ]
@@ -142,6 +144,7 @@ describe('DELETE /imposters', function () {
                         protocol: 'http',
                         port: isImposter.port,
                         name: isImposter.name,
+                        recordRequests: true,
                         numberOfRequests: 0,
                         requests: [],
                         stubs: isImposter.stubs,
@@ -151,6 +154,7 @@ describe('DELETE /imposters', function () {
                         protocol: 'http',
                         port: proxyImposter.port,
                         name: proxyImposter.name,
+                        recordRequests: true,
                         numberOfRequests: 0,
                         requests: [],
                         stubs: [],

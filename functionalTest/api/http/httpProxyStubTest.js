@@ -342,6 +342,7 @@ describe('http proxy stubs', function () {
                         protocol: 'http',
                         port,
                         name: proxyRequest.name,
+                        recordRequests: true,
                         stubs: [
                             {
                                 predicates: [

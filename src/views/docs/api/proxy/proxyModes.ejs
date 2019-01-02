@@ -273,13 +273,14 @@ Accept: application/json</code>
 Access-Control-Allow-Origin: *
 Vary: Accept
 Content-Type: application/json; charset=utf-8
-Content-Length: 869
+Content-Length: 895
 Date: <volatile>Sat, 20 May 2017 14:43:12 GMT</volatile>
 Connection: keep-alive
 
 {
   "protocol": "http",
   "port": 4000,
+  "recordRequests": true,
   "stubs": [{
     "predicates": [{ "deepEquals": { "path": "/test" } }],
     "responses": [

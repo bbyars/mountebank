@@ -291,6 +291,7 @@ const assert = require('assert'),
                         protocol: 'http',
                         port: port + 1,
                         name: imposter.name,
+                        recordRequests: true,
                         stubs: [{ responses: [{ is: { body: 'Hello, World!' } }] }]
                     });
                 });
