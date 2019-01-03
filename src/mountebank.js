@@ -67,7 +67,8 @@ function create (options) {
         impostersController = ImpostersController.create(protocols, imposters, Imposter, logger, {
             allowInjection: options.allowInjection,
             recordRequests: options.mock,
-            recordMatches: options.debug
+            recordMatches: options.debug,
+            port: options.port
         }),
         imposterController = ImposterController.create(imposters),
         logsController = LogsController.create(options.logfile),
@@ -113,6 +114,7 @@ function create (options) {
     app.delete('/imposters/:id', imposterController.del);
     app.delete('/imposters/:id/savedProxyResponses', imposterController.resetProxies);
     app.delete('/imposters/:id/requests', imposterController.resetProxies); // deprecated but saved for backwards compatibility
+    app.post('/imposters/:id/_requests', imposterController.postRequest);
 
     app.get('/logs', logsController.get);
     app.get('/config', configController.get);

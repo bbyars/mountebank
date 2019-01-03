@@ -45,6 +45,13 @@ function create (imposters) {
         });
     }
 
+    /**
+     * Corresponds to DELETE /imposters/:port/savedProxyResponses
+     * Removes all saved proxy responses
+     * @param {Object} request - the HTTP request
+     * @param {Object} response - the HTTP response
+     * @returns {Object} A promise for testing
+     */
     function resetProxies (request, response) {
         const Q = require('q'),
             json = {},
@@ -102,7 +109,24 @@ function create (imposters) {
         }
     }
 
-    return { get, del, resetProxies };
+    /**
+     * The function responding to POST /imposters/:port/_requests
+     * This is what protocol implementations call to send the JSON request
+     * structure to mountebank, which responds with the JSON response structure
+     * @param {Object} request - the HTTP request
+     * @param {Object} response - the HTTP response
+     * @returns {Object} A promise for testing
+     */
+    function postRequest (request, response) {
+        const imposter = imposters[request.params.id],
+            protoRequest = request.body.request;
+
+        return imposter.getResponseFor(protoRequest).then(protoResponse => {
+            response.send({ response: protoResponse });
+        });
+    }
+
+    return { get, del, resetProxies, postRequest };
 }
 
 module.exports = { create };

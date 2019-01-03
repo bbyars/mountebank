@@ -5,7 +5,7 @@
  * @module
  */
 
-const createError = (code, message, options) => {
+function createError (code, message, options) {
     const inherit = require('./inherit'),
         result = inherit.from(Error, { code, message });
 
@@ -15,15 +15,19 @@ const createError = (code, message, options) => {
         });
     }
     return result;
-};
+}
 
-const create = code => (message, options) => createError(code, message, options);
+function create (code) {
+    return (message, options) => createError(code, message, options);
+}
 
-const createWithMessage = (code, message) => options => createError(code, message, options);
+function createWithMessage (code, message) {
+    return options => createError(code, message, options);
+}
 
 // Produces a JSON.stringify-able Error object
 // (because message is on the prototype, it doesn't show by default)
-const details = error => {
+function details (error) {
     const helpers = require('./helpers'),
         prototypeProperties = {};
 
@@ -33,7 +37,7 @@ const details = error => {
         }
     });
     return helpers.merge(error, prototypeProperties);
-};
+}
 
 module.exports = {
     ValidationError: create('bad data'),
@@ -43,5 +47,6 @@ module.exports = {
     InvalidProxyError: create('invalid proxy'),
     MissingResourceError: create('no such resource'),
     InvalidJSONError: createWithMessage('invalid JSON', 'Unable to parse body as JSON'),
+    CommunicationError: createWithMessage('communication', 'Error communicating with mountebank'),
     details
 };

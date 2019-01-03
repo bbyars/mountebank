@@ -75,10 +75,11 @@ describe('foo imposter', function () {
                     protocol: 'foo',
                     port: originServerPort,
                     stubs: [originServerStub],
-                    name: 'ORIGIN'
+                    name: 'ORIGIN',
+                    inProcessResolution: true
                 },
                 proxyStub = { responses: [{ proxy: { to: { host: 'localhost', port: originServerPort } } }] },
-                proxyRequest = { protocol: 'foo', port, stubs: [proxyStub], name: 'PROXY' };
+                proxyRequest = { protocol: 'foo', port, stubs: [proxyStub], name: 'PROXY', inProcessResolution: true };
 
             return api.post('/imposters', originServerRequest).then(() => api.post('/imposters', proxyRequest))
                 .then(() => tcp.send('request', port))

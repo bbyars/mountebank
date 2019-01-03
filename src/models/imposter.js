@@ -31,14 +31,17 @@ function createErrorHandler (deferred, port) {
  * @param {Object} baseLogger - the logger
  * @param {Object} recordMatches - corresponds to the --debug command line flag
  * @param {Object} recordRequests - corresponds to the --mock command line flag
+ * @param {Object} mountebankPort - the mountebank port for callback URLs from the imposter
  * @returns {Object}
  */
-function create (Protocol, creationRequest, baseLogger, recordMatches, recordRequests) {
-    function scopeFor (port, name) {
+// TODO: Clean up constructor interface...
+// eslint-disable-next-line max-params
+function create (Protocol, creationRequest, baseLogger, recordMatches, recordRequests, mountebankPort) {
+    function scopeFor (port) {
         let scope = `${Protocol.name}:${port}`;
 
-        if (name) {
-            scope += ' ' + name;
+        if (creationRequest.name) {
+            scope += ' ' + creationRequest.name;
         }
         return scope;
     }
@@ -91,6 +94,10 @@ function create (Protocol, creationRequest, baseLogger, recordMatches, recordReq
             logger.info('Open for business...');
 
             const url = `/imposters/${server.port}`;
+            // TODO: Remove once all proto implementations converted
+            if (server.setCallbackUrl) {
+                server.setCallbackUrl(`http://localhost:${mountebankPort}${url}/_requests`);
+            }
 
             if (creationRequest.stubs) {
                 creationRequest.stubs.forEach(stubs.addStub);
@@ -179,7 +186,8 @@ function create (Protocol, creationRequest, baseLogger, recordMatches, recordReq
                 toJSON,
                 addStub: stubs.addStub,
                 stop,
-                resetProxies: stubs.resetProxies
+                resetProxies: stubs.resetProxies,
+                getResponseFor
             });
         });
     });
