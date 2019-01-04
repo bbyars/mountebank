@@ -21,22 +21,15 @@ function create (logger, encoding) {
     }
 
     function connectionInfoFor (proxyDestination) {
-        if (typeof proxyDestination === 'string') {
-            const url = require('url'),
-                parts = url.parse(proxyDestination),
-                errors = require('../../util/errors');
+        const url = require('url'),
+            parts = url.parse(proxyDestination),
+            errors = require('../../util/errors');
 
-            if (parts.protocol !== 'tcp:') {
-                throw errors.InvalidProxyError('Unable to proxy to any protocol other than tcp',
-                    { source: proxyDestination });
-            }
-            return { host: parts.hostname, port: parts.port };
+        if (parts.protocol !== 'tcp:') {
+            throw errors.InvalidProxyError('Unable to proxy to any protocol other than tcp',
+                { source: proxyDestination });
         }
-        else {
-            // old syntax, inconsistent with http proxies: { host: 'localhost', port: 3000 }
-            // left for backwards compatibility prior to version 1.4.1
-            return proxyDestination;
-        }
+        return { host: parts.hostname, port: parts.port };
     }
 
     function getProxyRequest (proxyDestination, originalRequest) {

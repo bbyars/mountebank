@@ -110,9 +110,27 @@ describe('tcp imposter', function () {
                 stub = { responses: [{ proxy: { to: `tcp://localhost:${proxyPort}` } }] },
                 request = { protocol: 'tcp', port, stubs: [stub], name: 'MAIN' };
 
-            return api.post('/imposters', proxyRequest).then(() => api.post('/imposters', request)).then(() => tcp.send('request', port)).then(response => {
-                assert.strictEqual(response.toString(), 'PROXIED');
-            }).finally(() => api.del('/imposters'));
+            return api.post('/imposters', proxyRequest)
+                .then(() => api.post('/imposters', request))
+                .then(() => tcp.send('request', port))
+                .then(response => {
+                    assert.strictEqual(response.toString(), 'PROXIED');
+                }).finally(() => api.del('/imposters'));
+        });
+
+        promiseIt('should support old proxy syntax for backwards compatibility', function () {
+            const proxyPort = port + 1,
+                proxyStub = { responses: [{ is: { data: 'PROXIED' } }] },
+                proxyRequest = { protocol: 'tcp', port: proxyPort, stubs: [proxyStub], name: 'PROXY' },
+                stub = { responses: [{ proxy: { to: { host: 'localhost', port: proxyPort } } }] },
+                request = { protocol: 'tcp', port, stubs: [stub], name: 'MAIN' };
+
+            return api.post('/imposters', proxyRequest)
+                .then(() => api.post('/imposters', request))
+                .then(() => tcp.send('request', port))
+                .then(response => {
+                    assert.strictEqual(response.toString(), 'PROXIED');
+                }).finally(() => api.del('/imposters'));
         });
 
         if (!airplaneMode) {

@@ -27,16 +27,6 @@ describe('tcp proxy', function () {
             }).finally(() => api.del('/imposters'));
         });
 
-        promiseIt('should support old proxy syntax for backwards compatibility', function () {
-            const stub = { responses: [{ is: { data: 'howdy!' } }] },
-                request = { protocol: 'tcp', port, stubs: [stub] },
-                proxy = TcpProxy.create(logger, 'utf8');
-
-            return api.post('/imposters', request).then(() => proxy.to({ host: 'localhost', port }, { data: 'hello, world!' })).then(response => {
-                assert.deepEqual(response.data.toString(), 'howdy!');
-            }).finally(() => api.del('/imposters'));
-        });
-
         promiseIt('should proxy binary data', function () {
             const buffer = new Buffer([0, 1, 2, 3]),
                 stub = { responses: [{ is: { data: buffer.toString('base64') } }] },

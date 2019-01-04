@@ -24,5 +24,45 @@ describe('compatibility', function () {
                 }]
             });
         });
+
+        it('should switch tcp proxy objects to URL strings', function () {
+            const request = {
+                protocol: 'tcp',
+                stubs: [
+                    {
+                        responses: [
+                            { is: { data: 'is-response' } },
+                            { proxy: { to: { host: 'host-1', port: 'port-1' } } }
+                        ]
+                    },
+                    {
+                        responses: [{ proxy: { to: 'url' } }]
+                    },
+                    {
+                        responses: [{ proxy: { to: { host: 'host-2', port: 'port-2' } } }]
+                    }
+                ]
+            };
+
+            compatibility.upcast(request);
+
+            assert.deepEqual(request, {
+                protocol: 'tcp',
+                stubs: [
+                    {
+                        responses: [
+                            { is: { data: 'is-response' } },
+                            { proxy: { to: 'tcp://host-1:port-1' } }
+                        ]
+                    },
+                    {
+                        responses: [{ proxy: { to: 'url' } }]
+                    },
+                    {
+                        responses: [{ proxy: { to: 'tcp://host-2:port-2' } }]
+                    }
+                ]
+            });
+        });
     });
 });

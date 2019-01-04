@@ -8,6 +8,11 @@
  * @module
  */
 
+/**
+ * The original shellTransform only accepted one command
+ * The new syntax expects an array, creating a shell pipeline
+ * @param {Object} request - the request to upcast
+ */
 function upcastShellTransformToArray (request) {
     (request.stubs || []).forEach(stub => {
         (stub.responses || []).forEach(response => {
@@ -20,11 +25,33 @@ function upcastShellTransformToArray (request) {
 }
 
 /**
+ * The original tcp proxy.to was an object with a host and port field
+ * The new syntax uses a tcp:// url for symmetry with http/s
+ * @param {Object} request - the request to upcast
+ */
+function upcastTcpProxyDestinationToUrl (request) {
+    if (request.protocol !== 'tcp' && request.protocol !== 'foo') {
+        return;
+    }
+
+    (request.stubs || []).forEach(stub => {
+        (stub.responses || []).forEach(response => {
+            const proxy = response.proxy;
+            if (proxy && typeof proxy.to === 'object' && proxy.to.host && proxy.to.port) {
+                proxy.to = `tcp://${proxy.to.host}:${proxy.to.port}`;
+                console.log('UPCASTING PROXY: ' + proxy.to);
+            }
+        });
+    });
+}
+
+/**
  * Upcast the request to the current version
  * @param {Object} request - the request to upcast
  */
 function upcast (request) {
     upcastShellTransformToArray(request);
+    upcastTcpProxyDestinationToUrl(request);
 }
 
 module.exports = {
