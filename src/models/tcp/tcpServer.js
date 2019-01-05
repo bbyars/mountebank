@@ -124,7 +124,7 @@ function create (options, logger, responseFn) {
                     data: response.data || defaultResponse.data || ''
                 };
             },
-            proxy: require('./tcpProxy').create(logger, encoding),
+            proxy: require('./tcpProxy').create(logger, encoding, isEndOfRequest),
             encoding: encoding
         });
     });

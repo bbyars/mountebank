@@ -39,7 +39,6 @@ function upcastTcpProxyDestinationToUrl (request) {
             const proxy = response.proxy;
             if (proxy && typeof proxy.to === 'object' && proxy.to.host && proxy.to.port) {
                 proxy.to = `tcp://${proxy.to.host}:${proxy.to.port}`;
-                console.log('UPCASTING PROXY: ' + proxy.to);
             }
         });
     });

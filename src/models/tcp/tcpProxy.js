@@ -9,9 +9,15 @@
  * Creates the proxy
  * @param {Object} logger - The logger
  * @param {string} encoding - utf8 or base64, depending on if the destination expects text or binary
+ * @param {Function} isEndOfRequest - the function defining a logical request
  * @returns {Object}
  */
-function create (logger, encoding) {
+function create (logger, encoding, isEndOfRequest) {
+
+    if (typeof isEndOfRequest === 'undefined') {
+        isEndOfRequest = () => true; // defaults to a packet boundary
+    }
+
     function socketName (socket) {
         return `${socket.host}:${socket.port}`;
     }
@@ -32,33 +38,6 @@ function create (logger, encoding) {
         return { host: parts.hostname, port: parts.port };
     }
 
-    function getProxyRequest (proxyDestination, originalRequest) {
-        const buffer = new Buffer(originalRequest.data, encoding),
-            net = require('net'),
-            socket = net.connect(connectionInfoFor(proxyDestination), () => {
-                socket.write(buffer, () => { socket.end(); });
-            });
-        return socket;
-    }
-
-    function proxy (socket) {
-        const packets = [],
-            Q = require('q'),
-            deferred = Q.defer(),
-            start = new Date();
-
-        socket.on('data', data => {
-            packets.push(data);
-        });
-        socket.on('end', () => {
-            deferred.resolve({
-                data: Buffer.concat(packets).toString(encoding),
-                _proxyResponseTime: new Date() - start
-            });
-        });
-        return deferred.promise;
-    }
-
     /**
      * Proxies a tcp request to the destination
      * @param {string} proxyDestination - The URL to proxy to (e.g. tcp://127.0.0.1:3535)
@@ -66,28 +45,51 @@ function create (logger, encoding) {
      * @returns {Object} - A promise resolving to the response
      */
     function to (proxyDestination, originalRequest) {
-
-        function log (direction, what) {
-            logger.debug('Proxy %s %s %s %s %s',
-                originalRequest.requestFrom, direction, JSON.stringify(format(what)), direction,
-                socketName(connectionInfoFor(proxyDestination)));
-        }
-
         const Q = require('q'),
             deferred = Q.defer();
-        let proxiedRequest;
 
         try {
-            proxiedRequest = getProxyRequest(proxyDestination, originalRequest);
+            const proxyName = socketName(connectionInfoFor(proxyDestination)),
+                log = (direction, what) => {
+                    logger.debug('Proxy %s %s %s %s %s',
+                        originalRequest.requestFrom, direction, JSON.stringify(format(what)), direction, proxyName);
+                },
+                buffer = new Buffer(originalRequest.data, encoding),
+                net = require('net'),
+                socket = net.connect(connectionInfoFor(proxyDestination), () => {
+                    socket.write(buffer);
+                }),
+                packets = [],
+                start = new Date();
+
             log('=>', originalRequest);
 
-            proxy(proxiedRequest).done(response => {
-                log('<=', response);
-                deferred.resolve(response);
+            socket.on('end', () => {
+                logger.debug('%s LAST-ACK', proxyName);
             });
 
-            proxiedRequest.once('error', error => {
+            socket.on('close', () => {
+                logger.debug('%s CLOSED', proxyName);
+            });
+
+            socket.on('data', data => {
+                packets.push(data);
+                const requestBuffer = Buffer.concat(packets);
+                if (isEndOfRequest(requestBuffer)) {
+                    socket.end();
+                    const response = {
+                        data: requestBuffer.toString(encoding),
+                        _proxyResponseTime: new Date() - start
+                    };
+                    log('<=', response);
+                    deferred.resolve(response);
+                }
+            });
+
+            socket.once('error', error => {
                 const errors = require('../../util/errors');
+
+                logger.error(`Proxy ${proxyName} transmission error X=> ${JSON.stringify(error)}`);
 
                 if (error.code === 'ENOTFOUND') {
                     deferred.reject(errors.InvalidProxyError(`Cannot resolve ${JSON.stringify(proxyDestination)}`));

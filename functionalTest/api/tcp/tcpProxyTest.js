@@ -38,21 +38,35 @@ describe('tcp proxy', function () {
             }).finally(() => api.del('/imposters'));
         });
 
-        promiseIt('should wait for remote socket to end before returning', function () {
-            const server = net.createServer(client => {
-                client.on('data', function () {
-                    // force multiple data packets
-                    client.write((new Array(10 * 1024 * 1024)).join('x'));
+        promiseIt('should obey endOfRequestResolver', function () {
+            // We'll simulate a protocol that has a 4 byte message length at byte 0 indicating how many bytes follow
+            const getRequest = length => {
+                    const buffer = new Buffer(length + 4);
+                    buffer.writeUInt32LE(length, 0);
+
+                    for (let i = 0; i < length; i += 1) {
+                        buffer.writeInt8(0, i + 4);
+                    }
+                    return buffer;
+                },
+                largeRequest = getRequest(100000),
+                resolver = requestBuffer => {
+                    const messageLength = requestBuffer.readUInt32LE(0);
+                    return requestBuffer.length >= messageLength + 4;
+                },
+                originServer = net.createServer(client => {
+                    client.on('data', () => {
+                        // force multiple data packets
+                        client.write(largeRequest, () => { originServer.close(); });
+                    });
                 });
-            });
-            server.listen(port);
 
-            const proxy = TcpProxy.create(logger, 'utf8');
+            originServer.listen(port);
 
-            return proxy.to(`tcp://localhost:${port}`, { data: 'hello, world!' }).then(response => {
-                assert.strictEqual(response.data.length, 10 * 1024 * 1024 - 1);
-            }).finally(() => {
-                server.close();
+            const proxy = TcpProxy.create(logger, 'base64', resolver),
+                request = { data: 'test' };
+            return proxy.to(`tcp://localhost:${port}`, request).then(response => {
+                assert.strictEqual(response.data, largeRequest.toString('base64'), `Response length: ${response.data.length}`);
             });
         });
 
