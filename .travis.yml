@@ -34,8 +34,9 @@ install:
   - mv Gemfile.lock Gemfile.lock.orig
   - sed -E -e 's/dpl \(1.10.6\)/dpl (1.8.47)/' Gemfile.lock.orig > Gemfile.lock
   # fpm install started failing even after bundle update
+  - ruby --version
   - gem install fpm
-  - gem install bundler 
+  - gem install bundler
   - bundle install --without development
 
 script:
