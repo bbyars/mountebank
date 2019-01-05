@@ -218,13 +218,21 @@ function create (proxy, postProcess) {
 
         addInjectedHeadersTo(request, responseConfig.proxy.injectHeaders);
 
-        return proxy.to(responseConfig.proxy.to, request, responseConfig.proxy).then(response =>
-            // Run behaviors here to persist decorated response
-            Q(behaviors.execute(request, response, responseConfig._behaviors, logger))
-        ).then(response => {
-            recordProxyResponse(responseConfig, request, response, stubs, logger);
-            return Q(response);
-        });
+        if (proxy) {
+            return proxy.to(responseConfig.proxy.to, request, responseConfig.proxy).then(response =>
+                // Run behaviors here to persist decorated response
+                Q(behaviors.execute(request, response, responseConfig._behaviors, logger))
+            ).then(response => {
+                recordProxyResponse(responseConfig, request, response, stubs, logger);
+                return Q(response);
+            });
+        }
+        else {
+            return Q({
+                proxy: responseConfig.proxy,
+                request: request
+            });
+        }
     }
 
     function processResponse (responseConfig, request, logger, stubs, imposterState) {
@@ -283,7 +291,14 @@ function create (proxy, postProcess) {
             else {
                 return Q(behaviors.execute(request, response, responseConfig._behaviors, logger));
             }
-        }).then(response => Q(postProcess(response, request)));
+        }).then(response => {
+            if (proxy) {
+                return Q(postProcess(response, request));
+            }
+            else {
+                return responseConfig.proxy ? Q(response) : Q({ response: postProcess(response, request) });
+            }
+        });
     }
 
     return { resolve };

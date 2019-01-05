@@ -119,6 +119,10 @@ function create (resolver, recordMatches, encoding) {
         return resolver.resolve(responseConfig, request, logger, stubs, imposterState).then(response => {
             const match = { timestamp: new Date().toJSON(), request, response };
             if (recordMatches) {
+                // TODO: Remove once protocol conversion
+                if (match.response && match.response.response) {
+                    match.response = match.response.response;
+                }
                 stub.matches = stub.matches || [];
                 stub.matches.push(match);
             }

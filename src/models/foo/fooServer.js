@@ -31,9 +31,18 @@ function create (options, logger, responseFn) {
                 mbResponse.on('data', chunk => packets.push(chunk));
 
                 mbResponse.on('end', () => {
-                    const buffer = Buffer.concat(packets);
-                    mbResponse.body = JSON.parse(buffer.toString('utf8'));
-                    responseDeferred.resolve(mbResponse);
+                    const buffer = Buffer.concat(packets),
+                        body = buffer.toString('utf8');
+
+                    if (mbResponse.statusCode !== 200) {
+                        deferred.reject(require('../../util/errors').CommunicationError({
+                            statusCode: mbResponse.statusCode,
+                            body: body
+                        }));
+                    }
+                    else {
+                        responseDeferred.resolve(JSON.parse(body));
+                    }
                 });
             });
 
@@ -41,6 +50,11 @@ function create (options, logger, responseFn) {
         mbRequest.write(JSON.stringify({ request }));
         mbRequest.end();
         return responseDeferred.promise;
+    }
+
+    function getProxyResponse (proxyConfig, request) {
+        const proxy = require('../tcp/tcpProxy').create(logger, 'utf8');
+        return proxy.to(proxyConfig.to, request, proxyConfig);
     }
 
     server.on('connection', socket => {
@@ -63,22 +77,18 @@ function create (options, logger, responseFn) {
                 });
             }
             else {
-                getResponseFromMountebank(request).done(mbResponse => {
-                    if (mbResponse.statusCode === 200) {
-                        // translate response JSON to network request
-                        const stubResponse = mbResponse.body.response;
-                        const buffer = Buffer.from(stubResponse.data, 'utf8');
-                        socket.write(buffer);
+                getResponseFromMountebank(request).then(mbResponse => {
+                    if (mbResponse.proxy) {
+                        return getProxyResponse(mbResponse.proxy, mbResponse.request);
                     }
                     else {
-                        const errors = require('../../util/errors'),
-                            error = errors.CommunicationError({
-                                statusCode: mbResponse.statusCode,
-                                body: mbResponse.body
-                            });
-                        logger.error(`Error calling mountebank: ${errors.details(error)}`);
-                        socket.write(JSON.stringify(error));
+                        return Q(mbResponse.response);
                     }
+                }).done(response => {
+                    // translate response JSON to network request
+                    socket.write(Buffer.from(response.data, 'utf8'), () => { socket.end(); });
+                }, error => {
+                    socket.write(require('../../util/errors').details(error), () => { socket.end(); });
                 });
             }
         });
@@ -96,7 +106,6 @@ function create (options, logger, responseFn) {
             postProcess: function (response, request, defaultResponse) {
                 return { data: response.data || defaultResponse.data || 'foo' };
             },
-            proxy: require('../tcp/tcpProxy').create(logger, 'utf8'),
             encoding: 'utf8',
             setCallbackUrl: url => { callbackUrl = url; }
         });

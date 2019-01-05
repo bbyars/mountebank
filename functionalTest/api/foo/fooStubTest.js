@@ -75,13 +75,13 @@ describe('foo imposter', function () {
                     protocol: 'foo',
                     port: originServerPort,
                     stubs: [originServerStub],
-                    name: 'ORIGIN',
-                    inProcessResolution: true
+                    name: 'ORIGIN'
                 },
-                proxyStub = { responses: [{ proxy: { to: { host: 'localhost', port: originServerPort } } }] },
-                proxyRequest = { protocol: 'foo', port, stubs: [proxyStub], name: 'PROXY', inProcessResolution: true };
+                proxyStub = { responses: [{ proxy: { to: 'tcp://localhost:' + originServerPort } }] },
+                proxyRequest = { protocol: 'foo', port, stubs: [proxyStub], name: 'PROXY' };
 
-            return api.post('/imposters', originServerRequest).then(() => api.post('/imposters', proxyRequest))
+            return api.post('/imposters', originServerRequest)
+                .then(() => api.post('/imposters', proxyRequest))
                 .then(() => tcp.send('request', port))
                 .then(response => {
                     assert.strictEqual(response.toString(), 'PROXIED');

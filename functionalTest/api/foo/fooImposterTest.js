@@ -59,7 +59,8 @@ describe('foo imposter', function () {
             const stub = { responses: [{ is: { data: '1' } }, { is: { data: '2' } }] },
                 request = { protocol: 'foo', port, stubs: [stub] };
 
-            return api.post('/imposters', request).then(() => tcp.send('first', port))
+            return api.post('/imposters', request)
+                .then(() => tcp.send('first', port))
                 .then(() => tcp.send('second', port))
                 .then(() => api.get(`/imposters/${port}`))
                 .then(response => {

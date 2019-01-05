@@ -122,7 +122,7 @@ function create (imposters) {
             protoRequest = request.body.request;
 
         return imposter.getResponseFor(protoRequest).then(protoResponse => {
-            response.send({ response: protoResponse });
+            response.send(protoResponse);
         });
     }
 

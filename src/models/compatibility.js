@@ -30,7 +30,7 @@ function upcastShellTransformToArray (request) {
  * @param {Object} request - the request to upcast
  */
 function upcastTcpProxyDestinationToUrl (request) {
-    if (request.protocol !== 'tcp' && request.protocol !== 'foo') {
+    if (request.protocol !== 'tcp') {
         return;
     }
 

@@ -84,7 +84,9 @@ function create (Protocol, creationRequest, baseLogger, recordMatches, recordReq
             const postProcess = (response, request) =>
                 server.postProcess(response, request, creationRequest.defaultResponse || {});
 
-            proxy = server.proxy;
+            if (Protocol.name !== 'foo') {
+                proxy = server.proxy;
+            }
             resolver = require('./responseResolver').create(proxy, postProcess);
             stubs = require('./stubRepository').create(resolver, recordMatches, server.encoding || 'utf8');
 
