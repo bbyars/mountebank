@@ -120,7 +120,7 @@ describe('http proxy', function () {
 
         ['application/octet-stream', 'audio/mpeg', 'audio/mp4', 'image/gif', 'image/jpeg', 'video/avi', 'video/mpeg'].forEach(mimeType => {
             promiseIt(`should base64 encode ${mimeType} responses`, function () {
-                const buffer = new Buffer([0, 1, 2, 3]),
+                const buffer = Buffer.from([0, 1, 2, 3]),
                     stub = {
                         responses: [{
                             is: {

@@ -48,14 +48,14 @@ describe('predicates', function () {
         });
 
         it('should return true if starts with binary sequence and encoding is base64', function () {
-            const predicate = { startsWith: { field: new Buffer([1, 2]).toString('base64') } },
-                request = { field: new Buffer([1, 2, 3, 4]).toString('base64') };
+            const predicate = { startsWith: { field: Buffer.from([1, 2]).toString('base64') } },
+                request = { field: Buffer.from([1, 2, 3, 4]).toString('base64') };
             assert.ok(predicates.evaluate(predicate, request, 'base64'));
         });
 
         it('should return false if does not start with binary sequence and encoding is base64', function () {
-            const predicate = { startsWith: { field: new Buffer([2]).toString('base64') } },
-                request = { field: new Buffer([1, 2, 3, 4]).toString('base64') };
+            const predicate = { startsWith: { field: Buffer.from([2]).toString('base64') } },
+                request = { field: Buffer.from([1, 2, 3, 4]).toString('base64') };
             assert.ok(!predicates.evaluate(predicate, request, 'base64'));
         });
 

@@ -410,7 +410,7 @@ describe('http proxy stubs', function () {
     });
 
     promiseIt('should support returning binary data from origin server based on content encoding', function () {
-        const buffer = new Buffer([0, 1, 2, 3]),
+        const buffer = Buffer.from([0, 1, 2, 3]),
             originServerPort = port + 1,
             originServerResponse = {
                 is: {

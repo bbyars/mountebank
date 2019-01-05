@@ -54,7 +54,7 @@ function create (logger, encoding, isEndOfRequest) {
                     logger.debug('Proxy %s %s %s %s %s',
                         originalRequest.requestFrom, direction, JSON.stringify(format(what)), direction, proxyName);
                 },
-                buffer = new Buffer(originalRequest.data, encoding),
+                buffer = Buffer.from(originalRequest.data, encoding),
                 net = require('net'),
                 socket = net.connect(connectionInfoFor(proxyDestination), () => {
                     socket.write(buffer);

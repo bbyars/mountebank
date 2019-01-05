@@ -167,7 +167,7 @@ const assert = require('assert'),
             });
 
             promiseIt('should support sending binary response', function () {
-                const buffer = new Buffer([0, 1, 2, 3]),
+                const buffer = Buffer.from([0, 1, 2, 3]),
                     stub = { responses: [{ is: { body: buffer.toString('base64'), _mode: 'binary' } }] },
                     request = { protocol, port, stubs: [stub] };
 

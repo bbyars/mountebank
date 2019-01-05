@@ -58,7 +58,7 @@ function create (options, logger, responseFn) {
             if (options.inProcessResolution) {
                 responseFn(request).done(stubResponse => {
                     // translate response JSON to network request
-                    const buffer = new Buffer(stubResponse.data, 'utf8');
+                    const buffer = Buffer.from(stubResponse.data, 'utf8');
                     socket.write(buffer);
                 });
             }
@@ -67,7 +67,7 @@ function create (options, logger, responseFn) {
                     if (mbResponse.statusCode === 200) {
                         // translate response JSON to network request
                         const stubResponse = mbResponse.body.response;
-                        const buffer = new Buffer(stubResponse.data, 'utf8');
+                        const buffer = Buffer.from(stubResponse.data, 'utf8');
                         socket.write(buffer);
                     }
                     else {

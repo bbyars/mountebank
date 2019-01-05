@@ -30,7 +30,7 @@ describe('tcp imposter', function () {
         });
 
         promiseIt('should allow binary stub responses', function () {
-            const buffer = new Buffer([0, 1, 2, 3]),
+            const buffer = Buffer.from([0, 1, 2, 3]),
                 stub = { responses: [{ is: { data: buffer.toString('base64') } }] },
                 request = { protocol: 'tcp', port, stubs: [stub], mode: 'binary' };
 

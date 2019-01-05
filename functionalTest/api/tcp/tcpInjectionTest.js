@@ -98,7 +98,7 @@ describe('tcp imposter', function () {
         promiseIt('should allow binary requests extending beyond a single packet using endOfRequestResolver', function () {
             // We'll simulate a protocol that has a 4 byte message length at byte 0 indicating how many bytes follow
             const getRequest = length => {
-                    const buffer = new Buffer(length + 4);
+                    const buffer = Buffer.alloc(length + 4);
                     buffer.writeUInt32LE(length, 0);
 
                     for (let i = 0; i < length; i += 1) {
@@ -107,7 +107,7 @@ describe('tcp imposter', function () {
                     return buffer;
                 },
                 largeRequest = getRequest(100000),
-                responseBuffer = new Buffer([0, 1, 2, 3]),
+                responseBuffer = Buffer.from([0, 1, 2, 3]),
                 stub = { responses: [{ is: { data: responseBuffer.toString('base64') } }] },
                 resolver = requestData => {
                     const messageLength = requestData.readUInt32LE(0);

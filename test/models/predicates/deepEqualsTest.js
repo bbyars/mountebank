@@ -108,15 +108,15 @@ describe('predicates', function () {
         });
 
         it('should return true if equals binary sequence and encoding is base64', function () {
-            const binary = new Buffer([1, 2, 3, 4]).toString('base64'),
+            const binary = Buffer.from([1, 2, 3, 4]).toString('base64'),
                 predicate = { deepEquals: { field: binary } },
                 request = { field: binary };
             assert.ok(predicates.evaluate(predicate, request, 'base64'));
         });
 
         it('should return false if is not binary sequence and encoding is base64', function () {
-            const actual = new Buffer([1, 2, 3, 4]).toString('base64'),
-                expected = new Buffer([1, 2, 4]).toString('base64'),
+            const actual = Buffer.from([1, 2, 3, 4]).toString('base64'),
+                expected = Buffer.from([1, 2, 4]).toString('base64'),
                 predicate = { deepEquals: { field: expected } },
                 request = { field: actual };
             assert.ok(!predicates.evaluate(predicate, request, 'base64'));

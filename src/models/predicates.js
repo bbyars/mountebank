@@ -153,7 +153,7 @@ function exceptTransform (config) {
 function encodingTransform (encoding) {
     const combinators = require('../util/combinators');
     if (encoding === 'base64') {
-        return text => new Buffer(text, 'base64').toString();
+        return text => Buffer.from(text, 'base64').toString();
     }
     else {
         return combinators.identity;

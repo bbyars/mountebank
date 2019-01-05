@@ -41,6 +41,7 @@
         "no-alert": 2,
         "no-array-constructor": 2,
         "no-bitwise": 2,
+        "no-buffer-constructor": 2,
         "no-caller": 2,
         "no-confusing-arrow": 1,
         "no-empty-pattern": 2,

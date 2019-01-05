@@ -96,7 +96,7 @@ function create (options, logger, responseFn) {
                     }).done(stubResponse => {
                         const buffer = Buffer.isBuffer(stubResponse.data)
                             ? stubResponse.data
-                            : new Buffer(stubResponse.data, encoding);
+                            : Buffer.from(stubResponse.data, encoding);
 
                         if (buffer.length > 0) {
                             container.socket.write(buffer);

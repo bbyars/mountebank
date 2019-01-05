@@ -28,20 +28,20 @@ describe('tcp proxy', function () {
         });
 
         promiseIt('should proxy binary data', function () {
-            const buffer = new Buffer([0, 1, 2, 3]),
+            const buffer = Buffer.from([0, 1, 2, 3]),
                 stub = { responses: [{ is: { data: buffer.toString('base64') } }] },
                 request = { protocol: 'tcp', port, stubs: [stub], mode: 'binary' },
                 proxy = TcpProxy.create(logger, 'base64');
 
             return api.post('/imposters', request).then(() => proxy.to(`tcp://localhost:${port}`, { data: buffer })).then(response => {
-                assert.deepEqual(new Buffer(response.data, 'base64').toJSON().data, [0, 1, 2, 3]);
+                assert.deepEqual(Buffer.from(response.data, 'base64').toJSON().data, [0, 1, 2, 3]);
             }).finally(() => api.del('/imposters'));
         });
 
         promiseIt('should obey endOfRequestResolver', function () {
             // We'll simulate a protocol that has a 4 byte message length at byte 0 indicating how many bytes follow
             const getRequest = length => {
-                    const buffer = new Buffer(length + 4);
+                    const buffer = Buffer.alloc(length + 4);
                     buffer.writeUInt32LE(length, 0);
 
                     for (let i = 0; i < length; i += 1) {
