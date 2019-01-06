@@ -19,11 +19,13 @@ describe('http proxy stubs', function () {
             const stub = { responses: [{ proxy: { to: 'http://invalid.domain' } }] },
                 request = { protocol: 'http', port, stubs: [stub] };
 
-            return api.post('/imposters', request).then(() => client.get('/', port)).then(response => {
-                assert.strictEqual(response.statusCode, 500);
-                assert.strictEqual(response.body.errors[0].code, 'invalid proxy');
-                assert.strictEqual(response.body.errors[0].message, 'Cannot resolve "http://invalid.domain"');
-            }).finally(() => api.del('/imposters'));
+            return api.post('/imposters', request)
+                .then(() => client.get('/', port))
+                .then(response => {
+                    assert.strictEqual(response.statusCode, 500);
+                    assert.strictEqual(response.body.errors[0].code, 'invalid proxy');
+                    assert.strictEqual(response.body.errors[0].message, 'Cannot resolve "http://invalid.domain"');
+                }).finally(() => api.del('/imposters'));
         });
     }
 
@@ -39,15 +41,17 @@ describe('http proxy stubs', function () {
             proxyStub = { responses: [{ proxy: { to: `http://localhost:${originServerPort}` } }] },
             proxyRequest = { protocol: 'http', port, stubs: [proxyStub], name: 'proxy' };
 
-        return api.post('/imposters', originServerRequest).then(() => api.post('/imposters', proxyRequest)).then(response => {
-            assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body, null, 2));
-            return client.get('/', port);
-        }).then(response => {
-            assert.strictEqual(response.body, 'origin server');
-            return api.get(`/imposters/${port}`);
-        }).then(response => {
-            assert.strictEqual(response.body.stubs[1].responses[0].proxy.mode, 'proxyOnce', response.body);
-        }).finally(() => api.del('/imposters'));
+        return api.post('/imposters', originServerRequest)
+            .then(() => api.post('/imposters', proxyRequest))
+            .then(response => {
+                assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body, null, 2));
+                return client.get('/', port);
+            }).then(response => {
+                assert.strictEqual(response.body, 'origin server');
+                return api.get(`/imposters/${port}`);
+            }).then(response => {
+                assert.strictEqual(response.body.stubs[1].responses[0].proxy.mode, 'proxyOnce', response.body);
+            }).finally(() => api.del('/imposters'));
     });
 
     promiseIt('should record new stubs in order in front of proxy resolver using proxyOnce mode', function () {
@@ -81,30 +85,32 @@ describe('http proxy stubs', function () {
             proxyStub = { responses: [{ proxy: proxyDefinition }] },
             proxyRequest = { protocol: 'http', port, stubs: [proxyStub], name: 'proxy' };
 
-        return api.post('/imposters', originServerRequest).then(() => api.post('/imposters', proxyRequest)).then(response => {
-            assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body, null, 2));
-            return client.get('/first', port);
-        }).then(response => {
-            assert.strictEqual(response.body, '1. GET /first');
-            return client.del('/first', port);
-        }).then(response => {
-            assert.strictEqual(response.body, '2. DELETE /first');
-            return client.get('/second', port);
-        }).then(response => {
-            assert.strictEqual(response.body, '3. GET /second');
-            return client.get('/first', port);
-        }).then(response => {
-            assert.strictEqual(response.body, '1. GET /first');
-            return client.del('/first', port);
-        }).then(response => {
-            assert.strictEqual(response.body, '2. DELETE /first');
-            return client.get('/second', port);
-        }).then(response => {
-            assert.strictEqual(response.body, '3. GET /second');
-            return api.del(`/imposters/${port}`);
-        }).then(response => {
-            assert.strictEqual(response.body.stubs.length, 4);
-        }).finally(() => api.del('/imposters'));
+        return api.post('/imposters', originServerRequest)
+            .then(() => api.post('/imposters', proxyRequest))
+            .then(response => {
+                assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body, null, 2));
+                return client.get('/first', port);
+            }).then(response => {
+                assert.strictEqual(response.body, '1. GET /first');
+                return client.del('/first', port);
+            }).then(response => {
+                assert.strictEqual(response.body, '2. DELETE /first');
+                return client.get('/second', port);
+            }).then(response => {
+                assert.strictEqual(response.body, '3. GET /second');
+                return client.get('/first', port);
+            }).then(response => {
+                assert.strictEqual(response.body, '1. GET /first');
+                return client.del('/first', port);
+            }).then(response => {
+                assert.strictEqual(response.body, '2. DELETE /first');
+                return client.get('/second', port);
+            }).then(response => {
+                assert.strictEqual(response.body, '3. GET /second');
+                return api.del(`/imposters/${port}`);
+            }).then(response => {
+                assert.strictEqual(response.body.stubs.length, 4);
+            }).finally(() => api.del('/imposters'));
     });
 
     promiseIt('should record new stubs with multiple responses behind proxy resolver in proxyAlways mode', function () {
@@ -131,17 +137,19 @@ describe('http proxy stubs', function () {
             proxyStub = { responses: [{ proxy: proxyDefinition }] },
             proxyRequest = { protocol: 'http', port, stubs: [proxyStub], name: 'proxy' };
 
-        return api.post('/imposters', originServerRequest).then(() => api.post('/imposters', proxyRequest)).then(response => {
-            assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body));
-            return client.get('/first', port);
-        }).then(() => client.get('/second', port)).then(() => client.get('/first', port)).then(() => api.del(`/imposters/${port}`)).then(response => {
-            assert.strictEqual(response.body.stubs.length, 3, JSON.stringify(response.body.stubs, null, 2));
+        return api.post('/imposters', originServerRequest)
+            .then(() => api.post('/imposters', proxyRequest))
+            .then(response => {
+                assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body));
+                return client.get('/first', port);
+            }).then(() => client.get('/second', port)).then(() => client.get('/first', port)).then(() => api.del(`/imposters/${port}`)).then(response => {
+                assert.strictEqual(response.body.stubs.length, 3, JSON.stringify(response.body.stubs, null, 2));
 
-            const stubs = response.body.stubs,
-                responses = stubs.splice(1).map(stub => stub.responses.map(stubResponse => stubResponse.is.body));
+                const stubs = response.body.stubs,
+                    responses = stubs.splice(1).map(stub => stub.responses.map(stubResponse => stubResponse.is.body));
 
-            assert.deepEqual(responses, [['1. /first', '3. /first'], ['2. /second']]);
-        }).finally(() => api.del('/imposters'));
+                assert.deepEqual(responses, [['1. /first', '3. /first'], ['2. /second']]);
+            }).finally(() => api.del('/imposters'));
     });
 
     promiseIt('should match entire object graphs', function () {
@@ -168,22 +176,24 @@ describe('http proxy stubs', function () {
             proxyStub = { responses: [{ proxy: proxyDefinition }] },
             proxyRequest = { protocol: 'http', port, stubs: [proxyStub], name: 'proxy' };
 
-        return api.post('/imposters', originServerRequest).then(() => api.post('/imposters', proxyRequest)).then(response => {
-            assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body));
-            return client.get('/?first=1&second=2', port);
-        }).then(response => {
-            assert.strictEqual(response.body, '1. {"first":"1","second":"2"}');
-            return client.get('/?first=1', port);
-        }).then(response => {
-            assert.strictEqual(response.body, '2. {"first":"1"}');
-            return client.get('/?first=2&second=2', port);
-        }).then(response => {
-            assert.strictEqual(response.body, '3. {"first":"2","second":"2"}');
-            return client.get('/?first=1&second=2', port);
-        }).then(response => {
-            assert.strictEqual(response.body, '1. {"first":"1","second":"2"}');
-            return api.del(`/imposters/${originServerPort}`);
-        }).finally(() => api.del('/imposters'));
+        return api.post('/imposters', originServerRequest)
+            .then(() => api.post('/imposters', proxyRequest))
+            .then(response => {
+                assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body));
+                return client.get('/?first=1&second=2', port);
+            }).then(response => {
+                assert.strictEqual(response.body, '1. {"first":"1","second":"2"}');
+                return client.get('/?first=1', port);
+            }).then(response => {
+                assert.strictEqual(response.body, '2. {"first":"1"}');
+                return client.get('/?first=2&second=2', port);
+            }).then(response => {
+                assert.strictEqual(response.body, '3. {"first":"2","second":"2"}');
+                return client.get('/?first=1&second=2', port);
+            }).then(response => {
+                assert.strictEqual(response.body, '1. {"first":"1","second":"2"}');
+                return api.del(`/imposters/${originServerPort}`);
+            }).finally(() => api.del('/imposters'));
     });
 
     promiseIt('should match sub-objects', function () {
@@ -210,22 +220,24 @@ describe('http proxy stubs', function () {
             proxyStub = { responses: [{ proxy: proxyDefinition }] },
             proxyRequest = { protocol: 'http', port, stubs: [proxyStub], name: 'proxy' };
 
-        return api.post('/imposters', originServerRequest).then(() => api.post('/imposters', proxyRequest)).then(response => {
-            assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body));
-            return client.get('/?first=1&second=2', port);
-        }).then(response => {
-            assert.strictEqual(response.body, '1. {"first":"1","second":"2"}');
-            return client.get('/?second=2', port);
-        }).then(response => {
-            assert.strictEqual(response.body, '2. {"second":"2"}');
-            return client.get('/?first=2&second=2', port);
-        }).then(response => {
-            assert.strictEqual(response.body, '3. {"first":"2","second":"2"}');
-            return client.get('/?first=1&second=2&third=3', port);
-        }).then(response => {
-            assert.strictEqual(response.body, '1. {"first":"1","second":"2"}');
-            return api.del(`/imposters/${originServerPort}`);
-        }).finally(() => api.del('/imposters'));
+        return api.post('/imposters', originServerRequest)
+            .then(() => api.post('/imposters', proxyRequest))
+            .then(response => {
+                assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body));
+                return client.get('/?first=1&second=2', port);
+            }).then(response => {
+                assert.strictEqual(response.body, '1. {"first":"1","second":"2"}');
+                return client.get('/?second=2', port);
+            }).then(response => {
+                assert.strictEqual(response.body, '2. {"second":"2"}');
+                return client.get('/?first=2&second=2', port);
+            }).then(response => {
+                assert.strictEqual(response.body, '3. {"first":"2","second":"2"}');
+                return client.get('/?first=1&second=2&third=3', port);
+            }).then(response => {
+                assert.strictEqual(response.body, '1. {"first":"1","second":"2"}');
+                return api.del(`/imposters/${originServerPort}`);
+            }).finally(() => api.del('/imposters'));
     });
 
     promiseIt('should persist behaviors from origin server', function () {
@@ -260,20 +272,22 @@ describe('http proxy stubs', function () {
 
         fs.writeFileSync('shellTransformTest.js', util.format('%s\nexec();', shellFn.toString()));
 
-        return api.post('/imposters', originServerRequest).then(() => api.post('/imposters', proxyRequest)).then(response => {
-            assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body, null, 2));
-            return client.get('/mountebank', port);
-        }).then(response => {
-            assert.strictEqual(response.body, 'Hello mountebank');
-            assert.strictEqual(response.headers['x-test'], 'decorated', JSON.stringify(response.headers, null, 2));
-            return client.get('/world', port);
-        }).then(response => {
-            assert.strictEqual(response.body, 'Hello mountebank');
-            assert.strictEqual(response.headers['x-test'], 'decorated', JSON.stringify(response.headers, null, 2));
-        }).finally(() => {
-            fs.unlinkSync('shellTransformTest.js');
-            return api.del('/imposters');
-        });
+        return api.post('/imposters', originServerRequest)
+            .then(() => api.post('/imposters', proxyRequest))
+            .then(response => {
+                assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body, null, 2));
+                return client.get('/mountebank', port);
+            }).then(response => {
+                assert.strictEqual(response.body, 'Hello mountebank');
+                assert.strictEqual(response.headers['x-test'], 'decorated', JSON.stringify(response.headers, null, 2));
+                return client.get('/world', port);
+            }).then(response => {
+                assert.strictEqual(response.body, 'Hello mountebank');
+                assert.strictEqual(response.headers['x-test'], 'decorated', JSON.stringify(response.headers, null, 2));
+            }).finally(() => {
+                fs.unlinkSync('shellTransformTest.js');
+                return api.del('/imposters');
+            });
     });
 
     promiseIt('should support adding latency to saved responses based on how long the origin server took to respond', function () {
@@ -291,17 +305,19 @@ describe('http proxy stubs', function () {
             } }] },
             proxyRequest = { protocol: 'http', port, stubs: [proxyStub], name: 'proxy' };
 
-        return api.post('/imposters', originServerRequest).then(() => api.post('/imposters', proxyRequest)).then(response => {
-            assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body, null, 2));
-            return client.get('/', port);
-        }).then(response => {
-            assert.strictEqual(response.body, 'origin server');
-            return api.get(`/imposters/${port}`);
-        }).then(response => {
-            const stubResponse = response.body.stubs[0].responses[0];
-            // eslint-disable-next-line no-underscore-dangle
-            assert.strictEqual(stubResponse._behaviors.wait, stubResponse.is._proxyResponseTime, JSON.stringify(stubResponse, null, 4));
-        }).finally(() => api.del('/imposters'));
+        return api.post('/imposters', originServerRequest)
+            .then(() => api.post('/imposters', proxyRequest))
+            .then(response => {
+                assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body, null, 2));
+                return client.get('/', port);
+            }).then(response => {
+                assert.strictEqual(response.body, 'origin server');
+                return api.get(`/imposters/${port}`);
+            }).then(response => {
+                const stubResponse = response.body.stubs[0].responses[0];
+                // eslint-disable-next-line no-underscore-dangle
+                assert.strictEqual(stubResponse._behaviors.wait, stubResponse.is._proxyResponseTime, JSON.stringify(stubResponse, null, 4));
+            }).finally(() => api.del('/imposters'));
     });
 
     promiseIt('should support retrieving replayable JSON with proxies removed for later playback', function () {
@@ -328,85 +344,87 @@ describe('http proxy stubs', function () {
             proxyStub = { responses: [{ proxy: proxyDefinition }] },
             proxyRequest = { protocol: 'http', port, stubs: [proxyStub], name: 'proxy' };
 
-        return api.post('/imposters', originServerRequest).then(() => api.post('/imposters', proxyRequest)).then(response => {
-            assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body));
-            return client.get('/first', port);
-        }).then(() => client.get('/second', port)).then(() => client.get('/first', port)).then(() => api.del(`/imposters/${originServerPort}`)).then(() => api.get('/imposters?replayable=true&removeProxies=true')).then(response => {
-            const actual = JSON.stringify(response.body),
-                withDateRemoved = actual.replace(/"Date":"[^"]+"/g, '"Date":"NOW"'),
-                actualWithoutEphemeralData = JSON.parse(withDateRemoved);
+        return api.post('/imposters', originServerRequest)
+            .then(() => api.post('/imposters', proxyRequest))
+            .then(response => {
+                assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body));
+                return client.get('/first', port);
+            }).then(() => client.get('/second', port)).then(() => client.get('/first', port)).then(() => api.del(`/imposters/${originServerPort}`)).then(() => api.get('/imposters?replayable=true&removeProxies=true')).then(response => {
+                const actual = JSON.stringify(response.body),
+                    withDateRemoved = actual.replace(/"Date":"[^"]+"/g, '"Date":"NOW"'),
+                    actualWithoutEphemeralData = JSON.parse(withDateRemoved);
 
-            assert.deepEqual(actualWithoutEphemeralData, {
-                imposters: [
-                    {
-                        protocol: 'http',
-                        port,
-                        name: proxyRequest.name,
-                        recordRequests: true,
-                        stubs: [
-                            {
-                                predicates: [
-                                    {
-                                        deepEquals: {
-                                            path: '/first'
+                assert.deepEqual(actualWithoutEphemeralData, {
+                    imposters: [
+                        {
+                            protocol: 'http',
+                            port,
+                            name: proxyRequest.name,
+                            recordRequests: true,
+                            stubs: [
+                                {
+                                    predicates: [
+                                        {
+                                            deepEquals: {
+                                                path: '/first'
+                                            }
                                         }
-                                    }
-                                ],
-                                responses: [
-                                    {
-                                        is: {
-                                            statusCode: 200,
-                                            headers: {
-                                                Connection: 'close',
-                                                Date: 'NOW',
-                                                'Transfer-Encoding': 'chunked'
-                                            },
-                                            body: '1. /first',
-                                            _mode: 'text'
+                                    ],
+                                    responses: [
+                                        {
+                                            is: {
+                                                statusCode: 200,
+                                                headers: {
+                                                    Connection: 'close',
+                                                    Date: 'NOW',
+                                                    'Transfer-Encoding': 'chunked'
+                                                },
+                                                body: '1. /first',
+                                                _mode: 'text'
+                                            }
+                                        },
+                                        {
+                                            is: {
+                                                statusCode: 200,
+                                                headers: {
+                                                    Connection: 'close',
+                                                    Date: 'NOW',
+                                                    'Transfer-Encoding': 'chunked'
+                                                },
+                                                body: '3. /first',
+                                                _mode: 'text'
+                                            }
                                         }
-                                    },
-                                    {
-                                        is: {
-                                            statusCode: 200,
-                                            headers: {
-                                                Connection: 'close',
-                                                Date: 'NOW',
-                                                'Transfer-Encoding': 'chunked'
-                                            },
-                                            body: '3. /first',
-                                            _mode: 'text'
+                                    ]
+                                },
+                                {
+                                    predicates: [
+                                        {
+                                            deepEquals: {
+                                                path: '/second'
+                                            }
                                         }
-                                    }
-                                ]
-                            },
-                            {
-                                predicates: [
-                                    {
-                                        deepEquals: {
-                                            path: '/second'
+                                    ],
+                                    responses: [
+                                        {
+                                            is: {
+                                                statusCode: 200,
+                                                headers: {
+                                                    Connection: 'close',
+                                                    Date: 'NOW',
+                                                    'Transfer-Encoding': 'chunked'
+                                                },
+                                                body: '2. /second',
+                                                _mode: 'text'
+                                            }
                                         }
-                                    }
-                                ],
-                                responses: [
-                                    {
-                                        is: {
-                                            statusCode: 200,
-                                            headers: {
-                                                Connection: 'close',
-                                                Date: 'NOW',
-                                                'Transfer-Encoding': 'chunked'
-                                            },
-                                            body: '2. /second',
-                                            _mode: 'text'
-                                        }
-                                    }
-                                ]
-                            }
-                        ]
-                    }
-                ]
-            });
-        }).finally(() => api.del('/imposters'));
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                });
+            }).finally(() => api.del('/imposters'));
     });
 
     promiseIt('should support returning binary data from origin server based on content encoding', function () {
@@ -430,12 +448,14 @@ describe('http proxy stubs', function () {
             proxyStub = { responses: [proxyResponse] },
             proxyRequest = { protocol: 'http', port, stubs: [proxyStub], name: 'proxy' };
 
-        return api.post('/imposters', originServerRequest).then(() => api.post('/imposters', proxyRequest)).then(response => {
-            assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body, null, 2));
-            return client.responseFor({ method: 'GET', port, path: '/', mode: 'binary' });
-        }).then(response => {
-            assert.deepEqual(response.body.toJSON().data, [0, 1, 2, 3]);
-        }).finally(() => api.del('/imposters'));
+        return api.post('/imposters', originServerRequest)
+            .then(() => api.post('/imposters', proxyRequest))
+            .then(response => {
+                assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body, null, 2));
+                return client.responseFor({ method: 'GET', port, path: '/', mode: 'binary' });
+            }).then(response => {
+                assert.deepEqual(response.body.toJSON().data, [0, 1, 2, 3]);
+            }).finally(() => api.del('/imposters'));
     });
 
     promiseIt('should persist decorated proxy responses and only run decorator once', function () {

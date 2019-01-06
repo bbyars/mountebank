@@ -45,21 +45,24 @@ const assert = require('assert'),
                 const stub = { responses: [{ is: { statusCode: 400 } }, { is: { statusCode: 405 } }] },
                     request = { protocol, port, stubs: [stub] };
 
-                return api.post('/imposters', request).then(() => client.get('/test', port)).then(response => {
-                    assert.strictEqual(response.statusCode, 400);
-
-                    return client.get('/test', port);
-                }).then(response => {
-                    assert.strictEqual(response.statusCode, 405);
-
-                    return client.get('/test', port);
-                }).then(response => {
-                    assert.strictEqual(response.statusCode, 400);
-
-                    return client.get('/test', port);
-                }).then(response => {
-                    assert.strictEqual(response.statusCode, 405);
-                }).finally(() => api.del('/imposters'));
+                return api.post('/imposters', request)
+                    .then(() => client.get('/test', port))
+                    .then(response => {
+                        assert.strictEqual(response.statusCode, 400);
+                        return client.get('/test', port);
+                    })
+                    .then(response => {
+                        assert.strictEqual(response.statusCode, 405);
+                        return client.get('/test', port);
+                    })
+                    .then(response => {
+                        assert.strictEqual(response.statusCode, 400);
+                        return client.get('/test', port);
+                    })
+                    .then(response => {
+                        assert.strictEqual(response.statusCode, 405);
+                    })
+                    .finally(() => api.del('/imposters'));
             });
 
             promiseIt('should only return stubbed response if matches complex predicate', function () {

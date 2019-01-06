@@ -32,9 +32,12 @@ describe('tcp imposter', function () {
                 stub = { responses: [{ inject: fn.toString() }] },
                 request = { protocol: 'tcp', port, stubs: [stub] };
 
-            return api.post('/imposters', request).then(() => tcp.send('request', port)).then(response => {
-                assert.strictEqual(response.toString(), 'request INJECTED');
-            }).finally(() => api.del('/imposters'));
+            return api.post('/imposters', request)
+                .then(() => tcp.send('request', port))
+                .then(response => {
+                    assert.strictEqual(response.toString(), 'request INJECTED');
+                })
+                .finally(() => api.del('/imposters'));
         });
 
         promiseIt('should allow javascript injection to keep state between requests', function () {
@@ -121,14 +124,17 @@ describe('tcp imposter', function () {
                     endOfRequestResolver: { inject: resolver.toString() }
                 };
 
-            return api.post('/imposters', request).then(response => {
-                assert.strictEqual(response.statusCode, 201);
-
-                return tcp.send(largeRequest, port);
-            }).then(() => api.get(`/imposters/${port}`)).then(response => {
-                assert.strictEqual(response.body.requests.length, 1);
-                assert.strictEqual(response.body.requests[0].data, largeRequest.toString('base64'));
-            }).finally(() => api.del('/imposters'));
+            return api.post('/imposters', request)
+                .then(response => {
+                    assert.strictEqual(response.statusCode, 201);
+                    return tcp.send(largeRequest, port);
+                })
+                .then(() => api.get(`/imposters/${port}`))
+                .then(response => {
+                    assert.strictEqual(response.body.requests.length, 1);
+                    assert.strictEqual(response.body.requests[0].data, largeRequest.toString('base64'));
+                })
+                .finally(() => api.del('/imposters'));
         });
 
         promiseIt('should allow text requests extending beyond a single packet using endOfRequestResolver', function () {
@@ -150,14 +156,17 @@ describe('tcp imposter', function () {
                     endOfRequestResolver: { inject: resolver.toString() }
                 };
 
-            return api.post('/imposters', request).then(response => {
-                assert.strictEqual(response.statusCode, 201);
-
-                return tcp.send(largeRequest, port);
-            }).then(() => api.get(`/imposters/${port}`)).then(response => {
-                assert.strictEqual(response.body.requests.length, 1);
-                assert.strictEqual(response.body.requests[0].data, largeRequest);
-            }).finally(() => api.del('/imposters'));
+            return api.post('/imposters', request)
+                .then(response => {
+                    assert.strictEqual(response.statusCode, 201);
+                    return tcp.send(largeRequest, port);
+                })
+                .then(() => api.get(`/imposters/${port}`))
+                .then(response => {
+                    assert.strictEqual(response.body.requests.length, 1);
+                    assert.strictEqual(response.body.requests[0].data, largeRequest);
+                })
+                .finally(() => api.del('/imposters'));
         });
     });
 });

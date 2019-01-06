@@ -59,11 +59,14 @@ const assert = require('assert'),
                     stub = { responses: [{ inject: fn.toString() }] },
                     request = { protocol, port, stubs: [stub] };
 
-                return api.post('/imposters', request).then(() => client.get('/', port)).then(response => {
-                    assert.strictEqual(response.body, 'GET INJECTED');
-                    assert.strictEqual(response.statusCode, 200);
-                    assert.strictEqual(response.headers.connection, 'close');
-                }).finally(() => api.del('/imposters'));
+                return api.post('/imposters', request)
+                    .then(() => client.get('/', port))
+                    .then(response => {
+                        assert.strictEqual(response.body, 'GET INJECTED');
+                        assert.strictEqual(response.statusCode, 200);
+                        assert.strictEqual(response.headers.connection, 'close');
+                    })
+                    .finally(() => api.del('/imposters'));
             });
 
             promiseIt('should not validate a bad response injection', function () {

@@ -22,9 +22,12 @@ describe('tcp proxy', function () {
                 request = { protocol: 'tcp', port, stubs: [stub] },
                 proxy = TcpProxy.create(logger, 'utf8');
 
-            return api.post('/imposters', request).then(() => proxy.to(`tcp://localhost:${port}`, { data: 'hello, world!' })).then(response => {
-                assert.deepEqual(response.data.toString(), 'howdy!');
-            }).finally(() => api.del('/imposters'));
+            return api.post('/imposters', request)
+                .then(() => proxy.to(`tcp://localhost:${port}`, { data: 'hello, world!' }))
+                .then(response => {
+                    assert.deepEqual(response.data.toString(), 'howdy!');
+                })
+                .finally(() => api.del('/imposters'));
         });
 
         promiseIt('should proxy binary data', function () {
@@ -33,9 +36,12 @@ describe('tcp proxy', function () {
                 request = { protocol: 'tcp', port, stubs: [stub], mode: 'binary' },
                 proxy = TcpProxy.create(logger, 'base64');
 
-            return api.post('/imposters', request).then(() => proxy.to(`tcp://localhost:${port}`, { data: buffer })).then(response => {
-                assert.deepEqual(Buffer.from(response.data, 'base64').toJSON().data, [0, 1, 2, 3]);
-            }).finally(() => api.del('/imposters'));
+            return api.post('/imposters', request)
+                .then(() => proxy.to(`tcp://localhost:${port}`, { data: buffer }))
+                .then(response => {
+                    assert.deepEqual(Buffer.from(response.data, 'base64').toJSON().data, [0, 1, 2, 3]);
+                })
+                .finally(() => api.del('/imposters'));
         });
 
         promiseIt('should obey endOfRequestResolver', function () {
@@ -75,10 +81,13 @@ describe('tcp proxy', function () {
                 request = { protocol: 'tcp', port, stubs: [stub] },
                 proxy = TcpProxy.create(logger, 'utf8');
 
-            return api.post('/imposters', request).then(() => proxy.to(`tcp://localhost:${port}`, { data: 'hello, world!' })).then(response => {
-                assert.deepEqual(response.data.toString(), 'howdy!');
-                assert.ok(response._proxyResponseTime >= 0); // eslint-disable-line no-underscore-dangle
-            }).finally(() => api.del('/imposters'));
+            return api.post('/imposters', request)
+                .then(() => proxy.to(`tcp://localhost:${port}`, { data: 'hello, world!' }))
+                .then(response => {
+                    assert.deepEqual(response.data.toString(), 'howdy!');
+                    assert.ok(response._proxyResponseTime >= 0); // eslint-disable-line no-underscore-dangle
+                })
+                .finally(() => api.del('/imposters'));
         });
 
         if (!airplaneMode) {

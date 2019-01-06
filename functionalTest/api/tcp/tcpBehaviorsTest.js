@@ -32,9 +32,13 @@ describe('tcp imposter', function () {
                 proxyStub = { responses: [proxyResponse] },
                 proxyRequest = { protocol: 'tcp', port, stubs: [proxyStub], name: 'PROXY' };
 
-            return api.post('/imposters', originServerRequest).then(() => api.post('/imposters', proxyRequest)).then(() => tcp.send('request', port)).then(response => {
-                assert.strictEqual(response.toString(), 'ORIGIN DECORATED');
-            }).finally(() => api.del('/imposters'));
+            return api.post('/imposters', originServerRequest)
+                .then(() => api.post('/imposters', proxyRequest))
+                .then(() => tcp.send('request', port))
+                .then(response => {
+                    assert.strictEqual(response.toString(), 'ORIGIN DECORATED');
+                })
+                .finally(() => api.del('/imposters'));
         });
 
         promiseIt('should compose multiple behaviors together', function () {

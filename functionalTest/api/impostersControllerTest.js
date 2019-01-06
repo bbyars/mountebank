@@ -27,9 +27,12 @@ describe('POST /imposters', function () {
     });
 
     promiseIt('should create imposter at provided port', function () {
-        return api.post('/imposters', { protocol: 'http', port }).then(() => api.get('/', port)).then(response => {
-            assert.strictEqual(response.statusCode, 200, JSON.stringify(response.body));
-        }).finally(() => api.del(`/imposters/${port}`));
+        return api.post('/imposters', { protocol: 'http', port })
+            .then(() => api.get('/', port))
+            .then(response => {
+                assert.strictEqual(response.statusCode, 200, JSON.stringify(response.body));
+            })
+            .finally(() => api.del(`/imposters/${port}`));
     });
 
     promiseIt('should return 400 on invalid input', function () {

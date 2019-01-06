@@ -17,10 +17,13 @@ describe('mb without --allowInjection', function () {
             stub = { responses: [{ inject: fn.toString() }] },
             request = { protocol: 'http', port, stubs: [stub] };
 
-        return mb.start().then(() => mb.post('/imposters', request)).then(response => {
-            assert.strictEqual(response.statusCode, 400);
-            assert.strictEqual(response.body.errors[0].code, 'invalid injection');
-        }).finally(() => mb.stop());
+        return mb.start()
+            .then(() => mb.post('/imposters', request))
+            .then(response => {
+                assert.strictEqual(response.statusCode, 400);
+                assert.strictEqual(response.body.errors[0].code, 'invalid injection');
+            })
+            .finally(() => mb.stop());
     });
 
     promiseIt('should return a 400 if predicate injection is used', function () {
@@ -31,10 +34,13 @@ describe('mb without --allowInjection', function () {
             },
             request = { protocol: 'http', port, stubs: [stub] };
 
-        return mb.start().then(() => mb.post('/imposters', request)).then(response => {
-            assert.strictEqual(response.statusCode, 400);
-            assert.strictEqual(response.body.errors[0].code, 'invalid injection');
-        }).finally(() => mb.stop());
+        return mb.start()
+            .then(() => mb.post('/imposters', request))
+            .then(response => {
+                assert.strictEqual(response.statusCode, 400);
+                assert.strictEqual(response.body.errors[0].code, 'invalid injection');
+            })
+            .finally(() => mb.stop());
     });
 
     promiseIt('should return a 400 if endOfResponseResolver is used', function () {
@@ -48,10 +54,13 @@ describe('mb without --allowInjection', function () {
                 endOfRequestResolver: { inject: resolver.toString() }
             };
 
-        return mb.start().then(() => mb.post('/imposters', request)).then(response => {
-            assert.strictEqual(response.statusCode, 400);
-            assert.strictEqual(response.body.errors[0].code, 'invalid injection');
-        }).finally(() => mb.stop());
+        return mb.start()
+            .then(() => mb.post('/imposters', request))
+            .then(response => {
+                assert.strictEqual(response.statusCode, 400);
+                assert.strictEqual(response.body.errors[0].code, 'invalid injection');
+            })
+            .finally(() => mb.stop());
     });
 
     promiseIt('should return a 400 if a decorate behavior is used', function () {
@@ -59,10 +68,13 @@ describe('mb without --allowInjection', function () {
             stub = { responses: [{ is: { body: 'Hello, World! ' }, _behaviors: { decorate: fn.toString() } }] },
             request = { protocol: 'http', port, stubs: [stub] };
 
-        return mb.start().then(() => mb.post('/imposters', request)).then(response => {
-            assert.strictEqual(response.statusCode, 400);
-            assert.strictEqual(response.body.errors[0].code, 'invalid injection');
-        }).finally(() => mb.stop());
+        return mb.start()
+            .then(() => mb.post('/imposters', request))
+            .then(response => {
+                assert.strictEqual(response.statusCode, 400);
+                assert.strictEqual(response.body.errors[0].code, 'invalid injection');
+            })
+            .finally(() => mb.stop());
     });
 
     promiseIt('should return a 400 if a wait behavior function is used', function () {
@@ -70,29 +82,38 @@ describe('mb without --allowInjection', function () {
             stub = { responses: [{ is: { body: 'Hello, World! ' }, _behaviors: { wait: fn.toString() } }] },
             request = { protocol: 'http', port, stubs: [stub] };
 
-        return mb.start().then(() => mb.post('/imposters', request)).then(response => {
-            assert.strictEqual(response.statusCode, 400);
-            assert.strictEqual(response.body.errors[0].code, 'invalid injection');
-        }).finally(() => mb.stop());
+        return mb.start()
+            .then(() => mb.post('/imposters', request))
+            .then(response => {
+                assert.strictEqual(response.statusCode, 400);
+                assert.strictEqual(response.body.errors[0].code, 'invalid injection');
+            })
+            .finally(() => mb.stop());
     });
 
     promiseIt('should allow a wait behavior that directly specifies latency', function () {
         const stub = { responses: [{ is: { body: 'Hello, World! ' }, _behaviors: { wait: 100 } }] },
             request = { protocol: 'http', port, stubs: [stub] };
 
-        return mb.start().then(() => mb.post('/imposters', request)).then(response => {
-            assert.strictEqual(response.statusCode, 201);
-        }).finally(() => mb.stop());
+        return mb.start()
+            .then(() => mb.post('/imposters', request))
+            .then(response => {
+                assert.strictEqual(response.statusCode, 201);
+            })
+            .finally(() => mb.stop());
     });
 
     promiseIt('should return a 400 if a shellTransform behavior is used', function () {
         const stub = { responses: [{ is: {}, _behaviors: { shellTransform: 'command' } }] },
             request = { protocol: 'http', port, stubs: [stub] };
 
-        return mb.start().then(() => mb.post('/imposters', request)).then(response => {
-            assert.strictEqual(response.statusCode, 400);
-            assert.strictEqual(response.body.errors[0].code, 'invalid injection');
-        }).finally(() => mb.stop());
+        return mb.start()
+            .then(() => mb.post('/imposters', request))
+            .then(response => {
+                assert.strictEqual(response.statusCode, 400);
+                assert.strictEqual(response.body.errors[0].code, 'invalid injection');
+            })
+            .finally(() => mb.stop());
     });
 
     promiseIt('should return a 400 if a proxy addDecorateBehavior is used', function () {
@@ -103,9 +124,12 @@ describe('mb without --allowInjection', function () {
             stub = { responses: [{ proxy: proxy }] },
             request = { protocol: 'http', port, stubs: [stub] };
 
-        return mb.start().then(() => mb.post('/imposters', request)).then(response => {
-            assert.strictEqual(response.statusCode, 400);
-            assert.strictEqual(response.body.errors[0].code, 'invalid injection');
-        }).finally(() => mb.stop());
+        return mb.start()
+            .then(() => mb.post('/imposters', request))
+            .then(response => {
+                assert.strictEqual(response.statusCode, 400);
+                assert.strictEqual(response.body.errors[0].code, 'invalid injection');
+            })
+            .finally(() => mb.stop());
     });
 });

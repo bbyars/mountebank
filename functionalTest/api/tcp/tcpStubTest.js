@@ -51,21 +51,24 @@ describe('tcp imposter', function () {
                 },
                 request = { protocol: 'tcp', port, stubs: [stub] };
 
-            return api.post('/imposters', request).then(() => tcp.send('request', port)).then(response => {
-                assert.strictEqual(response.toString(), 'first');
-
-                return tcp.send('request', port);
-            }).then(response => {
-                assert.strictEqual(response.toString(), 'second');
-
-                return tcp.send('request', port);
-            }).then(response => {
-                assert.strictEqual(response.toString(), 'first');
-
-                return tcp.send('request', port);
-            }).then(response => {
-                assert.strictEqual(response.toString(), 'second');
-            }).finally(() => api.del('/imposters'));
+            return api.post('/imposters', request)
+                .then(() => tcp.send('request', port))
+                .then(response => {
+                    assert.strictEqual(response.toString(), 'first');
+                    return tcp.send('request', port);
+                })
+                .then(response => {
+                    assert.strictEqual(response.toString(), 'second');
+                    return tcp.send('request', port);
+                })
+                .then(response => {
+                    assert.strictEqual(response.toString(), 'first');
+                    return tcp.send('request', port);
+                })
+                .then(response => {
+                    assert.strictEqual(response.toString(), 'second');
+                })
+                .finally(() => api.del('/imposters'));
         });
 
         promiseIt('should only return stubbed response if matches complex predicate', function () {
@@ -138,11 +141,14 @@ describe('tcp imposter', function () {
                 const stub = { responses: [{ proxy: { to: 'tcp://remotehost:8000' } }] },
                     request = { protocol: 'tcp', port, stubs: [stub] };
 
-                return api.post('/imposters', request).then(() => tcp.send('request', port)).then(response => {
-                    const error = JSON.parse(response).errors[0];
-                    assert.strictEqual(error.code, 'invalid proxy');
-                    assert.strictEqual(error.message, 'Cannot resolve "tcp://remotehost:8000"');
-                }).finally(() => api.del('/imposters'));
+                return api.post('/imposters', request)
+                    .then(() => tcp.send('request', port))
+                    .then(response => {
+                        const error = JSON.parse(response).errors[0];
+                        assert.strictEqual(error.code, 'invalid proxy');
+                        assert.strictEqual(error.message, 'Cannot resolve "tcp://remotehost:8000"');
+                    })
+                    .finally(() => api.del('/imposters'));
             });
         }
 
@@ -157,16 +163,19 @@ describe('tcp imposter', function () {
                     mode: 'text'
                 };
 
-            return api.post('/imposters', request).then(response => {
-                assert.strictEqual(response.statusCode, 201);
-
-                return tcp.send(largeRequest, port);
-            }).then(() => api.get(`/imposters/${port}`)).then(response => {
-                const requests = response.body.requests,
-                    dataLength = requests.reduce((sum, recordedRequest) => sum + recordedRequest.data.length, 0);
-                assert.ok(requests.length > 1);
-                assert.strictEqual(65537, dataLength);
-            }).finally(() => api.del('/imposters'));
+            return api.post('/imposters', request)
+                .then(response => {
+                    assert.strictEqual(response.statusCode, 201);
+                    return tcp.send(largeRequest, port);
+                })
+                .then(() => api.get(`/imposters/${port}`))
+                .then(response => {
+                    const requests = response.body.requests,
+                        dataLength = requests.reduce((sum, recordedRequest) => sum + recordedRequest.data.length, 0);
+                    assert.ok(requests.length > 1);
+                    assert.strictEqual(65537, dataLength);
+                })
+                .finally(() => api.del('/imposters'));
         });
 
         promiseIt('should support changing default response for stub', function () {

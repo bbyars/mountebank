@@ -20,18 +20,21 @@ describe('http proxy', function () {
             const proxyRequest = { protocol: 'http', port },
                 request = { path: '/PATH', method: 'POST', body: 'BODY', headers: { 'X-Key': 'TRUE' } };
 
-            return api.post('/imposters', proxyRequest).then(() => proxy.to(`http://localhost:${port}`, request, {})).then(response => {
-                assert.strictEqual(response.statusCode, 200, 'did not get a 200 from proxy');
-
-                return api.get(`/imposters/${port}`);
-            }).then(response => {
-                const requests = response.body.requests;
-                assert.strictEqual(requests.length, 1);
-                assert.strictEqual(requests[0].path, '/PATH');
-                assert.strictEqual(requests[0].method, 'POST');
-                assert.strictEqual(requests[0].body, 'BODY');
-                assert.strictEqual(requests[0].headers['X-Key'], 'TRUE');
-            }).finally(() => api.del('/imposters'));
+            return api.post('/imposters', proxyRequest)
+                .then(() => proxy.to(`http://localhost:${port}`, request, {}))
+                .then(response => {
+                    assert.strictEqual(response.statusCode, 200, 'did not get a 200 from proxy');
+                    return api.get(`/imposters/${port}`);
+                })
+                .then(response => {
+                    const requests = response.body.requests;
+                    assert.strictEqual(requests.length, 1);
+                    assert.strictEqual(requests[0].path, '/PATH');
+                    assert.strictEqual(requests[0].method, 'POST');
+                    assert.strictEqual(requests[0].body, 'BODY');
+                    assert.strictEqual(requests[0].headers['X-Key'], 'TRUE');
+                })
+                .finally(() => api.del('/imposters'));
         });
 
         promiseIt('should return proxied result', function () {

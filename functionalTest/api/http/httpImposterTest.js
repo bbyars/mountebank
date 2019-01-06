@@ -119,33 +119,35 @@ const assert = require('assert'),
             promiseIt('should provide access to all requests', function () {
                 const imposterRequest = { protocol, port };
 
-                return api.post('/imposters', imposterRequest).then(() => client.get('/first', port)
-                ).then(() => client.get('/second', port)
-                ).then(() => api.get(`/imposters/${port}`)
-                ).then(response => {
-                    const requests = response.body.requests.map(request => request.path);
-                    assert.deepEqual(requests, ['/first', '/second']);
-                }).finally(() => api.del('/imposters')
-                );
+                return api.post('/imposters', imposterRequest)
+                    .then(() => client.get('/first', port))
+                    .then(() => client.get('/second', port))
+                    .then(() => api.get(`/imposters/${port}`))
+                    .then(response => {
+                        const requests = response.body.requests.map(request => request.path);
+                        assert.deepEqual(requests, ['/first', '/second']);
+                    })
+                    .finally(() => api.del('/imposters'));
             });
 
             promiseIt('should save headers in case-sensitive way', function () {
                 const imposterRequest = { protocol, port };
 
-                return api.post('/imposters', imposterRequest).then(() => client.responseFor({
-                    method: 'GET',
-                    path: '/',
-                    port,
-                    headers: {
-                        Accept: 'APPLICATION/json'
-                    }
-                })
-                ).then(() => api.get(`/imposters/${port}`)
-                ).then(response => {
-                    const request = response.body.requests[0];
-                    assert.strictEqual(request.headers.Accept, 'APPLICATION/json');
-                }).finally(() => api.del('/imposters')
-                );
+                return api.post('/imposters', imposterRequest)
+                    .then(() => client.responseFor({
+                        method: 'GET',
+                        path: '/',
+                        port,
+                        headers: {
+                            Accept: 'APPLICATION/json'
+                        }
+                    }))
+                    .then(() => api.get(`/imposters/${port}`))
+                    .then(response => {
+                        const request = response.body.requests[0];
+                        assert.strictEqual(request.headers.Accept, 'APPLICATION/json');
+                    })
+                    .finally(() => api.del('/imposters'));
             });
 
             promiseIt('should return list of stubs in order', function () {
@@ -153,103 +155,111 @@ const assert = require('assert'),
                     second = { responses: [{ is: { body: '2' } }] },
                     request = { protocol, port, stubs: [first, second] };
 
-                return api.post('/imposters', request).then(() => api.get(`/imposters/${port}`)
-                ).then(response => {
-                    assert.strictEqual(response.statusCode, 200);
-                    assert.deepEqual(response.body.stubs, [
-                        { responses: [{ is: { body: '1' } }] },
-                        { responses: [{ is: { body: '2' } }] }
-                    ]);
-                }).finally(() => api.del('/imposters')
-                );
+                return api.post('/imposters', request)
+                    .then(() => api.get(`/imposters/${port}`))
+                    .then(response => {
+                        assert.strictEqual(response.statusCode, 200);
+                        assert.deepEqual(response.body.stubs, [
+                            { responses: [{ is: { body: '1' } }] },
+                            { responses: [{ is: { body: '2' } }] }
+                        ]);
+                    })
+                    .finally(() => api.del('/imposters'));
             });
 
             promiseIt('should record matches against stubs', function () {
                 const stub = { responses: [{ is: { body: '1' } }, { is: { body: '2' } }] },
                     request = { protocol, port, stubs: [stub] };
 
-                return api.post('/imposters', request).then(() => client.get('/first?q=1', port)
-                ).then(() => client.get('/second?q=2', port)
-                ).then(() => api.get(`/imposters/${port}`)
-                ).then(response => {
-                    const stubs = JSON.stringify(response.body.stubs),
-                        withTimeRemoved = stubs.replace(/"timestamp":"[^"]+"/g, '"timestamp":"NOW"'),
-                        withClientPortRemoved = withTimeRemoved.replace(
-                            /"requestFrom":"[a-f:.\d]+"/g, '"requestFrom":"HERE"'),
-                        actualWithoutEphemeralData = JSON.parse(withClientPortRemoved),
-                        requestHeaders = { accept: 'application/json', Host: `localhost:${port}`, Connection: 'keep-alive' };
+                return api.post('/imposters', request)
+                    .then(() => client.get('/first?q=1', port))
+                    .then(() => client.get('/second?q=2', port))
+                    .then(() => api.get(`/imposters/${port}`))
+                    .then(response => {
+                        const stubs = JSON.stringify(response.body.stubs),
+                            withTimeRemoved = stubs.replace(/"timestamp":"[^"]+"/g, '"timestamp":"NOW"'),
+                            withClientPortRemoved = withTimeRemoved.replace(
+                                /"requestFrom":"[a-f:.\d]+"/g, '"requestFrom":"HERE"'),
+                            actualWithoutEphemeralData = JSON.parse(withClientPortRemoved),
+                            requestHeaders = { accept: 'application/json', Host: `localhost:${port}`, Connection: 'keep-alive' };
 
-                    assert.deepEqual(actualWithoutEphemeralData, [{
-                        responses: [{ is: { body: '1' } }, { is: { body: '2' } }],
-                        matches: [
-                            {
-                                timestamp: 'NOW',
-                                request: {
-                                    requestFrom: 'HERE',
-                                    path: '/first',
-                                    query: { q: '1' },
-                                    method: 'GET',
-                                    headers: requestHeaders,
-                                    body: ''
+                        assert.deepEqual(actualWithoutEphemeralData, [{
+                            responses: [{ is: { body: '1' } }, { is: { body: '2' } }],
+                            matches: [
+                                {
+                                    timestamp: 'NOW',
+                                    request: {
+                                        requestFrom: 'HERE',
+                                        path: '/first',
+                                        query: { q: '1' },
+                                        method: 'GET',
+                                        headers: requestHeaders,
+                                        body: ''
+                                    },
+                                    response: {
+                                        statusCode: 200,
+                                        headers: { Connection: 'close' },
+                                        body: '1',
+                                        _mode: 'text'
+                                    }
                                 },
-                                response: {
-                                    statusCode: 200,
-                                    headers: { Connection: 'close' },
-                                    body: '1',
-                                    _mode: 'text'
+                                {
+                                    timestamp: 'NOW',
+                                    request: {
+                                        requestFrom: 'HERE',
+                                        path: '/second',
+                                        query: { q: '2' },
+                                        method: 'GET',
+                                        headers: requestHeaders,
+                                        body: ''
+                                    },
+                                    response: {
+                                        statusCode: 200,
+                                        headers: { Connection: 'close' },
+                                        body: '2',
+                                        _mode: 'text'
+                                    }
                                 }
-                            },
-                            {
-                                timestamp: 'NOW',
-                                request: {
-                                    requestFrom: 'HERE',
-                                    path: '/second',
-                                    query: { q: '2' },
-                                    method: 'GET',
-                                    headers: requestHeaders,
-                                    body: ''
-                                },
-                                response: {
-                                    statusCode: 200,
-                                    headers: { Connection: 'close' },
-                                    body: '2',
-                                    _mode: 'text'
-                                }
-                            }
-                        ]
-                    }]);
-                }).finally(() => api.del('/imposters')
-                );
+                            ]
+                        }]);
+                    })
+                    .finally(() => api.del('/imposters'));
             });
 
             promiseIt('should not record matches against stubs if --debug flag is missing', function () {
                 const stub = { responses: [{ is: { body: '1' } }, { is: { body: '2' } }] },
                     request = { protocol, port, stubs: [stub] };
 
-                return mb.start().then(() => mb.post('/imposters', request)
-                ).then(() => client.get('/first?q=1', port)
-                ).then(() => client.get('/second?q=2', port)
-                ).then(() => mb.get(`/imposters/${port}`)
-                ).then(response => {
-                    assert.deepEqual(response.body.stubs, [{ responses: [{ is: { body: '1' } }, { is: { body: '2' } }] }]);
-                }).finally(() => mb.stop());
+                return mb.start()
+                    .then(() => mb.post('/imposters', request))
+                    .then(() => client.get('/first?q=1', port))
+                    .then(() => client.get('/second?q=2', port))
+                    .then(() => mb.get(`/imposters/${port}`))
+                    .then(response => {
+                        assert.deepEqual(response.body.stubs, [{ responses: [{ is: { body: '1' } }, { is: { body: '2' } }] }]);
+                    })
+                    .finally(() => mb.stop());
             });
 
             promiseIt('should record numberOfRequests even if --mock flag is missing', function () {
                 const stub = { responses: [{ is: { body: 'SUCCESS' } }] },
                     request = { protocol, port, stubs: [stub] };
 
-                return mb.start().then(() => mb.post('/imposters', request)
-                ).then(() => client.get('/', port)
-                ).then(() => client.get('/', port)
-                ).then(() => mb.get(`/imposters/${port}`)
-                ).then(response => {
-                    assert.strictEqual(response.body.numberOfRequests, 2);
-                }).finally(() => mb.stop());
+                return mb.start()
+                    .then(() => mb.post('/imposters', request))
+                    .then(() => client.get('/', port))
+                    .then(() => client.get('/', port))
+                    .then(() => mb.get(`/imposters/${port}`))
+                    .then(response => {
+                        assert.strictEqual(response.body.numberOfRequests, 2);
+                    })
+                    .finally(() => mb.stop());
             });
 
             promiseIt('should return 404 if imposter has not been created', function () {
-                return api.get('/imposters/3535').then(response => assert.strictEqual(response.statusCode, 404));
+                return api.get('/imposters/3535').then(response => {
+                    assert.strictEqual(response.statusCode, 404);
+                });
             });
         });
 
@@ -257,13 +267,16 @@ const assert = require('assert'),
             promiseIt('should shutdown server at that port', function () {
                 const request = { protocol, port };
 
-                return api.post('/imposters', request).then(response => api.del(response.headers.location)
-                ).then(response => {
-                    assert.strictEqual(response.statusCode, 200, 'Delete failed');
-                    return api.post('/imposters', { protocol: 'http', port });
-                }).then(response => {
-                    assert.strictEqual(response.statusCode, 201, 'Delete did not free up port');
-                }).finally(() => api.del(`/imposters/${port}`));
+                return api.post('/imposters', request)
+                    .then(response => api.del(response.headers.location))
+                    .then(response => {
+                        assert.strictEqual(response.statusCode, 200, 'Delete failed');
+                        return api.post('/imposters', { protocol: 'http', port });
+                    })
+                    .then(response => {
+                        assert.strictEqual(response.statusCode, 201, 'Delete did not free up port');
+                    })
+                    .finally(() => api.del(`/imposters/${port}`));
             });
 
             promiseIt('should return a 200 even if the server does not exist', function () {

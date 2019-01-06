@@ -35,19 +35,27 @@ describe('mb replay', function () {
             proxyStub = { responses: [{ proxy: proxyDefinition }] },
             proxyRequest = { protocol: 'http', port: proxyPort, stubs: [proxyStub], name: 'PROXY' };
 
-        return mb.start(['--allowInjection']).then(() => mb.post('/imposters', originServerRequest)).then(response => {
-            assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body));
-            return mb.post('/imposters', proxyRequest);
-        }).then(response => {
-            assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body));
-            return client.get('/first', proxyPort);
-        }).then(() => client.get('/second', proxyPort)).then(() => client.get('/first', proxyPort)).then(() => mb.replay()).then(() => mb.get(`/imposters/${proxyPort}`)).then(response => {
-            assert.strictEqual(response.body.stubs.length, 2, JSON.stringify(response.body.stubs, null, 2));
+        return mb.start(['--allowInjection'])
+            .then(() => mb.post('/imposters', originServerRequest))
+            .then(response => {
+                assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body));
+                return mb.post('/imposters', proxyRequest);
+            })
+            .then(response => {
+                assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body));
+                return client.get('/first', proxyPort);
+            })
+            .then(() => client.get('/second', proxyPort))
+            .then(() => client.get('/first', proxyPort))
+            .then(() => mb.replay()).then(() => mb.get(`/imposters/${proxyPort}`))
+            .then(response => {
+                assert.strictEqual(response.body.stubs.length, 2, JSON.stringify(response.body.stubs, null, 2));
 
-            const stubs = response.body.stubs,
-                responses = stubs.map(stub => stub.responses.map(stubResponse => stubResponse.is.body));
+                const stubs = response.body.stubs,
+                    responses = stubs.map(stub => stub.responses.map(stubResponse => stubResponse.is.body));
 
-            assert.deepEqual(responses, [['1. /first', '3. /first'], ['2. /second']]);
-        }).finally(() => mb.stop());
+                assert.deepEqual(responses, [['1. /first', '3. /first'], ['2. /second']]);
+            })
+            .finally(() => mb.stop());
     });
 });
