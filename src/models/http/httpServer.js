@@ -12,4 +12,4 @@ function createBaseServer () {
     };
 }
 
-module.exports = require('./baseHttpServer')('http', createBaseServer);
+module.exports = require('./baseHttpServer')(createBaseServer);

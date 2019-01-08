@@ -5,7 +5,7 @@
  * @module
  */
 
-module.exports = function (protocolName, createBaseServer) {
+module.exports = function (createBaseServer) {
 
     function create (options, logger, responseFn) {
         const Q = require('q'),
@@ -143,7 +143,6 @@ module.exports = function (protocolName, createBaseServer) {
     }
 
     return {
-        name: protocolName,
         testRequest: {
             requestFrom: '',
             method: 'GET',

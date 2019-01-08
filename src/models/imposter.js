@@ -38,7 +38,7 @@ function createErrorHandler (deferred, port) {
 // eslint-disable-next-line max-params
 function create (Protocol, creationRequest, baseLogger, recordMatches, recordRequests, mountebankPort) {
     function scopeFor (port) {
-        let scope = `${Protocol.name}:${port}`;
+        let scope = `${creationRequest.protocol}:${port}`;
 
         if (creationRequest.name) {
             scope += ' ' + creationRequest.name;
@@ -102,7 +102,7 @@ function create (Protocol, creationRequest, baseLogger, recordMatches, recordReq
                 server.setCallbackUrl(callbackUrl);
             }
 
-            if (Protocol.name !== 'foo') {
+            if (creationRequest.protocol !== 'foo') {
                 proxy = server.proxy;
             }
             resolver = require('./responseResolver').create(proxy, postProcess, callbackUrl);
@@ -157,7 +157,7 @@ function create (Protocol, creationRequest, baseLogger, recordMatches, recordReq
                 // but it makes a nicer user experience for developers viewing the JSON to keep the most
                 // relevant information at the top
                 const result = {
-                    protocol: Protocol.name,
+                    protocol: creationRequest.protocol,
                     port: server.port,
                     numberOfRequests: numberOfRequests
                 };

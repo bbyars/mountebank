@@ -5,6 +5,46 @@
  * @module
  */
 
+function postJSON (what, where) {
+    const Q = require('q'),
+        deferred = Q.defer(),
+        url = require('url'),
+        parts = url.parse(where),
+        driver = require(parts.protocol.replace(':', '')),
+        options = {
+            hostname: parts.hostname,
+            port: parts.port,
+            path: parts.pathname,
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' }
+        },
+        request = driver.request(options, response => {
+            const packets = [];
+
+            response.on('data', chunk => packets.push(chunk));
+
+            response.on('end', () => {
+                const buffer = Buffer.concat(packets),
+                    body = buffer.toString('utf8');
+
+                if (response.statusCode !== 200) {
+                    deferred.reject(require('../../util/errors').CommunicationError({
+                        statusCode: response.statusCode,
+                        body: body
+                    }));
+                }
+                else {
+                    deferred.resolve(JSON.parse(body));
+                }
+            });
+        });
+
+    request.on('error', deferred.reject);
+    request.write(JSON.stringify(what));
+    request.end();
+    return deferred.promise;
+}
+
 function create (options, logger, responseFn) {
     const Q = require('q'),
         net = require('net'),
@@ -13,93 +53,10 @@ function create (options, logger, responseFn) {
 
     let callbackUrl;
 
-    function getResponseFromMountebank (request) {
-        const responseDeferred = Q.defer(),
-            url = require('url'),
-            parts = url.parse(callbackUrl),
-            driver = require(parts.protocol.replace(':', '')),
-            mbOptions = {
-                hostname: parts.hostname,
-                port: parts.port,
-                path: parts.pathname,
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' }
-            },
-            mbRequest = driver.request(mbOptions, mbResponse => {
-                const packets = [];
-
-                mbResponse.on('data', chunk => packets.push(chunk));
-
-                mbResponse.on('end', () => {
-                    const buffer = Buffer.concat(packets),
-                        body = buffer.toString('utf8');
-
-                    if (mbResponse.statusCode !== 200) {
-                        deferred.reject(require('../../util/errors').CommunicationError({
-                            statusCode: mbResponse.statusCode,
-                            body: body
-                        }));
-                    }
-                    else {
-                        responseDeferred.resolve(JSON.parse(body));
-                    }
-                });
-            });
-
-        mbRequest.on('error', responseDeferred.reject);
-        mbRequest.write(JSON.stringify({ request }));
-        mbRequest.end();
-        return responseDeferred.promise;
-    }
-
-    function getModifiedProxyResponseFromMountebank (proxyResponse, proxyCallbackUrl) {
-        const responseDeferred = Q.defer(),
-            url = require('url'),
-            parts = url.parse(proxyCallbackUrl),
-            driver = require(parts.protocol.replace(':', '')),
-            mbOptions = {
-                hostname: parts.hostname,
-                port: parts.port,
-                path: parts.pathname,
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' }
-            },
-            mbRequest = driver.request(mbOptions, mbResponse => {
-                const packets = [];
-
-                mbResponse.on('data', chunk => packets.push(chunk));
-
-                mbResponse.on('end', () => {
-                    const buffer = Buffer.concat(packets),
-                        body = buffer.toString('utf8');
-
-                    if (mbResponse.statusCode !== 200) {
-                        deferred.reject(require('../../util/errors').CommunicationError({
-                            statusCode: mbResponse.statusCode,
-                            body: body
-                        }));
-                    }
-                    else {
-                        responseDeferred.resolve(JSON.parse(body));
-                    }
-                });
-            });
-
-        mbRequest.on('error', responseDeferred.reject);
-        mbRequest.write(JSON.stringify({
-            proxyResponse: { data: proxyResponse.data },
-            _proxyResponseTime: proxyResponse._proxyResponseTime // eslint-disable-line no-underscore-dangle
-        }));
-        mbRequest.end();
-        return responseDeferred.promise;
-    }
-
     function getProxyResponse (proxyConfig, request, proxyCallbackUrl) {
         const proxy = require('../tcp/tcpProxy').create(logger, 'utf8');
-        return proxy.to(proxyConfig.to, request, proxyConfig).then(response => {
-            logger.warn('Got proxy response: ' + JSON.stringify(response));
-            return getModifiedProxyResponseFromMountebank(response, proxyCallbackUrl);
-        });
+        return proxy.to(proxyConfig.to, request, proxyConfig)
+            .then(response => postJSON({ proxyResponse: response }, proxyCallbackUrl));
     }
 
     server.on('connection', socket => {
@@ -116,13 +73,12 @@ function create (options, logger, responseFn) {
             // call mountebank with JSON request
             if (options.inProcessResolution) {
                 responseFn(request).done(stubResponse => {
-                    // translate response JSON to network request
                     const buffer = Buffer.from(stubResponse.data, 'utf8');
                     socket.write(buffer);
                 });
             }
             else {
-                getResponseFromMountebank(request).then(mbResponse => {
+                postJSON({ request }, callbackUrl).then(mbResponse => {
                     if (mbResponse.proxy) {
                         return getProxyResponse(mbResponse.proxy, mbResponse.request, mbResponse.callbackUrl);
                     }
@@ -160,7 +116,6 @@ function create (options, logger, responseFn) {
 }
 
 module.exports = {
-    name: 'foo',
     testRequest: { data: '' },
     testProxyResponse: { data: '' },
     create: create,

@@ -133,7 +133,6 @@ function create (options, logger, responseFn) {
 }
 
 module.exports = {
-    name: 'tcp',
     testRequest: { data: 'test' },
     testProxyResponse: { data: '' },
     create: create,

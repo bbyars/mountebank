@@ -83,7 +83,6 @@ function create (options, logger, responseFn) {
 }
 
 module.exports = {
-    name: 'smtp',
     testRequest: {
         from: 'test@test.com',
         to: ['test@test.com'],

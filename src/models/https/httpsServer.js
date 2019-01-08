@@ -28,4 +28,4 @@ function createBaseServer (options) {
     return { metadata, createNodeServer };
 }
 
-module.exports = require('../http/baseHttpServer')('https', createBaseServer);
+module.exports = require('../http/baseHttpServer')(createBaseServer);

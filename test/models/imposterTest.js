@@ -22,7 +22,6 @@ describe('imposter', function () {
                 encoding: 'utf8'
             };
             Protocol = {
-                name: 'test',
                 testRequest: {},
                 testProxyResponse: {},
                 create: mock().returns(Q(server))
@@ -41,7 +40,7 @@ describe('imposter', function () {
         promiseIt('should return trimmed down JSON for lists', function () {
             server.port = 3535;
 
-            return Imposter.create(Protocol, {}, logger, false, false).then(imposter => {
+            return Imposter.create(Protocol, { protocol: 'test' }, logger, false, false).then(imposter => {
                 assert.deepEqual(imposter.toJSON({ list: true }), {
                     protocol: 'test',
                     port: 3535,
@@ -54,7 +53,7 @@ describe('imposter', function () {
         promiseIt('should return recordRequests from global parameter', function () {
             server.port = 3535;
 
-            return Imposter.create(Protocol, {}, logger, false, true).then(imposter => {
+            return Imposter.create(Protocol, { protocol: 'test' }, logger, false, true).then(imposter => {
                 assert.deepEqual(imposter.toJSON(), {
                     protocol: 'test',
                     port: 3535,
@@ -90,7 +89,7 @@ describe('imposter', function () {
         promiseIt('should return full JSON representation by default', function () {
             server.port = 3535;
 
-            return Imposter.create(Protocol, {}, logger, false, false).then(imposter => {
+            return Imposter.create(Protocol, { protocol: 'test' }, logger, false, false).then(imposter => {
                 assert.deepEqual(imposter.toJSON(), {
                     protocol: 'test',
                     port: 3535,
@@ -107,7 +106,7 @@ describe('imposter', function () {
             server.port = 3535;
             metadata.key = 'value';
 
-            return Imposter.create(Protocol, {}, logger, false, false).then(imposter => {
+            return Imposter.create(Protocol, { protocol: 'test' }, logger, false, false).then(imposter => {
                 assert.deepEqual(imposter.toJSON(), {
                     protocol: 'test',
                     port: 3535,
@@ -125,7 +124,7 @@ describe('imposter', function () {
             server.port = 3535;
             metadata.key = 'value';
 
-            return Imposter.create(Protocol, {}, logger, false, false).then(imposter => {
+            return Imposter.create(Protocol, { protocol: 'test' }, logger, false, false).then(imposter => {
                 assert.deepEqual(imposter.toJSON({ replayable: true }), {
                     protocol: 'test',
                     port: 3535,
