@@ -119,7 +119,7 @@ function create (resolver, recordMatches, encoding) {
         return resolver.resolve(responseConfig, request, logger, stubs, imposterState).then(response => {
             const match = { timestamp: new Date().toJSON(), request, response };
             if (recordMatches) {
-                // TODO: Remove once protocol conversion
+                // TODO: Remove once protocol conversion. Also, what about proxy matches?
                 if (match.response && match.response.response) {
                     match.response = match.response.response;
                 }
@@ -147,7 +147,11 @@ function create (resolver, recordMatches, encoding) {
         }
     }
 
-    return { stubs: getStubs, addStub, resolve, resetProxies };
+    function resolveProxy (proxyResponse, proxyResolutionKey, logger) {
+        return resolver.resolveProxy(proxyResponse, proxyResolutionKey, stubs, logger);
+    }
+
+    return { stubs: getStubs, addStub, resolve, resetProxies, resolveProxy };
 }
 
 module.exports = { create };

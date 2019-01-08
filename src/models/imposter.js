@@ -77,6 +77,10 @@ function create (Protocol, creationRequest, baseLogger, recordMatches, recordReq
         return stubs.resolve(request, logger);
     }
 
+    function getProxyResponseFor (proxyResponse, proxyResolutionKey) {
+        return stubs.resolveProxy(proxyResponse, proxyResolutionKey, logger);
+    }
+
     domain.on('error', errorHandler);
     domain.run(() => {
         Protocol.create(creationRequest, logger, getResponseFor).done(server => {
@@ -84,22 +88,25 @@ function create (Protocol, creationRequest, baseLogger, recordMatches, recordReq
             const postProcess = (response, request) =>
                 server.postProcess(response, request, creationRequest.defaultResponse || {});
 
-            if (Protocol.name !== 'foo') {
-                proxy = server.proxy;
-            }
-            resolver = require('./responseResolver').create(proxy, postProcess);
-            stubs = require('./stubRepository').create(resolver, recordMatches, server.encoding || 'utf8');
-
             if (creationRequest.port !== server.port) {
                 logger.changeScope(scopeFor(server.port));
             }
             logger.info('Open for business...');
 
-            const url = `/imposters/${server.port}`;
+            // TODO: Get host from mountebank.js?
+            const url = `/imposters/${server.port}`,
+                callbackUrl = `http://localhost:${mountebankPort}${url}/_requests`;
+
             // TODO: Remove once all proto implementations converted
             if (server.setCallbackUrl) {
-                server.setCallbackUrl(`http://localhost:${mountebankPort}${url}/_requests`);
+                server.setCallbackUrl(callbackUrl);
             }
+
+            if (Protocol.name !== 'foo') {
+                proxy = server.proxy;
+            }
+            resolver = require('./responseResolver').create(proxy, postProcess, callbackUrl);
+            stubs = require('./stubRepository').create(resolver, recordMatches, server.encoding || 'utf8');
 
             if (creationRequest.stubs) {
                 creationRequest.stubs.forEach(stubs.addStub);
@@ -189,7 +196,8 @@ function create (Protocol, creationRequest, baseLogger, recordMatches, recordReq
                 addStub: stubs.addStub,
                 stop,
                 resetProxies: stubs.resetProxies,
-                getResponseFor
+                getResponseFor,
+                getProxyResponseFor
             });
         });
     });

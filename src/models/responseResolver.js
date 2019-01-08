@@ -9,10 +9,13 @@
  * Creates the resolver
  * @param {Object} proxy - The protocol-specific proxy implementation
  * @param {Function} postProcess - The protocol-specific post-processor to add default response values
+ * @param {String} callbackUrl - The protocol callback URL for response resolution
  * @returns {Object}
  */
-function create (proxy, postProcess) {
-    const injectState = {};
+function create (proxy, postProcess, callbackUrl) {
+    const injectState = {},
+        pendingProxyResolutions = {};
+    let nextProxyResolutionKey = 0;
 
     function inject (request, fn, logger, imposterState) {
         const Q = require('q'),
@@ -171,6 +174,7 @@ function create (proxy, postProcess) {
         return result;
     }
 
+    // TODO: Make function on stubRepository
     function addNewResponse (responseConfig, request, response, stubs, logger) {
         const stubResponse = newIsResponse(response, responseConfig.proxy.addWaitBehavior, responseConfig.proxy.addDecorateBehavior),
             responseIndex = indexOfStubToAddResponseTo(responseConfig, request, stubs, logger);
@@ -178,6 +182,7 @@ function create (proxy, postProcess) {
         stubs[responseIndex].responses.push(stubResponse);
     }
 
+    // TODO: Make function on stubRepository
     function addNewStub (responseConfig, request, response, stubs, logger) {
         const predicates = predicatesFor(request, responseConfig.proxy.predicateGenerators || [], logger),
             stubResponse = newIsResponse(response, responseConfig.proxy.addWaitBehavior, responseConfig.proxy.addDecorateBehavior),
@@ -228,9 +233,16 @@ function create (proxy, postProcess) {
             });
         }
         else {
+            pendingProxyResolutions[nextProxyResolutionKey] = {
+                responseConfig: responseConfig,
+                request: request,
+                startTime: new Date()
+            };
+            nextProxyResolutionKey += 1;
             return Q({
                 proxy: responseConfig.proxy,
-                request: request
+                request: request,
+                callbackUrl: `${callbackUrl}/${nextProxyResolutionKey - 1}`
             });
         }
     }
@@ -301,7 +313,33 @@ function create (proxy, postProcess) {
         });
     }
 
-    return { resolve };
+    /**
+     * Finishes the protocol implementation dance for proxy. On the first call,
+     * mountebank selects a JSON proxy response and sends it to the protocol implementation,
+     * saving state indexed by proxyResolutionKey. The protocol implementation sends the proxy
+     * to the downstream system and calls mountebank again with the response so mountebank
+     * can save it and add behaviors
+     * @param {Object} proxyResponse - the proxy response from the protocol implementation
+     * @param {Number} proxyResolutionKey - the key into the saved proxy state
+     * @param {Object} stubs - The stubs for the imposter
+     * @param {Object} logger - the logger
+     * @returns {Object} - Promise resolving to the response
+     */
+    function resolveProxy (proxyResponse, proxyResolutionKey, stubs, logger) {
+        const pendingProxyConfig = pendingProxyResolutions[proxyResolutionKey],
+            behaviors = require('./behaviors'),
+            Q = require('q');
+
+        // TODO: Capture start time in pendingProxyConfig and add _proxyResponseTime if missing
+        return behaviors.execute(pendingProxyConfig.request, proxyResponse, pendingProxyConfig.responseConfig._behaviors, logger)
+            .then(response => {
+                recordProxyResponse(pendingProxyConfig.responseConfig, pendingProxyConfig.request, response, stubs, logger);
+                delete pendingProxyResolutions[proxyResolutionKey];
+                return Q(response);
+            });
+    }
+
+    return { resolve, resolveProxy };
 }
 
 module.exports = { create };

@@ -126,7 +126,25 @@ function create (imposters) {
         });
     }
 
-    return { get, del, resetProxies, postRequest };
+    /**
+     * The function responding to POST /imposters/:port/_requests/:proxyResolutionKey
+     * This is what protocol implementations call after proxying a request so
+     * mountebank can record the response and add behaviors to it.
+     * @param {Object} request - the HTTP request
+     * @param {Object} response - the HTTP response
+     * @returns {Object} A promise for testing
+     */
+    function postProxyResponse (request, response) {
+        const imposter = imposters[request.params.id],
+            proxyResolutionKey = request.params.proxyResolutionKey,
+            proxyResponse = request.body.proxyResponse;
+
+        return imposter.getProxyResponseFor(proxyResponse, proxyResolutionKey).then(protoResponse => {
+            response.send(protoResponse);
+        });
+    }
+
+    return { get, del, resetProxies, postRequest, postProxyResponse };
 }
 
 module.exports = { create };

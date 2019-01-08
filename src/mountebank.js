@@ -114,7 +114,10 @@ function create (options) {
     app.delete('/imposters/:id', imposterController.del);
     app.delete('/imposters/:id/savedProxyResponses', imposterController.resetProxies);
     app.delete('/imposters/:id/requests', imposterController.resetProxies); // deprecated but saved for backwards compatibility
+
+    // Protocol implementation APIs
     app.post('/imposters/:id/_requests', imposterController.postRequest);
+    app.post('/imposters/:id/_requests/:proxyResolutionKey', imposterController.postProxyResponse);
 
     app.get('/logs', logsController.get);
     app.get('/config', configController.get);

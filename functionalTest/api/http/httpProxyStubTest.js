@@ -142,14 +142,19 @@ describe('http proxy stubs', function () {
             .then(response => {
                 assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body));
                 return client.get('/first', port);
-            }).then(() => client.get('/second', port)).then(() => client.get('/first', port)).then(() => api.del(`/imposters/${port}`)).then(response => {
+            })
+            .then(() => client.get('/second', port))
+            .then(() => client.get('/first', port))
+            .then(() => api.del(`/imposters/${port}`))
+            .then(response => {
                 assert.strictEqual(response.body.stubs.length, 3, JSON.stringify(response.body.stubs, null, 2));
 
                 const stubs = response.body.stubs,
                     responses = stubs.splice(1).map(stub => stub.responses.map(stubResponse => stubResponse.is.body));
 
                 assert.deepEqual(responses, [['1. /first', '3. /first'], ['2. /second']]);
-            }).finally(() => api.del('/imposters'));
+            })
+            .finally(() => api.del('/imposters'));
     });
 
     promiseIt('should match entire object graphs', function () {

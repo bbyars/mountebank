@@ -88,5 +88,101 @@ describe('foo imposter', function () {
                 })
                 .finally(() => api.del('/imposters'));
         });
+
+        promiseIt('should record new stubs in order in front of proxy resolver using proxyOnce mode', function () {
+            const originServerPort = port + 1,
+                originServerFn = (request, state) => {
+                    state.count = state.count || 0;
+                    state.count += 1;
+                    return { data: `${state.count}. ${request.data}` };
+                },
+                originServerStub = { responses: [{ inject: originServerFn.toString() }] },
+                originServerRequest = {
+                    protocol: 'foo',
+                    port: originServerPort,
+                    stubs: [originServerStub],
+                    name: 'ORIGIN'
+                },
+                proxyDefinition = {
+                    to: `tcp://localhost:${originServerPort}`,
+                    mode: 'proxyOnce',
+                    predicateGenerators: [{ matches: { data: true } }]
+                },
+                proxyStub = { responses: [{ proxy: proxyDefinition }] },
+                proxyRequest = { protocol: 'foo', port, stubs: [proxyStub], name: 'PROXY' };
+
+            return api.post('/imposters', originServerRequest).then(response => {
+                assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body, null, 2));
+                return api.post('/imposters', proxyRequest);
+            }).then(response => {
+                assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body, null, 2));
+                return tcp.send('FIRST', port);
+            }).then(response => {
+                assert.strictEqual(response.toString('utf8'), '1. FIRST');
+                return tcp.send('SECOND', port);
+            }).then(response => {
+                assert.strictEqual(response.toString('utf8'), '2. SECOND');
+                return tcp.send('THIRD', port);
+            }).then(response => {
+                assert.strictEqual(response.toString('utf8'), '3. THIRD');
+                return tcp.send('FIRST', port);
+            }).then(response => {
+                assert.strictEqual(response.toString('utf8'), '1. FIRST');
+                return tcp.send('SECOND', port);
+            }).then(response => {
+                assert.strictEqual(response.toString('utf8'), '2. SECOND');
+                return tcp.send('THIRD', port);
+            }).then(response => {
+                assert.strictEqual(response.toString('utf8'), '3. THIRD');
+                return api.del(`/imposters/${port}`);
+            }).then(response => {
+                assert.strictEqual(response.body.stubs.length, 4);
+            }).finally(() => api.del('/imposters'));
+        });
+
+        promiseIt('should record new stubs with multiple responses behind proxy resolver in proxyAlways mode', function () {
+            const originServerPort = port + 1,
+                originServerFn = (request, state) => {
+                    state.count = state.count || 0;
+                    state.count += 1;
+                    return { data: `${state.count}. ${request.data}` };
+                },
+                originServerStub = { responses: [{ inject: originServerFn.toString() }] },
+                originServerRequest = {
+                    protocol: 'foo',
+                    port: originServerPort,
+                    stubs: [originServerStub],
+                    name: 'ORIGIN'
+                },
+                proxyDefinition = {
+                    to: `tcp://localhost:${originServerPort}`,
+                    mode: 'proxyAlways',
+                    predicateGenerators: [{ matches: { data: true } }]
+                },
+                proxyStub = { responses: [{ proxy: proxyDefinition }] },
+                proxyRequest = { protocol: 'foo', port, stubs: [proxyStub], name: 'PROXY' };
+
+            return api.post('/imposters', originServerRequest)
+                .then(response => {
+                    assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body));
+                    return api.post('/imposters', proxyRequest);
+                })
+                .then(response => {
+                    assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body));
+                    return tcp.send('FIRST', port);
+                })
+                .then(() => tcp.send('SECOND', port))
+                .then(() => tcp.send('FIRST', port))
+                .then(() => api.del(`/imposters/${port}`))
+                .then(response => {
+                    assert.strictEqual(response.body.stubs.length, 3, JSON.stringify(response.body.stubs, null, 2));
+
+                    const stubs = response.body.stubs,
+                        responses = stubs.splice(1).map(stub => stub.responses.map(stubResponse => stubResponse.is.data));
+
+                    assert.deepEqual(responses, [['1. FIRST', '3. FIRST'], ['2. SECOND']]);
+                })
+                .finally(() => api.del('/imposters'));
+        });
     });
 });
