@@ -10,9 +10,10 @@ module.exports = function (createBaseServer) {
     function create (options, logger, responseFn) {
         const Q = require('q'),
             deferred = Q.defer(),
-            connections = {};
+            connections = {},
+            defaultResponse = options.defaultResponse || {};
 
-        function postProcess (stubResponse, request, defaultResponse) {
+        function postProcess (stubResponse, request) {
             /* eslint complexity: 0 */
             const headersHelper = require('./headersHelper'),
                 defaultHeaders = defaultResponse.headers || {},
@@ -104,13 +105,14 @@ module.exports = function (createBaseServer) {
 
             domain.on('error', errorHandler);
             domain.run(() => {
+                let simplifiedRequest;
                 require('./httpRequest').createFrom({ request }).then(simpleRequest => {
                     logger.debug('%s => %s', clientName, JSON.stringify(simpleRequest));
-
+                    simplifiedRequest = simpleRequest;
                     return responseFn(simpleRequest);
-                }).done(stubResponse => {
-                    const mode = stubResponse._mode ? stubResponse._mode : 'text',
-                        encoding = mode === 'binary' ? 'base64' : 'utf8';
+                }).done(mbResponse => {
+                    const stubResponse = postProcess(mbResponse, simplifiedRequest),
+                        encoding = stubResponse._mode === 'binary' ? 'base64' : 'utf8';
 
                     response.writeHead(stubResponse.statusCode, stubResponse.headers);
                     response.end(stubResponse.body.toString(), encoding);
@@ -133,7 +135,6 @@ module.exports = function (createBaseServer) {
                         connections[socket].destroy();
                     });
                 },
-                postProcess: postProcess,
                 proxy: require('./httpProxy').create(logger),
                 encoding: 'utf8'
             });

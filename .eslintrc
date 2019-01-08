@@ -1,5 +1,6 @@
 // eslint-disable-line no-underscore-dangle
 // eslint-disable-next-line no-underscore-dangle
+/* eslint complexity: 0 */
 {
     "extends": "eslint:recommended",
     "parserOptions": {

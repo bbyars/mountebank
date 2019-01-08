@@ -74,7 +74,6 @@ function create (options, logger, responseFn) {
                 });
             },
             proxy: {},
-            postProcess: function () { return {}; },
             encoding: 'utf8'
         });
     });

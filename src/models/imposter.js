@@ -84,10 +84,6 @@ function create (Protocol, creationRequest, baseLogger, recordMatches, recordReq
     domain.on('error', errorHandler);
     domain.run(() => {
         Protocol.create(creationRequest, logger, getResponseFor).done(server => {
-            // Add defaultResponse to postProcess function
-            const postProcess = (response, request) =>
-                server.postProcess(response, request, creationRequest.defaultResponse || {});
-
             if (creationRequest.port !== server.port) {
                 logger.changeScope(scopeFor(server.port));
             }
@@ -105,7 +101,7 @@ function create (Protocol, creationRequest, baseLogger, recordMatches, recordReq
             if (creationRequest.protocol !== 'foo') {
                 proxy = server.proxy;
             }
-            resolver = require('./responseResolver').create(proxy, postProcess, callbackUrl);
+            resolver = require('./responseResolver').create(proxy, callbackUrl);
             stubs = require('./stubRepository').create(resolver, recordMatches, server.encoding || 'utf8');
 
             if (creationRequest.stubs) {

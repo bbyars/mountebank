@@ -197,10 +197,7 @@ const assert = require('assert'),
                                         body: ''
                                     },
                                     response: {
-                                        statusCode: 200,
-                                        headers: { Connection: 'close' },
-                                        body: '1',
-                                        _mode: 'text'
+                                        body: '1'
                                     }
                                 },
                                 {
@@ -214,10 +211,7 @@ const assert = require('assert'),
                                         body: ''
                                     },
                                     response: {
-                                        statusCode: 200,
-                                        headers: { Connection: 'close' },
-                                        body: '2',
-                                        _mode: 'text'
+                                        body: '2'
                                     }
                                 }
                             ]

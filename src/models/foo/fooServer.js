@@ -49,7 +49,8 @@ function create (options, logger, responseFn) {
     const Q = require('q'),
         net = require('net'),
         deferred = Q.defer(),
-        server = net.createServer();
+        server = net.createServer(),
+        defaultResponse = options.defaultResponse || { data: 'foo' };
 
     let callbackUrl;
 
@@ -86,8 +87,10 @@ function create (options, logger, responseFn) {
                         return Q(mbResponse.response);
                     }
                 }).done(response => {
+                    const processedResponse = { data: response.data || defaultResponse.data };
+
                     // translate response JSON to network request
-                    socket.write(Buffer.from(response.data, 'utf8'), () => { socket.end(); });
+                    socket.write(Buffer.from(processedResponse.data, 'utf8'), () => { socket.end(); });
                 }, error => {
                     socket.write(require('../../util/errors').details(error), () => { socket.end(); });
                 });
@@ -103,9 +106,6 @@ function create (options, logger, responseFn) {
             close: callback => {
                 server.close();
                 callback();
-            },
-            postProcess: function (response, request, defaultResponse) {
-                return { data: response.data || defaultResponse.data || 'foo' };
             },
             encoding: 'utf8',
             setCallbackUrl: url => { callbackUrl = url; }

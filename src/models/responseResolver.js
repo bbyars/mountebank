@@ -8,11 +8,10 @@
 /**
  * Creates the resolver
  * @param {Object} proxy - The protocol-specific proxy implementation
- * @param {Function} postProcess - The protocol-specific post-processor to add default response values
  * @param {String} callbackUrl - The protocol callback URL for response resolution
  * @returns {Object}
  */
-function create (proxy, postProcess, callbackUrl) {
+function create (proxy, callbackUrl) {
     const injectState = {},
         pendingProxyResolutions = {};
     let nextProxyResolutionKey = 0;
@@ -305,10 +304,10 @@ function create (proxy, postProcess, callbackUrl) {
             }
         }).then(response => {
             if (proxy) {
-                return Q(postProcess(response, request));
+                return Q(response);
             }
             else {
-                return responseConfig.proxy ? Q(response) : Q({ response: postProcess(response, request) });
+                return responseConfig.proxy ? Q(response) : Q({ response });
             }
         });
     }

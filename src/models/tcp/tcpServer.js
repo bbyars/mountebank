@@ -38,7 +38,8 @@ function create (options, logger, responseFn) {
         deferred = Q.defer(),
         server = net.createServer(),
         helpers = require('../../util/helpers'),
-        connections = {};
+        connections = {},
+        defaultResponse = options.defaultResponse || { data: '' };
 
     server.on('connection', socket => {
         let packets = [];
@@ -94,9 +95,10 @@ function create (options, logger, responseFn) {
                         // call mountebank with JSON request
                         return responseFn(simpleRequest);
                     }).done(stubResponse => {
-                        const buffer = Buffer.isBuffer(stubResponse.data)
-                            ? stubResponse.data
-                            : Buffer.from(stubResponse.data, encoding);
+                        const processedResponse = { data: stubResponse.data || defaultResponse.data },
+                            buffer = Buffer.isBuffer(processedResponse.data)
+                                ? processedResponse.data
+                                : Buffer.from(processedResponse.data, encoding);
 
                         if (buffer.length > 0) {
                             container.socket.write(buffer);
@@ -118,11 +120,6 @@ function create (options, logger, responseFn) {
                 Object.keys(connections).forEach(socket => {
                     connections[socket].destroy();
                 });
-            },
-            postProcess: function (response, request, defaultResponse) {
-                return {
-                    data: response.data || defaultResponse.data || ''
-                };
             },
             proxy: require('./tcpProxy').create(logger, encoding, isEndOfRequest),
             encoding: encoding
