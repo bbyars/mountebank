@@ -8,14 +8,16 @@ else
     OS=linux
 fi
 
+VERSION=3.2.0.1227
+
 echo "Downloading sonar-scanner..."
-wget -q https://sonarsource.bintray.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-3.0.3.778-${OS}.zip
-unzip sonar-scanner-cli-3.0.3.778-${OS}.zip
-rm sonar-scanner-cli-3.0.3.778-${OS}.zip
+wget https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-${VERSION}-${OS}.zip
+unzip sonar-scanner-cli-${VERSION}-${OS}.zip
+rm sonar-scanner-cli-${VERSION}-${OS}.zip
 
 # Necessary for sonar-scanner to run correctly
-PATH=$PATH:`pwd`/sonar-scanner-3.0.3.778-${OS}/bin
-echo sonar.host.url=https://sonarqube.com >> sonar-scanner-3.0.3.778-${OS}/conf/sonar-scanner.properties
+PATH=$PATH:`pwd`/sonar-scanner-${VERSION}-${OS}/bin
+echo sonar.host.url=https://sonarqube.com >> sonar-scanner-${VERSION}-${OS}/conf/sonar-scanner.properties
 
 echo "Running sonar-scanner..."
 sonar-scanner \
@@ -27,4 +29,4 @@ sonar-scanner \
     -Dsonar.organization=bbyars-github \
     -Dsonar.login=$SONARQUBE_LOGIN
 
-rm -rf sonar-scanner-3.0.3.778-${OS}
+rm -rf sonar-scanner-${VERSION}-${OS}
