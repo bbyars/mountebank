@@ -83,8 +83,6 @@ module.exports = function (grunt) {
                 'grunt-cli',
                 'jsdoc',
                 'grunt-contrib-csslint',
-                'shonkwrap',
-                'codeclimate-test-reporter',
                 'firebase-tools',
                 'nc'
             ];
@@ -122,9 +120,9 @@ module.exports = function (grunt) {
         });
     });
 
-    grunt.registerTask('_codeclimate', 'Send coverage results to codeclimate', function () {
+    grunt.registerTask('codeclimate', 'Send coverage results to codeclimate', function () {
         const done = this.async(),
-            command = 'node_modules/.bin/codeclimate-test-reporter < coverage/lcov.info';
+            command = 'scripts/codeclimate';
 
         exec(command, function (error, stdout, stderr) {
             if (stdout) { console.log(stdout); }
@@ -145,6 +143,4 @@ module.exports = function (grunt) {
             done();
         });
     });
-
-    grunt.registerTask('codeclimate', 'Send coverage results to codeclimate', ['coverage', '_codeclimate']);
 };

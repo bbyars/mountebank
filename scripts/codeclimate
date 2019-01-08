@@ -1,0 +1,16 @@
+#!/bin/sh
+
+if [ ! -e ./cc-test-reporter ]; then
+    if [ `uname` = "Darwin" ]; then
+        OS=darwin
+    else
+        OS=linux
+    fi
+
+    curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-${OS}-amd64 > ./cc-test-reporter
+    chmod +x ./cc-test-reporter
+fi
+
+./cc-test-reporter before-build
+node_modules/.bin/istanbul cover node_modules/.bin/grunt mochaTest:unit
+./cc-test-reporter after-build --coverage-input-type lcov --exit-code $?

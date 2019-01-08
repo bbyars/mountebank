@@ -6,11 +6,12 @@ jobs:
       - image: circleci/node:8.9.4-stretch
     environment:
       - MB_RUN_WEB_TESTS=true
+      - CC_TEST_REPORTER_ID=8bc3a050a2f8ef1cc460e5f4c72d18a689c8ae0981bf494031eb4eb28bbd0b0b
     steps:
       - checkout
       - restore_cache:
           key: dependency-cache-{{ checksum "package.json" }}
-      - run: ./build lint test dist version trigger:travis jsdoc deploy:docs
+      - run: ./build lint test dist version trigger:travis jsdoc deploy:docs codeclimate
        # codeclimate sonar
       - save_cache:
           key: dependency-cache-{{ checksum "package.json" }}
