@@ -17,7 +17,6 @@ describe('imposter', function () {
                 port: 3535,
                 metadata: metadata,
                 close: mock(),
-                postProcess: response => response,
                 proxy: { to: mock() },
                 encoding: 'utf8'
             };

@@ -45,14 +45,23 @@ function postJSON (what, where) {
     return deferred.promise;
 }
 
-function create (options, logger, responseFn) {
+function create (port, callbackUrl, defaultResponse) {
     const Q = require('q'),
         net = require('net'),
         deferred = Q.defer(),
         server = net.createServer(),
-        defaultResponse = options.defaultResponse || { data: 'foo' };
+        logger = {};
 
-    let callbackUrl;
+    defaultResponse = defaultResponse || { data: 'foo' };
+
+    ['debug', 'info', 'warn', 'error'].forEach(level => {
+        logger[level] = function () {
+            const args = Array.prototype.slice.call(arguments),
+                message = require('util').format.apply(this, args);
+
+            console.log(`${level} ${message}`);
+        };
+    });
 
     function getProxyResponse (proxyConfig, request, proxyCallbackUrl) {
         const proxy = require('../tcp/tcpProxy').create(logger, 'utf8');
@@ -71,35 +80,26 @@ function create (options, logger, responseFn) {
 
             logger.info(`${request.requestFrom} => ${request.data}`);
 
-            // call mountebank with JSON request
-            if (options.inProcessResolution) {
-                responseFn(request).done(stubResponse => {
-                    const buffer = Buffer.from(stubResponse.data, 'utf8');
-                    socket.write(buffer);
-                });
-            }
-            else {
-                postJSON({ request }, callbackUrl).then(mbResponse => {
-                    if (mbResponse.proxy) {
-                        return getProxyResponse(mbResponse.proxy, mbResponse.request, mbResponse.callbackUrl);
-                    }
-                    else {
-                        return Q(mbResponse.response);
-                    }
-                }).done(response => {
-                    const processedResponse = { data: response.data || defaultResponse.data };
+            postJSON({ request }, callbackUrl).then(mbResponse => {
+                if (mbResponse.proxy) {
+                    return getProxyResponse(mbResponse.proxy, mbResponse.request, mbResponse.callbackUrl);
+                }
+                else {
+                    return Q(mbResponse.response);
+                }
+            }).done(response => {
+                const processedResponse = response.data || defaultResponse.data || 'foo';
 
-                    // translate response JSON to network request
-                    socket.write(Buffer.from(processedResponse.data, 'utf8'), () => { socket.end(); });
-                }, error => {
-                    socket.write(require('../../util/errors').details(error), () => { socket.end(); });
-                });
-            }
+                // translate response JSON to network request
+                socket.write(Buffer.from(processedResponse, 'utf8'), () => { socket.end(); });
+            }, error => {
+                socket.write(require('../../util/errors').details(error), () => { socket.end(); });
+            });
         });
     });
 
     // Bind the socket to a port (the || 0 bit auto-selects a port if one isn't provided)
-    server.listen(options.port || 0, () => {
+    server.listen(port || 0, () => {
         deferred.resolve({
             port: server.address().port,
             metadata: {},
@@ -107,17 +107,18 @@ function create (options, logger, responseFn) {
                 server.close();
                 callback();
             },
-            encoding: 'utf8',
-            setCallbackUrl: url => { callbackUrl = url; }
+            encoding: 'utf8'
         });
     });
 
     return deferred.promise;
 }
 
-module.exports = {
-    testRequest: { data: '' },
-    testProxyResponse: { data: '' },
-    create: create,
-    validate: undefined
-};
+const port = process.argv[2],
+    callbackUrl = process.argv[3],
+    defaultResponse = JSON.parse(process.argv[4]);
+
+create(port, callbackUrl, defaultResponse).done(() => {
+    console.log('READY');
+    // TODO: will have to write out port, metadata
+});

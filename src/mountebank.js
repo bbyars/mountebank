@@ -19,6 +19,24 @@ function initializeLogfile (filename) {
     }
 }
 
+function loadProtocols () {
+    const result = {
+            tcp: require('./models/tcp/tcpServer'),
+            http: require('./models/http/httpServer'),
+            https: require('./models/https/httpsServer'),
+            smtp: require('./models/smtp/smtpServer')
+        },
+        fs = require('fs');
+
+    if (fs.existsSync('./protocols.json')) {
+        const customProtocols = require(process.cwd() + '/protocols.json');
+        Object.keys(customProtocols).forEach(key => {
+            result[key] = customProtocols[key];
+        });
+    }
+    return result;
+}
+
 /**
  * Creates the mountebank server
  * @param {object} options - The command line options
@@ -55,13 +73,7 @@ function create (options) {
         deferred = Q.defer(),
         app = express(),
         imposters = options.imposters || {},
-        protocols = {
-            tcp: require('./models/tcp/tcpServer'),
-            http: require('./models/http/httpServer'),
-            https: require('./models/https/httpsServer'),
-            smtp: require('./models/smtp/smtpServer'),
-            foo: require('./models/foo/fooServer')
-        },
+        protocols = loadProtocols(),
         logger = ScopedLogger.create(winstonLogger, util.format('[mb:%s] ', options.port)),
         homeController = HomeController.create(releases),
         impostersController = ImpostersController.create(protocols, imposters, Imposter, logger, {

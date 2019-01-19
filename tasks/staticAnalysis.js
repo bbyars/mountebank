@@ -21,7 +21,7 @@ function include (filetype, file) {
 }
 
 function forEachFileIn (dir, fileCallback, options) {
-    fs.readdirSync(dir).forEach(function (file) {
+    fs.readdirSync(dir).forEach(file => {
         const filePath = path.join(dir, file);
 
         if (!exclude(options.exclude, filePath)) {
@@ -64,10 +64,10 @@ module.exports = function (grunt) {
         const thisPackage = require('../package.json'),
             dependencies = Object.keys(thisPackage.dependencies).concat(Object.keys(thisPackage.devDependencies)),
             usedCount = {},
-            dependencyCheck = function (file) {
+            dependencyCheck = file => {
                 const contents = fs.readFileSync(file, 'utf8');
 
-                dependencies.forEach(function (dependency) {
+                dependencies.forEach(dependency => {
                     if (contents.indexOf("require('" + dependency) >= 0 ||
                         contents.indexOf("loadNpmTasks('" + dependency + "')") >= 0) {
                         usedCount[dependency] += 1;
@@ -87,16 +87,12 @@ module.exports = function (grunt) {
                 'nc'
             ];
 
-        dependencies.forEach(function (dependency) {
-            usedCount[dependency] = 0;
-        });
-        whitelist.forEach(function (dependency) {
-            usedCount[dependency] += 1;
-        });
+        dependencies.forEach(dependency => { usedCount[dependency] = 0; });
+        whitelist.forEach(dependency => { usedCount[dependency] += 1; });
 
         forEachFileIn('.', dependencyCheck, { exclude: exclusions });
 
-        dependencies.forEach(function (dependency) {
+        dependencies.forEach(dependency => {
             if (usedCount[dependency] === 0) {
                 errors.push(dependency + ' is depended on in package.json but is never required');
             }

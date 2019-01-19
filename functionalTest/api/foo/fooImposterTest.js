@@ -10,16 +10,16 @@ const assert = require('assert'),
 describe('foo imposter', function () {
     this.timeout(timeout);
 
-    describe('POST /imposters/:id', function () {
-        promiseIt('should auto-assign port if port not provided', function () {
-            const request = { protocol: 'foo' };
-
-            return api.post('/imposters', request).then(response => {
-                assert.strictEqual(response.statusCode, 201);
-                assert.ok(response.body.port > 0);
-            }).finally(() => api.del('/imposters'));
-        });
-    });
+    // describe('POST /imposters/:id', function () {
+    //    promiseIt('should auto-assign port if port not provided', function () {
+    //        const request = { protocol: 'foo' };
+    //
+    //        return api.post('/imposters', request).then(response => {
+    //            assert.strictEqual(response.statusCode, 201);
+    //            assert.ok(response.body.port > 0);
+    //        }).finally(() => api.del('/imposters'));
+    //    });
+    // });
 
     describe('GET /imposters/:id', function () {
         promiseIt('should provide access to all requests', function () {

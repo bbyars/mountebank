@@ -56,6 +56,8 @@ function create (Protocol, creationRequest, baseLogger, recordMatches, recordReq
 
     let proxy, resolver, stubs;
     let numberOfRequests = 0;
+    let metadata = {};
+    let imposterUrl = `http://localhost:${mountebankPort}/imposters/${creationRequest.port}`;
 
     compatibility.upcast(creationRequest);
 
@@ -83,119 +85,143 @@ function create (Protocol, creationRequest, baseLogger, recordMatches, recordReq
 
     domain.on('error', errorHandler);
     domain.run(() => {
-        Protocol.create(creationRequest, logger, getResponseFor).done(server => {
-            if (creationRequest.port !== server.port) {
-                logger.changeScope(scopeFor(server.port));
+        function addDetailsTo (result) {
+            if (creationRequest.name) {
+                result.name = creationRequest.name;
             }
-            logger.info('Open for business...');
+            result.recordRequests = recordRequests;
 
-            // TODO: Get host from mountebank.js?
-            const url = `/imposters/${server.port}`,
-                callbackUrl = `http://localhost:${mountebankPort}${url}/_requests`;
-
-            // TODO: Remove once all proto implementations converted
-            if (server.setCallbackUrl) {
-                server.setCallbackUrl(callbackUrl);
-            }
-
-            if (creationRequest.protocol !== 'foo') {
-                proxy = server.proxy;
-            }
-            resolver = require('./responseResolver').create(proxy, callbackUrl);
-            stubs = require('./stubRepository').create(resolver, recordMatches, server.encoding || 'utf8');
-
-            if (creationRequest.stubs) {
-                creationRequest.stubs.forEach(stubs.addStub);
-            }
-
-            function addDetailsTo (result) {
-                if (creationRequest.name) {
-                    result.name = creationRequest.name;
-                }
-                result.recordRequests = recordRequests;
-
-                Object.keys(server.metadata).forEach(key => {
-                    result[key] = server.metadata[key];
-                });
-
-                result.requests = requests;
-                result.stubs = stubs.stubs();
-            }
-
-            function removeNonEssentialInformationFrom (result) {
-                const helpers = require('../util/helpers');
-
-                result.stubs.forEach(stub => {
-                    /* eslint-disable no-underscore-dangle */
-                    if (stub.matches) {
-                        delete stub.matches;
-                    }
-                    stub.responses.forEach(response => {
-                        if (helpers.defined(response.is) && helpers.defined(response.is._proxyResponseTime)) {
-                            delete response.is._proxyResponseTime;
-                        }
-                    });
-                });
-                delete result.numberOfRequests;
-                delete result.requests;
-                delete result._links;
-            }
-
-            function removeProxiesFrom (result) {
-                result.stubs.forEach(stub => {
-                    stub.responses = stub.responses.filter(response => !response.hasOwnProperty('proxy'));
-                });
-                result.stubs = result.stubs.filter(stub => stub.responses.length > 0);
-            }
-
-            function toJSON (options) {
-                // I consider the order of fields represented important.  They won't matter for parsing,
-                // but it makes a nicer user experience for developers viewing the JSON to keep the most
-                // relevant information at the top
-                const result = {
-                    protocol: creationRequest.protocol,
-                    port: server.port,
-                    numberOfRequests: numberOfRequests
-                };
-
-                options = options || {};
-
-                if (!options.list) {
-                    addDetailsTo(result);
-                }
-
-                result._links = { self: { href: url } };
-
-                if (options.replayable) {
-                    removeNonEssentialInformationFrom(result);
-                }
-                if (options.removeProxies) {
-                    removeProxiesFrom(result);
-                }
-
-                return result;
-            }
-
-            function stop () {
-                const stopDeferred = Q.defer();
-                server.close(() => {
-                    logger.info('Ciao for now');
-                    return stopDeferred.resolve({});
-                });
-                return stopDeferred.promise;
-            }
-
-            return deferred.resolve({
-                port: server.port,
-                url,
-                toJSON,
-                addStub: stubs.addStub,
-                stop,
-                resetProxies: stubs.resetProxies,
-                getResponseFor,
-                getProxyResponseFor
+            Object.keys(metadata).forEach(key => {
+                result[key] = metadata[key];
             });
-        });
+
+            result.requests = requests;
+            result.stubs = stubs.stubs();
+        }
+
+        function removeNonEssentialInformationFrom (result) {
+            const helpers = require('../util/helpers');
+
+            result.stubs.forEach(stub => {
+                /* eslint-disable no-underscore-dangle */
+                if (stub.matches) {
+                    delete stub.matches;
+                }
+                stub.responses.forEach(response => {
+                    if (helpers.defined(response.is) && helpers.defined(response.is._proxyResponseTime)) {
+                        delete response.is._proxyResponseTime;
+                    }
+                });
+            });
+            delete result.numberOfRequests;
+            delete result.requests;
+            delete result._links;
+        }
+
+        function removeProxiesFrom (result) {
+            result.stubs.forEach(stub => {
+                stub.responses = stub.responses.filter(response => !response.hasOwnProperty('proxy'));
+            });
+            result.stubs = result.stubs.filter(stub => stub.responses.length > 0);
+        }
+
+        function toJSON (options) {
+            // I consider the order of fields represented important.  They won't matter for parsing,
+            // but it makes a nicer user experience for developers viewing the JSON to keep the most
+            // relevant information at the top
+            const result = {
+                protocol: creationRequest.protocol,
+                port: creationRequest.port,
+                numberOfRequests: numberOfRequests
+            };
+
+            options = options || {};
+
+            if (!options.list) {
+                addDetailsTo(result);
+            }
+
+            result._links = { self: { href: '/imposters/' + creationRequest.port } };
+
+            if (options.replayable) {
+                removeNonEssentialInformationFrom(result);
+            }
+            if (options.removeProxies) {
+                removeProxiesFrom(result);
+            }
+
+            return result;
+        }
+
+        if (typeof Protocol.createCommand === 'string') {
+            require('./outOfProcessImposter').create(Protocol, creationRequest, imposterUrl, recordMatches, logger).done(outOfProcessImposter => {
+                resolver = outOfProcessImposter.resolver;
+                stubs = outOfProcessImposter.stubs;
+
+                deferred.resolve({
+                    port: creationRequest.port,
+                    url: imposterUrl,
+                    toJSON,
+                    addStub: stubs.addStub,
+                    stop: outOfProcessImposter.stop,
+                    resetProxies: stubs.resetProxies,
+                    getResponseFor,
+                    getProxyResponseFor
+                });
+            });
+        }
+        else if (typeof Protocol.create === 'function') {
+            Protocol.create(creationRequest, logger, getResponseFor).done(server => {
+                if (creationRequest.port !== server.port) {
+                    creationRequest.port = server.port;
+                    logger.changeScope(scopeFor(server.port));
+                }
+                logger.info('Open for business...');
+
+                imposterUrl = `http://localhost:${mountebankPort}/imposters/${server.port}`;
+                metadata = server.metadata;
+
+                // TODO: Get host from mountebank.js?
+                const callbackUrl = `http://localhost:${mountebankPort}/imposters/${server.port}/_requests`;
+
+                // TODO: Remove once all proto implementations converted
+                if (server.setCallbackUrl) {
+                    server.setCallbackUrl(callbackUrl);
+                }
+
+                proxy = server.proxy;
+                resolver = require('./responseResolver').create(proxy, callbackUrl);
+                stubs = require('./stubRepository').create(resolver, recordMatches, server.encoding || 'utf8');
+
+                if (creationRequest.stubs) {
+                    creationRequest.stubs.forEach(stubs.addStub);
+                }
+
+                function stop () {
+                    const stopDeferred = Q.defer();
+                    server.close(() => {
+                        logger.info('Ciao for now');
+                        return stopDeferred.resolve({});
+                    });
+                    return stopDeferred.promise;
+                }
+
+                return deferred.resolve({
+                    port: server.port,
+                    url: '/imposters/' + server.port,
+                    toJSON,
+                    addStub: stubs.addStub,
+                    stop,
+                    resetProxies: stubs.resetProxies,
+                    getResponseFor,
+                    getProxyResponseFor
+                });
+            });
+        }
+        else {
+            const errors = require('../util/errors');
+            deferred.reject(errors.ValidationError(`Protocol ${creationRequest.protocol} must have a createCommand configured.`));
+        }
     });
 
     return deferred.promise;

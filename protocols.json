@@ -1,0 +1,7 @@
+{
+    "foo": {
+        "testRequest": { "data": "" },
+        "testProxyResponse": { "data": "" },
+        "createCommand": "node src/models/foo/fooServer.js"
+    }
+}
