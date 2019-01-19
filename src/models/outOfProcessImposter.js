@@ -14,24 +14,17 @@ function create (Protocol, creationRequest, imposterUrl, recordMatches, logger) 
         Q = require('q'),
         deferred = Q.defer();
 
-    if (creationRequest.stubs) {
-        creationRequest.stubs.forEach(stubs.addStub);
-    }
-
     imposterProcess.stdout.once('data', () => {
-        logger.info('Open for business...');
-
         deferred.resolve({
+            port: creationRequest.port,
+            metadata: {},
             stubs,
             resolver,
-            stop: () => {
-                const stopDeferred = Q.defer();
+            close: callback => {
                 imposterProcess.once('exit', () => {
-                    logger.info('Ciao for now');
-                    stopDeferred.resolve({});
+                    callback();
                 });
                 imposterProcess.kill();
-                return stopDeferred.promise;
             }
         });
     });

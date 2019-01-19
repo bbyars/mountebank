@@ -50,7 +50,7 @@ describe('foo imposter', function () {
                     assert.deepEqual(response.body.stubs, [
                         { responses: [{ is: { data: '1' } }] },
                         { responses: [{ is: { data: '2' } }] }
-                    ]);
+                    ], JSON.stringify(response.body, null, 2));
                 })
                 .finally(() => api.del('/imposters'));
         });

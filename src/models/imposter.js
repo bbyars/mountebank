@@ -52,7 +52,8 @@ function create (Protocol, creationRequest, baseLogger, recordMatches, recordReq
         errorHandler = createErrorHandler(deferred, creationRequest.port),
         compatibility = require('./compatibility'),
         requests = [],
-        logger = require('../util/scopedLogger').create(baseLogger, scopeFor(creationRequest.port));
+        logger = require('../util/scopedLogger').create(baseLogger, scopeFor(creationRequest.port)),
+        helpers = require('../util/helpers');
 
     let proxy, resolver, stubs;
     let numberOfRequests = 0;
@@ -62,13 +63,11 @@ function create (Protocol, creationRequest, baseLogger, recordMatches, recordReq
     compatibility.upcast(creationRequest);
 
     // Can set per imposter
-    if (typeof creationRequest.recordRequests !== 'undefined') {
+    if (helpers.defined(creationRequest.recordRequests)) {
         recordRequests = creationRequest.recordRequests;
     }
 
     function getResponseFor (request) {
-        const helpers = require('../util/helpers');
-
         numberOfRequests += 1;
         if (recordRequests) {
             const recordedRequest = helpers.clone(request);
@@ -100,8 +99,6 @@ function create (Protocol, creationRequest, baseLogger, recordMatches, recordReq
         }
 
         function removeNonEssentialInformationFrom (result) {
-            const helpers = require('../util/helpers');
-
             result.stubs.forEach(stub => {
                 /* eslint-disable no-underscore-dangle */
                 if (stub.matches) {
@@ -153,75 +150,56 @@ function create (Protocol, creationRequest, baseLogger, recordMatches, recordReq
             return result;
         }
 
-        if (typeof Protocol.createCommand === 'string') {
-            require('./outOfProcessImposter').create(Protocol, creationRequest, imposterUrl, recordMatches, logger).done(outOfProcessImposter => {
-                resolver = outOfProcessImposter.resolver;
-                stubs = outOfProcessImposter.stubs;
+        function createServer () {
+            if (typeof Protocol.createCommand === 'string') {
+                return require('./outOfProcessImposter').create(Protocol, creationRequest, imposterUrl, recordMatches, logger);
+            }
+            else if (typeof Protocol.create === 'function') {
+                return require('./inProcessImposter').create(Protocol, creationRequest, logger, getResponseFor, recordMatches);
+            }
+            else {
+                // TODO: Won't work as is. Add test
+                const errors = require('../util/errors');
+                deferred.reject(errors.ValidationError(`Protocol ${creationRequest.protocol} must have a createCommand configured.`));
+            }
+        }
 
-                deferred.resolve({
-                    port: creationRequest.port,
-                    url: imposterUrl,
-                    toJSON,
-                    addStub: stubs.addStub,
-                    stop: outOfProcessImposter.stop,
-                    resetProxies: stubs.resetProxies,
-                    getResponseFor,
-                    getProxyResponseFor
+        createServer().done(server => {
+            if (creationRequest.port !== server.port) {
+                // TODO: Remove and change toJSON to use server's port
+                creationRequest.port = server.port;
+                logger.changeScope(scopeFor(server.port));
+            }
+            logger.info('Open for business...');
+
+            metadata = server.metadata;
+            resolver = server.resolver;
+            stubs = server.stubs;
+
+            if (creationRequest.stubs) {
+                creationRequest.stubs.forEach(stubs.addStub);
+            }
+
+            function stop () {
+                const stopDeferred = Q.defer();
+                server.close(() => {
+                    logger.info('Ciao for now');
+                    return stopDeferred.resolve({});
                 });
+                return stopDeferred.promise;
+            }
+
+            return deferred.resolve({
+                port: server.port,
+                url: '/imposters/' + server.port,
+                toJSON,
+                addStub: server.stubs.addStub,
+                stop,
+                resetProxies: stubs.resetProxies,
+                getResponseFor,
+                getProxyResponseFor
             });
-        }
-        else if (typeof Protocol.create === 'function') {
-            Protocol.create(creationRequest, logger, getResponseFor).done(server => {
-                if (creationRequest.port !== server.port) {
-                    creationRequest.port = server.port;
-                    logger.changeScope(scopeFor(server.port));
-                }
-                logger.info('Open for business...');
-
-                imposterUrl = `http://localhost:${mountebankPort}/imposters/${server.port}`;
-                metadata = server.metadata;
-
-                // TODO: Get host from mountebank.js?
-                const callbackUrl = `http://localhost:${mountebankPort}/imposters/${server.port}/_requests`;
-
-                // TODO: Remove once all proto implementations converted
-                if (server.setCallbackUrl) {
-                    server.setCallbackUrl(callbackUrl);
-                }
-
-                proxy = server.proxy;
-                resolver = require('./responseResolver').create(proxy, callbackUrl);
-                stubs = require('./stubRepository').create(resolver, recordMatches, server.encoding || 'utf8');
-
-                if (creationRequest.stubs) {
-                    creationRequest.stubs.forEach(stubs.addStub);
-                }
-
-                function stop () {
-                    const stopDeferred = Q.defer();
-                    server.close(() => {
-                        logger.info('Ciao for now');
-                        return stopDeferred.resolve({});
-                    });
-                    return stopDeferred.promise;
-                }
-
-                return deferred.resolve({
-                    port: server.port,
-                    url: '/imposters/' + server.port,
-                    toJSON,
-                    addStub: stubs.addStub,
-                    stop,
-                    resetProxies: stubs.resetProxies,
-                    getResponseFor,
-                    getProxyResponseFor
-                });
-            });
-        }
-        else {
-            const errors = require('../util/errors');
-            deferred.reject(errors.ValidationError(`Protocol ${creationRequest.protocol} must have a createCommand configured.`));
-        }
+        });
     });
 
     return deferred.promise;
