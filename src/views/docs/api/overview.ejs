@@ -160,7 +160,7 @@ Content-Type: application/json
 Access-Control-Allow-Origin: *
 Location: http://localhost:<%= port %>/imposters/4545
 Content-Type: application/json; charset=utf-8
-Content-Length: 216
+Content-Length: 217
 Date: <volatile>Sun, 05 Jan 2014 16:28:40 GMT</volatile>
 Connection: keep-alive
 
@@ -168,7 +168,7 @@ Connection: keep-alive
   "protocol": "http",
   "port": 4545,
   "numberOfRequests": 0,
-  "recordRequests": true,
+  "recordRequests": false,
   "requests": [],
   "stubs": [],
   "_links": {
@@ -243,7 +243,7 @@ Accept: application/json
 Access-Control-Allow-Origin: *
 Vary: Accept
 Content-Type: application/json; charset=utf-8
-Content-Length: 216
+Content-Length: 217
 Date: <volatile>Sun, 05 Jan 2014 16:59:33 GMT</volatile>
 Connection: keep-alive
 
@@ -251,7 +251,7 @@ Connection: keep-alive
   "protocol": "http",
   "port": 4545,
   "numberOfRequests": 0,
-  "recordRequests": true,
+  "recordRequests": false,
   "requests": [],
   "stubs": [],
   "_links": {
@@ -278,14 +278,14 @@ Accept: application/json</code></pre>
 Access-Control-Allow-Origin: *
 Vary: Accept
 Content-Type: application/json; charset=utf-8
-Content-Length: 81
+Content-Length: 82
 Date: <volatile>Sun, 05 Jan 2014 16:59:33 GMT</volatile>
 Connection: keep-alive
 
 {
   "protocol": "http",
   "port": 4545,
-  "recordRequests": true,
+  "recordRequests": false,
   "stubs": []
 }</code></pre>
         </assertResponse>
@@ -339,7 +339,7 @@ Accept: application/json</code></pre>
 <pre><code>HTTP/1.1 200 OK
 Access-Control-Allow-Origin: *
 Content-Type: application/json; charset=utf-8
-Content-Length: 216
+Content-Length: 217
 Date: <volatile>Sun, 05 Jan 2014 16:59:33 GMT</volatile>
 Connection: keep-alive
 
@@ -347,7 +347,7 @@ Connection: keep-alive
   "protocol": "http",
   "port": 4545,
   "numberOfRequests": 0,
-  "recordRequests": true,
+  "recordRequests": false,
   "requests": [],
   "stubs": [],
   "_links": {
@@ -579,7 +579,7 @@ Accept: application/json</code></pre>
 <pre><code>HTTP/1.1 200 OK
 Access-Control-Allow-Origin: *
 Content-Type: application/json; charset=utf-8
-Content-Length: 367
+Content-Length: 370
 Date: <volatile>Sun, 05 Jan 2014 16:58:25 GMT</volatile>
 Connection: keep-alive
 
@@ -588,20 +588,20 @@ Connection: keep-alive
     {
       "protocol": "http",
       "port": 4546,
-      "recordRequests": true,
+      "recordRequests": false,
       "stubs": []
     },
     {
       "protocol": "tcp",
       "port": 4547,
-      "recordRequests": true,
+      "recordRequests": false,
       "mode": "binary",
       "stubs": []
     },
     {
       "protocol": "smtp",
       "port": 4548,
-      "recordRequests": true,
+      "recordRequests": false,
       "stubs": []
     }
   ]

@@ -1,13 +1,13 @@
-//'use strict';
+// 'use strict';
 //
-//const assert = require('assert'),
+// const assert = require('assert'),
 //    mock = require('../mock').mock,
 //    Imposter = require('../../src/models/imposter'),
 //    Q = require('q'),
 //    promiseIt = require('../testHelpers').promiseIt,
 //    FakeLogger = require('../fakes/fakeLogger');
 //
-//describe('imposter', function () {
+// describe('imposter', function () {
 //    describe('#create', function () {
 //        let Protocol, metadata, server, logger;
 //
@@ -260,4 +260,4 @@
 //            });
 //        });
 //    });
-//});
+// });
