@@ -19,101 +19,6 @@ function initializeLogfile (filename) {
     }
 }
 
-function loadProtocols (options) {
-    function inProcessCreate (createProtocol) {
-        return (creationRequest, logger, responseFn) =>
-            createProtocol(creationRequest, logger, responseFn).then(server => {
-                const resolver = require('./models/responseResolver').create(server.proxy),
-                    stubs = require('./models/stubRepository').create(
-                        resolver, options.mock || creationRequest.recordMatches, server.encoding || 'utf8'),
-                    Q = require('q');
-
-                return Q({
-                    port: server.port,
-                    metadata: server.metadata,
-                    resolver: resolver,
-                    stubs: stubs,
-                    close: server.close
-                });
-            });
-    }
-
-    function outOfProcessCreate (createCommand) {
-        return (creationRequest, logger) => {
-            const { spawn } = require('child_process'),
-                command = createCommand.split(' ')[0],
-                args = createCommand.split(' ').splice(1),
-                port = creationRequest.port,
-                callbackUrl = `http://localhost:${options.port}/imposters/${port}/_requests`,
-                defaultResponse = creationRequest.defaultResponse || {},
-                allArgs = args.concat(port, callbackUrl, JSON.stringify(defaultResponse)),
-                imposterProcess = spawn(command, allArgs),
-                resolver = require('./models/responseResolver').create(undefined, callbackUrl),
-                stubs = require('./models/stubRepository').create(resolver, options.mock || creationRequest.recordMatches, 'utf8'),
-                Q = require('q'),
-                deferred = Q.defer();
-
-            imposterProcess.stdout.once('data', () => {
-                deferred.resolve({
-                    port: creationRequest.port,
-                    metadata: {},
-                    stubs,
-                    resolver,
-                    close: callback => {
-                        imposterProcess.once('exit', () => {
-                            callback();
-                        });
-                        imposterProcess.kill();
-                    }
-                });
-            });
-
-            imposterProcess.stdout.on('data', buffer => {
-                const data = buffer.toString('utf8');
-                if (data.indexOf(' ') > 0) {
-                    const words = data.split(' '),
-                        level = words[0],
-                        rest = words.splice(1).join(' ').trim();
-                    logger[level](rest);
-                }
-            });
-
-            imposterProcess.stderr.on('data', data => {
-                logger.error(data);
-            });
-
-            process.once('SIGINT', () => {
-                imposterProcess.kill();
-            });
-            process.once('SIGTERM', () => {
-                imposterProcess.kill();
-            });
-
-            return deferred.promise;
-        };
-    }
-
-    const result = {
-            tcp: require('./models/tcp/tcpServer'),
-            http: require('./models/http/httpServer'),
-            https: require('./models/https/httpsServer'),
-            smtp: require('./models/smtp/smtpServer')
-        },
-        fs = require('fs');
-
-    Object.keys(result).forEach(key => {
-        result[key].createServer = inProcessCreate(result[key].create);
-    });
-    if (fs.existsSync('./protocols.json')) {
-        const customProtocols = require(process.cwd() + '/protocols.json');
-        Object.keys(customProtocols).forEach(key => {
-            result[key] = customProtocols[key];
-            result[key].createServer = outOfProcessCreate(result[key].createCommand);
-        });
-    }
-    return result;
-}
-
 /**
  * Creates the mountebank server
  * @param {object} options - The command line options
@@ -150,7 +55,8 @@ function create (options) {
         deferred = Q.defer(),
         app = express(),
         imposters = options.imposters || {},
-        protocols = loadProtocols(options),
+        protocols = require('./models/protocols').load(options,
+            port => `http://localhost:${options.port}/imposters/${port}/_requests`),
         logger = ScopedLogger.create(winstonLogger, util.format('[mb:%s] ', options.port)),
         homeController = HomeController.create(releases),
         impostersController = ImpostersController.create(protocols, imposters, Imposter, logger, {

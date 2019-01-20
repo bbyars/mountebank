@@ -363,6 +363,13 @@ const aliases = {
             type: 'string',
             global: false
         },
+        protofile: {
+            default: 'protocols.json',
+            description: 'file to load custom protocol implementations from',
+            nargs: 1,
+            type: 'string',
+            global: false
+        },
         removeProxies: {
             default: false,
             description: 'removes proxies from the configuration when using the save command',
@@ -390,7 +397,8 @@ const aliases = {
         ipWhitelist: options.ipWhitelist,
         mock: options.mock,
         debug: options.debug,
-        heroku: options.heroku
+        heroku: options.heroku,
+        protofile: options.protofile
     };
 
 const argv = yargs
