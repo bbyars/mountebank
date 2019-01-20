@@ -57,10 +57,8 @@ function create (Protocol, creationRequest, baseLogger, recordRequests) {
 
     compatibility.upcast(creationRequest);
 
-    // Can set per imposter
-    if (helpers.defined(creationRequest.recordRequests)) {
-        recordRequests = creationRequest.recordRequests;
-    }
+    // If the CLI --mock flag is passed, we record even if the imposter level recordRequests = false
+    recordRequests = recordRequests || creationRequest.recordRequests;
 
     function getResponseFor (request) {
         numberOfRequests += 1;
@@ -80,7 +78,6 @@ function create (Protocol, creationRequest, baseLogger, recordRequests) {
     domain.on('error', errorHandler);
     domain.run(() => {
         Protocol.createServer(creationRequest, logger, getResponseFor).done(server => {
-            logger.warn('created');
             if (creationRequest.port !== server.port) {
                 logger.changeScope(scopeFor(server.port));
             }

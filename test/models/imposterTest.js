@@ -57,8 +57,9 @@ describe('imposter', function () {
 
         promiseIt('should not display imposter level recordRequests from the global parameter', function () {
             server.port = 3535;
+            const globalRecordRequests = true;
 
-            return Imposter.create(Protocol, { protocol: 'test' }, logger, true).then(imposter => {
+            return Imposter.create(Protocol, { protocol: 'test' }, logger, globalRecordRequests).then(imposter => {
                 assert.deepEqual(imposter.toJSON(), {
                     protocol: 'test',
                     port: 3535,
@@ -73,17 +74,18 @@ describe('imposter', function () {
 
         promiseIt('imposter-specific recordRequests should override global parameter', function () {
             const request = {
-                protocol: 'test',
-                port: 3535,
-                recordRequests: false
-            };
+                    protocol: 'test',
+                    port: 3535,
+                    recordRequests: true
+                },
+                globalRecordRequests = false;
 
-            return Imposter.create(Protocol, request, logger, true).then(imposter => {
+            return Imposter.create(Protocol, request, logger, globalRecordRequests).then(imposter => {
                 assert.deepEqual(imposter.toJSON(), {
                     protocol: 'test',
                     port: 3535,
                     numberOfRequests: 0,
-                    recordRequests: false,
+                    recordRequests: true,
                     requests: [],
                     stubs: [],
                     _links: { self: { href: '/imposters/3535' } }
@@ -263,6 +265,65 @@ describe('imposter', function () {
                         ]
                     }
                 ]);
+            });
+        });
+
+        promiseIt('responseFor should resolve using stubs', function () {
+            server.stubs.resolve = mock().returns('RESPONSE');
+
+            return Imposter.create(Protocol, {}, logger, false).then(imposter => {
+                assert.strictEqual(imposter.getResponseFor({}), 'RESPONSE');
+            });
+        });
+
+        promiseIt('responseFor should increment numberOfRequests and not record requests if recordRequests = false', function () {
+            server.stubs.resolve = mock().returns('RESPONSE');
+            const globalRecordRequests = false;
+
+            return Imposter.create(Protocol, { recordRequests: false }, logger, globalRecordRequests).then(imposter => {
+                imposter.getResponseFor({});
+                const json = imposter.toJSON();
+                assert.strictEqual(json.numberOfRequests, 1);
+                assert.deepEqual(json.requests, []);
+            });
+        });
+
+        promiseIt('responseFor should increment numberOfRequests and record requests if imposter recordRequests = true', function () {
+            server.stubs.resolve = mock().returns('RESPONSE');
+            const globalRecordRequests = false;
+
+            return Imposter.create(Protocol, { recordRequests: true }, logger, globalRecordRequests).then(imposter => {
+                imposter.getResponseFor({ request: 1 });
+                const json = imposter.toJSON();
+
+                assert.strictEqual(json.numberOfRequests, 1);
+                assert.strictEqual(json.requests.length, 1);
+            });
+        });
+
+        promiseIt('responseFor should increment numberOfRequests and record requests if global recordRequests = true', function () {
+            server.stubs.resolve = mock().returns('RESPONSE');
+            const globalRecordRequests = true;
+
+            return Imposter.create(Protocol, { recordRequests: false }, logger, globalRecordRequests).then(imposter => {
+                imposter.getResponseFor({ request: 1 });
+                const json = imposter.toJSON();
+
+                assert.strictEqual(json.numberOfRequests, 1);
+                assert.strictEqual(json.requests.length, 1);
+            });
+        });
+
+        promiseIt('responseFor should add timestamp to recorded request', function () {
+            server.stubs.resolve = mock().returns('RESPONSE');
+            const globalRecordRequests = true;
+
+            return Imposter.create(Protocol, {}, logger, globalRecordRequests).then(imposter => {
+                imposter.getResponseFor({ request: 1 });
+                const json = imposter.toJSON();
+
+                assert.deepEqual(Object.keys(json.requests[0]).sort(), ['request', 'timestamp']);
+                assert.strictEqual(json.requests[0].request, 1);
             });
         });
     });
