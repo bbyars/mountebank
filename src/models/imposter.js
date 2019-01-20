@@ -29,14 +29,10 @@ function createErrorHandler (deferred, port) {
  * @param {Object} Protocol - The protocol factory for creating servers of that protocol
  * @param {Object} creationRequest - the parsed imposter JSON
  * @param {Object} baseLogger - the logger
- * @param {Object} recordMatches - corresponds to the --debug command line flag
  * @param {Object} recordRequests - corresponds to the --mock command line flag
- * @param {Object} mountebankPort - the mountebank port for callback URLs from the imposter
  * @returns {Object}
  */
-// TODO: Clean up constructor interface...
-// eslint-disable-next-line max-params
-function create (Protocol, creationRequest, baseLogger, recordMatches, recordRequests, mountebankPort) {
+function create (Protocol, creationRequest, baseLogger, recordRequests) {
     function scopeFor (port) {
         let scope = `${creationRequest.protocol}:${port}`;
 
@@ -58,7 +54,6 @@ function create (Protocol, creationRequest, baseLogger, recordMatches, recordReq
     let stubs;
     let numberOfRequests = 0;
     let metadata = {};
-    let imposterUrl = `http://localhost:${mountebankPort}/imposters/${creationRequest.port}`;
 
     compatibility.upcast(creationRequest);
 
@@ -84,16 +79,8 @@ function create (Protocol, creationRequest, baseLogger, recordMatches, recordReq
 
     domain.on('error', errorHandler);
     domain.run(() => {
-        function createServer () {
-            if (typeof Protocol.createCommand === 'string') {
-                return require('./outOfProcessImposter').create(Protocol, creationRequest, imposterUrl, recordMatches, logger);
-            }
-            else {
-                return require('./inProcessImposter').create(Protocol, creationRequest, logger, getResponseFor, recordMatches);
-            }
-        }
-
-        createServer().done(server => {
+        Protocol.createServer(creationRequest, logger, getResponseFor).done(server => {
+            logger.warn('created');
             if (creationRequest.port !== server.port) {
                 logger.changeScope(scopeFor(server.port));
             }
