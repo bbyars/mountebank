@@ -4,8 +4,8 @@ function load (options, callbackUrlFn) {
     function inProcessCreate (createProtocol) {
         return (creationRequest, logger, responseFn) =>
             createProtocol(creationRequest, logger, responseFn).then(server => {
-                const resolver = require('./responseResolver').create(server.proxy),
-                    stubs = require('./stubRepository').create(resolver, options.debug, server.encoding || 'utf8'),
+                const stubs = require('./stubRepository').create(server.encoding || 'utf8'),
+                    resolver = require('./responseResolver').create(stubs, server.proxy),
                     Q = require('q');
 
                 return Q({
@@ -27,8 +27,8 @@ function load (options, callbackUrlFn) {
                 defaultResponse = creationRequest.defaultResponse || {},
                 allArgs = args.concat(port, callbackUrlFn(port), JSON.stringify(defaultResponse)),
                 imposterProcess = spawn(command, allArgs),
-                resolver = require('./responseResolver').create(undefined, callbackUrlFn(port)),
-                stubs = require('./stubRepository').create(resolver, options.mock, 'utf8'),
+                stubs = require('./stubRepository').create('utf8'),
+                resolver = require('./responseResolver').create(stubs, undefined, callbackUrlFn(port)),
                 Q = require('q'),
                 deferred = Q.defer();
 

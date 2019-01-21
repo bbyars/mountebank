@@ -1,159 +1,123 @@
 'use strict';
 
 const assert = require('assert'),
-    StubRepository = require('../../src/models/stubRepository'),
     mock = require('../mock').mock,
-    promiseIt = require('../testHelpers').promiseIt,
-    Q = require('q');
+    StubRepository = require('../../src/models/stubRepository');
 
 describe('stubRepository', function () {
-    describe('#resolve', function () {
+    describe('#getResponseFor', function () {
+        it('should return default response if no match', function () {
+            const stubs = StubRepository.create('utf8'),
+                logger = { debug: mock() };
 
-        promiseIt('should call resolve with default response if no match', function () {
-            const resolver = mock().returns(Q()),
-                stubs = StubRepository.create({ resolve: resolver }),
-                logger = { debug: mock() },
-                request = { field: 'value' };
+            const responseConfig = stubs.getResponseFor({ field: 'value' }, logger, {});
 
-            return stubs.resolve(request, logger).then(() => {
-                assert.ok(resolver.wasCalledWith({ is: {} }, request, logger, []), resolver.message());
-            });
+            assert.deepEqual(responseConfig.is, {});
         });
 
-        promiseIt('should always match if no predicate', function () {
-            const resolver = mock().returns(Q()),
-                stubs = StubRepository.create({ resolve: resolver }),
+        it('should always match if no predicate', function () {
+            const stubs = StubRepository.create('utf8'),
                 logger = { debug: mock() },
-                request = { field: 'value' },
-                stub = { responses: ['first stub'] };
+                stub = { responses: [{ is: 'first stub' }] };
 
             stubs.addStub(stub);
+            const responseConfig = stubs.getResponseFor({ field: 'value' }, logger, {});
 
-            return stubs.resolve(request, logger).then(() => {
-                assert.ok(resolver.wasCalledWith('first stub', request, logger, [stub]), resolver.message());
-            });
+            assert.strictEqual(responseConfig.is, 'first stub');
         });
 
-        promiseIt('should return first match', function () {
-            const resolver = mock().returns(Q()),
-                stubs = StubRepository.create({ resolve: resolver }),
+        it('should return first match', function () {
+            const stubs = StubRepository.create('utf8'),
                 logger = { debug: mock() },
-                request = { field: '2' },
-                firstStub = { predicates: [{ equals: { field: '1' } }], responses: ['first stub'] },
-                secondStub = { predicates: [{ equals: { field: '2' } }], responses: ['second stub'] },
-                thirdStub = { predicates: [{ equals: { field: '2' } }], responses: ['third stub'] };
+                firstStub = { predicates: [{ equals: { field: '1' } }], responses: [{ is: 'first stub' }] },
+                secondStub = { predicates: [{ equals: { field: '2' } }], responses: [{ is: 'second stub' }] },
+                thirdStub = { predicates: [{ equals: { field: '2' } }], responses: [{ is: 'third stub' }] };
 
             stubs.addStub(firstStub);
             stubs.addStub(secondStub);
             stubs.addStub(thirdStub);
+            const responseConfig = stubs.getResponseFor({ field: '2' }, logger, {});
 
-            return stubs.resolve(request, logger).then(() => {
-                assert.ok(resolver.wasCalledWith('second stub'), resolver.message());
-            });
+            assert.strictEqual(responseConfig.is, 'second stub');
         });
 
-        promiseIt('should return responses in order, looping around', function () {
-            const resolver = mock().returns(Q()),
-                stubs = StubRepository.create({ resolve: resolver }),
+        it('should return responses in order, looping around', function () {
+            const stubs = StubRepository.create('utf8'),
                 logger = { debug: mock() },
-                request = { field: 'value' },
-                stub = { responses: ['first response', 'second response'] };
+                stub = { responses: [{ is: 'first response' }, { is: 'second response' }] };
 
             stubs.addStub(stub);
 
-            return stubs.resolve(request, logger).then(() => {
-                assert.ok(resolver.wasCalledWith('first response'), resolver.message());
-                return stubs.resolve(request, logger);
-            }).then(() => {
-                assert.ok(resolver.wasCalledWith('second response'), resolver.message());
-                return stubs.resolve(request, logger);
-            }).then(() => {
-                assert.ok(resolver.wasCalledWith('first response'), resolver.message());
-            });
+            assert.strictEqual(stubs.getResponseFor({}, logger, {}).is, 'first response');
+            assert.strictEqual(stubs.getResponseFor({}, logger, {}).is, 'second response');
+            assert.strictEqual(stubs.getResponseFor({}, logger, {}).is, 'first response');
         });
 
-        promiseIt('should record matches', function () {
-            const resolver = mock().returns(Q()),
-                stubs = StubRepository.create({ resolve: resolver }, true),
+        it('should support recording matches', function () {
+            const stubs = StubRepository.create('utf8'),
                 logger = { debug: mock() },
                 matchingRequest = { field: 'value' },
                 mismatchingRequest = { field: 'other' },
-                stub = { predicates: [{ equals: { field: 'value' } }], responses: ['first response'] };
+                stub = { predicates: [{ equals: { field: 'value' } }], responses: [{ is: 'first response' }] };
 
             stubs.addStub(stub);
+            stubs.getResponseFor(matchingRequest, logger, {}).recordMatch('MATCHED');
+            stubs.getResponseFor(mismatchingRequest, logger, {}).recordMatch('MISMATCHED');
+            const matches = stubs.stubs()[0].matches;
+            matches.forEach(match => { match.timestamp = 'NOW'; });
 
-            return stubs.resolve(matchingRequest, logger).then(() => stubs.resolve(mismatchingRequest, logger)).then(() => {
-                assert.strictEqual(stub.matches.length, 1);
-                assert.deepEqual(stub.matches[0].request, matchingRequest);
-            });
+            assert.deepEqual(matches, [{ request: matchingRequest, response: 'MATCHED', timestamp: 'NOW' }]);
         });
 
-        promiseIt('should not record matches if recordMatches is false', function () {
-            const resolver = mock().returns(Q()),
-                stubs = StubRepository.create({ resolve: resolver }, false),
+        it('should only record match once for given response', function () {
+            const stubs = StubRepository.create('utf8'),
                 logger = { debug: mock() },
-                matchingRequest = { field: 'value' },
-                mismatchingRequest = { field: 'other' },
-                stub = { predicates: [{ equals: { field: 'value' } }], responses: ['first response'] };
+                stub = { responses: [{ is: 'response' }] };
 
             stubs.addStub(stub);
+            const responseConfig = stubs.getResponseFor({}, logger, {});
+            responseConfig.recordMatch('FIRST');
+            responseConfig.recordMatch('SECOND');
+            const matches = stubs.stubs()[0].matches;
+            matches.forEach(match => { match.timestamp = 'NOW'; });
 
-            return stubs.resolve(matchingRequest, logger).then(() => stubs.resolve(mismatchingRequest, logger)).then(() => {
-                assert.ok(!stub.hasOwnProperty('matches'));
-            });
+            assert.deepEqual(matches, [{ request: {}, response: 'FIRST', timestamp: 'NOW' }]);
         });
 
-        promiseIt('should return a repeat response only a set number of times', function () {
-            const resolver = mock().returns(Q()),
-                stubs = StubRepository.create({ resolve: resolver }, false),
+        it('should repeat a response and continue looping', function () {
+            const stubs = StubRepository.create('utf8'),
                 logger = { debug: mock() },
-                request = { field: 'value' },
                 stub = { responses: [
-                    { is: { body: 'first response' }, _behaviors: { repeat: 2 } },
-                    { is: { body: 'second response' } }
+                    { is: 'first response', _behaviors: { repeat: 2 } },
+                    { is: 'second response' }
                 ] };
 
             stubs.addStub(stub);
 
-            return stubs.resolve(request, logger).then(() => {
-                assert.ok(resolver.wasCalledWith({ is: { body: 'first response' }, _behaviors: { repeat: 2 } },
-                    request, logger, [stub]), resolver.message());
-
-                return stubs.resolve(request, logger);
-            }).then(() => {
-                assert.ok(resolver.wasCalledWith({ is: { body: 'first response' }, _behaviors: { repeat: 2 } },
-                    request, logger, [stub]), resolver.message());
-
-                return stubs.resolve(request, logger);
-            }).then(() => {
-                assert.ok(resolver.wasCalledWith({ is: { body: 'second response' } },
-                    request, logger, [stub]), resolver.message());
-            });
+            assert.strictEqual(stubs.getResponseFor({}, logger, {}).is, 'first response');
+            assert.strictEqual(stubs.getResponseFor({}, logger, {}).is, 'first response');
+            assert.strictEqual(stubs.getResponseFor({}, logger, {}).is, 'second response');
+            assert.strictEqual(stubs.getResponseFor({}, logger, {}).is, 'first response');
+            assert.strictEqual(stubs.getResponseFor({}, logger, {}).is, 'first response');
+            assert.strictEqual(stubs.getResponseFor({}, logger, {}).is, 'second response');
         });
 
-        promiseIt('should loop back around after repeats are exhausted', function () {
-            const resolver = mock().returns(Q()),
-                stubs = StubRepository.create({ resolve: resolver }, false),
-                logger = { debug: mock() },
-                request = { field: 'value' },
-                firstResponse = { is: { body: 'first response' }, _behaviors: { repeat: 1 } },
-                secondResponse = { is: { body: 'second response' }, _behaviors: { repeat: 2 } },
-                stub = { responses: [firstResponse, secondResponse] };
+        it('should add new stub in front of passed in response', function () {
+            const stubs = StubRepository.create('utf8'),
+                firstStub = { responses: [{ is: 'first' }, { is: 'second' }] },
+                secondStub = { responses: [{ is: 'third' }, { is: 'fourth' }] };
 
-            stubs.addStub(stub);
+            stubs.addStub(firstStub);
+            stubs.addStub(secondStub);
 
-            return stubs.resolve(request, logger).then(() => {
-                assert.ok(resolver.wasCalledWith(firstResponse), resolver.message());
-                return stubs.resolve(request, logger);
-            }).then(() => {
-                assert.ok(resolver.wasCalledWith(secondResponse), resolver.message());
-                return stubs.resolve(request, logger);
-            }).then(() => {
-                assert.ok(resolver.wasCalledWith(secondResponse), resolver.message());
-                return stubs.resolve(request, logger);
-            }).then(() => {
-                assert.ok(resolver.wasCalledWith(firstResponse), resolver.message());
-            });
+            stubs.addStub({ responses: [{ is: 'TEST' }] }, { is: 'fourth' });
+            const responses = stubs.stubs().map(stub => stub.responses);
+
+            assert.deepEqual(responses, [
+                [{ is: 'first' }, { is: 'second' }],
+                [{ is: 'TEST' }],
+                [{ is: 'third' }, { is: 'fourth' }]
+            ]);
         });
     });
 });

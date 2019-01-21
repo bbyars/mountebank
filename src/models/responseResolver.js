@@ -7,11 +7,12 @@
 
 /**
  * Creates the resolver
+ * @param {Object} stubs - The stubs repository
  * @param {Object} proxy - The protocol-specific proxy implementation
  * @param {String} callbackUrl - The protocol callback URL for response resolution
  * @returns {Object}
  */
-function create (proxy, callbackUrl) {
+function create (stubs, proxy, callbackUrl) {
     const injectState = {},
         pendingProxyResolutions = {};
     let nextProxyResolutionKey = 0;
@@ -130,41 +131,45 @@ function create (proxy, callbackUrl) {
         return predicates;
     }
 
-    function stubIndexFor (responseConfig, stubs) {
-        for (var i = 0; i < stubs.length; i += 1) {
-            const stub = stubs[i];
-            if (stub.responses.indexOf(responseConfig) >= 0) {
+    function deepEqual (obj1, obj2) {
+        return JSON.stringify(obj1) === JSON.stringify(obj2);
+    }
+
+    function stubIndexFor (responseConfig) {
+        const stubList = stubs.stubs();
+        for (var i = 0; i < stubList.length; i += 1) {
+            if (stubList[i].responses.some(response => deepEqual(response, responseConfig))) {
                 break;
             }
         }
         return i;
     }
 
-    function indexOfStubToAddResponseTo (responseConfig, request, stubs, logger) {
+    function indexOfStubToAddResponseTo (responseConfig, request, logger) {
         const predicates = predicatesFor(request, responseConfig.proxy.predicateGenerators || [], logger),
-            stringify = require('json-stable-stringify');
+            stubList = stubs.stubs();
 
-        for (let index = stubIndexFor(responseConfig, stubs) + 1; index < stubs.length; index += 1) {
-            if (stringify(predicates) === stringify(stubs[index].predicates)) {
+        for (let index = stubIndexFor(responseConfig) + 1; index < stubList.length; index += 1) {
+            if (deepEqual(predicates, stubList[index].predicates)) {
                 return index;
             }
         }
         return -1;
     }
 
-    function canAddResponseToExistingStub (responseConfig, request, stubs, logger) {
-        return indexOfStubToAddResponseTo(responseConfig, request, stubs, logger) >= 0;
+    function canAddResponseToExistingStub (responseConfig, request, logger) {
+        return indexOfStubToAddResponseTo(responseConfig, request, logger) >= 0;
     }
 
-    function newIsResponse (response, addWaitBehavior, addDecorateBehavior) {
+    function newIsResponse (response, proxyConfig) {
         const result = { is: response };
         const addBehaviors = {};
 
-        if (addWaitBehavior && response._proxyResponseTime) { // eslint-disable-line no-underscore-dangle
+        if (proxyConfig.addWaitBehavior && response._proxyResponseTime) { // eslint-disable-line no-underscore-dangle
             addBehaviors.wait = response._proxyResponseTime; // eslint-disable-line no-underscore-dangle
         }
-        if (addDecorateBehavior) {
-            addBehaviors.decorate = addDecorateBehavior;
+        if (proxyConfig.addDecorateBehavior) {
+            addBehaviors.decorate = proxyConfig.addDecorateBehavior;
         }
 
         if (Object.keys(addBehaviors).length) {
@@ -173,25 +178,27 @@ function create (proxy, callbackUrl) {
         return result;
     }
 
-    // TODO: Make function on stubRepository
-    function addNewResponse (responseConfig, request, response, stubs, logger) {
-        const stubResponse = newIsResponse(response, responseConfig.proxy.addWaitBehavior, responseConfig.proxy.addDecorateBehavior),
-            responseIndex = indexOfStubToAddResponseTo(responseConfig, request, stubs, logger);
+    function addNewResponse (responseConfig, request, response, logger) {
+        const stubResponse = newIsResponse(response, responseConfig.proxy),
+            responseIndex = indexOfStubToAddResponseTo(responseConfig, request, logger);
 
-        stubs[responseIndex].responses.push(stubResponse);
+        stubs.stubs()[responseIndex].addResponse(stubResponse);
     }
 
-    // TODO: Make function on stubRepository
-    function addNewStub (responseConfig, request, response, stubs, logger) {
+    function addNewStub (responseConfig, request, response, logger) {
         const predicates = predicatesFor(request, responseConfig.proxy.predicateGenerators || [], logger),
-            stubResponse = newIsResponse(response, responseConfig.proxy.addWaitBehavior, responseConfig.proxy.addDecorateBehavior),
-            newStub = { predicates: predicates, responses: [stubResponse] },
-            index = responseConfig.proxy.mode === 'proxyAlways' ? stubs.length : stubIndexFor(responseConfig, stubs);
+            stubResponse = newIsResponse(response, responseConfig.proxy),
+            newStub = { predicates: predicates, responses: [stubResponse] };
 
-        stubs.splice(index, 0, newStub);
+        if (responseConfig.proxy.mode === 'proxyAlways') {
+            stubs.addStub(newStub);
+        }
+        else {
+            stubs.addStub(newStub, responseConfig);
+        }
     }
 
-    function recordProxyResponse (responseConfig, request, response, stubs, logger) {
+    function recordProxyResponse (responseConfig, request, response, logger) {
         // proxyTransparent prevents the request from being recorded, and always transparently issues the request.
         if (responseConfig.proxy.mode === 'proxyTransparent') {
             return;
@@ -201,11 +208,11 @@ function create (proxy, callbackUrl) {
             responseConfig.proxy.mode = 'proxyOnce';
         }
 
-        if (responseConfig.proxy.mode === 'proxyAlways' && canAddResponseToExistingStub(responseConfig, request, stubs)) {
-            addNewResponse(responseConfig, request, response, stubs, logger);
+        if (responseConfig.proxy.mode === 'proxyAlways' && canAddResponseToExistingStub(responseConfig, request, logger)) {
+            addNewResponse(responseConfig, request, response, logger);
         }
         else {
-            addNewStub(responseConfig, request, response, stubs, logger);
+            addNewStub(responseConfig, request, response, logger);
         }
     }
 
@@ -216,7 +223,7 @@ function create (proxy, callbackUrl) {
         });
     }
 
-    function proxyAndRecord (responseConfig, request, logger, stubs) {
+    function proxyAndRecord (responseConfig, request, logger) {
         const Q = require('q'),
             behaviors = require('./behaviors');
 
@@ -227,7 +234,7 @@ function create (proxy, callbackUrl) {
                 // Run behaviors here to persist decorated response
                 Q(behaviors.execute(request, response, responseConfig._behaviors, logger))
             ).then(response => {
-                recordProxyResponse(responseConfig, request, response, stubs, logger);
+                recordProxyResponse(responseConfig, request, response, logger);
                 return Q(response);
             });
         }
@@ -235,7 +242,8 @@ function create (proxy, callbackUrl) {
             pendingProxyResolutions[nextProxyResolutionKey] = {
                 responseConfig: responseConfig,
                 request: request,
-                startTime: new Date()
+                startTime: new Date(),
+                recordMatch: responseConfig.recordMatch // This could be updated with another request before the proxy resolves
             };
             nextProxyResolutionKey += 1;
             return Q({
@@ -246,7 +254,7 @@ function create (proxy, callbackUrl) {
         }
     }
 
-    function processResponse (responseConfig, request, logger, stubs, imposterState) {
+    function processResponse (responseConfig, request, logger, imposterState) {
         const Q = require('q'),
             helpers = require('../util/helpers'),
             exceptions = require('../util/errors');
@@ -256,13 +264,14 @@ function create (proxy, callbackUrl) {
             return Q(helpers.clone(responseConfig.is));
         }
         else if (responseConfig.proxy) {
-            return proxyAndRecord(responseConfig, request, logger, stubs);
+            return proxyAndRecord(responseConfig, request, logger);
         }
         else if (responseConfig.inject) {
             return inject(request, responseConfig.inject, logger, imposterState).then(Q);
         }
         else {
-            return Q.reject(exceptions.ValidationError('unrecognized response type', { source: responseConfig }));
+            return Q.reject(exceptions.ValidationError('unrecognized response type',
+                { source: helpers.clone(responseConfig) }));
         }
     }
 
@@ -278,11 +287,10 @@ function create (proxy, callbackUrl) {
      * @param {Object} responseConfig - The API-provided response configuration
      * @param {Object} request - The protocol-specific request object
      * @param {Object} logger - The logger
-     * @param {Object} stubs - The stubs for the imposter
      * @param {Object} imposterState - The current state for the imposter
      * @returns {Object} - Promise resolving to the response
      */
-    function resolve (responseConfig, request, logger, stubs, imposterState) {
+    function resolve (responseConfig, request, logger, imposterState) {
         const Q = require('q'),
             exceptions = require('../util/errors'),
             helpers = require('../util/helpers'),
@@ -293,7 +301,7 @@ function create (proxy, callbackUrl) {
                 { source: responseConfig }));
         }
 
-        return processResponse(responseConfig, helpers.clone(request), logger, stubs, imposterState).then(response => {
+        return processResponse(responseConfig, helpers.clone(request), logger, imposterState).then(response => {
             // We may have already run the behaviors in the proxy call to persist the decorated response
             // in the new stub. If so, we need to ensure we don't re-run it
             if (responseConfig.proxy) {
@@ -320,11 +328,10 @@ function create (proxy, callbackUrl) {
      * can save it and add behaviors
      * @param {Object} proxyResponse - the proxy response from the protocol implementation
      * @param {Number} proxyResolutionKey - the key into the saved proxy state
-     * @param {Object} stubs - The stubs for the imposter
      * @param {Object} logger - the logger
      * @returns {Object} - Promise resolving to the response
      */
-    function resolveProxy (proxyResponse, proxyResolutionKey, stubs, logger) {
+    function resolveProxy (proxyResponse, proxyResolutionKey, logger) {
         const pendingProxyConfig = pendingProxyResolutions[proxyResolutionKey],
             behaviors = require('./behaviors'),
             Q = require('q');
@@ -332,7 +339,8 @@ function create (proxy, callbackUrl) {
         // TODO: Capture start time in pendingProxyConfig and add _proxyResponseTime if missing
         return behaviors.execute(pendingProxyConfig.request, proxyResponse, pendingProxyConfig.responseConfig._behaviors, logger)
             .then(response => {
-                recordProxyResponse(pendingProxyConfig.responseConfig, pendingProxyConfig.request, response, stubs, logger);
+                recordProxyResponse(pendingProxyConfig.responseConfig, pendingProxyConfig.request, response, logger);
+                response.recordMatch = pendingProxyConfig.recordMatch;
                 delete pendingProxyResolutions[proxyResolutionKey];
                 return Q(response);
             });

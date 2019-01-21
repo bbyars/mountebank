@@ -29,10 +29,10 @@ function createErrorHandler (deferred, port) {
  * @param {Object} Protocol - The protocol factory for creating servers of that protocol
  * @param {Object} creationRequest - the parsed imposter JSON
  * @param {Object} baseLogger - the logger
- * @param {Object} recordRequests - corresponds to the --mock command line flag
+ * @param {Object} config - command line options
  * @returns {Object}
  */
-function create (Protocol, creationRequest, baseLogger, recordRequests) {
+function create (Protocol, creationRequest, baseLogger, config) {
     function scopeFor (port) {
         let scope = `${creationRequest.protocol}:${port}`;
 
@@ -49,16 +49,18 @@ function create (Protocol, creationRequest, baseLogger, recordRequests) {
         compatibility = require('./compatibility'),
         requests = [],
         logger = require('../util/scopedLogger').create(baseLogger, scopeFor(creationRequest.port)),
-        helpers = require('../util/helpers');
+        helpers = require('../util/helpers'),
+        imposterState = {};
 
     let stubs;
+    let resolver;
     let numberOfRequests = 0;
     let metadata = {};
 
     compatibility.upcast(creationRequest);
 
     // If the CLI --mock flag is passed, we record even if the imposter level recordRequests = false
-    recordRequests = recordRequests || creationRequest.recordRequests;
+    const recordRequests = config.recordRequests || creationRequest.recordRequests;
 
     function getResponseFor (request) {
         numberOfRequests += 1;
@@ -68,11 +70,29 @@ function create (Protocol, creationRequest, baseLogger, recordRequests) {
             requests.push(recordedRequest);
         }
 
-        return stubs.resolve(request, logger);
+        const responseConfig = stubs.getResponseFor(request, logger, imposterState);
+        return resolver.resolve(responseConfig, request, logger, imposterState).then(response => {
+            if (config.recordMatches && !response.proxy) {
+                if (response.response) {
+                    // Out of process responses wrap the result in an outer response object
+                    responseConfig.recordMatch(response.response);
+                }
+                else {
+                    // In process resolution
+                    responseConfig.recordMatch(response);
+                }
+            }
+            return Q(response);
+        });
     }
 
     function getProxyResponseFor (proxyResponse, proxyResolutionKey) {
-        return stubs.resolveProxy(proxyResponse, proxyResolutionKey, logger);
+        return resolver.resolveProxy(proxyResponse, proxyResolutionKey, logger).then(response => {
+            if (config.recordMatches) {
+                response.recordMatch(response);
+            }
+            return Q(response);
+        });
     }
 
     domain.on('error', errorHandler);
@@ -85,6 +105,7 @@ function create (Protocol, creationRequest, baseLogger, recordRequests) {
 
             metadata = server.metadata;
             stubs = server.stubs;
+            resolver = server.resolver;
 
             if (creationRequest.stubs) {
                 creationRequest.stubs.forEach(stubs.addStub);

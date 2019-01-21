@@ -38,30 +38,30 @@ function create (options) {
     }
 
     function dryRun (stub, encoding, logger) {
-        // Need a well-formed proxy response in case a behavior decorator expects certain fields to exist
         const Q = require('q'),
             combinators = require('../util/combinators'),
-            dryRunProxy = { to: () => Q(options.testProxyResponse) },
             dryRunLogger = {
                 debug: combinators.noop,
                 info: combinators.noop,
                 warn: combinators.noop,
                 error: logger.error
             },
-            resolver = require('./responseResolver').create(dryRunProxy, combinators.identity),
             stubsToValidateWithPredicates = stub.responses.map(response => stubForResponse(stub, response, true)),
             stubsToValidateWithoutPredicates = stub.responses.map(response => stubForResponse(stub, response, false)),
             stubsToValidate = stubsToValidateWithPredicates.concat(stubsToValidateWithoutPredicates),
             dryRunRepositories = stubsToValidate.map(stubToValidate => {
-                const stubRepository = require('./stubRepository').create(resolver, false, encoding);
+                const stubRepository = require('./stubRepository').create(encoding);
                 stubRepository.addStub(stubToValidate);
                 return stubRepository;
             });
 
+        options.testRequest.isDryRun = true;
         return Q.all(dryRunRepositories.map(stubRepository => {
-            const testRequest = options.testRequest;
-            testRequest.isDryRun = true;
-            return stubRepository.resolve(testRequest, dryRunLogger, {});
+            // Need a well-formed proxy response in case a behavior decorator expects certain fields to exist
+            const dryRunProxy = { to: () => Q(options.testProxyResponse) },
+                resolver = require('./responseResolver').create(dryRunProxy),
+                responseConfig = stubRepository.getResponseFor(options.testRequest, dryRunLogger, {});
+            return resolver.resolve(responseConfig, options.testRequest, dryRunLogger, {});
         }));
     }
 

@@ -7,12 +7,10 @@
 
 /**
  * Creates the repository
- * @param {module:models/responseResolver} resolver - The response resolver
- * @param {boolean} recordMatches - Whether to record matches (the --debug command line flag)
  * @param {string} encoding - utf8 or base64
  * @returns {Object}
  */
-function create (resolver, recordMatches, encoding) {
+function create (encoding) {
     /**
      * The list of stubs within this repository
      * @memberOf module:models/stubRepository#
@@ -20,34 +18,33 @@ function create (resolver, recordMatches, encoding) {
      */
     const stubs = [];
 
-    // we call map before calling every so we make sure to call every
+    // We call map before calling every so we make sure to call every
     // predicate during dry run validation rather than short-circuiting
     function trueForAll (list, predicate) {
         return list.map(predicate).every(result => result);
     }
 
     function findFirstMatch (request, logger, imposterState) {
-        const helpers = require('../util/helpers');
-
         if (stubs.length === 0) {
             return undefined;
         }
-        const matches = stubs.filter(stub => {
-            const stubPredicates = stub.predicates || [],
-                predicates = require('./predicates');
 
-            return trueForAll(stubPredicates, predicate => predicates.evaluate(predicate, request, encoding, logger, imposterState));
-        });
+        const helpers = require('../util/helpers'),
+            readOnlyState = helpers.clone(imposterState),
+            matches = stubs.filter(stub => {
+                const stubPredicates = stub.predicates || [],
+                    predicates = require('./predicates');
+
+                return trueForAll(stubPredicates,
+                    predicate => predicates.evaluate(predicate, request, encoding, logger, readOnlyState));
+            });
+
         if (matches.length === 0) {
             logger.debug('no predicate match');
             return undefined;
         }
         else {
             logger.debug(`using predicate match: ${JSON.stringify(matches[0].predicates || {})}`);
-            if (!helpers.defined(matches[0].statefulResponses)) {
-                // This happens when the responseResolver adds a stub, but doesn't know about this hidden state
-                matches[0].statefulResponses = matches[0].responses;
-            }
             return matches[0];
         }
     }
@@ -75,14 +72,31 @@ function create (resolver, recordMatches, encoding) {
         return result;
     }
 
+    function stubIndexFor (responseToMatch) {
+        for (var i = 0; i < stubs.length; i += 1) {
+            if (stubs[i].responses.some(response => JSON.stringify(response) === JSON.stringify(responseToMatch))) {
+                break;
+            }
+        }
+        return i;
+    }
+
     /**
      * Adds a stub to the repository
      * @memberOf module:models/stubRepository#
      * @param {Object} stub - The stub to add
+     * @param {Object} beforeResponse - If provided, the new stub will be added before the stub containing the response (used for proxyOnce)
      */
-    function addStub (stub) {
+    function addStub (stub, beforeResponse) {
         stub.statefulResponses = repeatTransform(stub.responses);
-        stubs.push(stub);
+        stub.addResponse = response => { stub.responses.push(response); };
+
+        if (beforeResponse) {
+            stubs.splice(stubIndexFor(beforeResponse), 0, stub);
+        }
+        else {
+            stubs.push(stub);
+        }
     }
 
     /**
@@ -94,21 +108,23 @@ function create (resolver, recordMatches, encoding) {
         const helpers = require('../util/helpers'),
             result = helpers.clone(stubs);
 
-        result.forEach(stub => {
-            delete stub.statefulResponses;
-        });
+        for (var i = 0; i < stubs.length; i += 1) {
+            delete result[i].statefulResponses;
+            const stub = stubs[i];
+            result[i].addResponse = response => { stub.responses.push(response); };
+        }
         return result;
     }
 
     /**
-     * Finds the right stub for a request and generates a response
+     * Finds the next response configuration for the given request
      * @memberOf module:models/stubRepository#
      * @param {Object} request - The protocol request
      * @param {Object} logger - The logger
      * @param {Object} imposterState - The current state for the imposter
      * @returns {Object} - Promise resolving to the response
      */
-    function resolve (request, logger, imposterState) {
+    function getResponseFor (request, logger, imposterState) {
         const stub = findFirstMatch(request, logger, imposterState) || { statefulResponses: [{ is: {} }] },
             responseConfig = stub.statefulResponses.shift();
 
@@ -116,18 +132,13 @@ function create (resolver, recordMatches, encoding) {
 
         stub.statefulResponses.push(responseConfig);
 
-        return resolver.resolve(responseConfig, request, logger, stubs, imposterState).then(response => {
+        responseConfig.recordMatch = response => {
             const match = { timestamp: new Date().toJSON(), request, response };
-            if (recordMatches) {
-                // TODO: Remove once protocol conversion. Also, what about proxy matches?
-                if (match.response && match.response.response) {
-                    match.response = match.response.response;
-                }
-                stub.matches = stub.matches || [];
-                stub.matches.push(match);
-            }
-            return response;
-        });
+            stub.matches = stub.matches || [];
+            stub.matches.push(match);
+            responseConfig.recordMatch = () => {}; // Only record once
+        };
+        return responseConfig;
     }
 
     /**
@@ -147,11 +158,7 @@ function create (resolver, recordMatches, encoding) {
         }
     }
 
-    function resolveProxy (proxyResponse, proxyResolutionKey, logger) {
-        return resolver.resolveProxy(proxyResponse, proxyResolutionKey, stubs, logger);
-    }
-
-    return { stubs: getStubs, addStub, resolve, resetProxies, resolveProxy };
+    return { stubs: getStubs, addStub, getResponseFor, resetProxies };
 }
 
 module.exports = { create };

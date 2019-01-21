@@ -140,7 +140,7 @@ function create (protocols, imposters, Imposter, logger, config) {
             const Q = require('q');
 
             if (validation.isValid) {
-                return Imposter.create(protocols[protocol], request.body, logger.baseLogger, config.recordRequests).then(imposter => {
+                return Imposter.create(protocols[protocol], request.body, logger.baseLogger, config).then(imposter => {
                     imposters[imposter.port] = imposter;
                     response.setHeader('Location', imposter.url);
                     response.statusCode = 201;
@@ -205,7 +205,7 @@ function create (protocols, imposters, Imposter, logger, config) {
             if (isValid) {
                 return deleteAllImposters().then(() => {
                     const creationPromises = requestImposters.map(imposter =>
-                        Imposter.create(protocols[imposter.protocol], imposter, logger.baseLogger, config.recordRequests)
+                        Imposter.create(protocols[imposter.protocol], imposter, logger.baseLogger, config)
                     );
                     return Q.all(creationPromises);
                 }).then(allImposters => {
