@@ -39,6 +39,7 @@ jobs:
             - .git
             - travis-*.txt
             - build.properties
+            - protocols.json
 
   nodev6:
     docker:
