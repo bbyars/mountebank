@@ -14,7 +14,7 @@ module.exports = function (grunt) {
         };
     }
 
-    grunt.registerTask('dist', 'Create trimmed down distribution directory', () => {
+    grunt.registerTask('dist', 'Create trimmed down distribution directory', function () {
         const done = this.async(),
             newPackage = JSON.parse(JSON.stringify(require('../package.json'))),
             failed = failTask('dist');
@@ -38,7 +38,7 @@ module.exports = function (grunt) {
         }, failed);
     });
 
-    grunt.registerTask('version', 'Set the version number', () => {
+    grunt.registerTask('version', 'Set the version number', function () {
         const newPackage = require('../dist/mountebank/package.json');
 
         newPackage.version = version;
@@ -46,22 +46,22 @@ module.exports = function (grunt) {
         fs.writeFileSync('./dist/mountebank/package.json', JSON.stringify(newPackage, null, 2) + '\n');
     });
 
-    grunt.registerTask('dist:tarball', 'Create OS-specific tarballs', arch => {
+    grunt.registerTask('dist:tarball', 'Create OS-specific tarballs', function (arch) {
         run('scripts/dist/createSelfContainedTarball', [os.platform(), arch || os.arch(), version]).done(
             this.async(), failTask('dist:tarball'));
     });
 
-    grunt.registerTask('dist:zip', 'Create OS-specific zips', arch => {
+    grunt.registerTask('dist:zip', 'Create OS-specific zips', function (arch) {
         run('scripts/dist/createWindowsZip', [arch, version]).done(this.async(), failTask('dist:zip'));
     });
 
-    grunt.registerTask('dist:npm', 'Create npm tarball', () => {
+    grunt.registerTask('dist:npm', 'Create npm tarball', function () {
         const filename = 'mountebank-v' + version + '-npm.tar.gz';
 
         run('tar', ['czf', filename, 'mountebank'], { cwd: 'dist' }).done(this.async(), failTask('dist:npm'));
     });
 
-    grunt.registerTask('dist:package', 'Create OS-specific package', type => {
+    grunt.registerTask('dist:package', 'Create OS-specific package', function (type) {
         run('scripts/dist/createPackage', [os.platform(), type, version]).done(this.async(), failTask('dist:package'));
     });
 };
