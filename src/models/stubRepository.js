@@ -125,20 +125,29 @@ function create (encoding) {
      * @returns {Object} - Promise resolving to the response
      */
     function getResponseFor (request, logger, imposterState) {
-        const stub = findFirstMatch(request, logger, imposterState) || { statefulResponses: [{ is: {} }] },
-            responseConfig = stub.statefulResponses.shift();
+        const helpers = require('../util/helpers'),
+            stub = findFirstMatch(request, logger, imposterState) || { statefulResponses: [{ is: {} }] },
+            responseConfig = stub.statefulResponses.shift(),
+            cloned = helpers.clone(responseConfig);
 
         logger.debug(`generating response from ${JSON.stringify(responseConfig)}`);
 
         stub.statefulResponses.push(responseConfig);
 
-        responseConfig.recordMatch = response => {
+        cloned.recordMatch = response => {
             const match = { timestamp: new Date().toJSON(), request, response };
             stub.matches = stub.matches || [];
             stub.matches.push(match);
-            responseConfig.recordMatch = () => {}; // Only record once
+            cloned.recordMatch = () => {}; // Only record once
         };
-        return responseConfig;
+
+        cloned.setMetadata = (responseType, metadata) => {
+            Object.keys(metadata).forEach(key => {
+                responseConfig[responseType][key] = metadata[key];
+                cloned[responseType][key] = metadata[key];
+            });
+        };
+        return cloned;
     }
 
     /**

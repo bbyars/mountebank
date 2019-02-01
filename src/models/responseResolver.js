@@ -225,7 +225,7 @@ function create (stubs, proxy, callbackUrl) {
             behaviors = require('./behaviors');
 
         if (['proxyOnce', 'proxyAlways', 'proxyTransparent'].indexOf(responseConfig.proxy.mode) < 0) {
-            responseConfig.proxy.mode = 'proxyOnce';
+            responseConfig.setMetadata('proxy', { mode: 'proxyOnce' });
         }
 
         addInjectedHeadersTo(request, responseConfig.proxy.injectHeaders);
