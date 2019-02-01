@@ -141,6 +141,16 @@ describe('middleware', function () {
             assert(log.info.wasCalledWith('TEST MESSAGE'));
         });
 
+        it('should log protocol implementation requests at debug level', function () {
+            const log = { debug: mock() },
+                middlewareFn = middleware.logger(log, 'TEST MESSAGE');
+            request = { url: '/_requests/0', headers: { accept: '' } };
+
+            middlewareFn(request, {}, next);
+
+            assert(log.debug.wasCalledWith('TEST MESSAGE'));
+        });
+
         it('should log request url and method', function () {
             const log = { info: mock() },
                 middlewareFn = middleware.logger(log, 'MESSAGE WITH :method :url');

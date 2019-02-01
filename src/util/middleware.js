@@ -102,7 +102,13 @@ function logger (log, format) {
     return function (request, response, next) {
         if (shouldLog(request)) {
             const message = format.replace(':method', request.method).replace(':url', request.url);
-            log.info(message);
+            if (request.url.indexOf('_requests') > 0) {
+                // Protocol implementations communicating with mountebank
+                log.debug(message);
+            }
+            else {
+                log.info(message);
+            }
         }
         next();
     };
