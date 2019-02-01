@@ -19,6 +19,25 @@ function initializeLogfile (filename) {
     }
 }
 
+function loadCustomProtocols (protofile, logger) {
+    const fs = require('fs'),
+        path = require('path'),
+        filename = path.join(process.cwd(), protofile);
+
+    if (fs.existsSync(filename)) {
+        try {
+            return require(filename);
+        }
+        catch (e) {
+            logger.error(`${protofile} contains invalid JSON -- no custom protocols loaded`);
+            return {};
+        }
+    }
+    else {
+        return {};
+    }
+}
+
 /**
  * Creates the mountebank server
  * @param {object} options - The command line options
@@ -50,14 +69,20 @@ function create (options) {
         thisPackage = require('../package.json'),
         releases = require('../releases.json'),
         ScopedLogger = require('./util/scopedLogger'),
-        util = require('util'),
+        logger = ScopedLogger.create(winstonLogger, `[mb:${options.port}] `),
         helpers = require('./util/helpers'),
         deferred = Q.defer(),
         app = express(),
         imposters = options.imposters || {},
-        protocols = require('./models/protocols').load(options,
+        builtInProtocols = {
+            tcp: require('./models/tcp/tcpServer'),
+            http: require('./models/http/httpServer'),
+            https: require('./models/https/httpsServer'),
+            smtp: require('./models/smtp/smtpServer')
+        },
+        customProtocols = loadCustomProtocols(options.protofile, logger),
+        protocols = require('./models/protocols').load(builtInProtocols, customProtocols,
             port => `http://localhost:${options.port}/imposters/${port}/_requests`),
-        logger = ScopedLogger.create(winstonLogger, util.format('[mb:%s] ', options.port)),
         homeController = HomeController.create(releases),
         impostersController = ImpostersController.create(protocols, imposters, Imposter, logger, {
             allowInjection: options.allowInjection,
