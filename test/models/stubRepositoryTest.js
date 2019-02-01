@@ -5,6 +5,52 @@ const assert = require('assert'),
     StubRepository = require('../../src/models/stubRepository');
 
 describe('stubRepository', function () {
+    function jsonWithoutFunctions (obj) {
+        return JSON.parse(JSON.stringify(obj));
+    }
+
+    describe('#addStub', function () {
+        it('should add new stub in front of passed in response', function () {
+            const stubs = StubRepository.create('utf8'),
+                firstStub = { responses: [{ is: 'first' }, { is: 'second' }] },
+                secondStub = { responses: [{ is: 'third' }, { is: 'fourth' }] };
+
+            stubs.addStub(firstStub);
+            stubs.addStub(secondStub);
+
+            stubs.addStub({ responses: [{ is: 'TEST' }] }, { is: 'fourth' });
+            const responses = stubs.stubs().map(stub => stub.responses);
+
+            assert.deepEqual(responses, [
+                [{ is: 'first' }, { is: 'second' }],
+                [{ is: 'TEST' }],
+                [{ is: 'third' }, { is: 'fourth' }]
+            ]);
+        });
+    });
+
+    describe('#stubs', function () {
+        it('should not allow changing state in stubRepository', function () {
+            const stubs = StubRepository.create('utf8'),
+                stub = { responses: [] };
+
+            stubs.addStub(stub);
+            stubs.stubs()[0].responses.push('RESPONSE');
+
+            assert.deepEqual(jsonWithoutFunctions(stubs.stubs()), [{ responses: [] }]);
+        });
+
+        it('should support adding responses', function () {
+            const stubs = StubRepository.create('utf8'),
+                stub = { responses: [] };
+
+            stubs.addStub(stub);
+            stubs.stubs()[0].addResponse('RESPONSE');
+
+            assert.deepEqual(jsonWithoutFunctions(stubs.stubs()), [{ responses: ['RESPONSE'] }]);
+        });
+    });
+
     describe('#getResponseFor', function () {
         it('should return default response if no match', function () {
             const stubs = StubRepository.create('utf8'),
@@ -100,24 +146,6 @@ describe('stubRepository', function () {
             assert.strictEqual(stubs.getResponseFor({}, logger, {}).is, 'first response');
             assert.strictEqual(stubs.getResponseFor({}, logger, {}).is, 'first response');
             assert.strictEqual(stubs.getResponseFor({}, logger, {}).is, 'second response');
-        });
-
-        it('should add new stub in front of passed in response', function () {
-            const stubs = StubRepository.create('utf8'),
-                firstStub = { responses: [{ is: 'first' }, { is: 'second' }] },
-                secondStub = { responses: [{ is: 'third' }, { is: 'fourth' }] };
-
-            stubs.addStub(firstStub);
-            stubs.addStub(secondStub);
-
-            stubs.addStub({ responses: [{ is: 'TEST' }] }, { is: 'fourth' });
-            const responses = stubs.stubs().map(stub => stub.responses);
-
-            assert.deepEqual(responses, [
-                [{ is: 'first' }, { is: 'second' }],
-                [{ is: 'TEST' }],
-                [{ is: 'third' }, { is: 'fourth' }]
-            ]);
         });
     });
 });

@@ -14,7 +14,8 @@
  */
 function create (stubs, proxy, callbackUrl) {
     const injectState = {},
-        pendingProxyResolutions = {};
+        pendingProxyResolutions = {},
+        inProcessProxy = Boolean(proxy);
     let nextProxyResolutionKey = 0;
 
     function inject (request, fn, logger, imposterState) {
@@ -204,10 +205,6 @@ function create (stubs, proxy, callbackUrl) {
             return;
         }
 
-        if (['proxyOnce', 'proxyAlways'].indexOf(responseConfig.proxy.mode) < 0) {
-            responseConfig.proxy.mode = 'proxyOnce';
-        }
-
         if (responseConfig.proxy.mode === 'proxyAlways' && canAddResponseToExistingStub(responseConfig, request, logger)) {
             addNewResponse(responseConfig, request, response, logger);
         }
@@ -227,9 +224,13 @@ function create (stubs, proxy, callbackUrl) {
         const Q = require('q'),
             behaviors = require('./behaviors');
 
+        if (['proxyOnce', 'proxyAlways', 'proxyTransparent'].indexOf(responseConfig.proxy.mode) < 0) {
+            responseConfig.proxy.mode = 'proxyOnce';
+        }
+
         addInjectedHeadersTo(request, responseConfig.proxy.injectHeaders);
 
-        if (proxy) {
+        if (inProcessProxy) {
             return proxy.to(responseConfig.proxy.to, request, responseConfig.proxy).then(response =>
                 // Run behaviors here to persist decorated response
                 Q(behaviors.execute(request, response, responseConfig._behaviors, logger))
@@ -242,8 +243,7 @@ function create (stubs, proxy, callbackUrl) {
             pendingProxyResolutions[nextProxyResolutionKey] = {
                 responseConfig: responseConfig,
                 request: request,
-                startTime: new Date(),
-                recordMatch: responseConfig.recordMatch // This could be updated with another request before the proxy resolves
+                startTime: new Date()
             };
             nextProxyResolutionKey += 1;
             return Q({
@@ -311,7 +311,7 @@ function create (stubs, proxy, callbackUrl) {
                 return Q(behaviors.execute(request, response, responseConfig._behaviors, logger));
             }
         }).then(response => {
-            if (proxy) {
+            if (inProcessProxy) {
                 return Q(response);
             }
             else {
@@ -336,14 +336,22 @@ function create (stubs, proxy, callbackUrl) {
             behaviors = require('./behaviors'),
             Q = require('q');
 
-        // TODO: Capture start time in pendingProxyConfig and add _proxyResponseTime if missing
-        return behaviors.execute(pendingProxyConfig.request, proxyResponse, pendingProxyConfig.responseConfig._behaviors, logger)
-            .then(response => {
-                recordProxyResponse(pendingProxyConfig.responseConfig, pendingProxyConfig.request, response, logger);
-                response.recordMatch = pendingProxyConfig.recordMatch;
-                delete pendingProxyResolutions[proxyResolutionKey];
-                return Q(response);
-            });
+        if (pendingProxyConfig) {
+            return behaviors.execute(pendingProxyConfig.request, proxyResponse, pendingProxyConfig.responseConfig._behaviors, logger)
+                .then(response => {
+                    recordProxyResponse(pendingProxyConfig.responseConfig, pendingProxyConfig.request, response, logger);
+                    response.recordMatch = () => { pendingProxyConfig.responseConfig.recordMatch(response); };
+                    delete pendingProxyResolutions[proxyResolutionKey];
+                    return Q(response);
+                });
+        }
+        else {
+            const errors = require('../util/errors');
+
+            logger.error('Invalid proxy resolution key: ' + proxyResolutionKey);
+            return Q.reject(errors.MissingResourceError('invalid proxy resolution key',
+                { source: `${callbackUrl}/${proxyResolutionKey}` }));
+        }
     }
 
     return { resolve, resolveProxy };

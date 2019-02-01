@@ -89,7 +89,7 @@ function create (Protocol, creationRequest, baseLogger, config) {
     function getProxyResponseFor (proxyResponse, proxyResolutionKey) {
         return resolver.resolveProxy(proxyResponse, proxyResolutionKey, logger).then(response => {
             if (config.recordMatches) {
-                response.recordMatch(response);
+                response.recordMatch();
             }
             return Q(response);
         });

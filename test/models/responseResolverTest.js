@@ -48,6 +48,21 @@ describe('responseResolver', function () {
             });
         });
 
+        promiseIt('should resolve "proxy" by returning proxy configuration for out of process resolution', function () {
+            const stubs = StubRepository.create('utf8'),
+                resolver = ResponseResolver.create(stubs, null, 'CALLBACK URL'),
+                logger = Logger.create(),
+                responseConfig = { proxy: { to: 'where' } };
+
+            return resolver.resolve(responseConfig, 'request', logger, {}).then(response => {
+                assert.deepEqual(response, {
+                    proxy: { to: 'where', mode: 'proxyOnce' },
+                    request: 'request',
+                    callbackUrl: 'CALLBACK URL/0'
+                });
+            });
+        });
+
         promiseIt('should default to "proxyOnce" mode', function () {
             const proxy = { to: mock().returns(Q('value')) },
                 stubs = StubRepository.create('utf8'),
@@ -133,6 +148,29 @@ describe('responseResolver', function () {
                         { is: { data: 'value', _proxyResponseTime: 100 }, _behaviors: { wait: 100 } },
                         { is: { data: 'value', _proxyResponseTime: 100 }, _behaviors: { wait: 100 } }
                     ]
+                ]);
+            });
+        });
+
+        promiseIt('should run behaviors on proxy response before recording it', function () {
+            const decorateFunc = (request, response) => { response.data += '-DECORATED'; };
+            const proxy = { to: mock().returns(Q({ data: 'RESPONSE' })) },
+                stubs = StubRepository.create('utf8'),
+                resolver = ResponseResolver.create(stubs, proxy),
+                logger = Logger.create(),
+                responseConfig = {
+                    proxy: { to: 'where' },
+                    _behaviors: { decorate: decorateFunc.toString() }
+                },
+                request = {};
+
+            stubs.addStub({ responses: [responseConfig] });
+
+            return resolver.resolve(responseConfig, request, logger, {}).then(() => {
+                const stubResponses = stubs.stubs().map(stub => stub.responses);
+                assert.deepEqual(stubResponses, [
+                    [{ is: { data: 'RESPONSE-DECORATED' } }],
+                    [responseConfig]
                 ]);
             });
         });
@@ -834,6 +872,164 @@ describe('responseResolver', function () {
                 assert.fail('should not have resolved');
             }, error => {
                 assert.strictEqual(error.message, 'each response object must have only one response type');
+            });
+        });
+    });
+
+    describe('#resolveProxy', function () {
+        function jsonResponse (response) {
+            delete response.recordMatch;
+            return response;
+        }
+
+        function matches (stubs) {
+            const matchList = stubs.stubs().map(stub => stub.matches || []);
+            matchList.forEach(matchesForOneStub => {
+                matchesForOneStub.forEach(match => {
+                    if (match.timestamp) {
+                        match.timestamp = 'NOW';
+                    }
+                });
+            });
+            return matchList;
+        }
+
+        promiseIt('should error if called with invalid proxyResolutionKey', function () {
+            const stubs = StubRepository.create('utf8'),
+                resolver = ResponseResolver.create(stubs, null, 'CALLBACK-URL'),
+                logger = Logger.create();
+
+            return resolver.resolveProxy({ field: 'value' }, 0, logger).then(() => {
+                assert.fail('should have errored');
+            }, error => {
+                assert.deepEqual(error, {
+                    code: 'no such resource',
+                    message: 'invalid proxy resolution key',
+                    source: 'CALLBACK-URL/0'
+                });
+                logger.error.assertLogged('Invalid proxy resolution key: 0');
+            });
+        });
+
+        promiseIt('should save new response in front of proxy for "proxyOnce" mode', function () {
+            const stubs = StubRepository.create('utf8'),
+                resolver = ResponseResolver.create(stubs, null, 'CALLBACK-URL'),
+                logger = Logger.create(),
+                responseConfig = { proxy: { to: 'where', mode: 'proxyOnce' } },
+                request = {};
+
+            stubs.addStub({ responses: [responseConfig] });
+
+            return resolver.resolve(responseConfig, request, logger, {}).then(response => {
+                const proxyResolutionKey = parseInt(response.callbackUrl.replace('CALLBACK-URL/', ''));
+
+                return resolver.resolveProxy({ data: 'RESPONSE' }, proxyResolutionKey, logger);
+            }).then(response => {
+                assert.deepEqual(jsonResponse(response), { data: 'RESPONSE' });
+                const stubResponses = stubs.stubs().map(stub => stub.responses);
+                assert.deepEqual(stubResponses, [
+                    [{ is: { data: 'RESPONSE' } }],
+                    [responseConfig]
+                ]);
+            });
+        });
+
+        promiseIt('should save new response after proxy for "proxyAlways" mode', function () {
+            const stubs = StubRepository.create('utf8'),
+                resolver = ResponseResolver.create(stubs, null, 'CALLBACK-URL'),
+                logger = Logger.create(),
+                responseConfig = { proxy: { to: 'where', mode: 'proxyAlways' } },
+                request = {};
+
+            stubs.addStub({ responses: [responseConfig] });
+
+            return resolver.resolve(responseConfig, request, logger, {}).then(response => {
+                const proxyResolutionKey = parseInt(response.callbackUrl.replace('CALLBACK-URL/', ''));
+
+                return resolver.resolveProxy({ data: 'RESPONSE' }, proxyResolutionKey, logger);
+            }).then(response => {
+                assert.deepEqual(jsonResponse(response), { data: 'RESPONSE' });
+                const stubResponses = stubs.stubs().map(stub => stub.responses);
+                assert.deepEqual(stubResponses, [
+                    [responseConfig],
+                    [{ is: { data: 'RESPONSE' } }]
+                ]);
+            });
+        });
+
+        promiseIt('should run behaviors from original proxy config on proxy response before recording it', function () {
+            const decorateFunc = (request, response) => { response.data += '-DECORATED'; },
+                stubs = StubRepository.create('utf8'),
+                resolver = ResponseResolver.create(stubs, null, 'CALLBACK-URL'),
+                logger = Logger.create(),
+                responseConfig = {
+                    proxy: { to: 'where' },
+                    _behaviors: { decorate: decorateFunc.toString() }
+                },
+                request = {};
+
+            stubs.addStub({ responses: [responseConfig] });
+
+            return resolver.resolve(responseConfig, request, logger, {}).then(response => {
+                const proxyResolutionKey = parseInt(response.callbackUrl.replace('CALLBACK-URL/', ''));
+
+                return resolver.resolveProxy({ data: 'RESPONSE' }, proxyResolutionKey, logger);
+            }).then(response => {
+                assert.deepEqual(jsonResponse(response), { data: 'RESPONSE-DECORATED' });
+                const stubResponses = stubs.stubs().map(stub => stub.responses);
+                assert.deepEqual(stubResponses, [
+                    [{ is: { data: 'RESPONSE-DECORATED' } }],
+                    [responseConfig]
+                ]);
+            });
+        });
+
+        promiseIt('should support recording the match', function () {
+            const stubs = StubRepository.create('utf8'),
+                resolver = ResponseResolver.create(stubs, null, 'CALLBACK-URL'),
+                logger = Logger.create(),
+                request = { key: 'REQUEST' };
+
+            stubs.addStub({ responses: [{ proxy: { to: 'where', mode: 'proxyOnce' } }] });
+
+            // Call through the stubRepository to have it add the recordMatch function
+            const responseConfig = stubs.getResponseFor(request, logger, {});
+            return resolver.resolve(responseConfig, request, logger, {}).then(response => {
+                const proxyResolutionKey = parseInt(response.callbackUrl.replace('CALLBACK-URL/', ''));
+
+                return resolver.resolveProxy({ data: 'RESPONSE' }, proxyResolutionKey, logger);
+            }).then(response => {
+                response.recordMatch();
+                assert.deepEqual(matches(stubs), [
+                    [],
+                    [{ timestamp: 'NOW', request: { key: 'REQUEST' }, response: { data: 'RESPONSE' } }]
+                ]);
+            });
+        });
+
+        promiseIt('should not resolve the same proxyResolutionKey twice', function () {
+            const stubs = StubRepository.create('utf8'),
+                resolver = ResponseResolver.create(stubs, null, 'CALLBACK-URL'),
+                logger = Logger.create(),
+                responseConfig = { proxy: { to: 'where' } },
+                request = {};
+            let proxyResolutionKey;
+
+            stubs.addStub({ responses: [responseConfig] });
+
+            return resolver.resolve(responseConfig, request, logger, {}).then(response => {
+                proxyResolutionKey = parseInt(response.callbackUrl.replace('CALLBACK-URL/', ''));
+
+                return resolver.resolveProxy({ data: 'RESPONSE' }, proxyResolutionKey, logger);
+            }).then(() => resolver.resolveProxy({ data: 'RESPONSE' }, proxyResolutionKey, logger)).then(() => {
+                assert.fail('should have errored');
+            }, error => {
+                assert.deepEqual(error, {
+                    code: 'no such resource',
+                    message: 'invalid proxy resolution key',
+                    source: 'CALLBACK-URL/0'
+                });
+                logger.error.assertLogged('Invalid proxy resolution key: 0');
             });
         });
     });
