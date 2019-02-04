@@ -222,6 +222,7 @@ function create (stubs, proxy, callbackUrl) {
 
     function proxyAndRecord (responseConfig, request, logger) {
         const Q = require('q'),
+            startTime = new Date(),
             behaviors = require('./behaviors');
 
         if (['proxyOnce', 'proxyAlways', 'proxyTransparent'].indexOf(responseConfig.proxy.mode) < 0) {
@@ -231,10 +232,13 @@ function create (stubs, proxy, callbackUrl) {
         addInjectedHeadersTo(request, responseConfig.proxy.injectHeaders);
 
         if (inProcessProxy) {
-            return proxy.to(responseConfig.proxy.to, request, responseConfig.proxy).then(response =>
+            return proxy.to(responseConfig.proxy.to, request, responseConfig.proxy).then(response => {
+                // eslint-disable-next-line no-underscore-dangle
+                response._proxyResponseTime = new Date() - startTime;
+
                 // Run behaviors here to persist decorated response
-                Q(behaviors.execute(request, response, responseConfig._behaviors, logger))
-            ).then(response => {
+                return Q(behaviors.execute(request, response, responseConfig._behaviors, logger));
+            }).then(response => {
                 recordProxyResponse(responseConfig, request, response, logger);
                 return Q(response);
             });
@@ -337,6 +341,9 @@ function create (stubs, proxy, callbackUrl) {
             Q = require('q');
 
         if (pendingProxyConfig) {
+            // eslint-disable-next-line no-underscore-dangle
+            proxyResponse._proxyResponseTime = new Date() - pendingProxyConfig.startTime;
+
             return behaviors.execute(pendingProxyConfig.request, proxyResponse, pendingProxyConfig.responseConfig._behaviors, logger)
                 .then(response => {
                     recordProxyResponse(pendingProxyConfig.responseConfig, pendingProxyConfig.request, response, logger);

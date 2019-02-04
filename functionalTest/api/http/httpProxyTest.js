@@ -82,20 +82,6 @@ describe('http proxy', function () {
             }).finally(() => api.del('/imposters'));
         });
 
-        promiseIt('should capture response time to origin server', function () {
-            const stub = { responses: [{ is: { body: 'ORIGIN' }, _behaviors: { wait: 250 } }] },
-                request = { protocol: 'http', port, stubs: [stub] };
-
-            return api.post('/imposters', request).then(response => {
-                assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body));
-
-                return proxy.to(`http://localhost:${port}`, { path: '/', method: 'GET', headers: {} }, {});
-            }).then(response => {
-                assert.strictEqual(response.body, 'ORIGIN');
-                assert.ok(response._proxyResponseTime > 230); // eslint-disable-line no-underscore-dangle
-            }).finally(() => api.del('/imposters'));
-        });
-
         if (!airplaneMode) {
             promiseIt('should gracefully deal with DNS errors', function () {
                 return proxy.to('http://no.such.domain', { path: '/', method: 'GET', headers: {} }, {}).then(() => {

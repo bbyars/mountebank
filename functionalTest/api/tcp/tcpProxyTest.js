@@ -76,20 +76,6 @@ describe('tcp proxy', function () {
             });
         });
 
-        promiseIt('should capture response time to origin server', function () {
-            const stub = { responses: [{ is: { data: 'howdy!' } }] },
-                request = { protocol: 'tcp', port, stubs: [stub] },
-                proxy = TcpProxy.create(logger, 'utf8');
-
-            return api.post('/imposters', request)
-                .then(() => proxy.to(`tcp://localhost:${port}`, { data: 'hello, world!' }))
-                .then(response => {
-                    assert.deepEqual(response.data.toString(), 'howdy!');
-                    assert.ok(response._proxyResponseTime >= 0); // eslint-disable-line no-underscore-dangle
-                })
-                .finally(() => api.del('/imposters'));
-        });
-
         if (!airplaneMode) {
             promiseIt('should gracefully deal with DNS errors', function () {
                 const proxy = TcpProxy.create(logger, 'utf8');

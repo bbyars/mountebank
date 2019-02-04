@@ -277,8 +277,7 @@ Connection: keep-alive
             "statusCode": 201,
             "headers": {
               "Location": "http://localhost:4545/customers/123",
-              "Content-Type": "application/xml",
-              "Connection": "close"
+              "Content-Type": "application/xml"
             },
             "body": "&lt;customer&gt;&lt;email&gt;customer@test.com&lt;/email&gt;&lt;/customer&gt;"
           }
@@ -302,8 +301,7 @@ Connection: keep-alive
           "response": {
             "statusCode": 400,
             "headers": {
-              "Content-Type": "application/xml",
-              "Connection": "close"
+              "Content-Type": "application/xml"
             },
             "body": "&lt;error&gt;email already exists&lt;/error&gt;"
           }

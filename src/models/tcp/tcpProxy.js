@@ -59,8 +59,7 @@ function create (logger, encoding, isEndOfRequest) {
                 socket = net.connect(connectionInfoFor(proxyDestination), () => {
                     socket.write(buffer);
                 }),
-                packets = [],
-                start = new Date();
+                packets = [];
 
             log('=>', originalRequest);
 
@@ -77,10 +76,7 @@ function create (logger, encoding, isEndOfRequest) {
                 const requestBuffer = Buffer.concat(packets);
                 if (isEndOfRequest(requestBuffer)) {
                     socket.end();
-                    const response = {
-                        data: requestBuffer.toString(encoding),
-                        _proxyResponseTime: new Date() - start
-                    };
+                    const response = { data: requestBuffer.toString(encoding) };
                     log('<=', response);
                     deferred.resolve(response);
                 }

@@ -100,8 +100,7 @@ function create (logger) {
 
     function proxy (proxiedRequest) {
         const Q = require('q'),
-            deferred = Q.defer(),
-            start = new Date();
+            deferred = Q.defer();
 
         proxiedRequest.end();
 
@@ -121,8 +120,7 @@ function create (logger) {
                         statusCode: response.statusCode,
                         headers: headersHelper.headersFor(response.rawHeaders),
                         body: body.toString(encoding),
-                        _mode: mode,
-                        _proxyResponseTime: new Date() - start
+                        _mode: mode
                     };
                 deferred.resolve(stubResponse);
             });
