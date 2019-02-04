@@ -133,7 +133,8 @@ function create (stubs, proxy, callbackUrl) {
     }
 
     function deepEqual (obj1, obj2) {
-        return JSON.stringify(obj1) === JSON.stringify(obj2);
+        const stringify = require('json-stable-stringify');
+        return stringify(obj1) === stringify(obj2);
     }
 
     function stubIndexFor (responseConfig) {
