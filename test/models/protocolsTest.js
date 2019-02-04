@@ -20,7 +20,7 @@ describe('protocols', function () {
         describe('#outOfProcessCreate', function () {
             promiseIt('should error if invalid command passed', function () {
                 const customProtocols = { test: { createCommand: 'no-such-command' } },
-                    protocols = loader.load({}, customProtocols, combinators.identity),
+                    protocols = loader.load({}, customProtocols, 'info', combinators.identity),
                     logger = FakeLogger.create();
 
                 return protocols.test.createServer({}, logger).then(() => {
@@ -40,7 +40,7 @@ describe('protocols', function () {
                 fs.writeFileSync('protocol-test.js', `const fn = ${fn.toString()}; fn();`);
 
                 const customProtocols = { test: { createCommand: 'node ./protocol-test.js' } },
-                    protocols = loader.load({}, customProtocols, combinators.identity),
+                    protocols = loader.load({}, customProtocols, 'info', combinators.identity),
                     logger = FakeLogger.create();
 
                 return protocols.test.createServer({}, logger).then(server => {
@@ -53,7 +53,7 @@ describe('protocols', function () {
                 fs.writeFileSync('protocol-test.js', `const fn = ${fn.toString()}; fn();`);
 
                 const customProtocols = { test: { createCommand: 'node ./protocol-test.js' } },
-                    protocols = loader.load({}, customProtocols, combinators.identity),
+                    protocols = loader.load({}, customProtocols, 'info', combinators.identity),
                     logger = FakeLogger.create();
 
                 return protocols.test.createServer({ port: 3000 }, logger).then(server => {
@@ -66,7 +66,7 @@ describe('protocols', function () {
                 fs.writeFileSync('protocol-test.js', `const fn = ${fn.toString()}; fn();`);
 
                 const customProtocols = { test: { createCommand: 'node ./protocol-test.js' } },
-                    protocols = loader.load({}, customProtocols, combinators.identity),
+                    protocols = loader.load({}, customProtocols, 'info', combinators.identity),
                     logger = FakeLogger.create();
 
                 return protocols.test.createServer({}, logger).then(server => {
@@ -79,7 +79,7 @@ describe('protocols', function () {
                 fs.writeFileSync('protocol-test.js', `const fn = ${fn.toString()}; fn();`);
 
                 const customProtocols = { test: { createCommand: 'node ./protocol-test.js' } },
-                    protocols = loader.load({}, customProtocols, combinators.identity),
+                    protocols = loader.load({}, customProtocols, 'info', combinators.identity),
                     logger = FakeLogger.create();
 
                 return protocols.test.createServer({}, logger).then(server => {
@@ -98,7 +98,7 @@ describe('protocols', function () {
                 fs.writeFileSync('protocol-test.js', `const fn = ${fn.toString()}; fn();`);
 
                 const customProtocols = { test: { createCommand: 'node ./protocol-test.js' } },
-                    protocols = loader.load({}, customProtocols, combinators.identity),
+                    protocols = loader.load({}, customProtocols, 'info', combinators.identity),
                     logger = FakeLogger.create();
 
                 // Sleep to allow the log statements to finish
@@ -115,7 +115,7 @@ describe('protocols', function () {
                 fs.writeFileSync('protocol-test.js', `const fn = ${fn.toString()}; fn();`);
 
                 const customProtocols = { test: { createCommand: 'node ./protocol-test.js' } },
-                    protocols = loader.load({}, customProtocols, () => 'CALLBACK-URL'),
+                    protocols = loader.load({}, customProtocols, 'info', () => 'CALLBACK-URL'),
                     logger = FakeLogger.create(),
                     creationRequest = { port: 3000 };
 
@@ -124,7 +124,8 @@ describe('protocols', function () {
                         JSON.stringify({
                             port: 3000,
                             defaultResponse: {},
-                            callbackURL: 'CALLBACK-URL'
+                            callbackURL: 'CALLBACK-URL',
+                            loglevel: 'info'
                         })
                     ]);
                 }).finally(() => fs.unlinkSync('protocol-test.js'));
@@ -135,7 +136,7 @@ describe('protocols', function () {
                 fs.writeFileSync('protocol-test.js', `const fn = ${fn.toString()}; fn();`);
 
                 const customProtocols = { test: { createCommand: 'node ./protocol-test.js' } },
-                    protocols = loader.load({}, customProtocols, () => 'CALLBACK-URL'),
+                    protocols = loader.load({}, customProtocols, 'info', () => 'CALLBACK-URL'),
                     logger = FakeLogger.create(),
                     creationRequest = { port: 3000, defaultResponse: { key: 'default' } };
 
@@ -144,7 +145,8 @@ describe('protocols', function () {
                         JSON.stringify({
                             port: 3000,
                             defaultResponse: { key: 'default' },
-                            callbackURL: 'CALLBACK-URL'
+                            callbackURL: 'CALLBACK-URL',
+                            loglevel: 'info'
                         })
                     ]);
                 }).finally(() => fs.unlinkSync('protocol-test.js'));
@@ -160,7 +162,7 @@ describe('protocols', function () {
                             customProtocolFields: ['key1', 'key3']
                         }
                     },
-                    protocols = loader.load({}, customProtocols, () => 'CALLBACK-URL'),
+                    protocols = loader.load({}, customProtocols, 'info', () => 'CALLBACK-URL'),
                     logger = FakeLogger.create(),
                     creationRequest = {
                         protocol: 'test',
@@ -179,6 +181,7 @@ describe('protocols', function () {
                             port: 3000,
                             defaultResponse: {},
                             callbackURL: 'CALLBACK-URL',
+                            loglevel: 'info',
                             key1: 'FIRST',
                             key2: 'SECOND'
                         })

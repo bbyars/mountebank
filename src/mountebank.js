@@ -81,7 +81,7 @@ function create (options) {
             smtp: require('./models/smtp/smtpServer')
         },
         customProtocols = loadCustomProtocols(options.protofile, logger),
-        protocols = require('./models/protocols').load(builtInProtocols, customProtocols,
+        protocols = require('./models/protocols').load(builtInProtocols, customProtocols, options.loglevel,
             port => `http://localhost:${options.port}/imposters/${port}/_requests`),
         homeController = HomeController.create(releases),
         impostersController = ImpostersController.create(protocols, imposters, Imposter, logger, {

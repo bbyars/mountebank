@@ -1,6 +1,6 @@
 'use strict';
 
-function load (builtInProtocols, customProtocols, callbackUrlFn) {
+function load (builtInProtocols, customProtocols, loglevel, callbackUrlFn) {
     function inProcessCreate (createProtocol) {
         return (creationRequest, logger, responseFn) =>
             createProtocol(creationRequest, logger, responseFn).then(server => {
@@ -39,7 +39,7 @@ function load (builtInProtocols, customProtocols, callbackUrlFn) {
                 port = creationRequest.port,
                 defaultResponse = creationRequest.defaultResponse || {},
                 configArgs = require('../util/helpers').merge(
-                    { port, defaultResponse, callbackURL: callbackUrlFn(port) },
+                    { port, defaultResponse, callbackURL: callbackUrlFn(port), loglevel },
                     customFieldsFor(creationRequest)),
                 allArgs = args.concat(JSON.stringify(configArgs)),
                 imposterProcess = spawn(command, allArgs);
