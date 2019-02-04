@@ -103,7 +103,7 @@ module.exports = function (grunt) {
                 elapsedTime = new Date() - start;
 
             if (status !== lastStatus) {
-                process.stdout.write(`\n${lastStatus}: ${elapsedTime}\n${status}`);
+                process.stdout.write(`\n   took ${elapsedTime}ms\n${status}`);
                 lastStatus = status;
                 start = new Date();
             }
