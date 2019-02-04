@@ -250,6 +250,12 @@ function create (options) {
             });
         });
 
+    process.once('exit', () => {
+        Object.keys(imposters).forEach(port => {
+            imposters[port].stop();
+        });
+    });
+
     return deferred.promise;
 }
 

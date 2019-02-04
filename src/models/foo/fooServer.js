@@ -98,6 +98,8 @@ function create (port, callbackUrl, defaultResponse) {
         });
     });
 
+    server.on('error', deferred.reject);
+
     // Bind the socket to a port (the || 0 bit auto-selects a port if one isn't provided)
     server.listen(port || 0, () => {
         deferred.resolve({
@@ -114,11 +116,15 @@ function create (port, callbackUrl, defaultResponse) {
     return deferred.promise;
 }
 
-const port = process.argv[2],
-    callbackUrl = process.argv[3],
-    defaultResponse = JSON.parse(process.argv[4]);
+const config = JSON.parse(process.argv[2]),
+    port = config.port,
+    callbackUrl = config.callbackURL,
+    defaultResponse = config.defaultResponse;
 
 create(port, callbackUrl, defaultResponse).done(() => {
     console.log('READY');
     // TODO: will have to write out port, metadata
+}, error => {
+    console.error(JSON.stringify(error));
+    process.exit(1);
 });

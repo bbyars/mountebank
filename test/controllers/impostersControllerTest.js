@@ -4,6 +4,7 @@ const assert = require('assert'),
     mock = require('../mock').mock,
     Controller = require('../../src/controllers/impostersController'),
     FakeResponse = require('../fakes/fakeResponse'),
+    FakeLogger = require('../fakes/fakeLogger'),
     Q = require('q'),
     promiseIt = require('../testHelpers').promiseIt;
 
@@ -80,7 +81,7 @@ describe('ImpostersController', function () {
                     create: mock().returns({ validate: mock().returns(Q({ isValid: true })) })
                 }
             };
-            logger = { debug: mock(), warn: mock() };
+            logger = FakeLogger.create();
             controller = Controller.create({ http: Protocol }, imposters, Imposter, logger, config);
         });
 
@@ -271,7 +272,7 @@ describe('ImpostersController', function () {
 
         beforeEach(() => {
             request = { body: {}, socket: { remoteAddress: 'host', remotePort: 'port' } };
-            logger = { debug: mock(), warn: mock() };
+            logger = FakeLogger.create();
             Protocol = {
                 name: 'http',
                 Validator: {

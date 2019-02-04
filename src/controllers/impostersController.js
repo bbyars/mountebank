@@ -79,13 +79,13 @@ function create (protocols, imposters, Imposter, logger, config) {
     }
 
     function respondWithValidationErrors (response, validationErrors) {
-        logger.warn(`error creating imposter: ${JSON.stringify(exceptions.details(validationErrors))}`);
+        logger.error(`error creating imposter: ${JSON.stringify(exceptions.details(validationErrors))}`);
         response.statusCode = 400;
         response.send({ errors: validationErrors });
     }
 
     function respondWithCreationError (response, error) {
-        logger.warn(`error creating imposter: ${JSON.stringify(exceptions.details(error))}`);
+        logger.error(`error creating imposter: ${JSON.stringify(exceptions.details(error))}`);
         response.statusCode = (error.code === 'insufficient access') ? 403 : 400;
         response.send({ errors: [error] });
     }

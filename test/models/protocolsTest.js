@@ -18,7 +18,7 @@ describe('protocols', function () {
         });
 
         describe('#outOfProcessCreate', function () {
-            promiseIt('should log error if invalid command passed', function () {
+            promiseIt('should error if invalid command passed', function () {
                 const customProtocols = { test: { createCommand: 'no-such-command' } },
                     protocols = loader.load({}, customProtocols, combinators.identity),
                     logger = FakeLogger.create();
@@ -27,10 +27,9 @@ describe('protocols', function () {
                     assert.fail('should have errored');
                 }, error => {
                     delete error.details;
-                    logger.error.assertLogged('Invalid implementation for protocol "test": cannot run "no-such-command"');
                     assert.deepEqual(error, {
-                        code: 'invalid protocol implementation',
-                        message: 'Invalid implementation for protocol "test": cannot run "no-such-command"',
+                        code: 'cannot start server',
+                        message: 'Invalid configuration for protocol "test": cannot run "no-such-command"',
                         source: 'no-such-command'
                     });
                 });
@@ -111,32 +110,78 @@ describe('protocols', function () {
                 }).finally(() => fs.unlinkSync('protocol-test.js'));
             });
 
-            promiseIt('should pass port, callback url, default response, and creation metadata to process', function () {
+            promiseIt('should pass port and callback url to process', function () {
+                const fn = () => { console.log(JSON.stringify({ args: process.argv.splice(2) })); };
+                fs.writeFileSync('protocol-test.js', `const fn = ${fn.toString()}; fn();`);
+
+                const customProtocols = { test: { createCommand: 'node ./protocol-test.js' } },
+                    protocols = loader.load({}, customProtocols, () => 'CALLBACK-URL'),
+                    logger = FakeLogger.create(),
+                    creationRequest = { port: 3000 };
+
+                return protocols.test.createServer(creationRequest, logger).then(server => {
+                    assert.deepEqual(server.metadata.args, [
+                        JSON.stringify({
+                            port: 3000,
+                            defaultResponse: {},
+                            callbackURL: 'CALLBACK-URL'
+                        })
+                    ]);
+                }).finally(() => fs.unlinkSync('protocol-test.js'));
+            });
+
+            promiseIt('should pass custom defaultResponse to process', function () {
+                const fn = () => { console.log(JSON.stringify({ args: process.argv.splice(2) })); };
+                fs.writeFileSync('protocol-test.js', `const fn = ${fn.toString()}; fn();`);
+
+                const customProtocols = { test: { createCommand: 'node ./protocol-test.js' } },
+                    protocols = loader.load({}, customProtocols, () => 'CALLBACK-URL'),
+                    logger = FakeLogger.create(),
+                    creationRequest = { port: 3000, defaultResponse: { key: 'default' } };
+
+                return protocols.test.createServer(creationRequest, logger).then(server => {
+                    assert.deepEqual(server.metadata.args, [
+                        JSON.stringify({
+                            port: 3000,
+                            defaultResponse: { key: 'default' },
+                            callbackURL: 'CALLBACK-URL'
+                        })
+                    ]);
+                }).finally(() => fs.unlinkSync('protocol-test.js'));
+            });
+
+            promiseIt('should pass custom customProtocolFields to process', function () {
                 const fn = () => { console.log(JSON.stringify({ args: process.argv.splice(2) })); };
                 fs.writeFileSync('protocol-test.js', `const fn = ${fn.toString()}; fn();`);
 
                 const customProtocols = {
                         test: {
                             createCommand: 'node ./protocol-test.js',
-                            metadata: ['mode']
+                            customProtocolFields: ['key1', 'key3']
                         }
                     },
                     protocols = loader.load({}, customProtocols, () => 'CALLBACK-URL'),
                     logger = FakeLogger.create(),
                     creationRequest = {
+                        protocol: 'test',
                         port: 3000,
-                        defaultResponse: { key: 'default' },
-                        mode: 'text',
-                        ignore: 'true'
+                        name: 'name',
+                        stubs: [],
+                        recordRequests: false,
+                        defaultResponse: {},
+                        key1: 'FIRST',
+                        key2: 'SECOND'
                     };
 
-                // Sleep to allow the second echo command to finish
                 return protocols.test.createServer(creationRequest, logger).then(server => {
                     assert.deepEqual(server.metadata.args, [
-                        '3000',
-                        'CALLBACK-URL',
-                        JSON.stringify({ key: 'default' }),
-                        JSON.stringify({ mode: 'text' })
+                        JSON.stringify({
+                            port: 3000,
+                            defaultResponse: {},
+                            callbackURL: 'CALLBACK-URL',
+                            key1: 'FIRST',
+                            key2: 'SECOND'
+                        })
                     ]);
                 }).finally(() => fs.unlinkSync('protocol-test.js'));
             });

@@ -11,18 +11,19 @@ function load (builtInProtocols, customProtocols, callbackUrlFn) {
                 return Q({
                     port: server.port,
                     metadata: server.metadata,
-                    resolver: resolver,
                     stubs: stubs,
+                    resolver: resolver,
                     close: server.close
                 });
             });
     }
 
     function outOfProcessCreate (protocolName, config) {
-        function metadataFor (creationRequest) {
-            const result = {};
-            (config.metadata || []).forEach(key => {
-                if (typeof creationRequest[key] !== 'undefined') {
+        function customFieldsFor (creationRequest) {
+            const result = {},
+                commonFields = ['protocol', 'port', 'name', 'recordRequests', 'stubs', 'defaultResponse'];
+            Object.keys(creationRequest).forEach(key => {
+                if (commonFields.indexOf(key) < 0) {
                     result[key] = creationRequest[key];
                 }
             });
@@ -30,29 +31,33 @@ function load (builtInProtocols, customProtocols, callbackUrlFn) {
         }
 
         return (creationRequest, logger) => {
-            const { spawn } = require('child_process'),
+            const Q = require('q'),
+                deferred = Q.defer(),
+                { spawn } = require('child_process'),
                 command = config.createCommand.split(' ')[0],
                 args = config.createCommand.split(' ').splice(1),
                 port = creationRequest.port,
                 defaultResponse = creationRequest.defaultResponse || {},
-                creationMetadata = metadataFor(creationRequest),
-                allArgs = args.concat(port, callbackUrlFn(port), JSON.stringify(defaultResponse), JSON.stringify(creationMetadata)),
-                imposterProcess = spawn(command, allArgs),
-                stubs = require('./stubRepository').create(config.encoding || 'utf8'),
-                resolver = require('./responseResolver').create(stubs, undefined, callbackUrlFn(port)),
-                Q = require('q'),
-                deferred = Q.defer(),
-                kill = () => { imposterProcess.kill(); };
+                configArgs = require('../util/helpers').merge(
+                    { port, defaultResponse, callbackURL: callbackUrlFn(port) },
+                    customFieldsFor(creationRequest)),
+                allArgs = args.concat(JSON.stringify(configArgs)),
+                imposterProcess = spawn(command, allArgs);
 
             imposterProcess.on('error', error => {
                 const errors = require('../util/errors'),
-                    message = `Invalid implementation for protocol "${protocolName}": cannot run "${config.createCommand}"`;
-                logger.error(message);
-                deferred.reject(errors.ProtocolImplementationError(message, { source: config.createCommand, details: error }));
+                    message = `Invalid configuration for protocol "${protocolName}": cannot run "${config.createCommand}"`;
+                deferred.reject(errors.ProtocolError(message,
+                    { source: config.createCommand, details: error }));
             });
 
-            process.once('SIGINT', kill);
-            process.once('SIGTERM', kill);
+            imposterProcess.once('exit', code => {
+                if (code !== 0 && deferred.promise.isPending()) {
+                    const errors = require('../util/errors'),
+                        message = `"${protocolName}" start command failed (exit code ${code})`;
+                    deferred.reject(errors.ProtocolError(message, { source: config.createCommand }));
+                }
+            });
 
             function resolveWithMetadata (possibleJSON) {
                 let metadata = {};
@@ -68,40 +73,43 @@ function load (builtInProtocols, customProtocols, callbackUrlFn) {
                     delete metadata.port;
                 }
 
+                const stubs = require('./stubRepository').create(metadata.encoding || 'utf8'),
+                    resolver = require('./responseResolver').create(stubs, undefined, callbackUrlFn(serverPort));
+
                 deferred.resolve({
                     port: serverPort,
                     metadata: metadata,
                     stubs,
                     resolver,
                     close: callback => {
-                        imposterProcess.once('exit', () => {
-                            callback();
-                        });
-                        kill();
+                        imposterProcess.once('exit', callback);
+                        imposterProcess.kill();
                     }
                 });
             }
 
-            imposterProcess.stdout.on('data', buffer => {
-                const lines = buffer.toString('utf8').trim().split('\n');
+            function log (message) {
+                if (message.indexOf(' ') > 0) {
+                    const words = message.split(' '),
+                        level = words[0],
+                        rest = words.splice(1).join(' ').trim();
+                    if (['debug', 'info', 'warn', 'error'].indexOf(level) >= 0) {
+                        logger[level](rest);
+                    }
+                }
+            }
+
+            imposterProcess.stdout.on('data', data => {
+                const lines = data.toString('utf8').trim().split('\n');
                 lines.forEach(line => {
                     if (deferred.promise.isPending()) {
                         resolveWithMetadata(line);
                     }
-                    if (line.indexOf(' ') > 0) {
-                        const words = line .split(' '),
-                            level = words[0],
-                            rest = words.splice(1).join(' ').trim();
-                        if (['debug', 'info', 'warn', 'error'].indexOf(level) >= 0) {
-                            logger[level](rest);
-                        }
-                    }
+                    log(line);
                 });
             });
 
-            imposterProcess.stderr.on('data', data => {
-                logger.error(data);
-            });
+            imposterProcess.stderr.on('data', logger.error);
 
             return deferred.promise;
         };

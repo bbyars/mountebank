@@ -48,6 +48,6 @@ module.exports = {
     MissingResourceError: create('no such resource'),
     InvalidJSONError: createWithMessage('invalid JSON', 'Unable to parse body as JSON'),
     CommunicationError: createWithMessage('communication', 'Error communicating with mountebank'),
-    ProtocolImplementationError: create('invalid protocol implementation'),
+    ProtocolError: create('cannot start server'),
     details
 };
