@@ -44,6 +44,8 @@ function load (builtInProtocols, customProtocols, callbackUrlFn) {
                 allArgs = args.concat(JSON.stringify(configArgs)),
                 imposterProcess = spawn(command, allArgs);
 
+            let closeCalled = false;
+
             imposterProcess.on('error', error => {
                 const errors = require('../util/errors'),
                     message = `Invalid configuration for protocol "${protocolName}": cannot run "${config.createCommand}"`;
@@ -56,6 +58,9 @@ function load (builtInProtocols, customProtocols, callbackUrlFn) {
                     const errors = require('../util/errors'),
                         message = `"${protocolName}" start command failed (exit code ${code})`;
                     deferred.reject(errors.ProtocolError(message, { source: config.createCommand }));
+                }
+                else if (!closeCalled) {
+                    logger.error("Uh oh! I've crashed! Expect subsequent requests to fail.");
                 }
             });
 
@@ -82,6 +87,7 @@ function load (builtInProtocols, customProtocols, callbackUrlFn) {
                     stubs,
                     resolver,
                     close: callback => {
+                        closeCalled = true;
                         imposterProcess.once('exit', callback);
                         imposterProcess.kill();
                     }
