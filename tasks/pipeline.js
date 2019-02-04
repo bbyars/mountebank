@@ -92,31 +92,37 @@ module.exports = function (grunt) {
     grunt.registerTask('waitFor:travis', 'Wait for Travis build to finish', function () {
         const done = this.async(),
             buildNumber = fs.readFileSync('travis-' + version + '.txt'),
-            timeout = 10 * 60 * 1000,
-            interval = 3000,
-            start = new Date(),
-            spinWait = function (status) {
-                const deferred = Q.defer(),
-                    elapsedTime = new Date() - start;
+            timeoutPerStatus = 10 * 60 * 1000,
+            interval = 3000;
 
-                // process.stdout.write('.');
-                process.stdout.write(status + '\n');
-                if (elapsedTime > timeout) {
-                    // process.stdout.write('\n');
-                    deferred.resolve('timeout');
-                }
-                else if (['pending', 'created', 'started'].indexOf(status) < 0) {
-                    process.stdout.write('\n');
-                    deferred.resolve(status);
-                }
-                else {
-                    return Q.delay(interval).then(function () {
-                        return travis.getBuildStatus(buildNumber);
-                    }).then(spinWait, deferred.reject);
-                }
+        let start = new Date(),
+            lastStatus = '';
 
-                return deferred.promise;
-            };
+        function spinWait (status) {
+            const deferred = Q.defer(),
+                elapsedTime = new Date() - start;
+
+            if (status !== lastStatus) {
+                process.stdout.write(`\n${lastStatus}: ${elapsedTime}\n${status}`);
+                lastStatus = status;
+                start = new Date();
+            }
+
+            process.stdout.write('.');
+            if (elapsedTime > timeoutPerStatus) {
+                deferred.resolve('timeout');
+            }
+            else if (['pending', 'created', 'started'].indexOf(status) < 0) {
+                deferred.resolve(status);
+            }
+            else {
+                return Q.delay(interval).then(function () {
+                    return travis.getBuildStatus(buildNumber);
+                }).then(spinWait, deferred.reject);
+            }
+
+            return deferred.promise;
+        }
 
         return spinWait('pending').then(function (status) {
             console.log('Travis status: ' + status);
