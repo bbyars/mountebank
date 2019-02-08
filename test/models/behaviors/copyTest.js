@@ -381,6 +381,23 @@ describe('behaviors', function () {
             });
         });
 
+        promiseIt('should accept null response fields (issue #394)', function () {
+            const request = { field: JSON.stringify({ name: 'mountebank' }) },
+                response = { first: null, second: 'TOKEN' },
+                logger = Logger.create(),
+                config = {
+                    copy: [{
+                        from: 'field',
+                        into: 'TOKEN',
+                        using: { method: 'jsonpath', selector: '$..name' }
+                    }]
+                };
+
+            return behaviors.execute(request, response, config, logger).then(actualResponse => {
+                assert.deepEqual(actualResponse, { first: null, second: 'mountebank' });
+            });
+        });
+
         it('should not be valid if not an array', function () {
             const errors = behaviors.validate({
                 copy: {}

@@ -84,6 +84,10 @@ const fromSchema = {
         }
     };
 
+function isNonNullObject (o) {
+    return typeof o === 'object' && o !== null;
+}
+
 /**
  * Validates the behavior configuration and returns all errors
  * @param {Object} config - The behavior configuration
@@ -248,7 +252,7 @@ function getKeyIgnoringCase (obj, expectedKey) {
 }
 
 function getFrom (obj, from) {
-    if (typeof from === 'object') {
+    if (isNonNullObject(from)) {
         const keys = Object.keys(from);
         return getFrom(obj[keys[0]], from[keys[0]]);
     }
@@ -326,7 +330,7 @@ function globalObjectReplace (obj, replacer) {
         if (typeof obj[key] === 'string') {
             obj[key] = replacer(obj[key]);
         }
-        else if (typeof obj[key] === 'object') {
+        else if (isNonNullObject(obj[key])) {
             globalObjectReplace(obj[key], replacer);
         }
     });
