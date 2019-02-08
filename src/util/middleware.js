@@ -16,7 +16,8 @@ function useAbsoluteUrls (port) {
         const setHeaderOriginal = response.setHeader,
             sendOriginal = response.send,
             host = request.headers.host || `localhost:${port}`,
-            absolutize = link => 'http://' + host + link;
+            absolutize = link => 'http://' + host + link,
+            isObject = require('../util/helpers').isObject;
 
         response.setHeader = function () {
             const args = Array.prototype.slice.call(arguments);
@@ -44,13 +45,13 @@ function useAbsoluteUrls (port) {
                     }
                     fn(obj);
                     Object.keys(obj).forEach(key => {
-                        if (obj[key] && typeof obj[key] === 'object') {
+                        if (obj[key] && isObject(obj[key])) {
                             traverse(obj[key], fn, key);
                         }
                     });
                 };
 
-            if (typeof body === 'object') {
+            if (isObject(body)) {
                 traverse(body, changeLinks);
             }
             sendOriginal.apply(this, args);

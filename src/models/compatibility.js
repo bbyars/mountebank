@@ -34,10 +34,12 @@ function upcastTcpProxyDestinationToUrl (request) {
         return;
     }
 
+    const isObject = require('../util/helpers').isObject;
+
     (request.stubs || []).forEach(stub => {
         (stub.responses || []).forEach(response => {
             const proxy = response.proxy;
-            if (proxy && typeof proxy.to === 'object' && proxy.to.host && proxy.to.port) {
+            if (proxy && isObject(proxy.to) && proxy.to.host && proxy.to.port) {
                 proxy.to = `tcp://${proxy.to.host}:${proxy.to.port}`;
             }
         });

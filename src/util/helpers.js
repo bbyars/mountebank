@@ -12,6 +12,17 @@ function defined (obj) {
 }
 
 /**
+ * Returns true if obj is a non-null object
+ * Checking for typeof 'object' without checking for nulls
+ * is a very common source of bugs
+ * @param {Object} obj - the value to test
+ * @returns {boolean}
+ */
+function isObject (obj) {
+    return typeof obj === 'object' && obj !== null;
+}
+
+/**
  * Returns the text used for logging purposes related to this socket
  * @param {Object} socket - the socket
  * @returns {string}
@@ -53,4 +64,4 @@ function merge (defaults, overrides) {
     return result;
 }
 
-module.exports = { defined, socketName, clone, merge };
+module.exports = { defined, isObject, socketName, clone, merge };

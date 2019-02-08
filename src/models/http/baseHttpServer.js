@@ -24,9 +24,10 @@ module.exports = function (createBaseServer) {
                     _mode: stubResponse._mode || defaultResponse._mode || 'text'
                 },
                 responseHeaders = headersHelper.getJar(response.headers),
-                encoding = response._mode === 'binary' ? 'base64' : 'utf8';
+                encoding = response._mode === 'binary' ? 'base64' : 'utf8',
+                isObject = require('../../util/helpers').isObject;
 
-            if (typeof response.body === 'object') {
+            if (isObject(response.body)) {
                 // Support JSON response bodies
                 response.body = JSON.stringify(response.body, null, 4);
             }

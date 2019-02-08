@@ -37,9 +37,9 @@ function forEachFileIn (dir, fileCallback, options) {
 
 module.exports = function (grunt) {
 
-    grunt.registerTask('jsCheck', 'Run JavaScript checks not covered by eslint', function () {
+    grunt.registerTask('onlyCheck', 'Look for accidental mocha .only calls', function () {
         let errors = [],
-            jsCheck = function (file) {
+            check = function (file) {
                 const contents = fs.readFileSync(file, 'utf8'),
                     lines = contents.split(os.EOL);
 
@@ -53,12 +53,31 @@ module.exports = function (grunt) {
             },
             exclusions = ['node_modules', 'dist', 'staticAnalysis.js', 'testHelpers.js', '*.pid', 'jquery', 'docs'];
 
-        forEachFileIn('.', jsCheck, { exclude: exclusions, filetype: '.js' });
+        forEachFileIn('.', check, { exclude: exclusions, filetype: '.js' });
 
         if (errors.length > 0) {
             grunt.warn(errors.join(os.EOL));
         }
     });
+
+    grunt.registerTask('objectCheck', 'Look for accidental use of typeof x === "object"', function () {
+        let errors = [],
+            check = function (file) {
+                const contents = fs.readFileSync(file, 'utf8');
+                if (contents.indexOf("=== 'object'") > 0) {
+                    errors.push(`${file} appears to do a typecheck against object without using helpers.isObject`);
+                }
+            },
+            exclusions = ['node_modules', 'dist', 'functionalTest', 'staticAnalysis.js', 'helpers.js', '*.pid', 'jquery', 'docs'];
+
+        forEachFileIn('.', check, { exclude: exclusions, filetype: '.js' });
+
+        if (errors.length > 0) {
+            grunt.warn(errors.join(os.EOL));
+        }
+    });
+
+    grunt.registerTask('jsCheck', 'Run JavaScript checks not covered by eslint', ['onlyCheck', 'objectCheck']);
 
     grunt.registerTask('deadCheck', 'Check for unused dependencies in package.json', function () {
         const thisPackage = require('../package.json'),

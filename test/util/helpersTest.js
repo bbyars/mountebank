@@ -89,4 +89,14 @@ describe('helpers', function () {
             });
         });
     });
+
+    describe('#isObject', function () {
+        it('should return true for object', function () {
+            assert.ok(helpers.isObject({}));
+        });
+
+        it('should return false for null', function () {
+            assert.ok(!helpers.isObject(null));
+        });
+    });
 });

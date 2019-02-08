@@ -47,8 +47,10 @@ function create () {
     }
 
     function enumFieldFor (field) {
+        const isObject = require('../util/helpers').isObject;
+
         // Can be the string value or the object key
-        if (typeof field === 'object' && Object.keys(field).length > 0) {
+        if (isObject(field) && Object.keys(field).length > 0) {
             return Object.keys(field)[0];
         }
         else {

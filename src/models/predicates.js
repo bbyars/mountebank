@@ -5,14 +5,11 @@
  * @module
  */
 
-function isNonNullObject (o) {
-    return typeof o === 'object' && o !== null;
-}
-
 function sortObjects (a, b) {
-    const stringify = require('json-stable-stringify');
+    const stringify = require('json-stable-stringify'),
+        isObject = require('../util/helpers').isObject;
 
-    if (typeof a === 'object' && typeof b === 'object') {
+    if (isObject(a) && isObject(b)) {
         // Make best effort at sorting arrays of objects to make
         // deepEquals order-independent
         return sortObjects(stringify(a), stringify(b));
@@ -26,7 +23,9 @@ function sortObjects (a, b) {
 }
 
 function forceStrings (obj) {
-    if (!isNonNullObject(obj)) {
+    const isObject = require('../util/helpers').isObject;
+
+    if (!isObject(obj)) {
         return obj;
     }
     else if (Array.isArray(obj)) {
@@ -40,7 +39,7 @@ function forceStrings (obj) {
             else if (obj[key] === null) {
                 result[key] = 'null';
             }
-            else if (isNonNullObject(obj[key])) {
+            else if (isObject(obj[key])) {
                 result[key] = forceStrings(obj[key]);
             }
             else if (['boolean', 'number'].indexOf(typeof obj[key]) >= 0) {
@@ -185,12 +184,13 @@ function selectJSONPath (config, encoding, predicateConfig, stringTransform, tex
 
 function transformAll (obj, keyTransforms, valueTransforms, arrayTransforms) {
     const combinators = require('../util/combinators'),
-        apply = fns => combinators.compose.apply(null, fns);
+        apply = fns => combinators.compose.apply(null, fns),
+        isObject = require('../util/helpers').isObject;
 
     if (Array.isArray(obj)) {
         return apply(arrayTransforms)(obj.map(element => transformAll(element, keyTransforms, valueTransforms, arrayTransforms)));
     }
-    else if (isNonNullObject(obj)) {
+    else if (isObject(obj)) {
         return Object.keys(obj).reduce((result, key) => {
             result[apply(keyTransforms)(key)] = transformAll(obj[key], keyTransforms, valueTransforms, arrayTransforms);
             return result;
@@ -233,7 +233,7 @@ function testPredicate (expected, actual, predicateConfig, predicateFn) {
     if (!helpers.defined(actual)) {
         actual = '';
     }
-    if (isNonNullObject(expected)) {
+    if (helpers.isObject(expected)) {
         return predicateSatisfied(expected, actual, predicateConfig, predicateFn);
     }
     else {
@@ -274,6 +274,8 @@ function predicateSatisfied (expected, actual, predicateConfig, predicateFn) {
     }
 
     return Object.keys(expected).every(fieldName => {
+        const isObject = require('../util/helpers').isObject;
+
         if (bothArrays(expected[fieldName], actual[fieldName])) {
             return allExpectedArrayValuesMatchActualArray(
                 expected[fieldName], actual[fieldName], predicateConfig, predicateFn);
@@ -298,7 +300,7 @@ function predicateSatisfied (expected, actual, predicateConfig, predicateFn) {
             // in the actual array
             return expectedMatchesAtLeastOneValueInActualArray(expected, actual, predicateConfig, predicateFn);
         }
-        else if (isNonNullObject(expected[fieldName])) {
+        else if (isObject(expected[fieldName])) {
             return predicateSatisfied(expected[fieldName], actual[fieldName], predicateConfig, predicateFn);
         }
         else {
@@ -319,11 +321,12 @@ function create (operator, predicateFn) {
 function deepEquals (predicate, request, encoding) {
     const expected = normalize(forceStrings(predicate.deepEquals), predicate, { encoding: encoding }),
         actual = normalize(forceStrings(request), predicate, { encoding: encoding, withSelectors: true, shouldForceStrings: true }),
-        stringify = require('json-stable-stringify');
+        stringify = require('json-stable-stringify'),
+        isObject = require('../util/helpers').isObject;
 
     return Object.keys(expected).every(fieldName => {
         // Support predicates that reach into fields encoded in JSON strings (e.g. HTTP bodies)
-        if (isNonNullObject(expected[fieldName]) && typeof actual[fieldName] === 'string') {
+        if (isObject(expected[fieldName]) && typeof actual[fieldName] === 'string') {
             const possibleJSON = tryJSON(actual[fieldName], predicate);
             actual[fieldName] = normalize(forceStrings(possibleJSON), predicate, { encoding: encoding });
         }

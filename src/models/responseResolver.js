@@ -79,9 +79,11 @@ function create (stubs, proxy, callbackUrl) {
     }
 
     function buildEquals (request, matchers, valueOf) {
-        const result = {};
+        const result = {},
+            isObject = require('../util/helpers').isObject;
+
         Object.keys(matchers).forEach(key => {
-            if (typeof request[key] === 'object') {
+            if (isObject(request[key])) {
                 result[key] = buildEquals(request[key], matchers[key], valueOf);
             }
             else {
