@@ -275,7 +275,7 @@ const aliases = {
             global: false
         },
         host: {
-            description: 'the hostname to bind the mountebank server to; overriden if you also set the --localonly flag',
+            description: 'the hostname to bind the mountebank server to',
             nargs: 1,
             type: 'string',
             alias: aliases.h,

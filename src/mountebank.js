@@ -81,8 +81,10 @@ function create (options) {
             smtp: require('./models/smtp/smtpServer')
         },
         customProtocols = loadCustomProtocols(options.protofile, logger),
+        hostname = options.host || 'localhost',
+        baseURL = `http://${hostname}:${options.port}`,
         protocols = require('./models/protocols').load(builtInProtocols, customProtocols, options.loglevel,
-            port => `http://localhost:${options.port}/imposters/${port}/_requests`),
+            port => `${baseURL}/imposters/${port}/_requests`),
         homeController = HomeController.create(releases),
         impostersController = ImpostersController.create(protocols, imposters, Imposter, logger, {
             allowInjection: options.allowInjection,
@@ -96,7 +98,11 @@ function create (options) {
         feedController = FeedController.create(releases, options),
         validateImposterExists = middleware.createImposterValidator(imposters),
         localIPs = ['::ffff:127.0.0.1', '::1', '127.0.0.1'],
-        allowedIPs = localIPs.concat(options.ipWhitelist);
+        allowedIPs = localIPs;
+
+    if (!options.localOnly) {
+        options.ipWhitelist.forEach(ip => { allowedIPs.push(ip); });
+    }
 
     if (!options.nologfile) {
         initializeLogfile(options.logfile);
@@ -187,22 +193,9 @@ function create (options) {
         return allowedIPs.some(allowedIP => allowedIP === '*' || allowedIP.toLowerCase() === ipAddress.toLowerCase());
     }
 
-    function hostname () {
-        if (options.localOnly) {
-            return 'localhost';
-        }
-        else if (options.host) {
-            return options.host;
-        }
-        else {
-            return undefined;
-        }
-    }
-
     const connections = {},
-        server = app.listen(options.port, hostname(), () => {
-            logger.info('mountebank v%s now taking orders - point your browser to http://localhost:%s for help',
-                thisPackage.version, options.port);
+        server = app.listen(options.port, options.host, () => {
+            logger.info(`mountebank v${thisPackage.version} now taking orders - point your browser to ${baseURL}/ for help`);
             logger.debug(`config: ${JSON.stringify({
                 options: options,
                 process: {
@@ -212,8 +205,7 @@ function create (options) {
                 }
             })}`);
             if (options.allowInjection) {
-                logger.warn('Running with --allowInjection set. See http://localhost:%s/docs/security for security info',
-                    options.port);
+                logger.warn(`Running with --allowInjection set. See ${baseURL}/docs/security for security info`);
             }
 
             server.on('connection', socket => {
@@ -229,7 +221,7 @@ function create (options) {
                 });
 
                 if (!isAllowedConnection(socket.address().address)) {
-                    logger.warn('Blocking incoming connection from %s. Add to --ipWhitelist to allow',
+                    logger.warn('Blocking incoming connection from %s. Turn off --localOnly or add to --ipWhitelist to allow',
                         socket.address().address);
                     socket.end();
                 }

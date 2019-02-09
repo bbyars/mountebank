@@ -638,7 +638,7 @@ Connection: keep-alive
     "noParse": false,
     "nologfile": false,
     "allowInjection": true,
-    "localOnly": false,
+    "localOnly": true,
     "mock": true,
     "debug": true,
     "port": <%= port %>,
@@ -705,7 +705,7 @@ Connection: keep-alive
 {
   "logs": [
     {
-      "message": "[mb:<%= port %>] mountebank v<%= version %> now taking orders - point your browser to http://localhost:<%= port %> for help",
+      "message": "[mb:<%= port %>] mountebank v<%= version %> now taking orders - point your browser to http://localhost:<%= port %>/ for help",
       "level": "info",
       "timestamp": "<volatile>2015-10-20T03:33:23.018Z</volatile>"
     },
