@@ -38,6 +38,25 @@ function loadCustomProtocols (protofile, logger) {
     }
 }
 
+function getLocalIPs () {
+    const os = require('os'),
+        interfaces = os.networkInterfaces(),
+        result = [];
+
+    Object.keys(interfaces).forEach(name => {
+        interfaces[name].forEach(ip => {
+            if (ip.internal) {
+                result.push(ip.address);
+                if (ip.family === 'IPv4') {
+                    // Prefix for IPv4 address mapped to a compliant IPv6 scheme
+                    result.push(`::ffff:${ip.address}`);
+                }
+            }
+        });
+    });
+    return result;
+}
+
 /**
  * Creates the mountebank server
  * @param {object} options - The command line options
@@ -97,7 +116,7 @@ function create (options) {
         configController = ConfigController.create(thisPackage.version, options),
         feedController = FeedController.create(releases, options),
         validateImposterExists = middleware.createImposterValidator(imposters),
-        localIPs = ['::ffff:127.0.0.1', '::1', '127.0.0.1'],
+        localIPs = getLocalIPs(),
         allowedIPs = localIPs;
 
     if (!options.localOnly) {
@@ -209,7 +228,8 @@ function create (options) {
             }
 
             server.on('connection', socket => {
-                const name = helpers.socketName(socket);
+                const name = helpers.socketName(socket),
+                    ipAddress = socket.remoteAddress;
                 connections[name] = socket;
 
                 socket.on('close', () => {
@@ -220,9 +240,9 @@ function create (options) {
                     logger.error('%s transmission error X=> %s', name, JSON.stringify(error));
                 });
 
-                if (!isAllowedConnection(socket.address().address)) {
+                if (!isAllowedConnection(ipAddress)) {
                     logger.warn('Blocking incoming connection from %s. Turn off --localOnly or add to --ipWhitelist to allow',
-                        socket.address().address);
+                        ipAddress);
                     socket.end();
                 }
             });
