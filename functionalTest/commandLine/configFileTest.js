@@ -14,7 +14,7 @@ const assert = require('assert'),
     http = BaseHttpClient.create('http'),
     https = BaseHttpClient.create('https');
 
-describe('mb command line', function () {
+describe('config file', function () {
     this.timeout(timeout);
 
     // I don't normally advocate separating the data needed for the assertions from the test setup,
@@ -74,7 +74,7 @@ describe('mb command line', function () {
 
     // This is the response resolver injection example on /docs/api/injection
     promiseIt('should evaluate stringify function in templates when loading configuration files', function () {
-        const args = ['--configfile', path.join(__dirname, 'templates/imposters.ejs'), '--allowInjection'];
+        const args = ['--configfile', path.join(__dirname, 'templates/imposters.ejs'), '--allowInjection', '--localOnly'];
 
         return mb.start(args)
             .then(() => http.get('/first', 4546))
@@ -97,7 +97,7 @@ describe('mb command line', function () {
     });
 
     promiseIt('should evaluate nested stringify functions when loading configuration files', function () {
-        const args = ['--configfile', path.join(__dirname, 'nestedStringify/imposters.ejs'), '--allowInjection'];
+        const args = ['--configfile', path.join(__dirname, 'nestedStringify/imposters.ejs'), '--allowInjection', '--localOnly'];
 
         return mb.start(args)
             .then(() => http.get('/', 4542))
