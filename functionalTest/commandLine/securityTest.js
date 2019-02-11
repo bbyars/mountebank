@@ -217,8 +217,51 @@ describe('security', function () {
                 .finally(() => mb.stop());
         });
 
-        promiseIt('should block IPs not on --ipWhitelist', function () {
+        promiseIt('should allow non-local requests if --localOnly not used', function () {
+            const allIPs = localIPs().concat(nonLocalIPs());
 
+            return mb.start()
+                .then(() => Q.all(allIPs.map(ip => connectUsing(ip))))
+                .then(results => {
+                    const allAccepted = results.every(attempt => attempt.canConnect);
+                    assert.ok(allAccepted, 'Blocked local connection: ' + JSON.stringify(results, null, 2));
+                })
+                .finally(() => mb.stop());
+        });
+
+        promiseIt('should block IPs not on --ipWhitelist', function () {
+            if (nonLocalIPs().length < 2) {
+                console.log('Skipping test - not enough IPs to test with');
+                return Q(true);
+            }
+
+            const allowedIP = nonLocalIPs()[0],
+                blockedIPs = nonLocalIPs().slice(1),
+                ipWhitelist = `127.0.0.1|${allowedIP.address}`;
+
+            return mb.start(['--ipWhitelist', ipWhitelist])
+                .then(() => connectUsing(allowedIP))
+                .then(result => {
+                    assert.ok(result.canConnect, 'Could not connect to whitelisted IP: ' + JSON.stringify(result, null, 2));
+                    return Q.all(blockedIPs.map(ip => connectUsing(ip)));
+                })
+                .then(results => {
+                    const allBlocked = results.every(attempt => !attempt.canConnect && attempt.error.code === 'ECONNRESET');
+                    assert.ok(allBlocked, 'Allowed non-whitelisted connection: ' + JSON.stringify(results, null, 2));
+                })
+                .finally(() => mb.stop());
+        });
+
+        promiseIt('should ignore --ipWhitelist if --localOnly passed', function () {
+            const allowedIP = nonLocalIPs()[0],
+                ipWhitelist = `127.0.0.1|${allowedIP.address}`;
+
+            return mb.start(['--localOnly', '--ipWhitelist', ipWhitelist])
+                .then(() => connectUsing(allowedIP))
+                .then(result => {
+                    assert.ok(!result.canConnect, 'Should have blocked whitelisted IP: ' + JSON.stringify(result, null, 2));
+                })
+                .finally(() => mb.stop());
         });
     });
 });
