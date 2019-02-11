@@ -411,7 +411,7 @@ const argv = yargs
             .options(startOptions)
             .example('mb start --port 3000 --allowInjection --loglevel debug',
                 'Starts on port 3000, allowing injections and turning on debug logging')
-            .example('mb --ipWhitelist 192.168.1.20|192.158.1.21',
+            .example("mb --ipWhitelist '192.168.1.20|192.158.1.21'",
                 'Starts on port 2525 with the given ip whitelist')
             .epilog('Note on the last example that start is assumed if no command is specified\n\nFor more information, see http://www.mbtest.org/docs/commandLine');
     })
