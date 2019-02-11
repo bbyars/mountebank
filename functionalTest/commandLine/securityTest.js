@@ -137,7 +137,7 @@ describe('security', function () {
         });
     });
 
-    describe('mb with --localOnly', function () {
+    describe('IP blocking', function () {
         this.timeout(10000);
 
         function useInterface (name) {
@@ -215,6 +215,10 @@ describe('security', function () {
                     assert.ok(allAccepted, 'Blocked local connection: ' + JSON.stringify(accepts, null, 2));
                 })
                 .finally(() => mb.stop());
+        });
+
+        promiseIt('should block IPs not on --ipWhitelist', function () {
+
         });
     });
 });

@@ -33,7 +33,7 @@ describe('--host', function () {
         return mb.start(['--host', hostname])
             .then(() => http.responseFor({ method: 'GET', path: '/', hostname: 'localhost', port: mb.port }))
             .then(
-                () => { assert.fail('should not have connected'); },
+                () => { assert.fail(`should not have connected (hostname: ${hostname})`); },
                 error => { assert.strictEqual(error.errno, 'ECONNREFUSED'); })
             .finally(() => mb.stop());
     });
