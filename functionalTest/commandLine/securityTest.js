@@ -141,8 +141,9 @@ describe('security', function () {
         this.timeout(10000);
 
         function useInterface (name) {
-            // These cause problems running on my Mac
-            return name.indexOf('utun') < 0 && name.indexOf('awdl') < 0;
+            return name.indexOf('utun') < 0 // This causes problems on my Mac
+                && name.indexOf('awdl') < 0 // This causes problems on my Mac
+                && name.indexOf(' ') > 0; // This causes problems on Appveyor / Windows
         }
 
         function ips (local) {
@@ -189,11 +190,8 @@ describe('security', function () {
                         // If you run ifconfig, some of the addresses have the interface name
                         // appended (I'm not sure why). Node doesn't return them that way,
                         // but apparently needs it sometimes to bind to that address.
-                        // On Appveyor, the interface is "Ethernet 8", so we have to escape the
-                        // space (^ is Windows escape character)
-                        const ifaceName = ip.iface.replace(' ', '^ ');
                         return connectUsing({
-                            address: `${ip.address}%${ifaceName}`,
+                            address: `${ip.address}%${ip.iface}`,
                             family: ip.family,
                             iface: ip.iface
                         });

@@ -30,6 +30,11 @@ describe('--host', function () {
     });
 
     promiseIt('should disallow localhost calls when bound to specific host', function () {
+        // Travis adds hostname into /etc/hosts file
+        if (process.env.TRAVIS === 'true') {
+            return Q(true);
+        }
+
         return mb.start(['--host', hostname])
             .then(() => http.responseFor({ method: 'GET', path: '/', hostname: 'localhost', port: mb.port }))
             .then(
