@@ -38,7 +38,7 @@ function putConfig (options, body) {
             method: 'PUT',
             path: '/imposters',
             port: options.port,
-            hostname: 'localhost',
+            hostname: options.host || 'localhost',
             headers: {
                 'Content-Type': 'application/json',
                 Connection: 'close'
@@ -68,7 +68,7 @@ function getConfig (options) {
             method: 'GET',
             path: '/imposters?replayable=true',
             port: options.port,
-            hostname: 'localhost',
+            hostname: options.host || 'localhost',
             headers: {
                 'Content-Type': 'application/json',
                 Connection: 'close'
@@ -209,18 +209,21 @@ function serverAt (options) {
         return stop().then(start).done();
     }
 
+    function logConnectionErrorAndExit (err) {
+        const host = options.host || 'localhost';
+        if (err.code === 'ECONNREFUSED') {
+            console.error(`No mb process running on http://${host}:${options.port}`);
+        }
+        else {
+            console.error(err);
+        }
+        process.exit(1);
+    }
+
     function save () {
         getConfig(options).then(response => {
             fs.writeFileSync(options.savefile, response.body);
-        }).catch(err => {
-            if (err.code === 'ECONNREFUSED') {
-                console.error('No mb process running on port ' + options.port);
-            }
-            else {
-                console.error(err);
-            }
-            process.exit(1);
-        }).done();
+        }).catch(logConnectionErrorAndExit).done();
     }
 
     function replay () {
@@ -235,15 +238,7 @@ function serverAt (options) {
             else {
                 putConfig(options, response.body);
             }
-        }).catch(err => {
-            if (err.code === 'ECONNREFUSED') {
-                console.error('No mb process running on port ' + options.port);
-            }
-            else {
-                console.error(err);
-            }
-            process.exit(1);
-        }).done();
+        }).catch(logConnectionErrorAndExit).done();
     }
 
     return {
@@ -444,7 +439,8 @@ const argv = yargs
             .options({
                 port: options.port,
                 savefile: options.savefile,
-                removeProxies: options.removeProxies
+                removeProxies: options.removeProxies,
+                host: options.host
             })
             .example('mb save --savefile config.json --removeProxies --port 3000',
                 'Saves the config without proxies into config.json by querying port 3000')
@@ -458,7 +454,7 @@ const argv = yargs
                 .usage('Usage: mb replay [--port 3000]')
                 .help('help')
                 .wrap(null)
-                .options({ port: options.port })
+                .options({ port: options.port, host: options.host })
                 .example('mb replay --port 3000',
                     'Resets the configuration of mountebank running on port 3000 to remove all proxies')
                 .example('mb replay', 'Resets the configuration of mountebank running on port 2525 to remove all proxies')
