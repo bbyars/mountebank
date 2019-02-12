@@ -20,7 +20,7 @@ describe('--host', function () {
 
     promiseIt('should allow binding to specific host', function () {
         return mb.start(['--host', hostname])
-            .then(() => http.responseFor({ method: 'GET', path: '/', hostname, port: mb.port }))
+            .then(() => mb.get('/'))
             .then(response => {
                 const links = response.body._links,
                     hrefs = Object.keys(links).map(key => links[key].href);
@@ -61,7 +61,7 @@ describe('--host', function () {
         const imposters = { imposters: [{ protocol: 'http', port: 3000, recordRequests: false, stubs: [] }] };
 
         return mb.start(['--host', hostname])
-            .then(() => http.responseFor({ method: 'PUT', path: '/imposters', hostname, port: mb.port, body: imposters }))
+            .then(() => mb.put('/imposters', imposters))
             .then(response => {
                 assert.strictEqual(response.statusCode, 200);
                 return mb.save(['--host', hostname]);
@@ -73,4 +73,32 @@ describe('--host', function () {
             })
             .finally(() => mb.stop());
     });
+
+    promiseIt('should work with mb replay', function () {
+        const originServerPort = mb.port + 1,
+            originServerStub = { responses: [{ is: { body: 'ORIGIN' } }] },
+            originServerRequest = { protocol: 'http', port: originServerPort, stubs: [originServerStub] },
+            proxyPort = mb.port + 2,
+            proxyDefinition = { to: `http://localhost:${originServerPort}`, mode: 'proxyAlways' },
+            proxyStub = { responses: [{ proxy: proxyDefinition }] },
+            proxyRequest = { protocol: 'http', port: proxyPort, stubs: [proxyStub] };
+
+        return mb.start(['--host', hostname])
+            .then(() => mb.put('/imposters', { imposters: [originServerRequest, proxyRequest] }))
+            .then(response => {
+                assert.strictEqual(response.statusCode, 200, JSON.stringify(response.body));
+                return http.responseFor({ method: 'GET', path: '/', hostname, port: proxyPort });
+            })
+            .then(() => mb.replay(['--host', hostname]))
+            .then(() => mb.get('/imposters?replayable=true'))
+            .then(response => {
+                const imposters = response.body.imposters,
+                    oldProxyImposter = imposters.find(imposter => imposter.port === proxyPort),
+                    responses = oldProxyImposter.stubs[0].responses;
+                assert.strictEqual(responses.length, 1);
+                assert.strictEqual(responses[0].is.body, 'ORIGIN');
+            })
+            .finally(() => mb.stop());
+    });
+
 });

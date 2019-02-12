@@ -14,6 +14,8 @@ const Q = require('q'),
 
 function create (port, includeStdout) {
 
+    let host = 'localhost';
+
     function whenFullyInitialized (operation, callback) {
         let count = 0,
             pidfileMustExist = operation === 'start',
@@ -65,7 +67,12 @@ function create (port, includeStdout) {
 
     function start (args) {
         const deferred = Q.defer(),
-            mbArgs = ['restart', '--port', port, '--logfile', logfile, '--pidfile', pidfile].concat(args || []);
+            mbArgs = ['restart', '--port', port, '--logfile', logfile, '--pidfile', pidfile].concat(args || []),
+            hostIndex = mbArgs.indexOf('--host');
+
+        if (hostIndex >= 0) {
+            host = mbArgs[hostIndex + 1];
+        }
 
         whenFullyInitialized('start', deferred.resolve);
         const mb = spawnMb(mbArgs);
@@ -134,14 +141,18 @@ function create (port, includeStdout) {
     // the connection: close header on Windows or we end up with
     // ECONNRESET errors
     function get (endpoint) {
-        return httpClient.responseFor({ method: 'GET', path: endpoint, port, headers });
+        return httpClient.responseFor({ method: 'GET', path: endpoint, port, headers, hostname: host });
     }
 
     function post (endpoint, body) {
-        return httpClient.responseFor({ method: 'POST', path: endpoint, port, body, headers });
+        return httpClient.responseFor({ method: 'POST', path: endpoint, port, body, headers, hostname: host });
     }
 
-    return { port, url: `http://localhost:${port}`, start, restart, stop, save, get, post, replay };
+    function put (endpoint, body) {
+        return httpClient.responseFor({ method: 'PUT', path: endpoint, port, body, headers, hostname: host });
+    }
+
+    return { port, url: `http://localhost:${port}`, start, restart, stop, save, get, post, put, replay };
 }
 
 module.exports = { create };

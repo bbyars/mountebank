@@ -47,7 +47,8 @@ describe('mb replay', function () {
             })
             .then(() => client.get('/second', proxyPort))
             .then(() => client.get('/first', proxyPort))
-            .then(() => mb.replay()).then(() => mb.get(`/imposters/${proxyPort}`))
+            .then(() => mb.replay())
+            .then(() => mb.get(`/imposters/${proxyPort}`))
             .then(response => {
                 assert.strictEqual(response.body.stubs.length, 2, JSON.stringify(response.body.stubs, null, 2));
 
