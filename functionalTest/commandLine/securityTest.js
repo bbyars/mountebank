@@ -254,6 +254,11 @@ describe('security', function () {
         });
 
         promiseIt('should ignore --ipWhitelist if --localOnly passed', function () {
+            if (nonLocalIPs().length === 0) {
+                console.log('Skipping test - not enough IPs to test with');
+                return Q(true);
+            }
+
             const allowedIP = nonLocalIPs()[0],
                 ipWhitelist = `127.0.0.1|${allowedIP.address}`;
 
