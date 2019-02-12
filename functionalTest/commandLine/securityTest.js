@@ -188,9 +188,12 @@ describe('security', function () {
                     if (error.errno === 'EADDRNOTAVAIL' && ip.address.indexOf('%') < 0) {
                         // If you run ifconfig, some of the addresses have the interface name
                         // appended (I'm not sure why). Node doesn't return them that way,
-                        // but apparently needs it sometimes to bind to that address
+                        // but apparently needs it sometimes to bind to that address.
+                        // On Appveyor, the interface is "Ethernet 8", so we have to escape the
+                        // space (^ is Windows escape character)
+                        const ifaceName = ip.iface.replace(' ', '^ ');
                         return connectUsing({
-                            address: `${ip.address}%${ip.iface}`,
+                            address: `${ip.address}%${ifaceName}`,
                             family: ip.family,
                             iface: ip.iface
                         });

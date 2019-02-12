@@ -8,8 +8,6 @@ env:
   global:
     - MB_SLOW_TEST_TIMEOUT=6000
 
-# Roughly ordered slowest to fastest to kick off the slow jobs first,
-# except include nodes that trigger other CIs in first 5 since they start in parallel
 matrix:
   include:
     - os: osx
@@ -38,6 +36,7 @@ install:
   - gem install fpm
   - gem install bundler
   - bundle install --without development
+  - cat /etc/hosts
 
 script:
   - ./build $MB_GRUNT_TASK
