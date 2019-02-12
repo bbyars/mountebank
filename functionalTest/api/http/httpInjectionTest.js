@@ -101,6 +101,46 @@ const assert = require('assert'),
                 }).finally(() => api.del('/imposters'));
             });
 
+            promiseIt('should share state with predicate and response injection', function () {
+                const responseFn = (request, injectState, logger, callback, imposterState) => {
+                        imposterState.calls = imposterState.calls || 0;
+                        imposterState.calls += 1;
+                        return { body: 'INJECT' };
+                    },
+                    predicateFn = (request, logger, state) => {
+                        const numCalls = state.calls || 0;
+                        return numCalls > 1;
+                    },
+                    stubs = [
+                        {
+                            predicates: [{ // Compound predicate because previous bug didn't pass state in and/or
+                                and: [
+                                    { inject: predicateFn.toString() },
+                                    { equals: { path: '/' } }
+                                ]
+                            }],
+                            responses: [{ is: { body: 'IS' } }]
+                        },
+                        {
+                            responses: [{ inject: responseFn.toString() }]
+                        }
+                    ],
+                    request = { protocol, port, stubs };
+
+                return api.post('/imposters', request).then(response => {
+                    assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body));
+                    return client.get('/', port);
+                }).then(response => {
+                    assert.strictEqual(response.body, 'INJECT');
+                    return client.get('/', port);
+                }).then(response => {
+                    assert.strictEqual(response.body, 'INJECT');
+                    return client.get('/', port);
+                }).then(response => {
+                    assert.strictEqual(response.body, 'IS');
+                }).finally(() => api.del('/imposters'));
+            });
+
             promiseIt('should allow access to the global process object', function () {
                 // https://github.com/bbyars/mountebank/issues/134
                 const fn = () => ({ body: process.env.USER || 'test' }),
