@@ -143,7 +143,7 @@ describe('security', function () {
         function useInterface (name) {
             return name.indexOf('utun') < 0 // This causes problems on my Mac
                 && name.indexOf('awdl') < 0 // This causes problems on my Mac
-                && name.indexOf(' ') > 0; // This causes problems on Appveyor / Windows
+                && name.indexOf(' ') < 0; // This causes problems on Appveyor / Windows
         }
 
         function ips (local) {
@@ -254,11 +254,6 @@ describe('security', function () {
         });
 
         promiseIt('should ignore --ipWhitelist if --localOnly passed', function () {
-            if (nonLocalIPs().length === 0) {
-                console.log('Skipping test - not enough IPs to test with');
-                return Q(true);
-            }
-
             const allowedIP = nonLocalIPs()[0],
                 ipWhitelist = `127.0.0.1|${allowedIP.address}`;
 
