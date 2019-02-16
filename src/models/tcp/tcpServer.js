@@ -95,10 +95,10 @@ function create (options, logger, responseFn) {
                         // call mountebank with JSON request
                         return responseFn(simpleRequest);
                     }).done(stubResponse => {
-                        const processedResponse = { data: stubResponse.data || defaultResponse.data },
-                            buffer = Buffer.isBuffer(processedResponse.data)
-                                ? processedResponse.data
-                                : Buffer.from(processedResponse.data, encoding);
+                        const processedResponse = stubResponse.data || defaultResponse.data,
+                            buffer = Buffer.isBuffer(processedResponse)
+                                ? processedResponse
+                                : Buffer.from(processedResponse, encoding);
 
                         if (buffer.length > 0) {
                             container.socket.write(buffer);

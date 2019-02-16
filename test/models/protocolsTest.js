@@ -129,7 +129,6 @@ describe('protocols', function () {
                     assert.deepEqual(server.metadata.args, [
                         JSON.stringify({
                             port: 3000,
-                            defaultResponse: {},
                             callbackURLTemplate: 'CALLBACK-URL',
                             loglevel: 'info'
                         })
@@ -151,9 +150,9 @@ describe('protocols', function () {
                     assert.deepEqual(server.metadata.args, [
                         JSON.stringify({
                             port: 3000,
-                            defaultResponse: { key: 'default' },
                             callbackURLTemplate: 'CALLBACK-URL',
-                            loglevel: 'info'
+                            loglevel: 'info',
+                            defaultResponse: { key: 'default' }
                         })
                     ]);
                 }).finally(() => fs.unlinkSync('protocol-test.js'));
@@ -178,7 +177,6 @@ describe('protocols', function () {
                         name: 'name',
                         stubs: [],
                         recordRequests: false,
-                        defaultResponse: {},
                         key1: 'FIRST',
                         key2: 'SECOND'
                     };
@@ -187,7 +185,6 @@ describe('protocols', function () {
                     assert.deepEqual(server.metadata.args, [
                         JSON.stringify({
                             port: 3000,
-                            defaultResponse: {},
                             callbackURLTemplate: 'CALLBACK-URL',
                             loglevel: 'info',
                             key1: 'FIRST',

@@ -37,11 +37,15 @@ function load (builtInProtocols, customProtocols, options) {
                 command = config.createCommand.split(' ')[0],
                 args = config.createCommand.split(' ').splice(1),
                 port = creationRequest.port,
-                defaultResponse = creationRequest.defaultResponse || {},
                 configArgs = require('../util/helpers').merge(
-                    { port, defaultResponse, callbackURLTemplate: options.callbackURLTemplate, loglevel: options.loglevel },
-                    customFieldsFor(creationRequest)),
-                allArgs = args.concat(JSON.stringify(configArgs)),
+                    { port, callbackURLTemplate: options.callbackURLTemplate, loglevel: options.loglevel },
+                    customFieldsFor(creationRequest));
+
+            if (typeof creationRequest.defaultResponse !== 'undefined') {
+                configArgs.defaultResponse = creationRequest.defaultResponse;
+            }
+
+            const allArgs = args.concat(JSON.stringify(configArgs)),
                 imposterProcess = spawn(command, allArgs);
 
             let closeCalled = false;
@@ -77,10 +81,13 @@ function load (builtInProtocols, customProtocols, options) {
                     serverPort = metadata.port;
                     delete metadata.port;
                 }
-                const callbackURL = options.callbackURLTemplate.replace(':port', serverPort);
+                const callbackURL = options.callbackURLTemplate.replace(':port', serverPort),
+                    encoding = metadata.encoding || 'utf8';
 
-                const stubs = require('./stubRepository').create(metadata.encoding || 'utf8'),
+                const stubs = require('./stubRepository').create(encoding),
                     resolver = require('./responseResolver').create(stubs, undefined, callbackURL);
+
+                delete metadata.encoding;
 
                 deferred.resolve({
                     port: serverPort,

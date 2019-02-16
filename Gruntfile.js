@@ -140,6 +140,11 @@ module.exports = grunt => {
                 },
                 testProxyResponse: {},
                 createCommand: 'node src/models/smtp/index.js'
+            },
+            tcp: {
+                testRequest: { data: 'test' },
+                testProxyResponse: { data: '' },
+                createCommand: 'node src/models/tcp/index.js'
             }
         };
         require('fs').writeFileSync('protocols.json', JSON.stringify(protocols, null, 2));
