@@ -45,12 +45,13 @@ function postJSON (what, where) {
     return deferred.promise;
 }
 
-function create (port, callbackUrl, defaultResponse) {
+function create (port, callbackURLTemplate, defaultResponse) {
     const Q = require('q'),
         net = require('net'),
         deferred = Q.defer(),
         server = net.createServer(),
         logger = {};
+    let callbackURL = callbackURLTemplate.replace(':port', port);
 
     defaultResponse = defaultResponse || { data: 'foo' };
 
@@ -63,10 +64,10 @@ function create (port, callbackUrl, defaultResponse) {
         };
     });
 
-    function getProxyResponse (proxyConfig, request, proxyCallbackUrl) {
+    function getProxyResponse (proxyConfig, request, proxyCallbackURL) {
         const proxy = require('../tcp/tcpProxy').create(logger, 'utf8');
         return proxy.to(proxyConfig.to, request, proxyConfig)
-            .then(response => postJSON({ proxyResponse: response }, proxyCallbackUrl));
+            .then(response => postJSON({ proxyResponse: response }, proxyCallbackURL));
     }
 
     server.on('connection', socket => {
@@ -80,9 +81,9 @@ function create (port, callbackUrl, defaultResponse) {
 
             logger.info(`${request.requestFrom} => ${request.data}`);
 
-            postJSON({ request }, callbackUrl).then(mbResponse => {
+            postJSON({ request }, callbackURL).then(mbResponse => {
                 if (mbResponse.proxy) {
-                    return getProxyResponse(mbResponse.proxy, mbResponse.request, mbResponse.callbackUrl);
+                    return getProxyResponse(mbResponse.proxy, mbResponse.request, mbResponse.callbackURL);
                 }
                 else {
                     return Q(mbResponse.response);
@@ -102,6 +103,7 @@ function create (port, callbackUrl, defaultResponse) {
 
     // Bind the socket to a port (the || 0 bit auto-selects a port if one isn't provided)
     server.listen(port || 0, () => {
+        callbackURL = callbackURLTemplate.replace(':port', server.address().port);
         deferred.resolve({
             port: server.address().port,
             metadata: {},
@@ -118,12 +120,11 @@ function create (port, callbackUrl, defaultResponse) {
 
 const config = JSON.parse(process.argv[2]),
     port = config.port,
-    callbackUrl = config.callbackURL,
+    callbackURLTemplate = config.callbackURLTemplate,
     defaultResponse = config.defaultResponse;
 
-create(port, callbackUrl, defaultResponse).done(() => {
-    console.log('READY');
-    // TODO: will have to write out port, metadata
+create(port, callbackURLTemplate, defaultResponse).done(server => {
+    console.log(JSON.stringify({ port: server.port }));
 }, error => {
     console.error(JSON.stringify(error));
     process.exit(1);

@@ -1,6 +1,6 @@
 'use strict';
 
-function load (builtInProtocols, customProtocols, loglevel, callbackUrlFn) {
+function load (builtInProtocols, customProtocols, options) {
     function inProcessCreate (createProtocol) {
         return (creationRequest, logger, responseFn) =>
             createProtocol(creationRequest, logger, responseFn).then(server => {
@@ -39,7 +39,7 @@ function load (builtInProtocols, customProtocols, loglevel, callbackUrlFn) {
                 port = creationRequest.port,
                 defaultResponse = creationRequest.defaultResponse || {},
                 configArgs = require('../util/helpers').merge(
-                    { port, defaultResponse, callbackURL: callbackUrlFn(port), loglevel },
+                    { port, defaultResponse, callbackURLTemplate: options.callbackURLTemplate, loglevel: options.loglevel },
                     customFieldsFor(creationRequest)),
                 allArgs = args.concat(JSON.stringify(configArgs)),
                 imposterProcess = spawn(command, allArgs);
@@ -77,9 +77,10 @@ function load (builtInProtocols, customProtocols, loglevel, callbackUrlFn) {
                     serverPort = metadata.port;
                     delete metadata.port;
                 }
+                const callbackURL = options.callbackURLTemplate.replace(':port', serverPort);
 
                 const stubs = require('./stubRepository').create(metadata.encoding || 'utf8'),
-                    resolver = require('./responseResolver').create(stubs, undefined, callbackUrlFn(serverPort));
+                    resolver = require('./responseResolver').create(stubs, undefined, callbackURL);
 
                 deferred.resolve({
                     port: serverPort,

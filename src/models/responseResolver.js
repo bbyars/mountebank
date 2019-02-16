@@ -9,10 +9,10 @@
  * Creates the resolver
  * @param {Object} stubs - The stubs repository
  * @param {Object} proxy - The protocol-specific proxy implementation
- * @param {String} callbackUrl - The protocol callback URL for response resolution
+ * @param {String} callbackURL - The protocol callback URL for response resolution
  * @returns {Object}
  */
-function create (stubs, proxy, callbackUrl) {
+function create (stubs, proxy, callbackURL) {
     const injectState = {},
         pendingProxyResolutions = {},
         inProcessProxy = Boolean(proxy);
@@ -256,7 +256,7 @@ function create (stubs, proxy, callbackUrl) {
             return Q({
                 proxy: responseConfig.proxy,
                 request: request,
-                callbackUrl: `${callbackUrl}/${nextProxyResolutionKey - 1}`
+                callbackURL: `${callbackURL}/${nextProxyResolutionKey - 1}`
             });
         }
     }
@@ -360,7 +360,7 @@ function create (stubs, proxy, callbackUrl) {
 
             logger.error('Invalid proxy resolution key: ' + proxyResolutionKey);
             return Q.reject(errors.MissingResourceError('invalid proxy resolution key',
-                { source: `${callbackUrl}/${proxyResolutionKey}` }));
+                { source: `${callbackURL}/${proxyResolutionKey}` }));
         }
     }
 

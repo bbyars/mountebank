@@ -77,7 +77,7 @@ describe('responseResolver', function () {
                 assert.deepEqual(response, {
                     proxy: { to: 'where', mode: 'proxyOnce' },
                     request: 'request',
-                    callbackUrl: 'CALLBACK URL/0'
+                    callbackURL: 'CALLBACK URL/0'
                 });
             });
         });
@@ -984,7 +984,7 @@ describe('responseResolver', function () {
             stubs.addStub({ responses: [responseConfig] });
 
             return resolver.resolve(responseConfig, request, logger, {}).then(response => {
-                const proxyResolutionKey = parseInt(response.callbackUrl.replace('CALLBACK-URL/', ''));
+                const proxyResolutionKey = parseInt(response.callbackURL.replace('CALLBACK-URL/', ''));
 
                 return resolver.resolveProxy({ data: 'RESPONSE' }, proxyResolutionKey, logger);
             }).then(response => {
@@ -1007,7 +1007,7 @@ describe('responseResolver', function () {
             stubs.addStub({ responses: [responseConfig] });
 
             return resolver.resolve(responseConfig, request, logger, {}).then(response => {
-                const proxyResolutionKey = parseInt(response.callbackUrl.replace('CALLBACK-URL/', ''));
+                const proxyResolutionKey = parseInt(response.callbackURL.replace('CALLBACK-URL/', ''));
 
                 return resolver.resolveProxy({ data: 'RESPONSE' }, proxyResolutionKey, logger);
             }).then(response => {
@@ -1035,7 +1035,7 @@ describe('responseResolver', function () {
             const responseConfig = stubs.getResponseFor({}, logger, {});
 
             return resolver.resolve(responseConfig, request, logger, {}).then(response => {
-                const proxyResolutionKey = parseInt(response.callbackUrl.replace('CALLBACK-URL/', ''));
+                const proxyResolutionKey = parseInt(response.callbackURL.replace('CALLBACK-URL/', ''));
 
                 return resolver.resolveProxy({ data: 'RESPONSE' }, proxyResolutionKey, logger);
             }).then(response => {
@@ -1059,7 +1059,7 @@ describe('responseResolver', function () {
             const responseConfig = stubs.getResponseFor({}, logger, {});
 
             return resolver.resolve(responseConfig, request, logger, {}).then(response => {
-                const proxyResolutionKey = parseInt(response.callbackUrl.replace('CALLBACK-URL/', ''));
+                const proxyResolutionKey = parseInt(response.callbackURL.replace('CALLBACK-URL/', ''));
                 return Q.delay(proxyResolutionKey, 100);
             }).then(proxyResolutionKey =>
                 resolver.resolveProxy({ data: 'RESPONSE' }, proxyResolutionKey, logger)
@@ -1085,7 +1085,7 @@ describe('responseResolver', function () {
             // Call through the stubRepository to have it add the recordMatch function
             const responseConfig = stubs.getResponseFor(request, logger, {});
             return resolver.resolve(responseConfig, request, logger, {}).then(response => {
-                const proxyResolutionKey = parseInt(response.callbackUrl.replace('CALLBACK-URL/', ''));
+                const proxyResolutionKey = parseInt(response.callbackURL.replace('CALLBACK-URL/', ''));
 
                 return resolver.resolveProxy({ data: 'RESPONSE' }, proxyResolutionKey, logger);
             }).then(response => {
@@ -1108,7 +1108,7 @@ describe('responseResolver', function () {
             // Call through the stubRepository to have it add the recordMatch function
             const responseConfig = stubs.getResponseFor({ key: 'REQUEST-1' }, logger, {});
             return resolver.resolve(responseConfig, request, logger, {}).then(response => {
-                const proxyResolutionKey = parseInt(response.callbackUrl.replace('CALLBACK-URL/', ''));
+                const proxyResolutionKey = parseInt(response.callbackURL.replace('CALLBACK-URL/', ''));
 
                 // Now call with a second request on the same stub before resolving the proxy
                 stubs.getResponseFor({ key: 'REQUEST-2' }, logger, {});
@@ -1135,7 +1135,7 @@ describe('responseResolver', function () {
             const responseConfig = stubs.getResponseFor({}, logger, {});
 
             return resolver.resolve(responseConfig, request, logger, {}).then(response => {
-                proxyResolutionKey = parseInt(response.callbackUrl.replace('CALLBACK-URL/', ''));
+                proxyResolutionKey = parseInt(response.callbackURL.replace('CALLBACK-URL/', ''));
 
                 return resolver.resolveProxy({ data: 'RESPONSE' }, proxyResolutionKey, logger);
             }).then(() => resolver.resolveProxy({ data: 'RESPONSE' }, proxyResolutionKey, logger)).then(() => {

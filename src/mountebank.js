@@ -19,6 +19,10 @@ function initializeLogfile (filename) {
     }
 }
 
+function isBuiltInProtocol (protocol) {
+    return ['tcp', 'smtp', 'http', 'https'].indexOf(protocol) >= 0;
+}
+
 function loadCustomProtocols (protofile, logger) {
     const fs = require('fs'),
         path = require('path'),
@@ -26,7 +30,16 @@ function loadCustomProtocols (protofile, logger) {
 
     if (fs.existsSync(filename)) {
         try {
-            return require(filename);
+            const customProtocols = require(filename);
+            Object.keys(customProtocols).forEach(proto => {
+                if (isBuiltInProtocol(proto)) {
+                    logger.warn(`Using custom ${proto} implementation instead of the built-in one`);
+                }
+                else {
+                    logger.info(`Loaded custom protocol ${proto}`);
+                }
+            });
+            return customProtocols;
         }
         catch (e) {
             logger.error(`${protofile} contains invalid JSON -- no custom protocols loaded`);
@@ -102,8 +115,8 @@ function create (options) {
         customProtocols = loadCustomProtocols(options.protofile, logger),
         hostname = options.host || 'localhost',
         baseURL = `http://${hostname}:${options.port}`,
-        protocols = require('./models/protocols').load(builtInProtocols, customProtocols, options.loglevel,
-            port => `${baseURL}/imposters/${port}/_requests`),
+        protocols = require('./models/protocols').load(builtInProtocols, customProtocols,
+            { loglevel: options.loglevel, callbackURLTemplate: `${baseURL}/imposters/:port/_requests` }),
         homeController = HomeController.create(releases),
         impostersController = ImpostersController.create(protocols, imposters, Imposter, logger, {
             allowInjection: options.allowInjection,
