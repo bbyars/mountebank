@@ -113,6 +113,38 @@ module.exports = grunt => {
         process.env.MB_AIRPLANE_MODE = 'true';
     });
 
+    grunt.registerTask('inProcessImposters', () => {
+        const protocols = {
+            foo: {
+                testRequest: { data: '' },
+                testProxyResponse: { data: '' },
+                createCommand: 'node src/models/foo/fooServer.js'
+            }
+        };
+        require('fs').writeFileSync('protocols.json', JSON.stringify(protocols, null, 2));
+    });
+
+    grunt.registerTask('outOfProcessImposters', () => {
+        const protocols = {
+            foo: {
+                testRequest: { data: '' },
+                testProxyResponse: { data: '' },
+                createCommand: 'node src/models/foo/fooServer.js'
+            },
+            smtp: {
+                testRequest: {
+                    from: 'test@test.com',
+                    to: ['test@test.com'],
+                    subject: 'Test',
+                    text: 'Test'
+                },
+                testProxyResponse: {},
+                createCommand: 'node src/models/smtp/index.js'
+            }
+        };
+        require('fs').writeFileSync('protocols.json', JSON.stringify(protocols, null, 2));
+    });
+
     grunt.registerTask('test:unit', 'Run the unit tests', ['mochaTest:unit']);
     grunt.registerTask('test:functional', 'Run the functional tests',
         ['mb:restart', 'try', 'mochaTest:functional', 'finally', 'mb:stop', 'checkForErrors']);
