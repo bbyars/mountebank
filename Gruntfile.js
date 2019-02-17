@@ -114,23 +114,11 @@ module.exports = grunt => {
     });
 
     grunt.registerTask('inProcessImposters', () => {
-        const protocols = {
-            foo: {
-                testRequest: { data: '' },
-                testProxyResponse: { data: '' },
-                createCommand: 'node src/models/foo/fooServer.js'
-            }
-        };
-        require('fs').writeFileSync('protocols.json', JSON.stringify(protocols, null, 2));
+        require('fs').unlinkSync('protocols.json');
     });
 
     grunt.registerTask('outOfProcessImposters', () => {
         const protocols = {
-            foo: {
-                testRequest: { data: '' },
-                testProxyResponse: { data: '' },
-                createCommand: 'node src/models/foo/fooServer.js'
-            },
             smtp: {
                 testRequest: {
                     from: 'test@test.com',
@@ -174,6 +162,11 @@ module.exports = grunt => {
                     body: ''
                 },
                 createCommand: 'node src/models/https/index.js'
+            },
+            tcp: {
+                testRequest: { data: 'test' },
+                testProxyResponse: { data: '' },
+                createCommand: 'node src/models/tcp/index.js'
             }
         };
         require('fs').writeFileSync('protocols.json', JSON.stringify(protocols, null, 2));

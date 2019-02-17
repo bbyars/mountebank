@@ -2,30 +2,11 @@
 
 const config = JSON.parse(process.argv[2]),
     httpsServer = require('./httpsServer'),
-    outOfProcessImposter = require('../outOfProcessImposter'),
-    logger = outOfProcessImposter.createLogger(config.loglevel),
-    Q = require('q');
-let callbackURL;
+    mbConnection = require('../mbConnection').create(config);
 
-function getProxyResponse (proxyConfig, request, proxyCallbackURL) {
-    const proxy = require('../http/httpProxy').create(logger);
-    return proxy.to(proxyConfig.to, request, proxyConfig)
-        .then(response => outOfProcessImposter.postJSON({ proxyResponse: response }, proxyCallbackURL));
-}
-
-function getResponse (request) {
-    return outOfProcessImposter.postJSON({ request }, callbackURL).then(mbResponse => {
-        if (mbResponse.proxy) {
-            return getProxyResponse(mbResponse.proxy, mbResponse.request, mbResponse.callbackURL);
-        }
-        else {
-            return Q(mbResponse.response);
-        }
-    });
-}
-
-httpsServer.create(config, logger, getResponse).done(server => {
-    callbackURL = config.callbackURLTemplate.replace(':port', server.port);
+httpsServer.create(config, mbConnection.logger(), mbConnection.getResponse).done(server => {
+    mbConnection.setPort(server.port);
+    mbConnection.setProxy(require('../http/httpProxy').create(mbConnection.logger()));
 
     const metadata = server.metadata;
     metadata.port = server.port;

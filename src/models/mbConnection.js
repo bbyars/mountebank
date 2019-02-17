@@ -1,5 +1,11 @@
 'use strict';
 
+/**
+ * Helper functions to navigate the mountebank API for out of process implementations.
+ * Used to adapt the built-in (in-process) protocols to out of process.
+ * @module
+ */
+
 function createLogger (loglevel) {
     const result = {},
         levels = ['debug', 'info', 'warn', 'error'];
@@ -60,4 +66,40 @@ function postJSON (what, where) {
     return deferred.promise;
 }
 
-module.exports = { createLogger, postJSON };
+function create (config) {
+    let callbackURL,
+        proxy;
+
+    function setPort (port) {
+        callbackURL = config.callbackURLTemplate.replace(':port', port);
+    }
+
+    function setProxy (value) {
+        proxy = value;
+    }
+
+    function logger () {
+        return createLogger(config.loglevel);
+    }
+
+    function getProxyResponse (proxyConfig, request, proxyCallbackURL) {
+        return proxy.to(proxyConfig.to, request, proxyConfig)
+            .then(response => postJSON({ proxyResponse: response }, proxyCallbackURL));
+    }
+
+    function getResponse (request) {
+        return postJSON({ request }, callbackURL).then(mbResponse => {
+            if (mbResponse.proxy) {
+                return getProxyResponse(mbResponse.proxy, mbResponse.request, mbResponse.callbackURL);
+            }
+            else {
+                const Q = require('q');
+                return Q(mbResponse.response);
+            }
+        });
+    }
+
+    return { getResponse, setPort, setProxy, logger };
+}
+
+module.exports = { create };

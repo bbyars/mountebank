@@ -53,7 +53,7 @@ jobs:
       - run: ln -s dist/mountebank/src src
       - run: ln -s dist/mountebank/package.json package.json
       - run: ln -s dist/mountebank/bin bin
-      - run: node_modules/grunt-cli/bin/grunt test
+      - run: node_modules/grunt-cli/bin/grunt outOfProcessImposters test
 
   nodev10:
     docker:
@@ -67,7 +67,7 @@ jobs:
       - run: ln -s dist/mountebank/src src
       - run: ln -s dist/mountebank/package.json package.json
       - run: ln -s dist/mountebank/bin bin
-      - run: node_modules/grunt-cli/bin/grunt test
+      - run: node_modules/grunt-cli/bin/grunt outOfProcessImposters test
 
   package-source:
     docker:

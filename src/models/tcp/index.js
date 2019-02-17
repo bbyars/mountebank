@@ -2,38 +2,14 @@
 
 const config = JSON.parse(process.argv[2]),
     tcpServer = require('./tcpServer'),
-    outOfProcessImposter = require('../outOfProcessImposter'),
-    logger = outOfProcessImposter.createLogger(config.loglevel),
-    Q = require('q');
-let encoding = 'utf8',
-    callbackURL;
+    mbConnection = require('../mbConnection').create(config);
 
-function getProxyResponse (proxyConfig, request, proxyCallbackURL) {
-    const proxy = require('./tcpProxy').create(logger, encoding);
-    return proxy.to(proxyConfig.to, request, proxyConfig)
-        .then(response => outOfProcessImposter.postJSON({ proxyResponse: response }, proxyCallbackURL));
-}
+tcpServer.create(config, mbConnection.logger(), mbConnection.getResponse).done(server => {
+    mbConnection.setPort(server.port);
+    mbConnection.setProxy(require('./tcpProxy').create(mbConnection.logger(), server.encoding));
 
-function getResponse (request) {
-    return outOfProcessImposter.postJSON({ request }, callbackURL).then(mbResponse => {
-        if (mbResponse.proxy) {
-            return getProxyResponse(mbResponse.proxy, mbResponse.request, mbResponse.callbackURL);
-        }
-        else {
-            return Q(mbResponse.response);
-        }
-    });
-}
-
-tcpServer.create(config, logger, getResponse).done(server => {
-    callbackURL = config.callbackURLTemplate.replace(':port', server.port);
-    encoding = server.encoding;
-
-    const metadata = {
-        port: server.port,
-        encoding: server.encoding,
-        mode: server.metadata.mode
-    };
+    const metadata = server.metadata;
+    metadata.port = server.port;
     console.log(JSON.stringify(metadata));
 }, error => {
     console.error(JSON.stringify(error));

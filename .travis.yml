@@ -18,6 +18,10 @@ matrix:
       sudo: false
       env:
         - MB_GRUNT_TASK='dist version test:tarball:x64 deploy:s3'
+    - os: osx
+      sudo: false
+      env:
+        - MB_GRUNT_TASK='dist version outOfProcessImposters test'
 
 install:
   - export NODE_VERSION=${NODE_VERSION:-8} # Default node version = LTS version
@@ -36,7 +40,6 @@ install:
   - gem install fpm
   - gem install bundler
   - bundle install --without development
-  - cat /etc/hosts
 
 script:
   - ./build $MB_GRUNT_TASK

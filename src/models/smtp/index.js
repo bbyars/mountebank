@@ -2,17 +2,14 @@
 
 const config = JSON.parse(process.argv[2]),
     smtpServer = require('./smtpServer'),
-    outOfProcessImposter = require('../outOfProcessImposter'),
-    logger = outOfProcessImposter.createLogger(config.loglevel);
-let callbackURL;
+    mbConnection = require('../mbConnection').create(config);
 
-function getResponse (request) {
-    return outOfProcessImposter.postJSON({ request }, callbackURL);
-}
+smtpServer.create(config, mbConnection.logger(), mbConnection.getResponse).done(server => {
+    mbConnection.setPort(server.port);
 
-smtpServer.create(config, logger, getResponse).done(server => {
-    callbackURL = config.callbackURLTemplate.replace(':port', server.port);
-    console.log(JSON.stringify({ port: server.port }));
+    const metadata = server.metadata;
+    metadata.port = server.port;
+    console.log(JSON.stringify(metadata));
 }, error => {
     console.error(JSON.stringify(error));
     process.exit(1);
