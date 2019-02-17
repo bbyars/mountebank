@@ -16,7 +16,7 @@ function useAbsoluteUrls (port) {
         const setHeaderOriginal = response.setHeader,
             sendOriginal = response.send,
             host = request.headers.host || `localhost:${port}`,
-            absolutize = link => 'http://' + host + link,
+            absolutize = link => `http://${host}${link}`,
             isObject = require('../util/helpers').isObject;
 
         response.setHeader = function () {
@@ -39,8 +39,9 @@ function useAbsoluteUrls (port) {
                     }
                 },
                 traverse = function (obj, fn, parent) {
-                    if (parent === 'stubs') {
-                        // Don't change _links within stubs
+                    if (parent === 'stubs' || parent === 'response') {
+                        // Don't change _links within stubs or within the response
+                        // sent back to protocol implementations
                         return;
                     }
                     fn(obj);

@@ -141,10 +141,39 @@ module.exports = grunt => {
                 testProxyResponse: {},
                 createCommand: 'node src/models/smtp/index.js'
             },
-            tcp: {
-                testRequest: { data: 'test' },
-                testProxyResponse: { data: '' },
-                createCommand: 'node src/models/tcp/index.js'
+            http: {
+                testRequest: {
+                    requestFrom: '',
+                    method: 'GET',
+                    path: '/',
+                    query: {},
+                    headers: {},
+                    form: {},
+                    body: ''
+                },
+                testProxyResponse: {
+                    statusCode: 200,
+                    headers: {},
+                    body: ''
+                },
+                createCommand: 'node src/models/http/index.js'
+            },
+            https: {
+                testRequest: {
+                    requestFrom: '',
+                    method: 'GET',
+                    path: '/',
+                    query: {},
+                    headers: {},
+                    form: {},
+                    body: ''
+                },
+                testProxyResponse: {
+                    statusCode: 200,
+                    headers: {},
+                    body: ''
+                },
+                createCommand: 'node src/models/https/index.js'
             }
         };
         require('fs').writeFileSync('protocols.json', JSON.stringify(protocols, null, 2));

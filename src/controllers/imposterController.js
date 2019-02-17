@@ -115,13 +115,12 @@ function create (imposters) {
      * structure to mountebank, which responds with the JSON response structure
      * @param {Object} request - the HTTP request
      * @param {Object} response - the HTTP response
-     * @returns {Object} A promise for testing
      */
     function postRequest (request, response) {
         const imposter = imposters[request.params.id],
             protoRequest = request.body.request;
 
-        return imposter.getResponseFor(protoRequest).then(protoResponse => {
+        imposter.getResponseFor(protoRequest).done(protoResponse => {
             response.send(protoResponse);
         });
     }
@@ -132,14 +131,13 @@ function create (imposters) {
      * mountebank can record the response and add behaviors to it.
      * @param {Object} request - the HTTP request
      * @param {Object} response - the HTTP response
-     * @returns {Object} A promise for testing
      */
     function postProxyResponse (request, response) {
         const imposter = imposters[request.params.id],
             proxyResolutionKey = request.params.proxyResolutionKey,
             proxyResponse = request.body.proxyResponse;
 
-        return imposter.getProxyResponseFor(proxyResponse, proxyResolutionKey).then(protoResponse => {
+        imposter.getProxyResponseFor(proxyResponse, proxyResolutionKey).done(protoResponse => {
             response.send(protoResponse);
         });
     }

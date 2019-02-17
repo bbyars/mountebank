@@ -2,6 +2,7 @@
 
 const assert = require('assert'),
     api = require('./api').create(),
+    isInProcessImposter = require('../testHelpers').isInProcessImposter('http'),
     promiseIt = require('../testHelpers').promiseIt,
     port = api.port + 1,
     Q = require('q'),
@@ -60,12 +61,13 @@ describe('POST /imposters', function () {
         });
     });
 
-    promiseIt('should return 403 when does not have permission to bind to port', function () {
+    promiseIt('should return error when does not have permission to bind to port', function () {
         if (isWindows) {
             return Q(true); // no sudo required
         }
         return api.post('/imposters', { protocol: 'http', port: 90 }).then(response => {
-            assert.strictEqual(response.statusCode, 403);
+            const expected = isInProcessImposter ? 403 : 400;
+            assert.strictEqual(response.statusCode, expected);
         });
     });
 });

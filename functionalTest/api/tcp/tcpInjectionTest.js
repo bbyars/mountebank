@@ -78,7 +78,7 @@ describe('tcp imposter', function () {
                             port: '$PORT'
                         },
                         socket = net.connect(options, () => {
-                            socket.end(`${request.data}\n`);
+                            socket.write(`${request.data}\n`);
                         });
                     socket.once('data', data => {
                         callback({ data: data });

@@ -14,4 +14,20 @@ function promiseIt (what, test) {
 
 promiseIt.only = (what, test) => it.only(what, wrap(test, { name: what }));
 
-module.exports = { promiseIt };
+function isOutOfProcessImposter (protocol) {
+    const fs = require('fs');
+
+    if (fs.existsSync('protocols.json')) {
+        const protocols = require(process.cwd() + '/protocols.json');
+        return Object.keys(protocols).indexOf(protocol) >= 0;
+    }
+    else {
+        return false;
+    }
+}
+
+function isInProcessImposter (protocol) {
+    return !isOutOfProcessImposter(protocol);
+}
+
+module.exports = { promiseIt, isOutOfProcessImposter, isInProcessImposter };
