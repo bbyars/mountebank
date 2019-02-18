@@ -43,7 +43,6 @@ install:
 build_script:
   - node --version && npm --version
   - echo Using %MB_EXECUTABLE%
-  - build.bat test:functionalHttp test:functionalHttps test:functionalSmtp test:functionalTcp
-  - build.bat test:functionalApi test:functionalCli test:functionalHtml
+  - build.bat test:functional
 
 test: off

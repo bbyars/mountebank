@@ -27,38 +27,6 @@ module.exports = grunt => {
                 },
                 src: ['functionalTest/**/*.js']
             },
-            functionalFoo: {
-                options: { reporter: 'spec' },
-                src: ['functionalTest/api/foo/**/*.js']
-            },
-            functionalHttp: {
-                options: { reporter: 'spec' },
-                src: ['functionalTest/api/http/**/*.js']
-            },
-            functionalHttps: {
-                options: { reporter: 'spec' },
-                src: ['functionalTest/api/https/**/*.js']
-            },
-            functionalSmtp: {
-                options: { reporter: 'spec' },
-                src: ['functionalTest/api/smtp/**/*.js']
-            },
-            functionalTcp: {
-                options: { reporter: 'spec' },
-                src: ['functionalTest/api/tcp/**/*.js']
-            },
-            functionalApi: {
-                options: { reporter: 'spec' },
-                src: ['functionalTest/api/*.js']
-            },
-            functionalCli: {
-                options: { reporter: 'spec' },
-                src: ['functionalTest/commandLine/**/*.js']
-            },
-            functionalHtml: {
-                options: { reporter: 'spec' },
-                src: ['functionalTest/html/**/*.js']
-            },
             performance: {
                 options: { reporter: 'spec' },
                 src: ['performanceTest/**/*.js']
@@ -180,17 +148,6 @@ module.exports = grunt => {
     grunt.registerTask('lint', 'Run all lint checks', ['jsCheck', 'deadCheck', 'eslint']);
     grunt.registerTask('default', ['test', 'lint']);
     grunt.registerTask('airplane', 'Build that avoids tests requiring network access', ['setAirplaneMode', 'default']);
-
-    // Windows workaround; I have been unable to debug why I get ECONNRESET errors on Windows test runs
-    // of test:functional, so instead I'm cheating by breaking up the test run. With a full test:functional
-    // test run on Windows, I get an ECONNRESET error after around ~580 http/s requests from the functional
-    // tests. It appears to be deterministic, it will be the same test that starts failing as long as you maintain
-    // the order that the tests run in. However, that test works by itself, and will pass if you move it up in
-    // the order of the tests.
-    ['Foo', 'Http', 'Https', 'Smtp', 'Tcp', 'Api', 'Cli', 'Html'].forEach(key => {
-        grunt.registerTask('test:functional' + key,
-            ['mb:restart', 'try', 'mochaTest:functional' + key, 'finally', 'mb:stop', 'checkForErrors']);
-    });
 
     // Package-specific testing
     grunt.registerTask('test:tarball:x64', 'Run tests against packaged tarball',
