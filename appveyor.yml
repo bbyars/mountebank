@@ -13,8 +13,8 @@ environment:
     MB_SLOW_TEST_TIMEOUT: 45000
 
   matrix:
-    - MB_APPVEYOR_CONFIG: "NODE_VERSION=10|MB_PORT=3535|MB_OTHER_TASKS=outOfProcessImposters"
-    - MB_APPVEYOR_CONFIG: "NODE_VERSION=6|MB_INSTALL_ZIP=true|MB_EXECUTABLE=..\\.mb-test-dir\\mountebank-vMB_VERSION-win-x64\\mb.cmd|MB_PORT=3535"
+    - MB_APPVEYOR_CONFIG: "NODE_VERSION=10|MB_GRUNT_TASK=outOfProcessImposters default|MB_PORT=3535"
+    - MB_APPVEYOR_CONFIG: "NODE_VERSION=6|MB_GRUNT_TASK=test:zip|MB__PORT=3535"
 
 cache:
   - node_modules -> package.json
@@ -31,18 +31,9 @@ install:
               Set-Item env:$key $value
           }
   - ps: Install-Product node $env:NODE_VERSION
-  # This is part of the Windows hack working around ECONNRESET errors by splitting up the test runs
-  # I'd prefer just setting the MB_GRUNT_TASK in the matrix and passing that to build.bat
-  - call npm install
-  - ps: |
-          if (Test-Path env:MB_INSTALL_ZIP) {
-              echo Installing zipfile...
-              node node_modules\grunt-cli\bin\grunt download:zip install:zip
-          }
 
 build_script:
   - node --version && npm --version
-  - echo Using %MB_EXECUTABLE%
-  - build.bat %MB_OTHER_TASKS% test:functional
+  - build.bat %MB_GRUNT_TASK%
 
 test: off
