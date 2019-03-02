@@ -20,16 +20,18 @@ function messageText (message) {
     return result;
 }
 
-function send (message, port) {
+function send (message, port, host) {
     if (!port) {
         throw Error('you forgot to pass the port again');
     }
 
     let deferred = Q.defer();
-    let connection = new SMTPConnection({ port });
+    let connection = new SMTPConnection({ port, host });
 
     message.cc = message.cc || [];
     message.bcc = message.bcc || [];
+
+    connection.on('error', deferred.reject);
 
     connection.connect(connectionError => {
         if (connectionError) {

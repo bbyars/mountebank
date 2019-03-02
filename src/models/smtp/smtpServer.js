@@ -63,7 +63,7 @@ function create (options, logger, responseFn) {
             }
         });
 
-    server.listen(options.port || 0, () => {
+    server.listen(options.port || 0, options.host, () => {
         deferred.resolve({
             port: server.server.address().port,
             metadata: {},

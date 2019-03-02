@@ -37,9 +37,13 @@ function load (builtInProtocols, customProtocols, options, isAllowedConnection, 
                 command = config.createCommand.split(' ')[0],
                 args = config.createCommand.split(' ').splice(1),
                 port = creationRequest.port,
-                configArgs = require('../util/helpers').merge(
-                    { port, callbackURLTemplate: options.callbackURLTemplate, loglevel: options.loglevel },
-                    customFieldsFor(creationRequest));
+                commonArgs = {
+                    port,
+                    callbackURLTemplate: options.callbackURLTemplate,
+                    loglevel: options.loglevel,
+                    allowInjection: options.allowInjection
+                },
+                configArgs = require('../util/helpers').merge(commonArgs, customFieldsFor(creationRequest));
 
             if (typeof creationRequest.defaultResponse !== 'undefined') {
                 configArgs.defaultResponse = creationRequest.defaultResponse;

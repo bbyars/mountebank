@@ -134,7 +134,7 @@ module.exports = function (createBaseServer) {
         });
 
         // Bind the socket to a port (the || 0 bit auto-selects a port if one isn't provided)
-        server.listen(options.port || 0, () => {
+        server.listen(options.port || 0, options.host, () => {
             deferred.resolve({
                 port: server.address().port,
                 metadata: baseServer.metadata,

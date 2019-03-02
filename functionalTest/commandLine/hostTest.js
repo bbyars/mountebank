@@ -79,7 +79,7 @@ describe('--host', function () {
             originServerStub = { responses: [{ is: { body: 'ORIGIN' } }] },
             originServerRequest = { protocol: 'http', port: originServerPort, stubs: [originServerStub] },
             proxyPort = mb.port + 2,
-            proxyDefinition = { to: `http://localhost:${originServerPort}`, mode: 'proxyAlways' },
+            proxyDefinition = { to: `http://${hostname}:${originServerPort}`, mode: 'proxyAlways' },
             proxyStub = { responses: [{ proxy: proxyDefinition }] },
             proxyRequest = { protocol: 'http', port: proxyPort, stubs: [proxyStub] };
 
@@ -101,4 +101,93 @@ describe('--host', function () {
             .finally(() => mb.stop());
     });
 
+    promiseIt('should bind http imposter to provided host', function () {
+        // Travis adds hostname into /etc/hosts file
+        if (process.env.TRAVIS === 'true') {
+            return Q(true);
+        }
+
+        const imposter = { protocol: 'http', port: mb.port + 1 };
+
+        return mb.start(['--host', hostname])
+            .then(() => mb.post('/imposters', imposter))
+            .then(response => {
+                assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body, null, 2));
+                return http.responseFor({
+                    method: 'GET',
+                    path: '/',
+                    hostname: hostname,
+                    port: imposter.port
+                });
+            })
+            .then(response => {
+                assert.strictEqual(response.statusCode, 200);
+
+                return http.responseFor({
+                    method: 'GET',
+                    path: '/',
+                    hostname: 'localhost',
+                    port: imposter.port
+                });
+            })
+            .then(
+                () => { assert.fail('should not have connected to localhost'); },
+                error => { assert.strictEqual(error.errno, 'ECONNREFUSED'); }
+            )
+            .finally(() => mb.stop());
+    });
+
+    promiseIt('should bind tcp imposter to provided host', function () {
+        // Travis adds hostname into /etc/hosts file
+        if (process.env.TRAVIS === 'true') {
+            return Q(true);
+        }
+
+        const imposter = {
+                protocol: 'tcp',
+                port: mb.port + 1,
+                stubs: [{ responses: [{ is: { data: 'OK' } }] }]
+            },
+            client = require('../api/tcp/tcpClient');
+
+        return mb.start(['--host', hostname])
+            .then(() => mb.post('/imposters', imposter))
+            .then(response => {
+                assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body, null, 2));
+                return client.send('TEST', imposter.port, 0, hostname);
+            })
+            .then(response => {
+                assert.strictEqual(response.toString(), 'OK');
+                return client.send('TEST', imposter.port, 0, 'localhost');
+            })
+            .then(
+                () => { assert.fail('should not have connected to localhost'); },
+                error => { assert.strictEqual(error.errno, 'ECONNREFUSED'); }
+            )
+            .finally(() => mb.stop());
+    });
+
+    promiseIt('should bind smtp imposter to provided host', function () {
+        // Travis adds hostname into /etc/hosts file
+        if (process.env.TRAVIS === 'true') {
+            return Q(true);
+        }
+
+        const imposter = { protocol: 'smtp', port: mb.port + 1 },
+            message = { from: '"From" <from@mb.org>', to: ['"To" <to@mb.org>'], subject: 'subject', text: 'text' },
+            client = require('../api/smtp/smtpClient');
+
+        return mb.start(['--host', hostname])
+            .then(() => mb.post('/imposters', imposter))
+            .then(response => {
+                assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body, null, 2));
+                return client.send(message, imposter.port, hostname);
+            })
+            .then(() => client.send(message, imposter.port, 'localhost'))
+            .then(
+                () => { assert.fail('should not have connected to localhost'); },
+                error => { assert.strictEqual(error.errno, 'ECONNREFUSED'); }
+            )
+            .finally(() => mb.stop());
+    });
 });

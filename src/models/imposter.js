@@ -101,6 +101,10 @@ function create (Protocol, creationRequest, baseLogger, config, isAllowedConnect
 
     domain.on('error', errorHandler);
     domain.run(() => {
+        if (!helpers.defined(creationRequest.host) && helpers.defined(config.host)) {
+            creationRequest.host = config.host;
+        }
+
         Protocol.createServer(creationRequest, logger, getResponseFor).done(server => {
             if (creationRequest.port !== server.port) {
                 logger.changeScope(scopeFor(server.port));

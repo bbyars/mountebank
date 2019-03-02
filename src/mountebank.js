@@ -136,7 +136,9 @@ function loadProtocols (options, baseURL, logger, isAllowedConnection) {
             callbackURLTemplate: `${baseURL}/imposters/:port/_requests`,
             recordRequests: options.mock,
             recordMatches: options.debug,
-            loglevel: options.loglevel
+            loglevel: options.loglevel,
+            allowInjection: options.allowInjection,
+            host: options.host
         };
 
     return require('./models/protocols').load(builtInProtocols, customProtocols, config, isAllowedConnection, logger);

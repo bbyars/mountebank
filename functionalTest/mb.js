@@ -73,6 +73,9 @@ function create (port, includeStdout) {
         if (hostIndex >= 0) {
             host = mbArgs[hostIndex + 1];
         }
+        else {
+            host = 'localhost';
+        }
 
         whenFullyInitialized('start', deferred.resolve);
         const mb = spawnMb(mbArgs);

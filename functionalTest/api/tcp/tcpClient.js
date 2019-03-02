@@ -3,9 +3,15 @@
 const net = require('net'),
     Q = require('q');
 
-function send (message, serverPort, timeout) {
+function send (message, serverPort, timeout, serverHost) {
     const deferred = Q.defer(),
-        socket = net.createConnection({ port: serverPort }, () => { socket.write(message); });
+        options = { port: serverPort };
+
+    if (serverHost) {
+        options.host = serverHost;
+    }
+
+    const socket = net.createConnection(options, () => { socket.write(message); });
 
     if (!serverPort) {
         throw Error('you forgot to pass the port again');
