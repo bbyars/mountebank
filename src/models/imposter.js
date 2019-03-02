@@ -56,7 +56,6 @@ function create (Protocol, creationRequest, baseLogger, config, isAllowedConnect
     let stubs;
     let resolver;
     let numberOfRequests = 0;
-    let metadata = {};
 
     compatibility.upcast(creationRequest);
 
@@ -108,78 +107,11 @@ function create (Protocol, creationRequest, baseLogger, config, isAllowedConnect
             }
             logger.info('Open for business...');
 
-            metadata = server.metadata;
             stubs = server.stubs;
             resolver = server.resolver;
 
             if (creationRequest.stubs) {
                 creationRequest.stubs.forEach(stubs.addStub);
-            }
-
-            function addDetailsTo (result) {
-                if (creationRequest.name) {
-                    result.name = creationRequest.name;
-                }
-                result.recordRequests = Boolean(creationRequest.recordRequests);
-
-                Object.keys(metadata).forEach(key => {
-                    result[key] = metadata[key];
-                });
-
-                result.requests = requests;
-                result.stubs = stubs.stubs();
-            }
-
-            function removeNonEssentialInformationFrom (result) {
-                result.stubs.forEach(stub => {
-                    /* eslint-disable no-underscore-dangle */
-                    if (stub.matches) {
-                        delete stub.matches;
-                    }
-                    stub.responses.forEach(response => {
-                        if (helpers.defined(response.is) && helpers.defined(response.is._proxyResponseTime)) {
-                            delete response.is._proxyResponseTime;
-                        }
-                    });
-                });
-                delete result.numberOfRequests;
-                delete result.requests;
-                delete result._links;
-            }
-
-            function removeProxiesFrom (result) {
-                result.stubs.forEach(stub => {
-                    stub.responses = stub.responses.filter(response => !response.hasOwnProperty('proxy'));
-                });
-                result.stubs = result.stubs.filter(stub => stub.responses.length > 0);
-            }
-
-            function toJSON (options) {
-                // I consider the order of fields represented important.  They won't matter for parsing,
-                // but it makes a nicer user experience for developers viewing the JSON to keep the most
-                // relevant information at the top
-                const result = {
-                    protocol: creationRequest.protocol,
-                    port: server.port,
-                    numberOfRequests: numberOfRequests
-                };
-
-                options = options || {};
-
-                if (!options.list) {
-                    addDetailsTo(result);
-                }
-
-                result._links = { self: { href: '/imposters/' + server.port } };
-
-                if (options.replayable) {
-                    removeNonEssentialInformationFrom(result);
-                }
-                if (options.removeProxies) {
-                    removeProxiesFrom(result);
-                }
-
-                return result;
             }
 
             function stop () {
@@ -190,6 +122,9 @@ function create (Protocol, creationRequest, baseLogger, config, isAllowedConnect
                 });
                 return stopDeferred.promise;
             }
+
+            const printer = require('./imposterPrinter').create(creationRequest, server, requests),
+                toJSON = options => printer.toJSON(numberOfRequests, options);
 
             return deferred.resolve({
                 port: server.port,
