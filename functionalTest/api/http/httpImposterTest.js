@@ -194,6 +194,7 @@ const assert = require('assert'),
                                         query: { q: '1' },
                                         method: 'GET',
                                         headers: requestHeaders,
+                                        ip: '::ffff:127.0.0.1',
                                         body: ''
                                     },
                                     response: {
@@ -208,6 +209,7 @@ const assert = require('assert'),
                                         query: { q: '2' },
                                         method: 'GET',
                                         headers: requestHeaders,
+                                        ip: '::ffff:127.0.0.1',
                                         body: ''
                                     },
                                     response: {

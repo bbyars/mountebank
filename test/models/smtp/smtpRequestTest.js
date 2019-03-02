@@ -40,6 +40,7 @@ describe('smtpRequest', function () {
                     priority: 'normal',
                     references: [],
                     inReplyTo: [],
+                    ip: 'RemoteAddress',
                     text: 'Body',
                     html: '',
                     attachments: []

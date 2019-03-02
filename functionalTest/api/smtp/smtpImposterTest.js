@@ -68,6 +68,7 @@ describe('smtp imposter', function () {
                             priority: 'normal',
                             references: [],
                             inReplyTo: [],
+                            ip: '127.0.0.1',
                             text: 'text 1',
                             html: '',
                             attachments: []
@@ -85,6 +86,7 @@ describe('smtp imposter', function () {
                             priority: 'normal',
                             references: [],
                             inReplyTo: [],
+                            ip: '127.0.0.1',
                             text: 'text 2',
                             html: '',
                             attachments: []

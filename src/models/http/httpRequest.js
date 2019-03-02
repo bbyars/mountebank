@@ -21,7 +21,8 @@ function transform (request) {
         path: parts.pathname,
         query: parts.query,
         headers,
-        body: request.body
+        body: request.body,
+        ip: request.socket.remoteAddress
     };
 
     if (request.body && isUrlEncodedForm(headers['Content-Type'])) {
@@ -46,13 +47,12 @@ function isUrlEncodedForm (contentType) {
 
 /**
  * Creates the API-friendly http/s request
- * @param {Object} container - An object containing the raw http/s request
+ * @param {Object} request - The raw http/s request
  * @returns {Object} - Promise resolving to the simplified request
  */
-function createFrom (container) {
+function createFrom (request) {
     const Q = require('q'),
-        deferred = Q.defer(),
-        request = container.request;
+        deferred = Q.defer();
     request.body = '';
     request.setEncoding('utf8');
     request.on('data', chunk => { request.body += chunk; });

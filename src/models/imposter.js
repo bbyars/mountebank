@@ -30,9 +30,10 @@ function createErrorHandler (deferred, port) {
  * @param {Object} creationRequest - the parsed imposter JSON
  * @param {Object} baseLogger - the logger
  * @param {Object} config - command line options
+ * @param {Function} isAllowedConnection - function to determine if the IP address of the requestor is allowed
  * @returns {Object}
  */
-function create (Protocol, creationRequest, baseLogger, config) {
+function create (Protocol, creationRequest, baseLogger, config, isAllowedConnection) {
     function scopeFor (port) {
         let scope = `${creationRequest.protocol}:${port}`;
 
@@ -63,6 +64,10 @@ function create (Protocol, creationRequest, baseLogger, config) {
     const recordRequests = config.recordRequests || creationRequest.recordRequests;
 
     function getResponseFor (request) {
+        if (!isAllowedConnection(request.ip, logger)) {
+            return Q({ blocked: true, code: 'unauthorized ip address' });
+        }
+
         numberOfRequests += 1;
         if (recordRequests) {
             const recordedRequest = helpers.clone(request);

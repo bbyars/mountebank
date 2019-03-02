@@ -16,6 +16,7 @@ function createFrom (request) {
 
     return Q({
         requestFrom: helpers.socketName(request.socket),
+        ip: request.socket.remoteAddress,
         data: request.data
     });
 }

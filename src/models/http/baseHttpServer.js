@@ -67,6 +67,7 @@ module.exports = function (createBaseServer) {
         const baseServer = createBaseServer(options),
             server = baseServer.createNodeServer();
 
+        // Allow long wait behaviors
         server.timeout = 0;
 
         server.on('connection', socket => {
@@ -109,11 +110,16 @@ module.exports = function (createBaseServer) {
             domain.on('error', errorHandler);
             domain.run(() => {
                 let simplifiedRequest;
-                require('./httpRequest').createFrom({ request }).then(simpleRequest => {
+                require('./httpRequest').createFrom(request).then(simpleRequest => {
                     logger.debug('%s => %s', clientName, JSON.stringify(simpleRequest));
                     simplifiedRequest = simpleRequest;
                     return responseFn(simpleRequest);
                 }).done(mbResponse => {
+                    if (mbResponse.blocked) {
+                        request.socket.end();
+                        return;
+                    }
+
                     const stubResponse = postProcess(mbResponse, simplifiedRequest),
                         encoding = stubResponse._mode === 'binary' ? 'base64' : 'utf8';
 

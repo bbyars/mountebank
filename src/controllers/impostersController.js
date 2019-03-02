@@ -9,15 +9,11 @@
  * Creates the imposters controller
  * @param {Object} protocols - the protocol implementations supported by mountebank
  * @param {Object} imposters - The map of ports to imposters
- * @param {Object} Imposter - The factory for creating new imposters
  * @param {Object} logger - The logger
- * @param {Object} config - CLI configuration
- * @param {Boolean} config.allowInjection - Whether injection is allowed or not
- * @param {Boolean} config.recordRequests - Whether we should remember each request
- * @param {Boolean} config.recordMatches - Whether we should record detailed information about each predicate match
+ * @param {Boolean} allowInjection - Whether injection is allowed or not
  * @returns {{get, post, del, put}}
  */
-function create (protocols, imposters, Imposter, logger, config) {
+function create (protocols, imposters, logger, allowInjection) {
     const exceptions = require('../util/errors'),
         helpers = require('../util/helpers');
 
@@ -72,7 +68,7 @@ function create (protocols, imposters, Imposter, logger, config) {
                     testRequest: Protocol.testRequest,
                     testProxyResponse: Protocol.testProxyResponse,
                     additionalValidation: Protocol.validate,
-                    allowInjection: config.allowInjection
+                    allowInjection: allowInjection
                 });
             return validator.validate(request, logger, {});
         }
@@ -140,7 +136,7 @@ function create (protocols, imposters, Imposter, logger, config) {
             const Q = require('q');
 
             if (validation.isValid) {
-                return Imposter.create(protocols[protocol], request.body, logger.baseLogger, config).then(imposter => {
+                return protocols[protocol].createImposterFrom(request.body).then(imposter => {
                     imposters[imposter.port] = imposter;
                     response.setHeader('Location', imposter.url);
                     response.statusCode = 201;
@@ -205,7 +201,7 @@ function create (protocols, imposters, Imposter, logger, config) {
             if (isValid) {
                 return deleteAllImposters().then(() => {
                     const creationPromises = requestImposters.map(imposter =>
-                        Imposter.create(protocols[imposter.protocol], imposter, logger.baseLogger, config)
+                        protocols[imposter.protocol].createImposterFrom(imposter)
                     );
                     return Q.all(creationPromises);
                 }).then(allImposters => {

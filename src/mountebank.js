@@ -19,6 +19,79 @@ function initializeLogfile (filename) {
     }
 }
 
+function createLogger (options) {
+    const winston = require('winston'),
+        format = winston.format,
+        consoleFormat = format.printf(info => `${info.level}: ${info.message}`),
+        winstonLogger = winston.createLogger({
+            level: options.loglevel,
+            transports: [new winston.transports.Console({
+                format: format.combine(format.colorize(), consoleFormat)
+            })]
+        }),
+        ScopedLogger = require('./util/scopedLogger'),
+        logger = ScopedLogger.create(winstonLogger, `[mb:${options.port}] `);
+
+    if (!options.nologfile) {
+        initializeLogfile(options.logfile);
+        winstonLogger.add(new winston.transports.File({
+            filename: options.logfile,
+            maxsize: '20m',
+            maxFiles: 5,
+            tailable: true,
+            format: format.combine(format.timestamp(), format.json())
+        }));
+    }
+
+    return logger;
+}
+
+function getLocalIPs () {
+    const os = require('os'),
+        interfaces = os.networkInterfaces(),
+        result = [];
+
+    Object.keys(interfaces).forEach(name => {
+        interfaces[name].forEach(ip => {
+            if (ip.internal) {
+                result.push(ip.address);
+                if (ip.family === 'IPv4') {
+                    // Prefix for IPv4 address mapped to a compliant IPv6 scheme
+                    result.push(`::ffff:${ip.address}`);
+                }
+            }
+        });
+    });
+    return result;
+}
+
+function createIPVerification (options) {
+    const allowedIPs = getLocalIPs();
+
+    if (!options.localOnly) {
+        options.ipWhitelist.forEach(ip => { allowedIPs.push(ip.toLowerCase()); });
+    }
+
+    if (allowedIPs.indexOf('*') >= 0) {
+        return () => true;
+    }
+    else {
+        return (ip, logger) => {
+            if (typeof ip === 'undefined') {
+                logger.error('Blocking request because no IP address provided. This is likely a bug in the protocol implementation.');
+                return false;
+            }
+            else {
+                const allowed = allowedIPs.some(allowedIP => allowedIP === ip.toLowerCase());
+                if (!allowed) {
+                    logger.warn(`Blocking incoming connection from ${ip}. Turn off --localOnly or add to --ipWhitelist to allow`);
+                }
+                return allowed;
+            }
+        };
+    }
+}
+
 function isBuiltInProtocol (protocol) {
     return ['tcp', 'smtp', 'http', 'https'].indexOf(protocol) >= 0;
 }
@@ -51,23 +124,22 @@ function loadCustomProtocols (protofile, logger) {
     }
 }
 
-function getLocalIPs () {
-    const os = require('os'),
-        interfaces = os.networkInterfaces(),
-        result = [];
+function loadProtocols (options, baseURL, logger, isAllowedConnection) {
+    const builtInProtocols = {
+            tcp: require('./models/tcp/tcpServer'),
+            http: require('./models/http/httpServer'),
+            https: require('./models/https/httpsServer'),
+            smtp: require('./models/smtp/smtpServer')
+        },
+        customProtocols = loadCustomProtocols(options.protofile, logger),
+        config = {
+            callbackURLTemplate: `${baseURL}/imposters/:port/_requests`,
+            recordRequests: options.mock,
+            recordMatches: options.debug,
+            loglevel: options.loglevel
+        };
 
-    Object.keys(interfaces).forEach(name => {
-        interfaces[name].forEach(ip => {
-            if (ip.internal) {
-                result.push(ip.address);
-                if (ip.family === 'IPv4') {
-                    // Prefix for IPv4 address mapped to a compliant IPv6 scheme
-                    result.push(`::ffff:${ip.address}`);
-                }
-            }
-        });
-    });
-    return result;
+    return require('./models/protocols').load(builtInProtocols, customProtocols, config, isAllowedConnection, logger);
 }
 
 /**
@@ -82,70 +154,25 @@ function create (options) {
         errorHandler = require('errorhandler'),
         path = require('path'),
         middleware = require('./util/middleware'),
-        HomeController = require('./controllers/homeController'),
-        ImpostersController = require('./controllers/impostersController'),
-        ImposterController = require('./controllers/imposterController'),
-        LogsController = require('./controllers/logsController'),
-        ConfigController = require('./controllers/configController'),
-        FeedController = require('./controllers/feedController'),
-        Imposter = require('./models/imposter'),
-        winston = require('winston'),
-        format = winston.format,
-        consoleFormat = format.printf(info => `${info.level}: ${info.message}`),
-        winstonLogger = winston.createLogger({
-            level: options.loglevel,
-            transports: [new winston.transports.Console({
-                format: format.combine(format.colorize(), consoleFormat)
-            })]
-        }),
         thisPackage = require('../package.json'),
         releases = require('../releases.json'),
-        ScopedLogger = require('./util/scopedLogger'),
-        logger = ScopedLogger.create(winstonLogger, `[mb:${options.port}] `),
         helpers = require('./util/helpers'),
         deferred = Q.defer(),
         app = express(),
         imposters = options.imposters || {},
-        builtInProtocols = {
-            tcp: require('./models/tcp/tcpServer'),
-            http: require('./models/http/httpServer'),
-            https: require('./models/https/httpsServer'),
-            smtp: require('./models/smtp/smtpServer')
-        },
-        customProtocols = loadCustomProtocols(options.protofile, logger),
         hostname = options.host || 'localhost',
         baseURL = `http://${hostname}:${options.port}`,
-        protocols = require('./models/protocols').load(builtInProtocols, customProtocols,
-            { loglevel: options.loglevel, callbackURLTemplate: `${baseURL}/imposters/:port/_requests` }),
-        homeController = HomeController.create(releases),
-        impostersController = ImpostersController.create(protocols, imposters, Imposter, logger, {
-            allowInjection: options.allowInjection,
-            recordRequests: options.mock,
-            recordMatches: options.debug,
-            port: options.port
-        }),
-        imposterController = ImposterController.create(imposters),
-        logsController = LogsController.create(options.logfile),
-        configController = ConfigController.create(thisPackage.version, options),
-        feedController = FeedController.create(releases, options),
-        validateImposterExists = middleware.createImposterValidator(imposters),
-        localIPs = getLocalIPs(),
-        allowedIPs = localIPs;
-
-    if (!options.localOnly) {
-        options.ipWhitelist.forEach(ip => { allowedIPs.push(ip); });
-    }
-
-    if (!options.nologfile) {
-        initializeLogfile(options.logfile);
-        winstonLogger.add(new winston.transports.File({
-            filename: options.logfile,
-            maxsize: '20m',
-            maxFiles: 5,
-            tailable: true,
-            format: format.combine(format.timestamp(), format.json())
-        }));
-    }
+        logger = createLogger(options),
+        isAllowedConnection = createIPVerification(options),
+        protocols = loadProtocols(options, baseURL, logger, isAllowedConnection),
+        homeController = require('./controllers/homeController').create(releases),
+        impostersController = require('./controllers/impostersController').create(
+            protocols, imposters, logger, options.allowInjection),
+        imposterController = require('./controllers/imposterController').create(imposters),
+        logsController = require('./controllers/logsController').create(options.logfile),
+        configController = require('./controllers/configController').create(thisPackage.version, options),
+        feedController = require('./controllers/feedController').create(releases, options),
+        validateImposterExists = middleware.createImposterValidator(imposters);
 
     app.use(middleware.useAbsoluteUrls(options.port));
     app.use(middleware.logger(logger, ':method :url'));
@@ -221,10 +248,6 @@ function create (options) {
         });
     });
 
-    function isAllowedConnection (ipAddress) {
-        return allowedIPs.some(allowedIP => allowedIP === '*' || allowedIP.toLowerCase() === ipAddress.toLowerCase());
-    }
-
     const connections = {},
         server = app.listen(options.port, options.host, () => {
             logger.info(`mountebank v${thisPackage.version} now taking orders - point your browser to ${baseURL}/ for help`);
@@ -253,9 +276,7 @@ function create (options) {
                     logger.error('%s transmission error X=> %s', name, JSON.stringify(error));
                 });
 
-                if (!isAllowedConnection(ipAddress)) {
-                    logger.warn('Blocking incoming connection from %s. Turn off --localOnly or add to --ipWhitelist to allow',
-                        ipAddress);
+                if (!isAllowedConnection(ipAddress, logger)) {
                     socket.end();
                 }
             });

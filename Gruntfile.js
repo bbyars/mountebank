@@ -82,7 +82,10 @@ module.exports = grunt => {
     });
 
     grunt.registerTask('inProcessImposters', () => {
-        require('fs').unlinkSync('protocols.json');
+        const fs = require('fs');
+        if (fs.existsSync('protocols.json')) {
+            fs.unlinkSync('protocols.json');
+        }
     });
 
     grunt.registerTask('outOfProcessImposters', () => {

@@ -14,6 +14,9 @@ function promiseIt (what, test) {
 
 promiseIt.only = (what, test) => it.only(what, wrap(test, { name: what }));
 
+function xpromiseIt () {}
+xpromiseIt.only = () => {};
+
 function isOutOfProcessImposter (protocol) {
     const fs = require('fs');
 
@@ -30,4 +33,4 @@ function isInProcessImposter (protocol) {
     return !isOutOfProcessImposter(protocol);
 }
 
-module.exports = { promiseIt, isOutOfProcessImposter, isInProcessImposter };
+module.exports = { xpromiseIt, promiseIt, isOutOfProcessImposter, isInProcessImposter };

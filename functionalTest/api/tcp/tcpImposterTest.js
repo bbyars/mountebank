@@ -96,12 +96,12 @@ describe('tcp imposter', function () {
                         matches: [
                             {
                                 timestamp: 'NOW',
-                                request: { requestFrom: 'HERE', data: 'first' },
+                                request: { requestFrom: 'HERE', data: 'first', ip: '::ffff:127.0.0.1' },
                                 response: { data: '1' }
                             },
                             {
                                 timestamp: 'NOW',
-                                request: { requestFrom: 'HERE', data: 'second' },
+                                request: { requestFrom: 'HERE', data: 'second', ip: '::ffff:127.0.0.1' },
                                 response: { data: '2' }
                             }
                         ]

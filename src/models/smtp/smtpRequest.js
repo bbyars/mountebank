@@ -20,6 +20,7 @@ function addressValues (addresses) {
 function transform (session, email) {
     return {
         requestFrom: session.remoteAddress,
+        ip: session.remoteAddress,
         envelopeFrom: session.envelope.mailFrom.address,
         envelopeTo: session.envelope.rcptTo.map(value => value.address),
         from: email.from.value[0],

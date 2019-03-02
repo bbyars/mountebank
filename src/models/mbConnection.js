@@ -88,13 +88,17 @@ function create (config) {
     }
 
     function getResponse (request) {
+        const Q = require('q');
+
         return postJSON({ request }, callbackURL).then(mbResponse => {
             if (mbResponse.proxy) {
                 return getProxyResponse(mbResponse.proxy, mbResponse.request, mbResponse.callbackURL);
             }
-            else {
-                const Q = require('q');
+            else if (mbResponse.response) {
                 return Q(mbResponse.response);
+            }
+            else {
+                return Q(mbResponse);
             }
         });
     }

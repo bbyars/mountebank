@@ -1,6 +1,6 @@
 'use strict';
 
-function load (builtInProtocols, customProtocols, options) {
+function load (builtInProtocols, customProtocols, options, isAllowedConnection, mbLogger) {
     function inProcessCreate (createProtocol) {
         return (creationRequest, logger, responseFn) =>
             createProtocol(creationRequest, logger, responseFn).then(server => {
@@ -129,14 +129,21 @@ function load (builtInProtocols, customProtocols, options) {
         };
     }
 
+    function createImposter (Protocol, creationRequest) {
+        const Imposter = require('./imposter');
+        return Imposter.create(Protocol, creationRequest, mbLogger.baseLogger, options, isAllowedConnection);
+    }
+
     const result = {};
     Object.keys(builtInProtocols).forEach(key => {
         result[key] = builtInProtocols[key];
         result[key].createServer = inProcessCreate(result[key].create);
+        result[key].createImposterFrom = creationRequest => createImposter(result[key], creationRequest);
     });
     Object.keys(customProtocols).forEach(key => {
         result[key] = customProtocols[key];
         result[key].createServer = outOfProcessCreate(key, result[key]);
+        result[key].createImposterFrom = creationRequest => createImposter(result[key], creationRequest);
     });
     return result;
 }

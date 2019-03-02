@@ -175,12 +175,12 @@ describe('security', function () {
             return ips(false);
         }
 
-        function connectUsing (ip) {
+        function connectUsing (ip, destinationPort = mb.port) {
             return httpClient.responseFor({
                 method: 'GET',
                 path: '/',
                 hostname: 'localhost',
-                port: mb.port,
+                port: destinationPort,
                 localAddress: ip.address,
                 family: ip.family
             }).then(
@@ -211,6 +211,27 @@ describe('security', function () {
                     assert.ok(allBlocked, 'Allowed nonlocal connection: ' + JSON.stringify(rejections, null, 2));
 
                     return Q.all(localIPs().map(ip => connectUsing(ip)));
+                }).then(accepts => {
+                    const allAccepted = accepts.every(attempt => attempt.canConnect);
+                    assert.ok(allAccepted, 'Blocked local connection: ' + JSON.stringify(accepts, null, 2));
+                })
+                .finally(() => mb.stop());
+        });
+
+        promiseIt('should only allow local requests to imposter if --localOnly used', function () {
+            const imposter = { protocol: 'http', port: mb.port + 1 };
+
+            return mb.start(['--localOnly'])
+                .then(() => mb.post('/imposters', imposter))
+                .then(response => {
+                    assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body, null, 2));
+                    return Q.all(nonLocalIPs().map(ip => connectUsing(ip, imposter.port)));
+                })
+                .then(rejections => {
+                    const allBlocked = rejections.every(attempt => !attempt.canConnect && attempt.error.code === 'ECONNRESET');
+                    assert.ok(allBlocked, 'Allowed nonlocal connection: ' + JSON.stringify(rejections, null, 2));
+
+                    return Q.all(localIPs().map(ip => connectUsing(ip, imposter.port)));
                 }).then(accepts => {
                     const allAccepted = accepts.every(attempt => attempt.canConnect);
                     assert.ok(allAccepted, 'Blocked local connection: ' + JSON.stringify(accepts, null, 2));
