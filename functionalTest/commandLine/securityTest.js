@@ -175,7 +175,7 @@ describe('security', function () {
             return ips(false);
         }
 
-        function connectUsing (ip, destinationPort = mb.port) {
+        function connectToHTTPServerUsing (ip, destinationPort = mb.port) {
             return httpClient.responseFor({
                 method: 'GET',
                 path: '/',
@@ -190,11 +190,11 @@ describe('security', function () {
                         // If you run ifconfig, some of the addresses have the interface name
                         // appended (I'm not sure why). Node doesn't return them that way,
                         // but apparently needs it sometimes to bind to that address.
-                        return connectUsing({
+                        return connectToHTTPServerUsing({
                             address: `${ip.address}%${ip.iface}`,
                             family: ip.family,
                             iface: ip.iface
-                        });
+                        }, destinationPort);
                     }
                     else {
                         return Q({ ip: ip.address, canConnect: false, error: error });
@@ -203,14 +203,45 @@ describe('security', function () {
             );
         }
 
+        function connectToTCPServerUsing (ip, destinationPort) {
+            const deferred = Q.defer(),
+                net = require('net'),
+                socket = net.createConnection({ family: ip.family, localAddress: ip.address, port: destinationPort },
+                    () => { socket.write('TEST'); });
+
+            socket.once('data', () => { deferred.resolve({ ip: ip.address, canConnect: true }); });
+
+            socket.once('end', () => {
+                if (deferred.promise.isPending()) {
+                    deferred.resolve({ ip: ip.address, canConnect: false, error: { code: 'ECONNRESET' } });
+                }
+            });
+
+            socket.once('error', error => {
+                if (error.errno === 'EADDRNOTAVAIL' && ip.address.indexOf('%') < 0) {
+                    const ipWithInterface = {
+                        address: `${ip.address}%${ip.iface}`,
+                        family: ip.family,
+                        iface: ip.iface
+                    };
+                    connectToTCPServerUsing(ipWithInterface, destinationPort).done(deferred.resolve);
+                }
+                else {
+                    deferred.resolve({ ip: ip.address, canConnect: false, error: error });
+                }
+            });
+
+            return deferred.promise;
+        }
+
         promiseIt('should only allow local requests if --localOnly used', function () {
             return mb.start(['--localOnly'])
-                .then(() => Q.all(nonLocalIPs().map(ip => connectUsing(ip))))
+                .then(() => Q.all(nonLocalIPs().map(ip => connectToHTTPServerUsing(ip))))
                 .then(rejections => {
                     const allBlocked = rejections.every(attempt => !attempt.canConnect && attempt.error.code === 'ECONNRESET');
                     assert.ok(allBlocked, 'Allowed nonlocal connection: ' + JSON.stringify(rejections, null, 2));
 
-                    return Q.all(localIPs().map(ip => connectUsing(ip)));
+                    return Q.all(localIPs().map(ip => connectToHTTPServerUsing(ip)));
                 }).then(accepts => {
                     const allAccepted = accepts.every(attempt => attempt.canConnect);
                     assert.ok(allAccepted, 'Blocked local connection: ' + JSON.stringify(accepts, null, 2));
@@ -218,20 +249,45 @@ describe('security', function () {
                 .finally(() => mb.stop());
         });
 
-        promiseIt('should only allow local requests to imposter if --localOnly used', function () {
+        promiseIt('should only allow local requests to http imposter if --localOnly used', function () {
             const imposter = { protocol: 'http', port: mb.port + 1 };
 
             return mb.start(['--localOnly'])
                 .then(() => mb.post('/imposters', imposter))
                 .then(response => {
                     assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body, null, 2));
-                    return Q.all(nonLocalIPs().map(ip => connectUsing(ip, imposter.port)));
+                    return Q.all(nonLocalIPs().map(ip => connectToHTTPServerUsing(ip, imposter.port)));
                 })
                 .then(rejections => {
                     const allBlocked = rejections.every(attempt => !attempt.canConnect && attempt.error.code === 'ECONNRESET');
                     assert.ok(allBlocked, 'Allowed nonlocal connection: ' + JSON.stringify(rejections, null, 2));
 
-                    return Q.all(localIPs().map(ip => connectUsing(ip, imposter.port)));
+                    return Q.all(localIPs().map(ip => connectToHTTPServerUsing(ip, imposter.port)));
+                }).then(accepts => {
+                    const allAccepted = accepts.every(attempt => attempt.canConnect);
+                    assert.ok(allAccepted, 'Blocked local connection: ' + JSON.stringify(accepts, null, 2));
+                })
+                .finally(() => mb.stop());
+        });
+
+        promiseIt('should only allow local requests to tcp imposter if --localOnly used', function () {
+            const imposter = {
+                protocol: 'tcp',
+                port: mb.port + 1,
+                stubs: [{ responses: [{ is: { data: 'OK' } }] }]
+            };
+
+            return mb.start(['--localOnly', '--loglevel', 'debug'])
+                .then(() => mb.post('/imposters', imposter))
+                .then(response => {
+                    assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body, null, 2));
+                    return Q.all(nonLocalIPs().map(ip => connectToTCPServerUsing(ip, imposter.port)));
+                })
+                .then(rejections => {
+                    const allBlocked = rejections.every(attempt => !attempt.canConnect && attempt.error.code === 'ECONNRESET');
+                    assert.ok(allBlocked, 'Allowed nonlocal connection: ' + JSON.stringify(rejections, null, 2));
+
+                    return Q.all(localIPs().map(ip => connectToTCPServerUsing(ip, imposter.port)));
                 }).then(accepts => {
                     const allAccepted = accepts.every(attempt => attempt.canConnect);
                     assert.ok(allAccepted, 'Blocked local connection: ' + JSON.stringify(accepts, null, 2));
@@ -243,7 +299,7 @@ describe('security', function () {
             const allIPs = localIPs().concat(nonLocalIPs());
 
             return mb.start()
-                .then(() => Q.all(allIPs.map(ip => connectUsing(ip))))
+                .then(() => Q.all(allIPs.map(ip => connectToHTTPServerUsing(ip))))
                 .then(results => {
                     const allAccepted = results.every(attempt => attempt.canConnect);
                     assert.ok(allAccepted, 'Blocked local connection: ' + JSON.stringify(results, null, 2));
@@ -262,10 +318,10 @@ describe('security', function () {
                 ipWhitelist = `127.0.0.1|${allowedIP.address}`;
 
             return mb.start(['--ipWhitelist', ipWhitelist])
-                .then(() => connectUsing(allowedIP))
+                .then(() => connectToHTTPServerUsing(allowedIP))
                 .then(result => {
                     assert.ok(result.canConnect, 'Could not connect to whitelisted IP: ' + JSON.stringify(result, null, 2));
-                    return Q.all(blockedIPs.map(ip => connectUsing(ip)));
+                    return Q.all(blockedIPs.map(ip => connectToHTTPServerUsing(ip)));
                 })
                 .then(results => {
                     const allBlocked = results.every(attempt => !attempt.canConnect && attempt.error.code === 'ECONNRESET');
@@ -284,7 +340,7 @@ describe('security', function () {
                 ipWhitelist = `127.0.0.1|${allowedIP.address}`;
 
             return mb.start(['--localOnly', '--ipWhitelist', ipWhitelist])
-                .then(() => connectUsing(allowedIP))
+                .then(() => connectToHTTPServerUsing(allowedIP))
                 .then(result => {
                     assert.ok(!result.canConnect, 'Should have blocked whitelisted IP: ' + JSON.stringify(result, null, 2));
                 })

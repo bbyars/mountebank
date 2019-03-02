@@ -68,7 +68,7 @@ function create (options, logger, responseFn) {
             packets.push(data);
 
             const requestData = Buffer.concat(packets),
-                container = { socket: socket, data: requestData.toString(encoding) };
+                request = { socket: socket, data: requestData.toString(encoding) };
 
             if (isEndOfRequest(requestData)) {
                 packets = [];
@@ -89,19 +89,23 @@ function create (options, logger, responseFn) {
                 domain.on('error', errorHandler);
                 domain.run(() => {
                     // Translate network request to JSON
-                    require('./tcpRequest').createFrom(container).then(simpleRequest => {
-                        logger.debug('%s => %s', clientName, JSON.stringify(simpleRequest.data.toString(encoding)));
+                    require('./tcpRequest').createFrom(request).then(jsonRequest => {
+                        logger.debug('%s => %s', clientName, JSON.stringify(jsonRequest.data.toString(encoding)));
 
                         // call mountebank with JSON request
-                        return responseFn(simpleRequest);
-                    }).done(stubResponse => {
-                        const processedResponse = stubResponse.data || defaultResponse.data,
+                        return responseFn(jsonRequest);
+                    }).done(mbResponse => {
+                        if (mbResponse.blocked) {
+                            socket.end();
+                            return;
+                        }
+                        const processedResponse = mbResponse.data || defaultResponse.data,
                             buffer = Buffer.isBuffer(processedResponse)
                                 ? processedResponse
                                 : Buffer.from(processedResponse, encoding);
 
                         if (buffer.length > 0) {
-                            container.socket.write(buffer);
+                            socket.write(buffer);
                             logger.debug('%s <= %s', clientName, JSON.stringify(buffer.toString(encoding)));
                         }
                     }, errorHandler);
