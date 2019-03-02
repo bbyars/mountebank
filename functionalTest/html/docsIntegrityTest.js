@@ -20,7 +20,6 @@ describe('docs', function () {
     this.timeout(timeout);
 
     [
-        '/docs/api/overview',
         '/docs/api/mocks',
         '/docs/api/proxies',
         '/docs/api/injection',
@@ -32,6 +31,11 @@ describe('docs', function () {
     ].forEach(page => {
         validateDocs(page);
     });
+
+    // The logs change for out of process imposters
+    if (tcpIsInProcess) {
+        validateDocs('/docs/api/overview');
+    }
 
     // For tcp out of process imposters, I can't get the netcat tests working,
     // even with a -q1 replacement. The nc client ends the socket connection
