@@ -67,6 +67,8 @@ module.exports = function (createBaseServer) {
         const baseServer = createBaseServer(options),
             server = baseServer.createNodeServer();
 
+        server.timeout = 0;
+
         server.on('connection', socket => {
             const helpers = require('../../util/helpers'),
                 name = helpers.socketName(socket);
