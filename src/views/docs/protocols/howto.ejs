@@ -1,0 +1,217 @@
+<%
+title = 'http'
+description = 'How to create your own protocol implementation'
+%>
+
+<% include ../../_header %>
+
+<h1>how to create your own protocol implementation</h1>
+
+<p>As of mountebank 2.0, you can create your own protocol implementation in the language of your choice.
+You do not have to change the mountebank source code to do so.</p>
+
+<p>In mountebank land, a <em>protocol</em> has the following responsibilities:</p>
+
+<ul class='bullet-list'>
+  <li>Listen for incoming requests</li>
+  <li>Translate a network request into a JSON representation</li>
+  <li>Pass the JSON request to mountebank, which returns a JSON response representation</li>
+  <li>If necessary, proxy to a downstream server</li>
+  <li>Translate the JSON response into a network response</li>
+</ul>
+
+<h2>Command line interface</h2>
+
+<p>To inform mountebank of your custom protocol, you create a protocols configuration file. By default,
+this will be called "protocols.json" and is expected to reside in the working directory you start
+<code>mb</code> in. You can change it with the <code>--protofile</code> command line flag. The following
+configuration would override mountebank's built-in <code>http</code> protocol with
+a custom implementation and add a new protocol called "foo". Start by adding the following to "protocols.json":</p>
+
+<pre><code>
+{
+  "http": {
+    "createCommand": "node http.js",
+    "testRequest": {
+      "method": "GET",
+      "path": "/",
+      "query": {},
+      "headers": {},
+      "form": {},
+      "body": ""
+    },
+    "testProxyResponse": {
+      "statusCode": 200,
+      "headers": {},
+      "body": ""
+    }
+  },
+  "foo": {
+    "createCommand": "java foo",
+    "testRequest": {},
+    "testProxyResponse": {}
+  }
+}</code></pre>
+
+<p>You could run this with the following command:</p>
+
+<pre><code>mb --protofile protocols.json</code></pre>
+
+<p>The most important field is the <code>createCommand</code>, which tells mountebank the command line
+information needed to start a new instance of the protocol. As far as mountebank is concerned, it's
+just a shell command. That gives you enormous flexibility in how you implement it.</p>
+
+<p>The other two fields are used for validation. When a new imposter is created, mountebank performs
+a dry run of the creation, testing all predicates and responses to make sure none of them return an error.
+The <code>testRequest</code> and <code>testProxyResponse</code> fields should model the protocol-specific
+request and response format, which will be used during the dry run.</p>
+
+<p>When spinning up an imposter, mountebank will call the <code>createCommand</code>, passing a JSON
+string as an additional parameter. When parsed into JSON, the object will contain the following fields:</p>
+
+<table>
+  <tr>
+    <th>Field</th>
+    <th>Description</th>
+  </tr>
+  <tr>
+    <td><code>port</code></td>
+    <td>The port to listen to. While you are always free to require it, the built-in mountebank protocols
+    make this an optional field. If it's missing, you are free to pick any open port.</td>
+  </tr>
+  <tr>
+    <td><code>host</code></td>
+    <td>If passed, bind to the provided host name</td>
+  </tr>
+  <tr>
+    <td><code>callbackURLTemplate</code></td>
+    <td>A URL template that will look something like "http://localhost:2525/imposters/:port/_requests".
+    Replace <code>:port</code> with the actual server port, and use that URL to communicate with mountebank.
+    Every time you get a new request, after converting it to JSON, you'll <code>POST</code> that JSON
+    to the given URL, and mountebank will give you the JSON response.</td>
+  </tr>
+  <tr>
+    <td><code>loglevel</code></td>
+    <td>The logging level. Everything you write to standard out (stdout) that starts with one of the standard
+    log levels (debug, info, warn, error) will be written to the mountebank log. You may decide to use
+    this parameter to optimize what you write to stdout.</td>
+  </tr>
+  <tr>
+    <td><code>allowInjection</code></td>
+    <td>The value of the <code>--allowInjection</code> command line flag. Use this if you have some custom
+    injection code mountebank is unaware of.</td>
+  </tr>
+  <tr>
+    <td><code>defaultResponse</code></td>
+    <td>The default response JSON object, to be used to fill in missing response fields in the responses
+    provided by the user.</td>
+  </tr>
+  <tr>
+    <td><em>Custom protocol fields</em></td>
+    <td>Mountebank will pass any fields it does not recognize. This allows you to have custom metadata
+    (like the <code>mode</code> field in the <code>tcp</code> protocol).</td>
+  </tr>
+</table>
+
+<p>After you parse the JSON object, you spin up your server, listening on the provided socket.
+As soon as you write anything to stdout, mountebank assumes you have finished initializing.</p>
+
+<h2>The API</h2>
+
+<p>When a network request comes in, you translate it to a simplified JSON format and <code>POST</code>
+    it to the <code>callbackURLTemplate</code> (with ":port" replaced with the actual server port).
+    Mountebank will respond with one of the three following responses:</p>
+
+<h3>Standard response</h3>
+
+<p>Mountebank was able to determine the
+    correct JSON response to use. The <code>POST</code> response looks something like this:</p>
+
+<pre><code>{
+  "response": {
+    "statusCode": 400,
+    "body": "Error!!"
+  }
+}</code></pre>
+
+<p>All you have to do is to merge in the missing fields from the <code>defaultResponse</code>,
+and translate the JSON to a network response.</p>
+
+<h3>Proxy response</h3>
+
+<p>If mountebank determines you need to proxy to fulfill the response, it will send a payload
+that looks something like this:</p>
+
+<pre><code>{
+  "proxy": {
+    "to": "http://origin-server"
+  },
+  "request": {
+    "method": "GET",
+    "path": "/",
+    "query": {},
+    "headers": {}
+  },
+  "callbackURL": "http://localhost:2525/imposters/3000/_requests/0
+}</code></pre>
+
+<p>Your job at this point is to forward the request on to the given proxy configuration. This requires
+you to translate the JSON request into a network request to the proxy, and translate the captured
+network response into a JSON object. Then you <code>POST</code> the JSON response to the provided
+<code>callbackURL</code>. Mountebank will return you a standard <code>response</code> as shown above.
+Mountebank will be responsible for saving the proxy responses; you do not need to worry about it.</p>
+
+<h3>Blocked IPs</h3>
+
+<p>If you are running mountebank with either the <code>--localOnly</code> or <code>--ipWhitelist</code>
+command line flags, it's possible that the originating IP address of the request should be blocked.
+You must add a field to the JSON request called "ip" with the originating address, and if it should
+be blocked, mountebank will return something like the following payload:</p>
+
+<pre><code>{
+  "blocked": true,
+  "code": "unauthorized ip address"
+}</code></pre>
+
+<p>In such scenarios, it is recommended that you kill the connection rather than return an error.
+Mountebank will not return you a response.</p>
+
+<h2>Logging</h2>
+
+<p>Every message you write to stdout that begins with one of {debug, info, warn, error} will be written
+    to the mountebank log. While not strictly necessary, you can optimize the writes with the
+    <code>loglevel</code> parameter. The following creates a <code>log</code> function in JavaScript:</p>
+
+<pre><code>
+function createLogger (loglevel) {
+    const result = {},
+        levels = ['debug', 'info', 'warn', 'error'];
+
+    levels.forEach((level, index) => {
+        if (index < levels.indexOf(loglevel)) {
+            result[level] = () => {};
+        }
+        else {
+            result[level] = function () {
+                const args = Array.prototype.slice.call(arguments),
+                    message = require('util').format.apply(this, args);
+
+                console.log(`${level} ${message}`);
+            };
+        }
+    });
+    return result;
+}
+
+const config = JSON.parse(process.argv[2])
+    logger = createLogger(config.loglevle);
+
+// Use as log.info('This is an info message');
+</code></pre>
+
+<h2>Error handling</h2>
+
+<p>If you exit before writing to stdout, exit with a non-zero exit code. The user will get a 400
+error.</p>
+
+<% include ../../_footer %>

@@ -243,7 +243,8 @@ function create (options) {
         '/docs/protocols/http',
         '/docs/protocols/https',
         '/docs/protocols/tcp',
-        '/docs/protocols/smtp'
+        '/docs/protocols/smtp',
+        '/docs/protocols/howto'
     ].forEach(endpoint => {
         app.get(endpoint, (request, response) => {
             response.render(endpoint.substring(1));
