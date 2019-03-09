@@ -216,13 +216,6 @@ function create (stubs, proxy, callbackURL) {
         }
     }
 
-    // TODO: HTTP-specific, any way to move out of here?
-    function addInjectedHeadersTo (request, headersToInject) {
-        Object.keys(headersToInject || {}).forEach(key => {
-            request.headers[key] = headersToInject[key];
-        });
-    }
-
     function proxyAndRecord (responseConfig, request, logger) {
         const Q = require('q'),
             startTime = new Date(),
@@ -231,8 +224,6 @@ function create (stubs, proxy, callbackURL) {
         if (['proxyOnce', 'proxyAlways', 'proxyTransparent'].indexOf(responseConfig.proxy.mode) < 0) {
             responseConfig.setMetadata('proxy', { mode: 'proxyOnce' });
         }
-
-        addInjectedHeadersTo(request, responseConfig.proxy.injectHeaders);
 
         if (inProcessProxy) {
             return proxy.to(responseConfig.proxy.to, request, responseConfig.proxy).then(response => {

@@ -250,7 +250,10 @@ function getKeyIgnoringCase (obj, expectedKey) {
 function getFrom (obj, from) {
     const isObject = require('../util/helpers').isObject;
 
-    if (isObject(from)) {
+    if (typeof obj === 'undefined') {
+        return undefined;
+    }
+    else if (isObject(from)) {
         const keys = Object.keys(from);
         return getFrom(obj[keys[0]], from[keys[0]]);
     }

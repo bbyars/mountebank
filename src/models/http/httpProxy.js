@@ -13,6 +13,12 @@ process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
  * @returns {Object}
  */
 function create (logger) {
+    function addInjectedHeadersTo (request, headersToInject) {
+        Object.keys(headersToInject || {}).forEach(key => {
+            request.headers[key] = headersToInject[key];
+        });
+    }
+
     function toUrl (path, query) {
         const querystring = require('querystring'),
             tail = querystring.stringify(query);
@@ -137,9 +143,12 @@ function create (logger) {
      * @param {Object} options - Proxy options
      * @param {string} [options.cert] - The certificate, in case the destination requires mutual authentication
      * @param {string} [options.key] - The private key, in case the destination requires mutual authentication
+     * @param {Object} [options.injectHeaders] - The headers to inject in the proxied request
      * @returns {Object} - Promise resolving to the response
      */
     function to (proxyDestination, originalRequest, options) {
+
+        addInjectedHeadersTo(originalRequest, options.injectHeaders);
 
         function log (direction, what) {
             logger.debug('Proxy %s %s %s %s %s',

@@ -37,6 +37,34 @@ function create (options) {
         return clonedStub;
     }
 
+    function reposToTestFor (stub, encoding) {
+        // Test with predicates (likely won't match) to make sure predicates don't blow up
+        // Test without predicates (always matches) to make sure response doesn't blow up
+        const stubsToValidateWithPredicates = stub.responses.map(response => stubForResponse(stub, response, true)),
+            stubsToValidateWithoutPredicates = stub.responses.map(response => stubForResponse(stub, response, false)),
+            stubsToValidate = stubsToValidateWithPredicates.concat(stubsToValidateWithoutPredicates);
+
+        return stubsToValidate.map(stubToValidate => {
+            const stubRepository = require('./stubRepository').create(encoding);
+            stubRepository.addStub(stubToValidate);
+            return stubRepository;
+        });
+    }
+
+    function resolverFor (stubRepository) {
+        const Q = require('q');
+
+        // We can get a better test (running behaviors on proxied result) if the protocol gives
+        // us a testProxyResult
+        if (options.testProxyResponse) {
+            const dryRunProxy = { to: () => Q(options.testProxyResponse) };
+            return require('./responseResolver').create(stubRepository, dryRunProxy);
+        }
+        else {
+            return require('./responseResolver').create(stubRepository, undefined, 'URL');
+        }
+    }
+
     function dryRun (stub, encoding, logger) {
         const Q = require('q'),
             combinators = require('../util/combinators'),
@@ -46,21 +74,13 @@ function create (options) {
                 warn: combinators.noop,
                 error: logger.error
             },
-            stubsToValidateWithPredicates = stub.responses.map(response => stubForResponse(stub, response, true)),
-            stubsToValidateWithoutPredicates = stub.responses.map(response => stubForResponse(stub, response, false)),
-            stubsToValidate = stubsToValidateWithPredicates.concat(stubsToValidateWithoutPredicates),
-            dryRunRepositories = stubsToValidate.map(stubToValidate => {
-                const stubRepository = require('./stubRepository').create(encoding);
-                stubRepository.addStub(stubToValidate);
-                return stubRepository;
-            });
+            dryRunRepositories = reposToTestFor(stub, encoding);
 
+        options.testRequest = options.testRequest || {};
         options.testRequest.isDryRun = true;
         return Q.all(dryRunRepositories.map(stubRepository => {
-            // Need a well-formed proxy response in case a behavior decorator expects certain fields to exist
-            const dryRunProxy = { to: () => Q(options.testProxyResponse) },
-                resolver = require('./responseResolver').create(dryRunProxy),
-                responseConfig = stubRepository.getResponseFor(options.testRequest, dryRunLogger, {});
+            const responseConfig = stubRepository.getResponseFor(options.testRequest, dryRunLogger, {}),
+                resolver = resolverFor(stubRepository);
             return resolver.resolve(responseConfig, options.testRequest, dryRunLogger, {});
         }));
     }
