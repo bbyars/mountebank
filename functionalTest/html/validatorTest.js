@@ -69,7 +69,7 @@ function getHTML (path) {
 // MB_RUN_WEB_TESTS because these are slow, occasionally fragile, and there's
 // no value running them with every node in the build matrix
 if (process.env.MB_AIRPLANE_MODE !== 'true' && process.env.MB_RUN_WEB_TESTS === 'true') {
-    describe.only('all pages in the mountebank website', function () {
+    describe('all pages in the mountebank website', function () {
         this.timeout(60000);
 
         promiseIt('should be valid html', function () {
