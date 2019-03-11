@@ -187,7 +187,7 @@ function createLogger (loglevel) {
         levels = ['debug', 'info', 'warn', 'error'];
 
     levels.forEach((level, index) => {
-        if (index < levels.indexOf(loglevel)) {
+        if (index &lt; levels.indexOf(loglevel)) {
             result[level] = () => {};
         }
         else {
