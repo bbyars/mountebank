@@ -6,7 +6,6 @@ const Q = require('q'),
     spawn = require('child_process').spawn,
     exec = require('child_process').exec,
     httpClient = require('./api/http/baseHttpClient').create('http'),
-    headers = { connection: 'close' },
     isWindows = require('os').platform().indexOf('win') === 0,
     mbPath = process.env.MB_EXECUTABLE || path.join(__dirname, '/../bin/mb'),
     pidfile = 'test.pid',
@@ -139,20 +138,16 @@ function create (port, includeStdout) {
         return execCommand('replay', args);
     }
 
-    // TODO: Is this because of broken ip checks in mountebank.js?
-    // After trial and error, I discovered that we have to set
-    // the connection: close header on Windows or we end up with
-    // ECONNRESET errors
     function get (endpoint) {
-        return httpClient.responseFor({ method: 'GET', path: endpoint, port, headers, hostname: host });
+        return httpClient.responseFor({ method: 'GET', path: endpoint, port, hostname: host });
     }
 
     function post (endpoint, body) {
-        return httpClient.responseFor({ method: 'POST', path: endpoint, port, body, headers, hostname: host });
+        return httpClient.responseFor({ method: 'POST', path: endpoint, port, body, hostname: host });
     }
 
     function put (endpoint, body) {
-        return httpClient.responseFor({ method: 'PUT', path: endpoint, port, body, headers, hostname: host });
+        return httpClient.responseFor({ method: 'PUT', path: endpoint, port, body, hostname: host });
     }
 
     return { port, url: `http://localhost:${port}`, start, restart, stop, save, get, post, put, replay };
