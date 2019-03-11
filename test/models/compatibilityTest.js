@@ -65,4 +65,30 @@ describe('compatibility', function () {
             });
         });
     });
+
+    describe('#downcastInjectionConfig', function () {
+        it('should do nothing for new protocol request formats', function () {
+            const config = {
+                request: { key: 'value' }
+            };
+
+            compatibility.downcastInjectionConfig(config);
+
+            assert.deepEqual(config, { request: { key: 'value' } });
+        });
+
+        it('should add all request fields for backwards compatibility', function () {
+            const config = {
+                request: { method: 'GET', path: '/' }
+            };
+
+            compatibility.downcastInjectionConfig(config);
+
+            assert.deepEqual(config, {
+                request: { method: 'GET', path: '/' },
+                method: 'GET',
+                path: '/'
+            });
+        });
+    });
 });

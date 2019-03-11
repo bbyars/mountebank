@@ -48,8 +48,6 @@ a custom implementation and add a new protocol called "foo". Start by adding the
   },
   "foo": {
     "createCommand": "java foo",
-    "testRequest": {},
-    "testProxyResponse": {}
   }
 }</code></pre>
 
@@ -61,10 +59,11 @@ a custom implementation and add a new protocol called "foo". Start by adding the
 information needed to start a new instance of the protocol. As far as mountebank is concerned, it's
 just a shell command. That gives you enormous flexibility in how you implement it.</p>
 
-<p>The other two fields are used for validation. When a new imposter is created, mountebank performs
+<p>The other two fields are optional and used for validation. When a new imposter is created, mountebank performs
 a dry run of the creation, testing all predicates and responses to make sure none of them return an error.
 The <code>testRequest</code> and <code>testProxyResponse</code> fields should model the protocol-specific
-request and response format, which will be used during the dry run.</p>
+request and response format, which will be used during the dry run. Adding them makes that validation
+more robust.</p>
 
 <p>When spinning up an imposter, mountebank will call the <code>createCommand</code>, passing a JSON
 string as an additional parameter. When parsed into JSON, the object will contain the following fields:</p>

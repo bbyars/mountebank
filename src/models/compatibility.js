@@ -55,6 +55,23 @@ function upcast (request) {
     upcastTcpProxyDestinationToUrl(request);
 }
 
+/**
+ * While the new injection interface takes a single config object, the old
+ * interface took several parameters, starting with the request object.
+ * To make the new interface backwards compatible, we have to add all the
+ * request fields to the config object
+ * @param {Object} config - the injection parameter
+ */
+function downcastInjectionConfig (config) {
+    // Only possible to use older format for http/s and tcp protocols
+    if (config.request.method || config.request.data) {
+        Object.keys(config.request).forEach(key => {
+            config[key] = config.request[key];
+        });
+    }
+}
+
 module.exports = {
-    upcast: upcast
+    upcast,
+    downcastInjectionConfig
 };

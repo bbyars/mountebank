@@ -39,8 +39,28 @@ stub should match or not.  Unlike other predicates, predicate injections bind to
 can return truthy or falsy to decide whether the predicate matches.  mountebank doesn't know
 what that means, so he always returns <code>true</code> or <code>false</code>.</p>
 
-<p>The injected function should take a parameter representing the field it is bound to,
-and, optionally, a <code>logger</code>.  Predicate injection must be strictly synchronous.</p>
+<p>The injected function should take a single parameter, which will contain the following fields:</p>
+
+<table>
+    <tr>
+        <th>Field</th>
+        <th>Description</th>
+    </tr>
+    <tr>
+        <td><code>request</code></td>
+        <td>The entire request object, containing all request fields</td>
+    </tr>
+    <tr>
+        <td><code>state</code></td>
+        <td>An initially empty object that will be shared between both predicate
+        and response injection functions. You can use it to capture shared state.</td>
+    </tr>
+    <tr>
+        <td><code>logger</code></td>
+        <td>A logger object with <code>debug</code>, <code>info</code>, <code>warn</code>,
+        and <code>error</code> functions to write to the mountebank logs.</td>
+    </tr>
+</table>
 
 <p>The following example uses injection to satisfy a complicated multi-field predicate for HTTP:</p>
 
@@ -58,7 +78,7 @@ Content-Type: application/json
     {
       "responses": [{ "is": { "statusCode": 400 } }],
       "predicates": [{
-        "inject": "function (request, logger) {\n\n    function hasXMLProlog () {\n        return request.body.indexOf('&lt;?xml') === 0;\n    }\n\n    if (request.headers['Content-Type'] === 'application/xml') {\n        return !hasXMLProlog();\n    }\n    else {\n        return hasXMLProlog();\n    }\n}"
+        "inject": "function (config) {\n\n    function hasXMLProlog () {\n        return config.request.body.indexOf('&lt;?xml') === 0;\n    }\n\n    if (config.request.headers['Content-Type'] === 'application/xml') {\n        return !hasXMLProlog();\n    }\n    else {\n        return hasXMLProlog();\n    }\n}"
       }]
     }
   ]
@@ -70,13 +90,13 @@ look at the <code>stringify</code> function supported in file templating with th
 <code>--configfile</code></a> command line option to support storing the functions in a readable format.
 Let's look at our injected function appropriately formatted:</p>
 
-<pre><code>function (request, logger) {
+<pre><code>function (config) {
 
     function hasXMLProlog () {
-        return request.body.indexOf('&lt;?xml') === 0;
+        return config.request.body.indexOf('&lt;?xml') === 0;
     }
 
-    if (request.headers['Content-Type'] === 'application/xml') {
+    if (config.request.headers['Content-Type'] === 'application/xml') {
         return !hasXMLProlog();
     }
     else {
@@ -136,20 +156,42 @@ Accept: application/json</code>
 <p>Response injection allows you to dynamically construct the response based on the
 request and previous requests.  The response object should match the structure defined in
 the appropriate protocol page linked to on the sidebar.  mountebank will use the default
-value documented on the protocol page for any response fields you leave empty.</p>
+value documented on the protocol page for any response fields you leave empty. The predicate
+object takes a single parameter which will contain the following fields:</p>
 
-<p>mountebank maintains a <code>state</code> variable for you
-that will be empty on the first injection.  The same variable will be passed into
-every stub <code>inject</code> function, allowing you to remember state between calls,
-even between stubs.</p>
-
-<p>Asynchronous injection is supported through a <code>callback</code> parameter.
-If your function returns a value, the imposter will consider it to be synchronous.  If
-it does not return a value, it must invoke the <code>callback</code> parameter with the
-response object.  The following injection takes advantage of the node.js environment
-it will run in to proxy most of the request to localhost:5555.  It records the request
-and response to the <code>state</code> variable, and only proxies if certain request
-parameters have not already been sent.</p>
+<table>
+    <tr>
+        <th>Field</th>
+        <th>Description</th>
+    </tr>
+    <tr>
+        <td><code>request</code></td>
+        <td>The entire protocol-specific request object</td>
+    </tr>
+    <tr>
+        <td><code>state</code></td>
+        <td>mountebank maintains this variable for you
+            that will be empty on the first injection.  The same variable will be passed into
+            every <code>inject</code> function, allowing you to remember state between calls,
+            even between stubs. It will be shared with predicate <code>inject</code> functions.</td>
+    </tr>
+    <tr>
+        <td><code>callback</code></td>
+        <td>Asynchronous injection is supported through this parameter.
+            If your function returns a value, the imposter will consider it to be synchronous.  If
+            it does not return a value, it must invoke the <code>callback</code> parameter with the
+            response object.  The following injection takes advantage of the node.js environment
+            it will run in to proxy most of the request to localhost:5555.  It records the request
+            and response to the <code>state</code> variable, and only proxies if certain request
+            parameters have not already been sent.
+        </td>
+    </tr>
+    <tr>
+        <td><code>logger</code></td>
+        <td>A logger object with <code>debug</code>, <code>info</code>, <code>warn</code>,
+            and <code>error</code> functions to write to the mountebank logs.</td>
+    </tr>
+</table>
 
 <p>The example below will use two imposters, an origin server and a server that proxies
 to the origin server.  It would be better implemented using
@@ -171,7 +213,7 @@ Content-Type: application/json
   "protocol": "http",
   "name": "origin",
   "stubs": [{
-    "responses": [{ "inject": "(request, state, logger) => {\n    logger.info('origin called');\n    state.requests = state.requests || 0;\n    state.requests += 1;\n    return {\n      headers: {\n        'Content-Type': 'application/json'\n      },\n      body: JSON.stringify({ count: state.requests })\n    };\n}" }]
+    "responses": [{ "inject": "(config) => {\n    config.logger.info('origin called');\n    config.state.requests = config.state.requests || 0;\n    config.state.requests += 1;\n    return {\n      headers: {\n        'Content-Type': 'application/json'\n      },\n      body: JSON.stringify({ count: config.state.requests })\n    };\n}" }]
   }]
 }</code></pre>
     </step>
@@ -180,15 +222,15 @@ Content-Type: application/json
 uses the <code>state</code> parameter, and sets the <code>requests</code>
 field on it to return how many times it's been called:</p>
 
-<pre><code>(request, state, logger) => {
-    logger.info('origin called');
-    state.requests = state.requests || 0;
-    state.requests += 1;
+<pre><code>(config) => {
+    config.logger.info('origin called');
+    config.state.requests = config.state.requests || 0;
+    config.state.requests += 1;
     return {
       headers: {
         'Content-Type': 'application/json'
       },
-      <strong class='highlight3'>body: JSON.stringify({ count: state.requests })</strong>
+      <strong class='highlight3'>body: JSON.stringify({ count: config.state.requests })</strong>
     };
 }</code></pre>
 
@@ -207,10 +249,10 @@ Content-Type: application/json
   "stubs": [
     {
       "predicates": [<strong class='highlight1'>{ "equals": { "method": "GET", "path": "/counter" } }</strong>],
-      "responses": [{ "inject": "function (request, state) {\n    var count = state.requests ? Object.keys(state.requests).length : 0,\n        util = require('util');\n\n    return {\n        body: util.format('There have been %s proxied calls', count)\n    };\n}" }]
+      "responses": [{ "inject": "function (config) {\n    var count = config.state.requests ? Object.keys(config.state.requests).length : 0,\n        util = require('util');\n\n    return {\n        body: util.format('There have been %s proxied calls', count)\n    };\n}" }]
     },
     {
-      "responses": [{ "inject": "function (request, state, logger, callback) {\n    var cacheKey = request.method + ' ' + request.path;\n\n    if (typeof state.requests === 'undefined') {\n        state.requests = {};\n    }\n\n    if (state.requests[cacheKey]) {\n        logger.info('Using previous response');\n        callback(state.requests[cacheKey]);\n    }\n\n    var http = require('http'),\n        options = {\n            method: request.method,\n            hostname: 'localhost',\n            port: 5555,\n            path: request.path,\n            headers: request.headers\n        },\n        httpRequest = http.request(options, response => {\n            var body = '';\n            response.setEncoding('utf8');\n            response.on('data', chunk => {\n                body += chunk;\n            });\n            response.on('end', () => {\n                var stubResponse = {\n                        statusCode: response.statusCode,\n                        headers: response.headers,\n                        body: body\n                    };\n                logger.info('Successfully proxied: ' + JSON.stringify(stubResponse));\n                state.requests[cacheKey] = stubResponse;\n                callback(stubResponse);\n            });\n        });\n    httpRequest.end();\n}" }]
+      "responses": [{ "inject": "function (config) {\n    var cacheKey = config.request.method + ' ' + config.request.path;\n\n    if (typeof config.state.requests === 'undefined') {\n        config.state.requests = {};\n    }\n\n    if (config.state.requests[cacheKey]) {\n        config.logger.info('Using previous response');\n        config.callback(config.state.requests[cacheKey]);\n    }\n\n    var http = require('http'),\n        options = {\n            method: config.request.method,\n            hostname: 'localhost',\n            port: 5555,\n            path: config.request.path,\n            headers: config.request.headers\n        },\n        httpRequest = http.request(options, response => {\n            var body = '';\n            response.setEncoding('utf8');\n            response.on('data', chunk => {\n                body += chunk;\n            });\n            response.on('end', () => {\n                var stubResponse = {\n                        statusCode: response.statusCode,\n                        headers: response.headers,\n                        body: body\n                    };\n                config.logger.info('Successfully proxied: ' + JSON.stringify(stubResponse));\n                config.state.requests[cacheKey] = stubResponse;\n                config.callback(stubResponse);\n            });\n        });\n    httpRequest.end();\n}" }]
     }
   ]
 }</code></pre>
@@ -225,8 +267,8 @@ stubs on one imposter, but not shared between imposters.  This function
 <code>require</code>s in node's <code>util</code> module, showing an example
 that takes advantage of the runtime environment.</p>
 
-<pre><code>function (request, state) {
-    var count = state.requests ? Object.keys(state.requests).length : 0,
+<pre><code>function (config) {
+    var count = config.state.requests ? Object.keys(config.state.requests).length : 0,
         util = require('util');
 
     return {
@@ -236,25 +278,25 @@ that takes advantage of the runtime environment.</p>
 
 <p>The second stub uses an asynchronous proxy with a cache:</p>
 
-<pre><code>function (request, state, logger, callback) {
-    var cacheKey = request.method + ' ' + request.path;
+<pre><code>function (config) {
+    var cacheKey = config.request.method + ' ' + config.request.path;
 
-    if (typeof state.requests === 'undefined') {
-        state.requests = {};
+    if (typeof config.state.requests === 'undefined') {
+        config.state.requests = {};
     }
 
-    if (state.requests[cacheKey]) {
-        logger.info('Using previous response');
-        callback(state.requests[cacheKey]);
+    if (config.state.requests[cacheKey]) {
+        config.logger.info('Using previous response');
+        config.callback(config.state.requests[cacheKey]);
     }
 
     var http = require('http'),
         options = {
-            method: request.method,
+            method: config.request.method,
             hostname: 'localhost',
             port: 5555,
-            path: request.path,
-            headers: request.headers
+            path: config.request.path,
+            headers: config.request.headers
         },
         httpRequest = http.request(options, response => {
             var body = '';
@@ -268,9 +310,9 @@ that takes advantage of the runtime environment.</p>
                         headers: response.headers,
                         body
                     };
-                logger.info('Successfully proxied: ' + JSON.stringify(stubResponse));
-                state.requests[cacheKey] = stubResponse;
-                callback(stubResponse);
+                config.logger.info('Successfully proxied: ' + JSON.stringify(stubResponse));
+                config.state.requests[cacheKey] = stubResponse;
+                config.callback(stubResponse);
             });
         });
     httpRequest.end();
@@ -344,13 +386,11 @@ Transfer-Encoding: chunked
     </step>
 
 <p>This is the most complicated example in the documentation, and took
-mountebank some time to get it working (these examples in the docs are executed
+some time to get it working (these examples in the docs are executed
 as part of the test suite).  This is appropriate since injection is the most
 complicated thing you can do in the tool.  When injection errors are detected,
-mountebank logs the full <code>eval</code>'d code, including the bits he's added
-on top of your code.  He also logs JSON representation of both the request (or request
-field) and the <code>state</code> parameters to the function.  mountebank
-made heavy use of the <code>debug</code> logs while developing this example.</p>
+mountebank logs the full <code>eval</code>'d code, including the bits it's added
+on top of your code.  It also logs JSON representation of the parameter.</p>
 
 <p>As always, if you get stuck, <a href='/support'>ask for help.</a></p>
 

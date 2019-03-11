@@ -371,14 +371,22 @@ function and (predicate, request, encoding, logger, imposterState) {
 }
 
 function inject (predicate, request, encoding, logger, imposterState) {
-    const helpers = require('../util/helpers'),
-        scope = helpers.clone(request),
-        injected = `(${predicate.inject})(scope, logger, imposterState);`,
-        errors = require('../util/errors');
-
     if (request.isDryRun === true) {
         return true;
     }
+
+    const helpers = require('../util/helpers'),
+        config = {
+            request: helpers.clone(request),
+            state: imposterState,
+            logger: logger
+        },
+        compatibility = require('./compatibility');
+
+    compatibility.downcastInjectionConfig(config);
+
+    const injected = `(${predicate.inject})(config, logger, imposterState);`,
+        errors = require('../util/errors');
 
     try {
         return eval(injected);
@@ -386,8 +394,7 @@ function inject (predicate, request, encoding, logger, imposterState) {
     catch (error) {
         logger.error(`injection X=> ${error}`);
         logger.error(`    source: ${JSON.stringify(injected)}`);
-        logger.error(`    scope: ${JSON.stringify(scope)}`);
-        logger.error(`    imposterState: ${JSON.stringify(imposterState)}`);
+        logger.error(`    config: ${JSON.stringify(config)}`);
         throw errors.InjectionError('invalid predicate injection', { source: injected, data: error.message });
     }
 }

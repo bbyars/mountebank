@@ -7,7 +7,7 @@
   <tr>
     <td><code>decorate</code></td>
     <td>A string</td>
-    <td>The <code>decorate</code> function accepts the <code>request</code>, <code>response</code>,
+    <td>The <code>decorate</code> function accepts a single parameter containing the <code>request</code>, <code>response</code>,
         and the <code>logger</code>. It either changes the <code>response</code> directly and returns
         nothing, or returns a new <code>response</code> object. If you return a new <code>response</code>,
         all fields that you want included must be set; it will not be merged with the old <code>response</code>.
@@ -37,14 +37,14 @@ to the responses.  Let's add the current timestamp to each response.  We'll pass
 of the following JavaScript function:</p>
 
 <testScenario name='decorate'>
-<pre><code>(request, response) => {
+<pre><code>(config) => {
     var pad = function (number) {
             return (number &lt; 10) ? '0' + number : number.toString();
         },
         now = new Date(),
         time = pad(now.getHours()) + ':' + pad(now.getMinutes()) + ':' + pad(now.getSeconds());
 
-    response.body = response.body.replace('${TIME}', time);
+    config.response.body = config.response.body.replace('${TIME}', time);
 }</code></pre>
 
     <step type='http'>
@@ -64,7 +64,7 @@ Content-Type: application/json
             "body": "The time is <strong class='highlight1'>${TIME}</strong>"
           },
           "_behaviors": {
-            "decorate": "(request, response) => { var pad = function (number) { return (number &lt; 10) ? '0' + number : number.toString(); }, now = new Date(), time = pad(now.getHours()) + ':' + pad(now.getMinutes()) + ':' + pad(now.getSeconds()); response.body = response.body.replace('${TIME}', time); }"
+            "decorate": "(config) => { var pad = function (number) { return (number &lt; 10) ? '0' + number : number.toString(); }, now = new Date(), time = pad(now.getHours()) + ':' + pad(now.getMinutes()) + ':' + pad(now.getSeconds()); config.response.body = config.response.body.replace('${TIME}', time); }"
           }
         }
       ]
@@ -98,8 +98,8 @@ simulate your testing scenario.  In this example, we'll proxy to the
 We'll augment the proxied response with a custom header.  Here's the decorator function, passed
 into the imposter creation as a string:</p>
 
-<pre><code>(request, response) => {
-    response.headers['X-Test'] = 'True';
+<pre><code>(config) => {
+    config.response.headers['X-Test'] = 'True';
 }</code></pre>
 
     <step type='http'>
@@ -117,7 +117,7 @@ Content-Type: application/json
         {
           "proxy": { "to": "http://localhost:5545" },
           "_behaviors": {
-            "decorate": "(request, response) => { <strong class='highlight1'>response.headers['X-Test'] = 'True';</strong> }"
+            "decorate": "(config) => { <strong class='highlight1'>config.response.headers['X-Test'] = 'True';</strong> }"
           }
         }
       ]

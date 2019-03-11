@@ -213,9 +213,16 @@ function decorate (originalRequest, responsePromise, fn, logger) {
     return responsePromise.then(response => {
         const Q = require('q'),
             helpers = require('../util/helpers'),
-            request = helpers.clone(originalRequest),
-            injected = '(' + fn + ')(request, response, logger);',
-            exceptions = require('../util/errors');
+            config = {
+                request: helpers.clone(originalRequest),
+                response,
+                logger
+            },
+            injected = `(${fn})(config, response, logger);`,
+            exceptions = require('../util/errors'),
+            compatibility = require('./compatibility');
+
+        compatibility.downcastInjectionConfig(config);
 
         try {
             // Support functions that mutate response in place and those
@@ -229,8 +236,7 @@ function decorate (originalRequest, responsePromise, fn, logger) {
         catch (error) {
             logger.error('injection X=> ' + error);
             logger.error('    full source: ' + JSON.stringify(injected));
-            logger.error('    request: ' + JSON.stringify(request));
-            logger.error('    response: ' + JSON.stringify(response));
+            logger.error('    config: ' + JSON.stringify(config));
             return Q.reject(exceptions.InjectionError('invalid decorator injection', { source: injected, data: error.message }));
         }
     });

@@ -745,9 +745,9 @@ describe('responseResolver', function () {
             const stubs = StubRepository.create('utf8'),
                 resolver = ResponseResolver.create(stubs, {}),
                 logger = Logger.create(),
-                fn = request => request.key + ' injected',
+                fn = request => request.data + ' injected',
                 responseConfig = { inject: fn.toString() },
-                request = { key: 'request' };
+                request = { data: 'request' };
 
             return resolver.resolve(responseConfig, request, logger, {}).then(response => {
                 assert.strictEqual(response, 'request injected');

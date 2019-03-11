@@ -13,7 +13,8 @@
  * @returns {Object}
  */
 function create (stubs, proxy, callbackURL) {
-    const injectState = {},
+    // imjectState is deprecated in favor of imposterState, but kept for backwards compatibility
+    const injectState = {}, // eslint-disable-line no-unused-vars
         pendingProxyResolutions = {},
         inProcessProxy = Boolean(proxy);
     let nextProxyResolutionKey = 0;
@@ -22,8 +23,18 @@ function create (stubs, proxy, callbackURL) {
         const Q = require('q'),
             helpers = require('../util/helpers'),
             deferred = Q.defer(),
-            scope = helpers.clone(request),
-            injected = `(${fn})(scope, injectState, logger, deferred.resolve, imposterState);`,
+            config = {
+                request: helpers.clone(request),
+                state: imposterState,
+                logger: logger,
+                callback: deferred.resolve
+            },
+            compatibility = require('./compatibility');
+
+        compatibility.downcastInjectionConfig(config);
+
+        // Leave parameters for older interface
+        const injected = `(${fn})(config, injectState, logger, deferred.resolve, imposterState);`,
             exceptions = require('../util/errors');
 
         if (request.isDryRun === true) {
@@ -41,9 +52,7 @@ function create (stubs, proxy, callbackURL) {
             catch (error) {
                 logger.error(`injection X=> ${error}`);
                 logger.error(`    full source: ${JSON.stringify(injected)}`);
-                logger.error(`    scope: ${JSON.stringify(scope)}`);
-                logger.error(`    injectState: ${JSON.stringify(injectState)}`);
-                logger.error(`    imposterState: ${JSON.stringify(imposterState)}`);
+                logger.error(`    config: ${JSON.stringify(config)}`);
                 deferred.reject(exceptions.InjectionError('invalid response injection', {
                     source: injected,
                     data: error.message
