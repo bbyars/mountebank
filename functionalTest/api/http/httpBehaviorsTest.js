@@ -65,9 +65,30 @@ const assert = require('assert'),
                 }).finally(() => api.del('/imposters'));
             });
 
-            promiseIt('should support post-processing when using behaviors.decorate', function () {
+            promiseIt('should support post-processing when using behaviors.decorate (old interface)', function () {
                 const decorator = (request, response) => {
                         response.body = response.body.replace('${YEAR}', new Date().getFullYear());
+                    },
+                    stub = {
+                        responses: [{
+                            is: { body: 'the year is ${YEAR}' },
+                            _behaviors: { decorate: decorator.toString() }
+                        }]
+                    },
+                    stubs = [stub],
+                    request = { protocol, port, stubs: stubs };
+
+                return api.post('/imposters', request).then(response => {
+                    assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body, null, 2));
+                    return client.get('/', port);
+                }).then(response => {
+                    assert.strictEqual(response.body, `the year is ${new Date().getFullYear()}`);
+                }).finally(() => api.del('/imposters'));
+            });
+
+            promiseIt('should support post-processing when using behaviors.decorate', function () {
+                const decorator = config => {
+                        config.response.body = config.response.body.replace('${YEAR}', new Date().getFullYear());
                     },
                     stub = {
                         responses: [{
@@ -111,9 +132,30 @@ const assert = require('assert'),
                 }).finally(() => api.del('/imposters'));
             });
 
-            promiseIt('should support using request parameters during decorating', function () {
+            promiseIt('should support using request parameters during decorating (old interface)', function () {
                 const decorator = (request, response) => {
                         response.body = response.body.replace('${PATH}', request.path);
+                    },
+                    stub = {
+                        responses: [{
+                            is: { body: 'the path is ${PATH}' },
+                            _behaviors: { decorate: decorator.toString() }
+                        }]
+                    },
+                    stubs = [stub],
+                    request = { protocol, port, stubs: stubs };
+
+                return api.post('/imposters', request).then(response => {
+                    assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body, null, 2));
+                    return client.get('/test', port);
+                }).then(response => {
+                    assert.strictEqual(response.body, 'the path is /test');
+                }).finally(() => api.del('/imposters'));
+            });
+
+            promiseIt('should support using request parameters during decorating', function () {
+                const decorator = config => {
+                        config.response.body = config.response.body.replace('${PATH}', config.request.path);
                     },
                     stub = {
                         responses: [{
@@ -160,9 +202,32 @@ const assert = require('assert'),
                 }).finally(() => api.del('/imposters'));
             });
 
-            promiseIt('should support decorate functions that return a value', function () {
+            promiseIt('should support decorate functions that return a value (old interface)', function () {
                 const decorator = (request, response) => {
                         const clonedResponse = JSON.parse(JSON.stringify(response));
+                        clonedResponse.body = 'This is a clone';
+                        return clonedResponse;
+                    },
+                    stub = {
+                        responses: [{
+                            is: { body: 'This is the original' },
+                            _behaviors: { decorate: decorator.toString() }
+                        }]
+                    },
+                    stubs = [stub],
+                    request = { protocol, port, stubs: stubs };
+
+                return api.post('/imposters', request).then(response => {
+                    assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body, null, 2));
+                    return client.get('/', port);
+                }).then(response => {
+                    assert.strictEqual(response.body, 'This is a clone');
+                }).finally(() => api.del('/imposters'));
+            });
+
+            promiseIt('should support decorate functions that return a value', function () {
+                const decorator = config => {
+                        const clonedResponse = JSON.parse(JSON.stringify(config.response));
                         clonedResponse.body = 'This is a clone';
                         return clonedResponse;
                     },

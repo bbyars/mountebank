@@ -11,7 +11,7 @@ describe('tcp imposter', function () {
     this.timeout(timeout);
 
     describe('POST /imposters with injections', function () {
-        promiseIt('should allow javascript predicate for matching', function () {
+        promiseIt('should allow javascript predicate for matching (old interface)', function () {
             const fn = request => request.data.toString() === 'test',
                 stub = {
                     predicates: [{ inject: fn.toString() }],
@@ -27,7 +27,23 @@ describe('tcp imposter', function () {
             }).finally(() => api.del('/imposters'));
         });
 
-        promiseIt('should allow synchronous javascript injection for responses', function () {
+        promiseIt('should allow javascript predicate for matching', function () {
+            const fn = config => config.request.data.toString() === 'test',
+                stub = {
+                    predicates: [{ inject: fn.toString() }],
+                    responses: [{ is: { data: 'MATCHED' } }]
+                };
+
+            return api.post('/imposters', { protocol: 'tcp', port, stubs: [stub] }).then(response => {
+                assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body));
+
+                return tcp.send('test', port);
+            }).then(response => {
+                assert.strictEqual(response.toString(), 'MATCHED');
+            }).finally(() => api.del('/imposters'));
+        });
+
+        promiseIt('should allow synchronous javascript injection for responses (old interface)', function () {
             const fn = request => ({ data: `${request.data} INJECTED` }),
                 stub = { responses: [{ inject: fn.toString() }] },
                 request = { protocol: 'tcp', port, stubs: [stub] };
@@ -40,7 +56,20 @@ describe('tcp imposter', function () {
                 .finally(() => api.del('/imposters'));
         });
 
-        promiseIt('should allow javascript injection to keep state between requests', function () {
+        promiseIt('should allow synchronous javascript injection for responses', function () {
+            const fn = config => ({ data: `${config.request.data} INJECTED` }),
+                stub = { responses: [{ inject: fn.toString() }] },
+                request = { protocol: 'tcp', port, stubs: [stub] };
+
+            return api.post('/imposters', request)
+                .then(() => tcp.send('request', port))
+                .then(response => {
+                    assert.strictEqual(response.toString(), 'request INJECTED');
+                })
+                .finally(() => api.del('/imposters'));
+        });
+
+        promiseIt('should allow javascript injection to keep state between requests (old interface)', function () {
             const fn = (request, state) => {
                     if (!state.calls) { state.calls = 0; }
                     state.calls += 1;
@@ -62,7 +91,29 @@ describe('tcp imposter', function () {
             }).finally(() => api.del('/imposters'));
         });
 
-        promiseIt('should allow asynchronous injection', function () {
+        promiseIt('should allow javascript injection to keep state between requests', function () {
+            const fn = config => {
+                    if (!config.state.calls) { config.state.calls = 0; }
+                    config.state.calls += 1;
+                    return { data: config.state.calls.toString() };
+                },
+                stub = { responses: [{ inject: fn.toString() }] },
+                request = { protocol: 'tcp', port, stubs: [stub] };
+
+            return api.post('/imposters', request).then(response => {
+                assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body));
+
+                return tcp.send('request', port);
+            }).then(response => {
+                assert.strictEqual(response.toString(), '1');
+
+                return tcp.send('request', port);
+            }).then(response => {
+                assert.deepEqual(response.toString(), '2');
+            }).finally(() => api.del('/imposters'));
+        });
+
+        promiseIt('should allow asynchronous injection (old interface)', function () {
             const originServerPort = port + 1,
                 originServerStub = { responses: [{ is: { body: 'origin server' } }] },
                 originServerRequest = {
@@ -82,6 +133,42 @@ describe('tcp imposter', function () {
                         });
                     socket.once('data', data => {
                         callback({ data: data });
+                    });
+                    // No return value!!!
+                },
+                stub = { responses: [{ inject: fn.toString().replace("'$PORT'", originServerPort) }] };
+
+            return api.post('/imposters', originServerRequest).then(response => {
+                assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body, null, 4));
+                return api.post('/imposters', { protocol: 'tcp', port, stubs: [stub] });
+            }).then(response => {
+                assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body));
+                return tcp.send('GET / HTTP/1.1\r\nHost: www.google.com\r\n\r', port);
+            }).then(response => {
+                assert.strictEqual(response.toString().indexOf('HTTP/1.1'), 0);
+            }).finally(() => api.del('/imposters'));
+        });
+
+        promiseIt('should allow asynchronous injection', function () {
+            const originServerPort = port + 1,
+                originServerStub = { responses: [{ is: { body: 'origin server' } }] },
+                originServerRequest = {
+                    protocol: 'http',
+                    port: originServerPort,
+                    stubs: [originServerStub],
+                    name: 'origin'
+                },
+                fn = config => {
+                    const net = require('net'),
+                        options = {
+                            host: '127.0.0.1',
+                            port: '$PORT'
+                        },
+                        socket = net.connect(options, () => {
+                            socket.write(`${config.request.data}\n`);
+                        });
+                    socket.once('data', data => {
+                        config.callback({ data: data });
                     });
                     // No return value!!!
                 },
