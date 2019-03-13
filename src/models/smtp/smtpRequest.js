@@ -31,7 +31,7 @@ function transform (session, email) {
         priority: email.priority || 'normal',
         references: email.references || [],
         inReplyTo: email.inReplyTo || [],
-        text: email.text.trim(),
+        text: (email.text || '').trim(),
         html: (email.html || '').trim(),
         attachments: email.attachments || []
     };
