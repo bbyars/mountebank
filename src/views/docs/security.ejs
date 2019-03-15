@@ -17,11 +17,12 @@ attackers remote execution capabilities on your machine.</p>
 require <code>--allowInjection</code>:</p>
 
 <ul class='bullet-list'>
-  <li>Always run <code>mb</code> as an unprivileged user</li>
+  <li>ALWAYS run <code>mb</code> as an unprivileged user</li>
   <li>If possible, set the <a href='/docs/commandLine'><code>--localOnly</code></a> flag to only accept
-    requests from localhost</li>
+    requests from localhost. There's no reason not to do this when running directly (e.g., not inside
+    Docker or a VM) on your local developer machine.</li>
   <li>Whitelist all IP addresses allowed to connect to mountebank by setting the
-    <a href='/docs/commandLine'><code>--ipWhitelist</code></a> flag</li>
+    <a href='/docs/commandLine'><code>--ipWhitelist</code></a> flag.</li>
   <li>Consider using a local OS level firewall like iptables</li>
   <li>Consider running <code>mb</code> in a Docker environment or under a <code>chroot</code> operation
     to prevent access to the full filesystem</li>

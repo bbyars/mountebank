@@ -11,7 +11,11 @@ description = 'Extending mountebank with custom JavaScript scripting'
 where the built-in ones are not sufficient</p>
 
 <p class='warning-icon'>Injection only works if <code>mb</code> is
-run with the <code>--allowInjection</code> flag.</p>
+    run with the <code>--allowInjection</code> flag.</p>
+
+<p class='warning-icon'>If you have injection enabled, you should set either the
+<code>--localOnly</code> or <code>--ipWhitelist</code> flags as well. See the
+<a href='/docs/security'>security page</a> for more details.</p>
 
 <p>Though mountebank has gone to some trouble to make injections as hassle-free as
 possible, there are a couple of things to be aware of.  First, when validating stub creation,

@@ -85,14 +85,16 @@ description = 'Command line parameters for starting mountebank'
   </tr>
   <tr>
     <td><code>--localOnly</code></td>
-    <td>Only accept requests from localhost</td>
+    <td>Only accept requests from localhost. You should ALWAYS do this when running mountebank with
+        <code>--allowInjection</code> directly on your developer machine, but will need to use
+        <code>--ipWhitelist</code> otherwise (or if running in Docker),</td>
     <td><code>false</code></td>
   </tr>
   <tr>
     <td><code>--ipWhitelist</code></td>
     <td>A pipe-delimited string of remote IP addresses to whitelist (local IP addresses will always
-    be allowed). Any request to the primary <code>mb</code> socket that isn't whitelisted will be
-    dropped.</td>
+    be allowed). Any request to the primary <code>mb</code> socket or an imposter socket that isn't
+    whitelisted will be dropped.</td>
     <td><code>*</code>, representing all IP addresses</td>
   </tr>
   <tr>
