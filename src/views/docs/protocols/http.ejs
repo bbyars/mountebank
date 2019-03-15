@@ -173,6 +173,9 @@ to <code>binary</code> and base64 encode the <code>body</code>.  mountebank will
 to preserve binary responses in proxies by looking at the <code>Content-Encoding</code> and
 <code>Content-Type</code> headers.</p>
 
+<p>Note that the base64 must be on a single line with no newlines anywhere, otherwise the
+binary response will be garbled.</p>
+
 <h2 id='inline-json-response-bodies'>Inline JSON For Response Bodies</h2>
 
 <p>The example below shows passing an inline JSON object as the response body.</p>
