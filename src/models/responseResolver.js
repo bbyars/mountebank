@@ -108,15 +108,15 @@ function create (stubs, proxy, callbackURL) {
         matchers.forEach(matcher => {
             if (matcher.inject) {
                 const injected = `(${matcher.inject})(request);`,
-                      errors = require('../util/errors');
+                    errors = require('../util/errors');
                 try {
-                    predicates.push(...injected);
+                    predicates.push(...eval(injected));
                 }
                 catch (error) {
                     logger.error(`injection X=> ${error}`);
                     logger.error(`    source: ${JSON.stringify(injected)}`);
                     logger.error(`    request: ${JSON.stringify(request)}`);
-                    throw errors.InjectionError('invalid predicate generator injection', { source: injected, data: error.message });
+                    throw errors.InjectionError('invalid predicateGenerator injection', { source: injected, data: error.message });
                 }
                 return;
             }
