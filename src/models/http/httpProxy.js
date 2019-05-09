@@ -69,6 +69,10 @@ function create (logger) {
                 ciphers: proxyOptions.ciphers || 'ALL',
                 rejectUnauthorized: false
             };
+        //For allow overide  "secureProtocol"
+        if (proxyOptions.secureProtocol) {
+            options['secureProtocol'] = proxyOptions.secureProtocol
+        }
         // Only set host header if not overridden via injectHeaders (issue #388)
         if (!proxyOptions.injectHeaders || !headersHelper.hasHeader('host', proxyOptions.injectHeaders)) {
             options.headers.host = hostnameFor(parts.protocol, parts.hostname, options.port);
