@@ -81,12 +81,12 @@ function create (logger) {
         if (originalRequest.body &&
             !headersHelper.hasHeader('Transfer-Encoding', originalRequest.headers) &&
             !headersHelper.hasHeader('Content-Length', originalRequest.headers)) {
-            options.headers['Content-Length'] = Buffer.byteLength(originalRequest.body);
+            options.headers['Content-Length'] = Buffer.byteLength(originalRequest.body, 'binary');
         }
 
         const proxiedRequest = protocol.request(options);
         if (originalRequest.body) {
-            proxiedRequest.write(originalRequest.body);
+            proxiedRequest.write(originalRequest.body, 'binary');
         }
         return proxiedRequest;
     }
