@@ -218,13 +218,12 @@ jobs:
 
 workflows:
   version: 2
-  pull_request:
+  full_build:
     jobs:
       - pr:
           filters:
             branches:
               only: /^pull\/.*$/
-  full_build:
       - build:
           filters:
             branches:
