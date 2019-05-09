@@ -46,6 +46,12 @@ module.exports = function (createBaseServer) {
                 }
             }
 
+            if (encoding === 'base64') {
+                // ensure the base64 has no newlines or other non
+                // base64 chars that will cause the body to be garbled.
+                response.body = response.body.replace(/[^A-Za-z0-9=+/]+/g, '');
+            }
+
             if (!headersHelper.hasHeader('Connection', response.headers)) {
                 // Default to close connections, because a test case
                 // may shutdown the stub, which prevents new connections for
