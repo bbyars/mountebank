@@ -335,6 +335,26 @@ const assert = require('assert'),
                 }).finally(() => api.del('/imposters'));
             });
 
+            promiseIt('should correctly set content-length for binary data when using multiline base64', function () {
+                const stub = {
+                        responses: [{
+                            is: {
+                                headers: { 'Content-Length': 274 },
+                                body: 'iVBORw0KGgoAAAANSUhEUgAAAGQAAAAyBAMAAABYG2ONAAAAFVBMVEUAAAD///9/f39fX1+fn58f\nHx8/Pz8rYiDqAAAACXBIWXMAAA7EAAAOxAGVKw4bAAAAo0lEQVRIie2Qyw7CIBBFb2DwO5q+1o0L\n1w0NrrHRPQnV//8EAUl0ga1ujIs5CZAz4YYZAIZhmN/QQOkjzq3LLuv6xUrQHmTJGphcEGE9rUQ3\nY4bqqrDjAlgQoJK9Z8YBmFy8Gp8DeSeTfRSBCf2I6/JN5ORiRfrNiIfqh9S9SVPL27A1C0G4EX2e\nJR7J1iI7rbG0Vf4x0UwPW0Uh3i0bwzD/yR11mBj1DIKiVwAAAABJRU5ErkJggg==\n',
+                                _mode: 'binary'
+                            }
+                        }]
+                    },
+                    request = { protocol, port, stubs: [stub] };
+
+                return api.post('/imposters', request).then(response => {
+                    assert.strictEqual(response.statusCode, 201, response.body);
+                    return client.get('/', port);
+                }).then(response => {
+                    assert.deepEqual(response.headers['content-length'], 274);
+                }).finally(() => api.del('/imposters'));
+            });
+
             promiseIt('should handle JSON null values', function () {
                 // https://github.com/bbyars/mountebank/issues/209
                 const stub = { responses: [{ is: { body: { name: 'test', type: null } } }] },
