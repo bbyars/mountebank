@@ -1,6 +1,20 @@
 version: 2.0
 
 jobs:
+  pr:
+    docker:
+      - image: circleci/node:8.9.4-stretch
+    environment:
+      - CC_TEST_REPORTER_ID=8bc3a050a2f8ef1cc460e5f4c72d18a689c8ae0981bf494031eb4eb28bbd0b0b
+    steps:
+      - checkout
+      - restore_cache:
+          key: dependency-cache-{{ checksum "package.json" }}
+      - run: ./build lint test
+      - save_cache:
+          key: dependency-cache-{{ checksum "package.json" }}
+          paths:
+            - node_modules
   build:
     docker:
       - image: circleci/node:8.9.4-stretch
@@ -206,8 +220,14 @@ workflows:
   version: 2
   full_build:
     jobs:
+      - pr:
+          filters:
+            branches:
+              only: /^pull\/.*$/
       - build:
           filters:
+            branches:
+              only: master
             tags:
               only: /^v.*/
       - osx:
