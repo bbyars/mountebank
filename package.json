@@ -96,7 +96,7 @@
     "https-proxy-agent": "^2.2.1",
     "json-stable-stringify": "1.0.1",
     "jsonpath-plus": "^0.16.0",
-    "mailparser2": "^1.0.0",
+    "mailparser": "^2.7.0",
     "nodemailer": "^4.6.7",
     "q": "1.5.1",
     "query-string": "6.2.0",

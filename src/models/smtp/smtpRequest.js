@@ -46,7 +46,7 @@ function createFrom (request) {
     const Q = require('q'),
         deferred = Q.defer();
 
-    const simpleParser = require('mailparser2').simpleParser2;
+    const simpleParser = require('mailparser').simpleParser;
     simpleParser(request.source, (err, mail) => {
         if (err) {
             deferred.reject(err);
