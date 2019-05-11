@@ -8,8 +8,8 @@
     <td><code>shellTransform</code></td>
     <td>An array of strings</td>
     <td>Each array element represents the path of a command line application. The application should
-        accept the JSON-encoded <code>request</code> and <code>response</code> as arguments and print
-        out the transformed <code>response</code> to <code>stdout</code>.
+        retrieve the JSON-encoded <code>request</code> and <code>response</code> from the environment
+        and print out the transformed <code>response</code> to <code>stdout</code>.
 
     <p class='warning-icon'>The <code><a href='/docs/commandLine'>--allowInjection</a></code> command
       line flag must be set to support this behavior.</p>
@@ -30,8 +30,14 @@ differences:</p>
 transformation. Each shell command can represent a single transformation, and they will be executed
 in order. Since it allows shelling out to another application,
 the <a href='/docs/commandLine'>--allowInjection</a> flag must be passed in to <code>mb</code> on startup.
-mountebank will pass each shell command two parameters: a JSON representation of the request and a
-JSON representation of the response. The application should write to stdout a JSON representation of
+mountebank will add to environment variables:</p>
+
+<ul class='bullet-list'>
+    <li><code>MB_REQUEST</code> which contains the JSON request as a string, and</li>
+    <li><code>MB_RESPONSE</code> which contains the current JSON response as a string</li>
+</ul>
+
+<p>The application should write to stdout a JSON representation of
 the transformed response, which will be passed to the next shell command in the list, or returned
 over the wire if not more transformations are needed.</p>
 
@@ -95,8 +101,8 @@ will look something like <br />
 <code>['node', 'addName.js', <em>requestJSON</em>, <em>responseJSON</em>]</code>.</p>
 
     <step type='file' filename='addName.js'>
-<pre><code>var request = JSON.parse(process.argv[2]),
-    response = JSON.parse(process.argv[3]),
+<pre><code>var request = JSON.parse(process.env.MB_REQUEST),
+    response = JSON.parse(process.env.MB_RESPONSE),
     requestId = request.path.replace('/accounts/', ''),
     fs = require('fs'),
     mappings = fs.readFileSync('names.txt', { encoding: 'utf8' }),
