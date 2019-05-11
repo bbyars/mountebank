@@ -131,8 +131,8 @@ describe('behaviors', function () {
                 response = {},
                 logger = Logger.create(),
                 shellFn = function exec () {
-                    const shellRequest = JSON.parse(process.argv[2]),
-                        shellResponse = JSON.parse(process.argv[3]);
+                    const shellRequest = JSON.parse(process.env.MB_REQUEST),
+                        shellResponse = JSON.parse(process.env.MB_RESPONSE);
 
                     shellResponse.requestData = shellRequest.body;
                     console.log(JSON.stringify(shellResponse));
