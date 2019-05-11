@@ -125,5 +125,27 @@ describe('behaviors', function () {
                 source: { shellTransform: 'string' }
             }]);
         });
+
+        promiseIt('should correctly shell quote inner quotes (issue #419)', function () {
+            const request = { body: '{"fastSearch": "abctef abc def"}' },
+                response = {},
+                logger = Logger.create(),
+                shellFn = function exec () {
+                    const shellRequest = JSON.parse(process.argv[2]),
+                        shellResponse = JSON.parse(process.argv[3]);
+
+                    shellResponse.requestData = shellRequest.body;
+                    console.log(JSON.stringify(shellResponse));
+                },
+                config = { shellTransform: ['node shellTransformTest.js'] };
+
+            fs.writeFileSync('shellTransformTest.js', util.format('%s\nexec();', shellFn.toString()));
+
+            return behaviors.execute(request, response, config, logger).then(actualResponse => {
+                assert.deepEqual(actualResponse, { requestData: '{"fastSearch": "abctef abc def"}' });
+            }).finally(() => {
+                fs.unlinkSync('shellTransformTest.js');
+            });
+        });
     });
 });
