@@ -41,7 +41,7 @@ is key to keeping the code maintainable. The following describe key concepts:
 ### API changes
 
 I consider the REST API the public API from a semantic versioning standpoint, and I aspire never
-to have to release a v2 of mountebank. In my opinion, *the API is more important than the code
+to have to release a breaking change of mountebank. In my opinion, *the API is more important than the code
 behind it*; we can fix the code, but we can't change the API once it's been documented. Therefore,
 expect more scrutiny for API changes, and don't be offended if I recommend some changes. I often
 agonize over the names in the API, and use tests to help me play with ideas.
@@ -59,9 +59,6 @@ This includes all of the core logic in mountebank, including predicates, behavio
 To help myself maintain that mentality, I often write unit tests that use a different request or response
 structure than any of the existing protocols. This approach makes it easier to add protocols in the future
 and ensures that the logic will work for existing protocols.
-
-I aim in a [future version](https://github.com/bbyars/mountebank/issues/174) to completely separate
-the protocol implementations as separate plugins, making protocol extension as easy as pie.
 
 ### Aim for the broadest reach
 
