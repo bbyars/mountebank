@@ -135,6 +135,25 @@ describe('security', function () {
                 })
                 .finally(() => mb.stop());
         });
+
+        promiseIt('should return a 400 if a predicateGenerator inject is used', function () {
+            const proxy = {
+                    to: 'http://google.com',
+                    predicateGenerators: [{
+                        inject: 'fn () { return []; }'
+                    }]
+                },
+                stub = { responses: [{ proxy: proxy }] },
+                request = { protocol: 'http', port, stubs: [stub] };
+
+            return mb.start()
+                .then(() => mb.post('/imposters', request))
+                .then(response => {
+                    assert.strictEqual(response.statusCode, 400);
+                    assert.strictEqual(response.body.errors[0].code, 'invalid injection');
+                })
+                .finally(() => mb.stop());
+        });
     });
 
     describe('IP blocking', function () {

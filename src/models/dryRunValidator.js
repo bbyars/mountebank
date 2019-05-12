@@ -107,12 +107,17 @@ function create (options) {
         return deferred.promise;
     }
 
+    function hasPredicateGeneratorInjection (response) {
+        return response.proxy && response.proxy.predicateGenerators &&
+            response.proxy.predicateGenerators.some(generator => generator.inject);
+    }
+
     function hasStubInjection (stub) {
         const hasResponseInjections = stub.responses.some(response => {
                 const hasDecorator = response._behaviors && response._behaviors.decorate,
                     hasWaitFunction = response._behaviors && typeof response._behaviors.wait === 'string';
 
-                return response.inject || hasDecorator || hasWaitFunction;
+                return response.inject || hasDecorator || hasWaitFunction || hasPredicateGeneratorInjection(response);
             }),
             hasPredicateInjections = Object.keys(stub.predicates || {}).some(predicate => stub.predicates[predicate].inject),
             hasAddDecorateBehaviorInProxy = stub.responses.some(response => response.proxy && response.proxy.addDecorateBehavior);
