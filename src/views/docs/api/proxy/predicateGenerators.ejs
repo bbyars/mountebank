@@ -51,6 +51,13 @@ array takes the following fields:</p>
     <td>Defines an object containing a <code>selector</code> string. The predicate's
     scope is limited to the selected value in the request field.</td>
   </tr>
+  <tr>
+    <td><code>inject</code></td>
+    <td><code>null</code></td>
+    <td>string</td>
+    <td>Defines a JavaScript function that accepts a <code>request</code> parameter
+    and returns a list of predicates to add to the stub.</td>
+  </tr>
 </table>
 
 <p>With the exception of <code>matches</code>, the fields correspond to the standard
