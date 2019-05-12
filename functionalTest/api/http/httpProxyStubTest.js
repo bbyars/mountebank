@@ -113,6 +113,45 @@ describe('http proxy stubs', function () {
             }).finally(() => api.del('/imposters'));
     });
 
+    promiseIt('should allow programmatic creation of predicates', function () {
+        const originServerPort = port + 1,
+            originServerStub = { responses: [{ is: { body: 'ORIGIN' } }] },
+            originServerRequest = {
+                protocol: 'http',
+                port: originServerPort,
+                stubs: [originServerStub],
+                name: 'origin server'
+            },
+            fn = function (config) {
+                // Ignore first element; will be empty string in front of root /
+                const pathParts = config.request.path.split('/').splice(1);
+                // eslint-disable-next-line arrow-body-style
+                return pathParts.map(part => { return { contains: { path: part } }; });
+            },
+            proxyDefinition = {
+                to: `http://localhost:${originServerPort}`,
+                predicateGenerators: [{ inject: fn.toString() }]
+            },
+            proxyStub = { responses: [{ proxy: proxyDefinition }] },
+            proxyRequest = { protocol: 'http', port, stubs: [proxyStub], name: 'proxy' };
+
+        return api.post('/imposters', originServerRequest)
+            .then(() => api.post('/imposters', proxyRequest))
+            .then(response => {
+                assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body, null, 2));
+                return client.get('/first/third', port);
+            }).then(response => {
+                assert.strictEqual(response.body, 'ORIGIN');
+                return api.get(`/imposters/${port}`);
+            }).then(response => {
+                const predicates = response.body.stubs[0].predicates;
+                assert.deepEqual(predicates, [
+                    { contains: { path: 'first' } },
+                    { contains: { path: 'third' } }
+                ]);
+            }).finally(() => api.del('/imposters'));
+    });
+
     promiseIt('should record new stubs with multiple responses behind proxy resolver in proxyAlways mode', function () {
         const originServerPort = port + 1,
             originServerFn = (request, state) => {
