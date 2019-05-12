@@ -69,6 +69,7 @@ function normalizeJSON (possibleJSON) {
         return JSON.stringify(JSON.parse(possibleJSON), null, 2);
     }
     catch (e) {
+        console.log('WARNING: FAILED NORMALIZING BECAUSE OF INVALID JSON');
         return possibleJSON;
     }
 }

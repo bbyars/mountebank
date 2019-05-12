@@ -107,7 +107,9 @@ function create (stubs, proxy, callbackURL) {
 
         matchers.forEach(matcher => {
             if (matcher.inject) {
-                const injected = `(${matcher.inject})(request);`,
+                // eslint-disable-next-line no-unused-vars
+                const config = { request, logger },
+                    injected = `(${matcher.inject})(config);`,
                     errors = require('../util/errors');
                 try {
                     predicates.push(...eval(injected));

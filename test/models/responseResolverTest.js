@@ -382,7 +382,7 @@ describe('responseResolver', function () {
                         to: 'where',
                         mode: 'proxyOnce',
                         predicateGenerators: [{
-                            inject: 'function(request) { return [{ deepEquals: request, caseSensitive: true }, { not: { equals: { foo: "bar" }}}]; }'
+                            inject: 'function(config) { return [{ deepEquals: config.request, caseSensitive: true }, { not: { equals: { foo: "bar" }}}]; }'
                         }]
                     }
                 },
@@ -422,7 +422,7 @@ describe('responseResolver', function () {
                         to: 'where',
                         mode: 'proxyOnce',
                         predicateGenerators: [{
-                            inject: 'function(request) { throw Error("BOOM!!!"); }'
+                            inject: 'function(config) { throw Error("BOOM!!!"); }'
                         }]
                     }
                 },
