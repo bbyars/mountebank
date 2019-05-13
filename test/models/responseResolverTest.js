@@ -7,7 +7,8 @@ const assert = require('assert'),
     promiseIt = require('../testHelpers').promiseIt,
     mock = require('../mock').mock,
     Q = require('q'),
-    Logger = require('../fakes/fakeLogger');
+    Logger = require('../fakes/fakeLogger'),
+    util = require('util');
 
 describe('responseResolver', function () {
 
@@ -368,6 +369,78 @@ describe('responseResolver', function () {
                         responses: [response]
                     }
                 ]);
+            });
+        });
+
+        promiseIt('should support "inject" predicateGenerators', function () {
+            const proxy = { to: mock().returns(Q({ key: 'value' })) },
+                stubs = StubRepository.create('utf8'),
+                resolver = ResponseResolver.create(stubs, proxy),
+                logger = Logger.create(),
+                response = {
+                    proxy: {
+                        to: 'where',
+                        mode: 'proxyOnce',
+                        predicateGenerators: [{
+                            inject: 'function(config) { return [{ deepEquals: config.request, caseSensitive: true }, { not: { equals: { foo: "bar" }}}]; }'
+                        }]
+                    }
+                },
+                request = { key: 'Test' };
+
+            stubs.addStub({ responses: [response] });
+            const responseConfig = stubs.getResponseFor({}, logger, {});
+
+            return resolver.resolve(responseConfig, request, logger, {}).then(() => {
+                assert.deepEqual(stubList(stubs), [
+                    {
+                        predicates: [{
+                            deepEquals: { key: 'Test' },
+                            caseSensitive: true
+                        }, {
+                            not: {
+                                equals: { foo: 'bar' }
+                            }
+                        }],
+                        responses: [{ is: { key: 'value' } }]
+                    },
+                    {
+                        responses: [response]
+                    }
+                ]);
+            });
+        });
+
+        promiseIt('should log "inject" predicateGenerator exceptions', function () {
+            const errorsLogged = [],
+                proxy = { to: mock().returns(Q({ key: 'value' })) },
+                stubs = StubRepository.create('utf8'),
+                resolver = ResponseResolver.create(stubs, proxy),
+                logger = Logger.create(),
+                response = {
+                    proxy: {
+                        to: 'where',
+                        mode: 'proxyOnce',
+                        predicateGenerators: [{
+                            inject: 'function(config) { throw Error("BOOM!!!"); }'
+                        }]
+                    }
+                },
+                request = { key: 'Test' };
+
+            logger.error = function () {
+                const message = util.format.apply(this, Array.prototype.slice.call(arguments));
+                errorsLogged.push(message);
+            };
+
+            stubs.addStub({ responses: [response] });
+            const responseConfig = stubs.getResponseFor({}, logger, {});
+
+            return resolver.resolve(responseConfig, request, logger, {}).then(() => {
+                assert.fail('should have thrown exception');
+            }).catch(error => {
+                assert.strictEqual(error.message, 'invalid predicateGenerator injection');
+                assert.ok(errorsLogged.indexOf('injection X=> Error: BOOM!!!') >= 0);
             });
         });
 

@@ -106,6 +106,23 @@ function create (stubs, proxy, callbackURL) {
         const predicates = [];
 
         matchers.forEach(matcher => {
+            if (matcher.inject) {
+                // eslint-disable-next-line no-unused-vars
+                const config = { request, logger },
+                    injected = `(${matcher.inject})(config);`,
+                    errors = require('../util/errors');
+                try {
+                    predicates.push(...eval(injected));
+                }
+                catch (error) {
+                    logger.error(`injection X=> ${error}`);
+                    logger.error(`    source: ${JSON.stringify(injected)}`);
+                    logger.error(`    request: ${JSON.stringify(request)}`);
+                    throw errors.InjectionError('invalid predicateGenerator injection', { source: injected, data: error.message });
+                }
+                return;
+            }
+
             const basePredicate = {};
             let valueOf = field => field;
 

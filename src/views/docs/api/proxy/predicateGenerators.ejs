@@ -51,9 +51,15 @@ array takes the following fields:</p>
     <td>Defines an object containing a <code>selector</code> string. The predicate's
     scope is limited to the selected value in the request field.</td>
   </tr>
+  <tr>
+    <td><code>inject</code></td>
+    <td><code>null</code></td>
+    <td>string</td>
+    <td>Defines a JavaScript function that allows programmatic creation of the predicates.</td>
+  </tr>
 </table>
 
-<p>With the exception of <code>matches</code>, the fields correspond to the standard
+<p>With the exception of <code>matches</code> and <code>inject</code>, the fields correspond to the standard
 <a href='/docs/api/predicates'>predicate parameters</a>. Each object in the
 <code>predicateGenerators</code> array generates an object in
 the newly created stub's <code>predicates</code> array. You can decide how strictly
@@ -222,6 +228,8 @@ Host: localhost:<%= port %></code>
 Host: localhost:<%= port %></code>
     </step>
 
+<h3>xpath</h3>
+
 <p>The <a href='/docs/api/xpath'><code>xpath</code></a> and
 <a href='/docs/api/jsonpath'><code>jsonpath</code></a> predicate parameters work
 by limiting the scope of the generated predicate to the matching value in the
@@ -305,6 +313,8 @@ Host: localhost:<%= port %></code>
 Host: localhost:<%= port %></code>
     </step>
 
+<h3>jsonpath</h3>
+
 <p>Similarly, the following stub looks for number elements in JSON:</p>
 
     <step type='http'>
@@ -367,6 +377,120 @@ Host: localhost:<%= port %></code>
         "predicateGenerators": [{
           "matches": { "body": true },
           "jsonpath": { "selector": "$..number" }
+        }]
+      }
+    }]
+  }
+]<span class='hidden'>}</span></code></pre>
+        </assertResponse>
+    </step>
+
+    <step type='http'>
+<code class='hidden'>DELETE /imposters/3000
+Host: localhost:<%= port %></code>
+    </step>
+
+<h3>inject</h3>
+
+<p>In advanced scenarios, you need more fine-grained control over the creation of the predicates.
+In such scenarios, you can use the <code>inject</code> option.</p>
+
+<p class='warning-icon'>The <code>inject</code> option requires the <code>--allowInjection</code>
+command line option.</p>
+
+<p>The <code>inject</code> field takes a string representing a JavaScript function that is expected
+to return an array of predicate objects. Since it provides full control over the predicate generation,
+the <code>inject</code> option will ignore any other parameters, like <code>xpath</code>. The function
+accepts a single object parameter, which contains the following fields:</p>
+
+<table>
+    <tr>
+        <th>Field</th>
+        <th>Description</th>
+    </tr>
+    <tr>
+        <td><code>request</code></td>
+        <td>The entire request object, containing all request fields</td>
+    </tr>
+    <tr>
+        <td><code>logger</code></td>
+        <td>A logger object with <code>debug</code>, <code>info</code>, <code>warn</code>,
+        and <code>error</code> functions to write to the mountebank logs.</td>
+    </tr>
+</table>
+
+<p>In this example, we'll add a predicate if a specific header exists. Here's the injection
+function fully expanded:</p>
+
+<pre><code>
+function (config) {
+  const predicate = { exists: { headers: { 'X-Transaction-Id': false } } };
+  if (config.request.headers['X-Transaction-Id']) {
+    config.logger.debug('Requiring X-Transaction-Id header to exist in predicate');
+    predicate.exists.headers['X-Transaction-Id'] = true;
+  }
+  return [predicate];
+}
+</code></pre>
+
+<p>First let's add the imposter. The function must be passed as a single string, which makes it largely
+unreadable inline.</p>
+
+    <step type='http'>
+<pre><code><span class='hidden'>POST /imposters HTTP/1.1
+Host: localhost:<%= port %>
+Accept: application/json
+Content-Type: application/json
+
+{
+  "port": 3000,
+  "protocol": "http",
+</span>"stubs": [{
+  "responses": [{
+    "proxy": {
+      "to": "<change to='http://localhost:3001'>http://origin-server.com</change>",
+      <strong class='highlight1'>"predicateGenerators": [{
+        "inject": "function (config) {\n  const predicate = { exists: { headers: { 'X-Transaction-Id': false } } };\n  if (config.request.headers['X-Transaction-Id']) {\n    config.logger.debug('Requiring X-Transaction-Id header to exist in predicate');\n    predicate.exists.headers['X-Transaction-Id'] = true;\n  }\n  return [predicate];\n}"
+      }]</strong>
+    }
+  }]
+}]<span class='hidden'>}</span></code></pre>
+    </step>
+
+<p>We'll send it the following HTTP request:</p>
+
+    <step type='http'>
+<pre><code>POST / HTTP/1.1
+Host: localhost:3000
+<strong class='highlight1'>X-Transaction-Id: 100</strong>
+
+SUCCESS</code></pre>
+    </step>
+
+<p>Since the <code>X-Transaction-Id</code> header was passed, the generated predicate requires
+it to exist to replay the response later.</p>
+
+    <step type='http'>
+<code class='hidden'>GET /imposters/3000 HTTP/1.1
+Host: localhost:<%= port %></code>
+
+        <assertResponse partial='true'>
+<pre><code><span class='hidden'>{
+</span>"stubs": [
+  {
+    <strong class='highlight1'>"predicates": [{
+      "exists": { "headers": { "X-Transaction-Id": true } }
+    }]</strong>,
+    "responses": [{
+      "is": { <change to='"statusCode": 200'><strong class='highlight2'>...</strong></change> }
+    }]
+  },
+  {
+    "responses": [{
+      "proxy": {
+        "to": "<change to='http://localhost:3001'>http://origin-server.com</change>",
+        "predicateGenerators": [{
+          "inject": "function (config) {\n  const predicate = { exists: { headers: { 'X-Transaction-Id': false } } };\n  if (config.request.headers['X-Transaction-Id']) {\n    config.logger.debug('Requiring X-Transaction-Id header to exist in predicate');\n    predicate.exists.headers['X-Transaction-Id'] = true;\n  }\n  return [predicate];\n}"
         }]
       }
     }]
