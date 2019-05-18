@@ -68,6 +68,7 @@ function create (logger) {
                 key: proxyOptions.key,
                 ciphers: proxyOptions.ciphers || 'ALL',
                 secureProtocol: proxyOptions.secureProtocol,
+                passphrase: proxyOptions.passphrase,
                 rejectUnauthorized: false
             };
 

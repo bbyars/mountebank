@@ -66,7 +66,7 @@ in newly created <code>predicates</code>.</p>
   </tr>
 </table>
 
-<p>http and https proxies add three additional optional parameters for situations where the
+<p>http and https proxies add additional optional parameters for situations where the
 origin server expects to use mutual authentication and will request a client certificate, or
 for when you need to change the proxied request headers:</p>
 
@@ -94,6 +94,19 @@ for when you need to change the proxied request headers:</p>
     <td><code>ALL</code></td>
     <td>A valid cipher (see <a href='http://openssl.cs.utah.edu/docs/apps/ciphers.html'>this page</a> for formats)</td>
     <td>For older (and insecure) https servers, this field allows you to override the cipher used to commuicate</td>
+  </tr>
+  <tr>
+    <td><code>secureProtocol</code></td>
+    <td><code>TLS_method</code></td>
+    <td>A valid <a href='https://www.openssl.org/docs/man1.1.0/man7/ssl.html#Dealing-with-Protocol-Methods'>
+      OpenSSL protocol method name</a></td>
+    <td>The SSL method to use</td>
+  </tr>
+  <tr>
+    <td><code>passphrase</code></td>
+    <td><code>null</code></td>
+    <td>string</td>
+    <td>Shared passphrase used for a single private key</td>
   </tr>
   <tr>
     <td><code>injectHeaders</code></td>
