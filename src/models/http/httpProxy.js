@@ -19,7 +19,12 @@ function create (logger) {
         });
     }
 
-    function toUrl (path, query) {
+    function toUrl (path, query, requestDetails) {
+        if (requestDetails) {
+            // Not passed in outOfProcess mode
+            return requestDetails.rawUrl;
+        }
+
         const querystring = require('querystring'),
             tail = querystring.stringify(query);
 
@@ -49,7 +54,7 @@ function create (logger) {
         }
     }
 
-    function getProxyRequest (baseUrl, originalRequest, proxyOptions) {
+    function getProxyRequest (baseUrl, originalRequest, proxyOptions, requestDetails) {
         /* eslint complexity: 0 */
         const helpers = require('../../util/helpers'),
             headersHelper = require('./headersHelper'),
@@ -62,7 +67,7 @@ function create (logger) {
                 hostname: parts.hostname,
                 port: parts.port || defaultPort,
                 auth: parts.auth,
-                path: toUrl(originalRequest.path, originalRequest.query),
+                path: toUrl(originalRequest.path, originalRequest.query, requestDetails),
                 headers: helpers.clone(originalRequest.headers),
                 cert: proxyOptions.cert,
                 key: proxyOptions.key,
@@ -147,9 +152,11 @@ function create (logger) {
      * @param {string} [options.cert] - The certificate, in case the destination requires mutual authentication
      * @param {string} [options.key] - The private key, in case the destination requires mutual authentication
      * @param {Object} [options.injectHeaders] - The headers to inject in the proxied request
+     * @param {Object} [options.passphrase] - The passphrase for the private key
+     * @param {Object} requestDetails - Additional details about the request not stored in the simplified JSON
      * @returns {Object} - Promise resolving to the response
      */
-    function to (proxyDestination, originalRequest, options) {
+    function to (proxyDestination, originalRequest, options, requestDetails) {
 
         addInjectedHeadersTo(originalRequest, options.injectHeaders);
 
@@ -160,7 +167,7 @@ function create (logger) {
 
         const Q = require('q'),
             deferred = Q.defer(),
-            proxiedRequest = getProxyRequest(proxyDestination, originalRequest, options);
+            proxiedRequest = getProxyRequest(proxyDestination, originalRequest, options, requestDetails);
 
         log('=>', originalRequest);
 

@@ -87,10 +87,10 @@ function create (config) {
             .then(response => postJSON({ proxyResponse: response }, proxyCallbackURL));
     }
 
-    function getResponse (request) {
+    function getResponse (request, requestDetails) {
         const Q = require('q');
 
-        return postJSON({ request }, callbackURL).then(mbResponse => {
+        return postJSON({ request, requestDetails }, callbackURL).then(mbResponse => {
             if (mbResponse.proxy) {
                 return getProxyResponse(mbResponse.proxy, mbResponse.request, mbResponse.callbackURL);
             }

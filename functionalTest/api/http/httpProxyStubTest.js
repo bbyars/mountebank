@@ -6,6 +6,7 @@ const assert = require('assert'),
     api = require('../api').create(),
     client = require('./baseHttpClient').create('http'),
     promiseIt = require('../../testHelpers').promiseIt,
+    isInProcessImposter = require('../../testHelpers').isInProcessImposter,
     port = api.port + 1,
     isWindows = require('os').platform().indexOf('win') === 0,
     timeout = isWindows ? 10000 : parseInt(process.env.MB_SLOW_TEST_TIMEOUT || 2000),
@@ -719,4 +720,38 @@ describe('http proxy stubs', function () {
             })
             .finally(() => api.del('/imposters'));
     });
+
+    if (isInProcessImposter('http')) {
+        promiseIt('should not add = at end of of query key missing = in original request (issue #410)', function () {
+            const http = require('http'),
+                Q = require('q'),
+                originServerPort = port + 1,
+                originServer = http.createServer((request, response) => {
+                    // Uxe base http library rather than imposter to get raw url
+                    response.end(request.url);
+                });
+
+            originServer.listen(originServerPort);
+            originServer.stop = () => {
+                const deferred = Q.defer();
+                originServer.close(() => {
+                    deferred.resolve({});
+                });
+                return deferred.promise;
+            };
+
+            const proxyStub = { responses: [{ proxy: { to: `http://localhost:${originServerPort}`, mode: 'proxyAlways' } }] },
+                proxyRequest = { protocol: 'http', port, stubs: [proxyStub], name: 'proxy' };
+
+            return api.post('/imposters', proxyRequest).then(response => {
+                assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body, null, 2));
+                return client.get('/path?WSDL', port);
+            }).then(response => {
+                assert.strictEqual(response.body, '/path?WSDL');
+                return client.get('/path?WSDL=', port);
+            }).then(response => {
+                assert.strictEqual(response.body, '/path?WSDL=');
+            }).finally(() => originServer.stop().then(() => api.del('/imposters')));
+        });
+    }
 });

@@ -62,7 +62,10 @@ function create (Protocol, creationRequest, baseLogger, config, isAllowedConnect
     // If the CLI --mock flag is passed, we record even if the imposter level recordRequests = false
     const recordRequests = config.recordRequests || creationRequest.recordRequests;
 
-    function getResponseFor (request) {
+    // requestDetails are not stored with the imposter
+    // It was created to pass the raw URL to maintain the exact querystring during http proxying
+    // without having to change the path / query options on the stored request
+    function getResponseFor (request, requestDetails) {
         if (!isAllowedConnection(request.ip, logger)) {
             return Q({ blocked: true, code: 'unauthorized ip address' });
         }
@@ -75,7 +78,7 @@ function create (Protocol, creationRequest, baseLogger, config, isAllowedConnect
         }
 
         const responseConfig = stubs.getResponseFor(request, logger, imposterState);
-        return resolver.resolve(responseConfig, request, logger, imposterState).then(response => {
+        return resolver.resolve(responseConfig, request, logger, imposterState, requestDetails).then(response => {
             if (config.recordMatches && !response.proxy) {
                 if (response.response) {
                     // Out of process responses wrap the result in an outer response object

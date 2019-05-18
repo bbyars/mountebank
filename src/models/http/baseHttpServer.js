@@ -119,7 +119,7 @@ module.exports = function (createBaseServer) {
                 require('./httpRequest').createFrom(request).then(simpleRequest => {
                     logger.debug('%s => %s', clientName, JSON.stringify(simpleRequest));
                     simplifiedRequest = simpleRequest;
-                    return responseFn(simpleRequest);
+                    return responseFn(simpleRequest, { rawUrl: request.url });
                 }).done(mbResponse => {
                     if (mbResponse.blocked) {
                         request.socket.end();
