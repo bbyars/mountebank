@@ -13,12 +13,12 @@
  * @returns {Object}
  */
 function select (selector, possibleJSON, logger) {
-    const JSONPath = require('jsonpath-plus'),
+    const { JSONPath } = require('jsonpath-plus'),
         isObject = require('../util/helpers').isObject;
 
     try {
         const json = isObject(possibleJSON) ? possibleJSON : JSON.parse(possibleJSON),
-            result = JSONPath.eval(json, selector);
+            result = JSONPath(selector, json);
         if (typeof result === 'string') {
             return result;
         }
