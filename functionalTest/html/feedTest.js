@@ -27,6 +27,7 @@ describe('the feed', function () {
             console.log('    2.....');
             assert.strictEqual(response.statusCode, 200);
             assert.strictEqual(response.headers['content-type'], 'application/atom+xml; charset=utf-8');
+            console.log(response.body);
             assert.strictEqual(entryCount(response.body), 10);
 
             console.log('    3.....');
@@ -37,6 +38,7 @@ describe('the feed', function () {
             assert.ok(entryCount(response.body) > 0, 'No entries');
             console.log('    5.....');
         }, err => {
+            console.log('FEED ERROR:');
             console.log(err);
         });
     });
