@@ -286,7 +286,7 @@ workflows:
               only: master
             tags:
               only: /^v.*/
-      - nodev6:
+      - nodev8:
           requires:
             - build
           filters:
@@ -294,7 +294,7 @@ workflows:
               only: master
             tags:
               only: /^v.*/
-      - nodev10:
+      - nodev12:
           requires:
             - build
           filters:
@@ -317,8 +317,8 @@ workflows:
             - package-tarball
             - package-deb
             - package-rpm
-            - nodev6
-            - nodev10
+            - nodev8
+            - nodev12
           filters:
             branches:
               only: master
