@@ -36,6 +36,8 @@ describe('the feed', function () {
             assert.strictEqual(response.statusCode, 200);
             assert.ok(entryCount(response.body) > 0, 'No entries');
             console.log('    5.....');
+        }, err => {
+            console.log(err);
         });
     });
 });
