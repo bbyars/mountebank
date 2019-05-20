@@ -18,6 +18,14 @@ function create (version, options) {
     delete publicOptions.heroku;
     delete publicOptions.version;
 
+    // On some OS's, it duplicates camelCase as hypen-case (e.g. noParse and no-parse)
+    // I assume this was a change in yargs at some point
+    for (var prop in publicOptions) {
+        if (prop.indexOf('-') > 0) {
+            delete publicOptions[prop];
+        }
+    }
+
     /**
      * The method that responds to GET /config
      * @memberOf module:controllers/configController#
