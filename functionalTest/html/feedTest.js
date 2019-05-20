@@ -21,15 +21,21 @@ function getNextLink (body) {
 
 describe('the feed', function () {
     promiseIt('should default to page 1 with 10 entries', function () {
+        console.log('******************');
+        console.log('    1.....');
         return httpClient.get('/feed', api.port).then(response => {
+            console.log('    2.....');
             assert.strictEqual(response.statusCode, 200);
             assert.strictEqual(response.headers['content-type'], 'application/atom+xml; charset=utf-8');
             assert.strictEqual(entryCount(response.body), 10);
 
+            console.log('    3.....');
             return httpClient.get(getNextLink(response.body), api.port);
         }).then(response => {
+            console.log('    4.....');
             assert.strictEqual(response.statusCode, 200);
             assert.ok(entryCount(response.body) > 0, 'No entries');
+            console.log('    5.....');
         });
     });
 });
