@@ -21,13 +21,13 @@ Content-Type: application/json
     {
       "responses": [{ "is": { "data": "Zmlyc3QgcmVzcG9uc2U=" } }],
       "predicates": [{
-        "inject": "function (request, logger) { logger.info('Inside injection'); return new Buffer(request.data, 'base64')[2] &gt; 100; }"
+        "inject": "function (request, logger) { logger.info('Inside injection'); return Buffer.from(request.data, 'base64')[2] &gt; 100; }"
       }]
     }</strong>,<strong class='highlight2'>
     {
       "responses": [{ "is": { "data": "c2Vjb25kIHJlc3BvbnNl" } }],
       "predicates": [{
-        "inject": "request => { return new Buffer(request.data, 'base64')[2] &lt;= 100; }"
+        "inject": "request => { return Buffer.from(request.data, 'base64')[2] &lt;= 100; }"
       }]
     }</strong>
   ]
