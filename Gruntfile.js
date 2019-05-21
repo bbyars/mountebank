@@ -19,13 +19,14 @@ module.exports = grunt => {
                 options: {
                     reporter: 'spec'
                 },
-                src: ['test/**/*.js']
+                src: ['test2/**/*.js']
             },
             functional: {
                 options: {
                     reporter: 'spec'
                 },
-                src: ['functionalTest/**/*.js']
+                // src: ['functionalTest/**/*.js']
+                src: ['functionalTest/html/feedTest.js']
             },
             performance: {
                 options: { reporter: 'spec' },
