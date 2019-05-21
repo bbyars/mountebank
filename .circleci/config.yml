@@ -6,6 +6,7 @@ jobs:
       - image: circleci/node:10-stretch
     environment:
       - CC_TEST_REPORTER_ID=8bc3a050a2f8ef1cc460e5f4c72d18a689c8ae0981bf494031eb4eb28bbd0b0b
+      - MB_SLOW_TEST_TIMEOUT: 7000
     steps:
       - checkout
       - restore_cache:
@@ -21,6 +22,7 @@ jobs:
     environment:
       - MB_RUN_WEB_TESTS=true
       - CC_TEST_REPORTER_ID=8bc3a050a2f8ef1cc460e5f4c72d18a689c8ae0981bf494031eb4eb28bbd0b0b
+      - MB_SLOW_TEST_TIMEOUT: 7000
     steps:
       - checkout
       - restore_cache:
@@ -58,7 +60,7 @@ jobs:
     docker:
       - image: circleci/node:8-stretch
     environment:
-      - MB_SLOW_TEST_TIMEOUT: 6000
+      - MB_SLOW_TEST_TIMEOUT: 7000
       - MB_PORT: 3535
     steps:
       - attach_workspace:
@@ -72,7 +74,7 @@ jobs:
     docker:
       - image: circleci/node:12-stretch
     environment:
-      - MB_SLOW_TEST_TIMEOUT: 6000
+      - MB_SLOW_TEST_TIMEOUT: 7000
       - MB_PORT: 3535
     steps:
       - attach_workspace:
@@ -86,7 +88,7 @@ jobs:
     docker:
       - image: circleci/ruby:2.4.4-stretch-node
     environment:
-      - MB_SLOW_TEST_TIMEOUT: 6000
+      - MB_SLOW_TEST_TIMEOUT: 7000
       - MB_PORT: 3535
     steps:
       - attach_workspace:
@@ -102,7 +104,7 @@ jobs:
     docker:
       - image: circleci/ruby:2.4.4-stretch-node
     environment:
-      - MB_SLOW_TEST_TIMEOUT: 6000
+      - MB_SLOW_TEST_TIMEOUT: 7000
       - MB_PORT: 3535
     steps:
       - attach_workspace:
@@ -118,7 +120,7 @@ jobs:
     docker:
       - image: circleci/ruby:2.4.4-stretch-node
     environment:
-      - MB_SLOW_TEST_TIMEOUT: 6000
+      - MB_SLOW_TEST_TIMEOUT: 7000
       - MB_PORT: 3535
     steps:
       - attach_workspace:
@@ -138,7 +140,7 @@ jobs:
     docker:
       - image: circleci/ruby:2.4.4-stretch-node
     environment:
-      - MB_SLOW_TEST_TIMEOUT: 6000
+      - MB_SLOW_TEST_TIMEOUT: 7000
       - MB_PORT: 3535
     steps:
       - attach_workspace:
@@ -154,7 +156,7 @@ jobs:
     docker:
       - image: bbyars/mountebank-centos:latest
     environment:
-      - MB_SLOW_TEST_TIMEOUT: 6000
+      - MB_SLOW_TEST_TIMEOUT: 7000
       - MB_PORT: 3535
     steps:
       - attach_workspace:
