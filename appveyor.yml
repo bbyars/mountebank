@@ -13,8 +13,8 @@ environment:
     MB_SLOW_TEST_TIMEOUT: 45000
 
   matrix:
-    - MB_APPVEYOR_CONFIG: "NODE_VERSION=10|MB_GRUNT_TASK=outOfProcessImposters default|MB_PORT=3535"
-    - MB_APPVEYOR_CONFIG: "NODE_VERSION=8|MB_GRUNT_TASK=test:zip|MB__PORT=3535"
+    - MB_APPVEYOR_CONFIG: "NODE_VERSION=10|MB_GRUNT_TASK=outOfProcessImposters default|MB_PORT=3535|NODE_DEBUG=net"
+    - MB_APPVEYOR_CONFIG: "NODE_VERSION=8|MB_GRUNT_TASK=test:zip|MB__PORT=3535|NODE_DEBUG=net"
 
 cache:
   - node_modules -> package.json
