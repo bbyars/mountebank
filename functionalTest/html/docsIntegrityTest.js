@@ -51,7 +51,7 @@ describe('docs', function () {
 
     // TODO: Total hack. These started failing with timeout or ECONNRESET errors on Appveyor,
     // and I can't figure out why
-    if (isWindows && !tcpIsInProcess) {
+    if (tcpIsInProcess || !isWindows) {
         [
             '/docs/protocols/https',
             '/docs/protocols/http',
