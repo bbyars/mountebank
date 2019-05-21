@@ -6,12 +6,9 @@ const assert = require('assert'),
     client = require('./../functionalTest/api/http/baseHttpClient').create('http'),
     promiseIt = require('./../functionalTest/testHelpers').promiseIt,
     port = api.port + 1,
-    mb = require('../functionalTest/mb').create(port + 1),
-    numRequests = 15000,
-    baselineMemory = 3950,
-    minIncreasedMemory = 150;
+    mb = require('../functionalTest/mb').create(port + 1);
 
-function getMemoryUsedForManyRequests (mbPort) {
+function getMemoryUsedForManyRequests (mbPort, numRequests) {
     const stub = { responses: [{ is: { statusCode: 400 } }] },
         request = { protocol: 'http', port, stubs: [stub] },
         requestFn = () => client.get('/', port),
@@ -38,29 +35,26 @@ function getMemoryUsedForManyRequests (mbPort) {
         .finally(() => client.del(`/imposters/${port}`, mbPort));
 }
 
-describe('mb', function () {
-    this.timeout(300000);
+describe('mb memory usage', function () {
+    this.timeout(600000);
 
-    describe('when remembering requests', function () {
-        promiseIt('should increase memory usage with number of requests', function () {
-            return mb.start(['--mock'])
-                .then(() => getMemoryUsedForManyRequests(mb.port))
-                .then(memoryUsed => {
-                    console.log(`memory usage for ${numRequests} requests with --mock: ${memoryUsed}`);
-                    assert.ok(memoryUsed > baselineMemory + minIncreasedMemory, `Memory used: ${memoryUsed}`);
-                }).finally(() => mb.stop());
-        });
-    });
+    promiseIt('should not leak memory without --mock', function () {
+        const numRequests = 15000,
+            minIncreasedMemory = numRequests / 100;
 
-    describe('when not remembering requests', function () {
-        promiseIt('should not leak memory', function () {
-            return mb.start()
-                .then(() => getMemoryUsedForManyRequests(mb.port))
-                .then(memoryUsed => {
-                    console.log(`default memory usage with for ${numRequests} requests: ${memoryUsed}`);
-                    assert.ok(memoryUsed < baselineMemory, `Memory used: ${memoryUsed}`);
-                })
-                .finally(() => mb.stop());
-        });
+        var baselineMemory;
+
+        return mb.start()
+            .then(() => getMemoryUsedForManyRequests(mb.port, numRequests))
+            .then(memoryUsed => {
+                baselineMemory = memoryUsed;
+                console.log(`default memory usage with for ${numRequests} requests: ${memoryUsed}`);
+                return mb.stop();
+            }).then(() => mb.start(['--mock']))
+            .then(() => getMemoryUsedForManyRequests(mb.port, numRequests))
+            .then(memoryUsed => {
+                console.log(`memory usage for ${numRequests} requests with --mock: ${memoryUsed}`);
+                assert.ok(memoryUsed > baselineMemory + minIncreasedMemory, `Memory used: ${memoryUsed}`);
+            }).finally(() => mb.stop());
     });
 });
