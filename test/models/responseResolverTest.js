@@ -383,7 +383,7 @@ describe('responseResolver', function () {
                         mode: 'proxyOnce',
                         predicateGenerators: [{
                             matches: { key: true },
-                           predicateOperator: "exists"
+                            predicateOperator: 'exists'
                         }]
                     }
                 },

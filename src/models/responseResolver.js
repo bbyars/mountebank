@@ -153,7 +153,7 @@ function create (stubs, proxy, callbackURL) {
                     predicate.deepEquals = {};
                     predicate.deepEquals[fieldName] = valueOf(request[fieldName]);
                 }
-                else if (matcherValue === true && hasPredicateOperator === true){
+                else if (matcherValue === true && hasPredicateOperator === true) {
                     predicate[predicateOperator] = request;
                 }
                 else {
