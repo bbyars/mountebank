@@ -124,11 +124,13 @@ function create (stubs, proxy, callbackURL) {
             }
 
             const basePredicate = {};
+            let hasPredicateOperator = false;
+            let predicateOperator;
             let valueOf = field => field;
 
             // Add parameters
             Object.keys(matcher).forEach(key => {
-                if (key !== 'matches') {
+                if (key !== 'matches' && key !== 'predicateOperator') {
                     basePredicate[key] = matcher[key];
                 }
                 if (key === 'xpath') {
@@ -137,16 +139,22 @@ function create (stubs, proxy, callbackURL) {
                 else if (key === 'jsonpath') {
                     valueOf = field => jsonpathValue(matcher.jsonpath, field, logger);
                 }
+                else if (key === 'predicateOperator') {
+                    hasPredicateOperator = true;
+                    predicateOperator = matcher[key];
+                }
             });
 
             Object.keys(matcher.matches).forEach(fieldName => {
                 const helpers = require('../util/helpers'),
                     matcherValue = matcher.matches[fieldName],
                     predicate = helpers.clone(basePredicate);
-
-                if (matcherValue === true) {
+                if (matcherValue === true && hasPredicateOperator === false) {
                     predicate.deepEquals = {};
                     predicate.deepEquals[fieldName] = valueOf(request[fieldName]);
+                }
+                else if (matcherValue === true && hasPredicateOperator === true){
+                    predicate[predicateOperator] = request;
                 }
                 else {
                     predicate.equals = {};
