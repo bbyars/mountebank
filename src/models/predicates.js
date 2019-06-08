@@ -342,7 +342,8 @@ function matches (predicate, request, encoding) {
     const caseSensitive = predicate.caseSensitive ? true : false, // convert to boolean even if undefined
         helpers = require('../util/helpers'),
         clone = helpers.merge(predicate, { caseSensitive: true, keyCaseSensitive: caseSensitive }),
-        expected = normalize(predicate.matches, clone, { encoding: encoding }),
+        noexcept = helpers.merge(clone, { except: '' }),
+        expected = normalize(predicate.matches, noexcept, { encoding: encoding }),
         actual = normalize(request, clone, { encoding: encoding, withSelectors: true }),
         options = caseSensitive ? '' : 'i',
         errors = require('../util/errors');
