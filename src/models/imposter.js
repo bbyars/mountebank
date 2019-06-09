@@ -145,7 +145,8 @@ function create (Protocol, creationRequest, baseLogger, config, isAllowedConnect
                 stubs: server.stubs.stubs,
                 overwriteStubs: server.stubs.overwriteStubs,
                 overwriteStubAtIndex: server.stubs.overwriteStubAtIndex,
-                deleteStubAtIndex: server.stubs.deleteStubAtIndex
+                deleteStubAtIndex: server.stubs.deleteStubAtIndex,
+                addStubAtIndex: server.stubs.addStubAtIndex
             });
         });
     });

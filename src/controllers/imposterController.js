@@ -255,10 +255,31 @@ function create (protocols, imposters, logger, allowInjection) {
      * @memberOf module:controllers/imposterController#
      * @param {Object} request - the HTTP request
      * @param {Object} response - the HTTP response
+     * @returns {Object} - promise for testing
      */
     function postStub (request, response) {
-        const imposter = imposters[request.params.id];
-        response.send(imposter.toJSON());
+        const imposter = imposters[request.params.id],
+            newStub = request.body.stub,
+            index = typeof request.body.index === 'undefined' ? imposter.stubs().length : request.body.index,
+            errors = [];
+
+        if (typeof index !== 'number' || index < 0 || index > imposter.stubs().length) {
+            errors.push(exceptions.ValidationError("'index' must be between 0 and the length of the stubs array"));
+        }
+        if (errors.length > 0) {
+            return respondWithValidationErrors(response, errors);
+        }
+        else {
+            return validate(imposter, [newStub]).then(result => {
+                if (result.isValid) {
+                    imposter.addStubAtIndex(index, newStub);
+                    response.send(imposter.toJSON());
+                }
+                else {
+                    respondWithValidationErrors(response, result.errors);
+                }
+            });
+        }
     }
 
     /**

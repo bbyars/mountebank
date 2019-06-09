@@ -103,6 +103,16 @@ function create (encoding) {
     }
 
     /**
+     * Adds a stub at stubIndex without changing the state of any other stubs
+     * @memberOf module:models/stubRepository#
+     * @param {Number} index - the index of the stub to change
+     * @param {Object} newStub - the new stub
+     */
+    function addStubAtIndex (index, newStub) {
+        stubs.splice(index, 0, decorate(newStub));
+    }
+
+    /**
      * Overwrites the entire list of stubs
      * @memberOf module:models/stubRepository#
      * @param {Object} newStubs - the new list of stubs
@@ -212,6 +222,7 @@ function create (encoding) {
     return {
         stubs: getStubs,
         addStub,
+        addStubAtIndex,
         overwriteStubs,
         overwriteStubAtIndex,
         deleteStubAtIndex,

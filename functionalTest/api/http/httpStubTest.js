@@ -540,6 +540,68 @@ const assert = require('assert'),
                     })
                     .finally(() => api.del('/imposters'));
             });
+
+            promiseIt('should support adding single stub without restarting the imposter', function () {
+                const request = {
+                        protocol,
+                        port,
+                        stubs: [
+                            { responses: [{ is: { body: 'first' } }], predicates: [{ equals: { path: '/first' } }] },
+                            { responses: [{ is: { body: 'third' } }] }
+                        ]
+                    },
+                    newStub = { responses: [{ is: { body: 'SECOND' } }] };
+
+                return api.post('/imposters', request)
+                    .then(response => {
+                        assert.strictEqual(201, response.statusCode, JSON.stringify(response.body));
+                        return api.post(`/imposters/${port}/stubs`, { index: 1, stub: newStub });
+                    })
+                    .then(response => {
+                        assert.strictEqual(response.statusCode, 200);
+                        assert.deepEqual(response.body.stubs, [
+                            { responses: [{ is: { body: 'first' } }], predicates: [{ equals: { path: '/first' } }] },
+                            { responses: [{ is: { body: 'SECOND' } }] },
+                            { responses: [{ is: { body: 'third' } }] }
+                        ]);
+                        return client.get('/', port);
+                    })
+                    .then(response => {
+                        assert.strictEqual(response.body, 'SECOND');
+                    })
+                    .finally(() => api.del('/imposters'));
+            });
+
+            promiseIt('should support adding single stub at end without index ', function () {
+                const request = {
+                        protocol,
+                        port,
+                        stubs: [
+                            { responses: [{ is: { body: 'first' } }], predicates: [{ equals: { path: '/first' } }] },
+                            { responses: [{ is: { body: 'third' } }] }
+                        ]
+                    },
+                    newStub = { responses: [{ is: { body: 'LAST' } }] };
+
+                return api.post('/imposters', request)
+                    .then(response => {
+                        assert.strictEqual(201, response.statusCode, JSON.stringify(response.body));
+                        return api.post(`/imposters/${port}/stubs`, { stub: newStub });
+                    })
+                    .then(response => {
+                        assert.strictEqual(response.statusCode, 200);
+                        assert.deepEqual(response.body.stubs, [
+                            { responses: [{ is: { body: 'first' } }], predicates: [{ equals: { path: '/first' } }] },
+                            { responses: [{ is: { body: 'third' } }] },
+                            { responses: [{ is: { body: 'LAST' } }] }
+                        ]);
+                        return client.get('/', port);
+                    })
+                    .then(response => {
+                        assert.strictEqual(response.body, 'third');
+                    })
+                    .finally(() => api.del('/imposters'));
+            });
         });
     });
 });
