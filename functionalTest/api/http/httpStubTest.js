@@ -478,6 +478,38 @@ const assert = require('assert'),
                     })
                     .finally(() => api.del('/imposters'));
             });
+
+            promiseIt('should support overwriting a single stub without restarting the imposter', function () {
+                const request = {
+                        protocol,
+                        port,
+                        stubs: [
+                            { responses: [{ is: { body: 'first' } }], predicates: [{ equals: { path: '/first' } }] },
+                            { responses: [{ is: { body: 'SECOND' } }] },
+                            { responses: [{ is: { body: 'third' } }] }
+                        ]
+                    },
+                    changedStub = { responses: [{ is: { body: 'CHANGED' } }] };
+
+                return api.post('/imposters', request)
+                    .then(response => {
+                        assert.strictEqual(201, response.statusCode, JSON.stringify(response.body));
+                        return api.put(`/imposters/${port}/stubs/1`, changedStub);
+                    })
+                    .then(response => {
+                        assert.strictEqual(response.statusCode, 200);
+                        assert.deepEqual(response.body.stubs, [
+                            { responses: [{ is: { body: 'first' } }], predicates: [{ equals: { path: '/first' } }] },
+                            { responses: [{ is: { body: 'CHANGED' } }] },
+                            { responses: [{ is: { body: 'third' } }] }
+                        ]);
+                        return client.get('/', port);
+                    })
+                    .then(response => {
+                        assert.strictEqual(response.body, 'CHANGED');
+                    })
+                    .finally(() => api.del('/imposters'));
+            });
         });
     });
 });

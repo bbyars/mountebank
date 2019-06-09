@@ -81,6 +81,12 @@ function create (encoding) {
         return i;
     }
 
+    function decorate (stub) {
+        stub.statefulResponses = repeatTransform(stub.responses);
+        stub.addResponse = response => { stub.responses.push(response); };
+        return stub;
+    }
+
     /**
      * Adds a stub to the repository
      * @memberOf module:models/stubRepository#
@@ -88,14 +94,11 @@ function create (encoding) {
      * @param {Object} beforeResponse - If provided, the new stub will be added before the stub containing the response (used for proxyOnce)
      */
     function addStub (stub, beforeResponse) {
-        stub.statefulResponses = repeatTransform(stub.responses);
-        stub.addResponse = response => { stub.responses.push(response); };
-
         if (beforeResponse) {
-            stubs.splice(stubIndexFor(beforeResponse), 0, stub);
+            stubs.splice(stubIndexFor(beforeResponse), 0, decorate(stub));
         }
         else {
-            stubs.push(stub);
+            stubs.push(decorate(stub));
         }
     }
 
@@ -109,6 +112,16 @@ function create (encoding) {
             stubs.pop();
         }
         newStubs.forEach(stub => addStub(stub));
+    }
+
+    /**
+     * Overwrites the stub at stubIndex without changing the state of any other stubs
+     * @memberOf module:models/stubRepository#
+     * @param {Number} index - the index of the stub to change
+     * @param {Object} newStub - the new stub
+     */
+    function overwriteStubAtIndex (index, newStub) {
+        stubs[index] = decorate(newStub);
     }
 
     /**
@@ -191,6 +204,7 @@ function create (encoding) {
         stubs: getStubs,
         addStub,
         overwriteStubs,
+        overwriteStubAtIndex,
         getResponseFor,
         resetProxies
     };

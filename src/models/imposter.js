@@ -142,7 +142,9 @@ function create (Protocol, creationRequest, baseLogger, config, isAllowedConnect
                 getResponseFor,
                 getProxyResponseFor,
                 addStub: server.stubs.addStub,
-                overwriteStubs: server.stubs.overwriteStubs
+                stubs: server.stubs.stubs,
+                overwriteStubs: server.stubs.overwriteStubs,
+                overwriteStubAtIndex: server.stubs.overwriteStubAtIndex
             });
         });
     });

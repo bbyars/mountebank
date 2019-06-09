@@ -262,4 +262,138 @@ describe('ImposterController', function () {
             });
         });
     });
+
+    describe('#putStub', function () {
+        promiseIt('should return a 404 if stubIndex is not an integer', function () {
+            const response = FakeResponse.create(),
+                imposters = {
+                    1: {
+                        protocol: 'test',
+                        stubs: mock().returns([])
+                    }
+                },
+                Protocol = { testRequest: {} },
+                logger = require('../fakes/fakeLogger').create(),
+                controller = Controller.create({ test: Protocol }, imposters, logger, false),
+                request = {
+                    params: { id: 1, stubIndex: 'test' },
+                    body: { stubs: [{ responses: [{ is: 'response' }] }] }
+                };
+
+            return controller.putStub(request, response).then(() => {
+                assert.strictEqual(response.statusCode, 404);
+                assert.strictEqual(response.body.errors.length, 1);
+                assert.deepEqual(response.body.errors[0], {
+                    code: 'bad data',
+                    message: "'stubIndex' must be a valid integer, representing the array index position of the stub to replace"
+                });
+            });
+        });
+
+        promiseIt('should return a 404 if stubIndex is less than 0', function () {
+            const response = FakeResponse.create(),
+                imposters = {
+                    1: {
+                        protocol: 'test',
+                        stubs: mock().returns([])
+                    }
+                },
+                Protocol = { testRequest: {} },
+                logger = require('../fakes/fakeLogger').create(),
+                controller = Controller.create({ test: Protocol }, imposters, logger, false),
+                request = {
+                    params: { id: 1, stubIndex: -1 },
+                    body: { stubs: [{ responses: [{ is: 'response' }] }] }
+                };
+
+            return controller.putStub(request, response).then(() => {
+                assert.strictEqual(response.statusCode, 404);
+                assert.strictEqual(response.body.errors.length, 1);
+                assert.deepEqual(response.body.errors[0], {
+                    code: 'bad data',
+                    message: "'stubIndex' must be a valid integer, representing the array index position of the stub to replace"
+                });
+            });
+        });
+
+        promiseIt('should return a 404 if stubIndex is greater then highest index of stubs array', function () {
+            const response = FakeResponse.create(),
+                imposters = {
+                    1: {
+                        protocol: 'test',
+                        stubs: mock().returns([0, 1, 2])
+                    }
+                },
+                Protocol = { testRequest: {} },
+                logger = require('../fakes/fakeLogger').create(),
+                controller = Controller.create({ test: Protocol }, imposters, logger, false),
+                request = {
+                    params: { id: 1, stubIndex: 3 },
+                    body: { stubs: [{ responses: [{ is: 'response' }] }] }
+                };
+
+            return controller.putStub(request, response).then(() => {
+                assert.strictEqual(response.statusCode, 404);
+                assert.strictEqual(response.body.errors.length, 1);
+                assert.deepEqual(response.body.errors[0], {
+                    code: 'bad data',
+                    message: "'stubIndex' must be a valid integer, representing the array index position of the stub to replace"
+                });
+            });
+        });
+
+        promiseIt('should return a 400 if no stub fails dry run validation', function () {
+            const response = FakeResponse.create(),
+                imposters = {
+                    1: {
+                        protocol: 'test',
+                        stubs: mock().returns([0, 1, 2])
+                    }
+                },
+                Protocol = { testRequest: {} },
+                logger = require('../fakes/fakeLogger').create(),
+                controller = Controller.create({ test: Protocol }, imposters, logger, false),
+                request = {
+                    params: { id: 1, stubIndex: 0 },
+                    body: { responses: [{ INVALID: 'response' }] }
+                };
+
+            return controller.putStub(request, response).then(() => {
+                assert.strictEqual(response.statusCode, 400);
+                assert.strictEqual(response.body.errors.length, 1);
+                assert.deepEqual(response.body.errors[0], {
+                    code: 'bad data',
+                    message: 'unrecognized response type',
+                    source: { INVALID: 'response' }
+                });
+            });
+        });
+
+        promiseIt('should return a 400 if no adding inject without --allowInjection', function () {
+            const response = FakeResponse.create(),
+                imposters = {
+                    1: {
+                        protocol: 'test',
+                        stubs: mock().returns([0, 1, 2])
+                    }
+                },
+                Protocol = { testRequest: {} },
+                logger = require('../fakes/fakeLogger').create(),
+                controller = Controller.create({ test: Protocol }, imposters, logger, false),
+                request = {
+                    params: { id: 1, stubIndex: 0 },
+                    body: { responses: [{ inject: '() => {}' }] }
+                };
+
+            return controller.putStub(request, response).then(() => {
+                assert.strictEqual(response.statusCode, 400);
+                assert.strictEqual(response.body.errors.length, 1);
+                assert.deepEqual(response.body.errors[0], {
+                    code: 'invalid injection',
+                    message: 'JavaScript injection is not allowed unless mb is run with the --allowInjection flag',
+                    source: { responses: [{ inject: '() => {}' }] }
+                });
+            });
+        });
+    });
 });
