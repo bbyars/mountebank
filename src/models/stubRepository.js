@@ -100,6 +100,18 @@ function create (encoding) {
     }
 
     /**
+     * Overwrites the entire list of stubs
+     * @memberOf module:models/stubRepository#
+     * @param {Object} newStubs - the new list of stubs
+     */
+    function overwriteStubs (newStubs) {
+        while (stubs.length > 0) {
+            stubs.pop();
+        }
+        newStubs.forEach(stub => addStub(stub));
+    }
+
+    /**
      * Returns the outside representation of the stubs
      * @memberOf module:models/stubRepository#
      * @returns {Object} - The stubs
@@ -175,7 +187,13 @@ function create (encoding) {
         }
     }
 
-    return { stubs: getStubs, addStub, getResponseFor, resetProxies };
+    return {
+        stubs: getStubs,
+        addStub,
+        overwriteStubs,
+        getResponseFor,
+        resetProxies
+    };
 }
 
 module.exports = { create };

@@ -51,7 +51,6 @@ function create (protocols, imposters, logger, allowInjection) {
     function validate (request) {
         const Q = require('q'),
             errors = [],
-            valid = Q({ isValid: false, errors }),
             compatibility = require('../models/compatibility');
 
         compatibility.upcast(request);
@@ -60,7 +59,7 @@ function create (protocols, imposters, logger, allowInjection) {
         validateProtocol(request.protocol, errors);
 
         if (errors.length > 0) {
-            return valid;
+            return Q({ isValid: false, errors });
         }
         else {
             const Protocol = protocols[request.protocol],
@@ -70,7 +69,7 @@ function create (protocols, imposters, logger, allowInjection) {
                     additionalValidation: Protocol.validate,
                     allowInjection: allowInjection
                 });
-            return validator.validate(request, logger, {});
+            return validator.validate(request, logger);
         }
     }
 

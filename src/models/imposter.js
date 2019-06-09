@@ -137,11 +137,12 @@ function create (Protocol, creationRequest, baseLogger, config, isAllowedConnect
                 port: server.port,
                 url: '/imposters/' + server.port,
                 toJSON,
-                addStub: server.stubs.addStub,
                 stop,
                 resetProxies: stubs.resetProxies,
                 getResponseFor,
-                getProxyResponseFor
+                getProxyResponseFor,
+                addStub: server.stubs.addStub,
+                overwriteStubs: server.stubs.overwriteStubs
             });
         });
     });

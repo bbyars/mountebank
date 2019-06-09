@@ -456,6 +456,28 @@ const assert = require('assert'),
                     assert.strictEqual(response.body, 'SUCCESS');
                 }).finally(() => api.del('/imposters'));
             });
+
+            promiseIt('should support overwriting the stubs without restarting the imposter', function () {
+                const stub = { responses: [{ is: { body: 'ORIGINAL' } }] },
+                    request = { protocol, port, stubs: [stub] },
+                    newStubs = [
+                        { responses: [{ is: { body: 'FIRST' } }] },
+                        { responses: [{ is: { body: 'ORIGINAL' } }] },
+                        { responses: [{ is: { body: 'THIRD' } }] }
+                    ];
+
+                return api.post('/imposters', request)
+                    .then(() => api.put(`/imposters/${port}/stubs`, { stubs: newStubs }))
+                    .then(response => {
+                        assert.strictEqual(response.statusCode, 200);
+                        assert.deepEqual(response.body.stubs, newStubs);
+                        return client.get('/', port);
+                    })
+                    .then(response => {
+                        assert.strictEqual(response.body, 'FIRST');
+                    })
+                    .finally(() => api.del('/imposters'));
+            });
         });
     });
 });
