@@ -48,7 +48,7 @@ describe('stubRepository', function () {
         });
     });
 
-    describe('#overwriteStub', function () {
+    describe('#overwriteStubAtIndex', function () {
         it('should overwrite single stub', function () {
             const stubs = StubRepository.create('utf8'),
                 firstStub = { responses: [{ is: 'first' }, { is: 'second' }] },
@@ -63,6 +63,27 @@ describe('stubRepository', function () {
 
             assert.deepEqual(responses, [
                 [{ is: 'first' }, { is: 'second' }],
+                [{ is: 'fifth' }, { is: 'sixth' }]
+            ]);
+        });
+    });
+
+    describe('#deleteeStubAtIndex', function () {
+        it('should overwrite single stub', function () {
+            const stubs = StubRepository.create('utf8'),
+                firstStub = { responses: [{ is: 'first' }, { is: 'second' }] },
+                secondStub = { responses: [{ is: 'third' }, { is: 'fourth' }] },
+                thirdStub = { responses: [{ is: 'fifth' }, { is: 'sixth' }] };
+
+            stubs.addStub(firstStub);
+            stubs.addStub(secondStub);
+            stubs.addStub(thirdStub);
+
+            stubs.deleteStubAtIndex(0);
+            const responses = stubs.stubs().map(stub => stub.responses);
+
+            assert.deepEqual(responses, [
+                [{ is: 'third' }, { is: 'fourth' }],
                 [{ is: 'fifth' }, { is: 'sixth' }]
             ]);
         });

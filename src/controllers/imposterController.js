@@ -267,10 +267,22 @@ function create (protocols, imposters, logger, allowInjection) {
      * @memberOf module:controllers/imposterController#
      * @param {Object} request - the HTTP request
      * @param {Object} response - the HTTP response
+     * @returns {Object} - promise for testing
      */
     function deleteStub (request, response) {
-        const imposter = imposters[request.params.id];
-        response.send(imposter.toJSON());
+        const imposter = imposters[request.params.id],
+            errors = [];
+
+        validateStubIndex(request.params.stubIndex, imposter, errors);
+        if (errors.length > 0) {
+            return respondWithValidationErrors(response, errors, 404);
+        }
+        else {
+
+            imposter.deleteStubAtIndex(request.params.stubIndex);
+            response.send(imposter.toJSON());
+            return require('q')();
+        }
     }
 
     return {

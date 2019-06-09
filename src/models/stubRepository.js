@@ -125,6 +125,15 @@ function create (encoding) {
     }
 
     /**
+     * Deletes the stub at stubIndex without changing the state of any other stubs
+     * @memberOf module:models/stubRepository#
+     * @param {Number} index - the index of the stub to remove
+     */
+    function deleteStubAtIndex (index) {
+        stubs.splice(index, 1);
+    }
+
+    /**
      * Returns the outside representation of the stubs
      * @memberOf module:models/stubRepository#
      * @returns {Object} - The stubs
@@ -205,6 +214,7 @@ function create (encoding) {
         addStub,
         overwriteStubs,
         overwriteStubAtIndex,
+        deleteStubAtIndex,
         getResponseFor,
         resetProxies
     };

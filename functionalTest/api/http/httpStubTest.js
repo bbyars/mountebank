@@ -510,6 +510,36 @@ const assert = require('assert'),
                     })
                     .finally(() => api.del('/imposters'));
             });
+
+            promiseIt('should support deleting single stub without restarting the imposter', function () {
+                const request = {
+                    protocol,
+                    port,
+                    stubs: [
+                        { responses: [{ is: { body: 'first' } }], predicates: [{ equals: { path: '/first' } }] },
+                        { responses: [{ is: { body: 'SECOND' } }] },
+                        { responses: [{ is: { body: 'third' } }] }
+                    ]
+                };
+
+                return api.post('/imposters', request)
+                    .then(response => {
+                        assert.strictEqual(201, response.statusCode, JSON.stringify(response.body));
+                        return api.del(`/imposters/${port}/stubs/1`);
+                    })
+                    .then(response => {
+                        assert.strictEqual(response.statusCode, 200);
+                        assert.deepEqual(response.body.stubs, [
+                            { responses: [{ is: { body: 'first' } }], predicates: [{ equals: { path: '/first' } }] },
+                            { responses: [{ is: { body: 'third' } }] }
+                        ]);
+                        return client.get('/', port);
+                    })
+                    .then(response => {
+                        assert.strictEqual(response.body, 'third');
+                    })
+                    .finally(() => api.del('/imposters'));
+            });
         });
     });
 });

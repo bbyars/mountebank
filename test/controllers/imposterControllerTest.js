@@ -396,4 +396,32 @@ describe('ImposterController', function () {
             });
         });
     });
+
+    describe('#deleteStub', function () {
+        promiseIt('should return a 404 if stubIndex is greater then highest index of stubs array', function () {
+            const response = FakeResponse.create(),
+                imposters = {
+                    1: {
+                        protocol: 'test',
+                        stubs: mock().returns([0, 1, 2])
+                    }
+                },
+                Protocol = { testRequest: {} },
+                logger = require('../fakes/fakeLogger').create(),
+                controller = Controller.create({ test: Protocol }, imposters, logger, false),
+                request = {
+                    params: { id: 1, stubIndex: 3 },
+                    body: { stubs: [{ responses: [{ is: 'response' }] }] }
+                };
+
+            return controller.deleteStub(request, response).then(() => {
+                assert.strictEqual(response.statusCode, 404);
+                assert.strictEqual(response.body.errors.length, 1);
+                assert.deepEqual(response.body.errors[0], {
+                    code: 'bad data',
+                    message: "'stubIndex' must be a valid integer, representing the array index position of the stub to replace"
+                });
+            });
+        });
+    });
 });
