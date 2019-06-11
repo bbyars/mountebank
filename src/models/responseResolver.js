@@ -100,6 +100,10 @@ function create (stubs, proxy, callbackURL) {
             }
         });
         return result;
+    }   
+
+    function formatSelector(predicate, matcher, request) {
+        matcher.predicateOperator !== 'exists' ? predicate[matcher.predicateOperator] = request : predicate[matcher.predicateOperator] = matcher.matches;
     }
 
     function predicatesFor (request, matchers, logger) {
@@ -154,7 +158,7 @@ function create (stubs, proxy, callbackURL) {
                     predicate.deepEquals[fieldName] = valueOf(request[fieldName]);
                 }
                 else if (matcherValue === true && hasPredicateOperator === true) {
-                    predicate[predicateOperator] = request;
+                    formatSelector(predicate, matcher, request);
                 }
                 else {
                     predicate.equals = {};
