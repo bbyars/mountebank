@@ -107,7 +107,7 @@
     "yargs": "13.2.4"
   },
   "devDependencies": {
-    "firebase-tools": "^6.10.0",
+    "firebase-tools": "^7.0.0",
     "fs-extra": "8.0.1",
     "grunt": "^1.0.3",
     "grunt-cli": "^1.2.0",
