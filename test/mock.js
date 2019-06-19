@@ -30,11 +30,15 @@ function mock () {
 
     stubFunction.wasCalled = () => wasCalled;
 
-    stubFunction.wasCalledWith = () => {
+    stubFunction.wasCalledWith = function () {
         const expected = slice.call(arguments),
             actual = actualArguments.slice(0, expected.length); // allow matching only first few params
         setMessage(expected, actualArguments);
 
+        if (JSON.stringify(expected) === '[]') {
+            console.log('Expected params not captured; please do not convert function to lambda because it loses arguments variable');
+            return false;
+        }
         return wasCalled && JSON.stringify(actual) === JSON.stringify(expected);
     };
 

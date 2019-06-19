@@ -158,7 +158,7 @@ Content-Type: application/json
 Access-Control-Allow-Origin: *
 Location: http://localhost:<%= port %>/imposters/4545
 Content-Type: application/json; charset=utf-8
-Content-Length: 217
+Content-Length: 298
 Date: <volatile>Sun, 05 Jan 2014 16:28:40 GMT</volatile>
 Connection: keep-alive
 
@@ -170,7 +170,8 @@ Connection: keep-alive
   "requests": [],
   "stubs": [],
   "_links": {
-    "self": { "href": "http://localhost:<%= port %>/imposters/4545" }
+    "self": { "href": "http://localhost:<%= port %>/imposters/4545" },
+    "stubs": { "href": "http://localhost:<%= port %>/imposters/4545/stubs" }
   }
 }</code></pre>
         </assertResponse>
@@ -239,7 +240,7 @@ Accept: application/json
 Access-Control-Allow-Origin: *
 Vary: Accept
 Content-Type: application/json; charset=utf-8
-Content-Length: 217
+Content-Length: 298
 Date: <volatile>Sun, 05 Jan 2014 16:59:33 GMT</volatile>
 Connection: keep-alive
 
@@ -251,7 +252,8 @@ Connection: keep-alive
   "requests": [],
   "stubs": [],
   "_links": {
-    "self": { "href": "http://localhost:<%= port %>/imposters/4545" }
+    "self": { "href": "http://localhost:<%= port %>/imposters/4545" },
+    "stubs": { "href": "http://localhost:<%= port %>/imposters/4545/stubs" }
   }
 }</code></pre>
         </assertResponse>
@@ -317,7 +319,7 @@ Accept: application/json
 <pre><code>HTTP/1.1 200 OK
 Access-Control-Allow-Origin: *
 Content-Type: application/json; charset=utf-8
-Content-Length: 347
+Content-Length: 548
 Date: <volatile>Wed, 19 Jun 2019 01:00:55 GMT</volatile>
 Connection: keep-alive
 
@@ -332,10 +334,14 @@ Connection: keep-alive
       "is": {
         "body": "Hello, world!"
       }
-    }]
+    }],
+    "_links": {
+      "self": { "href": "http://localhost:<%= port %>/imposters/4545/stubs/0" }
+    }
   }],
   "_links": {
-    "self": { "href": "http://localhost:<%= port %>/imposters/4545" }
+    "self": { "href": "http://localhost:<%= port %>/imposters/4545" },
+    "stubs": { "href": "http://localhost:<%= port %>/imposters/4545/stubs" }
   }
 }</code></pre>
         </assertResponse>
@@ -367,7 +373,7 @@ Accept: application/json
 <pre><code>HTTP/1.1 200 OK
 Access-Control-Allow-Origin: *
 Content-Type: application/json; charset=utf-8
-Content-Length: 349
+Content-Length: 550
 Date: <volatile>Wed, 19 Jun 2019 01:00:55 GMT</volatile>
 Connection: keep-alive
 
@@ -382,10 +388,14 @@ Connection: keep-alive
       "is": {
         "body": "Goodbye, world!"
       }
-    }]
+    }],
+    "_links": {
+      "self": { "href": "http://localhost:<%= port %>/imposters/4545/stubs/0" }
+    }
   }],
   "_links": {
-    "self": { "href": "http://localhost:<%= port %>/imposters/4545" }
+    "self": { "href": "http://localhost:<%= port %>/imposters/4545" },
+    "stubs": { "href": "http://localhost:<%= port %>/imposters/4545/stubs" }
   }
 }</code></pre>
         </assertResponse>
@@ -415,7 +425,7 @@ Accept: application/json
 <pre><code>HTTP/1.1 200 OK
 Access-Control-Allow-Origin: *
 Content-Type: application/json; charset=utf-8
-Content-Length: 342
+Content-Length: 543
 Date: <volatile>Wed, 19 Jun 2019 01:00:55 GMT</volatile>
 Connection: keep-alive
 
@@ -429,11 +439,15 @@ Connection: keep-alive
     {
       "responses": [{
         "is": { "body": "New stub" }
-      }]
+      }],
+      "_links": {
+        "self": { "href": "http://localhost:<%= port %>/imposters/4545/stubs/0" }
+      }
     }
   ],
   "_links": {
-    "self": { "href": "http://localhost:<%= port %>/imposters/4545" }
+    "self": { "href": "http://localhost:<%= port %>/imposters/4545" },
+    "stubs": { "href": "http://localhost:<%= port %>/imposters/4545/stubs" }
   }
 }</code></pre>
         </assertResponse>
@@ -455,7 +469,7 @@ Accept: application/json</code></pre>
 <pre><code>HTTP/1.1 200 OK
 Access-Control-Allow-Origin: *
 Content-Type: application/json; charset=utf-8
-Content-Length: 217
+Content-Length: 298
 Date: <volatile>Wed, 19 Jun 2019 01:00:55 GMT</volatile>
 Connection: keep-alive
 
@@ -467,7 +481,8 @@ Connection: keep-alive
   "requests": [],
   "stubs": [],
   "_links": {
-    "self": { "href": "http://localhost:<%= port %>/imposters/4545" }
+    "self": { "href": "http://localhost:<%= port %>/imposters/4545" },
+    "stubs": { "href": "http://localhost:<%= port %>/imposters/4545/stubs" }
   }
 }</code></pre>
         </assertResponse>
@@ -521,7 +536,7 @@ Accept: application/json</code></pre>
 <pre><code>HTTP/1.1 200 OK
 Access-Control-Allow-Origin: *
 Content-Type: application/json; charset=utf-8
-Content-Length: 217
+Content-Length: 298
 Date: <volatile>Sun, 05 Jan 2014 16:59:33 GMT</volatile>
 Connection: keep-alive
 
@@ -533,7 +548,8 @@ Connection: keep-alive
   "requests": [],
   "stubs": [],
   "_links": {
-    "self": { "href": "http://localhost:<%= port %>/imposters/4545" }
+    "self": { "href": "http://localhost:<%= port %>/imposters/4545" },
+    "stubs": { "href": "http://localhost:<%= port %>/imposters/4545/stubs" }
   }
 }
 </code></pre>
@@ -598,7 +614,7 @@ Content-Type: application/json
 HTTP/1.1 200 OK
 Access-Control-Allow-Origin: *
 Content-Type: application/json; charset=utf-8
-Content-Length: 619
+Content-Length: 898
 Date: <volatile>Sun, 05 Jan 2014 16:59:33 GMT</volatile>
 Connection: keep-alive
 
@@ -609,7 +625,8 @@ Connection: keep-alive
       "port": 4546,
       "numberOfRequests": 0,
       "_links": {
-        "self": { "href": "http://localhost:<%= port %>/imposters/4546" }
+        "self": { "href": "http://localhost:<%= port %>/imposters/4546" },
+        "stubs": { "href": "http://localhost:<%= port %>/imposters/4546/stubs" }
       }
     },
     {
@@ -617,7 +634,8 @@ Connection: keep-alive
       "port": 4547,
       "numberOfRequests": 0,
       "_links": {
-        "self": { "href": "http://localhost:<%= port %>/imposters/4547" }
+        "self": { "href": "http://localhost:<%= port %>/imposters/4547" },
+        "stubs": { "href": "http://localhost:<%= port %>/imposters/4547/stubs" }
       }
     },
     {
@@ -625,7 +643,8 @@ Connection: keep-alive
       "port": 4548,
       "numberOfRequests": 0,
       "_links": {
-        "self": { "href": "http://localhost:<%= port %>/imposters/4548" }
+        "self": { "href": "http://localhost:<%= port %>/imposters/4548" },
+        "stubs": { "href": "http://localhost:<%= port %>/imposters/4548/stubs" }
       }
     }
   ]
@@ -681,7 +700,7 @@ Accept: application/json</code></pre>
 Access-Control-Allow-Origin: *
 Vary: Accept
 Content-Type: application/json; charset=utf-8
-Content-Length: 619
+Content-Length: 898
 Date: <volatile>Sun, 05 Jan 2014 16:58:25 GMT</volatile>
 Connection: keep-alive
 
@@ -692,7 +711,8 @@ Connection: keep-alive
       "port": 4546,
       "numberOfRequests": 0,
       "_links": {
-        "self": { "href": "http://localhost:<%= port %>/imposters/4546" }
+        "self": { "href": "http://localhost:<%= port %>/imposters/4546" },
+        "stubs": { "href": "http://localhost:<%= port %>/imposters/4546/stubs" }
       }
     },
     {
@@ -700,7 +720,8 @@ Connection: keep-alive
       "port": 4547,
       "numberOfRequests": 0,
       "_links": {
-        "self": { "href": "http://localhost:<%= port %>/imposters/4547" }
+        "self": { "href": "http://localhost:<%= port %>/imposters/4547" },
+        "stubs": { "href": "http://localhost:<%= port %>/imposters/4547/stubs" }
       }
     },
     {
@@ -708,7 +729,8 @@ Connection: keep-alive
       "port": 4548,
       "numberOfRequests": 0,
       "_links": {
-        "self": { "href": "http://localhost:<%= port %>/imposters/4548" }
+        "self": { "href": "http://localhost:<%= port %>/imposters/4548" },
+        "stubs": { "href": "http://localhost:<%= port %>/imposters/4548/stubs" }
       }
     }
   ]

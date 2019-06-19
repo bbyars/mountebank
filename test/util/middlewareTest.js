@@ -107,6 +107,69 @@ describe('middleware', function () {
 
             assert.ok(send.wasCalledWith('<html _links="/"></html>'));
         });
+
+        it('should not change links within stub responses', function () {
+            const middlewareFn = middleware.useAbsoluteUrls(9000),
+                userRequest = ({
+                    stubs: [{
+                        responses: [{
+                            is: {
+                                body: {
+                                    _links: { self: { href: '/path/to' } }
+                                }
+                            }
+                        }]
+                    }]
+                });
+
+            middlewareFn(request, response, next);
+            response.send(userRequest);
+
+            assert.ok(send.wasCalledWith(userRequest));
+        });
+
+        it('should change links within stub _links', function () {
+            const middlewareFn = middleware.useAbsoluteUrls(9000),
+                userRequest = ({ stubs: [{ _links: { self: { href: '/path/to' } } }] });
+
+            middlewareFn(request, response, next);
+            response.send(userRequest);
+
+            assert.ok(send.wasCalledWith({ stubs: [{ _links: { self: { href: 'http://localhost:9000/path/to' } } }] }));
+        });
+
+        it('should change links within stub _links with root imposters array', function () {
+            const middlewareFn = middleware.useAbsoluteUrls(9000),
+                userRequest = ({
+                    imposters: [{
+                        stubs: [{ _links: { self: { href: '/path/to' } } }]
+                    }]
+                });
+
+            middlewareFn(request, response, next);
+            response.send(userRequest);
+
+            assert.ok(send.wasCalledWith({
+                imposters: [{
+                    stubs: [{ _links: { self: { href: 'http://localhost:9000/path/to' } } }]
+                }]
+            }));
+        });
+
+        it('should not change links within response elements sent back to protocol implementations', function () {
+            const middlewareFn = middleware.useAbsoluteUrls(9000),
+                userRequest = {
+                    response: {
+                        statusCode: 200,
+                        body: { _links: { self: { href: '/path/to' } } }
+                    }
+                };
+
+            middlewareFn(request, response, next);
+            response.send(userRequest);
+
+            assert.ok(send.wasCalledWith(userRequest));
+        });
     });
 
     describe('#validateImposterExists', function () {
