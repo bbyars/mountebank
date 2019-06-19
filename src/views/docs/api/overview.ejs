@@ -21,63 +21,78 @@ will happily assist you.</p>
 <table>
   <tr>
     <th style='width: 25em;'>Capability</th>
-    <th>Resource Contract</th>
+    <th>Request Body</th>
+    <th>Response Body</th>
   </tr>
   <tr>
     <td><a href='#get-home'>Get entry hypermedia</a></td>
-    <td><a href='/docs/api/contracts?type=home'>home resource</a></td>
+    <td></td>
+    <td><a href='/docs/api/contracts?type=home'>home</a></td>
   </tr>
   <tr>
     <td><a href='#post-imposters'>Create a single imposter</a></td>
-    <td><a href='/docs/api/contracts?type=imposter'>imposter resource</a></td>
+    <td><a href='/docs/api/contracts?type=imposter'>imposter</a></td>
+    <td><a href='/docs/api/contracts?type=imposter'>imposter</a></td>
   </tr>
   <tr>
     <td><a href='#get-imposter'>Get a single imposter</a></td>
-    <td><a href='/docs/api/contracts?type=imposter'>imposter resource</a></td>
+    <td></td>
+    <td><a href='/docs/api/contracts?type=imposter'>imposter</a></td>
   </tr>
   <tr>
     <td><a href='#add-stub'>Add a stub to an existing imposter</a></td>
-    <td><a href='/docs/api/contracts?type=imposter'>imposter resource</a></td>
+    <td><a href='/docs/api/contracts?type=addStub'>add stub</a></td>
+    <td><a href='/docs/api/contracts?type=imposter'>imposter</a></td>
   </tr>
   <tr>
     <td><a href='#change-stub'>Overwrite a stub of an existing imposter</a></td>
-    <td><a href='/docs/api/contracts?type=imposter'>imposter resource</a></td>
+    <td><a href='/docs/api/contracts?type=stub'>stub</a></td>
+    <td><a href='/docs/api/contracts?type=imposter'>imposter</a></td>
   </tr>
   <tr>
     <td><a href='#change-stubs'>Overwrite all stubs of an existing imposter</a></td>
-    <td><a href='/docs/api/contracts?type=imposter'>imposter resource</a></td>
+    <td><a href='/docs/api/contracts?type=stubs'>stubs</a></td>
+    <td><a href='/docs/api/contracts?type=imposter'>imposter</a></td>
   </tr>
   <tr>
     <td><a href='#delete-stub'>Remove a stub of an existing imposter</a></td>
-    <td><a href='/docs/api/contracts?type=imposter'>imposter resource</a></td>
+    <td></td>
+    <td><a href='/docs/api/contracts?type=imposter'>imposter</a></td>
   </tr>
   <tr>
     <td><a href='#delete-imposter'>Delete a single imposter</a></td>
-    <td><a href='/docs/api/contracts?type=imposter'>imposter resource</a></td>
+    <td></td>
+    <td><a href='/docs/api/contracts?type=imposter'>imposter</a></td>
   </tr>
   <tr>
     <td><a href='#delete-proxy-responses'>Delete saved proxy responses from an imposter</a></td>
-    <td>&nbsp;</td>
+    <td></td>
+    <td></td>
   </tr>
   <tr>
     <td><a href='#put-imposters'>Overwrite all imposters with a new set of imposters</a></td>
-    <td><a href='/docs/api/contracts?type=imposters'>imposters resource</a></td>
+    <td><a href='/docs/api/contracts?type=imposters'>imposters</a></td>
+    <td><a href='/docs/api/contracts?type=imposters'>imposters</a></td>
   </tr>
   <tr>
     <td><a href='#get-imposters'>Get a list of all imposters</a></td>
-    <td><a href='/docs/api/contracts?type=imposters'>imposters resource</a></td>
+    <td></td>
+    <td><a href='/docs/api/contracts?type=imposters'>imposters</a></td>
   </tr>
   <tr>
     <td><a href='#delete-imposters'>Delete all imposters</a></td>
-    <td><a href='/docs/api/contracts?type=imposters'>imposters resource</a></td>
+    <td></td>
+    <td><a href='/docs/api/contracts?type=imposters'>imposters</a></td>
   </tr>
   <tr>
     <td><a href='#get-config'>Get mountebank configuration and process information</a></td>
-    <td><a href='/docs/api/contracts?type=config'>config resource</a></td>
+    <td></td>
+    <td><a href='/docs/api/contracts?type=config'>config</a></td>
   </tr>
   <tr>
     <td><a href='#get-logs'>Get the logs</a></td>
-    <td><a href='/docs/api/contracts?type=logs'>logs resource</a></td>
+    <td></td>
+    <td><a href='/docs/api/contracts?type=logs'>logs</a></td>
   </tr>
 </table>
 
@@ -85,11 +100,12 @@ will happily assist you.</p>
 
 <pre><code>GET /</code></pre>
 
-<p><b>Contract</b>: <a href='/docs/api/contracts?type=home'>home resource</a></p>
+<p><b>Response contract</b>: <a href='/docs/api/contracts?type=home'>home</a></p>
 
 <p>This endpoint exists for those who aspire to the
 <a href='http://martinfowler.com/articles/richardsonMaturityModel.html'>upper echelons of REST</a>,
-using hypermedia as the engine of application state.</p>
+using hypermedia as the engine of application state. For those with more humble aspirations, mountebank
+provides URL templates for all capabilities.</p>
 
 <testScenario name='home'>
     <step type='http'>
@@ -121,7 +137,8 @@ Connection: keep-alive
 
 <pre><code>POST /imposters</code></pre>
 
-<p><b>Contract</b>: <a href='/docs/api/contracts?type=imposter'>imposter resource</a></p>
+<p><b>Request contract</b>: <a href='/docs/api/contracts?type=imposter'>imposter</a></p>
+<p><b>Response contract</b>: <a href='/docs/api/contracts?type=imposter'>imposter</a></p>
 
 <p>Though he's not proud to admit it, mountebank employs an army of imposters to
 fulfill your orders.  Because your needs are varied and sundry, his imposters
@@ -187,7 +204,7 @@ http://localhost:4545. To retrieve a list of all imposters, simply issue a <code
 
 <pre><code>GET /imposters/:port</code></pre>
 
-<p><b>Contract</b>: <a href='/docs/api/contracts?type=imposter'>imposter resource</a></p>
+<p><b>Response contract</b>: <a href='/docs/api/contracts?type=imposter'>imposter</a></p>
 
 <p>Retrieving an imposter is generally useful for one the following reasons:</p>
 
@@ -291,6 +308,9 @@ Connection: keep-alive
 
 <h3 id='add-stub'>Add a stub to an existing imposter</h3>
 
+<p><b>Request contract</b>: <a href='/docs/api/contracts?type=addStub'>add stub</a></p>
+<p><b>Response contract</b>: <a href='/docs/api/contracts?type=imposter'>imposter</a></p>
+
 <pre><code>POST /imposters/:port/stubs</code></pre>
 
 <p>In most cases, you would add the stubs at the time you create the imposter, but this call
@@ -351,6 +371,9 @@ Connection: keep-alive
 
 <pre><code>PUT /imposters/:port/stubs/:stubIndex</code></pre>
 
+<p><b>Request contract</b>: <a href='/docs/api/contracts?type=stub'>stub</a></p>
+<p><b>Response contract</b>: <a href='/docs/api/contracts?type=imposter'>imposter</a></p>
+
 <p>Use this endpoint to overwrite an existing stub without restarting the imposter. The
 <code>stubIndex</code> must match the array index of the stub you wish to change. Pass
 the new stub as the body of the request. The response will provide the updated imposter
@@ -405,6 +428,9 @@ Connection: keep-alive
 
 <pre><code>PUT /imposters/:port/stubs</code></pre>
 
+<p><b>Request contract</b>: <a href='/docs/api/contracts?type=stubs'>stubs</a></p>
+<p><b>Response contract</b>: <a href='/docs/api/contracts?type=imposter'>imposter</a></p>
+
 <p>Use this endpoint to overwrite all existing stub without restarting the imposter. The
 response will provide the updated imposter resource.</p>
 
@@ -457,6 +483,8 @@ Connection: keep-alive
 
 <pre><code>DELETE /imposters/:port/stubs/:stubIndex</code></pre>
 
+<p><b>Response contract</b>: <a href='/docs/api/contracts?type=imposter'>imposter</a></p>
+
 <p>Use this endpoint to remove the stub at the given array index without restarting the imposter. The
 response will provide the updated imposter resource.</p>
 
@@ -492,7 +520,7 @@ Connection: keep-alive
 
 <pre><code>DELETE /imposters/:port</code></pre>
 
-<p><b>Contract</b>: <a href='/docs/api/contracts?type=imposter'>imposter resource</a></p>
+<p><b>Response contract</b>: <a href='/docs/api/contracts?type=imposter'>imposter</a></p>
 
 <p>As mentioned above, typically you want to delete the imposter after each test run. This
 frees up the socket and removes the resource. As a convenience, the <code>DELETE</code> call
@@ -571,7 +599,8 @@ to <a href='/docs/api/proxies#proxy-modes'><code>proxyTransparent</code></a>.</p
 
 <pre><code>PUT /imposters</code></pre>
 
-<p><b>Contract</b>: <a href='/docs/api/contracts?type=imposters'>imposters resource</a></p>
+<p><b>Request contract</b>: <a href='/docs/api/contracts?type=imposters'>imposters</a></p>
+<p><b>Response contract</b>: <a href='/docs/api/contracts?type=imposters'>imposters</a></p>
 
 <p>Sometimes you want to create a batch of imposters in a single call, overwriting
 any imposters already created.  This call is destructive - it will first delete all
@@ -656,7 +685,7 @@ Connection: keep-alive
 
 <pre><code>GET /imposters</code></pre>
 
-<p><b>Contract</b>: <a href='/docs/api/contracts?type=imposters'>imposters resource</a></p>
+<p><b>Response contract</b>: <a href='/docs/api/contracts?type=imposters'>imposters</a></p>
 
 <p>This is where you will come to retrieve a list of all active imposters.  By default,
 mountebank returns some basic information and hypermedia.  If you want more information,
@@ -742,7 +771,7 @@ Connection: keep-alive
 
 <pre><code>DELETE /imposters</code></pre>
 
-<p><b>Contract</b>: <a href='/docs/api/contracts?type=imposters'>imposters resource</a></p>
+<p><b>Response contract</b>: <a href='/docs/api/contracts?type=imposters'>imposters</a></p>
 
 <p>The surest way to reset to a clean slate is to delete all imposters. Any imposter sockets
 mountebank has open will be closed, and the response body will contain exactly what you need
@@ -817,7 +846,7 @@ Connection: keep-alive
 
 <pre><code>GET /config</code></pre>
 
-<p><b>Contract</b>: <a href='/docs/api/contracts?type=config'>config resource</a></p>
+<p><b>Response contract</b>: <a href='/docs/api/contracts?type=config'>config</a></p>
 
 <p>If you want to know about the environment mountebank is running it, this resource will give you
 what you need.  It describes the version, command line flags, and process information.</p>
@@ -870,7 +899,7 @@ Connection: keep-alive
 
 <pre><code>GET /logs</code></pre>
 
-<p><b>Contract</b>: <a href='/docs/api/contracts?type=logs'>logs resource</a></p>
+<p><b>Response contract</b>: <a href='/docs/api/contracts?type=logs'>logs</a></p>
 
 <p><strong>Query Parameters:</strong></p>
 
