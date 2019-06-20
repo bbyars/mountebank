@@ -1,7 +1,7 @@
 # Contributing to mountebank
 
 Congratulations! You're here because you want to join the millions of open source developers
-contributing to mountebank. The good news is contributing is an easy process. In fact, you can
+contributing to mountebank. The good news is that contributing is an easy process. In fact, you can
 make a difference without writing a single line of code. I am grateful for all of the following contributions:
 
 * Submitting an issue, either through github or the [support page](http://www.mbtest.org/support)
@@ -20,6 +20,7 @@ on a web page (I will never announce a company's usage of mountebank without the
 pre-existing public writeup).
 * Writing a client library that hides the REST API under a language-specific API
 * Writing a build plugin for (maven, gradle, MSBuild, rake, gulp, etc)
+* Writing a custom protocol implementation
 
 Still want to write some code?  Great! You may want to keep the
 [source documentation](https://mountebank.firebaseapp.com/)
@@ -35,10 +36,10 @@ as rewarding an experience as possible.
 
 ## Designing mountebank
 
-The code in mountebank is now a few years old, and maintaining consistency of design vision
-is key to keeping the code maintainable. The following describe key concepts:
+The code in mountebank is now a few years old, and consistency of design vision
+is important to keeping the code maintainable. The following describe key principles:
 
-### API changes
+### Interface over implementation
 
 I consider the REST API the public API from a semantic versioning standpoint, and I aspire never
 to have to release a breaking change of mountebank. In my opinion, *the API is more important than the code
@@ -111,14 +112,12 @@ to what needs reviewing.
 ### JavaScript OO
 
 Try to avoid using the `new` and `this` keyword, unless a third-party dependency requires it.  They
-are poorly implemented (most JavaScript developers don't know what the `new` keyword does, and every
-time I know it, I forget it 30 seconds later).  In a similar vein, prefer avoiding typical JavaScript
-constructor functions and prototypes.
+were traditionally poorly implemented in JavaScript, so I opted for a more functional code style.
+In a similar vein, prefer avoiding typical JavaScript constructor functions and prototypes.
 
 Instead prefer modules that return object literals.  If you need a creation function, prefer the name
 `create`, although I've certainly abused that with layers and layers of creations in places that I'm none
-too proud about.  Although I'm of mixed opinion on this, I've tended to capitalize objects with a `create`
-method to emulate the style for standard JavaScript constructors.
+too proud about.
 
 The code was written using ES4 and left that way for a long time to support node v4 and earlier.
 Now that node v4 is no longer supported, prefer using ES2015 features.
@@ -181,8 +180,8 @@ enough that I consider it to be an entirely different type of test, described ne
 
 ### Documentation tests
 
-The `functionalTest/html/docsIntegrityTest.js` file crawls the website and looks for special HTML
-tags that indicate the code blocks within are meant to be executed and validated.
+The `functionalTest/html/docsIntegrityTest.js` file looks for special HTML
+tags that indicate the code blocks within are meant to be executed and validated within the docs.
 At first I wrote these tests as a check on my own laziness;
 I know from experience how hard it is to keep the docs up-to-date. They proved quite useful,
 however, as a kind of BDD style outside-in description of the behavior, motivating me to rewrite
