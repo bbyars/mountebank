@@ -184,7 +184,7 @@ Accept: application/json</code></pre>
 Access-Control-Allow-Origin: *
 Vary: Accept
 Content-Type: application/json; charset=utf-8
-Content-Length: <volatile>3856</volatile>
+Content-Length: <volatile>4212</volatile>
 Date: <volatile>Thu, 09 Jan 2014 02:30:31 GMT</volatile>
 Connection: keep-alive
 
@@ -310,20 +310,25 @@ Connection: keep-alive
             "body": "&lt;error&gt;email already exists&lt;/error&gt;"
           }
         }
-      ]
+      ],
+      "_links": {
+        "self": { "href": "http://localhost:<%= port %>/imposters/4545/stubs/0" }
+      }
     },
     {
       "responses": [
         {
           "is": { "statusCode": 404 }
         }
-      ]
+      ],
+      "_links": {
+        "self": { "href": "http://localhost:<%= port %>/imposters/4545/stubs/1" }
+      }
     }
   ],
   "_links": {
-    "self": {
-      "href": "http://localhost:<%= port %>/imposters/4545"
-    }
+    "self": { "href": "http://localhost:<%= port %>/imposters/4545" },
+    "stubs": { "href": "http://localhost:<%= port %>/imposters/4545/stubs" }
   }
 }</code></pre>
         </assertResponse>

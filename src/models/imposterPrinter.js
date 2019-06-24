@@ -1,7 +1,7 @@
 'use strict';
 
 function create (creationRequest, server, requests) {
-    function addDetailsTo (result) {
+    function addDetailsTo (result, baseURL) {
         if (creationRequest.name) {
             result.name = creationRequest.name;
         }
@@ -13,6 +13,12 @@ function create (creationRequest, server, requests) {
 
         result.requests = requests;
         result.stubs = server.stubs.stubs();
+
+        for (let i = 0; i < result.stubs.length; i += 1) {
+            result.stubs[i]._links = {
+                self: { href: `${baseURL}/stubs/${i}` }
+            };
+        }
     }
 
     function removeNonEssentialInformationFrom (result) {
@@ -28,6 +34,7 @@ function create (creationRequest, server, requests) {
                     delete response.is._proxyResponseTime;
                 }
             });
+            delete stub._links;
         });
         delete result.numberOfRequests;
         delete result.requests;
@@ -46,18 +53,22 @@ function create (creationRequest, server, requests) {
         // but it makes a nicer user experience for developers viewing the JSON to keep the most
         // relevant information at the top
         const result = {
-            protocol: creationRequest.protocol,
-            port: server.port,
-            numberOfRequests: numberOfRequests
-        };
+                protocol: creationRequest.protocol,
+                port: server.port,
+                numberOfRequests: numberOfRequests
+            },
+            baseURL = `/imposters/${server.port}`;
 
         options = options || {};
 
         if (!options.list) {
-            addDetailsTo(result);
+            addDetailsTo(result, baseURL);
         }
 
-        result._links = { self: { href: '/imposters/' + server.port } };
+        result._links = {
+            self: { href: baseURL },
+            stubs: { href: `${baseURL}/stubs` }
+        };
 
         if (options.replayable) {
             removeNonEssentialInformationFrom(result);

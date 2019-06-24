@@ -302,7 +302,7 @@ const assert = require('assert'),
             promiseIt('should support sending JSON bodies with _links field for canned responses', function () {
                 const stub = { responses: [{ is: {
                         headers: { 'Content-Type': 'application/json' },
-                        body: { _links: { self: '/products/123' } }
+                        body: { _links: { self: { href: '/products/123' } } }
                     } }] },
                     request = { protocol, port, stubs: [stub] };
 
@@ -310,7 +310,7 @@ const assert = require('assert'),
                     assert.strictEqual(response.statusCode, 201, response.body);
                     return client.get('/', port);
                 }).then(response => {
-                    assert.deepEqual(response.body, { _links: { self: '/products/123' } });
+                    assert.deepEqual(response.body, { _links: { self: { href: '/products/123' } } });
                 }).finally(() => api.del('/imposters'));
             });
 
@@ -459,18 +459,32 @@ const assert = require('assert'),
 
             promiseIt('should support overwriting the stubs without restarting the imposter', function () {
                 const stub = { responses: [{ is: { body: 'ORIGINAL' } }] },
-                    request = { protocol, port, stubs: [stub] },
-                    newStubs = [
-                        { responses: [{ is: { body: 'FIRST' } }] },
-                        { responses: [{ is: { body: 'ORIGINAL' } }] },
-                        { responses: [{ is: { body: 'THIRD' } }] }
-                    ];
+                    request = { protocol, port, stubs: [stub] };
 
                 return api.post('/imposters', request)
-                    .then(() => api.put(`/imposters/${port}/stubs`, { stubs: newStubs }))
+                    .then(() => api.put(`/imposters/${port}/stubs`, {
+                        stubs: [
+                            { responses: [{ is: { body: 'FIRST' } }] },
+                            { responses: [{ is: { body: 'ORIGINAL' } }] },
+                            { responses: [{ is: { body: 'THIRD' } }] }
+                        ]
+                    }))
                     .then(response => {
                         assert.strictEqual(response.statusCode, 200);
-                        assert.deepEqual(response.body.stubs, newStubs);
+                        assert.deepEqual(response.body.stubs, [
+                            {
+                                responses: [{ is: { body: 'FIRST' } }],
+                                _links: { self: { href: `${api.url}/imposters/${port}/stubs/0` } }
+                            },
+                            {
+                                responses: [{ is: { body: 'ORIGINAL' } }],
+                                _links: { self: { href: `${api.url}/imposters/${port}/stubs/1` } }
+                            },
+                            {
+                                responses: [{ is: { body: 'THIRD' } }],
+                                _links: { self: { href: `${api.url}/imposters/${port}/stubs/2` } }
+                            }
+                        ]);
                         return client.get('/', port);
                     })
                     .then(response => {
@@ -499,9 +513,19 @@ const assert = require('assert'),
                     .then(response => {
                         assert.strictEqual(response.statusCode, 200);
                         assert.deepEqual(response.body.stubs, [
-                            { responses: [{ is: { body: 'first' } }], predicates: [{ equals: { path: '/first' } }] },
-                            { responses: [{ is: { body: 'CHANGED' } }] },
-                            { responses: [{ is: { body: 'third' } }] }
+                            {
+                                responses: [{ is: { body: 'first' } }],
+                                predicates: [{ equals: { path: '/first' } }],
+                                _links: { self: { href: `${api.url}/imposters/${port}/stubs/0` } }
+                            },
+                            {
+                                responses: [{ is: { body: 'CHANGED' } }],
+                                _links: { self: { href: `${api.url}/imposters/${port}/stubs/1` } }
+                            },
+                            {
+                                responses: [{ is: { body: 'third' } }],
+                                _links: { self: { href: `${api.url}/imposters/${port}/stubs/2` } }
+                            }
                         ]);
                         return client.get('/', port);
                     })
@@ -530,8 +554,14 @@ const assert = require('assert'),
                     .then(response => {
                         assert.strictEqual(response.statusCode, 200);
                         assert.deepEqual(response.body.stubs, [
-                            { responses: [{ is: { body: 'first' } }], predicates: [{ equals: { path: '/first' } }] },
-                            { responses: [{ is: { body: 'third' } }] }
+                            {
+                                responses: [{ is: { body: 'first' } }], predicates: [{ equals: { path: '/first' } }],
+                                _links: { self: { href: `${api.url}/imposters/${port}/stubs/0` } }
+                            },
+                            {
+                                responses: [{ is: { body: 'third' } }],
+                                _links: { self: { href: `${api.url}/imposters/${port}/stubs/1` } }
+                            }
                         ]);
                         return client.get('/', port);
                     })
@@ -560,9 +590,18 @@ const assert = require('assert'),
                     .then(response => {
                         assert.strictEqual(response.statusCode, 200);
                         assert.deepEqual(response.body.stubs, [
-                            { responses: [{ is: { body: 'first' } }], predicates: [{ equals: { path: '/first' } }] },
-                            { responses: [{ is: { body: 'SECOND' } }] },
-                            { responses: [{ is: { body: 'third' } }] }
+                            {
+                                responses: [{ is: { body: 'first' } }], predicates: [{ equals: { path: '/first' } }],
+                                _links: { self: { href: `${api.url}/imposters/${port}/stubs/0` } }
+                            },
+                            {
+                                responses: [{ is: { body: 'SECOND' } }],
+                                _links: { self: { href: `${api.url}/imposters/${port}/stubs/1` } }
+                            },
+                            {
+                                responses: [{ is: { body: 'third' } }],
+                                _links: { self: { href: `${api.url}/imposters/${port}/stubs/2` } }
+                            }
                         ]);
                         return client.get('/', port);
                     })
@@ -591,9 +630,18 @@ const assert = require('assert'),
                     .then(response => {
                         assert.strictEqual(response.statusCode, 200);
                         assert.deepEqual(response.body.stubs, [
-                            { responses: [{ is: { body: 'first' } }], predicates: [{ equals: { path: '/first' } }] },
-                            { responses: [{ is: { body: 'third' } }] },
-                            { responses: [{ is: { body: 'LAST' } }] }
+                            {
+                                responses: [{ is: { body: 'first' } }], predicates: [{ equals: { path: '/first' } }],
+                                _links: { self: { href: `${api.url}/imposters/${port}/stubs/0` } }
+                            },
+                            {
+                                responses: [{ is: { body: 'third' } }],
+                                _links: { self: { href: `${api.url}/imposters/${port}/stubs/1` } }
+                            },
+                            {
+                                responses: [{ is: { body: 'LAST' } }],
+                                _links: { self: { href: `${api.url}/imposters/${port}/stubs/2` } }
+                            }
                         ]);
                         return client.get('/', port);
                     })

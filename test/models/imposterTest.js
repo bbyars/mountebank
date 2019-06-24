@@ -53,7 +53,10 @@ describe('imposter', function () {
                     protocol: 'test',
                     port: 3535,
                     numberOfRequests: 0,
-                    _links: { self: { href: '/imposters/3535' } }
+                    _links: {
+                        self: { href: '/imposters/3535' },
+                        stubs: { href: '/imposters/3535/stubs' }
+                    }
                 });
             });
         });
@@ -69,7 +72,10 @@ describe('imposter', function () {
                     recordRequests: false,
                     requests: [],
                     stubs: [],
-                    _links: { self: { href: '/imposters/3535' } }
+                    _links: {
+                        self: { href: '/imposters/3535' },
+                        stubs: { href: '/imposters/3535/stubs' }
+                    }
                 });
             });
         });
@@ -89,7 +95,10 @@ describe('imposter', function () {
                     recordRequests: true,
                     requests: [],
                     stubs: [],
-                    _links: { self: { href: '/imposters/3535' } }
+                    _links: {
+                        self: { href: '/imposters/3535' },
+                        stubs: { href: '/imposters/3535/stubs' }
+                    }
                 });
             });
         });
@@ -105,7 +114,10 @@ describe('imposter', function () {
                     recordRequests: false,
                     requests: [],
                     stubs: [],
-                    _links: { self: { href: '/imposters/3535' } }
+                    _links: {
+                        self: { href: '/imposters/3535' },
+                        stubs: { href: '/imposters/3535/stubs' }
+                    }
                 });
             });
         });
@@ -123,7 +135,10 @@ describe('imposter', function () {
                     requests: [],
                     stubs: [],
                     key: 'value',
-                    _links: { self: { href: '/imposters/3535' } }
+                    _links: {
+                        self: { href: '/imposters/3535' },
+                        stubs: { href: '/imposters/3535/stubs' }
+                    }
                 });
             });
         });
@@ -155,13 +170,19 @@ describe('imposter', function () {
             };
             return Imposter.create(Protocol, request, logger, {}, allow).then(imposter => {
                 assert.deepEqual(imposter.toJSON().stubs, [
-                    { responses: ['FIRST'] },
-                    { responses: ['SECOND'] }
+                    {
+                        responses: ['FIRST'],
+                        _links: { self: { href: '/imposters/3535/stubs/0' } }
+                    },
+                    {
+                        responses: ['SECOND'],
+                        _links: { self: { href: '/imposters/3535/stubs/1' } }
+                    }
                 ]);
             });
         });
 
-        promiseIt('replayable JSON should remove stub matches', function () {
+        promiseIt('replayable JSON should remove stub matches and links', function () {
             const request = {
                 protocol: 'test',
                 port: 3535,
@@ -228,12 +249,14 @@ describe('imposter', function () {
                         responses: [
                             { is: { body: 'first' } },
                             { inject: 'inject' }
-                        ]
+                        ],
+                        _links: { self: { href: '/imposters/3535/stubs/0' } }
                     },
                     {
                         responses: [
                             { is: { body: 'second' } }
-                        ]
+                        ],
+                        _links: { self: { href: '/imposters/3535/stubs/1' } }
                     }
                 ]);
             });
@@ -263,7 +286,8 @@ describe('imposter', function () {
                         responses: [
                             { is: { body: 'first' } },
                             { inject: 'inject' }
-                        ]
+                        ],
+                        _links: { self: { href: '/imposters/3535/stubs/0' } }
                     }
                 ]);
             });

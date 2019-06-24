@@ -160,8 +160,14 @@ const assert = require('assert'),
                     .then(response => {
                         assert.strictEqual(response.statusCode, 200);
                         assert.deepEqual(response.body.stubs, [
-                            { responses: [{ is: { body: '1' } }] },
-                            { responses: [{ is: { body: '2' } }] }
+                            {
+                                responses: [{ is: { body: '1' } }],
+                                _links: { self: { href: `${api.url}/imposters/${port}/stubs/0` } }
+                            },
+                            {
+                                responses: [{ is: { body: '2' } }],
+                                _links: { self: { href: `${api.url}/imposters/${port}/stubs/1` } }
+                            }
                         ]);
                     })
                     .finally(() => api.del('/imposters'));
@@ -216,7 +222,8 @@ const assert = require('assert'),
                                         body: '2'
                                     }
                                 }
-                            ]
+                            ],
+                            _links: { self: { href: `${api.url}/imposters/${port}/stubs/0` } }
                         }]);
                     })
                     .finally(() => api.del('/imposters'));
@@ -232,7 +239,10 @@ const assert = require('assert'),
                     .then(() => client.get('/second?q=2', port))
                     .then(() => mb.get(`/imposters/${port}`))
                     .then(response => {
-                        assert.deepEqual(response.body.stubs, [{ responses: [{ is: { body: '1' } }, { is: { body: '2' } }] }]);
+                        assert.deepEqual(response.body.stubs, [{
+                            responses: [{ is: { body: '1' } }, { is: { body: '2' } }],
+                            _links: { self: { href: `${mb.url}/imposters/${port}/stubs/0` } }
+                        }]);
                     })
                     .finally(() => mb.stop());
             });

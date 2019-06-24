@@ -715,7 +715,10 @@ describe('http proxy stubs', function () {
                 return api.get(`/imposters/${port}`);
             })
             .then(response => {
-                response.body.stubs.forEach(stub => { delete stub.matches; });
+                response.body.stubs.forEach(stub => {
+                    delete stub.matches;
+                    delete stub._links;
+                });
                 assert.deepEqual(proxyRequest.stubs, response.body.stubs, JSON.stringify(response.body.stubs, null, 2));
             })
             .finally(() => api.del('/imposters'));
