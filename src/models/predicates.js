@@ -430,7 +430,9 @@ function evaluate (predicate, request, encoding, logger, imposterState) {
         errors = require('../util/errors');
 
     if (predicateFn) {
-        return predicates[predicateFn](predicate, request, encoding, logger, imposterState);
+        const result = predicates[predicateFn](predicate, request, encoding, logger, imposterState);
+        delete predicate.keyCaseSensitive;
+        return result;
     }
     else {
         throw errors.ValidationError('missing predicate', { source: predicate });

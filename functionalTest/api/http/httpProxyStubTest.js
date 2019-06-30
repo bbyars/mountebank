@@ -197,6 +197,56 @@ describe('http proxy stubs', function () {
             .finally(() => api.del('/imposters'));
     });
 
+    promiseIt('should capture responses together in proxyAlways mode even with complex predicateGenerators', function () {
+        const originServerPort = port + 1,
+            originServerFn = (request, state) => {
+                state.count = state.count || 0;
+                state.count += 1;
+                return {
+                    body: `${state.count}. ${request.path}`
+                };
+            },
+            originServerStub = { responses: [{ inject: originServerFn.toString() }] },
+            originServerRequest = {
+                protocol: 'http',
+                port: originServerPort,
+                stubs: [originServerStub],
+                name: 'origin server'
+            },
+            proxyDefinition = {
+                to: `http://localhost:${originServerPort}`,
+                mode: 'proxyAlways',
+                predicateGenerators: [{
+                    matches: {
+                        path: true,
+                        method: true
+                    },
+                    caseSensitive: false
+                }]
+            },
+            proxyStub = { responses: [{ proxy: proxyDefinition }] },
+            proxyRequest = { protocol: 'http', port, stubs: [proxyStub], name: 'proxy' };
+
+        return api.post('/imposters', originServerRequest)
+            .then(() => api.post('/imposters', proxyRequest))
+            .then(response => {
+                assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body));
+                return client.get('/first', port);
+            })
+            .then(() => client.get('/second', port))
+            .then(() => client.get('/first', port))
+            .then(() => api.del(`/imposters/${port}`))
+            .then(response => {
+                assert.strictEqual(response.body.stubs.length, 3, JSON.stringify(response.body.stubs, null, 2));
+
+                const stubs = response.body.stubs,
+                    responses = stubs.splice(1).map(stub => stub.responses.map(stubResponse => stubResponse.is.body));
+
+                assert.deepEqual(responses, [['1. /first', '3. /first'], ['2. /second']]);
+            })
+            .finally(() => api.del('/imposters'));
+    });
+
     promiseIt('should match entire object graphs', function () {
         const originServerPort = port + 1,
             originServerFn = (request, state) => {
