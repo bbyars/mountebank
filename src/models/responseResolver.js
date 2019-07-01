@@ -100,10 +100,24 @@ function create (stubs, proxy, callbackURL) {
             }
         });
         return result;
-    }   
+    }
 
-    function formatSelector(predicate, matcher, request) {
-        matcher.predicateOperator !== 'exists' ? predicate[matcher.predicateOperator] = request : predicate[matcher.predicateOperator] = matcher.matches;
+    const path = [];
+
+    function buildExists (request, fieldName, matchers, initialRequest) {
+        const isObject = require('../util/helpers').isObject,
+            setDeep = require('../util/helpers').setDeep;
+        Object.keys(request).forEach(key => {
+            path.push(key);
+            if (isObject(request[key])) {
+                buildExists(request[key], fieldName, matchers[key], initialRequest);
+            }
+            else {
+                const booleanValue = (typeof fieldName !== 'undefined' && fieldName !== null && fieldName !== '');
+                setDeep(initialRequest, path, booleanValue);
+            }
+        });
+        return initialRequest;
     }
 
     function predicatesFor (request, matchers, logger) {
@@ -129,7 +143,7 @@ function create (stubs, proxy, callbackURL) {
 
             const basePredicate = {};
             let hasPredicateOperator = false;
-            let predicateOperator;
+            let predicateOperator; // eslint-disable-line no-unused-vars
             let valueOf = field => field;
 
             // Add parameters
@@ -157,8 +171,11 @@ function create (stubs, proxy, callbackURL) {
                     predicate.deepEquals = {};
                     predicate.deepEquals[fieldName] = valueOf(request[fieldName]);
                 }
-                else if (matcherValue === true && hasPredicateOperator === true) {
-                    formatSelector(predicate, matcher, request);
+                else if (hasPredicateOperator === true && matcher.predicateOperator === 'exists') {
+                    predicate[matcher.predicateOperator] = buildExists(request, fieldName, matcherValue, request);
+                }
+                else if (hasPredicateOperator === true && matcher.predicateOperator !== 'exists') {
+                    predicate[matcher.predicateOperator] = valueOf(request);
                 }
                 else {
                     predicate.equals = {};
