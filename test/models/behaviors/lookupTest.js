@@ -202,7 +202,7 @@ describe('behaviors', function () {
                     config = {
                         lookup: [{
                             key: { from: 'data', using: { method: 'regex', selector: '\\w+$' } },
-                            fromDataSource: { csv: { path: 'INVALID.csv', keyColumn: 'name' } },
+                            fromDataSource: { csv: { path: 'INVALID.csv', keyColumn: 'name', delimiter: '|' } },
                             into: '${you}'
                         }]
                     };
@@ -696,6 +696,58 @@ describe('behaviors', function () {
                     message: 'lookup behavior "fromDataSource.csv.keyColumn" field must be a string, representing the column header to select against the "key" field',
                     source: config
                 }]);
+            });
+
+            describe('csv-delimiter', () => {
+                before(() => {
+                    fs.writeFileSync('lookupDelimiterTest.csv',
+                        'name|occupation|location\n' +
+                        'mountebank|tester|worldwide\n' +
+                        'Brandon|mountebank|Dallas\n' +
+                        'Bob Barker|"The Price Is Right"|"Darrington, Washington"\n' +
+                        'jeanpaulct|developer|Peru');
+                });
+
+                after(() => {
+                    fs.unlinkSync('lookupDelimiterTest.csv');
+                });
+
+                promiseIt('should not be lookup if "CSV headers" does not contains "keyColumn"', () => {
+                    const request = { field: JSON.stringify({ name: 'jeanpaulct' }) },
+                        response = { data: 'Hello from ${you}[location]' },
+                        logger = Logger.create(),
+                        config = {
+                            lookup: [{
+                                key: { from: 'field', using: { method: 'jsonpath', selector: '$..name' } },
+                                fromDataSource: { csv: { path: 'lookupDelimiterTest.csv', keyColumn: 'name' } },
+                                into: '${you}'
+                            }]
+                        };
+
+                    return behaviors.execute(request, response, config, logger).then(actualResponse => {
+                        assert.deepEqual(actualResponse, { data: 'Hello from ${you}[location]' });
+                        logger.error.assertLogged('CSV headers "name|occupation|location" with delimiter "," does not contain keyColumn:"name"');
+                    });
+                });
+
+                promiseIt('should be lookup with custom delimiter', () => {
+                    const request = { field: JSON.stringify({ name: 'jeanpaulct' }) },
+                        response = { data: 'Regards from ${you}[location]' },
+                        logger = Logger.create(),
+                        config = {
+                            lookup: [{
+                                key: { from: 'field', using: { method: 'jsonpath', selector: '$..name' } },
+                                fromDataSource: { csv: { path: 'lookupDelimiterTest.csv', keyColumn: 'name', delimiter: '|' } },
+                                into: '${you}'
+                            }]
+                        };
+
+                    return behaviors.execute(request, response, config, logger).then(actualResponse => {
+                        assert.deepEqual(actualResponse, { data: 'Regards from Peru' });
+                    });
+                });
+
+
             });
         });
     });
