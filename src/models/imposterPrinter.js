@@ -43,6 +43,7 @@ function create (creationRequest, server, requests) {
 
     function removeProxiesFrom (result) {
         result.stubs.forEach(stub => {
+            // eslint-disable-next-line no-prototype-builtins
             stub.responses = stub.responses.filter(response => !response.hasOwnProperty('proxy'));
         });
         result.stubs = result.stubs.filter(stub => stub.responses.length > 0);
