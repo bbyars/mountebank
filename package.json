@@ -108,7 +108,7 @@
     "mailparser": "^2.7.0",
     "nodemailer": "^6.1.1",
     "q": "1.5.1",
-    "query-string": "6.6.0",
+    "query-string": "6.8.0",
     "smtp-server": "^3.4.6",
     "winston": "3.2.1",
     "xmldom": "0.1.27",
