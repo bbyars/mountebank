@@ -95,6 +95,11 @@
     found, the entire row will be returned.</td>
   </tr>
   <tr>
+    <td><code>lookup[].fromDataSource.csv.delimiter</code></td>
+    <td>A string(default to comma ,)</td>
+    <td>The delimiter separated colums in CSV file.</td>
+  </tr>
+  <tr>
     <td><code>lookup[].into</code></td>
     <td>A string</td>
     <td>The token to replace in the response with the selected request value. There is
@@ -170,7 +175,8 @@ Content-Type: application/json
               "fromDataSource": {
                 "csv": {
                   "path": "values.csv",
-                  "keyColumn": "Name"
+                  "keyColumn": "Name",
+                  "delimiter": ","
                 }
               },
               "into": "<strong class='highlight1'>${row}</strong>"

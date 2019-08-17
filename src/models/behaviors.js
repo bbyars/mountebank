@@ -63,6 +63,11 @@ const fromSchema = {
                         _allowedTypes: { string: {} },
                         _additionalContext: 'the path to the CSV file'
                     },
+                    delimiter: {
+                        _required: false,
+                        _allowedTypes: { string: {} },
+                        _additionalContext: 'the delimiter separator values'
+                    },
                     keyColumn: {
                         _required: true,
                         _allowedTypes: { string: {} },
@@ -394,6 +399,12 @@ function copy (originalRequest, responsePromise, copyArray, logger) {
     });
 }
 
+function containsKey (headers, keyColumn) {
+    const helpers = require('../util/helpers'),
+        key = Object.values(headers).find(value => value === keyColumn);
+    return helpers.defined(key);
+}
+
 function createRowObject (headers, rowArray) {
     const row = {};
     rowArray.forEach(function (value, index) {
@@ -406,8 +417,9 @@ function selectRowFromCSV (csvConfig, keyValue, logger) {
     const fs = require('fs'),
         Q = require('q'),
         helpers = require('../util/helpers'),
+        delimiter = csvConfig.delimiter || ',',
         inputStream = fs.createReadStream(csvConfig.path),
-        parser = require('csv-parse')({ delimiter: ',' }),
+        parser = require('csv-parse')({ delimiter: delimiter }),
         pipe = inputStream.pipe(parser),
         deferred = Q.defer();
     let headers;
@@ -420,13 +432,23 @@ function selectRowFromCSV (csvConfig, keyValue, logger) {
     pipe.on('data', function (rowArray) {
         if (!helpers.defined(headers)) {
             headers = rowArray;
+            const keyOnHeader = containsKey(headers, csvConfig.keyColumn);
+            if (!keyOnHeader) {
+                logger.error('CSV headers "' + headers + '" with delimiter "' + delimiter + '" does not contain keyColumn:"' + csvConfig.keyColumn + '"');
+                deferred.resolve({});
+            }
         }
         else {
             const row = createRowObject(headers, rowArray);
-            if (row[csvConfig.keyColumn].localeCompare(keyValue) === 0) {
+            if (helpers.defined(row[csvConfig.keyColumn]) && row[csvConfig.keyColumn].localeCompare(keyValue) === 0) {
                 deferred.resolve(row);
             }
         }
+    });
+
+    pipe.on('error', e => {
+        logger.debug('Error: ' + e);
+        deferred.resolve({});
     });
 
     pipe.on('end', () => {
