@@ -123,7 +123,7 @@
     "grunt-cli": "^1.2.0",
     "grunt-contrib-csslint": "~2.0.0",
     "grunt-css": "^0.5.4",
-    "grunt-eslint": "^21.0.0",
+    "grunt-eslint": "^22.0.0",
     "grunt-jsdoc": "^2.2.1",
     "grunt-mocha-test": "~0.13.3",
     "grunt-mountebank": "1.0.7",

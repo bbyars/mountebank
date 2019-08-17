@@ -37,7 +37,7 @@ function runStep (step) {
     const deferred = Q.defer(),
         filename = `test-${nextTestId}`;
 
-    fs.writeFileSync(filename, usePortableNetcat(step.requestText), { mode: 484 /* 0744 */});
+    fs.writeFileSync(filename, usePortableNetcat(step.requestText), { mode: 484 /* 0744 */ });
     nextTestId += 1;
 
     execute(`sh ./${filename}`).done(stdout => {

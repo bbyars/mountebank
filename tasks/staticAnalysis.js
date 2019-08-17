@@ -103,7 +103,8 @@ module.exports = function (grunt) {
                 'jsdoc',
                 'grunt-contrib-csslint',
                 'firebase-tools',
-                'nc'
+                'nc',
+                'snyk'
             ];
 
         dependencies.forEach(dependency => { usedCount[dependency] = 0; });
