@@ -114,7 +114,7 @@
     "xmldom": "0.1.27",
     "xpath": "0.0.27",
     "yargs": "13.3.0",
-    "snyk": "^1.189.0"
+    "snyk": "^1.217.0"
   },
   "devDependencies": {
     "firebase-tools": "^7.0.0",
