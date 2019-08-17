@@ -186,7 +186,8 @@ to <code>/imposters</code>.  View the <a href='/docs/api/contracts?type=imposter
 to see what the contents should look like.</p>
 
 <p>Creating one file containing a set of complex configurations for multiple imposters
-can be unwieldy.  <code>mb</code> supports using <a href='https://github.com/tj/ejs'>EJS</a>
+can be unwieldy. Through the <code>--configfile</code> command line option, <code>mb</code>
+supports using <a href='https://github.com/tj/ejs'>EJS</a>
 templates, which allow you to put contents into separate files and use an
 <a href='https://github.com/tj/ejs#user-content-includes'>EJS include</a> directive to merge the
 contents into one file.  This is particularly useful for separating out JavaScript injection
@@ -196,12 +197,9 @@ templating to turn them into JSON-friendly single line strings.</p>
 <p>mountebank will pass a <code>stringify</code> function into your templates that allows you to put
 multi-line strings in separate files.  The example below is loosely based on the
 <a href='/docs/api/injection#response-injection'>response injection</a> example described on
-the Injection page, and shows the use of the <code>stringify</code> function.  You'll note that
-<code>stringify</code> takes a mysterious parameter named <code>filename</code>.  Unfortunately,
-this is a required parameter, one that is required to be satisfied by the hidden variable named
-<code>filename</code>, and is simply a bit of magic that mountebank isn't clever enough
-to find a way to hide.  The variable is passed in by <code>mb</code> and used to resolve relative
-paths.</p>
+the Injection page, and shows the use of the <code>stringify</code> function. The path passed in
+to <code>stringify</code> is relative to the root file referenced in the <code>--configfile</code>
+command line parameter.</p>
 
 <p>Assuming the files below are in a relative directory called <code>templates</code>, you can
 initialize <code>mb</code> with the following command:</p>
@@ -229,10 +227,10 @@ mb --configfile templates/imposters.ejs --allowInjection
   "stubs": [
     {
       "predicates": [{ "contains": { "headers": { "Content-Type": "xml" } } }],
-      "responses": [{ "is": { "body": "&lt;%- stringify(filename, 'originXMLResponse.ejs') %&gt;" }}]
+      "responses": [{ "is": { "body": "&lt;%- stringify('originXMLResponse.ejs') %&gt;" }}]
     },
     {
-      "responses": [{ "inject": "&lt;%- stringify(filename, 'originServerResponse.ejs') %&gt;" }]
+      "responses": [{ "inject": "&lt;%- stringify('originServerResponse.ejs') %&gt;" }]
     }
   ]
 }
@@ -270,7 +268,7 @@ mb --configfile templates/imposters.ejs --allowInjection
   "name": "proxy",
   "stubs": [
     {
-      "responses": [{ "inject": "&lt;%- stringify(filename, 'counter.ejs') %&gt;" }],
+      "responses": [{ "inject": "&lt;%- stringify('counter.ejs') %&gt;" }],
       "predicates": [{
         "equals": {
           "method": "GET",
@@ -279,7 +277,7 @@ mb --configfile templates/imposters.ejs --allowInjection
       }]
     },
     {
-      "responses": [{ "inject": "&lt;%- stringify(filename, 'proxy.ejs') %&gt;" }]
+      "responses": [{ "inject": "&lt;%- stringify('proxy.ejs') %&gt;" }]
     }
   ]
 }
