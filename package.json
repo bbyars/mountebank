@@ -113,7 +113,7 @@
     "winston": "3.2.1",
     "xmldom": "0.1.27",
     "xpath": "0.0.27",
-    "yargs": "13.2.4",
+    "yargs": "13.3.0",
     "snyk": "^1.189.0"
   },
   "devDependencies": {
@@ -130,7 +130,7 @@
     "istanbul": "0.4.5",
     "jsdoc": "^3.5.5",
     "jsdom": "~15.1.0",
-    "mocha": "6.1.4",
+    "mocha": "6.2.0",
     "nc": "^1.0.2",
     "rimraf": "^2.6.2",
     "time-grunt": "2.0.0",
