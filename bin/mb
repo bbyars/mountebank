@@ -94,11 +94,14 @@ function getConfig (options) {
     return deferred.promise;
 }
 
+// usage: stringify(includeFile)
+// note: Trying to make this backwards compatible. However, the intent is to change
+// the signature to just require `includeFile`.
 function stringify (filename, includeFile) {
-    const resolvedPath = path.join(path.dirname(filename), includeFile),
-        contents = fs.readFileSync(resolvedPath, 'utf8'),
+    const resolvedPath = makePathInABackwardsCompatibleWay(filename, includeFile);
+    const contents = fs.readFileSync(resolvedPath, 'utf8'),
         rendered = ejs.render(contents, {
-            filename: filename,
+            filename: CONFIG_FILE_PATH,
             stringify: stringify,
             inject: stringify // backwards compatibility
         }),
@@ -106,6 +109,15 @@ function stringify (filename, includeFile) {
 
     // get rid of the surrounding quotes because it makes the templates more natural to quote them there
     return jsonString.substring(1, jsonString.length - 1);
+}
+
+function makePathInABackwardsCompatibleWay (filename, includeFile) {
+    var resolvedPath = null;
+    if (!includeFile) {
+        includeFile = filename;
+    }
+    resolvedPath = path.join(path.dirname(CONFIG_FILE_PATH), includeFile);
+    return resolvedPath;
 }
 
 function getContentsOrExit (file, server) {
@@ -121,11 +133,12 @@ function getContentsOrExit (file, server) {
     }
 }
 
+var CONFIG_FILE_PATH = null;
 function loadConfig (options, server) {
     if (!shouldLoadConfigFile(options)) {
         return Q(true);
     }
-
+    CONFIG_FILE_PATH = options.configfile;
     const configContents = getContentsOrExit(options.configfile, server),
         parsedContents = options.noParse ? configContents : ejs.render(configContents, {
             filename: options.configfile,

@@ -11,10 +11,6 @@ about their mobile cloud migration (emphasis theirs):
 >the entire program over to a Mountebank OSS-based solution with a custom provision to give us the ability
 >to expand/shrink our mocking needs on demand.
 
-mountebank is the first open source tool to provide cross-platform, multi-protocol test doubles over the wire.
-Just point your application to mountebank instead of the real dependency,
-and test like you would with traditional stubs and mocks.
-
 At the moment, the following protocols are supported:
 * http
 * https
@@ -22,15 +18,14 @@ At the moment, the following protocols are supported:
 * smtp
 
 mountebank supports mock verification, stubbing with advanced predicates, JavaScript injection,
-and record-playback through proxying.
+and record-playback through proxying. It also supports extensions that allow you to build custom
+protocol implementations in the language of your choice.
 
 ![how it works](https://github.com/bbyars/mountebank/blob/master/src/public/images/overview.gif?raw=true)
 
 See [getting started](https://www.mbtest.org/docs/gettingStarted) guide for more information.
 
 ## Install and Run
-
-[![npm][npm-badge]][npm]
 
 Install:
 
@@ -52,7 +47,7 @@ After installing and running, view the docs in your browser at <http://localhost
 
 You can always learn more and support mountebank development by buying the book:
 
-[![Testing Microservices with Mountebank](https://images.manning.com/720/960/resize/book/f/1f11ee6-6c23-472f-b397-8ab704a2141b/Byars-Mountebank-HI.png)](https://www.manning.com/books/testing-microservices-with-mountebank?a_aid=mb&a_bid=ee3288f4)
+[![Testing Microservices with Mountebank](https://github.com/bbyars/mountebank/blob/master/src/public/images/book.jpg)](https://www.manning.com/books/testing-microservices-with-mountebank?a_aid=mb&a_bid=ee3288f4)
 
 ## Goals
 
@@ -77,8 +72,7 @@ source developers, and they are legion.
 mountebank is used by a large number of companies and I think it's important to convey my best guess as to what
 the feature roadmap is. I've adopted GitHub tools to manage the roadmap. Specifically, the
 [Roadmap project](https://github.com/bbyars/mountebank/projects/9) page shows the features by release. I generally
-re-prioritize and update the ETAs each release. I'm in the middle of writing the mountebank book at the moment too,
-so please be patient.
+re-prioritize and update the ETAs each release.
 
 Visit the [Google group](https://groups.google.com/forum/#!forum/mountebank-discuss)
 for any support questions.  Don't be shy!
@@ -103,8 +97,8 @@ and Appveyor builds in [CircleCI](https://circleci.com/gh/bbyars/mountebank) as 
 
 ## Building
 
-`./build` should do the trick on Mac and Linux, and `build.bat` on Windows, assuming you have at least node 4.0.
-If not, yell at me.
+`./build` should do the trick on Mac and Linux, and `build.bat` on Windows, assuming you have a supported version
+of node. If not, yell at me.
 
 There are some tests that require network access (`grunt airplane` ignores them in case that offends your
 moral sensibilities).  A few of these tests verify the correct behavior under DNS failures.  If your ISP
@@ -116,10 +110,9 @@ which will avoid tests requiring your DNS resolver.
 ## Contributing
 
 Contributions are welcome!
-Some tips for contributing are in the contributing link that spins up when you run mb.
-I have a liberal policy accepting pull requests - I'd rather you sent them even if you can't figure out
-how to get the build working, etc.  I'm also available via Skype or something similar to help you get started.
-Feel free to reach me at brandon.byars@gmail.com.
+Some tips for contributing are in the [CONTRIBUTING.md](https://github.com/bbyars/mountebank/blob/master/CONTRIBUTING.md).
+While I've done my best to maintain a healthy codebase, mountebank is now several years old, If you're interested in
+contributing but need some pointers to understand the code, feel free to reach me at brandon.byars@gmail.com.
 
 [npm-badge]: https://nodei.co/npm/mountebank.png?downloads=true&downloadRank=true&stars=true
 [npm]: https://www.npmjs.com/package/mountebank

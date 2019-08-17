@@ -81,6 +81,12 @@ function create (encoding) {
         return i;
     }
 
+    function decorate (stub) {
+        stub.statefulResponses = repeatTransform(stub.responses);
+        stub.addResponse = response => { stub.responses.push(response); };
+        return stub;
+    }
+
     /**
      * Adds a stub to the repository
      * @memberOf module:models/stubRepository#
@@ -88,15 +94,53 @@ function create (encoding) {
      * @param {Object} beforeResponse - If provided, the new stub will be added before the stub containing the response (used for proxyOnce)
      */
     function addStub (stub, beforeResponse) {
-        stub.statefulResponses = repeatTransform(stub.responses);
-        stub.addResponse = response => { stub.responses.push(response); };
-
         if (beforeResponse) {
-            stubs.splice(stubIndexFor(beforeResponse), 0, stub);
+            stubs.splice(stubIndexFor(beforeResponse), 0, decorate(stub));
         }
         else {
-            stubs.push(stub);
+            stubs.push(decorate(stub));
         }
+    }
+
+    /**
+     * Adds a stub at stubIndex without changing the state of any other stubs
+     * @memberOf module:models/stubRepository#
+     * @param {Number} index - the index of the stub to change
+     * @param {Object} newStub - the new stub
+     */
+    function addStubAtIndex (index, newStub) {
+        stubs.splice(index, 0, decorate(newStub));
+    }
+
+    /**
+     * Overwrites the entire list of stubs
+     * @memberOf module:models/stubRepository#
+     * @param {Object} newStubs - the new list of stubs
+     */
+    function overwriteStubs (newStubs) {
+        while (stubs.length > 0) {
+            stubs.pop();
+        }
+        newStubs.forEach(stub => addStub(stub));
+    }
+
+    /**
+     * Overwrites the stub at stubIndex without changing the state of any other stubs
+     * @memberOf module:models/stubRepository#
+     * @param {Number} index - the index of the stub to change
+     * @param {Object} newStub - the new stub
+     */
+    function overwriteStubAtIndex (index, newStub) {
+        stubs[index] = decorate(newStub);
+    }
+
+    /**
+     * Deletes the stub at stubIndex without changing the state of any other stubs
+     * @memberOf module:models/stubRepository#
+     * @param {Number} index - the index of the stub to remove
+     */
+    function deleteStubAtIndex (index) {
+        stubs.splice(index, 1);
     }
 
     /**
@@ -175,7 +219,16 @@ function create (encoding) {
         }
     }
 
-    return { stubs: getStubs, addStub, getResponseFor, resetProxies };
+    return {
+        stubs: getStubs,
+        addStub,
+        addStubAtIndex,
+        overwriteStubs,
+        overwriteStubAtIndex,
+        deleteStubAtIndex,
+        getResponseFor,
+        resetProxies
+    };
 }
 
 module.exports = { create };

@@ -46,8 +46,14 @@ describe('tcp imposter', function () {
                 .then(response => {
                     assert.strictEqual(response.statusCode, 200);
                     assert.deepEqual(response.body.stubs, [
-                        { responses: [{ is: { data: '1' } }] },
-                        { responses: [{ is: { data: '2' } }] }
+                        {
+                            responses: [{ is: { data: '1' } }],
+                            _links: { self: { href: `${api.url}/imposters/${port}/stubs/0` } }
+                        },
+                        {
+                            responses: [{ is: { data: '2' } }],
+                            _links: { self: { href: `${api.url}/imposters/${port}/stubs/1` } }
+                        }
                     ]);
                 })
                 .finally(() => api.del('/imposters'));
@@ -70,7 +76,8 @@ describe('tcp imposter', function () {
                         requests: [],
                         stubs: [],
                         _links: {
-                            self: { href: `${api.url}/imposters/${port}` }
+                            self: { href: `${api.url}/imposters/${port}` },
+                            stubs: { href: `${api.url}/imposters/${port}/stubs` }
                         }
                     });
                 })
@@ -104,7 +111,8 @@ describe('tcp imposter', function () {
                                 request: { requestFrom: 'HERE', data: 'second', ip: '::ffff:127.0.0.1' },
                                 response: { data: '2' }
                             }
-                        ]
+                        ],
+                        _links: { self: { href: `${api.url}/imposters/${port}/stubs/0` } }
                     }]);
                 })
                 .finally(() => api.del('/imposters'));

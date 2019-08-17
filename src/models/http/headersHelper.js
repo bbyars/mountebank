@@ -22,6 +22,14 @@ function hasHeader (headerName, headers) {
     return Object.keys(headers).some(header => header.toLowerCase() === headerName.toLowerCase());
 }
 
+function getHeader (headerName, headers) {
+    return headers[headerNameFor(headerName, headers)];
+}
+
+function setHeader (headerName, value, headers) {
+    headers[headerNameFor(headerName, headers)] = value;
+}
+
 function headerNameFor (headerName, headers) {
     const helpers = require('../../util/helpers'),
         result = Object.keys(headers).find(header => header.toLowerCase() === headerName.toLowerCase());
@@ -36,11 +44,9 @@ function headerNameFor (headerName, headers) {
 
 function getJar (headers) {
     return {
-        get: header => headers[headerNameFor(header, headers)],
-        set: (header, value) => {
-            headers[headerNameFor(header, headers)] = value;
-        }
+        get: header => getHeader(header, headers),
+        set: (header, value) => setHeader(header, value, headers)
     };
 }
 
-module.exports = { headersFor, hasHeader, headerNameFor, getJar };
+module.exports = { headersFor, hasHeader, headerNameFor, getJar, getHeader, setHeader };

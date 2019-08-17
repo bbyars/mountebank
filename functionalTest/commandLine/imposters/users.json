@@ -1,0 +1,25 @@
+{
+    "port": 7575,
+    "protocol": "https",
+    "name": "user service",
+    "stubs": [
+      {
+        "responses": [
+          {
+            "is": {
+              "body": "<%- stringify('users.xml') %>"
+            }
+          }
+        ],
+        "predicates": [
+          {
+            "equals": {
+              "path": "/users/123",
+              "method": "GET"
+            }
+          }
+        ]
+      }
+    ]
+  }
+  

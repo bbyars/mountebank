@@ -170,7 +170,8 @@ function create (options) {
         homeController = require('./controllers/homeController').create(releases),
         impostersController = require('./controllers/impostersController').create(
             protocols, imposters, logger, options.allowInjection),
-        imposterController = require('./controllers/imposterController').create(imposters),
+        imposterController = require('./controllers/imposterController').create(
+            protocols, imposters, logger, options.allowInjection),
         logsController = require('./controllers/logsController').create(options.logfile),
         configController = require('./controllers/configController').create(thisPackage.version, options),
         feedController = require('./controllers/feedController').create(releases, options),
@@ -199,12 +200,18 @@ function create (options) {
     app.put('/imposters', impostersController.put);
     app.get('/imposters/:id', validateImposterExists, imposterController.get);
     app.delete('/imposters/:id', imposterController.del);
-    app.delete('/imposters/:id/savedProxyResponses', imposterController.resetProxies);
-    app.delete('/imposters/:id/requests', imposterController.resetProxies); // deprecated but saved for backwards compatibility
+    app.delete('/imposters/:id/savedProxyResponses', validateImposterExists, imposterController.resetProxies);
+    app.delete('/imposters/:id/requests', validateImposterExists, imposterController.resetProxies); // deprecated but saved for backwards compatibility
+
+    // Changing stubs without restarting imposter
+    app.put('/imposters/:id/stubs', validateImposterExists, imposterController.putStubs);
+    app.put('/imposters/:id/stubs/:stubIndex', validateImposterExists, imposterController.putStub);
+    app.post('/imposters/:id/stubs', validateImposterExists, imposterController.postStub);
+    app.delete('/imposters/:id/stubs/:stubIndex', validateImposterExists, imposterController.deleteStub);
 
     // Protocol implementation APIs
-    app.post('/imposters/:id/_requests', imposterController.postRequest);
-    app.post('/imposters/:id/_requests/:proxyResolutionKey', imposterController.postProxyResponse);
+    app.post('/imposters/:id/_requests', validateImposterExists, imposterController.postRequest);
+    app.post('/imposters/:id/_requests/:proxyResolutionKey', validateImposterExists, imposterController.postProxyResponse);
 
     app.get('/logs', logsController.get);
     app.get('/config', configController.get);

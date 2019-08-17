@@ -69,6 +69,13 @@ describe('config file', function () {
                     text: 'text 1'
                 }, 6565);
             })
+            .then(response => {
+                assert.strictEqual(response.response, '250 OK: message queued');
+                return https.get('/users/123', 7575);
+            }).then(response => {
+                assert.ok(response.body.indexOf('<users>') > -1);
+                assert.ok(response.body.indexOf('<id>123</id>') > 0);
+            })
             .finally(() => mb.stop());
     });
 
