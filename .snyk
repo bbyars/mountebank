@@ -8,3 +8,14 @@ patch:
         patched: '2019-07-03T22:06:43.790Z'
     - winston > async > lodash:
         patched: '2019-07-03T22:06:43.790Z'
+    - snyk > lodash:
+        patched: '2019-08-17T08:01:25.812Z'
+    - snyk > inquirer > lodash:
+        patched: '2019-08-17T08:01:25.812Z'
+    - snyk > snyk-config > lodash:
+        patched: '2019-08-17T08:01:25.812Z'
+    - snyk > snyk-nodejs-lockfile-parser > lodash:
+        patched: '2019-08-17T08:01:25.812Z'
+  'npm:extend:20180424':
+    - snyk > proxy-agent > pac-proxy-agent > get-uri > extend:
+        patched: '2019-08-17T08:01:25.812Z'
