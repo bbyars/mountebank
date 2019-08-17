@@ -96,7 +96,7 @@
   ],
   "dependencies": {
     "cors": "~2.8.4",
-    "csv-parse": "4.4.1",
+    "csv-parse": "4.4.2",
     "ejs": "^2.6.1",
     "errorhandler": "1.5.1",
     "escape-html": "^1.0.3",
