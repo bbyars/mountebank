@@ -25,7 +25,8 @@ function transform (request) {
         ip: request.socket.remoteAddress
     };
 
-    if (request.body && isUrlEncodedForm(headers['Content-Type'])) {
+    const contentType = headersHelper.getHeader('Content-Type', headers);
+    if (request.body && isUrlEncodedForm(contentType)) {
         transformed.form = queryString.parse(request.body);
     }
 

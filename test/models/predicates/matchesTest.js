@@ -125,5 +125,15 @@ describe('predicates', function () {
                 request = { headers: { field: 'begin middle end' } };
             assert.ok(predicates.evaluate(predicate, request));
         });
+        it('should correctly strip "except" predicate from request field and return false', function () {
+            const predicate = { matches: { field: 'ab' }, except: 'ab' },
+                request = { field: 'abcde' };
+            assert.ok(!predicates.evaluate(predicate, request));
+        });
+        it('should correctly strip "except" predicate from request field and return true', function () {
+            const predicate = { matches: { field: '^\\d{1,10}$' }, except: '\\D' },
+                request = { field: '1+2' };
+            assert.ok(predicates.evaluate(predicate, request));
+        });
     });
 });

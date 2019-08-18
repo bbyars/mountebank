@@ -302,7 +302,7 @@ const assert = require('assert'),
             promiseIt('should support sending JSON bodies with _links field for canned responses', function () {
                 const stub = { responses: [{ is: {
                         headers: { 'Content-Type': 'application/json' },
-                        body: { _links: { self: '/products/123' } }
+                        body: { _links: { self: { href: '/products/123' } } }
                     } }] },
                     request = { protocol, port, stubs: [stub] };
 
@@ -310,7 +310,7 @@ const assert = require('assert'),
                     assert.strictEqual(response.statusCode, 201, response.body);
                     return client.get('/', port);
                 }).then(response => {
-                    assert.deepEqual(response.body, { _links: { self: '/products/123' } });
+                    assert.deepEqual(response.body, { _links: { self: { href: '/products/123' } } });
                 }).finally(() => api.del('/imposters'));
             });
 
@@ -455,6 +455,200 @@ const assert = require('assert'),
                 }).then(response => {
                     assert.strictEqual(response.body, 'SUCCESS');
                 }).finally(() => api.del('/imposters'));
+            });
+
+            promiseIt('should support overwriting the stubs without restarting the imposter', function () {
+                const stub = { responses: [{ is: { body: 'ORIGINAL' } }] },
+                    request = { protocol, port, stubs: [stub] };
+
+                return api.post('/imposters', request)
+                    .then(() => api.put(`/imposters/${port}/stubs`, {
+                        stubs: [
+                            { responses: [{ is: { body: 'FIRST' } }] },
+                            { responses: [{ is: { body: 'ORIGINAL' } }] },
+                            { responses: [{ is: { body: 'THIRD' } }] }
+                        ]
+                    }))
+                    .then(response => {
+                        assert.strictEqual(response.statusCode, 200);
+                        assert.deepEqual(response.body.stubs, [
+                            {
+                                responses: [{ is: { body: 'FIRST' } }],
+                                _links: { self: { href: `${api.url}/imposters/${port}/stubs/0` } }
+                            },
+                            {
+                                responses: [{ is: { body: 'ORIGINAL' } }],
+                                _links: { self: { href: `${api.url}/imposters/${port}/stubs/1` } }
+                            },
+                            {
+                                responses: [{ is: { body: 'THIRD' } }],
+                                _links: { self: { href: `${api.url}/imposters/${port}/stubs/2` } }
+                            }
+                        ]);
+                        return client.get('/', port);
+                    })
+                    .then(response => {
+                        assert.strictEqual(response.body, 'FIRST');
+                    })
+                    .finally(() => api.del('/imposters'));
+            });
+
+            promiseIt('should support overwriting a single stub without restarting the imposter', function () {
+                const request = {
+                        protocol,
+                        port,
+                        stubs: [
+                            { responses: [{ is: { body: 'first' } }], predicates: [{ equals: { path: '/first' } }] },
+                            { responses: [{ is: { body: 'SECOND' } }] },
+                            { responses: [{ is: { body: 'third' } }] }
+                        ]
+                    },
+                    changedStub = { responses: [{ is: { body: 'CHANGED' } }] };
+
+                return api.post('/imposters', request)
+                    .then(response => {
+                        assert.strictEqual(201, response.statusCode, JSON.stringify(response.body));
+                        return api.put(`/imposters/${port}/stubs/1`, changedStub);
+                    })
+                    .then(response => {
+                        assert.strictEqual(response.statusCode, 200);
+                        assert.deepEqual(response.body.stubs, [
+                            {
+                                responses: [{ is: { body: 'first' } }],
+                                predicates: [{ equals: { path: '/first' } }],
+                                _links: { self: { href: `${api.url}/imposters/${port}/stubs/0` } }
+                            },
+                            {
+                                responses: [{ is: { body: 'CHANGED' } }],
+                                _links: { self: { href: `${api.url}/imposters/${port}/stubs/1` } }
+                            },
+                            {
+                                responses: [{ is: { body: 'third' } }],
+                                _links: { self: { href: `${api.url}/imposters/${port}/stubs/2` } }
+                            }
+                        ]);
+                        return client.get('/', port);
+                    })
+                    .then(response => {
+                        assert.strictEqual(response.body, 'CHANGED');
+                    })
+                    .finally(() => api.del('/imposters'));
+            });
+
+            promiseIt('should support deleting single stub without restarting the imposter', function () {
+                const request = {
+                    protocol,
+                    port,
+                    stubs: [
+                        { responses: [{ is: { body: 'first' } }], predicates: [{ equals: { path: '/first' } }] },
+                        { responses: [{ is: { body: 'SECOND' } }] },
+                        { responses: [{ is: { body: 'third' } }] }
+                    ]
+                };
+
+                return api.post('/imposters', request)
+                    .then(response => {
+                        assert.strictEqual(201, response.statusCode, JSON.stringify(response.body));
+                        return api.del(`/imposters/${port}/stubs/1`);
+                    })
+                    .then(response => {
+                        assert.strictEqual(response.statusCode, 200);
+                        assert.deepEqual(response.body.stubs, [
+                            {
+                                responses: [{ is: { body: 'first' } }], predicates: [{ equals: { path: '/first' } }],
+                                _links: { self: { href: `${api.url}/imposters/${port}/stubs/0` } }
+                            },
+                            {
+                                responses: [{ is: { body: 'third' } }],
+                                _links: { self: { href: `${api.url}/imposters/${port}/stubs/1` } }
+                            }
+                        ]);
+                        return client.get('/', port);
+                    })
+                    .then(response => {
+                        assert.strictEqual(response.body, 'third');
+                    })
+                    .finally(() => api.del('/imposters'));
+            });
+
+            promiseIt('should support adding single stub without restarting the imposter', function () {
+                const request = {
+                        protocol,
+                        port,
+                        stubs: [
+                            { responses: [{ is: { body: 'first' } }], predicates: [{ equals: { path: '/first' } }] },
+                            { responses: [{ is: { body: 'third' } }] }
+                        ]
+                    },
+                    newStub = { responses: [{ is: { body: 'SECOND' } }] };
+
+                return api.post('/imposters', request)
+                    .then(response => {
+                        assert.strictEqual(201, response.statusCode, JSON.stringify(response.body));
+                        return api.post(`/imposters/${port}/stubs`, { index: 1, stub: newStub });
+                    })
+                    .then(response => {
+                        assert.strictEqual(response.statusCode, 200);
+                        assert.deepEqual(response.body.stubs, [
+                            {
+                                responses: [{ is: { body: 'first' } }], predicates: [{ equals: { path: '/first' } }],
+                                _links: { self: { href: `${api.url}/imposters/${port}/stubs/0` } }
+                            },
+                            {
+                                responses: [{ is: { body: 'SECOND' } }],
+                                _links: { self: { href: `${api.url}/imposters/${port}/stubs/1` } }
+                            },
+                            {
+                                responses: [{ is: { body: 'third' } }],
+                                _links: { self: { href: `${api.url}/imposters/${port}/stubs/2` } }
+                            }
+                        ]);
+                        return client.get('/', port);
+                    })
+                    .then(response => {
+                        assert.strictEqual(response.body, 'SECOND');
+                    })
+                    .finally(() => api.del('/imposters'));
+            });
+
+            promiseIt('should support adding single stub at end without index ', function () {
+                const request = {
+                        protocol,
+                        port,
+                        stubs: [
+                            { responses: [{ is: { body: 'first' } }], predicates: [{ equals: { path: '/first' } }] },
+                            { responses: [{ is: { body: 'third' } }] }
+                        ]
+                    },
+                    newStub = { responses: [{ is: { body: 'LAST' } }] };
+
+                return api.post('/imposters', request)
+                    .then(response => {
+                        assert.strictEqual(201, response.statusCode, JSON.stringify(response.body));
+                        return api.post(`/imposters/${port}/stubs`, { stub: newStub });
+                    })
+                    .then(response => {
+                        assert.strictEqual(response.statusCode, 200);
+                        assert.deepEqual(response.body.stubs, [
+                            {
+                                responses: [{ is: { body: 'first' } }], predicates: [{ equals: { path: '/first' } }],
+                                _links: { self: { href: `${api.url}/imposters/${port}/stubs/0` } }
+                            },
+                            {
+                                responses: [{ is: { body: 'third' } }],
+                                _links: { self: { href: `${api.url}/imposters/${port}/stubs/1` } }
+                            },
+                            {
+                                responses: [{ is: { body: 'LAST' } }],
+                                _links: { self: { href: `${api.url}/imposters/${port}/stubs/2` } }
+                            }
+                        ]);
+                        return client.get('/', port);
+                    })
+                    .then(response => {
+                        assert.strictEqual(response.body, 'third');
+                    })
+                    .finally(() => api.del('/imposters'));
             });
         });
     });

@@ -29,6 +29,66 @@ describe('stubRepository', function () {
         });
     });
 
+    describe('#overwriteStubs', function () {
+        it('should overwrite entire list', function () {
+            const stubs = StubRepository.create('utf8'),
+                firstStub = { responses: [{ is: 'first' }, { is: 'second' }] },
+                secondStub = { responses: [{ is: 'third' }, { is: 'fourth' }] },
+                thirdStub = { responses: [{ is: 'fifth' }, { is: 'sixth' }] };
+
+            stubs.addStub(firstStub);
+            stubs.addStub(secondStub);
+            stubs.overwriteStubs([thirdStub]);
+
+            const responses = stubs.stubs().map(stub => stub.responses);
+
+            assert.deepEqual(responses, [
+                [{ is: 'fifth' }, { is: 'sixth' }]
+            ]);
+        });
+    });
+
+    describe('#overwriteStubAtIndex', function () {
+        it('should overwrite single stub', function () {
+            const stubs = StubRepository.create('utf8'),
+                firstStub = { responses: [{ is: 'first' }, { is: 'second' }] },
+                secondStub = { responses: [{ is: 'third' }, { is: 'fourth' }] },
+                thirdStub = { responses: [{ is: 'fifth' }, { is: 'sixth' }] };
+
+            stubs.addStub(firstStub);
+            stubs.addStub(secondStub);
+            stubs.overwriteStubAtIndex(1, thirdStub);
+
+            const responses = stubs.stubs().map(stub => stub.responses);
+
+            assert.deepEqual(responses, [
+                [{ is: 'first' }, { is: 'second' }],
+                [{ is: 'fifth' }, { is: 'sixth' }]
+            ]);
+        });
+    });
+
+    describe('#deleteeStubAtIndex', function () {
+        it('should overwrite single stub', function () {
+            const stubs = StubRepository.create('utf8'),
+                firstStub = { responses: [{ is: 'first' }, { is: 'second' }] },
+                secondStub = { responses: [{ is: 'third' }, { is: 'fourth' }] },
+                thirdStub = { responses: [{ is: 'fifth' }, { is: 'sixth' }] };
+
+            stubs.addStub(firstStub);
+            stubs.addStub(secondStub);
+            stubs.addStub(thirdStub);
+
+            stubs.deleteStubAtIndex(0);
+            const responses = stubs.stubs().map(stub => stub.responses);
+
+            assert.deepEqual(responses, [
+                [{ is: 'third' }, { is: 'fourth' }],
+                [{ is: 'fifth' }, { is: 'sixth' }]
+            ]);
+        });
+    });
+
     describe('#stubs', function () {
         it('should not allow changing state in stubRepository', function () {
             const stubs = StubRepository.create('utf8'),

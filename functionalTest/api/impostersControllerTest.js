@@ -111,8 +111,8 @@ describe('DELETE /imposters', function () {
     promiseIt('supports returning a non-replayable body with proxies removed', function () {
         const isImposter = {
                 protocol: 'http',
-                port, name:
-                'imposter-is',
+                port,
+                name: 'imposter-is',
                 stubs: [{ responses: [{ is: { body: 'Hello, World!' } }] }]
             },
             proxyImposter = {
@@ -139,8 +139,14 @@ describe('DELETE /imposters', function () {
                         recordRequests: false,
                         numberOfRequests: 0,
                         requests: [],
-                        stubs: isImposter.stubs,
-                        _links: { self: { href: `http://localhost:${api.port}/imposters/${isImposter.port}` } }
+                        stubs: [{
+                            responses: [{ is: { body: 'Hello, World!' } }],
+                            _links: { self: { href: `${api.url}/imposters/${isImposter.port}/stubs/0` } }
+                        }],
+                        _links: {
+                            self: { href: `http://localhost:${api.port}/imposters/${isImposter.port}` },
+                            stubs: { href: `http://localhost:${api.port}/imposters/${isImposter.port}/stubs` }
+                        }
                     },
                     {
                         protocol: 'http',
@@ -150,7 +156,10 @@ describe('DELETE /imposters', function () {
                         numberOfRequests: 0,
                         requests: [],
                         stubs: [],
-                        _links: { self: { href: `http://localhost:${api.port}/imposters/${proxyImposter.port }` } }
+                        _links: {
+                            self: { href: `http://localhost:${api.port}/imposters/${proxyImposter.port }` },
+                            stubs: { href: `http://localhost:${api.port}/imposters/${proxyImposter.port}/stubs` }
+                        }
                     }
                 ]
             });

@@ -17,17 +17,23 @@ function validateDocs (page) {
 }
 
 describe('docs', function () {
-    this.timeout(timeout);
+    // TODO: Hack - getting ECONNRESET errors on windows / appveyor
+    if (!isWindows) {
+        this.timeout(timeout);
 
-    [
-        '/docs/api/mocks',
-        '/docs/api/proxies',
-        '/docs/api/injection',
-        '/docs/api/xpath',
-        '/docs/api/json'
-    ].forEach(page => {
-        validateDocs(page);
-    });
+        [
+            '/docs/api/mocks',
+            '/docs/api/proxies',
+            '/docs/api/injection',
+            '/docs/api/xpath',
+            '/docs/api/json',
+            '/docs/protocols/https',
+            '/docs/protocols/http',
+            '/docs/api/jsonpath'
+        ].forEach(page => {
+            validateDocs(page);
+        });
+    }
 
     // The logs change for out of process imposters
     if (tcpIsInProcess) {
@@ -44,18 +50,6 @@ describe('docs', function () {
             '/docs/api/behaviors',
             '/docs/api/stubs',
             '/docs/protocols/tcp'
-        ].forEach(page => {
-            validateDocs(page);
-        });
-    }
-
-    // TODO: Total hack. These started failing with timeout or ECONNRESET errors on Appveyor,
-    // and I can't figure out why
-    if (tcpIsInProcess || !isWindows) {
-        [
-            '/docs/protocols/https',
-            '/docs/protocols/http',
-            '/docs/api/jsonpath'
         ].forEach(page => {
             validateDocs(page);
         });

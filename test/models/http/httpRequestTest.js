@@ -71,16 +71,20 @@ describe('HttpRequest', function () {
             return shouldTransformForm('application/x-www-form-urlencoded; charset=UTF-8');
         });
 
-        function shouldTransformForm (contentType) {
+        promiseIt('should transform form with lowercased content-type header name', function () {
+            return shouldTransformForm('application/x-www-form-urlencoded', 'content-type');
+        });
+
+        function shouldTransformForm (contentType, contentTypeHeader = 'Content-Type') {
             request.rawHeaders = [
-                'Content-Type', contentType,
+                contentTypeHeader, contentType,
                 'Host', '127.0.0.1:8000'
             ];
 
             const promise = httpRequest.createFrom(request).then(mbRequest => {
                 assert.deepEqual(mbRequest.headers, {
-                    'Content-Type': contentType,
-                    Host: '127.0.0.1:8000'
+                    Host: '127.0.0.1:8000',
+                    [contentTypeHeader]: contentType
                 });
                 assert.deepEqual(mbRequest.form, {
                     firstname: 'ruud',

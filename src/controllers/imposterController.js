@@ -7,13 +7,17 @@
 
 /**
  * Creates the imposter controller
- * @param {Object} imposters - the map of ports to imposters
+ * @param {Object} protocols - the protocol implementations supported by mountebank
+ * @param {Object} imposters - The map of ports to imposters
+ * @param {Object} logger - The logger
+ * @param {Boolean} allowInjection - Whether injection is allowed or not
  * @returns {{get, del}}
  */
-function create (imposters) {
-    function queryBoolean (query, key) {
-        const helpers = require('../util/helpers');
+function create (protocols, imposters, logger, allowInjection) {
+    const exceptions = require('../util/errors'),
+        helpers = require('../util/helpers');
 
+    function queryBoolean (query, key) {
         if (!helpers.defined(query[key])) {
             return false;
         }
@@ -21,7 +25,7 @@ function create (imposters) {
     }
 
     /**
-     * The function responding to GET /imposters/:port
+     * The function responding to GET /imposters/:id
      * @memberOf module:controllers/imposterController#
      * @param {Object} request - the HTTP request
      * @param {Object} response - the HTTP response
@@ -46,8 +50,9 @@ function create (imposters) {
     }
 
     /**
-     * Corresponds to DELETE /imposters/:port/savedProxyResponses
+     * Corresponds to DELETE /imposters/:id/savedProxyResponses
      * Removes all saved proxy responses
+     * @memberOf module:controllers/imposterController#
      * @param {Object} request - the HTTP request
      * @param {Object} response - the HTTP response
      * @returns {Object} A promise for testing
@@ -82,7 +87,7 @@ function create (imposters) {
     }
 
     /**
-     * The function responding to DELETE /imposters/:port
+     * The function responding to DELETE /imposters/:id
      * @memberOf module:controllers/imposterController#
      * @param {Object} request - the HTTP request
      * @param {Object} response - the HTTP response
@@ -110,9 +115,10 @@ function create (imposters) {
     }
 
     /**
-     * The function responding to POST /imposters/:port/_requests
+     * The function responding to POST /imposters/:id/_requests
      * This is what protocol implementations call to send the JSON request
      * structure to mountebank, which responds with the JSON response structure
+     * @memberOf module:controllers/imposterController#
      * @param {Object} request - the HTTP request
      * @param {Object} response - the HTTP response
      */
@@ -126,9 +132,10 @@ function create (imposters) {
     }
 
     /**
-     * The function responding to POST /imposters/:port/_requests/:proxyResolutionKey
+     * The function responding to POST /imposters/:id/_requests/:proxyResolutionKey
      * This is what protocol implementations call after proxying a request so
-     * mountebank can record the response and add behaviors to it.
+     * mountebank can record the response and add behaviors to
+     * @memberOf module:controllers/imposterController#
      * @param {Object} request - the HTTP request
      * @param {Object} response - the HTTP response
      */
@@ -142,7 +149,174 @@ function create (imposters) {
         });
     }
 
-    return { get, del, resetProxies, postRequest, postProxyResponse };
+    function validateStubs (stubs, errors) {
+        if (!helpers.defined(stubs)) {
+            errors.push(exceptions.ValidationError("'stubs' is a required field"));
+        }
+        else if (!require('util').isArray(stubs)) {
+            errors.push(exceptions.ValidationError("'stubs' must be an array"));
+        }
+    }
+
+    function validate (imposter, newStubs) {
+        const compatibility = require('../models/compatibility'),
+            request = helpers.clone(imposter);
+
+        request.stubs = newStubs;
+
+        compatibility.upcast(request);
+
+        const Protocol = protocols[request.protocol],
+            validator = require('../models/dryRunValidator').create({
+                testRequest: Protocol.testRequest,
+                testProxyResponse: Protocol.testProxyResponse,
+                additionalValidation: Protocol.validate,
+                allowInjection: allowInjection
+            });
+        return validator.validate(request, logger);
+    }
+
+    function respondWithValidationErrors (response, validationErrors, statusCode = 400) {
+        logger.error(`error changing stubs: ${JSON.stringify(exceptions.details(validationErrors))}`);
+        response.statusCode = statusCode;
+        response.send({ errors: validationErrors });
+        return require('q')();
+    }
+
+    /**
+     * The function responding to PUT /imposters/:id/stubs
+     * Overwrites the stubs list without restarting the imposter
+     * @memberOf module:controllers/imposterController#
+     * @param {Object} request - the HTTP request
+     * @param {Object} response - the HTTP response
+     * @returns {Object} - promise for testing
+     */
+    function putStubs (request, response) {
+        const imposter = imposters[request.params.id],
+            newStubs = request.body.stubs,
+            errors = [];
+
+        validateStubs(newStubs, errors);
+        if (errors.length > 0) {
+            return respondWithValidationErrors(response, errors);
+        }
+        else {
+            return validate(imposter, newStubs).then(result => {
+                if (result.isValid) {
+                    imposter.overwriteStubs(newStubs);
+                    response.send(imposter.toJSON());
+                }
+                else {
+                    respondWithValidationErrors(response, result.errors);
+                }
+            });
+        }
+    }
+
+    function validateStubIndex (index, imposter, errors) {
+        if (typeof imposter.stubs()[index] === 'undefined') {
+            errors.push(exceptions.ValidationError("'stubIndex' must be a valid integer, representing the array index position of the stub to replace"));
+        }
+    }
+
+    /**
+     * The function responding to PUT /imposters/:id/stubs/:stubIndex
+     * Overwrites a single stub without restarting the imposter
+     * @memberOf module:controllers/imposterController#
+     * @param {Object} request - the HTTP request
+     * @param {Object} response - the HTTP response
+     * @returns {Object} - promise for testing
+     */
+    function putStub (request, response) {
+        const imposter = imposters[request.params.id],
+            newStub = request.body,
+            errors = [];
+
+        validateStubIndex(request.params.stubIndex, imposter, errors);
+        if (errors.length > 0) {
+            return respondWithValidationErrors(response, errors, 404);
+        }
+        else {
+            return validate(imposter, [newStub]).then(result => {
+                if (result.isValid) {
+                    imposter.overwriteStubAtIndex(request.params.stubIndex, newStub);
+                    response.send(imposter.toJSON());
+                }
+                else {
+                    respondWithValidationErrors(response, result.errors);
+                }
+            });
+        }
+    }
+
+    /**
+     * The function responding to POST /imposters/:port/stubs
+     * Creates a single stub without restarting the imposter
+     * @memberOf module:controllers/imposterController#
+     * @param {Object} request - the HTTP request
+     * @param {Object} response - the HTTP response
+     * @returns {Object} - promise for testing
+     */
+    function postStub (request, response) {
+        const imposter = imposters[request.params.id],
+            newStub = request.body.stub,
+            index = typeof request.body.index === 'undefined' ? imposter.stubs().length : request.body.index,
+            errors = [];
+
+        if (typeof index !== 'number' || index < 0 || index > imposter.stubs().length) {
+            errors.push(exceptions.ValidationError("'index' must be between 0 and the length of the stubs array"));
+        }
+        if (errors.length > 0) {
+            return respondWithValidationErrors(response, errors);
+        }
+        else {
+            return validate(imposter, [newStub]).then(result => {
+                if (result.isValid) {
+                    imposter.addStubAtIndex(index, newStub);
+                    response.send(imposter.toJSON());
+                }
+                else {
+                    respondWithValidationErrors(response, result.errors);
+                }
+            });
+        }
+    }
+
+    /**
+     * The function responding to DELETE /imposters/:port/stubs/:stubIndex
+     * Removes a single stub without restarting the imposter
+     * @memberOf module:controllers/imposterController#
+     * @param {Object} request - the HTTP request
+     * @param {Object} response - the HTTP response
+     * @returns {Object} - promise for testing
+     */
+    function deleteStub (request, response) {
+        const imposter = imposters[request.params.id],
+            errors = [];
+
+        validateStubIndex(request.params.stubIndex, imposter, errors);
+        if (errors.length > 0) {
+            return respondWithValidationErrors(response, errors, 404);
+        }
+        else {
+
+            imposter.deleteStubAtIndex(request.params.stubIndex);
+            response.send(imposter.toJSON());
+            return require('q')();
+        }
+    }
+
+    return {
+        get,
+        del,
+        resetProxies,
+        postRequest,
+        postProxyResponse,
+        putStubs,
+        putStub,
+        postStub,
+        deleteStub
+    };
 }
 
 module.exports = { create };
