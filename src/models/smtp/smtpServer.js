@@ -11,6 +11,7 @@ function create (options, logger, responseFn) {
         connections = {},
         SMTPServer = require('smtp-server').SMTPServer,
         server = new SMTPServer({
+            maxAllowedUnauthenticatedCommands: 1000,
             disableReverseLookup: true,
             authOptional: true,
             onConnect (socket, callback) {

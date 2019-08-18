@@ -77,7 +77,9 @@
   "scripts": {
     "start": "bin/mb",
     "restart": "bin/mb restart",
-    "stop": "bin/mb stop"
+    "stop": "bin/mb stop",
+    "snyk-protect": "snyk protect",
+    "prepare": "npm run snyk-protect"
   },
   "keywords": [
     "test",
@@ -102,34 +104,35 @@
     "http-proxy-agent": "^2.1.0",
     "https-proxy-agent": "^2.2.1",
     "json-stable-stringify": "1.0.1",
-    "jsonpath-plus": "^0.20.0",
+    "jsonpath-plus": "^1.0.0",
     "mailparser": "^2.7.0",
     "nodemailer": "^6.1.1",
     "q": "1.5.1",
-    "query-string": "6.6.0",
+    "query-string": "6.8.0",
     "smtp-server": "^3.4.6",
     "winston": "3.2.1",
     "xmldom": "0.1.27",
     "xpath": "0.0.27",
-    "yargs": "13.2.4"
+    "yargs": "13.3.0",
+    "snyk": "^1.217.0"
   },
   "devDependencies": {
     "firebase-tools": "^7.0.0",
-    "fs-extra": "8.0.1",
+    "fs-extra": "8.1.0",
     "grunt": "^1.0.3",
     "grunt-cli": "^1.2.0",
     "grunt-contrib-csslint": "~2.0.0",
     "grunt-css": "^0.5.4",
-    "grunt-eslint": "^21.0.0",
+    "grunt-eslint": "^22.0.0",
     "grunt-jsdoc": "^2.2.1",
     "grunt-mocha-test": "~0.13.3",
     "grunt-mountebank": "1.0.7",
     "istanbul": "0.4.5",
     "jsdoc": "^3.5.5",
     "jsdom": "~15.1.0",
-    "mocha": "6.1.4",
+    "mocha": "6.2.0",
     "nc": "^1.0.2",
-    "rimraf": "^2.6.2",
+    "rimraf": "^3.0.0",
     "time-grunt": "2.0.0",
     "w3cjs": "~0.4.0"
   },
@@ -140,5 +143,6 @@
     "ignore": [
       "q"
     ]
-  }
+  },
+  "snyk": true
 }
