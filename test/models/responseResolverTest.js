@@ -372,6 +372,115 @@ describe('responseResolver', function () {
             });
         });
 
+        promiseIt('should choose predicate operator from predicateGenerators', function () {
+            const proxy = { to: mock().returns(Q({ key: 'value' })) },
+                stubs = StubRepository.create('utf8'),
+                resolver = ResponseResolver.create(stubs, proxy),
+                logger = Logger.create(),
+                response = {
+                    proxy: {
+                        to: 'where',
+                        mode: 'proxyOnce',
+                        predicateGenerators: [{
+                            matches: { key: true },
+                            predicateOperator: 'contains'
+                        }]
+                    }
+                },
+                request = { key: 'Test' };
+
+            stubs.addStub({ responses: [response] });
+            const responseConfig = stubs.getResponseFor({}, logger, {});
+
+
+            return resolver.resolve(responseConfig, request, logger, {}).then(() => {
+                assert.deepEqual(stubList(stubs), [
+                    {
+                        predicates: [{
+                            contains: { key: 'Test' }
+                        }],
+                        responses: [{ is: { key: 'value' } }]
+                    },
+                    {
+                        responses: [response]
+                    }
+                ]);
+            });
+        });
+
+        promiseIt('should format exists matcher from predicateOperator', function () {
+            const proxy = { to: mock().returns(Q({ key: 'value' })) },
+                stubs = StubRepository.create('utf8'),
+                resolver = ResponseResolver.create(stubs, proxy),
+                logger = Logger.create(),
+                response = {
+                    proxy: {
+                        to: 'where',
+                        mode: 'proxyOnce',
+                        predicateGenerators: [{
+                            matches: { key: true },
+                            predicateOperator: 'exists'
+                        }]
+                    }
+                },
+                request = { key: 'Test' };
+
+            stubs.addStub({ responses: [response] });
+            const responseConfig = stubs.getResponseFor({}, logger, {});
+
+
+            return resolver.resolve(responseConfig, request, logger, {}).then(() => {
+                assert.deepEqual(stubList(stubs), [
+                    {
+                        predicates: [{
+                            exists: { key: true }
+                        }],
+                        responses: [{ is: { key: 'value' } }]
+                    },
+                    {
+                        responses: [response]
+                    }
+                ]);
+            });
+        });
+
+        promiseIt('should format exists matcher from predicateOperator with nested match', function () {
+            const proxy = { to: mock().returns(Q({ key: 'value' })) },
+                stubs = StubRepository.create('utf8'),
+                resolver = ResponseResolver.create(stubs, proxy),
+                logger = Logger.create(),
+                response = {
+                    proxy: {
+                        to: 'where',
+                        mode: 'proxyOnce',
+                        predicateGenerators: [{
+                            matches: { key: { nested: true } },
+                            predicateOperator: 'exists'
+                        }]
+                    }
+                },
+                request = { key: { nested: 'Test' } };
+
+            stubs.addStub({ responses: [response] });
+            const responseConfig = stubs.getResponseFor({}, logger, {});
+
+
+            return resolver.resolve(responseConfig, request, logger, {}).then(() => {
+                assert.deepEqual(stubList(stubs), [
+                    {
+                        predicates: [{
+                            exists: { key: { nested: true } }
+                        }],
+                        responses: [{ is: { key: 'value' } }]
+                    },
+                    {
+                        responses: [response]
+                    }
+                ]);
+            });
+        });
+
+
         promiseIt('should support "inject" predicateGenerators', function () {
             const proxy = { to: mock().returns(Q({ key: 'value' })) },
                 stubs = StubRepository.create('utf8'),
