@@ -428,12 +428,12 @@ const predicates = {
  */
 function evaluate (predicate, request, encoding, logger, imposterState) {
     const predicateFn = Object.keys(predicate).find(key => Object.keys(predicates).indexOf(key) >= 0),
-        errors = require('../util/errors');
+        errors = require('../util/errors'),
+        helpers = require('../util/helpers'),
+        clone = helpers.clone(predicate);
 
     if (predicateFn) {
-        const result = predicates[predicateFn](predicate, request, encoding, logger, imposterState);
-        delete predicate.keyCaseSensitive;
-        return result;
+        return predicates[predicateFn](clone, request, encoding, logger, imposterState);
     }
     else {
         throw errors.ValidationError('missing predicate', { source: predicate });
