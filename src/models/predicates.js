@@ -22,34 +22,26 @@ function sortObjects (a, b) {
     }
 }
 
-function forceStrings (obj) {
+function forceStrings (value) {
     const isObject = require('../util/helpers').isObject;
 
-    if (!isObject(obj)) {
-        return obj;
+    if (value === null) {
+        return 'null';
     }
-    else if (Array.isArray(obj)) {
-        return obj.map(forceStrings);
+    else if (Array.isArray(value)) {
+        return value.map(forceStrings);
+    }
+    else if (isObject(value)) {
+        return Object.keys(value).reduce((accumulator, key) => {
+            accumulator[key] = forceStrings(value[key]);
+            return accumulator;
+        }, {});
+    }
+    else if (typeof value.toString === 'function') {
+        return value.toString();
     }
     else {
-        return Object.keys(obj).reduce((result, key) => {
-            if (Array.isArray(obj[key])) {
-                result[key] = obj[key].map(forceStrings);
-            }
-            else if (obj[key] === null) {
-                result[key] = 'null';
-            }
-            else if (isObject(obj[key])) {
-                result[key] = forceStrings(obj[key]);
-            }
-            else if (['boolean', 'number'].indexOf(typeof obj[key]) >= 0) {
-                result[key] = obj[key].toString();
-            }
-            else {
-                result[key] = obj[key];
-            }
-            return result;
-        }, {});
+        return value;
     }
 }
 
@@ -191,9 +183,9 @@ function transformAll (obj, keyTransforms, valueTransforms, arrayTransforms) {
         return apply(arrayTransforms)(obj.map(element => transformAll(element, keyTransforms, valueTransforms, arrayTransforms)));
     }
     else if (isObject(obj)) {
-        return Object.keys(obj).reduce((result, key) => {
-            result[apply(keyTransforms)(key)] = transformAll(obj[key], keyTransforms, valueTransforms, arrayTransforms);
-            return result;
+        return Object.keys(obj).reduce((accumulator, key) => {
+            accumulator[apply(keyTransforms)(key)] = transformAll(obj[key], keyTransforms, valueTransforms, arrayTransforms);
+            return accumulator;
         }, {});
     }
     else if (typeof obj === 'string') {
@@ -400,15 +392,24 @@ function inject (predicate, request, encoding, logger, imposterState) {
     }
 }
 
+function toString (value) {
+    if (value !== null && typeof value !== 'undefined' && typeof value.toString === 'function') {
+        return value.toString();
+    }
+    else {
+        return value;
+    }
+}
+
 const predicates = {
-    equals: create('equals', (expected, actual) => expected === actual),
+    equals: create('equals', (expected, actual) => toString(expected) === toString(actual)),
     deepEquals,
     contains: create('contains', (expected, actual) => actual.indexOf(expected) >= 0),
     startsWith: create('startsWith', (expected, actual) => actual.indexOf(expected) === 0),
     endsWith: create('endsWith', (expected, actual) => actual.indexOf(expected, actual.length - expected.length) >= 0),
     matches,
     exists: create('exists', function (expected, actual) {
-        return expected ? (actual !== undefined && actual !== '') : (actual === undefined || actual === '');
+        return expected ? (typeof actual !== 'undefined' && actual !== '') : (typeof actual === 'undefined' || actual === '');
     }),
     not,
     or,
