@@ -24,9 +24,11 @@ function assertValid (path, html) {
                 line: message.lastLine,
                 message: message.message
             }));
+
+            console.log(`Testing ${path}...`);
             assert.strictEqual(0, errors.length,
                 `Errors for ${path}: ${JSON.stringify(errors, null, 2)}`);
-            console.log(`${path} is valid}`);
+            console.log(`...${path} is valid`);
             deferred.resolve();
         }
     });
@@ -70,7 +72,7 @@ function getHTML (path) {
 // no value running them with every node in the build matrix
 if (process.env.MB_AIRPLANE_MODE !== 'true' && process.env.MB_RUN_WEB_TESTS === 'true') {
     describe('all pages in the mountebank website', function () {
-        this.timeout(60000);
+        this.timeout(120000);
 
         promiseIt('should be valid html', function () {
             // feed isn't html and is tested elsewhere; support has non-valid Google HTML embedded
