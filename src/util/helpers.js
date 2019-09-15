@@ -72,9 +72,9 @@ function merge (defaults, overrides) {
  *    setNestedKey(obj, ['a', 'b', 'c'], 'changed-value')
  *    assert(obj === {a: {b:{c:'changed-value'}}})
  *
- * @param {[Object]} obj   Object to set the nested key
- * @param {[Array]} path  An array to describe the path(Ex: ['a', 'b', 'c'])
- * @param {[Object]} value Any value
+ * @param {Object} obj   Object to set the nested key
+ * @param {Array} path  An array to describe the path(Ex: ['a', 'b', 'c'])
+ * @param {Object} value Any value
  * @returns {undefined}
  * from https://stackoverflow.com/a/49754647
  */
