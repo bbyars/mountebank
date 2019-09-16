@@ -70,9 +70,9 @@ function getHTML (path) {
 // MB_AIRPLANE_MODE because these require network access
 // MB_RUN_WEB_TESTS because these are slow, occasionally fragile, and there's
 // no value running them with every node in the build matrix
-if (process.env.MB_AIRPLANE_MODE !== 'true' && process.env.MB_RUN_WEB_TESTS === 'true') {
+if (process.env.MB_AIRPLANE_MODE !== 'true' && process.env.MB_RUN_WEB_TESTS === 'true' && process.env.MB_COMMENT === 'true') {
     describe('all pages in the mountebank website', function () {
-        this.timeout(180000);
+        this.timeout(60000);
 
         promiseIt('should be valid html', function () {
             // feed isn't html and is tested elsewhere; support has non-valid Google HTML embedded
