@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     "module": "commonjs",
-    "target": "env",
+    "target": "es2015",
     "lib": [ "es2015.promise", "es5", "dom", "scripthost", "es2015.iterable" ],
     "sourceMap": true,
     "experimentalDecorators": true,
