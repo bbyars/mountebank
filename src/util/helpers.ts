@@ -1,5 +1,9 @@
 'use strict';
 
+interface IIndexed {
+    [key: string]:any
+}
+
 /** @module */
 
 /**
@@ -7,7 +11,7 @@
  * @param {Object} obj - the value to test
  * @returns {boolean}
  */
-function defined (obj) {
+export function defined (obj:Object):Boolean {
     return typeof obj !== 'undefined';
 }
 
@@ -18,16 +22,20 @@ function defined (obj) {
  * @param {Object} obj - the value to test
  * @returns {boolean}
  */
-function isObject (obj) {
+export function isObject (obj:Object|null):boolean {
     return typeof obj === 'object' && obj !== null;
 }
 
+interface ISocket {
+    remoteAddress:string;
+    remotePort:string;
+}
 /**
  * Returns the text used for logging purposes related to this socket
  * @param {Object} socket - the socket
  * @returns {string}
  */
-function socketName (socket) {
+export function socketName (socket:ISocket):string {
     let result = socket.remoteAddress;
     if (socket.remotePort) {
         result += `:${socket.remotePort}`;
@@ -40,7 +48,7 @@ function socketName (socket) {
  * @param {Object} obj - the object to clone
  * @returns {Object}
  */
-function clone (obj) {
+export function clone (obj:Object):Object {
     return JSON.parse(JSON.stringify(obj));
 }
 
@@ -51,8 +59,8 @@ function clone (obj) {
  * and overrides, the values for overrides will be used
  * @returns {Object}
  */
-function merge (defaults, overrides) {
-    const result = clone(defaults);
+export function merge (defaults:Object & IIndexed, overrides:Object & IIndexed):Object {
+    const result:Object & IIndexed = clone(defaults);
     Object.keys(overrides).forEach(key => {
         if (typeof overrides[key] === 'object' && overrides[key] !== null) {
             result[key] = merge(result[key] || {}, overrides[key]);
@@ -78,12 +86,10 @@ function merge (defaults, overrides) {
  * @returns {undefined}
  * from https://stackoverflow.com/a/49754647
  */
-function setDeep (obj, path, value) {
+export function setDeep (obj:Object & IIndexed, path:string[], value:Object):void {
     if (path.length === 1) {
-        obj[path] = value;
+        obj[path[0]] = value;
         return;
     }
     setDeep(obj[path[0]], path.slice(1), value);
 }
-
-module.exports = { defined, isObject, socketName, clone, merge, setDeep };

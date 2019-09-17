@@ -2,6 +2,7 @@
 // eslint-disable-next-line no-underscore-dangle
 /* eslint complexity: 0 */
 {
+    "parser": "@typescript-eslint/parser",
     "extends": "eslint:recommended",
     "parserOptions": {
         "ecmaVersion": 6

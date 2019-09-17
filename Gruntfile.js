@@ -36,6 +36,8 @@ module.exports = grunt => {
             target: [
                 'Gruntfile.js',
                 'src/**/*.js',
+                'src/**/*.ts',
+                '!src/util/helpers.js',
                 'tasks/**/*.js',
                 'test/**/*.js',
                 'functionalTest/**/*.js',
