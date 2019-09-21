@@ -134,6 +134,7 @@
     "nc": "^1.0.2",
     "rimraf": "^3.0.0",
     "time-grunt": "2.0.0",
+    "typescript": "^3.6.3",
     "w3cjs": "~0.4.0"
   },
   "engines": {
