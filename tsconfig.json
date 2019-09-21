@@ -2,14 +2,11 @@
   "compilerOptions": {
     "module": "commonjs",
     "target": "es2015",
-    "lib": [ "es2015.promise", "es5", "dom", "scripthost", "es2015.iterable" ],
     "sourceMap": true,
     "experimentalDecorators": true,
     "noImplicitAny": true,
     "noUnusedLocals": true,
     "strictNullChecks": true,
-    "importHelpers": true,
-    "noEmitHelpers": true,
     "allowSyntheticDefaultImports": true,
     "moduleResolution": "node",
     "types": [

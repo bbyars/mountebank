@@ -12,8 +12,34 @@ module.exports = grunt => {
     grunt.loadNpmTasks('grunt-mountebank');
     grunt.loadNpmTasks('grunt-eslint');
     grunt.loadNpmTasks('grunt-css');
+    grunt.loadNpmTasks("grunt-ts");
 
     grunt.initConfig({
+        ts: {
+            dev: {
+                tsconfig: './tsconfig.json',
+                src: [
+                    '**/*.ts',
+                    '!node_modules/**',
+                    '!dist/**'
+                ]
+            },
+            production: {
+                tsconfig: './tsconfig.json',
+                src: [
+                    '**/*.ts',
+                    '!node_modules/**',
+                    '!dist/**'
+                ],
+                options: {
+                    sourceMap: false
+                }
+            },
+            life: {
+                tsconfig: './tsconfig.json',
+                watch: '.'
+            }
+        },
         mochaTest: {
             unit: {
                 options: {
@@ -106,7 +132,7 @@ module.exports = grunt => {
     grunt.registerTask('test:performance', 'Run the performance tests', ['mochaTest:performance']);
     grunt.registerTask('test', 'Run all non-performance tests', ['test:unit', 'test:functional']);
     grunt.registerTask('lint', 'Run all lint checks', ['jsCheck', 'deadCheck', 'eslint']);
-    grunt.registerTask('default', ['test', 'lint']);
+    grunt.registerTask('default', ['ts:build', 'test', 'lint']);
     grunt.registerTask('airplane', 'Build that avoids tests requiring network access', ['setAirplaneMode', 'default']);
 
     // Package-specific testing
