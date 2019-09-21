@@ -2,13 +2,13 @@
 
 /** @module */
 
-function toEpochWithoutTime (text) {
+function toEpochWithoutTime (text:string):number {
     // be sure to exclude time so we get accurate text
     const dateTextWithoutTime = new Date(Date.parse(text)).toDateString();
     return Date.parse(dateTextWithoutTime);
 }
 
-function sameMonth (firstEpoch, secondEpoch) {
+function sameMonth (firstEpoch:number, secondEpoch:number):boolean {
     const first = new Date(firstEpoch),
         second = new Date(secondEpoch);
 
@@ -21,7 +21,7 @@ function sameMonth (firstEpoch, secondEpoch) {
  * @param {string} testNowText - Ignore, used for testing purposes only.
  * @returns {string}
  */
-function howLongAgo (thenText, testNowText) {
+export function howLongAgo (thenText:string, testNowText:string):string {
     const nowText = testNowText ? testNowText : new Date(Date.now()).toISOString(), // testNow is just for testing purposes
         then = toEpochWithoutTime(thenText),
         now = toEpochWithoutTime(nowText),
@@ -47,5 +47,3 @@ function howLongAgo (thenText, testNowText) {
         return '';
     }
 }
-
-module.exports = { howLongAgo };
