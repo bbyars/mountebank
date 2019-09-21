@@ -15,6 +15,7 @@ module.exports = function (grunt) {
         };
     }
 
+    // start ts compilation and then create dist folder with pure content
     grunt.registerTask('dist', ['ts:production', 'dist:folder']);
 
     grunt.registerTask('dist:folder', 'Create trimmed down distribution directory', function () {
@@ -25,6 +26,9 @@ module.exports = function (grunt) {
         rimraf.sync('dist');
         fs.mkdirSync('dist');
         fs.mkdirSync('dist/mountebank');
+
+        // we dont want to add ts files to resulting package
+        // so using glob and exlude all ts by file extension
         ['bin/**/*.!(ts|map)', 'src/**/*.!(ts|map)', 'package.json', 'package-lock.json', 'releases.json', 'README.md', 'LICENSE'].forEach(source => {
             const files = glob.sync(source);
 
