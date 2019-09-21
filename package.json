@@ -110,12 +110,11 @@
     "q": "1.5.1",
     "query-string": "6.8.0",
     "smtp-server": "^3.4.6",
-    "snyk": "^1.217.0",
-    "typescript": "^3.6.3",
     "winston": "3.2.1",
     "xmldom": "0.1.27",
     "xpath": "0.0.27",
-    "yargs": "13.3.0"
+    "yargs": "13.3.0",
+    "snyk": "^1.217.0"
   },
   "devDependencies": {
     "firebase-tools": "^7.0.0",
