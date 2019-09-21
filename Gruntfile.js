@@ -35,7 +35,7 @@ module.exports = grunt => {
             },
             life: {
                 tsconfig: './tsconfig.json',
-                watch: tsSrcSet,
+                watch: '.',
                 src: tsSrcSet
             }
         },
