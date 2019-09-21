@@ -2,7 +2,7 @@
 
 /** @module */
 
-interface ILogger {
+export interface ILogger {
     baseLogger:ILogger;
     [key:string]:Function|ILogger;
     (message:string):void;

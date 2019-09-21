@@ -1,9 +1,41 @@
 'use strict';
 
+import {ILogger} from "./scopedLogger";
+
 /**
  * Express middleware functions to inject into the HTTP processing
  * @module
  */
+
+interface IResponse {
+    setHeader(...args:string[]):void;
+    send(data:unknown):void;
+    statusCode:number;
+    render():void;
+}
+
+interface IRequest {
+    headers:any;
+    url:string;
+    method:string;
+    body:string;
+    params:any;
+    setEncoding(encoding:string):void;
+    on(event:string, cb:(...args:any[]) => void):void;
+}
+
+interface IImposter {
+    stubs:IStub[];
+}
+
+interface IStub {
+
+}
+
+interface IBody {
+    stubs:IStub[];
+    imposters:IImposter[];
+}
 
 /**
  * Returns a middleware function to transforms all outgoing relative links in the response body
@@ -11,35 +43,32 @@
  * @param {number} port - The port of the current instance
  * @returns {Function}
  */
-function useAbsoluteUrls (port) {
+export function useAbsoluteUrls (port:number):(request:IRequest, response:IResponse, next:() => void) => void {
     return function (request, response, next) {
         const setHeaderOriginal = response.setHeader,
             sendOriginal = response.send,
             host = request.headers.host || `localhost:${port}`,
-            absolutize = link => `http://${host}${link}`,
+            absolutize = (link:string) => `http://${host}${link}`,
             isObject = require('../util/helpers').isObject,
             util = require('util');
 
-        response.setHeader = function () {
-            const args = Array.prototype.slice.call(arguments);
-
+        response.setHeader = function (...args:string[]) {
             if (args[0] && args[0].toLowerCase() === 'location') {
                 args[1] = absolutize(args[1]);
             }
             setHeaderOriginal.apply(this, args);
         };
 
-        response.send = function () {
-            const args = Array.prototype.slice.call(arguments),
-                body = args[0],
-                changeLinks = function (obj) {
+        response.send = function (...args:IBody[]) {
+            const body = args[0],
+                changeLinks = function (obj:any) {
                     if (obj._links) {
                         Object.keys(obj._links).forEach(function (rel) {
                             obj._links[rel].href = absolutize(obj._links[rel].href);
                         });
                     }
                 },
-                traverse = function (obj, fn, parent) {
+                traverse = function (obj:any, fn:(obj:unknown) => void, parent?:string) {
                     if (parent === 'stubs' || parent === 'response') {
                         // Don't change _links within stubs or within the response
                         // sent back to protocol implementations
@@ -62,7 +91,7 @@ function useAbsoluteUrls (port) {
                     body.stubs.forEach(changeLinks);
                 }
                 else if (util.isArray(body.imposters)) {
-                    body.imposters.forEach(imposter => {
+                    body.imposters.forEach((imposter) => {
                         if (util.isArray(imposter.stubs)) {
                             imposter.stubs.forEach(changeLinks);
                         }
@@ -81,7 +110,7 @@ function useAbsoluteUrls (port) {
  * @param {Object} imposters - The current dictionary of imposters
  * @returns {Function}
  */
-function createImposterValidator (imposters) {
+export function createImposterValidator (imposters:{[key:string]:IImposter}):(request:IRequest, response:IResponse, next:() => void) => void {
     return function validateImposterExists (request, response, next) {
         const errors = require('./errors'),
             imposter = imposters[request.params.id];
@@ -104,8 +133,8 @@ function createImposterValidator (imposters) {
  * @param {string} format - The log format
  * @returns {Function}
  */
-function logger (log, format) {
-    function shouldLog (request) {
+export function logger (log:ILogger, format:string) {
+    function shouldLog (request:IRequest) {
         const isStaticAsset = (['.js', '.css', '.gif', '.png', '.ico'].some(function (fileType) {
                 return request.url.indexOf(fileType) >= 0;
             })),
@@ -115,7 +144,7 @@ function logger (log, format) {
         return !(isStaticAsset || isHtmlRequest || isXHR);
     }
 
-    return function (request, response, next) {
+    return function (request:IRequest, response:IResponse, next:() => void) {
         if (shouldLog(request)) {
             const message = format.replace(':method', request.method).replace(':url', request.url);
             if (request.url.indexOf('_requests') > 0) {
@@ -136,8 +165,8 @@ function logger (log, format) {
  * @param {Object} vars - the global variables to pass
  * @returns {Function}
  */
-function globals (vars) {
-    return function (request, response, next) {
+export function globals (vars:{[key:string]:unknown}) {
+    return function (request:IRequest, response:IResponse, next:() => void) {
         const originalRender = response.render;
         response.render = function () {
             const args = Array.prototype.slice.call(arguments),
@@ -163,7 +192,7 @@ function globals (vars) {
  * @param {Object} response - The http response
  * @param {Function} next - The next middleware function to call
  */
-function defaultIEtoHTML (request, response, next) {
+export function defaultIEtoHTML (request:IRequest, response:IResponse, next:() => void) {
     // IE has inconsistent Accept headers, often defaulting to */*
     // Our default is JSON, which fails to render in the browser on content-negotiated pages
     if (request.headers['user-agent'] && request.headers['user-agent'].indexOf('MSIE') >= 0) {
@@ -181,8 +210,8 @@ function defaultIEtoHTML (request, response, next) {
  * @param {Object} log - The logger
  * @returns {Function}
  */
-function json (log) {
-    return function (request, response, next) {
+export function json (log:ILogger) {
+    return function (request:IRequest, response:IResponse, next:() => void) {
         request.body = '';
         request.setEncoding('utf8');
         request.on('data', chunk => {
@@ -211,5 +240,3 @@ function json (log) {
         });
     };
 }
-
-module.exports = { useAbsoluteUrls, createImposterValidator, logger, globals, defaultIEtoHTML, json };

@@ -62,7 +62,7 @@ module.exports = grunt => {
                 'Gruntfile.js',
                 'src/**/*.js',
                 'src/**/*.ts',
-                '!src/util/helpers.js',
+                '!src/util/*',
                 'tasks/**/*.js',
                 'test/**/*.js',
                 'functionalTest/**/*.js',
