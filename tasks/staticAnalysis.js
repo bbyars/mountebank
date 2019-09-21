@@ -104,7 +104,9 @@ module.exports = function (grunt) {
                 'grunt-contrib-csslint',
                 'firebase-tools',
                 'nc',
-                'snyk'
+                'snyk',
+                'typescript',
+                '@typescript-eslint/parser'
             ];
 
         dependencies.forEach(dependency => { usedCount[dependency] = 0; });
