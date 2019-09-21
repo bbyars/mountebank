@@ -125,11 +125,11 @@ module.exports = grunt => {
         require('fs').writeFileSync('protocols.json', JSON.stringify(protocols, null, 2));
     });
 
-    grunt.registerTask('test:unit', 'Run the unit tests', ['mochaTest:unit']);
+    grunt.registerTask('test:unit', 'Run the unit tests', ['ts:production', 'mochaTest:unit']);
     grunt.registerTask('test:functional', 'Run the functional tests',
-        ['mb:restart', 'try', 'mochaTest:functional', 'finally', 'mb:stop', 'checkForErrors']);
-    grunt.registerTask('test:performance', 'Run the performance tests', ['mochaTest:performance']);
-    grunt.registerTask('test', 'Run all non-performance tests', ['test:unit', 'test:functional']);
+        ['ts:production', 'mb:restart', 'try', 'mochaTest:functional', 'finally', 'mb:stop', 'checkForErrors']);
+    grunt.registerTask('test:performance', 'Run the performance tests', ['ts:production', 'mochaTest:performance']);
+    grunt.registerTask('test', 'Run all non-performance tests', ['ts:production', 'test:unit', 'test:functional']);
     grunt.registerTask('lint', 'Run all lint checks', ['jsCheck', 'deadCheck', 'eslint']);
     grunt.registerTask('default', ['ts:production', 'test', 'lint']);
     grunt.registerTask('airplane', 'Build that avoids tests requiring network access', ['setAirplaneMode', 'default']);
