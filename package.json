@@ -119,6 +119,7 @@
   "devDependencies": {
     "firebase-tools": "^7.0.0",
     "fs-extra": "8.1.0",
+    "glob": "^7.1.4",
     "grunt": "^1.0.3",
     "grunt-cli": "^1.2.0",
     "grunt-contrib-csslint": "~2.0.0",
