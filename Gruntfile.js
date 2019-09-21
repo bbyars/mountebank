@@ -35,7 +35,8 @@ module.exports = grunt => {
             },
             life: {
                 tsconfig: './tsconfig.json',
-                watch: '.'
+                watch: tsSrcSet,
+                src: tsSrcSet
             }
         },
         mochaTest: {
