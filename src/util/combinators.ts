@@ -20,11 +20,9 @@
  * @param {...*} args - The arguments to curry
  * @returns {Function}
  */
-function curry (fn) {
-    const args = Array.prototype.slice.call(arguments, 1);
-    return function () {
-        const nextArgs = Array.prototype.slice.call(arguments),
-            allArgs = args.concat(nextArgs);
+export function curry (fn:Function, ...args:unknown[]):Function {
+    return function (...carry_args:unknown[]) {
+        const allArgs = args.concat(carry_args);
 
         return fn.apply(null, allArgs);
     };
@@ -40,29 +38,31 @@ function curry (fn) {
  * @param {...Function} args - The functions to compose
  * @returns {Function} A single function that represents the composition of the functions provided
  */
-function compose () {
+export function compose ():Function {
     const args = Array.prototype.slice.call(arguments).reverse();
-    return obj => args.reduce((result, F) => F(result), obj);
+    return (obj:object) => args.reduce((result:unknown, F:(obj:unknown) => unknown) => F(result), obj);
 }
 
-module.exports = {
-    /**
-     * Returns what was passed in unchanged, occasionally useful as the default transformation function
-     * to avoid special case logic
-     * @param {Object} i - The input
-     * @returns {Object} Exactly what was passed in
-     */
-    identity: i => i,
-    /**
-     * Ignores its parameters, and instead always returns a constant value
-     * @param {Object} k - The constant to return
-     * @returns {Function} - A function that will always return the constant
-     */
-    constant: k => () => k,
-    /**
-     * A function that does nothing, occasionally useful to avoid special case logic
-     */
-    noop: () => {},
-    compose,
-    curry
-};
+/**
+ * A function that does nothing, occasionally useful to avoid special case logic
+ */
+export function noop():void {}
+
+/**
+ * Ignores its parameters, and instead always returns a constant value
+ * @param {Object} k - The constant to return
+ * @returns {Function} - A function that will always return the constant
+ */
+export function constant<T>(k:T): () => T {
+  return () => k
+}
+
+/**
+ * Returns what was passed in unchanged, occasionally useful as the default transformation function
+ * to avoid special case logic
+ * @param {Object} i - The input
+ * @returns {Object} Exactly what was passed in
+ */
+export function identity<T>(i:T):T {
+    return i
+}
