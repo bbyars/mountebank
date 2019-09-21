@@ -101,7 +101,6 @@
     "errorhandler": "1.5.1",
     "escape-html": "^1.0.3",
     "express": "^4.16.3",
-    "grunt-ts": "^6.0.0-beta.22",
     "http-proxy-agent": "^2.1.0",
     "https-proxy-agent": "^2.2.1",
     "json-stable-stringify": "1.0.1",
@@ -111,15 +110,13 @@
     "q": "1.5.1",
     "query-string": "6.8.0",
     "smtp-server": "^3.4.6",
-    "snyk": "^1.217.0",
-    "typescript": "^3.6.3",
     "winston": "3.2.1",
     "xmldom": "0.1.27",
     "xpath": "0.0.27",
-    "yargs": "13.3.0"
+    "yargs": "13.3.0",
+    "snyk": "^1.217.0"
   },
   "devDependencies": {
-    "@typescript-eslint/parser": "^2.3.0",
     "firebase-tools": "^7.0.0",
     "fs-extra": "8.1.0",
     "grunt": "^1.0.3",
@@ -130,7 +127,6 @@
     "grunt-jsdoc": "^2.2.1",
     "grunt-mocha-test": "~0.13.3",
     "grunt-mountebank": "1.0.7",
-    "grunt-tslint": "^5.0.2",
     "istanbul": "0.4.5",
     "jsdoc": "^3.5.5",
     "jsdom": "~15.1.0",
@@ -138,7 +134,6 @@
     "nc": "^1.0.2",
     "rimraf": "^3.0.0",
     "time-grunt": "2.0.0",
-    "tslint": "^5.20.0",
     "w3cjs": "~0.4.0"
   },
   "engines": {
