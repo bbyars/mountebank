@@ -322,12 +322,12 @@ describe('http proxy stubs', function () {
                 return client.get('/?first=1&second=2', port);
             }).then(response => {
                 assert.strictEqual(response.body, '1. {"first":"1","second":"2"}');
-                return client.get('/?second=2', port);
-            }).then(response => {
-                assert.strictEqual(response.body, '2. {"second":"2"}');
                 return client.get('/?first=2&second=2', port);
             }).then(response => {
-                assert.strictEqual(response.body, '3. {"first":"2","second":"2"}');
+                assert.strictEqual(response.body, '2. {"first":"2","second":"2"}');
+                return client.get('/?first=3&second=2', port);
+            }).then(response => {
+                assert.strictEqual(response.body, '3. {"first":"3","second":"2"}');
                 return client.get('/?first=1&second=2&third=3', port);
             }).then(response => {
                 assert.strictEqual(response.body, '1. {"first":"1","second":"2"}');
