@@ -3,7 +3,7 @@ version: 2.0
 jobs:
   pr:
     docker:
-      - image: circleci/node:10-stretch
+      - image: circleci/node:12-stretch
     environment:
       - CC_TEST_REPORTER_ID=8bc3a050a2f8ef1cc460e5f4c72d18a689c8ae0981bf494031eb4eb28bbd0b0b
       - MB_SLOW_TEST_TIMEOUT: 7000
@@ -18,7 +18,7 @@ jobs:
             - node_modules
   build:
     docker:
-      - image: circleci/node:10-stretch
+      - image: circleci/node:12-stretch
     environment:
       - MB_RUN_WEB_TESTS=true
       - CC_TEST_REPORTER_ID=8bc3a050a2f8ef1cc460e5f4c72d18a689c8ae0981bf494031eb4eb28bbd0b0b
@@ -70,9 +70,9 @@ jobs:
       - run: ln -s dist/mountebank/bin bin
       - run: node_modules/grunt-cli/bin/grunt outOfProcessImposters test
 
-  nodev12:
+  nodev10:
     docker:
-      - image: circleci/node:12-stretch
+      - image: circleci/node:10-stretch
     environment:
       - MB_SLOW_TEST_TIMEOUT: 7000
       - MB_PORT: 3535
@@ -175,7 +175,7 @@ jobs:
 
   performance:
     docker:
-      - image: circleci/node:10-stretch
+      - image: circleci/node:12-stretch
     environment:
       - MB_EXECUTABLE: /home/circleci/project/dist/mountebank/bin/mb
     steps:
@@ -187,7 +187,7 @@ jobs:
 
   windows:
     docker:
-      - image: circleci/node:10-stretch
+      - image: circleci/node:12-stretch
     steps:
       - attach_workspace:
           at: .
@@ -195,7 +195,7 @@ jobs:
 
   osx:
     docker:
-      - image: circleci/node:10-stretch
+      - image: circleci/node:12-stretch
     steps:
       - attach_workspace:
           at: .
