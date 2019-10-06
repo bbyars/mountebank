@@ -113,7 +113,7 @@
     "winston": "3.2.1",
     "xmldom": "0.1.27",
     "xpath": "0.0.27",
-    "yargs": "13.3.0",
+    "yargs": "14.0.0",
     "snyk": "^1.230.5"
   },
   "devDependencies": {
