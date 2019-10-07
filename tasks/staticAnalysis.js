@@ -68,7 +68,7 @@ module.exports = function (grunt) {
                     errors.push(`${file} appears to do a typecheck against object without using helpers.isObject`);
                 }
             },
-            exclusions = ['node_modules', 'dist', 'functionalTest', 'staticAnalysis.js', 'helpers.js', '*.pid', 'jquery', 'docs'];
+            exclusions = ['node_modules', 'dist', 'functionalTest', 'staticAnalysis.js', 'helpers.js', '*.pid', 'jquery', 'docs', '*.csv'];
 
         forEachFileIn('.', check, { exclude: exclusions, filetype: '.js' });
 
