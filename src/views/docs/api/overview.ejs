@@ -868,17 +868,19 @@ Connection: keep-alive
 {
   "version": "<%= version %>",
   "options": {
-    "noParse": false,
-    "nologfile": false,
-    "allowInjection": true,
-    "localOnly": true,
-    "mock": true,
-    "debug": true,
     "port": <%= port %>,
     "pidfile": "mb-grunt.pid",
     "logfile": "mb-grunt.log",
+    "allowInjection": true,
+    "mock": true,
+    "debug": true,
+    "localOnly": true,
+    "noParse": false,
+    "nologfile": false,
     "loglevel": "info",
-    "ipWhitelist": ["*"],
+    "ipWhitelist": [
+      "*"
+    ],
     "protofile": "protocols.json"
   },
   "process": {
