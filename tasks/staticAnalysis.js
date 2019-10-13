@@ -93,7 +93,7 @@ module.exports = function (grunt) {
                     }
                 });
             },
-            exclusions = ['node_modules', 'docs', '.git', '.DS_Store', '.idea', 'images', 'dist', 'mountebank.iml', 'mb.log', '*.pid', 'package-lock.json'],
+            exclusions = ['node_modules', 'docs', '.git', '.DS_Store', '.idea', 'images', 'dist', 'mountebank.iml', 'mb.log', '*.pid', 'package-lock.json', '*.csv'],
             errors = [],
             whitelist = [
                 'grunt',
