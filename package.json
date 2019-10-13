@@ -102,7 +102,7 @@
     "escape-html": "^1.0.3",
     "express": "^4.16.3",
     "http-proxy-agent": "^2.1.0",
-    "https-proxy-agent": "^2.2.1",
+    "https-proxy-agent": "^3.0.0",
     "json-stable-stringify": "1.0.1",
     "jsonpath-plus": "^1.0.0",
     "mailparser": "^2.7.0",
