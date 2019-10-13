@@ -88,7 +88,7 @@
       "q"
     ]
   },
-  "snyk": false,
+  "snyk": true,
   "contributors": [
     "Jason Reid",
     "James Thomas",
