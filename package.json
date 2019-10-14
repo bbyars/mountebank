@@ -21,9 +21,7 @@
   "scripts": {
     "start": "bin/mb",
     "restart": "bin/mb restart",
-    "stop": "bin/mb stop",
-    "snyk-protect": "snyk protect",
-    "prepare": "npm run snyk-protect"
+    "stop": "bin/mb stop"
   },
   "keywords": [
     "test",
