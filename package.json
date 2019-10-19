@@ -1,7 +1,7 @@
 {
   "name": "mountebank",
   "preferGlobal": true,
-  "version": "2.1.1",
+  "version": "2.1.2",
   "author": "Brandon Byars <brandon.byars@gmail.com>",
   "description": "Over the wire test doubles",
   "homepage": "http://www.mbtest.org",
@@ -52,7 +52,6 @@
     "q": "1.5.1",
     "query-string": "6.8.3",
     "smtp-server": "^3.4.6",
-    "snyk": "^1.230.6",
     "winston": "3.2.1",
     "xmldom": "0.1.27",
     "xpath": "0.0.27",
@@ -72,9 +71,10 @@
     "istanbul": "0.4.5",
     "jsdoc": "^3.5.5",
     "jsdom": "~15.2.0",
-    "mocha": "6.2.1",
+    "mocha": "6.2.2",
     "nc": "^1.0.2",
     "rimraf": "^3.0.0",
+    "snyk": "^1.230.6",
     "time-grunt": "2.0.0",
     "w3cjs": "~0.4.0"
   },
