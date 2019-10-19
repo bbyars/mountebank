@@ -201,7 +201,9 @@ function create (options) {
     app.get('/imposters/:id', validateImposterExists, imposterController.get);
     app.delete('/imposters/:id', imposterController.del);
     app.delete('/imposters/:id/savedProxyResponses', validateImposterExists, imposterController.resetProxies);
-    app.delete('/imposters/:id/requests', validateImposterExists, imposterController.resetProxies); // deprecated but saved for backwards compatibility
+
+    // deprecated but saved for backwards compatibility
+    app.delete('/imposters/:id/requests', validateImposterExists, imposterController.resetProxies);
 
     // Changing stubs without restarting imposter
     app.put('/imposters/:id/stubs', validateImposterExists, imposterController.putStubs);
