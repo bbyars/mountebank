@@ -45,16 +45,16 @@ function create (releases, options) {
             };
 
         // I'd prefer putting this as an include in the view, but EJS doesn't support dynamic includes
-        if (!feedReleases[0].view) {
-            feedReleases.forEach(release => {
+        config.releases.forEach(release => {
+            if (!release.view) {
                 const contents = fs.readFileSync(releaseFilenameFor(release.version), { encoding: 'utf8' });
                 release.view = ejs.render(contents, {
                     host: request.headers.host,
                     releaseMajorMinor: release.version.replace(/^v(\d+\.\d+).*/, '$1'),
                     releaseVersion: release.version.replace('v', '')
                 });
-            });
-        }
+            }
+        });
 
         response.type('application/atom+xml');
         response.render('feed', config);
