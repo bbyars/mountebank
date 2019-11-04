@@ -174,7 +174,8 @@ describe('middleware', function () {
 
     describe('#validateImposterExists', function () {
         it('should return 404 if imposter does not exist', function () {
-            const middlewareFn = middleware.createImposterValidator({});
+            const repo = { exists: mock().returns(false) },
+                middlewareFn = middleware.createImposterValidator(repo);
             request.params.id = 1;
 
             middlewareFn(request, response, next);
@@ -183,8 +184,8 @@ describe('middleware', function () {
         });
 
         it('should call next if imposter exists', function () {
-            const imposters = { 1: {} },
-                middlewareFn = middleware.createImposterValidator(imposters);
+            const repo = { exists: mock().returns(true) },
+                middlewareFn = middleware.createImposterValidator(repo);
             request.params.id = 1;
 
             middlewareFn(request, response, next);

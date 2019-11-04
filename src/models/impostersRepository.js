@@ -17,6 +17,24 @@ function create (config) {
             accumulator.concat(imposters[id].toJSON(queryOptions)), []);
     }
 
+    function get (id) {
+        return imposters[id];
+    }
+
+    function getAll () {
+        return imposters;
+    }
+
+    function exists (id) {
+        return typeof get(id) !== 'undefined';
+    }
+
+    function del (id) {
+        const result = get(id);
+        delete imposters[id];
+        return result.stop();
+    }
+
     function deleteAllSync () {
         Object.keys(imposters).forEach(id => { imposters[id].stop(); });
     }
@@ -31,9 +49,12 @@ function create (config) {
     }
 
     return {
-        imposters,
         add,
+        get,
+        getAll,
         getAllJSON,
+        exists,
+        del,
         deleteAllSync,
         deleteAll
     };

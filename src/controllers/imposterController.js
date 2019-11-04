@@ -34,7 +34,7 @@ function create (protocols, imposters, logger, allowInjection) {
         const url = require('url'),
             query = url.parse(request.url, true).query,
             options = { replayable: queryBoolean(query, 'replayable'), removeProxies: queryBoolean(query, 'removeProxies') },
-            imposter = imposters[request.params.id].toJSON(options);
+            imposter = imposters.get(request.params.id).toJSON(options);
 
         response.format({
             json: () => { response.send(imposter); },
@@ -60,21 +60,20 @@ function create (protocols, imposters, logger, allowInjection) {
     function resetProxies (request, response) {
         const Q = require('q'),
             json = {},
-            options = { replayable: false, removeProxies: false };
-        let imposter = imposters[request.params.id];
+            options = { replayable: false, removeProxies: false },
+            imposter = imposters.get(request.params.id);
 
         if (imposter) {
             imposter.resetProxies();
-            imposter = imposter.toJSON(options);
 
             response.format({
-                json: () => { response.send(imposter); },
+                json: () => { response.send(imposter.toJSON(options)); },
                 html: () => {
                     if (request.headers['x-requested-with']) {
-                        response.render('_imposter', { imposter: imposter });
+                        response.render('_imposter', { imposter: imposter.toJSON(options) });
                     }
                     else {
-                        response.render('imposter', { imposter: imposter });
+                        response.render('imposter', { imposter: imposter.toJSON(options) });
                     }
                 }
             });
@@ -95,7 +94,7 @@ function create (protocols, imposters, logger, allowInjection) {
      */
     function del (request, response) {
         const Q = require('q'),
-            imposter = imposters[request.params.id],
+            imposter = imposters.get(request.params.id),
             url = require('url'),
             query = url.parse(request.url, true).query,
             options = { replayable: queryBoolean(query, 'replayable'), removeProxies: queryBoolean(query, 'removeProxies') };
@@ -103,8 +102,7 @@ function create (protocols, imposters, logger, allowInjection) {
 
         if (imposter) {
             json = imposter.toJSON(options);
-            return imposter.stop().then(() => {
-                delete imposters[request.params.id];
+            return imposters.del(request.params.id).then(() => {
                 response.send(json);
             });
         }
@@ -123,7 +121,7 @@ function create (protocols, imposters, logger, allowInjection) {
      * @param {Object} response - the HTTP response
      */
     function postRequest (request, response) {
-        const imposter = imposters[request.params.id],
+        const imposter = imposters.get(request.params.id),
             protoRequest = request.body.request;
 
         imposter.getResponseFor(protoRequest).done(protoResponse => {
@@ -140,7 +138,7 @@ function create (protocols, imposters, logger, allowInjection) {
      * @param {Object} response - the HTTP response
      */
     function postProxyResponse (request, response) {
-        const imposter = imposters[request.params.id],
+        const imposter = imposters.get(request.params.id),
             proxyResolutionKey = request.params.proxyResolutionKey,
             proxyResponse = request.body.proxyResponse;
 
@@ -192,7 +190,7 @@ function create (protocols, imposters, logger, allowInjection) {
      * @returns {Object} - promise for testing
      */
     function putStubs (request, response) {
-        const imposter = imposters[request.params.id],
+        const imposter = imposters.get(request.params.id),
             newStubs = request.body.stubs,
             errors = [];
 
@@ -228,7 +226,7 @@ function create (protocols, imposters, logger, allowInjection) {
      * @returns {Object} - promise for testing
      */
     function putStub (request, response) {
-        const imposter = imposters[request.params.id],
+        const imposter = imposters.get(request.params.id),
             newStub = request.body,
             errors = [];
 
@@ -258,7 +256,7 @@ function create (protocols, imposters, logger, allowInjection) {
      * @returns {Object} - promise for testing
      */
     function postStub (request, response) {
-        const imposter = imposters[request.params.id],
+        const imposter = imposters.get(request.params.id),
             newStub = request.body.stub,
             index = typeof request.body.index === 'undefined' ? imposter.stubs().length : request.body.index,
             errors = [];
@@ -291,7 +289,7 @@ function create (protocols, imposters, logger, allowInjection) {
      * @returns {Object} - promise for testing
      */
     function deleteStub (request, response) {
-        const imposter = imposters[request.params.id],
+        const imposter = imposters.get(request.params.id),
             errors = [];
 
         validateStubIndex(request.params.stubIndex, imposter, errors);

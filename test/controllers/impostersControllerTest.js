@@ -112,7 +112,7 @@ describe('ImpostersController', function () {
             request.body = { protocol: 'http' };
 
             return controller.post(request, response).then(() => {
-                assert.deepEqual(imposters.imposters, { 3535: imposter });
+                assert.deepEqual(imposters.getAll(), { 3535: imposter });
             });
         });
 
@@ -221,8 +221,7 @@ describe('ImpostersController', function () {
                 controller = Controller.create({}, impostersRepo, {}, false);
 
             return controller.del({ url: '/imposters' }, response).then(() => {
-                assert.deepEqual(impostersRepo.imposters, {});
-                assert.deepEqual(impostersRepo.imposters, {});
+                assert.deepEqual(impostersRepo.getAll(), {});
             });
         });
 
@@ -298,8 +297,9 @@ describe('ImpostersController', function () {
 
         promiseIt('should return a 400 if the "imposters" key is not present', function () {
             const existingImposter = { stop: mock() },
-                imposters = { imposters: { 0: existingImposter } },
-                controller = Controller.create({ http: Protocol }, imposters, logger, false);
+                imposters = { 0: existingImposter },
+                repo = ImpostersRepo.create({ imposters }),
+                controller = Controller.create({ http: Protocol }, repo, logger, false);
 
             request.body = {};
 
@@ -312,26 +312,20 @@ describe('ImpostersController', function () {
                     }]
                 });
 
-                assert.deepEqual(imposters.imposters, { 0: existingImposter });
+                assert.deepEqual(repo.getAll(), { 0: existingImposter });
             });
         });
 
         promiseIt('should return an empty array if no imposters provided', function () {
             const existingImposter = { stop: mock() },
-                imposters = { imposters: { 0: existingImposter } },
-                impostersRepo = {
-                    deleteAll: () => {
-                        Object.keys(imposters).forEach(id => { delete imposters[id]; });
-                        return Q(true);
-                    },
-                    imposters: imposters
-                },
+                imposters = { 0: existingImposter },
+                impostersRepo = ImpostersRepo.create({ imposters }),
                 controller = Controller.create({ http: Protocol }, impostersRepo, logger, false);
             request.body = { imposters: [] };
 
             return controller.put(request, response).then(() => {
                 assert.deepEqual(response.body, { imposters: [] });
-                assert.deepEqual(impostersRepo.imposters, {});
+                assert.deepEqual(impostersRepo.getAll(), {});
             });
         });
 
@@ -377,7 +371,7 @@ describe('ImpostersController', function () {
             request.body = { imposters: [{ protocol: 'http' }, { protocol: 'http' }] };
 
             return controller.put(request, response).then(() => {
-                assert.deepEqual(impostersRepo.imposters, { 1: firstImposter, 2: secondImposter });
+                assert.deepEqual(impostersRepo.getAll(), { 1: firstImposter, 2: secondImposter });
                 assert.ok(firstImposter.toJSON.wasCalledWith({ list: true }), firstImposter.toJSON.message());
                 assert.ok(secondImposter.toJSON.wasCalledWith({ list: true }), secondImposter.toJSON.message());
             });

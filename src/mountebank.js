@@ -171,11 +171,11 @@ function create (options) {
         impostersController = require('./controllers/impostersController').create(
             protocols, imposters, logger, options.allowInjection),
         imposterController = require('./controllers/imposterController').create(
-            protocols, imposters.imposters, logger, options.allowInjection),
+            protocols, imposters, logger, options.allowInjection),
         logsController = require('./controllers/logsController').create(options.logfile),
         configController = require('./controllers/configController').create(thisPackage.version, options),
         feedController = require('./controllers/feedController').create(releases, options),
-        validateImposterExists = middleware.createImposterValidator(imposters.imposters);
+        validateImposterExists = middleware.createImposterValidator(imposters);
 
     app.use(middleware.useAbsoluteUrls(options.port));
     app.use(middleware.logger(logger, ':method :url'));

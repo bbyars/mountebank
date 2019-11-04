@@ -78,15 +78,14 @@ function useAbsoluteUrls (port) {
 
 /**
  * Returns a middleware function to return a 404 if the imposter does not exist
- * @param {Object} imposters - The current dictionary of imposters
+ * @param {Object} imposters - The imposters repository
  * @returns {Function}
  */
 function createImposterValidator (imposters) {
     return function validateImposterExists (request, response, next) {
-        const errors = require('./errors'),
-            imposter = imposters[request.params.id];
+        const errors = require('./errors');
 
-        if (imposter) {
+        if (imposters.exists(request.params.id)) {
             next();
         }
         else {
