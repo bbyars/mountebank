@@ -8,7 +8,7 @@
 /**
  * Creates the imposters controller
  * @param {Object} protocols - the protocol implementations supported by mountebank
- * @param {Object} imposters - The map of ports to imposters
+ * @param {Object} imposters - The imposters repository
  * @param {Object} logger - The logger
  * @param {Boolean} allowInjection - Whether injection is allowed or not
  * @returns {{get, post, del, put}}
@@ -19,15 +19,6 @@ function create (protocols, imposters, logger, allowInjection) {
 
     const queryIsFalse = (query, key) => !helpers.defined(query[key]) || query[key].toLowerCase() !== 'false';
     const queryBoolean = (query, key) => helpers.defined(query[key]) && query[key].toLowerCase() === 'true';
-
-    function deleteAllImposters () {
-        const Q = require('q'),
-            ids = Object.keys(imposters),
-            promises = ids.map(id => imposters[id].stop());
-
-        ids.forEach(id => { delete imposters[id]; });
-        return Q.all(promises);
-    }
 
     function validatePort (port, errors) {
         const portIsValid = !helpers.defined(port) || (port.toString().indexOf('.') === -1 && port > 0 && port < 65536);
@@ -85,10 +76,6 @@ function create (protocols, imposters, logger, allowInjection) {
         response.send({ errors: [error] });
     }
 
-    function getJSON (options) {
-        return Object.keys(imposters).reduce((accumulator, id) => accumulator.concat(imposters[id].toJSON(options)), []);
-    }
-
     function requestDetails (request) {
         return `${helpers.socketName(request.socket)} => ${JSON.stringify(request.body)}`;
     }
@@ -110,10 +97,10 @@ function create (protocols, imposters, logger, allowInjection) {
                         list: !(queryBoolean(query, 'replayable') || queryBoolean(query, 'removeProxies'))
                     };
 
-                response.send({ imposters: getJSON(options) });
+                response.send({ imposters: imposters.getAllJSON(options) });
             },
             html: () => {
-                response.render('imposters', { imposters: getJSON() });
+                response.render('imposters', { imposters: imposters.getAllJSON() });
             }
         });
     }
@@ -136,7 +123,7 @@ function create (protocols, imposters, logger, allowInjection) {
 
             if (validation.isValid) {
                 return protocols[protocol].createImposterFrom(request.body).then(imposter => {
-                    imposters[imposter.port] = imposter;
+                    imposters.add(imposter);
                     response.setHeader('Location', imposter.url);
                     response.statusCode = 201;
                     response.send(imposter.toJSON());
@@ -166,9 +153,9 @@ function create (protocols, imposters, logger, allowInjection) {
                 replayable: queryIsFalse(query, 'replayable'),
                 removeProxies: queryBoolean(query, 'removeProxies')
             },
-            json = getJSON(options);
+            json = imposters.getAllJSON(options);
 
-        return deleteAllImposters().then(() => {
+        return imposters.deleteAll().then(() => {
             response.send({ imposters: json });
         });
     }
@@ -198,7 +185,7 @@ function create (protocols, imposters, logger, allowInjection) {
             const isValid = validations.every(validation => validation.isValid);
 
             if (isValid) {
-                return deleteAllImposters().then(() => {
+                return imposters.deleteAll().then(() => {
                     const creationPromises = requestImposters.map(imposter =>
                         protocols[imposter.protocol].createImposterFrom(imposter)
                     );
@@ -206,7 +193,7 @@ function create (protocols, imposters, logger, allowInjection) {
                 }).then(allImposters => {
                     const json = allImposters.map(imposter => imposter.toJSON({ list: true }));
                     allImposters.forEach(imposter => {
-                        imposters[imposter.port] = imposter;
+                        imposters.add(imposter);
                     });
                     response.send({ imposters: json });
                 }, error => {

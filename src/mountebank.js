@@ -161,7 +161,7 @@ function create (options) {
         helpers = require('./util/helpers'),
         deferred = Q.defer(),
         app = express(),
-        imposters = options.imposters || {},
+        imposters = require('./models/impostersRepository').create(options),
         hostname = options.host || 'localhost',
         baseURL = `http://${hostname}:${options.port}`,
         logger = createLogger(options),
@@ -171,11 +171,11 @@ function create (options) {
         impostersController = require('./controllers/impostersController').create(
             protocols, imposters, logger, options.allowInjection),
         imposterController = require('./controllers/imposterController').create(
-            protocols, imposters, logger, options.allowInjection),
+            protocols, imposters.imposters, logger, options.allowInjection),
         logsController = require('./controllers/logsController').create(options.logfile),
         configController = require('./controllers/configController').create(thisPackage.version, options),
         feedController = require('./controllers/feedController').create(releases, options),
-        validateImposterExists = middleware.createImposterValidator(imposters);
+        validateImposterExists = middleware.createImposterValidator(imposters.imposters);
 
     app.use(middleware.useAbsoluteUrls(options.port));
     app.use(middleware.logger(logger, ':method :url'));
@@ -309,9 +309,7 @@ function create (options) {
         });
 
     process.once('exit', () => {
-        Object.keys(imposters).forEach(port => {
-            imposters[port].stop();
-        });
+        imposters.deleteAllSync();
     });
 
     return deferred.promise;
