@@ -295,6 +295,12 @@ const aliases = {
             type: 'string',
             global: false
         },
+        datadir: {
+            description: 'The database directory, useful for persistence and large scale',
+            nargs: 1,
+            type: 'string',
+            global: false
+        },
         noParse: {
             default: false,
             description: 'prevent rendering the configfile as an EJS template',
@@ -395,6 +401,7 @@ const aliases = {
         port: options.port,
         host: options.host,
         configfile: options.configfile,
+        datadir: options.datadir,
         noParse: options.noParse,
         pidfile: options.pidfile,
         nologfile: options.nologfile,

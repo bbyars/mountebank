@@ -13,7 +13,7 @@
  * @returns {Object}
  */
 function create (stubs, proxy, callbackURL) {
-    // imjectState is deprecated in favor of imposterState, but kept for backwards compatibility
+    // injectState is deprecated in favor of imposterState, but kept for backwards compatibility
     const injectState = {}, // eslint-disable-line no-unused-vars
         pendingProxyResolutions = {},
         inProcessProxy = Boolean(proxy);
