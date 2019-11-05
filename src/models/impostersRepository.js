@@ -12,7 +12,7 @@
  */
 function create (config) {
     if (config.datadir) {
-        return require('./filesystemBackedImposterRepository').create(config.datadir);
+        return require('./filesystemBackedImposterRepository').create(config);
     }
     else {
         return require('./inMemoryImpostersRepository').create(config.imposters);

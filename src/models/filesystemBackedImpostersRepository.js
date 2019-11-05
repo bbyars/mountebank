@@ -7,18 +7,87 @@
 
 /**
  * Creates the repository
- * @param {Object} startupImposters - The imposters to load at startup (will not be validated)
+ * @param {Object} config - The database configuration
+ * @param {String} config.datadir - The database directory
+ * @param {Number} config.batchSize - number of stubs to save in one file, defaults to 100
  * @returns {Object}
  */
-function create (startupImposters) {
-    const imposters = startupImposters || {};
+// TODO: Make async to collect permission errors
+function create (config) {
+
+    function ensureDir (filepath) {
+        // Node 11 introduced a recursive flag for mkdir, can use that when node 10 and below are deprecated
+        const path = require('path'),
+            fs = require('fs'),
+            dir = path.dirname(filepath);
+
+        if (fs.existsSync(dir)) {
+            return;
+        }
+        else {
+            ensureDir(dir);
+            fs.mkdirSync(dir);
+        }
+    }
+
+    function writeFile (filepath, obj) {
+        const fs = require('fs'),
+            path = require('path'),
+            fullPath = path.join(config.datadir, filepath);
+
+        ensureDir(fullPath);
+        fs.writeFileSync(fullPath, JSON.stringify(obj));
+    }
+
+    function writeHeader (imposter) {
+        const helpers = require('../util/helpers'),
+            clone = helpers.clone(imposter);
+
+        delete clone.stubs;
+        delete clone.requests;
+
+        writeFile(`${imposter.port}.json`, clone);
+    }
+
+    function writeResponses (responseDir, stubResponses) {
+        const responsesIndex = { next: 0, order: [] };
+
+        if (stubResponses.length === 0) {
+            return;
+        }
+
+        stubResponses.forEach((response, index) => {
+            writeFile(`${responseDir}/${index}.json`, response);
+            responsesIndex.order.push(index);
+        });
+
+        writeFile(`${responseDir}/index.json`, responsesIndex);
+    }
+
+    function writeStubs (imposter) {
+        const helpers = require('../util/helpers'),
+            stubs = helpers.clone(imposter.stubs || []);
+
+        if (stubs.length === 0) {
+            return;
+        }
+
+        stubs.forEach((stub, index) => {
+            stub.responseDir = `${imposter.port}/stubs/${index}`;
+            writeResponses(stub.responseDir, stub.responses || []);
+            delete stub.responses;
+        });
+
+        writeFile(`${imposter.port}/stubs/0-99.json`, stubs);
+    }
 
     /**
      * Adds a new imposter
      * @param {Object} imposter - the imposter to add
      */
     function add (imposter) {
-        imposters[imposter.port] = imposter;
+        writeHeader(imposter);
+        writeStubs(imposter);
     }
 
     /**
@@ -26,9 +95,8 @@ function create (startupImposters) {
      * @param {Object} queryOptions - the query parameters for formatting
      * @returns {Object} - the JSON representation
      */
-    function getAllJSON (queryOptions) {
-        return Object.keys(imposters).reduce((accumulator, id) =>
-            accumulator.concat(imposters[id].toJSON(queryOptions)), []);
+    function getAllJSON (queryOptions) { // eslint-disable-line no-unused-vars
+        return null;
     }
 
     /**
@@ -36,8 +104,8 @@ function create (startupImposters) {
      * @param {Number} id - the id of the imposter (e.g. the port)
      * @returns {Object} - the imposter
      */
-    function get (id) {
-        return imposters[id];
+    function get (id) { // eslint-disable-line no-unused-vars
+        return null;
     }
 
     /**
@@ -45,7 +113,7 @@ function create (startupImposters) {
      * @returns {Object} - all imposters keyed by port
      */
     function getAll () {
-        return imposters;
+        return null;
     }
 
     /**
@@ -53,8 +121,8 @@ function create (startupImposters) {
      * @param {Number} id - the id (e.g. the port)
      * @returns {boolean}
      */
-    function exists (id) {
-        return typeof get(id) !== 'undefined';
+    function exists (id) { // eslint-disable-line no-unused-vars
+        return false;
     }
 
     /**
@@ -62,17 +130,14 @@ function create (startupImposters) {
      * @param {Number} id - the id (e.g. the port)
      * @returns {Object} - the deletion promise
      */
-    function del (id) {
-        const result = get(id);
-        delete imposters[id];
-        return result.stop();
+    function del (id) { // eslint-disable-line no-unused-vars
+        return null;
     }
 
     /**
      * Deletes all imposters synchronously; used during shutdown
      */
     function deleteAllSync () {
-        Object.keys(imposters).forEach(id => { imposters[id].stop(); });
     }
 
     /**
@@ -80,12 +145,7 @@ function create (startupImposters) {
      * @returns {Object} - the deletion promise
      */
     function deleteAll () {
-        const Q = require('q'),
-            ids = Object.keys(imposters),
-            promises = ids.map(id => imposters[id].stop());
-
-        ids.forEach(id => { delete imposters[id]; });
-        return Q.all(promises);
+        return null;
     }
 
     return {
