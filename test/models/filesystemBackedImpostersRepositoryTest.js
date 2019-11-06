@@ -61,4 +61,30 @@ describe('filesystemBackedImpostersRepository', function () {
             });
         });
     });
+
+    describe('#get', function () {
+        it('should retrieve previously added imposter', function () {
+            const repo = Repo.create({ datadir: '.mbtest' }),
+                imposter = {
+                    port: 1000,
+                    protocol: 'test',
+                    stubs: [{
+                        predicates: [
+                            { equals: { key: 'value' } },
+                            { exists: { first: true } }
+                        ],
+                        responses: [
+                            { is: { field: 'one' } },
+                            { is: { field: 'two' } }
+                        ]
+                    }]
+                };
+
+            return repo.add(imposter)
+                .then(() => repo.get(1000))
+                .then(saved => {
+                    assert.deepEqual(saved, imposter);
+                });
+        });
+    });
 });

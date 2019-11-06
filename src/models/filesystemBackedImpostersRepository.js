@@ -64,6 +64,24 @@ function create (config) {
         return deferred.promise;
     }
 
+    function readFile (filepath) {
+        const deferred = Q.defer(),
+            path = require('path'),
+            fullPath = path.join(config.datadir, filepath),
+            fs = require('fs');
+
+        fs.readFile(fullPath, 'utf8', (err, data) => {
+            if (err) {
+                deferred.reject(err);
+            }
+            else {
+                deferred.resolve(JSON.parse(data));
+            }
+        });
+
+        return deferred.promise;
+    }
+
     function writeHeader (imposter) {
         const helpers = require('../util/helpers'),
             clone = helpers.clone(imposter);
@@ -72,6 +90,10 @@ function create (config) {
         delete clone.requests;
 
         return writeFile(`${imposter.port}.json`, clone);
+    }
+
+    function readHeader (id) {
+        return readFile(`${id}.json`);
     }
 
     function writeResponses (responseDir, stubResponses) {
@@ -91,6 +113,25 @@ function create (config) {
         return Q.all(promises);
     }
 
+    function readResponses (responseDir) {
+        const responses = [],
+            deferred = Q.defer();
+
+        readFile(`${responseDir}/index.json`).then(index => {
+            const promises = index.order.map(responseIndex =>
+                readFile(`${responseDir}/${responseIndex}.json`).then(response => {
+                    responses.splice(responseIndex, 1, response);
+                })
+            );
+
+            return Q.all(promises);
+        }).done(() => {
+            deferred.resolve(responses);
+        });
+
+        return deferred.promise;
+    }
+
     function writeStubs (imposter) {
         const helpers = require('../util/helpers'),
             stubs = helpers.clone(imposter.stubs || []),
@@ -108,6 +149,28 @@ function create (config) {
 
         promises.push(writeFile(`${imposter.port}/stubs/0-99.json`, stubs));
         return Q.all(promises);
+    }
+
+    function readStubs (id) {
+        const deferred = Q.defer();
+
+        let stubs;
+        readFile(`${id}/stubs/0-99.json`).then(stubsWithoutResponses => {
+            stubs = stubsWithoutResponses;
+            const promises = [];
+            stubs.forEach(stub => {
+                const promise = readResponses(stub.responseDir).then(responses => {
+                    stub.responses = responses;
+                    delete stub.responseDir;
+                });
+                promises.push(promise);
+            });
+            return Q.all(promises);
+        }).done(() => {
+            deferred.resolve(stubs);
+        });
+
+        return deferred.promise;
     }
 
     /**
@@ -131,10 +194,20 @@ function create (config) {
     /**
      * Gets the imposter by id
      * @param {Number} id - the id of the imposter (e.g. the port)
-     * @returns {Object} - the imposter
+     * @returns {Object} - the promise resolving to the imposter
      */
-    function get (id) { // eslint-disable-line no-unused-vars
-        return null;
+    function get (id) {
+        const deferred = Q.defer();
+
+        let imposter;
+        readHeader(id).then(header => {
+            imposter = header;
+            return readStubs(id);
+        }).then(stubs => {
+            imposter.stubs = stubs;
+        }).done(() => deferred.resolve(imposter));
+
+        return deferred.promise;
     }
 
     /**
