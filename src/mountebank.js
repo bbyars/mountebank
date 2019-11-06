@@ -161,11 +161,11 @@ function create (options) {
         helpers = require('./util/helpers'),
         deferred = Q.defer(),
         app = express(),
-        imposters = require('./models/impostersRepository').create(options),
         hostname = options.host || 'localhost',
         baseURL = `http://${hostname}:${options.port}`,
         logger = createLogger(options),
         isAllowedConnection = createIPVerification(options),
+        imposters = require('./models/impostersRepository').create(options, logger),
         protocols = loadProtocols(options, baseURL, logger, isAllowedConnection),
         homeController = require('./controllers/homeController').create(releases),
         impostersController = require('./controllers/impostersController').create(

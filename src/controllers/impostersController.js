@@ -122,14 +122,15 @@ function create (protocols, imposters, logger, allowInjection) {
             const Q = require('q');
 
             if (validation.isValid) {
-                return protocols[protocol].createImposterFrom(request.body).then(imposter => {
-                    imposters.add(imposter);
-                    response.setHeader('Location', imposter.url);
-                    response.statusCode = 201;
-                    response.send(imposter.toJSON());
-                }, error => {
-                    respondWithCreationError(response, error);
-                });
+                return protocols[protocol].createImposterFrom(request.body)
+                    .then(imposter => imposters.add(imposter))
+                    .then(imposter => {
+                        response.setHeader('Location', imposter.url);
+                        response.statusCode = 201;
+                        response.send(imposter.toJSON());
+                    }, error => {
+                        respondWithCreationError(response, error);
+                    });
             }
             else {
                 respondWithValidationErrors(response, validation.errors);
@@ -183,6 +184,7 @@ function create (protocols, imposters, logger, allowInjection) {
 
         return Q.all(validationPromises).then(validations => {
             const isValid = validations.every(validation => validation.isValid);
+            let json;
 
             if (isValid) {
                 return imposters.deleteAll().then(() => {
@@ -191,10 +193,10 @@ function create (protocols, imposters, logger, allowInjection) {
                     );
                     return Q.all(creationPromises);
                 }).then(allImposters => {
-                    const json = allImposters.map(imposter => imposter.toJSON({ list: true }));
-                    allImposters.forEach(imposter => {
-                        imposters.add(imposter);
-                    });
+                    const promises = allImposters.map(imposter => imposters.add(imposter));
+                    json = allImposters.map(imposter => imposter.toJSON({ list: true }));
+                    return Q.all(promises);
+                }).then(() => {
                     response.send({ imposters: json });
                 }, error => {
                     respondWithCreationError(response, error);

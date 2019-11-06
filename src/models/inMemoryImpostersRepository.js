@@ -11,14 +11,17 @@
  * @returns {Object}
  */
 function create (startupImposters) {
-    const imposters = startupImposters || {};
+    const imposters = startupImposters || {},
+        Q = require('q');
 
     /**
      * Adds a new imposter
      * @param {Object} imposter - the imposter to add
+     * @returns {Object} - the promise
      */
     function add (imposter) {
         imposters[imposter.port] = imposter;
+        return Q(imposter);
     }
 
     /**
@@ -80,8 +83,7 @@ function create (startupImposters) {
      * @returns {Object} - the deletion promise
      */
     function deleteAll () {
-        const Q = require('q'),
-            ids = Object.keys(imposters),
+        const ids = Object.keys(imposters),
             promises = ids.map(id => imposters[id].stop());
 
         ids.forEach(id => { delete imposters[id]; });

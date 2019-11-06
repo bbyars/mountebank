@@ -12,31 +12,56 @@
  * @param {Number} config.batchSize - number of stubs to save in one file, defaults to 100
  * @returns {Object}
  */
-// TODO: Make async to collect permission errors
 function create (config) {
+    const Q = require('q');
 
-    function ensureDir (filepath) {
+    function ensureParentDirExists (filepath) {
         // Node 11 introduced a recursive flag for mkdir, can use that when node 10 and below are deprecated
         const path = require('path'),
             fs = require('fs'),
+            deferred = Q.defer(),
             dir = path.dirname(filepath);
 
-        if (fs.existsSync(dir)) {
-            return;
-        }
-        else {
-            ensureDir(dir);
-            fs.mkdirSync(dir);
-        }
+        fs.access(dir, fs.constants.F_OK, dirDoesNotExist => {
+            if (dirDoesNotExist) {
+                ensureParentDirExists(dir).done(() => {
+                    fs.mkdir(dir, err => {
+                        // Another request could have created it since the last check
+                        if (err && err.code !== 'EEXIST') {
+                            deferred.reject(err);
+                        }
+                        else {
+                            deferred.resolve(dir);
+                        }
+                    });
+                });
+            }
+            else {
+                deferred.resolve(dir);
+            }
+        });
+
+        return deferred.promise;
     }
 
     function writeFile (filepath, obj) {
         const fs = require('fs'),
             path = require('path'),
-            fullPath = path.join(config.datadir, filepath);
+            fullPath = path.join(config.datadir, filepath),
+            deferred = Q.defer();
 
-        ensureDir(fullPath);
-        fs.writeFileSync(fullPath, JSON.stringify(obj));
+        ensureParentDirExists(fullPath).done(() => {
+            fs.writeFile(fullPath, JSON.stringify(obj), err => {
+                if (err) {
+                    deferred.reject(err);
+                }
+                else {
+                    deferred.resolve(filepath);
+                }
+            });
+        });
+
+        return deferred.promise;
     }
 
     function writeHeader (imposter) {
@@ -46,48 +71,52 @@ function create (config) {
         delete clone.stubs;
         delete clone.requests;
 
-        writeFile(`${imposter.port}.json`, clone);
+        return writeFile(`${imposter.port}.json`, clone);
     }
 
     function writeResponses (responseDir, stubResponses) {
-        const responsesIndex = { next: 0, order: [] };
+        const responsesIndex = { next: 0, order: [] },
+            promises = [];
 
         if (stubResponses.length === 0) {
-            return;
+            return Q(true);
         }
 
         stubResponses.forEach((response, index) => {
-            writeFile(`${responseDir}/${index}.json`, response);
+            promises.push(writeFile(`${responseDir}/${index}.json`, response));
             responsesIndex.order.push(index);
         });
 
-        writeFile(`${responseDir}/index.json`, responsesIndex);
+        promises.push(writeFile(`${responseDir}/index.json`, responsesIndex));
+        return Q.all(promises);
     }
 
     function writeStubs (imposter) {
         const helpers = require('../util/helpers'),
-            stubs = helpers.clone(imposter.stubs || []);
+            stubs = helpers.clone(imposter.stubs || []),
+            promises = [];
 
         if (stubs.length === 0) {
-            return;
+            return Q(true);
         }
 
         stubs.forEach((stub, index) => {
             stub.responseDir = `${imposter.port}/stubs/${index}`;
-            writeResponses(stub.responseDir, stub.responses || []);
+            promises.push(writeResponses(stub.responseDir, stub.responses || []));
             delete stub.responses;
         });
 
-        writeFile(`${imposter.port}/stubs/0-99.json`, stubs);
+        promises.push(writeFile(`${imposter.port}/stubs/0-99.json`, stubs));
+        return Q.all(promises);
     }
 
     /**
      * Adds a new imposter
      * @param {Object} imposter - the imposter to add
+     * @returns {Object} - the promise
      */
     function add (imposter) {
-        writeHeader(imposter);
-        writeStubs(imposter);
+        return Q.all([writeHeader(imposter), writeStubs(imposter)]).then(() => Q(imposter));
     }
 
     /**
