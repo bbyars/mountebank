@@ -30,7 +30,7 @@ function create (startupImposters) {
      * @returns {Object} - the imposter
      */
     function get (id) {
-        return imposters[id];
+        return Q(imposters[id] || null);
     }
 
     /**
@@ -47,7 +47,7 @@ function create (startupImposters) {
      * @returns {boolean}
      */
     function exists (id) {
-        return typeof get(id) !== 'undefined';
+        return typeof imposters[id] !== 'undefined';
     }
 
     /**
@@ -56,7 +56,7 @@ function create (startupImposters) {
      * @returns {Object} - the deletion promise
      */
     function del (id) {
-        const result = get(id);
+        const result = imposters[id];
         delete imposters[id];
         return result.stop();
     }
