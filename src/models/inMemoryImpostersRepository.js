@@ -47,7 +47,7 @@ function create (startupImposters) {
      * @returns {boolean}
      */
     function exists (id) {
-        return typeof imposters[id] !== 'undefined';
+        return Q(typeof imposters[id] !== 'undefined');
     }
 
     /**

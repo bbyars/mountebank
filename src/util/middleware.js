@@ -85,15 +85,17 @@ function createImposterValidator (imposters) {
     return function validateImposterExists (request, response, next) {
         const errors = require('./errors');
 
-        if (imposters.exists(request.params.id)) {
-            next();
-        }
-        else {
-            response.statusCode = 404;
-            response.send({
-                errors: [errors.MissingResourceError('Try POSTing to /imposters first?')]
-            });
-        }
+        return imposters.exists(request.params.id).then(exists => {
+            if (exists) {
+                next();
+            }
+            else {
+                response.statusCode = 404;
+                response.send({
+                    errors: [errors.MissingResourceError('Try POSTing to /imposters first?')]
+                });
+            }
+        });
     };
 }
 

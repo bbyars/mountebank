@@ -172,4 +172,24 @@ describe('filesystemBackedImpostersRepository', function () {
                 });
         });
     });
+
+    describe('#exists', function () {
+        promiseIt('should return false if imposter has not previously been added', function () {
+            const repo = Repo.create({ datadir: '.mbtest' });
+
+            return repo.exists(1000).then(result => {
+                assert.strictEqual(false, result);
+            });
+        });
+
+        promiseIt('should return true if imposter has been added', function () {
+            const repo = Repo.create({ datadir: '.mbtest' });
+
+            return repo.add({ port: 1000, protocol: 'test' }).then(() =>
+                repo.exists(1000)
+            ).then(result => {
+                assert.strictEqual(true, result);
+            });
+        });
+    });
 });

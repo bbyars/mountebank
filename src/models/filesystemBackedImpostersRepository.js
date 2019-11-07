@@ -238,8 +238,8 @@ function create (config) {
      * @param {Number} id - the id (e.g. the port)
      * @returns {boolean}
      */
-    function exists (id) { // eslint-disable-line no-unused-vars
-        return false;
+    function exists (id) {
+        return readHeader(id).then(header => Q(header !== null));
     }
 
     /**
