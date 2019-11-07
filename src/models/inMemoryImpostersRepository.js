@@ -25,16 +25,6 @@ function create (startupImposters) {
     }
 
     /**
-     * Gets the JSON for all imposters
-     * @param {Object} queryOptions - the query parameters for formatting
-     * @returns {Object} - the JSON representation
-     */
-    function getAllJSON (queryOptions) {
-        return Object.keys(imposters).reduce((accumulator, id) =>
-            accumulator.concat(imposters[id].toJSON(queryOptions)), []);
-    }
-
-    /**
      * Gets the imposter by id
      * @param {Number} id - the id of the imposter (e.g. the port)
      * @returns {Object} - the imposter
@@ -94,7 +84,6 @@ function create (startupImposters) {
         add,
         get,
         getAll,
-        getAllJSON,
         exists,
         del,
         deleteAllSync,

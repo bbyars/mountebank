@@ -80,6 +80,12 @@ function create (protocols, imposters, logger, allowInjection) {
         return `${helpers.socketName(request.socket)} => ${JSON.stringify(request.body)}`;
     }
 
+    function getAllJSON (queryOptions) {
+        const allImposters = imposters.getAll();
+        return Object.keys(allImposters).reduce((accumulator, id) =>
+            accumulator.concat(allImposters[id].toJSON(queryOptions)), []);
+    }
+
     /**
      * The function responding to GET /imposters
      * @memberOf module:controllers/impostersController#
@@ -97,10 +103,10 @@ function create (protocols, imposters, logger, allowInjection) {
                         list: !(queryBoolean(query, 'replayable') || queryBoolean(query, 'removeProxies'))
                     };
 
-                response.send({ imposters: imposters.getAllJSON(options) });
+                response.send({ imposters: getAllJSON(options) });
             },
             html: () => {
-                response.render('imposters', { imposters: imposters.getAllJSON() });
+                response.render('imposters', { imposters: getAllJSON() });
             }
         });
     }
@@ -154,7 +160,7 @@ function create (protocols, imposters, logger, allowInjection) {
                 replayable: queryIsFalse(query, 'replayable'),
                 removeProxies: queryBoolean(query, 'removeProxies')
             },
-            json = imposters.getAllJSON(options);
+            json = getAllJSON(options);
 
         return imposters.deleteAll().then(() => {
             response.send({ imposters: json });

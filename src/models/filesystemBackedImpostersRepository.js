@@ -183,15 +183,6 @@ function create (config) {
     }
 
     /**
-     * Gets the JSON for all imposters
-     * @param {Object} queryOptions - the query parameters for formatting
-     * @returns {Object} - the JSON representation
-     */
-    function getAllJSON (queryOptions) { // eslint-disable-line no-unused-vars
-        return null;
-    }
-
-    /**
      * Gets the imposter by id
      * @param {Number} id - the id of the imposter (e.g. the port)
      * @returns {Object} - the promise resolving to the imposter
@@ -254,7 +245,6 @@ function create (config) {
         add,
         get,
         getAll,
-        getAllJSON,
         exists,
         del,
         deleteAllSync,
