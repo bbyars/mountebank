@@ -38,7 +38,7 @@ function create (startupImposters) {
      * @returns {Object} - all imposters keyed by port
      */
     function getAll () {
-        return imposters;
+        return Q(imposters);
     }
 
     /**

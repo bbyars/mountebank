@@ -71,7 +71,10 @@ function create (config) {
             fs = require('fs');
 
         fs.readFile(fullPath, 'utf8', (err, data) => {
-            if (err) {
+            if (err && err.code === 'ENOENT') {
+                deferred.resolve(null);
+            }
+            else if (err) {
                 deferred.reject(err);
             }
             else {
@@ -114,22 +117,23 @@ function create (config) {
     }
 
     function readResponses (responseDir) {
-        const responses = [],
-            deferred = Q.defer();
+        let responses = [];
 
-        readFile(`${responseDir}/index.json`).then(index => {
-            const promises = index.order.map(responseIndex =>
-                readFile(`${responseDir}/${responseIndex}.json`).then(response => {
-                    responses.splice(responseIndex, 1, response);
-                })
-            );
+        return readFile(`${responseDir}/index.json`).then(index => {
+            if (index === null) {
+                return Q(true);
+            }
+            else {
+                responses = Array(index.order.length);
+                const promises = index.order.map(responseIndex =>
+                    readFile(`${responseDir}/${responseIndex}.json`).then(response => {
+                        responses.splice(responseIndex, 1, response);
+                    })
+                );
 
-            return Q.all(promises);
-        }).done(() => {
-            deferred.resolve(responses);
-        });
-
-        return deferred.promise;
+                return Q.all(promises);
+            }
+        }).then(() => Q(responses));
     }
 
     function writeStubs (imposter) {
@@ -152,25 +156,25 @@ function create (config) {
     }
 
     function readStubs (id) {
-        const deferred = Q.defer();
-
         let stubs;
-        readFile(`${id}/stubs/0-99.json`).then(stubsWithoutResponses => {
-            stubs = stubsWithoutResponses;
-            const promises = [];
-            stubs.forEach(stub => {
-                const promise = readResponses(stub.responseDir).then(responses => {
-                    stub.responses = responses;
-                    delete stub.responseDir;
+        return readFile(`${id}/stubs/0-99.json`).then(stubsWithoutResponses => {
+            if (stubsWithoutResponses === null) {
+                stubs = [];
+                return Q(true);
+            }
+            else {
+                stubs = stubsWithoutResponses;
+                const promises = [];
+                stubs.forEach(stub => {
+                    const promise = readResponses(stub.responseDir).then(responses => {
+                        stub.responses = responses;
+                        delete stub.responseDir;
+                    });
+                    promises.push(promise);
                 });
-                promises.push(promise);
-            });
-            return Q.all(promises);
-        }).done(() => {
-            deferred.resolve(stubs);
-        });
-
-        return deferred.promise;
+                return Q.all(promises);
+            }
+        }).then(() => Q(stubs));
     }
 
     /**
@@ -188,17 +192,16 @@ function create (config) {
      * @returns {Object} - the promise resolving to the imposter
      */
     function get (id) {
-        const deferred = Q.defer();
-
         let imposter;
-        readHeader(id).then(header => {
+        return readHeader(id).then(header => {
             imposter = header;
-            return readStubs(id);
+            return imposter === null ? Q(true) : readStubs(id);
         }).then(stubs => {
-            imposter.stubs = stubs;
-        }).done(() => deferred.resolve(imposter));
-
-        return deferred.promise;
+            if (imposter !== null) {
+                imposter.stubs = stubs;
+            }
+            return Q(imposter);
+        });
     }
 
     /**
@@ -206,7 +209,28 @@ function create (config) {
      * @returns {Object} - all imposters keyed by port
      */
     function getAll () {
-        return null;
+        const fs = require('fs'),
+            imposters = {},
+            deferred = Q.defer();
+
+        fs.readdir(config.datadir, (err, files) => {
+            if (err && err.code === 'ENOENT') {
+                // Nothing saved yet
+                deferred.resolve({});
+            }
+            else if (err) {
+                deferred.reject(err);
+            }
+            else {
+                const ids = files
+                        .filter(filename => filename.indexOf('.json') > 0)
+                        .map(filename => filename.replace('.json', '')),
+                    promises = ids.map(id => get(id).then(imposter => { imposters[id] = imposter; }));
+
+                Q.all(promises).done(() => { deferred.resolve(imposters); });
+            }
+        });
+        return deferred.promise;
     }
 
     /**

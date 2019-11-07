@@ -81,9 +81,11 @@ function create (protocols, imposters, logger, allowInjection) {
     }
 
     function getAllJSON (queryOptions) {
-        const allImposters = imposters.getAll();
-        return Object.keys(allImposters).reduce((accumulator, id) =>
-            accumulator.concat(allImposters[id].toJSON(queryOptions)), []);
+        const Q = require('q');
+        return imposters.getAll().then(allImposters =>
+            Q(Object.keys(allImposters).reduce((accumulator, id) =>
+                accumulator.concat(allImposters[id].toJSON(queryOptions)), []))
+        );
     }
 
     /**
@@ -91,23 +93,22 @@ function create (protocols, imposters, logger, allowInjection) {
      * @memberOf module:controllers/impostersController#
      * @param {Object} request - the HTTP request
      * @param {Object} response - the HTTP response
+     * @returns {Object} - the promise
      */
     function get (request, response) {
-        response.format({
-            json: () => {
-                const url = require('url'),
-                    query = url.parse(request.url, true).query,
-                    options = {
-                        replayable: queryBoolean(query, 'replayable'),
-                        removeProxies: queryBoolean(query, 'removeProxies'),
-                        list: !(queryBoolean(query, 'replayable') || queryBoolean(query, 'removeProxies'))
-                    };
+        const url = require('url'),
+            query = url.parse(request.url, true).query,
+            options = {
+                replayable: queryBoolean(query, 'replayable'),
+                removeProxies: queryBoolean(query, 'removeProxies'),
+                list: !(queryBoolean(query, 'replayable') || queryBoolean(query, 'removeProxies'))
+            };
 
-                response.send({ imposters: getAllJSON(options) });
-            },
-            html: () => {
-                response.render('imposters', { imposters: getAllJSON() });
-            }
+        return getAllJSON(options).then(impostersJSON => {
+            response.format({
+                json: () => { response.send({ imposters: impostersJSON }); },
+                html: () => { response.render('imposters', { impostersJSON }); }
+            });
         });
     }
 
@@ -159,10 +160,13 @@ function create (protocols, imposters, logger, allowInjection) {
                 // default to replayable for backwards compatibility
                 replayable: queryIsFalse(query, 'replayable'),
                 removeProxies: queryBoolean(query, 'removeProxies')
-            },
-            json = getAllJSON(options);
+            };
+        let json;
 
-        return imposters.deleteAll().then(() => {
+        return getAllJSON(options).then(impostersJSON => {
+            json = impostersJSON;
+            return imposters.deleteAll();
+        }).then(() => {
             response.send({ imposters: json });
         });
     }

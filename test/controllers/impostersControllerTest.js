@@ -17,55 +17,55 @@ describe('ImpostersController', function () {
     });
 
     describe('#get', function () {
-        it('should send an empty array if no imposters', function () {
+        promiseIt('should send an empty array if no imposters', function () {
             const impostersRepo = ImpostersRepo.create({}),
                 controller = Controller.create({}, impostersRepo, null, false);
 
-            controller.get({ url: '/imposters' }, response);
-
-            assert.deepEqual(response.body, { imposters: [] });
+            return controller.get({ url: '/imposters' }, response).then(() => {
+                assert.deepEqual(response.body, { imposters: [] });
+            });
         });
 
-        it('should send list JSON for all imposters by default', function () {
+        promiseIt('should send list JSON for all imposters by default', function () {
             const firstImposter = { toJSON: mock().returns('firstJSON') },
                 secondImposter = { toJSON: mock().returns('secondJSON') },
                 imposters = { 1: firstImposter, 2: secondImposter },
                 impostersRepo = ImpostersRepo.create({ imposters }),
                 controller = Controller.create({}, impostersRepo, null, false);
 
-            controller.get({ url: '/imposters' }, response);
-
-            assert.deepEqual(response.body, { imposters: ['firstJSON', 'secondJSON'] });
-            assert.ok(firstImposter.toJSON.wasCalledWith({ replayable: false, removeProxies: false, list: true }), firstImposter.toJSON.message());
-            assert.ok(secondImposter.toJSON.wasCalledWith({ replayable: false, removeProxies: false, list: true }), secondImposter.toJSON.message());
+            return controller.get({ url: '/imposters' }, response).then(() => {
+                assert.deepEqual(response.body, { imposters: ['firstJSON', 'secondJSON'] });
+                assert.ok(firstImposter.toJSON.wasCalledWith({ replayable: false, removeProxies: false, list: true }), firstImposter.toJSON.message());
+                assert.ok(secondImposter.toJSON.wasCalledWith({ replayable: false, removeProxies: false, list: true }), secondImposter.toJSON.message());
+            });
         });
 
-        it('should send replayable JSON for all imposters if querystring present', function () {
+        promiseIt('should send replayable JSON for all imposters if querystring present', function () {
             const firstImposter = { toJSON: mock().returns('firstJSON') },
                 secondImposter = { toJSON: mock().returns('secondJSON') },
                 imposters = { 1: firstImposter, 2: secondImposter },
                 impostersRepo = ImpostersRepo.create({ imposters }),
                 controller = Controller.create({}, impostersRepo, null, false);
 
-            controller.get({ url: '/imposters?replayable=true' }, response);
-
-            assert.deepEqual(response.body, { imposters: ['firstJSON', 'secondJSON'] });
-            assert.ok(firstImposter.toJSON.wasCalledWith({ replayable: true, removeProxies: false, list: false }), firstImposter.toJSON.message());
-            assert.ok(secondImposter.toJSON.wasCalledWith({ replayable: true, removeProxies: false, list: false }), secondImposter.toJSON.message());
+            return controller.get({ url: '/imposters?replayable=true' }, response).then(() => {
+                assert.deepEqual(response.body, { imposters: ['firstJSON', 'secondJSON'] });
+                assert.ok(firstImposter.toJSON.wasCalledWith({ replayable: true, removeProxies: false, list: false }), firstImposter.toJSON.message());
+                assert.ok(secondImposter.toJSON.wasCalledWith({ replayable: true, removeProxies: false, list: false }), secondImposter.toJSON.message());
+            });
         });
 
-        it('should send replayable and removeProxies JSON for all imposters if querystring present', function () {
+        promiseIt('should send replayable and removeProxies JSON for all imposters if querystring present', function () {
             const firstImposter = { toJSON: mock().returns('firstJSON') },
                 secondImposter = { toJSON: mock().returns('secondJSON') },
                 imposters = { 1: firstImposter, 2: secondImposter },
                 impostersRepo = ImpostersRepo.create({ imposters }),
                 controller = Controller.create({}, impostersRepo, null, false);
 
-            controller.get({ url: '/imposters?replayable=true&removeProxies=true' }, response);
-
-            assert.deepEqual(response.body, { imposters: ['firstJSON', 'secondJSON'] });
-            assert.ok(firstImposter.toJSON.wasCalledWith({ replayable: true, removeProxies: true, list: false }), firstImposter.toJSON.message());
-            assert.ok(secondImposter.toJSON.wasCalledWith({ replayable: true, removeProxies: true, list: false }), secondImposter.toJSON.message());
+            return controller.get({ url: '/imposters?replayable=true&removeProxies=true' }, response).then(() => {
+                assert.deepEqual(response.body, { imposters: ['firstJSON', 'secondJSON'] });
+                assert.ok(firstImposter.toJSON.wasCalledWith({ replayable: true, removeProxies: true, list: false }), firstImposter.toJSON.message());
+                assert.ok(secondImposter.toJSON.wasCalledWith({ replayable: true, removeProxies: true, list: false }), secondImposter.toJSON.message());
+            });
         });
     });
 
@@ -111,8 +111,10 @@ describe('ImpostersController', function () {
             imposter.port = 3535;
             request.body = { protocol: 'http' };
 
-            return controller.post(request, response).then(() => {
-                assert.deepEqual(imposters.getAll(), { 3535: imposter });
+            return controller.post(request, response).then(() =>
+                imposters.getAll()
+            ).then(allImposters => {
+                assert.deepEqual(allImposters, { 3535: imposter });
             });
         });
 
@@ -220,8 +222,10 @@ describe('ImpostersController', function () {
                 impostersRepo = ImpostersRepo.create({ imposters }),
                 controller = Controller.create({}, impostersRepo, {}, false);
 
-            return controller.del({ url: '/imposters' }, response).then(() => {
-                assert.deepEqual(impostersRepo.getAll(), {});
+            return controller.del({ url: '/imposters' }, response).then(() =>
+                impostersRepo.getAll()
+            ).then(allImposters => {
+                assert.deepEqual(allImposters, {});
             });
         });
 
@@ -312,7 +316,9 @@ describe('ImpostersController', function () {
                     }]
                 });
 
-                assert.deepEqual(repo.getAll(), { 0: existingImposter });
+                return repo.getAll();
+            }).then(allImposters => {
+                assert.deepEqual(allImposters, { 0: existingImposter });
             });
         });
 
@@ -325,7 +331,9 @@ describe('ImpostersController', function () {
 
             return controller.put(request, response).then(() => {
                 assert.deepEqual(response.body, { imposters: [] });
-                assert.deepEqual(impostersRepo.getAll(), {});
+                return impostersRepo.getAll();
+            }).then(allImposters => {
+                assert.deepEqual(allImposters, {});
             });
         });
 
@@ -370,8 +378,10 @@ describe('ImpostersController', function () {
 
             request.body = { imposters: [{ protocol: 'http' }, { protocol: 'http' }] };
 
-            return controller.put(request, response).then(() => {
-                assert.deepEqual(impostersRepo.getAll(), { 1: firstImposter, 2: secondImposter });
+            return controller.put(request, response).then(() =>
+                impostersRepo.getAll()
+            ).then(allImposters => {
+                assert.deepEqual(allImposters, { 1: firstImposter, 2: secondImposter });
                 assert.ok(firstImposter.toJSON.wasCalledWith({ list: true }), firstImposter.toJSON.message());
                 assert.ok(secondImposter.toJSON.wasCalledWith({ list: true }), secondImposter.toJSON.message());
             });

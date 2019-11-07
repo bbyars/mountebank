@@ -63,6 +63,13 @@ describe('filesystemBackedImpostersRepository', function () {
     });
 
     describe('#get', function () {
+        it('should return null if no imposter exists', function () {
+            const repo = Repo.create({ datadir: '.mbtest' });
+            return repo.get(1000).then(imposter => {
+                assert.strictEqual(imposter, null);
+            });
+        });
+
         it('should retrieve previously added imposter', function () {
             const repo = Repo.create({ datadir: '.mbtest' }),
                 imposter = {
@@ -84,6 +91,84 @@ describe('filesystemBackedImpostersRepository', function () {
                 .then(() => repo.get(1000))
                 .then(saved => {
                     assert.deepEqual(saved, imposter);
+                });
+        });
+
+        it('should retrieve imposter with empty stubs array if no stubs saved', function () {
+            const repo = Repo.create({ datadir: '.mbtest' }),
+                imposter = { port: 1000, protocol: 'test', customField: true };
+
+            return repo.add(imposter)
+                .then(() => repo.get(1000))
+                .then(saved => {
+                    assert.deepEqual(saved, {
+                        port: 1000,
+                        protocol: 'test',
+                        customField: true,
+                        stubs: []
+                    });
+                });
+        });
+
+        it('should retrieve imposter with empty responses array if no responses saved', function () {
+            // Validation should prevent this from happening unless they've mucked with the database directly
+            const repo = Repo.create({ datadir: '.mbtest' }),
+                imposter = {
+                    port: 1000,
+                    protocol: 'test',
+                    stubs: [{
+                        predicates: [{ equals: { key: 'value' } }]
+                    }]
+                };
+
+            return repo.add(imposter)
+                .then(() => repo.get(1000))
+                .then(saved => {
+                    assert.deepEqual(saved, {
+                        port: 1000,
+                        protocol: 'test',
+                        stubs: [{
+                            predicates: [{ equals: { key: 'value' } }],
+                            responses: []
+                        }]
+                    });
+                });
+        });
+    });
+
+    describe('#getAll', function () {
+        promiseIt('should retrieve empty object if nothing saved', function () {
+            const repo = Repo.create({ datadir: '.mbtest' });
+            return repo.getAll().then(imposters => {
+                assert.deepEqual(imposters, {});
+            });
+        });
+
+        promiseIt('should retrieve all saved keyed by port', function () {
+            const repo = Repo.create({ datadir: '.mbtest' }),
+                firstImposter = {
+                    port: 1000,
+                    protocol: 'test',
+                    stubs: [{
+                        predicates: [{ equals: { key: 'value' } }],
+                        responses: [{ is: { field: 'one' } }]
+                    }]
+                },
+                secondImposter = { port: 2000, protocol: 'test', customField: true };
+
+            return repo.add(firstImposter)
+                .then(() => repo.add(secondImposter))
+                .then(() => repo.getAll())
+                .then(imposters => {
+                    assert.deepEqual(imposters, {
+                        1000: firstImposter,
+                        2000: {
+                            port: 2000,
+                            protocol: 'test',
+                            customField: true,
+                            stubs: []
+                        }
+                    });
                 });
         });
     });
