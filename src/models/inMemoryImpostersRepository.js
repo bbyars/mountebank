@@ -58,7 +58,7 @@ function create (startupImposters) {
     function del (id) {
         const result = imposters[id];
         delete imposters[id];
-        return result.stop();
+        return result.stop().then(() => Q(result));
     }
 
     /**

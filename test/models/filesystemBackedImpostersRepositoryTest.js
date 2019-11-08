@@ -228,4 +228,38 @@ describe('filesystemBackedImpostersRepository', function () {
             });
         });
     });
+
+    describe('#deleteAll', function () {
+        promiseIt('does nothing if no database', function () {
+            const repo = Repo.create({ datadir: '.mbtest' });
+
+            return repo.deleteAll().then(() => {
+                assert.strictEqual(fs.existsSync('.mbtest'), false);
+            });
+        });
+
+        promiseIt('removes all added imposters', function () {
+            const repo = Repo.create({ datadir: '.mbtest' });
+
+            return repo.add({ port: 1000, protocol: 'test' })
+                .then(() => repo.add({ port: 2000, protocol: 'test' }))
+                .then(() => repo.deleteAll())
+                .then(() => {
+                    assert.strictEqual(fs.existsSync('.mbtest'), false);
+                });
+        });
+    });
+
+    describe('#deleteAllSync', function () {
+        promiseIt('synchronously removes database', function () {
+            const repo = Repo.create({ datadir: '.mbtest' });
+
+            return repo.add({ port: 1000, protocol: 'test' })
+                .then(() => repo.add({ port: 2000, protocol: 'test' }))
+                .then(() => {
+                    repo.deleteAllSync();
+                    assert.strictEqual(fs.existsSync('.mbtest'), false);
+                });
+        });
+    });
 });

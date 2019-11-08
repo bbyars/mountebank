@@ -265,6 +265,8 @@ function create (config) {
      * Deletes all imposters synchronously; used during shutdown
      */
     function deleteAllSync () {
+        const fs = require('fs-extra');
+        fs.removeSync(config.datadir);
     }
 
     /**
@@ -272,7 +274,18 @@ function create (config) {
      * @returns {Object} - the deletion promise
      */
     function deleteAll () {
-        return null;
+        const fs = require('fs-extra'),
+            deferred = Q.defer();
+
+        fs.remove(config.datadir, err => {
+            if (err) {
+                deferred.reject(err);
+            }
+            else {
+                deferred.resolve();
+            }
+        });
+        return deferred.promise;
     }
 
     return {
