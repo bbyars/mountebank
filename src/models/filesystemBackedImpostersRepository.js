@@ -15,50 +15,27 @@
 function create (config) {
     const Q = require('q');
 
-    function ensureParentDirExists (filepath) {
-        // Node 11 introduced a recursive flag for mkdir, can use that when node 10 and below are deprecated
-        const path = require('path'),
-            fs = require('fs'),
-            deferred = Q.defer(),
-            dir = path.dirname(filepath);
-
-        fs.access(dir, fs.constants.F_OK, dirDoesNotExist => {
-            if (dirDoesNotExist) {
-                ensureParentDirExists(dir).done(() => {
-                    fs.mkdir(dir, err => {
-                        // Another request could have created it since the last check
-                        if (err && err.code !== 'EEXIST') {
-                            deferred.reject(err);
-                        }
-                        else {
-                            deferred.resolve(dir);
-                        }
-                    });
-                });
-            }
-            else {
-                deferred.resolve(dir);
-            }
-        });
-
-        return deferred.promise;
-    }
-
     function writeFile (filepath, obj) {
-        const fs = require('fs'),
+        const fs = require('fs-extra'),
             path = require('path'),
             fullPath = path.join(config.datadir, filepath),
+            dir = path.dirname(fullPath),
             deferred = Q.defer();
 
-        ensureParentDirExists(fullPath).done(() => {
-            fs.writeFile(fullPath, JSON.stringify(obj), err => {
-                if (err) {
-                    deferred.reject(err);
-                }
-                else {
-                    deferred.resolve(filepath);
-                }
-            });
+        fs.ensureDir(dir, mkdirErr => {
+            if (mkdirErr) {
+                deferred.reject(mkdirErr);
+            }
+            else {
+                fs.writeFile(fullPath, JSON.stringify(obj), err => {
+                    if (err) {
+                        deferred.reject(err);
+                    }
+                    else {
+                        deferred.resolve(filepath);
+                    }
+                });
+            }
         });
 
         return deferred.promise;
@@ -97,6 +74,22 @@ function create (config) {
 
     function readHeader (id) {
         return readFile(`${id}.json`);
+    }
+
+    function deleteHeader (id) {
+        const fs = require('fs-extra'),
+            deferred = Q.defer();
+
+        fs.remove(`${config.datadir}/${id}.json`, err => {
+            if (err) {
+                deferred.reject(err);
+            }
+            else {
+                deferred.resolve();
+            }
+        });
+
+        return deferred.promise;
     }
 
     function writeResponses (responseDir, stubResponses) {
@@ -177,6 +170,21 @@ function create (config) {
         }).then(() => Q(stubs));
     }
 
+    function deleteStubs (id) {
+        const fs = require('fs-extra'),
+            deferred = Q.defer();
+
+        fs.remove(`${config.datadir}/${id}`, err => {
+            if (err) {
+                deferred.reject(err);
+            }
+            else {
+                deferred.resolve();
+            }
+        });
+
+        return deferred.promise;
+    }
     /**
      * Adds a new imposter
      * @param {Object} imposter - the imposter to add
@@ -247,8 +255,10 @@ function create (config) {
      * @param {Number} id - the id (e.g. the port)
      * @returns {Object} - the deletion promise
      */
-    function del (id) { // eslint-disable-line no-unused-vars
-        return null;
+    function del (id) {
+        return get(id).then(imposter =>
+            Q.all([deleteHeader(id), deleteStubs(id)]).then(() => Q(imposter))
+        );
     }
 
     /**

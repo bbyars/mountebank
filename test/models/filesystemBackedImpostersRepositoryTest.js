@@ -2,13 +2,13 @@
 
 const assert = require('assert'),
     Repo = require('../../src/models/filesystemBackedImpostersRepository'),
-    rimraf = require('rimraf'),
+    fs = require('fs-extra'),
     cwd = require('process').cwd(),
     promiseIt = require('../testHelpers').promiseIt;
 
 describe('filesystemBackedImpostersRepository', function () {
     afterEach(function () {
-        rimraf.sync('.mbtest');
+        fs.removeSync('.mbtest');
     });
 
     describe('#add', function () {
@@ -178,7 +178,7 @@ describe('filesystemBackedImpostersRepository', function () {
             const repo = Repo.create({ datadir: '.mbtest' });
 
             return repo.exists(1000).then(result => {
-                assert.strictEqual(false, result);
+                assert.strictEqual(result, false);
             });
         });
 
@@ -188,7 +188,43 @@ describe('filesystemBackedImpostersRepository', function () {
             return repo.add({ port: 1000, protocol: 'test' }).then(() =>
                 repo.exists(1000)
             ).then(result => {
-                assert.strictEqual(true, result);
+                assert.strictEqual(result, true);
+            });
+        });
+    });
+
+    describe('#del', function () {
+        promiseIt('should return null if imposter has not previously been added', function () {
+            const repo = Repo.create({ datadir: '.mbtest' });
+
+            return repo.del(1000).then(imposter => {
+                assert.strictEqual(imposter, null);
+            });
+        });
+
+        promiseIt('should return imposter and delete all files', function () {
+            const repo = Repo.create({ datadir: '.mbtest' }),
+                imposter = {
+                    port: 1000,
+                    protocol: 'test',
+                    stubs: [{
+                        predicates: [
+                            { equals: { key: 'value' } },
+                            { exists: { first: true } }
+                        ],
+                        responses: [
+                            { is: { field: 'one' } },
+                            { is: { field: 'two' } }
+                        ]
+                    }]
+                };
+
+            return repo.add(imposter).then(() =>
+                repo.del(1000)
+            ).then(deleted => {
+                assert.deepEqual(deleted, imposter);
+                assert.strictEqual(fs.existsSync(`${cwd}/.mbtest/1000.json`), false);
+                assert.strictEqual(fs.existsSync(`${cwd}/.mbtest/1000`), false);
             });
         });
     });
