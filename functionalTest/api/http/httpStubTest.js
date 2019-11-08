@@ -650,6 +650,24 @@ const assert = require('assert'),
                     })
                     .finally(() => api.del('/imposters'));
             });
+
+            promiseIt('should support matching cirillic characters (issue #477)', function () {
+                const request = {
+                    port,
+                    protocol,
+                    stubs: [{
+                        predicates: [{ deepEquals: { body: { тест: '2' } } }],
+                        responses: [{ is: { body: 'Matched' } }]
+                    }]
+                };
+
+                return api.post('/imposters', request).then(response => {
+                    assert.strictEqual(201, response.statusCode, JSON.stringify(response.body, null, 4));
+                    return client.post('/', '{ "тест": "2" }', port);
+                }).then(response => {
+                    assert.strictEqual(response.body, 'Matched');
+                }).finally(() => api.del('/imposters'));
+            });
         });
     });
 });
