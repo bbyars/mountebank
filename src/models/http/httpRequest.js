@@ -55,7 +55,7 @@ function createFrom (request) {
     const Q = require('q'),
         deferred = Q.defer();
     request.body = '';
-    request.setEncoding('binary');
+    request.setEncoding('utf8');
     request.on('data', chunk => { request.body += chunk; });
     request.on('end', () => { deferred.resolve(transform(request)); });
     return deferred.promise;
