@@ -11,12 +11,61 @@
  * @returns {Object}
  */
 function create (encoding) {
-    /**
-     * The list of stubs within this repository
-     * @memberOf module:models/stubRepository#
-     * @type {Array}
-     */
-    const stubs = [];
+    const stubs = function () {
+        const _stubs = []; // eslint-disable-line no-underscore-dangle
+
+        function first (filter) {
+            return _stubs.find(filter);
+        }
+
+        function add (stub) {
+            _stubs.push(stub);
+        }
+
+        function insertBefore (stub, filter) {
+            for (var i = 0; i < _stubs.length; i += 1) {
+                if (filter(_stubs[i])) {
+                    break;
+                }
+            }
+            _stubs.splice(i, 0, stub);
+        }
+
+        function insertAtIndex (stub, index) {
+            _stubs.splice(index, 0, stub);
+        }
+
+        function overwriteAll (newStubs) {
+            while (_stubs.length > 0) {
+                _stubs.pop();
+            }
+            newStubs.forEach(stub => add(stub));
+        }
+
+        function overwriteAtIndex (newStub, index) {
+            _stubs[index] = newStub;
+        }
+
+        function deleteAtIndex (index) {
+            _stubs.splice(index, 1);
+        }
+
+        function getAll () {
+            return _stubs;
+        }
+
+        return {
+            count: () => _stubs.length,
+            first,
+            add,
+            insertBefore,
+            insertAtIndex,
+            overwriteAll,
+            overwriteAtIndex,
+            deleteAtIndex,
+            getAll
+        };
+    }();
 
     // We call map before calling every so we make sure to call every
     // predicate during dry run validation rather than short-circuiting
@@ -25,13 +74,15 @@ function create (encoding) {
     }
 
     function findFirstMatch (request, logger, imposterState) {
-        if (stubs.length === 0) {
-            return undefined;
+        const defaultStub = { statefulResponses: [{ is: {} }] };
+
+        if (stubs.count() === 0) {
+            return defaultStub;
         }
 
         const helpers = require('../util/helpers'),
             readOnlyState = helpers.clone(imposterState),
-            matches = stubs.filter(stub => {
+            match = stubs.first(stub => {
                 const stubPredicates = stub.predicates || [],
                     predicates = require('./predicates');
 
@@ -39,13 +90,13 @@ function create (encoding) {
                     predicate => predicates.evaluate(predicate, request, encoding, logger, readOnlyState));
             });
 
-        if (matches.length === 0) {
+        if (typeof match === 'undefined') {
             logger.debug('no predicate match');
-            return undefined;
+            return defaultStub;
         }
         else {
-            logger.debug(`using predicate match: ${JSON.stringify(matches[0].predicates || {})}`);
-            return matches[0];
+            logger.debug(`using predicate match: ${JSON.stringify(match.predicates || {})}`);
+            return match;
         }
     }
 
@@ -72,15 +123,6 @@ function create (encoding) {
         return result;
     }
 
-    function stubIndexFor (responseToMatch) {
-        for (var i = 0; i < stubs.length; i += 1) {
-            if (stubs[i].responses.some(response => JSON.stringify(response) === JSON.stringify(responseToMatch))) {
-                break;
-            }
-        }
-        return i;
-    }
-
     function decorate (stub) {
         stub.statefulResponses = repeatTransform(stub.responses);
         stub.addResponse = response => { stub.responses.push(response); };
@@ -95,10 +137,13 @@ function create (encoding) {
      */
     function addStub (stub, beforeResponse) {
         if (beforeResponse) {
-            stubs.splice(stubIndexFor(beforeResponse), 0, decorate(stub));
+            const responseToMatch = JSON.stringify(beforeResponse);
+            stubs.insertBefore(decorate(stub), existingStub =>
+                existingStub.responses.some(response => JSON.stringify(response) === responseToMatch)
+            );
         }
         else {
-            stubs.push(decorate(stub));
+            stubs.add(decorate(stub));
         }
     }
 
@@ -109,7 +154,7 @@ function create (encoding) {
      * @param {Object} newStub - the new stub
      */
     function addStubAtIndex (index, newStub) {
-        stubs.splice(index, 0, decorate(newStub));
+        stubs.insertAtIndex(decorate(newStub), index);
     }
 
     /**
@@ -118,10 +163,7 @@ function create (encoding) {
      * @param {Object} newStubs - the new list of stubs
      */
     function overwriteStubs (newStubs) {
-        while (stubs.length > 0) {
-            stubs.pop();
-        }
-        newStubs.forEach(stub => addStub(stub));
+        stubs.overwriteAll(newStubs.map(decorate));
     }
 
     /**
@@ -131,7 +173,7 @@ function create (encoding) {
      * @param {Object} newStub - the new stub
      */
     function overwriteStubAtIndex (index, newStub) {
-        stubs[index] = decorate(newStub);
+        stubs.overwriteAtIndex(decorate(newStub), index);
     }
 
     /**
@@ -140,7 +182,7 @@ function create (encoding) {
      * @param {Number} index - the index of the stub to remove
      */
     function deleteStubAtIndex (index) {
-        stubs.splice(index, 1);
+        stubs.deleteAtIndex(index);
     }
 
     /**
@@ -150,11 +192,12 @@ function create (encoding) {
      */
     function getStubs () {
         const helpers = require('../util/helpers'),
-            result = helpers.clone(stubs);
+            allStubs = stubs.getAll(),
+            result = helpers.clone(allStubs);
 
-        for (var i = 0; i < stubs.length; i += 1) {
+        for (var i = 0; i < allStubs.length; i += 1) {
             delete result[i].statefulResponses;
-            const stub = stubs[i];
+            const stub = allStubs[i];
             result[i].addResponse = response => { stub.responses.push(response); };
         }
         return result;
@@ -170,7 +213,7 @@ function create (encoding) {
      */
     function getResponseFor (request, logger, imposterState) {
         const helpers = require('../util/helpers'),
-            stub = findFirstMatch(request, logger, imposterState) || { statefulResponses: [{ is: {} }] },
+            stub = findFirstMatch(request, logger, imposterState),
             responseConfig = stub.statefulResponses.shift(),
             cloned = helpers.clone(responseConfig);
 
@@ -206,15 +249,16 @@ function create (encoding) {
     * Removes the saved proxy responses
     */
     function resetProxies () {
-        for (let i = stubs.length - 1; i >= 0; i -= 1) {
-            stubs[i].responses = stubs[i].responses.filter(response => {
+        const allStubs = stubs.getAll();
+        for (let i = allStubs.length - 1; i >= 0; i -= 1) {
+            allStubs[i].responses = allStubs[i].responses.filter(response => {
                 if (!response.is) {
                     return true;
                 }
                 return typeof response.is._proxyResponseTime === 'undefined'; // eslint-disable-line no-underscore-dangle
             });
-            if (stubs[i].responses.length === 0) {
-                stubs.splice(i, 1);
+            if (allStubs[i].responses.length === 0) {
+                stubs.deleteAtIndex(i);
             }
         }
     }
