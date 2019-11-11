@@ -67,10 +67,15 @@ function create (encoding) {
         };
     }();
 
-    // We call map before calling every so we make sure to call every
+    // If testAll, we call map before calling every so we make sure to call every
     // predicate during dry run validation rather than short-circuiting
-    function trueForAll (list, predicate) {
-        return list.map(predicate).every(result => result);
+    function trueForAll (list, predicate, testAll) {
+        if (testAll) {
+            return list.map(predicate).every(result => result);
+        }
+        else {
+            return list.every(predicate);
+        }
     }
 
     function findFirstMatch (request, logger, imposterState) {
@@ -87,7 +92,8 @@ function create (encoding) {
                     predicates = require('./predicates');
 
                 return trueForAll(stubPredicates,
-                    predicate => predicates.evaluate(predicate, request, encoding, logger, readOnlyState));
+                    predicate => predicates.evaluate(predicate, request, encoding, logger, readOnlyState),
+                    request.isDryRun === true);
             });
 
         if (typeof match === 'undefined') {
