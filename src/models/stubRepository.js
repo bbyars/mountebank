@@ -14,12 +14,48 @@ function create (encoding) {
     const stubs = function () {
         const _stubs = []; // eslint-disable-line no-underscore-dangle
 
+        function repeatsFor (response) {
+            if (response._behaviors && response._behaviors.repeat) {
+                return response._behaviors.repeat;
+            }
+            else {
+                return 1;
+            }
+        }
+
+        function repeatTransform (responses) {
+            const result = [];
+            let response, repeats;
+
+            for (let i = 0; i < responses.length; i += 1) {
+                response = responses[i];
+                repeats = repeatsFor(response);
+                for (let j = 0; j < repeats; j += 1) {
+                    result.push(response);
+                }
+            }
+            return result;
+        }
+
+        function decorate (stub) {
+            // TODO: Clone first?
+            stub.statefulResponses = repeatTransform(stub.responses);
+            stub.addResponse = response => { stub.responses.push(response); };
+            stub.nextResponse = () => {
+                const responseConfig = stub.statefulResponses.shift();
+
+                stub.statefulResponses.push(responseConfig);
+                return responseConfig;
+            };
+            return stub;
+        }
+
         function first (filter) {
             return _stubs.find(filter);
         }
 
         function add (stub) {
-            _stubs.push(stub);
+            _stubs.push(decorate(stub));
         }
 
         function insertBefore (stub, filter) {
@@ -28,11 +64,11 @@ function create (encoding) {
                     break;
                 }
             }
-            _stubs.splice(i, 0, stub);
+            _stubs.splice(i, 0, decorate(stub));
         }
 
         function insertAtIndex (stub, index) {
-            _stubs.splice(index, 0, stub);
+            _stubs.splice(index, 0, decorate(stub));
         }
 
         function overwriteAll (newStubs) {
@@ -43,7 +79,7 @@ function create (encoding) {
         }
 
         function overwriteAtIndex (newStub, index) {
-            _stubs[index] = newStub;
+            _stubs[index] = decorate(newStub);
         }
 
         function deleteAtIndex (index) {
@@ -79,7 +115,7 @@ function create (encoding) {
     }
 
     function findFirstMatch (request, logger, imposterState) {
-        const defaultStub = { statefulResponses: [{ is: {} }] };
+        const defaultStub = { nextResponse: () => { return { is: {} }; } };
 
         if (stubs.count() === 0) {
             return defaultStub;
@@ -106,35 +142,6 @@ function create (encoding) {
         }
     }
 
-    function repeatsFor (response) {
-        if (response._behaviors && response._behaviors.repeat) {
-            return response._behaviors.repeat;
-        }
-        else {
-            return 1;
-        }
-    }
-
-    function repeatTransform (responses) {
-        const result = [];
-        let response, repeats;
-
-        for (let i = 0; i < responses.length; i += 1) {
-            response = responses[i];
-            repeats = repeatsFor(response);
-            for (let j = 0; j < repeats; j += 1) {
-                result.push(response);
-            }
-        }
-        return result;
-    }
-
-    function decorate (stub) {
-        stub.statefulResponses = repeatTransform(stub.responses);
-        stub.addResponse = response => { stub.responses.push(response); };
-        return stub;
-    }
-
     /**
      * Adds a stub to the repository
      * @memberOf module:models/stubRepository#
@@ -144,12 +151,12 @@ function create (encoding) {
     function addStub (stub, beforeResponse) {
         if (beforeResponse) {
             const responseToMatch = JSON.stringify(beforeResponse);
-            stubs.insertBefore(decorate(stub), existingStub =>
+            stubs.insertBefore(stub, existingStub =>
                 existingStub.responses.some(response => JSON.stringify(response) === responseToMatch)
             );
         }
         else {
-            stubs.add(decorate(stub));
+            stubs.add(stub);
         }
     }
 
@@ -160,7 +167,7 @@ function create (encoding) {
      * @param {Object} newStub - the new stub
      */
     function addStubAtIndex (index, newStub) {
-        stubs.insertAtIndex(decorate(newStub), index);
+        stubs.insertAtIndex(newStub, index);
     }
 
     /**
@@ -169,7 +176,7 @@ function create (encoding) {
      * @param {Object} newStubs - the new list of stubs
      */
     function overwriteStubs (newStubs) {
-        stubs.overwriteAll(newStubs.map(decorate));
+        stubs.overwriteAll(newStubs);
     }
 
     /**
@@ -179,7 +186,7 @@ function create (encoding) {
      * @param {Object} newStub - the new stub
      */
     function overwriteStubAtIndex (index, newStub) {
-        stubs.overwriteAtIndex(decorate(newStub), index);
+        stubs.overwriteAtIndex(newStub, index);
     }
 
     /**
@@ -204,6 +211,8 @@ function create (encoding) {
         for (var i = 0; i < allStubs.length; i += 1) {
             delete result[i].statefulResponses;
             const stub = allStubs[i];
+
+            // TODO: Isn't this a bug, ignoring statefulResponses?
             result[i].addResponse = response => { stub.responses.push(response); };
         }
         return result;
@@ -220,12 +229,10 @@ function create (encoding) {
     function getResponseFor (request, logger, imposterState) {
         const helpers = require('../util/helpers'),
             stub = findFirstMatch(request, logger, imposterState),
-            responseConfig = stub.statefulResponses.shift(),
+            responseConfig = stub.nextResponse(),
             cloned = helpers.clone(responseConfig);
 
         logger.debug(`generating response from ${JSON.stringify(responseConfig)}`);
-
-        stub.statefulResponses.push(responseConfig);
 
         cloned.recordMatch = response => {
             const clonedResponse = helpers.clone(response),
@@ -237,11 +244,14 @@ function create (encoding) {
             if (helpers.defined(clonedResponse._proxyResponseTime)) { // eslint-disable-line no-underscore-dangle
                 delete clonedResponse._proxyResponseTime; // eslint-disable-line no-underscore-dangle
             }
+
+            // TODO: Decorate stub returned from collection with addMatch()
             stub.matches = stub.matches || [];
             stub.matches.push(match);
             cloned.recordMatch = () => {}; // Only record once
         };
 
+        // TODO: Decorate response?
         cloned.setMetadata = (responseType, metadata) => {
             Object.keys(metadata).forEach(key => {
                 responseConfig[responseType][key] = metadata[key];
@@ -257,6 +267,7 @@ function create (encoding) {
     function resetProxies () {
         const allStubs = stubs.getAll();
         for (let i = allStubs.length - 1; i >= 0; i -= 1) {
+            // TODO: Decorate responses?
             allStubs[i].responses = allStubs[i].responses.filter(response => {
                 if (!response.is) {
                     return true;
