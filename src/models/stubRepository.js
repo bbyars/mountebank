@@ -42,10 +42,35 @@ function create (encoding) {
             stub.statefulResponses = repeatTransform(stub.responses);
             stub.addResponse = response => { stub.responses.push(response); };
             stub.nextResponse = () => {
-                const responseConfig = stub.statefulResponses.shift();
+                const helpers = require('../util/helpers'),
+                    responseConfig = stub.statefulResponses.shift(),
+                    cloned = helpers.clone(responseConfig);
 
                 stub.statefulResponses.push(responseConfig);
-                return responseConfig;
+
+                cloned.recordMatch = (request, response) => {
+                    const clonedResponse = helpers.clone(response),
+                        match = {
+                            timestamp: new Date().toJSON(),
+                            request,
+                            response: clonedResponse
+                        };
+                    if (helpers.defined(clonedResponse._proxyResponseTime)) { // eslint-disable-line no-underscore-dangle
+                        delete clonedResponse._proxyResponseTime; // eslint-disable-line no-underscore-dangle
+                    }
+
+                    stub.matches = stub.matches || [];
+                    stub.matches.push(match);
+                    cloned.recordMatch = () => {}; // Only record once
+                };
+
+                cloned.setMetadata = (responseType, metadata) => {
+                    Object.keys(metadata).forEach(key => {
+                        responseConfig[responseType][key] = metadata[key];
+                        cloned[responseType][key] = metadata[key];
+                    });
+                };
+                return cloned;
             };
             return stub;
         }
@@ -115,7 +140,11 @@ function create (encoding) {
     }
 
     function findFirstMatch (request, logger, imposterState) {
-        const defaultStub = { nextResponse: () => { return { is: {} }; } };
+        const defaultResponse = { is: {} },
+            defaultStub = { nextResponse: () => defaultResponse };
+
+        defaultResponse.recordMatch = () => {};
+        defaultResponse.setMetadata = () => {};
 
         if (stubs.count() === 0) {
             return defaultStub;
@@ -227,38 +256,11 @@ function create (encoding) {
      * @returns {Object} - Promise resolving to the response
      */
     function getResponseFor (request, logger, imposterState) {
-        const helpers = require('../util/helpers'),
-            stub = findFirstMatch(request, logger, imposterState),
-            responseConfig = stub.nextResponse(),
-            cloned = helpers.clone(responseConfig);
+        const stub = findFirstMatch(request, logger, imposterState),
+            responseConfig = stub.nextResponse();
 
         logger.debug(`generating response from ${JSON.stringify(responseConfig)}`);
-
-        cloned.recordMatch = response => {
-            const clonedResponse = helpers.clone(response),
-                match = {
-                    timestamp: new Date().toJSON(),
-                    request,
-                    response: clonedResponse
-                };
-            if (helpers.defined(clonedResponse._proxyResponseTime)) { // eslint-disable-line no-underscore-dangle
-                delete clonedResponse._proxyResponseTime; // eslint-disable-line no-underscore-dangle
-            }
-
-            // TODO: Decorate stub returned from collection with addMatch()
-            stub.matches = stub.matches || [];
-            stub.matches.push(match);
-            cloned.recordMatch = () => {}; // Only record once
-        };
-
-        // TODO: Decorate response?
-        cloned.setMetadata = (responseType, metadata) => {
-            Object.keys(metadata).forEach(key => {
-                responseConfig[responseType][key] = metadata[key];
-                cloned[responseType][key] = metadata[key];
-            });
-        };
-        return cloned;
+        return responseConfig;
     }
 
     /**

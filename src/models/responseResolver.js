@@ -398,7 +398,7 @@ function create (stubs, proxy, callbackURL) {
             return behaviors.execute(pendingProxyConfig.request, proxyResponse, pendingProxyConfig.responseConfig._behaviors, logger)
                 .then(response => {
                     recordProxyResponse(pendingProxyConfig.responseConfig, pendingProxyConfig.request, response, logger);
-                    response.recordMatch = () => { pendingProxyConfig.responseConfig.recordMatch(response); };
+                    response.recordMatch = () => { pendingProxyConfig.responseConfig.recordMatch(pendingProxyConfig.request, response); };
                     delete pendingProxyResolutions[proxyResolutionKey];
                     return Q(response);
                 });

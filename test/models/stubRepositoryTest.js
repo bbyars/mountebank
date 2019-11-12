@@ -167,8 +167,8 @@ describe('stubRepository', function () {
                 stub = { predicates: [{ equals: { field: 'value' } }], responses: [{ is: 'first response' }] };
 
             stubs.addStub(stub);
-            stubs.getResponseFor(matchingRequest, logger, {}).recordMatch('MATCHED');
-            stubs.getResponseFor(mismatchingRequest, logger, {}).recordMatch('MISMATCHED');
+            stubs.getResponseFor(matchingRequest, logger, {}).recordMatch(matchingRequest, 'MATCHED');
+            stubs.getResponseFor(mismatchingRequest, logger, {}).recordMatch(mismatchingRequest, 'MISMATCHED');
             const matches = stubs.stubs()[0].matches;
             matches.forEach(match => { match.timestamp = 'NOW'; });
 
@@ -182,8 +182,8 @@ describe('stubRepository', function () {
 
             stubs.addStub(stub);
             const responseConfig = stubs.getResponseFor({}, logger, {});
-            responseConfig.recordMatch('FIRST');
-            responseConfig.recordMatch('SECOND');
+            responseConfig.recordMatch({}, 'FIRST');
+            responseConfig.recordMatch({}, 'SECOND');
             const matches = stubs.stubs()[0].matches;
             matches.forEach(match => { match.timestamp = 'NOW'; });
 

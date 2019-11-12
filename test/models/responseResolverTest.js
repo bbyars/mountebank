@@ -1282,14 +1282,13 @@ describe('responseResolver', function () {
         promiseIt('should avoid race conditions when recording the match', function () {
             const stubs = StubRepository.create('utf8'),
                 resolver = ResponseResolver.create(stubs, null, 'CALLBACK-URL'),
-                logger = Logger.create(),
-                request = { key: 'REQUEST' };
+                logger = Logger.create();
 
             stubs.addStub({ responses: [{ proxy: { to: 'where', mode: 'proxyAlways' } }] });
 
             // Call through the stubRepository to have it add the recordMatch function
             const responseConfig = stubs.getResponseFor({ key: 'REQUEST-1' }, logger, {});
-            return resolver.resolve(responseConfig, request, logger, {}).then(response => {
+            return resolver.resolve(responseConfig, { key: 'REQUEST-1' }, logger, {}).then(response => {
                 const proxyResolutionKey = parseInt(response.callbackURL.replace('CALLBACK-URL/', ''));
 
                 // Now call with a second request on the same stub before resolving the proxy

@@ -82,11 +82,11 @@ function create (Protocol, creationRequest, baseLogger, config, isAllowedConnect
             if (config.recordMatches && !response.proxy) {
                 if (response.response) {
                     // Out of process responses wrap the result in an outer response object
-                    responseConfig.recordMatch(response.response);
+                    responseConfig.recordMatch(request, response.response);
                 }
                 else {
                     // In process resolution
-                    responseConfig.recordMatch(response);
+                    responseConfig.recordMatch(request, response);
                 }
             }
             return Q(response);
