@@ -11,42 +11,46 @@
  * @returns {Object}
  */
 function create (encoding) {
-    const stubs = function () {
-        const _stubs = []; // eslint-disable-line no-underscore-dangle
-
-        function repeatsFor (response) {
-            if (response._behaviors && response._behaviors.repeat) {
-                return response._behaviors.repeat;
-            }
-            else {
-                return 1;
-            }
-        }
-
-        function repeatTransform (responses) {
-            const result = [];
-            let response, repeats;
-
-            for (let i = 0; i < responses.length; i += 1) {
-                response = responses[i];
-                repeats = repeatsFor(response);
-                for (let j = 0; j < repeats; j += 1) {
-                    result.push(response);
+    const Stub = {
+        create: function (config) {
+            function repeatsFor (response) {
+                if (response._behaviors && response._behaviors.repeat) {
+                    return response._behaviors.repeat;
+                }
+                else {
+                    return 1;
                 }
             }
-            return result;
-        }
 
-        function decorate (stub) {
+            function repeatTransform (responses) {
+                const result = [];
+                let response, repeats;
+
+                for (let i = 0; i < responses.length; i += 1) {
+                    response = responses[i];
+                    repeats = repeatsFor(response);
+                    for (let j = 0; j < repeats; j += 1) {
+                        result.push(response);
+                    }
+                }
+                return result;
+            }
+
             // TODO: Clone first?
-            stub.statefulResponses = repeatTransform(stub.responses);
+            const helpers = require('../util/helpers'),
+                stub = config || {};
+
+            stub.responses = stub.responses || [{ is: {} }];
+
+            const statefulResponses = repeatTransform(stub.responses);
+
             stub.addResponse = response => { stub.responses.push(response); };
+
             stub.nextResponse = () => {
-                const helpers = require('../util/helpers'),
-                    responseConfig = stub.statefulResponses.shift(),
+                const responseConfig = statefulResponses.shift(),
                     cloned = helpers.clone(responseConfig);
 
-                stub.statefulResponses.push(responseConfig);
+                statefulResponses.push(responseConfig);
 
                 cloned.recordMatch = (request, response) => {
                     const clonedResponse = helpers.clone(response),
@@ -74,13 +78,17 @@ function create (encoding) {
             };
             return stub;
         }
+    };
+
+    const stubs = function () {
+        const _stubs = []; // eslint-disable-line no-underscore-dangle
 
         function first (filter) {
             return _stubs.find(filter);
         }
 
         function add (stub) {
-            _stubs.push(decorate(stub));
+            _stubs.push(Stub.create(stub));
         }
 
         function insertBefore (stub, filter) {
@@ -89,11 +97,11 @@ function create (encoding) {
                     break;
                 }
             }
-            _stubs.splice(i, 0, decorate(stub));
+            _stubs.splice(i, 0, Stub.create(stub));
         }
 
         function insertAtIndex (stub, index) {
-            _stubs.splice(index, 0, decorate(stub));
+            _stubs.splice(index, 0, Stub.create(stub));
         }
 
         function overwriteAll (newStubs) {
@@ -104,7 +112,7 @@ function create (encoding) {
         }
 
         function overwriteAtIndex (newStub, index) {
-            _stubs[index] = decorate(newStub);
+            _stubs[index] = Stub.create(newStub);
         }
 
         function deleteAtIndex (index) {
@@ -116,7 +124,6 @@ function create (encoding) {
                 result = helpers.clone(_stubs);
 
             for (var i = 0; i < _stubs.length; i += 1) {
-                delete result[i].statefulResponses;
                 const stub = _stubs[i];
 
                 result[i].addResponse = response => {
@@ -151,14 +158,8 @@ function create (encoding) {
     }
 
     function findFirstMatch (request, logger, imposterState) {
-        const defaultResponse = { is: {} },
-            defaultStub = { nextResponse: () => defaultResponse };
-
-        defaultResponse.recordMatch = () => {};
-        defaultResponse.setMetadata = () => {};
-
         if (stubs.count() === 0) {
-            return defaultStub;
+            return Stub.create();
         }
 
         const helpers = require('../util/helpers'),
@@ -174,7 +175,7 @@ function create (encoding) {
 
         if (typeof match === 'undefined') {
             logger.debug('no predicate match');
-            return defaultStub;
+            return Stub.create();
         }
         else {
             logger.debug(`using predicate match: ${JSON.stringify(match.predicates || {})}`);
