@@ -112,7 +112,18 @@ function create (encoding) {
         }
 
         function getAll () {
-            return _stubs;
+            const helpers = require('../util/helpers'),
+                result = helpers.clone(_stubs);
+
+            for (var i = 0; i < _stubs.length; i += 1) {
+                delete result[i].statefulResponses;
+                const stub = _stubs[i];
+
+                result[i].addResponse = response => {
+                    stub.responses.push(response);
+                };
+            }
+            return result;
         }
 
         return {
@@ -233,18 +244,7 @@ function create (encoding) {
      * @returns {Object} - The stubs
      */
     function getStubs () {
-        const helpers = require('../util/helpers'),
-            allStubs = stubs.getAll(),
-            result = helpers.clone(allStubs);
-
-        for (var i = 0; i < allStubs.length; i += 1) {
-            delete result[i].statefulResponses;
-            const stub = allStubs[i];
-
-            // TODO: Isn't this a bug, ignoring statefulResponses?
-            result[i].addResponse = response => { stub.responses.push(response); };
-        }
-        return result;
+        return stubs.getAll();
     }
 
     /**
