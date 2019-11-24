@@ -28,6 +28,7 @@ describe('responseResolver', function () {
         result.forEach(stub => {
             delete stub.recordMatch;
             delete stub.addResponse;
+            delete stub.deleteResponsesMatching;
             stub.responses = proxyResponses(stub.responses);
         });
         return result;

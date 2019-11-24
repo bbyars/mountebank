@@ -11,145 +11,7 @@
  * @returns {Object}
  */
 function create (encoding) {
-    const Response = {
-        create: function (responseConfig, stub) {
-            const helpers = require('../util/helpers'),
-                cloned = helpers.clone(responseConfig);
-
-            cloned.recordMatch = (request, response) => {
-                const clonedResponse = helpers.clone(response),
-                    match = {
-                        timestamp: new Date().toJSON(),
-                        request,
-                        response: clonedResponse
-                    };
-                if (helpers.defined(clonedResponse._proxyResponseTime)) { // eslint-disable-line no-underscore-dangle
-                    delete clonedResponse._proxyResponseTime; // eslint-disable-line no-underscore-dangle
-                }
-
-                stub.matches = stub.matches || [];
-                stub.matches.push(match);
-                cloned.recordMatch = () => {}; // Only record once
-            };
-
-            cloned.setMetadata = (responseType, metadata) => {
-                Object.keys(metadata).forEach(key => {
-                    responseConfig[responseType][key] = metadata[key];
-                    cloned[responseType][key] = metadata[key];
-                });
-            };
-            return cloned;
-        }
-    };
-
-    const Stub = {
-        create: function (config) {
-            function repeatsFor (response) {
-                if (response._behaviors && response._behaviors.repeat) {
-                    return response._behaviors.repeat;
-                }
-                else {
-                    return 1;
-                }
-            }
-
-            function repeatTransform (responses) {
-                const result = [];
-                let response, repeats;
-
-                for (let i = 0; i < responses.length; i += 1) {
-                    response = responses[i];
-                    repeats = repeatsFor(response);
-                    for (let j = 0; j < repeats; j += 1) {
-                        result.push(response);
-                    }
-                }
-                return result;
-            }
-
-            const helpers = require('../util/helpers'),
-                stub = helpers.clone(config || {});
-
-            stub.responses = stub.responses || [{ is: {} }];
-
-            const statefulResponses = repeatTransform(stub.responses);
-
-            stub.addResponse = response => { stub.responses.push(response); };
-
-            stub.nextResponse = () => {
-                const responseConfig = statefulResponses.shift();
-                statefulResponses.push(responseConfig);
-                return Response.create(responseConfig, stub);
-            };
-            return stub;
-        }
-    };
-
-    const stubs = function () {
-        const _stubs = []; // eslint-disable-line no-underscore-dangle
-
-        function first (filter) {
-            return _stubs.find(filter);
-        }
-
-        function add (stub) {
-            _stubs.push(Stub.create(stub));
-        }
-
-        function insertBefore (stub, filter) {
-            for (var i = 0; i < _stubs.length; i += 1) {
-                if (filter(_stubs[i])) {
-                    break;
-                }
-            }
-            _stubs.splice(i, 0, Stub.create(stub));
-        }
-
-        function insertAtIndex (stub, index) {
-            _stubs.splice(index, 0, Stub.create(stub));
-        }
-
-        function overwriteAll (newStubs) {
-            while (_stubs.length > 0) {
-                _stubs.pop();
-            }
-            newStubs.forEach(stub => add(stub));
-        }
-
-        function overwriteAtIndex (newStub, index) {
-            _stubs[index] = Stub.create(newStub);
-        }
-
-        function deleteAtIndex (index) {
-            _stubs.splice(index, 1);
-        }
-
-        function getAll () {
-            const helpers = require('../util/helpers'),
-                result = helpers.clone(_stubs);
-
-            for (var i = 0; i < _stubs.length; i += 1) {
-                const stub = _stubs[i];
-
-                result[i].addResponse = response => {
-                    stub.responses.push(response);
-                };
-            }
-            return result;
-        }
-
-        return {
-            count: () => _stubs.length,
-            first,
-            add,
-            insertBefore,
-            insertAtIndex,
-            overwriteAll,
-            overwriteAtIndex,
-            deleteAtIndex,
-            getAll
-        };
-    }();
+    const stubs = require('./inMemoryStubRepository').create();
 
     // If testAll, we call map before calling every so we make sure to call every
     // predicate during dry run validation rather than short-circuiting
@@ -164,7 +26,7 @@ function create (encoding) {
 
     function findFirstMatch (request, logger, imposterState) {
         if (stubs.count() === 0) {
-            return Stub.create();
+            return stubs.newStub();
         }
 
         const helpers = require('../util/helpers'),
@@ -180,7 +42,7 @@ function create (encoding) {
 
         if (typeof match === 'undefined') {
             logger.debug('no predicate match');
-            return Stub.create();
+            return stubs.newStub();
         }
         else {
             logger.debug(`using predicate match: ${JSON.stringify(match.predicates || {})}`);
@@ -269,19 +131,17 @@ function create (encoding) {
         return responseConfig;
     }
 
+    function isRecordedResponse (response) {
+        return response.is && response.is._proxyResponseTime; // eslint-disable-line no-underscore-dangle
+    }
+
     /**
     * Removes the saved proxy responses
     */
     function resetProxies () {
         const allStubs = stubs.getAll();
         for (let i = allStubs.length - 1; i >= 0; i -= 1) {
-            // TODO: Decorate responses?
-            allStubs[i].responses = allStubs[i].responses.filter(response => {
-                if (!response.is) {
-                    return true;
-                }
-                return typeof response.is._proxyResponseTime === 'undefined'; // eslint-disable-line no-underscore-dangle
-            });
+            allStubs[i].deleteResponsesMatching(isRecordedResponse);
             if (allStubs[i].responses.length === 0) {
                 stubs.deleteAtIndex(i);
             }
