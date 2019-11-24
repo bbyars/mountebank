@@ -11,6 +11,37 @@
  * @returns {Object}
  */
 function create (encoding) {
+    const Response = {
+        create: function (responseConfig, stub) {
+            const helpers = require('../util/helpers'),
+                cloned = helpers.clone(responseConfig);
+
+            cloned.recordMatch = (request, response) => {
+                const clonedResponse = helpers.clone(response),
+                    match = {
+                        timestamp: new Date().toJSON(),
+                        request,
+                        response: clonedResponse
+                    };
+                if (helpers.defined(clonedResponse._proxyResponseTime)) { // eslint-disable-line no-underscore-dangle
+                    delete clonedResponse._proxyResponseTime; // eslint-disable-line no-underscore-dangle
+                }
+
+                stub.matches = stub.matches || [];
+                stub.matches.push(match);
+                cloned.recordMatch = () => {}; // Only record once
+            };
+
+            cloned.setMetadata = (responseType, metadata) => {
+                Object.keys(metadata).forEach(key => {
+                    responseConfig[responseType][key] = metadata[key];
+                    cloned[responseType][key] = metadata[key];
+                });
+            };
+            return cloned;
+        }
+    };
+
     const Stub = {
         create: function (config) {
             function repeatsFor (response) {
@@ -36,9 +67,8 @@ function create (encoding) {
                 return result;
             }
 
-            // TODO: Clone first?
             const helpers = require('../util/helpers'),
-                stub = config || {};
+                stub = helpers.clone(config || {});
 
             stub.responses = stub.responses || [{ is: {} }];
 
@@ -47,34 +77,9 @@ function create (encoding) {
             stub.addResponse = response => { stub.responses.push(response); };
 
             stub.nextResponse = () => {
-                const responseConfig = statefulResponses.shift(),
-                    cloned = helpers.clone(responseConfig);
-
+                const responseConfig = statefulResponses.shift();
                 statefulResponses.push(responseConfig);
-
-                cloned.recordMatch = (request, response) => {
-                    const clonedResponse = helpers.clone(response),
-                        match = {
-                            timestamp: new Date().toJSON(),
-                            request,
-                            response: clonedResponse
-                        };
-                    if (helpers.defined(clonedResponse._proxyResponseTime)) { // eslint-disable-line no-underscore-dangle
-                        delete clonedResponse._proxyResponseTime; // eslint-disable-line no-underscore-dangle
-                    }
-
-                    stub.matches = stub.matches || [];
-                    stub.matches.push(match);
-                    cloned.recordMatch = () => {}; // Only record once
-                };
-
-                cloned.setMetadata = (responseType, metadata) => {
-                    Object.keys(metadata).forEach(key => {
-                        responseConfig[responseType][key] = metadata[key];
-                        cloned[responseType][key] = metadata[key];
-                    });
-                };
-                return cloned;
+                return Response.create(responseConfig, stub);
             };
             return stub;
         }

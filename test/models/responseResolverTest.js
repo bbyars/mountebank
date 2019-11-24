@@ -13,7 +13,7 @@ const assert = require('assert'),
 describe('responseResolver', function () {
 
     function cleanedProxyResponse (response) {
-        if (helpers.defined(response.is) && helpers.defined(response.is._proxyResponseTime)) { // eslint-disable-line no-underscore-dangle
+        if (helpers.defined(response.is)) {
             delete response.is._proxyResponseTime; // eslint-disable-line no-underscore-dangle
         }
         return response;
@@ -564,7 +564,8 @@ describe('responseResolver', function () {
                         predicateGenerators: [{
                             matches: { field: true },
                             xpath: { selector: '//title' }
-                        }]
+                        }],
+                        mode: 'proxyOnce'
                     }
                 },
                 request = { field: '<books><book><title>Harry Potter</title></book></books>' };
@@ -599,7 +600,8 @@ describe('responseResolver', function () {
                         predicateGenerators: [{
                             matches: { parent: { child: true } },
                             xpath: { selector: '//title' }
-                        }]
+                        }],
+                        mode: 'proxyOnce'
                     }
                 },
                 request = { parent: { child: '<books><book><title>Harry Potter</title></book></books>' } };
@@ -637,7 +639,8 @@ describe('responseResolver', function () {
                                 selector: '//isbn:title',
                                 ns: { isbn: 'http://schemas.isbn.org/ns/1999/basic.dtd' }
                             }
-                        }]
+                        }],
+                        mode: 'proxyOnce'
                     }
                 },
                 xml = '<root xmlns:isbn="http://schemas.isbn.org/ns/1999/basic.dtd">' +
@@ -680,7 +683,8 @@ describe('responseResolver', function () {
                         predicateGenerators: [{
                             matches: { field: true },
                             xpath: { selector: '//title' }
-                        }]
+                        }],
+                        mode: 'proxyOnce'
                     }
                 },
                 request = { field: '<books />' };
@@ -715,7 +719,8 @@ describe('responseResolver', function () {
                         predicateGenerators: [{
                             matches: { field: true },
                             xpath: { selector: 'count(//title)' }
-                        }]
+                        }],
+                        mode: 'proxyOnce'
                     }
                 },
                 request = { field: '<doc><title>first</title><title>second</title></doc>' };
@@ -750,7 +755,8 @@ describe('responseResolver', function () {
                         predicateGenerators: [{
                             matches: { field: true },
                             xpath: { selector: 'boolean(//title)' }
-                        }]
+                        }],
+                        mode: 'proxyOnce'
                     }
                 },
                 request = { field: '<doc></doc>' };
@@ -785,7 +791,8 @@ describe('responseResolver', function () {
                         predicateGenerators: [{
                             matches: { field: true },
                             jsonpath: { selector: '$..title' }
-                        }]
+                        }],
+                        mode: 'proxyOnce'
                     }
                 },
                 request = { field: { title: 'Harry Potter' } };
@@ -820,7 +827,8 @@ describe('responseResolver', function () {
                         predicateGenerators: [{
                             matches: { field: true },
                             jsonpath: { selector: '$.books[*].title' }
-                        }]
+                        }],
+                        mode: 'proxyOnce'
                     }
                 },
                 request = {
@@ -863,7 +871,8 @@ describe('responseResolver', function () {
                         predicateGenerators: [{
                             matches: { field: true },
                             jsonpath: { selector: '$..title' }
-                        }]
+                        }],
+                        mode: 'proxyOnce'
                     }
                 },
                 request = { field: false };
@@ -898,7 +907,8 @@ describe('responseResolver', function () {
                         predicateGenerators: [{
                             matches: { field: true },
                             jsonpath: { selector: '$..title' }
-                        }]
+                        }],
+                        mode: 'proxyOnce'
                     }
                 },
                 request = { field: 'Hello, world' };
