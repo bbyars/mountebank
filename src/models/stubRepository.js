@@ -8,10 +8,11 @@
 /**
  * Creates the repository
  * @param {string} encoding - utf8 or base64
+ * @param {Object} config - startup configuration
  * @returns {Object}
  */
-function create (encoding) {
-    const stubs = require('./inMemoryStubRepository').create();
+function create (encoding, config) {
+    const stubs = require('./inMemoryStubRepository').create(config);
 
     // If testAll, we call map before calling every so we make sure to call every
     // predicate during dry run validation rather than short-circuiting
