@@ -67,21 +67,19 @@ function create (config) {
     function first () {}
 
     function add (stub) {
-        let stubFile, newStub;
-        const path = require('path'),
-            datadir = path.dirname(config.imposterFile);
+        let stubFile, stubIndex, newStub;
+        const headerFile = `${config.imposterDir}/header.json`;
 
-        return readFile(config.imposterFile).then(header => {
+        return readFile(headerFile).then(header => {
             header.stubs = header.stubs || { batchSize: 100, dirs: [] };
-            const nextIndex = header.stubs.dirs.length;
-            stubFile = `${header.port}/stubs/${nextIndex}.json`;
+            stubIndex = header.stubs.dirs.length;
+            stubFile = `stubs/${stubIndex}.json`;
             header.stubs.dirs.push(stubFile);
-            return writeFile(config.imposterFile, header);
+            return writeFile(headerFile, header);
         }).then(() =>
-            readFile(stubFile)
+            readFile(`${config.imposterDir}/${stubFile}`)
         ).then(stubList => {
-            const responses = stub.responses || [],
-                responseDir = stubFile.replace('.json', '') + '/responses';
+            const responses = stub.responses || [];
 
             newStub = {
                 predicates: stub.predicates,
@@ -91,18 +89,18 @@ function create (config) {
             };
 
             for (let i = 0; i < responses.length; i += 1) {
-                newStub.responseDirs.push(`${responseDir}/${i}.json`);
+                newStub.responseDirs.push(`responses/${i}.json`);
                 newStub.orderWithRepeats.push(i);
             }
             stubList = stubList || { stubs: [] };
             stubList.stubs.push(newStub);
-            return writeFile(`${datadir}/${stubFile}`, stubList);
+            return writeFile(`${config.imposterDir}/${stubFile}`, stubList);
         }).then(() => {
             const Q = require('q'),
                 promises = [Q(true)];
 
             for (let i = 0; i < stub.responses.length; i += 1) {
-                promises.push(writeFile(`${datadir}/${newStub.responseDirs[i]}`, stub.responses[i]));
+                promises.push(writeFile(`${config.imposterDir}/stubs/${stubIndex}/${newStub.responseDirs[i]}`, stub.responses[i]));
             }
             return Q.all(promises);
         });
