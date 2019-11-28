@@ -96,8 +96,75 @@ describe('filesystemBackedStubRepository', function () {
                 });
         });
 
-        it('should save multiple responses in separate files');
-        it('should throw error if no imposter file');
-        it('should throw error if corrupted data');
+        promiseIt('should save multiple responses in separate files', function () {
+            const repo = Repo.create({ imposterDir }),
+                stub = {
+                    predicates: [{ equals: { field: 'request' } }],
+                    responses: [
+                        { is: { field: 'first-response' } },
+                        { is: { field: 'second-response' } }
+                    ]
+                };
+            write('imposter.json', { port: 3000, protocol: 'test' });
+
+            return repo.add(stub).then(() => {
+                assert.deepEqual(read('imposter.json'), {
+                    port: 3000,
+                    protocol: 'test',
+                    stubs: [{
+                        predicates: [{ equals: { field: 'request' } }],
+                        meta: {
+                            responseFiles: ['stubs/0/responses/0.json', 'stubs/0/responses/1.json'],
+                            orderWithRepeats: [0, 1],
+                            nextIndex: 0
+                        }
+                    }]
+                });
+
+                assert.deepEqual(read('stubs/0/responses/0.json'), { is: { field: 'first-response' } });
+                assert.deepEqual(read('stubs/0/responses/1.json'), { is: { field: 'second-response' } });
+            });
+        });
+
+        promiseIt('should apply repeat behavior', function () {
+            const repo = Repo.create({ imposterDir }),
+                stub = {
+                    predicates: [{ equals: { field: 'request' } }],
+                    responses: [
+                        { is: { field: 'first-response' }, _behaviors: { repeat: 2 } },
+                        { is: { field: 'second-response' } },
+                        { is: { field: 'third-response' }, _behaviors: { repeat: 3 } }
+                    ]
+                };
+            write('imposter.json', { port: 3000, protocol: 'test' });
+
+            return repo.add(stub).then(() => {
+                assert.deepEqual(read('imposter.json'), {
+                    port: 3000,
+                    protocol: 'test',
+                    stubs: [{
+                        predicates: [{ equals: { field: 'request' } }],
+                        meta: {
+                            responseFiles: ['stubs/0/responses/0.json', 'stubs/0/responses/1.json', 'stubs/0/responses/2.json'],
+                            orderWithRepeats: [0, 0, 1, 2, 2, 2],
+                            nextIndex: 0
+                        }
+                    }]
+                });
+            });
+        });
+
+        promiseIt('should throw error if no imposter file', function () {
+            const repo = Repo.create({ imposterDir });
+
+            return repo.add({}).then(() => {
+                assert.fail('should have rejected');
+            }, err => {
+                assert.deepEqual(err, {
+                    code: 'corrupted database',
+                    message: `no imposter file: ${imposterDir}/imposter.json`
+                });
+            });
+        });
     });
 });

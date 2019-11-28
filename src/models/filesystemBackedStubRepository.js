@@ -63,6 +63,15 @@ const Stub = {
     }
 };
 
+function repeatsFor (response) {
+    if (response._behaviors && response._behaviors.repeat) {
+        return response._behaviors.repeat;
+    }
+    else {
+        return 1;
+    }
+}
+
 function create (config) {
     function first () {}
 
@@ -78,16 +87,25 @@ function create (config) {
             },
             responses = stub.responses || [],
             Q = require('q'),
-            promises = [];
+            promises = [],
+            errors = require('../util/errors');
 
         return readFile(headerFile).then(imposter => {
+            if (imposter === null) {
+                return Q.reject(errors.DatabaseError(`no imposter file: ${headerFile}`));
+            }
+
             imposter.stubs = imposter.stubs || [];
             const stubDir = `stubs/${imposter.stubs.length}`;
 
             for (let i = 0; i < responses.length; i += 1) {
                 const responseFile = `${stubDir}/responses/${i}.json`;
                 stubDefinition.meta.responseFiles.push(responseFile);
-                stubDefinition.meta.orderWithRepeats.push(i);
+
+                for (let repeats = 0; repeats < repeatsFor(responses[i]); repeats += 1) {
+                    stubDefinition.meta.orderWithRepeats.push(i);
+                }
+
                 promises.push(writeFile(`${config.imposterDir}/${responseFile}`, responses[i]));
             }
 
