@@ -167,4 +167,41 @@ describe('filesystemBackedStubRepository', function () {
             });
         });
     });
+
+    describe('#first', function () {
+        promiseIt('should return undefined if no match', function () {
+            const repo = Repo.create({ imposterDir });
+            write('imposter.json', { port: 3000, protocol: 'test' });
+
+            return repo.first(stub => stub.predicates.length === 1).then(match => {
+                assert.strictEqual('undefined', typeof match);
+            });
+        });
+
+        promiseIt('should return first match', function () {
+            const repo = Repo.create({ imposterDir });
+            write('imposter.json', { port: 3000, protocol: 'test' });
+
+            return repo.add({ predicates: ['first', 'second'] })
+                .then(() => repo.add({ predicates: ['third'] }))
+                .then(() => repo.add({ predicates: ['fourth'] }))
+                .then(() => repo.first(stub => stub.predicates.length === 1))
+                .then(match => {
+                    assert.deepEqual(match, { predicates: ['third'] });
+                });
+        });
+
+        promiseIt('should throw error if no imposter file', function () {
+            const repo = Repo.create({ imposterDir });
+
+            return repo.first(stub => stub.predicates.length === 1).then(() => {
+                assert.fail('should have rejected');
+            }, err => {
+                assert.deepEqual(err, {
+                    code: 'corrupted database',
+                    message: `no imposter file: ${imposterDir}/imposter.json`
+                });
+            });
+        });
+    });
 });

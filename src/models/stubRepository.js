@@ -26,10 +26,6 @@ function create (encoding, config) {
     }
 
     function findFirstMatch (request, logger, imposterState) {
-        if (stubs.count() === 0) {
-            return stubs.newStub();
-        }
-
         const helpers = require('../util/helpers'),
             readOnlyState = helpers.clone(imposterState),
             match = stubs.first(stub => {

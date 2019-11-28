@@ -73,11 +73,39 @@ function repeatsFor (response) {
 }
 
 function create (config) {
-    function first () {}
+    const headerFile = `${config.imposterDir}/imposter.json`;
+
+    function readHeader () {
+        const errors = require('../util/errors'),
+            Q = require('q');
+
+        return readFile(headerFile).then(imposter => {
+            if (imposter === null) {
+                return Q.reject(errors.DatabaseError(`no imposter file: ${headerFile}`));
+            }
+            return Q(imposter);
+        });
+    }
+
+    function first (filter) {
+        return readHeader().then(imposter => {
+            const stubs = imposter.stubs || [],
+                helpers = require('../util/helpers'),
+                match = stubs.find(filter);
+
+            if (typeof match === 'undefined') {
+                return match;
+            }
+            else {
+                const cloned = helpers.clone(match);
+                delete cloned.meta;
+                return cloned;
+            }
+        });
+    }
 
     function add (stub) {
-        const headerFile = `${config.imposterDir}/imposter.json`,
-            stubDefinition = {
+        const stubDefinition = {
                 predicates: stub.predicates || [],
                 meta: {
                     responseFiles: [],
@@ -87,14 +115,9 @@ function create (config) {
             },
             responses = stub.responses || [],
             Q = require('q'),
-            promises = [],
-            errors = require('../util/errors');
+            promises = [];
 
-        return readFile(headerFile).then(imposter => {
-            if (imposter === null) {
-                return Q.reject(errors.DatabaseError(`no imposter file: ${headerFile}`));
-            }
-
+        return readHeader().then(imposter => {
             imposter.stubs = imposter.stubs || [];
             const stubDir = `stubs/${imposter.stubs.length}`;
 
@@ -115,7 +138,8 @@ function create (config) {
         });
     }
 
-    function insertBefore () {}
+    function insertBefore () {
+    }
 
     function insertAtIndex () {
     }
