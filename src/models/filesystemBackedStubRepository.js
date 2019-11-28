@@ -67,41 +67,32 @@ function create (config) {
     function first () {}
 
     function add (stub) {
-        let stubFile, stubIndex, newStub;
-        const headerFile = `${config.imposterDir}/header.json`;
+        const headerFile = `${config.imposterDir}/imposter.json`,
+            stubDefinition = {
+                predicates: stub.predicates || [],
+                meta: {
+                    responseFiles: [],
+                    orderWithRepeats: [],
+                    nextIndex: 0
+                }
+            },
+            responses = stub.responses || [],
+            Q = require('q'),
+            promises = [];
 
-        return readFile(headerFile).then(header => {
-            header.stubs = header.stubs || { batchSize: 100, dirs: [] };
-            stubIndex = header.stubs.dirs.length;
-            stubFile = `stubs/${stubIndex}.json`;
-            header.stubs.dirs.push(stubFile);
-            return writeFile(headerFile, header);
-        }).then(() =>
-            readFile(`${config.imposterDir}/${stubFile}`)
-        ).then(stubList => {
-            const responses = stub.responses || [];
-
-            newStub = {
-                predicates: stub.predicates,
-                responseDirs: [],
-                orderWithRepeats: [],
-                nextIndex: 0
-            };
+        return readFile(headerFile).then(imposter => {
+            imposter.stubs = imposter.stubs || [];
+            const stubDir = `stubs/${imposter.stubs.length}`;
 
             for (let i = 0; i < responses.length; i += 1) {
-                newStub.responseDirs.push(`responses/${i}.json`);
-                newStub.orderWithRepeats.push(i);
+                const responseFile = `${stubDir}/responses/${i}.json`;
+                stubDefinition.meta.responseFiles.push(responseFile);
+                stubDefinition.meta.orderWithRepeats.push(i);
+                promises.push(writeFile(`${config.imposterDir}/${responseFile}`, responses[i]));
             }
-            stubList = stubList || { stubs: [] };
-            stubList.stubs.push(newStub);
-            return writeFile(`${config.imposterDir}/${stubFile}`, stubList);
-        }).then(() => {
-            const Q = require('q'),
-                promises = [Q(true)];
 
-            for (let i = 0; i < stub.responses.length; i += 1) {
-                promises.push(writeFile(`${config.imposterDir}/stubs/${stubIndex}/${newStub.responseDirs[i]}`, stub.responses[i]));
-            }
+            imposter.stubs.push(stubDefinition);
+            promises.push(writeFile(headerFile, imposter));
             return Q.all(promises);
         });
     }
