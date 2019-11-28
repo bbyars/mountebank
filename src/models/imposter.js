@@ -118,7 +118,7 @@ function create (Protocol, creationRequest, baseLogger, config, isAllowedConnect
             resolver = server.resolver;
 
             if (creationRequest.stubs) {
-                creationRequest.stubs.forEach(stubs.addStub);
+                creationRequest.stubs.forEach(stubs.add);
             }
 
             function stop () {
@@ -141,12 +141,12 @@ function create (Protocol, creationRequest, baseLogger, config, isAllowedConnect
                 resetProxies: stubs.resetProxies,
                 getResponseFor,
                 getProxyResponseFor,
-                addStub: server.stubs.addStub,
-                stubs: server.stubs.stubs,
-                overwriteStubs: server.stubs.overwriteStubs,
-                overwriteStubAtIndex: server.stubs.overwriteStubAtIndex,
-                deleteStubAtIndex: server.stubs.deleteStubAtIndex,
-                addStubAtIndex: server.stubs.addStubAtIndex
+                addStub: server.stubs.add,
+                stubs: server.stubs.all,
+                overwriteStubs: server.stubs.overwriteAll,
+                overwriteStubAtIndex: server.stubs.overwriteAtIndex,
+                deleteStubAtIndex: server.stubs.deleteAtIndex,
+                insertStubAtIndex: server.stubs.insertAtIndex
             });
         });
     });

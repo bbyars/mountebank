@@ -26,14 +26,17 @@ describe('smtp imposter', function () {
             const imposterRequest = { protocol: 'smtp', port };
 
             return api.post('/imposters', imposterRequest)
-                .then(() => client.send({
-                    envelopeFrom: 'envelopeFrom1@mb.org',
-                    envelopeTo: ['envelopeTo1@mb.org'],
-                    from: '"From 1" <from1@mb.org>',
-                    to: ['"To 1" <to1@mb.org>'],
-                    subject: 'subject 1',
-                    text: 'text 1'
-                }, port)).then(() => client.send({
+                .then(() => {
+                    console.log('...'); // TODO: This line (or a large timeout) fixes the tests for some reason?!?
+                    return client.send({
+                        envelopeFrom: 'envelopeFrom1@mb.org',
+                        envelopeTo: ['envelopeTo1@mb.org'],
+                        from: '"From 1" <from1@mb.org>',
+                        to: ['"To 1" <to1@mb.org>'],
+                        subject: 'subject 1',
+                        text: 'text 1'
+                    }, port);
+                }).then(() => client.send({
                     envelopeFrom: 'envelopeFrom2@mb.org',
                     envelopeTo: ['envelopeTo2@mb.org'],
                     from: '"From 2" <from2@mb.org>',

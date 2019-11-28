@@ -195,7 +195,7 @@ function create (stubs, proxy, callbackURL) {
     }
 
     function stubIndexFor (responseConfig) {
-        const stubList = stubs.stubs();
+        const stubList = stubs.all();
         for (var i = 0; i < stubList.length; i += 1) {
             if (stubList[i].responses.some(response => deepEqual(response, responseConfig))) {
                 break;
@@ -206,7 +206,7 @@ function create (stubs, proxy, callbackURL) {
 
     function indexOfStubToAddResponseTo (responseConfig, request, logger) {
         const predicates = predicatesFor(request, responseConfig.proxy.predicateGenerators || [], logger),
-            stubList = stubs.stubs();
+            stubList = stubs.all();
 
         for (let index = stubIndexFor(responseConfig) + 1; index < stubList.length; index += 1) {
             if (deepEqual(predicates, stubList[index].predicates)) {
@@ -241,7 +241,7 @@ function create (stubs, proxy, callbackURL) {
         const stubResponse = newIsResponse(response, responseConfig.proxy),
             responseIndex = indexOfStubToAddResponseTo(responseConfig, request, logger);
 
-        stubs.stubs()[responseIndex].addResponse(stubResponse);
+        stubs.all()[responseIndex].addResponse(stubResponse);
     }
 
     function addNewStub (responseConfig, request, response, logger) {
@@ -250,10 +250,10 @@ function create (stubs, proxy, callbackURL) {
             newStub = { predicates: predicates, responses: [stubResponse] };
 
         if (responseConfig.proxy.mode === 'proxyAlways') {
-            stubs.addStub(newStub);
+            stubs.add(newStub);
         }
         else {
-            stubs.addStub(newStub, responseConfig);
+            stubs.add(newStub, responseConfig);
         }
     }
 

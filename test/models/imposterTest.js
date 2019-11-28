@@ -19,8 +19,8 @@ describe('imposter', function () {
             stubs = [];
             server = {
                 stubs: {
-                    addStub: stub => { stubs.push(stub); },
-                    stubs: () => stubs
+                    add: stub => { stubs.push(stub); },
+                    all: () => stubs
                 },
                 resolver: mock(),
                 port: 3535,

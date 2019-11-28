@@ -241,7 +241,7 @@ function create (protocols, imposters, logger, allowInjection) {
             else {
                 return validate(imposter, [newStub]).then(result => {
                     if (result.isValid) {
-                        imposter.overwriteStubAtIndex(request.params.stubIndex, newStub);
+                        imposter.overwriteStubAtIndex(newStub, request.params.stubIndex);
                         response.send(imposter.toJSON());
                     }
                     else {
@@ -275,7 +275,7 @@ function create (protocols, imposters, logger, allowInjection) {
             else {
                 return validate(imposter, [newStub]).then(result => {
                     if (result.isValid) {
-                        imposter.addStubAtIndex(index, newStub);
+                        imposter.insertStubAtIndex(newStub, index);
                         response.send(imposter.toJSON());
                     }
                     else {

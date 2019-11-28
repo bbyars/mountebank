@@ -46,7 +46,7 @@ function create (options) {
 
         return stubsToValidate.map(stubToValidate => {
             const stubRepository = require('./stubRepository').create(encoding);
-            stubRepository.addStub(stubToValidate);
+            stubRepository.add(stubToValidate);
             return stubRepository;
         });
     }

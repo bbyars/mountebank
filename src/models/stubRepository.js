@@ -66,53 +66,6 @@ function create (encoding, config) {
     }
 
     /**
-     * Adds a stub at stubIndex without changing the state of any other stubs
-     * @memberOf module:models/stubRepository#
-     * @param {Number} index - the index of the stub to change
-     * @param {Object} newStub - the new stub
-     */
-    function addStubAtIndex (index, newStub) {
-        stubs.insertAtIndex(newStub, index);
-    }
-
-    /**
-     * Overwrites the entire list of stubs
-     * @memberOf module:models/stubRepository#
-     * @param {Object} newStubs - the new list of stubs
-     */
-    function overwriteStubs (newStubs) {
-        stubs.overwriteAll(newStubs);
-    }
-
-    /**
-     * Overwrites the stub at stubIndex without changing the state of any other stubs
-     * @memberOf module:models/stubRepository#
-     * @param {Number} index - the index of the stub to change
-     * @param {Object} newStub - the new stub
-     */
-    function overwriteStubAtIndex (index, newStub) {
-        stubs.overwriteAtIndex(newStub, index);
-    }
-
-    /**
-     * Deletes the stub at stubIndex without changing the state of any other stubs
-     * @memberOf module:models/stubRepository#
-     * @param {Number} index - the index of the stub to remove
-     */
-    function deleteStubAtIndex (index) {
-        stubs.deleteAtIndex(index);
-    }
-
-    /**
-     * Returns the outside representation of the stubs
-     * @memberOf module:models/stubRepository#
-     * @returns {Object} - The stubs
-     */
-    function getStubs () {
-        return stubs.getAll();
-    }
-
-    /**
      * Finds the next response configuration for the given request
      * @memberOf module:models/stubRepository#
      * @param {Object} request - The protocol request
@@ -146,12 +99,12 @@ function create (encoding, config) {
     }
 
     return {
-        stubs: getStubs,
-        addStub,
-        addStubAtIndex,
-        overwriteStubs,
-        overwriteStubAtIndex,
-        deleteStubAtIndex,
+        all: stubs.getAll,
+        add: addStub,
+        insertAtIndex: stubs.insertAtIndex,
+        overwriteAll: stubs.overwriteAll,
+        overwriteAtIndex: stubs.overwriteAtIndex,
+        deleteAtIndex: stubs.deleteAtIndex,
         getResponseFor,
         resetProxies
     };

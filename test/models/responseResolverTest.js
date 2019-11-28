@@ -24,7 +24,7 @@ describe('responseResolver', function () {
     }
 
     function stubList (stubs) {
-        const result = stubs.stubs();
+        const result = stubs.all();
         result.forEach(stub => {
             delete stub.recordMatch;
             delete stub.addResponse;
@@ -54,7 +54,7 @@ describe('responseResolver', function () {
                 logger = Logger.create();
 
             // Call through the stubRepository to have it add the setMetadata function
-            stubs.addStub({ responses: [{ proxy: { to: 'where' } }] });
+            stubs.add({ responses: [{ proxy: { to: 'where' } }] });
             const responseConfig = stubs.getResponseFor({}, logger, {});
 
             return resolver.resolve(responseConfig, 'request', logger, {}).then(response => {
@@ -72,7 +72,7 @@ describe('responseResolver', function () {
                 logger = Logger.create();
 
             // Call through the stubRepository to have it add the setMetadata function
-            stubs.addStub({ responses: [{ proxy: { to: 'where' } }] });
+            stubs.add({ responses: [{ proxy: { to: 'where' } }] });
             const responseConfig = stubs.getResponseFor({}, logger, {});
 
             return resolver.resolve(responseConfig, 'request', logger, {}).then(response => {
@@ -91,7 +91,7 @@ describe('responseResolver', function () {
                 logger = Logger.create();
 
             // Call through the stubRepository to have it add the setMetadata function
-            stubs.addStub({ responses: [{ proxy: { to: 'where' } }] });
+            stubs.add({ responses: [{ proxy: { to: 'where' } }] });
             const responseConfig = stubs.getResponseFor({}, logger, {});
 
             return resolver.resolve(responseConfig, 'request', logger, {}).then(() => {
@@ -106,7 +106,7 @@ describe('responseResolver', function () {
                 logger = Logger.create();
 
             // Call through the stubRepository to have it add the setMetadata function
-            stubs.addStub({ responses: [{ proxy: { to: 'where', mode: 'unrecognized' } }] });
+            stubs.add({ responses: [{ proxy: { to: 'where', mode: 'unrecognized' } }] });
             const responseConfig = stubs.getResponseFor({}, logger, {});
 
             return resolver.resolve(responseConfig, 'request', logger, {}).then(() => {
@@ -120,13 +120,13 @@ describe('responseResolver', function () {
                 resolver = ResponseResolver.create(stubs, proxy),
                 logger = Logger.create();
 
-            stubs.addStub({ responses: [], predicates: [{ equals: { ignore: 'true' } }] });
-            stubs.addStub({ responses: [{ proxy: { to: 'where' } }] });
+            stubs.add({ responses: [], predicates: [{ equals: { ignore: 'true' } }] });
+            stubs.add({ responses: [{ proxy: { to: 'where' } }] });
             const responseConfig = stubs.getResponseFor({}, logger, {});
 
             return resolver.resolve(responseConfig, {}, logger, {}).then(response => {
                 assert.strictEqual(response.key, 'value');
-                const stubResponses = stubs.stubs().map(stub => proxyResponses(stub.responses));
+                const stubResponses = stubs.all().map(stub => proxyResponses(stub.responses));
                 assert.deepEqual(stubResponses, [
                     [],
                     [{ is: { key: 'value' } }],
@@ -142,11 +142,11 @@ describe('responseResolver', function () {
                 logger = Logger.create(),
                 request = {};
 
-            stubs.addStub({ responses: [{ proxy: { to: 'where', addWaitBehavior: true } }] });
+            stubs.add({ responses: [{ proxy: { to: 'where', addWaitBehavior: true } }] });
             const responseConfig = stubs.getResponseFor({}, logger, {});
 
             return resolver.resolve(responseConfig, request, logger, {}).then(() => {
-                const stubResponses = stubs.stubs().map(stub => stub.responses),
+                const stubResponses = stubs.all().map(stub => stub.responses),
                     wait = stubResponses[0][0].is._proxyResponseTime; // eslint-disable-line no-underscore-dangle
                 assert.ok(wait > 90); // allow some variability
                 assert.deepEqual(stubResponses, [
@@ -171,14 +171,14 @@ describe('responseResolver', function () {
                 logger = Logger.create(),
                 request = {};
 
-            stubs.addStub({ responses: [{ proxy: { to: 'where', mode: 'proxyAlways', addWaitBehavior: true } }] });
+            stubs.add({ responses: [{ proxy: { to: 'where', mode: 'proxyAlways', addWaitBehavior: true } }] });
             const responseConfig = stubs.getResponseFor({}, logger, {});
 
             return resolver.resolve(responseConfig, request, logger, {}).then(() =>
                 // First call adds the stub, second call adds a response
                 resolver.resolve(responseConfig, request, logger, {})
             ).then(() => {
-                const stubResponses = stubs.stubs().map(stub => stub.responses),
+                const stubResponses = stubs.all().map(stub => stub.responses),
                     firstWait = stubResponses[1][0].is._proxyResponseTime, // eslint-disable-line no-underscore-dangle
                     secondWait = stubResponses[1][1].is._proxyResponseTime; // eslint-disable-line no-underscore-dangle
                 assert.deepEqual(stubResponses, [
@@ -203,11 +203,11 @@ describe('responseResolver', function () {
                 },
                 request = {};
 
-            stubs.addStub({ responses: [response] });
+            stubs.add({ responses: [response] });
             const responseConfig = stubs.getResponseFor({}, logger, {});
 
             return resolver.resolve(responseConfig, request, logger, {}).then(() => {
-                const stubResponses = stubs.stubs().map(stub => proxyResponses(stub.responses));
+                const stubResponses = stubs.all().map(stub => proxyResponses(stub.responses));
                 assert.deepEqual(stubResponses, [
                     [{ is: { data: 'RESPONSE-DECORATED' } }],
                     [{ proxy: { to: 'where', mode: 'proxyOnce' }, _behaviors: { decorate: decorateFunc.toString() } }]
@@ -223,11 +223,11 @@ describe('responseResolver', function () {
                 logger = Logger.create(),
                 request = {};
 
-            stubs.addStub({ responses: [{ proxy: { to: 'where', addDecorateBehavior: decorateFunc } }] });
+            stubs.add({ responses: [{ proxy: { to: 'where', addDecorateBehavior: decorateFunc } }] });
             const responseConfig = stubs.getResponseFor({}, logger, {});
 
             return resolver.resolve(responseConfig, request, logger, {}).then(() => {
-                const stubResponses = stubs.stubs().map(stub => proxyResponses(stub.responses));
+                const stubResponses = stubs.all().map(stub => proxyResponses(stub.responses));
                 assert.deepEqual(stubResponses, [
                     [{ is: { data: 'value' }, _behaviors: { decorate: decorateFunc } }],
                     [{ proxy: { to: 'where', addDecorateBehavior: decorateFunc, mode: 'proxyOnce' } }]
@@ -243,14 +243,14 @@ describe('responseResolver', function () {
                 logger = Logger.create(),
                 request = {};
 
-            stubs.addStub({ responses: [{ proxy: { to: 'where', mode: 'proxyAlways', addDecorateBehavior: decorateFunc } }] });
+            stubs.add({ responses: [{ proxy: { to: 'where', mode: 'proxyAlways', addDecorateBehavior: decorateFunc } }] });
             const responseConfig = stubs.getResponseFor({}, logger, {});
 
             return resolver.resolve(responseConfig, request, logger, {}).then(() =>
                 // First call adds the stub, second call adds a response
                 resolver.resolve(responseConfig, request, logger, stubs)
             ).then(() => {
-                const stubResponses = stubs.stubs().map(stub => proxyResponses(stub.responses));
+                const stubResponses = stubs.all().map(stub => proxyResponses(stub.responses));
                 assert.deepEqual(stubResponses, [
                     [{ proxy: { to: 'where', mode: 'proxyAlways', addDecorateBehavior: decorateFunc } }],
                     [
@@ -274,7 +274,7 @@ describe('responseResolver', function () {
                 },
                 request = { key: { nested: { first: 'one', second: 'two' }, third: 'three' } };
 
-            stubs.addStub({ responses: [response] });
+            stubs.add({ responses: [response] });
             const responseConfig = stubs.getResponseFor({}, logger, {});
 
             return resolver.resolve(responseConfig, request, logger, {}).then(() => {
@@ -313,7 +313,7 @@ describe('responseResolver', function () {
                 },
                 request = { key: { nested: { first: 'one', second: 'two' }, third: 'three' } };
 
-            stubs.addStub({ responses: [response] });
+            stubs.add({ responses: [response] });
             const responseConfig = stubs.getResponseFor({}, logger, {});
 
             return resolver.resolve(responseConfig, request, logger, {}).then(() => {
@@ -353,7 +353,7 @@ describe('responseResolver', function () {
                 },
                 request = { key: 'Test' };
 
-            stubs.addStub({ responses: [response] });
+            stubs.add({ responses: [response] });
             const responseConfig = stubs.getResponseFor({}, logger, {});
 
             return resolver.resolve(responseConfig, request, logger, {}).then(() => {
@@ -390,7 +390,7 @@ describe('responseResolver', function () {
                 },
                 request = { key: 'Test' };
 
-            stubs.addStub({ responses: [response] });
+            stubs.add({ responses: [response] });
             const responseConfig = stubs.getResponseFor({}, logger, {});
 
 
@@ -426,7 +426,7 @@ describe('responseResolver', function () {
                 },
                 request = { key: 'Test' };
 
-            stubs.addStub({ responses: [response] });
+            stubs.add({ responses: [response] });
             const responseConfig = stubs.getResponseFor({}, logger, {});
 
 
@@ -462,7 +462,7 @@ describe('responseResolver', function () {
                 },
                 request = { key: { nested: 'Test' } };
 
-            stubs.addStub({ responses: [response] });
+            stubs.add({ responses: [response] });
             const responseConfig = stubs.getResponseFor({}, logger, {});
 
 
@@ -498,7 +498,7 @@ describe('responseResolver', function () {
                 },
                 request = { key: 'Test' };
 
-            stubs.addStub({ responses: [response] });
+            stubs.add({ responses: [response] });
             const responseConfig = stubs.getResponseFor({}, logger, {});
 
             return resolver.resolve(responseConfig, request, logger, {}).then(() => {
@@ -543,7 +543,7 @@ describe('responseResolver', function () {
                 errorsLogged.push(message);
             };
 
-            stubs.addStub({ responses: [response] });
+            stubs.add({ responses: [response] });
             const responseConfig = stubs.getResponseFor({}, logger, {});
 
             return resolver.resolve(responseConfig, request, logger, {}).then(() => {
@@ -571,7 +571,7 @@ describe('responseResolver', function () {
                 },
                 request = { field: '<books><book><title>Harry Potter</title></book></books>' };
 
-            stubs.addStub({ responses: [response] });
+            stubs.add({ responses: [response] });
             const responseConfig = stubs.getResponseFor({}, logger, {});
 
             return resolver.resolve(responseConfig, request, logger, {}).then(() => {
@@ -607,7 +607,7 @@ describe('responseResolver', function () {
                 },
                 request = { parent: { child: '<books><book><title>Harry Potter</title></book></books>' } };
 
-            stubs.addStub({ responses: [response] });
+            stubs.add({ responses: [response] });
             const responseConfig = stubs.getResponseFor({}, logger, {});
 
             return resolver.resolve(responseConfig, request, logger, {}).then(() => {
@@ -651,7 +651,7 @@ describe('responseResolver', function () {
                       '</root>',
                 request = { field: xml };
 
-            stubs.addStub({ responses: [response] });
+            stubs.add({ responses: [response] });
             const responseConfig = stubs.getResponseFor({}, logger, {});
 
             return resolver.resolve(responseConfig, request, logger, {}).then(() => {
@@ -690,7 +690,7 @@ describe('responseResolver', function () {
                 },
                 request = { field: '<books />' };
 
-            stubs.addStub({ responses: [response] });
+            stubs.add({ responses: [response] });
             const responseConfig = stubs.getResponseFor({}, logger, {});
 
             return resolver.resolve(responseConfig, request, logger, {}).then(() => {
@@ -726,7 +726,7 @@ describe('responseResolver', function () {
                 },
                 request = { field: '<doc><title>first</title><title>second</title></doc>' };
 
-            stubs.addStub({ responses: [response] });
+            stubs.add({ responses: [response] });
             const responseConfig = stubs.getResponseFor({}, logger, {});
 
             return resolver.resolve(responseConfig, request, logger, {}).then(() => {
@@ -762,7 +762,7 @@ describe('responseResolver', function () {
                 },
                 request = { field: '<doc></doc>' };
 
-            stubs.addStub({ responses: [response] });
+            stubs.add({ responses: [response] });
             const responseConfig = stubs.getResponseFor({}, logger, {});
 
             return resolver.resolve(responseConfig, request, logger, {}).then(() => {
@@ -798,7 +798,7 @@ describe('responseResolver', function () {
                 },
                 request = { field: { title: 'Harry Potter' } };
 
-            stubs.addStub({ responses: [response] });
+            stubs.add({ responses: [response] });
             const responseConfig = stubs.getResponseFor({}, logger, {});
 
             return resolver.resolve(responseConfig, request, logger, {}).then(() => {
@@ -842,7 +842,7 @@ describe('responseResolver', function () {
                     }
                 };
 
-            stubs.addStub({ responses: [response] });
+            stubs.add({ responses: [response] });
             const responseConfig = stubs.getResponseFor({}, logger, {});
 
             return resolver.resolve(responseConfig, request, logger, {}).then(() => {
@@ -878,7 +878,7 @@ describe('responseResolver', function () {
                 },
                 request = { field: false };
 
-            stubs.addStub({ responses: [response] });
+            stubs.add({ responses: [response] });
             const responseConfig = stubs.getResponseFor({}, logger, {});
 
             return resolver.resolve(responseConfig, request, logger, {}).then(() => {
@@ -914,7 +914,7 @@ describe('responseResolver', function () {
                 },
                 request = { field: 'Hello, world' };
 
-            stubs.addStub({ responses: [response] });
+            stubs.add({ responses: [response] });
             const responseConfig = stubs.getResponseFor({}, logger, {});
 
             return resolver.resolve(responseConfig, request, logger, {}).then(() => {
@@ -1139,7 +1139,7 @@ describe('responseResolver', function () {
         }
 
         function matches (stubs) {
-            const matchList = stubs.stubs().map(stub => stub.matches || []);
+            const matchList = stubs.all().map(stub => stub.matches || []);
             matchList.forEach(matchesForOneStub => {
                 matchesForOneStub.forEach(match => {
                     if (match.timestamp) {
@@ -1174,7 +1174,7 @@ describe('responseResolver', function () {
                 responseConfig = { proxy: { to: 'where', mode: 'proxyOnce' } },
                 request = {};
 
-            stubs.addStub({ responses: [responseConfig] });
+            stubs.add({ responses: [responseConfig] });
 
             return resolver.resolve(responseConfig, request, logger, {}).then(response => {
                 const proxyResolutionKey = parseInt(response.callbackURL.replace('CALLBACK-URL/', ''));
@@ -1182,7 +1182,7 @@ describe('responseResolver', function () {
                 return resolver.resolveProxy({ data: 'RESPONSE' }, proxyResolutionKey, logger);
             }).then(response => {
                 assert.deepEqual(jsonResponse(response), { data: 'RESPONSE' });
-                const stubResponses = stubs.stubs().map(stub => proxyResponses(stub.responses));
+                const stubResponses = stubs.all().map(stub => proxyResponses(stub.responses));
                 assert.deepEqual(stubResponses, [
                     [{ is: { data: 'RESPONSE' } }],
                     [responseConfig]
@@ -1197,7 +1197,7 @@ describe('responseResolver', function () {
                 responseConfig = { proxy: { to: 'where', mode: 'proxyAlways' } },
                 request = {};
 
-            stubs.addStub({ responses: [responseConfig] });
+            stubs.add({ responses: [responseConfig] });
 
             return resolver.resolve(responseConfig, request, logger, {}).then(response => {
                 const proxyResolutionKey = parseInt(response.callbackURL.replace('CALLBACK-URL/', ''));
@@ -1205,7 +1205,7 @@ describe('responseResolver', function () {
                 return resolver.resolveProxy({ data: 'RESPONSE' }, proxyResolutionKey, logger);
             }).then(response => {
                 assert.deepEqual(jsonResponse(response), { data: 'RESPONSE' });
-                const stubResponses = stubs.stubs().map(stub => proxyResponses(stub.responses));
+                const stubResponses = stubs.all().map(stub => proxyResponses(stub.responses));
                 assert.deepEqual(stubResponses, [
                     [responseConfig],
                     [{ is: { data: 'RESPONSE' } }]
@@ -1224,7 +1224,7 @@ describe('responseResolver', function () {
                 },
                 request = {};
 
-            stubs.addStub({ responses: [proxyResponse] });
+            stubs.add({ responses: [proxyResponse] });
             const responseConfig = stubs.getResponseFor({}, logger, {});
 
             return resolver.resolve(responseConfig, request, logger, {}).then(response => {
@@ -1233,7 +1233,7 @@ describe('responseResolver', function () {
                 return resolver.resolveProxy({ data: 'RESPONSE' }, proxyResolutionKey, logger);
             }).then(response => {
                 assert.deepEqual(jsonResponse(response), { data: 'RESPONSE-DECORATED' });
-                const stubResponses = stubs.stubs().map(stub => proxyResponses(stub.responses));
+                const stubResponses = stubs.all().map(stub => proxyResponses(stub.responses));
                 assert.deepEqual(stubResponses, [
                     [{ is: { data: 'RESPONSE-DECORATED' } }],
                     [proxyResponse]
@@ -1248,7 +1248,7 @@ describe('responseResolver', function () {
                 proxyResponse = { proxy: { to: 'where', mode: 'proxyOnce', addWaitBehavior: true } },
                 request = {};
 
-            stubs.addStub({ responses: [proxyResponse] });
+            stubs.add({ responses: [proxyResponse] });
             const responseConfig = stubs.getResponseFor({}, logger, {});
 
             return resolver.resolve(responseConfig, request, logger, {}).then(response => {
@@ -1257,7 +1257,7 @@ describe('responseResolver', function () {
             }).then(proxyResolutionKey =>
                 resolver.resolveProxy({ data: 'RESPONSE' }, proxyResolutionKey, logger)
             ).then(() => {
-                const stubResponses = stubs.stubs().map(stub => stub.responses),
+                const stubResponses = stubs.all().map(stub => stub.responses),
                     wait = stubResponses[0][0].is._proxyResponseTime; // eslint-disable-line no-underscore-dangle
                 assert.ok(wait > 90); // allow some variability
                 assert.deepEqual(stubResponses, [
@@ -1273,7 +1273,7 @@ describe('responseResolver', function () {
                 logger = Logger.create(),
                 request = { key: 'REQUEST' };
 
-            stubs.addStub({ responses: [{ proxy: { to: 'where', mode: 'proxyOnce' } }] });
+            stubs.add({ responses: [{ proxy: { to: 'where', mode: 'proxyOnce' } }] });
 
             // Call through the stubRepository to have it add the recordMatch function
             const responseConfig = stubs.getResponseFor(request, logger, {});
@@ -1295,7 +1295,7 @@ describe('responseResolver', function () {
                 resolver = ResponseResolver.create(stubs, null, 'CALLBACK-URL'),
                 logger = Logger.create();
 
-            stubs.addStub({ responses: [{ proxy: { to: 'where', mode: 'proxyAlways' } }] });
+            stubs.add({ responses: [{ proxy: { to: 'where', mode: 'proxyAlways' } }] });
 
             // Call through the stubRepository to have it add the recordMatch function
             const responseConfig = stubs.getResponseFor({ key: 'REQUEST-1' }, logger, {});
@@ -1323,7 +1323,7 @@ describe('responseResolver', function () {
                 request = {};
             let proxyResolutionKey;
 
-            stubs.addStub({ responses: [proxyResponse] });
+            stubs.add({ responses: [proxyResponse] });
             const responseConfig = stubs.getResponseFor({}, logger, {});
 
             return resolver.resolve(responseConfig, request, logger, {}).then(response => {
