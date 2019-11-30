@@ -174,7 +174,7 @@ describe('filesystemBackedStubRepository', function () {
             write('imposter.json', { port: 3000, protocol: 'test' });
 
             return repo.first(stub => stub.predicates.length === 1).then(match => {
-                assert.strictEqual('undefined', typeof match);
+                assert.ok(!match.success);
             });
         });
 
@@ -187,7 +187,9 @@ describe('filesystemBackedStubRepository', function () {
                 .then(() => repo.add({ predicates: ['fourth'] }))
                 .then(() => repo.first(stub => stub.predicates.length === 1))
                 .then(match => {
-                    assert.deepEqual(match, { predicates: ['third'] });
+                    assert.ok(match.success);
+                    assert.strictEqual(match.index, 1);
+                    assert.deepEqual(match.stub, { predicates: ['third'] });
                 });
         });
 

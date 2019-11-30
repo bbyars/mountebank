@@ -74,16 +74,16 @@ function create (config) {
         return readHeader().then(imposter => {
             const stubs = imposter.stubs || [],
                 helpers = require('../util/helpers'),
-                match = stubs.find(filter);
+                defaultStub = { nextResponse: () => require('./response').create() };
 
-            if (typeof match === 'undefined') {
-                return match;
+            for (let i = 0; i < stubs.length; i += 1) {
+                if (filter(stubs[i])) {
+                    const cloned = helpers.clone(stubs[i]);
+                    delete cloned.meta;
+                    return { success: true, index: i, stub: cloned };
+                }
             }
-            else {
-                const cloned = helpers.clone(match);
-                delete cloned.meta;
-                return cloned;
-            }
+            return { success: false, index: -1, stub: defaultStub };
         });
     }
 

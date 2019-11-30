@@ -2,7 +2,7 @@
 
 function create (responseConfig, stub) {
     const helpers = require('../util/helpers'),
-        cloned = helpers.clone(responseConfig);
+        cloned = helpers.clone(responseConfig || {});
 
     cloned.recordMatch = (request, response) => {
         const clonedResponse = helpers.clone(response),
@@ -15,8 +15,10 @@ function create (responseConfig, stub) {
             delete clonedResponse._proxyResponseTime; // eslint-disable-line no-underscore-dangle
         }
 
-        stub.matches = stub.matches || [];
-        stub.matches.push(match);
+        if (stub) {
+            stub.matches = stub.matches || [];
+            stub.matches.push(match);
+        }
         cloned.recordMatch = () => {}; // Only record once
     };
 
