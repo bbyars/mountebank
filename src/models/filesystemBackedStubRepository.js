@@ -168,7 +168,22 @@ function create (config) {
         });
     }
 
-    function overwriteAll () {
+    function overwriteAll (newStubs) {
+        const Q = require('q');
+
+        return readHeader().then(imposter => {
+            const deletePromises = [];
+            imposter.stubs = [];
+            deletePromises.push(remove(`${config.imposterDir}/stubs`));
+            deletePromises.push(writeFile(headerFile, imposter));
+            return Q.all(deletePromises);
+        }).then(() => {
+            let addSequence = Q(true);
+            newStubs.forEach(stub => {
+                addSequence = addSequence.then(() => add(stub));
+            });
+            return addSequence;
+        });
     }
 
     function overwriteAtIndex () {

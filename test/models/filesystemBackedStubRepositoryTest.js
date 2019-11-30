@@ -388,4 +388,94 @@ describe('filesystemBackedStubRepository', function () {
                 });
         });
     });
+
+    describe('#overwriteAll', function () {
+        promiseIt('should add if no stubs previously added', function () {
+            const repo = Repo.create({ imposterDir }),
+                firstStub = {
+                    predicates: [{ equals: { field: 'first-request' } }],
+                    responses: [{ is: { field: 'first-response' } }]
+                },
+                secondStub = {
+                    predicates: [{ equals: { field: 'second-request' } }],
+                    responses: [{ is: { field: 'second-response' } }]
+                };
+            write('imposter.json', { port: 3000, protocol: 'test' });
+
+            return repo.overwriteAll([firstStub, secondStub]).then(() => {
+                assert.deepEqual(read('imposter.json'), {
+                    port: 3000,
+                    protocol: 'test',
+                    stubs: [
+                        {
+                            predicates: [{ equals: { field: 'first-request' } }],
+                            meta: {
+                                dir: 'stubs/0',
+                                responseFiles: ['responses/0.json'],
+                                orderWithRepeats: [0],
+                                nextIndex: 0
+                            }
+                        },
+                        {
+                            predicates: [{ equals: { field: 'second-request' } }],
+                            meta: {
+                                dir: 'stubs/1',
+                                responseFiles: ['responses/0.json'],
+                                orderWithRepeats: [0],
+                                nextIndex: 0
+                            }
+                        }
+                    ]
+                });
+            });
+        });
+
+        promiseIt('should replace existing stubs', function () {
+            const repo = Repo.create({ imposterDir }),
+                stubs = [];
+
+            for (let i = 0; i < 4; i += 1) {
+                stubs.push({
+                    predicates: [{ equals: { field: `request-${i}` } }],
+                    responses: [{ is: { field: `response-${i}` } }]
+                });
+            }
+            write('imposter.json', { port: 3000, protocol: 'test' });
+
+            return repo.add(stubs[0])
+                .then(() => repo.add(stubs[1]))
+                .then(() => repo.overwriteAll([stubs[2], stubs[3]]))
+                .then(() => {
+                    assert.deepEqual(read('imposter.json'), {
+                        port: 3000,
+                        protocol: 'test',
+                        stubs: [
+                            {
+                                predicates: [{ equals: { field: 'request-2' } }],
+                                meta: {
+                                    dir: 'stubs/0',
+                                    responseFiles: ['responses/0.json'],
+                                    orderWithRepeats: [0],
+                                    nextIndex: 0
+                                }
+                            },
+                            {
+                                predicates: [{ equals: { field: 'request-3' } }],
+                                meta: {
+                                    dir: 'stubs/1',
+                                    responseFiles: ['responses/0.json'],
+                                    orderWithRepeats: [0],
+                                    nextIndex: 0
+                                }
+                            }
+                        ]
+                    });
+
+                    assert.deepEqual(read('stubs/0/responses/0.json'),
+                        { is: { field: 'response-2' } });
+                    assert.deepEqual(read('stubs/1/responses/0.json'),
+                        { is: { field: 'response-3' } });
+                });
+        });
+    });
 });
