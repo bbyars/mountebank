@@ -168,6 +168,29 @@ describe('filesystemBackedStubRepository', function () {
         });
     });
 
+    describe('#count', function () {
+        promiseIt('should be 0 if no stubs added', function () {
+            const repo = Repo.create({ imposterDir });
+            write('imposter.json', { port: 3000, protocol: 'test' });
+
+            return repo.count().then(count => {
+                assert.strictEqual(count, 0);
+            });
+        });
+
+        promiseIt('should count all stubs added', function () {
+            const repo = Repo.create({ imposterDir });
+            write('imposter.json', { port: 3000, protocol: 'test' });
+
+            return repo.add({ predicates: ['first'] })
+                .then(() => repo.add({ predicates: ['second'] }))
+                .then(() => repo.count())
+                .then(count => {
+                    assert.strictEqual(count, 2);
+                });
+        });
+    });
+
     describe('#first', function () {
         promiseIt('should return undefined if no match', function () {
             const repo = Repo.create({ imposterDir });

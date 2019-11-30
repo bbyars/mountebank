@@ -70,6 +70,13 @@ function create (config) {
         });
     }
 
+    function count () {
+        return readHeader().then(imposter => {
+            const stubs = imposter.stubs || [];
+            return stubs.length;
+        });
+    }
+
     function first (filter) {
         return readHeader().then(imposter => {
             const stubs = imposter.stubs || [],
@@ -137,7 +144,7 @@ function create (config) {
     }
 
     return {
-        count: () => 0,
+        count,
         first,
         add,
         insertAtIndex,
