@@ -40,7 +40,8 @@ describe('filesystemBackedStubRepository', function () {
                     stubs: [{
                         predicates: [{ equals: { field: 'request' } }],
                         meta: {
-                            responseFiles: ['stubs/0/responses/0.json'],
+                            dir: 'stubs/0',
+                            responseFiles: ['responses/0.json'],
                             orderWithRepeats: [0],
                             nextIndex: 0
                         }
@@ -73,7 +74,8 @@ describe('filesystemBackedStubRepository', function () {
                             {
                                 predicates: [{ equals: { field: 'first-request' } }],
                                 meta: {
-                                    responseFiles: ['stubs/0/responses/0.json'],
+                                    dir: 'stubs/0',
+                                    responseFiles: ['responses/0.json'],
                                     orderWithRepeats: [0],
                                     nextIndex: 0
                                 }
@@ -81,7 +83,8 @@ describe('filesystemBackedStubRepository', function () {
                             {
                                 predicates: [{ equals: { field: 'second-request' } }],
                                 meta: {
-                                    responseFiles: ['stubs/1/responses/0.json'],
+                                    dir: 'stubs/1',
+                                    responseFiles: ['responses/0.json'],
                                     orderWithRepeats: [0],
                                     nextIndex: 0
                                 }
@@ -114,7 +117,8 @@ describe('filesystemBackedStubRepository', function () {
                     stubs: [{
                         predicates: [{ equals: { field: 'request' } }],
                         meta: {
-                            responseFiles: ['stubs/0/responses/0.json', 'stubs/0/responses/1.json'],
+                            dir: 'stubs/0',
+                            responseFiles: ['responses/0.json', 'responses/1.json'],
                             orderWithRepeats: [0, 1],
                             nextIndex: 0
                         }
@@ -145,7 +149,8 @@ describe('filesystemBackedStubRepository', function () {
                     stubs: [{
                         predicates: [{ equals: { field: 'request' } }],
                         meta: {
-                            responseFiles: ['stubs/0/responses/0.json', 'stubs/0/responses/1.json', 'stubs/0/responses/2.json'],
+                            dir: 'stubs/0',
+                            responseFiles: ['responses/0.json', 'responses/1.json', 'responses/2.json'],
                             orderWithRepeats: [0, 0, 1, 2, 2, 2],
                             nextIndex: 0
                         }
@@ -246,7 +251,8 @@ describe('filesystemBackedStubRepository', function () {
                     stubs: [{
                         predicates: [{ equals: { field: 'request' } }],
                         meta: {
-                            responseFiles: ['stubs/0/responses/0.json'],
+                            dir: 'stubs/0',
+                            responseFiles: ['responses/0.json'],
                             orderWithRepeats: [0],
                             nextIndex: 0
                         }
@@ -284,7 +290,8 @@ describe('filesystemBackedStubRepository', function () {
                             {
                                 predicates: [{ equals: { field: 'first-request' } }],
                                 meta: {
-                                    responseFiles: ['stubs/0/responses/0.json'],
+                                    dir: 'stubs/0',
+                                    responseFiles: ['responses/0.json'],
                                     orderWithRepeats: [0],
                                     nextIndex: 0
                                 }
@@ -292,7 +299,8 @@ describe('filesystemBackedStubRepository', function () {
                             {
                                 predicates: [{ equals: { field: 'NEW-REQUEST' } }],
                                 meta: {
-                                    responseFiles: ['stubs/2/responses/0.json'],
+                                    dir: 'stubs/2',
+                                    responseFiles: ['responses/0.json'],
                                     orderWithRepeats: [0],
                                     nextIndex: 0
                                 }
@@ -300,7 +308,8 @@ describe('filesystemBackedStubRepository', function () {
                             {
                                 predicates: [{ equals: { field: 'second-request' } }],
                                 meta: {
-                                    responseFiles: ['stubs/1/responses/0.json'],
+                                    dir: 'stubs/1',
+                                    responseFiles: ['responses/0.json'],
                                     orderWithRepeats: [0],
                                     nextIndex: 0
                                 }
@@ -310,6 +319,72 @@ describe('filesystemBackedStubRepository', function () {
 
                     assert.deepEqual(read('stubs/2/responses/0.json'),
                         { is: { field: 'NEW-RESPONSE' } });
+                });
+        });
+    });
+
+    describe('#deleteAtIndex', function () {
+        promiseIt('should reject the promise if no stub at that index', function () {
+            const repo = Repo.create({ imposterDir });
+            write('imposter.json', { port: 3000, protocol: 'test' });
+
+            return repo.deleteAtIndex(0).then(() => {
+                assert.fail('Should have rejected');
+            }, err => {
+                assert.deepEqual(err, {
+                    code: 'no such resource',
+                    message: 'no stub at index 0'
+                });
+            });
+        });
+
+        promiseIt('should delete stub and stub dir at specified index', function () {
+            const repo = Repo.create({ imposterDir }),
+                firstStub = {
+                    predicates: [{ equals: { field: 'first-request' } }],
+                    responses: [{ is: { field: 'first-response' } }]
+                },
+                secondStub = {
+                    predicates: [{ equals: { field: 'second-request' } }],
+                    responses: [{ is: { field: 'second-response' } }]
+                },
+                thirdStub = {
+                    predicates: [{ equals: { field: 'third-request' } }],
+                    responses: [{ is: { field: 'third-response' } }]
+                };
+            write('imposter.json', { port: 3000, protocol: 'test' });
+
+            return repo.add(firstStub)
+                .then(() => repo.add(secondStub))
+                .then(() => repo.add(thirdStub))
+                .then(() => repo.deleteAtIndex(1))
+                .then(() => {
+                    assert.deepEqual(read('imposter.json'), {
+                        port: 3000,
+                        protocol: 'test',
+                        stubs: [
+                            {
+                                predicates: [{ equals: { field: 'first-request' } }],
+                                meta: {
+                                    dir: 'stubs/0',
+                                    responseFiles: ['responses/0.json'],
+                                    orderWithRepeats: [0],
+                                    nextIndex: 0
+                                }
+                            },
+                            {
+                                predicates: [{ equals: { field: 'third-request' } }],
+                                meta: {
+                                    dir: 'stubs/2',
+                                    responseFiles: ['responses/0.json'],
+                                    orderWithRepeats: [0],
+                                    nextIndex: 0
+                                }
+                            }
+                        ]
+                    });
+
+                    assert.ok(!fs.existsSync(`${imposterDir}/stubs/1`));
                 });
         });
     });

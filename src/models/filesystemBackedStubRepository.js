@@ -46,6 +46,23 @@ function readFile (filepath) {
     return deferred.promise;
 }
 
+function remove (dir) {
+    const Q = require('q'),
+        deferred = Q.defer(),
+        fs = require('fs-extra');
+
+    fs.remove(dir, err => {
+        if (err) {
+            deferred.reject(err);
+        }
+        else {
+            deferred.resolve({});
+        }
+    });
+
+    return deferred.promise;
+}
+
 function repeatsFor (response) {
     if (response._behaviors && response._behaviors.repeat) {
         return response._behaviors.repeat;
@@ -102,6 +119,7 @@ function create (config) {
         const stubDefinition = {
                 predicates: stub.predicates || [],
                 meta: {
+                    dir: '',
                     responseFiles: [],
                     orderWithRepeats: [],
                     nextIndex: 0
@@ -113,17 +131,17 @@ function create (config) {
 
         return readHeader().then(imposter => {
             imposter.stubs = imposter.stubs || [];
-            const stubDir = `stubs/${imposter.stubs.length}`;
+            stubDefinition.meta.dir = `stubs/${imposter.stubs.length}`;
 
             for (let i = 0; i < responses.length; i += 1) {
-                const responseFile = `${stubDir}/responses/${i}.json`;
+                const responseFile = `responses/${i}.json`;
                 stubDefinition.meta.responseFiles.push(responseFile);
 
                 for (let repeats = 0; repeats < repeatsFor(responses[i]); repeats += 1) {
                     stubDefinition.meta.orderWithRepeats.push(i);
                 }
 
-                promises.push(writeFile(`${config.imposterDir}/${responseFile}`, responses[i]));
+                promises.push(writeFile(`${config.imposterDir}/${stubDefinition.meta.dir}/${responseFile}`, responses[i]));
             }
 
             imposter.stubs.splice(index, 0, stubDefinition);
@@ -132,7 +150,22 @@ function create (config) {
         });
     }
 
-    function deleteAtIndex () {
+    function deleteAtIndex (index) {
+        return readHeader().then(imposter => {
+            const errors = require('../util/errors'),
+                Q = require('q'),
+                stubs = imposter.stubs || [],
+                promises = [];
+
+            if (typeof stubs[index] === 'undefined') {
+                return Q.reject(errors.MissingResourceError(`no stub at index ${index}`));
+            }
+
+            promises.push(remove(`${config.imposterDir}/${stubs[index].meta.dir}`));
+            imposter.stubs.splice(index, 1);
+            promises.push(writeFile(headerFile, imposter));
+            return Q.all(promises);
+        });
     }
 
     function overwriteAll () {
