@@ -95,6 +95,10 @@ function create (config) {
     }
 
     function add (stub) {
+        return insertAtIndex(stub, 99999999);
+    }
+
+    function insertAtIndex (stub, index) {
         const stubDefinition = {
                 predicates: stub.predicates || [],
                 meta: {
@@ -122,22 +126,19 @@ function create (config) {
                 promises.push(writeFile(`${config.imposterDir}/${responseFile}`, responses[i]));
             }
 
-            imposter.stubs.push(stubDefinition);
+            imposter.stubs.splice(index, 0, stubDefinition);
             promises.push(writeFile(headerFile, imposter));
             return Q.all(promises);
         });
     }
 
-    function insertAtIndex () {
+    function deleteAtIndex () {
     }
 
     function overwriteAll () {
     }
 
     function overwriteAtIndex () {
-    }
-
-    function deleteAtIndex () {
     }
 
     function getAll () {

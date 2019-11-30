@@ -229,4 +229,88 @@ describe('filesystemBackedStubRepository', function () {
             });
         });
     });
+
+    describe('#insertAtIndex', function () {
+        promiseIt('should create stub files if empty stubs array and inserting at index 0', function () {
+            const repo = Repo.create({ imposterDir }),
+                stub = {
+                    predicates: [{ equals: { field: 'request' } }],
+                    responses: [{ is: { field: 'response' } }]
+                };
+            write('imposter.json', { port: 3000, protocol: 'test' });
+
+            return repo.insertAtIndex(stub, 0).then(() => {
+                assert.deepEqual(read('imposter.json'), {
+                    port: 3000,
+                    protocol: 'test',
+                    stubs: [{
+                        predicates: [{ equals: { field: 'request' } }],
+                        meta: {
+                            responseFiles: ['stubs/0/responses/0.json'],
+                            orderWithRepeats: [0],
+                            nextIndex: 0
+                        }
+                    }]
+                });
+
+                assert.deepEqual(read('stubs/0/responses/0.json'), { is: { field: 'response' } });
+            });
+        });
+
+        promiseIt('should add to stubs file if it already exists', function () {
+            const repo = Repo.create({ imposterDir }),
+                firstStub = {
+                    predicates: [{ equals: { field: 'first-request' } }],
+                    responses: [{ is: { field: 'first-response' } }]
+                },
+                secondStub = {
+                    predicates: [{ equals: { field: 'second-request' } }],
+                    responses: [{ is: { field: 'second-response' } }]
+                },
+                newStub = {
+                    predicates: [{ equals: { field: 'NEW-REQUEST' } }],
+                    responses: [{ is: { field: 'NEW-RESPONSE' } }]
+                };
+            write('imposter.json', { port: 3000, protocol: 'test' });
+
+            return repo.add(firstStub)
+                .then(() => repo.add(secondStub))
+                .then(() => repo.insertAtIndex(newStub, 1))
+                .then(() => {
+                    assert.deepEqual(read('imposter.json'), {
+                        port: 3000,
+                        protocol: 'test',
+                        stubs: [
+                            {
+                                predicates: [{ equals: { field: 'first-request' } }],
+                                meta: {
+                                    responseFiles: ['stubs/0/responses/0.json'],
+                                    orderWithRepeats: [0],
+                                    nextIndex: 0
+                                }
+                            },
+                            {
+                                predicates: [{ equals: { field: 'NEW-REQUEST' } }],
+                                meta: {
+                                    responseFiles: ['stubs/2/responses/0.json'],
+                                    orderWithRepeats: [0],
+                                    nextIndex: 0
+                                }
+                            },
+                            {
+                                predicates: [{ equals: { field: 'second-request' } }],
+                                meta: {
+                                    responseFiles: ['stubs/1/responses/0.json'],
+                                    orderWithRepeats: [0],
+                                    nextIndex: 0
+                                }
+                            }
+                        ]
+                    });
+
+                    assert.deepEqual(read('stubs/2/responses/0.json'),
+                        { is: { field: 'NEW-RESPONSE' } });
+                });
+        });
+    });
 });
