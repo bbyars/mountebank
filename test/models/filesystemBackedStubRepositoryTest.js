@@ -478,4 +478,67 @@ describe('filesystemBackedStubRepository', function () {
                 });
         });
     });
+
+    describe('#overwriteAtIndex', function () {
+        promiseIt('should reject the promise if no stub at that index', function () {
+            const repo = Repo.create({ imposterDir });
+            write('imposter.json', { port: 3000, protocol: 'test' });
+
+            return repo.overwriteAtIndex({}, 0).then(() => {
+                assert.fail('Should have rejected');
+            }, err => {
+                assert.deepEqual(err, {
+                    code: 'no such resource',
+                    message: 'no stub at index 0'
+                });
+            });
+        });
+
+        promiseIt('should overwrite at given index', function () {
+            const repo = Repo.create({ imposterDir }),
+                firstStub = {
+                    predicates: [{ equals: { field: 'first-request' } }],
+                    responses: [{ is: { field: 'first-response' } }]
+                },
+                secondStub = {
+                    predicates: [{ equals: { field: 'second-request' } }],
+                    responses: [{ is: { field: 'second-response' } }]
+                },
+                thirdStub = {
+                    predicates: [{ equals: { field: 'third-request' } }],
+                    responses: [{ is: { field: 'third-response' } }]
+                };
+            write('imposter.json', { port: 3000, protocol: 'test' });
+
+            return repo.add(firstStub)
+                .then(() => repo.add(secondStub))
+                .then(() => repo.overwriteAtIndex(thirdStub, 0))
+                .then(() => {
+                    assert.deepEqual(read('imposter.json'), {
+                        port: 3000,
+                        protocol: 'test',
+                        stubs: [
+                            {
+                                predicates: [{ equals: { field: 'third-request' } }],
+                                meta: {
+                                    dir: 'stubs/2',
+                                    responseFiles: ['responses/0.json'],
+                                    orderWithRepeats: [0],
+                                    nextIndex: 0
+                                }
+                            },
+                            {
+                                predicates: [{ equals: { field: 'second-request' } }],
+                                meta: {
+                                    dir: 'stubs/1',
+                                    responseFiles: ['responses/0.json'],
+                                    orderWithRepeats: [0],
+                                    nextIndex: 0
+                                }
+                            }
+                        ]
+                    });
+                });
+        });
+    });
 });

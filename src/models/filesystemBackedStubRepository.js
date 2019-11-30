@@ -115,6 +115,17 @@ function create (config) {
         return insertAtIndex(stub, 99999999);
     }
 
+    function nextDir (stubs) {
+        if (stubs.length === 0) {
+            return 'stubs/0';
+        }
+
+        const dirIndexes = stubs.map(stub => parseInt(stub.meta.dir.replace('stubs/', ''))),
+            max = Math.max(...dirIndexes);
+
+        return `stubs/${max + 1}`;
+    }
+
     function insertAtIndex (stub, index) {
         const stubDefinition = {
                 predicates: stub.predicates || [],
@@ -131,7 +142,7 @@ function create (config) {
 
         return readHeader().then(imposter => {
             imposter.stubs = imposter.stubs || [];
-            stubDefinition.meta.dir = `stubs/${imposter.stubs.length}`;
+            stubDefinition.meta.dir = nextDir(imposter.stubs);
 
             for (let i = 0; i < responses.length; i += 1) {
                 const responseFile = `responses/${i}.json`;
@@ -186,7 +197,8 @@ function create (config) {
         });
     }
 
-    function overwriteAtIndex () {
+    function overwriteAtIndex (stub, index) {
+        return deleteAtIndex(index).then(() => insertAtIndex(stub, index));
     }
 
     function getAll () {
