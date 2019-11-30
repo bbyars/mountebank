@@ -1175,6 +1175,7 @@ describe('responseResolver', function () {
                 request = {};
 
             stubs.add({ responses: [responseConfig] });
+            responseConfig.stubIndex = () => 0;
 
             return resolver.resolve(responseConfig, request, logger, {}).then(response => {
                 const proxyResolutionKey = parseInt(response.callbackURL.replace('CALLBACK-URL/', ''));
@@ -1183,6 +1184,7 @@ describe('responseResolver', function () {
             }).then(response => {
                 assert.deepEqual(jsonResponse(response), { data: 'RESPONSE' });
                 const stubResponses = stubs.all().map(stub => proxyResponses(stub.responses));
+                delete responseConfig.stubIndex;
                 assert.deepEqual(stubResponses, [
                     [{ is: { data: 'RESPONSE' } }],
                     [responseConfig]
@@ -1198,6 +1200,7 @@ describe('responseResolver', function () {
                 request = {};
 
             stubs.add({ responses: [responseConfig] });
+            responseConfig.stubIndex = () => 0;
 
             return resolver.resolve(responseConfig, request, logger, {}).then(response => {
                 const proxyResolutionKey = parseInt(response.callbackURL.replace('CALLBACK-URL/', ''));
@@ -1206,6 +1209,7 @@ describe('responseResolver', function () {
             }).then(response => {
                 assert.deepEqual(jsonResponse(response), { data: 'RESPONSE' });
                 const stubResponses = stubs.all().map(stub => proxyResponses(stub.responses));
+                delete responseConfig.stubIndex;
                 assert.deepEqual(stubResponses, [
                     [responseConfig],
                     [{ is: { data: 'RESPONSE' } }]

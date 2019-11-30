@@ -9,26 +9,6 @@ describe('stubRepository', function () {
         return JSON.parse(JSON.stringify(obj));
     }
 
-    describe('#add', function () {
-        it('should add new stub in front of passed in response', function () {
-            const stubs = StubRepository.create('utf8'),
-                firstStub = { responses: [{ is: 'first' }, { is: 'second' }] },
-                secondStub = { responses: [{ is: 'third' }, { is: 'fourth' }] };
-
-            stubs.add(firstStub);
-            stubs.add(secondStub);
-
-            stubs.add({ responses: [{ is: 'TEST' }] }, { is: 'fourth' });
-            const responses = stubs.all().map(stub => stub.responses);
-
-            assert.deepEqual(responses, [
-                [{ is: 'first' }, { is: 'second' }],
-                [{ is: 'TEST' }],
-                [{ is: 'third' }, { is: 'fourth' }]
-            ]);
-        });
-    });
-
     describe('#overwriteAll', function () {
         it('should overwrite entire list', function () {
             const stubs = StubRepository.create('utf8'),

@@ -54,20 +54,16 @@ function create () {
     const stubs = []; // eslint-disable-line no-underscore-dangle
 
     function first (filter) {
-        return stubs.find(filter);
+        for (let i = 0; i < stubs.length; i += 1) {
+            if (filter(stubs[i])) {
+                return { success: true, index: i, stub: stubs[i] };
+            }
+        }
+        return { success: false, index: -1, stub: Stub.create() };
     }
 
     function add (stub) {
         stubs.push(Stub.create(stub));
-    }
-
-    function insertBefore (stub, filter) {
-        for (var i = 0; i < stubs.length; i += 1) {
-            if (filter(stubs[i])) {
-                break;
-            }
-        }
-        stubs.splice(i, 0, Stub.create(stub));
     }
 
     function insertAtIndex (stub, index) {
@@ -111,13 +107,11 @@ function create () {
         count: () => stubs.length,
         first,
         add,
-        insertBefore,
         insertAtIndex,
         overwriteAll,
         overwriteAtIndex,
         deleteAtIndex,
-        getAll,
-        newStub: Stub.create
+        getAll
     };
 }
 

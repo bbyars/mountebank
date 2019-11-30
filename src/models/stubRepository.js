@@ -37,32 +37,13 @@ function create (encoding, config) {
                     request.isDryRun === true);
             });
 
-        if (typeof match === 'undefined') {
+        if (match.success) {
+            logger.debug(`using predicate match: ${JSON.stringify(match.stub.predicates || {})}`);
+        }
+        else {
             logger.debug('no predicate match');
-            return stubs.newStub();
         }
-        else {
-            logger.debug(`using predicate match: ${JSON.stringify(match.predicates || {})}`);
-            return match;
-        }
-    }
-
-    /**
-     * Adds a stub to the repository
-     * @memberOf module:models/stubRepository#
-     * @param {Object} stub - The stub to add
-     * @param {Object} beforeResponse - If provided, the new stub will be added before the stub containing the response (used for proxyOnce)
-     */
-    function addStub (stub, beforeResponse) {
-        if (beforeResponse) {
-            const responseToMatch = JSON.stringify(beforeResponse);
-            stubs.insertBefore(stub, existingStub =>
-                existingStub.responses.some(response => JSON.stringify(response) === responseToMatch)
-            );
-        }
-        else {
-            stubs.add(stub);
-        }
+        return match;
     }
 
     /**
@@ -74,10 +55,11 @@ function create (encoding, config) {
      * @returns {Object} - Promise resolving to the response
      */
     function getResponseFor (request, logger, imposterState) {
-        const stub = findFirstMatch(request, logger, imposterState),
-            responseConfig = stub.nextResponse();
+        const match = findFirstMatch(request, logger, imposterState),
+            responseConfig = match.stub.nextResponse();
 
         logger.debug(`generating response from ${JSON.stringify(responseConfig)}`);
+        responseConfig.stubIndex = () => match.index;
         return responseConfig;
     }
 
@@ -100,7 +82,7 @@ function create (encoding, config) {
 
     return {
         all: stubs.getAll,
-        add: addStub,
+        add: stubs.add,
         insertAtIndex: stubs.insertAtIndex,
         overwriteAll: stubs.overwriteAll,
         overwriteAtIndex: stubs.overwriteAtIndex,

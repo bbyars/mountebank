@@ -194,21 +194,11 @@ function create (stubs, proxy, callbackURL) {
         return stringify(obj1) === stringify(obj2);
     }
 
-    function stubIndexFor (responseConfig) {
-        const stubList = stubs.all();
-        for (var i = 0; i < stubList.length; i += 1) {
-            if (stubList[i].responses.some(response => deepEqual(response, responseConfig))) {
-                break;
-            }
-        }
-        return i;
-    }
-
     function indexOfStubToAddResponseTo (responseConfig, request, logger) {
         const predicates = predicatesFor(request, responseConfig.proxy.predicateGenerators || [], logger),
             stubList = stubs.all();
 
-        for (let index = stubIndexFor(responseConfig) + 1; index < stubList.length; index += 1) {
+        for (let index = responseConfig.stubIndex() + 1; index < stubList.length; index += 1) {
             if (deepEqual(predicates, stubList[index].predicates)) {
                 return index;
             }
@@ -253,7 +243,7 @@ function create (stubs, proxy, callbackURL) {
             stubs.add(newStub);
         }
         else {
-            stubs.add(newStub, responseConfig);
+            stubs.insertAtIndex(newStub, responseConfig.stubIndex());
         }
     }
 

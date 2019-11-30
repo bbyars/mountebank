@@ -46,23 +46,6 @@ function readFile (filepath) {
     return deferred.promise;
 }
 
-const Stub = {
-    create: function (config) {
-        const helpers = require('../util/helpers'),
-            stub = helpers.clone(config || {});
-
-        stub.responses = stub.responses || [{ is: {} }];
-
-        stub.addResponse = () => {};
-
-        stub.nextResponse = () => {};
-
-        stub.deleteResponsesMatching = () => {};
-
-        return stub;
-    }
-};
-
 function repeatsFor (response) {
     if (response._behaviors && response._behaviors.repeat) {
         return response._behaviors.repeat;
@@ -138,9 +121,6 @@ function create (config) {
         });
     }
 
-    function insertBefore () {
-    }
-
     function insertAtIndex () {
     }
 
@@ -160,13 +140,11 @@ function create (config) {
         count: () => 0,
         first,
         add,
-        insertBefore,
         insertAtIndex,
         overwriteAll,
         overwriteAtIndex,
         deleteAtIndex,
-        getAll,
-        newStub: Stub.create
+        getAll
     };
 }
 

@@ -240,9 +240,7 @@ describe('ImposterController', function () {
 
         promiseIt('should return a 400 if no stub fails dry run validation', function () {
             const response = FakeResponse.create(),
-                imposters = {
-                    1: { protocol: 'test' }
-                },
+                imposters = { 1: { protocol: 'test' } },
                 repo = ImpostersRepo.create({ imposters }),
                 Protocol = { testRequest: {} },
                 logger = require('../fakes/fakeLogger').create(),
