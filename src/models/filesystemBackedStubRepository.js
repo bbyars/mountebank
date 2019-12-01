@@ -171,6 +171,17 @@ function create (config) {
         };
 
         cloned.nextResponse = () => {
+            return readHeader().then(imposter => {
+                const meta = imposter.stubs[index].meta,
+                    stubDir = `${config.imposterDir}/${meta.dir}`,
+                    maxIndex = meta.orderWithRepeats.length,
+                    responseIndex = meta.orderWithRepeats[meta.nextIndex % maxIndex],
+                    responseFile = meta.responseFiles[responseIndex],
+                    Q = require('q');
+
+                meta.nextIndex = (meta.nextIndex + 1) % maxIndex;
+                return Q.all([readFile(`${stubDir}/${responseFile}`), writeFile(headerFile, imposter)]);
+            }).then(results => Response.create(results[0]));
         };
 
         return cloned;

@@ -237,6 +237,49 @@ describe('filesystemBackedStubRepository', function () {
                 });
             });
         });
+
+        promiseIt('should return {} from nextResponse if no stub added', function () {
+            const repo = Repo.create({ imposterDir });
+            write('imposter.json', { port: 3000, protocol: 'test' });
+
+            return repo.first(stub => stub.predicates.length === 1).then(match => {
+                return match.stub.nextResponse();
+            }).then(response => {
+                assert.deepEqual(stripFunctions(response), {});
+            });
+        });
+
+        promiseIt('should support looping through responses', function () {
+            const repo = Repo.create({ imposterDir }),
+                stub = {
+                    predicates: [{ equals: { field: 'request' } }],
+                    responses: [
+                        { is: { field: 'first' }, _behaviors: { repeat: 2 } },
+                        { is: { field: 'second' } }
+                    ]
+                };
+            let matchedStub;
+            write('imposter.json', { port: 3000, protocol: 'test' });
+
+            return repo.add(stub)
+                .then(() => repo.first(match => match.predicates.length === 1))
+                .then(match => {
+                    matchedStub = match.stub;
+                    return matchedStub.nextResponse();
+                }).then(response => {
+                    assert.deepEqual(stripFunctions(response), { is: { field: 'first' }, _behaviors: { repeat: 2 } });
+                    return matchedStub.nextResponse();
+                }).then(response => {
+                    assert.deepEqual(stripFunctions(response), { is: { field: 'first' }, _behaviors: { repeat: 2 } });
+                    return matchedStub.nextResponse();
+                }).then(response => {
+                    assert.deepEqual(stripFunctions(response), { is: { field: 'second' } });
+                    return matchedStub.nextResponse();
+                }).then(response => {
+                    assert.deepEqual(stripFunctions(response), { is: { field: 'first' }, _behaviors: { repeat: 2 } });
+                    assert.strictEqual(read('imposter.json').stubs[0].meta.nextIndex, 1);
+                });
+        });
     });
 
     describe('#insertAtIndex', function () {
