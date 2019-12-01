@@ -71,7 +71,7 @@ function create (encoding, config) {
     * Removes the saved proxy responses
     */
     function resetProxies () {
-        const allStubs = stubs.getAll();
+        const allStubs = stubs.all();
         for (let i = allStubs.length - 1; i >= 0; i -= 1) {
             allStubs[i].deleteResponsesMatching(isRecordedResponse);
             if (allStubs[i].responses.length === 0) {
@@ -81,7 +81,7 @@ function create (encoding, config) {
     }
 
     return {
-        all: stubs.getAll,
+        all: stubs.all,
         add: stubs.add,
         insertAtIndex: stubs.insertAtIndex,
         overwriteAll: stubs.overwriteAll,

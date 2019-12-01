@@ -24,6 +24,10 @@ describe('filesystemBackedStubRepository', function () {
         return fs.writeFileSync(`${imposterDir}/${filename}`, JSON.stringify(obj));
     }
 
+    function stripFunctions (obj) {
+        return JSON.parse(JSON.stringify(obj));
+    }
+
     describe('#add', function () {
         promiseIt('should create stub files if first stub to be added', function () {
             const repo = Repo.create({ imposterDir }),
@@ -197,7 +201,7 @@ describe('filesystemBackedStubRepository', function () {
     });
 
     describe('#first', function () {
-        promiseIt('should return undefined if no match', function () {
+        promiseIt('should indicate no match', function () {
             const repo = Repo.create({ imposterDir });
             write('imposter.json', { port: 3000, protocol: 'test' });
 
@@ -217,7 +221,7 @@ describe('filesystemBackedStubRepository', function () {
                 .then(match => {
                     assert.ok(match.success);
                     assert.strictEqual(match.index, 1);
-                    assert.deepEqual(match.stub, { predicates: ['third'] });
+                    assert.deepEqual(stripFunctions(match.stub), { predicates: ['third'] });
                 });
         });
 
@@ -538,6 +542,95 @@ describe('filesystemBackedStubRepository', function () {
                             }
                         ]
                     });
+                });
+        });
+    });
+
+    describe('#all', function () {
+        promiseIt('should return all stubs with predicates', function () {
+            const repo = Repo.create({ imposterDir }),
+                firstStub = {
+                    predicates: [{ equals: { field: 'first-request' } }],
+                    responses: [{ is: { field: 'first-response' } }]
+                },
+                secondStub = {
+                    predicates: [{ equals: { field: 'second-request' } }],
+                    responses: [{ is: { field: 'second-response' } }]
+                };
+            write('imposter.json', { port: 3000, protocol: 'test' });
+
+            return repo.add(firstStub)
+                .then(() => repo.add(secondStub))
+                .then(() => repo.all())
+                .then(stubs => {
+                    assert.deepEqual(stripFunctions(stubs), [
+                        { predicates: [{ equals: { field: 'first-request' } }] },
+                        { predicates: [{ equals: { field: 'second-request' } }] }
+                    ]);
+                });
+        });
+
+        promiseIt('should allow adding responses', function () {
+            const repo = Repo.create({ imposterDir }),
+                stub = {
+                    predicates: [{ equals: { field: 'request' } }],
+                    responses: [{ is: { field: 'response' } }]
+                };
+            write('imposter.json', { port: 3000, protocol: 'test' });
+
+            return repo.add(stub)
+                .then(() => repo.all())
+                .then(stubs => stubs[0].addResponse({ is: { field: 'NEW-RESPONSE' } }))
+                .then(() => {
+                    assert.deepEqual(read('imposter.json'), {
+                        port: 3000,
+                        protocol: 'test',
+                        stubs: [
+                            {
+                                predicates: [{ equals: { field: 'request' } }],
+                                meta: {
+                                    dir: 'stubs/0',
+                                    responseFiles: ['responses/0.json', 'responses/1.json'],
+                                    orderWithRepeats: [0, 1],
+                                    nextIndex: 0
+                                }
+                            }
+                        ]
+                    });
+
+                    assert.deepEqual(read('stubs/0/responses/1.json'), { is: { field: 'NEW-RESPONSE' } });
+                });
+        });
+
+        promiseIt('should allow deleting responses', function () {
+            const repo = Repo.create({ imposterDir }),
+                stub = {
+                    predicates: [{ equals: { field: 'request' } }],
+                    responses: [{ is: { field: 'first' } }, { is: { field: 'second' } }]
+                };
+            write('imposter.json', { port: 3000, protocol: 'test' });
+
+            return repo.add(stub)
+                .then(() => repo.all())
+                .then(stubs => stubs[0].deleteResponsesMatching(response => response.is.field === 'first'))
+                .then(() => {
+                    assert.deepEqual(read('imposter.json'), {
+                        port: 3000,
+                        protocol: 'test',
+                        stubs: [
+                            {
+                                predicates: [{ equals: { field: 'request' } }],
+                                meta: {
+                                    dir: 'stubs/0',
+                                    responseFiles: ['responses/1.json'],
+                                    orderWithRepeats: [0],
+                                    nextIndex: 0
+                                }
+                            }
+                        ]
+                    });
+
+                    assert.ok(!fs.existsSync('.mbtest/3000/stubs/0/responses/0.json'));
                 });
         });
     });

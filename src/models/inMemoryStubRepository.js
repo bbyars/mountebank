@@ -85,7 +85,7 @@ function create () {
         stubs.splice(index, 1);
     }
 
-    function getAll () {
+    function all () {
         const helpers = require('../util/helpers'),
             result = helpers.clone(stubs);
 
@@ -111,7 +111,7 @@ function create () {
         overwriteAll,
         overwriteAtIndex,
         deleteAtIndex,
-        getAll
+        all
     };
 }
 

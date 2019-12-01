@@ -46,12 +46,12 @@ function readFile (filepath) {
     return deferred.promise;
 }
 
-function remove (dir) {
+function remove (path) {
     const Q = require('q'),
         deferred = Q.defer(),
         fs = require('fs-extra');
 
-    fs.remove(dir, err => {
+    fs.remove(path, err => {
         if (err) {
             deferred.reject(err);
         }
@@ -87,6 +87,95 @@ function create (config) {
         });
     }
 
+    function next (paths, template) {
+        if (paths.length === 0) {
+            return template.replace('${index}', 0);
+        }
+
+        const numbers = paths.map(file => parseInt(file.match(/\d+/)[0])),
+            max = Math.max(...numbers);
+
+        return template.replace('${index}', max + 1);
+    }
+
+    function wrap (stub, index) {
+        const Response = require('./response');
+
+        if (typeof stub === 'undefined') {
+            return {
+                addResponse: () => {},
+                deleteResponsesMatching: () => {},
+                nextResponse: () => Response.create()
+            };
+        }
+
+        const helpers = require('../util/helpers'),
+            cloned = helpers.clone(stub);
+
+        delete cloned.meta;
+
+        cloned.addResponse = response =>
+            readHeader().then(imposter => {
+                const promises = [],
+                    saved = imposter.stubs[index],
+                    responseFile = next(saved.meta.responseFiles, 'responses/${index}.json'),
+                    responseIndex = saved.meta.responseFiles.length,
+                    Q = require('q');
+
+                saved.meta.responseFiles.push(responseFile);
+                for (let repeats = 0; repeats < repeatsFor(response); repeats += 1) {
+                    saved.meta.orderWithRepeats.push(responseIndex);
+                }
+
+                promises.push(writeFile(`${config.imposterDir}/${saved.meta.dir}/${responseFile}`, response));
+                promises.push(writeFile(headerFile, imposter));
+                return Q.all(promises);
+            });
+
+        cloned.deleteResponsesMatching = filter => {
+            return readHeader().then(imposter => {
+                const savedStub = imposter.stubs[index].meta,
+                    stubDir = `${config.imposterDir}/${savedStub.dir}`,
+                    loadResponses = savedStub.responseFiles.map(file => readFile(`${stubDir}/${file}`)),
+                    Q = require('q');
+
+                return Q.all(loadResponses).then(responses => {
+                    const deletes = [];
+
+                    for (let i = responses.length - 1; i >= 0; i -= 1) {
+                        if (filter(responses[i])) {
+                            deletes.push(remove(`${stubDir}/${savedStub.responseFiles[i]}`));
+                            savedStub.responseFiles.splice(i, 1);
+                            savedStub.orderWithRepeats = savedStub.orderWithRepeats
+                                .filter(responseIndex => responseIndex !== i)
+                                .map(responseIndex => {
+                                    if (responseIndex > i) {
+                                        return responseIndex - 1;
+                                    }
+                                    else {
+                                        return responseIndex;
+                                    }
+                                });
+                        }
+                    }
+
+                    if (deletes.length > 0) {
+                        deletes.push(writeFile(headerFile, imposter));
+                        return Q.all(deletes);
+                    }
+                    else {
+                        return Q(true);
+                    }
+                });
+            });
+        };
+
+        cloned.nextResponse = () => {
+        };
+
+        return cloned;
+    }
+
     function count () {
         return readHeader().then(imposter => {
             const stubs = imposter.stubs || [];
@@ -96,34 +185,19 @@ function create (config) {
 
     function first (filter) {
         return readHeader().then(imposter => {
-            const stubs = imposter.stubs || [],
-                helpers = require('../util/helpers'),
-                defaultStub = { nextResponse: () => require('./response').create() };
+            const stubs = imposter.stubs || [];
 
             for (let i = 0; i < stubs.length; i += 1) {
                 if (filter(stubs[i])) {
-                    const cloned = helpers.clone(stubs[i]);
-                    delete cloned.meta;
-                    return { success: true, index: i, stub: cloned };
+                    return { success: true, index: i, stub: wrap(stubs[i], i) };
                 }
             }
-            return { success: false, index: -1, stub: defaultStub };
+            return { success: false, index: -1, stub: wrap() };
         });
     }
 
     function add (stub) {
         return insertAtIndex(stub, 99999999);
-    }
-
-    function nextDir (stubs) {
-        if (stubs.length === 0) {
-            return 'stubs/0';
-        }
-
-        const dirIndexes = stubs.map(stub => parseInt(stub.meta.dir.replace('stubs/', ''))),
-            max = Math.max(...dirIndexes);
-
-        return `stubs/${max + 1}`;
     }
 
     function insertAtIndex (stub, index) {
@@ -142,7 +216,7 @@ function create (config) {
 
         return readHeader().then(imposter => {
             imposter.stubs = imposter.stubs || [];
-            stubDefinition.meta.dir = nextDir(imposter.stubs);
+            stubDefinition.meta.dir = next(imposter.stubs.map(saved => saved.meta.dir), 'stubs/${index}');
 
             for (let i = 0; i < responses.length; i += 1) {
                 const responseFile = `responses/${i}.json`;
@@ -201,7 +275,11 @@ function create (config) {
         return deleteAtIndex(index).then(() => insertAtIndex(stub, index));
     }
 
-    function getAll () {
+    function all () {
+        return readHeader().then(imposter => {
+            const stubs = imposter.stubs || [];
+            return stubs.map(wrap);
+        });
     }
 
     return {
@@ -212,7 +290,7 @@ function create (config) {
         overwriteAll,
         overwriteAtIndex,
         deleteAtIndex,
-        getAll
+        all
     };
 }
 
