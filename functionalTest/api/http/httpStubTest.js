@@ -462,14 +462,16 @@ const assert = require('assert'),
                     request = { protocol, port, stubs: [stub] };
 
                 return api.post('/imposters', request)
-                    .then(() => api.put(`/imposters/${port}/stubs`, {
-                        stubs: [
-                            { responses: [{ is: { body: 'FIRST' } }] },
-                            { responses: [{ is: { body: 'ORIGINAL' } }] },
-                            { responses: [{ is: { body: 'THIRD' } }] }
-                        ]
-                    }))
                     .then(response => {
+                        assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body));
+                        return api.put(`/imposters/${port}/stubs`, {
+                            stubs: [
+                                { responses: [{ is: { body: 'FIRST' } }] },
+                                { responses: [{ is: { body: 'ORIGINAL' } }] },
+                                { responses: [{ is: { body: 'THIRD' } }] }
+                            ]
+                        });
+                    }).then(response => {
                         assert.strictEqual(response.statusCode, 200);
                         assert.deepEqual(response.body.stubs, [
                             {

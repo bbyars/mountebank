@@ -114,8 +114,8 @@ function create (config) {
 
         delete cloned.meta;
 
-        cloned.addResponse = response =>
-            readHeader().then(imposter => {
+        cloned.addResponse = response => {
+            return readHeader().then(imposter => {
                 const promises = [],
                     saved = imposter.stubs[index],
                     responseFile = next(saved.meta.responseFiles, 'responses/${index}.json'),
@@ -131,6 +131,7 @@ function create (config) {
                 promises.push(writeFile(headerFile, imposter));
                 return Q.all(promises);
             });
+        };
 
         cloned.deleteResponsesMatching = filter => {
             return readHeader().then(imposter => {

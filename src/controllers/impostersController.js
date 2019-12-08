@@ -82,10 +82,10 @@ function create (protocols, imposters, logger, allowInjection) {
 
     function getAllJSON (queryOptions) {
         const Q = require('q');
-        return imposters.getAll().then(allImposters =>
-            Q(Object.keys(allImposters).reduce((accumulator, id) =>
-                accumulator.concat(allImposters[id].toJSON(queryOptions)), []))
-        );
+        return imposters.getAll().then(allImposters => {
+            const promises = Object.keys(allImposters).map(id => allImposters[id].toJSON(queryOptions));
+            return Q.all(promises);
+        });
     }
 
     /**
@@ -120,29 +120,28 @@ function create (protocols, imposters, logger, allowInjection) {
      * @returns {Object} A promise for testing purposes
      */
     function post (request, response) {
-        const protocol = request.body.protocol,
-            validationPromise = validate(request.body);
-
         logger.debug(requestDetails(request));
 
-        return validationPromise.then(validation => {
-            const Q = require('q');
+        return validate(request.body).then(validation => {
+            const Q = require('q'),
+                protocol = request.body.protocol;
 
-            if (validation.isValid) {
-                return protocols[protocol].createImposterFrom(request.body)
-                    .then(imposter => imposters.add(imposter))
-                    .then(imposter => {
-                        response.setHeader('Location', imposter.url);
-                        response.statusCode = 201;
-                        response.send(imposter.toJSON());
-                    }, error => {
-                        respondWithCreationError(response, error);
-                    });
-            }
-            else {
+            if (!validation.isValid) {
                 respondWithValidationErrors(response, validation.errors);
                 return Q(false);
             }
+
+            return protocols[protocol].createImposterFrom(request.body)
+                .then(imposter => imposters.add(imposter))
+                .then(imposter => {
+                    response.setHeader('Location', imposter.url);
+                    response.statusCode = 201;
+                    return imposter.toJSON();
+                }).then(json => {
+                    response.send(json);
+                }, error => {
+                    respondWithCreationError(response, error);
+                });
         });
     }
 
@@ -194,7 +193,7 @@ function create (protocols, imposters, logger, allowInjection) {
 
         return Q.all(validationPromises).then(validations => {
             const isValid = validations.every(validation => validation.isValid);
-            let json;
+            let allImposters;
 
             if (isValid) {
                 return imposters.deleteAll().then(() => {
@@ -202,11 +201,13 @@ function create (protocols, imposters, logger, allowInjection) {
                         protocols[imposter.protocol].createImposterFrom(imposter)
                     );
                     return Q.all(creationPromises);
-                }).then(allImposters => {
-                    const promises = allImposters.map(imposter => imposters.add(imposter));
-                    json = allImposters.map(imposter => imposter.toJSON({ list: true }));
-                    return Q.all(promises);
+                }).then(all => {
+                    allImposters = all;
+                    return Q.all(allImposters.map(imposters.add));
                 }).then(() => {
+                    const promises = allImposters.map(imposter => imposter.toJSON({ list: true }));
+                    return Q.all(promises);
+                }).then(json => {
                     response.send({ imposters: json });
                 }, error => {
                     respondWithCreationError(response, error);

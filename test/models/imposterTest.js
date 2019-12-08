@@ -49,7 +49,9 @@ describe('imposter', function () {
             server.port = 3535;
 
             return Imposter.create(Protocol, { protocol: 'test' }, logger, {}, allow).then(imposter => {
-                assert.deepEqual(imposter.toJSON({ list: true }), {
+                return imposter.toJSON({ list: true });
+            }).then(json => {
+                assert.deepEqual(json, {
                     protocol: 'test',
                     port: 3535,
                     numberOfRequests: 0,
@@ -65,7 +67,9 @@ describe('imposter', function () {
             server.port = 3535;
 
             return Imposter.create(Protocol, { protocol: 'test' }, logger, { recordRequests: true }, allow).then(imposter => {
-                assert.deepEqual(imposter.toJSON(), {
+                return imposter.toJSON();
+            }).then(json => {
+                assert.deepEqual(json, {
                     protocol: 'test',
                     port: 3535,
                     numberOfRequests: 0,
@@ -88,7 +92,9 @@ describe('imposter', function () {
             };
 
             return Imposter.create(Protocol, request, logger, { recordRequests: false }, allow).then(imposter => {
-                assert.deepEqual(imposter.toJSON(), {
+                return imposter.toJSON();
+            }).then(json => {
+                assert.deepEqual(json, {
                     protocol: 'test',
                     port: 3535,
                     numberOfRequests: 0,
@@ -107,7 +113,9 @@ describe('imposter', function () {
             server.port = 3535;
 
             return Imposter.create(Protocol, { protocol: 'test' }, logger, {}, allow).then(imposter => {
-                assert.deepEqual(imposter.toJSON(), {
+                return imposter.toJSON();
+            }).then(json => {
+                assert.deepEqual(json, {
                     protocol: 'test',
                     port: 3535,
                     numberOfRequests: 0,
@@ -127,7 +135,9 @@ describe('imposter', function () {
             metadata.key = 'value';
 
             return Imposter.create(Protocol, { protocol: 'test' }, logger, {}, allow).then(imposter => {
-                assert.deepEqual(imposter.toJSON(), {
+                return imposter.toJSON();
+            }).then(json => {
+                assert.deepEqual(json, {
                     protocol: 'test',
                     port: 3535,
                     numberOfRequests: 0,
@@ -148,7 +158,9 @@ describe('imposter', function () {
             metadata.key = 'value';
 
             return Imposter.create(Protocol, { protocol: 'test' }, logger, {}, allow).then(imposter => {
-                assert.deepEqual(imposter.toJSON({ replayable: true }), {
+                return imposter.toJSON({ replayable: true });
+            }).then(json => {
+                assert.deepEqual(json, {
                     protocol: 'test',
                     port: 3535,
                     recordRequests: false,
@@ -169,7 +181,9 @@ describe('imposter', function () {
                 stubs: [{ responses: ['FIRST'] }, { responses: ['SECOND'] }]
             };
             return Imposter.create(Protocol, request, logger, {}, allow).then(imposter => {
-                assert.deepEqual(imposter.toJSON().stubs, [
+                return imposter.toJSON();
+            }).then(json => {
+                assert.deepEqual(json.stubs, [
                     {
                         responses: ['FIRST'],
                         _links: { self: { href: '/imposters/3535/stubs/0' } }
@@ -199,7 +213,9 @@ describe('imposter', function () {
             };
 
             return Imposter.create(Protocol, request, logger, {}, allow).then(imposter => {
-                assert.deepEqual(imposter.toJSON({ replayable: true }), {
+                return imposter.toJSON({ replayable: true });
+            }).then(json => {
+                assert.deepEqual(json, {
                     protocol: 'test',
                     port: 3535,
                     recordRequests: false,
@@ -217,7 +233,9 @@ describe('imposter', function () {
             };
 
             return Imposter.create(Protocol, request, logger, {}, allow).then(imposter => {
-                assert.deepEqual(imposter.toJSON({ replayable: true }), {
+                return imposter.toJSON({ replayable: true });
+            }).then(json => {
+                assert.deepEqual(json, {
                     protocol: 'test',
                     port: 3535,
                     recordRequests: false,
@@ -244,7 +262,9 @@ describe('imposter', function () {
                 ]
             };
             return Imposter.create(Protocol, request, logger, {}, allow).then(imposter => {
-                assert.deepEqual(imposter.toJSON({ removeProxies: true }).stubs, [
+                return imposter.toJSON({ removeProxies: true });
+            }).then(json => {
+                assert.deepEqual(json.stubs, [
                     {
                         responses: [
                             { is: { body: 'first' } },
@@ -281,7 +301,9 @@ describe('imposter', function () {
             };
 
             return Imposter.create(Protocol, request, logger, {}, allow).then(imposter => {
-                assert.deepEqual(imposter.toJSON({ removeProxies: true }).stubs, [
+                return imposter.toJSON({ removeProxies: true });
+            }).then(json => {
+                assert.deepEqual(json.stubs, [
                     {
                         responses: [
                             { is: { body: 'first' } },
@@ -313,7 +335,8 @@ describe('imposter', function () {
                 imposter = imp;
                 return imposter.getResponseFor({});
             }).then(() => {
-                const json = imposter.toJSON();
+                return imposter.toJSON();
+            }).then(json => {
                 assert.strictEqual(json.numberOfRequests, 1);
                 assert.deepEqual(json.requests, []);
             });
@@ -328,8 +351,8 @@ describe('imposter', function () {
                 imposter = imp;
                 return imposter.getResponseFor({ request: 1 });
             }).then(() => {
-                const json = imposter.toJSON();
-
+                return imposter.toJSON();
+            }).then(json => {
                 assert.strictEqual(json.numberOfRequests, 1);
                 assert.strictEqual(json.requests.length, 1);
             });
@@ -344,8 +367,8 @@ describe('imposter', function () {
                 imposter = imp;
                 return imposter.getResponseFor({ request: 1 });
             }).then(() => {
-                const json = imposter.toJSON();
-
+                return imposter.toJSON();
+            }).then(json => {
                 assert.strictEqual(json.numberOfRequests, 1);
                 assert.strictEqual(json.requests.length, 1);
             });
@@ -360,8 +383,8 @@ describe('imposter', function () {
                 imposter = imp;
                 return imposter.getResponseFor({ request: 1 });
             }).then(() => {
-                const json = imposter.toJSON();
-
+                return imposter.toJSON();
+            }).then(json => {
                 assert.deepEqual(Object.keys(json.requests[0]).sort(), ['request', 'timestamp']);
                 assert.strictEqual(json.requests[0].request, 1);
             });

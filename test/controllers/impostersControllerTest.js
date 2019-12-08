@@ -27,8 +27,8 @@ describe('ImpostersController', function () {
         });
 
         promiseIt('should send list JSON for all imposters by default', function () {
-            const firstImposter = { toJSON: mock().returns('firstJSON') },
-                secondImposter = { toJSON: mock().returns('secondJSON') },
+            const firstImposter = { toJSON: mock().returns(Q('firstJSON')) },
+                secondImposter = { toJSON: mock().returns(Q('secondJSON')) },
                 imposters = { 1: firstImposter, 2: secondImposter },
                 impostersRepo = ImpostersRepo.create({ imposters }),
                 controller = Controller.create({}, impostersRepo, null, false);
@@ -41,8 +41,8 @@ describe('ImpostersController', function () {
         });
 
         promiseIt('should send replayable JSON for all imposters if querystring present', function () {
-            const firstImposter = { toJSON: mock().returns('firstJSON') },
-                secondImposter = { toJSON: mock().returns('secondJSON') },
+            const firstImposter = { toJSON: mock().returns(Q('firstJSON')) },
+                secondImposter = { toJSON: mock().returns(Q('secondJSON')) },
                 imposters = { 1: firstImposter, 2: secondImposter },
                 impostersRepo = ImpostersRepo.create({ imposters }),
                 controller = Controller.create({}, impostersRepo, null, false);
@@ -55,8 +55,8 @@ describe('ImpostersController', function () {
         });
 
         promiseIt('should send replayable and removeProxies JSON for all imposters if querystring present', function () {
-            const firstImposter = { toJSON: mock().returns('firstJSON') },
-                secondImposter = { toJSON: mock().returns('secondJSON') },
+            const firstImposter = { toJSON: mock().returns(Q('firstJSON')) },
+                secondImposter = { toJSON: mock().returns(Q('secondJSON')) },
                 imposters = { 1: firstImposter, 2: secondImposter },
                 impostersRepo = ImpostersRepo.create({ imposters }),
                 controller = Controller.create({}, impostersRepo, null, false);
@@ -76,7 +76,7 @@ describe('ImpostersController', function () {
             request = { body: {}, socket: { remoteAddress: 'host', remotePort: 'port' } };
             imposter = {
                 url: mock().returns('imposter-url'),
-                toJSON: mock().returns('JSON')
+                toJSON: mock().returns(Q('JSON'))
             };
             imposters = ImpostersRepo.create({});
             Protocol = {
@@ -216,8 +216,8 @@ describe('ImpostersController', function () {
         const stopMock = () => mock().returns(Q(true));
 
         promiseIt('should delete all imposters', function () {
-            const firstImposter = { stop: stopMock(), toJSON: mock().returns('firstJSON') },
-                secondImposter = { stop: stopMock(), toJSON: mock().returns('secondJSON') },
+            const firstImposter = { stop: stopMock(), toJSON: mock().returns(Q('firstJSON')) },
+                secondImposter = { stop: stopMock(), toJSON: mock().returns(Q('secondJSON')) },
                 imposters = { 1: firstImposter, 2: secondImposter },
                 impostersRepo = ImpostersRepo.create({ imposters }),
                 controller = Controller.create({}, impostersRepo, {}, false);
@@ -230,8 +230,8 @@ describe('ImpostersController', function () {
         });
 
         promiseIt('should call stop on all imposters', function () {
-            const firstImposter = { stop: mock(), toJSON: mock().returns('firstJSON') },
-                secondImposter = { stop: mock(), toJSON: mock().returns('secondJSON') },
+            const firstImposter = { stop: mock(), toJSON: mock().returns(Q('firstJSON')) },
+                secondImposter = { stop: mock(), toJSON: mock().returns(Q('secondJSON')) },
                 imposters = { 1: firstImposter, 2: secondImposter },
                 impostersRepo = ImpostersRepo.create({ imposters }),
                 controller = Controller.create({}, impostersRepo, {}, false);
@@ -243,8 +243,8 @@ describe('ImpostersController', function () {
         });
 
         promiseIt('should send replayable JSON for all imposters by default', function () {
-            const firstImposter = { stop: stopMock(), toJSON: mock().returns('firstJSON') },
-                secondImposter = { stop: stopMock(), toJSON: mock().returns('secondJSON') },
+            const firstImposter = { stop: stopMock(), toJSON: mock().returns(Q('firstJSON')) },
+                secondImposter = { stop: stopMock(), toJSON: mock().returns(Q('secondJSON')) },
                 imposters = { 1: firstImposter, 2: secondImposter },
                 impostersRepo = ImpostersRepo.create({ imposters }),
                 controller = Controller.create({}, impostersRepo, {}, false);
@@ -257,8 +257,8 @@ describe('ImpostersController', function () {
         });
 
         promiseIt('should send default JSON for all imposters if replayable is false on querystring', function () {
-            const firstImposter = { stop: stopMock(), toJSON: mock().returns('firstJSON') },
-                secondImposter = { stop: stopMock(), toJSON: mock().returns('secondJSON') },
+            const firstImposter = { stop: stopMock(), toJSON: mock().returns(Q('firstJSON')) },
+                secondImposter = { stop: stopMock(), toJSON: mock().returns(Q('secondJSON')) },
                 imposters = { 1: firstImposter, 2: secondImposter },
                 impostersRepo = ImpostersRepo.create({ imposters }),
                 controller = Controller.create({}, impostersRepo, {}, false);
@@ -270,8 +270,8 @@ describe('ImpostersController', function () {
         });
 
         promiseIt('should send removeProxies JSON for all imposters if querystring present', function () {
-            const firstImposter = { stop: mock(), toJSON: mock().returns('firstJSON') },
-                secondImposter = { stop: mock(), toJSON: mock().returns('secondJSON') },
+            const firstImposter = { stop: mock(), toJSON: mock().returns(Q('firstJSON')) },
+                secondImposter = { stop: mock(), toJSON: mock().returns(Q('secondJSON')) },
                 imposters = { 1: firstImposter, 2: secondImposter },
                 impostersRepo = ImpostersRepo.create({ imposters }),
                 controller = Controller.create({}, impostersRepo, {}, false);
@@ -339,8 +339,8 @@ describe('ImpostersController', function () {
 
         promiseIt('should return imposter list JSON for all imposters', function () {
             let creates = 0;
-            const firstImposter = { toJSON: mock().returns({ first: true }) },
-                secondImposter = { toJSON: mock().returns({ second: true }) },
+            const firstImposter = { toJSON: mock().returns(Q({ first: true })) },
+                secondImposter = { toJSON: mock().returns(Q({ second: true })) },
                 imposters = [firstImposter, secondImposter],
                 impostersRepo = ImpostersRepo.create({}),
                 controller = Controller.create({ http: Protocol }, impostersRepo, logger, false);
@@ -365,8 +365,8 @@ describe('ImpostersController', function () {
             const oldImposter = { stop: mock() },
                 imposters = { 0: oldImposter },
                 impostersRepo = ImpostersRepo.create({ imposters }),
-                firstImposter = { toJSON: mock().returns({ first: true }), port: 1 },
-                secondImposter = { toJSON: mock().returns({ second: true }), port: 2 },
+                firstImposter = { toJSON: mock().returns(Q({ first: true })), port: 1 },
+                secondImposter = { toJSON: mock().returns(Q({ second: true })), port: 2 },
                 impostersToCreate = [firstImposter, secondImposter],
                 controller = Controller.create({ http: Protocol }, impostersRepo, logger, false);
 

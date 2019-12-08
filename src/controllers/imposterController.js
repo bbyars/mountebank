@@ -34,17 +34,22 @@ function create (protocols, imposters, logger, allowInjection) {
     function get (request, response) {
         const url = require('url'),
             query = url.parse(request.url, true).query,
-            options = { replayable: queryBoolean(query, 'replayable'), removeProxies: queryBoolean(query, 'removeProxies') };
+            options = {
+                replayable: queryBoolean(query, 'replayable'),
+                removeProxies: queryBoolean(query, 'removeProxies')
+            };
 
         return imposters.get(request.params.id).then(imposter => {
+            return imposter.toJSON(options);
+        }).then(json => {
             response.format({
-                json: () => { response.send(imposter.toJSON(options)); },
+                json: () => { response.send(json); },
                 html: () => {
                     if (request.headers['x-requested-with']) {
-                        response.render('_imposter', { imposter: imposter.toJSON(options) });
+                        response.render('_imposter', { imposter: json });
                     }
                     else {
-                        response.render('imposter', { imposter: imposter.toJSON(options) });
+                        response.render('imposter', { imposter: json });
                     }
                 }
             });
@@ -63,24 +68,20 @@ function create (protocols, imposters, logger, allowInjection) {
         const options = { replayable: false, removeProxies: false };
 
         return imposters.get(request.params.id).then(imposter => {
-            if (imposter) {
-                imposter.resetProxies();
-
-                response.format({
-                    json: () => { response.send(imposter.toJSON(options)); },
-                    html: () => {
-                        if (request.headers['x-requested-with']) {
-                            response.render('_imposter', { imposter: imposter.toJSON(options) });
-                        }
-                        else {
-                            response.render('imposter', { imposter: imposter.toJSON(options) });
-                        }
+            imposter.resetProxies();
+            return imposter.toJSON(options);
+        }).then(json => {
+            response.format({
+                json: () => { response.send(json); },
+                html: () => {
+                    if (request.headers['x-requested-with']) {
+                        response.render('_imposter', { imposter: json });
                     }
-                });
-            }
-            else {
-                response.send({});
-            }
+                    else {
+                        response.render('imposter', { imposter: json });
+                    }
+                }
+            });
         });
     }
 
@@ -99,9 +100,10 @@ function create (protocols, imposters, logger, allowInjection) {
 
         return imposters.get(request.params.id).then(imposter => {
             if (imposter) {
-                const json = imposter.toJSON(options);
-                return imposters.del(request.params.id).then(() => {
-                    response.send(json);
+                return imposter.toJSON(options).then(json => {
+                    return imposters.del(request.params.id).then(() => {
+                        response.send(json);
+                    });
                 });
             }
             else {
@@ -158,21 +160,20 @@ function create (protocols, imposters, logger, allowInjection) {
     }
 
     function validate (imposter, newStubs) {
-        const compatibility = require('../models/compatibility'),
-            request = helpers.clone(imposter);
+        return imposter.toJSON().then(request => {
+            const compatibility = require('../models/compatibility'),
+                Protocol = protocols[request.protocol],
+                validator = require('../models/dryRunValidator').create({
+                    testRequest: Protocol.testRequest,
+                    testProxyResponse: Protocol.testProxyResponse,
+                    additionalValidation: Protocol.validate,
+                    allowInjection: allowInjection
+                });
 
-        request.stubs = newStubs;
-
-        compatibility.upcast(request);
-
-        const Protocol = protocols[request.protocol],
-            validator = require('../models/dryRunValidator').create({
-                testRequest: Protocol.testRequest,
-                testProxyResponse: Protocol.testProxyResponse,
-                additionalValidation: Protocol.validate,
-                allowInjection: allowInjection
-            });
-        return validator.validate(request, logger);
+            request.stubs = newStubs;
+            compatibility.upcast(request);
+            return validator.validate(request, logger);
+        });
     }
 
     function respondWithValidationErrors (response, validationErrors, statusCode = 400) {
@@ -193,26 +194,24 @@ function create (protocols, imposters, logger, allowInjection) {
     function putStubs (request, response) {
         const newStubs = request.body.stubs,
             errors = [];
-        let imposter;
 
         validateStubs(newStubs, errors);
         if (errors.length > 0) {
             return respondWithValidationErrors(response, errors);
         }
-        else {
-            return imposters.get(request.params.id).then(retrieved => {
-                imposter = retrieved;
-                return validate(imposter, newStubs);
-            }).then(result => {
-                if (result.isValid) {
-                    imposter.overwriteStubs(newStubs);
-                    response.send(imposter.toJSON());
+
+        return imposters.get(request.params.id).then(imposter => {
+            return validate(imposter, newStubs).then(result => {
+                if (!result.isValid) {
+                    return respondWithValidationErrors(response, result.errors);
                 }
-                else {
-                    respondWithValidationErrors(response, result.errors);
-                }
+
+                imposter.overwriteStubs(newStubs);
+                return imposter.toJSON().then(json => {
+                    response.send(json);
+                });
             });
-        }
+        });
     }
 
     function validateStubIndex (index, imposter, errors) {
@@ -242,10 +241,12 @@ function create (protocols, imposters, logger, allowInjection) {
                 return validate(imposter, [newStub]).then(result => {
                     if (result.isValid) {
                         imposter.overwriteStubAtIndex(newStub, request.params.stubIndex);
-                        response.send(imposter.toJSON());
+                        return imposter.toJSON().then(json => {
+                            response.send(json);
+                        });
                     }
                     else {
-                        respondWithValidationErrors(response, result.errors);
+                        return respondWithValidationErrors(response, result.errors);
                     }
                 });
             }
@@ -276,10 +277,12 @@ function create (protocols, imposters, logger, allowInjection) {
                 return validate(imposter, [newStub]).then(result => {
                     if (result.isValid) {
                         imposter.insertStubAtIndex(newStub, index);
-                        response.send(imposter.toJSON());
+                        return imposter.toJSON().then(json => {
+                            response.send(json);
+                        });
                     }
                     else {
-                        respondWithValidationErrors(response, result.errors);
+                        return respondWithValidationErrors(response, result.errors);
                     }
                 });
             }
@@ -304,8 +307,10 @@ function create (protocols, imposters, logger, allowInjection) {
             }
             else {
                 imposter.deleteStubAtIndex(request.params.stubIndex);
-                response.send(imposter.toJSON());
-                return require('q')();
+                return imposter.toJSON().then(json => {
+                    response.send(json);
+                    return require('q')();
+                });
             }
         });
     }

@@ -19,6 +19,7 @@ function create (creationRequest, server, requests) {
                 self: { href: `${baseURL}/stubs/${i}` }
             };
         }
+        return require('q')(result);
     }
 
     function removeNonEssentialInformationFrom (result) {
@@ -49,6 +50,10 @@ function create (creationRequest, server, requests) {
         result.stubs = result.stubs.filter(stub => stub.responses.length > 0);
     }
 
+    function removeFunctions (obj) {
+        return JSON.parse(JSON.stringify(obj));
+    }
+
     function toJSON (numberOfRequests, options) {
         // I consider the order of fields represented important.  They won't matter for parsing,
         // but it makes a nicer user experience for developers viewing the JSON to keep the most
@@ -58,27 +63,27 @@ function create (creationRequest, server, requests) {
                 port: server.port,
                 numberOfRequests: numberOfRequests
             },
-            baseURL = `/imposters/${server.port}`;
+            baseURL = `/imposters/${server.port}`,
+            Q = require('q');
 
         options = options || {};
 
-        if (!options.list) {
-            addDetailsTo(result, baseURL);
-        }
+        const promise = options.list ? Q(true) : addDetailsTo(result, baseURL);
+        return promise.then(() => {
+            result._links = {
+                self: { href: baseURL },
+                stubs: { href: `${baseURL}/stubs` }
+            };
 
-        result._links = {
-            self: { href: baseURL },
-            stubs: { href: `${baseURL}/stubs` }
-        };
+            if (options.replayable) {
+                removeNonEssentialInformationFrom(result);
+            }
+            if (options.removeProxies) {
+                removeProxiesFrom(result);
+            }
 
-        if (options.replayable) {
-            removeNonEssentialInformationFrom(result);
-        }
-        if (options.removeProxies) {
-            removeProxiesFrom(result);
-        }
-
-        return result;
+            return removeFunctions(result);
+        });
     }
 
     return { toJSON };
