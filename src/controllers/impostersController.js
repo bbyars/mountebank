@@ -195,29 +195,28 @@ function create (protocols, imposters, logger, allowInjection) {
             const isValid = validations.every(validation => validation.isValid);
             let allImposters;
 
-            if (isValid) {
-                return imposters.deleteAll().then(() => {
-                    const creationPromises = requestImposters.map(imposter =>
-                        protocols[imposter.protocol].createImposterFrom(imposter)
-                    );
-                    return Q.all(creationPromises);
-                }).then(all => {
-                    allImposters = all;
-                    return Q.all(allImposters.map(imposters.add));
-                }).then(() => {
-                    const promises = allImposters.map(imposter => imposter.toJSON({ list: true }));
-                    return Q.all(promises);
-                }).then(json => {
-                    response.send({ imposters: json });
-                }, error => {
-                    respondWithCreationError(response, error);
-                });
-            }
-            else {
+            if (!isValid) {
                 const validationErrors = validations.reduce((accumulator, validation) => accumulator.concat(validation.errors), []);
                 respondWithValidationErrors(response, validationErrors);
                 return Q(false);
             }
+
+            return imposters.deleteAll().then(() => {
+                const creationPromises = requestImposters.map(imposter =>
+                    protocols[imposter.protocol].createImposterFrom(imposter)
+                );
+                return Q.all(creationPromises);
+            }).then(all => {
+                allImposters = all;
+                return Q.all(allImposters.map(imposters.add));
+            }).then(() => {
+                const promises = allImposters.map(imposter => imposter.toJSON({ list: true }));
+                return Q.all(promises);
+            }).then(json => {
+                response.send({ imposters: json });
+            }, error => {
+                respondWithCreationError(response, error);
+            });
         });
     }
 

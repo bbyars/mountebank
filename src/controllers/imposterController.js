@@ -96,7 +96,10 @@ function create (protocols, imposters, logger, allowInjection) {
         const Q = require('q'),
             url = require('url'),
             query = url.parse(request.url, true).query,
-            options = { replayable: queryBoolean(query, 'replayable'), removeProxies: queryBoolean(query, 'removeProxies') };
+            options = {
+                replayable: queryBoolean(query, 'replayable'),
+                removeProxies: queryBoolean(query, 'removeProxies')
+            };
 
         return imposters.get(request.params.id).then(imposter => {
             if (imposter) {
@@ -125,9 +128,7 @@ function create (protocols, imposters, logger, allowInjection) {
     function postRequest (request, response) {
         return imposters.get(request.params.id).then(imposter =>
             imposter.getResponseFor(request.body.request)
-        ).then(protoResponse => {
-            response.send(protoResponse);
-        });
+        ).then(json => response.send(json));
     }
 
     /**
@@ -145,21 +146,24 @@ function create (protocols, imposters, logger, allowInjection) {
 
         return imposters.get(request.params.id).then(imposter =>
             imposter.getProxyResponseFor(proxyResponse, proxyResolutionKey)
-        ).then(protoResponse => {
-            response.send(protoResponse);
-        });
+        ).then(json => response.send(json));
     }
 
-    function validateStubs (stubs, errors) {
-        if (!helpers.defined(stubs)) {
+    function validateStubs (imposter, newStubs) {
+        const errors = [],
+            Q = require('q');
+
+        if (!helpers.defined(newStubs)) {
             errors.push(exceptions.ValidationError("'stubs' is a required field"));
         }
-        else if (!require('util').isArray(stubs)) {
+        else if (!require('util').isArray(newStubs)) {
             errors.push(exceptions.ValidationError("'stubs' must be an array"));
         }
-    }
 
-    function validate (imposter, newStubs) {
+        if (errors.length > 0) {
+            return Q({ isValid: false, errors });
+        }
+
         return imposter.toJSON().then(request => {
             const compatibility = require('../models/compatibility'),
                 Protocol = protocols[request.protocol],
@@ -192,32 +196,26 @@ function create (protocols, imposters, logger, allowInjection) {
      * @returns {Object} - promise for testing
      */
     function putStubs (request, response) {
-        const newStubs = request.body.stubs,
-            errors = [];
-
-        validateStubs(newStubs, errors);
-        if (errors.length > 0) {
-            return respondWithValidationErrors(response, errors);
-        }
-
         return imposters.get(request.params.id).then(imposter => {
-            return validate(imposter, newStubs).then(result => {
+            const newStubs = request.body.stubs;
+
+            return validateStubs(imposter, newStubs).then(result => {
                 if (!result.isValid) {
                     return respondWithValidationErrors(response, result.errors);
                 }
 
                 imposter.overwriteStubs(newStubs);
-                return imposter.toJSON().then(json => {
-                    response.send(json);
-                });
+                return imposter.toJSON().then(json => response.send(json));
             });
         });
     }
 
-    function validateStubIndex (index, imposter, errors) {
+    function validateStubIndex (index, imposter) {
+        const errors = [];
         if (typeof imposter.stubs()[index] === 'undefined') {
             errors.push(exceptions.ValidationError("'stubIndex' must be a valid integer, representing the array index position of the stub to replace"));
         }
+        return { isValid: errors.length === 0, errors };
     }
 
     /**
@@ -229,27 +227,22 @@ function create (protocols, imposters, logger, allowInjection) {
      * @returns {Object} - promise for testing
      */
     function putStub (request, response) {
-        const newStub = request.body,
-            errors = [];
-
         return imposters.get(request.params.id).then(imposter => {
-            validateStubIndex(request.params.stubIndex, imposter, errors);
-            if (errors.length > 0) {
-                return respondWithValidationErrors(response, errors, 404);
+            const validation = validateStubIndex(request.params.stubIndex, imposter),
+                newStub = request.body;
+
+            if (!validation.isValid) {
+                return respondWithValidationErrors(response, validation.errors, 404);
             }
-            else {
-                return validate(imposter, [newStub]).then(result => {
-                    if (result.isValid) {
-                        imposter.overwriteStubAtIndex(newStub, request.params.stubIndex);
-                        return imposter.toJSON().then(json => {
-                            response.send(json);
-                        });
-                    }
-                    else {
-                        return respondWithValidationErrors(response, result.errors);
-                    }
-                });
-            }
+
+            return validateStubs(imposter, [newStub]).then(result => {
+                if (!result.isValid) {
+                    return respondWithValidationErrors(response, result.errors);
+                }
+
+                imposter.overwriteStubAtIndex(newStub, request.params.stubIndex);
+                return imposter.toJSON().then(json => response.send(json));
+            });
         });
     }
 
@@ -273,19 +266,15 @@ function create (protocols, imposters, logger, allowInjection) {
             if (errors.length > 0) {
                 return respondWithValidationErrors(response, errors);
             }
-            else {
-                return validate(imposter, [newStub]).then(result => {
-                    if (result.isValid) {
-                        imposter.insertStubAtIndex(newStub, index);
-                        return imposter.toJSON().then(json => {
-                            response.send(json);
-                        });
-                    }
-                    else {
-                        return respondWithValidationErrors(response, result.errors);
-                    }
-                });
-            }
+
+            return validateStubs(imposter, [newStub]).then(result => {
+                if (!result.isValid) {
+                    return respondWithValidationErrors(response, result.errors);
+                }
+
+                imposter.insertStubAtIndex(newStub, index);
+                return imposter.toJSON().then(json => response.send(json));
+            });
         });
     }
 
@@ -298,20 +287,14 @@ function create (protocols, imposters, logger, allowInjection) {
      * @returns {Object} - promise for testing
      */
     function deleteStub (request, response) {
-        const errors = [];
-
         return imposters.get(request.params.id).then(imposter => {
-            validateStubIndex(request.params.stubIndex, imposter, errors);
-            if (errors.length > 0) {
-                return respondWithValidationErrors(response, errors, 404);
+            const validation = validateStubIndex(request.params.stubIndex, imposter);
+            if (!validation.isValid) {
+                return respondWithValidationErrors(response, validation.errors, 404);
             }
-            else {
-                imposter.deleteStubAtIndex(request.params.stubIndex);
-                return imposter.toJSON().then(json => {
-                    response.send(json);
-                    return require('q')();
-                });
-            }
+
+            imposter.deleteStubAtIndex(request.params.stubIndex);
+            return imposter.toJSON().then(json => response.send(json));
         });
     }
 
