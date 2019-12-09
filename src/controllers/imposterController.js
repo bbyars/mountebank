@@ -284,8 +284,9 @@ function create (protocols, imposters, logger, allowInjection) {
                         return respondWithValidationErrors(response, result.errors);
                     }
 
-                    imposter.insertStubAtIndex(newStub, index);
-                    return imposter.toJSON().then(json => response.send(json));
+                    return imposter.insertStubAtIndex(newStub, index).then(() => {
+                        return imposter.toJSON().then(json => response.send(json));
+                    });
                 });
             });
         });

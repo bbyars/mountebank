@@ -69,6 +69,7 @@ function create () {
 
     function insertAtIndex (stub, index) {
         stubs.splice(index, 0, Stub.create(stub));
+        return Q();
     }
 
     function overwriteAll (newStubs) {

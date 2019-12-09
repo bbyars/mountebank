@@ -238,13 +238,15 @@ function create (stubs, proxy, callbackURL) {
     function addNewStub (responseConfig, request, response, logger) {
         const predicates = predicatesFor(request, responseConfig.proxy.predicateGenerators || [], logger),
             stubResponse = newIsResponse(response, responseConfig.proxy),
-            newStub = { predicates: predicates, responses: [stubResponse] };
+            newStub = { predicates: predicates, responses: [stubResponse] },
+            Q = require('q');
 
         if (responseConfig.proxy.mode === 'proxyAlways') {
             stubs.add(newStub);
+            return Q();
         }
         else {
-            stubs.insertAtIndex(newStub, responseConfig.stubIndex());
+            return stubs.insertAtIndex(newStub, responseConfig.stubIndex());
         }
     }
 
@@ -257,16 +259,15 @@ function create (stubs, proxy, callbackURL) {
         }
 
         if (responseConfig.proxy.mode === 'proxyOnce') {
-            addNewStub(responseConfig, request, response, logger);
-            return Q();
+            return addNewStub(responseConfig, request, response, logger);
         }
 
         return stubs.all().then(stubList => {
             if (canAddResponseToExistingStub(stubList, responseConfig, request, logger)) {
-                addNewResponse(responseConfig, request, response, logger);
+                return addNewResponse(responseConfig, request, response, logger);
             }
             else {
-                addNewStub(responseConfig, request, response, logger);
+                return addNewStub(responseConfig, request, response, logger);
             }
         });
     }
