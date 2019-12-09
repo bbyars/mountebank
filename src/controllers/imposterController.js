@@ -203,8 +203,9 @@ function create (protocols, imposters, logger, allowInjection) {
                     return respondWithValidationErrors(response, result.errors);
                 }
 
-                imposter.overwriteStubs(newStubs);
-                return imposter.toJSON().then(json => response.send(json));
+                return imposter.overwriteStubs(newStubs).then(() => {
+                    return imposter.toJSON().then(json => response.send(json));
+                });
             });
         });
     }

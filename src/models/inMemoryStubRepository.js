@@ -76,6 +76,7 @@ function create () {
             stubs.pop();
         }
         newStubs.forEach(stub => add(stub));
+        return Q();
     }
 
     function overwriteAtIndex (newStub, index) {

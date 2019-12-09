@@ -19,14 +19,15 @@ describe('stubRepository', function () {
 
             stubs.add(firstStub);
             stubs.add(secondStub);
-            stubs.overwriteAll([thirdStub]);
 
-            return stubs.all().then(all => {
-                const responses = all.map(stub => stub.responses);
+            return stubs.overwriteAll([thirdStub]).then(() => {
+                return stubs.all().then(all => {
+                    const responses = all.map(stub => stub.responses);
 
-                assert.deepEqual(responses, [
-                    [{ is: 'fifth' }, { is: 'sixth' }]
-                ]);
+                    assert.deepEqual(responses, [
+                        [{ is: 'fifth' }, { is: 'sixth' }]
+                    ]);
+                });
             });
         });
     });
