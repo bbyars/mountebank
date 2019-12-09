@@ -513,7 +513,7 @@ const assert = require('assert'),
                         return api.put(`/imposters/${port}/stubs/1`, changedStub);
                     })
                     .then(response => {
-                        assert.strictEqual(response.statusCode, 200);
+                        assert.strictEqual(response.statusCode, 200, JSON.stringify(response.body));
                         assert.deepEqual(response.body.stubs, [
                             {
                                 responses: [{ is: { body: 'first' } }],

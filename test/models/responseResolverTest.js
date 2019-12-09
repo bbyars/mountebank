@@ -23,15 +23,16 @@ describe('responseResolver', function () {
         return responses.map(response => cleanedProxyResponse(response));
     }
 
-    function stubList (stubs) {
-        const result = stubs.all();
-        result.forEach(stub => {
-            delete stub.recordMatch;
-            delete stub.addResponse;
-            delete stub.deleteResponsesMatching;
-            stub.responses = proxyResponses(stub.responses);
+    function stubListFor (stubs) {
+        return stubs.all().then(result => {
+            result.forEach(stub => {
+                delete stub.recordMatch;
+                delete stub.addResponse;
+                delete stub.deleteResponsesMatching;
+                stub.responses = proxyResponses(stub.responses);
+            });
+            return result;
         });
-        return result;
     }
 
     describe('#resolve', function () {
@@ -126,7 +127,9 @@ describe('responseResolver', function () {
 
             return resolver.resolve(responseConfig, {}, logger, {}).then(response => {
                 assert.strictEqual(response.key, 'value');
-                const stubResponses = stubs.all().map(stub => proxyResponses(stub.responses));
+                return stubs.all();
+            }).then(all => {
+                const stubResponses = all.map(stub => proxyResponses(stub.responses));
                 assert.deepEqual(stubResponses, [
                     [],
                     [{ is: { key: 'value' } }],
@@ -146,7 +149,9 @@ describe('responseResolver', function () {
             const responseConfig = stubs.getResponseFor({}, logger, {});
 
             return resolver.resolve(responseConfig, request, logger, {}).then(() => {
-                const stubResponses = stubs.all().map(stub => stub.responses),
+                return stubs.all();
+            }).then(all => {
+                const stubResponses = all.map(stub => stub.responses),
                     wait = stubResponses[0][0].is._proxyResponseTime; // eslint-disable-line no-underscore-dangle
                 assert.ok(wait > 90); // allow some variability
                 assert.deepEqual(stubResponses, [
@@ -178,7 +183,9 @@ describe('responseResolver', function () {
                 // First call adds the stub, second call adds a response
                 resolver.resolve(responseConfig, request, logger, {})
             ).then(() => {
-                const stubResponses = stubs.all().map(stub => stub.responses),
+                return stubs.all();
+            }).then(all => {
+                const stubResponses = all.map(stub => stub.responses),
                     firstWait = stubResponses[1][0].is._proxyResponseTime, // eslint-disable-line no-underscore-dangle
                     secondWait = stubResponses[1][1].is._proxyResponseTime; // eslint-disable-line no-underscore-dangle
                 assert.deepEqual(stubResponses, [
@@ -207,7 +214,9 @@ describe('responseResolver', function () {
             const responseConfig = stubs.getResponseFor({}, logger, {});
 
             return resolver.resolve(responseConfig, request, logger, {}).then(() => {
-                const stubResponses = stubs.all().map(stub => proxyResponses(stub.responses));
+                return stubs.all();
+            }).then(all => {
+                const stubResponses = all.map(stub => proxyResponses(stub.responses));
                 assert.deepEqual(stubResponses, [
                     [{ is: { data: 'RESPONSE-DECORATED' } }],
                     [{ proxy: { to: 'where', mode: 'proxyOnce' }, _behaviors: { decorate: decorateFunc.toString() } }]
@@ -227,7 +236,9 @@ describe('responseResolver', function () {
             const responseConfig = stubs.getResponseFor({}, logger, {});
 
             return resolver.resolve(responseConfig, request, logger, {}).then(() => {
-                const stubResponses = stubs.all().map(stub => proxyResponses(stub.responses));
+                return stubs.all();
+            }).then(all => {
+                const stubResponses = all.map(stub => proxyResponses(stub.responses));
                 assert.deepEqual(stubResponses, [
                     [{ is: { data: 'value' }, _behaviors: { decorate: decorateFunc } }],
                     [{ proxy: { to: 'where', addDecorateBehavior: decorateFunc, mode: 'proxyOnce' } }]
@@ -250,7 +261,9 @@ describe('responseResolver', function () {
                 // First call adds the stub, second call adds a response
                 resolver.resolve(responseConfig, request, logger, stubs)
             ).then(() => {
-                const stubResponses = stubs.all().map(stub => proxyResponses(stub.responses));
+                return stubs.all();
+            }).then(all => {
+                const stubResponses = all.map(stub => proxyResponses(stub.responses));
                 assert.deepEqual(stubResponses, [
                     [{ proxy: { to: 'where', mode: 'proxyAlways', addDecorateBehavior: decorateFunc } }],
                     [
@@ -278,7 +291,9 @@ describe('responseResolver', function () {
             const responseConfig = stubs.getResponseFor({}, logger, {});
 
             return resolver.resolve(responseConfig, request, logger, {}).then(() => {
-                assert.deepEqual(stubList(stubs), [
+                return stubListFor(stubs);
+            }).then(stubList => {
+                assert.deepEqual(stubList, [
                     {
                         predicates: [{
                             deepEquals: {
@@ -317,7 +332,9 @@ describe('responseResolver', function () {
             const responseConfig = stubs.getResponseFor({}, logger, {});
 
             return resolver.resolve(responseConfig, request, logger, {}).then(() => {
-                assert.deepEqual(stubList(stubs), [
+                return stubListFor(stubs);
+            }).then(stubList => {
+                assert.deepEqual(stubList, [
                     {
                         predicates: [{ equals: { key: { nested: { first: 'one' } } } }],
                         responses: [{ is: { key: 'value' } }]
@@ -357,7 +374,9 @@ describe('responseResolver', function () {
             const responseConfig = stubs.getResponseFor({}, logger, {});
 
             return resolver.resolve(responseConfig, request, logger, {}).then(() => {
-                assert.deepEqual(stubList(stubs), [
+                return stubListFor(stubs);
+            }).then(stubList => {
+                assert.deepEqual(stubList, [
                     {
                         predicates: [{
                             deepEquals: { key: 'Test' },
@@ -395,7 +414,9 @@ describe('responseResolver', function () {
 
 
             return resolver.resolve(responseConfig, request, logger, {}).then(() => {
-                assert.deepEqual(stubList(stubs), [
+                return stubListFor(stubs);
+            }).then(stubList => {
+                assert.deepEqual(stubList, [
                     {
                         predicates: [{
                             contains: { key: 'Test' }
@@ -431,7 +452,9 @@ describe('responseResolver', function () {
 
 
             return resolver.resolve(responseConfig, request, logger, {}).then(() => {
-                assert.deepEqual(stubList(stubs), [
+                return stubListFor(stubs);
+            }).then(stubList => {
+                assert.deepEqual(stubList, [
                     {
                         predicates: [{
                             exists: { key: true }
@@ -467,7 +490,9 @@ describe('responseResolver', function () {
 
 
             return resolver.resolve(responseConfig, request, logger, {}).then(() => {
-                assert.deepEqual(stubList(stubs), [
+                return stubListFor(stubs);
+            }).then(stubList => {
+                assert.deepEqual(stubList, [
                     {
                         predicates: [{
                             exists: { key: { nested: true } }
@@ -502,7 +527,9 @@ describe('responseResolver', function () {
             const responseConfig = stubs.getResponseFor({}, logger, {});
 
             return resolver.resolve(responseConfig, request, logger, {}).then(() => {
-                assert.deepEqual(stubList(stubs), [
+                return stubListFor(stubs);
+            }).then(stubList => {
+                assert.deepEqual(stubList, [
                     {
                         predicates: [{
                             deepEquals: { key: 'Test' },
@@ -575,7 +602,9 @@ describe('responseResolver', function () {
             const responseConfig = stubs.getResponseFor({}, logger, {});
 
             return resolver.resolve(responseConfig, request, logger, {}).then(() => {
-                assert.deepEqual(stubList(stubs), [
+                return stubListFor(stubs);
+            }).then(stubList => {
+                assert.deepEqual(stubList, [
                     {
                         predicates: [{
                             deepEquals: { field: 'Harry Potter' },
@@ -611,7 +640,9 @@ describe('responseResolver', function () {
             const responseConfig = stubs.getResponseFor({}, logger, {});
 
             return resolver.resolve(responseConfig, request, logger, {}).then(() => {
-                assert.deepEqual(stubList(stubs), [
+                return stubListFor(stubs);
+            }).then(stubList => {
+                assert.deepEqual(stubList, [
                     {
                         predicates: [{
                             equals: { parent: { child: 'Harry Potter' } },
@@ -655,7 +686,9 @@ describe('responseResolver', function () {
             const responseConfig = stubs.getResponseFor({}, logger, {});
 
             return resolver.resolve(responseConfig, request, logger, {}).then(() => {
-                assert.deepEqual(stubList(stubs), [
+                return stubListFor(stubs);
+            }).then(stubList => {
+                assert.deepEqual(stubList, [
                     {
                         predicates: [{
                             deepEquals: { field: ['Harry Potter', 'The Hobbit', 'Game of Thrones'] },
@@ -694,7 +727,9 @@ describe('responseResolver', function () {
             const responseConfig = stubs.getResponseFor({}, logger, {});
 
             return resolver.resolve(responseConfig, request, logger, {}).then(() => {
-                assert.deepEqual(stubList(stubs), [
+                return stubListFor(stubs);
+            }).then(stubList => {
+                assert.deepEqual(stubList, [
                     {
                         predicates: [{
                             deepEquals: { field: '' },
@@ -730,7 +765,9 @@ describe('responseResolver', function () {
             const responseConfig = stubs.getResponseFor({}, logger, {});
 
             return resolver.resolve(responseConfig, request, logger, {}).then(() => {
-                assert.deepEqual(stubList(stubs), [
+                return stubListFor(stubs);
+            }).then(stubList => {
+                assert.deepEqual(stubList, [
                     {
                         predicates: [{
                             deepEquals: { field: 2 },
@@ -766,7 +803,9 @@ describe('responseResolver', function () {
             const responseConfig = stubs.getResponseFor({}, logger, {});
 
             return resolver.resolve(responseConfig, request, logger, {}).then(() => {
-                assert.deepEqual(stubList(stubs), [
+                return stubListFor(stubs);
+            }).then(stubList => {
+                assert.deepEqual(stubList, [
                     {
                         predicates: [{
                             deepEquals: { field: false },
@@ -802,7 +841,9 @@ describe('responseResolver', function () {
             const responseConfig = stubs.getResponseFor({}, logger, {});
 
             return resolver.resolve(responseConfig, request, logger, {}).then(() => {
-                assert.deepEqual(stubList(stubs), [
+                return stubListFor(stubs);
+            }).then(stubList => {
+                assert.deepEqual(stubList, [
                     {
                         predicates: [{
                             deepEquals: { field: 'Harry Potter' },
@@ -846,7 +887,9 @@ describe('responseResolver', function () {
             const responseConfig = stubs.getResponseFor({}, logger, {});
 
             return resolver.resolve(responseConfig, request, logger, {}).then(() => {
-                assert.deepEqual(stubList(stubs), [
+                return stubListFor(stubs);
+            }).then(stubList => {
+                assert.deepEqual(stubList, [
                     {
                         predicates: [{
                             deepEquals: { field: ['Harry Potter', 'The Hobbit', 'Game of Thrones'] },
@@ -882,7 +925,9 @@ describe('responseResolver', function () {
             const responseConfig = stubs.getResponseFor({}, logger, {});
 
             return resolver.resolve(responseConfig, request, logger, {}).then(() => {
-                assert.deepEqual(stubList(stubs), [
+                return stubListFor(stubs);
+            }).then(stubList => {
+                assert.deepEqual(stubList, [
                     {
                         predicates: [{
                             deepEquals: { field: '' },
@@ -918,7 +963,9 @@ describe('responseResolver', function () {
             const responseConfig = stubs.getResponseFor({}, logger, {});
 
             return resolver.resolve(responseConfig, request, logger, {}).then(() => {
-                assert.deepEqual(stubList(stubs), [
+                return stubListFor(stubs);
+            }).then(stubList => {
+                assert.deepEqual(stubList, [
                     {
                         predicates: [{
                             deepEquals: { field: '' },
@@ -1138,16 +1185,18 @@ describe('responseResolver', function () {
             return response;
         }
 
-        function matches (stubs) {
-            const matchList = stubs.all().map(stub => stub.matches || []);
-            matchList.forEach(matchesForOneStub => {
-                matchesForOneStub.forEach(match => {
-                    if (match.timestamp) {
-                        match.timestamp = 'NOW';
-                    }
+        function matchesFor (stubs) {
+            return stubs.all().then(all => {
+                const matchList = all.map(stub => stub.matches || []);
+                matchList.forEach(matchesForOneStub => {
+                    matchesForOneStub.forEach(match => {
+                        if (match.timestamp) {
+                            match.timestamp = 'NOW';
+                        }
+                    });
                 });
+                return matchList;
             });
-            return matchList;
         }
 
         promiseIt('should error if called with invalid proxyResolutionKey', function () {
@@ -1183,7 +1232,9 @@ describe('responseResolver', function () {
                 return resolver.resolveProxy({ data: 'RESPONSE' }, proxyResolutionKey, logger);
             }).then(response => {
                 assert.deepEqual(jsonResponse(response), { data: 'RESPONSE' });
-                const stubResponses = stubs.all().map(stub => proxyResponses(stub.responses));
+                return stubs.all();
+            }).then(all => {
+                const stubResponses = all.map(stub => proxyResponses(stub.responses));
                 delete responseConfig.stubIndex;
                 assert.deepEqual(stubResponses, [
                     [{ is: { data: 'RESPONSE' } }],
@@ -1208,7 +1259,9 @@ describe('responseResolver', function () {
                 return resolver.resolveProxy({ data: 'RESPONSE' }, proxyResolutionKey, logger);
             }).then(response => {
                 assert.deepEqual(jsonResponse(response), { data: 'RESPONSE' });
-                const stubResponses = stubs.all().map(stub => proxyResponses(stub.responses));
+                return stubs.all();
+            }).then(all => {
+                const stubResponses = all.map(stub => proxyResponses(stub.responses));
                 delete responseConfig.stubIndex;
                 assert.deepEqual(stubResponses, [
                     [responseConfig],
@@ -1237,7 +1290,9 @@ describe('responseResolver', function () {
                 return resolver.resolveProxy({ data: 'RESPONSE' }, proxyResolutionKey, logger);
             }).then(response => {
                 assert.deepEqual(jsonResponse(response), { data: 'RESPONSE-DECORATED' });
-                const stubResponses = stubs.all().map(stub => proxyResponses(stub.responses));
+                return stubs.all();
+            }).then(all => {
+                const stubResponses = all.map(stub => proxyResponses(stub.responses));
                 assert.deepEqual(stubResponses, [
                     [{ is: { data: 'RESPONSE-DECORATED' } }],
                     [proxyResponse]
@@ -1261,7 +1316,9 @@ describe('responseResolver', function () {
             }).then(proxyResolutionKey =>
                 resolver.resolveProxy({ data: 'RESPONSE' }, proxyResolutionKey, logger)
             ).then(() => {
-                const stubResponses = stubs.all().map(stub => stub.responses),
+                return stubs.all();
+            }).then(all => {
+                const stubResponses = all.map(stub => stub.responses),
                     wait = stubResponses[0][0].is._proxyResponseTime; // eslint-disable-line no-underscore-dangle
                 assert.ok(wait > 90); // allow some variability
                 assert.deepEqual(stubResponses, [
@@ -1287,7 +1344,9 @@ describe('responseResolver', function () {
                 return resolver.resolveProxy({ data: 'RESPONSE' }, proxyResolutionKey, logger);
             }).then(response => {
                 response.recordMatch();
-                assert.deepEqual(matches(stubs), [
+                return matchesFor(stubs);
+            }).then(matches => {
+                assert.deepEqual(matches, [
                     [],
                     [{ timestamp: 'NOW', request: { key: 'REQUEST' }, response: { data: 'RESPONSE' } }]
                 ]);
@@ -1312,7 +1371,9 @@ describe('responseResolver', function () {
                 return resolver.resolveProxy({ data: 'RESPONSE' }, proxyResolutionKey, logger);
             }).then(response => {
                 response.recordMatch();
-                assert.deepEqual(matches(stubs), [
+                return matchesFor(stubs);
+            }).then(matches => {
+                assert.deepEqual(matches, [
                     [{ timestamp: 'NOW', request: { key: 'REQUEST-1' }, response: { data: 'RESPONSE' } }],
                     []
                 ]);

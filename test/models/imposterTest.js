@@ -20,7 +20,7 @@ describe('imposter', function () {
             server = {
                 stubs: {
                     add: stub => { stubs.push(stub); },
-                    all: () => stubs
+                    all: () => Q(stubs)
                 },
                 resolver: mock(),
                 port: 3535,

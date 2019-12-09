@@ -194,9 +194,8 @@ function create (stubs, proxy, callbackURL) {
         return stringify(obj1) === stringify(obj2);
     }
 
-    function indexOfStubToAddResponseTo (responseConfig, request, logger) {
-        const predicates = predicatesFor(request, responseConfig.proxy.predicateGenerators || [], logger),
-            stubList = stubs.all();
+    function indexOfStubToAddResponseTo (stubList, responseConfig, request, logger) {
+        const predicates = predicatesFor(request, responseConfig.proxy.predicateGenerators || [], logger);
 
         for (let index = responseConfig.stubIndex() + 1; index < stubList.length; index += 1) {
             if (deepEqual(predicates, stubList[index].predicates)) {
@@ -206,8 +205,8 @@ function create (stubs, proxy, callbackURL) {
         return -1;
     }
 
-    function canAddResponseToExistingStub (responseConfig, request, logger) {
-        return indexOfStubToAddResponseTo(responseConfig, request, logger) >= 0;
+    function canAddResponseToExistingStub (stubList, responseConfig, request, logger) {
+        return indexOfStubToAddResponseTo(stubList, responseConfig, request, logger) >= 0;
     }
 
     function newIsResponse (response, proxyConfig) {
@@ -228,10 +227,12 @@ function create (stubs, proxy, callbackURL) {
     }
 
     function addNewResponse (responseConfig, request, response, logger) {
-        const stubResponse = newIsResponse(response, responseConfig.proxy),
-            responseIndex = indexOfStubToAddResponseTo(responseConfig, request, logger);
+        const stubResponse = newIsResponse(response, responseConfig.proxy);
 
-        stubs.all()[responseIndex].addResponse(stubResponse);
+        return stubs.all().then(stubList => {
+            const responseIndex = indexOfStubToAddResponseTo(stubList, responseConfig, request, logger);
+            stubList[responseIndex].addResponse(stubResponse);
+        });
     }
 
     function addNewStub (responseConfig, request, response, logger) {
@@ -248,17 +249,26 @@ function create (stubs, proxy, callbackURL) {
     }
 
     function recordProxyResponse (responseConfig, request, response, logger) {
+        const Q = require('q');
+
         // proxyTransparent prevents the request from being recorded, and always transparently issues the request.
         if (responseConfig.proxy.mode === 'proxyTransparent') {
-            return;
+            return Q();
         }
 
-        if (responseConfig.proxy.mode === 'proxyAlways' && canAddResponseToExistingStub(responseConfig, request, logger)) {
-            addNewResponse(responseConfig, request, response, logger);
-        }
-        else {
+        if (responseConfig.proxy.mode === 'proxyOnce') {
             addNewStub(responseConfig, request, response, logger);
+            return Q();
         }
+
+        return stubs.all().then(stubList => {
+            if (canAddResponseToExistingStub(stubList, responseConfig, request, logger)) {
+                addNewResponse(responseConfig, request, response, logger);
+            }
+            else {
+                addNewStub(responseConfig, request, response, logger);
+            }
+        });
     }
 
     function proxyAndRecord (responseConfig, request, logger, requestDetails) {
@@ -278,8 +288,7 @@ function create (stubs, proxy, callbackURL) {
                 // Run behaviors here to persist decorated response
                 return Q(behaviors.execute(request, response, responseConfig._behaviors, logger));
             }).then(response => {
-                recordProxyResponse(responseConfig, request, response, logger);
-                return Q(response);
+                return recordProxyResponse(responseConfig, request, response, logger).then(() => response);
             });
         }
         else {
@@ -387,10 +396,12 @@ function create (stubs, proxy, callbackURL) {
 
             return behaviors.execute(pendingProxyConfig.request, proxyResponse, pendingProxyConfig.responseConfig._behaviors, logger)
                 .then(response => {
-                    recordProxyResponse(pendingProxyConfig.responseConfig, pendingProxyConfig.request, response, logger);
-                    response.recordMatch = () => { pendingProxyConfig.responseConfig.recordMatch(pendingProxyConfig.request, response); };
-                    delete pendingProxyResolutions[proxyResolutionKey];
-                    return Q(response);
+                    return recordProxyResponse(pendingProxyConfig.responseConfig, pendingProxyConfig.request, response, logger)
+                        .then(() => {
+                            response.recordMatch = () => { pendingProxyConfig.responseConfig.recordMatch(pendingProxyConfig.request, response); };
+                            delete pendingProxyResolutions[proxyResolutionKey];
+                            return Q(response);
+                        });
                 });
         }
         else {

@@ -69,15 +69,17 @@ function create (encoding, config) {
 
     /**
     * Removes the saved proxy responses
+    * @returns {Object} - Promise
     */
     function resetProxies () {
-        const allStubs = stubs.all();
-        for (let i = allStubs.length - 1; i >= 0; i -= 1) {
-            allStubs[i].deleteResponsesMatching(isRecordedResponse);
-            if (allStubs[i].responses.length === 0) {
-                stubs.deleteAtIndex(i);
+        return stubs.all().then(allStubs => {
+            for (let i = allStubs.length - 1; i >= 0; i -= 1) {
+                allStubs[i].deleteResponsesMatching(isRecordedResponse);
+                if (allStubs[i].responses.length === 0) {
+                    stubs.deleteAtIndex(i);
+                }
             }
-        }
+        });
     }
 
     return {

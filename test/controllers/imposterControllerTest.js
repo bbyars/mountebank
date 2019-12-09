@@ -188,7 +188,7 @@ describe('ImposterController', function () {
             const response = FakeResponse.create(),
                 imposter = {
                     toJSON: mock().returns(Q('JSON')),
-                    resetProxies: mock()
+                    resetProxies: mock().returns(Q())
                 },
                 repo = ImpostersRepo.create({ imposters: { 1: imposter } }),
                 controller = Controller.create({}, repo);
@@ -285,7 +285,7 @@ describe('ImposterController', function () {
                 imposters = {
                     1: {
                         protocol: 'test',
-                        stubs: mock().returns([])
+                        stubs: mock().returns(Q([]))
                     }
                 },
                 repo = ImpostersRepo.create({ imposters }),
@@ -312,7 +312,7 @@ describe('ImposterController', function () {
                 imposters = {
                     1: {
                         protocol: 'test',
-                        stubs: mock().returns([])
+                        stubs: mock().returns(Q([]))
                     }
                 },
                 repo = ImpostersRepo.create({ imposters }),
@@ -339,7 +339,7 @@ describe('ImposterController', function () {
                 imposters = {
                     1: {
                         protocol: 'test',
-                        stubs: mock().returns([0, 1, 2])
+                        stubs: mock().returns(Q([0, 1, 2]))
                     }
                 },
                 repo = ImpostersRepo.create({ imposters }),
@@ -366,7 +366,7 @@ describe('ImposterController', function () {
                 imposters = {
                     1: {
                         protocol: 'test',
-                        stubs: mock().returns([0, 1, 2]),
+                        stubs: mock().returns(Q([0, 1, 2])),
                         toJSON: mock().returns(Q({ protocol: 'test' }))
                     }
                 },
@@ -395,7 +395,7 @@ describe('ImposterController', function () {
                 imposters = {
                     1: {
                         protocol: 'test',
-                        stubs: mock().returns([0, 1, 2]),
+                        stubs: mock().returns(Q([0, 1, 2])),
                         toJSON: mock().returns(Q({ protocol: 'test' }))
                     }
                 },
@@ -426,7 +426,7 @@ describe('ImposterController', function () {
                 imposters = {
                     1: {
                         protocol: 'test',
-                        stubs: mock().returns([0, 1, 2])
+                        stubs: mock().returns(Q([0, 1, 2]))
                     }
                 },
                 repo = ImpostersRepo.create({ imposters }),

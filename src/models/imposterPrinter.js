@@ -12,14 +12,15 @@ function create (creationRequest, server, requests) {
         });
 
         result.requests = requests;
-        result.stubs = server.stubs.all();
-
-        for (let i = 0; i < result.stubs.length; i += 1) {
-            result.stubs[i]._links = {
-                self: { href: `${baseURL}/stubs/${i}` }
-            };
-        }
-        return require('q')(result);
+        return server.stubs.all().then(all => {
+            result.stubs = all;
+            for (let i = 0; i < result.stubs.length; i += 1) {
+                result.stubs[i]._links = {
+                    self: { href: `${baseURL}/stubs/${i}` }
+                };
+            }
+            return result;
+        });
     }
 
     function removeNonEssentialInformationFrom (result) {

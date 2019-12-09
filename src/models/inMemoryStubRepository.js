@@ -87,7 +87,8 @@ function create () {
 
     function all () {
         const helpers = require('../util/helpers'),
-            result = helpers.clone(stubs);
+            result = helpers.clone(stubs),
+            Q = require('q');
 
         for (var i = 0; i < stubs.length; i += 1) {
             const realStub = stubs[i],
@@ -100,7 +101,7 @@ function create () {
                 exposedStub.responses = realStub.responses;
             };
         }
-        return result;
+        return Q(result);
     }
 
     return {
