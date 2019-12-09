@@ -80,6 +80,7 @@ function create () {
 
     function overwriteAtIndex (newStub, index) {
         stubs[index] = Stub.create(newStub);
+        return Q();
     }
 
     function deleteAtIndex (index) {

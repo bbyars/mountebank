@@ -40,9 +40,10 @@ describe('stubRepository', function () {
 
             stubs.add(firstStub);
             stubs.add(secondStub);
-            stubs.overwriteAtIndex(thirdStub, 1);
 
-            return stubs.all().then(all => {
+            return stubs.overwriteAtIndex(thirdStub, 1).then(() => {
+                return stubs.all();
+            }).then(all => {
                 const responses = all.map(stub => stub.responses);
 
                 assert.deepEqual(responses, [

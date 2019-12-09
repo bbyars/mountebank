@@ -240,8 +240,9 @@ function create (protocols, imposters, logger, allowInjection) {
                         return respondWithValidationErrors(response, result.errors);
                     }
 
-                    imposter.overwriteStubAtIndex(newStub, request.params.stubIndex);
-                    return imposter.toJSON().then(json => response.send(json));
+                    return imposter.overwriteStubAtIndex(newStub, request.params.stubIndex).then(() => {
+                        return imposter.toJSON().then(json => response.send(json));
+                    });
                 });
             });
         });
@@ -304,8 +305,9 @@ function create (protocols, imposters, logger, allowInjection) {
                     return respondWithValidationErrors(response, validation.errors, 404);
                 }
 
-                imposter.deleteStubAtIndex(request.params.stubIndex);
-                return imposter.toJSON().then(json => response.send(json));
+                return imposter.deleteStubAtIndex(request.params.stubIndex).then(() => {
+                    return imposter.toJSON().then(json => response.send(json));
+                });
             });
         });
     }
