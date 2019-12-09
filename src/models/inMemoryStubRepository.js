@@ -51,7 +51,8 @@ const Stub = {
 };
 
 function create () {
-    const stubs = []; // eslint-disable-line no-underscore-dangle
+    const stubs = [], // eslint-disable-line no-underscore-dangle
+        Q = require('q');
 
     function first (filter) {
         for (let i = 0; i < stubs.length; i += 1) {
@@ -83,12 +84,12 @@ function create () {
 
     function deleteAtIndex (index) {
         stubs.splice(index, 1);
+        return Q();
     }
 
     function all () {
         const helpers = require('../util/helpers'),
-            result = helpers.clone(stubs),
-            Q = require('q');
+            result = helpers.clone(stubs);
 
         for (var i = 0; i < stubs.length; i += 1) {
             const realStub = stubs[i],

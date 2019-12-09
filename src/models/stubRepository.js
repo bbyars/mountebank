@@ -73,12 +73,16 @@ function create (encoding, config) {
     */
     function resetProxies () {
         return stubs.all().then(allStubs => {
+            const Q = require('q');
+            let sequence = Q();
+
             for (let i = allStubs.length - 1; i >= 0; i -= 1) {
                 allStubs[i].deleteResponsesMatching(isRecordedResponse);
                 if (allStubs[i].responses.length === 0) {
-                    stubs.deleteAtIndex(i);
+                    sequence = sequence.then(() => { stubs.deleteAtIndex(i); });
                 }
             }
+            return sequence;
         });
     }
 

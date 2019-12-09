@@ -64,9 +64,9 @@ describe('stubRepository', function () {
             stubs.add(secondStub);
             stubs.add(thirdStub);
 
-            stubs.deleteAtIndex(0);
-
-            return stubs.all().then(all => {
+            return stubs.deleteAtIndex(0).then(() => {
+                return stubs.all();
+            }).then(all => {
                 const responses = all.map(stub => stub.responses);
 
                 assert.deepEqual(responses, [
