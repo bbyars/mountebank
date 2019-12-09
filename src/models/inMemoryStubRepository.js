@@ -57,10 +57,10 @@ function create () {
     function first (filter) {
         for (let i = 0; i < stubs.length; i += 1) {
             if (filter(stubs[i])) {
-                return { success: true, index: i, stub: stubs[i] };
+                return Q({ success: true, index: i, stub: stubs[i] });
             }
         }
-        return { success: false, index: -1, stub: Stub.create() };
+        return Q({ success: false, index: -1, stub: Stub.create() });
     }
 
     function add (stub) {

@@ -79,9 +79,9 @@ function create (options) {
         options.testRequest = options.testRequest || {};
         options.testRequest.isDryRun = true;
         return Q.all(dryRunRepositories.map(stubRepository => {
-            const responseConfig = stubRepository.getResponseFor(options.testRequest, dryRunLogger, {}),
-                resolver = resolverFor(stubRepository);
-            return resolver.resolve(responseConfig, options.testRequest, dryRunLogger, {});
+            return stubRepository.getResponseFor(options.testRequest, dryRunLogger, {}).then(responseConfig => {
+                return resolverFor(stubRepository).resolve(responseConfig, options.testRequest, dryRunLogger, {});
+            });
         }));
     }
 

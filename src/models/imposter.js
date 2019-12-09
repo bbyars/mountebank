@@ -77,19 +77,20 @@ function create (Protocol, creationRequest, baseLogger, config, isAllowedConnect
             requests.push(recordedRequest);
         }
 
-        const responseConfig = stubs.getResponseFor(request, logger, imposterState);
-        return resolver.resolve(responseConfig, request, logger, imposterState, requestDetails).then(response => {
-            if (config.recordMatches && !response.proxy) {
-                if (response.response) {
-                    // Out of process responses wrap the result in an outer response object
-                    responseConfig.recordMatch(request, response.response);
+        return stubs.getResponseFor(request, logger, imposterState).then(responseConfig => {
+            return resolver.resolve(responseConfig, request, logger, imposterState, requestDetails).then(response => {
+                if (config.recordMatches && !response.proxy) {
+                    if (response.response) {
+                        // Out of process responses wrap the result in an outer response object
+                        responseConfig.recordMatch(request, response.response);
+                    }
+                    else {
+                        // In process resolution
+                        responseConfig.recordMatch(request, response);
+                    }
                 }
-                else {
-                    // In process resolution
-                    responseConfig.recordMatch(request, response);
-                }
-            }
-            return Q(response);
+                return response;
+            });
         });
     }
 

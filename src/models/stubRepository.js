@@ -28,22 +28,24 @@ function create (encoding, config) {
     function findFirstMatch (request, logger, imposterState) {
         const helpers = require('../util/helpers'),
             readOnlyState = helpers.clone(imposterState),
-            match = stubs.first(stub => {
+            filter = stub => {
                 const stubPredicates = stub.predicates || [],
                     predicates = require('./predicates');
 
                 return trueForAll(stubPredicates,
                     predicate => predicates.evaluate(predicate, request, encoding, logger, readOnlyState),
                     request.isDryRun === true);
-            });
+            };
 
-        if (match.success) {
-            logger.debug(`using predicate match: ${JSON.stringify(match.stub.predicates || {})}`);
-        }
-        else {
-            logger.debug('no predicate match');
-        }
-        return match;
+        return stubs.first(filter).then(match => {
+            if (match.success) {
+                logger.debug(`using predicate match: ${JSON.stringify(match.stub.predicates || {})}`);
+            }
+            else {
+                logger.debug('no predicate match');
+            }
+            return match;
+        });
     }
 
     /**
@@ -55,12 +57,13 @@ function create (encoding, config) {
      * @returns {Object} - Promise resolving to the response
      */
     function getResponseFor (request, logger, imposterState) {
-        const match = findFirstMatch(request, logger, imposterState),
-            responseConfig = match.stub.nextResponse();
+        return findFirstMatch(request, logger, imposterState).then(match => {
+            const responseConfig = match.stub.nextResponse();
 
-        logger.debug(`generating response from ${JSON.stringify(responseConfig)}`);
-        responseConfig.stubIndex = () => match.index;
-        return responseConfig;
+            logger.debug(`generating response from ${JSON.stringify(responseConfig)}`);
+            responseConfig.stubIndex = () => match.index;
+            return responseConfig;
+        });
     }
 
     function isRecordedResponse (response) {

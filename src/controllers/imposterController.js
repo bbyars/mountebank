@@ -125,9 +125,9 @@ function create (protocols, imposters, logger, allowInjection) {
      * @returns {Object} - the promise
      */
     function postRequest (request, response) {
-        return imposters.get(request.params.id).then(imposter =>
-            imposter.getResponseFor(request.body.request)
-        ).then(json => response.send(json));
+        return imposters.get(request.params.id)
+            .then(imposter => imposter.getResponseFor(request.body.request))
+            .then(jsonResponse => response.send(jsonResponse));
     }
 
     /**
@@ -241,9 +241,9 @@ function create (protocols, imposters, logger, allowInjection) {
                         return respondWithValidationErrors(response, result.errors);
                     }
 
-                    return imposter.overwriteStubAtIndex(newStub, request.params.stubIndex).then(() => {
-                        return imposter.toJSON().then(json => response.send(json));
-                    });
+                    return imposter.overwriteStubAtIndex(newStub, request.params.stubIndex)
+                        .then(() => imposter.toJSON())
+                        .then(json => response.send(json));
                 });
             });
         });

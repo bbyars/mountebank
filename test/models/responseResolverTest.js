@@ -56,9 +56,11 @@ describe('responseResolver', function () {
 
             // Call through the stubRepository to have it add the setMetadata function
             stubs.add({ responses: [{ proxy: { to: 'where' } }] });
-            const responseConfig = stubs.getResponseFor({}, logger, {});
 
-            return resolver.resolve(responseConfig, 'request', logger, {}).then(response => {
+
+            return stubs.getResponseFor({}, logger, {}).then(responseConfig => {
+                return resolver.resolve(responseConfig, 'request', logger, {});
+            }).then(response => {
                 assert.strictEqual(response.key, 'value');
                 assert.ok(proxy.to.wasCalledWith('where', 'request', {
                     to: 'where',
@@ -74,9 +76,10 @@ describe('responseResolver', function () {
 
             // Call through the stubRepository to have it add the setMetadata function
             stubs.add({ responses: [{ proxy: { to: 'where' } }] });
-            const responseConfig = stubs.getResponseFor({}, logger, {});
 
-            return resolver.resolve(responseConfig, 'request', logger, {}).then(response => {
+            return stubs.getResponseFor({}, logger, {}).then(responseConfig => {
+                return resolver.resolve(responseConfig, 'request', logger, {});
+            }).then(response => {
                 assert.deepEqual(response, {
                     proxy: { to: 'where', mode: 'proxyOnce' },
                     request: 'request',
@@ -93,10 +96,11 @@ describe('responseResolver', function () {
 
             // Call through the stubRepository to have it add the setMetadata function
             stubs.add({ responses: [{ proxy: { to: 'where' } }] });
-            const responseConfig = stubs.getResponseFor({}, logger, {});
 
-            return resolver.resolve(responseConfig, 'request', logger, {}).then(() => {
-                assert.strictEqual(responseConfig.proxy.mode, 'proxyOnce');
+            return stubs.getResponseFor({}, logger, {}).then(responseConfig => {
+                return resolver.resolve(responseConfig, 'request', logger, {}).then(() => {
+                    assert.strictEqual(responseConfig.proxy.mode, 'proxyOnce');
+                });
             });
         });
 
@@ -108,10 +112,11 @@ describe('responseResolver', function () {
 
             // Call through the stubRepository to have it add the setMetadata function
             stubs.add({ responses: [{ proxy: { to: 'where', mode: 'unrecognized' } }] });
-            const responseConfig = stubs.getResponseFor({}, logger, {});
 
-            return resolver.resolve(responseConfig, 'request', logger, {}).then(() => {
-                assert.strictEqual(responseConfig.proxy.mode, 'proxyOnce');
+            return stubs.getResponseFor({}, logger, {}).then(responseConfig => {
+                return resolver.resolve(responseConfig, 'request', logger, {}).then(() => {
+                    assert.strictEqual(responseConfig.proxy.mode, 'proxyOnce');
+                });
             });
         });
 
@@ -123,9 +128,10 @@ describe('responseResolver', function () {
 
             stubs.add({ responses: [], predicates: [{ equals: { ignore: 'true' } }] });
             stubs.add({ responses: [{ proxy: { to: 'where' } }] });
-            const responseConfig = stubs.getResponseFor({}, logger, {});
 
-            return resolver.resolve(responseConfig, {}, logger, {}).then(response => {
+            return stubs.getResponseFor({}, logger, {}).then(responseConfig => {
+                return resolver.resolve(responseConfig, {}, logger, {});
+            }).then(response => {
                 assert.strictEqual(response.key, 'value');
                 return stubs.all();
             }).then(all => {
@@ -146,9 +152,10 @@ describe('responseResolver', function () {
                 request = {};
 
             stubs.add({ responses: [{ proxy: { to: 'where', addWaitBehavior: true } }] });
-            const responseConfig = stubs.getResponseFor({}, logger, {});
 
-            return resolver.resolve(responseConfig, request, logger, {}).then(() => {
+            return stubs.getResponseFor({}, logger, {}).then(responseConfig => {
+                return resolver.resolve(responseConfig, request, logger, {});
+            }).then(() => {
                 return stubs.all();
             }).then(all => {
                 const stubResponses = all.map(stub => stub.responses),
@@ -177,24 +184,25 @@ describe('responseResolver', function () {
                 request = {};
 
             stubs.add({ responses: [{ proxy: { to: 'where', mode: 'proxyAlways', addWaitBehavior: true } }] });
-            const responseConfig = stubs.getResponseFor({}, logger, {});
 
-            return resolver.resolve(responseConfig, request, logger, {}).then(() =>
-                // First call adds the stub, second call adds a response
-                resolver.resolve(responseConfig, request, logger, {})
-            ).then(() => {
-                return stubs.all();
-            }).then(all => {
-                const stubResponses = all.map(stub => stub.responses),
-                    firstWait = stubResponses[1][0].is._proxyResponseTime, // eslint-disable-line no-underscore-dangle
-                    secondWait = stubResponses[1][1].is._proxyResponseTime; // eslint-disable-line no-underscore-dangle
-                assert.deepEqual(stubResponses, [
-                    [{ proxy: { to: 'where', mode: 'proxyAlways', addWaitBehavior: true } }],
-                    [
-                        { is: { data: 1, _proxyResponseTime: firstWait }, _behaviors: { wait: firstWait } },
-                        { is: { data: 2, _proxyResponseTime: secondWait }, _behaviors: { wait: secondWait } }
-                    ]
-                ]);
+            return stubs.getResponseFor({}, logger, {}).then(responseConfig => {
+                return resolver.resolve(responseConfig, request, logger, {}).then(() =>
+                    // First call adds the stub, second call adds a response
+                    resolver.resolve(responseConfig, request, logger, {})
+                ).then(() => {
+                    return stubs.all();
+                }).then(all => {
+                    const stubResponses = all.map(stub => stub.responses),
+                        firstWait = stubResponses[1][0].is._proxyResponseTime, // eslint-disable-line no-underscore-dangle
+                        secondWait = stubResponses[1][1].is._proxyResponseTime; // eslint-disable-line no-underscore-dangle
+                    assert.deepEqual(stubResponses, [
+                        [{ proxy: { to: 'where', mode: 'proxyAlways', addWaitBehavior: true } }],
+                        [
+                            { is: { data: 1, _proxyResponseTime: firstWait }, _behaviors: { wait: firstWait } },
+                            { is: { data: 2, _proxyResponseTime: secondWait }, _behaviors: { wait: secondWait } }
+                        ]
+                    ]);
+                });
             });
         });
 
@@ -211,9 +219,9 @@ describe('responseResolver', function () {
                 request = {};
 
             stubs.add({ responses: [response] });
-            const responseConfig = stubs.getResponseFor({}, logger, {});
-
-            return resolver.resolve(responseConfig, request, logger, {}).then(() => {
+            return stubs.getResponseFor({}, logger, {}).then(responseConfig => {
+                return resolver.resolve(responseConfig, request, logger, {});
+            }).then(() => {
                 return stubs.all();
             }).then(all => {
                 const stubResponses = all.map(stub => proxyResponses(stub.responses));
@@ -233,9 +241,10 @@ describe('responseResolver', function () {
                 request = {};
 
             stubs.add({ responses: [{ proxy: { to: 'where', addDecorateBehavior: decorateFunc } }] });
-            const responseConfig = stubs.getResponseFor({}, logger, {});
 
-            return resolver.resolve(responseConfig, request, logger, {}).then(() => {
+            return stubs.getResponseFor({}, logger, {}).then(responseConfig => {
+                return resolver.resolve(responseConfig, request, logger, {});
+            }).then(() => {
                 return stubs.all();
             }).then(all => {
                 const stubResponses = all.map(stub => proxyResponses(stub.responses));
@@ -255,22 +264,23 @@ describe('responseResolver', function () {
                 request = {};
 
             stubs.add({ responses: [{ proxy: { to: 'where', mode: 'proxyAlways', addDecorateBehavior: decorateFunc } }] });
-            const responseConfig = stubs.getResponseFor({}, logger, {});
 
-            return resolver.resolve(responseConfig, request, logger, {}).then(() =>
-                // First call adds the stub, second call adds a response
-                resolver.resolve(responseConfig, request, logger, stubs)
-            ).then(() => {
-                return stubs.all();
-            }).then(all => {
-                const stubResponses = all.map(stub => proxyResponses(stub.responses));
-                assert.deepEqual(stubResponses, [
-                    [{ proxy: { to: 'where', mode: 'proxyAlways', addDecorateBehavior: decorateFunc } }],
-                    [
-                        { is: { data: 'value' }, _behaviors: { decorate: decorateFunc } },
-                        { is: { data: 'value' }, _behaviors: { decorate: decorateFunc } }
-                    ]
-                ]);
+            return stubs.getResponseFor({}, logger, {}).then(responseConfig => {
+                return resolver.resolve(responseConfig, request, logger, {}).then(() =>
+                    // First call adds the stub, second call adds a response
+                    resolver.resolve(responseConfig, request, logger, stubs)
+                ).then(() => {
+                    return stubs.all();
+                }).then(all => {
+                    const stubResponses = all.map(stub => proxyResponses(stub.responses));
+                    assert.deepEqual(stubResponses, [
+                        [{ proxy: { to: 'where', mode: 'proxyAlways', addDecorateBehavior: decorateFunc } }],
+                        [
+                            { is: { data: 'value' }, _behaviors: { decorate: decorateFunc } },
+                            { is: { data: 'value' }, _behaviors: { decorate: decorateFunc } }
+                        ]
+                    ]);
+                });
             });
         });
 
@@ -288,9 +298,10 @@ describe('responseResolver', function () {
                 request = { key: { nested: { first: 'one', second: 'two' }, third: 'three' } };
 
             stubs.add({ responses: [response] });
-            const responseConfig = stubs.getResponseFor({}, logger, {});
 
-            return resolver.resolve(responseConfig, request, logger, {}).then(() => {
+            return stubs.getResponseFor({}, logger, {}).then(responseConfig => {
+                return resolver.resolve(responseConfig, request, logger, {});
+            }).then(() => {
                 return stubListFor(stubs);
             }).then(stubList => {
                 assert.deepEqual(stubList, [
@@ -329,9 +340,10 @@ describe('responseResolver', function () {
                 request = { key: { nested: { first: 'one', second: 'two' }, third: 'three' } };
 
             stubs.add({ responses: [response] });
-            const responseConfig = stubs.getResponseFor({}, logger, {});
 
-            return resolver.resolve(responseConfig, request, logger, {}).then(() => {
+            return stubs.getResponseFor({}, logger, {}).then(responseConfig => {
+                return resolver.resolve(responseConfig, request, logger, {});
+            }).then(() => {
                 return stubListFor(stubs);
             }).then(stubList => {
                 assert.deepEqual(stubList, [
@@ -371,9 +383,10 @@ describe('responseResolver', function () {
                 request = { key: 'Test' };
 
             stubs.add({ responses: [response] });
-            const responseConfig = stubs.getResponseFor({}, logger, {});
 
-            return resolver.resolve(responseConfig, request, logger, {}).then(() => {
+            return stubs.getResponseFor({}, logger, {}).then(responseConfig => {
+                return resolver.resolve(responseConfig, request, logger, {});
+            }).then(() => {
                 return stubListFor(stubs);
             }).then(stubList => {
                 assert.deepEqual(stubList, [
@@ -410,10 +423,10 @@ describe('responseResolver', function () {
                 request = { key: 'Test' };
 
             stubs.add({ responses: [response] });
-            const responseConfig = stubs.getResponseFor({}, logger, {});
 
-
-            return resolver.resolve(responseConfig, request, logger, {}).then(() => {
+            return stubs.getResponseFor({}, logger, {}).then(responseConfig => {
+                return resolver.resolve(responseConfig, request, logger, {});
+            }).then(() => {
                 return stubListFor(stubs);
             }).then(stubList => {
                 assert.deepEqual(stubList, [
@@ -448,10 +461,10 @@ describe('responseResolver', function () {
                 request = { key: 'Test' };
 
             stubs.add({ responses: [response] });
-            const responseConfig = stubs.getResponseFor({}, logger, {});
 
-
-            return resolver.resolve(responseConfig, request, logger, {}).then(() => {
+            return stubs.getResponseFor({}, logger, {}).then(responseConfig => {
+                return resolver.resolve(responseConfig, request, logger, {});
+            }).then(() => {
                 return stubListFor(stubs);
             }).then(stubList => {
                 assert.deepEqual(stubList, [
@@ -486,10 +499,10 @@ describe('responseResolver', function () {
                 request = { key: { nested: 'Test' } };
 
             stubs.add({ responses: [response] });
-            const responseConfig = stubs.getResponseFor({}, logger, {});
 
-
-            return resolver.resolve(responseConfig, request, logger, {}).then(() => {
+            return stubs.getResponseFor({}, logger, {}).then(responseConfig => {
+                return resolver.resolve(responseConfig, request, logger, {});
+            }).then(() => {
                 return stubListFor(stubs);
             }).then(stubList => {
                 assert.deepEqual(stubList, [
@@ -524,9 +537,9 @@ describe('responseResolver', function () {
                 request = { key: 'Test' };
 
             stubs.add({ responses: [response] });
-            const responseConfig = stubs.getResponseFor({}, logger, {});
-
-            return resolver.resolve(responseConfig, request, logger, {}).then(() => {
+            return stubs.getResponseFor({}, logger, {}).then(responseConfig => {
+                return resolver.resolve(responseConfig, request, logger, {});
+            }).then(() => {
                 return stubListFor(stubs);
             }).then(stubList => {
                 assert.deepEqual(stubList, [
@@ -571,9 +584,10 @@ describe('responseResolver', function () {
             };
 
             stubs.add({ responses: [response] });
-            const responseConfig = stubs.getResponseFor({}, logger, {});
 
-            return resolver.resolve(responseConfig, request, logger, {}).then(() => {
+            return stubs.getResponseFor({}, logger, {}).then(responseConfig => {
+                return resolver.resolve(responseConfig, request, logger, {});
+            }).then(() => {
                 assert.fail('should have thrown exception');
             }).catch(error => {
                 assert.strictEqual(error.message, 'invalid predicateGenerator injection');
@@ -599,9 +613,10 @@ describe('responseResolver', function () {
                 request = { field: '<books><book><title>Harry Potter</title></book></books>' };
 
             stubs.add({ responses: [response] });
-            const responseConfig = stubs.getResponseFor({}, logger, {});
 
-            return resolver.resolve(responseConfig, request, logger, {}).then(() => {
+            return stubs.getResponseFor({}, logger, {}).then(responseConfig => {
+                return resolver.resolve(responseConfig, request, logger, {});
+            }).then(() => {
                 return stubListFor(stubs);
             }).then(stubList => {
                 assert.deepEqual(stubList, [
@@ -637,9 +652,10 @@ describe('responseResolver', function () {
                 request = { parent: { child: '<books><book><title>Harry Potter</title></book></books>' } };
 
             stubs.add({ responses: [response] });
-            const responseConfig = stubs.getResponseFor({}, logger, {});
 
-            return resolver.resolve(responseConfig, request, logger, {}).then(() => {
+            return stubs.getResponseFor({}, logger, {}).then(responseConfig => {
+                return resolver.resolve(responseConfig, request, logger, {});
+            }).then(() => {
                 return stubListFor(stubs);
             }).then(stubList => {
                 assert.deepEqual(stubList, [
@@ -683,9 +699,10 @@ describe('responseResolver', function () {
                 request = { field: xml };
 
             stubs.add({ responses: [response] });
-            const responseConfig = stubs.getResponseFor({}, logger, {});
 
-            return resolver.resolve(responseConfig, request, logger, {}).then(() => {
+            return stubs.getResponseFor({}, logger, {}).then(responseConfig => {
+                return resolver.resolve(responseConfig, request, logger, {});
+            }).then(() => {
                 return stubListFor(stubs);
             }).then(stubList => {
                 assert.deepEqual(stubList, [
@@ -724,9 +741,10 @@ describe('responseResolver', function () {
                 request = { field: '<books />' };
 
             stubs.add({ responses: [response] });
-            const responseConfig = stubs.getResponseFor({}, logger, {});
 
-            return resolver.resolve(responseConfig, request, logger, {}).then(() => {
+            return stubs.getResponseFor({}, logger, {}).then(responseConfig => {
+                return resolver.resolve(responseConfig, request, logger, {});
+            }).then(() => {
                 return stubListFor(stubs);
             }).then(stubList => {
                 assert.deepEqual(stubList, [
@@ -762,9 +780,10 @@ describe('responseResolver', function () {
                 request = { field: '<doc><title>first</title><title>second</title></doc>' };
 
             stubs.add({ responses: [response] });
-            const responseConfig = stubs.getResponseFor({}, logger, {});
 
-            return resolver.resolve(responseConfig, request, logger, {}).then(() => {
+            return stubs.getResponseFor({}, logger, {}).then(responseConfig => {
+                return resolver.resolve(responseConfig, request, logger, {});
+            }).then(() => {
                 return stubListFor(stubs);
             }).then(stubList => {
                 assert.deepEqual(stubList, [
@@ -800,9 +819,10 @@ describe('responseResolver', function () {
                 request = { field: '<doc></doc>' };
 
             stubs.add({ responses: [response] });
-            const responseConfig = stubs.getResponseFor({}, logger, {});
 
-            return resolver.resolve(responseConfig, request, logger, {}).then(() => {
+            return stubs.getResponseFor({}, logger, {}).then(responseConfig => {
+                return resolver.resolve(responseConfig, request, logger, {});
+            }).then(() => {
                 return stubListFor(stubs);
             }).then(stubList => {
                 assert.deepEqual(stubList, [
@@ -838,9 +858,10 @@ describe('responseResolver', function () {
                 request = { field: { title: 'Harry Potter' } };
 
             stubs.add({ responses: [response] });
-            const responseConfig = stubs.getResponseFor({}, logger, {});
 
-            return resolver.resolve(responseConfig, request, logger, {}).then(() => {
+            return stubs.getResponseFor({}, logger, {}).then(responseConfig => {
+                return resolver.resolve(responseConfig, request, logger, {});
+            }).then(() => {
                 return stubListFor(stubs);
             }).then(stubList => {
                 assert.deepEqual(stubList, [
@@ -884,9 +905,10 @@ describe('responseResolver', function () {
                 };
 
             stubs.add({ responses: [response] });
-            const responseConfig = stubs.getResponseFor({}, logger, {});
 
-            return resolver.resolve(responseConfig, request, logger, {}).then(() => {
+            return stubs.getResponseFor({}, logger, {}).then(responseConfig => {
+                return resolver.resolve(responseConfig, request, logger, {});
+            }).then(() => {
                 return stubListFor(stubs);
             }).then(stubList => {
                 assert.deepEqual(stubList, [
@@ -922,9 +944,10 @@ describe('responseResolver', function () {
                 request = { field: false };
 
             stubs.add({ responses: [response] });
-            const responseConfig = stubs.getResponseFor({}, logger, {});
 
-            return resolver.resolve(responseConfig, request, logger, {}).then(() => {
+            return stubs.getResponseFor({}, logger, {}).then(responseConfig => {
+                return resolver.resolve(responseConfig, request, logger, {});
+            }).then(() => {
                 return stubListFor(stubs);
             }).then(stubList => {
                 assert.deepEqual(stubList, [
@@ -960,9 +983,10 @@ describe('responseResolver', function () {
                 request = { field: 'Hello, world' };
 
             stubs.add({ responses: [response] });
-            const responseConfig = stubs.getResponseFor({}, logger, {});
 
-            return resolver.resolve(responseConfig, request, logger, {}).then(() => {
+            return stubs.getResponseFor({}, logger, {}).then(responseConfig => {
+                return resolver.resolve(responseConfig, request, logger, {});
+            }).then(() => {
                 return stubListFor(stubs);
             }).then(stubList => {
                 assert.deepEqual(stubList, [
@@ -1282,9 +1306,10 @@ describe('responseResolver', function () {
                 request = {};
 
             stubs.add({ responses: [proxyResponse] });
-            const responseConfig = stubs.getResponseFor({}, logger, {});
 
-            return resolver.resolve(responseConfig, request, logger, {}).then(response => {
+            return stubs.getResponseFor({}, logger, {}).then(responseConfig => {
+                return resolver.resolve(responseConfig, request, logger, {});
+            }).then(response => {
                 const proxyResolutionKey = parseInt(response.callbackURL.replace('CALLBACK-URL/', ''));
 
                 return resolver.resolveProxy({ data: 'RESPONSE' }, proxyResolutionKey, logger);
@@ -1308,9 +1333,10 @@ describe('responseResolver', function () {
                 request = {};
 
             stubs.add({ responses: [proxyResponse] });
-            const responseConfig = stubs.getResponseFor({}, logger, {});
 
-            return resolver.resolve(responseConfig, request, logger, {}).then(response => {
+            return stubs.getResponseFor({}, logger, {}).then(responseConfig => {
+                return resolver.resolve(responseConfig, request, logger, {});
+            }).then(response => {
                 const proxyResolutionKey = parseInt(response.callbackURL.replace('CALLBACK-URL/', ''));
                 return Q.delay(proxyResolutionKey, 100);
             }).then(proxyResolutionKey =>
@@ -1337,8 +1363,9 @@ describe('responseResolver', function () {
             stubs.add({ responses: [{ proxy: { to: 'where', mode: 'proxyOnce' } }] });
 
             // Call through the stubRepository to have it add the recordMatch function
-            const responseConfig = stubs.getResponseFor(request, logger, {});
-            return resolver.resolve(responseConfig, request, logger, {}).then(response => {
+            return stubs.getResponseFor(request, logger, {}).then(responseConfig => {
+                return resolver.resolve(responseConfig, request, logger, {});
+            }).then(response => {
                 const proxyResolutionKey = parseInt(response.callbackURL.replace('CALLBACK-URL/', ''));
 
                 return resolver.resolveProxy({ data: 'RESPONSE' }, proxyResolutionKey, logger);
@@ -1357,17 +1384,19 @@ describe('responseResolver', function () {
             const stubs = StubRepository.create('utf8'),
                 resolver = ResponseResolver.create(stubs, null, 'CALLBACK-URL'),
                 logger = Logger.create();
+            let proxyResolutionKey;
 
             stubs.add({ responses: [{ proxy: { to: 'where', mode: 'proxyAlways' } }] });
 
             // Call through the stubRepository to have it add the recordMatch function
-            const responseConfig = stubs.getResponseFor({ key: 'REQUEST-1' }, logger, {});
-            return resolver.resolve(responseConfig, { key: 'REQUEST-1' }, logger, {}).then(response => {
-                const proxyResolutionKey = parseInt(response.callbackURL.replace('CALLBACK-URL/', ''));
+            return stubs.getResponseFor({ key: 'REQUEST-1' }, logger, {}).then(responseConfig => {
+                return resolver.resolve(responseConfig, { key: 'REQUEST-1' }, logger, {});
+            }).then(response => {
+                proxyResolutionKey = parseInt(response.callbackURL.replace('CALLBACK-URL/', ''));
 
                 // Now call with a second request on the same stub before resolving the proxy
-                stubs.getResponseFor({ key: 'REQUEST-2' }, logger, {});
-
+                return stubs.getResponseFor({ key: 'REQUEST-2' }, logger, {});
+            }).then(() => {
                 return resolver.resolveProxy({ data: 'RESPONSE' }, proxyResolutionKey, logger);
             }).then(response => {
                 response.recordMatch();
@@ -1389,9 +1418,10 @@ describe('responseResolver', function () {
             let proxyResolutionKey;
 
             stubs.add({ responses: [proxyResponse] });
-            const responseConfig = stubs.getResponseFor({}, logger, {});
 
-            return resolver.resolve(responseConfig, request, logger, {}).then(response => {
+            return stubs.getResponseFor({}, logger, {}).then(responseConfig => {
+                return resolver.resolve(responseConfig, request, logger, {});
+            }).then(response => {
                 proxyResolutionKey = parseInt(response.callbackURL.replace('CALLBACK-URL/', ''));
 
                 return resolver.resolveProxy({ data: 'RESPONSE' }, proxyResolutionKey, logger);

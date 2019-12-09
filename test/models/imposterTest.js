@@ -316,7 +316,7 @@ describe('imposter', function () {
         });
 
         promiseIt('responseFor should resolve using stubs and resolver', function () {
-            server.stubs.getResponseFor = mock().returns('RESPONSE CONFIG');
+            server.stubs.getResponseFor = mock().returns(Q('RESPONSE CONFIG'));
             server.resolver.resolve = mock().returns(Q({ is: 'RESPONSE' }));
 
             return Imposter.create(Protocol, {}, logger, {}, allow).then(imposter =>
@@ -327,7 +327,7 @@ describe('imposter', function () {
         });
 
         promiseIt('responseFor should increment numberOfRequests and not record requests if recordRequests = false', function () {
-            server.stubs.getResponseFor = mock().returns('RESPONSE CONFIG');
+            server.stubs.getResponseFor = mock().returns(Q('RESPONSE CONFIG'));
             server.resolver.resolve = mock().returns(Q({}));
             let imposter;
 
@@ -343,7 +343,7 @@ describe('imposter', function () {
         });
 
         promiseIt('responseFor should increment numberOfRequests and record requests if imposter recordRequests = true', function () {
-            server.stubs.getResponseFor = mock().returns('RESPONSE CONFIG');
+            server.stubs.getResponseFor = mock().returns(Q('RESPONSE CONFIG'));
             server.resolver.resolve = mock().returns(Q({}));
             let imposter;
 
@@ -359,7 +359,7 @@ describe('imposter', function () {
         });
 
         promiseIt('responseFor should increment numberOfRequests and record requests if global recordRequests = true', function () {
-            server.stubs.getResponseFor = mock().returns('RESPONSE');
+            server.stubs.getResponseFor = mock().returns(Q('RESPONSE'));
             server.resolver.resolve = mock().returns(Q({}));
             let imposter;
 
@@ -375,7 +375,7 @@ describe('imposter', function () {
         });
 
         promiseIt('responseFor should add timestamp to recorded request', function () {
-            server.stubs.getResponseFor = mock().returns('RESPONSE');
+            server.stubs.getResponseFor = mock().returns(Q('RESPONSE'));
             server.resolver.resolve = mock().returns(Q({}));
             let imposter;
 
