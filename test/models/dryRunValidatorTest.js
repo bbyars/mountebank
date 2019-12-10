@@ -249,8 +249,7 @@ describe('dryRunValidator', function () {
                     isValid: false,
                     errors: [{
                         code: 'bad data',
-                        message: 'malformed stub request',
-                        data: 'missing predicate',
+                        message: 'missing predicate',
                         source: { invalidPredicate: { path: '/test' } }
                     }]
                 });
@@ -274,8 +273,7 @@ describe('dryRunValidator', function () {
                     isValid: false,
                     errors: [{
                         code: 'bad data',
-                        message: 'malformed stub request',
-                        data: 'missing predicate',
+                        message: 'missing predicate',
                         source: { invalidPredicate: { body: 'value' } }
                     }]
                 });
@@ -296,8 +294,7 @@ describe('dryRunValidator', function () {
                     isValid: false,
                     errors: [{
                         code: 'bad data',
-                        message: 'malformed stub request',
-                        data: 'missing predicate',
+                        message: 'missing predicate',
                         source: { headers: [{ exists: 'Test' }] }
                     }]
                 });

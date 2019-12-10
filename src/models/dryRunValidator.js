@@ -42,13 +42,15 @@ function create (options) {
         // Test without predicates (always matches) to make sure response doesn't blow up
         const stubsToValidateWithPredicates = stub.responses.map(response => stubForResponse(stub, response, true)),
             stubsToValidateWithoutPredicates = stub.responses.map(response => stubForResponse(stub, response, false)),
-            stubsToValidate = stubsToValidateWithPredicates.concat(stubsToValidateWithoutPredicates);
+            stubsToValidate = stubsToValidateWithPredicates.concat(stubsToValidateWithoutPredicates),
+            promises = stubsToValidate.map(stubToValidate => {
+                // TODO: Ensure this stays in memory, no file system touch
+                const stubRepository = require('./stubRepository').create(encoding);
+                return stubRepository.add(stubToValidate).then(() => stubRepository);
+            }),
+            Q = require('q');
 
-        return stubsToValidate.map(stubToValidate => {
-            const stubRepository = require('./stubRepository').create(encoding);
-            stubRepository.add(stubToValidate);
-            return stubRepository;
-        });
+        return Q.all(promises);
     }
 
     function resolverFor (stubRepository) {
@@ -73,16 +75,17 @@ function create (options) {
                 info: combinators.noop,
                 warn: combinators.noop,
                 error: logger.error
-            },
-            dryRunRepositories = reposToTestFor(stub, encoding);
+            };
 
         options.testRequest = options.testRequest || {};
         options.testRequest.isDryRun = true;
-        return Q.all(dryRunRepositories.map(stubRepository => {
-            return stubRepository.getResponseFor(options.testRequest, dryRunLogger, {}).then(responseConfig => {
-                return resolverFor(stubRepository).resolve(responseConfig, options.testRequest, dryRunLogger, {});
-            });
-        }));
+        return reposToTestFor(stub, encoding).then(dryRunRepositories => {
+            return Q.all(dryRunRepositories.map(stubRepository => {
+                return stubRepository.getResponseFor(options.testRequest, dryRunLogger, {}).then(responseConfig => {
+                    return resolverFor(stubRepository).resolve(responseConfig, options.testRequest, dryRunLogger, {});
+                });
+            }));
+        });
     }
 
     function addDryRunErrors (stub, encoding, errors, logger) {
@@ -209,20 +212,17 @@ function create (options) {
         const stubs = request.stubs || [],
             encoding = request.mode === 'binary' ? 'base64' : 'utf8',
             validationPromises = stubs.map(stub => errorsForStub(stub, encoding, logger)),
-            Q = require('q'),
-            deferred = Q.defer();
+            Q = require('q');
 
         validationPromises.push(Q(errorsForRequest(request)));
         if (typeof options.additionalValidation === 'function') {
             validationPromises.push(Q(options.additionalValidation(request)));
         }
 
-        Q.all(validationPromises).done(errorsForAllStubs => {
+        return Q.all(validationPromises).then(errorsForAllStubs => {
             const allErrors = errorsForAllStubs.reduce((stubErrors, accumulator) => accumulator.concat(stubErrors), []);
-            deferred.resolve({ isValid: allErrors.length === 0, errors: allErrors });
+            return { isValid: allErrors.length === 0, errors: allErrors };
         });
-
-        return deferred.promise;
     }
 
     return { validate };

@@ -238,12 +238,10 @@ function create (stubs, proxy, callbackURL) {
     function addNewStub (responseConfig, request, response, logger) {
         const predicates = predicatesFor(request, responseConfig.proxy.predicateGenerators || [], logger),
             stubResponse = newIsResponse(response, responseConfig.proxy),
-            newStub = { predicates: predicates, responses: [stubResponse] },
-            Q = require('q');
+            newStub = { predicates: predicates, responses: [stubResponse] };
 
         if (responseConfig.proxy.mode === 'proxyAlways') {
-            stubs.add(newStub);
-            return Q();
+            return stubs.add(newStub);
         }
         else {
             return stubs.insertAtIndex(newStub, responseConfig.stubIndex());

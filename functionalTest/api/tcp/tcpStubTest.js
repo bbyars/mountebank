@@ -101,8 +101,8 @@ describe('tcp imposter', function () {
                 request = { protocol: 'tcp', port, mode: 'binary', stubs: [stub] };
 
             return api.post('/imposters', request).then(response => {
-                assert.strictEqual(response.statusCode, 400);
-                assert.strictEqual(response.body.errors[0].data, 'the matches predicate is not allowed in binary mode');
+                assert.strictEqual(response.statusCode, 400, JSON.stringify(response.body, null, 4));
+                assert.strictEqual(response.body.errors[0].message, 'the matches predicate is not allowed in binary mode');
             }).finally(() => api.del('/imposters'));
         });
 

@@ -55,18 +55,16 @@ describe('responseResolver', function () {
                 logger = Logger.create();
 
             // Call through the stubRepository to have it add the setMetadata function
-            stubs.add({ responses: [{ proxy: { to: 'where' } }] });
-
-
-            return stubs.getResponseFor({}, logger, {}).then(responseConfig => {
-                return resolver.resolve(responseConfig, 'request', logger, {});
-            }).then(response => {
-                assert.strictEqual(response.key, 'value');
-                assert.ok(proxy.to.wasCalledWith('where', 'request', {
-                    to: 'where',
-                    mode: 'proxyOnce'
-                }), proxy.to.message());
-            });
+            return stubs.add({ responses: [{ proxy: { to: 'where' } }] })
+                .then(() => stubs.getResponseFor({}, logger, {}))
+                .then(responseConfig => resolver.resolve(responseConfig, 'request', logger, {}))
+                .then(response => {
+                    assert.strictEqual(response.key, 'value');
+                    assert.ok(proxy.to.wasCalledWith('where', 'request', {
+                        to: 'where',
+                        mode: 'proxyOnce'
+                    }), proxy.to.message());
+                });
         });
 
         promiseIt('should resolve "proxy" by returning proxy configuration for out of process resolution', function () {
@@ -75,17 +73,16 @@ describe('responseResolver', function () {
                 logger = Logger.create();
 
             // Call through the stubRepository to have it add the setMetadata function
-            stubs.add({ responses: [{ proxy: { to: 'where' } }] });
-
-            return stubs.getResponseFor({}, logger, {}).then(responseConfig => {
-                return resolver.resolve(responseConfig, 'request', logger, {});
-            }).then(response => {
-                assert.deepEqual(response, {
-                    proxy: { to: 'where', mode: 'proxyOnce' },
-                    request: 'request',
-                    callbackURL: 'CALLBACK URL/0'
+            return stubs.add({ responses: [{ proxy: { to: 'where' } }] })
+                .then(() => stubs.getResponseFor({}, logger, {}))
+                .then(responseConfig => resolver.resolve(responseConfig, 'request', logger, {}))
+                .then(response => {
+                    assert.deepEqual(response, {
+                        proxy: { to: 'where', mode: 'proxyOnce' },
+                        request: 'request',
+                        callbackURL: 'CALLBACK URL/0'
+                    });
                 });
-            });
         });
 
         promiseIt('should default to "proxyOnce" mode', function () {
@@ -95,9 +92,9 @@ describe('responseResolver', function () {
                 logger = Logger.create();
 
             // Call through the stubRepository to have it add the setMetadata function
-            stubs.add({ responses: [{ proxy: { to: 'where' } }] });
-
-            return stubs.getResponseFor({}, logger, {}).then(responseConfig => {
+            return stubs.add({ responses: [{ proxy: { to: 'where' } }] }).then(() => {
+                return stubs.getResponseFor({}, logger, {});
+            }).then(responseConfig => {
                 return resolver.resolve(responseConfig, 'request', logger, {}).then(() => {
                     assert.strictEqual(responseConfig.proxy.mode, 'proxyOnce');
                 });
@@ -111,9 +108,9 @@ describe('responseResolver', function () {
                 logger = Logger.create();
 
             // Call through the stubRepository to have it add the setMetadata function
-            stubs.add({ responses: [{ proxy: { to: 'where', mode: 'unrecognized' } }] });
-
-            return stubs.getResponseFor({}, logger, {}).then(responseConfig => {
+            return stubs.add({ responses: [{ proxy: { to: 'where', mode: 'unrecognized' } }] }).then(() => {
+                return stubs.getResponseFor({}, logger, {});
+            }).then(responseConfig => {
                 return resolver.resolve(responseConfig, 'request', logger, {}).then(() => {
                     assert.strictEqual(responseConfig.proxy.mode, 'proxyOnce');
                 });
@@ -126,22 +123,21 @@ describe('responseResolver', function () {
                 resolver = ResponseResolver.create(stubs, proxy),
                 logger = Logger.create();
 
-            stubs.add({ responses: [], predicates: [{ equals: { ignore: 'true' } }] });
-            stubs.add({ responses: [{ proxy: { to: 'where' } }] });
-
-            return stubs.getResponseFor({}, logger, {}).then(responseConfig => {
-                return resolver.resolve(responseConfig, {}, logger, {});
-            }).then(response => {
-                assert.strictEqual(response.key, 'value');
-                return stubs.all();
-            }).then(all => {
-                const stubResponses = all.map(stub => proxyResponses(stub.responses));
-                assert.deepEqual(stubResponses, [
-                    [],
-                    [{ is: { key: 'value' } }],
-                    [{ proxy: { to: 'where', mode: 'proxyOnce' } }]
-                ]);
-            });
+            return stubs.add({ responses: [], predicates: [{ equals: { ignore: 'true' } }] })
+                .then(() => stubs.add({ responses: [{ proxy: { to: 'where' } }] }))
+                .then(() => stubs.getResponseFor({}, logger, {}))
+                .then(responseConfig => resolver.resolve(responseConfig, {}, logger, {}))
+                .then(response => {
+                    assert.strictEqual(response.key, 'value');
+                    return stubs.all();
+                }).then(all => {
+                    const stubResponses = all.map(stub => proxyResponses(stub.responses));
+                    assert.deepEqual(stubResponses, [
+                        [],
+                        [{ is: { key: 'value' } }],
+                        [{ proxy: { to: 'where', mode: 'proxyOnce' } }]
+                    ]);
+                });
         });
 
         promiseIt('should support adding wait behavior to newly created stub for in process imposters', function () {
@@ -151,21 +147,19 @@ describe('responseResolver', function () {
                 logger = Logger.create(),
                 request = {};
 
-            stubs.add({ responses: [{ proxy: { to: 'where', addWaitBehavior: true } }] });
-
-            return stubs.getResponseFor({}, logger, {}).then(responseConfig => {
-                return resolver.resolve(responseConfig, request, logger, {});
-            }).then(() => {
-                return stubs.all();
-            }).then(all => {
-                const stubResponses = all.map(stub => stub.responses),
-                    wait = stubResponses[0][0].is._proxyResponseTime; // eslint-disable-line no-underscore-dangle
-                assert.ok(wait > 90); // allow some variability
-                assert.deepEqual(stubResponses, [
-                    [{ is: { data: 'value', _proxyResponseTime: wait }, _behaviors: { wait: wait } }],
-                    [{ proxy: { to: 'where', addWaitBehavior: true, mode: 'proxyOnce' } }]
-                ]);
-            });
+            return stubs.add({ responses: [{ proxy: { to: 'where', addWaitBehavior: true } }] })
+                .then(() => stubs.getResponseFor({}, logger, {}))
+                .then(responseConfig => resolver.resolve(responseConfig, request, logger, {}))
+                .then(() => stubs.all())
+                .then(all => {
+                    const stubResponses = all.map(stub => stub.responses),
+                        wait = stubResponses[0][0].is._proxyResponseTime; // eslint-disable-line no-underscore-dangle
+                    assert.ok(wait > 90); // allow some variability
+                    assert.deepEqual(stubResponses, [
+                        [{ is: { data: 'value', _proxyResponseTime: wait }, _behaviors: { wait: wait } }],
+                        [{ proxy: { to: 'where', addWaitBehavior: true, mode: 'proxyOnce' } }]
+                    ]);
+                });
         });
 
         promiseIt('should support adding wait behavior to newly created response in proxyAlways mode', function () {
@@ -183,15 +177,14 @@ describe('responseResolver', function () {
                 logger = Logger.create(),
                 request = {};
 
-            stubs.add({ responses: [{ proxy: { to: 'where', mode: 'proxyAlways', addWaitBehavior: true } }] });
-
-            return stubs.getResponseFor({}, logger, {}).then(responseConfig => {
-                return resolver.resolve(responseConfig, request, logger, {}).then(() =>
+            return stubs.add({ responses: [{ proxy: { to: 'where', mode: 'proxyAlways', addWaitBehavior: true } }] })
+                .then(() => stubs.getResponseFor({}, logger, {}))
+                .then(responseConfig => {
                     // First call adds the stub, second call adds a response
-                    resolver.resolve(responseConfig, request, logger, {})
-                ).then(() => {
-                    return stubs.all();
-                }).then(all => {
+                    return resolver.resolve(responseConfig, request, logger, {})
+                        .then(() => resolver.resolve(responseConfig, request, logger, {}));
+                }).then(() => stubs.all())
+                .then(all => {
                     const stubResponses = all.map(stub => stub.responses),
                         firstWait = stubResponses[1][0].is._proxyResponseTime, // eslint-disable-line no-underscore-dangle
                         secondWait = stubResponses[1][1].is._proxyResponseTime; // eslint-disable-line no-underscore-dangle
@@ -203,7 +196,6 @@ describe('responseResolver', function () {
                         ]
                     ]);
                 });
-            });
         });
 
         promiseIt('should run behaviors on proxy response before recording it', function () {
@@ -218,18 +210,17 @@ describe('responseResolver', function () {
                 },
                 request = {};
 
-            stubs.add({ responses: [response] });
-            return stubs.getResponseFor({}, logger, {}).then(responseConfig => {
-                return resolver.resolve(responseConfig, request, logger, {});
-            }).then(() => {
-                return stubs.all();
-            }).then(all => {
-                const stubResponses = all.map(stub => proxyResponses(stub.responses));
-                assert.deepEqual(stubResponses, [
-                    [{ is: { data: 'RESPONSE-DECORATED' } }],
-                    [{ proxy: { to: 'where', mode: 'proxyOnce' }, _behaviors: { decorate: decorateFunc.toString() } }]
-                ]);
-            });
+            return stubs.add({ responses: [response] })
+                .then(() => stubs.getResponseFor({}, logger, {}))
+                .then(responseConfig => resolver.resolve(responseConfig, request, logger, {}))
+                .then(() => stubs.all())
+                .then(all => {
+                    const stubResponses = all.map(stub => proxyResponses(stub.responses));
+                    assert.deepEqual(stubResponses, [
+                        [{ is: { data: 'RESPONSE-DECORATED' } }],
+                        [{ proxy: { to: 'where', mode: 'proxyOnce' }, _behaviors: { decorate: decorateFunc.toString() } }]
+                    ]);
+                });
         });
 
         promiseIt('should support adding decorate behavior to newly created stub', function () {
@@ -240,19 +231,17 @@ describe('responseResolver', function () {
                 logger = Logger.create(),
                 request = {};
 
-            stubs.add({ responses: [{ proxy: { to: 'where', addDecorateBehavior: decorateFunc } }] });
-
-            return stubs.getResponseFor({}, logger, {}).then(responseConfig => {
-                return resolver.resolve(responseConfig, request, logger, {});
-            }).then(() => {
-                return stubs.all();
-            }).then(all => {
-                const stubResponses = all.map(stub => proxyResponses(stub.responses));
-                assert.deepEqual(stubResponses, [
-                    [{ is: { data: 'value' }, _behaviors: { decorate: decorateFunc } }],
-                    [{ proxy: { to: 'where', addDecorateBehavior: decorateFunc, mode: 'proxyOnce' } }]
-                ]);
-            });
+            return stubs.add({ responses: [{ proxy: { to: 'where', addDecorateBehavior: decorateFunc } }] })
+                .then(() => stubs.getResponseFor({}, logger, {}))
+                .then(responseConfig => resolver.resolve(responseConfig, request, logger, {}))
+                .then(() => stubs.all())
+                .then(all => {
+                    const stubResponses = all.map(stub => proxyResponses(stub.responses));
+                    assert.deepEqual(stubResponses, [
+                        [{ is: { data: 'value' }, _behaviors: { decorate: decorateFunc } }],
+                        [{ proxy: { to: 'where', addDecorateBehavior: decorateFunc, mode: 'proxyOnce' } }]
+                    ]);
+                });
         });
 
         promiseIt('should support adding decorate behavior to newly created response in proxyAlways mode', function () {
@@ -263,15 +252,14 @@ describe('responseResolver', function () {
                 logger = Logger.create(),
                 request = {};
 
-            stubs.add({ responses: [{ proxy: { to: 'where', mode: 'proxyAlways', addDecorateBehavior: decorateFunc } }] });
-
-            return stubs.getResponseFor({}, logger, {}).then(responseConfig => {
-                return resolver.resolve(responseConfig, request, logger, {}).then(() =>
+            return stubs.add({ responses: [{ proxy: { to: 'where', mode: 'proxyAlways', addDecorateBehavior: decorateFunc } }] })
+                .then(() => stubs.getResponseFor({}, logger, {}))
+                .then(responseConfig => {
                     // First call adds the stub, second call adds a response
-                    resolver.resolve(responseConfig, request, logger, stubs)
-                ).then(() => {
-                    return stubs.all();
-                }).then(all => {
+                    return resolver.resolve(responseConfig, request, logger, {})
+                        .then(() => resolver.resolve(responseConfig, request, logger, stubs));
+                }).then(() => stubs.all())
+                .then(all => {
                     const stubResponses = all.map(stub => proxyResponses(stub.responses));
                     assert.deepEqual(stubResponses, [
                         [{ proxy: { to: 'where', mode: 'proxyAlways', addDecorateBehavior: decorateFunc } }],
@@ -281,7 +269,6 @@ describe('responseResolver', function () {
                         ]
                     ]);
                 });
-            });
         });
 
         promiseIt('should resolve "proxy" and remember full objects as "deepEquals" predicates', function () {
@@ -297,32 +284,30 @@ describe('responseResolver', function () {
                 },
                 request = { key: { nested: { first: 'one', second: 'two' }, third: 'three' } };
 
-            stubs.add({ responses: [response] });
-
-            return stubs.getResponseFor({}, logger, {}).then(responseConfig => {
-                return resolver.resolve(responseConfig, request, logger, {});
-            }).then(() => {
-                return stubListFor(stubs);
-            }).then(stubList => {
-                assert.deepEqual(stubList, [
-                    {
-                        predicates: [{
-                            deepEquals: {
-                                key: {
-                                    nested: { first: 'one', second: 'two' },
-                                    third: 'three'
+            return stubs.add({ responses: [response] })
+                .then(() => stubs.getResponseFor({}, logger, {}))
+                .then(responseConfig => resolver.resolve(responseConfig, request, logger, {}))
+                .then(() => stubListFor(stubs))
+                .then(stubList => {
+                    assert.deepEqual(stubList, [
+                        {
+                            predicates: [{
+                                deepEquals: {
+                                    key: {
+                                        nested: { first: 'one', second: 'two' },
+                                        third: 'three'
+                                    }
                                 }
-                            }
-                        }],
-                        responses: [{ is: { key: 'value' } }]
-                    },
-                    {
-                        responses: [{
-                            proxy: { to: 'where', mode: 'proxyOnce', predicateGenerators: [{ matches: { key: true } }] }
-                        }]
-                    }
-                ]);
-            });
+                            }],
+                            responses: [{ is: { key: 'value' } }]
+                        },
+                        {
+                            responses: [{
+                                proxy: { to: 'where', mode: 'proxyOnce', predicateGenerators: [{ matches: { key: true } }] }
+                            }]
+                        }
+                    ]);
+                });
         });
 
         promiseIt('should resolve "proxy" and remember nested keys as "equals" predicates', function () {
@@ -339,29 +324,27 @@ describe('responseResolver', function () {
                 },
                 request = { key: { nested: { first: 'one', second: 'two' }, third: 'three' } };
 
-            stubs.add({ responses: [response] });
-
-            return stubs.getResponseFor({}, logger, {}).then(responseConfig => {
-                return resolver.resolve(responseConfig, request, logger, {});
-            }).then(() => {
-                return stubListFor(stubs);
-            }).then(stubList => {
-                assert.deepEqual(stubList, [
-                    {
-                        predicates: [{ equals: { key: { nested: { first: 'one' } } } }],
-                        responses: [{ is: { key: 'value' } }]
-                    },
-                    {
-                        responses: [{
-                            proxy: {
-                                to: 'where',
-                                mode: 'proxyOnce',
-                                predicateGenerators: [{ matches: { key: { nested: { first: true } } } }]
-                            }
-                        }]
-                    }
-                ]);
-            });
+            return stubs.add({ responses: [response] })
+                .then(() => stubs.getResponseFor({}, logger, {}))
+                .then(responseConfig => resolver.resolve(responseConfig, request, logger, {}))
+                .then(() => stubListFor(stubs))
+                .then(stubList => {
+                    assert.deepEqual(stubList, [
+                        {
+                            predicates: [{ equals: { key: { nested: { first: 'one' } } } }],
+                            responses: [{ is: { key: 'value' } }]
+                        },
+                        {
+                            responses: [{
+                                proxy: {
+                                    to: 'where',
+                                    mode: 'proxyOnce',
+                                    predicateGenerators: [{ matches: { key: { nested: { first: true } } } }]
+                                }
+                            }]
+                        }
+                    ]);
+                });
         });
 
         promiseIt('should add predicate parameters from predicateGenerators', function () {
@@ -382,27 +365,25 @@ describe('responseResolver', function () {
                 },
                 request = { key: 'Test' };
 
-            stubs.add({ responses: [response] });
-
-            return stubs.getResponseFor({}, logger, {}).then(responseConfig => {
-                return resolver.resolve(responseConfig, request, logger, {});
-            }).then(() => {
-                return stubListFor(stubs);
-            }).then(stubList => {
-                assert.deepEqual(stubList, [
-                    {
-                        predicates: [{
-                            deepEquals: { key: 'Test' },
-                            caseSensitive: true,
-                            except: 'xxx'
-                        }],
-                        responses: [{ is: { key: 'value' } }]
-                    },
-                    {
-                        responses: [response]
-                    }
-                ]);
-            });
+            return stubs.add({ responses: [response] })
+                .then(() => stubs.getResponseFor({}, logger, {}))
+                .then(responseConfig => resolver.resolve(responseConfig, request, logger, {}))
+                .then(() => stubListFor(stubs))
+                .then(stubList => {
+                    assert.deepEqual(stubList, [
+                        {
+                            predicates: [{
+                                deepEquals: { key: 'Test' },
+                                caseSensitive: true,
+                                except: 'xxx'
+                            }],
+                            responses: [{ is: { key: 'value' } }]
+                        },
+                        {
+                            responses: [response]
+                        }
+                    ]);
+                });
         });
 
         promiseIt('should choose predicate operator from predicateGenerators', function () {
@@ -422,25 +403,23 @@ describe('responseResolver', function () {
                 },
                 request = { key: 'Test' };
 
-            stubs.add({ responses: [response] });
-
-            return stubs.getResponseFor({}, logger, {}).then(responseConfig => {
-                return resolver.resolve(responseConfig, request, logger, {});
-            }).then(() => {
-                return stubListFor(stubs);
-            }).then(stubList => {
-                assert.deepEqual(stubList, [
-                    {
-                        predicates: [{
-                            contains: { key: 'Test' }
-                        }],
-                        responses: [{ is: { key: 'value' } }]
-                    },
-                    {
-                        responses: [response]
-                    }
-                ]);
-            });
+            return stubs.add({ responses: [response] })
+                .then(() => stubs.getResponseFor({}, logger, {}))
+                .then(responseConfig => resolver.resolve(responseConfig, request, logger, {}))
+                .then(() => stubListFor(stubs))
+                .then(stubList => {
+                    assert.deepEqual(stubList, [
+                        {
+                            predicates: [{
+                                contains: { key: 'Test' }
+                            }],
+                            responses: [{ is: { key: 'value' } }]
+                        },
+                        {
+                            responses: [response]
+                        }
+                    ]);
+                });
         });
 
         promiseIt('should format exists matcher from predicateOperator', function () {
@@ -460,25 +439,23 @@ describe('responseResolver', function () {
                 },
                 request = { key: 'Test' };
 
-            stubs.add({ responses: [response] });
-
-            return stubs.getResponseFor({}, logger, {}).then(responseConfig => {
-                return resolver.resolve(responseConfig, request, logger, {});
-            }).then(() => {
-                return stubListFor(stubs);
-            }).then(stubList => {
-                assert.deepEqual(stubList, [
-                    {
-                        predicates: [{
-                            exists: { key: true }
-                        }],
-                        responses: [{ is: { key: 'value' } }]
-                    },
-                    {
-                        responses: [response]
-                    }
-                ]);
-            });
+            return stubs.add({ responses: [response] })
+                .then(() => stubs.getResponseFor({}, logger, {}))
+                .then(responseConfig => resolver.resolve(responseConfig, request, logger, {}))
+                .then(() => stubListFor(stubs))
+                .then(stubList => {
+                    assert.deepEqual(stubList, [
+                        {
+                            predicates: [{
+                                exists: { key: true }
+                            }],
+                            responses: [{ is: { key: 'value' } }]
+                        },
+                        {
+                            responses: [response]
+                        }
+                    ]);
+                });
         });
 
         promiseIt('should format exists matcher from predicateOperator with nested match', function () {
@@ -498,27 +475,24 @@ describe('responseResolver', function () {
                 },
                 request = { key: { nested: 'Test' } };
 
-            stubs.add({ responses: [response] });
-
-            return stubs.getResponseFor({}, logger, {}).then(responseConfig => {
-                return resolver.resolve(responseConfig, request, logger, {});
-            }).then(() => {
-                return stubListFor(stubs);
-            }).then(stubList => {
-                assert.deepEqual(stubList, [
-                    {
-                        predicates: [{
-                            exists: { key: { nested: true } }
-                        }],
-                        responses: [{ is: { key: 'value' } }]
-                    },
-                    {
-                        responses: [response]
-                    }
-                ]);
-            });
+            return stubs.add({ responses: [response] })
+                .then(() => stubs.getResponseFor({}, logger, {}))
+                .then(responseConfig => resolver.resolve(responseConfig, request, logger, {}))
+                .then(() => stubListFor(stubs))
+                .then(stubList => {
+                    assert.deepEqual(stubList, [
+                        {
+                            predicates: [{
+                                exists: { key: { nested: true } }
+                            }],
+                            responses: [{ is: { key: 'value' } }]
+                        },
+                        {
+                            responses: [response]
+                        }
+                    ]);
+                });
         });
-
 
         promiseIt('should support "inject" predicateGenerators', function () {
             const proxy = { to: mock().returns(Q({ key: 'value' })) },
@@ -536,29 +510,28 @@ describe('responseResolver', function () {
                 },
                 request = { key: 'Test' };
 
-            stubs.add({ responses: [response] });
-            return stubs.getResponseFor({}, logger, {}).then(responseConfig => {
-                return resolver.resolve(responseConfig, request, logger, {});
-            }).then(() => {
-                return stubListFor(stubs);
-            }).then(stubList => {
-                assert.deepEqual(stubList, [
-                    {
-                        predicates: [{
-                            deepEquals: { key: 'Test' },
-                            caseSensitive: true
-                        }, {
-                            not: {
-                                equals: { foo: 'bar' }
-                            }
-                        }],
-                        responses: [{ is: { key: 'value' } }]
-                    },
-                    {
-                        responses: [response]
-                    }
-                ]);
-            });
+            return stubs.add({ responses: [response] })
+                .then(() => stubs.getResponseFor({}, logger, {}))
+                .then(responseConfig => resolver.resolve(responseConfig, request, logger, {}))
+                .then(() => stubListFor(stubs))
+                .then(stubList => {
+                    assert.deepEqual(stubList, [
+                        {
+                            predicates: [{
+                                deepEquals: { key: 'Test' },
+                                caseSensitive: true
+                            }, {
+                                not: {
+                                    equals: { foo: 'bar' }
+                                }
+                            }],
+                            responses: [{ is: { key: 'value' } }]
+                        },
+                        {
+                            responses: [response]
+                        }
+                    ]);
+                });
         });
 
         promiseIt('should log "inject" predicateGenerator exceptions', function () {
@@ -583,16 +556,15 @@ describe('responseResolver', function () {
                 errorsLogged.push(message);
             };
 
-            stubs.add({ responses: [response] });
-
-            return stubs.getResponseFor({}, logger, {}).then(responseConfig => {
-                return resolver.resolve(responseConfig, request, logger, {});
-            }).then(() => {
-                assert.fail('should have thrown exception');
-            }).catch(error => {
-                assert.strictEqual(error.message, 'invalid predicateGenerator injection');
-                assert.ok(errorsLogged.indexOf('injection X=> Error: BOOM!!!') >= 0);
-            });
+            return stubs.add({ responses: [response] })
+                .then(() => stubs.getResponseFor({}, logger, {}))
+                .then(responseConfig => resolver.resolve(responseConfig, request, logger, {}))
+                .then(() => {
+                    assert.fail('should have thrown exception');
+                }).catch(error => {
+                    assert.strictEqual(error.message, 'invalid predicateGenerator injection');
+                    assert.ok(errorsLogged.indexOf('injection X=> Error: BOOM!!!') >= 0);
+                });
         });
 
         promiseIt('should add xpath predicate parameter in predicateGenerators with one match', function () {
@@ -612,26 +584,24 @@ describe('responseResolver', function () {
                 },
                 request = { field: '<books><book><title>Harry Potter</title></book></books>' };
 
-            stubs.add({ responses: [response] });
-
-            return stubs.getResponseFor({}, logger, {}).then(responseConfig => {
-                return resolver.resolve(responseConfig, request, logger, {});
-            }).then(() => {
-                return stubListFor(stubs);
-            }).then(stubList => {
-                assert.deepEqual(stubList, [
-                    {
-                        predicates: [{
-                            deepEquals: { field: 'Harry Potter' },
-                            xpath: { selector: '//title' }
-                        }],
-                        responses: [{ is: { key: 'value' } }]
-                    },
-                    {
-                        responses: [response]
-                    }
-                ]);
-            });
+            return stubs.add({ responses: [response] })
+                .then(() => stubs.getResponseFor({}, logger, {}))
+                .then(responseConfig => resolver.resolve(responseConfig, request, logger, {}))
+                .then(() => stubListFor(stubs))
+                .then(stubList => {
+                    assert.deepEqual(stubList, [
+                        {
+                            predicates: [{
+                                deepEquals: { field: 'Harry Potter' },
+                                xpath: { selector: '//title' }
+                            }],
+                            responses: [{ is: { key: 'value' } }]
+                        },
+                        {
+                            responses: [response]
+                        }
+                    ]);
+                });
         });
 
         promiseIt('should add xpath predicate parameter in predicateGenerators with one match and a nested match key', function () {
@@ -651,26 +621,24 @@ describe('responseResolver', function () {
                 },
                 request = { parent: { child: '<books><book><title>Harry Potter</title></book></books>' } };
 
-            stubs.add({ responses: [response] });
-
-            return stubs.getResponseFor({}, logger, {}).then(responseConfig => {
-                return resolver.resolve(responseConfig, request, logger, {});
-            }).then(() => {
-                return stubListFor(stubs);
-            }).then(stubList => {
-                assert.deepEqual(stubList, [
-                    {
-                        predicates: [{
-                            equals: { parent: { child: 'Harry Potter' } },
-                            xpath: { selector: '//title' }
-                        }],
-                        responses: [{ is: { key: 'value' } }]
-                    },
-                    {
-                        responses: [response]
-                    }
-                ]);
-            });
+            return stubs.add({ responses: [response] })
+                .then(() => stubs.getResponseFor({}, logger, {}))
+                .then(responseConfig => resolver.resolve(responseConfig, request, logger, {}))
+                .then(() => stubListFor(stubs))
+                .then(stubList => {
+                    assert.deepEqual(stubList, [
+                        {
+                            predicates: [{
+                                equals: { parent: { child: 'Harry Potter' } },
+                                xpath: { selector: '//title' }
+                            }],
+                            responses: [{ is: { key: 'value' } }]
+                        },
+                        {
+                            responses: [response]
+                        }
+                    ]);
+                });
         });
 
         promiseIt('should add xpath predicate parameter in predicateGenerators with multiple matches', function () {
@@ -698,29 +666,27 @@ describe('responseResolver', function () {
                       '</root>',
                 request = { field: xml };
 
-            stubs.add({ responses: [response] });
-
-            return stubs.getResponseFor({}, logger, {}).then(responseConfig => {
-                return resolver.resolve(responseConfig, request, logger, {});
-            }).then(() => {
-                return stubListFor(stubs);
-            }).then(stubList => {
-                assert.deepEqual(stubList, [
-                    {
-                        predicates: [{
-                            deepEquals: { field: ['Harry Potter', 'The Hobbit', 'Game of Thrones'] },
-                            xpath: {
-                                selector: '//isbn:title',
-                                ns: { isbn: 'http://schemas.isbn.org/ns/1999/basic.dtd' }
-                            }
-                        }],
-                        responses: [{ is: { key: 'value' } }]
-                    },
-                    {
-                        responses: [response]
-                    }
-                ]);
-            });
+            return stubs.add({ responses: [response] })
+                .then(() => stubs.getResponseFor({}, logger, {}))
+                .then(responseConfig => resolver.resolve(responseConfig, request, logger, {}))
+                .then(() => stubListFor(stubs))
+                .then(stubList => {
+                    assert.deepEqual(stubList, [
+                        {
+                            predicates: [{
+                                deepEquals: { field: ['Harry Potter', 'The Hobbit', 'Game of Thrones'] },
+                                xpath: {
+                                    selector: '//isbn:title',
+                                    ns: { isbn: 'http://schemas.isbn.org/ns/1999/basic.dtd' }
+                                }
+                            }],
+                            responses: [{ is: { key: 'value' } }]
+                        },
+                        {
+                            responses: [response]
+                        }
+                    ]);
+                });
         });
 
         promiseIt('should add xpath predicate parameter in predicateGenerators even if no xpath match', function () {
@@ -740,26 +706,24 @@ describe('responseResolver', function () {
                 },
                 request = { field: '<books />' };
 
-            stubs.add({ responses: [response] });
-
-            return stubs.getResponseFor({}, logger, {}).then(responseConfig => {
-                return resolver.resolve(responseConfig, request, logger, {});
-            }).then(() => {
-                return stubListFor(stubs);
-            }).then(stubList => {
-                assert.deepEqual(stubList, [
-                    {
-                        predicates: [{
-                            deepEquals: { field: '' },
-                            xpath: { selector: '//title' }
-                        }],
-                        responses: [{ is: { key: 'value' } }]
-                    },
-                    {
-                        responses: [response]
-                    }
-                ]);
-            });
+            return stubs.add({ responses: [response] })
+                .then(() => stubs.getResponseFor({}, logger, {}))
+                .then(responseConfig => resolver.resolve(responseConfig, request, logger, {}))
+                .then(() => stubListFor(stubs))
+                .then(stubList => {
+                    assert.deepEqual(stubList, [
+                        {
+                            predicates: [{
+                                deepEquals: { field: '' },
+                                xpath: { selector: '//title' }
+                            }],
+                            responses: [{ is: { key: 'value' } }]
+                        },
+                        {
+                            responses: [response]
+                        }
+                    ]);
+                });
         });
 
         promiseIt('should add xpath predicate parameter in predicateGenerators even if scalar xpath match', function () {
@@ -779,26 +743,24 @@ describe('responseResolver', function () {
                 },
                 request = { field: '<doc><title>first</title><title>second</title></doc>' };
 
-            stubs.add({ responses: [response] });
-
-            return stubs.getResponseFor({}, logger, {}).then(responseConfig => {
-                return resolver.resolve(responseConfig, request, logger, {});
-            }).then(() => {
-                return stubListFor(stubs);
-            }).then(stubList => {
-                assert.deepEqual(stubList, [
-                    {
-                        predicates: [{
-                            deepEquals: { field: 2 },
-                            xpath: { selector: 'count(//title)' }
-                        }],
-                        responses: [{ is: { key: 'value' } }]
-                    },
-                    {
-                        responses: [response]
-                    }
-                ]);
-            });
+            return stubs.add({ responses: [response] })
+                .then(() => stubs.getResponseFor({}, logger, {}))
+                .then(responseConfig => resolver.resolve(responseConfig, request, logger, {}))
+                .then(() => stubListFor(stubs))
+                .then(stubList => {
+                    assert.deepEqual(stubList, [
+                        {
+                            predicates: [{
+                                deepEquals: { field: 2 },
+                                xpath: { selector: 'count(//title)' }
+                            }],
+                            responses: [{ is: { key: 'value' } }]
+                        },
+                        {
+                            responses: [response]
+                        }
+                    ]);
+                });
         });
 
         promiseIt('should add xpath predicate parameter in predicateGenerators even if boolean match', function () {
@@ -818,26 +780,24 @@ describe('responseResolver', function () {
                 },
                 request = { field: '<doc></doc>' };
 
-            stubs.add({ responses: [response] });
-
-            return stubs.getResponseFor({}, logger, {}).then(responseConfig => {
-                return resolver.resolve(responseConfig, request, logger, {});
-            }).then(() => {
-                return stubListFor(stubs);
-            }).then(stubList => {
-                assert.deepEqual(stubList, [
-                    {
-                        predicates: [{
-                            deepEquals: { field: false },
-                            xpath: { selector: 'boolean(//title)' }
-                        }],
-                        responses: [{ is: { key: 'value' } }]
-                    },
-                    {
-                        responses: [response]
-                    }
-                ]);
-            });
+            return stubs.add({ responses: [response] })
+                .then(() => stubs.getResponseFor({}, logger, {}))
+                .then(responseConfig => resolver.resolve(responseConfig, request, logger, {}))
+                .then(() => stubListFor(stubs))
+                .then(stubList => {
+                    assert.deepEqual(stubList, [
+                        {
+                            predicates: [{
+                                deepEquals: { field: false },
+                                xpath: { selector: 'boolean(//title)' }
+                            }],
+                            responses: [{ is: { key: 'value' } }]
+                        },
+                        {
+                            responses: [response]
+                        }
+                    ]);
+                });
         });
 
         promiseIt('should add jsonpath predicate parameter in predicateGenerators with one match', function () {
@@ -857,26 +817,24 @@ describe('responseResolver', function () {
                 },
                 request = { field: { title: 'Harry Potter' } };
 
-            stubs.add({ responses: [response] });
-
-            return stubs.getResponseFor({}, logger, {}).then(responseConfig => {
-                return resolver.resolve(responseConfig, request, logger, {});
-            }).then(() => {
-                return stubListFor(stubs);
-            }).then(stubList => {
-                assert.deepEqual(stubList, [
-                    {
-                        predicates: [{
-                            deepEquals: { field: 'Harry Potter' },
-                            jsonpath: { selector: '$..title' }
-                        }],
-                        responses: [{ is: { key: 'value' } }]
-                    },
-                    {
-                        responses: [response]
-                    }
-                ]);
-            });
+            return stubs.add({ responses: [response] })
+                .then(() => stubs.getResponseFor({}, logger, {}))
+                .then(responseConfig => resolver.resolve(responseConfig, request, logger, {}))
+                .then(() => stubListFor(stubs))
+                .then(stubList => {
+                    assert.deepEqual(stubList, [
+                        {
+                            predicates: [{
+                                deepEquals: { field: 'Harry Potter' },
+                                jsonpath: { selector: '$..title' }
+                            }],
+                            responses: [{ is: { key: 'value' } }]
+                        },
+                        {
+                            responses: [response]
+                        }
+                    ]);
+                });
         });
 
         promiseIt('should add jsonpath predicate parameter in predicateGenerators with multiple matches', function () {
@@ -904,26 +862,24 @@ describe('responseResolver', function () {
                     }
                 };
 
-            stubs.add({ responses: [response] });
-
-            return stubs.getResponseFor({}, logger, {}).then(responseConfig => {
-                return resolver.resolve(responseConfig, request, logger, {});
-            }).then(() => {
-                return stubListFor(stubs);
-            }).then(stubList => {
-                assert.deepEqual(stubList, [
-                    {
-                        predicates: [{
-                            deepEquals: { field: ['Harry Potter', 'The Hobbit', 'Game of Thrones'] },
-                            jsonpath: { selector: '$.books[*].title' }
-                        }],
-                        responses: [{ is: { key: 'value' } }]
-                    },
-                    {
-                        responses: [response]
-                    }
-                ]);
-            });
+            return stubs.add({ responses: [response] })
+                .then(() => stubs.getResponseFor({}, logger, {}))
+                .then(responseConfig => resolver.resolve(responseConfig, request, logger, {}))
+                .then(() => stubListFor(stubs))
+                .then(stubList => {
+                    assert.deepEqual(stubList, [
+                        {
+                            predicates: [{
+                                deepEquals: { field: ['Harry Potter', 'The Hobbit', 'Game of Thrones'] },
+                                jsonpath: { selector: '$.books[*].title' }
+                            }],
+                            responses: [{ is: { key: 'value' } }]
+                        },
+                        {
+                            responses: [response]
+                        }
+                    ]);
+                });
         });
 
         promiseIt('should add jsonpath predicate parameter in predicateGenerators with no match', function () {
@@ -943,26 +899,24 @@ describe('responseResolver', function () {
                 },
                 request = { field: false };
 
-            stubs.add({ responses: [response] });
-
-            return stubs.getResponseFor({}, logger, {}).then(responseConfig => {
-                return resolver.resolve(responseConfig, request, logger, {});
-            }).then(() => {
-                return stubListFor(stubs);
-            }).then(stubList => {
-                assert.deepEqual(stubList, [
-                    {
-                        predicates: [{
-                            deepEquals: { field: '' },
-                            jsonpath: { selector: '$..title' }
-                        }],
-                        responses: [{ is: { key: 'value' } }]
-                    },
-                    {
-                        responses: [response]
-                    }
-                ]);
-            });
+            return stubs.add({ responses: [response] })
+                .then(() => stubs.getResponseFor({}, logger, {}))
+                .then(responseConfig => resolver.resolve(responseConfig, request, logger, {}))
+                .then(() => stubListFor(stubs))
+                .then(stubList => {
+                    assert.deepEqual(stubList, [
+                        {
+                            predicates: [{
+                                deepEquals: { field: '' },
+                                jsonpath: { selector: '$..title' }
+                            }],
+                            responses: [{ is: { key: 'value' } }]
+                        },
+                        {
+                            responses: [response]
+                        }
+                    ]);
+                });
         });
 
         promiseIt('should log warning if request not JSON', function () {
@@ -982,27 +936,25 @@ describe('responseResolver', function () {
                 },
                 request = { field: 'Hello, world' };
 
-            stubs.add({ responses: [response] });
-
-            return stubs.getResponseFor({}, logger, {}).then(responseConfig => {
-                return resolver.resolve(responseConfig, request, logger, {});
-            }).then(() => {
-                return stubListFor(stubs);
-            }).then(stubList => {
-                assert.deepEqual(stubList, [
-                    {
-                        predicates: [{
-                            deepEquals: { field: '' },
-                            jsonpath: { selector: '$..title' }
-                        }],
-                        responses: [{ is: { key: 'value' } }]
-                    },
-                    {
-                        responses: [response]
-                    }
-                ]);
-                logger.warn.assertLogged('Cannot parse as JSON: "Hello, world"');
-            });
+            return stubs.add({ responses: [response] })
+                .then(() => stubs.getResponseFor({}, logger, {}))
+                .then(responseConfig => resolver.resolve(responseConfig, request, logger, {}))
+                .then(() => stubListFor(stubs))
+                .then(stubList => {
+                    assert.deepEqual(stubList, [
+                        {
+                            predicates: [{
+                                deepEquals: { field: '' },
+                                jsonpath: { selector: '$..title' }
+                            }],
+                            responses: [{ is: { key: 'value' } }]
+                        },
+                        {
+                            responses: [response]
+                        }
+                    ]);
+                    logger.warn.assertLogged('Cannot parse as JSON: "Hello, world"');
+                });
         });
 
         promiseIt('should allow "inject" response', function () {
@@ -1247,12 +1199,11 @@ describe('responseResolver', function () {
                 responseConfig = { proxy: { to: 'where', mode: 'proxyOnce' } },
                 request = {};
 
-            stubs.add({ responses: [responseConfig] });
-            responseConfig.stubIndex = () => 0;
-
-            return resolver.resolve(responseConfig, request, logger, {}).then(response => {
+            return stubs.add({ responses: [responseConfig] }).then(() => {
+                responseConfig.stubIndex = () => 0;
+                return resolver.resolve(responseConfig, request, logger, {});
+            }).then(response => {
                 const proxyResolutionKey = parseInt(response.callbackURL.replace('CALLBACK-URL/', ''));
-
                 return resolver.resolveProxy({ data: 'RESPONSE' }, proxyResolutionKey, logger);
             }).then(response => {
                 assert.deepEqual(jsonResponse(response), { data: 'RESPONSE' });
@@ -1274,12 +1225,11 @@ describe('responseResolver', function () {
                 responseConfig = { proxy: { to: 'where', mode: 'proxyAlways' } },
                 request = {};
 
-            stubs.add({ responses: [responseConfig] });
-            responseConfig.stubIndex = () => 0;
-
-            return resolver.resolve(responseConfig, request, logger, {}).then(response => {
+            return stubs.add({ responses: [responseConfig] }).then(() => {
+                responseConfig.stubIndex = () => 0;
+                return resolver.resolve(responseConfig, request, logger, {});
+            }).then(response => {
                 const proxyResolutionKey = parseInt(response.callbackURL.replace('CALLBACK-URL/', ''));
-
                 return resolver.resolveProxy({ data: 'RESPONSE' }, proxyResolutionKey, logger);
             }).then(response => {
                 assert.deepEqual(jsonResponse(response), { data: 'RESPONSE' });
@@ -1305,24 +1255,22 @@ describe('responseResolver', function () {
                 },
                 request = {};
 
-            stubs.add({ responses: [proxyResponse] });
-
-            return stubs.getResponseFor({}, logger, {}).then(responseConfig => {
-                return resolver.resolve(responseConfig, request, logger, {});
-            }).then(response => {
-                const proxyResolutionKey = parseInt(response.callbackURL.replace('CALLBACK-URL/', ''));
-
-                return resolver.resolveProxy({ data: 'RESPONSE' }, proxyResolutionKey, logger);
-            }).then(response => {
-                assert.deepEqual(jsonResponse(response), { data: 'RESPONSE-DECORATED' });
-                return stubs.all();
-            }).then(all => {
-                const stubResponses = all.map(stub => proxyResponses(stub.responses));
-                assert.deepEqual(stubResponses, [
-                    [{ is: { data: 'RESPONSE-DECORATED' } }],
-                    [proxyResponse]
-                ]);
-            });
+            return stubs.add({ responses: [proxyResponse] })
+                .then(() => stubs.getResponseFor({}, logger, {}))
+                .then(responseConfig => resolver.resolve(responseConfig, request, logger, {}))
+                .then(response => {
+                    const proxyResolutionKey = parseInt(response.callbackURL.replace('CALLBACK-URL/', ''));
+                    return resolver.resolveProxy({ data: 'RESPONSE' }, proxyResolutionKey, logger);
+                }).then(response => {
+                    assert.deepEqual(jsonResponse(response), { data: 'RESPONSE-DECORATED' });
+                    return stubs.all();
+                }).then(all => {
+                    const stubResponses = all.map(stub => proxyResponses(stub.responses));
+                    assert.deepEqual(stubResponses, [
+                        [{ is: { data: 'RESPONSE-DECORATED' } }],
+                        [proxyResponse]
+                    ]);
+                });
         });
 
         promiseIt('should add wait behavior based on the proxy resolution time', function () {
@@ -1332,26 +1280,25 @@ describe('responseResolver', function () {
                 proxyResponse = { proxy: { to: 'where', mode: 'proxyOnce', addWaitBehavior: true } },
                 request = {};
 
-            stubs.add({ responses: [proxyResponse] });
-
-            return stubs.getResponseFor({}, logger, {}).then(responseConfig => {
-                return resolver.resolve(responseConfig, request, logger, {});
-            }).then(response => {
-                const proxyResolutionKey = parseInt(response.callbackURL.replace('CALLBACK-URL/', ''));
-                return Q.delay(proxyResolutionKey, 100);
-            }).then(proxyResolutionKey =>
-                resolver.resolveProxy({ data: 'RESPONSE' }, proxyResolutionKey, logger)
-            ).then(() => {
-                return stubs.all();
-            }).then(all => {
-                const stubResponses = all.map(stub => stub.responses),
-                    wait = stubResponses[0][0].is._proxyResponseTime; // eslint-disable-line no-underscore-dangle
-                assert.ok(wait > 90); // allow some variability
-                assert.deepEqual(stubResponses, [
-                    [{ is: { data: 'RESPONSE', _proxyResponseTime: wait }, _behaviors: { wait: wait } }],
-                    [proxyResponse]
-                ]);
-            });
+            return stubs.add({ responses: [proxyResponse] })
+                .then(() => stubs.getResponseFor({}, logger, {}))
+                .then(responseConfig => resolver.resolve(responseConfig, request, logger, {}))
+                .then(response => {
+                    const proxyResolutionKey = parseInt(response.callbackURL.replace('CALLBACK-URL/', ''));
+                    return Q.delay(proxyResolutionKey, 100);
+                }).then(proxyResolutionKey =>
+                    resolver.resolveProxy({ data: 'RESPONSE' }, proxyResolutionKey, logger)
+                ).then(() => {
+                    return stubs.all();
+                }).then(all => {
+                    const stubResponses = all.map(stub => stub.responses),
+                        wait = stubResponses[0][0].is._proxyResponseTime; // eslint-disable-line no-underscore-dangle
+                    assert.ok(wait > 90); // allow some variability
+                    assert.deepEqual(stubResponses, [
+                        [{ is: { data: 'RESPONSE', _proxyResponseTime: wait }, _behaviors: { wait: wait } }],
+                        [proxyResponse]
+                    ]);
+                });
         });
 
         promiseIt('should support recording the match', function () {
@@ -1360,14 +1307,13 @@ describe('responseResolver', function () {
                 logger = Logger.create(),
                 request = { key: 'REQUEST' };
 
-            stubs.add({ responses: [{ proxy: { to: 'where', mode: 'proxyOnce' } }] });
-
-            // Call through the stubRepository to have it add the recordMatch function
-            return stubs.getResponseFor(request, logger, {}).then(responseConfig => {
+            return stubs.add({ responses: [{ proxy: { to: 'where', mode: 'proxyOnce' } }] }).then(() => {
+                // Call through the stubRepository to have it add the recordMatch function
+                return stubs.getResponseFor(request, logger, {});
+            }).then(responseConfig => {
                 return resolver.resolve(responseConfig, request, logger, {});
             }).then(response => {
                 const proxyResolutionKey = parseInt(response.callbackURL.replace('CALLBACK-URL/', ''));
-
                 return resolver.resolveProxy({ data: 'RESPONSE' }, proxyResolutionKey, logger);
             }).then(response => {
                 response.recordMatch();
@@ -1386,10 +1332,10 @@ describe('responseResolver', function () {
                 logger = Logger.create();
             let proxyResolutionKey;
 
-            stubs.add({ responses: [{ proxy: { to: 'where', mode: 'proxyAlways' } }] });
-
-            // Call through the stubRepository to have it add the recordMatch function
-            return stubs.getResponseFor({ key: 'REQUEST-1' }, logger, {}).then(responseConfig => {
+            return stubs.add({ responses: [{ proxy: { to: 'where', mode: 'proxyAlways' } }] }).then(() => {
+                // Call through the stubRepository to have it add the recordMatch function
+                return stubs.getResponseFor({ key: 'REQUEST-1' }, logger, {});
+            }).then(responseConfig => {
                 return resolver.resolve(responseConfig, { key: 'REQUEST-1' }, logger, {});
             }).then(response => {
                 proxyResolutionKey = parseInt(response.callbackURL.replace('CALLBACK-URL/', ''));
@@ -1417,24 +1363,23 @@ describe('responseResolver', function () {
                 request = {};
             let proxyResolutionKey;
 
-            stubs.add({ responses: [proxyResponse] });
+            return stubs.add({ responses: [proxyResponse] })
+                .then(() => stubs.getResponseFor({}, logger, {}))
+                .then(responseConfig => resolver.resolve(responseConfig, request, logger, {}))
+                .then(response => {
+                    proxyResolutionKey = parseInt(response.callbackURL.replace('CALLBACK-URL/', ''));
 
-            return stubs.getResponseFor({}, logger, {}).then(responseConfig => {
-                return resolver.resolve(responseConfig, request, logger, {});
-            }).then(response => {
-                proxyResolutionKey = parseInt(response.callbackURL.replace('CALLBACK-URL/', ''));
-
-                return resolver.resolveProxy({ data: 'RESPONSE' }, proxyResolutionKey, logger);
-            }).then(() => resolver.resolveProxy({ data: 'RESPONSE' }, proxyResolutionKey, logger)).then(() => {
-                assert.fail('should have errored');
-            }, error => {
-                assert.deepEqual(error, {
-                    code: 'no such resource',
-                    message: 'invalid proxy resolution key',
-                    source: 'CALLBACK-URL/0'
+                    return resolver.resolveProxy({ data: 'RESPONSE' }, proxyResolutionKey, logger);
+                }).then(() => resolver.resolveProxy({ data: 'RESPONSE' }, proxyResolutionKey, logger)).then(() => {
+                    assert.fail('should have errored');
+                }, error => {
+                    assert.deepEqual(error, {
+                        code: 'no such resource',
+                        message: 'invalid proxy resolution key',
+                        source: 'CALLBACK-URL/0'
+                    });
+                    logger.error.assertLogged('Invalid proxy resolution key: 0');
                 });
-                logger.error.assertLogged('Invalid proxy resolution key: 0');
-            });
         });
     });
 });

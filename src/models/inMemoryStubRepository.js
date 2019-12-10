@@ -65,6 +65,7 @@ function create () {
 
     function add (stub) {
         stubs.push(Stub.create(stub));
+        return Q();
     }
 
     function insertAtIndex (stub, index) {

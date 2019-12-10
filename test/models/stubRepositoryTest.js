@@ -17,18 +17,18 @@ describe('stubRepository', function () {
                 secondStub = { responses: [{ is: 'third' }, { is: 'fourth' }] },
                 thirdStub = { responses: [{ is: 'fifth' }, { is: 'sixth' }] };
 
-            stubs.add(firstStub);
-            stubs.add(secondStub);
+            return stubs.add(firstStub)
+                .then(() => stubs.add(secondStub))
+                .then(() => stubs.overwriteAll([thirdStub]))
+                .then(() => {
+                    return stubs.all().then(all => {
+                        const responses = all.map(stub => stub.responses);
 
-            return stubs.overwriteAll([thirdStub]).then(() => {
-                return stubs.all().then(all => {
-                    const responses = all.map(stub => stub.responses);
-
-                    assert.deepEqual(responses, [
-                        [{ is: 'fifth' }, { is: 'sixth' }]
-                    ]);
+                        assert.deepEqual(responses, [
+                            [{ is: 'fifth' }, { is: 'sixth' }]
+                        ]);
+                    });
                 });
-            });
         });
     });
 
@@ -39,19 +39,18 @@ describe('stubRepository', function () {
                 secondStub = { responses: [{ is: 'third' }, { is: 'fourth' }] },
                 thirdStub = { responses: [{ is: 'fifth' }, { is: 'sixth' }] };
 
-            stubs.add(firstStub);
-            stubs.add(secondStub);
+            return stubs.add(firstStub)
+                .then(() => stubs.add(secondStub))
+                .then(() => stubs.overwriteAtIndex(thirdStub, 1))
+                .then(() => stubs.all())
+                .then(all => {
+                    const responses = all.map(stub => stub.responses);
 
-            return stubs.overwriteAtIndex(thirdStub, 1).then(() => {
-                return stubs.all();
-            }).then(all => {
-                const responses = all.map(stub => stub.responses);
-
-                assert.deepEqual(responses, [
-                    [{ is: 'first' }, { is: 'second' }],
-                    [{ is: 'fifth' }, { is: 'sixth' }]
-                ]);
-            });
+                    assert.deepEqual(responses, [
+                        [{ is: 'first' }, { is: 'second' }],
+                        [{ is: 'fifth' }, { is: 'sixth' }]
+                    ]);
+                });
         });
     });
 
@@ -62,20 +61,19 @@ describe('stubRepository', function () {
                 secondStub = { responses: [{ is: 'third' }, { is: 'fourth' }] },
                 thirdStub = { responses: [{ is: 'fifth' }, { is: 'sixth' }] };
 
-            stubs.add(firstStub);
-            stubs.add(secondStub);
-            stubs.add(thirdStub);
+            return stubs.add(firstStub)
+                .then(() => stubs.add(secondStub))
+                .then(() => stubs.add(thirdStub))
+                .then(() => stubs.deleteAtIndex(0))
+                .then(() => stubs.all())
+                .then(all => {
+                    const responses = all.map(stub => stub.responses);
 
-            return stubs.deleteAtIndex(0).then(() => {
-                return stubs.all();
-            }).then(all => {
-                const responses = all.map(stub => stub.responses);
-
-                assert.deepEqual(responses, [
-                    [{ is: 'third' }, { is: 'fourth' }],
-                    [{ is: 'fifth' }, { is: 'sixth' }]
-                ]);
-            });
+                    assert.deepEqual(responses, [
+                        [{ is: 'third' }, { is: 'fourth' }],
+                        [{ is: 'fifth' }, { is: 'sixth' }]
+                    ]);
+                });
         });
     });
 
@@ -84,26 +82,28 @@ describe('stubRepository', function () {
             const stubs = StubRepository.create('utf8'),
                 stub = { responses: [] };
 
-            stubs.add(stub);
-            return stubs.all().then(all => {
-                all[0].responses.push('RESPONSE');
-                return stubs.all();
-            }).then(all => {
-                assert.deepEqual(jsonWithoutFunctions(all), [{ responses: [] }]);
-            });
+            return stubs.add(stub)
+                .then(() => stubs.all())
+                .then(all => {
+                    all[0].responses.push('RESPONSE');
+                    return stubs.all();
+                }).then(all => {
+                    assert.deepEqual(jsonWithoutFunctions(all), [{ responses: [] }]);
+                });
         });
 
         promiseIt('should support adding responses', function () {
             const stubs = StubRepository.create('utf8'),
                 stub = { responses: [] };
 
-            stubs.add(stub);
-            return stubs.all().then(all => {
-                all[0].addResponse('RESPONSE');
-                return stubs.all();
-            }).then(all => {
-                assert.deepEqual(jsonWithoutFunctions(all), [{ responses: ['RESPONSE'] }]);
-            });
+            return stubs.add(stub)
+                .then(() => stubs.all())
+                .then(all => {
+                    all[0].addResponse('RESPONSE');
+                    return stubs.all();
+                }).then(all => {
+                    assert.deepEqual(jsonWithoutFunctions(all), [{ responses: ['RESPONSE'] }]);
+                });
         });
     });
 
@@ -122,11 +122,11 @@ describe('stubRepository', function () {
                 logger = { debug: mock() },
                 stub = { responses: [{ is: 'first stub' }] };
 
-            stubs.add(stub);
-
-            return stubs.getResponseFor({ field: 'value' }, logger, {}).then(responseConfig => {
-                assert.strictEqual(responseConfig.is, 'first stub');
-            });
+            return stubs.add(stub)
+                .then(() => stubs.getResponseFor({ field: 'value' }, logger, {}))
+                .then(responseConfig => {
+                    assert.strictEqual(responseConfig.is, 'first stub');
+                });
         });
 
         promiseIt('should return first match', function () {
@@ -136,13 +136,13 @@ describe('stubRepository', function () {
                 secondStub = { predicates: [{ equals: { field: '2' } }], responses: [{ is: 'second stub' }] },
                 thirdStub = { predicates: [{ equals: { field: '2' } }], responses: [{ is: 'third stub' }] };
 
-            stubs.add(firstStub);
-            stubs.add(secondStub);
-            stubs.add(thirdStub);
-
-            return stubs.getResponseFor({ field: '2' }, logger, {}).then(responseConfig => {
-                assert.strictEqual(responseConfig.is, 'second stub');
-            });
+            return stubs.add(firstStub)
+                .then(() => stubs.add(secondStub))
+                .then(() => stubs.add(thirdStub))
+                .then(() => stubs.getResponseFor({ field: '2' }, logger, {}))
+                .then(responseConfig => {
+                    assert.strictEqual(responseConfig.is, 'second stub');
+                });
         });
 
         promiseIt('should return responses in order, looping around', function () {
@@ -150,9 +150,9 @@ describe('stubRepository', function () {
                 logger = { debug: mock() },
                 stub = { responses: [{ is: 'first response' }, { is: 'second response' }] };
 
-            stubs.add(stub);
-
-            return stubs.getResponseFor({}, logger, {}).then(responseConfig => {
+            return stubs.add(stub).then(() => {
+                return stubs.getResponseFor({}, logger, {});
+            }).then(responseConfig => {
                 assert.strictEqual(responseConfig.is, 'first response');
                 return stubs.getResponseFor({}, logger, {});
             }).then(responseConfig => {
@@ -170,9 +170,9 @@ describe('stubRepository', function () {
                 mismatchingRequest = { field: 'other' },
                 stub = { predicates: [{ equals: { field: 'value' } }], responses: [{ is: 'first response' }] };
 
-            stubs.add(stub);
-
-            return stubs.getResponseFor(matchingRequest, logger, {}).then(responseConfig => {
+            return stubs.add(stub).then(() => {
+                return stubs.getResponseFor(matchingRequest, logger, {});
+            }).then(responseConfig => {
                 responseConfig.recordMatch(matchingRequest, 'MATCHED');
                 return stubs.getResponseFor(mismatchingRequest, logger, {});
             }).then(responseConfig => {
@@ -191,9 +191,9 @@ describe('stubRepository', function () {
                 logger = { debug: mock() },
                 stub = { responses: [{ is: 'response' }] };
 
-            stubs.add(stub);
-
-            return stubs.getResponseFor({}, logger, {}).then(responseConfig => {
+            return stubs.add(stub).then(() => {
+                return stubs.getResponseFor({}, logger, {});
+            }).then(responseConfig => {
                 responseConfig.recordMatch({}, 'FIRST');
                 responseConfig.recordMatch({}, 'SECOND');
 
@@ -214,9 +214,9 @@ describe('stubRepository', function () {
                     { is: 'second response' }
                 ] };
 
-            stubs.add(stub);
-
-            return stubs.getResponseFor({}, logger, {}).then(responseConfig => {
+            return stubs.add(stub).then(() => {
+                return stubs.getResponseFor({}, logger, {});
+            }).then(responseConfig => {
                 assert.strictEqual(responseConfig.is, 'first response');
                 return stubs.getResponseFor({}, logger, {});
             }).then(responseConfig => {
