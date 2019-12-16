@@ -754,22 +754,22 @@ describe('http proxy stubs', function () {
             .then(() => api.post('/imposters', proxyRequest))
             .then(response => {
                 assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body, null, 2));
-                return client.get('/', port);
+                return client.get('/', proxyRequest.port);
             })
             .then(response => {
                 assert.strictEqual(response.body, 'origin server');
-                return api.del(`/imposters/${port}/requests`);
+                return api.del(`/imposters/${proxyRequest.port}/requests`);
             })
             .then(response => {
                 assert.strictEqual(response.statusCode, 200, JSON.stringify(response.body, null, 2));
-                return api.get(`/imposters/${port}`);
+                return api.get(`/imposters/${proxyRequest.port}`);
             })
             .then(response => {
                 response.body.stubs.forEach(stub => {
                     delete stub.matches;
                     delete stub._links;
                 });
-                assert.deepEqual(proxyRequest.stubs, response.body.stubs, JSON.stringify(response.body.stubs, null, 2));
+                assert.deepEqual(response.body.stubs, proxyRequest.stubs, JSON.stringify(response.body.stubs, null, 2));
             })
             .finally(() => api.del('/imposters'));
     });

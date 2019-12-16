@@ -66,29 +66,6 @@ function create (encoding, config) {
         });
     }
 
-    function isRecordedResponse (response) {
-        return response.is && response.is._proxyResponseTime; // eslint-disable-line no-underscore-dangle
-    }
-
-    /**
-    * Removes the saved proxy responses
-    * @returns {Object} - Promise
-    */
-    function resetProxies () {
-        return stubs.all().then(allStubs => {
-            const Q = require('q');
-            let sequence = Q();
-
-            for (let i = allStubs.length - 1; i >= 0; i -= 1) {
-                allStubs[i].deleteResponsesMatching(isRecordedResponse);
-                if (allStubs[i].responses.length === 0) {
-                    sequence = sequence.then(() => { stubs.deleteAtIndex(i); });
-                }
-            }
-            return sequence;
-        });
-    }
-
     return {
         all: stubs.all,
         add: stubs.add,
@@ -96,8 +73,7 @@ function create (encoding, config) {
         overwriteAll: stubs.overwriteAll,
         overwriteAtIndex: stubs.overwriteAtIndex,
         deleteAtIndex: stubs.deleteAtIndex,
-        getResponseFor,
-        resetProxies
+        getResponseFor
     };
 }
 
