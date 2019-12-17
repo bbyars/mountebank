@@ -48,14 +48,6 @@ function create (encoding, config) {
         });
     }
 
-    /**
-     * Finds the next response configuration for the given request
-     * @memberOf module:models/stubRepository#
-     * @param {Object} request - The protocol request
-     * @param {Object} logger - The logger
-     * @param {Object} imposterState - The current state for the imposter
-     * @returns {Object} - Promise resolving to the response
-     */
     function getResponseFor (request, logger, imposterState) {
         return findFirstMatch(request, logger, imposterState).then(match => {
             const responseConfig = match.stub.nextResponse();

@@ -4,7 +4,7 @@ function load (builtInProtocols, customProtocols, options, isAllowedConnection, 
     function inProcessCreate (createProtocol) {
         return (creationRequest, logger, responseFn) =>
             createProtocol(creationRequest, logger, responseFn).then(server => {
-                const stubs = require('./stubRepository').create(server.encoding || 'utf8'),
+                const stubs = require('./inMemoryStubRepository').create(),
                     resolver = require('./responseResolver').create(stubs, server.proxy),
                     Q = require('q');
 
@@ -13,7 +13,8 @@ function load (builtInProtocols, customProtocols, options, isAllowedConnection, 
                     metadata: server.metadata,
                     stubs: stubs,
                     resolver: resolver,
-                    close: server.close
+                    close: server.close,
+                    encoding: server.encoding || 'utf8'
                 });
             });
     }
@@ -88,7 +89,7 @@ function load (builtInProtocols, customProtocols, options, isAllowedConnection, 
                 const callbackURL = options.callbackURLTemplate.replace(':port', serverPort),
                     encoding = metadata.encoding || 'utf8';
 
-                const stubs = require('./stubRepository').create(encoding),
+                const stubs = require('./inMemoryStubRepository').create(),
                     resolver = require('./responseResolver').create(stubs, undefined, callbackURL);
 
                 delete metadata.encoding;
@@ -98,6 +99,7 @@ function load (builtInProtocols, customProtocols, options, isAllowedConnection, 
                     metadata: metadata,
                     stubs,
                     resolver,
+                    encoding,
                     close: callback => {
                         closeCalled = true;
                         imposterProcess.once('exit', callback);

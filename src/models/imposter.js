@@ -55,12 +55,46 @@ function create (Protocol, creationRequest, baseLogger, config, isAllowedConnect
 
     let stubs;
     let resolver;
+    let encoding;
     let numberOfRequests = 0;
 
     compatibility.upcast(creationRequest);
 
     // If the CLI --mock flag is passed, we record even if the imposter level recordRequests = false
     const recordRequests = config.recordRequests || creationRequest.recordRequests;
+
+    // If testAll, we call map before calling every so we make sure to call every
+    // predicate during dry run validation rather than short-circuiting
+    function trueForAll (list, predicate, testAll) {
+        if (testAll) {
+            return list.map(predicate).every(result => result);
+        }
+        else {
+            return list.every(predicate);
+        }
+    }
+
+    function findFirstMatch (request) {
+        const readOnlyState = helpers.clone(imposterState),
+            filter = stub => {
+                const stubPredicates = stub.predicates || [],
+                    predicates = require('./predicates');
+
+                return trueForAll(stubPredicates,
+                    predicate => predicates.evaluate(predicate, request, encoding, logger, readOnlyState),
+                    request.isDryRun === true);
+            };
+
+        return stubs.first(filter).then(match => {
+            if (match.success) {
+                logger.debug(`using predicate match: ${JSON.stringify(match.stub.predicates || {})}`);
+            }
+            else {
+                logger.debug('no predicate match');
+            }
+            return match;
+        });
+    }
 
     // requestDetails are not stored with the imposter
     // It was created to pass the raw URL to maintain the exact querystring during http proxying
@@ -77,7 +111,12 @@ function create (Protocol, creationRequest, baseLogger, config, isAllowedConnect
             requests.push(recordedRequest);
         }
 
-        return stubs.getResponseFor(request, logger, imposterState).then(responseConfig => {
+        return findFirstMatch(request).then(match => {
+            const responseConfig = match.stub.nextResponse();
+            logger.debug(`generating response from ${JSON.stringify(responseConfig)}`);
+            responseConfig.stubIndex = () => match.index;
+            return responseConfig;
+        }).then(responseConfig => {
             return resolver.resolve(responseConfig, request, logger, imposterState, requestDetails).then(response => {
                 if (config.recordMatches && !response.proxy) {
                     if (response.response) {
@@ -144,6 +183,7 @@ function create (Protocol, creationRequest, baseLogger, config, isAllowedConnect
 
             stubs = server.stubs;
             resolver = server.resolver;
+            encoding = server.encoding;
 
             if (creationRequest.stubs) {
                 creationRequest.stubs.forEach(stubs.add);

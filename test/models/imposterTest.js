@@ -5,23 +5,20 @@ const assert = require('assert'),
     Imposter = require('../../src/models/imposter'),
     Q = require('q'),
     promiseIt = require('../testHelpers').promiseIt,
-    FakeLogger = require('../fakes/fakeLogger');
+    FakeLogger = require('../fakes/fakeLogger'),
+    StubRepository = require('../../src/models/inMemoryStubRepository');
 
 function allow () { return true; }
 function deny () { return false; }
 
 describe('imposter', function () {
     describe('#create', function () {
-        let Protocol, metadata, server, logger, stubs;
+        let Protocol, metadata, server, logger;
 
         beforeEach(() => {
             metadata = {};
-            stubs = [];
             server = {
-                stubs: {
-                    add: stub => { stubs.push(stub); },
-                    all: () => Q(stubs)
-                },
+                stubs: StubRepository.create(),
                 resolver: mock(),
                 port: 3535,
                 metadata: metadata,
@@ -315,19 +312,7 @@ describe('imposter', function () {
             });
         });
 
-        promiseIt('responseFor should resolve using stubs and resolver', function () {
-            server.stubs.getResponseFor = mock().returns(Q('RESPONSE CONFIG'));
-            server.resolver.resolve = mock().returns(Q({ is: 'RESPONSE' }));
-
-            return Imposter.create(Protocol, {}, logger, {}, allow).then(imposter =>
-                imposter.getResponseFor({})
-            ).then(response => {
-                assert.deepEqual(response, { is: 'RESPONSE' });
-            });
-        });
-
         promiseIt('responseFor should increment numberOfRequests and not record requests if recordRequests = false', function () {
-            server.stubs.getResponseFor = mock().returns(Q('RESPONSE CONFIG'));
             server.resolver.resolve = mock().returns(Q({}));
             let imposter;
 
@@ -343,7 +328,6 @@ describe('imposter', function () {
         });
 
         promiseIt('responseFor should increment numberOfRequests and record requests if imposter recordRequests = true', function () {
-            server.stubs.getResponseFor = mock().returns(Q('RESPONSE CONFIG'));
             server.resolver.resolve = mock().returns(Q({}));
             let imposter;
 
@@ -359,7 +343,6 @@ describe('imposter', function () {
         });
 
         promiseIt('responseFor should increment numberOfRequests and record requests if global recordRequests = true', function () {
-            server.stubs.getResponseFor = mock().returns(Q('RESPONSE'));
             server.resolver.resolve = mock().returns(Q({}));
             let imposter;
 
@@ -375,7 +358,6 @@ describe('imposter', function () {
         });
 
         promiseIt('responseFor should add timestamp to recorded request', function () {
-            server.stubs.getResponseFor = mock().returns(Q('RESPONSE'));
             server.resolver.resolve = mock().returns(Q({}));
             let imposter;
 
