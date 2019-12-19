@@ -63,26 +63,14 @@ function create (Protocol, creationRequest, baseLogger, config, isAllowedConnect
     // If the CLI --mock flag is passed, we record even if the imposter level recordRequests = false
     const recordRequests = config.recordRequests || creationRequest.recordRequests;
 
-    // If testAll, we call map before calling every so we make sure to call every
-    // predicate during dry run validation rather than short-circuiting
-    function trueForAll (list, predicate, testAll) {
-        if (testAll) {
-            return list.map(predicate).every(result => result);
-        }
-        else {
-            return list.every(predicate);
-        }
-    }
-
     function findFirstMatch (request) {
         const readOnlyState = helpers.clone(imposterState),
             filter = stub => {
                 const stubPredicates = stub.predicates || [],
                     predicates = require('./predicates');
 
-                return trueForAll(stubPredicates,
-                    predicate => predicates.evaluate(predicate, request, encoding, logger, readOnlyState),
-                    request.isDryRun === true);
+                return stubPredicates.every(predicate =>
+                    predicates.evaluate(predicate, request, encoding, logger, readOnlyState));
             };
 
         return stubs.first(filter).then(match => {
