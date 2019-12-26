@@ -5,7 +5,7 @@ const assert = require('assert'),
     promiseIt = require('../testHelpers').promiseIt;
 
 describe('inMemoryStubRepository', function () {
-    function jsonWithoutFunctions (obj) {
+    function stripFunctions (obj) {
         return JSON.parse(JSON.stringify(obj));
     }
 
@@ -110,7 +110,7 @@ describe('inMemoryStubRepository', function () {
                     all[0].responses.push('RESPONSE');
                     return stubs.all();
                 }).then(all => {
-                    assert.deepEqual(jsonWithoutFunctions(all), [{ responses: [] }]);
+                    assert.deepEqual(stripFunctions(all), [{ responses: [] }]);
                 });
         });
 
@@ -124,7 +124,7 @@ describe('inMemoryStubRepository', function () {
                     all[0].addResponse('RESPONSE');
                     return stubs.all();
                 }).then(all => {
-                    assert.deepEqual(jsonWithoutFunctions(all), [{ responses: ['RESPONSE'] }]);
+                    assert.deepEqual(stripFunctions(all), [{ responses: ['RESPONSE'] }]);
                 });
         });
     });
@@ -134,7 +134,7 @@ describe('inMemoryStubRepository', function () {
             const stubs = StubRepository.create();
 
             return stubs.first(stub => stub.responses.length === 1).then(match => {
-                assert.deepEqual(jsonWithoutFunctions(match),
+                assert.deepEqual(stripFunctions(match),
                     { success: false, index: -1, stub: { responses: [{ is: {} }] } });
             });
         });
@@ -143,7 +143,7 @@ describe('inMemoryStubRepository', function () {
             const stubs = StubRepository.create();
 
             return stubs.first(stub => stub.responses.length === 1).then(match => {
-                const response = jsonWithoutFunctions(match.stub.nextResponse());
+                const response = stripFunctions(match.stub.nextResponse());
                 assert.deepEqual(response, { is: {} });
             });
         });
@@ -159,7 +159,7 @@ describe('inMemoryStubRepository', function () {
                 .then(() => stubs.add(thirdStub))
                 .then(() => stubs.first(stub => stub.responses[0].is === 'third'))
                 .then(match => {
-                    assert.deepEqual(jsonWithoutFunctions(match),
+                    assert.deepEqual(stripFunctions(match),
                         { success: true, index: 1, stub: secondStub });
                 });
         });
@@ -179,13 +179,13 @@ describe('inMemoryStubRepository', function () {
                     matchedStub = match.stub;
                     return matchedStub.nextResponse();
                 }).then(response => {
-                    assert.deepEqual(jsonWithoutFunctions(response), { is: 'third' });
+                    assert.deepEqual(stripFunctions(response), { is: 'third' });
                     return matchedStub.nextResponse();
                 }).then(response => {
-                    assert.deepEqual(jsonWithoutFunctions(response), { is: 'fourth' });
+                    assert.deepEqual(stripFunctions(response), { is: 'fourth' });
                     return matchedStub.nextResponse();
                 }).then(response => {
-                    assert.deepEqual(jsonWithoutFunctions(response), { is: 'third' });
+                    assert.deepEqual(stripFunctions(response), { is: 'third' });
                 });
         });
 

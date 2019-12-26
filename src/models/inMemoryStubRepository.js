@@ -105,6 +105,7 @@ function create () {
                 realStub.deleteResponsesMatching(filter);
                 exposedStub.responses = realStub.responses;
             };
+            exposedStub.nextResponse = realStub.nextResponse;
         }
         return Q(result);
     }
