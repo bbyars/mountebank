@@ -1,14 +1,15 @@
 'use strict';
 
 const assert = require('assert'),
-    Repo = require('../../src/models/filesystemBackedStubRepository'),
+    createRepo = () => require('../../src/models/filesystemBackedImpostersRepository')
+        .create({ datadir: '.mbtest' })
+        .stubsRepositoryFor(3000),
     fs = require('fs-extra'),
-    promiseIt = require('../testHelpers').promiseIt,
-    imposterDir = '.mbtest/3000';
+    promiseIt = require('../testHelpers').promiseIt;
 
-describe('filesystemBackedStubRepository', function () {
+describe('filesystemBackedImpostersRepository#stubsRepositoryFor', function () {
     beforeEach(function () {
-        fs.ensureDirSync(imposterDir);
+        fs.ensureDirSync('.mbtest/3000');
     });
 
     afterEach(function () {
@@ -17,11 +18,11 @@ describe('filesystemBackedStubRepository', function () {
 
     function read (filename) {
         // Don't use require because it caches on the first read of that filename
-        return JSON.parse(fs.readFileSync(`${imposterDir}/${filename}`));
+        return JSON.parse(fs.readFileSync(`.mbtest/3000/${filename}`));
     }
 
     function write (filename, obj) {
-        return fs.writeFileSync(`${imposterDir}/${filename}`, JSON.stringify(obj));
+        return fs.writeFileSync(`.mbtest/3000/${filename}`, JSON.stringify(obj));
     }
 
     function stripFunctions (obj) {
@@ -30,7 +31,7 @@ describe('filesystemBackedStubRepository', function () {
 
     describe('#add', function () {
         promiseIt('should create stub files if first stub to be added', function () {
-            const repo = Repo.create({ imposterDir }),
+            const repo = createRepo(),
                 stub = {
                     predicates: [{ equals: { field: 'request' } }],
                     responses: [{ is: { field: 'response' } }]
@@ -57,7 +58,7 @@ describe('filesystemBackedStubRepository', function () {
         });
 
         promiseIt('should add to stubs file if it already exists', function () {
-            const repo = Repo.create({ imposterDir }),
+            const repo = createRepo(),
                 firstStub = {
                     predicates: [{ equals: { field: 'first-request' } }],
                     responses: [{ is: { field: 'first-response' } }]
@@ -104,7 +105,7 @@ describe('filesystemBackedStubRepository', function () {
         });
 
         promiseIt('should save multiple responses in separate files', function () {
-            const repo = Repo.create({ imposterDir }),
+            const repo = createRepo(),
                 stub = {
                     predicates: [{ equals: { field: 'request' } }],
                     responses: [
@@ -135,7 +136,7 @@ describe('filesystemBackedStubRepository', function () {
         });
 
         promiseIt('should apply repeat behavior', function () {
-            const repo = Repo.create({ imposterDir }),
+            const repo = createRepo(),
                 stub = {
                     predicates: [{ equals: { field: 'request' } }],
                     responses: [
@@ -164,14 +165,14 @@ describe('filesystemBackedStubRepository', function () {
         });
 
         promiseIt('should throw error if no imposter file', function () {
-            const repo = Repo.create({ imposterDir });
+            const repo = createRepo();
 
             return repo.add({}).then(() => {
                 assert.fail('should have rejected');
             }, err => {
                 assert.deepEqual(err, {
                     code: 'corrupted database',
-                    message: `no imposter file: ${imposterDir}/imposter.json`
+                    message: 'no imposter file: .mbtest/3000/imposter.json'
                 });
             });
         });
@@ -179,7 +180,7 @@ describe('filesystemBackedStubRepository', function () {
 
     describe('#count', function () {
         promiseIt('should be 0 if no stubs added', function () {
-            const repo = Repo.create({ imposterDir });
+            const repo = createRepo();
             write('imposter.json', { port: 3000, protocol: 'test' });
 
             return repo.count().then(count => {
@@ -188,7 +189,7 @@ describe('filesystemBackedStubRepository', function () {
         });
 
         promiseIt('should count all stubs added', function () {
-            const repo = Repo.create({ imposterDir });
+            const repo = createRepo();
             write('imposter.json', { port: 3000, protocol: 'test' });
 
             return repo.add({ predicates: ['first'] })
@@ -202,7 +203,7 @@ describe('filesystemBackedStubRepository', function () {
 
     describe('#first', function () {
         promiseIt('should indicate no match', function () {
-            const repo = Repo.create({ imposterDir });
+            const repo = createRepo();
             write('imposter.json', { port: 3000, protocol: 'test' });
 
             return repo.first(stub => stub.predicates.length === 1).then(match => {
@@ -211,7 +212,7 @@ describe('filesystemBackedStubRepository', function () {
         });
 
         promiseIt('should return first match', function () {
-            const repo = Repo.create({ imposterDir });
+            const repo = createRepo();
             write('imposter.json', { port: 3000, protocol: 'test' });
 
             return repo.add({ predicates: ['first', 'second'] })
@@ -226,20 +227,20 @@ describe('filesystemBackedStubRepository', function () {
         });
 
         promiseIt('should throw error if no imposter file', function () {
-            const repo = Repo.create({ imposterDir });
+            const repo = createRepo();
 
             return repo.first(stub => stub.predicates.length === 1).then(() => {
                 assert.fail('should have rejected');
             }, err => {
                 assert.deepEqual(err, {
                     code: 'corrupted database',
-                    message: `no imposter file: ${imposterDir}/imposter.json`
+                    message: 'no imposter file: .mbtest/3000/imposter.json'
                 });
             });
         });
 
         promiseIt('should return {} from nextResponse if no stub added', function () {
-            const repo = Repo.create({ imposterDir });
+            const repo = createRepo();
             write('imposter.json', { port: 3000, protocol: 'test' });
 
             return repo.first(stub => stub.predicates.length === 1).then(match => {
@@ -250,7 +251,7 @@ describe('filesystemBackedStubRepository', function () {
         });
 
         promiseIt('should support looping through responses', function () {
-            const repo = Repo.create({ imposterDir }),
+            const repo = createRepo(),
                 stub = {
                     predicates: [{ equals: { field: 'request' } }],
                     responses: [
@@ -284,7 +285,7 @@ describe('filesystemBackedStubRepository', function () {
 
     describe('#insertAtIndex', function () {
         promiseIt('should create stub files if empty stubs array and inserting at index 0', function () {
-            const repo = Repo.create({ imposterDir }),
+            const repo = createRepo(),
                 stub = {
                     predicates: [{ equals: { field: 'request' } }],
                     responses: [{ is: { field: 'response' } }]
@@ -311,7 +312,7 @@ describe('filesystemBackedStubRepository', function () {
         });
 
         promiseIt('should add to stubs file if it already exists', function () {
-            const repo = Repo.create({ imposterDir }),
+            const repo = createRepo(),
                 firstStub = {
                     predicates: [{ equals: { field: 'first-request' } }],
                     responses: [{ is: { field: 'first-response' } }]
@@ -372,7 +373,7 @@ describe('filesystemBackedStubRepository', function () {
 
     describe('#deleteAtIndex', function () {
         promiseIt('should reject the promise if no stub at that index', function () {
-            const repo = Repo.create({ imposterDir });
+            const repo = createRepo();
             write('imposter.json', { port: 3000, protocol: 'test' });
 
             return repo.deleteAtIndex(0).then(() => {
@@ -386,7 +387,7 @@ describe('filesystemBackedStubRepository', function () {
         });
 
         promiseIt('should delete stub and stub dir at specified index', function () {
-            const repo = Repo.create({ imposterDir }),
+            const repo = createRepo(),
                 firstStub = {
                     predicates: [{ equals: { field: 'first-request' } }],
                     responses: [{ is: { field: 'first-response' } }]
@@ -431,14 +432,14 @@ describe('filesystemBackedStubRepository', function () {
                         ]
                     });
 
-                    assert.ok(!fs.existsSync(`${imposterDir}/stubs/1`));
+                    assert.ok(!fs.existsSync('.mbtest/stubs/1'));
                 });
         });
     });
 
     describe('#overwriteAll', function () {
         promiseIt('should add if no stubs previously added', function () {
-            const repo = Repo.create({ imposterDir }),
+            const repo = createRepo(),
                 firstStub = {
                     predicates: [{ equals: { field: 'first-request' } }],
                     responses: [{ is: { field: 'first-response' } }]
@@ -478,7 +479,7 @@ describe('filesystemBackedStubRepository', function () {
         });
 
         promiseIt('should replace existing stubs', function () {
-            const repo = Repo.create({ imposterDir }),
+            const repo = createRepo(),
                 stubs = [];
 
             for (let i = 0; i < 4; i += 1) {
@@ -528,7 +529,7 @@ describe('filesystemBackedStubRepository', function () {
 
     describe('#overwriteAtIndex', function () {
         promiseIt('should reject the promise if no stub at that index', function () {
-            const repo = Repo.create({ imposterDir });
+            const repo = createRepo();
             write('imposter.json', { port: 3000, protocol: 'test' });
 
             return repo.overwriteAtIndex({}, 0).then(() => {
@@ -542,7 +543,7 @@ describe('filesystemBackedStubRepository', function () {
         });
 
         promiseIt('should overwrite at given index', function () {
-            const repo = Repo.create({ imposterDir }),
+            const repo = createRepo(),
                 firstStub = {
                     predicates: [{ equals: { field: 'first-request' } }],
                     responses: [{ is: { field: 'first-response' } }]
@@ -591,7 +592,7 @@ describe('filesystemBackedStubRepository', function () {
 
     describe('#all', function () {
         promiseIt('should return all stubs with predicates', function () {
-            const repo = Repo.create({ imposterDir }),
+            const repo = createRepo(),
                 firstStub = {
                     predicates: [{ equals: { field: 'first-request' } }],
                     responses: [{ is: { field: 'first-response' } }]
@@ -614,7 +615,7 @@ describe('filesystemBackedStubRepository', function () {
         });
 
         promiseIt('should allow adding responses', function () {
-            const repo = Repo.create({ imposterDir }),
+            const repo = createRepo(),
                 stub = {
                     predicates: [{ equals: { field: 'request' } }],
                     responses: [{ is: { field: 'response' } }]
@@ -646,7 +647,7 @@ describe('filesystemBackedStubRepository', function () {
         });
 
         promiseIt('should allow deleting responses', function () {
-            const repo = Repo.create({ imposterDir }),
+            const repo = createRepo(),
                 stub = {
                     predicates: [{ equals: { field: 'request' } }],
                     responses: [{ is: { field: 'first' } }, { is: { field: 'second' } }]

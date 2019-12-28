@@ -6,7 +6,7 @@ const assert = require('assert'),
     Q = require('q'),
     promiseIt = require('../testHelpers').promiseIt,
     FakeLogger = require('../fakes/fakeLogger'),
-    StubRepository = require('../../src/models/inMemoryStubRepository');
+    createStubRepository = require('../../src/models/inMemoryImpostersRepository').create().stubsRepositoryFor;
 
 function allow () { return true; }
 function deny () { return false; }
@@ -17,7 +17,7 @@ describe('imposter', function () {
     beforeEach(() => {
         metadata = {};
         server = {
-            stubs: StubRepository.create(),
+            stubs: createStubRepository(),
             resolver: { resolve: mock().returns(Q({})) },
             port: 3535,
             metadata: metadata,

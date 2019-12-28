@@ -1,17 +1,17 @@
 'use strict';
 
 const assert = require('assert'),
-    StubRepository = require('../../src/models/inMemoryStubRepository'),
+    createStubsRepository = require('../../src/models/inMemoryImpostersRepository').create().stubsRepositoryFor,
     promiseIt = require('../testHelpers').promiseIt;
 
-describe('inMemoryStubRepository', function () {
+describe('inMemoryImpostersRepository#stubsRepositoryFor', function () {
     function stripFunctions (obj) {
         return JSON.parse(JSON.stringify(obj));
     }
 
     describe('#overwriteAll', function () {
         promiseIt('should overwrite entire list', function () {
-            const stubs = StubRepository.create(),
+            const stubs = createStubsRepository(),
                 firstStub = { responses: [{ is: 'first' }, { is: 'second' }] },
                 secondStub = { responses: [{ is: 'third' }, { is: 'fourth' }] },
                 thirdStub = { responses: [{ is: 'fifth' }, { is: 'sixth' }] };
@@ -33,7 +33,7 @@ describe('inMemoryStubRepository', function () {
 
     describe('#overwriteAtIndex', function () {
         promiseIt('should overwrite single stub', function () {
-            const stubs = StubRepository.create(),
+            const stubs = createStubsRepository(),
                 firstStub = { responses: [{ is: 'first' }, { is: 'second' }] },
                 secondStub = { responses: [{ is: 'third' }, { is: 'fourth' }] },
                 thirdStub = { responses: [{ is: 'fifth' }, { is: 'sixth' }] };
@@ -55,7 +55,7 @@ describe('inMemoryStubRepository', function () {
 
     describe('#deleteAtIndex', function () {
         promiseIt('should overwrite single stub', function () {
-            const stubs = StubRepository.create('utf8'),
+            const stubs = createStubsRepository(),
                 firstStub = { responses: [{ is: 'first' }, { is: 'second' }] },
                 secondStub = { responses: [{ is: 'third' }, { is: 'fourth' }] },
                 thirdStub = { responses: [{ is: 'fifth' }, { is: 'sixth' }] };
@@ -78,7 +78,7 @@ describe('inMemoryStubRepository', function () {
 
     describe('#insertAtIndex', function () {
         promiseIt('should add single stub at given index', function () {
-            const stubs = StubRepository.create('utf8'),
+            const stubs = createStubsRepository(),
                 firstStub = { responses: [{ is: 'first' }, { is: 'second' }] },
                 secondStub = { responses: [{ is: 'third' }, { is: 'fourth' }] },
                 insertedStub = { responses: [{ is: 'fifth' }, { is: 'sixth' }] };
@@ -101,7 +101,7 @@ describe('inMemoryStubRepository', function () {
 
     describe('#all', function () {
         promiseIt('should not allow changing state in stubRepository', function () {
-            const stubs = StubRepository.create(),
+            const stubs = createStubsRepository(),
                 stub = { responses: [] };
 
             return stubs.add(stub)
@@ -115,7 +115,7 @@ describe('inMemoryStubRepository', function () {
         });
 
         promiseIt('should support adding responses', function () {
-            const stubs = StubRepository.create(),
+            const stubs = createStubsRepository(),
                 stub = { responses: [] };
 
             return stubs.add(stub)
@@ -131,7 +131,7 @@ describe('inMemoryStubRepository', function () {
 
     describe('#first', function () {
         promiseIt('should return default stub if no match', function () {
-            const stubs = StubRepository.create();
+            const stubs = createStubsRepository();
 
             return stubs.first(stub => stub.responses.length === 1).then(match => {
                 assert.deepEqual(stripFunctions(match),
@@ -140,7 +140,7 @@ describe('inMemoryStubRepository', function () {
         });
 
         promiseIt('should return default response on nextResponse() if no match', function () {
-            const stubs = StubRepository.create();
+            const stubs = createStubsRepository();
 
             return stubs.first(stub => stub.responses.length === 1).then(match => {
                 const response = stripFunctions(match.stub.nextResponse());
@@ -149,7 +149,7 @@ describe('inMemoryStubRepository', function () {
         });
 
         promiseIt('should return match with index', function () {
-            const stubs = StubRepository.create(),
+            const stubs = createStubsRepository(),
                 firstStub = { responses: [{ is: 'first' }, { is: 'second' }] },
                 secondStub = { responses: [{ is: 'third' }, { is: 'fourth' }] },
                 thirdStub = { responses: [{ is: 'fifth' }, { is: 'sixth' }] };
@@ -165,7 +165,7 @@ describe('inMemoryStubRepository', function () {
         });
 
         promiseIt('should loop through responses on nextResponse()', function () {
-            const stubs = StubRepository.create(),
+            const stubs = createStubsRepository(),
                 firstStub = { responses: [{ is: 'first' }, { is: 'second' }] },
                 secondStub = { responses: [{ is: 'third' }, { is: 'fourth' }] },
                 thirdStub = { responses: [{ is: 'fifth' }, { is: 'sixth' }] };
@@ -190,7 +190,7 @@ describe('inMemoryStubRepository', function () {
         });
 
         promiseIt('should handle repeat behavior on nextResponse()', function () {
-            const stubs = StubRepository.create(),
+            const stubs = createStubsRepository(),
                 stub = { responses: [{ is: 'first', _behaviors: { repeat: 2 } }, { is: 'second' }] };
             let matchedStub;
 

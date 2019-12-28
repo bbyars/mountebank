@@ -11,6 +11,11 @@ describe('filesystemBackedImpostersRepository', function () {
         fs.removeSync('.mbtest');
     });
 
+    function read (filename) {
+        // Don't use require because it caches on the first read of that filename
+        return JSON.parse(fs.readFileSync(filename));
+    }
+
     describe('#add', function () {
         promiseIt('should create a header file for imposter', function () {
             const repo = Repo.create({ datadir: '.mbtest' });
@@ -39,7 +44,7 @@ describe('filesystemBackedImpostersRepository', function () {
                 };
 
             return repo.add(imposter).then(() => {
-                const stubs = require(`${cwd}/.mbtest/1000/stubs/0-99`);
+                const stubs = read('.mbtest/1000/stubs/0-99.json');
                 assert.deepEqual(stubs, [{
                     predicates: [
                         { equals: { key: 'value' } },
@@ -48,15 +53,15 @@ describe('filesystemBackedImpostersRepository', function () {
                     responseDir: '1000/stubs/0'
                 }]);
 
-                const responseIndex = require(`${cwd}/.mbtest/1000/stubs/0/index`);
+                const responseIndex = read('.mbtest/1000/stubs/0/index.json');
                 assert.deepEqual(responseIndex, {
                     next: 0,
                     order: [0, 1]
                 });
 
-                const firstResponse = require(`${cwd}/.mbtest/1000/stubs/0/0`);
+                const firstResponse = read('.mbtest/1000/stubs/0/0.json');
                 assert.deepEqual(firstResponse, { is: { field: 'one' } });
-                const secondResponse = require(`${cwd}/.mbtest/1000/stubs/0/1`);
+                const secondResponse = read('.mbtest/1000/stubs/0/1.json');
                 assert.deepEqual(secondResponse, { is: { field: 'two' } });
             });
         });
@@ -223,8 +228,8 @@ describe('filesystemBackedImpostersRepository', function () {
                 repo.del(1000)
             ).then(deleted => {
                 assert.deepEqual(deleted, imposter);
-                assert.strictEqual(fs.existsSync(`${cwd}/.mbtest/1000.json`), false);
-                assert.strictEqual(fs.existsSync(`${cwd}/.mbtest/1000`), false);
+                assert.strictEqual(fs.existsSync('.mbtest/1000.json'), false);
+                assert.strictEqual(fs.existsSync('.mbtest/1000'), false);
             });
         });
     });

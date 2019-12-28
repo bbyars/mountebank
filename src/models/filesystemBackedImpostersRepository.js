@@ -1,66 +1,429 @@
 'use strict';
 
 /**
- * An abstraction for loading imposters from in-memory
+ * An abstraction for loading imposters from the filesystem
+ * The root of the database is provided on the command line as --datadir
+ * The file layout looks like this:
+ *
+ * /{datadir}
+ *   /3000
+ *     /imposter.json
+ *       {
+ *         "protocol": "http",
+ *         "port": 3000,
+ *         "stubs: [{
+ *           "predicates": [{ "equals": { "path": "/" } }],
+ *           "meta": {
+ *             "dir": "stubs/0"
+ *           }
+ *         }]
+ *       }
+ *
+ *     /stubs
+ *       /0
+ *         /meta.json
+ *           {
+ *             "responseFiles": ["responses/0.json"],
+ *               // An array of indexes into responseFiles which handle repeat behavior
+ *             "orderWithRepeats": [0],
+ *               // The next index into orderWithRepeats; incremented with each call to nextResponse()
+ *             "nextIndex": 0
+ *           }
+ *
+ *         /responses
+ *           /0.json
+ *             {
+ *               "is": { "body": "Hello, world!" }
+ *             }
+ *
+ *         /matches
+ *           /{timestamp}.json
+ *             {
+ *               { "request": { ... } },
+ *               { "response": { ... } }
+ *             }
+ *
+ *     /requests
+ *       /{timestamp}.json
+ *         { ... }
+ *
+ * This structure is designed to improve parallelism and throughput
+ * The imposters.json file needs to be locked during imposter-level activities (e.g. adding a stub)
+ * The stub meta.json needs to be locked to add responses or trigger the next response, but is
+ * separated from the imposter.json so we can have responses from multiple stubs in parallel with no
+ * lock conflict. The matches and requests use timestamp-based filenames to avoid having to lock any
+ * file to update an index.
  * @module
  */
+
+function writeFile (filepath, obj) {
+    const fs = require('fs-extra'),
+        path = require('path'),
+        Q = require('q'),
+        dir = path.dirname(filepath),
+        deferred = Q.defer();
+
+    fs.ensureDir(dir, mkdirErr => {
+        if (mkdirErr) {
+            deferred.reject(mkdirErr);
+        }
+        else {
+            fs.writeFile(filepath, JSON.stringify(obj, null, 2), err => {
+                if (err) {
+                    deferred.reject(err);
+                }
+                else {
+                    deferred.resolve(filepath);
+                }
+            });
+        }
+    });
+
+    return deferred.promise;
+}
+
+function readFile (filepath) {
+    const Q = require('q'),
+        deferred = Q.defer(),
+        fs = require('fs');
+
+    fs.readFile(filepath, 'utf8', (err, data) => {
+        if (err && err.code === 'ENOENT') {
+            deferred.resolve(null);
+        }
+        else if (err) {
+            deferred.reject(err);
+        }
+        else {
+            deferred.resolve(JSON.parse(data));
+        }
+    });
+
+    return deferred.promise;
+}
+
+function remove (path) {
+    const Q = require('q'),
+        deferred = Q.defer(),
+        fs = require('fs-extra');
+
+    fs.remove(path, err => {
+        if (err) {
+            deferred.reject(err);
+        }
+        else {
+            deferred.resolve({});
+        }
+    });
+
+    return deferred.promise;
+}
+
+function repeatsFor (response) {
+    if (response._behaviors && response._behaviors.repeat) {
+        return response._behaviors.repeat;
+    }
+    else {
+        return 1;
+    }
+}
+
+function stubRepository (imposterDir) {
+    const headerFile = `${imposterDir}/imposter.json`;
+
+    function readHeader () {
+        const errors = require('../util/errors'),
+            Q = require('q');
+
+        return readFile(headerFile).then(imposter => {
+            if (imposter === null) {
+                return Q.reject(errors.DatabaseError(`no imposter file: ${headerFile}`));
+            }
+            return Q(imposter);
+        });
+    }
+
+    function next (paths, template) {
+        if (paths.length === 0) {
+            return template.replace('${index}', 0);
+        }
+
+        const numbers = paths.map(file => parseInt(file.match(/\d+/)[0])),
+            max = Math.max(...numbers);
+
+        return template.replace('${index}', max + 1);
+    }
+
+    function wrap (stub, index) {
+        const Response = require('./response');
+
+        if (typeof stub === 'undefined') {
+            return {
+                addResponse: () => {},
+                deleteResponsesMatching: () => {},
+                nextResponse: () => Response.create()
+            };
+        }
+
+        const helpers = require('../util/helpers'),
+            cloned = helpers.clone(stub);
+
+        delete cloned.meta;
+
+        /**
+         * Adds a response to the stub
+         * @param {Object} response - the new response
+         * @returns {Object} - the promise
+         */
+        cloned.addResponse = response => {
+            return readHeader().then(imposter => {
+                const promises = [],
+                    saved = imposter.stubs[index],
+                    responseFile = next(saved.meta.responseFiles, 'responses/${index}.json'),
+                    responseIndex = saved.meta.responseFiles.length,
+                    Q = require('q');
+
+                saved.meta.responseFiles.push(responseFile);
+                for (let repeats = 0; repeats < repeatsFor(response); repeats += 1) {
+                    saved.meta.orderWithRepeats.push(responseIndex);
+                }
+
+                promises.push(writeFile(`${imposterDir}/${saved.meta.dir}/${responseFile}`, response));
+                promises.push(writeFile(headerFile, imposter));
+                return Q.all(promises);
+            });
+        };
+
+        /**
+         * Deletes all responses matching the filter
+         * @param {Function} filter - the filter function
+         * @returns {Object} - the promise
+         */
+        cloned.deleteResponsesMatching = filter => {
+            return readHeader().then(imposter => {
+                const savedStub = imposter.stubs[index].meta,
+                    stubDir = `${imposterDir}/${savedStub.dir}`,
+                    loadResponses = savedStub.responseFiles.map(file => readFile(`${stubDir}/${file}`)),
+                    Q = require('q');
+
+                return Q.all(loadResponses).then(responses => {
+                    const deletes = [];
+
+                    for (let i = responses.length - 1; i >= 0; i -= 1) {
+                        if (filter(responses[i])) {
+                            deletes.push(remove(`${stubDir}/${savedStub.responseFiles[i]}`));
+                            savedStub.responseFiles.splice(i, 1);
+                            savedStub.orderWithRepeats = savedStub.orderWithRepeats
+                                .filter(responseIndex => responseIndex !== i)
+                                .map(responseIndex => {
+                                    if (responseIndex > i) {
+                                        return responseIndex - 1;
+                                    }
+                                    else {
+                                        return responseIndex;
+                                    }
+                                });
+                        }
+                    }
+
+                    if (deletes.length > 0) {
+                        deletes.push(writeFile(headerFile, imposter));
+                        return Q.all(deletes);
+                    }
+                    else {
+                        return Q(true);
+                    }
+                });
+            });
+        };
+
+        /**
+         * Returns the next response for the stub, taking into consideration repeat behavior and cycling back the beginning
+         * @returns {Object} - the promise
+         */
+        cloned.nextResponse = () => {
+            return readHeader().then(imposter => {
+                const meta = imposter.stubs[index].meta,
+                    stubDir = `${imposterDir}/${meta.dir}`,
+                    maxIndex = meta.orderWithRepeats.length,
+                    responseIndex = meta.orderWithRepeats[meta.nextIndex % maxIndex],
+                    responseFile = meta.responseFiles[responseIndex],
+                    Q = require('q');
+
+                meta.nextIndex = (meta.nextIndex + 1) % maxIndex;
+                return Q.all([readFile(`${stubDir}/${responseFile}`), writeFile(headerFile, imposter)]);
+            }).then(results => Response.create(results[0]));
+        };
+
+        return cloned;
+    }
+
+    /**
+     * Returns the number of stubs for the imposter
+     * @returns {Object} - the promise
+     */
+    function count () {
+        return readHeader().then(imposter => {
+            const stubs = imposter.stubs || [];
+            return stubs.length;
+        });
+    }
+
+    /**
+     * Returns the first stub that matches the filter
+     * @param {Function} filter - the filter function
+     * @returns {Object} - the promise
+     */
+    function first (filter) {
+        return readHeader().then(imposter => {
+            const stubs = imposter.stubs || [];
+
+            for (let i = 0; i < stubs.length; i += 1) {
+                if (filter(stubs[i])) {
+                    return { success: true, index: i, stub: wrap(stubs[i], i) };
+                }
+            }
+            return { success: false, index: -1, stub: wrap() };
+        });
+    }
+
+    /**
+     * Adds a new stub to imposter
+     * @param {Object} stub - the stub to add
+     * @returns {Object} - the promise
+     */
+    function add (stub) {
+        return insertAtIndex(stub, 99999999);
+    }
+
+    /**
+     * Inserts a new stub at the given index
+     * @param {Object} stub - the stub to add
+     * @param {Number} index - the index to insert the new stub at
+     * @returns {Object} - the promise
+     */
+    function insertAtIndex (stub, index) {
+        const stubDefinition = {
+                predicates: stub.predicates || [],
+                meta: {
+                    dir: '',
+                    responseFiles: [],
+                    orderWithRepeats: [],
+                    nextIndex: 0
+                }
+            },
+            responses = stub.responses || [],
+            Q = require('q'),
+            promises = [];
+
+        return readHeader().then(imposter => {
+            imposter.stubs = imposter.stubs || [];
+            stubDefinition.meta.dir = next(imposter.stubs.map(saved => saved.meta.dir), 'stubs/${index}');
+
+            for (let i = 0; i < responses.length; i += 1) {
+                const responseFile = `responses/${i}.json`;
+                stubDefinition.meta.responseFiles.push(responseFile);
+
+                for (let repeats = 0; repeats < repeatsFor(responses[i]); repeats += 1) {
+                    stubDefinition.meta.orderWithRepeats.push(i);
+                }
+
+                promises.push(writeFile(`${imposterDir}/${stubDefinition.meta.dir}/${responseFile}`, responses[i]));
+            }
+
+            imposter.stubs.splice(index, 0, stubDefinition);
+            promises.push(writeFile(headerFile, imposter));
+            return Q.all(promises);
+        });
+    }
+
+    /**
+     * Deletes the stub at the given index
+     * @param {Number} index - the index of the stub to delete
+     * @returns {Object} - the promise
+     */
+    function deleteAtIndex (index) {
+        return readHeader().then(imposter => {
+            const errors = require('../util/errors'),
+                Q = require('q'),
+                stubs = imposter.stubs || [],
+                promises = [];
+
+            if (typeof stubs[index] === 'undefined') {
+                return Q.reject(errors.MissingResourceError(`no stub at index ${index}`));
+            }
+
+            promises.push(remove(`${imposterDir}/${stubs[index].meta.dir}`));
+            imposter.stubs.splice(index, 1);
+            promises.push(writeFile(headerFile, imposter));
+            return Q.all(promises);
+        });
+    }
+
+    /**
+     * Overwrites all stubs with a new list
+     * @param {Object} newStubs - the new list of stubs
+     * @returns {Object} - the promise
+     */
+    function overwriteAll (newStubs) {
+        const Q = require('q');
+
+        return readHeader().then(imposter => {
+            const deletePromises = [];
+            imposter.stubs = [];
+            deletePromises.push(remove(`${imposterDir}/stubs`));
+            deletePromises.push(writeFile(headerFile, imposter));
+            return Q.all(deletePromises);
+        }).then(() => {
+            let addSequence = Q(true);
+            newStubs.forEach(stub => {
+                addSequence = addSequence.then(() => add(stub));
+            });
+            return addSequence;
+        });
+    }
+
+    /**
+     * Overwrites the stub at the given index
+     * @param {Object} stub - the new stub
+     * @param {Number} index - the index of the stub to overwrite
+     * @returns {Object} - the promise
+     */
+    function overwriteAtIndex (stub, index) {
+        return deleteAtIndex(index).then(() => insertAtIndex(stub, index));
+    }
+
+    /**
+     * Returns all stubs
+     * @returns {Object} - the promise resolving to the list of stubs
+     */
+    function all () {
+        return readHeader().then(imposter => {
+            const stubs = imposter.stubs || [];
+            return stubs.map(wrap);
+        });
+    }
+
+    return {
+        count,
+        first,
+        add,
+        insertAtIndex,
+        overwriteAll,
+        overwriteAtIndex,
+        deleteAtIndex,
+        all
+    };
+}
 
 /**
  * Creates the repository
  * @param {Object} config - The database configuration
  * @param {String} config.datadir - The database directory
- * @param {Number} config.batchSize - number of stubs to save in one file, defaults to 100
  * @returns {Object}
  */
 function create (config) {
     const Q = require('q');
-
-    function writeFile (filepath, obj) {
-        const fs = require('fs-extra'),
-            path = require('path'),
-            fullPath = path.join(config.datadir, filepath),
-            dir = path.dirname(fullPath),
-            deferred = Q.defer();
-
-        fs.ensureDir(dir, mkdirErr => {
-            if (mkdirErr) {
-                deferred.reject(mkdirErr);
-            }
-            else {
-                fs.writeFile(fullPath, JSON.stringify(obj), err => {
-                    if (err) {
-                        deferred.reject(err);
-                    }
-                    else {
-                        deferred.resolve(filepath);
-                    }
-                });
-            }
-        });
-
-        return deferred.promise;
-    }
-
-    function readFile (filepath) {
-        const deferred = Q.defer(),
-            path = require('path'),
-            fullPath = path.join(config.datadir, filepath),
-            fs = require('fs');
-
-        fs.readFile(fullPath, 'utf8', (err, data) => {
-            if (err && err.code === 'ENOENT') {
-                deferred.resolve(null);
-            }
-            else if (err) {
-                deferred.reject(err);
-            }
-            else {
-                deferred.resolve(JSON.parse(data));
-            }
-        });
-
-        return deferred.promise;
-    }
 
     function writeHeader (imposter) {
         const helpers = require('../util/helpers'),
@@ -69,11 +432,11 @@ function create (config) {
         delete clone.stubs;
         delete clone.requests;
 
-        return writeFile(`${imposter.port}.json`, clone);
+        return writeFile(`${config.datadir}/${imposter.port}.json`, clone);
     }
 
     function readHeader (id) {
-        return readFile(`${id}.json`);
+        return readFile(`${config.datadir}/${id}.json`);
     }
 
     function deleteHeader (id) {
@@ -101,25 +464,25 @@ function create (config) {
         }
 
         stubResponses.forEach((response, index) => {
-            promises.push(writeFile(`${responseDir}/${index}.json`, response));
+            promises.push(writeFile(`${config.datadir}/${responseDir}/${index}.json`, response));
             responsesIndex.order.push(index);
         });
 
-        promises.push(writeFile(`${responseDir}/index.json`, responsesIndex));
+        promises.push(writeFile(`${config.datadir}/${responseDir}/index.json`, responsesIndex));
         return Q.all(promises);
     }
 
     function readResponses (responseDir) {
         let responses = [];
 
-        return readFile(`${responseDir}/index.json`).then(index => {
+        return readFile(`${config.datadir}/${responseDir}/index.json`).then(index => {
             if (index === null) {
                 return Q(true);
             }
             else {
                 responses = Array(index.order.length);
                 const promises = index.order.map(responseIndex =>
-                    readFile(`${responseDir}/${responseIndex}.json`).then(response => {
+                    readFile(`${config.datadir}/${responseDir}/${responseIndex}.json`).then(response => {
                         responses.splice(responseIndex, 1, response);
                     })
                 );
@@ -144,13 +507,13 @@ function create (config) {
             delete stub.responses;
         });
 
-        promises.push(writeFile(`${imposter.port}/stubs/0-99.json`, stubs));
+        promises.push(writeFile(`${config.datadir}/${imposter.port}/stubs/0-99.json`, stubs));
         return Q.all(promises);
     }
 
     function readStubs (id) {
         let stubs;
-        return readFile(`${id}/stubs/0-99.json`).then(stubsWithoutResponses => {
+        return readFile(`${config.datadir}/${id}/stubs/0-99.json`).then(stubsWithoutResponses => {
             if (stubsWithoutResponses === null) {
                 stubs = [];
                 return Q(true);
@@ -171,19 +534,7 @@ function create (config) {
     }
 
     function deleteStubs (id) {
-        const fs = require('fs-extra'),
-            deferred = Q.defer();
-
-        fs.remove(`${config.datadir}/${id}`, err => {
-            if (err) {
-                deferred.reject(err);
-            }
-            else {
-                deferred.resolve();
-            }
-        });
-
-        return deferred.promise;
+        return remove(`${config.datadir}/${id}`);
     }
     /**
      * Adds a new imposter
@@ -208,7 +559,7 @@ function create (config) {
             if (imposter !== null) {
                 imposter.stubs = stubs;
             }
-            return Q(imposter);
+            return imposter;
         });
     }
 
@@ -274,18 +625,7 @@ function create (config) {
      * @returns {Object} - the deletion promise
      */
     function deleteAll () {
-        const fs = require('fs-extra'),
-            deferred = Q.defer();
-
-        fs.remove(config.datadir, err => {
-            if (err) {
-                deferred.reject(err);
-            }
-            else {
-                deferred.resolve();
-            }
-        });
-        return deferred.promise;
+        return remove(config.datadir);
     }
 
     return {
@@ -295,7 +635,8 @@ function create (config) {
         exists,
         del,
         deleteAllSync,
-        deleteAll
+        deleteAll,
+        stubsRepositoryFor: id => stubRepository(`${config.datadir}/${id}`)
     };
 }
 
