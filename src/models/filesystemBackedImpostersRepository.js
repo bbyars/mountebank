@@ -650,7 +650,7 @@ function create (config) {
         del,
         deleteAllSync,
         deleteAll,
-        stubsRepositoryFor: id => stubRepository(`${config.datadir}/${id}`)
+        stubsFor: id => stubRepository(`${config.datadir}/${id}`)
     };
 }
 

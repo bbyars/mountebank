@@ -2,7 +2,7 @@
 
 const assert = require('assert'),
     ResponseResolver = require('../../src/models/responseResolver'),
-    createStubsRepository = require('../../src/models/inMemoryImpostersRepository').create().stubsRepositoryFor,
+    createStubsRepository = require('../../src/models/inMemoryImpostersRepository').create().stubsFor,
     helpers = require('../../src/util/helpers'),
     promiseIt = require('../testHelpers').promiseIt,
     mock = require('../mock').mock,

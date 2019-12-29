@@ -1,10 +1,10 @@
 'use strict';
 
 const assert = require('assert'),
-    createStubsRepository = require('../../src/models/inMemoryImpostersRepository').create().stubsRepositoryFor,
+    createStubsRepository = require('../../src/models/inMemoryImpostersRepository').create().stubsFor,
     promiseIt = require('../testHelpers').promiseIt;
 
-describe('inMemoryImpostersRepository#stubsRepositoryFor', function () {
+describe('inMemoryImpostersRepository#stubsFor', function () {
     function stripFunctions (obj) {
         return JSON.parse(JSON.stringify(obj));
     }

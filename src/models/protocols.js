@@ -15,7 +15,7 @@ function load (builtInProtocols, customProtocols, options, isAllowedConnection, 
     function inProcessCreate (createProtocol) {
         return (creationRequest, logger, responseFn) =>
             createProtocol(creationRequest, logger, responseFn).then(server => {
-                const stubs = impostersRepository.stubsRepositoryFor(server.port),
+                const stubs = impostersRepository.stubsFor(server.port),
                     resolver = require('./responseResolver').create(stubs, server.proxy),
                     Q = require('q');
 
@@ -99,7 +99,7 @@ function load (builtInProtocols, customProtocols, options, isAllowedConnection, 
                 }
                 const callbackURL = options.callbackURLTemplate.replace(':port', serverPort),
                     encoding = metadata.encoding || 'utf8',
-                    stubs = impostersRepository.stubsRepositoryFor(serverPort),
+                    stubs = impostersRepository.stubsFor(serverPort),
                     resolver = require('./responseResolver').create(stubs, undefined, callbackURL);
 
                 delete metadata.encoding;

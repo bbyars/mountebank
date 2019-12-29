@@ -6,7 +6,7 @@ const assert = require('assert'),
     Q = require('q'),
     promiseIt = require('../testHelpers').promiseIt,
     FakeLogger = require('../fakes/fakeLogger'),
-    createStubRepository = require('../../src/models/inMemoryImpostersRepository').create().stubsRepositoryFor;
+    createStubRepository = require('../../src/models/inMemoryImpostersRepository').create().stubsFor;
 
 function allow () { return true; }
 function deny () { return false; }

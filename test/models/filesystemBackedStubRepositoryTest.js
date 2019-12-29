@@ -3,11 +3,11 @@
 const assert = require('assert'),
     createRepo = () => require('../../src/models/filesystemBackedImpostersRepository')
         .create({ datadir: '.mbtest' })
-        .stubsRepositoryFor(3000),
+        .stubsFor(3000),
     fs = require('fs-extra'),
     promiseIt = require('../testHelpers').promiseIt;
 
-describe('filesystemBackedImpostersRepository#stubsRepositoryFor', function () {
+describe('filesystemBackedImpostersRepository#stubsFor', function () {
     beforeEach(function () {
         fs.ensureDirSync('.mbtest/3000');
     });

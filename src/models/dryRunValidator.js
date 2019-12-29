@@ -44,7 +44,7 @@ function create (options) {
             stubsToValidateWithoutPredicates = stub.responses.map(response => stubForResponse(stub, response, false)),
             stubsToValidate = stubsToValidateWithPredicates.concat(stubsToValidateWithoutPredicates),
             promises = stubsToValidate.map(stubToValidate => {
-                const stubRepository = require('./inMemoryImpostersRepository').create().stubsRepositoryFor();
+                const stubRepository = require('./inMemoryImpostersRepository').create().stubsFor();
                 return stubRepository.add(stubToValidate).then(() => stubRepository);
             }),
             Q = require('q');

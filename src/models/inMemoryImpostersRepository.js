@@ -273,7 +273,7 @@ function create (startupImposters) {
         del,
         deleteAllSync,
         deleteAll,
-        stubsRepositoryFor: createStubsRepository
+        stubsFor: createStubsRepository
     };
 }
 
