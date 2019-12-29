@@ -141,10 +141,10 @@ describe('filesystemBackedImpostersRepository', function () {
         });
     });
 
-    describe('#getAll', function () {
+    describe('#all', function () {
         promiseIt('should retrieve empty object if nothing saved', function () {
             const repo = Repo.create({ datadir: '.mbtest' });
-            return repo.getAll().then(imposters => {
+            return repo.all().then(imposters => {
                 assert.deepEqual(imposters, {});
             });
         });
@@ -163,7 +163,7 @@ describe('filesystemBackedImpostersRepository', function () {
 
             return repo.add(firstImposter)
                 .then(() => repo.add(secondImposter))
-                .then(() => repo.getAll())
+                .then(() => repo.all())
                 .then(imposters => {
                     assert.deepEqual(imposters, {
                         1000: firstImposter,

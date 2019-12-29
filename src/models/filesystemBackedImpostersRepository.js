@@ -423,7 +423,8 @@ function stubRepository (imposterDir) {
  * @returns {Object}
  */
 function create (config) {
-    const Q = require('q');
+    const Q = require('q'),
+        imposters = {};
 
     function writeHeader (imposter) {
         const helpers = require('../util/helpers'),
@@ -542,7 +543,11 @@ function create (config) {
      * @returns {Object} - the promise
      */
     function add (imposter) {
-        return Q.all([writeHeader(imposter), writeStubs(imposter)]).then(() => Q(imposter));
+        return Q.all([writeHeader(imposter), writeStubs(imposter)]).then(() => {
+            const id = String(imposter.port);
+            imposters[id] = { stop: imposter.stop };
+            return imposter;
+        });
     }
 
     /**
@@ -567,9 +572,9 @@ function create (config) {
      * Gets all imposters
      * @returns {Object} - all imposters keyed by port
      */
-    function getAll () {
+    function all () {
         const fs = require('fs'),
-            imposters = {},
+            allImposters = {},
             deferred = Q.defer();
 
         fs.readdir(config.datadir, (err, files) => {
@@ -584,9 +589,9 @@ function create (config) {
                 const ids = files
                         .filter(filename => filename.indexOf('.json') > 0)
                         .map(filename => filename.replace('.json', '')),
-                    promises = ids.map(id => get(id).then(imposter => { imposters[id] = imposter; }));
+                    promises = ids.map(id => get(id).then(imposter => { allImposters[id] = imposter; }));
 
-                Q.all(promises).done(() => { deferred.resolve(imposters); });
+                Q.all(promises).done(() => { deferred.resolve(allImposters); });
             }
         });
         return deferred.promise;
@@ -598,18 +603,24 @@ function create (config) {
      * @returns {boolean}
      */
     function exists (id) {
-        return readHeader(id).then(header => Q(header !== null));
+        return Q(Object.keys(imposters).indexOf(String(id)) >= 0);
     }
 
+    function shutdown (id) {
+        const fn = imposters[String(id)].stop;
+        delete imposters[String(id)];
+        return fn ? fn() : Q();
+    }
     /**
      * Deletes the imnposter at the given id
      * @param {Number} id - the id (e.g. the port)
      * @returns {Object} - the deletion promise
      */
     function del (id) {
-        return get(id).then(imposter =>
-            Q.all([deleteHeader(id), deleteStubs(id)]).then(() => Q(imposter))
-        );
+        return get(id).then(imposter => {
+            const promises = imposter ? [deleteHeader(id), deleteStubs(id), shutdown(id)] : [];
+            return Q.all(promises).then(() => imposter);
+        });
     }
 
     /**
@@ -618,6 +629,7 @@ function create (config) {
     function deleteAllSync () {
         const fs = require('fs-extra');
         fs.removeSync(config.datadir);
+        Object.keys(imposters).forEach(shutdown);
     }
 
     /**
@@ -625,13 +637,15 @@ function create (config) {
      * @returns {Object} - the deletion promise
      */
     function deleteAll () {
-        return remove(config.datadir);
+        const promises = Object.keys(imposters).map(shutdown);
+        promises.push(remove(config.datadir));
+        return Q.all(promises);
     }
 
     return {
         add,
         get,
-        getAll,
+        all,
         exists,
         del,
         deleteAllSync,

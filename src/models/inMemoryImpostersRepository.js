@@ -194,6 +194,9 @@ function create (startupImposters) {
      * @returns {Object} - the promise
      */
     function add (imposter) {
+        if (!imposter.stubs) {
+            imposter.stubs = [];
+        }
         imposters[imposter.port] = imposter;
         return Q(imposter);
     }
@@ -211,7 +214,7 @@ function create (startupImposters) {
      * Gets all imposters
      * @returns {Object} - all imposters keyed by port
      */
-    function getAll () {
+    function all () {
         return Q(imposters);
     }
 
@@ -230,16 +233,24 @@ function create (startupImposters) {
      * @returns {Object} - the deletion promise
      */
     function del (id) {
-        const result = imposters[id];
+        const result = imposters[id] || null;
         delete imposters[id];
-        return result.stop().then(() => Q(result));
+        if (result) {
+            return result.stop().then(() => Q(result));
+        }
+        else {
+            return Q(result);
+        }
     }
 
     /**
      * Deletes all imposters synchronously; used during shutdown
      */
     function deleteAllSync () {
-        Object.keys(imposters).forEach(id => { imposters[id].stop(); });
+        Object.keys(imposters).forEach(id => {
+            imposters[id].stop();
+            delete imposters[id];
+        });
     }
 
     /**
@@ -257,7 +268,7 @@ function create (startupImposters) {
     return {
         add,
         get,
-        getAll,
+        all,
         exists,
         del,
         deleteAllSync,
