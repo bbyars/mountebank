@@ -138,22 +138,24 @@ function create (Protocol, creationRequest, baseLogger, config, isAllowedConnect
      * @returns {Object} - Promise
      */
     function resetProxies () {
-        return stubs.all().then(allStubs => {
-            let sequence = Q();
-            const stubIndexesToDelete = [];
+        return stubs.all()
+            .then(allStubs => Q.all(allStubs.map(stub => stub.deleteResponsesMatching(isRecordedResponse))))
+            .then(() => stubs.all())
+            .then(allStubs => {
+                let sequence = Q();
+                const stubIndexesToDelete = [];
 
-            for (let i = allStubs.length - 1; i >= 0; i -= 1) {
-                allStubs[i].deleteResponsesMatching(isRecordedResponse);
-                if (allStubs[i].responses.length === 0) {
-                    stubIndexesToDelete.push(i);
+                for (let i = allStubs.length - 1; i >= 0; i -= 1) {
+                    if (allStubs[i].responses.length === 0) {
+                        stubIndexesToDelete.push(i);
+                    }
                 }
-            }
 
-            stubIndexesToDelete.forEach(index => {
-                sequence = sequence.then(stubs.deleteAtIndex(index));
+                stubIndexesToDelete.forEach(index => {
+                    sequence = sequence.then(stubs.deleteAtIndex(index));
+                });
+                return sequence;
             });
-            return sequence;
-        });
     }
 
     domain.on('error', errorHandler);

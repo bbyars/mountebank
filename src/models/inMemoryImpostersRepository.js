@@ -64,9 +64,11 @@ const Stub = {
         /**
          * Deletes responses matching the filter
          * @param {Function} filter - the filter function
+         * @returns {Object} - the promise
          */
         stub.deleteResponsesMatching = filter => {
             stub.responses = stub.responses.filter(response => !filter(response));
+            return Q();
         };
 
         return stub;
@@ -164,10 +166,7 @@ function createStubsRepository () {
 
             // Proxy cloned functions to underlying object
             exposedStub.addResponse = realStub.addResponse;
-            exposedStub.deleteResponsesMatching = filter => {
-                realStub.deleteResponsesMatching(filter);
-                exposedStub.responses = realStub.responses;
-            };
+            exposedStub.deleteResponsesMatching = realStub.deleteResponsesMatching;
             exposedStub.nextResponse = realStub.nextResponse;
         }
         return Q(result);
