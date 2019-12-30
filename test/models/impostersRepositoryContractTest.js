@@ -194,6 +194,73 @@ types.forEach(function (type) {
                             assert.deepEqual(stripFunctions(response), { is: {} });
                         });
                 });
+
+                promiseIt('should return match with index', function () {
+                    const stubs = repo.stubsFor(1),
+                        firstStub = { predicates: [{ equals: { field: 'value' } }], responses: [{ is: 'first' }] },
+                        secondStub = { responses: [{ is: 'third' }, { is: 'fourth' }] },
+                        thirdStub = { responses: [{ is: 'fifth' }, { is: 'sixth' }] };
+
+                    // This simulates the actual order of operations; adding stubs (in imposter.js)
+                    // before adding the imposter (in impostersController.js)
+                    return stubs.add(firstStub)
+                        .then(() => stubs.add(secondStub))
+                        .then(() => stubs.add(thirdStub))
+                        .then(() => repo.add({ port: 1, protocol: 'test', stubs: [firstStub, secondStub, thirdStub] }))
+                        .then(() => stubs.first(stub => (stub.predicates || []).length === 0))
+                        .then(match => {
+                            assert.strictEqual(match.success, true);
+                            assert.strictEqual(match.index, 1);
+                            return match.stub.nextResponse();
+                        }).then(response => {
+                            assert.deepEqual(stripFunctions(response), { is: 'third' });
+                        });
+                });
+
+                promiseIt('should loop through responses on nextResponse()', function () {
+                    const stubs = repo.stubsFor(1),
+                        stub = { responses: [{ is: 'first' }, { is: 'second' }] };
+                    let matchedStub;
+
+                    return stubs.add(stub)
+                        .then(() => stubs.first(() => true))
+                        .then(match => {
+                            matchedStub = match.stub;
+                            return matchedStub.nextResponse();
+                        }).then(response => {
+                            assert.deepEqual(stripFunctions(response), { is: 'first' });
+                            return matchedStub.nextResponse();
+                        }).then(response => {
+                            assert.deepEqual(stripFunctions(response), { is: 'second' });
+                            return matchedStub.nextResponse();
+                        }).then(response => {
+                            assert.deepEqual(stripFunctions(response), { is: 'first' });
+                        });
+                });
+
+                promiseIt('should handle repeat behavior on nextResponse()', function () {
+                    const stubs = repo.stubsFor(1),
+                        stub = { responses: [{ is: 'first', _behaviors: { repeat: 2 } }, { is: 'second' }] };
+                    let matchedStub;
+
+                    return stubs.add(stub)
+                        .then(() => stubs.first(() => true))
+                        .then(match => {
+                            matchedStub = match.stub;
+                            return matchedStub.nextResponse();
+                        }).then(response => {
+                            assert.deepEqual(response.is, 'first');
+                            return matchedStub.nextResponse();
+                        }).then(response => {
+                            assert.deepEqual(response.is, 'first');
+                            return matchedStub.nextResponse();
+                        }).then(response => {
+                            assert.deepEqual(response.is, 'second');
+                            return matchedStub.nextResponse();
+                        }).then(response => {
+                            assert.deepEqual(response.is, 'first');
+                        });
+                });
             });
         });
     });
