@@ -158,13 +158,14 @@ function stubRepository (imposterDir) {
     }
 
     function wrap (stub, index) {
-        const Response = require('./response');
+        const Response = require('./response'),
+            Q = require('q');
 
         if (typeof stub === 'undefined') {
             return {
-                addResponse: () => {},
-                deleteResponsesMatching: () => {},
-                nextResponse: () => Response.create()
+                addResponse: () => Q(),
+                deleteResponsesMatching: () => Q(),
+                nextResponse: () => Q(Response.create())
             };
         }
 
@@ -183,8 +184,7 @@ function stubRepository (imposterDir) {
                 const promises = [],
                     saved = imposter.stubs[index],
                     responseFile = next(saved.meta.responseFiles, 'responses/${index}.json'),
-                    responseIndex = saved.meta.responseFiles.length,
-                    Q = require('q');
+                    responseIndex = saved.meta.responseFiles.length;
 
                 saved.meta.responseFiles.push(responseFile);
                 for (let repeats = 0; repeats < repeatsFor(response); repeats += 1) {
@@ -206,8 +206,7 @@ function stubRepository (imposterDir) {
             return readHeader().then(imposter => {
                 const savedStub = imposter.stubs[index].meta,
                     stubDir = `${imposterDir}/${savedStub.dir}`,
-                    loadResponses = savedStub.responseFiles.map(file => readFile(`${stubDir}/${file}`)),
-                    Q = require('q');
+                    loadResponses = savedStub.responseFiles.map(file => readFile(`${stubDir}/${file}`));
 
                 return Q.all(loadResponses).then(responses => {
                     const deletes = [];
@@ -250,8 +249,7 @@ function stubRepository (imposterDir) {
                     stubDir = `${imposterDir}/${meta.dir}`,
                     maxIndex = meta.orderWithRepeats.length,
                     responseIndex = meta.orderWithRepeats[meta.nextIndex % maxIndex],
-                    responseFile = meta.responseFiles[responseIndex],
-                    Q = require('q');
+                    responseFile = meta.responseFiles[responseIndex];
 
                 meta.nextIndex = (meta.nextIndex + 1) % maxIndex;
                 return Q.all([readFile(`${stubDir}/${responseFile}`), writeFile(headerFile, imposter)]);
@@ -420,18 +418,7 @@ function create (config) {
         imposters = {};
 
     function writeHeader (imposter) {
-        const helpers = require('../util/helpers'),
-            clone = helpers.clone(imposter),
-            stubsWithoutResponses = clone.stubs || [];
-
-        stubsWithoutResponses.forEach((stub, index) => {
-            stub.meta = { dir: `stubs/${index}` };
-            delete stub.responses;
-        });
-        clone.stubs = stubsWithoutResponses;
-        delete clone.requests;
-
-        return writeFile(`${config.datadir}/${imposter.port}/imposter.json`, clone);
+        return writeFile(`${config.datadir}/${imposter.port}/imposter.json`, imposter);
     }
 
     function readHeader (id) {
@@ -474,38 +461,6 @@ function create (config) {
         }).then(() => Q(responses));
     }
 
-    function writeStubs (imposter) {
-        const helpers = require('../util/helpers'),
-            stubs = helpers.clone(imposter.stubs || []),
-            promises = [];
-
-        if (stubs.length === 0) {
-            return Q(true);
-        }
-
-        stubs.forEach((stub, index) => {
-            const meta = {
-                responseFiles: [],
-                orderWithRepeats: [],
-                nextIndex: 0
-            };
-
-            (stub.responses || []).forEach((response, responseIndex) => {
-                const responseFile = `responses/${responseIndex}.json`;
-                meta.responseFiles.push(responseFile);
-
-                for (let repeats = 0; repeats < repeatsFor(response); repeats += 1) {
-                    meta.orderWithRepeats.push(responseIndex);
-                }
-
-                promises.push(writeFile(`${config.datadir}/${imposter.port}/stubs/${index}/${responseFile}`, response));
-            });
-            promises.push(writeFile(`${config.datadir}/${imposter.port}/stubs/${index}/meta.json`, meta));
-        });
-
-        return Q.all(promises);
-    }
-
     function readStubs (id) {
         let stubs;
         return readFile(`${config.datadir}/${id}/stubs/0-99.json`).then(stubsWithoutResponses => {
@@ -539,11 +494,21 @@ function create (config) {
     function add (imposter) {
         // Due to historical design decisions when everything was in memory, stubs are actually
         // added (in imposter.js) _before_ the imposter is added (in impostersController.js). This
-        // means that the header file may already exist (or not, if no stubs were added).
-        return Q.all([writeHeader(imposter), writeStubs(imposter)]).then(() => {
-            const id = String(imposter.port);
-            imposters[id] = { stop: imposter.stop };
-            return imposter;
+        // means that the header file may already exist (or not, if the imposter has no stubs).
+        return readHeader(imposter.port).then(header => {
+            if (header === null) {
+                header = { stubs: [] };
+            }
+
+            const helpers = require('../util/helpers'),
+                cloned = helpers.clone(imposter);
+            cloned.stubs = header.stubs;
+            delete cloned.requests;
+            return writeHeader(cloned).then(() => {
+                const id = String(imposter.port);
+                imposters[id] = { stop: imposter.stop };
+                return imposter;
+            });
         });
     }
 

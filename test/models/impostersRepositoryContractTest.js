@@ -189,7 +189,9 @@ types.forEach(function (type) {
                         .then(match => {
                             assert.strictEqual(match.success, false);
                             assert.strictEqual(match.index, -1);
-                            assert.deepEqual(stripFunctions(match.stub.nextResponse()), { is: {} });
+                            return match.stub.nextResponse();
+                        }).then(response => {
+                            assert.deepEqual(stripFunctions(response), { is: {} });
                         });
                 });
             });

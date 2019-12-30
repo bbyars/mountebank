@@ -24,47 +24,6 @@ describe('filesystemBackedImpostersRepository', function () {
                 assert.deepEqual(saved, { port: 1000, protocol: 'test', customField: true, stubs: [] });
             });
         });
-
-        promiseIt('should save stub predicates in header and save responses separately', function () {
-            const repo = Repo.create({ datadir: '.mbtest' }),
-                imposter = {
-                    port: 1000,
-                    protocol: 'test',
-                    stubs: [{
-                        predicates: [
-                            { equals: { key: 'value' } },
-                            { exists: { first: true } }
-                        ],
-                        responses: [
-                            { is: { field: 'one' } },
-                            { is: { field: 'two' } }
-                        ]
-                    }]
-                };
-
-            return repo.add(imposter).then(() => {
-                const saved = read('.mbtest/1000/imposter.json');
-                assert.deepEqual(saved.stubs, [{
-                    predicates: [
-                        { equals: { key: 'value' } },
-                        { exists: { first: true } }
-                    ],
-                    meta: { dir: 'stubs/0' }
-                }]);
-
-                const meta = read('.mbtest/1000/stubs/0/meta.json');
-                assert.deepEqual(meta, {
-                    responseFiles: ['responses/0.json', 'responses/1.json'],
-                    orderWithRepeats: [0, 1],
-                    nextIndex: 0
-                });
-
-                const firstResponse = read('.mbtest/1000/stubs/0/responses/0.json');
-                assert.deepEqual(firstResponse, { is: { field: 'one' } });
-                const secondResponse = read('.mbtest/1000/stubs/0/responses/1.json');
-                assert.deepEqual(secondResponse, { is: { field: 'two' } });
-            });
-        });
     });
 
     describe('#del', function () {

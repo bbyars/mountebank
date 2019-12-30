@@ -31,7 +31,8 @@ const Stub = {
         }
 
         const helpers = require('../util/helpers'),
-            stub = helpers.clone(config || {});
+            stub = helpers.clone(config || {}),
+            Q = require('q');
 
         stub.responses = stub.responses || [{ is: {} }];
 
@@ -40,19 +41,24 @@ const Stub = {
         /**
          * Adds a new response to the stub (e.g. during proxying)
          * @param {Object} response - the response to add
+         * @returns {Object} - the promise
          */
-        stub.addResponse = response => { stub.responses.push(response); };
+        stub.addResponse = response => {
+            stub.responses.push(response);
+            return Q(response);
+        };
 
         /**
          * Selects the next response from the stub, including repeat behavior and circling back to the beginning
          * @returns {Object} - the response
+         * @returns {Object} - the promise
          */
         stub.nextResponse = () => {
             const responseConfig = statefulResponses.shift(),
                 Response = require('./response');
 
             statefulResponses.push(responseConfig);
-            return Response.create(responseConfig, stub);
+            return Q(Response.create(responseConfig, stub));
         };
 
         /**

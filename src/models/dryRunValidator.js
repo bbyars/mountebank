@@ -99,9 +99,10 @@ function create (options) {
         return reposToTestFor(stub).then(dryRunRepositories => {
             return Q.all(dryRunRepositories.map(stubRepository => {
                 return findFirstMatch(stubRepository, options.testRequest, encoding, dryRunLogger).then(match => {
-                    const responseConfig = match.stub.nextResponse();
-                    responseConfig.stubIndex = () => match.index;
-                    return resolverFor(stubRepository).resolve(responseConfig, options.testRequest, dryRunLogger, {});
+                    return match.stub.nextResponse().then(responseConfig => {
+                        responseConfig.stubIndex = () => match.index;
+                        return resolverFor(stubRepository).resolve(responseConfig, options.testRequest, dryRunLogger, {});
+                    });
                 });
             }));
         });

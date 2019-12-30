@@ -231,7 +231,7 @@ function create (stubs, proxy, callbackURL) {
 
         return stubs.all().then(stubList => {
             const responseIndex = indexOfStubToAddResponseTo(stubList, responseConfig, request, logger);
-            stubList[responseIndex].addResponse(stubResponse);
+            return stubList[responseIndex].addResponse(stubResponse);
         });
     }
 

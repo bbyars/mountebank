@@ -40,9 +40,10 @@ describe('responseResolver', function () {
         // Simulates what the imposter / stubRepository do with the added functions
         return stubs.first(stub => (stub.predicates || []).length === 0)
             .then(match => {
-                const result = match.stub.nextResponse();
-                result.stubIndex = () => match.index;
-                return result;
+                return match.stub.nextResponse().then(result => {
+                    result.stubIndex = () => match.index;
+                    return result;
+                });
             });
     }
 

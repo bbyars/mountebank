@@ -120,10 +120,9 @@ describe('inMemoryImpostersRepository#stubsFor', function () {
 
             return stubs.add(stub)
                 .then(() => stubs.all())
+                .then(all => all[0].addResponse('RESPONSE'))
+                .then(() => stubs.all())
                 .then(all => {
-                    all[0].addResponse('RESPONSE');
-                    return stubs.all();
-                }).then(all => {
                     assert.deepEqual(stripFunctions(all), [{ responses: ['RESPONSE'] }]);
                 });
         });
