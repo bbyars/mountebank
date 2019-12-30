@@ -4,6 +4,8 @@
  * Tests the semantics of each repository implementation to ensure they function equivalently
  */
 
+/* eslint max-nested-callbacks: 0 */
+
 const assert = require('assert'),
     promiseIt = require('../testHelpers').promiseIt,
     fs = require('fs-extra'),
@@ -154,6 +156,42 @@ types.forEach(function (type) {
                     }).then(imposters => {
                         assert.deepEqual(imposters, []);
                     });
+            });
+        });
+
+        describe('#stubsFor', function () {
+            describe('#count', function () {
+                promiseIt('should be 0 if no stubs on the imposter', function () {
+                    return repo.add({ port: 1 })
+                        .then(repo.stubsFor(1).count)
+                        .then(count => {
+                            assert.strictEqual(0, count);
+                        });
+                });
+
+                promiseIt('should provide count of all stubs on imposter', function () {
+                    const stubs = repo.stubsFor(1);
+                    return repo.add({ port: 1, protocol: 'test' })
+                        .then(() => stubs.add({ responses: [{ is: { field: 1 } }] }))
+                        .then(() => stubs.add({ responses: [{ is: { field: 2 } }] }))
+                        .then(stubs.count)
+                        .then(count => {
+                            assert.strictEqual(2, count);
+                        });
+                });
+            });
+
+            describe('#first', function () {
+                promiseIt('should return default stub if no match', function () {
+                    const stubs = repo.stubsFor(1);
+                    return repo.add({ port: 1, protocol: 'test' })
+                        .then(() => stubs.first(() => false))
+                        .then(match => {
+                            assert.strictEqual(match.success, false);
+                            assert.strictEqual(match.index, -1);
+                            assert.deepEqual(stripFunctions(match.stub.nextResponse()), { is: {} });
+                        });
+                });
             });
         });
     });

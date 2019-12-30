@@ -1,7 +1,7 @@
 'use strict';
 
 const assert = require('assert'),
-    createStubsRepository = require('../../src/models/inMemoryImpostersRepository').create().stubsFor,
+    createStubsRepository = require('../../src/models/inMemoryImpostersRepository').create().createStubsRepository,
     promiseIt = require('../testHelpers').promiseIt;
 
 describe('inMemoryImpostersRepository#stubsFor', function () {
@@ -130,24 +130,6 @@ describe('inMemoryImpostersRepository#stubsFor', function () {
     });
 
     describe('#first', function () {
-        promiseIt('should return default stub if no match', function () {
-            const stubs = createStubsRepository();
-
-            return stubs.first(stub => stub.responses.length === 1).then(match => {
-                assert.deepEqual(stripFunctions(match),
-                    { success: false, index: -1, stub: { responses: [{ is: {} }] } });
-            });
-        });
-
-        promiseIt('should return default response on nextResponse() if no match', function () {
-            const stubs = createStubsRepository();
-
-            return stubs.first(stub => stub.responses.length === 1).then(match => {
-                const response = stripFunctions(match.stub.nextResponse());
-                assert.deepEqual(response, { is: {} });
-            });
-        });
-
         promiseIt('should return match with index', function () {
             const stubs = createStubsRepository(),
                 firstStub = { responses: [{ is: 'first' }, { is: 'second' }] },

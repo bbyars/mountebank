@@ -2,7 +2,7 @@
 
 function create (responseConfig, stub) {
     const helpers = require('../util/helpers'),
-        cloned = helpers.clone(responseConfig || {});
+        cloned = helpers.clone(responseConfig || { is: {} });
 
     cloned.recordMatch = (request, response) => {
         const clonedResponse = helpers.clone(response),

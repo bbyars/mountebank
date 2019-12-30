@@ -163,19 +163,6 @@ describe('filesystemBackedImpostersRepository#stubsFor', function () {
                 });
             });
         });
-
-        promiseIt('should throw error if no imposter file', function () {
-            const repo = createRepo();
-
-            return repo.add({}).then(() => {
-                assert.fail('should have rejected');
-            }, err => {
-                assert.deepEqual(err, {
-                    code: 'corrupted database',
-                    message: 'no imposter file: .mbtest/3000/imposter.json'
-                });
-            });
-        });
     });
 
     describe('#count', function () {
@@ -226,27 +213,14 @@ describe('filesystemBackedImpostersRepository#stubsFor', function () {
                 });
         });
 
-        promiseIt('should throw error if no imposter file', function () {
-            const repo = createRepo();
-
-            return repo.first(stub => stub.predicates.length === 1).then(() => {
-                assert.fail('should have rejected');
-            }, err => {
-                assert.deepEqual(err, {
-                    code: 'corrupted database',
-                    message: 'no imposter file: .mbtest/3000/imposter.json'
-                });
-            });
-        });
-
-        promiseIt('should return {} from nextResponse if no stub added', function () {
+        promiseIt('should return default response from nextResponse if no stub added', function () {
             const repo = createRepo();
             write('imposter.json', { port: 3000, protocol: 'test' });
 
             return repo.first(stub => stub.predicates.length === 1).then(match => {
                 return match.stub.nextResponse();
             }).then(response => {
-                assert.deepEqual(stripFunctions(response), {});
+                assert.deepEqual(stripFunctions(response), { is: {} });
             });
         });
 

@@ -207,7 +207,7 @@ function create (startupImposters) {
      * @returns {Object} - the imposter
      */
     function get (id) {
-        return Q(imposters[id] || null);
+        return Q(imposters[String(id)] || null);
     }
 
     /**
@@ -224,7 +224,7 @@ function create (startupImposters) {
      * @returns {boolean}
      */
     function exists (id) {
-        return Q(typeof imposters[id] !== 'undefined');
+        return Q(typeof imposters[String(id)] !== 'undefined');
     }
 
     /**
@@ -233,8 +233,8 @@ function create (startupImposters) {
      * @returns {Object} - the deletion promise
      */
     function del (id) {
-        const result = imposters[id] || null;
-        delete imposters[id];
+        const result = imposters[String(id)] || null;
+        delete imposters[String(id)];
         if (result) {
             return result.stop().then(() => Q(result));
         }
@@ -273,7 +273,8 @@ function create (startupImposters) {
         del,
         deleteAllSync,
         deleteAll,
-        stubsFor: createStubsRepository
+        stubsFor: createStubsRepository,
+        createStubsRepository
     };
 }
 

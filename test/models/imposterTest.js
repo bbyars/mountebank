@@ -6,7 +6,7 @@ const assert = require('assert'),
     Q = require('q'),
     promiseIt = require('../testHelpers').promiseIt,
     FakeLogger = require('../fakes/fakeLogger'),
-    createStubRepository = require('../../src/models/inMemoryImpostersRepository').create().stubsFor;
+    createStubRepository = require('../../src/models/inMemoryImpostersRepository').create().createStubsRepository;
 
 function allow () { return true; }
 function deny () { return false; }
@@ -212,6 +212,7 @@ describe('imposter', function () {
             return Imposter.create(Protocol, request, logger, {}, allow).then(imposter => {
                 return imposter.toJSON({ replayable: true });
             }).then(json => {
+                console.log(JSON.stringify(json, null, 2));
                 assert.deepEqual(json, {
                     protocol: 'test',
                     port: 3535,
