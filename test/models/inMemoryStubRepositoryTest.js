@@ -98,33 +98,4 @@ describe('inMemoryImpostersRepository#stubsFor', function () {
                 });
         });
     });
-
-    describe('#all', function () {
-        promiseIt('should not allow changing state in stubRepository', function () {
-            const stubs = createStubsRepository(),
-                stub = { responses: [] };
-
-            return stubs.add(stub)
-                .then(() => stubs.all())
-                .then(all => {
-                    all[0].responses.push('RESPONSE');
-                    return stubs.all();
-                }).then(all => {
-                    assert.deepEqual(stripFunctions(all), [{ responses: [] }]);
-                });
-        });
-
-        promiseIt('should support adding responses', function () {
-            const stubs = createStubsRepository(),
-                stub = { responses: [] };
-
-            return stubs.add(stub)
-                .then(() => stubs.all())
-                .then(all => all[0].addResponse('RESPONSE'))
-                .then(() => stubs.all())
-                .then(all => {
-                    assert.deepEqual(stripFunctions(all), [{ responses: ['RESPONSE'] }]);
-                });
-        });
-    });
 });

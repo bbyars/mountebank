@@ -34,7 +34,7 @@ const Stub = {
             stub = helpers.clone(config || {}),
             Q = require('q');
 
-        stub.responses = stub.responses || [{ is: {} }];
+        stub.responses = stub.responses || [];
 
         const statefulResponses = repeatTransform(stub.responses);
 
@@ -45,6 +45,9 @@ const Stub = {
          */
         stub.addResponse = response => {
             stub.responses.push(response);
+            config.responses = config.responses || [];
+            config.responses.push(response);
+            statefulResponses.push(response);
             return Q(response);
         };
 
@@ -57,8 +60,13 @@ const Stub = {
             const responseConfig = statefulResponses.shift(),
                 Response = require('./response');
 
-            statefulResponses.push(responseConfig);
-            return Q(Response.create(responseConfig, stub));
+            if (responseConfig) {
+                statefulResponses.push(responseConfig);
+                return Q(Response.create(responseConfig, stub));
+            }
+            else {
+                return Q(Response.create());
+            }
         };
 
         /**
@@ -154,7 +162,7 @@ function createStubsRepository () {
 
     /**
      * Returns all stubs
-     * @returns {Object} -the promise resolving to the list of stubs
+     * @returns {Object} - the promise resolving to the list of stubs
      */
     function all () {
         const helpers = require('../util/helpers'),
