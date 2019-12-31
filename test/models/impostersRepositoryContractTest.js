@@ -307,7 +307,7 @@ types.forEach(function (type) {
                             assert.deepEqual(all[0].predicates, stub.predicates);
                             return all[0].nextResponse();
                         }).then(response => {
-                            assert.deepEqual(stripFunctions(response), { is: { field: 1} });
+                            assert.deepEqual(stripFunctions(response), { is: { field: 1 } });
                         });
                 });
 

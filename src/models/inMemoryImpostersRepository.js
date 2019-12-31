@@ -94,10 +94,11 @@ function createStubsRepository () {
     /**
      * Returns the first stub whose predicates match the filter, or a default one if none match
      * @param {Function} filter - the filter function
+     * @param {Number} startIndex - the index to to start searching
      * @returns {Object}
      */
-    function first (filter) {
-        for (let i = 0; i < stubs.length; i += 1) {
+    function first (filter, startIndex = 0) {
+        for (let i = startIndex; i < stubs.length; i += 1) {
             if (filter(stubs[i].predicates || [])) {
                 return Q({ success: true, index: i, stub: stubs[i] });
             }

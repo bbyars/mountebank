@@ -270,11 +270,12 @@ function stubRepository (imposterDir) {
     /**
      * Returns the first stub whose predicates matches the filter
      * @param {Function} filter - the filter function
+     * @param {Number} startIndex - the index to to start searching
      * @returns {Object} - the promise
      */
-    function first (filter) {
+    function first (filter, startIndex = 0) {
         return readHeader().then(imposter => {
-            for (let i = 0; i < imposter.stubs.length; i += 1) {
+            for (let i = startIndex; i < imposter.stubs.length; i += 1) {
                 if (filter(imposter.stubs[i].predicates || [])) {
                     return { success: true, index: i, stub: wrap(imposter.stubs[i], i) };
                 }

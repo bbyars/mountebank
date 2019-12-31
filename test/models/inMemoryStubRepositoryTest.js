@@ -5,10 +5,6 @@ const assert = require('assert'),
     promiseIt = require('../testHelpers').promiseIt;
 
 describe('inMemoryImpostersRepository#stubsFor', function () {
-    function stripFunctions (obj) {
-        return JSON.parse(JSON.stringify(obj));
-    }
-
     describe('#overwriteAll', function () {
         promiseIt('should overwrite entire list', function () {
             const stubs = createStubsRepository(),
