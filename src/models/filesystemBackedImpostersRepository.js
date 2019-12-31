@@ -268,14 +268,14 @@ function stubRepository (imposterDir) {
     }
 
     /**
-     * Returns the first stub that matches the filter
+     * Returns the first stub whose predicates matches the filter
      * @param {Function} filter - the filter function
      * @returns {Object} - the promise
      */
     function first (filter) {
         return readHeader().then(imposter => {
             for (let i = 0; i < imposter.stubs.length; i += 1) {
-                if (filter(imposter.stubs[i])) {
+                if (filter(imposter.stubs[i].predicates || [])) {
                     return { success: true, index: i, stub: wrap(imposter.stubs[i], i) };
                 }
             }

@@ -193,7 +193,7 @@ describe('filesystemBackedImpostersRepository#stubsFor', function () {
             const repo = createRepo();
             write('imposter.json', { port: 3000, protocol: 'test' });
 
-            return repo.first(stub => stub.predicates.length === 1).then(match => {
+            return repo.first(predicates => predicates.length === 1).then(match => {
                 assert.ok(!match.success);
             });
         });
@@ -205,7 +205,7 @@ describe('filesystemBackedImpostersRepository#stubsFor', function () {
             return repo.add({ predicates: ['first', 'second'] })
                 .then(() => repo.add({ predicates: ['third'] }))
                 .then(() => repo.add({ predicates: ['fourth'] }))
-                .then(() => repo.first(stub => stub.predicates.length === 1))
+                .then(() => repo.first(predicates => predicates.length === 1))
                 .then(match => {
                     assert.ok(match.success);
                     assert.strictEqual(match.index, 1);
@@ -217,7 +217,7 @@ describe('filesystemBackedImpostersRepository#stubsFor', function () {
             const repo = createRepo();
             write('imposter.json', { port: 3000, protocol: 'test' });
 
-            return repo.first(stub => stub.predicates.length === 1).then(match => {
+            return repo.first(predicates => predicates.length === 1).then(match => {
                 return match.stub.nextResponse();
             }).then(response => {
                 assert.deepEqual(stripFunctions(response), { is: {} });
@@ -237,7 +237,7 @@ describe('filesystemBackedImpostersRepository#stubsFor', function () {
             write('imposter.json', { port: 3000, protocol: 'test' });
 
             return repo.add(stub)
-                .then(() => repo.first(match => match.predicates.length === 1))
+                .then(() => repo.first(predicates => predicates.length === 1))
                 .then(match => {
                     matchedStub = match.stub;
                     return matchedStub.nextResponse();

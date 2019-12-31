@@ -182,6 +182,15 @@ types.forEach(function (type) {
             });
 
             describe('#first', function () {
+                promiseIt('should default empty array to filter function if no predicates on stub', function () {
+                    const stubs = repo.stubsFor(1);
+                    return repo.add({ responses: [] })
+                        .then(() => stubs.first(predicates => {
+                            assert.deepEqual(predicates, []);
+                            return true;
+                        }));
+                });
+
                 promiseIt('should return default stub if no match', function () {
                     const stubs = repo.stubsFor(1);
                     return repo.add({ port: 1, protocol: 'test' })
@@ -207,7 +216,7 @@ types.forEach(function (type) {
                         .then(() => stubs.add(secondStub))
                         .then(() => stubs.add(thirdStub))
                         .then(() => repo.add({ port: 1, protocol: 'test', stubs: [firstStub, secondStub, thirdStub] }))
-                        .then(() => stubs.first(stub => (stub.predicates || []).length === 0))
+                        .then(() => stubs.first(predicates => predicates.length === 0))
                         .then(match => {
                             assert.strictEqual(match.success, true);
                             assert.strictEqual(match.index, 1);

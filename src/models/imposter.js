@@ -65,9 +65,8 @@ function create (Protocol, creationRequest, baseLogger, config, isAllowedConnect
 
     function findFirstMatch (request) {
         const readOnlyState = helpers.clone(imposterState),
-            filter = stub => {
-                const stubPredicates = stub.predicates || [],
-                    predicates = require('./predicates');
+            filter = stubPredicates => {
+                const predicates = require('./predicates');
 
                 return stubPredicates.every(predicate =>
                     predicates.evaluate(predicate, request, encoding, logger, readOnlyState));

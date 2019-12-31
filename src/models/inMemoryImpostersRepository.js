@@ -92,13 +92,13 @@ function createStubsRepository () {
         Q = require('q');
 
     /**
-     * Returns the first stub matching the filter, or a default one if none match
+     * Returns the first stub whose predicates match the filter, or a default one if none match
      * @param {Function} filter - the filter function
      * @returns {Object}
      */
     function first (filter) {
         for (let i = 0; i < stubs.length; i += 1) {
-            if (filter(stubs[i])) {
+            if (filter(stubs[i].predicates || [])) {
                 return Q({ success: true, index: i, stub: stubs[i] });
             }
         }

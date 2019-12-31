@@ -38,7 +38,7 @@ describe('responseResolver', function () {
 
     function getResponseFrom (stubs) {
         // Simulates what the imposter / stubRepository do with the added functions
-        return stubs.first(stub => (stub.predicates || []).length === 0)
+        return stubs.first(predicates => predicates.length === 0)
             .then(match => {
                 return match.stub.nextResponse().then(result => {
                     result.stubIndex = () => match.index;

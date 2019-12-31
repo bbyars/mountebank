@@ -59,9 +59,8 @@ function create (options) {
     }
 
     function findFirstMatch (stubRepository, request, encoding, logger) {
-        const filter = stub => {
-            const stubPredicates = stub.predicates || [],
-                predicates = require('./predicates');
+        const filter = stubPredicates => {
+            const predicates = require('./predicates');
 
             return trueForAll(stubPredicates,
                 predicate => predicates.evaluate(predicate, request, encoding, logger, {}));
