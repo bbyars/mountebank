@@ -345,14 +345,6 @@ function stubRepository (imposterDir) {
         return deleteAtIndex(index).then(() => insertAtIndex(stub, index));
     }
 
-    /**
-     * Returns all stubs
-     * @returns {Object} - the promise resolving to the list of stubs
-     */
-    function all () {
-        return readHeader().then(imposter => imposter.stubs.map(wrap));
-    }
-
     function loadResponses (stub) {
         const Q = require('q');
         return Q.all(stub.meta.responseFiles.map(responseFile =>
@@ -404,7 +396,6 @@ function stubRepository (imposterDir) {
         overwriteAll,
         overwriteAtIndex,
         deleteAtIndex,
-        all,
         toJSON,
         deleteSavedProxyResponses
     };

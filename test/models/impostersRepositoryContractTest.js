@@ -286,49 +286,6 @@ types.forEach(function (type) {
                 });
             });
 
-            describe('#all', function () {
-                promiseIt('should not allow directly changing state in stubRepository', function () {
-                    const stubs = repo.stubsFor(1),
-                        stub = {
-                            predicates: [{ equals: { field: 'value' } }],
-                            responses: [{ is: { field: 1 } }]
-                        };
-
-                    return stubs.add(stub)
-                        .then(() => stubs.all())
-                        .then(all => {
-                            assert.strictEqual(1, all.length);
-                            all[0].predicates = [];
-                            all[0].responses = [];
-                            all.push({ responses: [] });
-                            return stubs.all();
-                        }).then(all => {
-                            assert.strictEqual(1, all.length);
-                            assert.deepEqual(all[0].predicates, stub.predicates);
-                            return all[0].nextResponse();
-                        }).then(response => {
-                            assert.deepEqual(stripFunctions(response), { is: { field: 1 } });
-                        });
-                });
-
-                promiseIt('should not reflect state changes in stub after add()', function () {
-                    const stubs = repo.stubsFor(1),
-                        stub = {
-                            predicates: [{ equals: { field: 'value' } }],
-                            responses: []
-                        };
-
-                    return stubs.add(stub)
-                        .then(() => {
-                            stub.responses.push({ is: { field: 1 } });
-                            return stubs.all();
-                        }).then(all => all[0].nextResponse())
-                        .then(response => {
-                            assert.deepEqual(stripFunctions(response), { is: {} });
-                        });
-                });
-            });
-
             describe('#toJSON', function () {
                 promiseIt('should return empty array if nothing added', function () {
                     return repo.stubsFor(1).toJSON().then(json => {

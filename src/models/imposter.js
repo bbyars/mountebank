@@ -168,7 +168,7 @@ function create (Protocol, creationRequest, baseLogger, config, isAllowedConnect
                 getResponseFor,
                 getProxyResponseFor,
                 addStub: server.stubs.add,
-                stubs: server.stubs.all,
+                stubs: server.stubs.toJSON,
                 overwriteStubs: server.stubs.overwriteAll,
                 overwriteStubAtIndex: server.stubs.overwriteAtIndex,
                 deleteStubAtIndex: server.stubs.deleteAtIndex,

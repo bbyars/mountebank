@@ -24,11 +24,8 @@ describe('responseResolver', function () {
     }
 
     function stubListFor (stubs) {
-        return stubs.all().then(result => {
+        return stubs.toJSON().then(result => {
             result.forEach(stub => {
-                delete stub.recordMatch;
-                delete stub.addResponse;
-                delete stub.nextResponse;
                 stub.responses = proxyResponses(stub.responses);
             });
             return result;
@@ -140,7 +137,7 @@ describe('responseResolver', function () {
                 .then(responseConfig => resolver.resolve(responseConfig, {}, logger, {}))
                 .then(response => {
                     assert.strictEqual(response.key, 'value');
-                    return stubs.all();
+                    return stubs.toJSON();
                 }).then(all => {
                     const stubResponses = all.map(stub => proxyResponses(stub.responses));
                     assert.deepEqual(stubResponses, [
@@ -161,7 +158,7 @@ describe('responseResolver', function () {
             return stubs.add({ responses: [{ proxy: { to: 'where', addWaitBehavior: true } }] })
                 .then(() => getResponseFrom(stubs))
                 .then(responseConfig => resolver.resolve(responseConfig, request, logger, {}))
-                .then(() => stubs.all())
+                .then(() => stubs.toJSON())
                 .then(all => {
                     const stubResponses = all.map(stub => stub.responses),
                         wait = stubResponses[0][0].is._proxyResponseTime; // eslint-disable-line no-underscore-dangle
@@ -194,7 +191,7 @@ describe('responseResolver', function () {
                     // First call adds the stub, second call adds a response
                     return resolver.resolve(responseConfig, request, logger, {})
                         .then(() => resolver.resolve(responseConfig, request, logger, {}));
-                }).then(() => stubs.all())
+                }).then(() => stubs.toJSON())
                 .then(all => {
                     const stubResponses = all.map(stub => stub.responses),
                         firstWait = stubResponses[1][0].is._proxyResponseTime, // eslint-disable-line no-underscore-dangle
@@ -224,7 +221,7 @@ describe('responseResolver', function () {
             return stubs.add({ responses: [response] })
                 .then(() => getResponseFrom(stubs))
                 .then(responseConfig => resolver.resolve(responseConfig, request, logger, {}))
-                .then(() => stubs.all())
+                .then(() => stubs.toJSON())
                 .then(all => {
                     const stubResponses = all.map(stub => proxyResponses(stub.responses));
                     assert.deepEqual(stubResponses, [
@@ -245,7 +242,7 @@ describe('responseResolver', function () {
             return stubs.add({ responses: [{ proxy: { to: 'where', addDecorateBehavior: decorateFunc } }] })
                 .then(() => getResponseFrom(stubs))
                 .then(responseConfig => resolver.resolve(responseConfig, request, logger, {}))
-                .then(() => stubs.all())
+                .then(() => stubs.toJSON())
                 .then(all => {
                     const stubResponses = all.map(stub => proxyResponses(stub.responses));
                     assert.deepEqual(stubResponses, [
@@ -269,7 +266,7 @@ describe('responseResolver', function () {
                     // First call adds the stub, second call adds a response
                     return resolver.resolve(responseConfig, request, logger, {})
                         .then(() => resolver.resolve(responseConfig, request, logger, stubs));
-                }).then(() => stubs.all())
+                }).then(() => stubs.toJSON())
                 .then(all => {
                     const stubResponses = all.map(stub => proxyResponses(stub.responses));
                     assert.deepEqual(stubResponses, [
@@ -1173,7 +1170,7 @@ describe('responseResolver', function () {
         }
 
         function matchesFor (stubs) {
-            return stubs.all().then(all => {
+            return stubs.toJSON().then(all => {
                 const matchList = all.map(stub => stub.matches || []);
                 matchList.forEach(matchesForOneStub => {
                     matchesForOneStub.forEach(match => {
@@ -1218,7 +1215,7 @@ describe('responseResolver', function () {
                 return resolver.resolveProxy({ data: 'RESPONSE' }, proxyResolutionKey, logger);
             }).then(response => {
                 assert.deepEqual(jsonResponse(response), { data: 'RESPONSE' });
-                return stubs.all();
+                return stubs.toJSON();
             }).then(all => {
                 const stubResponses = all.map(stub => proxyResponses(stub.responses));
                 delete responseConfig.stubIndex;
@@ -1244,7 +1241,7 @@ describe('responseResolver', function () {
                 return resolver.resolveProxy({ data: 'RESPONSE' }, proxyResolutionKey, logger);
             }).then(response => {
                 assert.deepEqual(jsonResponse(response), { data: 'RESPONSE' });
-                return stubs.all();
+                return stubs.toJSON();
             }).then(all => {
                 const stubResponses = all.map(stub => proxyResponses(stub.responses));
                 delete responseConfig.stubIndex;
@@ -1274,7 +1271,7 @@ describe('responseResolver', function () {
                     return resolver.resolveProxy({ data: 'RESPONSE' }, proxyResolutionKey, logger);
                 }).then(response => {
                     assert.deepEqual(jsonResponse(response), { data: 'RESPONSE-DECORATED' });
-                    return stubs.all();
+                    return stubs.toJSON();
                 }).then(all => {
                     const stubResponses = all.map(stub => proxyResponses(stub.responses));
                     assert.deepEqual(stubResponses, [
@@ -1300,7 +1297,7 @@ describe('responseResolver', function () {
                 }).then(proxyResolutionKey =>
                     resolver.resolveProxy({ data: 'RESPONSE' }, proxyResolutionKey, logger)
                 ).then(() => {
-                    return stubs.all();
+                    return stubs.toJSON();
                 }).then(all => {
                     const stubResponses = all.map(stub => stub.responses),
                         wait = stubResponses[0][0].is._proxyResponseTime; // eslint-disable-line no-underscore-dangle

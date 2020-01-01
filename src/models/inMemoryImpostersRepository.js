@@ -152,25 +152,6 @@ function createStubsRepository () {
     }
 
     /**
-     * Returns all stubs
-     * @returns {Object} - the promise resolving to the list of stubs
-     */
-    function all () {
-        const helpers = require('../util/helpers'),
-            result = helpers.clone(stubs);
-
-        for (var i = 0; i < stubs.length; i += 1) {
-            const realStub = stubs[i],
-                exposedStub = result[i];
-
-            // Proxy cloned functions to underlying object
-            exposedStub.addResponse = realStub.addResponse;
-            exposedStub.nextResponse = realStub.nextResponse;
-        }
-        return Q(result);
-    }
-
-    /**
      * Returns a JSON-convertible representation
      * @returns {Object} - the promise resolving to the JSON object
      */
@@ -205,7 +186,6 @@ function createStubsRepository () {
         overwriteAll,
         overwriteAtIndex,
         deleteAtIndex,
-        all,
         toJSON,
         deleteSavedProxyResponses
     };

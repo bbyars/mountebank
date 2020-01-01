@@ -16,7 +16,7 @@ describe('inMemoryImpostersRepository#stubsFor', function () {
                 .then(() => stubs.add(secondStub))
                 .then(() => stubs.overwriteAll([thirdStub]))
                 .then(() => {
-                    return stubs.all().then(all => {
+                    return stubs.toJSON().then(all => {
                         const responses = all.map(stub => stub.responses);
 
                         assert.deepEqual(responses, [
@@ -37,7 +37,7 @@ describe('inMemoryImpostersRepository#stubsFor', function () {
             return stubs.add(firstStub)
                 .then(() => stubs.add(secondStub))
                 .then(() => stubs.overwriteAtIndex(thirdStub, 1))
-                .then(() => stubs.all())
+                .then(() => stubs.toJSON())
                 .then(all => {
                     const responses = all.map(stub => stub.responses);
 
@@ -60,7 +60,7 @@ describe('inMemoryImpostersRepository#stubsFor', function () {
                 .then(() => stubs.add(secondStub))
                 .then(() => stubs.add(thirdStub))
                 .then(() => stubs.deleteAtIndex(0))
-                .then(() => stubs.all())
+                .then(() => stubs.toJSON())
                 .then(all => {
                     const responses = all.map(stub => stub.responses);
 
@@ -82,7 +82,7 @@ describe('inMemoryImpostersRepository#stubsFor', function () {
             return stubs.add(firstStub)
                 .then(() => stubs.add(secondStub))
                 .then(() => stubs.insertAtIndex(insertedStub, 0))
-                .then(() => stubs.all())
+                .then(() => stubs.toJSON())
                 .then(all => {
                     const responses = all.map(stub => stub.responses);
 
