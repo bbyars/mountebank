@@ -146,6 +146,26 @@ function stubRepository (imposterDir) {
         });
     }
 
+    function writeHeader (header) {
+        return writeFile(headerFile, header);
+    }
+
+    function readMeta (stubDir) {
+        return readFile(`${imposterDir}/${stubDir}/meta.json`);
+    }
+
+    function writeMeta (stubDir, meta) {
+        return writeFile(`${imposterDir}/${stubDir}/meta.json`, meta);
+    }
+
+    function readResponse (stubDir, responseFile) {
+        return readFile(`${imposterDir}/${stubDir}/${responseFile}`);
+    }
+
+    function writeResponse (stubDir, responseFile, response) {
+        return writeFile(`${imposterDir}/${stubDir}/${responseFile}`, response);
+    }
+
     function next (paths, template) {
         if (paths.length === 0) {
             return template.replace('${index}', 0);
@@ -179,20 +199,20 @@ function stubRepository (imposterDir) {
          * @returns {Object} - the promise
          */
         cloned.addResponse = response => {
+            let stubDir;
             return readHeader().then(imposter => {
-                const promises = [],
-                    saved = imposter.stubs[index],
-                    responseFile = next(saved.meta.responseFiles, 'responses/${index}.json'),
-                    responseIndex = saved.meta.responseFiles.length;
+                stubDir = imposter.stubs[index].meta.dir;
+                return readMeta(stubDir);
+            }).then(meta => {
+                const responseFile = next(meta.responseFiles, 'responses/${index}.json'),
+                    responseIndex = meta.responseFiles.length;
 
-                saved.meta.responseFiles.push(responseFile);
+                meta.responseFiles.push(responseFile);
                 for (let repeats = 0; repeats < repeatsFor(response); repeats += 1) {
-                    saved.meta.orderWithRepeats.push(responseIndex);
+                    meta.orderWithRepeats.push(responseIndex);
                 }
 
-                promises.push(writeFile(`${imposterDir}/${saved.meta.dir}/${responseFile}`, response));
-                promises.push(writeFile(headerFile, imposter));
-                return Q.all(promises);
+                return Q.all([writeResponse(stubDir, responseFile, response), writeMeta(stubDir, meta)]);
             });
         };
 
@@ -201,15 +221,17 @@ function stubRepository (imposterDir) {
          * @returns {Object} - the promise
          */
         cloned.nextResponse = () => {
+            let stubDir;
             return readHeader().then(imposter => {
-                const meta = imposter.stubs[index].meta,
-                    stubDir = `${imposterDir}/${meta.dir}`,
-                    maxIndex = meta.orderWithRepeats.length,
+                stubDir = imposter.stubs[index].meta.dir;
+                return readMeta(stubDir);
+            }).then(meta => {
+                const maxIndex = meta.orderWithRepeats.length,
                     responseIndex = meta.orderWithRepeats[meta.nextIndex % maxIndex],
                     responseFile = meta.responseFiles[responseIndex];
 
                 meta.nextIndex = (meta.nextIndex + 1) % maxIndex;
-                return Q.all([readFile(`${stubDir}/${responseFile}`), writeFile(headerFile, imposter)]);
+                return Q.all([readResponse(stubDir, responseFile), writeMeta(stubDir, meta)]);
             }).then(results => Response.create(results[0]));
         };
 
@@ -259,12 +281,12 @@ function stubRepository (imposterDir) {
     function insertAtIndex (stub, index) {
         const stubDefinition = {
                 predicates: stub.predicates || [],
-                meta: {
-                    dir: '',
-                    responseFiles: [],
-                    orderWithRepeats: [],
-                    nextIndex: 0
-                }
+                meta: { dir: '' }
+            },
+            meta = {
+                responseFiles: [],
+                orderWithRepeats: [],
+                nextIndex: 0
             },
             responses = stub.responses || [],
             Q = require('q'),
@@ -275,17 +297,18 @@ function stubRepository (imposterDir) {
 
             for (let i = 0; i < responses.length; i += 1) {
                 const responseFile = `responses/${i}.json`;
-                stubDefinition.meta.responseFiles.push(responseFile);
+                meta.responseFiles.push(responseFile);
 
                 for (let repeats = 0; repeats < repeatsFor(responses[i]); repeats += 1) {
-                    stubDefinition.meta.orderWithRepeats.push(i);
+                    meta.orderWithRepeats.push(i);
                 }
 
-                promises.push(writeFile(`${imposterDir}/${stubDefinition.meta.dir}/${responseFile}`, responses[i]));
+                promises.push(writeResponse(stubDefinition.meta.dir, responseFile, responses[i]));
             }
 
+            promises.push(writeMeta(stubDefinition.meta.dir, meta));
             imposter.stubs.splice(index, 0, stubDefinition);
-            promises.push(writeFile(headerFile, imposter));
+            promises.push(writeHeader(imposter));
             return Q.all(promises);
         });
     }
@@ -307,7 +330,7 @@ function stubRepository (imposterDir) {
 
             promises.push(remove(`${imposterDir}/${imposter.stubs[index].meta.dir}`));
             imposter.stubs.splice(index, 1);
-            promises.push(writeFile(headerFile, imposter));
+            promises.push(writeHeader(imposter));
             return Q.all(promises);
         });
     }
@@ -324,7 +347,7 @@ function stubRepository (imposterDir) {
             const deletePromises = [];
             imposter.stubs = [];
             deletePromises.push(remove(`${imposterDir}/stubs`));
-            deletePromises.push(writeFile(headerFile, imposter));
+            deletePromises.push(writeHeader(imposter));
             return Q.all(deletePromises);
         }).then(() => {
             let addSequence = Q(true);
@@ -347,8 +370,9 @@ function stubRepository (imposterDir) {
 
     function loadResponses (stub) {
         const Q = require('q');
-        return Q.all(stub.meta.responseFiles.map(responseFile =>
-            readFile(`${imposterDir}/${stub.meta.dir}/${responseFile}`)));
+        return readMeta(stub.meta.dir).then(meta => {
+            return Q.all(meta.responseFiles.map(responseFile => readResponse(stub.meta.dir, responseFile)));
+        });
     }
 
     /**

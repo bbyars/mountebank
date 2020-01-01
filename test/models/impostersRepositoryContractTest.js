@@ -465,10 +465,23 @@ types.forEach(function (type) {
                             ]);
                         });
                 });
+
+                promiseIt('should reject the promise if no stub at that index', function () {
+                    const stubs = repo.stubsFor(1);
+
+                    return stubs.overwriteAtIndex({}, 0).then(() => {
+                        assert.fail('Should have rejected');
+                    }, err => {
+                        assert.deepEqual(err, {
+                            code: 'no such resource',
+                            message: 'no stub at index 0'
+                        });
+                    });
+                });
             });
 
             describe('#deleteAtIndex', function () {
-                promiseIt('should overwrite single stub', function () {
+                promiseIt('should delete single stub', function () {
                     const stubs = repo.stubsFor(1),
                         firstStub = { responses: [{ is: 'first' }, { is: 'second' }] },
                         secondStub = { responses: [{ is: 'third' }, { is: 'fourth' }] },
@@ -487,6 +500,19 @@ types.forEach(function (type) {
                                 [{ is: 'fifth' }, { is: 'sixth' }]
                             ]);
                         });
+                });
+
+                promiseIt('should reject the promise if no stub at that index', function () {
+                    const stubs = repo.stubsFor(1);
+
+                    return stubs.deleteAtIndex(0).then(() => {
+                        assert.fail('Should have rejected');
+                    }, err => {
+                        assert.deepEqual(err, {
+                            code: 'no such resource',
+                            message: 'no stub at index 0'
+                        });
+                    });
                 });
             });
 

@@ -189,4 +189,278 @@ describe('filesystemBackedImpostersRepository', function () {
                 });
         });
     });
+
+    describe('#stubsFor', function () {
+        describe('#add', function () {
+            promiseIt('should merge stubs with imposter header information', function () {
+                const repo = Repo.create({ datadir: '.mbtest' }),
+                    stubs = repo.stubsFor(3000),
+                    imposter = {
+                        port: 3000,
+                        protocol: 'test',
+                        stubs: [{
+                            predicates: [{ equals: { field: 'request' } }],
+                            responses: [{ is: { field: 'response' } }]
+                        }]
+                    };
+
+                return stubs.add(imposter.stubs[0])
+                    .then(() => repo.add(imposter))
+                    .then(() => {
+                        assert.deepEqual(read('.mbtest/3000/imposter.json'), {
+                            port: 3000,
+                            protocol: 'test',
+                            stubs: [{
+                                predicates: [{ equals: { field: 'request' } }],
+                                meta: {
+                                    dir: 'stubs/0'
+                                }
+                            }]
+                        });
+
+                        assert.deepEqual(read('.mbtest/3000/stubs/0/meta.json'), {
+                            responseFiles: ['responses/0.json'],
+                            orderWithRepeats: [0],
+                            nextIndex: 0
+                        });
+
+                        assert.deepEqual(read('.mbtest/3000/stubs/0/responses/0.json'), { is: { field: 'response' } });
+                });
+            });
+
+            promiseIt('should add to stubs file if it already exists', function () {
+                const repo = Repo.create({ datadir: '.mbtest' }),
+                    stubs = repo.stubsFor(3000),
+                    firstStub = {
+                        predicates: [{ equals: { field: 'first-request' } }],
+                        responses: [{ is: { field: 'first-response' } }]
+                    },
+                    secondStub = {
+                        predicates: [{ equals: { field: 'second-request' } }],
+                        responses: [{ is: { field: 'second-response' } }]
+                    };
+
+                return stubs.add(firstStub)
+                    .then(() => stubs.add(secondStub))
+                    .then(() => {
+                        assert.deepEqual(read('.mbtest/3000/imposter.json'), {
+                            stubs: [
+                                {
+                                    predicates: [{ equals: { field: 'first-request' } }],
+                                    meta: { dir: 'stubs/0' }
+                                },
+                                {
+                                    predicates: [{ equals: { field: 'second-request' } }],
+                                    meta: { dir: 'stubs/1' }
+                                }
+                            ]
+                        });
+
+                        assert.deepEqual(read('.mbtest/3000/stubs/0/meta.json'), {
+                            responseFiles: ['responses/0.json'],
+                            orderWithRepeats: [0],
+                            nextIndex: 0
+                        });
+                        assert.deepEqual(read('.mbtest/3000/stubs/1/meta.json'), {
+                            responseFiles: ['responses/0.json'],
+                            orderWithRepeats: [0],
+                            nextIndex: 0
+                        });
+                        assert.deepEqual(read('.mbtest/3000/stubs/0/responses/0.json'),
+                            { is: { field: 'first-response' } });
+                        assert.deepEqual(read('.mbtest/3000/stubs/1/responses/0.json'),
+                            { is: { field: 'second-response' } });
+                    });
+            });
+
+            promiseIt('should save multiple responses in separate files', function () {
+                const repo = Repo.create({ datadir: '.mbtest' }),
+                    stubs = repo.stubsFor(3000),
+                    stub = {
+                        predicates: [{ equals: { field: 'request' } }],
+                        responses: [
+                            { is: { field: 'first-response' } },
+                            { is: { field: 'second-response' } }
+                        ]
+                    };
+
+                return stubs.add(stub).then(() => {
+                    assert.deepEqual(read('.mbtest/3000/stubs/0/meta.json'), {
+                        responseFiles: ['responses/0.json', 'responses/1.json'],
+                        orderWithRepeats: [0, 1],
+                        nextIndex: 0
+                    });
+                    assert.deepEqual(read('.mbtest/3000/stubs/0/responses/0.json'), { is: { field: 'first-response' } });
+                    assert.deepEqual(read('.mbtest/3000/stubs/0/responses/1.json'), { is: { field: 'second-response' } });
+                });
+            });
+
+            promiseIt('should apply repeat behavior', function () {
+                const repo = Repo.create({ datadir: '.mbtest' }),
+                    stubs = repo.stubsFor(3000),
+                    stub = {
+                        predicates: [{ equals: { field: 'request' } }],
+                        responses: [
+                            { is: { field: 'first-response' }, _behaviors: { repeat: 2 } },
+                            { is: { field: 'second-response' } },
+                            { is: { field: 'third-response' }, _behaviors: { repeat: 3 } }
+                        ]
+                    };
+
+                return stubs.add(stub).then(() => {
+                    assert.deepEqual(read('.mbtest/3000/stubs/0/meta.json'), {
+                        responseFiles: ['responses/0.json', 'responses/1.json', 'responses/2.json'],
+                        orderWithRepeats: [0, 0, 1, 2, 2, 2],
+                        nextIndex: 0
+                    });
+                });
+            });
+        });
+
+        describe('#insertAtIndex', function () {
+            promiseIt('should create stub files if empty stubs array and inserting at index 0', function () {
+                const repo = Repo.create({ datadir: '.mbtest' }),
+                    stubs = repo.stubsFor(3000),
+                    stub = {
+                        predicates: [{ equals: { field: 'request' } }],
+                        responses: [{ is: { field: 'response' } }]
+                    };
+
+                return stubs.insertAtIndex(stub, 0).then(() => {
+                    assert.deepEqual(read('.mbtest/3000/imposter.json'), {
+                        stubs: [{
+                            predicates: [{ equals: { field: 'request' } }],
+                            meta: { dir: 'stubs/0' }
+                        }]
+                    });
+
+                    assert.deepEqual(read('.mbtest/3000/stubs/0/meta.json'), {
+                        responseFiles: ['responses/0.json'],
+                        orderWithRepeats: [0],
+                        nextIndex: 0
+                    });
+                    assert.deepEqual(read('.mbtest/3000/stubs/0/responses/0.json'), { is: { field: 'response' } });
+                });
+            });
+
+            promiseIt('should add to stubs file if it already exists', function () {
+                const repo = Repo.create({ datadir: '.mbtest' }),
+                    stubs = repo.stubsFor(3000),
+                    firstStub = {
+                        predicates: [{ equals: { field: 'first-request' } }],
+                        responses: [{ is: { field: 'first-response' } }]
+                    },
+                    secondStub = {
+                        predicates: [{ equals: { field: 'second-request' } }],
+                        responses: [{ is: { field: 'second-response' } }]
+                    },
+                    newStub = {
+                        predicates: [{ equals: { field: 'NEW-REQUEST' } }],
+                        responses: [{ is: { field: 'NEW-RESPONSE' } }]
+                    };
+
+                return stubs.add(firstStub)
+                    .then(() => stubs.add(secondStub))
+                    .then(() => stubs.insertAtIndex(newStub, 1))
+                    .then(() => {
+                        assert.deepEqual(read('.mbtest/3000/imposter.json'), {
+                            stubs: [
+                                {
+                                    predicates: [{ equals: { field: 'first-request' } }],
+                                    meta: { dir: 'stubs/0' }
+                                },
+                                {
+                                    predicates: [{ equals: { field: 'NEW-REQUEST' } }],
+                                    meta: { dir: 'stubs/2' }
+                                },
+                                {
+                                    predicates: [{ equals: { field: 'second-request' } }],
+                                    meta: { dir: 'stubs/1' }
+                                }
+                            ]
+                        });
+
+                        assert.deepEqual(read('.mbtest/3000/stubs/2/responses/0.json'),
+                            { is: { field: 'NEW-RESPONSE' } });
+                    });
+            });
+        });
+
+        describe('#deleteAtIndex', function () {
+            promiseIt('should delete stub and stub dir at specified index', function () {
+                const repo = Repo.create({ datadir: '.mbtest' }),
+                    stubs = repo.stubsFor(3000),
+                    firstStub = {
+                        predicates: [{ equals: { field: 'first-request' } }],
+                        responses: [{ is: { field: 'first-response' } }]
+                    },
+                    secondStub = {
+                        predicates: [{ equals: { field: 'second-request' } }],
+                        responses: [{ is: { field: 'second-response' } }]
+                    },
+                    thirdStub = {
+                        predicates: [{ equals: { field: 'third-request' } }],
+                        responses: [{ is: { field: 'third-response' } }]
+                    };
+
+                return stubs.add(firstStub)
+                    .then(() => stubs.add(secondStub))
+                    .then(() => stubs.add(thirdStub))
+                    .then(() => stubs.deleteAtIndex(1))
+                    .then(() => {
+                        assert.deepEqual(read('.mbtest/3000/imposter.json'), {
+                            stubs: [
+                                {
+                                    predicates: [{ equals: { field: 'first-request' } }],
+                                    meta: { dir: 'stubs/0' }
+                                },
+                                {
+                                    predicates: [{ equals: { field: 'third-request' } }],
+                                    meta: { dir: 'stubs/2' }
+                                }
+                            ]
+                        });
+
+                        assert.ok(!fs.existsSync('.mbtest/3000/stubs/1'));
+                    });
+            });
+        });
+
+        describe('#overwriteAtIndex', function () {
+            promiseIt('should overwrite at given index', function () {
+                const repo = Repo.create({ datadir: '.mbtest' }),
+                    stubs = repo.stubsFor(3000),
+                    firstStub = {
+                        predicates: [{ equals: { field: 'first-request' } }],
+                        responses: [{ is: { field: 'first-response' } }]
+                    },
+                    secondStub = {
+                        predicates: [{ equals: { field: 'second-request' } }],
+                        responses: [{ is: { field: 'second-response' } }]
+                    },
+                    thirdStub = {
+                        predicates: [{ equals: { field: 'third-request' } }],
+                        responses: [{ is: { field: 'third-response' } }]
+                    };
+
+                return stubs.add(firstStub)
+                    .then(() => stubs.add(secondStub))
+                    .then(() => stubs.overwriteAtIndex(thirdStub, 0))
+                    .then(() => {
+                        assert.deepEqual(read('.mbtest/3000/imposter.json'), {
+                            stubs: [
+                                {
+                                    predicates: [{ equals: { field: 'third-request' } }],
+                                    meta: { dir: 'stubs/2' }
+                                },
+                                {
+                                    predicates: [{ equals: { field: 'second-request' } }],
+                                    meta: { dir: 'stubs/1' }
+                                }
+                            ]
+                        });
+                    });
+            });
+        });
+    });
 });

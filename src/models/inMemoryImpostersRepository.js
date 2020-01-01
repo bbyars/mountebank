@@ -137,6 +137,11 @@ function createStubsRepository () {
      * @returns {Object} - the promise
      */
     function overwriteAtIndex (newStub, index) {
+        const errors = require('../util/errors');
+        if (typeof stubs[index] === 'undefined') {
+            return Q.reject(errors.MissingResourceError(`no stub at index ${index}`));
+        }
+
         stubs[index] = Stub.create(newStub);
         return Q();
     }
@@ -147,6 +152,11 @@ function createStubsRepository () {
      * @returns {Object} - the promise
      */
     function deleteAtIndex (index) {
+        const errors = require('../util/errors');
+        if (typeof stubs[index] === 'undefined') {
+            return Q.reject(errors.MissingResourceError(`no stub at index ${index}`));
+        }
+
         stubs.splice(index, 1);
         return Q();
     }
