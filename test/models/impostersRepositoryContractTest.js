@@ -49,6 +49,22 @@ types.forEach(function (type) {
                         assert.deepEqual(imposter, { port: 1, value: 2, stubs: [] });
                     });
             });
+
+            promiseIt('should accept a string add and a number get', function () {
+                return repo.add({ port: '1', value: 2 })
+                    .then(() => repo.get(1))
+                    .then(imposter => {
+                        assert.deepEqual(imposter, { port: '1', value: 2, stubs: [] });
+                    });
+            });
+
+            promiseIt('should accept a number add and a string get', function () {
+                return repo.add({ port: 1, value: 2 })
+                    .then(() => repo.get('1'))
+                    .then(imposter => {
+                        assert.deepEqual(imposter, { port: 1, value: 2, stubs: [] });
+                    });
+            });
         });
 
         describe('#get', function () {

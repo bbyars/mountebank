@@ -209,7 +209,7 @@ function create (startupImposters) {
         if (!imposter.stubs) {
             imposter.stubs = [];
         }
-        imposters[imposter.port] = imposter;
+        imposters[String(imposter.port)] = imposter;
         return Q(imposter);
     }
 
