@@ -212,7 +212,6 @@ describe('imposter', function () {
             return Imposter.create(Protocol, request, logger, {}, allow).then(imposter => {
                 return imposter.toJSON({ replayable: true });
             }).then(json => {
-                console.log(JSON.stringify(json, null, 2));
                 assert.deepEqual(json, {
                     protocol: 'test',
                     port: 3535,

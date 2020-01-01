@@ -37,22 +37,27 @@
  *             }
  *
  *         /matches
- *           /{timestamp}.json
+ *           /{timestamp-pid-counter}.json
  *             {
  *               { "request": { ... } },
  *               { "response": { ... } }
  *             }
  *
  *     /requests
- *       /{timestamp}.json
+ *       /{timestamp-pid-counter}.json
  *         { ... }
  *
  * This structure is designed to improve parallelism and throughput
  * The imposters.json file needs to be locked during imposter-level activities (e.g. adding a stub)
  * The stub meta.json needs to be locked to add responses or trigger the next response, but is
  * separated from the imposter.json so we can have responses from multiple stubs in parallel with no
- * lock conflict. The matches and requests use timestamp-based filenames to avoid having to lock any
- * file to update an index.
+ * lock conflict.
+ *
+ * The matches and requests use timestamp-based filenames to avoid having to lock any file to update an index.
+ * Since the timestamp has millisecond granularity and it's possible that two requests could be recorded during
+ * the same millisecond, and since multiple processes may be writing requests, we append a pid and counter
+ * to the timestamp to guarantee we don't accidentally overwrite one request with another.
+ *
  * Keeping all imposter information under a directory (instead of having metadata outside the directory)
  * allows us to remove the imposter by simply removing the directory.
  *
@@ -119,6 +124,31 @@ function remove (path) {
         }
     });
 
+    return deferred.promise;
+}
+
+function loadAllInDir (path) {
+    const Q = require('q'),
+        deferred = Q.defer(),
+        fs = require('fs-extra');
+
+    fs.readdir(path, (err, files) => {
+        if (err && err.code === 'ENOENT') {
+            // Nothing saved yet
+            deferred.resolve([]);
+        }
+        else if (err) {
+            deferred.reject(err);
+        }
+        else {
+            const promises = files
+                .filter(file => file.indexOf('.json') > 0)
+                .sort()
+                .map(file => readFile(`${path}/${file}`));
+
+            Q.all(promises).done(deferred.resolve);
+        }
+    });
     return deferred.promise;
 }
 
@@ -433,7 +463,22 @@ function stubRepository (imposterDir) {
  */
 function create (config) {
     const Q = require('q'),
-        imposters = {};
+        imposters = {},
+        counterLimit = 100;
+    let requestCount = 0;
+
+    function lpad (num) {
+        const numString = String(num),
+            padLength = String(counterLimit).length,
+            pad = new Array(padLength - numString.length + 1).join('0');
+        return pad + numString;
+    }
+
+    function nextRequestCounter () {
+        const result = requestCount;
+        requestCount = (requestCount + 1) % counterLimit;
+        return lpad(result);
+    }
 
     function writeHeader (imposter) {
         return writeFile(`${config.datadir}/${imposter.port}/imposter.json`, imposter);
@@ -445,6 +490,11 @@ function create (config) {
 
     function deleteImposter (id) {
         return remove(`${config.datadir}/${id}`);
+    }
+
+    function writeRequest (imposterId, request) {
+        const filename = `${config.datadir}/${imposterId}/requests/${request.timestamp}-${nextRequestCounter()}.json`;
+        return writeFile(filename, request);
     }
 
     /**
@@ -562,6 +612,35 @@ function create (config) {
         return Q.all(promises);
     }
 
+    /**
+     * Adds a request for the imposter
+     * @param {Number} imposterId - the imposter id
+     * @param {Object} request - the request
+     * @returns {Object} - the promise
+     */
+    function addRequest (imposterId, request) {
+        const errors = require('../util/errors'),
+            helpers = require('../util/helpers');
+
+        if (typeof imposters[String(imposterId)] === 'undefined') {
+            return Q.reject(errors.MissingResourceError(`no imposter with id ${imposterId}`));
+        }
+
+        const recordedRequest = helpers.clone(request);
+        recordedRequest.timestamp = new Date().toJSON();
+
+        return writeRequest(imposterId, recordedRequest);
+    }
+
+    /**
+     * Returns the saved requests for the imposter
+     * @param {Number} imposterId - the id of the imposter
+     * @returns {Object} - the promise resolving to the array of requests
+     */
+    function requestsFor (imposterId) {
+        return loadAllInDir(`${config.datadir}/${imposterId}/requests`);
+    }
+
     return {
         add,
         get,
@@ -570,7 +649,9 @@ function create (config) {
         del,
         deleteAllSync,
         deleteAll,
-        stubsFor
+        stubsFor,
+        addRequest,
+        requestsFor
     };
 }
 

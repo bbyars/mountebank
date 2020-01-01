@@ -228,6 +228,71 @@ types.forEach(function (type) {
             });
         });
 
+        describe('#addRequest', function () {
+            promiseIt('should error if imposter has not been added yet', function () {
+                return repo.addRequest(1, { field: 'value' })
+                    .then(() => {
+                        assert.fail('should have rejected');
+                    }, error => {
+                        assert.deepEqual(error, {
+                            code: 'no such resource',
+                            message: 'no imposter with id 1'
+                        });
+                    });
+            });
+
+            promiseIt('should save request with timestamp', function () {
+                return repo.add({ port: 1, protocol: 'test' })
+                    .then(() => repo.addRequest(1, { field: 'value' }))
+                    .then(() => repo.requestsFor(1))
+                    .then(requests => {
+                        assert.deepEqual(requests, [{ field: 'value', timestamp: requests[0].timestamp }]);
+                        const delta = new Date() - Date.parse(requests[0].timestamp);
+                        assert.ok(delta < 1000);
+                    });
+            });
+
+            promiseIt('should save request with timestamp', function () {
+                return repo.add({ port: 1, protocol: 'test' })
+                    .then(() => repo.addRequest(1, { field: 'value' }))
+                    .then(() => repo.requestsFor(1))
+                    .then(requests => {
+                        assert.deepEqual(requests, [{ field: 'value', timestamp: requests[0].timestamp }]);
+                        const delta = new Date() - Date.parse(requests[0].timestamp);
+                        assert.ok(delta < 1000);
+                    });
+            });
+        });
+
+        describe('#requestsFor', function () {
+            promiseIt('should return requests in order', function () {
+                return repo.add({ port: 1, protocol: 'test' })
+                    .then(() => repo.addRequest(1, { value: 1 }))
+                    .then(() => repo.addRequest(1, { value: 2 }))
+                    .then(() => repo.addRequest(1, { value: 3 }))
+                    .then(() => repo.addRequest(1, { value: 4 }))
+                    .then(() => repo.requestsFor(1))
+                    .then(requests => {
+                        const values = requests.map(request => request.value);
+                        assert.deepEqual(values, [1, 2, 3, 4]);
+                    });
+            });
+
+            promiseIt('only returns requests for given imposter', function () {
+                return repo.add({ port: 1, protocol: 'test' })
+                    .then(() => repo.add({ port: 2, protocol: 'test' }))
+                    .then(() => repo.addRequest(1, { value: 1 }))
+                    .then(() => repo.addRequest(1, { value: 2 }))
+                    .then(() => repo.addRequest(2, { value: 3 }))
+                    .then(() => repo.addRequest(2, { value: 4 }))
+                    .then(() => repo.requestsFor(2))
+                    .then(requests => {
+                        const values = requests.map(request => request.value);
+                        assert.deepEqual(values, [3, 4]);
+                    });
+            });
+        });
+
         describe('#stubsFor', function () {
             describe('#count', function () {
                 promiseIt('should be 0 if no stubs on the imposter', function () {

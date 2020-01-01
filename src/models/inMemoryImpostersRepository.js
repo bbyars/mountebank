@@ -208,6 +208,7 @@ function createStubsRepository () {
  */
 function create (startupImposters) {
     const imposters = startupImposters || {},
+        requests = {},
         Q = require('q');
 
     /**
@@ -287,6 +288,38 @@ function create (startupImposters) {
         return Q.all(promises);
     }
 
+    /**
+     * Adds a request for the imposter
+     * @param {Number} imposterId - the imposter id
+     * @param {Object} request - the request
+     * @returns {Object} - the promise
+     */
+    function addRequest (imposterId, request) {
+        const errors = require('../util/errors'),
+            helpers = require('../util/helpers');
+
+        if (typeof imposters[String(imposterId)] === 'undefined') {
+            return Q.reject(errors.MissingResourceError(`no imposter with id ${imposterId}`));
+        }
+
+        const recordedRequest = helpers.clone(request);
+        recordedRequest.timestamp = new Date().toJSON();
+        if (!requests[String(imposterId)]) {
+            requests[String(imposterId)] = [];
+        }
+        requests[String(imposterId)].push(recordedRequest);
+        return Q();
+    }
+
+    /**
+     * Returns the saved requests for the imposter
+     * @param {Number} imposterId - the id of the imposter
+     * @returns {Object} - the promise resolving to the array of requests
+     */
+    function requestsFor (imposterId) {
+        return Q(requests[String(imposterId)] || []);
+    }
+
     return {
         add,
         get,
@@ -296,6 +329,8 @@ function create (startupImposters) {
         deleteAllSync,
         deleteAll,
         stubsFor: createStubsRepository,
+        addRequest,
+        requestsFor,
         createStubsRepository
     };
 }

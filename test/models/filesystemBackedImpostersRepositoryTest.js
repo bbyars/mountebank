@@ -225,7 +225,7 @@ describe('filesystemBackedImpostersRepository', function () {
                         });
 
                         assert.deepEqual(read('.mbtest/3000/stubs/0/responses/0.json'), { is: { field: 'response' } });
-                });
+                    });
             });
 
             promiseIt('should add to stubs file if it already exists', function () {
