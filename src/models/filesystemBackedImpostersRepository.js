@@ -206,9 +206,9 @@ function stubRepository (imposterDir) {
             return readHeader().then(imposter => {
                 const savedStub = imposter.stubs[index].meta,
                     stubDir = `${imposterDir}/${savedStub.dir}`,
-                    loadResponses = savedStub.responseFiles.map(file => readFile(`${stubDir}/${file}`));
+                    loadPromises = savedStub.responseFiles.map(file => readFile(`${stubDir}/${file}`));
 
-                return Q.all(loadResponses).then(responses => {
+                return Q.all(loadPromises).then(responses => {
                     const deletes = [];
 
                     for (let i = responses.length - 1; i >= 0; i -= 1) {
@@ -396,15 +396,41 @@ function stubRepository (imposterDir) {
         return readHeader().then(imposter => imposter.stubs.map(wrap));
     }
 
+    function loadResponses (stub) {
+        const Q = require('q');
+        return Q.all(stub.meta.responseFiles.map(responseFile =>
+            readFile(`${imposterDir}/${stub.meta.dir}/${responseFile}`)));
+    }
+
+    /**
+     * Returns a JSON-convertible representation
+     * @returns {Object} - the promise resolving to the JSON object
+     */
+    function toJSON () {
+        return readHeader().then(header => {
+            const Q = require('q'),
+                loadPromises = header.stubs.map(loadResponses);
+
+            return Q.all(loadPromises).then(stubResponses => {
+                header.stubs.forEach((stub, index) => {
+                    stub.responses = stubResponses[index];
+                    delete stub.meta;
+                });
+                return header.stubs;
+            });
+        });
+    }
+
     return {
-        add,
         count,
-        all,
         first,
+        add,
         insertAtIndex,
         overwriteAll,
         overwriteAtIndex,
-        deleteAtIndex
+        deleteAtIndex,
+        all,
+        toJSON
     };
 }
 

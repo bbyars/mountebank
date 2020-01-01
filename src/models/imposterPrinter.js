@@ -12,7 +12,7 @@ function create (creationRequest, server, requests) {
         });
 
         result.requests = requests;
-        return server.stubs.all().then(all => {
+        return server.stubs.toJSON().then(all => {
             result.stubs = all;
             for (let i = 0; i < result.stubs.length; i += 1) {
                 result.stubs[i]._links = {

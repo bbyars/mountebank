@@ -328,6 +328,35 @@ types.forEach(function (type) {
                         });
                 });
             });
+
+            describe('#toJSON', function () {
+                promiseIt('should return empty array if nothing added', function () {
+                    return repo.stubsFor(1).toJSON().then(json => {
+                        assert.deepEqual(json, []);
+                    });
+                });
+
+                promiseIt('should return all predicates and original response order of all stubs', function () {
+                    const stubs = repo.stubsFor(1),
+                        first = {
+                            predicates: [{ equals: { field: 'value' } }],
+                            responses: [{ is: { field: 1 } }, { is: { field: 2 } }]
+                        },
+                        second = {
+                            predicates: [],
+                            responses: [{ is: { key: 'value' }, _behaviors: { repeat: 2 } }]
+                        };
+
+                    return stubs.add(first)
+                        .then(() => stubs.add(second))
+                        .then(() => stubs.first(() => true))
+                        .then(match => match.stub.nextResponse())
+                        .then(() => stubs.toJSON())
+                        .then(json => {
+                            assert.deepEqual(json, [first, second]);
+                        });
+                });
+            });
         });
     });
 });

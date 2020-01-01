@@ -181,6 +181,15 @@ function createStubsRepository () {
         return Q(result);
     }
 
+    /**
+     * Returns a JSON-convertible representation
+     * @returns {Object} - the promise resolving to the JSON object
+     */
+    function toJSON () {
+        const helpers = require('../util/helpers');
+        return Q(helpers.clone(stubs));
+    }
+
     return {
         count: () => stubs.length,
         first,
@@ -189,7 +198,8 @@ function createStubsRepository () {
         overwriteAll,
         overwriteAtIndex,
         deleteAtIndex,
-        all
+        all,
+        toJSON
     };
 }
 
