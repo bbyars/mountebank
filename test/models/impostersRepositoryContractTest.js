@@ -357,6 +357,45 @@ types.forEach(function (type) {
                         });
                 });
             });
+
+            describe('#deleteSavedProxyResponses', function () {
+                promiseIt('should remove recorded responses and stubs', function () {
+                    const stubs = repo.stubsFor(1),
+                        first = {
+                            predicates: [{ equals: { key: 1 } }],
+                            responses: [{ is: { field: 1, _proxyResponseTime: 100 } }]
+                        },
+                        second = {
+                            predicates: [{ equals: { key: 2 } }],
+                            responses: [
+                                { is: { field: 2, _proxyResponseTime: 100 } },
+                                { is: { field: 3 } }
+                            ]
+                        },
+                        third = {
+                            predicates: [],
+                            responses: [{ proxy: { to: 'http://test.com' } }]
+                        };
+
+                    return stubs.add(first)
+                        .then(() => stubs.add(second))
+                        .then(() => stubs.add(third))
+                        .then(() => stubs.deleteSavedProxyResponses())
+                        .then(() => stubs.toJSON())
+                        .then(json => {
+                            assert.deepEqual(json, [
+                                {
+                                    predicates: [{ equals: { key: 2 } }],
+                                    responses: [{ is: { field: 3 } }]
+                                },
+                                {
+                                    predicates: [],
+                                    responses: [{ proxy: { to: 'http://test.com' } }]
+                                }
+                            ]);
+                        });
+                });
+            });
         });
     });
 });

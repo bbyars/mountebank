@@ -128,35 +128,6 @@ function create (Protocol, creationRequest, baseLogger, config, isAllowedConnect
         });
     }
 
-    function isRecordedResponse (response) {
-        return response.is && response.is._proxyResponseTime; // eslint-disable-line no-underscore-dangle
-    }
-
-    /**
-     * Removes the saved proxy responses
-     * @returns {Object} - Promise
-     */
-    function resetProxies () {
-        return stubs.all()
-            .then(allStubs => Q.all(allStubs.map(stub => stub.deleteResponsesMatching(isRecordedResponse))))
-            .then(() => stubs.all())
-            .then(allStubs => {
-                let sequence = Q();
-                const stubIndexesToDelete = [];
-
-                for (let i = allStubs.length - 1; i >= 0; i -= 1) {
-                    if (allStubs[i].responses.length === 0) {
-                        stubIndexesToDelete.push(i);
-                    }
-                }
-
-                stubIndexesToDelete.forEach(index => {
-                    sequence = sequence.then(stubs.deleteAtIndex(index));
-                });
-                return sequence;
-            });
-    }
-
     domain.on('error', errorHandler);
     domain.run(() => {
         if (!helpers.defined(creationRequest.host) && helpers.defined(config.host)) {
@@ -194,7 +165,6 @@ function create (Protocol, creationRequest, baseLogger, config, isAllowedConnect
                 url: '/imposters/' + server.port,
                 toJSON,
                 stop,
-                resetProxies,
                 getResponseFor,
                 getProxyResponseFor,
                 addStub: server.stubs.add,
@@ -202,7 +172,8 @@ function create (Protocol, creationRequest, baseLogger, config, isAllowedConnect
                 overwriteStubs: server.stubs.overwriteAll,
                 overwriteStubAtIndex: server.stubs.overwriteAtIndex,
                 deleteStubAtIndex: server.stubs.deleteAtIndex,
-                insertStubAtIndex: server.stubs.insertAtIndex
+                insertStubAtIndex: server.stubs.insertAtIndex,
+                deleteSavedProxyResponses: server.stubs.deleteSavedProxyResponses
             });
         });
     });

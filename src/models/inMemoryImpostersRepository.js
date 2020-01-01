@@ -69,16 +69,6 @@ const Stub = {
             }
         };
 
-        /**
-         * Deletes responses matching the filter
-         * @param {Function} filter - the filter function
-         * @returns {Object} - the promise
-         */
-        stub.deleteResponsesMatching = filter => {
-            stub.responses = stub.responses.filter(response => !filter(response));
-            return Q();
-        };
-
         return stub;
     }
 };
@@ -175,7 +165,6 @@ function createStubsRepository () {
 
             // Proxy cloned functions to underlying object
             exposedStub.addResponse = realStub.addResponse;
-            exposedStub.deleteResponsesMatching = realStub.deleteResponsesMatching;
             exposedStub.nextResponse = realStub.nextResponse;
         }
         return Q(result);
@@ -190,6 +179,24 @@ function createStubsRepository () {
         return Q(helpers.clone(stubs));
     }
 
+    function isRecordedResponse (response) {
+        return response.is && response.is._proxyResponseTime; // eslint-disable-line no-underscore-dangle
+    }
+
+    /**
+     * Removes the saved proxy responses
+     * @returns {Object} - Promise
+     */
+    function deleteSavedProxyResponses () {
+        return toJSON().then(allStubs => {
+            allStubs.forEach(stub => {
+                stub.responses = stub.responses.filter(response => !isRecordedResponse(response));
+            });
+            allStubs = allStubs.filter(stub => stub.responses.length > 0);
+            return overwriteAll(allStubs);
+        });
+    }
+
     return {
         count: () => stubs.length,
         first,
@@ -199,7 +206,8 @@ function createStubsRepository () {
         overwriteAtIndex,
         deleteAtIndex,
         all,
-        toJSON
+        toJSON,
+        deleteSavedProxyResponses
     };
 }
 

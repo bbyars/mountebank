@@ -68,7 +68,7 @@ function create (protocols, imposters, logger, allowInjection) {
         const options = { replayable: false, removeProxies: false };
 
         return imposters.get(request.params.id).then(imposter => {
-            return imposter.resetProxies().then(() => imposter.toJSON(options));
+            return imposter.deleteSavedProxyResponses().then(() => imposter.toJSON(options));
         }).then(json => {
             response.format({
                 json: () => { response.send(json); },

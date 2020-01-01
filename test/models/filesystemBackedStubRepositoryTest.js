@@ -619,37 +619,5 @@ describe('filesystemBackedImpostersRepository#stubsFor', function () {
                     assert.deepEqual(read('stubs/0/responses/1.json'), { is: { field: 'NEW-RESPONSE' } });
                 });
         });
-
-        promiseIt('should allow deleting responses', function () {
-            const repo = createRepo(),
-                stub = {
-                    predicates: [{ equals: { field: 'request' } }],
-                    responses: [{ is: { field: 'first' } }, { is: { field: 'second' } }]
-                };
-            write('imposter.json', { port: 3000, protocol: 'test' });
-
-            return repo.add(stub)
-                .then(() => repo.all())
-                .then(stubs => stubs[0].deleteResponsesMatching(response => response.is.field === 'first'))
-                .then(() => {
-                    assert.deepEqual(read('imposter.json'), {
-                        port: 3000,
-                        protocol: 'test',
-                        stubs: [
-                            {
-                                predicates: [{ equals: { field: 'request' } }],
-                                meta: {
-                                    dir: 'stubs/0',
-                                    responseFiles: ['responses/1.json'],
-                                    orderWithRepeats: [0],
-                                    nextIndex: 0
-                                }
-                            }
-                        ]
-                    });
-
-                    assert.ok(!fs.existsSync('.mbtest/3000/stubs/0/responses/0.json'));
-                });
-        });
     });
 });

@@ -164,7 +164,6 @@ function stubRepository (imposterDir) {
         if (typeof stub === 'undefined') {
             return {
                 addResponse: () => Q(),
-                deleteResponsesMatching: () => Q(),
                 nextResponse: () => Q(Response.create())
             };
         }
@@ -194,48 +193,6 @@ function stubRepository (imposterDir) {
                 promises.push(writeFile(`${imposterDir}/${saved.meta.dir}/${responseFile}`, response));
                 promises.push(writeFile(headerFile, imposter));
                 return Q.all(promises);
-            });
-        };
-
-        /**
-         * Deletes all responses matching the filter
-         * @param {Function} filter - the filter function
-         * @returns {Object} - the promise
-         */
-        cloned.deleteResponsesMatching = filter => {
-            return readHeader().then(imposter => {
-                const savedStub = imposter.stubs[index].meta,
-                    stubDir = `${imposterDir}/${savedStub.dir}`,
-                    loadPromises = savedStub.responseFiles.map(file => readFile(`${stubDir}/${file}`));
-
-                return Q.all(loadPromises).then(responses => {
-                    const deletes = [];
-
-                    for (let i = responses.length - 1; i >= 0; i -= 1) {
-                        if (filter(responses[i])) {
-                            deletes.push(remove(`${stubDir}/${savedStub.responseFiles[i]}`));
-                            savedStub.responseFiles.splice(i, 1);
-                            savedStub.orderWithRepeats = savedStub.orderWithRepeats
-                                .filter(responseIndex => responseIndex !== i)
-                                .map(responseIndex => {
-                                    if (responseIndex > i) {
-                                        return responseIndex - 1;
-                                    }
-                                    else {
-                                        return responseIndex;
-                                    }
-                                });
-                        }
-                    }
-
-                    if (deletes.length > 0) {
-                        deletes.push(writeFile(headerFile, imposter));
-                        return Q.all(deletes);
-                    }
-                    else {
-                        return Q(true);
-                    }
-                });
             });
         };
 
@@ -421,6 +378,24 @@ function stubRepository (imposterDir) {
         });
     }
 
+    function isRecordedResponse (response) {
+        return response.is && response.is._proxyResponseTime; // eslint-disable-line no-underscore-dangle
+    }
+
+    /**
+     * Removes the saved proxy responses
+     * @returns {Object} - Promise
+     */
+    function deleteSavedProxyResponses () {
+        return toJSON().then(allStubs => {
+            allStubs.forEach(stub => {
+                stub.responses = stub.responses.filter(response => !isRecordedResponse(response));
+            });
+            allStubs = allStubs.filter(stub => stub.responses.length > 0);
+            return overwriteAll(allStubs);
+        });
+    }
+
     return {
         count,
         first,
@@ -430,7 +405,8 @@ function stubRepository (imposterDir) {
         overwriteAtIndex,
         deleteAtIndex,
         all,
-        toJSON
+        toJSON,
+        deleteSavedProxyResponses
     };
 }
 
