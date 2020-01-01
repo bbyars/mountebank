@@ -83,7 +83,7 @@ function create (protocols, imposters, logger, allowInjection) {
     function getAllJSON (queryOptions) {
         const Q = require('q');
         return imposters.all().then(allImposters => {
-            const promises = Object.keys(allImposters).map(id => allImposters[id].toJSON(queryOptions));
+            const promises = allImposters.map(imposter => imposter.toJSON(queryOptions));
             return Q.all(promises);
         });
     }

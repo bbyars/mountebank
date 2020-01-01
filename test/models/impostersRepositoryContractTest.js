@@ -73,6 +73,25 @@ types.forEach(function (type) {
                     assert.strictEqual(imposter, null);
                 });
             });
+
+            promiseIt('should retrieve with stubs', function () {
+                const stubs = repo.stubsFor(1),
+                    imposter = {
+                        port: 1,
+                        protocol: 'test',
+                        stubs: [{
+                            predicates: [{ equals: { key: 1 } }],
+                            responses: [{ is: { field: 'value' } }]
+                        }]
+                    };
+
+                return stubs.add(imposter.stubs[0])
+                    .then(() => repo.add(imposter))
+                    .then(() => repo.get('1'))
+                    .then(saved => {
+                        assert.deepEqual(saved, imposter);
+                    });
+            });
         });
 
         describe('#all', function () {
@@ -82,15 +101,41 @@ types.forEach(function (type) {
                 });
             });
 
-            promiseIt('should return all previously added keyed by port', function () {
+            promiseIt('should return all previously added', function () {
                 return repo.add({ port: 1, value: 2 })
                     .then(() => repo.add({ port: 2, value: 3 }))
                     .then(repo.all)
                     .then(imposters => {
-                        assert.deepEqual(imposters, {
-                            1: { port: 1, value: 2, stubs: [] },
-                            2: { port: 2, value: 3, stubs: [] }
-                        });
+                        assert.deepEqual(imposters, [
+                            { port: 1, value: 2, stubs: [] },
+                            { port: 2, value: 3, stubs: [] }
+                        ]);
+                    });
+            });
+
+            promiseIt('should return all added with stubs', function () {
+                const first = {
+                        port: 1,
+                        stubs: [{
+                            predicates: [{ equals: { key: 1 } }],
+                            responses: [{ is: { field: 'value' } }]
+                        }]
+                    },
+                    second = {
+                        port: 2,
+                        stubs: [{
+                            predicates: [],
+                            responses: [{ is: { key: 1 } }]
+                        }]
+                    };
+
+                return repo.stubsFor(1).add(first.stubs[0])
+                    .then(() => repo.add(first))
+                    .then(() => repo.stubsFor(2).add(second.stubs[0]))
+                    .then(() => repo.add(second))
+                    .then(repo.all)
+                    .then(imposters => {
+                        assert.deepEqual(imposters, [first, second]);
                     });
             });
         });
@@ -107,6 +152,14 @@ types.forEach(function (type) {
             promiseIt('should return true if given port has been added', function () {
                 return repo.add({ port: 1, value: 2 })
                     .then(() => repo.exists(1))
+                    .then(exists => {
+                        assert.strictEqual(exists, true);
+                    });
+            });
+
+            promiseIt('should do type conversion if needed', function () {
+                return repo.add({ port: 1, value: 2 })
+                    .then(() => repo.exists('1'))
                     .then(exists => {
                         assert.strictEqual(exists, true);
                     });

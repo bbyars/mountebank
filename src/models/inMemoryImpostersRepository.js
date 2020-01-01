@@ -227,7 +227,7 @@ function create (startupImposters) {
      * @returns {Object} - all imposters keyed by port
      */
     function all () {
-        return Q(imposters);
+        return Q.all(Object.keys(imposters).map(get));
     }
 
     /**

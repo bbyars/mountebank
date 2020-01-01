@@ -114,7 +114,7 @@ describe('ImpostersController', function () {
             return controller.post(request, response).then(() =>
                 imposters.all()
             ).then(allImposters => {
-                assert.deepEqual(allImposters, { 3535: imposter });
+                assert.deepEqual(allImposters, [imposter]);
             });
         });
 
@@ -381,7 +381,7 @@ describe('ImpostersController', function () {
             return controller.put(request, response).then(() =>
                 impostersRepo.all()
             ).then(allImposters => {
-                assert.deepEqual(allImposters, { 1: firstImposter, 2: secondImposter });
+                assert.deepEqual(allImposters, [firstImposter, secondImposter]);
                 assert.ok(firstImposter.toJSON.wasCalledWith({ list: true }), firstImposter.toJSON.message());
                 assert.ok(secondImposter.toJSON.wasCalledWith({ list: true }), secondImposter.toJSON.message());
             });

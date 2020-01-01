@@ -419,67 +419,19 @@ function create (config) {
         return readFile(`${config.datadir}/${id}/imposter.json`);
     }
 
-    function deleteHeader (id) {
-        const fs = require('fs-extra'),
-            deferred = Q.defer();
-
-        fs.remove(`${config.datadir}/${id}/imposter.json`, err => {
-            if (err) {
-                deferred.reject(err);
-            }
-            else {
-                deferred.resolve();
-            }
-        });
-
-        return deferred.promise;
-    }
-
-    function readResponses (responseDir) {
-        let responses = [];
-
-        return readFile(`${config.datadir}/${responseDir}/index.json`).then(index => {
-            if (index === null) {
-                return Q(true);
-            }
-            else {
-                responses = Array(index.order.length);
-                const promises = index.order.map(responseIndex =>
-                    readFile(`${config.datadir}/${responseDir}/${responseIndex}.json`).then(response => {
-                        responses.splice(responseIndex, 1, response);
-                    })
-                );
-
-                return Q.all(promises);
-            }
-        }).then(() => Q(responses));
-    }
-
-    function readStubs (id) {
-        let stubs;
-        return readFile(`${config.datadir}/${id}/stubs/0-99.json`).then(stubsWithoutResponses => {
-            if (stubsWithoutResponses === null) {
-                stubs = [];
-                return Q(true);
-            }
-            else {
-                stubs = stubsWithoutResponses;
-                const promises = [];
-                stubs.forEach(stub => {
-                    const promise = readResponses(stub.responseDir).then(responses => {
-                        stub.responses = responses;
-                        delete stub.responseDir;
-                    });
-                    promises.push(promise);
-                });
-                return Q.all(promises);
-            }
-        }).then(() => Q(stubs));
-    }
-
-    function deleteStubs (id) {
+    function deleteImposter (id) {
         return remove(`${config.datadir}/${id}`);
     }
+
+    /**
+     * Returns the stubs repository for the imposter
+     * @param {Number} id - the id of the imposter
+     * @returns {Object} - the stubs repository
+     */
+    function stubsFor (id) {
+        return stubRepository(`${config.datadir}/${id}`);
+    }
+
     /**
      * Adds a new imposter
      * @param {Object} imposter - the imposter to add
@@ -512,15 +464,15 @@ function create (config) {
      * @returns {Object} - the promise resolving to the imposter
      */
     function get (id) {
-        let imposter;
-        return readHeader(id).then(header => {
-            imposter = header;
-            return imposter === null ? Q(true) : readStubs(id);
-        }).then(stubs => {
-            if (imposter !== null) {
-                imposter.stubs = stubs;
+        return readHeader(id).then(imposter => {
+            if (imposter === null) {
+                return Q(null);
             }
-            return imposter;
+
+            return stubsFor(id).toJSON().then(stubs => {
+                imposter.stubs = stubs;
+                return imposter;
+            });
         });
     }
 
@@ -529,28 +481,7 @@ function create (config) {
      * @returns {Object} - all imposters keyed by port
      */
     function all () {
-        const fs = require('fs'),
-            allImposters = {},
-            deferred = Q.defer();
-
-        fs.readdir(config.datadir, (err, files) => {
-            if (err && err.code === 'ENOENT') {
-                // Nothing saved yet
-                deferred.resolve({});
-            }
-            else if (err) {
-                deferred.reject(err);
-            }
-            else {
-                const ids = files
-                        .filter(filename => filename)
-                        .map(filename => filename.replace('.json', '')),
-                    promises = ids.map(id => get(id).then(imposter => { allImposters[id] = imposter; }));
-
-                Q.all(promises).done(() => { deferred.resolve(allImposters); });
-            }
-        });
-        return deferred.promise;
+        return Q.all(Object.keys(imposters).map(get));
     }
 
     /**
@@ -563,10 +494,15 @@ function create (config) {
     }
 
     function shutdown (id) {
+        if (typeof imposters[String(id)] === 'undefined') {
+            return Q();
+        }
+
         const fn = imposters[String(id)].stop;
         delete imposters[String(id)];
         return fn ? fn() : Q();
     }
+
     /**
      * Deletes the imnposter at the given id
      * @param {Number} id - the id (e.g. the port)
@@ -574,7 +510,11 @@ function create (config) {
      */
     function del (id) {
         return get(id).then(imposter => {
-            const promises = imposter ? [deleteHeader(id), deleteStubs(id), shutdown(id)] : [];
+            const promises = [shutdown(id)];
+            if (imposter !== null) {
+                promises.push(deleteImposter(id));
+            }
+
             return Q.all(promises).then(() => imposter);
         });
     }
@@ -606,7 +546,7 @@ function create (config) {
         del,
         deleteAllSync,
         deleteAll,
-        stubsFor: id => stubRepository(`${config.datadir}/${id}`)
+        stubsFor
     };
 }
 
