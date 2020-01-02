@@ -37,17 +37,17 @@
  *             }
  *
  *         /matches
- *           /{timestamp-pid-counter}.json
+ *           /{epoch-pid-counter}.json
  *             {
  *               { "request": { ... } },
  *               { "response": { ... } }
  *             }
  *
  *     /requests
- *       /{timestamp-pid-counter}.json
+ *       /{epoch-pid-counter}.json
  *         { ... }
  *
- * This structure is designed to improve parallelism and throughput
+ * This structure is designed to improve parallelism and throughput.
  * The imposters.json file needs to be locked during imposter-level activities (e.g. adding a stub)
  * The stub meta.json needs to be locked to add responses or trigger the next response, but is
  * separated from the imposter.json so we can have responses from multiple stubs in parallel with no
@@ -127,6 +127,33 @@ function remove (path) {
     return deferred.promise;
 }
 
+function partsFrom (filename) {
+    // format {epoch}-{pid}-{counter}
+    const pattern = /^(\d+)-(\d+)-(\d+)\.json$/,
+        parts = pattern.exec(filename);
+    return {
+        epoch: Number(parts[1]),
+        pid: Number(parts[2]),
+        counter: Number(parts[3])
+    };
+}
+
+function timeSorter (first, second) {
+    // format {epoch}-{pid}-{counter}
+    // sort by epoch first, then pid, then counter to guarantee determinism for
+    // files added during the same millisecond.
+    const firstParts = partsFrom(first),
+        secondParts = partsFrom(second);
+    let result = firstParts.epoch - secondParts.epoch;
+    if (result === 0) {
+        result = firstParts.pid - secondParts.pid;
+    }
+    if (result === 0) {
+        result = firstParts.counter - secondParts.counter;
+    }
+    return result;
+}
+
 function loadAllInDir (path) {
     const Q = require('q'),
         deferred = Q.defer(),
@@ -143,7 +170,7 @@ function loadAllInDir (path) {
         else {
             const promises = files
                 .filter(file => file.indexOf('.json') > 0)
-                .sort()
+                .sort(timeSorter)
                 .map(file => readFile(`${path}/${file}`));
 
             Q.all(promises).done(deferred.resolve);
@@ -463,21 +490,12 @@ function stubRepository (imposterDir) {
  */
 function create (config) {
     const Q = require('q'),
-        imposters = {},
-        counterLimit = 100;
-    let requestCount = 0;
+        imposters = {};
+    let counter = 0;
 
-    function lpad (num) {
-        const numString = String(num),
-            padLength = String(counterLimit).length,
-            pad = new Array(padLength - numString.length + 1).join('0');
-        return pad + numString;
-    }
-
-    function nextRequestCounter () {
-        const result = requestCount;
-        requestCount = (requestCount + 1) % counterLimit;
-        return lpad(result);
+    function nextCounter () {
+        counter += 1;
+        return counter;
     }
 
     function writeHeader (imposter) {
@@ -493,8 +511,10 @@ function create (config) {
     }
 
     function writeRequest (imposterId, request) {
-        const filename = `${config.datadir}/${imposterId}/requests/${request.timestamp}-${nextRequestCounter()}.json`;
-        return writeFile(filename, request);
+        const epoch = Date.parse(request.timestamp).valueOf(),
+            filename = `${epoch}-${process.pid}-${nextCounter()}.json`,
+            fullPath = `${config.datadir}/${imposterId}/requests/${filename}`;
+        return writeFile(fullPath, request);
     }
 
     /**

@@ -265,16 +265,25 @@ types.forEach(function (type) {
         });
 
         describe('#requestsFor', function () {
-            promiseIt('should return requests in order', function () {
+            promiseIt('should return requests in order without losing any', function () {
+                // Simulate enough rapid load to add two with the same millisecond timestamp
+                // The filesystemBackedImpostersRepository has to add some metadata to ensure
+                // we capture both if they occur at the same millisecond.
                 return repo.add({ port: 1, protocol: 'test' })
                     .then(() => repo.addRequest(1, { value: 1 }))
                     .then(() => repo.addRequest(1, { value: 2 }))
                     .then(() => repo.addRequest(1, { value: 3 }))
                     .then(() => repo.addRequest(1, { value: 4 }))
+                    .then(() => repo.addRequest(1, { value: 5 }))
+                    .then(() => repo.addRequest(1, { value: 6 }))
+                    .then(() => repo.addRequest(1, { value: 7 }))
+                    .then(() => repo.addRequest(1, { value: 8 }))
+                    .then(() => repo.addRequest(1, { value: 9 }))
+                    .then(() => repo.addRequest(1, { value: 10 }))
                     .then(() => repo.requestsFor(1))
                     .then(requests => {
                         const values = requests.map(request => request.value);
-                        assert.deepEqual(values, [1, 2, 3, 4]);
+                        assert.deepEqual(values, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
                     });
             });
 
