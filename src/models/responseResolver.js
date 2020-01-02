@@ -366,7 +366,6 @@ function create (stubs, proxy, callbackURL) {
                 .then(response => {
                     return recordProxyResponse(pendingProxyConfig.responseConfig, pendingProxyConfig.request, response, logger)
                         .then(() => {
-                            response.recordMatch = () => { pendingProxyConfig.responseConfig.recordMatch(pendingProxyConfig.request, response); };
                             delete pendingProxyResolutions[proxyResolutionKey];
                             return Q(response);
                         });

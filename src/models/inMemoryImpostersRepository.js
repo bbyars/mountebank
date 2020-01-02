@@ -5,73 +5,83 @@
  * @module
  */
 
-const Stub = {
-    create: function (config) {
-        function repeatsFor (response) {
-            if (response._behaviors && response._behaviors.repeat) {
-                return response._behaviors.repeat;
-            }
-            else {
-                return 1;
-            }
-        }
-
-        function repeatTransform (responses) {
-            const result = [];
-            let response, repeats;
-
-            for (let i = 0; i < responses.length; i += 1) {
-                response = responses[i];
-                repeats = repeatsFor(response);
-                for (let j = 0; j < repeats; j += 1) {
-                    result.push(response);
-                }
-            }
-            return result;
-        }
-
-        const helpers = require('../util/helpers'),
-            stub = helpers.clone(config || {}),
-            Q = require('q');
-
-        stub.responses = stub.responses || [];
-
-        const statefulResponses = repeatTransform(stub.responses);
-
-        /**
-         * Adds a new response to the stub (e.g. during proxying)
-         * @param {Object} response - the response to add
-         * @returns {Object} - the promise
-         */
-        stub.addResponse = response => {
-            stub.responses.push(response);
-            config.responses = config.responses || [];
-            config.responses.push(response);
-            statefulResponses.push(response);
-            return Q(response);
-        };
-
-        /**
-         * Selects the next response from the stub, including repeat behavior and circling back to the beginning
-         * @returns {Object} - the response
-         * @returns {Object} - the promise
-         */
-        stub.nextResponse = () => {
-            const responseConfig = statefulResponses.shift(),
-                Response = require('./response');
-
-            if (responseConfig) {
-                statefulResponses.push(responseConfig);
-                return Q(Response.create(responseConfig, stub));
-            }
-            else {
-                return Q(Response.create());
-            }
-        };
-
-        return stub;
+function repeatsFor (response) {
+    if (response._behaviors && response._behaviors.repeat) {
+        return response._behaviors.repeat;
     }
-};
+    else {
+        return 1;
+    }
+}
+
+function repeatTransform (responses) {
+    const result = [];
+    let response, repeats;
+
+    for (let i = 0; i < responses.length; i += 1) {
+        response = responses[i];
+        repeats = repeatsFor(response);
+        for (let j = 0; j < repeats; j += 1) {
+            result.push(response);
+        }
+    }
+    return result;
+}
+
+function wrap (stub = {}) {
+    const Q = require('q'),
+        helpers = require('../util/helpers'),
+        cloned = helpers.clone(stub),
+        statefulResponses = repeatTransform(cloned.responses || []);
+
+    /**
+     * Adds a new response to the stub (e.g. during proxying)
+     * @param {Object} response - the response to add
+     * @returns {Object} - the promise
+     */
+    cloned.addResponse = response => {
+        cloned.responses = cloned.responses || [];
+        cloned.responses.push(response);
+        statefulResponses.push(response);
+        return Q(response);
+    };
+
+    /**
+     * Selects the next response from the stub, including repeat behavior and circling back to the beginning
+     * @returns {Object} - the response
+     * @returns {Object} - the promise
+     */
+    cloned.nextResponse = () => {
+        const responseConfig = statefulResponses.shift(),
+            Response = require('./response');
+
+        if (responseConfig) {
+            statefulResponses.push(responseConfig);
+            return Q(Response.create(responseConfig));
+        }
+        else {
+            return Q(Response.create());
+        }
+    };
+
+    /**
+     * Records a match for debugging purposes
+     * @param {Object} request - the request
+     * @param {Object} response - the response
+     * @returns {Object} - the promise
+     */
+    cloned.recordMatch = (request, response) => {
+        cloned.matches = cloned.matches || [];
+        cloned.matches.push({
+            timestamp: new Date().toJSON(),
+            request,
+            response
+        });
+        return Q();
+    };
+
+    return cloned;
+}
 
 /**
  * Creates the stubs repository for a single imposter
@@ -94,7 +104,7 @@ function createStubsRepository () {
                 return Q({ success: true, index: i, stub: stubs[i] });
             }
         }
-        return Q({ success: false, index: -1, stub: Stub.create() });
+        return Q({ success: false, index: -1, stub: wrap() });
     }
 
     /**
@@ -103,7 +113,7 @@ function createStubsRepository () {
      * @returns {Object} - the promise
      */
     function add (stub) {
-        stubs.push(Stub.create(stub));
+        stubs.push(wrap(stub));
         return Q();
     }
 
@@ -114,7 +124,7 @@ function createStubsRepository () {
      * @returns {Object} - the promise
      */
     function insertAtIndex (stub, index) {
-        stubs.splice(index, 0, Stub.create(stub));
+        stubs.splice(index, 0, wrap(stub));
         return Q();
     }
 
@@ -143,7 +153,7 @@ function createStubsRepository () {
             return Q.reject(errors.MissingResourceError(`no stub at index ${index}`));
         }
 
-        stubs[index] = Stub.create(newStub);
+        stubs[index] = wrap(newStub);
         return Q();
     }
 

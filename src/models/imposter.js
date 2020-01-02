@@ -82,6 +82,25 @@ function create (Protocol, creationRequest, baseLogger, config, isAllowedConnect
         });
     }
 
+    function recordMatch (stub, request, response, responseConfig) {
+        if (response.proxy) {
+            // Out of process proxying. Just save the responseConfig.
+            // I used to carry the function context around to getProxyResponseFor to
+            // save the actual response, but it's too much complexity for too little
+            // value, as I consider  saving the matches a tactical design error in retrospect
+            // but give a head nod to backwards compatibility.
+            return stub.recordMatch(request, responseConfig);
+        }
+        else if (response.response) {
+            // Out of process responses wrap the result in an outer response object
+            return stub.recordMatch(request, response.response);
+        }
+        else {
+            // In process resolution
+            return stub.recordMatch(request, response);
+        }
+    }
+
     // requestDetails are not stored with the imposter
     // It was created to pass the raw URL to maintain the exact querystring during http proxying
     // without having to change the path / query options on the stored request
@@ -100,15 +119,8 @@ function create (Protocol, creationRequest, baseLogger, config, isAllowedConnect
                 logger.debug(`generating response from ${JSON.stringify(responseConfig)}`);
                 responseConfig.stubIndex = () => match.index;
                 return resolver.resolve(responseConfig, request, logger, imposterState, requestDetails).then(response => {
-                    if (config.recordMatches && !response.proxy) {
-                        if (response.response) {
-                            // Out of process responses wrap the result in an outer response object
-                            responseConfig.recordMatch(request, response.response);
-                        }
-                        else {
-                            // In process resolution
-                            responseConfig.recordMatch(request, response);
-                        }
+                    if (config.recordMatches) {
+                        return recordMatch(match.stub, request, response, responseConfig).then(() => response);
                     }
                     return response;
                 });
@@ -117,12 +129,7 @@ function create (Protocol, creationRequest, baseLogger, config, isAllowedConnect
     }
 
     function getProxyResponseFor (proxyResponse, proxyResolutionKey) {
-        return resolver.resolveProxy(proxyResponse, proxyResolutionKey, logger).then(response => {
-            if (config.recordMatches) {
-                response.recordMatch();
-            }
-            return Q(response);
-        });
+        return resolver.resolveProxy(proxyResponse, proxyResolutionKey, logger);
     }
 
     domain.on('error', errorHandler);

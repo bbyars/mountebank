@@ -1169,20 +1169,6 @@ describe('responseResolver', function () {
             return response;
         }
 
-        function matchesFor (stubs) {
-            return stubs.toJSON().then(all => {
-                const matchList = all.map(stub => stub.matches || []);
-                matchList.forEach(matchesForOneStub => {
-                    matchesForOneStub.forEach(match => {
-                        if (match.timestamp) {
-                            match.timestamp = 'NOW';
-                        }
-                    });
-                });
-                return matchList;
-            });
-        }
-
         promiseIt('should error if called with invalid proxyResolutionKey', function () {
             const stubs = createStubsRepository(),
                 resolver = ResponseResolver.create(stubs, null, 'CALLBACK-URL'),
@@ -1307,61 +1293,6 @@ describe('responseResolver', function () {
                         [proxyResponse]
                     ]);
                 });
-        });
-
-        promiseIt('should support recording the match', function () {
-            const stubs = createStubsRepository(),
-                resolver = ResponseResolver.create(stubs, null, 'CALLBACK-URL'),
-                logger = Logger.create(),
-                request = { key: 'REQUEST' };
-
-            return stubs.add({ responses: [{ proxy: { to: 'where', mode: 'proxyOnce' } }] }).then(() => {
-                // Call through the stubRepository to have it add the recordMatch function
-                return getResponseFrom(stubs);
-            }).then(responseConfig => {
-                return resolver.resolve(responseConfig, request, logger, {});
-            }).then(response => {
-                const proxyResolutionKey = parseInt(response.callbackURL.replace('CALLBACK-URL/', ''));
-                return resolver.resolveProxy({ data: 'RESPONSE' }, proxyResolutionKey, logger);
-            }).then(response => {
-                response.recordMatch();
-                return matchesFor(stubs);
-            }).then(matches => {
-                assert.deepEqual(matches, [
-                    [],
-                    [{ timestamp: 'NOW', request: { key: 'REQUEST' }, response: { data: 'RESPONSE' } }]
-                ]);
-            });
-        });
-
-        promiseIt('should avoid race conditions when recording the match', function () {
-            const stubs = createStubsRepository(),
-                resolver = ResponseResolver.create(stubs, null, 'CALLBACK-URL'),
-                logger = Logger.create();
-            let proxyResolutionKey;
-
-            return stubs.add({ responses: [{ proxy: { to: 'where', mode: 'proxyAlways' } }] }).then(() => {
-                // Call through the stubRepository to have it add the recordMatch function
-                return getResponseFrom(stubs);
-            }).then(responseConfig => {
-                return resolver.resolve(responseConfig, { key: 'REQUEST-1' }, logger, {});
-            }).then(response => {
-                proxyResolutionKey = parseInt(response.callbackURL.replace('CALLBACK-URL/', ''));
-                return getResponseFrom(stubs);
-            }).then(responseConfig => {
-                // Now call with a second request on the same stub before resolving the proxy
-                return resolver.resolve(responseConfig, { key: 'REQUEST-2' }, logger, {});
-            }).then(() => {
-                return resolver.resolveProxy({ data: 'RESPONSE' }, proxyResolutionKey, logger);
-            }).then(response => {
-                response.recordMatch();
-                return matchesFor(stubs);
-            }).then(matches => {
-                assert.deepEqual(matches, [
-                    [{ timestamp: 'NOW', request: { key: 'REQUEST-1' }, response: { data: 'RESPONSE' } }],
-                    []
-                ]);
-            });
         });
 
         promiseIt('should not resolve the same proxyResolutionKey twice', function () {

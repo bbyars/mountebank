@@ -36,13 +36,6 @@
  *               "is": { "body": "Hello, world!" }
  *             }
  *
- *         /matches
- *           /{epoch-pid-counter}.json
- *             {
- *               { "request": { ... } },
- *               { "response": { ... } }
- *             }
- *
  *     /requests
  *       /{epoch-pid-counter}.json
  *         { ... }
@@ -53,10 +46,13 @@
  * separated from the imposter.json so we can have responses from multiple stubs in parallel with no
  * lock conflict.
  *
- * The matches and requests use timestamp-based filenames to avoid having to lock any file to update an index.
+ * The requests use timestamp-based filenames to avoid having to lock any file to update an index.
  * Since the timestamp has millisecond granularity and it's possible that two requests could be recorded during
  * the same millisecond, and since multiple processes may be writing requests, we append a pid and counter
- * to the timestamp to guarantee we don't accidentally overwrite one request with another.
+ * to the timestamp to guarantee we don't accidentally overwrite one request with another. After consideration,
+ * I decided not to support saving matches (from the --debug flag) with this repository, as I consider supporting
+ * that a tactical design error. It is still supported using the default inMemoryImposterRepository, and, if
+ * needed, could be supported here using the same naming convention used by requests.
  *
  * Keeping all imposter information under a directory (instead of having metadata outside the directory)
  * allows us to remove the imposter by simply removing the directory.
@@ -254,7 +250,8 @@ function stubRepository (imposterDir) {
         if (typeof stub === 'undefined') {
             return {
                 addResponse: () => Q(),
-                nextResponse: () => Q(Response.create())
+                nextResponse: () => Q(Response.create()),
+                recordMatch: () => Q()
             };
         }
 
@@ -305,6 +302,7 @@ function stubRepository (imposterDir) {
             }).then(results => Response.create(results[0]));
         };
 
+        cloned.recordMatch = () => Q();
         return cloned;
     }
 

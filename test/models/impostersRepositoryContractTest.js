@@ -353,6 +353,23 @@ types.forEach(function (type) {
                             assert.deepEqual(stripFunctions(response), { is: { field: 1 } });
                         });
                 });
+
+                promiseIt('should support recording matches', function () {
+                    const stubs = repo.stubsFor(1);
+
+                    return stubs.add({})
+                        .then(() => stubs.first(() => true))
+                        .then(match => match.stub.recordMatch('REQUEST', 'RESPONSE'))
+                        .then(() => stubs.toJSON())
+                        .then(all => {
+                            // matches not supported by filesystemBackedImpostersRepository
+                            if (type.name !== 'filesystemBackedImpostersRepository') {
+                                assert.strictEqual(1, all[0].matches.length);
+                                delete all[0].matches[0].timestamp;
+                                assert.deepEqual(all[0].matches, [{ request: 'REQUEST', response: 'RESPONSE' }]);
+                            }
+                        });
+                });
             });
 
             describe('#toJSON', function () {
