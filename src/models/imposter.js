@@ -48,7 +48,6 @@ function create (Protocol, creationRequest, baseLogger, config, isAllowedConnect
         domain = require('domain').create(),
         errorHandler = createErrorHandler(deferred, creationRequest.port),
         compatibility = require('./compatibility'),
-        requests = [],
         logger = require('../util/scopedLogger').create(baseLogger, scopeFor(creationRequest.port)),
         helpers = require('../util/helpers'),
         imposterState = {};
@@ -93,9 +92,7 @@ function create (Protocol, creationRequest, baseLogger, config, isAllowedConnect
 
         numberOfRequests += 1;
         if (recordRequests) {
-            const recordedRequest = helpers.clone(request);
-            recordedRequest.timestamp = new Date().toJSON();
-            requests.push(recordedRequest);
+            stubs.addRequest(request);
         }
 
         return findFirstMatch(request).then(match => {
@@ -157,7 +154,11 @@ function create (Protocol, creationRequest, baseLogger, config, isAllowedConnect
                 return stopDeferred.promise;
             }
 
-            const printer = require('./imposterPrinter').create(creationRequest, server, requests),
+            function loadRequests () {
+                return recordRequests ? stubs.loadRequests() : require('q')([]);
+            }
+
+            const printer = require('./imposterPrinter').create(creationRequest, server, loadRequests),
                 toJSON = options => printer.toJSON(numberOfRequests, options);
 
             return deferred.resolve({

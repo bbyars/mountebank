@@ -190,6 +190,12 @@ function repeatsFor (response) {
 
 function stubRepository (imposterDir) {
     const headerFile = `${imposterDir}/imposter.json`;
+    let counter = 0;
+
+    function nextCounter () {
+        counter += 1;
+        return counter;
+    }
 
     function readHeader () {
         return readFile(headerFile).then(imposter => {
@@ -221,6 +227,13 @@ function stubRepository (imposterDir) {
 
     function writeResponse (stubDir, responseFile, response) {
         return writeFile(`${imposterDir}/${stubDir}/${responseFile}`, response);
+    }
+
+    function writeRequest (request) {
+        const epoch = Date.parse(request.timestamp).valueOf(),
+            filename = `${epoch}-${process.pid}-${nextCounter()}.json`,
+            fullPath = `${imposterDir}/requests/${filename}`;
+        return writeFile(fullPath, request);
     }
 
     function next (paths, template) {
@@ -469,6 +482,28 @@ function stubRepository (imposterDir) {
         });
     }
 
+    /**
+     * Adds a request for the imposter
+     * @param {Object} request - the request
+     * @returns {Object} - the promise
+     */
+    function addRequest (request) {
+        const helpers = require('../util/helpers');
+
+        const recordedRequest = helpers.clone(request);
+        recordedRequest.timestamp = new Date().toJSON();
+
+        return writeRequest(recordedRequest);
+    }
+
+    /**
+     * Returns the saved requests for the imposter
+     * @returns {Object} - the promise resolving to the array of requests
+     */
+    function loadRequests () {
+        return loadAllInDir(`${imposterDir}/requests`);
+    }
+
     return {
         count,
         first,
@@ -478,7 +513,9 @@ function stubRepository (imposterDir) {
         overwriteAtIndex,
         deleteAtIndex,
         toJSON,
-        deleteSavedProxyResponses
+        deleteSavedProxyResponses,
+        addRequest,
+        loadRequests
     };
 }
 
@@ -491,12 +528,6 @@ function stubRepository (imposterDir) {
 function create (config) {
     const Q = require('q'),
         imposters = {};
-    let counter = 0;
-
-    function nextCounter () {
-        counter += 1;
-        return counter;
-    }
 
     function writeHeader (imposter) {
         return writeFile(`${config.datadir}/${imposter.port}/imposter.json`, imposter);
@@ -508,13 +539,6 @@ function create (config) {
 
     function deleteImposter (id) {
         return remove(`${config.datadir}/${id}`);
-    }
-
-    function writeRequest (imposterId, request) {
-        const epoch = Date.parse(request.timestamp).valueOf(),
-            filename = `${epoch}-${process.pid}-${nextCounter()}.json`,
-            fullPath = `${config.datadir}/${imposterId}/requests/${filename}`;
-        return writeFile(fullPath, request);
     }
 
     /**
@@ -632,35 +656,6 @@ function create (config) {
         return Q.all(promises);
     }
 
-    /**
-     * Adds a request for the imposter
-     * @param {Number} imposterId - the imposter id
-     * @param {Object} request - the request
-     * @returns {Object} - the promise
-     */
-    function addRequest (imposterId, request) {
-        const errors = require('../util/errors'),
-            helpers = require('../util/helpers');
-
-        if (typeof imposters[String(imposterId)] === 'undefined') {
-            return Q.reject(errors.MissingResourceError(`no imposter with id ${imposterId}`));
-        }
-
-        const recordedRequest = helpers.clone(request);
-        recordedRequest.timestamp = new Date().toJSON();
-
-        return writeRequest(imposterId, recordedRequest);
-    }
-
-    /**
-     * Returns the saved requests for the imposter
-     * @param {Number} imposterId - the id of the imposter
-     * @returns {Object} - the promise resolving to the array of requests
-     */
-    function requestsFor (imposterId) {
-        return loadAllInDir(`${config.datadir}/${imposterId}/requests`);
-    }
-
     return {
         add,
         get,
@@ -669,9 +664,7 @@ function create (config) {
         del,
         deleteAllSync,
         deleteAll,
-        stubsFor,
-        addRequest,
-        requestsFor
+        stubsFor
     };
 }
 

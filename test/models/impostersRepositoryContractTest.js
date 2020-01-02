@@ -228,80 +228,6 @@ types.forEach(function (type) {
             });
         });
 
-        describe('#addRequest', function () {
-            promiseIt('should error if imposter has not been added yet', function () {
-                return repo.addRequest(1, { field: 'value' })
-                    .then(() => {
-                        assert.fail('should have rejected');
-                    }, error => {
-                        assert.deepEqual(error, {
-                            code: 'no such resource',
-                            message: 'no imposter with id 1'
-                        });
-                    });
-            });
-
-            promiseIt('should save request with timestamp', function () {
-                return repo.add({ port: 1, protocol: 'test' })
-                    .then(() => repo.addRequest(1, { field: 'value' }))
-                    .then(() => repo.requestsFor(1))
-                    .then(requests => {
-                        assert.deepEqual(requests, [{ field: 'value', timestamp: requests[0].timestamp }]);
-                        const delta = new Date() - Date.parse(requests[0].timestamp);
-                        assert.ok(delta < 1000);
-                    });
-            });
-
-            promiseIt('should save request with timestamp', function () {
-                return repo.add({ port: 1, protocol: 'test' })
-                    .then(() => repo.addRequest(1, { field: 'value' }))
-                    .then(() => repo.requestsFor(1))
-                    .then(requests => {
-                        assert.deepEqual(requests, [{ field: 'value', timestamp: requests[0].timestamp }]);
-                        const delta = new Date() - Date.parse(requests[0].timestamp);
-                        assert.ok(delta < 1000);
-                    });
-            });
-        });
-
-        describe('#requestsFor', function () {
-            promiseIt('should return requests in order without losing any', function () {
-                // Simulate enough rapid load to add two with the same millisecond timestamp
-                // The filesystemBackedImpostersRepository has to add some metadata to ensure
-                // we capture both if they occur at the same millisecond.
-                return repo.add({ port: 1, protocol: 'test' })
-                    .then(() => repo.addRequest(1, { value: 1 }))
-                    .then(() => repo.addRequest(1, { value: 2 }))
-                    .then(() => repo.addRequest(1, { value: 3 }))
-                    .then(() => repo.addRequest(1, { value: 4 }))
-                    .then(() => repo.addRequest(1, { value: 5 }))
-                    .then(() => repo.addRequest(1, { value: 6 }))
-                    .then(() => repo.addRequest(1, { value: 7 }))
-                    .then(() => repo.addRequest(1, { value: 8 }))
-                    .then(() => repo.addRequest(1, { value: 9 }))
-                    .then(() => repo.addRequest(1, { value: 10 }))
-                    .then(() => repo.requestsFor(1))
-                    .then(requests => {
-                        const values = requests.map(request => request.value);
-                        assert.deepEqual(values, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
-                    });
-            });
-
-            promiseIt('only returns requests for given imposter', function () {
-                return repo.add({ port: 1, protocol: 'test' })
-                    .then(() => repo.add({ port: 2, protocol: 'test' }))
-                    .then(() => repo.addRequest(1, { value: 1 }))
-                    .then(() => repo.addRequest(1, { value: 2 }))
-                    .then(() => repo.addRequest(2, { value: 3 }))
-                    .then(() => repo.addRequest(2, { value: 4 }))
-                    .then(() => repo.requestsFor(2))
-                    .then(requests => {
-                        const values = requests.map(request => request.value);
-                        assert.deepEqual(values, [3, 4]);
-                    });
-            });
-        });
-
         describe('#stubsFor', function () {
             describe('#count', function () {
                 promiseIt('should be 0 if no stubs on the imposter', function () {
@@ -609,6 +535,43 @@ types.forEach(function (type) {
                                 [{ is: 'first' }, { is: 'second' }],
                                 [{ is: 'third' }, { is: 'fourth' }]
                             ]);
+                        });
+                });
+            });
+
+            describe('#addRequest', function () {
+                promiseIt('should save request with timestamp', function () {
+                    const stubs = repo.stubsFor(1);
+                    return stubs.addRequest({ field: 'value' })
+                        .then(() => stubs.loadRequests())
+                        .then(requests => {
+                            assert.deepEqual(requests, [{ field: 'value', timestamp: requests[0].timestamp }]);
+                            const delta = new Date() - Date.parse(requests[0].timestamp);
+                            assert.ok(delta < 1000);
+                        });
+                });
+            });
+
+            describe('#loadRequests', function () {
+                promiseIt('should return requests in order without losing any', function () {
+                    // Simulate enough rapid load to add two with the same millisecond timestamp
+                    // The filesystemBackedImpostersRepository has to add some metadata to ensure
+                    // we capture both if they occur at the same millisecond.
+                    const stubs = repo.stubsFor(1);
+                    return stubs.addRequest({ value: 1 })
+                        .then(() => stubs.addRequest({ value: 2 }))
+                        .then(() => stubs.addRequest({ value: 3 }))
+                        .then(() => stubs.addRequest({ value: 4 }))
+                        .then(() => stubs.addRequest({ value: 5 }))
+                        .then(() => stubs.addRequest({ value: 6 }))
+                        .then(() => stubs.addRequest({ value: 7 }))
+                        .then(() => stubs.addRequest({ value: 8 }))
+                        .then(() => stubs.addRequest({ value: 9 }))
+                        .then(() => stubs.addRequest({ value: 10 }))
+                        .then(() => stubs.loadRequests())
+                        .then(requests => {
+                            const values = requests.map(request => request.value);
+                            assert.deepEqual(values, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
                         });
                 });
             });

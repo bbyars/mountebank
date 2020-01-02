@@ -1,6 +1,6 @@
 'use strict';
 
-function create (creationRequest, server, requests) {
+function create (creationRequest, server, loadRequests) {
     function addDetailsTo (result, baseURL) {
         if (creationRequest.name) {
             result.name = creationRequest.name;
@@ -11,8 +11,10 @@ function create (creationRequest, server, requests) {
             result[key] = server.metadata[key];
         });
 
-        result.requests = requests;
-        return server.stubs.toJSON().then(all => {
+        return loadRequests().then(requests => {
+            result.requests = requests;
+            return server.stubs.toJSON();
+        }).then(all => {
             result.stubs = all;
             for (let i = 0; i < result.stubs.length; i += 1) {
                 result.stubs[i]._links = {
