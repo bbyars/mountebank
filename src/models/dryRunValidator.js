@@ -37,20 +37,36 @@ function create (options) {
         return clonedStub;
     }
 
-    function reposToTestFor (stub, encoding) {
+    function reposToTestFor (stub) {
         // Test with predicates (likely won't match) to make sure predicates don't blow up
         // Test without predicates (always matches) to make sure response doesn't blow up
         const stubsToValidateWithPredicates = stub.responses.map(response => stubForResponse(stub, response, true)),
             stubsToValidateWithoutPredicates = stub.responses.map(response => stubForResponse(stub, response, false)),
             stubsToValidate = stubsToValidateWithPredicates.concat(stubsToValidateWithoutPredicates),
             promises = stubsToValidate.map(stubToValidate => {
-                // TODO: Ensure this stays in memory, no file system touch
-                const stubRepository = require('./stubRepository').create(encoding);
+                const stubRepository = require('./inMemoryImpostersRepository').create().createStubsRepository();
                 return stubRepository.add(stubToValidate).then(() => stubRepository);
             }),
             Q = require('q');
 
         return Q.all(promises);
+    }
+
+    // We call map before calling every so we make sure to call every
+    // predicate during dry run validation rather than short-circuiting
+    function trueForAll (list, predicate) {
+        return list.map(predicate).every(result => result);
+    }
+
+    function findFirstMatch (stubRepository, request, encoding, logger) {
+        const filter = stubPredicates => {
+            const predicates = require('./predicates');
+
+            return trueForAll(stubPredicates,
+                predicate => predicates.evaluate(predicate, request, encoding, logger, {}));
+        };
+
+        return stubRepository.first(filter);
     }
 
     function resolverFor (stubRepository) {
@@ -79,10 +95,12 @@ function create (options) {
 
         options.testRequest = options.testRequest || {};
         options.testRequest.isDryRun = true;
-        return reposToTestFor(stub, encoding).then(dryRunRepositories => {
+        return reposToTestFor(stub).then(dryRunRepositories => {
             return Q.all(dryRunRepositories.map(stubRepository => {
-                return stubRepository.getResponseFor(options.testRequest, dryRunLogger, {}).then(responseConfig => {
-                    return resolverFor(stubRepository).resolve(responseConfig, options.testRequest, dryRunLogger, {});
+                return findFirstMatch(stubRepository, options.testRequest, encoding, dryRunLogger).then(match => {
+                    return match.stub.nextResponse().then(responseConfig => {
+                        return resolverFor(stubRepository).resolve(responseConfig, options.testRequest, dryRunLogger, {});
+                    });
                 });
             }));
         });

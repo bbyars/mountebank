@@ -45,7 +45,8 @@
     "express": "^4.16.3",
     "fs-extra": "8.1.0",
     "http-proxy-agent": "^3.0.0",
-    "https-proxy-agent": "^3.0.0",
+    "http-proxy-agent": "^2.1.0",
+    "https-proxy-agent": "^4.0.0",
     "json-stable-stringify": "1.0.1",
     "jsonpath-plus": "^1.0.0",
     "mailparser": "^2.7.0",
@@ -54,7 +55,7 @@
     "query-string": "6.9.0",
     "smtp-server": "^3.4.6",
     "winston": "3.2.1",
-    "xmldom": "0.1.27",
+    "xmldom": "0.1.30",
     "xpath": "0.0.27",
     "yargs": "14.2.0"
   },

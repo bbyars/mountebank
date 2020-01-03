@@ -1,0 +1,17 @@
+[
+  {
+    "predicates": [
+      {
+        "equals": {
+          "key": "value"
+        }
+      },
+      {
+        "exists": {
+          "first": true
+        }
+      }
+    ],
+    "responseDir": "1000/stubs/0"
+  }
+]

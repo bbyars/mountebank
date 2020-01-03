@@ -1,10 +1,21 @@
 'use strict';
 
-function load (builtInProtocols, customProtocols, options, isAllowedConnection, mbLogger) {
+/**
+ * Loads the imposter creation functions for all built in and custom protocols
+ * @param builtInProtocols {Object} - the in-memory protocol implementations that ship with mountebank
+ * @param customProtocols {Object} - custom out-of-process protocol implementations
+ * @param options {Object} - command line configuration
+ * @param isAllowedConnection {Function} - a function that determines whether the connection is allowed or not for security verification
+ * @param mbLogger {Object} - the logger
+ * @param impostersRepository {Object} - the imposters repository
+ * @returns {Object} - a map of protocol name to creation functions
+ */
+// eslint-disable-next-line max-params
+function load (builtInProtocols, customProtocols, options, isAllowedConnection, mbLogger, impostersRepository) {
     function inProcessCreate (createProtocol) {
         return (creationRequest, logger, responseFn) =>
             createProtocol(creationRequest, logger, responseFn).then(server => {
-                const stubs = require('./stubRepository').create(server.encoding || 'utf8'),
+                const stubs = impostersRepository.stubsFor(server.port),
                     resolver = require('./responseResolver').create(stubs, server.proxy),
                     Q = require('q');
 
@@ -13,7 +24,8 @@ function load (builtInProtocols, customProtocols, options, isAllowedConnection, 
                     metadata: server.metadata,
                     stubs: stubs,
                     resolver: resolver,
-                    close: server.close
+                    close: server.close,
+                    encoding: server.encoding || 'utf8'
                 });
             });
     }
@@ -86,9 +98,8 @@ function load (builtInProtocols, customProtocols, options, isAllowedConnection, 
                     delete metadata.port;
                 }
                 const callbackURL = options.callbackURLTemplate.replace(':port', serverPort),
-                    encoding = metadata.encoding || 'utf8';
-
-                const stubs = require('./stubRepository').create(encoding),
+                    encoding = metadata.encoding || 'utf8',
+                    stubs = impostersRepository.stubsFor(serverPort),
                     resolver = require('./responseResolver').create(stubs, undefined, callbackURL);
 
                 delete metadata.encoding;
@@ -98,6 +109,7 @@ function load (builtInProtocols, customProtocols, options, isAllowedConnection, 
                     metadata: metadata,
                     stubs,
                     resolver,
+                    encoding,
                     close: callback => {
                         closeCalled = true;
                         imposterProcess.once('exit', callback);

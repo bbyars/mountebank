@@ -6,27 +6,30 @@ const assert = require('assert'),
     FakeLogger = require('../fakes/fakeLogger'),
     fs = require('fs'),
     Q = require('q'),
-    loader = require('../../src/models/protocols');
+    loader = require('../../src/models/protocols'),
+    ImpostersRepository = require('../../src/models/inMemoryImpostersRepository');
 
 describe('protocols', function () {
     describe('#load', function () {
-        let config;
+        let config, logger, repository;
+        const allow = () => true;
 
         beforeEach(function () {
             config = { loglevel: 'info', callbackURLTemplate: 'url' };
+            logger = FakeLogger.create();
+            repository = ImpostersRepository.create();
         });
 
         it('should return only builtins if no customProtocols passed in', function () {
             const builtIns = { proto: { create: mock() } },
-                protocols = loader.load(builtIns, {}, config);
+                protocols = loader.load(builtIns, {}, config, allow, logger, repository);
             assert.deepEqual(Object.keys(protocols), ['proto']);
         });
 
         describe('#outOfProcessCreate', function () {
             promiseIt('should error if invalid command passed', function () {
                 const customProtocols = { test: { createCommand: 'no-such-command' } },
-                    protocols = loader.load({}, customProtocols, config),
-                    logger = FakeLogger.create();
+                    protocols = loader.load({}, customProtocols, config, allow, logger, repository);
 
                 return protocols.test.createServer({}, logger).then(() => {
                     assert.fail('should have errored');
@@ -45,8 +48,7 @@ describe('protocols', function () {
                 fs.writeFileSync('protocol-test.js', `const fn = ${fn.toString()}; fn();`);
 
                 const customProtocols = { test: { createCommand: 'node ./protocol-test.js' } },
-                    protocols = loader.load({}, customProtocols, config),
-                    logger = FakeLogger.create();
+                    protocols = loader.load({}, customProtocols, config, allow, logger, repository);
 
                 return protocols.test.createServer({}, logger).then(server => {
                     assert.deepEqual(server.metadata, {});
@@ -58,8 +60,7 @@ describe('protocols', function () {
                 fs.writeFileSync('protocol-test.js', `const fn = ${fn.toString()}; fn();`);
 
                 const customProtocols = { test: { createCommand: 'node ./protocol-test.js' } },
-                    protocols = loader.load({}, customProtocols, config),
-                    logger = FakeLogger.create();
+                    protocols = loader.load({}, customProtocols, config, allow, logger, repository);
 
                 return protocols.test.createServer({ port: 3000 }, logger).then(server => {
                     assert.strictEqual(server.port, 3000);
@@ -71,8 +72,7 @@ describe('protocols', function () {
                 fs.writeFileSync('protocol-test.js', `const fn = ${fn.toString()}; fn();`);
 
                 const customProtocols = { test: { createCommand: 'node ./protocol-test.js' } },
-                    protocols = loader.load({}, customProtocols, config),
-                    logger = FakeLogger.create();
+                    protocols = loader.load({}, customProtocols, config, allow, logger, repository);
 
                 return protocols.test.createServer({}, logger).then(server => {
                     assert.strictEqual(server.port, 3000);
@@ -84,8 +84,7 @@ describe('protocols', function () {
                 fs.writeFileSync('protocol-test.js', `const fn = ${fn.toString()}; fn();`);
 
                 const customProtocols = { test: { createCommand: 'node ./protocol-test.js' } },
-                    protocols = loader.load({}, customProtocols, config),
-                    logger = FakeLogger.create();
+                    protocols = loader.load({}, customProtocols, config, allow, logger, repository);
 
                 return protocols.test.createServer({}, logger).then(server => {
                     assert.deepEqual(server.metadata, { mode: 'text' });
@@ -103,8 +102,7 @@ describe('protocols', function () {
                 fs.writeFileSync('protocol-test.js', `const fn = ${fn.toString()}; fn();`);
 
                 const customProtocols = { test: { createCommand: 'node ./protocol-test.js' } },
-                    protocols = loader.load({}, customProtocols, config),
-                    logger = FakeLogger.create();
+                    protocols = loader.load({}, customProtocols, config, allow, logger, repository);
 
                 // Sleep to allow the log statements to finish
                 return protocols.test.createServer({}, logger).then(() => Q.delay(100)).then(() => {
@@ -121,8 +119,7 @@ describe('protocols', function () {
 
                 config.callbackURLTemplate = 'CALLBACK-URL';
                 const customProtocols = { test: { createCommand: 'node ./protocol-test.js' } },
-                    protocols = loader.load({}, customProtocols, config),
-                    logger = FakeLogger.create(),
+                    protocols = loader.load({}, customProtocols, config, allow, logger, repository),
                     creationRequest = { port: 3000 };
 
                 return protocols.test.createServer(creationRequest, logger).then(server => {
@@ -142,8 +139,7 @@ describe('protocols', function () {
 
                 config.callbackURLTemplate = 'CALLBACK-URL';
                 const customProtocols = { test: { createCommand: 'node ./protocol-test.js' } },
-                    protocols = loader.load({}, customProtocols, config),
-                    logger = FakeLogger.create(),
+                    protocols = loader.load({}, customProtocols, config, allow, logger, repository),
                     creationRequest = { port: 3000, defaultResponse: { key: 'default' } };
 
                 return protocols.test.createServer(creationRequest, logger).then(server => {
@@ -169,8 +165,7 @@ describe('protocols', function () {
                             customProtocolFields: ['key1', 'key3']
                         }
                     },
-                    protocols = loader.load({}, customProtocols, config),
-                    logger = FakeLogger.create(),
+                    protocols = loader.load({}, customProtocols, config, allow, logger, repository),
                     creationRequest = {
                         protocol: 'test',
                         port: 3000,

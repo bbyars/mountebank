@@ -5,6 +5,250 @@
  * @module
  */
 
+function repeatsFor (response) {
+    if (response._behaviors && response._behaviors.repeat) {
+        return response._behaviors.repeat;
+    }
+    else {
+        return 1;
+    }
+}
+
+function repeatTransform (responses) {
+    const result = [];
+    let response, repeats;
+
+    for (let i = 0; i < responses.length; i += 1) {
+        response = responses[i];
+        repeats = repeatsFor(response);
+        for (let j = 0; j < repeats; j += 1) {
+            result.push(response);
+        }
+    }
+    return result;
+}
+
+function wrap (stub = {}) {
+    const Q = require('q'),
+        helpers = require('../util/helpers'),
+        cloned = helpers.clone(stub),
+        statefulResponses = repeatTransform(cloned.responses || []);
+
+    /**
+     * Adds a new response to the stub (e.g. during proxying)
+     * @param {Object} response - the response to add
+     * @returns {Object} - the promise
+     */
+    cloned.addResponse = response => {
+        cloned.responses = cloned.responses || [];
+        cloned.responses.push(response);
+        statefulResponses.push(response);
+        return Q(response);
+    };
+
+    /**
+     * Selects the next response from the stub, including repeat behavior and circling back to the beginning
+     * @returns {Object} - the response
+     * @returns {Object} - the promise
+     */
+    cloned.nextResponse = () => {
+        const responseConfig = statefulResponses.shift(),
+            Response = require('./response');
+
+        if (responseConfig) {
+            statefulResponses.push(responseConfig);
+            return Q(Response.create(responseConfig, cloned.stubIndex));
+        }
+        else {
+            return Q(Response.create());
+        }
+    };
+
+    /**
+     * Records a match for debugging purposes
+     * @param {Object} request - the request
+     * @param {Object} response - the response
+     * @returns {Object} - the promise
+     */
+    cloned.recordMatch = (request, response) => {
+        cloned.matches = cloned.matches || [];
+        cloned.matches.push({
+            timestamp: new Date().toJSON(),
+            request,
+            response
+        });
+        return Q();
+    };
+
+    return cloned;
+}
+
+/**
+ * Creates the stubs repository for a single imposter
+ * @returns {Object}
+ */
+function createStubsRepository () {
+    const stubs = [],
+        requests = [],
+        Q = require('q');
+
+    function reindex () {
+        // stubIndex() is used to find the right spot to insert recorded
+        // proxy responses. We reindex after every state change
+        stubs.forEach((stub, index) => {
+            stub.stubIndex = () => Q(index);
+        });
+    }
+
+    /**
+     * Returns the first stub whose predicates match the filter, or a default one if none match
+     * @param {Function} filter - the filter function
+     * @param {Number} startIndex - the index to to start searching
+     * @returns {Object}
+     */
+    function first (filter, startIndex = 0) {
+        for (let i = startIndex; i < stubs.length; i += 1) {
+            if (filter(stubs[i].predicates || [])) {
+                return Q({ success: true, stub: stubs[i] });
+            }
+        }
+        return Q({ success: false, stub: wrap() });
+    }
+
+    /**
+     * Adds a new stub
+     * @param {Object} stub - the stub to add
+     * @returns {Object} - the promise
+     */
+    function add (stub) {
+        stubs.push(wrap(stub));
+        reindex();
+        return Q();
+    }
+
+    /**
+     * Inserts a new stub at the given index
+     * @param {Object} stub - the stub to insert
+     * @param {Number} index - the index to add the stub at
+     * @returns {Object} - the promise
+     */
+    function insertAtIndex (stub, index) {
+        stubs.splice(index, 0, wrap(stub));
+        reindex();
+        return Q();
+    }
+
+    /**
+     * Overwrites the list of stubs with a new list
+     * @param {Object} newStubs - the new list of stubs
+     * @returns {Object} - the promise
+     */
+    function overwriteAll (newStubs) {
+        while (stubs.length > 0) {
+            stubs.pop();
+        }
+        newStubs.forEach(stub => add(stub));
+        reindex();
+        return Q();
+    }
+
+    /**
+     * Overwrites the stub at the given index with the new stub
+     * @param {Object} newStub - the new stub
+     * @param {Number} index - the index of the old stuib
+     * @returns {Object} - the promise
+     */
+    function overwriteAtIndex (newStub, index) {
+        const errors = require('../util/errors');
+        if (typeof stubs[index] === 'undefined') {
+            return Q.reject(errors.MissingResourceError(`no stub at index ${index}`));
+        }
+
+        stubs[index] = wrap(newStub);
+        reindex();
+        return Q();
+    }
+
+    /**
+     * Deletes the stub at the given index
+     * @param {Number} index - the index of the stub to delete
+     * @returns {Object} - the promise
+     */
+    function deleteAtIndex (index) {
+        const errors = require('../util/errors');
+        if (typeof stubs[index] === 'undefined') {
+            return Q.reject(errors.MissingResourceError(`no stub at index ${index}`));
+        }
+
+        stubs.splice(index, 1);
+        reindex();
+        return Q();
+    }
+
+    /**
+     * Returns a JSON-convertible representation
+     * @returns {Object} - the promise resolving to the JSON object
+     */
+    function toJSON () {
+        const helpers = require('../util/helpers');
+        return Q(helpers.clone(stubs));
+    }
+
+    function isRecordedResponse (response) {
+        return response.is && response.is._proxyResponseTime; // eslint-disable-line no-underscore-dangle
+    }
+
+    /**
+     * Removes the saved proxy responses
+     * @returns {Object} - Promise
+     */
+    function deleteSavedProxyResponses () {
+        return toJSON().then(allStubs => {
+            allStubs.forEach(stub => {
+                stub.responses = stub.responses.filter(response => !isRecordedResponse(response));
+            });
+            allStubs = allStubs.filter(stub => stub.responses.length > 0);
+            return overwriteAll(allStubs);
+        });
+    }
+
+    /**
+     * Adds a request for the imposter
+     * @param {Object} request - the request
+     * @returns {Object} - the promise
+     */
+    function addRequest (request) {
+        const helpers = require('../util/helpers');
+
+        const recordedRequest = helpers.clone(request);
+        recordedRequest.timestamp = new Date().toJSON();
+        requests.push(recordedRequest);
+        return Q();
+    }
+
+    /**
+     * Returns the saved requests for the imposter
+     * @returns {Object} - the promise resolving to the array of requests
+     */
+    function loadRequests () {
+        return Q(requests);
+    }
+
+    return {
+        count: () => stubs.length,
+        first,
+        add,
+        insertAtIndex,
+        overwriteAll,
+        overwriteAtIndex,
+        deleteAtIndex,
+        toJSON,
+        deleteSavedProxyResponses,
+        addRequest,
+        loadRequests
+    };
+}
+
 /**
  * Creates the repository
  * @param {Object} startupImposters - The imposters to load at startup (will not be validated)
@@ -20,7 +264,10 @@ function create (startupImposters) {
      * @returns {Object} - the promise
      */
     function add (imposter) {
-        imposters[imposter.port] = imposter;
+        if (!imposter.stubs) {
+            imposter.stubs = [];
+        }
+        imposters[String(imposter.port)] = imposter;
         return Q(imposter);
     }
 
@@ -30,15 +277,15 @@ function create (startupImposters) {
      * @returns {Object} - the imposter
      */
     function get (id) {
-        return Q(imposters[id] || null);
+        return Q(imposters[String(id)] || null);
     }
 
     /**
      * Gets all imposters
      * @returns {Object} - all imposters keyed by port
      */
-    function getAll () {
-        return Q(imposters);
+    function all () {
+        return Q.all(Object.keys(imposters).map(get));
     }
 
     /**
@@ -47,25 +294,33 @@ function create (startupImposters) {
      * @returns {boolean}
      */
     function exists (id) {
-        return Q(typeof imposters[id] !== 'undefined');
+        return Q(typeof imposters[String(id)] !== 'undefined');
     }
 
     /**
-     * Deletes the imnposter at the given id
+     * Deletes the imposter at the given id
      * @param {Number} id - the id (e.g. the port)
      * @returns {Object} - the deletion promise
      */
     function del (id) {
-        const result = imposters[id];
-        delete imposters[id];
-        return result.stop().then(() => Q(result));
+        const result = imposters[String(id)] || null;
+        delete imposters[String(id)];
+        if (result) {
+            return result.stop().then(() => Q(result));
+        }
+        else {
+            return Q(result);
+        }
     }
 
     /**
      * Deletes all imposters synchronously; used during shutdown
      */
     function deleteAllSync () {
-        Object.keys(imposters).forEach(id => { imposters[id].stop(); });
+        Object.keys(imposters).forEach(id => {
+            imposters[id].stop();
+            delete imposters[id];
+        });
     }
 
     /**
@@ -83,11 +338,13 @@ function create (startupImposters) {
     return {
         add,
         get,
-        getAll,
+        all,
         exists,
         del,
         deleteAllSync,
-        deleteAll
+        deleteAll,
+        stubsFor: createStubsRepository,
+        createStubsRepository
     };
 }
 

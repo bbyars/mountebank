@@ -124,7 +124,7 @@ function loadCustomProtocols (protofile, logger) {
     }
 }
 
-function loadProtocols (options, baseURL, logger, isAllowedConnection) {
+function loadProtocols (options, baseURL, logger, isAllowedConnection, imposters) {
     const builtInProtocols = {
             tcp: require('./models/tcp/tcpServer'),
             http: require('./models/http/httpServer'),
@@ -141,7 +141,7 @@ function loadProtocols (options, baseURL, logger, isAllowedConnection) {
             host: options.host
         };
 
-    return require('./models/protocols').load(builtInProtocols, customProtocols, config, isAllowedConnection, logger);
+    return require('./models/protocols').load(builtInProtocols, customProtocols, config, isAllowedConnection, logger, imposters);
 }
 
 /**
@@ -166,7 +166,7 @@ function create (options) {
         logger = createLogger(options),
         isAllowedConnection = createIPVerification(options),
         imposters = require('./models/impostersRepository').create(options, logger),
-        protocols = loadProtocols(options, baseURL, logger, isAllowedConnection),
+        protocols = loadProtocols(options, baseURL, logger, isAllowedConnection, imposters),
         homeController = require('./controllers/homeController').create(releases),
         impostersController = require('./controllers/impostersController').create(
             protocols, imposters, logger, options.allowInjection),

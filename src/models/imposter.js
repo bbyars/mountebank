@@ -48,19 +48,58 @@ function create (Protocol, creationRequest, baseLogger, config, isAllowedConnect
         domain = require('domain').create(),
         errorHandler = createErrorHandler(deferred, creationRequest.port),
         compatibility = require('./compatibility'),
-        requests = [],
         logger = require('../util/scopedLogger').create(baseLogger, scopeFor(creationRequest.port)),
         helpers = require('../util/helpers'),
         imposterState = {};
 
     let stubs;
     let resolver;
+    let encoding;
     let numberOfRequests = 0;
 
     compatibility.upcast(creationRequest);
 
     // If the CLI --mock flag is passed, we record even if the imposter level recordRequests = false
     const recordRequests = config.recordRequests || creationRequest.recordRequests;
+
+    function findFirstMatch (request) {
+        const readOnlyState = helpers.clone(imposterState),
+            filter = stubPredicates => {
+                const predicates = require('./predicates');
+
+                return stubPredicates.every(predicate =>
+                    predicates.evaluate(predicate, request, encoding, logger, readOnlyState));
+            };
+
+        return stubs.first(filter).then(match => {
+            if (match.success) {
+                logger.debug(`using predicate match: ${JSON.stringify(match.stub.predicates || {})}`);
+            }
+            else {
+                logger.debug('no predicate match');
+            }
+            return match;
+        });
+    }
+
+    function recordMatch (stub, request, response, responseConfig) {
+        if (response.proxy) {
+            // Out of process proxying. Just save the responseConfig.
+            // I used to carry the function context around to getProxyResponseFor to
+            // save the actual response, but it's too much complexity for too little
+            // value, as I consider  saving the matches a tactical design error in retrospect
+            // but give a head nod to backwards compatibility.
+            return stub.recordMatch(request, responseConfig);
+        }
+        else if (response.response) {
+            // Out of process responses wrap the result in an outer response object
+            return stub.recordMatch(request, response.response);
+        }
+        else {
+            // In process resolution
+            return stub.recordMatch(request, response);
+        }
+    }
 
     // requestDetails are not stored with the imposter
     // It was created to pass the raw URL to maintain the exact querystring during http proxying
@@ -72,35 +111,24 @@ function create (Protocol, creationRequest, baseLogger, config, isAllowedConnect
 
         numberOfRequests += 1;
         if (recordRequests) {
-            const recordedRequest = helpers.clone(request);
-            recordedRequest.timestamp = new Date().toJSON();
-            requests.push(recordedRequest);
+            stubs.addRequest(request);
         }
 
-        return stubs.getResponseFor(request, logger, imposterState).then(responseConfig => {
-            return resolver.resolve(responseConfig, request, logger, imposterState, requestDetails).then(response => {
-                if (config.recordMatches && !response.proxy) {
-                    if (response.response) {
-                        // Out of process responses wrap the result in an outer response object
-                        responseConfig.recordMatch(request, response.response);
+        return findFirstMatch(request).then(match => {
+            return match.stub.nextResponse().then(responseConfig => {
+                logger.debug(`generating response from ${JSON.stringify(responseConfig)}`);
+                return resolver.resolve(responseConfig, request, logger, imposterState, requestDetails).then(response => {
+                    if (config.recordMatches) {
+                        return recordMatch(match.stub, request, response, responseConfig).then(() => response);
                     }
-                    else {
-                        // In process resolution
-                        responseConfig.recordMatch(request, response);
-                    }
-                }
-                return response;
+                    return response;
+                });
             });
         });
     }
 
     function getProxyResponseFor (proxyResponse, proxyResolutionKey) {
-        return resolver.resolveProxy(proxyResponse, proxyResolutionKey, logger).then(response => {
-            if (config.recordMatches) {
-                response.recordMatch();
-            }
-            return Q(response);
-        });
+        return resolver.resolveProxy(proxyResponse, proxyResolutionKey, logger);
     }
 
     domain.on('error', errorHandler);
@@ -117,6 +145,7 @@ function create (Protocol, creationRequest, baseLogger, config, isAllowedConnect
 
             stubs = server.stubs;
             resolver = server.resolver;
+            encoding = server.encoding;
 
             if (creationRequest.stubs) {
                 creationRequest.stubs.forEach(stubs.add);
@@ -131,7 +160,11 @@ function create (Protocol, creationRequest, baseLogger, config, isAllowedConnect
                 return stopDeferred.promise;
             }
 
-            const printer = require('./imposterPrinter').create(creationRequest, server, requests),
+            function loadRequests () {
+                return recordRequests ? stubs.loadRequests() : require('q')([]);
+            }
+
+            const printer = require('./imposterPrinter').create(creationRequest, server, loadRequests),
                 toJSON = options => printer.toJSON(numberOfRequests, options);
 
             return deferred.resolve({
@@ -139,15 +172,15 @@ function create (Protocol, creationRequest, baseLogger, config, isAllowedConnect
                 url: '/imposters/' + server.port,
                 toJSON,
                 stop,
-                resetProxies: stubs.resetProxies,
                 getResponseFor,
                 getProxyResponseFor,
                 addStub: server.stubs.add,
-                stubs: server.stubs.all,
+                stubs: server.stubs.toJSON,
                 overwriteStubs: server.stubs.overwriteAll,
                 overwriteStubAtIndex: server.stubs.overwriteAtIndex,
                 deleteStubAtIndex: server.stubs.deleteAtIndex,
-                insertStubAtIndex: server.stubs.insertAtIndex
+                insertStubAtIndex: server.stubs.insertAtIndex,
+                deleteSavedProxyResponses: server.stubs.deleteSavedProxyResponses
             });
         });
     });

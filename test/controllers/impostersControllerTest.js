@@ -112,9 +112,9 @@ describe('ImpostersController', function () {
             request.body = { protocol: 'http' };
 
             return controller.post(request, response).then(() =>
-                imposters.getAll()
+                imposters.all()
             ).then(allImposters => {
-                assert.deepEqual(allImposters, { 3535: imposter });
+                assert.deepEqual(allImposters, [imposter]);
             });
         });
 
@@ -223,7 +223,7 @@ describe('ImpostersController', function () {
                 controller = Controller.create({}, impostersRepo, {}, false);
 
             return controller.del({ url: '/imposters' }, response).then(() =>
-                impostersRepo.getAll()
+                impostersRepo.all()
             ).then(allImposters => {
                 assert.deepEqual(allImposters, {});
             });
@@ -316,7 +316,7 @@ describe('ImpostersController', function () {
                     }]
                 });
 
-                return repo.getAll();
+                return repo.all();
             }).then(allImposters => {
                 assert.deepEqual(allImposters, { 0: existingImposter });
             });
@@ -331,7 +331,7 @@ describe('ImpostersController', function () {
 
             return controller.put(request, response).then(() => {
                 assert.deepEqual(response.body, { imposters: [] });
-                return impostersRepo.getAll();
+                return impostersRepo.all();
             }).then(allImposters => {
                 assert.deepEqual(allImposters, {});
             });
@@ -379,9 +379,9 @@ describe('ImpostersController', function () {
             request.body = { imposters: [{ protocol: 'http' }, { protocol: 'http' }] };
 
             return controller.put(request, response).then(() =>
-                impostersRepo.getAll()
+                impostersRepo.all()
             ).then(allImposters => {
-                assert.deepEqual(allImposters, { 1: firstImposter, 2: secondImposter });
+                assert.deepEqual(allImposters, [firstImposter, secondImposter]);
                 assert.ok(firstImposter.toJSON.wasCalledWith({ list: true }), firstImposter.toJSON.message());
                 assert.ok(secondImposter.toJSON.wasCalledWith({ list: true }), secondImposter.toJSON.message());
             });

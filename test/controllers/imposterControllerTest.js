@@ -188,13 +188,13 @@ describe('ImposterController', function () {
             const response = FakeResponse.create(),
                 imposter = {
                     toJSON: mock().returns(Q('JSON')),
-                    resetProxies: mock().returns(Q())
+                    deleteSavedProxyResponses: mock().returns(Q())
                 },
                 repo = ImpostersRepo.create({ imposters: { 1: imposter } }),
                 controller = Controller.create({}, repo);
 
             return controller.resetProxies({ url: '/imposters/1/requests', params: { id: 1 } }, response).then(() => {
-                assert(imposter.resetProxies.wasCalled());
+                assert(imposter.deleteSavedProxyResponses.wasCalled());
             });
         });
     });
