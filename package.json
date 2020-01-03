@@ -44,6 +44,7 @@
     "escape-html": "^1.0.3",
     "express": "^4.16.3",
     "fs-extra": "8.1.0",
+    "http-proxy-agent": "^3.0.0",
     "http-proxy-agent": "^2.1.0",
     "https-proxy-agent": "^4.0.0",
     "json-stable-stringify": "1.0.1",
