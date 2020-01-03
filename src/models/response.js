@@ -1,8 +1,10 @@
 'use strict';
 
-function create (responseConfig) {
+function create (responseConfig, stubIndexFn) {
     const helpers = require('../util/helpers'),
         cloned = helpers.clone(responseConfig || { is: {} });
+
+    cloned.stubIndex = stubIndexFn ? stubIndexFn : () => require('q')(0);
 
     cloned.setMetadata = (responseType, metadata) => {
         Object.keys(metadata).forEach(key => {

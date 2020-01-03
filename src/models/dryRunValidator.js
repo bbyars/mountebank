@@ -99,7 +99,6 @@ function create (options) {
             return Q.all(dryRunRepositories.map(stubRepository => {
                 return findFirstMatch(stubRepository, options.testRequest, encoding, dryRunLogger).then(match => {
                     return match.stub.nextResponse().then(responseConfig => {
-                        responseConfig.stubIndex = () => match.index;
                         return resolverFor(stubRepository).resolve(responseConfig, options.testRequest, dryRunLogger, {});
                     });
                 });

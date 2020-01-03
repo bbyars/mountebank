@@ -213,7 +213,10 @@ function create (stubs, proxy, callbackURL) {
 
     function recordProxyAlways (newPredicates, newResponse, responseConfig) {
         const filter = stubPredicates => deepEqual(newPredicates, stubPredicates);
-        return stubs.first(filter, responseConfig.stubIndex() + 1).then(match => {
+
+        return responseConfig.stubIndex().then(index => {
+            return stubs.first(filter, index + 1);
+        }).then(match => {
             if (match.success) {
                 return match.stub.addResponse(newResponse);
             }
@@ -232,7 +235,9 @@ function create (stubs, proxy, callbackURL) {
             return require('q')();
         }
         else if (responseConfig.proxy.mode === 'proxyOnce') {
-            return stubs.insertAtIndex({ predicates: newPredicates, responses: [newResponse] }, responseConfig.stubIndex());
+            return responseConfig.stubIndex().then(index => {
+                return stubs.insertAtIndex({ predicates: newPredicates, responses: [newResponse] }, index);
+            });
         }
         else {
             return recordProxyAlways(newPredicates, newResponse, responseConfig);

@@ -283,6 +283,19 @@ function stubRepository (imposterDir) {
             });
         };
 
+        function stubIndexFor (stubDir) {
+            return () => {
+                return readHeader().then(header => {
+                    for (let i = 0; i < header.stubs.length; i += 1) {
+                        if (header.stubs[i].meta.dir === stubDir) {
+                            return i;
+                        }
+                    }
+                    return 0;
+                });
+            };
+        }
+
         /**
          * Returns the next response for the stub, taking into consideration repeat behavior and cycling back the beginning
          * @returns {Object} - the promise
@@ -299,7 +312,7 @@ function stubRepository (imposterDir) {
 
                 meta.nextIndex = (meta.nextIndex + 1) % maxIndex;
                 return Q.all([readResponse(stubDir, responseFile), writeMeta(stubDir, meta)]);
-            }).then(results => Response.create(results[0]));
+            }).then(results => Response.create(results[0], stubIndexFor(stubDir)));
         };
 
         cloned.recordMatch = () => Q();
@@ -324,10 +337,10 @@ function stubRepository (imposterDir) {
         return readHeader().then(imposter => {
             for (let i = startIndex; i < imposter.stubs.length; i += 1) {
                 if (filter(imposter.stubs[i].predicates || [])) {
-                    return { success: true, index: i, stub: wrap(imposter.stubs[i], i) };
+                    return { success: true, stub: wrap(imposter.stubs[i], i) };
                 }
             }
-            return { success: false, index: -1, stub: wrap() };
+            return { success: false, stub: wrap() };
         });
     }
 

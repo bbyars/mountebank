@@ -266,7 +266,6 @@ types.forEach(function (type) {
                         .then(() => stubs.first(() => false))
                         .then(match => {
                             assert.strictEqual(match.success, false);
-                            assert.strictEqual(match.index, -1);
                             return match.stub.nextResponse();
                         }).then(response => {
                             assert.deepEqual(stripFunctions(response), { is: {} });
@@ -288,10 +287,12 @@ types.forEach(function (type) {
                         .then(() => stubs.first(predicates => predicates.length === 0))
                         .then(match => {
                             assert.strictEqual(match.success, true);
-                            assert.strictEqual(match.index, 1);
                             return match.stub.nextResponse();
                         }).then(response => {
                             assert.deepEqual(stripFunctions(response), { is: 'third' });
+                            return response.stubIndex();
+                        }).then(index => {
+                            assert.strictEqual(index, 1);
                         });
                 });
 

@@ -57,7 +57,7 @@ function wrap (stub = {}) {
 
         if (responseConfig) {
             statefulResponses.push(responseConfig);
-            return Q(Response.create(responseConfig));
+            return Q(Response.create(responseConfig, cloned.stubIndex));
         }
         else {
             return Q(Response.create());
@@ -92,6 +92,14 @@ function createStubsRepository () {
         requests = [],
         Q = require('q');
 
+    function reindex () {
+        // stubIndex() is used to find the right spot to insert recorded
+        // proxy responses. We reindex after every state change
+        stubs.forEach((stub, index) => {
+            stub.stubIndex = () => Q(index);
+        });
+    }
+
     /**
      * Returns the first stub whose predicates match the filter, or a default one if none match
      * @param {Function} filter - the filter function
@@ -101,10 +109,10 @@ function createStubsRepository () {
     function first (filter, startIndex = 0) {
         for (let i = startIndex; i < stubs.length; i += 1) {
             if (filter(stubs[i].predicates || [])) {
-                return Q({ success: true, index: i, stub: stubs[i] });
+                return Q({ success: true, stub: stubs[i] });
             }
         }
-        return Q({ success: false, index: -1, stub: wrap() });
+        return Q({ success: false, stub: wrap() });
     }
 
     /**
@@ -114,6 +122,7 @@ function createStubsRepository () {
      */
     function add (stub) {
         stubs.push(wrap(stub));
+        reindex();
         return Q();
     }
 
@@ -125,6 +134,7 @@ function createStubsRepository () {
      */
     function insertAtIndex (stub, index) {
         stubs.splice(index, 0, wrap(stub));
+        reindex();
         return Q();
     }
 
@@ -138,6 +148,7 @@ function createStubsRepository () {
             stubs.pop();
         }
         newStubs.forEach(stub => add(stub));
+        reindex();
         return Q();
     }
 
@@ -154,6 +165,7 @@ function createStubsRepository () {
         }
 
         stubs[index] = wrap(newStub);
+        reindex();
         return Q();
     }
 
@@ -169,6 +181,7 @@ function createStubsRepository () {
         }
 
         stubs.splice(index, 1);
+        reindex();
         return Q();
     }
 

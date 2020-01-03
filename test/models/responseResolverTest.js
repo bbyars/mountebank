@@ -33,14 +33,9 @@ describe('responseResolver', function () {
     }
 
     function getResponseFrom (stubs) {
-        // Simulates what the imposter / stubRepository do with the added functions
+        // Simulates what the imposter / stubRepository do
         return stubs.first(predicates => predicates.length === 0)
-            .then(match => {
-                return match.stub.nextResponse().then(result => {
-                    result.stubIndex = () => match.index;
-                    return result;
-                });
-            });
+            .then(match => match.stub.nextResponse());
     }
 
     describe('#resolve', function () {
@@ -1194,7 +1189,7 @@ describe('responseResolver', function () {
                 request = {};
 
             return stubs.add({ responses: [responseConfig] }).then(() => {
-                responseConfig.stubIndex = () => 0;
+                responseConfig.stubIndex = () => Q(0);
                 return resolver.resolve(responseConfig, request, logger, {});
             }).then(response => {
                 const proxyResolutionKey = parseInt(response.callbackURL.replace('CALLBACK-URL/', ''));
@@ -1220,7 +1215,7 @@ describe('responseResolver', function () {
                 request = {};
 
             return stubs.add({ responses: [responseConfig] }).then(() => {
-                responseConfig.stubIndex = () => 0;
+                responseConfig.stubIndex = () => Q(0);
                 return resolver.resolve(responseConfig, request, logger, {});
             }).then(response => {
                 const proxyResolutionKey = parseInt(response.callbackURL.replace('CALLBACK-URL/', ''));

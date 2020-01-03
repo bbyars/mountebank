@@ -117,7 +117,6 @@ function create (Protocol, creationRequest, baseLogger, config, isAllowedConnect
         return findFirstMatch(request).then(match => {
             return match.stub.nextResponse().then(responseConfig => {
                 logger.debug(`generating response from ${JSON.stringify(responseConfig)}`);
-                responseConfig.stubIndex = () => match.index;
                 return resolver.resolve(responseConfig, request, logger, imposterState, requestDetails).then(response => {
                     if (config.recordMatches) {
                         return recordMatch(match.stub, request, response, responseConfig).then(() => response);
