@@ -107,7 +107,7 @@ function create (protocols, imposters, logger, allowInjection) {
         return getAllJSON(options).then(impostersJSON => {
             response.format({
                 json: () => { response.send({ imposters: impostersJSON }); },
-                html: () => { response.render('imposters', { impostersJSON }); }
+                html: () => { response.render('imposters', { imposters: impostersJSON }); }
             });
         });
     }
