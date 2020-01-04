@@ -255,8 +255,12 @@ function createStubsRepository () {
  * @returns {Object}
  */
 function create (startupImposters) {
-    const imposters = startupImposters || {},
+    const imposters = {},
         Q = require('q');
+
+    if (startupImposters) {
+        Object.keys(startupImposters).forEach(id => add(startupImposters[id]));
+    }
 
     /**
      * Adds a new imposter
