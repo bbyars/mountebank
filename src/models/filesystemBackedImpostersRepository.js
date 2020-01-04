@@ -43,11 +43,24 @@
  * This structure is designed to improve parallelism and throughput.
  *
  * The imposters.json file needs to be locked during imposter-level activities (e.g. adding a stub).
+ * Readers do not lock; they just get the data at the time they read it. Since this file doesn't
+ * contain transient state, there's no harm from a stale read. Writes (which happen for
+ * stub changing operations, either for proxy response recording or stub API calls) grab a file lock
+ * for both the read and the write. Writes to this file should be infrequent, except perhaps during
+ * proxy recording. Newly added stubs may change the index of existing stubs in the stubs array, but
+ * will never change the stub meta.dir, so once an operation has grabbed the dir, there is no race
+ * condition hanging on to it even if the imposter.json file changes afterwards. The only edge case
+ * is stub delete API calls, in which case the meta.dir directory will not exist anyway.
+ *
  * The stub meta.json needs to be locked to add responses or trigger the next response, but is
  * separated from the imposter.json so we can have responses from multiple stubs in parallel with no
- * lock conflict. Operations hang on to the imposter.json-level stub meta.dir (whose index does not
- * need to match the actual stub index) to avoid race conditions and to avoid having to read the
- * imposter.json again to navigate to the right directory.
+ * lock conflict. Again, readers (e.g. to generate imposter JSON) do not need a lock because the responseFiles
+ * array is mostly read-only, and even when it's not (adding responses during proxyAlways recording), there's
+ * no harm from a stale read. Writers (usually generating the next response for a stub) grab a lock for the
+ * read and the write. This should be the most common write across files, which is why the meta.json file
+ * is small.
+ *
+ * In both cases where a file needs to be locked, an exponential backoff retry strategy is used.
  *
  * The requests use timestamp-based filenames to avoid having to lock any file to update an index.
  * Since the timestamp has millisecond granularity and it's possible that two requests could be recorded during
@@ -107,6 +120,24 @@ function readFile (filepath) {
     });
 
     return deferred.promise;
+}
+
+function readAndWriteFile (filepath, transformer, logger = console) {
+    const locker = require('proper-lockfile'),
+        retries = {
+            retries: 10,
+            factor: 2,
+            minTimeout: 50,
+            randomize: true
+        };
+    return locker.lock(filepath, { retries }).then(release => {
+        return readFile(filepath)
+            .then(data => writeFile(filepath, transformer(data)))
+            .then(() => release());
+    }).catch(error => {
+        logger.error(`Unable to acquire or release lock on ${filepath}: ${error}`);
+        throw error;
+    });
 }
 
 function remove (path) {
@@ -220,6 +251,10 @@ function stubRepository (imposterDir) {
         return writeFile(`${imposterDir}/${stubDir}/meta.json`, meta);
     }
 
+    function readAndWriteMeta (stubDir, writeFn) {
+        return readAndWriteFile(`${imposterDir}/${stubDir}/meta.json`, writeFn);
+    }
+
     function readResponse (stubDir, responseFile) {
         return readFile(`${imposterDir}/${stubDir}/${responseFile}`);
     }
@@ -298,14 +333,17 @@ function stubRepository (imposterDir) {
          * @returns {Object} - the promise
          */
         cloned.nextResponse = () => {
-            return readMeta(stubDir).then(meta => {
+            let responseFile;
+            return readAndWriteMeta(stubDir, meta => {
                 const maxIndex = meta.orderWithRepeats.length,
-                    responseIndex = meta.orderWithRepeats[meta.nextIndex % maxIndex],
-                    responseFile = meta.responseFiles[responseIndex];
+                    responseIndex = meta.orderWithRepeats[meta.nextIndex % maxIndex];
+
+                responseFile = meta.responseFiles[responseIndex];
 
                 meta.nextIndex = (meta.nextIndex + 1) % maxIndex;
-                return Q.all([readResponse(stubDir, responseFile), writeMeta(stubDir, meta)]);
-            }).then(results => Response.create(results[0], stubIndex));
+                return meta;
+            }).then(() => readResponse(stubDir, responseFile))
+                .then(responseConfig => Response.create(responseConfig, stubIndex));
         };
 
         cloned.recordMatch = () => Q();
