@@ -112,7 +112,10 @@ description = 'Command line parameters for starting mountebank'
     <td><code>--debug</code></td>
     <td>Include a <code>matches</code> array with each stub in the body of a
       <a href='/docs/api/overview#get-imposter'>GET imposter</a> response
-      for debugging why a particular stub did or did not match a request.</td>
+      for debugging why a particular stub did or did not match a request.
+
+      <p class='warning-icon'>This option is not available in conjunction with the
+      <code>datadir</code> option.</p></td>
     <td><code>false</code></td>
   </tr>
   <tr>

@@ -8,15 +8,9 @@ description = 'Creating canned responses using mountebank'
 <h1>Stubs</h1>
 
 <p>Stubs are a type of test double that return a canned response based on the request.
-mountebank allows you to define a list of stubs when creating an imposter, but does not
-support changing stubs once the imposter has been created.</p>
-
-<p id='matches-array'>mountebank associates both a list of <em>responses</em> and a list of
-<a href='/docs/api/predicates'><em>predicates</em></a> with each stub.  Since mountebank
-knows that setting up stubs can sometimes be difficult, he can optionally add a <em>matches</em>
-element each time the stub is used if you start <code>mb</code> with the <a href='/docs/commandLine'>
-<code>--debug</code> command line flag</a>.  You can retrieve the <em>matches</em> by issuing
-a <code>GET</code> or <code>DELETE</code> to the imposter.</p>
+mountebank allows you to define a list of stubs when creating an imposter. mountebank
+associates both a list of <em>responses</em> and a list of
+<a href='/docs/api/predicates'><em>predicates</em></a> with each stub.</p>
 
 <p>It doesn't make sense to create an empty array of responses, but each response is under no
 obligation to override the defaults (every protocol defines a default for every response field;
@@ -171,7 +165,7 @@ Transfer-Encoding: chunked
         </assertResponse>
     </step>
 
-<p>Now let's see the <code>matches</code> elements that mountebank
+<p>Now let's see the <code>requests</code> that mountebank
 has saved for you:</p>
 
     <step type='http'>
@@ -253,61 +247,6 @@ Connection: keep-alive
             "statusCode": 400,
             "headers": {
               "Content-Type": "application/xml"
-            },
-            "body": "&lt;error&gt;email already exists&lt;/error&gt;"
-          }
-        }
-      ],
-      "matches": [
-        {
-          "timestamp": "<volatile>2014-01-06T04:31:44.584Z</volatile>",
-          "request": {
-            "requestFrom": "<volatile>::ffff:127.0.0.1:60524</volatile>",
-            "method": "POST",
-            "path": "/customers/123",
-            "query": {},
-            "headers": {
-              "Accept": "application/xml",
-              "Host": "localhost:4545",
-              "Content-Type": "application/xml",
-              "Connection": "keep-alive",
-              "Transfer-Encoding": "chunked"
-            },
-            "body": "&lt;customer&gt;\n  &lt;email&gt;customer@test.com&lt;/email&gt;\n&lt;/customer&gt;",
-            "ip": "<volatile>::ffff:127.0.0.1</volatile>"
-          },
-          "response": {
-            "statusCode": 201,
-            "headers": {
-              "Location": "http://localhost:4545/customers/123",
-              "Content-Type": "application/xml",
-              "Connection": "close"
-            },
-            "body": "&lt;customer&gt;&lt;email&gt;customer@test.com&lt;/email&gt;&lt;/customer&gt;"
-          }
-        },
-        {
-          "timestamp": "<volatile>2014-01-06T04:31:44.587Z</volatile>",
-          "request": {
-            "requestFrom": "<volatile>::ffff:127.0.0.1:60523</volatile>",
-            "method": "POST",
-            "path": "/customers/123",
-            "query": {},
-            "headers": {
-              "Accept": "application/xml",
-              "Host": "localhost:4545",
-              "Content-Type": "application/xml",
-              "Connection": "keep-alive",
-              "Transfer-Encoding": "chunked"
-            },
-            "body": "&lt;customer&gt;\n  &lt;email&gt;customer@test.com&lt;/email&gt;\n&lt;/customer&gt;",
-            "ip": "<volatile>::ffff:127.0.0.1</volatile>"
-          },
-          "response": {
-            "statusCode": 400,
-            "headers": {
-              "Content-Type": "application/xml",
-              "Connection": "close"
             },
             "body": "&lt;error&gt;email already exists&lt;/error&gt;"
           }

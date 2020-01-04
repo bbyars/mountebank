@@ -233,8 +233,7 @@ http://localhost:4545. To retrieve a list of all imposters, simply issue a <code
     <td>boolean</td>
     <td>Set to <code>true</code> to retrieve the minimum amount of information for
       <a href='#post-imposters'>creating the imposter</a> in the future.  This leaves
-      out the <a href='/docs/api/mocks'><code>requests</code> array</a>, the
-      <a href='/docs/api/stubs#matches-array'> <code>matches</code> array</a>, and any hypermedia.</td>
+      out the <a href='/docs/api/mocks'><code>requests</code> array</a> and any hypermedia.</td>
   </tr>
   <tr>
     <td><code>removeProxies</code></td>
@@ -541,9 +540,7 @@ at the <code>requests</code> array for <a href='/docs/api/mocks'>mock verificati
     <td>boolean</td>
     <td>Set to <code>true</code> to retrieve the minimum amount of information for
       <a href='#post-imposters'>creating the imposter</a> in the future.  This leaves
-      out the <a href='/docs/api/mocks'><code>requests</code> array</a>, the
-      <a href='/docs/api/stubs#matches-array'>
-      <code>matches</code> array</a>, and any hypermedia.</td>
+      out the <a href='/docs/api/mocks'><code>requests</code> array</a> and any hypermedia.</td>
   </tr>
   <tr>
     <td><code>removeProxies</code></td>
@@ -705,8 +702,7 @@ either <a href='#get-imposter'>get the single imposter</a> or use the
     <td>boolean</td>
     <td>Set to <code>true</code> to retrieve the minimum amount of information for replaying
       the set of imposters in the future through a <a href='#put-imposters'>mass create</a>
-      call.  This leaves out the <a href='/docs/api/mocks'><code>requests</code> array</a>, the
-      <a href='/docs/api/stubs#matches-array'><code>matches</code> array</a>,
+      call.  This leaves out the <a href='/docs/api/mocks'><code>requests</code> array</a>
       and any hypermedia.</td>
   </tr>
   <tr>
@@ -789,8 +785,7 @@ to <a href='#put-imposters'>mass create</a> the same imposters in the future.</p
     <td><code>replayable</code></td>
     <td>boolean</td>
     <td>Defaults to true.  Set to <code>false</code> to retrieve the
-      <a href='/docs/api/stubs#matches-array'><code>matches</code></a>
-      and <a href='/docs/api/mocks'><code>requests</code></a> arrays with the response.  You can still
+      <a href='/docs/api/mocks'><code>requests</code></a> arrays with the response.  You can still
       <a href='#put-imposters'>mass create</a> using this JSON; it just has extraneous information.</td>
   </tr>
   <tr>
@@ -873,7 +868,6 @@ Connection: keep-alive
     "logfile": "mb-grunt.log",
     "allowInjection": true,
     "mock": true,
-    "debug": true,
     "localOnly": true,
     "noParse": false,
     "nologfile": false,
@@ -881,6 +875,7 @@ Connection: keep-alive
     "ipWhitelist": [
       "*"
     ],
+    "debug": false,
     "protofile": "protocols.json"
   },
   "process": {
