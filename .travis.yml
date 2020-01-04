@@ -39,7 +39,7 @@ install:
   - ruby --version
   - gem install fpm
   - gem install bundler
-  # - bundle install --without development
+  - bundle install --without development
 
 script:
   - ./build $MB_GRUNT_TASK
