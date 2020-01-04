@@ -70,6 +70,32 @@ const assert = require('assert'),
                 }).finally(() => api.del('/imposters'));
             });
 
+            promiseIt('should allow changing state in predicate injection (issue #495)', function () {
+                const fn = config => {
+                        config.state.requests = config.state.requests || 0;
+                        config.state.requests += 1;
+                        return config.state.requests === 2;
+                    },
+                    matchedStub = {
+                        predicates: [{ inject: fn.toString() }],
+                        responses: [{ is: { body: 'MATCHED' } }]
+                    },
+                    unmatchedStub = {
+                        responses: [{ is: { body: 'UNMATCHED' } }]
+                    },
+                    request = { protocol, port, stubs: [matchedStub, unmatchedStub] };
+
+                return api.post('/imposters', request).then(response => {
+                    assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body));
+                    return client.get('/', port);
+                }).then(response => {
+                    assert.strictEqual(response.body, 'UNMATCHED');
+                    return client.get('/', port);
+                }).then(response => {
+                    assert.strictEqual(response.body, 'MATCHED');
+                }).finally(() => api.del('/imposters'));
+            });
+
             promiseIt('should not validate a bad predicate injection', function () {
                 const stub = {
                         predicates: [{ inject: 'return true;' }],

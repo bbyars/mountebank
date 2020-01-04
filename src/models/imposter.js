@@ -63,13 +63,12 @@ function create (Protocol, creationRequest, baseLogger, config, isAllowedConnect
     const recordRequests = config.recordRequests || creationRequest.recordRequests;
 
     function findFirstMatch (request) {
-        const readOnlyState = helpers.clone(imposterState),
-            filter = stubPredicates => {
-                const predicates = require('./predicates');
+        const filter = stubPredicates => {
+            const predicates = require('./predicates');
 
-                return stubPredicates.every(predicate =>
-                    predicates.evaluate(predicate, request, encoding, logger, readOnlyState));
-            };
+            return stubPredicates.every(predicate =>
+                predicates.evaluate(predicate, request, encoding, logger, imposterState));
+        };
 
         return stubs.first(filter).then(match => {
             if (match.success) {
