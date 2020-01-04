@@ -38,8 +38,9 @@ install:
   # fpm install started failing even after bundle update
   - ruby --version
   - gem install fpm
-  - gem install bundler
-  - bundle install --without development
+  - gem install dpl
+  #- gem install bundler
+  #- bundle install --without development
 
 script:
   - ./build $MB_GRUNT_TASK
