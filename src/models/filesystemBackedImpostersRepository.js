@@ -41,10 +41,13 @@
  *         { ... }
  *
  * This structure is designed to improve parallelism and throughput.
- * The imposters.json file needs to be locked during imposter-level activities (e.g. adding a stub)
+ *
+ * The imposters.json file needs to be locked during imposter-level activities (e.g. adding a stub).
  * The stub meta.json needs to be locked to add responses or trigger the next response, but is
  * separated from the imposter.json so we can have responses from multiple stubs in parallel with no
- * lock conflict.
+ * lock conflict. Operations hang on to the imposter.json-level stub meta.dir (whose index does not
+ * need to match the actual stub index) to avoid race conditions and to avoid having to read the
+ * imposter.json again to navigate to the right directory.
  *
  * The requests use timestamp-based filenames to avoid having to lock any file to update an index.
  * Since the timestamp has millisecond granularity and it's possible that two requests could be recorded during
@@ -243,9 +246,12 @@ function stubRepository (imposterDir) {
         return template.replace('${index}', max + 1);
     }
 
-    function wrap (stub, index) {
+    function wrap (stub) {
         const Response = require('./response'),
-            Q = require('q');
+            Q = require('q'),
+            helpers = require('../util/helpers'),
+            cloned = helpers.clone(stub || {}),
+            stubDir = stub ? stub.meta.dir : '';
 
         if (typeof stub === 'undefined') {
             return {
@@ -255,9 +261,6 @@ function stubRepository (imposterDir) {
             };
         }
 
-        const helpers = require('../util/helpers'),
-            cloned = helpers.clone(stub);
-
         delete cloned.meta;
 
         /**
@@ -266,11 +269,7 @@ function stubRepository (imposterDir) {
          * @returns {Object} - the promise
          */
         cloned.addResponse = response => {
-            let stubDir;
-            return readHeader().then(imposter => {
-                stubDir = imposter.stubs[index].meta.dir;
-                return readMeta(stubDir);
-            }).then(meta => {
+            return readMeta(stubDir).then(meta => {
                 const responseFile = next(meta.responseFiles, 'responses/${index}.json'),
                     responseIndex = meta.responseFiles.length;
 
@@ -283,17 +282,15 @@ function stubRepository (imposterDir) {
             });
         };
 
-        function stubIndexFor (stubDir) {
-            return () => {
-                return readHeader().then(header => {
-                    for (let i = 0; i < header.stubs.length; i += 1) {
-                        if (header.stubs[i].meta.dir === stubDir) {
-                            return i;
-                        }
+        function stubIndex () {
+            return readHeader().then(header => {
+                for (let i = 0; i < header.stubs.length; i += 1) {
+                    if (header.stubs[i].meta.dir === stubDir) {
+                        return i;
                     }
-                    return 0;
-                });
-            };
+                }
+                return 0;
+            });
         }
 
         /**
@@ -301,18 +298,14 @@ function stubRepository (imposterDir) {
          * @returns {Object} - the promise
          */
         cloned.nextResponse = () => {
-            let stubDir;
-            return readHeader().then(imposter => {
-                stubDir = imposter.stubs[index].meta.dir;
-                return readMeta(stubDir);
-            }).then(meta => {
+            return readMeta(stubDir).then(meta => {
                 const maxIndex = meta.orderWithRepeats.length,
                     responseIndex = meta.orderWithRepeats[meta.nextIndex % maxIndex],
                     responseFile = meta.responseFiles[responseIndex];
 
                 meta.nextIndex = (meta.nextIndex + 1) % maxIndex;
                 return Q.all([readResponse(stubDir, responseFile), writeMeta(stubDir, meta)]);
-            }).then(results => Response.create(results[0], stubIndexFor(stubDir)));
+            }).then(results => Response.create(results[0], stubIndex));
         };
 
         cloned.recordMatch = () => Q();
@@ -334,10 +327,10 @@ function stubRepository (imposterDir) {
      * @returns {Object} - the promise
      */
     function first (filter, startIndex = 0) {
-        return readHeader().then(imposter => {
-            for (let i = startIndex; i < imposter.stubs.length; i += 1) {
-                if (filter(imposter.stubs[i].predicates || [])) {
-                    return { success: true, stub: wrap(imposter.stubs[i], i) };
+        return readHeader().then(header => {
+            for (let i = startIndex; i < header.stubs.length; i += 1) {
+                if (filter(header.stubs[i].predicates || [])) {
+                    return { success: true, stub: wrap(header.stubs[i]) };
                 }
             }
             return { success: false, stub: wrap() };
