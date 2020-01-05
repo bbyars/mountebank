@@ -60,7 +60,10 @@
  * read and the write. This should be the most common write across files, which is why the meta.json file
  * is small.
  *
- * In both cases where a file needs to be locked, an exponential backoff retry strategy is used.
+ * In both cases where a file needs to be locked, an exponential backoff retry strategy is used. Inconsistent
+ * reads of partially written files (which can happen by default with the system calls - fs.writeFile is not
+ * atomic) are avoided by writing first to a temp file (during which time reads can happen to the original file)
+ * and then renaming to the original file.
  *
  * The requests use timestamp-based filenames to avoid having to lock any file to update an index.
  * Since the timestamp has millisecond granularity and it's possible that two requests could be recorded during
@@ -122,6 +125,23 @@ function readFile (filepath) {
     return deferred.promise;
 }
 
+function rename (oldPath, newPath) {
+    const Q = require('q'),
+        deferred = Q.defer(),
+        fs = require('fs');
+
+    fs.rename(oldPath, newPath, err => {
+        if (err) {
+            deferred.reject(err);
+        }
+        else {
+            deferred.resolve(newPath);
+        }
+    });
+
+    return deferred.promise;
+}
+
 function readAndWriteFile (filepath, transformer, logger = console) {
     const locker = require('proper-lockfile'),
         retries = {
@@ -129,10 +149,13 @@ function readAndWriteFile (filepath, transformer, logger = console) {
             factor: 2,
             minTimeout: 50,
             randomize: true
-        };
+        },
+        tmpfile = filepath + '.tmp';
+
     return locker.lock(filepath, { retries }).then(release => {
         return readFile(filepath)
-            .then(data => writeFile(filepath, transformer(data)))
+            .then(data => writeFile(tmpfile, transformer(data)))
+            .then(() => rename(tmpfile, filepath))
             .then(() => release());
     }).catch(error => {
         logger.error(`Unable to acquire or release lock on ${filepath}: ${error}`);
