@@ -14,16 +14,16 @@
  *         "stubs: [{
  *           "predicates": [{ "equals": { "path": "/" } }],
  *           "meta": {
- *             "dir": "stubs/0"
+ *             "dir": "stubs/{epoch-pid-counter}"
  *           }
  *         }]
  *       }
  *
  *     /stubs
- *       /0
+ *       /{epoch-pid-counter}
  *         /meta.json
  *           {
- *             "responseFiles": ["responses/0.json"],
+ *             "responseFiles": ["responses/{epoch-pid-counter}.json"],
  *               // An array of indexes into responseFiles which handle repeat behavior
  *             "orderWithRepeats": [0],
  *               // The next index into orderWithRepeats; incremented with each call to nextResponse()
@@ -31,7 +31,7 @@
  *           }
  *
  *         /responses
- *           /0.json
+ *           /{epoch-pid-counter}.json
  *             {
  *               "is": { "body": "Hello, world!" }
  *             }
@@ -40,7 +40,7 @@
  *       /{epoch-pid-counter}.json
  *         { ... }
  *
- * This structure is designed to improve parallelism and throughput.
+ * This structure is designed to minimize the amount of file locking and to maximize parallelism and throughput.
  *
  * The imposters.json file needs to be locked during imposter-level activities (e.g. adding a stub).
  * Readers do not lock; they just get the data at the time they read it. Since this file doesn't
@@ -48,9 +48,7 @@
  * stub changing operations, either for proxy response recording or stub API calls) grab a file lock
  * for both the read and the write. Writes to this file should be infrequent, except perhaps during
  * proxy recording. Newly added stubs may change the index of existing stubs in the stubs array, but
- * will never change the stub meta.dir, which is guaranteed to be unique amongst processes on the same
- * machine (and almost certainly guaranteed to be unique across processes on multiple machines) so once
- * an operation has grabbed the dir, it is safe to use it.
+ * will never change the stub meta.dir, so it is always safe to hang on to it for subsequent operations.
  *
  * The stub meta.json needs to be locked to add responses or trigger the next response, but is
  * separated from the imposter.json so we can have responses from multiple stubs in parallel with no
@@ -65,13 +63,12 @@
  * atomic) are avoided by writing first to a temp file (during which time reads can happen to the original file)
  * and then renaming to the original file.
  *
- * The requests use timestamp-based filenames to avoid having to lock any file to update an index.
- * Since the timestamp has millisecond granularity and it's possible that two requests could be recorded during
- * the same millisecond, and since multiple processes may be writing requests, we append a pid and counter
- * to the timestamp to guarantee we don't accidentally overwrite one request with another. After consideration,
- * I decided not to support saving matches (from the --debug flag) with this repository, as I consider supporting
- * that a tactical design error. It is still supported using the default inMemoryImposterRepository, and, if
- * needed, could be supported here using the same naming convention used by requests.
+ * New directories and filenames use a timestamp-based filename to allow creating them without synchronizing
+ * with a read. Since multiple files (esp. requests) can be added during the same millisecond, a pid and counter
+ * is tacked on to the filename to improve uniqueness. It doesn't provide the * ironclad guarantee a GUID
+ * does -- two different processes on two different machines could in theory have the same pid and create files
+ * during the same timestamp with the same counter, but the odds of that happening * are so small that it's not
+ * worth giving up the easy time-based sortability based on filenames alone.
  *
  * Keeping all imposter information under a directory (instead of having metadata outside the directory)
  * allows us to remove the imposter by simply removing the directory.
@@ -87,6 +84,7 @@
  * @returns {Object}
  */
 function create (config, logger) {
+    let counter = 0;
     const Q = require('q'),
         imposters = {};
 
@@ -228,6 +226,12 @@ function create (config, logger) {
         return deferred.promise;
     }
 
+    function filenameFor (timestamp) {
+        const epoch = timestamp.valueOf();
+        counter += 1;
+        return `${epoch}-${process.pid}-${counter}`;
+    }
+
     function partsFrom (filename) {
         // format {epoch}-{pid}-{counter}
         const pattern = /^(\d+)-(\d+)-(\d+)\.json$/,
@@ -290,7 +294,6 @@ function create (config, logger) {
 
     function stubRepository (baseDir) {
         const imposterFile = `${baseDir}/imposter.json`;
-        let counter = 0;
 
         function metaPath (stubDir) {
             return `${baseDir}/${stubDir}/meta.json`;
@@ -301,9 +304,7 @@ function create (config, logger) {
         }
 
         function requestPath (request) {
-            const epoch = Date.parse(request.timestamp).valueOf();
-            counter += 1;
-            return `${baseDir}/requests/${epoch}-${process.pid}-${counter}.json`;
+            return `${baseDir}/requests/${filenameFor(Date.parse(request.timestamp))}.json`;
         }
 
         function readHeader () {
@@ -316,17 +317,6 @@ function create (config, logger) {
 
         function readAndWriteHeader (transformer) {
             return readAndWriteFile(imposterFile, transformer, { stubs: [] });
-        }
-
-        function next (paths, template) {
-            if (paths.length === 0) {
-                return template.replace('${index}', 0);
-            }
-
-            const numbers = paths.map(file => parseInt(file.match(/\d+/)[0])),
-                max = Math.max(...numbers);
-
-            return template.replace('${index}', max + 1);
         }
 
         function wrap (stub) {
@@ -354,7 +344,7 @@ function create (config, logger) {
                 let responseFile;
                 return readAndWriteFile(metaPath(stubDir), meta => {
                     const responseIndex = meta.responseFiles.length;
-                    responseFile = next(meta.responseFiles, 'responses/${index}.json');
+                    responseFile = `responses/${filenameFor(new Date())}.json`;
 
                     meta.responseFiles.push(responseFile);
                     for (let repeats = 0; repeats < repeatsFor(response); repeats += 1) {
@@ -452,10 +442,10 @@ function create (config, logger) {
                 promises = [];
 
             return readAndWriteHeader(header => {
-                stubDefinition.meta.dir = next(header.stubs.map(saved => saved.meta.dir), 'stubs/${index}');
+                stubDefinition.meta.dir = `stubs/${filenameFor(new Date())}`;
 
                 for (let i = 0; i < responses.length; i += 1) {
-                    const responseFile = `responses/${i}.json`;
+                    const responseFile = `responses/${filenameFor(new Date())}.json`;
                     meta.responseFiles.push(responseFile);
 
                     for (let repeats = 0; repeats < repeatsFor(responses[i]); repeats += 1) {

@@ -199,68 +199,75 @@ describe('filesystemBackedImpostersRepository', function () {
                 return stubs.add(imposter.stubs[0])
                     .then(() => repo.add(imposter))
                     .then(() => {
-                        assert.deepEqual(read('.mbtest/3000/imposter.json'), {
+                        const header = read('.mbtest/3000/imposter.json'),
+                            stubDir = header.stubs[0].meta.dir;
+
+                        assert.deepEqual(header, {
                             port: 3000,
                             protocol: 'test',
                             stubs: [{
                                 predicates: [{ equals: { field: 'request' } }],
                                 meta: {
-                                    dir: 'stubs/0'
+                                    dir: stubDir
                                 }
                             }]
                         });
 
-                        assert.deepEqual(read('.mbtest/3000/stubs/0/meta.json'), {
-                            responseFiles: ['responses/0.json'],
+                        const meta = read(`.mbtest/3000/${stubDir}/meta.json`),
+                            responseFile = meta.responseFiles[0];
+
+                        assert.deepEqual(meta, {
+                            responseFiles: [responseFile],
                             orderWithRepeats: [0],
                             nextIndex: 0
                         });
 
-                        assert.deepEqual(read('.mbtest/3000/stubs/0/responses/0.json'), { is: { field: 'response' } });
+                        assert.deepEqual(read(`.mbtest/3000/${stubDir}/${responseFile}`), { is: { field: 'response' } });
                     });
             });
 
             promiseIt('should add to stubs file if it already exists', function () {
                 const stubs = repo.stubsFor(3000),
                     firstStub = {
-                        predicates: [{ equals: { field: 'first-request' } }],
-                        responses: [{ is: { field: 'first-response' } }]
+                        predicates: [{ equals: { field: 'request-0' } }],
+                        responses: [{ is: { field: 'response-0' } }]
                     },
                     secondStub = {
-                        predicates: [{ equals: { field: 'second-request' } }],
-                        responses: [{ is: { field: 'second-response' } }]
+                        predicates: [{ equals: { field: 'request-1' } }],
+                        responses: [{ is: { field: 'response-1' } }]
                     };
 
                 return stubs.add(firstStub)
                     .then(() => stubs.add(secondStub))
                     .then(() => {
-                        assert.deepEqual(read('.mbtest/3000/imposter.json'), {
+                        const header = read('.mbtest/3000/imposter.json'),
+                            stubDirs = header.stubs.map(stub => stub.meta.dir);
+
+                        assert.deepEqual(header, {
                             stubs: [
                                 {
-                                    predicates: [{ equals: { field: 'first-request' } }],
-                                    meta: { dir: 'stubs/0' }
+                                    predicates: [{ equals: { field: 'request-0' } }],
+                                    meta: { dir: stubDirs[0] }
                                 },
                                 {
-                                    predicates: [{ equals: { field: 'second-request' } }],
-                                    meta: { dir: 'stubs/1' }
+                                    predicates: [{ equals: { field: 'request-1' } }],
+                                    meta: { dir: stubDirs[1] }
                                 }
                             ]
                         });
 
-                        assert.deepEqual(read('.mbtest/3000/stubs/0/meta.json'), {
-                            responseFiles: ['responses/0.json'],
-                            orderWithRepeats: [0],
-                            nextIndex: 0
+                        stubDirs.forEach((stubDir, index) => {
+                            const meta = read(`.mbtest/3000/${stubDir}/meta.json`),
+                                responseFile = meta.responseFiles[0];
+
+                            assert.deepEqual(meta, {
+                                responseFiles: [responseFile],
+                                orderWithRepeats: [0],
+                                nextIndex: 0
+                            });
+                            assert.deepEqual(read(`.mbtest/3000/${stubDir}/${responseFile}`),
+                                { is: { field: `response-${index}` } });
                         });
-                        assert.deepEqual(read('.mbtest/3000/stubs/1/meta.json'), {
-                            responseFiles: ['responses/0.json'],
-                            orderWithRepeats: [0],
-                            nextIndex: 0
-                        });
-                        assert.deepEqual(read('.mbtest/3000/stubs/0/responses/0.json'),
-                            { is: { field: 'first-response' } });
-                        assert.deepEqual(read('.mbtest/3000/stubs/1/responses/0.json'),
-                            { is: { field: 'second-response' } });
                     });
             });
 
@@ -275,13 +282,18 @@ describe('filesystemBackedImpostersRepository', function () {
                     };
 
                 return stubs.add(stub).then(() => {
-                    assert.deepEqual(read('.mbtest/3000/stubs/0/meta.json'), {
-                        responseFiles: ['responses/0.json', 'responses/1.json'],
+                    const header = read('.mbtest/3000/imposter.json'),
+                        stubDir = header.stubs[0].meta.dir,
+                        meta = read(`.mbtest/3000/${stubDir}/meta.json`),
+                        responseFiles = meta.responseFiles;
+
+                    assert.deepEqual(meta, {
+                        responseFiles: responseFiles,
                         orderWithRepeats: [0, 1],
                         nextIndex: 0
                     });
-                    assert.deepEqual(read('.mbtest/3000/stubs/0/responses/0.json'), { is: { field: 'first-response' } });
-                    assert.deepEqual(read('.mbtest/3000/stubs/0/responses/1.json'), { is: { field: 'second-response' } });
+                    assert.deepEqual(read(`.mbtest/3000/${stubDir}/${responseFiles[0]}`), { is: { field: 'first-response' } });
+                    assert.deepEqual(read(`.mbtest/3000/${stubDir}/${responseFiles[1]}`), { is: { field: 'second-response' } });
                 });
             });
 
@@ -297,8 +309,12 @@ describe('filesystemBackedImpostersRepository', function () {
                     };
 
                 return stubs.add(stub).then(() => {
-                    assert.deepEqual(read('.mbtest/3000/stubs/0/meta.json'), {
-                        responseFiles: ['responses/0.json', 'responses/1.json', 'responses/2.json'],
+                    const header = read('.mbtest/3000/imposter.json'),
+                        stubDir = header.stubs[0].meta.dir,
+                        meta = read(`.mbtest/3000/${stubDir}/meta.json`);
+
+                    assert.deepEqual(meta, {
+                        responseFiles: meta.responseFiles,
                         orderWithRepeats: [0, 0, 1, 2, 2, 2],
                         nextIndex: 0
                     });
@@ -315,19 +331,23 @@ describe('filesystemBackedImpostersRepository', function () {
                     };
 
                 return stubs.insertAtIndex(stub, 0).then(() => {
-                    assert.deepEqual(read('.mbtest/3000/imposter.json'), {
+                    const header = read('.mbtest/3000/imposter.json'),
+                        stubDir = header.stubs[0].meta.dir;
+                    assert.deepEqual(header, {
                         stubs: [{
                             predicates: [{ equals: { field: 'request' } }],
-                            meta: { dir: 'stubs/0' }
+                            meta: { dir: stubDir }
                         }]
                     });
 
-                    assert.deepEqual(read('.mbtest/3000/stubs/0/meta.json'), {
-                        responseFiles: ['responses/0.json'],
+                    const meta = read(`.mbtest/3000/${stubDir}/meta.json`),
+                        responseFile = meta.responseFiles[0];
+                    assert.deepEqual(meta, {
+                        responseFiles: [responseFile],
                         orderWithRepeats: [0],
                         nextIndex: 0
                     });
-                    assert.deepEqual(read('.mbtest/3000/stubs/0/responses/0.json'), { is: { field: 'response' } });
+                    assert.deepEqual(read(`.mbtest/3000/${stubDir}/${responseFile}`), { is: { field: 'response' } });
                 });
             });
 
@@ -350,24 +370,28 @@ describe('filesystemBackedImpostersRepository', function () {
                     .then(() => stubs.add(secondStub))
                     .then(() => stubs.insertAtIndex(newStub, 1))
                     .then(() => {
-                        assert.deepEqual(read('.mbtest/3000/imposter.json'), {
+                        const header = read('.mbtest/3000/imposter.json'),
+                            stubDirs = header.stubs.map(stub => stub.meta.dir);
+                        assert.deepEqual(header, {
                             stubs: [
                                 {
                                     predicates: [{ equals: { field: 'first-request' } }],
-                                    meta: { dir: 'stubs/0' }
+                                    meta: { dir: stubDirs[0] }
                                 },
                                 {
                                     predicates: [{ equals: { field: 'NEW-REQUEST' } }],
-                                    meta: { dir: 'stubs/2' }
+                                    meta: { dir: stubDirs[1] }
                                 },
                                 {
                                     predicates: [{ equals: { field: 'second-request' } }],
-                                    meta: { dir: 'stubs/1' }
+                                    meta: { dir: stubDirs[2] }
                                 }
                             ]
                         });
 
-                        assert.deepEqual(read('.mbtest/3000/stubs/2/responses/0.json'),
+                        const meta = read(`.mbtest/3000/${stubDirs[1]}/meta.json`),
+                            responseFile = meta.responseFiles[0];
+                        assert.deepEqual(read(`.mbtest/3000/${stubDirs[1]}/${responseFile}`),
                             { is: { field: 'NEW-RESPONSE' } });
                     });
             });
@@ -388,26 +412,32 @@ describe('filesystemBackedImpostersRepository', function () {
                         predicates: [{ equals: { field: 'third-request' } }],
                         responses: [{ is: { field: 'third-response' } }]
                     };
+                let stubDirToDelete;
 
                 return stubs.add(firstStub)
                     .then(() => stubs.add(secondStub))
                     .then(() => stubs.add(thirdStub))
-                    .then(() => stubs.deleteAtIndex(1))
                     .then(() => {
-                        assert.deepEqual(read('.mbtest/3000/imposter.json'), {
+                        const header = read('.mbtest/3000/imposter.json');
+                        stubDirToDelete = header.stubs[1].meta.dir;
+                        return stubs.deleteAtIndex(1);
+                    }).then(() => {
+                        const header = read('.mbtest/3000/imposter.json'),
+                            stubDirs = header.stubs.map(stub => stub.meta.dir);
+                        assert.deepEqual(header, {
                             stubs: [
                                 {
                                     predicates: [{ equals: { field: 'first-request' } }],
-                                    meta: { dir: 'stubs/0' }
+                                    meta: { dir: stubDirs[0] }
                                 },
                                 {
                                     predicates: [{ equals: { field: 'third-request' } }],
-                                    meta: { dir: 'stubs/2' }
+                                    meta: { dir: stubDirs[1] }
                                 }
                             ]
                         });
 
-                        assert.ok(!fs.existsSync('.mbtest/3000/stubs/1'));
+                        assert.ok(!fs.existsSync(`.mbtest/3000/${stubDirToDelete}`));
                     });
             });
         });
@@ -427,23 +457,31 @@ describe('filesystemBackedImpostersRepository', function () {
                         predicates: [{ equals: { field: 'third-request' } }],
                         responses: [{ is: { field: 'third-response' } }]
                     };
+                let stubDirToDelete;
 
                 return stubs.add(firstStub)
                     .then(() => stubs.add(secondStub))
-                    .then(() => stubs.overwriteAtIndex(thirdStub, 0))
                     .then(() => {
+                        const header = read('.mbtest/3000/imposter.json');
+                        stubDirToDelete = header.stubs[0].meta.dir;
+                        return stubs.overwriteAtIndex(thirdStub, 0);
+                    }).then(() => {
+                        const header = read('.mbtest/3000/imposter.json'),
+                            stubDirs = header.stubs.map(stub => stub.meta.dir);
                         assert.deepEqual(read('.mbtest/3000/imposter.json'), {
                             stubs: [
                                 {
                                     predicates: [{ equals: { field: 'third-request' } }],
-                                    meta: { dir: 'stubs/2' }
+                                    meta: { dir: stubDirs[0] }
                                 },
                                 {
                                     predicates: [{ equals: { field: 'second-request' } }],
-                                    meta: { dir: 'stubs/1' }
+                                    meta: { dir: stubDirs[1] }
                                 }
                             ]
                         });
+
+                        assert.ok(!fs.existsSync(`.mbtest/3000/${stubDirToDelete}`));
                     });
             });
         });
@@ -458,9 +496,16 @@ describe('filesystemBackedImpostersRepository', function () {
                             { is: { field: 'second-response' } }
                         ]
                     };
+                let responsePath;
 
                 return stubs.add(stub).then(() => {
-                    fs.removeSync('.mbtest/3000/stubs/0/responses/1.json');
+                    const header = read('.mbtest/3000/imposter.json'),
+                        stubDir = header.stubs[0].meta.dir,
+                        meta = read(`.mbtest/3000/${stubDir}/meta.json`),
+                        lastResponseFile = meta.responseFiles[1];
+
+                    responsePath = `.mbtest/3000/${stubDir}/${lastResponseFile}`;
+                    fs.removeSync(responsePath);
                     return stubs.toJSON();
                 }).then(() => {
                     assert.fail('should have errored');
@@ -468,7 +513,7 @@ describe('filesystemBackedImpostersRepository', function () {
                     assert.deepEqual(err, {
                         code: 'corrupted database',
                         message: 'file not found',
-                        details: "ENOENT: no such file or directory, open '.mbtest/3000/stubs/0/responses/1.json'"
+                        details: `ENOENT: no such file or directory, open '${responsePath}'`
                     });
                 });
             });
@@ -482,9 +527,13 @@ describe('filesystemBackedImpostersRepository', function () {
                             { is: { field: 'second-response' } }
                         ]
                     };
+                let metaPath;
 
                 return stubs.add(stub).then(() => {
-                    fs.removeSync('.mbtest/3000/stubs/0/meta.json');
+                    const header = read('.mbtest/3000/imposter.json'),
+                        stubDir = header.stubs[0].meta.dir;
+                    metaPath = `.mbtest/3000/${stubDir}/meta.json`;
+                    fs.removeSync(metaPath);
                     return stubs.toJSON();
                 }).then(() => {
                     assert.fail('should have errored');
@@ -492,7 +541,7 @@ describe('filesystemBackedImpostersRepository', function () {
                     assert.deepEqual(err, {
                         code: 'corrupted database',
                         message: 'file not found',
-                        details: "ENOENT: no such file or directory, open '.mbtest/3000/stubs/0/meta.json'"
+                        details: `ENOENT: no such file or directory, open '${metaPath}'`
                     });
                 });
             });
@@ -506,16 +555,23 @@ describe('filesystemBackedImpostersRepository', function () {
                             { is: { field: 'second-response' } }
                         ]
                     };
+                let responsePath;
 
                 return stubs.add(stub).then(() => {
-                    fs.writeFileSync('.mbtest/3000/stubs/0/responses/1.json', 'CORRUPTED');
+                    const header = read('.mbtest/3000/imposter.json'),
+                        stubDir = header.stubs[0].meta.dir,
+                        meta = read(`.mbtest/3000/${stubDir}/meta.json`),
+                        lastResponseFile = meta.responseFiles[1];
+                    responsePath = `.mbtest/3000/${stubDir}/${lastResponseFile}`;
+
+                    fs.writeFileSync(responsePath, 'CORRUPTED');
                     return stubs.toJSON();
                 }).then(() => {
                     assert.fail('should have errored');
                 }).catch(err => {
                     assert.deepEqual(err, {
                         code: 'corrupted database',
-                        message: 'invalid JSON in .mbtest/3000/stubs/0/responses/1.json',
+                        message: `invalid JSON in ${responsePath}`,
                         details: 'Unexpected token C in JSON at position 0'
                     });
                 });
