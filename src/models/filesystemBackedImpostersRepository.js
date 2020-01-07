@@ -196,7 +196,10 @@ function readAndWriteFile (filepath, transformer, logger = console, defaultConte
                 .then(original => transformer(original))
                 .then(transformed => writeFile(tmpfile, transformed))
                 .then(() => rename(tmpfile, filepath))
-                .then(() => release());
+                .then(() => release())
+                .catch(err => {
+                    return release().then(() => Q.reject(err));
+                });
         })
         .catch(err => {
             logger.error(`Unable to acquire or release lock on ${filepath}: ${err}`);
