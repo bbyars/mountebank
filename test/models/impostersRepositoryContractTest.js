@@ -9,6 +9,7 @@
 const assert = require('assert'),
     promiseIt = require('../testHelpers').promiseIt,
     fs = require('fs-extra'),
+    Logger = require('../fakes/fakeLogger'),
     types = [
         {
             name: 'inMemoryImpostersRepository',
@@ -18,7 +19,7 @@ const assert = require('assert'),
         },
         {
             name: 'filesystemBackedImpostersRepository',
-            create: () => require('../../src/models/filesystemBackedImpostersRepository').create({ datadir: '.mbtest' }),
+            create: () => require('../../src/models/filesystemBackedImpostersRepository').create({ datadir: '.mbtest' }, Logger.create()),
             beforeEach: () => {},
             afterEach: () => { fs.removeSync('.mbtest'); }
         }
