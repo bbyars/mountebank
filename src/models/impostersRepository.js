@@ -8,11 +8,12 @@
 /**
  * Creates the repository based on startup configuration
  * @param {Object} config - The startup configuration
+ * @param {Object} logger - The logger
  * @returns {Object} - the repository
  */
-function create (config) {
+function create (config, logger) {
     if (config.datadir) {
-        return require('./filesystemBackedImposterRepository').create(config);
+        return require('./filesystemBackedImposterRepository').create(config, logger);
     }
     else {
         return require('./inMemoryImpostersRepository').create(config.imposters);
