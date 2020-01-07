@@ -105,20 +105,33 @@ function writeFile (filepath, obj) {
     return deferred.promise;
 }
 
-function readFile (filepath) {
+function readFile (filepath, logger = console, defaultContents) {
     const Q = require('q'),
         deferred = Q.defer(),
-        fs = require('fs');
+        fs = require('fs'),
+        errors = require('../util/errors');
 
     fs.readFile(filepath, 'utf8', (err, data) => {
         if (err && err.code === 'ENOENT') {
-            deferred.resolve(null);
+            if (typeof defaultContents === 'undefined') {
+                logger.error(`Corrupted database: missing file ${filepath}`);
+                deferred.reject(errors.DatabaseError('file not found', { details: err.message }));
+            }
+            else {
+                deferred.resolve(defaultContents);
+            }
         }
         else if (err) {
             deferred.reject(err);
         }
         else {
-            deferred.resolve(JSON.parse(data));
+            try {
+                deferred.resolve(JSON.parse(data));
+            }
+            catch (parseErr) {
+                logger.error(`Corrupted database: invalid JSON for ${filepath}`);
+                deferred.reject(errors.DatabaseError(`invalid JSON in ${filepath}`, { details: parseErr.message }));
+            }
         }
     });
 
@@ -161,7 +174,7 @@ function ensureDir (filepath) {
     return deferred.promise;
 }
 
-function readAndWriteFile (filepath, transformer, logger = console) {
+function readAndWriteFile (filepath, transformer, logger = console, defaultContents) {
     const locker = require('proper-lockfile'),
         options = {
             realpath: false,
@@ -179,7 +192,7 @@ function readAndWriteFile (filepath, transformer, logger = console) {
     return ensureDir(filepath)
         .then(() => locker.lock(filepath, options))
         .then(release => {
-            return readFile(filepath)
+            return readFile(filepath, logger, defaultContents)
                 .then(original => transformer(original))
                 .then(transformed => writeFile(tmpfile, transformed))
                 .then(() => rename(tmpfile, filepath))
@@ -235,7 +248,7 @@ function timeSorter (first, second) {
     return result;
 }
 
-function loadAllInDir (path) {
+function loadAllInDir (path, logger) {
     const Q = require('q'),
         deferred = Q.defer(),
         fs = require('fs-extra');
@@ -252,7 +265,7 @@ function loadAllInDir (path) {
             const promises = files
                 .filter(file => file.indexOf('.json') > 0)
                 .sort(timeSorter)
-                .map(file => readFile(`${path}/${file}`));
+                .map(file => readFile(`${path}/${file}`, logger));
 
             Q.all(promises).done(deferred.resolve);
         }
@@ -287,23 +300,16 @@ function stubRepository (imposterDir, logger) {
         return `${imposterDir}/requests/${epoch}-${process.pid}-${counter}.json`;
     }
 
-    function headerOrDefault (header) {
+    function readHeader () {
         // Due to historical design decisions when everything was in memory, stubs are actually
         // added (in imposter.js) _before_ the imposter is added (in impostersController.js). This
         // means that the stubs repository needs to gracefully handle the case where the header file
         // does not yet exist
-        const result = header === null ? {} : header;
-        result.stubs = result.stubs || [];
-        return result;
-    }
-
-    function readHeader () {
-        return readFile(headerFile).then(headerOrDefault);
+        return readFile(headerFile, logger, { stubs: [] });
     }
 
     function readAndWriteHeader (transformer) {
-        const newTransformer = header => transformer(headerOrDefault(header));
-        return readAndWriteFile(headerFile, newTransformer, logger);
+        return readAndWriteFile(headerFile, transformer, logger, { stubs: [] });
     }
 
     function next (paths, template) {
@@ -379,7 +385,7 @@ function stubRepository (imposterDir, logger) {
 
                 meta.nextIndex = (meta.nextIndex + 1) % maxIndex;
                 return Q(meta);
-            }).then(() => readFile(responsePath(stubDir, responseFile)))
+            }).then(() => readFile(responsePath(stubDir, responseFile), logger))
                 .then(responseConfig => Response.create(responseConfig, stubIndex));
         };
 
@@ -515,8 +521,9 @@ function stubRepository (imposterDir, logger) {
 
     function loadResponses (stub) {
         const Q = require('q');
-        return readFile(metaPath(stub.meta.dir))
-            .then(meta => Q.all(meta.responseFiles.map(responseFile => readFile(responsePath(stub.meta.dir, responseFile)))));
+        return readFile(metaPath(stub.meta.dir), logger)
+            .then(meta => Q.all(meta.responseFiles.map(responseFile =>
+                readFile(responsePath(stub.meta.dir, responseFile), logger))));
     }
 
     /**
@@ -575,7 +582,7 @@ function stubRepository (imposterDir, logger) {
      * @returns {Object} - the promise resolving to the array of requests
      */
     function loadRequests () {
-        return loadAllInDir(`${imposterDir}/requests`);
+        return loadAllInDir(`${imposterDir}/requests`, logger);
     }
 
     return {
@@ -631,16 +638,12 @@ function create (config, logger) {
         // added (in imposter.js) _before_ the imposter is added (in impostersController.js). This
         // means that the header file may already exist (or not, if the imposter has no stubs).
         return readAndWriteFile(headerFile(imposter.port), header => {
-            if (header === null) {
-                header = { stubs: [] };
-            }
-
             const helpers = require('../util/helpers'),
                 cloned = helpers.clone(imposter);
             cloned.stubs = header.stubs;
             delete cloned.requests;
             return Q(cloned);
-        }, logger).then(() => {
+        }, logger, { stubs: [] }).then(() => {
             const id = String(imposter.port);
             imposters[id] = { stop: imposter.stop };
             return imposter;
@@ -653,7 +656,7 @@ function create (config, logger) {
      * @returns {Object} - the promise resolving to the imposter
      */
     function get (id) {
-        return readFile(headerFile(id)).then(header => {
+        return readFile(headerFile(id), logger, null).then(header => {
             if (header === null) {
                 return Q(null);
             }

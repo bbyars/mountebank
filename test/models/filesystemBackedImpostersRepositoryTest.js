@@ -462,5 +462,82 @@ describe('filesystemBackedImpostersRepository', function () {
                     });
             });
         });
+
+        describe('#toJSON', function () {
+            promiseIt('should error if database corrupted via deleted response file', function () {
+                const repo = Repo.create({ datadir: '.mbtest' }),
+                    stubs = repo.stubsFor(3000),
+                    stub = {
+                        predicates: [{ equals: { field: 'request' } }],
+                        responses: [
+                            { is: { field: 'first-response' } },
+                            { is: { field: 'second-response' } }
+                        ]
+                    };
+
+                return stubs.add(stub).then(() => {
+                    fs.removeSync('.mbtest/3000/stubs/0/responses/1.json');
+                    return stubs.toJSON();
+                }).then(() => {
+                    assert.fail('should have errored');
+                }).catch(err => {
+                    assert.deepEqual(err, {
+                        code: 'corrupted database',
+                        message: 'file not found',
+                        details: "ENOENT: no such file or directory, open '.mbtest/3000/stubs/0/responses/1.json'"
+                    });
+                });
+            });
+
+            promiseIt('should error if database corrupted via deleted meta file', function () {
+                const repo = Repo.create({ datadir: '.mbtest' }),
+                    stubs = repo.stubsFor(3000),
+                    stub = {
+                        predicates: [{ equals: { field: 'request' } }],
+                        responses: [
+                            { is: { field: 'first-response' } },
+                            { is: { field: 'second-response' } }
+                        ]
+                    };
+
+                return stubs.add(stub).then(() => {
+                    fs.removeSync('.mbtest/3000/stubs/0/meta.json');
+                    return stubs.toJSON();
+                }).then(() => {
+                    assert.fail('should have errored');
+                }).catch(err => {
+                    assert.deepEqual(err, {
+                        code: 'corrupted database',
+                        message: 'file not found',
+                        details: "ENOENT: no such file or directory, open '.mbtest/3000/stubs/0/meta.json'"
+                    });
+                });
+            });
+
+            promiseIt('should error if database corrupted via corrupted JSON', function () {
+                const repo = Repo.create({ datadir: '.mbtest' }),
+                    stubs = repo.stubsFor(3000),
+                    stub = {
+                        predicates: [{ equals: { field: 'request' } }],
+                        responses: [
+                            { is: { field: 'first-response' } },
+                            { is: { field: 'second-response' } }
+                        ]
+                    };
+
+                return stubs.add(stub).then(() => {
+                    fs.writeFileSync('.mbtest/3000/stubs/0/responses/1.json', 'CORRUPTED');
+                    return stubs.toJSON();
+                }).then(() => {
+                    assert.fail('should have errored');
+                }).catch(err => {
+                    assert.deepEqual(err, {
+                        code: 'corrupted database',
+                        message: 'invalid JSON in .mbtest/3000/stubs/0/responses/1.json',
+                        details: 'Unexpected token C in JSON at position 0'
+                    });
+                });
+            });
+        });
     });
 });
