@@ -187,11 +187,21 @@ function createStubsRepository () {
 
     /**
      * Returns a JSON-convertible representation
+     * @param {Object} options - The formatting options
+     * @param {Boolean} options.debug - If true, includes debug information
      * @returns {Object} - the promise resolving to the JSON object
      */
-    function toJSON () {
-        const helpers = require('../util/helpers');
-        return Q(helpers.clone(stubs));
+    function toJSON (options = {}) {
+        const helpers = require('../util/helpers'),
+            cloned = helpers.clone(stubs);
+
+        cloned.forEach(stub => {
+            if (!options.debug) {
+                delete stub.matches;
+            }
+        });
+
+        return Q(cloned);
     }
 
     function isRecordedResponse (response) {

@@ -362,14 +362,11 @@ types.forEach(function (type) {
                     return stubs.add({})
                         .then(() => stubs.first(() => true))
                         .then(match => match.stub.recordMatch('REQUEST', 'RESPONSE'))
-                        .then(() => stubs.toJSON())
+                        .then(() => stubs.toJSON({ debug: true }))
                         .then(all => {
-                            // matches not supported by filesystemBackedImpostersRepository
-                            if (type.name !== 'filesystemBackedImpostersRepository') {
-                                assert.strictEqual(1, all[0].matches.length);
-                                delete all[0].matches[0].timestamp;
-                                assert.deepEqual(all[0].matches, [{ request: 'REQUEST', response: 'RESPONSE' }]);
-                            }
+                            assert.strictEqual(1, all[0].matches.length);
+                            delete all[0].matches[0].timestamp;
+                            assert.deepEqual(all[0].matches, [{ request: 'REQUEST', response: 'RESPONSE' }]);
                         });
                 });
             });
@@ -399,6 +396,18 @@ types.forEach(function (type) {
                         .then(() => stubs.toJSON())
                         .then(json => {
                             assert.deepEqual(json, [first, second]);
+                        });
+                });
+
+                promiseIt('should not return matches if debug option not set', function () {
+                    const stubs = repo.stubsFor(1);
+
+                    return stubs.add({})
+                        .then(() => stubs.first(() => true))
+                        .then(match => match.stub.recordMatch('REQUEST', 'RESPONSE'))
+                        .then(() => stubs.toJSON())
+                        .then(all => {
+                            assert.strictEqual(typeof all[0].matches, 'undefined');
                         });
                 });
             });

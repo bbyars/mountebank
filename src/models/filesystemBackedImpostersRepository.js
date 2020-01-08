@@ -36,6 +36,10 @@
  *               "is": { "body": "Hello, world!" }
  *             }
  *
+ *         /matches
+ *             /{epoch-pid-counter}.json
+ *                 { ... }
+ *
  *     /requests
  *       /{epoch-pid-counter}.json
  *         { ... }
@@ -307,6 +311,10 @@ function create (config, logger) {
             return `${baseDir}/requests/${filenameFor(Date.parse(request.timestamp))}.json`;
         }
 
+        function matchPath (stubDir, match) {
+            return `${baseDir}/${stubDir}/matches/${filenameFor(Date.parse(match.timestamp))}.json`;
+        }
+
         function readHeader () {
             // Due to historical design decisions when everything was in memory, stubs are actually
             // added (in imposter.js) _before_ the imposter is added (in impostersController.js). This
@@ -384,7 +392,15 @@ function create (config, logger) {
                     .then(responseConfig => Response.create(responseConfig, stubIndex));
             };
 
-            cloned.recordMatch = () => Q();
+            cloned.recordMatch = (request, response) => {
+                const match = {
+                    timestamp: new Date().toJSON(),
+                    request,
+                    response
+                };
+                writeFile(matchPath(stubDir, match), match);
+            };
+
             return cloned;
         }
 
@@ -516,20 +532,32 @@ function create (config, logger) {
                     readFile(responsePath(stub.meta.dir, responseFile)))));
         }
 
+        function loadMatches (stub) {
+            return loadAllInDir(`${baseDir}/${stub.meta.dir}/matches`);
+        }
+
         /**
          * Returns a JSON-convertible representation
+         * @param {Object} options - The formatting options
+         * @param {Boolean} options.debug - If true, includes debug information
          * @returns {Object} - the promise resolving to the JSON object
          */
-        function toJSON () {
+        function toJSON (options = {}) {
             return readHeader().then(header => {
-                const loadPromises = header.stubs.map(loadResponses);
+                const responsePromises = header.stubs.map(loadResponses),
+                    debugPromises = options.debug ? header.stubs.map(loadMatches) : [];
 
-                return Q.all(loadPromises).then(stubResponses => {
-                    header.stubs.forEach((stub, index) => {
-                        stub.responses = stubResponses[index];
-                        delete stub.meta;
+                return Q.all(responsePromises).then(stubResponses => {
+                    return Q.all(debugPromises).then(matches => {
+                        header.stubs.forEach((stub, index) => {
+                            stub.responses = stubResponses[index];
+                            if (options.debug) {
+                                stub.matches = matches[index];
+                            }
+                            delete stub.meta;
+                        });
+                        return header.stubs;
                     });
-                    return header.stubs;
                 });
             });
         }

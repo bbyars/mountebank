@@ -13,7 +13,7 @@ function create (creationRequest, server, loadRequests) {
 
         return loadRequests().then(requests => {
             result.requests = requests;
-            return server.stubs.toJSON();
+            return server.stubs.toJSON({ debug: true });
         }).then(all => {
             result.stubs = all;
             for (let i = 0; i < result.stubs.length; i += 1) {
