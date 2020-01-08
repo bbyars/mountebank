@@ -113,9 +113,9 @@ description = 'Command line parameters for starting mountebank'
     <td>Include a <code>matches</code> array with each stub in the body of a
       <a href='/docs/api/overview#get-imposter'>GET imposter</a> response
       for debugging why a particular stub did or did not match a request.
-
-      <p class='warning-icon'>This option is not available in conjunction with the
-      <code>datadir</code> option.</p></td>
+      Every time a response from the stub is used, a match will be added containing
+      the request, the response configuration, the actual generated response (even
+      if it is proxied), and the overall processing time.
     <td><code>false</code></td>
   </tr>
   <tr>

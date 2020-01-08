@@ -68,14 +68,18 @@ function wrap (stub = {}) {
      * Records a match for debugging purposes
      * @param {Object} request - the request
      * @param {Object} response - the response
+     * @param {Object} responseConfig - the config that generated the response
+     * @param {Number} processingTime - the time to match the predicate and generate the full response
      * @returns {Object} - the promise
      */
-    cloned.recordMatch = (request, response) => {
+    cloned.recordMatch = (request, response, responseConfig, processingTime) => {
         cloned.matches = cloned.matches || [];
         cloned.matches.push({
             timestamp: new Date().toJSON(),
             request,
-            response
+            response,
+            responseConfig,
+            processingTime
         });
         return Q();
     };

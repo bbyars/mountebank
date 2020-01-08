@@ -392,13 +392,23 @@ function create (config, logger) {
                     .then(responseConfig => Response.create(responseConfig, stubIndex));
             };
 
-            cloned.recordMatch = (request, response) => {
+            /**
+             * Records a match for debugging purposes
+             * @param {Object} request - the request
+             * @param {Object} response - the response
+             * @param {Object} responseConfig - the config that generated the response
+             * @param {Number} processingTime - the time to match the predicate and generate the full response
+             * @returns {Object} - the promise
+             */
+            cloned.recordMatch = (request, response, responseConfig, processingTime) => {
                 const match = {
                     timestamp: new Date().toJSON(),
                     request,
-                    response
+                    response,
+                    responseConfig,
+                    processingTime
                 };
-                writeFile(matchPath(stubDir, match), match);
+                return writeFile(matchPath(stubDir, match), match);
             };
 
             return cloned;

@@ -50,7 +50,8 @@ function create (Protocol, creationRequest, baseLogger, config, isAllowedConnect
         compatibility = require('./compatibility'),
         logger = require('../util/scopedLogger').create(baseLogger, scopeFor(creationRequest.port)),
         helpers = require('../util/helpers'),
-        imposterState = {};
+        imposterState = {},
+        unresolvedProxies = {};
 
     let stubs;
     let resolver;
@@ -81,22 +82,26 @@ function create (Protocol, creationRequest, baseLogger, config, isAllowedConnect
         });
     }
 
-    function recordMatch (stub, request, response, responseConfig) {
+    function recordMatch (stub, request, response, responseConfig, start) {
         if (response.proxy) {
-            // Out of process proxying. Just save the responseConfig.
-            // I used to carry the function context around to getProxyResponseFor to
-            // save the actual response, but it's too much complexity for too little
-            // value, as I consider  saving the matches a tactical design error in retrospect
-            // but give a head nod to backwards compatibility.
-            return stub.recordMatch(request, responseConfig);
+            // Out of process proxying, so we don't have the actual response yet.
+            const parts = response.callbackURL.split('/'),
+                proxyResolutionKey = parts[parts.length - 1];
+
+            unresolvedProxies[proxyResolutionKey] = {
+                recordMatch: proxyResponse => {
+                    return stub.recordMatch(request, proxyResponse, responseConfig, new Date() - start);
+                }
+            };
+            return Q();
         }
         else if (response.response) {
             // Out of process responses wrap the result in an outer response object
-            return stub.recordMatch(request, response.response);
+            return stub.recordMatch(request, response.response, responseConfig, new Date() - start);
         }
         else {
             // In process resolution
-            return stub.recordMatch(request, response);
+            return stub.recordMatch(request, response, responseConfig, new Date() - start);
         }
     }
 
@@ -108,6 +113,8 @@ function create (Protocol, creationRequest, baseLogger, config, isAllowedConnect
             return Q({ blocked: true, code: 'unauthorized ip address' });
         }
 
+        const start = new Date();
+
         numberOfRequests += 1;
         if (recordRequests) {
             stubs.addRequest(request);
@@ -118,7 +125,7 @@ function create (Protocol, creationRequest, baseLogger, config, isAllowedConnect
                 logger.debug(`generating response from ${JSON.stringify(responseConfig)}`);
                 return resolver.resolve(responseConfig, request, logger, imposterState, requestDetails).then(response => {
                     if (config.recordMatches) {
-                        return recordMatch(match.stub, request, response, responseConfig).then(() => response);
+                        return recordMatch(match.stub, request, response, responseConfig, start).then(() => response);
                     }
                     return response;
                 });
@@ -127,7 +134,14 @@ function create (Protocol, creationRequest, baseLogger, config, isAllowedConnect
     }
 
     function getProxyResponseFor (proxyResponse, proxyResolutionKey) {
-        return resolver.resolveProxy(proxyResponse, proxyResolutionKey, logger);
+        return resolver.resolveProxy(proxyResponse, proxyResolutionKey, logger).then(response => {
+            let promise = Q();
+            if (config.recordMatches && unresolvedProxies[String(proxyResolutionKey)].recordMatch) {
+                promise = unresolvedProxies[String(proxyResolutionKey)].recordMatch(response);
+            }
+            delete unresolvedProxies[String(proxyResolutionKey)];
+            return promise.then(() => response);
+        });
     }
 
     domain.on('error', errorHandler);
