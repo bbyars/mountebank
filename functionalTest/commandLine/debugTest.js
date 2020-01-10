@@ -174,6 +174,9 @@ describe('--debug flag', function () {
             .finally(() => {
                 fs.removeSync('recordMatchTest.json');
                 mb.stop();
+
+                // I can't figure out why this is needed, but without it, the next test fails.
+                return require('q').delay(100);
             });
     });
 });
