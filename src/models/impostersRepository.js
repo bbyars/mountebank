@@ -13,7 +13,7 @@
  */
 function create (config, logger) {
     if (config.datadir) {
-        return require('./filesystemBackedImposterRepository').create(config, logger);
+        return require('./filesystemBackedImpostersRepository').create(config, logger);
     }
     else {
         return require('./inMemoryImpostersRepository').create(config.imposters);

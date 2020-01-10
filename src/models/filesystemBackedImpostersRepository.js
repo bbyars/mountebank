@@ -197,6 +197,7 @@ function create (config, logger) {
             tmpfile = filepath + '.tmp';
 
         // with realpath = false, the file doesn't have to exist, but the directory does
+        logger.debug(`Acquiring file lock on ${filepath}`);
         return ensureDir(filepath)
             .then(() => locker.lock(filepath, options))
             .then(release => {
@@ -204,7 +205,10 @@ function create (config, logger) {
                     .then(original => transformer(original))
                     .then(transformed => writeFile(tmpfile, transformed))
                     .then(() => rename(tmpfile, filepath))
-                    .then(() => release());
+                    .then(() => {
+                        logger.debug(`Releasing file lock on ${filepath}`)
+                        return release();
+                    });
             })
             .catch(err => {
                 locker.unlock(filepath, { realpath: false }).catch(unlockErr => {
@@ -661,7 +665,10 @@ function create (config, logger) {
             return Q(cloned);
         }, { stubs: [] }).then(() => {
             const id = String(imposter.port);
-            imposters[id] = { stop: imposter.stop };
+            imposters[id] = {
+                stop: imposter.stop,
+                toJSON: imposter.toJSON
+            };
             return imposter;
         });
     }
@@ -679,6 +686,7 @@ function create (config, logger) {
 
             return stubsFor(id).toJSON().then(stubs => {
                 header.stubs = stubs;
+                header.toJSON = imposters[id].toJSON;
                 return header;
             });
         });
