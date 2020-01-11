@@ -206,7 +206,7 @@ function create (config, logger) {
                     .then(transformed => writeFile(tmpfile, transformed))
                     .then(() => rename(tmpfile, filepath))
                     .then(() => {
-                        logger.debug(`Releasing file lock on ${filepath}`)
+                        logger.debug(`Releasing file lock on ${filepath}`);
                         return release();
                     });
             })

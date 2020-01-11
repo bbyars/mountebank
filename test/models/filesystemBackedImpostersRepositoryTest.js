@@ -33,6 +33,10 @@ describe('filesystemBackedImpostersRepository', function () {
         fs.writeFileSync(filename, JSON.stringify(obj, null, 2));
     }
 
+    function stripFunctions (obj) {
+        return JSON.parse(JSON.stringify(obj));
+    }
+
     describe('#add', function () {
         promiseIt('should create a header file for imposter', function () {
             return repo.add({ port: 1000, protocol: 'test', customField: true, stubs: [], requests: [] }).then(() => {
@@ -88,7 +92,7 @@ describe('filesystemBackedImpostersRepository', function () {
             return repo.add(first)
                 .then(() => repo.all())
                 .then(all => {
-                    assert.deepEqual(all, [{ port: 1000, protocol: 'test', stubs: [] }]);
+                    assert.deepEqual(stripFunctions(all), [{ port: 1000, protocol: 'test', stubs: [] }]);
                 });
         });
     });
@@ -109,7 +113,7 @@ describe('filesystemBackedImpostersRepository', function () {
                 .then(() => repo.del(1000))
                 .then(deleted => {
                     assert.strictEqual(fs.existsSync('.mbtest/1000'), false);
-                    assert.deepEqual(deleted, imposter);
+                    assert.deepEqual(stripFunctions(deleted), imposter);
                 });
         });
 

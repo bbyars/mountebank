@@ -47,7 +47,7 @@ types.forEach(function (type) {
                 return repo.add({ port: 1, value: 2 })
                     .then(() => repo.get(1))
                     .then(imposter => {
-                        assert.deepEqual(imposter, { port: 1, value: 2, stubs: [] });
+                        assert.deepEqual(stripFunctions(imposter), { port: 1, value: 2, stubs: [] });
                     });
             });
 
@@ -55,7 +55,7 @@ types.forEach(function (type) {
                 return repo.add({ port: '1', value: 2 })
                     .then(() => repo.get(1))
                     .then(imposter => {
-                        assert.deepEqual(imposter, { port: '1', value: 2, stubs: [] });
+                        assert.deepEqual(stripFunctions(imposter), { port: '1', value: 2, stubs: [] });
                     });
             });
 
@@ -63,7 +63,7 @@ types.forEach(function (type) {
                 return repo.add({ port: 1, value: 2 })
                     .then(() => repo.get('1'))
                     .then(imposter => {
-                        assert.deepEqual(imposter, { port: 1, value: 2, stubs: [] });
+                        assert.deepEqual(stripFunctions(imposter), { port: 1, value: 2, stubs: [] });
                     });
             });
         });
@@ -90,7 +90,7 @@ types.forEach(function (type) {
                     .then(() => repo.add(imposter))
                     .then(() => repo.get('1'))
                     .then(saved => {
-                        assert.deepEqual(saved, imposter);
+                        assert.deepEqual(stripFunctions(saved), imposter);
                     });
             });
         });
@@ -107,7 +107,7 @@ types.forEach(function (type) {
                     .then(() => repo.add({ port: 2, value: 3 }))
                     .then(repo.all)
                     .then(imposters => {
-                        assert.deepEqual(imposters, [
+                        assert.deepEqual(stripFunctions(imposters), [
                             { port: 1, value: 2, stubs: [] },
                             { port: 2, value: 3, stubs: [] }
                         ]);
@@ -136,7 +136,7 @@ types.forEach(function (type) {
                     .then(() => repo.add(second))
                     .then(repo.all)
                     .then(imposters => {
-                        assert.deepEqual(imposters, [first, second]);
+                        assert.deepEqual(stripFunctions(imposters), [first, second]);
                     });
             });
         });
