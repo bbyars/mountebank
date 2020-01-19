@@ -13,16 +13,16 @@ describe('database concurrency', function () {
         fs.removeSync('.mbtest');
     });
 
-    describe('#nextResponse', function () {
-        function logger () {
-            return {
-                debug: () => {},
-                info: () => {},
-                warn: msg => { console.log(msg); },
-                error: msg => { console.error(msg); }
-            };
-        }
+    function logger () {
+        return {
+            debug: () => {},
+            info: () => {},
+            warn: msg => { console.log(msg); },
+            error: msg => { console.error(msg); }
+        };
+    }
 
+    describe('#nextResponse', function () {
         function responseFor (i) {
             return { is: { value: i } };
         }

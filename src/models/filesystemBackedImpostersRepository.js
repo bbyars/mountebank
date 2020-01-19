@@ -88,7 +88,8 @@
  * @returns {Object}
  */
 function create (config, logger) {
-    let counter = 0;
+    let counter = 0,
+        locks = 0;
     const Q = require('q'),
         imposterFns = {};
 
@@ -183,7 +184,7 @@ function create (config, logger) {
         return deferred.promise;
     }
 
-    function readAndWriteFile (filepath, transformer, defaultContents) {
+    function readAndWriteFile (filepath, caller, transformer, defaultContents) {
         const locker = require('proper-lockfile'),
             options = {
                 realpath: false,
@@ -194,10 +195,14 @@ function create (config, logger) {
                     randomize: true
                 }
             },
-            tmpfile = filepath + '.tmp';
+            tmpfile = filepath + '.tmp',
+            currentLockId = locks,
+            start = new Date();
+
+        locks += 1;
 
         // with realpath = false, the file doesn't have to exist, but the directory does
-        logger.debug(`Acquiring file lock on ${filepath}`);
+        logger.debug(`Acquiring file lock on ${filepath} for ${caller}-${currentLockId}`);
         return ensureDir(filepath)
             .then(() => locker.lock(filepath, options))
             .then(release => {
@@ -206,13 +211,14 @@ function create (config, logger) {
                     .then(transformed => writeFile(tmpfile, transformed))
                     .then(() => rename(tmpfile, filepath))
                     .then(() => {
-                        logger.debug(`Releasing file lock on ${filepath}`);
+                        const lockDuration = new Date() - start;
+                        logger.debug(`Releasing file lock on ${filepath} for ${caller}-${currentLockId} after ${lockDuration}ms`);
                         return release();
                     });
             })
             .catch(err => {
                 locker.unlock(filepath, { realpath: false }).catch(unlockErr => {
-                    logger.error(`Failed to unlock ${filepath}: ${unlockErr}`);
+                    logger.error(`Failed to unlock ${filepath} for ${caller}-${currentLockId}: ${unlockErr}`);
                 });
                 return Q.reject(err);
             });
@@ -327,8 +333,8 @@ function create (config, logger) {
             return readFile(imposterFile, { stubs: [] });
         }
 
-        function readAndWriteHeader (transformer) {
-            return readAndWriteFile(imposterFile, transformer, { stubs: [] });
+        function readAndWriteHeader (caller, transformer) {
+            return readAndWriteFile(imposterFile, caller, transformer, { stubs: [] });
         }
 
         function wrap (stub) {
@@ -354,7 +360,7 @@ function create (config, logger) {
              */
             cloned.addResponse = response => {
                 let responseFile;
-                return readAndWriteFile(metaPath(stubDir), meta => {
+                return readAndWriteFile(metaPath(stubDir), 'addResponse', meta => {
                     const responseIndex = meta.responseFiles.length;
                     responseFile = `responses/${filenameFor(new Date())}.json`;
 
@@ -384,7 +390,7 @@ function create (config, logger) {
              */
             cloned.nextResponse = () => {
                 let responseFile;
-                return readAndWriteFile(metaPath(stubDir), meta => {
+                return readAndWriteFile(metaPath(stubDir), 'nextResponse', meta => {
                     const maxIndex = meta.orderWithRepeats.length,
                         responseIndex = meta.orderWithRepeats[meta.nextIndex % maxIndex];
 
@@ -449,16 +455,17 @@ function create (config, logger) {
          * @returns {Object} - the promise
          */
         function add (stub) { // eslint-disable-line no-shadow
-            return insertAtIndex(stub, 99999999);
+            return insertAtIndex(stub, 99999999, 'addStub');
         }
 
         /**
          * Inserts a new stub at the given index
          * @param {Object} stub - the stub to add
          * @param {Number} index - the index to insert the new stub at
+         * @param {String} caller - Internal, used for debug logging
          * @returns {Object} - the promise
          */
-        function insertAtIndex (stub, index) {
+        function insertAtIndex (stub, index, caller = 'insertStubAtIndex') {
             const stubDefinition = { meta: { dir: '' } },
                 meta = {
                     responseFiles: [],
@@ -472,7 +479,7 @@ function create (config, logger) {
                 stubDefinition.predicates = stub.predicates;
             }
 
-            return readAndWriteHeader(header => {
+            return readAndWriteHeader(caller, header => {
                 stubDefinition.meta.dir = `stubs/${filenameFor(new Date())}`;
 
                 for (let i = 0; i < responses.length; i += 1) {
@@ -500,7 +507,7 @@ function create (config, logger) {
         function deleteAtIndex (index) {
             let stubDir;
 
-            return readAndWriteHeader(header => {
+            return readAndWriteHeader('deleteStubAtIndex', header => {
                 const errors = require('../util/errors');
 
                 if (typeof header.stubs[index] === 'undefined') {
@@ -519,7 +526,7 @@ function create (config, logger) {
          * @returns {Object} - the promise
          */
         function overwriteAll (newStubs) {
-            return readAndWriteHeader(header => {
+            return readAndWriteHeader('overwriteAllStubs', header => {
                 header.stubs = [];
                 return remove(`${baseDir}/stubs`).then(() => header);
             }).then(() => {
@@ -678,7 +685,7 @@ function create (config, logger) {
         // Due to historical design decisions when everything was in memory, stubs are actually
         // added (in imposter.js) _before_ the imposter is added (in impostersController.js). This
         // means that the header file may already exist (or not, if the imposter has no stubs).
-        return readAndWriteFile(headerFile(header.port), saved => {
+        return readAndWriteFile(headerFile(header.port), 'addImposter', saved => {
             header.stubs = saved.stubs;
             return header;
         }, { stubs: [] }).then(() => {
