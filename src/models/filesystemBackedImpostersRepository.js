@@ -188,7 +188,7 @@ function create (config, logger) {
             options = {
                 realpath: false,
                 retries: {
-                    retries: 5,
+                    retries: 10,
                     factor: 2,
                     minTimeout: 50,
                     randomize: true
@@ -459,10 +459,7 @@ function create (config, logger) {
          * @returns {Object} - the promise
          */
         function insertAtIndex (stub, index) {
-            const stubDefinition = {
-                    predicates: stub.predicates || [],
-                    meta: { dir: '' }
-                },
+            const stubDefinition = { meta: { dir: '' } },
                 meta = {
                     responseFiles: [],
                     orderWithRepeats: [],
@@ -470,6 +467,10 @@ function create (config, logger) {
                 },
                 responses = stub.responses || [],
                 promises = [];
+
+            if (stub.predicates) {
+                stubDefinition.predicates = stub.predicates;
+            }
 
             return readAndWriteHeader(header => {
                 stubDefinition.meta.dir = `stubs/${filenameFor(new Date())}`;

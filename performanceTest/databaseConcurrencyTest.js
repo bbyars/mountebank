@@ -14,6 +14,15 @@ describe('database concurrency', function () {
     });
 
     describe('#nextResponse', function () {
+        function logger () {
+            return {
+                debug: () => {},
+                info: () => {},
+                warn: msg => { console.log(msg); },
+                error: msg => { console.error(msg); }
+            };
+        }
+
         function responseFor (i) {
             return { is: { value: i } };
         }
@@ -23,7 +32,7 @@ describe('database concurrency', function () {
         }
 
         promiseIt('should handle concurrent load correctly and performantly', function () {
-            const repo = Repo.create({ datadir: '.mbtest' }).stubsFor(1000),
+            const repo = Repo.create({ datadir: '.mbtest' }, logger()).stubsFor(1000),
                 startingValues = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
                 responses = startingValues.map(responseFor),
                 start = new Date(),
