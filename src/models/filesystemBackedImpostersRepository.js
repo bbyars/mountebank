@@ -90,7 +90,7 @@
 function create (config, logger) {
     let counter = 0;
     const Q = require('q'),
-        imposters = {};
+        imposterFns = {};
 
     function writeFile (filepath, obj) {
         const fs = require('fs-extra'),
@@ -565,7 +565,7 @@ function create (config, logger) {
                     return Q.all(debugPromises).then(matches => {
                         header.stubs.forEach((stub, index) => {
                             stub.responses = stubResponses[index];
-                            if (options.debug) {
+                            if (options.debug && matches[index].length > 0) {
                                 stub.matches = matches[index];
                             }
                             delete stub.meta;
@@ -648,27 +648,40 @@ function create (config, logger) {
         return stubRepository(imposterDir(id));
     }
 
+    function saveFunctionsFor (imposter) {
+        const id = String(imposter.port);
+        imposterFns[id] = {};
+        Object.keys(imposter).forEach(key => {
+            if (typeof imposter[key] === 'function' && key !== 'header') {
+                imposterFns[id][key] = imposter[key];
+            }
+        });
+    }
+
+    function addFunctionsTo (imposter) {
+        const id = String(imposter.port);
+        Object.keys(imposterFns[id]).forEach(key => {
+            imposter[key] = imposterFns[id][key];
+        });
+    }
+
     /**
      * Adds a new imposter
      * @param {Object} imposter - the imposter to add
      * @returns {Object} - the promise
      */
     function add (imposter) {
+        const header = imposter.header();
+        delete header.requests;
+
         // Due to historical design decisions when everything was in memory, stubs are actually
         // added (in imposter.js) _before_ the imposter is added (in impostersController.js). This
         // means that the header file may already exist (or not, if the imposter has no stubs).
-        return readAndWriteFile(headerFile(imposter.port), header => {
-            const helpers = require('../util/helpers'),
-                cloned = helpers.clone(imposter);
-            cloned.stubs = header.stubs;
-            delete cloned.requests;
-            return Q(cloned);
+        return readAndWriteFile(headerFile(header.port), saved => {
+            header.stubs = saved.stubs;
+            return header;
         }, { stubs: [] }).then(() => {
-            const id = String(imposter.port);
-            imposters[id] = {
-                stop: imposter.stop,
-                toJSON: imposter.toJSON
-            };
+            saveFunctionsFor(imposter);
             return imposter;
         });
     }
@@ -686,7 +699,7 @@ function create (config, logger) {
 
             return stubsFor(id).toJSON().then(stubs => {
                 header.stubs = stubs;
-                header.toJSON = imposters[id].toJSON;
+                addFunctionsTo(header);
                 return header;
             });
         });
@@ -697,7 +710,7 @@ function create (config, logger) {
      * @returns {Object} - all imposters keyed by port
      */
     function all () {
-        return Q.all(Object.keys(imposters).map(get));
+        return Q.all(Object.keys(imposterFns).map(get));
     }
 
     /**
@@ -706,16 +719,16 @@ function create (config, logger) {
      * @returns {boolean}
      */
     function exists (id) {
-        return Q(Object.keys(imposters).indexOf(String(id)) >= 0);
+        return Q(Object.keys(imposterFns).indexOf(String(id)) >= 0);
     }
 
     function shutdown (id) {
-        if (typeof imposters[String(id)] === 'undefined') {
+        if (typeof imposterFns[String(id)] === 'undefined') {
             return Q();
         }
 
-        const fn = imposters[String(id)].stop;
-        delete imposters[String(id)];
+        const fn = imposterFns[String(id)].stop;
+        delete imposterFns[String(id)];
         return fn ? fn() : Q();
     }
 
@@ -740,7 +753,7 @@ function create (config, logger) {
      */
     function deleteAllSync () {
         const fs = require('fs-extra');
-        Object.keys(imposters).forEach(shutdown);
+        Object.keys(imposterFns).forEach(shutdown);
         fs.removeSync(config.datadir);
     }
 
@@ -749,7 +762,7 @@ function create (config, logger) {
      * @returns {Object} - the deletion promise
      */
     function deleteAll () {
-        const promises = Object.keys(imposters).map(shutdown);
+        const promises = Object.keys(imposterFns).map(shutdown);
         promises.push(remove(config.datadir));
         return Q.all(promises);
     }

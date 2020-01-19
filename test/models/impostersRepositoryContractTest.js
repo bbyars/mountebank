@@ -31,6 +31,26 @@ function stripFunctions (obj) {
     return JSON.parse(JSON.stringify(obj));
 }
 
+function imposterize (config) {
+    // The repositories work differently
+    // The in memory repo gets all the config as is
+    // The file repo reads the header function to allow garbage collection of the rest of the configuration
+    const cloned = JSON.parse(JSON.stringify(config)),
+        result = {
+            header: () => cloned,
+            port: cloned.port
+        };
+    Object.keys(cloned).forEach(key => {
+        result[key] = cloned[key];
+    });
+    Object.keys(config).forEach(key => {
+        if (typeof config[key] === 'function') {
+            result[key] = config[key];
+        }
+    });
+    return result;
+}
+
 types.forEach(function (type) {
     describe(type.name, function () {
         let repo;
@@ -44,7 +64,7 @@ types.forEach(function (type) {
 
         describe('#add', function () {
             promiseIt('should allow a reciprocal get', function () {
-                return repo.add({ port: 1, value: 2 })
+                return repo.add(imposterize({ port: 1, value: 2 }))
                     .then(() => repo.get(1))
                     .then(imposter => {
                         assert.deepEqual(stripFunctions(imposter), { port: 1, value: 2, stubs: [] });
@@ -52,7 +72,7 @@ types.forEach(function (type) {
             });
 
             promiseIt('should accept a string add and a number get', function () {
-                return repo.add({ port: '1', value: 2 })
+                return repo.add(imposterize({ port: '1', value: 2 }))
                     .then(() => repo.get(1))
                     .then(imposter => {
                         assert.deepEqual(stripFunctions(imposter), { port: '1', value: 2, stubs: [] });
@@ -60,10 +80,25 @@ types.forEach(function (type) {
             });
 
             promiseIt('should accept a number add and a string get', function () {
-                return repo.add({ port: 1, value: 2 })
+                return repo.add(imposterize({ port: 1, value: 2 }))
                     .then(() => repo.get('1'))
                     .then(imposter => {
                         assert.deepEqual(stripFunctions(imposter), { port: 1, value: 2, stubs: [] });
+                    });
+            });
+
+            promiseIt('should save functions on imposter', function () {
+                const imposter = {
+                    port: 1,
+                    truthy: () => true,
+                    falsy: () => false
+                };
+
+                return repo.add(imposterize(imposter))
+                    .then(() => repo.get('1'))
+                    .then(saved => {
+                        assert.ok(saved.truthy());
+                        assert.ok(!saved.falsy());
                     });
             });
         });
@@ -87,7 +122,7 @@ types.forEach(function (type) {
                     };
 
                 return stubs.add(imposter.stubs[0])
-                    .then(() => repo.add(imposter))
+                    .then(() => repo.add(imposterize(imposter)))
                     .then(() => repo.get('1'))
                     .then(saved => {
                         assert.deepEqual(stripFunctions(saved), imposter);
@@ -103,8 +138,8 @@ types.forEach(function (type) {
             });
 
             promiseIt('should return all previously added', function () {
-                return repo.add({ port: 1, value: 2 })
-                    .then(() => repo.add({ port: 2, value: 3 }))
+                return repo.add(imposterize({ port: 1, value: 2 }))
+                    .then(() => repo.add(imposterize({ port: 2, value: 3 })))
                     .then(repo.all)
                     .then(imposters => {
                         assert.deepEqual(stripFunctions(imposters), [
@@ -131,9 +166,9 @@ types.forEach(function (type) {
                     };
 
                 return repo.stubsFor(1).add(first.stubs[0])
-                    .then(() => repo.add(first))
+                    .then(() => repo.add(imposterize(first)))
                     .then(() => repo.stubsFor(2).add(second.stubs[0]))
-                    .then(() => repo.add(second))
+                    .then(() => repo.add(imposterize(second)))
                     .then(repo.all)
                     .then(imposters => {
                         assert.deepEqual(stripFunctions(imposters), [first, second]);
@@ -143,7 +178,7 @@ types.forEach(function (type) {
 
         describe('#exists', function () {
             promiseIt('should return false if given port has not been added', function () {
-                return repo.add({ port: 1, value: 2 })
+                return repo.add(imposterize({ port: 1, value: 2 }))
                     .then(() => repo.exists(2))
                     .then(exists => {
                         assert.strictEqual(exists, false);
@@ -151,7 +186,7 @@ types.forEach(function (type) {
             });
 
             promiseIt('should return true if given port has been added', function () {
-                return repo.add({ port: 1, value: 2 })
+                return repo.add(imposterize({ port: 1, value: 2 }))
                     .then(() => repo.exists(1))
                     .then(exists => {
                         assert.strictEqual(exists, true);
@@ -159,7 +194,7 @@ types.forEach(function (type) {
             });
 
             promiseIt('should do type conversion if needed', function () {
-                return repo.add({ port: 1, value: 2 })
+                return repo.add(imposterize({ port: 1, value: 2 }))
                     .then(() => repo.exists('1'))
                     .then(exists => {
                         assert.strictEqual(exists, true);
@@ -175,7 +210,7 @@ types.forEach(function (type) {
             });
 
             promiseIt('should return imposter and remove from list', function () {
-                return repo.add({ port: 1, value: 2, stop: mock().returns(Q()) })
+                return repo.add(imposterize({ port: 1, value: 2, stop: mock().returns(Q()) }))
                     .then(() => repo.del(1))
                     .then(imposter => {
                         assert.deepEqual(stripFunctions(imposter), { port: 1, value: 2, stubs: [] });
@@ -187,7 +222,7 @@ types.forEach(function (type) {
 
             promiseIt('should call stop() on the imposter', function () {
                 const imposter = { port: 1, value: 2, stop: mock().returns(Q()) };
-                return repo.add(imposter)
+                return repo.add(imposterize(imposter))
                     .then(() => repo.del(1))
                     .then(() => {
                         assert.ok(imposter.stop.wasCalled(), imposter.stop.message());
@@ -199,8 +234,8 @@ types.forEach(function (type) {
             promiseIt('should call stop() on all imposters and empty list', function () {
                 const first = { port: 1, value: 2, stop: mock().returns(Q()) },
                     second = { port: 2, value: 3, stop: mock().returns(Q()) };
-                return repo.add(first)
-                    .then(() => repo.add(second))
+                return repo.add(imposterize(first))
+                    .then(() => repo.add(imposterize(second)))
                     .then(() => {
                         repo.deleteAllSync();
                         assert.ok(first.stop.wasCalled(), first.stop.message());
@@ -216,8 +251,8 @@ types.forEach(function (type) {
             promiseIt('should call stop() on all imposters and empty list', function () {
                 const first = { port: 1, value: 2, stop: mock().returns(Q()) },
                     second = { port: 2, value: 3, stop: mock().returns(Q()) };
-                return repo.add(first)
-                    .then(() => repo.add(second))
+                return repo.add(imposterize(first))
+                    .then(() => repo.add(imposterize(second)))
                     .then(repo.deleteAll)
                     .then(() => {
                         assert.ok(first.stop.wasCalled(), first.stop.message());
@@ -232,7 +267,7 @@ types.forEach(function (type) {
         describe('#stubsFor', function () {
             describe('#count', function () {
                 promiseIt('should be 0 if no stubs on the imposter', function () {
-                    return repo.add({ port: 1 })
+                    return repo.add(imposterize({ port: 1 }))
                         .then(repo.stubsFor(1).count)
                         .then(count => {
                             assert.strictEqual(0, count);
@@ -241,7 +276,7 @@ types.forEach(function (type) {
 
                 promiseIt('should provide count of all stubs on imposter', function () {
                     const stubs = repo.stubsFor(1);
-                    return repo.add({ port: 1, protocol: 'test' })
+                    return repo.add(imposterize({ port: 1, protocol: 'test' }))
                         .then(() => stubs.add({ responses: [{ is: { field: 1 } }] }))
                         .then(() => stubs.add({ responses: [{ is: { field: 2 } }] }))
                         .then(stubs.count)
@@ -254,7 +289,7 @@ types.forEach(function (type) {
             describe('#first', function () {
                 promiseIt('should default empty array to filter function if no predicates on stub', function () {
                     const stubs = repo.stubsFor(1);
-                    return repo.add({ responses: [] })
+                    return repo.add(imposterize({ responses: [] }))
                         .then(() => stubs.first(predicates => {
                             assert.deepEqual(predicates, []);
                             return true;
@@ -263,7 +298,7 @@ types.forEach(function (type) {
 
                 promiseIt('should return default stub if no match', function () {
                     const stubs = repo.stubsFor(1);
-                    return repo.add({ port: 1, protocol: 'test' })
+                    return repo.add(imposterize({ port: 1, protocol: 'test' }))
                         .then(() => stubs.first(() => false))
                         .then(match => {
                             assert.strictEqual(match.success, false);
@@ -284,7 +319,7 @@ types.forEach(function (type) {
                     return stubs.add(firstStub)
                         .then(() => stubs.add(secondStub))
                         .then(() => stubs.add(thirdStub))
-                        .then(() => repo.add({ port: 1, protocol: 'test', stubs: [firstStub, secondStub, thirdStub] }))
+                        .then(() => repo.add(imposterize({ port: 1, protocol: 'test', stubs: [firstStub, secondStub, thirdStub] })))
                         .then(() => stubs.first(predicates => predicates.length === 0))
                         .then(match => {
                             assert.strictEqual(match.success, true);

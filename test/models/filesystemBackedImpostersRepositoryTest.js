@@ -20,6 +20,18 @@ describe('filesystemBackedImpostersRepository', function () {
         fs.removeSync('.mbtest');
     });
 
+    function imposterize (config) {
+        const cloned = JSON.parse(JSON.stringify(config)),
+            result = { header: () => cloned };
+        Object.keys(config).forEach(key => {
+            if (typeof config[key] === 'function') {
+                result[key] = config[key];
+            }
+        });
+        result.port = config.port;
+        return result;
+    }
+
     function read (filename) {
         // Don't use require because it caches on the first read of that filename
         return JSON.parse(fs.readFileSync(filename));
@@ -39,7 +51,9 @@ describe('filesystemBackedImpostersRepository', function () {
 
     describe('#add', function () {
         promiseIt('should create a header file for imposter', function () {
-            return repo.add({ port: 1000, protocol: 'test', customField: true, stubs: [], requests: [] }).then(() => {
+            const imposter = { port: 1000, protocol: 'test', customField: true, stubs: [], requests: [] };
+
+            return repo.add(imposterize(imposter)).then(() => {
                 const saved = read('.mbtest/1000/imposter.json');
                 assert.deepEqual(saved, { port: 1000, protocol: 'test', customField: true, stubs: [] });
             });
@@ -54,7 +68,7 @@ describe('filesystemBackedImpostersRepository', function () {
                 }]
             };
 
-            return repo.add(imposter).then(() => {
+            return repo.add(imposterize(imposter)).then(() => {
                 const saved = read('.mbtest/1000/imposter.json');
                 assert.deepEqual(saved, { port: 1000, protocol: 'test', stubs: [] });
             });
@@ -71,7 +85,7 @@ describe('filesystemBackedImpostersRepository', function () {
                 };
 
             return stubs.add(imposter.stubs[0])
-                .then(() => repo.add(imposter))
+                .then(() => repo.add(imposterize(imposter)))
                 .then(() => {
                     const saved = read('.mbtest/1000/imposter.json');
                     assert.strictEqual(saved.stubs.length, 1);
@@ -83,13 +97,12 @@ describe('filesystemBackedImpostersRepository', function () {
 
     describe('#all', function () {
         promiseIt('should not retrieve imposters in database that have not been added', function () {
-            const first = { port: 1000, protocol: 'test' },
-                second = { port: 2000, protocol: 'test' };
+            const imposter = { port: 1000, protocol: 'test' };
 
             // Simulate another process adding the imposter
-            write('.mbtest/2000/imposter.json', second);
+            write('.mbtest/2000/imposter.json', { port: 2000, protocol: 'test' });
 
-            return repo.add(first)
+            return repo.add(imposterize(imposter))
                 .then(() => repo.all())
                 .then(all => {
                     assert.deepEqual(stripFunctions(all), [{ port: 1000, protocol: 'test', stubs: [] }]);
@@ -109,7 +122,7 @@ describe('filesystemBackedImpostersRepository', function () {
             };
 
             return repo.stubsFor(1000).add(imposter.stubs[0])
-                .then(() => repo.add(imposter))
+                .then(() => repo.add(imposterize(imposter)))
                 .then(() => repo.del(1000))
                 .then(deleted => {
                     assert.strictEqual(fs.existsSync('.mbtest/1000'), false);
@@ -120,7 +133,7 @@ describe('filesystemBackedImpostersRepository', function () {
         promiseIt('should call stop() even if another process has deleted the directory', function () {
             const imposter = { port: 1000, protocol: 'test', stop: mock().returns(Q()) };
 
-            return repo.add(imposter)
+            return repo.add(imposterize(imposter))
                 .then(() => {
                     fs.removeSync('.mbtest/1000');
                     return repo.del(1000);
@@ -138,8 +151,11 @@ describe('filesystemBackedImpostersRepository', function () {
         });
 
         promiseIt('removes all added imposters from the filesystem', function () {
-            return repo.add({ port: 1000, protocol: 'test' })
-                .then(() => repo.add({ port: 2000, protocol: 'test' }))
+            const first = { port: 1000, protocol: 'test' },
+                second = { port: 2000, protocol: 'test' };
+
+            return repo.add(imposterize(first))
+                .then(() => repo.add(imposterize(second)))
                 .then(() => repo.deleteAll())
                 .then(() => {
                     assert.strictEqual(fs.existsSync('.mbtest'), false);
@@ -150,8 +166,8 @@ describe('filesystemBackedImpostersRepository', function () {
             const first = { port: 1000, protocol: 'test', stop: mock().returns(Q()) },
                 second = { port: 2000, protocol: 'test', stop: mock().returns(Q()) };
 
-            return repo.add(first)
-                .then(() => repo.add(second))
+            return repo.add(imposterize(first))
+                .then(() => repo.add(imposterize(second)))
                 .then(() => {
                     fs.removeSync('.mbtest');
                     return repo.deleteAll();
@@ -164,8 +180,11 @@ describe('filesystemBackedImpostersRepository', function () {
 
     describe('#deleteAllSync', function () {
         promiseIt('synchronously removes database', function () {
-            return repo.add({ port: 1000, protocol: 'test' })
-                .then(() => repo.add({ port: 2000, protocol: 'test' }))
+            const first = { port: 1000, protocol: 'test' },
+                second = { port: 2000, protocol: 'test' };
+
+            return repo.add(imposterize(first))
+                .then(() => repo.add(imposterize(second)))
                 .then(() => {
                     repo.deleteAllSync();
                     assert.strictEqual(fs.existsSync('.mbtest'), false);
@@ -176,8 +195,8 @@ describe('filesystemBackedImpostersRepository', function () {
             const first = { port: 1000, protocol: 'test', stop: mock().returns(Q()) },
                 second = { port: 2000, protocol: 'test', stop: mock().returns(Q()) };
 
-            return repo.add(first)
-                .then(() => repo.add(second))
+            return repo.add(imposterize(first))
+                .then(() => repo.add(imposterize(second)))
                 .then(() => {
                     fs.removeSync('.mbtest');
                     repo.deleteAllSync();
@@ -201,7 +220,7 @@ describe('filesystemBackedImpostersRepository', function () {
                     };
 
                 return stubs.add(imposter.stubs[0])
-                    .then(() => repo.add(imposter))
+                    .then(() => repo.add(imposterize(imposter)))
                     .then(() => {
                         const header = read('.mbtest/3000/imposter.json'),
                             stubDir = header.stubs[0].meta.dir;

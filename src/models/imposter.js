@@ -51,7 +51,8 @@ function create (Protocol, creationRequest, baseLogger, config, isAllowedConnect
         logger = require('../util/scopedLogger').create(baseLogger, scopeFor(creationRequest.port)),
         helpers = require('../util/helpers'),
         imposterState = {},
-        unresolvedProxies = {};
+        unresolvedProxies = {},
+        header = helpers.clone(creationRequest);
 
     let stubs;
     let resolver;
@@ -152,6 +153,7 @@ function create (Protocol, creationRequest, baseLogger, config, isAllowedConnect
 
         Protocol.createServer(creationRequest, logger, getResponseFor).done(server => {
             if (creationRequest.port !== server.port) {
+                header.port = server.port;
                 logger.changeScope(scopeFor(server.port));
             }
             logger.info('Open for business...');
@@ -162,6 +164,7 @@ function create (Protocol, creationRequest, baseLogger, config, isAllowedConnect
 
             if (creationRequest.stubs) {
                 creationRequest.stubs.forEach(stubs.add);
+                delete header.stubs; // free up the memory
             }
 
             function stop () {
@@ -177,12 +180,13 @@ function create (Protocol, creationRequest, baseLogger, config, isAllowedConnect
                 return recordRequests ? stubs.loadRequests() : require('q')([]);
             }
 
-            const printer = require('./imposterPrinter').create(creationRequest, server, loadRequests),
+            const printer = require('./imposterPrinter').create(header, server, loadRequests),
                 toJSON = options => printer.toJSON(numberOfRequests, options);
 
             return deferred.resolve({
                 port: server.port,
                 url: '/imposters/' + server.port,
+                header: () => helpers.clone(header),
                 toJSON,
                 stop,
                 getResponseFor,
