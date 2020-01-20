@@ -228,6 +228,18 @@ types.forEach(function (type) {
                         assert.ok(imposter.stop.wasCalled(), imposter.stop.message());
                     });
             });
+
+            promiseIt('should empty the stubs associated with the imposter', function () {
+                const stub = { responses: [{ is: { key: 'value' } }] },
+                    imposter = { port: 1, stubs: [stub], stop: mock().returns(Q()) };
+                return repo.add(imposterize(imposter))
+                    .then(() => repo.stubsFor(1).add(stub))
+                    .then(() => repo.del(1))
+                    .then(() => repo.stubsFor(1).count())
+                    .then(count => {
+                        assert.strictEqual(count, 0);
+                    });
+            });
         });
 
         describe('#deleteAllSync', function () {

@@ -270,6 +270,7 @@ function createStubsRepository () {
  */
 function create (startupImposters) {
     const imposters = {},
+        stubRepos = {},
         Q = require('q');
 
     if (startupImposters) {
@@ -323,6 +324,8 @@ function create (startupImposters) {
     function del (id) {
         const result = imposters[String(id)] || null;
         delete imposters[String(id)];
+        delete stubRepos[String(id)];
+
         if (result) {
             return result.stop().then(() => Q(result));
         }
@@ -338,6 +341,7 @@ function create (startupImposters) {
         Object.keys(imposters).forEach(id => {
             imposters[id].stop();
             delete imposters[id];
+            delete stubRepos[id];
         });
     }
 
@@ -349,8 +353,25 @@ function create (startupImposters) {
         const ids = Object.keys(imposters),
             promises = ids.map(id => imposters[id].stop());
 
-        ids.forEach(id => { delete imposters[id]; });
+        ids.forEach(id => {
+            delete imposters[id];
+            delete stubRepos[id];
+        });
         return Q.all(promises);
+    }
+
+    /**
+     * Returns the stub repository for the given id
+     * @param {Number} id - the imposter's id
+     * @returns {Object} - the stub repository
+     */
+    function stubsFor (id) {
+        // In practice, the stubsFor call occurs before the imposter is actually added...
+        if (!stubRepos[String(id)]) {
+            stubRepos[String(id)] = createStubsRepository();
+        }
+
+        return stubRepos[String(id)];
     }
 
     return {
@@ -361,7 +382,7 @@ function create (startupImposters) {
         del,
         deleteAllSync,
         deleteAll,
-        stubsFor: createStubsRepository,
+        stubsFor,
         createStubsRepository
     };
 }
