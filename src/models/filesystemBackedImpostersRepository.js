@@ -202,17 +202,20 @@ function create (config, logger) {
         locks += 1;
 
         // with realpath = false, the file doesn't have to exist, but the directory does
-        logger.debug(`Acquiring file lock on ${filepath} for ${caller}-${currentLockId}`);
         return ensureDir(filepath)
             .then(() => locker.lock(filepath, options))
             .then(release => {
+                const lockStart = new Date(),
+                    lockWait = lockStart - start;
+                logger.debug(`Acquired file lock on ${filepath} for ${caller}-${currentLockId} after ${lockWait}ms`);
+
                 return readFile(filepath, defaultContents)
                     .then(original => transformer(original))
                     .then(transformed => writeFile(tmpfile, transformed))
                     .then(() => rename(tmpfile, filepath))
                     .then(() => {
-                        const lockDuration = new Date() - start;
-                        logger.debug(`Releasing file lock on ${filepath} for ${caller}-${currentLockId} after ${lockDuration}ms`);
+                        const lockHeld = new Date() - lockStart;
+                        logger.debug(`Released file lock on ${filepath} for ${caller}-${currentLockId} after ${lockHeld}ms`);
                         return release();
                     });
             })
