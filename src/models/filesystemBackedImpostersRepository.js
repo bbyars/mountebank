@@ -309,6 +309,37 @@ function create (config, logger) {
         }
     }
 
+    function saveStubMetaAndResponses (stub, baseDir) {
+        const stubDefinition = {
+                meta: { dir: `stubs/${filenameFor(new Date())}` }
+            },
+            meta = {
+                responseFiles: [],
+                orderWithRepeats: [],
+                nextIndex: 0
+            },
+            responses = stub.responses || [],
+            promises = [];
+
+        if (stub.predicates) {
+            stubDefinition.predicates = stub.predicates;
+        }
+
+        for (let i = 0; i < responses.length; i += 1) {
+            const responseFile = `responses/${filenameFor(new Date())}.json`;
+            meta.responseFiles.push(responseFile);
+
+            for (let repeats = 0; repeats < repeatsFor(responses[i]); repeats += 1) {
+                meta.orderWithRepeats.push(i);
+            }
+
+            promises.push(writeFile(`${baseDir}/${stubDefinition.meta.dir}/${responseFile}`, responses[i]));
+        }
+
+        promises.push(writeFile(`${baseDir}/${stubDefinition.meta.dir}/meta.json`, meta));
+        return Q.all(promises).then(() => stubDefinition);
+    }
+
     function stubRepository (baseDir) {
         const imposterFile = `${baseDir}/imposter.json`;
 
@@ -329,10 +360,6 @@ function create (config, logger) {
         }
 
         function readHeader () {
-            // Due to historical design decisions when everything was in memory, stubs are actually
-            // added (in imposter.js) _before_ the imposter is added (in impostersController.js). This
-            // means that the stubs repository needs to gracefully handle the case where the header file
-            // does not yet exist
             return readFile(imposterFile, { stubs: [] });
         }
 
@@ -458,47 +485,26 @@ function create (config, logger) {
          * @returns {Object} - the promise
          */
         function add (stub) { // eslint-disable-line no-shadow
-            return insertAtIndex(stub, 99999999, 'addStub');
+            return saveStubMetaAndResponses(stub, baseDir).then(stubDefinition => {
+                return readAndWriteHeader('addStub', header => {
+                    header.stubs.push(stubDefinition);
+                    return header;
+                });
+            });
         }
 
         /**
          * Inserts a new stub at the given index
          * @param {Object} stub - the stub to add
          * @param {Number} index - the index to insert the new stub at
-         * @param {String} caller - Internal, used for debug logging
          * @returns {Object} - the promise
          */
-        function insertAtIndex (stub, index, caller = 'insertStubAtIndex') {
-            const stubDefinition = { meta: { dir: '' } },
-                meta = {
-                    responseFiles: [],
-                    orderWithRepeats: [],
-                    nextIndex: 0
-                },
-                responses = stub.responses || [],
-                promises = [];
-
-            if (stub.predicates) {
-                stubDefinition.predicates = stub.predicates;
-            }
-
-            return readAndWriteHeader(caller, header => {
-                stubDefinition.meta.dir = `stubs/${filenameFor(new Date())}`;
-
-                for (let i = 0; i < responses.length; i += 1) {
-                    const responseFile = `responses/${filenameFor(new Date())}.json`;
-                    meta.responseFiles.push(responseFile);
-
-                    for (let repeats = 0; repeats < repeatsFor(responses[i]); repeats += 1) {
-                        meta.orderWithRepeats.push(i);
-                    }
-
-                    promises.push(writeFile(responsePath(stubDefinition.meta.dir, responseFile), responses[i]));
-                }
-
-                promises.push(writeFile(metaPath(stubDefinition.meta.dir), meta));
-                header.stubs.splice(index, 0, stubDefinition);
-                return Q.all(promises).then(() => header);
+        function insertAtIndex (stub, index) {
+            return saveStubMetaAndResponses(stub, baseDir).then(stubDefinition => {
+                return readAndWriteHeader('insertStubAtIndex', header => {
+                    header.stubs.splice(index, 0, stubDefinition);
+                    return header;
+                });
             });
         }
 
@@ -663,7 +669,7 @@ function create (config, logger) {
         const id = String(imposter.port);
         imposterFns[id] = {};
         Object.keys(imposter).forEach(key => {
-            if (typeof imposter[key] === 'function' && key !== 'header') {
+            if (typeof imposter[key] === 'function') {
                 imposterFns[id][key] = imposter[key];
             }
         });
@@ -682,16 +688,17 @@ function create (config, logger) {
      * @returns {Object} - the promise
      */
     function add (imposter) {
-        const header = imposter.header();
-        delete header.requests;
+        const imposterConfig = imposter.creationRequest,
+            stubs = imposterConfig.stubs || [],
+            promises = stubs.map(stub => saveStubMetaAndResponses(stub, imposterDir(imposter.port)));
 
-        // Due to historical design decisions when everything was in memory, stubs are actually
-        // added (in imposter.js) _before_ the imposter is added (in impostersController.js). This
-        // means that the header file may already exist (or not, if the imposter has no stubs).
-        return readAndWriteFile(headerFile(header.port), 'addImposter', saved => {
-            header.stubs = saved.stubs;
-            return header;
-        }, { stubs: [] }).then(() => {
+        delete imposterConfig.requests;
+
+        return Q.all(promises).then(stubDefinitions => {
+            imposterConfig.port = imposter.port;
+            imposterConfig.stubs = stubDefinitions;
+            return writeFile(headerFile(imposter.port), imposterConfig);
+        }).then(() => {
             saveFunctionsFor(imposter);
             return imposter;
         });

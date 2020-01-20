@@ -27,17 +27,10 @@ const assert = require('assert'),
     mock = require('../mock').mock,
     Q = require('q');
 
-function stripFunctions (obj) {
-    return JSON.parse(JSON.stringify(obj));
-}
-
 function imposterize (config) {
-    // The repositories work differently
-    // The in memory repo gets all the config as is
-    // The file repo reads the header function to allow garbage collection of the rest of the configuration
     const cloned = JSON.parse(JSON.stringify(config)),
         result = {
-            header: () => cloned,
+            creationRequest: cloned,
             port: cloned.port
         };
     Object.keys(cloned).forEach(key => {
@@ -49,6 +42,19 @@ function imposterize (config) {
         }
     });
     return result;
+}
+
+function stripFunctions (obj) {
+    return JSON.parse(JSON.stringify(obj));
+}
+
+function deimposterize (obj) {
+    const withoutFunctions = stripFunctions(obj);
+    if (Array.isArray(withoutFunctions)) {
+        withoutFunctions.forEach(imposter => { delete imposter.creationRequest; });
+    }
+    delete withoutFunctions.creationRequest;
+    return withoutFunctions;
 }
 
 types.forEach(function (type) {
@@ -67,7 +73,7 @@ types.forEach(function (type) {
                 return repo.add(imposterize({ port: 1, value: 2 }))
                     .then(() => repo.get(1))
                     .then(imposter => {
-                        assert.deepEqual(stripFunctions(imposter), { port: 1, value: 2, stubs: [] });
+                        assert.deepEqual(deimposterize(imposter), { port: 1, value: 2, stubs: [] });
                     });
             });
 
@@ -75,7 +81,7 @@ types.forEach(function (type) {
                 return repo.add(imposterize({ port: '1', value: 2 }))
                     .then(() => repo.get(1))
                     .then(imposter => {
-                        assert.deepEqual(stripFunctions(imposter), { port: '1', value: 2, stubs: [] });
+                        assert.deepEqual(deimposterize(imposter), { port: '1', value: 2, stubs: [] });
                     });
             });
 
@@ -83,7 +89,7 @@ types.forEach(function (type) {
                 return repo.add(imposterize({ port: 1, value: 2 }))
                     .then(() => repo.get('1'))
                     .then(imposter => {
-                        assert.deepEqual(stripFunctions(imposter), { port: 1, value: 2, stubs: [] });
+                        assert.deepEqual(deimposterize(imposter), { port: 1, value: 2, stubs: [] });
                     });
             });
 
@@ -111,21 +117,19 @@ types.forEach(function (type) {
             });
 
             promiseIt('should retrieve with stubs', function () {
-                const stubs = repo.stubsFor(1),
-                    imposter = {
-                        port: 1,
-                        protocol: 'test',
-                        stubs: [{
-                            predicates: [{ equals: { key: 1 } }],
-                            responses: [{ is: { field: 'value' } }]
-                        }]
-                    };
+                const imposter = {
+                    port: 1,
+                    protocol: 'test',
+                    stubs: [{
+                        predicates: [{ equals: { key: 1 } }],
+                        responses: [{ is: { field: 'value' } }]
+                    }]
+                };
 
-                return stubs.add(imposter.stubs[0])
-                    .then(() => repo.add(imposterize(imposter)))
+                return repo.add(imposterize(imposter))
                     .then(() => repo.get('1'))
                     .then(saved => {
-                        assert.deepEqual(stripFunctions(saved), imposter);
+                        assert.deepEqual(deimposterize(saved), imposter);
                     });
             });
         });
@@ -142,7 +146,7 @@ types.forEach(function (type) {
                     .then(() => repo.add(imposterize({ port: 2, value: 3 })))
                     .then(repo.all)
                     .then(imposters => {
-                        assert.deepEqual(stripFunctions(imposters), [
+                        assert.deepEqual(deimposterize(imposters), [
                             { port: 1, value: 2, stubs: [] },
                             { port: 2, value: 3, stubs: [] }
                         ]);
@@ -165,13 +169,11 @@ types.forEach(function (type) {
                         }]
                     };
 
-                return repo.stubsFor(1).add(first.stubs[0])
-                    .then(() => repo.add(imposterize(first)))
-                    .then(() => repo.stubsFor(2).add(second.stubs[0]))
+                return repo.add(imposterize(first))
                     .then(() => repo.add(imposterize(second)))
                     .then(repo.all)
                     .then(imposters => {
-                        assert.deepEqual(stripFunctions(imposters), [first, second]);
+                        assert.deepEqual(deimposterize(imposters), [first, second]);
                     });
             });
         });
@@ -213,7 +215,7 @@ types.forEach(function (type) {
                 return repo.add(imposterize({ port: 1, value: 2, stop: mock().returns(Q()) }))
                     .then(() => repo.del(1))
                     .then(imposter => {
-                        assert.deepEqual(stripFunctions(imposter), { port: 1, value: 2, stubs: [] });
+                        assert.deepEqual(deimposterize(imposter), { port: 1, value: 2, stubs: [] });
                         return repo.get(1);
                     }).then(imposter => {
                         assert.strictEqual(imposter, null);
@@ -233,7 +235,6 @@ types.forEach(function (type) {
                 const stub = { responses: [{ is: { key: 'value' } }] },
                     imposter = { port: 1, stubs: [stub], stop: mock().returns(Q()) };
                 return repo.add(imposterize(imposter))
-                    .then(() => repo.stubsFor(1).add(stub))
                     .then(() => repo.del(1))
                     .then(() => repo.stubsFor(1).count())
                     .then(count => {
@@ -286,12 +287,33 @@ types.forEach(function (type) {
                         });
                 });
 
-                promiseIt('should provide count of all stubs on imposter', function () {
-                    const stubs = repo.stubsFor(1);
-                    return repo.add(imposterize({ port: 1, protocol: 'test' }))
-                        .then(() => stubs.add({ responses: [{ is: { field: 1 } }] }))
-                        .then(() => stubs.add({ responses: [{ is: { field: 2 } }] }))
-                        .then(stubs.count)
+                promiseIt('should provide count of all stubs on imposter added initially', function () {
+                    const imposter = {
+                        port: 1,
+                        protocol: 'test',
+                        stubs: [
+                            { responses: [{ is: { field: 1 } }] },
+                            { responses: [{ is: { field: 2 } }] }
+                        ]
+                    };
+
+                    return repo.add(imposterize(imposter))
+                        .then(repo.stubsFor(1).count)
+                        .then(count => {
+                            assert.strictEqual(2, count);
+                        });
+                });
+
+                promiseIt('should all stubs added after creation', function () {
+                    const imposter = {
+                        port: 1,
+                        protocol: 'test',
+                        stubs: [{ responses: [{ is: { field: 1 } }] }]
+                    };
+
+                    return repo.add(imposterize(imposter))
+                        .then(() => repo.stubsFor(1).add({ responses: [{ is: { field: 2 } }] }))
+                        .then(repo.stubsFor(1).count)
                         .then(count => {
                             assert.strictEqual(2, count);
                         });
@@ -300,18 +322,23 @@ types.forEach(function (type) {
 
             describe('#first', function () {
                 promiseIt('should default empty array to filter function if no predicates on stub', function () {
-                    const stubs = repo.stubsFor(1);
-                    return repo.add(imposterize({ responses: [] }))
-                        .then(() => stubs.first(predicates => {
+                    const imposter = {
+                        port: 1,
+                        stubs: [{ responses: [] }]
+                    };
+
+                    return repo.add(imposterize(imposter))
+                        .then(() => repo.stubsFor(1).first(predicates => {
                             assert.deepEqual(predicates, []);
                             return true;
                         }));
                 });
 
                 promiseIt('should return default stub if no match', function () {
-                    const stubs = repo.stubsFor(1);
-                    return repo.add(imposterize({ port: 1, protocol: 'test' }))
-                        .then(() => stubs.first(() => false))
+                    const imposter = { port: 1, protocol: 'test' };
+
+                    return repo.add(imposterize(imposter))
+                        .then(() => repo.stubsFor(1).first(() => false))
                         .then(match => {
                             assert.strictEqual(match.success, false);
                             return match.stub.nextResponse();
@@ -324,14 +351,10 @@ types.forEach(function (type) {
                     const stubs = repo.stubsFor(1),
                         firstStub = { predicates: [{ equals: { field: 'value' } }], responses: [{ is: 'first' }] },
                         secondStub = { responses: [{ is: 'third' }, { is: 'fourth' }] },
-                        thirdStub = { responses: [{ is: 'fifth' }, { is: 'sixth' }] };
+                        thirdStub = { responses: [{ is: 'fifth' }, { is: 'sixth' }] },
+                        imposter = { port: 1, protocol: 'test', stubs: [firstStub, secondStub, thirdStub] };
 
-                    // This simulates the actual order of operations; adding stubs (in imposter.js)
-                    // before adding the imposter (in impostersController.js)
-                    return stubs.add(firstStub)
-                        .then(() => stubs.add(secondStub))
-                        .then(() => stubs.add(thirdStub))
-                        .then(() => repo.add(imposterize({ port: 1, protocol: 'test', stubs: [firstStub, secondStub, thirdStub] })))
+                    return repo.add(imposterize(imposter))
                         .then(() => stubs.first(predicates => predicates.length === 0))
                         .then(match => {
                             assert.strictEqual(match.success, true);
@@ -345,12 +368,12 @@ types.forEach(function (type) {
                 });
 
                 promiseIt('should loop through responses on nextResponse()', function () {
-                    const stubs = repo.stubsFor(1),
-                        stub = { responses: [{ is: 'first' }, { is: 'second' }] };
+                    const stub = { responses: [{ is: 'first' }, { is: 'second' }] },
+                        imposter = { port: 1, stubs: [stub] };
                     let matchedStub;
 
-                    return stubs.add(stub)
-                        .then(() => stubs.first(() => true))
+                    return repo.add(imposterize(imposter))
+                        .then(() => repo.stubsFor(1).first(() => true))
                         .then(match => {
                             matchedStub = match.stub;
                             return matchedStub.nextResponse();
@@ -366,12 +389,12 @@ types.forEach(function (type) {
                 });
 
                 promiseIt('should handle repeat behavior on nextResponse()', function () {
-                    const stubs = repo.stubsFor(1),
-                        stub = { responses: [{ is: 'first', _behaviors: { repeat: 2 } }, { is: 'second' }] };
+                    const stub = { responses: [{ is: 'first', _behaviors: { repeat: 2 } }, { is: 'second' }] },
+                        imposter = { port: 1, stubs: [stub] };
                     let matchedStub;
 
-                    return stubs.add(stub)
-                        .then(() => stubs.first(() => true))
+                    return repo.add(imposterize(imposter))
+                        .then(() => repo.stubsFor(1).first(() => true))
                         .then(match => {
                             matchedStub = match.stub;
                             return matchedStub.nextResponse();
@@ -390,12 +413,12 @@ types.forEach(function (type) {
                 });
 
                 promiseIt('should support adding responses through addResponse()', function () {
-                    const stubs = repo.stubsFor(1);
+                    const imposter = { port: 1, stubs: [{}] };
 
-                    return stubs.add({})
-                        .then(() => stubs.first(() => true))
+                    return repo.add(imposterize(imposter))
+                        .then(() => repo.stubsFor(1).first(() => true))
                         .then(match => match.stub.addResponse({ is: { field: 1 } }))
-                        .then(() => stubs.first(() => true))
+                        .then(() => repo.stubsFor(1).first(() => true))
                         .then(match => {
                             return match.stub.nextResponse();
                         }).then(response => {
@@ -404,12 +427,12 @@ types.forEach(function (type) {
                 });
 
                 promiseIt('should support recording matches', function () {
-                    const stubs = repo.stubsFor(1);
+                    const imposter = { port: 1, stubs: [{}] };
 
-                    return stubs.add({})
-                        .then(() => stubs.first(() => true))
+                    return repo.add(imposterize(imposter))
+                        .then(() => repo.stubsFor(1).first(() => true))
                         .then(match => match.stub.recordMatch('REQUEST', 'RESPONSE'))
-                        .then(() => stubs.toJSON({ debug: true }))
+                        .then(() => repo.stubsFor(1).toJSON({ debug: true }))
                         .then(all => {
                             assert.strictEqual(1, all[0].matches.length);
                             delete all[0].matches[0].timestamp;
@@ -426,33 +449,31 @@ types.forEach(function (type) {
                 });
 
                 promiseIt('should return all predicates and original response order of all stubs', function () {
-                    const stubs = repo.stubsFor(1),
-                        first = {
+                    const first = {
                             predicates: [{ equals: { field: 'value' } }],
                             responses: [{ is: { field: 1 } }, { is: { field: 2 } }]
                         },
                         second = {
-                            predicates: [],
                             responses: [{ is: { key: 'value' }, _behaviors: { repeat: 2 } }]
-                        };
+                        },
+                        imposter = { port: 1, stubs: [first, second] };
 
-                    return stubs.add(first)
-                        .then(() => stubs.add(second))
-                        .then(() => stubs.first(() => true))
+                    return repo.add(imposterize(imposter))
+                        .then(() => repo.stubsFor(1).first(() => true))
                         .then(match => match.stub.nextResponse())
-                        .then(() => stubs.toJSON())
+                        .then(() => repo.stubsFor(1).toJSON())
                         .then(json => {
                             assert.deepEqual(json, [first, second]);
                         });
                 });
 
                 promiseIt('should not return matches if debug option not set', function () {
-                    const stubs = repo.stubsFor(1);
+                    const imposter = { port: 1, stubs: [{}] };
 
-                    return stubs.add({})
-                        .then(() => stubs.first(() => true))
+                    return repo.add(imposterize(imposter))
+                        .then(() => repo.stubsFor(1).first(() => true))
                         .then(match => match.stub.recordMatch('REQUEST', 'RESPONSE'))
-                        .then(() => stubs.toJSON())
+                        .then(() => repo.stubsFor(1).toJSON())
                         .then(all => {
                             assert.strictEqual(typeof all[0].matches, 'undefined');
                         });
@@ -461,8 +482,7 @@ types.forEach(function (type) {
 
             describe('#deleteSavedProxyResponses', function () {
                 promiseIt('should remove recorded responses and stubs', function () {
-                    const stubs = repo.stubsFor(1),
-                        first = {
+                    const first = {
                             predicates: [{ equals: { key: 1 } }],
                             responses: [{ is: { field: 1, _proxyResponseTime: 100 } }]
                         },
@@ -474,15 +494,13 @@ types.forEach(function (type) {
                             ]
                         },
                         third = {
-                            predicates: [],
                             responses: [{ proxy: { to: 'http://test.com' } }]
-                        };
+                        },
+                        imposter = { port: 1, stubs: [first, second, third] };
 
-                    return stubs.add(first)
-                        .then(() => stubs.add(second))
-                        .then(() => stubs.add(third))
-                        .then(() => stubs.deleteSavedProxyResponses())
-                        .then(() => stubs.toJSON())
+                    return repo.add(imposterize(imposter))
+                        .then(() => repo.stubsFor(1).deleteSavedProxyResponses())
+                        .then(() => repo.stubsFor(1).toJSON())
                         .then(json => {
                             assert.deepEqual(json, [
                                 {
@@ -490,7 +508,6 @@ types.forEach(function (type) {
                                     responses: [{ is: { field: 3 } }]
                                 },
                                 {
-                                    predicates: [],
                                     responses: [{ proxy: { to: 'http://test.com' } }]
                                 }
                             ]);
@@ -500,37 +517,34 @@ types.forEach(function (type) {
 
             describe('#overwriteAll', function () {
                 promiseIt('should overwrite entire list', function () {
-                    const stubs = repo.stubsFor(1),
-                        firstStub = { responses: [{ is: 'first' }, { is: 'second' }] },
-                        secondStub = { responses: [{ is: 'third' }, { is: 'fourth' }] },
-                        thirdStub = { responses: [{ is: 'fifth' }, { is: 'sixth' }] };
+                    const first = { responses: [{ is: 'first' }, { is: 'second' }] },
+                        second = { responses: [{ is: 'third' }, { is: 'fourth' }] },
+                        newStub = { responses: [{ is: 'fifth' }, { is: 'sixth' }] },
+                        imposter = { port: 1, stubs: [first, second] };
 
-                    return stubs.add(firstStub)
-                        .then(() => stubs.add(secondStub))
-                        .then(() => stubs.overwriteAll([thirdStub]))
-                        .then(() => {
-                            return stubs.toJSON().then(all => {
-                                const responses = all.map(stub => stub.responses);
+                    return repo.add(imposterize(imposter))
+                        .then(() => repo.stubsFor(1).overwriteAll([newStub]))
+                        .then(() => repo.stubsFor(1).toJSON())
+                        .then(all => {
+                            const responses = all.map(stub => stub.responses);
 
-                                assert.deepEqual(responses, [
-                                    [{ is: 'fifth' }, { is: 'sixth' }]
-                                ]);
-                            });
+                            assert.deepEqual(responses, [
+                                [{ is: 'fifth' }, { is: 'sixth' }]
+                            ]);
                         });
                 });
             });
 
             describe('#overwriteAtIndex', function () {
                 promiseIt('should overwrite single stub', function () {
-                    const stubs = repo.stubsFor(1),
-                        firstStub = { responses: [{ is: 'first' }, { is: 'second' }] },
-                        secondStub = { responses: [{ is: 'third' }, { is: 'fourth' }] },
-                        thirdStub = { responses: [{ is: 'fifth' }, { is: 'sixth' }] };
+                    const first = { responses: [{ is: 'first' }, { is: 'second' }] },
+                        second = { responses: [{ is: 'third' }, { is: 'fourth' }] },
+                        newStub = { responses: [{ is: 'fifth' }, { is: 'sixth' }] },
+                        imposter = { port: 1, stubs: [first, second] };
 
-                    return stubs.add(firstStub)
-                        .then(() => stubs.add(secondStub))
-                        .then(() => stubs.overwriteAtIndex(thirdStub, 1))
-                        .then(() => stubs.toJSON())
+                    return repo.add(imposterize(imposter))
+                        .then(() => repo.stubsFor(1).overwriteAtIndex(newStub, 1))
+                        .then(() => repo.stubsFor(1).toJSON())
                         .then(all => {
                             const responses = all.map(stub => stub.responses);
 
@@ -542,31 +556,31 @@ types.forEach(function (type) {
                 });
 
                 promiseIt('should reject the promise if no stub at that index', function () {
-                    const stubs = repo.stubsFor(1);
+                    const imposter = { port: 1 };
 
-                    return stubs.overwriteAtIndex({}, 0).then(() => {
-                        assert.fail('Should have rejected');
-                    }, err => {
-                        assert.deepEqual(err, {
-                            code: 'no such resource',
-                            message: 'no stub at index 0'
+                    return repo.add(imposterize(imposter))
+                        .then(() => repo.stubsFor(1).overwriteAtIndex({}, 0))
+                        .then(() => {
+                            assert.fail('Should have rejected');
+                        }, err => {
+                            assert.deepEqual(err, {
+                                code: 'no such resource',
+                                message: 'no stub at index 0'
+                            });
                         });
-                    });
                 });
             });
 
             describe('#deleteAtIndex', function () {
                 promiseIt('should delete single stub', function () {
-                    const stubs = repo.stubsFor(1),
-                        firstStub = { responses: [{ is: 'first' }, { is: 'second' }] },
-                        secondStub = { responses: [{ is: 'third' }, { is: 'fourth' }] },
-                        thirdStub = { responses: [{ is: 'fifth' }, { is: 'sixth' }] };
+                    const first = { responses: [{ is: 'first' }, { is: 'second' }] },
+                        second = { responses: [{ is: 'third' }, { is: 'fourth' }] },
+                        third = { responses: [{ is: 'fifth' }, { is: 'sixth' }] },
+                        imposter = { port: 1, stubs: [first, second, third] };
 
-                    return stubs.add(firstStub)
-                        .then(() => stubs.add(secondStub))
-                        .then(() => stubs.add(thirdStub))
-                        .then(() => stubs.deleteAtIndex(0))
-                        .then(() => stubs.toJSON())
+                    return repo.add(imposterize(imposter))
+                        .then(() => repo.stubsFor(1).deleteAtIndex(0))
+                        .then(() => repo.stubsFor(1).toJSON())
                         .then(all => {
                             const responses = all.map(stub => stub.responses);
 
@@ -578,30 +592,31 @@ types.forEach(function (type) {
                 });
 
                 promiseIt('should reject the promise if no stub at that index', function () {
-                    const stubs = repo.stubsFor(1);
+                    const imposter = { port: 1 };
 
-                    return stubs.deleteAtIndex(0).then(() => {
-                        assert.fail('Should have rejected');
-                    }, err => {
-                        assert.deepEqual(err, {
-                            code: 'no such resource',
-                            message: 'no stub at index 0'
+                    return repo.add(imposterize(imposter))
+                        .then(() => repo.stubsFor(1).deleteAtIndex(0))
+                        .then(() => {
+                            assert.fail('Should have rejected');
+                        }, err => {
+                            assert.deepEqual(err, {
+                                code: 'no such resource',
+                                message: 'no stub at index 0'
+                            });
                         });
-                    });
                 });
             });
 
             describe('#insertAtIndex', function () {
                 promiseIt('should add single stub at given index', function () {
-                    const stubs = repo.stubsFor(1),
-                        firstStub = { responses: [{ is: 'first' }, { is: 'second' }] },
-                        secondStub = { responses: [{ is: 'third' }, { is: 'fourth' }] },
-                        insertedStub = { responses: [{ is: 'fifth' }, { is: 'sixth' }] };
+                    const first = { responses: [{ is: 'first' }, { is: 'second' }] },
+                        second = { responses: [{ is: 'third' }, { is: 'fourth' }] },
+                        insertedStub = { responses: [{ is: 'fifth' }, { is: 'sixth' }] },
+                        imposter = { port: 1, stubs: [first, second] };
 
-                    return stubs.add(firstStub)
-                        .then(() => stubs.add(secondStub))
-                        .then(() => stubs.insertAtIndex(insertedStub, 0))
-                        .then(() => stubs.toJSON())
+                    return repo.add(imposterize(imposter))
+                        .then(() => repo.stubsFor(1).insertAtIndex(insertedStub, 0))
+                        .then(() => repo.stubsFor(1).toJSON())
                         .then(all => {
                             const responses = all.map(stub => stub.responses);
 
@@ -616,9 +631,11 @@ types.forEach(function (type) {
 
             describe('#addRequest', function () {
                 promiseIt('should save request with timestamp', function () {
-                    const stubs = repo.stubsFor(1);
-                    return stubs.addRequest({ field: 'value' })
-                        .then(() => stubs.loadRequests())
+                    const imposter = { port: 1 };
+
+                    return repo.add(imposterize(imposter))
+                        .then(() => repo.stubsFor(1).addRequest({ field: 'value' }))
+                        .then(() => repo.stubsFor(1).loadRequests())
                         .then(requests => {
                             assert.deepEqual(requests, [{ field: 'value', timestamp: requests[0].timestamp }]);
                             const delta = new Date() - Date.parse(requests[0].timestamp);

@@ -75,7 +75,7 @@ describe('ImpostersController', function () {
         beforeEach(() => {
             request = { body: {}, socket: { remoteAddress: 'host', remotePort: 'port' } };
             imposter = {
-                url: mock().returns('imposter-url'),
+                url: 'imposter-url',
                 toJSON: mock().returns(Q('JSON'))
             };
             imposters = ImpostersRepo.create();
@@ -84,7 +84,10 @@ describe('ImpostersController', function () {
                 Validator: {
                     create: mock().returns({ validate: mock().returns(Q({ isValid: true })) })
                 },
-                createImposterFrom: mock().returns(Q(imposter))
+                createImposterFrom: creationRequest => {
+                    imposter.creationRequest = creationRequest;
+                    return Q(imposter);
+                }
             };
             logger = FakeLogger.create();
             controller = Controller.create({ http: Protocol }, imposters, logger, false);
@@ -92,9 +95,10 @@ describe('ImpostersController', function () {
 
         promiseIt('should return a 201 with the Location header set', function () {
             request.body = { port: 3535, protocol: 'http' };
+            imposter.url = 'http://localhost/servers/3535';
 
             return controller.post(request, response).then(() => {
-                assert(response.headers.Location, 'http://localhost/servers/3535');
+                assert.strictEqual(response.headers.Location, 'http://localhost/servers/3535');
                 assert.strictEqual(response.statusCode, 201);
             });
         });
@@ -345,8 +349,9 @@ describe('ImpostersController', function () {
                 impostersRepo = ImpostersRepo.create(),
                 controller = Controller.create({ http: Protocol }, impostersRepo, logger, false);
 
-            Protocol.createImposterFrom = () => {
+            Protocol.createImposterFrom = creationRequest => {
                 const result = imposters[creates];
+                result.creationRequest = creationRequest;
                 creates += 1;
                 return result;
             };
@@ -369,8 +374,9 @@ describe('ImpostersController', function () {
                 impostersToCreate = [firstImposter, secondImposter],
                 controller = Controller.create({ http: Protocol }, impostersRepo, logger, false);
 
-            Protocol.createImposterFrom = () => {
+            Protocol.createImposterFrom = creationRequest => {
                 const result = impostersToCreate[creates];
+                result.creationRequest = creationRequest;
                 creates += 1;
                 return result;
             };

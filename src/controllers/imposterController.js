@@ -211,7 +211,7 @@ function create (protocols, imposters, logger, allowInjection) {
     }
 
     function validateStubIndex (index, imposter) {
-        return imposter.stubs().then(allStubs => {
+        return imposter.stubsJSON().then(allStubs => {
             const errors = [];
             if (typeof allStubs[index] === 'undefined') {
                 errors.push(exceptions.ValidationError("'stubIndex' must be a valid integer, representing the array index position of the stub to replace"));
@@ -269,7 +269,7 @@ function create (protocols, imposters, logger, allowInjection) {
      */
     function postStub (request, response) {
         return imposters.get(request.params.id).then(imposter => {
-            return imposter.stubs().then(allStubs => {
+            return imposter.stubsJSON().then(allStubs => {
                 const newStub = request.body.stub,
                     index = typeof request.body.index === 'undefined' ? allStubs.length : request.body.index,
                     indexValidation = validateNewStubIndex(index, allStubs);

@@ -297,7 +297,7 @@ describe('ImposterController', function () {
                     1: {
                         port: 1,
                         protocol: 'test',
-                        stubs: mock().returns(Q([]))
+                        stubsJSON: mock().returns(Q([]))
                     }
                 },
                 repo = ImpostersRepo.create(imposters),
@@ -325,7 +325,7 @@ describe('ImposterController', function () {
                     1: {
                         port: 1,
                         protocol: 'test',
-                        stubs: mock().returns(Q([]))
+                        stubsJSON: mock().returns(Q([]))
                     }
                 },
                 repo = ImpostersRepo.create(imposters),
@@ -353,7 +353,7 @@ describe('ImposterController', function () {
                     1: {
                         port: 1,
                         protocol: 'test',
-                        stubs: mock().returns(Q([0, 1, 2]))
+                        stubsJSON: mock().returns(Q([0, 1, 2]))
                     }
                 },
                 repo = ImpostersRepo.create(imposters),
@@ -381,7 +381,7 @@ describe('ImposterController', function () {
                     1: {
                         port: 1,
                         protocol: 'test',
-                        stubs: mock().returns(Q([0, 1, 2])),
+                        stubsJSON: mock().returns(Q([0, 1, 2])),
                         toJSON: mock().returns(Q({ protocol: 'test' }))
                     }
                 },
@@ -411,7 +411,7 @@ describe('ImposterController', function () {
                     1: {
                         port: 1,
                         protocol: 'test',
-                        stubs: mock().returns(Q([0, 1, 2])),
+                        stubsJSON: mock().returns(Q([0, 1, 2])),
                         toJSON: mock().returns(Q({ protocol: 'test' }))
                     }
                 },
@@ -443,7 +443,7 @@ describe('ImposterController', function () {
                     1: {
                         port: 1,
                         protocol: 'test',
-                        stubs: mock().returns(Q([0, 1, 2]))
+                        stubsJSON: mock().returns(Q([0, 1, 2]))
                     }
                 },
                 repo = ImpostersRepo.create(imposters),

@@ -54,6 +54,9 @@ function create (Protocol, creationRequest, baseLogger, config, isAllowedConnect
         unresolvedProxies = {},
         header = helpers.clone(creationRequest);
 
+    // Free up the memory by allowing garbage collection of stubs when using filesystemBackedImpostersRepository
+    delete header.stubs;
+
     let stubs;
     let resolver;
     let encoding;
@@ -153,7 +156,7 @@ function create (Protocol, creationRequest, baseLogger, config, isAllowedConnect
 
         Protocol.createServer(creationRequest, logger, getResponseFor).done(server => {
             if (creationRequest.port !== server.port) {
-                header.port = server.port;
+                creationRequest.port = server.port;
                 logger.changeScope(scopeFor(server.port));
             }
             logger.info('Open for business...');
@@ -161,11 +164,6 @@ function create (Protocol, creationRequest, baseLogger, config, isAllowedConnect
             stubs = server.stubs;
             resolver = server.resolver;
             encoding = server.encoding;
-
-            if (creationRequest.stubs) {
-                creationRequest.stubs.forEach(stubs.add);
-                delete header.stubs; // free up the memory
-            }
 
             function stop () {
                 const stopDeferred = Q.defer();
@@ -186,13 +184,13 @@ function create (Protocol, creationRequest, baseLogger, config, isAllowedConnect
             return deferred.resolve({
                 port: server.port,
                 url: '/imposters/' + server.port,
-                header: () => helpers.clone(header),
+                creationRequest: creationRequest,
                 toJSON,
                 stop,
                 getResponseFor,
                 getProxyResponseFor,
                 addStub: server.stubs.add,
-                stubs: server.stubs.toJSON,
+                stubsJSON: server.stubs.toJSON,
                 overwriteStubs: server.stubs.overwriteAll,
                 overwriteStubAtIndex: server.stubs.overwriteAtIndex,
                 deleteStubAtIndex: server.stubs.deleteAtIndex,

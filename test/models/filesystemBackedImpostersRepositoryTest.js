@@ -22,7 +22,7 @@ describe('filesystemBackedImpostersRepository', function () {
 
     function imposterize (config) {
         const cloned = JSON.parse(JSON.stringify(config)),
-            result = { header: () => cloned };
+            result = { creationRequest: cloned };
         Object.keys(config).forEach(key => {
             if (typeof config[key] === 'function') {
                 result[key] = config[key];
@@ -59,7 +59,7 @@ describe('filesystemBackedImpostersRepository', function () {
             });
         });
 
-        promiseIt('should not add stubs for the imposter (stubsFor.add does that)', function () {
+        promiseIt('should add stubs for the imposter', function () {
             const imposter = {
                 port: 1000,
                 protocol: 'test',
@@ -70,28 +70,14 @@ describe('filesystemBackedImpostersRepository', function () {
 
             return repo.add(imposterize(imposter)).then(() => {
                 const saved = read('.mbtest/1000/imposter.json');
-                assert.deepEqual(saved, { port: 1000, protocol: 'test', stubs: [] });
+                assert.strictEqual(saved.stubs.length, 1);
+
+                const meta = read(`.mbtest/1000/${saved.stubs[0].meta.dir}/meta.json`);
+                assert.strictEqual(meta.responseFiles.length, 1);
+
+                const response = read(`.mbtest/1000/${saved.stubs[0].meta.dir}/${meta.responseFiles[0]}`);
+                assert.deepEqual(response, { is: { field: 'value' } });
             });
-        });
-
-        promiseIt('should not change stubs previously added by stubsFor.add', function () {
-            const stubs = repo.stubsFor(1000),
-                imposter = {
-                    port: 1000,
-                    protocol: 'test',
-                    stubs: [{
-                        responses: [{ is: { field: 'value' } }]
-                    }]
-                };
-
-            return stubs.add(imposter.stubs[0])
-                .then(() => repo.add(imposterize(imposter)))
-                .then(() => {
-                    const saved = read('.mbtest/1000/imposter.json');
-                    assert.strictEqual(saved.stubs.length, 1);
-                    assert.strictEqual(saved.port, 1000);
-                    assert.strictEqual(saved.protocol, 'test');
-                });
         });
     });
 
@@ -116,13 +102,11 @@ describe('filesystemBackedImpostersRepository', function () {
                 port: 1000,
                 protocol: 'test',
                 stubs: [{
-                    predicates: [],
                     responses: [{ is: { key: 'value' } }]
                 }]
             };
 
-            return repo.stubsFor(1000).add(imposter.stubs[0])
-                .then(() => repo.add(imposterize(imposter)))
+            return repo.add(imposterize(imposter))
                 .then(() => repo.del(1000))
                 .then(deleted => {
                     assert.strictEqual(fs.existsSync('.mbtest/1000'), false);
@@ -213,14 +197,15 @@ describe('filesystemBackedImpostersRepository', function () {
                     imposter = {
                         port: 3000,
                         protocol: 'test',
-                        stubs: [{
-                            predicates: [{ equals: { field: 'request' } }],
-                            responses: [{ is: { field: 'response' } }]
-                        }]
+                        stubs: []
+                    },
+                    stub = {
+                        predicates: [{ equals: { field: 'request' } }],
+                        responses: [{ is: { field: 'response' } }]
                     };
 
-                return stubs.add(imposter.stubs[0])
-                    .then(() => repo.add(imposterize(imposter)))
+                return repo.add(imposterize(imposter))
+                    .then(() => stubs.add(stub))
                     .then(() => {
                         const header = read('.mbtest/3000/imposter.json'),
                             stubDir = header.stubs[0].meta.dir;
@@ -230,9 +215,7 @@ describe('filesystemBackedImpostersRepository', function () {
                             protocol: 'test',
                             stubs: [{
                                 predicates: [{ equals: { field: 'request' } }],
-                                meta: {
-                                    dir: stubDir
-                                }
+                                meta: { dir: stubDir }
                             }]
                         });
 
@@ -258,15 +241,17 @@ describe('filesystemBackedImpostersRepository', function () {
                     secondStub = {
                         predicates: [{ equals: { field: 'request-1' } }],
                         responses: [{ is: { field: 'response-1' } }]
-                    };
+                    },
+                    imposter = { port: 3000, stubs: [firstStub] };
 
-                return stubs.add(firstStub)
+                return repo.add(imposterize(imposter))
                     .then(() => stubs.add(secondStub))
                     .then(() => {
                         const header = read('.mbtest/3000/imposter.json'),
                             stubDirs = header.stubs.map(stub => stub.meta.dir);
 
                         assert.deepEqual(header, {
+                            port: 3000,
                             stubs: [
                                 {
                                     predicates: [{ equals: { field: 'request-0' } }],
@@ -302,22 +287,25 @@ describe('filesystemBackedImpostersRepository', function () {
                             { is: { field: 'first-response' } },
                             { is: { field: 'second-response' } }
                         ]
-                    };
+                    },
+                    imposter = { port: 3000, stubs: [] };
 
-                return stubs.add(stub).then(() => {
-                    const header = read('.mbtest/3000/imposter.json'),
-                        stubDir = header.stubs[0].meta.dir,
-                        meta = read(`.mbtest/3000/${stubDir}/meta.json`),
-                        responseFiles = meta.responseFiles;
+                return repo.add(imposterize(imposter))
+                    .then(() => stubs.add(stub))
+                    .then(() => {
+                        const header = read('.mbtest/3000/imposter.json'),
+                            stubDir = header.stubs[0].meta.dir,
+                            meta = read(`.mbtest/3000/${stubDir}/meta.json`),
+                            responseFiles = meta.responseFiles;
 
-                    assert.deepEqual(meta, {
-                        responseFiles: responseFiles,
-                        orderWithRepeats: [0, 1],
-                        nextIndex: 0
+                        assert.deepEqual(meta, {
+                            responseFiles: responseFiles,
+                            orderWithRepeats: [0, 1],
+                            nextIndex: 0
+                        });
+                        assert.deepEqual(read(`.mbtest/3000/${stubDir}/${responseFiles[0]}`), { is: { field: 'first-response' } });
+                        assert.deepEqual(read(`.mbtest/3000/${stubDir}/${responseFiles[1]}`), { is: { field: 'second-response' } });
                     });
-                    assert.deepEqual(read(`.mbtest/3000/${stubDir}/${responseFiles[0]}`), { is: { field: 'first-response' } });
-                    assert.deepEqual(read(`.mbtest/3000/${stubDir}/${responseFiles[1]}`), { is: { field: 'second-response' } });
-                });
             });
 
             promiseIt('should apply repeat behavior', function () {
@@ -329,19 +317,22 @@ describe('filesystemBackedImpostersRepository', function () {
                             { is: { field: 'second-response' } },
                             { is: { field: 'third-response' }, _behaviors: { repeat: 3 } }
                         ]
-                    };
+                    },
+                    imposter = { port: 3000, stubs: [] };
 
-                return stubs.add(stub).then(() => {
-                    const header = read('.mbtest/3000/imposter.json'),
-                        stubDir = header.stubs[0].meta.dir,
-                        meta = read(`.mbtest/3000/${stubDir}/meta.json`);
+                return repo.add(imposterize(imposter))
+                    .then(() => stubs.add(stub))
+                    .then(() => {
+                        const header = read('.mbtest/3000/imposter.json'),
+                            stubDir = header.stubs[0].meta.dir,
+                            meta = read(`.mbtest/3000/${stubDir}/meta.json`);
 
-                    assert.deepEqual(meta, {
-                        responseFiles: meta.responseFiles,
-                        orderWithRepeats: [0, 0, 1, 2, 2, 2],
-                        nextIndex: 0
+                        assert.deepEqual(meta, {
+                            responseFiles: meta.responseFiles,
+                            orderWithRepeats: [0, 0, 1, 2, 2, 2],
+                            nextIndex: 0
+                        });
                     });
-                });
             });
         });
 
@@ -351,51 +342,56 @@ describe('filesystemBackedImpostersRepository', function () {
                     stub = {
                         predicates: [{ equals: { field: 'request' } }],
                         responses: [{ is: { field: 'response' } }]
-                    };
+                    },
+                    imposter = { port: 3000 };
 
-                return stubs.insertAtIndex(stub, 0).then(() => {
-                    const header = read('.mbtest/3000/imposter.json'),
-                        stubDir = header.stubs[0].meta.dir;
-                    assert.deepEqual(header, {
-                        stubs: [{
-                            predicates: [{ equals: { field: 'request' } }],
-                            meta: { dir: stubDir }
-                        }]
-                    });
+                return repo.add(imposterize(imposter))
+                    .then(() => stubs.insertAtIndex(stub, 0))
+                    .then(() => {
+                        const header = read('.mbtest/3000/imposter.json'),
+                            stubDir = header.stubs[0].meta.dir;
+                        assert.deepEqual(header, {
+                            port: 3000,
+                            stubs: [{
+                                predicates: [{ equals: { field: 'request' } }],
+                                meta: { dir: stubDir }
+                            }]
+                        });
 
-                    const meta = read(`.mbtest/3000/${stubDir}/meta.json`),
-                        responseFile = meta.responseFiles[0];
-                    assert.deepEqual(meta, {
-                        responseFiles: [responseFile],
-                        orderWithRepeats: [0],
-                        nextIndex: 0
+                        const meta = read(`.mbtest/3000/${stubDir}/meta.json`),
+                            responseFile = meta.responseFiles[0];
+                        assert.deepEqual(meta, {
+                            responseFiles: [responseFile],
+                            orderWithRepeats: [0],
+                            nextIndex: 0
+                        });
+                        assert.deepEqual(read(`.mbtest/3000/${stubDir}/${responseFile}`), { is: { field: 'response' } });
                     });
-                    assert.deepEqual(read(`.mbtest/3000/${stubDir}/${responseFile}`), { is: { field: 'response' } });
-                });
             });
 
             promiseIt('should add to stubs file if it already exists', function () {
                 const stubs = repo.stubsFor(3000),
-                    firstStub = {
+                    first = {
                         predicates: [{ equals: { field: 'first-request' } }],
                         responses: [{ is: { field: 'first-response' } }]
                     },
-                    secondStub = {
+                    second = {
                         predicates: [{ equals: { field: 'second-request' } }],
                         responses: [{ is: { field: 'second-response' } }]
                     },
+                    imposter = { port: 3000, stubs: [first, second] },
                     newStub = {
                         predicates: [{ equals: { field: 'NEW-REQUEST' } }],
                         responses: [{ is: { field: 'NEW-RESPONSE' } }]
                     };
 
-                return stubs.add(firstStub)
-                    .then(() => stubs.add(secondStub))
+                return repo.add(imposterize(imposter))
                     .then(() => stubs.insertAtIndex(newStub, 1))
                     .then(() => {
                         const header = read('.mbtest/3000/imposter.json'),
                             stubDirs = header.stubs.map(stub => stub.meta.dir);
                         assert.deepEqual(header, {
+                            port: 3000,
                             stubs: [
                                 {
                                     predicates: [{ equals: { field: 'first-request' } }],
@@ -423,23 +419,22 @@ describe('filesystemBackedImpostersRepository', function () {
         describe('#deleteAtIndex', function () {
             promiseIt('should delete stub and stub dir at specified index', function () {
                 const stubs = repo.stubsFor(3000),
-                    firstStub = {
+                    first = {
                         predicates: [{ equals: { field: 'first-request' } }],
                         responses: [{ is: { field: 'first-response' } }]
                     },
-                    secondStub = {
+                    second = {
                         predicates: [{ equals: { field: 'second-request' } }],
                         responses: [{ is: { field: 'second-response' } }]
                     },
-                    thirdStub = {
+                    third = {
                         predicates: [{ equals: { field: 'third-request' } }],
                         responses: [{ is: { field: 'third-response' } }]
-                    };
+                    },
+                    imposter = { port: 3000, stubs: [first, second, third] };
                 let stubDirToDelete;
 
-                return stubs.add(firstStub)
-                    .then(() => stubs.add(secondStub))
-                    .then(() => stubs.add(thirdStub))
+                return repo.add(imposterize(imposter))
                     .then(() => {
                         const header = read('.mbtest/3000/imposter.json');
                         stubDirToDelete = header.stubs[1].meta.dir;
@@ -448,6 +443,7 @@ describe('filesystemBackedImpostersRepository', function () {
                         const header = read('.mbtest/3000/imposter.json'),
                             stubDirs = header.stubs.map(stub => stub.meta.dir);
                         assert.deepEqual(header, {
+                            port: 3000,
                             stubs: [
                                 {
                                     predicates: [{ equals: { field: 'first-request' } }],
@@ -468,30 +464,31 @@ describe('filesystemBackedImpostersRepository', function () {
         describe('#overwriteAtIndex', function () {
             promiseIt('should overwrite at given index', function () {
                 const stubs = repo.stubsFor(3000),
-                    firstStub = {
+                    first = {
                         predicates: [{ equals: { field: 'first-request' } }],
                         responses: [{ is: { field: 'first-response' } }]
                     },
-                    secondStub = {
+                    second = {
                         predicates: [{ equals: { field: 'second-request' } }],
                         responses: [{ is: { field: 'second-response' } }]
                     },
-                    thirdStub = {
+                    imposter = { port: 3000, stubs: [first, second] },
+                    newStub = {
                         predicates: [{ equals: { field: 'third-request' } }],
                         responses: [{ is: { field: 'third-response' } }]
                     };
                 let stubDirToDelete;
 
-                return stubs.add(firstStub)
-                    .then(() => stubs.add(secondStub))
+                return repo.add(imposterize(imposter))
                     .then(() => {
                         const header = read('.mbtest/3000/imposter.json');
                         stubDirToDelete = header.stubs[0].meta.dir;
-                        return stubs.overwriteAtIndex(thirdStub, 0);
+                        return stubs.overwriteAtIndex(newStub, 0);
                     }).then(() => {
                         const header = read('.mbtest/3000/imposter.json'),
                             stubDirs = header.stubs.map(stub => stub.meta.dir);
                         assert.deepEqual(read('.mbtest/3000/imposter.json'), {
+                            port: 3000,
                             stubs: [
                                 {
                                     predicates: [{ equals: { field: 'third-request' } }],
@@ -518,10 +515,11 @@ describe('filesystemBackedImpostersRepository', function () {
                             { is: { field: 'first-response' } },
                             { is: { field: 'second-response' } }
                         ]
-                    };
+                    },
+                    imposter = { port: 3000, stubs: [stub] };
                 let responsePath;
 
-                return stubs.add(stub).then(() => {
+                return repo.add(imposterize(imposter)).then(() => {
                     const header = read('.mbtest/3000/imposter.json'),
                         stubDir = header.stubs[0].meta.dir,
                         meta = read(`.mbtest/3000/${stubDir}/meta.json`),
@@ -549,10 +547,11 @@ describe('filesystemBackedImpostersRepository', function () {
                             { is: { field: 'first-response' } },
                             { is: { field: 'second-response' } }
                         ]
-                    };
+                    },
+                    imposter = { port: 3000, stubs: [stub] };
                 let metaPath;
 
-                return stubs.add(stub).then(() => {
+                return repo.add(imposterize(imposter)).then(() => {
                     const header = read('.mbtest/3000/imposter.json'),
                         stubDir = header.stubs[0].meta.dir;
                     metaPath = `.mbtest/3000/${stubDir}/meta.json`;
@@ -577,10 +576,11 @@ describe('filesystemBackedImpostersRepository', function () {
                             { is: { field: 'first-response' } },
                             { is: { field: 'second-response' } }
                         ]
-                    };
+                    },
+                    imposter = { port: 3000, stubs: [stub] };
                 let responsePath;
 
-                return stubs.add(stub).then(() => {
+                return repo.add(imposterize(imposter)).then(() => {
                     const header = read('.mbtest/3000/imposter.json'),
                         stubDir = header.stubs[0].meta.dir,
                         meta = read(`.mbtest/3000/${stubDir}/meta.json`),

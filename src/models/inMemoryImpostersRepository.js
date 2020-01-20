@@ -274,7 +274,10 @@ function create (startupImposters) {
         Q = require('q');
 
     if (startupImposters) {
-        Object.keys(startupImposters).forEach(id => add(startupImposters[id]));
+        Object.keys(startupImposters).forEach(id => {
+            startupImposters[id].creationRequest = startupImposters[id];
+            add(startupImposters[id]);
+        });
     }
 
     /**
@@ -287,7 +290,9 @@ function create (startupImposters) {
             imposter.stubs = [];
         }
         imposters[String(imposter.port)] = imposter;
-        return Q(imposter);
+
+        const promises = (imposter.creationRequest.stubs || []).map(stubsFor(imposter.port).add);
+        return Q.all(promises).then(() => imposter);
     }
 
     /**
