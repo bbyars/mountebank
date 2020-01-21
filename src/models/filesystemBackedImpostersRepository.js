@@ -368,15 +368,17 @@ function create (config, logger) {
         }
 
         function wrap (stub) {
-            const Response = require('./response'),
-                helpers = require('../util/helpers'),
+            const helpers = require('../util/helpers'),
                 cloned = helpers.clone(stub || {}),
                 stubDir = stub ? stub.meta.dir : '';
 
             if (typeof stub === 'undefined') {
                 return {
                     addResponse: () => Q(),
-                    nextResponse: () => Q(Response.create()),
+                    nextResponse: () => Q({
+                        is: {},
+                        stubIndex: () => Q(0)
+                    }),
                     recordMatch: () => Q()
                 };
             }
@@ -414,6 +416,12 @@ function create (config, logger) {
                 });
             }
 
+            function createResponse (responseConfig) {
+                const result = helpers.clone(responseConfig || { is: {} });
+                result.stubIndex = stubIndex;
+                return result;
+            }
+
             /**
              * Returns the next response for the stub, taking into consideration repeat behavior and cycling back the beginning
              * @returns {Object} - the promise
@@ -429,7 +437,7 @@ function create (config, logger) {
                     meta.nextIndex = (meta.nextIndex + 1) % maxIndex;
                     return Q(meta);
                 }).then(() => readFile(responsePath(stubDir, responseFile)))
-                    .then(responseConfig => Response.create(responseConfig, stubIndex));
+                    .then(responseConfig => createResponse(responseConfig));
             };
 
             /**

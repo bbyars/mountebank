@@ -250,7 +250,7 @@ function create (stubs, proxy, callbackURL) {
             behaviors = require('./behaviors');
 
         if (['proxyOnce', 'proxyAlways', 'proxyTransparent'].indexOf(responseConfig.proxy.mode) < 0) {
-            responseConfig.setMetadata('proxy', { mode: 'proxyOnce' });
+            responseConfig.proxy.mode = 'proxyOnce';
         }
 
         if (inProcessProxy) {

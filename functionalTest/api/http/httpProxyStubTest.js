@@ -30,31 +30,6 @@ describe('http proxy stubs', function () {
         });
     }
 
-    promiseIt('should reflect default mode after first proxy if no mode passed in', function () {
-        const originServerPort = port + 1,
-            originServerStub = { responses: [{ is: { body: 'origin server' } }] },
-            originServerRequest = {
-                protocol: 'http',
-                port: originServerPort,
-                stubs: [originServerStub],
-                name: 'origin'
-            },
-            proxyStub = { responses: [{ proxy: { to: `http://localhost:${originServerPort}` } }] },
-            proxyRequest = { protocol: 'http', port, stubs: [proxyStub], name: 'proxy' };
-
-        return api.post('/imposters', originServerRequest)
-            .then(() => api.post('/imposters', proxyRequest))
-            .then(response => {
-                assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body, null, 2));
-                return client.get('/', port);
-            }).then(response => {
-                assert.strictEqual(response.body, 'origin server');
-                return api.get(`/imposters/${port}`);
-            }).then(response => {
-                assert.strictEqual(response.body.stubs[1].responses[0].proxy.mode, 'proxyOnce', response.body);
-            }).finally(() => api.del('/imposters'));
-    });
-
     promiseIt('should record new stubs in order in front of proxy resolver using proxyOnce mode', function () {
         const originServerPort = port + 1,
             originServerFn = (request, state) => {

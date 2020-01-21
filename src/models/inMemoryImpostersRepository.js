@@ -28,6 +28,15 @@ function repeatTransform (responses) {
     return result;
 }
 
+function createResponse (responseConfig, stubIndexFn) {
+    const helpers = require('../util/helpers'),
+        cloned = helpers.clone(responseConfig || { is: {} });
+
+    cloned.stubIndex = stubIndexFn ? stubIndexFn : () => require('q')(0);
+
+    return cloned;
+}
+
 function wrap (stub = {}) {
     const Q = require('q'),
         helpers = require('../util/helpers'),
@@ -52,15 +61,14 @@ function wrap (stub = {}) {
      * @returns {Object} - the promise
      */
     cloned.nextResponse = () => {
-        const responseConfig = statefulResponses.shift(),
-            Response = require('./response');
+        const responseConfig = statefulResponses.shift();
 
         if (responseConfig) {
             statefulResponses.push(responseConfig);
-            return Q(Response.create(responseConfig, cloned.stubIndex));
+            return Q(createResponse(responseConfig, cloned.stubIndex));
         }
         else {
-            return Q(Response.create());
+            return Q(createResponse());
         }
     };
 
