@@ -1,7 +1,7 @@
 {
   "name": "mountebank",
   "preferGlobal": true,
-  "version": "2.1.2",
+  "version": "2.2.0",
   "author": "Brandon Byars <brandon.byars@gmail.com>",
   "description": "Over the wire test doubles",
   "homepage": "http://www.mbtest.org",
@@ -68,7 +68,7 @@
     "grunt-eslint": "^22.0.0",
     "grunt-jsdoc": "^2.2.1",
     "grunt-mocha-test": "~0.13.3",
-    "grunt-mountebank": "1.0.7",
+    "grunt-mountebank": "1.1.0",
     "istanbul": "0.4.5",
     "jsdoc": "^3.5.5",
     "jsdom": "~15.2.0",
@@ -79,7 +79,7 @@
     "w3cjs": "~0.4.0"
   },
   "engines": {
-    "node": ">=8"
+    "node": ">=10"
   },
   "greenkeeper": {
     "ignore": [

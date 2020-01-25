@@ -868,7 +868,8 @@ Connection: keep-alive
     "logfile": "mb-grunt.log",
     "allowInjection": true,
     "mock": true,
-    "localOnly": true,
+    "localOnly": true, <% if (process.env.MB_PERSISTENT === 'true') { %>
+    "datadir": ".mbdb", <% } %>
     "noParse": false,
     "nologfile": false,
     "loglevel": "info",

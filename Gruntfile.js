@@ -3,7 +3,6 @@
 const port = process.env.MB_PORT || 2525;
 
 module.exports = grunt => {
-
     require('time-grunt')(grunt);
 
     grunt.loadTasks('tasks');
@@ -60,7 +59,7 @@ module.exports = grunt => {
                 path: 'bin/mb',
                 pathEnvironmentVariable: 'MB_EXECUTABLE'
             },
-            restart: ['--port', port, '--pidfile', 'mb-grunt.pid', '--logfile', 'mb-grunt.log', '--allowInjection', '--mock', '--localOnly'],
+            start: ['--port', port, '--pidfile', 'mb-grunt.pid', '--logfile', 'mb-grunt.log', '--allowInjection', '--mock', '--localOnly'],
             stop: ['--pidfile', 'mb-grunt.pid']
         },
         csslint: {
@@ -98,13 +97,22 @@ module.exports = grunt => {
         require('fs').writeFileSync('protocols.json', JSON.stringify(protocols, null, 2));
     });
 
+    grunt.registerTask('persistent', () => {
+        grunt.log.writeln('Running tests with --datadir enabled');
+        process.env.MB_PERSISTENT = 'true';
+        const mbConfig = grunt.config.get('mb.start');
+        mbConfig.push('--datadir');
+        mbConfig.push('.mbdb');
+        grunt.config('mb.start', mbConfig);
+    });
+
     grunt.registerTask('test:unit', 'Run the unit tests', ['mochaTest:unit']);
     grunt.registerTask('test:functional', 'Run the functional tests',
-        ['mb:restart', 'try', 'mochaTest:functional', 'finally', 'mb:stop', 'checkForErrors']);
+        ['mb:start', 'try', 'mochaTest:functional', 'finally', 'mb:stop', 'checkForErrors']);
     grunt.registerTask('test:performance', 'Run the performance tests', ['mochaTest:performance']);
     grunt.registerTask('test', 'Run all non-performance tests', ['test:unit', 'test:functional']);
     grunt.registerTask('lint', 'Run all lint checks', ['jsCheck', 'deadCheck', 'eslint']);
-    grunt.registerTask('default', ['test', 'lint']);
+    grunt.registerTask('default', ['lint', 'test']);
     grunt.registerTask('airplane', 'Build that avoids tests requiring network access', ['setAirplaneMode', 'default']);
 
     // Package-specific testing

@@ -3,6 +3,7 @@
 const Q = require('q'),
     promiseIt = require('../testHelpers').promiseIt,
     tcpIsInProcess = require('../testHelpers').isInProcessImposter('tcp'),
+    isPersistent = process.env.MB_PERSISTENT === 'true',
     docs = require('./docsTester/docs'),
     isWindows = require('os').platform().indexOf('win') === 0,
     timeout = parseInt(process.env.MB_SLOW_TEST_TIMEOUT || 3000);
@@ -40,10 +41,10 @@ describe('docs', function () {
         validateDocs('/docs/api/overview');
     }
 
-    // For tcp out of process imposters, I can't get the netcat tests working,
+    // For tcp out of process imposters or using the --datadir option, I can't get the netcat tests working,
     // even with a -q1 replacement. The nc client ends the socket connection
     // before the server has a chance to respond.
-    if (tcpIsInProcess && !isWindows) {
+    if (tcpIsInProcess && !isWindows && !isPersistent) {
         [
             '/docs/gettingStarted',
             '/docs/api/predicates',
