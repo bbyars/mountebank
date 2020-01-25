@@ -243,14 +243,14 @@ types.forEach(function (type) {
             });
         });
 
-        describe('#deleteAllSync', function () {
+        describe('#stopAllSync', function () {
             promiseIt('should call stop() on all imposters and empty list', function () {
                 const first = { port: 1, value: 2, stop: mock().returns(Q()) },
                     second = { port: 2, value: 3, stop: mock().returns(Q()) };
                 return repo.add(imposterize(first))
                     .then(() => repo.add(imposterize(second)))
                     .then(() => {
-                        repo.deleteAllSync();
+                        repo.stopAllSync();
                         assert.ok(first.stop.wasCalled(), first.stop.message());
                         assert.ok(second.stop.wasCalled(), second.stop.message());
                         return repo.all();

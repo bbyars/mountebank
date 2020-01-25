@@ -778,10 +778,8 @@ function create (config, logger) {
     /**
      * Deletes all imposters synchronously; used during shutdown
      */
-    function deleteAllSync () {
-        const fs = require('fs-extra');
+    function stopAllSync () {
         Object.keys(imposterFns).forEach(shutdown);
-        fs.removeSync(config.datadir);
     }
 
     /**
@@ -800,7 +798,7 @@ function create (config, logger) {
         all,
         exists,
         del,
-        deleteAllSync,
+        stopAllSync,
         deleteAll,
         stubsFor
     };

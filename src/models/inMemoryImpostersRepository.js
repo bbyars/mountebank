@@ -342,7 +342,7 @@ function create () {
     /**
      * Deletes all imposters synchronously; used during shutdown
      */
-    function deleteAllSync () {
+    function stopAllSync () {
         Object.keys(imposters).forEach(id => {
             imposters[id].stop();
             delete imposters[id];
@@ -385,7 +385,7 @@ function create () {
         all,
         exists,
         del,
-        deleteAllSync,
+        stopAllSync,
         deleteAll,
         stubsFor,
         createStubsRepository

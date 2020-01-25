@@ -162,19 +162,7 @@ describe('filesystemBackedImpostersRepository', function () {
         });
     });
 
-    describe('#deleteAllSync', function () {
-        promiseIt('synchronously removes database', function () {
-            const first = { port: 1000, protocol: 'test' },
-                second = { port: 2000, protocol: 'test' };
-
-            return repo.add(imposterize(first))
-                .then(() => repo.add(imposterize(second)))
-                .then(() => {
-                    repo.deleteAllSync();
-                    assert.strictEqual(fs.existsSync('.mbtest'), false);
-                });
-        });
-
+    describe('#stopAllSync', function () {
         promiseIt('calls stop() on all added imposters even if another process already deleted the database', function () {
             const first = { port: 1000, protocol: 'test', stop: mock().returns(Q()) },
                 second = { port: 2000, protocol: 'test', stop: mock().returns(Q()) };
@@ -183,7 +171,7 @@ describe('filesystemBackedImpostersRepository', function () {
                 .then(() => repo.add(imposterize(second)))
                 .then(() => {
                     fs.removeSync('.mbtest');
-                    repo.deleteAllSync();
+                    repo.stopAllSync();
                     assert.ok(first.stop.wasCalled());
                     assert.ok(second.stop.wasCalled());
                 });

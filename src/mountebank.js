@@ -309,7 +309,7 @@ function create (options) {
         });
 
     process.once('exit', () => {
-        imposters.deleteAllSync();
+        imposters.stopAllSync();
     });
 
     return deferred.promise;
