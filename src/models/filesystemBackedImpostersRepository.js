@@ -190,8 +190,9 @@ function create (config, logger) {
                 realpath: false,
                 retries: {
                     retries: 10,
-                    factor: 2,
+                    factor: 1.47394, // https://www.wolframalpha.com/input/?i=Sum%5B50*x%5Ek%2C+%7Bk%2C+0%2C+9%7D%5D+%3D+5000
                     minTimeout: 50,
+                    maxTimeout: 5000,
                     randomize: true
                 }
             },
