@@ -531,11 +531,8 @@ describe('filesystemBackedImpostersRepository', function () {
                 }).then(() => {
                     assert.fail('should have errored');
                 }).catch(err => {
-                    assert.deepEqual(err, {
-                        code: 'corrupted database',
-                        message: 'file not found',
-                        details: `ENOENT: no such file or directory, open '${responsePath}'`
-                    });
+                    assert.strictEqual(err.code, 'corrupted database');
+                    assert.strictEqual(err.message, 'file not found');
                 });
             });
 
@@ -560,11 +557,8 @@ describe('filesystemBackedImpostersRepository', function () {
                 }).then(() => {
                     assert.fail('should have errored');
                 }).catch(err => {
-                    assert.deepEqual(err, {
-                        code: 'corrupted database',
-                        message: 'file not found',
-                        details: `ENOENT: no such file or directory, open '${metaPath}'`
-                    });
+                    assert.strictEqual(err.code, 'corrupted database');
+                    assert.strictEqual(err.message, 'file not found');
                 });
             });
 
