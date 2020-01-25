@@ -188,14 +188,7 @@ function create (Protocol, creationRequest, baseLogger, config, isAllowedConnect
                 toJSON,
                 stop,
                 getResponseFor,
-                getProxyResponseFor,
-                addStub: server.stubs.add,
-                stubsJSON: server.stubs.toJSON,
-                overwriteStubs: server.stubs.overwriteAll,
-                overwriteStubAtIndex: server.stubs.overwriteAtIndex,
-                deleteStubAtIndex: server.stubs.deleteAtIndex,
-                insertStubAtIndex: server.stubs.insertAtIndex,
-                deleteSavedProxyResponses: server.stubs.deleteSavedProxyResponses
+                getProxyResponseFor
             });
         });
     });

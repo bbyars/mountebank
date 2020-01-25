@@ -191,21 +191,6 @@ describe('ImposterController', function () {
                 assert.ok(imposter.toJSON.wasCalledWith({ replayable: false, removeProxies: false }), imposter.toJSON.message());
             });
         });
-
-        promiseIt('should delete requests recorded with the imposter', function () {
-            const response = FakeResponse.create(),
-                imposter = {
-                    port: 1,
-                    toJSON: mock().returns(Q('JSON')),
-                    deleteSavedProxyResponses: mock().returns(Q())
-                },
-                repo = ImpostersRepo.create({ 1: imposter }),
-                controller = Controller.create({}, repo);
-
-            return controller.resetProxies({ url: '/imposters/1/requests', params: { id: 1 } }, response).then(() => {
-                assert(imposter.deleteSavedProxyResponses.wasCalled());
-            });
-        });
     });
 
     describe('#putStubs', function () {
@@ -251,8 +236,13 @@ describe('ImposterController', function () {
 
         promiseIt('should return a 400 if no stub fails dry run validation', function () {
             const response = FakeResponse.create(),
-                imposters = { 1: { port: 1, protocol: 'test', toJSON: mock().returns(Q({ protocol: 'test' })) } },
-                repo = ImpostersRepo.create(imposters),
+                imposter = {
+                    port: 1,
+                    protocol: 'test',
+                    creationRequest: { port: 1, protocol: 'test', stubs: [{}] },
+                    toJSON: mock().returns(Q({ port: 1, protocol: 'test', stubs: [{}] }))
+                },
+                repo = ImpostersRepo.create(),
                 Protocol = { testRequest: {} },
                 logger = require('../fakes/fakeLogger').create(),
                 controller = Controller.create({ test: Protocol }, repo, logger, false),
@@ -261,11 +251,13 @@ describe('ImposterController', function () {
                     body: { stubs: [{ responses: [{ invalid: 1 }] }] }
                 };
 
-            return controller.putStubs(request, response).then(() => {
-                assert.strictEqual(response.statusCode, 400);
-                assert.strictEqual(response.body.errors.length, 1);
-                assert.strictEqual(response.body.errors[0].code, 'bad data');
-            });
+            return repo.add(imposter)
+                .then(() => controller.putStubs(request, response))
+                .then(() => {
+                    assert.strictEqual(response.statusCode, 400);
+                    assert.strictEqual(response.body.errors.length, 1);
+                    assert.strictEqual(response.body.errors[0].code, 'bad data');
+                });
         });
 
         promiseIt('should return a 400 if trying to add injection without --allowInjection set', function () {
@@ -377,15 +369,13 @@ describe('ImposterController', function () {
 
         promiseIt('should return a 400 if no stub fails dry run validation', function () {
             const response = FakeResponse.create(),
-                imposters = {
-                    1: {
-                        port: 1,
-                        protocol: 'test',
-                        stubsJSON: mock().returns(Q([0, 1, 2])),
-                        toJSON: mock().returns(Q({ protocol: 'test' }))
-                    }
+                imposter = {
+                    port: 1,
+                    protocol: 'test',
+                    toJSON: mock().returns(Q({ protocol: 'test' })),
+                    creationRequest: { port: 1, protocol: 'test', stubs: [{}] }
                 },
-                repo = ImpostersRepo.create(imposters),
+                repo = ImpostersRepo.create(),
                 Protocol = { testRequest: {} },
                 logger = require('../fakes/fakeLogger').create(),
                 controller = Controller.create({ test: Protocol }, repo, logger, false),
@@ -394,28 +384,28 @@ describe('ImposterController', function () {
                     body: { responses: [{ INVALID: 'response' }] }
                 };
 
-            return controller.putStub(request, response).then(() => {
-                assert.strictEqual(response.statusCode, 400);
-                assert.strictEqual(response.body.errors.length, 1);
-                assert.deepEqual(response.body.errors[0], {
-                    code: 'bad data',
-                    message: 'unrecognized response type',
-                    source: { INVALID: 'response' }
+            return repo.add(imposter)
+                .then(() => controller.putStub(request, response))
+                .then(() => {
+                    assert.strictEqual(response.statusCode, 400);
+                    assert.strictEqual(response.body.errors.length, 1);
+                    assert.deepEqual(response.body.errors[0], {
+                        code: 'bad data',
+                        message: 'unrecognized response type',
+                        source: { INVALID: 'response' }
+                    });
                 });
-            });
         });
 
         promiseIt('should return a 400 if no adding inject without --allowInjection', function () {
             const response = FakeResponse.create(),
-                imposters = {
-                    1: {
-                        port: 1,
-                        protocol: 'test',
-                        stubsJSON: mock().returns(Q([0, 1, 2])),
-                        toJSON: mock().returns(Q({ protocol: 'test' }))
-                    }
+                imposter = {
+                    port: 1,
+                    protocol: 'test',
+                    toJSON: mock().returns(Q({ protocol: 'test' })),
+                    creationRequest: { port: 1, protocol: 'test', stubs: [{}] }
                 },
-                repo = ImpostersRepo.create(imposters),
+                repo = ImpostersRepo.create(),
                 Protocol = { testRequest: {} },
                 logger = require('../fakes/fakeLogger').create(),
                 controller = Controller.create({ test: Protocol }, repo, logger, false),
@@ -424,15 +414,17 @@ describe('ImposterController', function () {
                     body: { responses: [{ inject: '() => {}' }] }
                 };
 
-            return controller.putStub(request, response).then(() => {
-                assert.strictEqual(response.statusCode, 400);
-                assert.strictEqual(response.body.errors.length, 1);
-                assert.deepEqual(response.body.errors[0], {
-                    code: 'invalid injection',
-                    message: 'JavaScript injection is not allowed unless mb is run with the --allowInjection flag',
-                    source: { responses: [{ inject: '() => {}' }] }
+            return repo.add(imposter)
+                .then(() => controller.putStub(request, response))
+                .then(() => {
+                    assert.strictEqual(response.statusCode, 400);
+                    assert.strictEqual(response.body.errors.length, 1);
+                    assert.deepEqual(response.body.errors[0], {
+                        code: 'invalid injection',
+                        message: 'JavaScript injection is not allowed unless mb is run with the --allowInjection flag',
+                        source: { responses: [{ inject: '() => {}' }] }
+                    });
                 });
-            });
         });
     });
 
