@@ -16,7 +16,7 @@ function create (config, logger) {
         return require('./filesystemBackedImpostersRepository').create(config, logger);
     }
     else {
-        return require('./inMemoryImpostersRepository').create(config.imposters);
+        return require('./inMemoryImpostersRepository').create();
     }
 }
 

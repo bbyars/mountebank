@@ -273,20 +273,12 @@ function createStubsRepository () {
 
 /**
  * Creates the repository
- * @param {Object} startupImposters - The imposters to load at startup (will not be validated)
  * @returns {Object}
  */
-function create (startupImposters) {
+function create () {
     const imposters = {},
         stubRepos = {},
         Q = require('q');
-
-    if (startupImposters) {
-        Object.keys(startupImposters).forEach(id => {
-            startupImposters[id].creationRequest = startupImposters[id];
-            add(startupImposters[id]);
-        });
-    }
 
     /**
      * Adds a new imposter
