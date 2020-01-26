@@ -674,7 +674,14 @@ function create (config, logger) {
         return stubRepository(imposterDir(id));
     }
 
-    function saveFunctionsFor (imposter) {
+    /**
+     * Saves a reference to the imposter so that the functions
+     * (which can't be persisted) can be rehydrated to a loaded imposter.
+     * This means that any data in the function closures will be held in
+     * memory.
+     * @param {Object} imposter - the imposter
+     */
+    function addReference (imposter) {
         const id = String(imposter.port);
         imposterFns[id] = {};
         Object.keys(imposter).forEach(key => {
@@ -684,7 +691,7 @@ function create (config, logger) {
         });
     }
 
-    function addFunctionsTo (imposter) {
+    function rehydrate (imposter) {
         const id = String(imposter.port);
         Object.keys(imposterFns[id]).forEach(key => {
             imposter[key] = imposterFns[id][key];
@@ -708,7 +715,7 @@ function create (config, logger) {
             imposterConfig.stubs = stubDefinitions;
             return writeFile(headerFile(imposter.port), imposterConfig);
         }).then(() => {
-            saveFunctionsFor(imposter);
+            addReference(imposter);
             return imposter;
         });
     }
@@ -726,7 +733,7 @@ function create (config, logger) {
 
             return stubsFor(id).toJSON().then(stubs => {
                 header.stubs = stubs;
-                addFunctionsTo(header);
+                rehydrate(header);
                 return header;
             });
         });
@@ -794,6 +801,7 @@ function create (config, logger) {
 
     return {
         add,
+        addReference,
         get,
         all,
         exists,

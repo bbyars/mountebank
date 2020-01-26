@@ -296,14 +296,9 @@ const aliases = {
             global: false
         },
         datadir: {
-            description: 'the database directory, useful for persistence and large scale',
+            description: 'the database directory, useful for persistence and performance',
             nargs: 1,
             type: 'string',
-            global: false
-        },
-        inplace: {
-            description: 'if set, will create all imposters based on the content of --datadir',
-            type: 'boolean',
             global: false
         },
         noParse: {
@@ -407,7 +402,6 @@ const aliases = {
         host: options.host,
         configfile: options.configfile,
         datadir: options.datadir,
-        inplace: options.inplace,
         noParse: options.noParse,
         pidfile: options.pidfile,
         nologfile: options.nologfile,

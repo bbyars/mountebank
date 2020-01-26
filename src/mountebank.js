@@ -177,20 +177,8 @@ function create (options) {
         validateImposterExists = middleware.createImposterValidator(imposters),
         fs = require('fs');
 
-    if (options.datadir && !options.inplace && fs.existsSync(options.datadir)) {
-        logger.warning('datadir already exists; any operations will overwrite. Use --inplace to load from database without overwriting');
-    }
-
     function loadAllImpostersFromDatabase () {
-        if (!options.inplace) {
-            return Q();
-        }
-        if (!options.datadir) {
-            logger.warning('ignoring --inplace; must be used in conjunction with --datadir');
-            return Q();
-        }
-        if (!fs.existsSync(options.datadir)) {
-            logger.warning('ignoring --inplace; datadir is empty');
+        if (!options.datadir || !fs.existsSync(options.datadir)) {
             return Q();
         }
 
@@ -198,7 +186,7 @@ function create (options) {
             promises = dirs.map(dir => {
                 const imposterFilename = `${options.datadir}/${dir}/imposter.json`;
                 if (!fs.existsSync(imposterFilename)) {
-                    logger.warning(`Skipping ${dir} during inplace loading; missing imposter.json`);
+                    logger.warn(`Skipping ${dir} during loading; missing imposter.json`);
                 }
 
                 const config = JSON.parse(fs.readFileSync(imposterFilename)),
@@ -206,7 +194,8 @@ function create (options) {
 
                 if (protocol) {
                     logger.info(`Loading ${config.protocol}:${dir} from datadir`);
-                    return protocol.createImposterFrom(config);
+                    return protocol.createImposterFrom(config)
+                        .then(imposter => imposters.addReference(imposter));
                 }
                 else {
                     logger.error(`Cannot load imposter ${dir}; no protocol loaded for ${config.protocol}`);
@@ -303,12 +292,13 @@ function create (options) {
         imposters.stopAllSync();
     });
 
+    if (options.allowInjection) {
+        logger.warn(`Running with --allowInjection set. See ${baseURL}/docs/security for security info`);
+    }
+
     return loadAllImpostersFromDatabase().then(() => {
         const connections = {},
             server = app.listen(options.port, options.host, () => {
-                if (options.allowInjection) {
-                    logger.warn(`Running with --allowInjection set. See ${baseURL}/docs/security for security info`);
-                }
                 logger.info(`mountebank v${thisPackage.version} now taking orders - point your browser to ${baseURL}/ for help`);
                 logger.debug(`config: ${JSON.stringify({
                     options: options,

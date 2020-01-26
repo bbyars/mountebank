@@ -81,6 +81,23 @@ describe('filesystemBackedImpostersRepository', function () {
         });
     });
 
+    describe('#addReference', function () {
+        promiseIt('should allow loading without overwriting existing files', function () {
+            const imposter = { port: 1000, protocol: 'test', fn: mock() },
+                saved = { port: 1000, protocol: 'test', customField: true, stubs: [] };
+
+            write('.mbtest/1000/imposter.json', saved);
+
+            repo.addReference(imposterize(imposter));
+            assert.deepEqual(read('.mbtest/1000/imposter.json'), saved);
+
+            return repo.get(1000).then(retrieved => {
+                retrieved.fn();
+                assert.ok(imposter.fn.wasCalled());
+            });
+        });
+    });
+
     describe('#all', function () {
         promiseIt('should not retrieve imposters in database that have not been added', function () {
             const imposter = { port: 1000, protocol: 'test' };

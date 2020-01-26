@@ -39,9 +39,21 @@ description = 'Command line parameters for starting mountebank'
     <td><em>all hosts</em></td>
   </tr>
   <tr>
+    <td><code>--datadir .mbdb</code></td>
+    <td>The root directory for database. When used, mountebank will start all imposters saved in the
+    database initially and persist all operations to disk, significantly reducing the memory footprint.</td>
+    <td>Without this option, all configuration will be in memory. This can be a significant load,
+    for example, during proxy recording.</td>
+  </tr>
+  <tr>
     <td><code>--configfile imposters.ejs</code></td>
     <td>If present, mountebank will load the contents of the specified file.  See
-    <a href='#config-file'>below</a> for details.</td>
+    <a href='#config-file'>below</a> for details.
+
+    <p class='warning-icon'>If both the <code>--datadir</code> and <code>--configfile</code> options are
+    used, mountebank will initially load all imposters from the <code>datadir</code> and then add all from
+    the <code>configfile</code>. This means that when the same imposter port is saved in both places, what
+    is in the <code>datadir</code> will be immediately overwritten by what's in the <code>configfile</code>!</p></td>
     <td><code>N/A</code></td>
   </tr>
   <tr>
