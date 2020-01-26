@@ -6,9 +6,12 @@ const assert = require('assert'),
     fs = require('fs-extra'),
     promiseIt = require('../testHelpers').promiseIt,
     mock = require('../mock').mock,
-    Q = require('q');
+    Q = require('q'),
+    timeout = parseInt(process.env.MB_SLOW_TEST_TIMEOUT || 3000); // times out on Appveyor
 
 describe('filesystemBackedImpostersRepository', function () {
+    this.timeout(timeout);
+
     let logger, repo;
 
     beforeEach(function () {
