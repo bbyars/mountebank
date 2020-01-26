@@ -49,5 +49,25 @@ describe('--datadir', function () {
             }).finally(() => mb.stop());
     });
 
-    it('should allow configfile to overwrite imposters loaded from datadir');
+    promiseIt('should allow configfile to overwrite imposters loaded from datadir', function () {
+        const imposter = {
+                port: 4545,
+                protocol: 'http',
+                stubs: [{ responses: [{ is: { body: 'SHOULD BE OVERWRITTEN' } }] }]
+            },
+            path = require('path');
+
+        return mb.start(['--datadir', '.mbtest'])
+            .then(() => mb.post('/imposters', imposter))
+            .then(() => http.get('/orders/123', 4545))
+            .then(response => {
+                assert.strictEqual(response.body, 'SHOULD BE OVERWRITTEN');
+                return mb.stop();
+            }).then(() => mb.start(['--datadir', '.mbtest', '--configfile', path.join(__dirname, 'imposters/imposters.ejs')]))
+            .then(() => http.get('/orders/123', 4545))
+            .then(response => {
+                assert.strictEqual(response.body, 'Order 123');
+                return mb.del('/imposters');
+            }).finally(() => mb.stop());
+    });
 });

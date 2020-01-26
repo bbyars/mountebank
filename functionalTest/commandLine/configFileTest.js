@@ -17,8 +17,6 @@ const assert = require('assert'),
 describe('config file', function () {
     this.timeout(timeout);
 
-    // I don't normally advocate separating the data needed for the assertions from the test setup,
-    // but I wanted this to be a reasonably complex regression test
     promiseIt('should support complex configuration with --configfile in multiple files', function () {
         const args = ['--configfile', path.join(__dirname, 'imposters/imposters.ejs')];
 
