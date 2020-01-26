@@ -177,6 +177,18 @@ describe('filesystemBackedImpostersRepository', function () {
                     assert.ok(second.stop.wasCalled());
                 });
         });
+
+        promiseIt('does not remove any files not referenced by the repository', function () {
+            const imposter = { port: 1000, protocol: 'test' };
+
+            write('.mbtest/2000/imposter.json', { port: 2000, protocol: 'test' });
+
+            return repo.add(imposterize(imposter))
+                .then(() => repo.deleteAll())
+                .then(() => {
+                    assert.strictEqual(fs.existsSync('.mbtest/2000/imposter.json'), true);
+                });
+        });
     });
 
     describe('#stopAllSync', function () {

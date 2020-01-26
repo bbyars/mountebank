@@ -277,7 +277,7 @@ function create (config, logger) {
         return result;
     }
 
-    function loadAllInDir (path) {
+    function readdir (path) {
         const deferred = Q.defer(),
             fs = require('fs-extra');
 
@@ -290,15 +290,21 @@ function create (config, logger) {
                 deferred.reject(err);
             }
             else {
-                const promises = files
-                    .filter(file => file.indexOf('.json') > 0)
-                    .sort(timeSorter)
-                    .map(file => readFile(`${path}/${file}`));
-
-                Q.all(promises).done(deferred.resolve);
+                deferred.resolve(files);
             }
         });
         return deferred.promise;
+    }
+
+    function loadAllInDir (path) {
+        return readdir(path).then(files => {
+            const promises = files
+                .filter(file => file.indexOf('.json') > 0)
+                .sort(timeSorter)
+                .map(file => readFile(`${path}/${file}`));
+
+            return Q.all(promises);
+        });
     }
 
     function repeatsFor (response) {
@@ -794,9 +800,21 @@ function create (config, logger) {
      * @returns {Object} - the deletion promise
      */
     function deleteAll () {
-        const promises = Object.keys(imposterFns).map(shutdown);
-        promises.push(remove(config.datadir));
-        return Q.all(promises);
+        const ids = Object.keys(imposterFns),
+            dirs = ids.map(imposterDir),
+            promises = ids.map(shutdown).concat(dirs.map(remove));
+
+        // Remove only the directories for imposters we have a reference to
+        return Q.all(promises)
+            .then(() => readdir(config.datadir))
+            .then(entries => {
+                if (entries.length === 0) {
+                    return remove(config.datadir);
+                }
+                else {
+                    return Q();
+                }
+            });
     }
 
     return {
