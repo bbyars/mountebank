@@ -93,6 +93,17 @@ function create (config, logger) {
     const Q = require('q'),
         imposterFns = {};
 
+    function prettyError (err, filepath) {
+        const errors = require('../util/errors');
+
+        if (err.code === 'EACCES') {
+            return errors.InsufficientAccessError({ path: filepath });
+        }
+        else {
+            return err;
+        }
+    }
+
     function writeFile (filepath, obj) {
         const fs = require('fs-extra'),
             path = require('path'),
@@ -101,12 +112,12 @@ function create (config, logger) {
 
         fs.ensureDir(dir, mkdirErr => {
             if (mkdirErr) {
-                deferred.reject(mkdirErr);
+                deferred.reject(prettyError(mkdirErr, dir));
             }
             else {
                 fs.writeFile(filepath, JSON.stringify(obj, null, 2), err => {
                     if (err) {
-                        deferred.reject(err);
+                        deferred.reject(prettyError(err, filepath));
                     }
                     else {
                         deferred.resolve(filepath);
@@ -134,7 +145,7 @@ function create (config, logger) {
                 }
             }
             else if (err) {
-                deferred.reject(err);
+                deferred.reject(prettyError(err, filepath));
             }
             else {
                 try {
@@ -156,7 +167,7 @@ function create (config, logger) {
 
         fs.rename(oldPath, newPath, err => {
             if (err) {
-                deferred.reject(err);
+                deferred.reject(prettyError(err, oldPath));
             }
             else {
                 deferred.resolve(newPath);
@@ -174,7 +185,7 @@ function create (config, logger) {
 
         fs.ensureDir(dir, err => {
             if (err) {
-                deferred.reject(err);
+                deferred.reject(prettyError(err, dir));
             }
             else {
                 deferred.resolve(dir);
