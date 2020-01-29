@@ -187,6 +187,7 @@ function create (options) {
                 const imposterFilename = `${options.datadir}/${dir}/imposter.json`;
                 if (!fs.existsSync(imposterFilename)) {
                     logger.warn(`Skipping ${dir} during loading; missing imposter.json`);
+                    return Q();
                 }
 
                 const config = JSON.parse(fs.readFileSync(imposterFilename)),
