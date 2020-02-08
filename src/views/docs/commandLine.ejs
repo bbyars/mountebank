@@ -40,10 +40,14 @@ description = 'Command line parameters for starting mountebank'
   </tr>
   <tr>
     <td><code>--datadir .mbdb</code></td>
-    <td>The root directory for database. When used, mountebank will start all imposters saved in the
-    database initially and persist all operations to disk, significantly reducing the memory footprint.</td>
-    <td>Without this option, all configuration will be in memory. This can be a significant load,
-    for example, during proxy recording.</td>
+    <td>The root directory for the database. When used, mountebank will start all imposters saved in the
+    database initially and persist all operations to disk in real time, significantly reducing the memory footprint.
+
+    <p class='info-icon'>This option allows you to scale imposters with multiple processes (running on multiple
+    hosts behind a load balancer to avoid port collision), with the state of all processes synced in real time.</td>
+
+    <td>Without this option, all configuration will be in memory. Keeping everything in memory can be a
+    significant performance hit when there is a lot of test data, for example, during proxy recording.</td>
   </tr>
   <tr>
     <td><code>--configfile imposters.ejs</code></td>
@@ -108,17 +112,6 @@ description = 'Command line parameters for starting mountebank'
     be allowed). Any request to the primary <code>mb</code> socket or an imposter socket that isn't
     whitelisted will be dropped.</td>
     <td><code>*</code>, representing all IP addresses</td>
-  </tr>
-  <tr>
-    <td><code>--mock</code></td>
-    <td>mountebank supports <a href='/docs/api/mocks'>mock verification</a> by remembering the requests
-      made against each stub.  Note that this represents a memory leak for any long running
-      <code>mb</code> process, as requests are never forgotten.
-
-      <p class='warning-icon'>This flag has been deprecated. You can set the <code>recordRequests</code>
-      field to <code>true</code> at the top level of each imposter to record just for that one imposter.</p>
-    </td>
-    <td><code>false</code></td>
   </tr>
   <tr>
     <td><code>--debug</code></td>

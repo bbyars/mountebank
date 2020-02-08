@@ -170,7 +170,7 @@ These live in the `functionalTest` directory, and are out-of-process tests that 
 of behavior:
 
 * Protocol-specific API behavior, in the `functionalTest/api` directory. Each of these tests expects
-`mb` to be running (sometimes with the `--mock --debug --allowInjection` flags) and calls its API.
+`mb` to be running and calls its API.
 * Command line behavior, in the `functionalTest/commandLine` directory. Each of these tests spins
 up a new instance of `mb` and verifies certain behaviors
 * Website integrity, in the `functionalTest/html` directory. These expect `mb` to be running and
