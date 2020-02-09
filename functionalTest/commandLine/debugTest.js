@@ -11,7 +11,7 @@ const assert = require('assert'),
     timeout = isWindows ? 2 * baseTimeout : baseTimeout,
     http = BaseHttpClient.create('http');
 
-describe('--debug flag', function () {
+describe('--debug', function () {
     this.timeout(timeout);
 
     promiseIt('tcp server should record matches against stubs', function () {
@@ -176,7 +176,7 @@ describe('--debug flag', function () {
                 mb.stop();
 
                 // I can't figure out why this is needed, but without it, the next test fails.
-                return require('q').delay(100);
+                return require('q').delay(200);
             });
     });
 });
