@@ -155,7 +155,7 @@ describe('behaviors', function () {
                 shellFn = function exec () {
                     const shellResponse = JSON.parse(process.env.MB_RESPONSE);
 
-                    shellResponse.added = new Array(require('buffer').constants.MAX_STRING_LENGTH / 2).join('x');
+                    shellResponse.added = new Array(1024 * 1024 * 2).join('x');
                     console.log(JSON.stringify(shellResponse));
                 },
                 config = { shellTransform: ['node shellTransformTest.js'] };
@@ -165,7 +165,7 @@ describe('behaviors', function () {
             return behaviors.execute(request, response, config, logger).then(actualResponse => {
                 assert.deepEqual(actualResponse, {
                     field: 0,
-                    added: new Array(require('buffer').constants.MAX_STRING_LENGTH / 2).join('x')
+                    added: new Array(1024 * 1024 * 2).join('x')
                 });
             }).finally(() => {
                 fs.unlinkSync('shellTransformTest.js');
