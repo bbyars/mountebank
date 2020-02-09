@@ -176,7 +176,7 @@ describe('--debug', function () {
                 mb.stop();
 
                 // I can't figure out why this is needed, but without it, the next test fails.
-                return require('q').delay(200);
+                return require('q').delay(300);
             });
     });
 });
