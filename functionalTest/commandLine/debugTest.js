@@ -171,12 +171,7 @@ describe('--debug', function () {
                     proxy: { mode: 'proxyOnce', to: `http://localhost:${originServerPort}` }
                 });
             })
-            .finally(() => {
-                fs.removeSync('recordMatchTest.json');
-                mb.stop();
-
-                // I can't figure out why this is needed, but without it, the next test fails.
-                return require('q').delay(300);
-            });
+            .then(() => fs.removeSync('recordMatchTest.json'))
+            .finally(() => mb.stop());
     });
 });
