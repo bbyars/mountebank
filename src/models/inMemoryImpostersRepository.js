@@ -278,7 +278,7 @@ function createStubsRepository () {
         deleteSavedProxyResponses,
         addRequest,
         loadRequests,
-        deleteSavedRequests,
+        deleteSavedRequests
     };
 }
 

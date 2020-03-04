@@ -96,7 +96,7 @@ function create (protocols, imposters, logger, allowInjection) {
     function resetRequests (request, response) {
         return imposters.get(request.params.id).then(imposter => {
             return imposters.stubsFor(request.params.id).deleteSavedRequests()
-                .then(() => imposter.toJSON())
+                .then(() => imposter.toJSON());
         }).then(json => {
             response.format({
                 json: () => { response.send(json); },
@@ -157,8 +157,6 @@ function create (protocols, imposters, logger, allowInjection) {
             .then(imposter => imposter.getResponseFor(request.body.request))
             .then(jsonResponse => response.send(jsonResponse));
     }
-
-  
 
     /**
      * The function responding to POST /imposters/:id/_requests/:proxyResolutionKey

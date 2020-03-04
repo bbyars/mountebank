@@ -665,7 +665,7 @@ function create (config, logger) {
          */
         function deleteSavedRequests () {
             return readAndWriteHeader('deleteSavedRequests', header => {
-                return remove(`${baseDir}/requests`).then(() => header);       
+                return remove(`${baseDir}/requests`).then(() => header);
             });
         }
 
@@ -681,7 +681,7 @@ function create (config, logger) {
             deleteSavedProxyResponses,
             addRequest,
             loadRequests,
-            deleteSavedRequests,
+            deleteSavedRequests
         };
     }
 
