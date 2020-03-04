@@ -101,8 +101,8 @@ function wrap (stub = {}) {
  */
 function createStubsRepository () {
     const stubs = [],
-        requests = [],
         Q = require('q');
+    let requests = [];
 
     function reindex () {
         // stubIndex() is used to find the right spot to insert recorded
@@ -256,6 +256,16 @@ function createStubsRepository () {
         return Q(requests);
     }
 
+    /**
+     * Clears the saved requests list
+     * @param {Object} request - the request
+     * @returns {Object} - Promise
+     */
+    function deleteSavedRequests () {
+        requests = [];
+        return Q();
+    }
+
     return {
         count: () => stubs.length,
         first,
@@ -267,7 +277,8 @@ function createStubsRepository () {
         toJSON,
         deleteSavedProxyResponses,
         addRequest,
-        loadRequests
+        loadRequests,
+        deleteSavedRequests
     };
 }
 

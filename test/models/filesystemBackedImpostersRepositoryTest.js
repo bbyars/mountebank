@@ -632,5 +632,28 @@ describe('filesystemBackedImpostersRepository', function () {
                 });
             });
         });
+
+        describe('#deleteSavedRequests', function () {
+            promiseIt('should delete the imposter\'s requests/ directory', function () {
+                const stubs = repo.stubsFor(3000),
+                    imposter = { port: 3000, protocol: 'test', stubs: [] };
+
+                return repo.add(imposterize(imposter))
+                    .then(() => stubs.addRequest({ field: 'value' })
+                        .then(() => {
+                            const requestFiles = fs.readdirSync('.mbtest/3000/requests');
+                            assert(requestFiles.length, 1);
+                        })
+                        .then(() => stubs.loadRequests())
+                        .then(requests => {
+                            assert.deepEqual(requests, [{ field: 'value', timestamp: requests[0].timestamp }]);
+                        })
+                        .then(() => stubs.deleteSavedRequests())
+                        .then(() => {
+                            const imposterDir = fs.readdirSync('.mbtest/3000');
+                            assert(imposterDir.includes('requests') === false);
+                        }));
+            });
+        });
     });
 });

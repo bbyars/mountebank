@@ -20,7 +20,8 @@ verification. Mocking requires mountebank to remember information about each req
 For long-running instances of mountebank, it is recommended that you run <code>mb</code> with the
 <code>--datadir</code> command line option so that all requests are persisted to disk. Otherwise,
 mountebank will save them to memory, which will create a significant performance constraint
-when there are a large number of requests saved.</p>
+when there are a large number of requests saved. You can also manually clear an imposter's saved 
+requests - see the <a href='/docs/api/overview'>overview page</a> for details.</p>
 
 <h2>Example</h2>
 
