@@ -70,6 +70,11 @@ will happily assist you.</p>
     <td></td>
   </tr>
   <tr>
+    <td><a href='#delete-requests'>Delete saved requests from an imposter</a></td>
+    <td></td>
+    <td><a href='/docs/api/contracts?type=imposter'>imposter</a></td>
+  </tr>
+  <tr>
     <td><a href='#put-imposters'>Overwrite all imposters with a new set of imposters</a></td>
     <td><a href='/docs/api/contracts?type=imposters'>imposters</a></td>
     <td><a href='/docs/api/contracts?type=imposters'>imposters</a></td>
@@ -590,6 +595,15 @@ available. However, if you need to clear them but keep the stubs intact, you can
 
 <p class='info-icon'>Note that you can prevent the proxy from saving responses by setting the <code>mode</code>
 to <a href='/docs/api/proxies#proxy-modes'><code>proxyTransparent</code></a>.</p>
+
+<h3 id='delete-requests'>Delete saved requests from an imposter</h3>
+
+<pre><code>DELETE /imposters/:port/savedRequests</code></pre>
+
+<p><b>Response contract</b>: <a href='/docs/api/contracts?type=imposter'>imposter</a></p>
+
+<p>Clear an imposter's recorded requests (used for <a href='/docs/api/mocks'>mock verification</a>) while leaving the rest of the imposter intact. 
+On a successful request, mountebank will return the updated imposter resource.</p>
 
 <h3 id='put-imposters'>Overwrite all imposters with a new set of imposters</h3>
 
