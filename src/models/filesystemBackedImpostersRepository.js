@@ -659,6 +659,16 @@ function create (config, logger) {
             return loadAllInDir(`${baseDir}/requests`);
         }
 
+        /**
+         * Deletes the requests directory for an mposter
+         * @returns {Object} - Promise
+         */
+        function deleteSavedRequests () {
+            return readAndWriteHeader('deleteSavedRequests', header => {
+                return remove(`${baseDir}/requests`).then(() => header);       
+            });
+        }
+
         return {
             count,
             first,
@@ -670,7 +680,8 @@ function create (config, logger) {
             toJSON,
             deleteSavedProxyResponses,
             addRequest,
-            loadRequests
+            loadRequests,
+            deleteSavedRequests,
         };
     }
 
