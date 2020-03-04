@@ -242,5 +242,25 @@ const assert = require('assert'),
                 });
             });
         });
+
+        describe('DELETE /imposters/:id/savedRequests', function () {
+            promiseIt('shold return the imposter post requests-deletion', function () {
+                const imposterRequest = { protocol, port, recordRequests: true };
+
+                return api.post('/imposters', imposterRequest)
+                    .then(() => client.get('/first', port))
+                    .then(() => api.get(`/imposters/${port}`))
+                    .then(response => {
+                        const requests = response.body.requests.map(request => request.path);
+                        assert.deepEqual(requests, ['/first']);
+                    })
+                    .then(() => api.del(`/imposters/${port}/savedRequests`))
+                    .then(() => api.get(`/imposters/${port}`))
+                    .then(response => {
+                        assert.deepEqual(response.body.requests, []);
+                    })
+                    .finally(() => api.del('/imposters'));
+            });
+        });
     });
 });
