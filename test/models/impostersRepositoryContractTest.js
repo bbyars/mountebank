@@ -644,6 +644,24 @@ types.forEach(function (type) {
                 });
             });
 
+            describe('#deleteSavedRequests', function () {
+                promiseIt('should clear the requests list', function () {
+                    const imposter = { port: 1 };
+
+                    return repo.add(imposterize(imposter))
+                        .then(() => repo.stubsFor(1).addRequest({ field: 'value' }))
+                        .then(() => repo.stubsFor(1).loadRequests())
+                        .then(requests => {
+                            assert.deepEqual(requests, [{ field: 'value', timestamp: requests[0].timestamp }]);
+                        })
+                        .then(() => repo.stubsFor(1).deleteSavedRequests())
+                        .then(() => repo.stubsFor(1).loadRequests())
+                        .then(requests => {
+                            assert.deepEqual(requests, []);
+                        });
+                });
+            });
+
             describe('#loadRequests', function () {
                 promiseIt('should return requests in order without losing any', function () {
                     // Simulate enough rapid load to add two with the same millisecond timestamp

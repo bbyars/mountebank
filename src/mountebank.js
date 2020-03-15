@@ -230,6 +230,7 @@ function create (options) {
     app.get('/imposters/:id', validateImposterExists, imposterController.get);
     app.delete('/imposters/:id', imposterController.del);
     app.delete('/imposters/:id/savedProxyResponses', validateImposterExists, imposterController.resetProxies);
+    app.delete('/imposters/:id/savedRequests', validateImposterExists, imposterController.resetRequests);
 
     // deprecated but saved for backwards compatibility
     app.delete('/imposters/:id/requests', validateImposterExists, imposterController.resetProxies);
