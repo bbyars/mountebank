@@ -32,7 +32,6 @@ jobs:
           paths:
             - node_modules
       - persist_to_workspace:
-          root: .
           # Ignore src; use dist for all downstream jobs, but keep enough to run tests
           root: .
           paths:
