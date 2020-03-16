@@ -660,13 +660,11 @@ function create (config, logger) {
         }
 
         /**
-         * Deletes the requests directory for an mposter
+         * Deletes the requests directory for an imposter
          * @returns {Object} - Promise
          */
         function deleteSavedRequests () {
-            return readAndWriteHeader('deleteSavedRequests', header => {
-                return remove(`${baseDir}/requests`).then(() => header);
-            });
+            return remove(`${baseDir}/requests`);
         }
 
         return {

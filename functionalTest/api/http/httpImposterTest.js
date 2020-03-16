@@ -244,7 +244,7 @@ const assert = require('assert'),
         });
 
         describe('DELETE /imposters/:id/savedRequests', function () {
-            promiseIt('shold return the imposter post requests-deletion', function () {
+            promiseIt('should return the imposter post requests-deletion', function () {
                 const imposterRequest = { protocol, port, recordRequests: true };
 
                 return api.post('/imposters', imposterRequest)
