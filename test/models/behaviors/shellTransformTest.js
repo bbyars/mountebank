@@ -147,5 +147,29 @@ describe('behaviors', function () {
                 fs.unlinkSync('shellTransformTest.js');
             });
         });
+
+        promiseIt('should allow large files (issue #518)', function () {
+            const request = { key: 'value' },
+                response = { field: 0 },
+                logger = Logger.create(),
+                shellFn = function exec () {
+                    const shellResponse = JSON.parse(process.env.MB_RESPONSE);
+
+                    shellResponse.added = new Array(1024 * 1024 * 2).join('x');
+                    console.log(JSON.stringify(shellResponse));
+                },
+                config = { shellTransform: ['node shellTransformTest.js'] };
+
+            fs.writeFileSync('shellTransformTest.js', util.format('%s\nexec();', shellFn.toString()));
+
+            return behaviors.execute(request, response, config, logger).then(actualResponse => {
+                assert.deepEqual(actualResponse, {
+                    field: 0,
+                    added: new Array(1024 * 1024 * 2).join('x')
+                });
+            }).finally(() => {
+                fs.unlinkSync('shellTransformTest.js');
+            });
+        });
     });
 });

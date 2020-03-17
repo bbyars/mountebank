@@ -659,6 +659,14 @@ function create (config, logger) {
             return loadAllInDir(`${baseDir}/requests`);
         }
 
+        /**
+         * Deletes the requests directory for an imposter
+         * @returns {Object} - Promise
+         */
+        function deleteSavedRequests () {
+            return remove(`${baseDir}/requests`);
+        }
+
         return {
             count,
             first,
@@ -670,7 +678,8 @@ function create (config, logger) {
             toJSON,
             deleteSavedProxyResponses,
             addRequest,
-            loadRequests
+            loadRequests,
+            deleteSavedRequests
         };
     }
 

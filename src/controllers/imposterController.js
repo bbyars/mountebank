@@ -86,6 +86,33 @@ function create (protocols, imposters, logger, allowInjection) {
     }
 
     /**
+     * Corresponds to DELETE /imposters/:id/savedRequests
+     * Removes all saved requests
+     * @memberOf module:controllers/imposterController#
+     * @param {Object} request - the HTTP request
+     * @param {Object} response - the HTTP response
+     * @returns {Object} A promise for testing
+     */
+    function resetRequests (request, response) {
+        return imposters.get(request.params.id).then(imposter => {
+            return imposters.stubsFor(request.params.id).deleteSavedRequests()
+                .then(() => imposter.toJSON());
+        }).then(json => {
+            response.format({
+                json: () => { response.send(json); },
+                html: () => {
+                    if (request.headers['x-requested-with']) {
+                        response.render('_imposter', { imposter: json });
+                    }
+                    else {
+                        response.render('imposter', { imposter: json });
+                    }
+                }
+            });
+        });
+    }
+
+    /**
      * The function responding to DELETE /imposters/:id
      * @memberOf module:controllers/imposterController#
      * @param {Object} request - the HTTP request
@@ -326,6 +353,7 @@ function create (protocols, imposters, logger, allowInjection) {
         get,
         del,
         resetProxies,
+        resetRequests,
         postRequest,
         postProxyResponse,
         putStubs,

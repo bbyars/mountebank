@@ -187,6 +187,7 @@ function create (options) {
                 const imposterFilename = `${options.datadir}/${dir}/imposter.json`;
                 if (!fs.existsSync(imposterFilename)) {
                     logger.warn(`Skipping ${dir} during loading; missing imposter.json`);
+                    return Q();
                 }
 
                 const config = JSON.parse(fs.readFileSync(imposterFilename)),
@@ -229,6 +230,7 @@ function create (options) {
     app.get('/imposters/:id', validateImposterExists, imposterController.get);
     app.delete('/imposters/:id', imposterController.del);
     app.delete('/imposters/:id/savedProxyResponses', validateImposterExists, imposterController.resetProxies);
+    app.delete('/imposters/:id/savedRequests', validateImposterExists, imposterController.resetRequests);
 
     // deprecated but saved for backwards compatibility
     app.delete('/imposters/:id/requests', validateImposterExists, imposterController.resetProxies);
@@ -297,7 +299,8 @@ function create (options) {
     }
 
     return loadAllImpostersFromDatabase().then(() => {
-        const connections = {},
+        const deferred = Q.defer(),
+            connections = {},
             server = app.listen(options.port, options.host, () => {
                 logger.info(`mountebank v${thisPackage.version} now taking orders - point your browser to ${baseURL}/ for help`);
                 logger.debug(`config: ${JSON.stringify({
@@ -309,38 +312,40 @@ function create (options) {
                     }
                 })}`);
 
-                server.on('connection', socket => {
-                    const name = helpers.socketName(socket),
-                        ipAddress = socket.remoteAddress;
-                    connections[name] = socket;
+                deferred.resolve({
+                    close: callback => {
+                        server.close(() => {
+                            logger.info('Adios - see you soon?');
+                            callback();
+                        });
 
-                    socket.on('close', () => {
-                        delete connections[name];
-                    });
-
-                    socket.on('error', error => {
-                        logger.error('%s transmission error X=> %s', name, JSON.stringify(error));
-                    });
-
-                    if (!isAllowedConnection(ipAddress, logger)) {
-                        socket.end();
+                        // Force kill any open connections to prevent process hanging
+                        Object.keys(connections).forEach(socket => {
+                            connections[socket].destroy();
+                        });
                     }
                 });
             });
 
-        return {
-            close: callback => {
-                server.close(() => {
-                    logger.info('Adios - see you soon?');
-                    callback();
-                });
+        server.on('connection', socket => {
+            const name = helpers.socketName(socket),
+                ipAddress = socket.remoteAddress;
+            connections[name] = socket;
 
-                // Force kill any open connections to prevent process hanging
-                Object.keys(connections).forEach(socket => {
-                    connections[socket].destroy();
-                });
+            socket.on('close', () => {
+                delete connections[name];
+            });
+
+            socket.on('error', error => {
+                logger.error('%s transmission error X=> %s', name, JSON.stringify(error));
+            });
+
+            if (!isAllowedConnection(ipAddress, logger)) {
+                socket.end();
             }
-        };
+        });
+
+        return deferred.promise;
     });
 }
 

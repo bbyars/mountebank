@@ -14,7 +14,7 @@ const assert = require('assert'),
     http = BaseHttpClient.create('http'),
     https = BaseHttpClient.create('https');
 
-describe('config file', function () {
+describe('--configfile', function () {
     this.timeout(timeout);
 
     promiseIt('should support complex configuration with --configfile in multiple files', function () {

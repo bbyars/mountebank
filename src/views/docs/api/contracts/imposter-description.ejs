@@ -26,8 +26,8 @@
 <div id='imposter-numberOfRequests-description'>
   <p>The number of requests to this imposter</p>
 
-  <p class='info-icon'>Turn on the <a href='/docs/commandLine'><code>--mock</code></a> command line
-  flag to also record the details of each request in the <code>requests</code> array below</p>
+  <p class='info-icon'>Set <code>recordRequests</code> to <code>true</code> on the imposter to also record
+      the details of each request in the <code>requests</code> array below</p>
 </div>
 
 <div id='imposter-key-description'>
@@ -431,9 +431,6 @@
 <div id='imposter-requests-description' class='response'>
   <p>mountebank will save off all requests to the imposter for mock verification.  By retrieving
     the imposter, your client code can determine if an expected service call was in fact made.</p>
-
-  <p class='warning-icon'>Since saving requests represents a memory leak, the <code>requests</code> array will only
-    be saved if the <a href='/docs/commandLine'>--mock command line flag</a> is set.</p>
 
   <p class='info-icon'>More information: <a href='/docs/api/mocks'>mocks</a></p>
 </div>

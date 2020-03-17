@@ -7,6 +7,7 @@ const assert = require('assert'),
     promiseIt = require('../testHelpers').promiseIt,
     mock = require('../mock').mock,
     Q = require('q'),
+    isWindows = require('os').platform().indexOf('win') === 0,
     timeout = parseInt(process.env.MB_SLOW_TEST_TIMEOUT || 3000); // times out on Appveyor
 
 describe('filesystemBackedImpostersRepository', function () {
@@ -83,20 +84,22 @@ describe('filesystemBackedImpostersRepository', function () {
             });
         });
 
-        promiseIt('should deal with permission errors', function () {
-            const imposter = { port: 1000, protocol: 'test' };
+        if (!isWindows) {
+            promiseIt('should deal with permission errors', function () {
+                const imposter = { port: 1000, protocol: 'test' };
 
-            repo = Repo.create({ datadir: '/.mbtest' }, logger);
-            return repo.add(imposterize(imposter)).then(() => {
-                assert.fail('should not have been allowed');
-            }, error => {
-                assert.deepEqual(error, {
-                    code: 'insufficient access',
-                    message: 'Run mb in superuser mode if you want access',
-                    path: '/.mbtest/1000'
+                repo = Repo.create({ datadir: '/.mbtest' }, logger);
+                return repo.add(imposterize(imposter)).then(() => {
+                    assert.fail('should not have been allowed');
+                }, error => {
+                    assert.deepEqual(error, {
+                        code: 'insufficient access',
+                        message: 'Run mb in superuser mode if you want access',
+                        path: '/.mbtest/1000'
+                    });
                 });
             });
-        });
+        }
     });
 
     describe('#addReference', function () {
@@ -627,6 +630,29 @@ describe('filesystemBackedImpostersRepository', function () {
                         details: 'Unexpected token C in JSON at position 0'
                     });
                 });
+            });
+        });
+
+        describe('#deleteSavedRequests', function () {
+            promiseIt('should delete the imposter\'s requests/ directory', function () {
+                const stubs = repo.stubsFor(3000),
+                    imposter = { port: 3000, protocol: 'test', stubs: [] };
+
+                return repo.add(imposterize(imposter))
+                    .then(() => stubs.addRequest({ field: 'value' })
+                        .then(() => {
+                            const requestFiles = fs.readdirSync('.mbtest/3000/requests');
+                            assert(requestFiles.length, 1);
+                        })
+                        .then(() => stubs.loadRequests())
+                        .then(requests => {
+                            assert.deepEqual(requests, [{ field: 'value', timestamp: requests[0].timestamp }]);
+                        })
+                        .then(() => stubs.deleteSavedRequests())
+                        .then(() => {
+                            const imposterDir = fs.readdirSync('.mbtest/3000');
+                            assert(imposterDir.includes('requests') === false);
+                        }));
             });
         });
     });

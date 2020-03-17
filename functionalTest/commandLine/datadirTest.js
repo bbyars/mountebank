@@ -70,4 +70,30 @@ describe('--datadir', function () {
                 return mb.del('/imposters');
             }).finally(() => mb.stop());
     });
+
+    promiseIt('should not delete files outside of imposter directories when deleting imposter', function () {
+        const imposter = {
+                port: 5555,
+                protocol: 'http',
+                stubs: [{ responses: [{ is: { body: 'BODY' } }] }]
+            },
+            fs = require('fs-extra');
+
+        fs.ensureDirSync('.mbtest/5555');
+        fs.writeFileSync('.mbtest/5555/INSIDE-IMPOSTER-DIR.txt', '');
+        fs.ensureDirSync('.mbtest/meta');
+        fs.writeFileSync('.mbtest/meta/OUTSIDE-IMPOSTER-DIR.txt', '');
+
+        return mb.start(['--datadir', '.mbtest'])
+            .then(() => mb.post('/imposters', imposter))
+            .then(() => http.get('/', imposter.port))
+            .then(response => {
+                assert.strictEqual(response.body, 'BODY');
+                return mb.del('/imposters');
+            }).then(() => {
+                assert.strictEqual(fs.existsSync('.mbtest/meta/OUTSIDE-IMPOSTER-DIR.txt'), true);
+                assert.strictEqual(fs.existsSync('.mbtest/5555/INSIDE-IMPOSTER-DIR.txt'), false);
+                fs.removeSync('.mbtest');
+            }).finally(() => mb.stop());
+    });
 });
