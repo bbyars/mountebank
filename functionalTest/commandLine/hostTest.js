@@ -4,15 +4,13 @@ const assert = require('assert'),
     api = require('../api/api').create(),
     port = api.port + 1,
     mb = require('../mb').create(port),
-    isWindows = require('os').platform().indexOf('win') === 0,
     promiseIt = require('../testHelpers').promiseIt,
     baseTimeout = parseInt(process.env.MB_SLOW_TEST_TIMEOUT || 3000),
-    timeout = isWindows ? 2 * baseTimeout : baseTimeout,
+    timeout = 2 * baseTimeout,
     hostname = require('os').hostname(),
     BaseHttpClient = require('../api/http/baseHttpClient'),
     http = BaseHttpClient.create('http'),
     fs = require('fs'),
-    Q = require('q'),
     path = require('path');
 
 describe('--host', function () {
@@ -29,21 +27,6 @@ describe('--host', function () {
                     assert.ok(href.indexOf(`http://${hostname}`) === 0, `${href} does not use hostname`);
                 });
             })
-            .finally(() => mb.stop());
-    });
-
-    promiseIt('should disallow localhost calls when bound to specific host', function () {
-        // Travis adds hostname into /etc/hosts file
-        // Not sure why it doesn't work in airplane mode
-        if (process.env.TRAVIS === 'true' || process.env.MB_AIRPLANE_MODE === 'true') {
-            return Q(true);
-        }
-
-        return mb.start(['--host', hostname])
-            .then(() => http.responseFor({ method: 'GET', path: '/', hostname: 'localhost', port: mb.port }))
-            .then(
-                () => { assert.fail(`should not have connected (hostname: ${hostname})`); },
-                error => { assert.strictEqual(error.errno, 'ECONNREFUSED'); })
             .finally(() => mb.stop());
     });
 
@@ -102,95 +85,94 @@ describe('--host', function () {
             .finally(() => mb.stop());
     });
 
-    promiseIt('should bind http imposter to provided host', function () {
-        // Travis adds hostname into /etc/hosts file
-        // Not sure why it doesn't work in airplane mode
-        if (process.env.TRAVIS === 'true' || process.env.MB_AIRPLANE_MODE === 'true') {
-            return Q(true);
-        }
+    // Travis adds hostname into /etc/hosts file
+    if (process.env.TRAVIS !== 'true') {
+        promiseIt('should disallow localhost calls when bound to specific host', function () {
+            return mb.start(['--host', hostname])
+                .then(() => http.responseFor({ method: 'GET', path: '/', hostname: 'localhost', port: mb.port }))
+                .then(
+                    () => { assert.fail(`should not have connected (hostname: ${hostname})`); },
+                    error => { assert.strictEqual(error.errno, 'ECONNREFUSED'); })
+                .finally(() => mb.stop());
+        });
 
-        const imposter = { protocol: 'http', port: mb.port + 1 };
+        promiseIt('should bind http imposter to provided host', function () {
+            const imposter = { protocol: 'http', port: mb.port + 1 };
 
-        return mb.start(['--host', hostname])
-            .then(() => mb.post('/imposters', imposter))
-            .then(response => {
-                assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body, null, 2));
-                return http.responseFor({
-                    method: 'GET',
-                    path: '/',
-                    hostname: hostname,
-                    port: imposter.port
-                });
-            })
-            .then(response => {
-                assert.strictEqual(response.statusCode, 200);
+            return mb.start(['--host', hostname])
+                .then(() => mb.post('/imposters', imposter))
+                .then(response => {
+                    assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body, null, 2));
+                    return http.responseFor({
+                        method: 'GET',
+                        path: '/',
+                        hostname: hostname,
+                        port: imposter.port
+                    });
+                })
+                .then(response => {
+                    assert.strictEqual(response.statusCode, 200);
 
-                return http.responseFor({
-                    method: 'GET',
-                    path: '/',
-                    hostname: 'localhost',
-                    port: imposter.port
-                });
-            })
-            .then(
-                () => { assert.fail('should not have connected to localhost'); },
-                error => { assert.strictEqual(error.errno, 'ECONNREFUSED'); }
-            )
-            .finally(() => mb.stop());
-    });
+                    return http.responseFor({
+                        method: 'GET',
+                        path: '/',
+                        hostname: 'localhost',
+                        port: imposter.port
+                    });
+                })
+                .then(
+                    () => {
+                        assert.fail('should not have connected to localhost');
+                    },
+                    error => {
+                        assert.strictEqual(error.errno, 'ECONNREFUSED');
+                    }
+                )
+                .finally(() => mb.stop());
+        });
 
-    promiseIt('should bind tcp imposter to provided host', function () {
-        // Travis adds hostname into /etc/hosts file
-        // Not sure why it doesn't work in airplane mode
-        if (process.env.TRAVIS === 'true' || process.env.MB_AIRPLANE_MODE === 'true') {
-            return Q(true);
-        }
+        promiseIt('should bind tcp imposter to provided host', function () {
+            const imposter = {
+                    protocol: 'tcp',
+                    port: mb.port + 1,
+                    stubs: [{ responses: [{ is: { data: 'OK' } }] }]
+                },
+                client = require('../api/tcp/tcpClient');
 
-        const imposter = {
-                protocol: 'tcp',
-                port: mb.port + 1,
-                stubs: [{ responses: [{ is: { data: 'OK' } }] }]
-            },
-            client = require('../api/tcp/tcpClient');
+            return mb.start(['--host', hostname])
+                .then(() => mb.post('/imposters', imposter))
+                .then(response => {
+                    assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body, null, 2));
+                    return client.send('TEST', imposter.port, 0, hostname);
+                })
+                .then(response => {
+                    assert.strictEqual(response.toString(), 'OK');
+                    return client.send('TEST', imposter.port, 0, 'localhost');
+                })
+                .then(
+                    () => { assert.fail('should not have connected to localhost'); },
+                    error => { assert.strictEqual(error.errno, 'ECONNREFUSED'); }
+                )
+                .finally(() => mb.stop());
+        });
 
-        return mb.start(['--host', hostname])
-            .then(() => mb.post('/imposters', imposter))
-            .then(response => {
-                assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body, null, 2));
-                return client.send('TEST', imposter.port, 0, hostname);
-            })
-            .then(response => {
-                assert.strictEqual(response.toString(), 'OK');
-                return client.send('TEST', imposter.port, 0, 'localhost');
-            })
-            .then(
-                () => { assert.fail('should not have connected to localhost'); },
-                error => { assert.strictEqual(error.errno, 'ECONNREFUSED'); }
-            )
-            .finally(() => mb.stop());
-    });
+        promiseIt('should bind smtp imposter to provided host', function () {
+            const imposter = { protocol: 'smtp', port: mb.port + 1 },
+                message = { from: '"From" <from@mb.org>', to: ['"To" <to@mb.org>'], subject: 'subject', text: 'text' },
+                client = require('../api/smtp/smtpClient');
 
-    promiseIt('should bind smtp imposter to provided host', function () {
-        // Travis adds hostname into /etc/hosts file
-        if (process.env.TRAVIS === 'true') {
-            return Q(true);
-        }
-
-        const imposter = { protocol: 'smtp', port: mb.port + 1 },
-            message = { from: '"From" <from@mb.org>', to: ['"To" <to@mb.org>'], subject: 'subject', text: 'text' },
-            client = require('../api/smtp/smtpClient');
-
-        return mb.start(['--host', hostname])
-            .then(() => mb.post('/imposters', imposter))
-            .then(response => {
-                assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body, null, 2));
-                return client.send(message, imposter.port, hostname);
-            })
-            .then(() => client.send(message, imposter.port, 'localhost'))
-            .then(
-                () => { assert.fail('should not have connected to localhost'); },
-                error => { assert.strictEqual(error.errno, 'ECONNREFUSED'); }
-            )
-            .finally(() => mb.stop());
-    });
+            return mb.start(['--host', hostname])
+                .then(() => mb.post('/imposters', imposter))
+                .then(response => {
+                    assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body, null, 2));
+                    return client.send(message, imposter.port, hostname);
+                })
+                .then(() => client.send(message, imposter.port, 'localhost'))
+                .then(
+                    () => { assert.fail('should not have connected to localhost'); },
+                    error => { assert.strictEqual(error.errno, 'ECONNREFUSED'); }
+                )
+                .finally(() => mb.stop());
+        });
+    }
 });

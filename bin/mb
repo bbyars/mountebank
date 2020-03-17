@@ -296,7 +296,7 @@ const aliases = {
             global: false
         },
         datadir: {
-            description: 'The database directory, useful for persistence and large scale',
+            description: 'the database directory, useful for persistence and performance',
             nargs: 1,
             type: 'string',
             global: false

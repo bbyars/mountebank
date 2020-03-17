@@ -138,7 +138,7 @@ describe('responseResolver', function () {
                     assert.deepEqual(stubResponses, [
                         [],
                         [{ is: { key: 'value' } }],
-                        [{ proxy: { to: 'where', mode: 'proxyOnce' } }]
+                        [{ proxy: { to: 'where' } }]
                     ]);
                 });
         });
@@ -160,7 +160,7 @@ describe('responseResolver', function () {
                     assert.ok(wait > 90); // allow some variability
                     assert.deepEqual(stubResponses, [
                         [{ is: { data: 'value', _proxyResponseTime: wait }, _behaviors: { wait: wait } }],
-                        [{ proxy: { to: 'where', addWaitBehavior: true, mode: 'proxyOnce' } }]
+                        [{ proxy: { to: 'where', addWaitBehavior: true } }]
                     ]);
                 });
         });
@@ -221,7 +221,7 @@ describe('responseResolver', function () {
                     const stubResponses = all.map(stub => proxyResponses(stub.responses));
                     assert.deepEqual(stubResponses, [
                         [{ is: { data: 'RESPONSE-DECORATED' } }],
-                        [{ proxy: { to: 'where', mode: 'proxyOnce' }, _behaviors: { decorate: decorateFunc.toString() } }]
+                        [{ proxy: { to: 'where' }, _behaviors: { decorate: decorateFunc.toString() } }]
                     ]);
                 });
         });
@@ -242,7 +242,7 @@ describe('responseResolver', function () {
                     const stubResponses = all.map(stub => proxyResponses(stub.responses));
                     assert.deepEqual(stubResponses, [
                         [{ is: { data: 'value' }, _behaviors: { decorate: decorateFunc } }],
-                        [{ proxy: { to: 'where', addDecorateBehavior: decorateFunc, mode: 'proxyOnce' } }]
+                        [{ proxy: { to: 'where', addDecorateBehavior: decorateFunc } }]
                     ]);
                 });
         });
@@ -306,7 +306,7 @@ describe('responseResolver', function () {
                         },
                         {
                             responses: [{
-                                proxy: { to: 'where', mode: 'proxyOnce', predicateGenerators: [{ matches: { key: true } }] }
+                                proxy: { to: 'where', predicateGenerators: [{ matches: { key: true } }] }
                             }]
                         }
                     ]);

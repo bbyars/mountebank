@@ -21,10 +21,10 @@ matrix:
     - os: osx
       sudo: false
       env:
-        - MB_GRUNT_TASK='dist version outOfProcessImposters test'
+        - MB_GRUNT_TASK='dist version persistent outOfProcessImposters test'
 
 install:
-  - export NODE_VERSION=${NODE_VERSION:-10} # Default node version = LTS version
+  - export NODE_VERSION=${NODE_VERSION:-12} # Default node version = LTS version
   - rm -rf ~/.nvm
   - git clone https://github.com/creationix/nvm.git ~/.nvm
   - source ~/.nvm/nvm.sh

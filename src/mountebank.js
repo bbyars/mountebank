@@ -159,7 +159,6 @@ function create (options) {
         thisPackage = require('../package.json'),
         releases = require('../releases.json'),
         helpers = require('./util/helpers'),
-        deferred = Q.defer(),
         app = express(),
         hostname = options.host || 'localhost',
         baseURL = `http://${hostname}:${options.port}`,
@@ -175,7 +174,37 @@ function create (options) {
         logsController = require('./controllers/logsController').create(options.logfile),
         configController = require('./controllers/configController').create(thisPackage.version, options),
         feedController = require('./controllers/feedController').create(releases, options),
-        validateImposterExists = middleware.createImposterValidator(imposters);
+        validateImposterExists = middleware.createImposterValidator(imposters),
+        fs = require('fs');
+
+    function loadAllImpostersFromDatabase () {
+        if (!options.datadir || !fs.existsSync(options.datadir)) {
+            return Q();
+        }
+
+        const dirs = fs.readdirSync(options.datadir),
+            promises = dirs.map(dir => {
+                const imposterFilename = `${options.datadir}/${dir}/imposter.json`;
+                if (!fs.existsSync(imposterFilename)) {
+                    logger.warn(`Skipping ${dir} during loading; missing imposter.json`);
+                    return Q();
+                }
+
+                const config = JSON.parse(fs.readFileSync(imposterFilename)),
+                    protocol = protocols[config.protocol];
+
+                if (protocol) {
+                    logger.info(`Loading ${config.protocol}:${dir} from datadir`);
+                    return protocol.createImposterFrom(config)
+                        .then(imposter => imposters.addReference(imposter));
+                }
+                else {
+                    logger.error(`Cannot load imposter ${dir}; no protocol loaded for ${config.protocol}`);
+                    return Q();
+                }
+            });
+        return Q.all(promises);
+    }
 
     app.use(middleware.useAbsoluteUrls(options.port));
     app.use(middleware.logger(logger, ':method :url'));
@@ -201,6 +230,7 @@ function create (options) {
     app.get('/imposters/:id', validateImposterExists, imposterController.get);
     app.delete('/imposters/:id', imposterController.del);
     app.delete('/imposters/:id/savedProxyResponses', validateImposterExists, imposterController.resetProxies);
+    app.delete('/imposters/:id/savedRequests', validateImposterExists, imposterController.resetRequests);
 
     // deprecated but saved for backwards compatibility
     app.delete('/imposters/:id/requests', validateImposterExists, imposterController.resetProxies);
@@ -260,59 +290,63 @@ function create (options) {
         });
     });
 
-    const connections = {},
-        server = app.listen(options.port, options.host, () => {
-            logger.info(`mountebank v${thisPackage.version} now taking orders - point your browser to ${baseURL}/ for help`);
-            logger.debug(`config: ${JSON.stringify({
-                options: options,
-                process: {
-                    nodeVersion: process.version,
-                    architecture: process.arch,
-                    platform: process.platform
-                }
-            })}`);
-            if (options.allowInjection) {
-                logger.warn(`Running with --allowInjection set. See ${baseURL}/docs/security for security info`);
-            }
-
-            server.on('connection', socket => {
-                const name = helpers.socketName(socket),
-                    ipAddress = socket.remoteAddress;
-                connections[name] = socket;
-
-                socket.on('close', () => {
-                    delete connections[name];
-                });
-
-                socket.on('error', error => {
-                    logger.error('%s transmission error X=> %s', name, JSON.stringify(error));
-                });
-
-                if (!isAllowedConnection(ipAddress, logger)) {
-                    socket.end();
-                }
-            });
-
-            deferred.resolve({
-                close: callback => {
-                    server.close(() => {
-                        logger.info('Adios - see you soon?');
-                        callback();
-                    });
-
-                    // Force kill any open connections to prevent process hanging
-                    Object.keys(connections).forEach(socket => {
-                        connections[socket].destroy();
-                    });
-                }
-            });
-        });
-
     process.once('exit', () => {
-        imposters.deleteAllSync();
+        imposters.stopAllSync();
     });
 
-    return deferred.promise;
+    if (options.allowInjection) {
+        logger.warn(`Running with --allowInjection set. See ${baseURL}/docs/security for security info`);
+    }
+
+    return loadAllImpostersFromDatabase().then(() => {
+        const deferred = Q.defer(),
+            connections = {},
+            server = app.listen(options.port, options.host, () => {
+                logger.info(`mountebank v${thisPackage.version} now taking orders - point your browser to ${baseURL}/ for help`);
+                logger.debug(`config: ${JSON.stringify({
+                    options: options,
+                    process: {
+                        nodeVersion: process.version,
+                        architecture: process.arch,
+                        platform: process.platform
+                    }
+                })}`);
+
+                deferred.resolve({
+                    close: callback => {
+                        server.close(() => {
+                            logger.info('Adios - see you soon?');
+                            callback();
+                        });
+
+                        // Force kill any open connections to prevent process hanging
+                        Object.keys(connections).forEach(socket => {
+                            connections[socket].destroy();
+                        });
+                    }
+                });
+            });
+
+        server.on('connection', socket => {
+            const name = helpers.socketName(socket),
+                ipAddress = socket.remoteAddress;
+            connections[name] = socket;
+
+            socket.on('close', () => {
+                delete connections[name];
+            });
+
+            socket.on('error', error => {
+                logger.error('%s transmission error X=> %s', name, JSON.stringify(error));
+            });
+
+            if (!isAllowedConnection(ipAddress, logger)) {
+                socket.end();
+            }
+        });
+
+        return deferred.promise;
+    });
 }
 
 module.exports = { create };

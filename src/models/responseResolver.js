@@ -52,7 +52,8 @@ function create (stubs, proxy, callbackURL) {
             catch (error) {
                 logger.error(`injection X=> ${error}`);
                 logger.error(`    full source: ${JSON.stringify(injected)}`);
-                logger.error(`    config: ${JSON.stringify(config)}`);
+                logger.error(`    config.request: ${JSON.stringify(config.request)}`);
+                logger.error(`    config.state: ${JSON.stringify(config.state)}`);
                 deferred.reject(exceptions.InjectionError('invalid response injection', {
                     source: injected,
                     data: error.message
@@ -250,7 +251,7 @@ function create (stubs, proxy, callbackURL) {
             behaviors = require('./behaviors');
 
         if (['proxyOnce', 'proxyAlways', 'proxyTransparent'].indexOf(responseConfig.proxy.mode) < 0) {
-            responseConfig.setMetadata('proxy', { mode: 'proxyOnce' });
+            responseConfig.proxy.mode = 'proxyOnce';
         }
 
         if (inProcessProxy) {

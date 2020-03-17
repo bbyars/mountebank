@@ -93,6 +93,17 @@ function create (config, logger) {
     const Q = require('q'),
         imposterFns = {};
 
+    function prettyError (err, filepath) {
+        const errors = require('../util/errors');
+
+        if (err.code === 'EACCES') {
+            return errors.InsufficientAccessError({ path: filepath });
+        }
+        else {
+            return err;
+        }
+    }
+
     function writeFile (filepath, obj) {
         const fs = require('fs-extra'),
             path = require('path'),
@@ -101,12 +112,12 @@ function create (config, logger) {
 
         fs.ensureDir(dir, mkdirErr => {
             if (mkdirErr) {
-                deferred.reject(mkdirErr);
+                deferred.reject(prettyError(mkdirErr, dir));
             }
             else {
                 fs.writeFile(filepath, JSON.stringify(obj, null, 2), err => {
                     if (err) {
-                        deferred.reject(err);
+                        deferred.reject(prettyError(err, filepath));
                     }
                     else {
                         deferred.resolve(filepath);
@@ -134,7 +145,7 @@ function create (config, logger) {
                 }
             }
             else if (err) {
-                deferred.reject(err);
+                deferred.reject(prettyError(err, filepath));
             }
             else {
                 try {
@@ -156,7 +167,7 @@ function create (config, logger) {
 
         fs.rename(oldPath, newPath, err => {
             if (err) {
-                deferred.reject(err);
+                deferred.reject(prettyError(err, oldPath));
             }
             else {
                 deferred.resolve(newPath);
@@ -174,7 +185,7 @@ function create (config, logger) {
 
         fs.ensureDir(dir, err => {
             if (err) {
-                deferred.reject(err);
+                deferred.reject(prettyError(err, dir));
             }
             else {
                 deferred.resolve(dir);
@@ -190,8 +201,9 @@ function create (config, logger) {
                 realpath: false,
                 retries: {
                     retries: 10,
-                    factor: 2,
+                    factor: 1.47394, // https://www.wolframalpha.com/input/?i=Sum%5B50*x%5Ek%2C+%7Bk%2C+0%2C+9%7D%5D+%3D+5000
                     minTimeout: 50,
+                    maxTimeout: 5000,
                     randomize: true
                 }
             },
@@ -202,17 +214,20 @@ function create (config, logger) {
         locks += 1;
 
         // with realpath = false, the file doesn't have to exist, but the directory does
-        logger.debug(`Acquiring file lock on ${filepath} for ${caller}-${currentLockId}`);
         return ensureDir(filepath)
             .then(() => locker.lock(filepath, options))
             .then(release => {
+                const lockStart = new Date(),
+                    lockWait = lockStart - start;
+                logger.debug(`Acquired file lock on ${filepath} for ${caller}-${currentLockId} after ${lockWait}ms`);
+
                 return readFile(filepath, defaultContents)
                     .then(original => transformer(original))
                     .then(transformed => writeFile(tmpfile, transformed))
                     .then(() => rename(tmpfile, filepath))
                     .then(() => {
-                        const lockDuration = new Date() - start;
-                        logger.debug(`Releasing file lock on ${filepath} for ${caller}-${currentLockId} after ${lockDuration}ms`);
+                        const lockHeld = new Date() - lockStart;
+                        logger.debug(`Released file lock on ${filepath} for ${caller}-${currentLockId} after ${lockHeld}ms`);
                         return release();
                     });
             })
@@ -273,7 +288,7 @@ function create (config, logger) {
         return result;
     }
 
-    function loadAllInDir (path) {
+    function readdir (path) {
         const deferred = Q.defer(),
             fs = require('fs-extra');
 
@@ -286,15 +301,21 @@ function create (config, logger) {
                 deferred.reject(err);
             }
             else {
-                const promises = files
-                    .filter(file => file.indexOf('.json') > 0)
-                    .sort(timeSorter)
-                    .map(file => readFile(`${path}/${file}`));
-
-                Q.all(promises).done(deferred.resolve);
+                deferred.resolve(files);
             }
         });
         return deferred.promise;
+    }
+
+    function loadAllInDir (path) {
+        return readdir(path).then(files => {
+            const promises = files
+                .filter(file => file.indexOf('.json') > 0)
+                .sort(timeSorter)
+                .map(file => readFile(`${path}/${file}`));
+
+            return Q.all(promises);
+        });
     }
 
     function repeatsFor (response) {
@@ -304,6 +325,37 @@ function create (config, logger) {
         else {
             return 1;
         }
+    }
+
+    function saveStubMetaAndResponses (stub, baseDir) {
+        const stubDefinition = {
+                meta: { dir: `stubs/${filenameFor(new Date())}` }
+            },
+            meta = {
+                responseFiles: [],
+                orderWithRepeats: [],
+                nextIndex: 0
+            },
+            responses = stub.responses || [],
+            promises = [];
+
+        if (stub.predicates) {
+            stubDefinition.predicates = stub.predicates;
+        }
+
+        for (let i = 0; i < responses.length; i += 1) {
+            const responseFile = `responses/${filenameFor(new Date())}.json`;
+            meta.responseFiles.push(responseFile);
+
+            for (let repeats = 0; repeats < repeatsFor(responses[i]); repeats += 1) {
+                meta.orderWithRepeats.push(i);
+            }
+
+            promises.push(writeFile(`${baseDir}/${stubDefinition.meta.dir}/${responseFile}`, responses[i]));
+        }
+
+        promises.push(writeFile(`${baseDir}/${stubDefinition.meta.dir}/meta.json`, meta));
+        return Q.all(promises).then(() => stubDefinition);
     }
 
     function stubRepository (baseDir) {
@@ -326,10 +378,6 @@ function create (config, logger) {
         }
 
         function readHeader () {
-            // Due to historical design decisions when everything was in memory, stubs are actually
-            // added (in imposter.js) _before_ the imposter is added (in impostersController.js). This
-            // means that the stubs repository needs to gracefully handle the case where the header file
-            // does not yet exist
             return readFile(imposterFile, { stubs: [] });
         }
 
@@ -338,15 +386,17 @@ function create (config, logger) {
         }
 
         function wrap (stub) {
-            const Response = require('./response'),
-                helpers = require('../util/helpers'),
+            const helpers = require('../util/helpers'),
                 cloned = helpers.clone(stub || {}),
                 stubDir = stub ? stub.meta.dir : '';
 
             if (typeof stub === 'undefined') {
                 return {
                     addResponse: () => Q(),
-                    nextResponse: () => Q(Response.create()),
+                    nextResponse: () => Q({
+                        is: {},
+                        stubIndex: () => Q(0)
+                    }),
                     recordMatch: () => Q()
                 };
             }
@@ -384,6 +434,12 @@ function create (config, logger) {
                 });
             }
 
+            function createResponse (responseConfig) {
+                const result = helpers.clone(responseConfig || { is: {} });
+                result.stubIndex = stubIndex;
+                return result;
+            }
+
             /**
              * Returns the next response for the stub, taking into consideration repeat behavior and cycling back the beginning
              * @returns {Object} - the promise
@@ -399,7 +455,7 @@ function create (config, logger) {
                     meta.nextIndex = (meta.nextIndex + 1) % maxIndex;
                     return Q(meta);
                 }).then(() => readFile(responsePath(stubDir, responseFile)))
-                    .then(responseConfig => Response.create(responseConfig, stubIndex));
+                    .then(responseConfig => createResponse(responseConfig));
             };
 
             /**
@@ -455,47 +511,26 @@ function create (config, logger) {
          * @returns {Object} - the promise
          */
         function add (stub) { // eslint-disable-line no-shadow
-            return insertAtIndex(stub, 99999999, 'addStub');
+            return saveStubMetaAndResponses(stub, baseDir).then(stubDefinition => {
+                return readAndWriteHeader('addStub', header => {
+                    header.stubs.push(stubDefinition);
+                    return header;
+                });
+            });
         }
 
         /**
          * Inserts a new stub at the given index
          * @param {Object} stub - the stub to add
          * @param {Number} index - the index to insert the new stub at
-         * @param {String} caller - Internal, used for debug logging
          * @returns {Object} - the promise
          */
-        function insertAtIndex (stub, index, caller = 'insertStubAtIndex') {
-            const stubDefinition = { meta: { dir: '' } },
-                meta = {
-                    responseFiles: [],
-                    orderWithRepeats: [],
-                    nextIndex: 0
-                },
-                responses = stub.responses || [],
-                promises = [];
-
-            if (stub.predicates) {
-                stubDefinition.predicates = stub.predicates;
-            }
-
-            return readAndWriteHeader(caller, header => {
-                stubDefinition.meta.dir = `stubs/${filenameFor(new Date())}`;
-
-                for (let i = 0; i < responses.length; i += 1) {
-                    const responseFile = `responses/${filenameFor(new Date())}.json`;
-                    meta.responseFiles.push(responseFile);
-
-                    for (let repeats = 0; repeats < repeatsFor(responses[i]); repeats += 1) {
-                        meta.orderWithRepeats.push(i);
-                    }
-
-                    promises.push(writeFile(responsePath(stubDefinition.meta.dir, responseFile), responses[i]));
-                }
-
-                promises.push(writeFile(metaPath(stubDefinition.meta.dir), meta));
-                header.stubs.splice(index, 0, stubDefinition);
-                return Q.all(promises).then(() => header);
+        function insertAtIndex (stub, index) {
+            return saveStubMetaAndResponses(stub, baseDir).then(stubDefinition => {
+                return readAndWriteHeader('insertStubAtIndex', header => {
+                    header.stubs.splice(index, 0, stubDefinition);
+                    return header;
+                });
             });
         }
 
@@ -624,6 +659,14 @@ function create (config, logger) {
             return loadAllInDir(`${baseDir}/requests`);
         }
 
+        /**
+         * Deletes the requests directory for an imposter
+         * @returns {Object} - Promise
+         */
+        function deleteSavedRequests () {
+            return remove(`${baseDir}/requests`);
+        }
+
         return {
             count,
             first,
@@ -635,7 +678,8 @@ function create (config, logger) {
             toJSON,
             deleteSavedProxyResponses,
             addRequest,
-            loadRequests
+            loadRequests,
+            deleteSavedRequests
         };
     }
 
@@ -656,17 +700,24 @@ function create (config, logger) {
         return stubRepository(imposterDir(id));
     }
 
-    function saveFunctionsFor (imposter) {
+    /**
+     * Saves a reference to the imposter so that the functions
+     * (which can't be persisted) can be rehydrated to a loaded imposter.
+     * This means that any data in the function closures will be held in
+     * memory.
+     * @param {Object} imposter - the imposter
+     */
+    function addReference (imposter) {
         const id = String(imposter.port);
         imposterFns[id] = {};
         Object.keys(imposter).forEach(key => {
-            if (typeof imposter[key] === 'function' && key !== 'header') {
+            if (typeof imposter[key] === 'function') {
                 imposterFns[id][key] = imposter[key];
             }
         });
     }
 
-    function addFunctionsTo (imposter) {
+    function rehydrate (imposter) {
         const id = String(imposter.port);
         Object.keys(imposterFns[id]).forEach(key => {
             imposter[key] = imposterFns[id][key];
@@ -679,17 +730,18 @@ function create (config, logger) {
      * @returns {Object} - the promise
      */
     function add (imposter) {
-        const header = imposter.header();
-        delete header.requests;
+        const imposterConfig = imposter.creationRequest,
+            stubs = imposterConfig.stubs || [],
+            promises = stubs.map(stub => saveStubMetaAndResponses(stub, imposterDir(imposter.port)));
 
-        // Due to historical design decisions when everything was in memory, stubs are actually
-        // added (in imposter.js) _before_ the imposter is added (in impostersController.js). This
-        // means that the header file may already exist (or not, if the imposter has no stubs).
-        return readAndWriteFile(headerFile(header.port), 'addImposter', saved => {
-            header.stubs = saved.stubs;
-            return header;
-        }, { stubs: [] }).then(() => {
-            saveFunctionsFor(imposter);
+        delete imposterConfig.requests;
+
+        return Q.all(promises).then(stubDefinitions => {
+            imposterConfig.port = imposter.port;
+            imposterConfig.stubs = stubDefinitions;
+            return writeFile(headerFile(imposter.port), imposterConfig);
+        }).then(() => {
+            addReference(imposter);
             return imposter;
         });
     }
@@ -707,7 +759,7 @@ function create (config, logger) {
 
             return stubsFor(id).toJSON().then(stubs => {
                 header.stubs = stubs;
-                addFunctionsTo(header);
+                rehydrate(header);
                 return header;
             });
         });
@@ -759,10 +811,8 @@ function create (config, logger) {
     /**
      * Deletes all imposters synchronously; used during shutdown
      */
-    function deleteAllSync () {
-        const fs = require('fs-extra');
+    function stopAllSync () {
         Object.keys(imposterFns).forEach(shutdown);
-        fs.removeSync(config.datadir);
     }
 
     /**
@@ -770,18 +820,31 @@ function create (config, logger) {
      * @returns {Object} - the deletion promise
      */
     function deleteAll () {
-        const promises = Object.keys(imposterFns).map(shutdown);
-        promises.push(remove(config.datadir));
-        return Q.all(promises);
+        const ids = Object.keys(imposterFns),
+            dirs = ids.map(imposterDir),
+            promises = ids.map(shutdown).concat(dirs.map(remove));
+
+        // Remove only the directories for imposters we have a reference to
+        return Q.all(promises)
+            .then(() => readdir(config.datadir))
+            .then(entries => {
+                if (entries.length === 0) {
+                    return remove(config.datadir);
+                }
+                else {
+                    return Q();
+                }
+            });
     }
 
     return {
         add,
+        addReference,
         get,
         all,
         exists,
         del,
-        deleteAllSync,
+        stopAllSync,
         deleteAll,
         stubsFor
     };

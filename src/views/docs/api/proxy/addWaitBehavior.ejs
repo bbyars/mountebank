@@ -72,8 +72,7 @@ Host: localhost:<%= port %></code>
     "responses": [{
       "proxy": {
         "to": "<change to='http://localhost:6001'>http://origin-server.com</change>",
-        "addWaitBehavior": true,
-        "mode": "proxyOnce"
+        "addWaitBehavior": true
       }
     }]
   }

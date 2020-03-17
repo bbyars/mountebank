@@ -169,7 +169,7 @@ describe('imposter', function () {
 
         promiseIt('should create protocol server on provided port with options', function () {
             return Imposter.create(Protocol, { key: 'value' }, logger, {}, allow).then(() => {
-                assert(Protocol.createServer.wasCalledWith({ key: 'value' }));
+                assert(Protocol.createServer.wasCalledWith({ key: 'value', port: 3535 }), Protocol.createServer.message());
             });
         });
 
@@ -178,18 +178,21 @@ describe('imposter', function () {
                 stubs: [{ responses: ['FIRST'] }, { responses: ['SECOND'] }]
             };
             return Imposter.create(Protocol, request, logger, {}, allow).then(imposter => {
-                return imposter.toJSON();
-            }).then(json => {
-                assert.deepEqual(json.stubs, [
-                    {
-                        responses: ['FIRST'],
-                        _links: { self: { href: '/imposters/3535/stubs/0' } }
-                    },
-                    {
-                        responses: ['SECOND'],
-                        _links: { self: { href: '/imposters/3535/stubs/1' } }
-                    }
-                ]);
+                return server.stubs.add(request.stubs[0])
+                    .then(() => server.stubs.add(request.stubs[1]))
+                    .then(() => imposter.toJSON())
+                    .then(json => {
+                        assert.deepEqual(json.stubs, [
+                            {
+                                responses: ['FIRST'],
+                                _links: { self: { href: '/imposters/3535/stubs/0' } }
+                            },
+                            {
+                                responses: ['SECOND'],
+                                _links: { self: { href: '/imposters/3535/stubs/1' } }
+                            }
+                        ]);
+                    });
             });
         });
 
@@ -210,15 +213,18 @@ describe('imposter', function () {
             };
 
             return Imposter.create(Protocol, request, logger, {}, allow).then(imposter => {
-                return imposter.toJSON({ replayable: true });
-            }).then(json => {
-                assert.deepEqual(json, {
-                    protocol: 'test',
-                    port: 3535,
-                    recordRequests: false,
-                    stubs: [{ responses: ['FIRST'] },
-                        { responses: ['SECOND'] }]
-                });
+                return server.stubs.add(request.stubs[0])
+                    .then(() => server.stubs.add(request.stubs[1]))
+                    .then(() => imposter.toJSON({ replayable: true }))
+                    .then(json => {
+                        assert.deepEqual(json, {
+                            protocol: 'test',
+                            port: 3535,
+                            recordRequests: false,
+                            stubs: [{ responses: ['FIRST'] },
+                                { responses: ['SECOND'] }]
+                        });
+                    });
             });
         });
 
@@ -230,14 +236,16 @@ describe('imposter', function () {
             };
 
             return Imposter.create(Protocol, request, logger, {}, allow).then(imposter => {
-                return imposter.toJSON({ replayable: true });
-            }).then(json => {
-                assert.deepEqual(json, {
-                    protocol: 'test',
-                    port: 3535,
-                    recordRequests: false,
-                    stubs: [{ responses: [{ is: { body: 'body' } }] }]
-                });
+                return server.stubs.add(request.stubs[0])
+                    .then(() => imposter.toJSON({ replayable: true }))
+                    .then(json => {
+                        assert.deepEqual(json, {
+                            protocol: 'test',
+                            port: 3535,
+                            recordRequests: false,
+                            stubs: [{ responses: [{ is: { body: 'body' } }] }]
+                        });
+                    });
             });
         });
 
@@ -259,23 +267,26 @@ describe('imposter', function () {
                 ]
             };
             return Imposter.create(Protocol, request, logger, {}, allow).then(imposter => {
-                return imposter.toJSON({ removeProxies: true });
-            }).then(json => {
-                assert.deepEqual(json.stubs, [
-                    {
-                        responses: [
-                            { is: { body: 'first' } },
-                            { inject: 'inject' }
-                        ],
-                        _links: { self: { href: '/imposters/3535/stubs/0' } }
-                    },
-                    {
-                        responses: [
-                            { is: { body: 'second' } }
-                        ],
-                        _links: { self: { href: '/imposters/3535/stubs/1' } }
-                    }
-                ]);
+                return server.stubs.add(request.stubs[0])
+                    .then(() => server.stubs.add(request.stubs[1]))
+                    .then(() => imposter.toJSON({ removeProxies: true }))
+                    .then(json => {
+                        assert.deepEqual(json.stubs, [
+                            {
+                                responses: [
+                                    { is: { body: 'first' } },
+                                    { inject: 'inject' }
+                                ],
+                                _links: { self: { href: '/imposters/3535/stubs/0' } }
+                            },
+                            {
+                                responses: [
+                                    { is: { body: 'second' } }
+                                ],
+                                _links: { self: { href: '/imposters/3535/stubs/1' } }
+                            }
+                        ]);
+                    });
             });
         });
 
@@ -298,17 +309,20 @@ describe('imposter', function () {
             };
 
             return Imposter.create(Protocol, request, logger, {}, allow).then(imposter => {
-                return imposter.toJSON({ removeProxies: true });
-            }).then(json => {
-                assert.deepEqual(json.stubs, [
-                    {
-                        responses: [
-                            { is: { body: 'first' } },
-                            { inject: 'inject' }
-                        ],
-                        _links: { self: { href: '/imposters/3535/stubs/0' } }
-                    }
-                ]);
+                return server.stubs.add(request.stubs[0])
+                    .then(() => server.stubs.add(request.stubs[1]))
+                    .then(() => imposter.toJSON({ removeProxies: true }))
+                    .then(json => {
+                        assert.deepEqual(json.stubs, [
+                            {
+                                responses: [
+                                    { is: { body: 'first' } },
+                                    { inject: 'inject' }
+                                ],
+                                _links: { self: { href: '/imposters/3535/stubs/0' } }
+                            }
+                        ]);
+                    });
             });
         });
 
@@ -395,10 +409,12 @@ describe('imposter', function () {
                 stubs: [{ responses: [{ is: 'first stub' }] }]
             };
 
-            return Imposter.create(Protocol, request, logger, {}, allow).then(imposter =>
-                imposter.getResponseFor({ field: 'value' })
-            ).then(() => {
-                assert.ok(server.resolver.resolve.wasCalledWith({ is: 'first stub' }), server.resolver.resolve.message());
+            return Imposter.create(Protocol, request, logger, {}, allow).then(imposter => {
+                return server.stubs.add(request.stubs[0])
+                    .then(() => imposter.getResponseFor({ field: 'value' }))
+                    .then(() => {
+                        assert.ok(server.resolver.resolve.wasCalledWith({ is: 'first stub' }), server.resolver.resolve.message());
+                    });
             });
         });
 
@@ -411,10 +427,14 @@ describe('imposter', function () {
                 ]
             };
 
-            return Imposter.create(Protocol, request, logger, {}, allow).then(imposter =>
-                imposter.getResponseFor({ field: '2' })
-            ).then(() => {
-                assert.ok(server.resolver.resolve.wasCalledWith({ is: 'second stub' }), server.resolver.resolve.message());
+            return Imposter.create(Protocol, request, logger, {}, allow).then(imposter => {
+                return server.stubs.add(request.stubs[0])
+                    .then(() => server.stubs.add(request.stubs[1]))
+                    .then(() => server.stubs.add(request.stubs[2]))
+                    .then(() => imposter.getResponseFor({ field: '2' }))
+                    .then(() => {
+                        assert.ok(server.resolver.resolve.wasCalledWith({ is: 'second stub' }), server.resolver.resolve.message());
+                    });
             });
         });
 
@@ -426,6 +446,8 @@ describe('imposter', function () {
 
             return Imposter.create(Protocol, request, logger, {}, allow).then(imp => {
                 imposter = imp;
+                return server.stubs.add(request.stubs[0]);
+            }).then(() => {
                 return imposter.getResponseFor({});
             }).then(() => {
                 assert.ok(server.resolver.resolve.wasCalledWith({ is: 'first response' }), server.resolver.resolve.message());
@@ -446,6 +468,8 @@ describe('imposter', function () {
 
             return Imposter.create(Protocol, request, logger, {}, allow).then(imp => {
                 imposter = imp;
+                return server.stubs.add(request.stubs[0]);
+            }).then(() => {
                 return imposter.getResponseFor({});
             }).then(() => {
                 assert.ok(server.resolver.resolve.wasCalledWith(firstResponse), server.resolver.resolve.message());

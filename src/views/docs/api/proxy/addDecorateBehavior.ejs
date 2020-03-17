@@ -22,8 +22,8 @@ Content-Type: application/json
 
 <p>We'll decorate our saved responses with the following JavaScript function:</p>
 
-<pre><code>(request, response) => {
-  response.body = response.body + ' DECORATED!';
+<pre><code>config => {
+  config.response.body = config.response.body + ' DECORATED!';
 }</code></pre>
 
 <p>Add that function in the <code>addDecorateBehavior</code> field of the proxy
@@ -41,7 +41,7 @@ Content-Type: application/json
   "responses": [{
     "proxy": {
       "to": "<change to='http://localhost:5002'>http://origin-server.com</change>",
-      <strong class='highlight1'>"addDecorateBehavior": "(request, response) => { response.body = response.body + ' DECORATED!'; }"</strong>
+      <strong class='highlight1'>"addDecorateBehavior": "config => { config.response.body = config.response.body + ' DECORATED!'; }"</strong>
     }
   }]
 }]<span class='hidden'>}</span></code></pre>
@@ -83,7 +83,7 @@ Host: localhost:<%= port %></code>
         <change to=''>...</change>
       },
       <strong class='highlight1'>"_behaviors": {
-        "decorate": "(request, response) => { response.body = response.body + ' DECORATED!'; }"
+        "decorate": "config => { config.response.body = config.response.body + ' DECORATED!'; }"
       }</strong>
     }]
   },
@@ -91,8 +91,7 @@ Host: localhost:<%= port %></code>
     "responses": [{
       "proxy": {
         "to": "<change to='http://localhost:5002'>http://origin-server.com</change>",
-        "addDecorateBehavior": "(request, response) => { response.body = response.body + ' DECORATED!'; }",
-        "mode": "proxyOnce"
+        "addDecorateBehavior": "config => { config.response.body = config.response.body + ' DECORATED!'; }"
       }
     }]
   }

@@ -20,7 +20,6 @@ jobs:
     docker:
       - image: circleci/node:12-stretch
     environment:
-      - MB_RUN_WEB_TESTS=true
       - CC_TEST_REPORTER_ID=8bc3a050a2f8ef1cc460e5f4c72d18a689c8ae0981bf494031eb4eb28bbd0b0b
       - MB_SLOW_TEST_TIMEOUT: 7000
     steps:
@@ -33,7 +32,6 @@ jobs:
           paths:
             - node_modules
       - persist_to_workspace:
-          root: .
           # Ignore src; use dist for all downstream jobs, but keep enough to run tests
           root: .
           paths:
@@ -56,20 +54,6 @@ jobs:
             - travis-*.txt
             - build.properties
 
-  nodev8:
-    docker:
-      - image: circleci/node:8-stretch
-    environment:
-      - MB_SLOW_TEST_TIMEOUT: 7000
-      - MB_PORT: 3535
-    steps:
-      - attach_workspace:
-          at: .
-      - run: ln -s dist/mountebank/src src
-      - run: ln -s dist/mountebank/package.json package.json
-      - run: ln -s dist/mountebank/bin bin
-      - run: node_modules/grunt-cli/bin/grunt outOfProcessImposters test
-
   nodev10:
     docker:
       - image: circleci/node:10-stretch
@@ -83,6 +67,21 @@ jobs:
       - run: ln -s dist/mountebank/package.json package.json
       - run: ln -s dist/mountebank/bin bin
       - run: node_modules/grunt-cli/bin/grunt outOfProcessImposters test
+
+  dbAndWeb:
+    docker:
+      - image: circleci/node:12-stretch
+    environment:
+      - MB_SLOW_TEST_TIMEOUT: 7000
+      - MB_PORT: 3535
+      - MB_RUN_WEB_TESTS=true
+    steps:
+      - attach_workspace:
+          at: .
+      - run: ln -s dist/mountebank/src src
+      - run: ln -s dist/mountebank/package.json package.json
+      - run: ln -s dist/mountebank/bin bin
+      - run: node_modules/grunt-cli/bin/grunt persistent outOfProcessImposters test
 
   package-source:
     docker:
@@ -288,7 +287,7 @@ workflows:
               only: master
             tags:
               only: /^v.*/
-      - nodev8:
+      - dbAndWeb:
           requires:
             - build
           filters:
@@ -319,7 +318,7 @@ workflows:
             - package-tarball
             - package-deb
             - package-rpm
-            - nodev8
+            - dbAndWeb
             - nodev10
           filters:
             branches:
