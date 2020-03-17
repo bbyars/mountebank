@@ -156,7 +156,9 @@ function execShell (command, request, response, logger) {
         util = require('util'),
         exec = require('child_process').exec,
         fullCommand = util.format('%s %s %s', command, quoteForShell(request), quoteForShell(response)),
-        env = require('../util/helpers').clone(process.env);
+        env = require('../util/helpers').clone(process.env),
+        maxBuffer = require('buffer').constants.MAX_STRING_LENGTH;
+
     logger.debug('Shelling out to %s', command);
     logger.debug(fullCommand);
 
@@ -165,7 +167,7 @@ function execShell (command, request, response, logger) {
     env.MB_REQUEST = JSON.stringify(request);
     env.MB_RESPONSE = JSON.stringify(response);
 
-    exec(fullCommand, { env }, (error, stdout, stderr) => {
+    exec(fullCommand, { env, maxBuffer }, (error, stdout, stderr) => {
         if (error) {
             console.log('ERROR');
             console.log(error);

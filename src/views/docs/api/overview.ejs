@@ -70,6 +70,11 @@ will happily assist you.</p>
     <td></td>
   </tr>
   <tr>
+    <td><a href='#delete-requests'>Delete saved requests from an imposter</a></td>
+    <td></td>
+    <td><a href='/docs/api/contracts?type=imposter'>imposter</a></td>
+  </tr>
+  <tr>
     <td><a href='#put-imposters'>Overwrite all imposters with a new set of imposters</a></td>
     <td><a href='/docs/api/contracts?type=imposters'>imposters</a></td>
     <td><a href='/docs/api/contracts?type=imposters'>imposters</a></td>
@@ -210,8 +215,7 @@ http://localhost:4545. To retrieve a list of all imposters, simply issue a <code
 
 <ul class='bullet-list'>
   <li>You want to perform <a href='/docs/api/mocks'>mock verifications</a> by inspecting the
-    <a href='/docs/api/mocks'><code>requests</code> array</a> (you must run <code>mb</code> with the
-    <a href='/docs/commandLine'> <code>--mock</code> command line parameter</a> for this to work).</li>
+    <a href='/docs/api/mocks'><code>requests</code> array</a>).</li>
   <li>You want to debug <a href='/docs/api/predicates'>stub predicates</a> by inspecting the
     <a href='/docs/api/stubs#matches-array'><code>matches</code> array</a> (you must run
     <code>mb</code> with the <a href='/docs/commandLine'> <code>--debug</code> command line
@@ -592,6 +596,15 @@ available. However, if you need to clear them but keep the stubs intact, you can
 <p class='info-icon'>Note that you can prevent the proxy from saving responses by setting the <code>mode</code>
 to <a href='/docs/api/proxies#proxy-modes'><code>proxyTransparent</code></a>.</p>
 
+<h3 id='delete-requests'>Delete saved requests from an imposter</h3>
+
+<pre><code>DELETE /imposters/:port/savedRequests</code></pre>
+
+<p><b>Response contract</b>: <a href='/docs/api/contracts?type=imposter'>imposter</a></p>
+
+<p>Clear an imposter's recorded requests (used for <a href='/docs/api/mocks'>mock verification</a>) while leaving the rest of the imposter intact. 
+On a successful request, mountebank will return the updated imposter resource.</p>
+
 <h3 id='put-imposters'>Overwrite all imposters with a new set of imposters</h3>
 
 <pre><code>PUT /imposters</code></pre>
@@ -868,7 +881,8 @@ Connection: keep-alive
     "logfile": "mb-grunt.log",
     "allowInjection": true,
     "mock": true,
-    "localOnly": true,
+    "localOnly": true, <% if (process.env.MB_PERSISTENT === 'true') { %>
+    "datadir": ".mbdb", <% } %>
     "noParse": false,
     "nologfile": false,
     "loglevel": "info",
@@ -935,14 +949,14 @@ Connection: keep-alive
 {
   "logs": [
     {
-      "message": "[mb:<%= port %>] mountebank v<%= version %> now taking orders - point your browser to http://localhost:<%= port %>/ for help",
-      "level": "info",
-      "timestamp": "<volatile>2015-10-20T03:33:23.018Z</volatile>"
-    },
-    {
       "message": "[mb:<%= port %>] Running with --allowInjection set. See http://localhost:<%= port %>/docs/security for security info",
       "level": "warn",
       "timestamp": "<volatile>2015-10-20T03:33:23.019Z</volatile>"
+    },
+    {
+      "message": "[mb:<%= port %>] mountebank v<%= version %> now taking orders - point your browser to http://localhost:<%= port %>/ for help",
+      "level": "info",
+      "timestamp": "<volatile>2015-10-20T03:33:23.018Z</volatile>"
     }
   ]
 }</code></pre>

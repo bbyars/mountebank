@@ -1,7 +1,7 @@
 {
   "name": "mountebank",
   "preferGlobal": true,
-  "version": "2.1.2",
+  "version": "2.2.1",
   "author": "Brandon Byars <brandon.byars@gmail.com>",
   "description": "Over the wire test doubles",
   "homepage": "http://www.mbtest.org",
@@ -44,20 +44,20 @@
     "escape-html": "^1.0.3",
     "express": "^4.16.3",
     "fs-extra": "8.1.0",
-    "http-proxy-agent": "^2.1.0",
-    "https-proxy-agent": "^4.0.0",
+    "https-proxy-agent": "^5.0.0",
+    "http-proxy-agent": "^4.0.0",
     "json-stable-stringify": "1.0.1",
-    "jsonpath-plus": "^2.0.0",
+    "jsonpath-plus": "^3.0.0",
     "mailparser": "^2.7.0",
     "nodemailer": "^6.1.1",
     "proper-lockfile": "^4.1.1",
     "q": "1.5.1",
-    "query-string": "6.9.0",
+    "query-string": "6.10.1",
     "smtp-server": "^3.4.6",
     "winston": "3.2.1",
-    "xmldom": "0.1.30",
+    "xmldom": "0.3.0",
     "xpath": "0.0.27",
-    "yargs": "15.0.1"
+    "yargs": "15.3.0"
   },
   "devDependencies": {
     "firebase-tools": "^7.0.0",
@@ -68,18 +68,18 @@
     "grunt-eslint": "^22.0.0",
     "grunt-jsdoc": "^2.2.1",
     "grunt-mocha-test": "~0.13.3",
-    "grunt-mountebank": "1.0.7",
+    "grunt-mountebank": "1.1.0",
     "istanbul": "0.4.5",
     "jsdoc": "^3.5.5",
-    "jsdom": "~15.2.0",
-    "mocha": "6.2.2",
+    "jsdom": "~16.0.1",
+    "mocha": "7.0.1",
     "nc": "^1.0.2",
     "snyk": "^1.230.6",
     "time-grunt": "2.0.0",
     "w3cjs": "~0.4.0"
   },
   "engines": {
-    "node": ">=8"
+    "node": ">=10"
   },
   "greenkeeper": {
     "ignore": [
@@ -145,6 +145,7 @@
     "Jean Paul Curinaupa Taype",
     "Joey Guerra",
     "Dheeraj Bhaskar",
-    "James Raspass"
+    "James Raspass",
+    "George Tseres"
   ]
 }

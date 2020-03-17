@@ -68,7 +68,35 @@ function create (protocols, imposters, logger, allowInjection) {
         const options = { replayable: false, removeProxies: false };
 
         return imposters.get(request.params.id).then(imposter => {
-            return imposter.deleteSavedProxyResponses().then(() => imposter.toJSON(options));
+            return imposters.stubsFor(request.params.id).deleteSavedProxyResponses()
+                .then(() => imposter.toJSON(options));
+        }).then(json => {
+            response.format({
+                json: () => { response.send(json); },
+                html: () => {
+                    if (request.headers['x-requested-with']) {
+                        response.render('_imposter', { imposter: json });
+                    }
+                    else {
+                        response.render('imposter', { imposter: json });
+                    }
+                }
+            });
+        });
+    }
+
+    /**
+     * Corresponds to DELETE /imposters/:id/savedRequests
+     * Removes all saved requests
+     * @memberOf module:controllers/imposterController#
+     * @param {Object} request - the HTTP request
+     * @param {Object} response - the HTTP response
+     * @returns {Object} A promise for testing
+     */
+    function resetRequests (request, response) {
+        return imposters.get(request.params.id).then(imposter => {
+            return imposters.stubsFor(request.params.id).deleteSavedRequests()
+                .then(() => imposter.toJSON());
         }).then(json => {
             response.format({
                 json: () => { response.send(json); },
@@ -196,22 +224,23 @@ function create (protocols, imposters, logger, allowInjection) {
      */
     function putStubs (request, response) {
         return imposters.get(request.params.id).then(imposter => {
-            const newStubs = request.body.stubs;
+            const stubs = imposters.stubsFor(request.params.id),
+                newStubs = request.body.stubs;
 
             return validateStubs(imposter, newStubs).then(result => {
                 if (!result.isValid) {
                     return respondWithValidationErrors(response, result.errors);
                 }
 
-                return imposter.overwriteStubs(newStubs).then(() => {
+                return stubs.overwriteAll(newStubs).then(() => {
                     return imposter.toJSON().then(json => response.send(json));
                 });
             });
         });
     }
 
-    function validateStubIndex (index, imposter) {
-        return imposter.stubs().then(allStubs => {
+    function validateStubIndex (stubs, index) {
+        return stubs.toJSON().then(allStubs => {
             const errors = [];
             if (typeof allStubs[index] === 'undefined') {
                 errors.push(exceptions.ValidationError("'stubIndex' must be a valid integer, representing the array index position of the stub to replace"));
@@ -230,7 +259,9 @@ function create (protocols, imposters, logger, allowInjection) {
      */
     function putStub (request, response) {
         return imposters.get(request.params.id).then(imposter => {
-            return validateStubIndex(request.params.stubIndex, imposter).then(validation => {
+            const stubs = imposters.stubsFor(request.params.id);
+
+            return validateStubIndex(stubs, request.params.stubIndex).then(validation => {
                 if (!validation.isValid) {
                     return respondWithValidationErrors(response, validation.errors, 404);
                 }
@@ -241,7 +272,7 @@ function create (protocols, imposters, logger, allowInjection) {
                         return respondWithValidationErrors(response, result.errors);
                     }
 
-                    return imposter.overwriteStubAtIndex(newStub, request.params.stubIndex)
+                    return stubs.overwriteAtIndex(newStub, request.params.stubIndex)
                         .then(() => imposter.toJSON())
                         .then(json => response.send(json));
                 });
@@ -269,7 +300,9 @@ function create (protocols, imposters, logger, allowInjection) {
      */
     function postStub (request, response) {
         return imposters.get(request.params.id).then(imposter => {
-            return imposter.stubs().then(allStubs => {
+            const stubs = imposters.stubsFor(request.params.id);
+
+            return stubs.toJSON().then(allStubs => {
                 const newStub = request.body.stub,
                     index = typeof request.body.index === 'undefined' ? allStubs.length : request.body.index,
                     indexValidation = validateNewStubIndex(index, allStubs);
@@ -284,7 +317,7 @@ function create (protocols, imposters, logger, allowInjection) {
                         return respondWithValidationErrors(response, result.errors);
                     }
 
-                    return imposter.insertStubAtIndex(newStub, index).then(() => {
+                    return stubs.insertAtIndex(newStub, index).then(() => {
                         return imposter.toJSON().then(json => response.send(json));
                     });
                 });
@@ -302,12 +335,14 @@ function create (protocols, imposters, logger, allowInjection) {
      */
     function deleteStub (request, response) {
         return imposters.get(request.params.id).then(imposter => {
-            return validateStubIndex(request.params.stubIndex, imposter).then(validation => {
+            const stubs = imposters.stubsFor(request.params.id);
+
+            return validateStubIndex(stubs, request.params.stubIndex).then(validation => {
                 if (!validation.isValid) {
                     return respondWithValidationErrors(response, validation.errors, 404);
                 }
 
-                return imposter.deleteStubAtIndex(request.params.stubIndex).then(() => {
+                return stubs.deleteAtIndex(request.params.stubIndex).then(() => {
                     return imposter.toJSON().then(json => response.send(json));
                 });
             });
@@ -318,6 +353,7 @@ function create (protocols, imposters, logger, allowInjection) {
         get,
         del,
         resetProxies,
+        resetRequests,
         postRequest,
         postProxyResponse,
         putStubs,

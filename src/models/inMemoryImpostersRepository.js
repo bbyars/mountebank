@@ -28,6 +28,15 @@ function repeatTransform (responses) {
     return result;
 }
 
+function createResponse (responseConfig, stubIndexFn) {
+    const helpers = require('../util/helpers'),
+        cloned = helpers.clone(responseConfig || { is: {} });
+
+    cloned.stubIndex = stubIndexFn ? stubIndexFn : () => require('q')(0);
+
+    return cloned;
+}
+
 function wrap (stub = {}) {
     const Q = require('q'),
         helpers = require('../util/helpers'),
@@ -52,15 +61,14 @@ function wrap (stub = {}) {
      * @returns {Object} - the promise
      */
     cloned.nextResponse = () => {
-        const responseConfig = statefulResponses.shift(),
-            Response = require('./response');
+        const responseConfig = statefulResponses.shift();
 
         if (responseConfig) {
             statefulResponses.push(responseConfig);
-            return Q(Response.create(responseConfig, cloned.stubIndex));
+            return Q(createResponse(responseConfig, cloned.stubIndex));
         }
         else {
-            return Q(Response.create());
+            return Q(createResponse());
         }
     };
 
@@ -93,8 +101,8 @@ function wrap (stub = {}) {
  */
 function createStubsRepository () {
     const stubs = [],
-        requests = [],
         Q = require('q');
+    let requests = [];
 
     function reindex () {
         // stubIndex() is used to find the right spot to insert recorded
@@ -248,6 +256,16 @@ function createStubsRepository () {
         return Q(requests);
     }
 
+    /**
+     * Clears the saved requests list
+     * @param {Object} request - the request
+     * @returns {Object} - Promise
+     */
+    function deleteSavedRequests () {
+        requests = [];
+        return Q();
+    }
+
     return {
         count: () => stubs.length,
         first,
@@ -259,22 +277,19 @@ function createStubsRepository () {
         toJSON,
         deleteSavedProxyResponses,
         addRequest,
-        loadRequests
+        loadRequests,
+        deleteSavedRequests
     };
 }
 
 /**
  * Creates the repository
- * @param {Object} startupImposters - The imposters to load at startup (will not be validated)
  * @returns {Object}
  */
-function create (startupImposters) {
+function create () {
     const imposters = {},
+        stubRepos = {},
         Q = require('q');
-
-    if (startupImposters) {
-        Object.keys(startupImposters).forEach(id => add(startupImposters[id]));
-    }
 
     /**
      * Adds a new imposter
@@ -286,7 +301,9 @@ function create (startupImposters) {
             imposter.stubs = [];
         }
         imposters[String(imposter.port)] = imposter;
-        return Q(imposter);
+
+        const promises = (imposter.creationRequest.stubs || []).map(stubsFor(imposter.port).add);
+        return Q.all(promises).then(() => imposter);
     }
 
     /**
@@ -323,6 +340,8 @@ function create (startupImposters) {
     function del (id) {
         const result = imposters[String(id)] || null;
         delete imposters[String(id)];
+        delete stubRepos[String(id)];
+
         if (result) {
             return result.stop().then(() => Q(result));
         }
@@ -334,10 +353,11 @@ function create (startupImposters) {
     /**
      * Deletes all imposters synchronously; used during shutdown
      */
-    function deleteAllSync () {
+    function stopAllSync () {
         Object.keys(imposters).forEach(id => {
             imposters[id].stop();
             delete imposters[id];
+            delete stubRepos[id];
         });
     }
 
@@ -349,8 +369,25 @@ function create (startupImposters) {
         const ids = Object.keys(imposters),
             promises = ids.map(id => imposters[id].stop());
 
-        ids.forEach(id => { delete imposters[id]; });
+        ids.forEach(id => {
+            delete imposters[id];
+            delete stubRepos[id];
+        });
         return Q.all(promises);
+    }
+
+    /**
+     * Returns the stub repository for the given id
+     * @param {Number} id - the imposter's id
+     * @returns {Object} - the stub repository
+     */
+    function stubsFor (id) {
+        // In practice, the stubsFor call occurs before the imposter is actually added...
+        if (!stubRepos[String(id)]) {
+            stubRepos[String(id)] = createStubsRepository();
+        }
+
+        return stubRepos[String(id)];
     }
 
     return {
@@ -359,9 +396,9 @@ function create (startupImposters) {
         all,
         exists,
         del,
-        deleteAllSync,
+        stopAllSync,
         deleteAll,
-        stubsFor: createStubsRepository,
+        stubsFor,
         createStubsRepository
     };
 }

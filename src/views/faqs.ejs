@@ -18,22 +18,14 @@ description = 'Frequently asked questions about using mountebank'
             You can inject headers into proxied responses using the <a href='/docs/api/proxies#proxy-inject-headers'>
             <code>injectHeaders</code></a> field</dd>
 
-        <dt>How can I optimize the number of API calls during test setup and teardown?</dt>
-        <dd>You can use the <a href='/docs/api/overview#put-imposters'>PUT /imposters</a> API
-        call to combine cleanup of the previous test run's imposters and setup of the new
-        test run.  If you need to do mock verification, the <a href='/docs/api/overview#delete-imposter'>
-        DELETE /imposter</a> call will return the <code>requests</code> array.</dd>
-
         <dt>How can I split my imposters into multiple files and have them automatically
         loaded when <code>mb</code> restarts?</dt>
         <dd>See the <a href='/docs/commandLine#config-file'><code>--configfile</code> command line option</a>
         It can either be a single file containing the JSON that you get back when you call
         <a href='/docs/api/overview#get-imposters'><code>GET /imposters?replayable=true</code></a>
-        or multiple files that will be collected via templating.</dd>
-
-        <dt>How can I change imposters once I've created them?</dt>
-        <dd>You can't - imposters are immutable through the API once created.  The expected workflow
-        is that you recreate the imposters rather than mutate them, which is a lightweight operation.</dd>
+        or multiple files that will be collected via templating. Alternatively, starting <code>mb</code>
+        with the <code>--datadir</code> command line option will load all previously saved imposters
+        in the database.</dd>
 
         <dt>I'm adding mountebank as an npm dependency to my project. Why isn't npm shrinkwrap working?</dt>
         <dd>This is actually a npm issue, not a bug in mountebank. Mountebank is published using npm v3, which
@@ -53,12 +45,12 @@ description = 'Frequently asked questions about using mountebank'
         <dt>Can I use mountebank for load testing?</dt>
         <dd>Yes, and field reports have indicated that mountebank may be the only open source
         service virtualization tool that performs under significant load. For any long-running process, make
-        sure you leave off the <code>--mock</code> and <code>--debug</code> command line flags (which are
-        disabled by default) so mountebank isn't leaking memory. You'll also want to use keepalive connections
+        sure you run with the <code>--datadir</code> command line option so mountebank doesn't leak memory
+        during proxy recording or saving requests. You'll also want to use keepalive connections
         for HTTP connections, so consider setting the <a href='/docs/protocols/http'><code>defaultResponse</code></a>
         to make all <code>Connection</code> headers as <code>Keep-Alive</code>. As long as you set up each <code>mb</code>
-        instance with the same configuration, you can run multiple instances behind a load balancer. Given a
-        reasonable hardware setup, organizations have reported managing 200-250 TPS per instance. A common
+        instance with the same configuration, you can run multiple instances behind a load balancer (they should all
+        share the same volume for the <code>--datadir</code> option). A common
         strategy is to set up a <a href='/docs/api/proxies'>proxy</a> in <code>proxyAlways</code> or <code>proxyTransparent</code> mode
         and to capture the downstream latency by using the <code>addWaitBehavior</code> field to the proxy.
         When you replay the saved responses, they will add the perform with roughly the same latency the
@@ -67,18 +59,6 @@ description = 'Frequently asked questions about using mountebank'
         <dt>Why did you misspell impostor?</dt>
         <dd>mountebank is not an educated man, having spent the waking hours of his
           youth caring for the poor and the sick.</dd>
-
-        <dt>Does mountebank proved service virtualization?</dt>
-        <dd>Yes!  Service virtualization is the term that commercial vendors use that
-        came out of the SOA tools, and essentially just means over the wire test doubles, which
-        is something mountebank knows a thing or two about.  Unlike commercial service virtualization packages,
-        mountebank is free of charge, so there are no licensing concerns preventing you from pushing the
-        tests to the left of the project lifecycle.  mountebank is also far more friendly of continuous
-        integration and continuous delivery than commercial software.  A key goal of mountebank's approach
-        to service virtualization is that the intelligence of what will be returned by the test double belongs
-        as close to your test as possible, which is why he makes it easy for you to customize the response
-        on a test-by-test.  Putting the intelligence in the tool means that the tests become victims of your
-        environment rather than rulers of it.</dd>
 
       </dl>
 

@@ -387,7 +387,8 @@ function inject (predicate, request, encoding, logger, imposterState) {
     catch (error) {
         logger.error(`injection X=> ${error}`);
         logger.error(`    source: ${JSON.stringify(injected)}`);
-        logger.error(`    config: ${JSON.stringify(config)}`);
+        logger.error(`    config.request: ${JSON.stringify(config.request)}`);
+        logger.error(`    config.state: ${JSON.stringify(config.state)}`);
         throw errors.InjectionError('invalid predicate injection', { source: injected, data: error.message });
     }
 }

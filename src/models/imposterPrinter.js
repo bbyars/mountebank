@@ -1,11 +1,11 @@
 'use strict';
 
-function create (creationRequest, server, loadRequests) {
+function create (header, server, loadRequests) {
     const baseURL = `/imposters/${server.port}`;
 
     function createHeader (numberOfRequests, options) {
         const result = {
-            protocol: creationRequest.protocol,
+            protocol: header.protocol,
             port: server.port
         };
 
@@ -13,10 +13,10 @@ function create (creationRequest, server, loadRequests) {
             result.numberOfRequests = numberOfRequests;
         }
         if (!options.list) {
-            if (creationRequest.name) {
-                result.name = creationRequest.name;
+            if (header.name) {
+                result.name = header.name;
             }
-            result.recordRequests = Boolean(creationRequest.recordRequests);
+            result.recordRequests = Boolean(header.recordRequests);
 
             Object.keys(server.metadata).forEach(key => {
                 result[key] = server.metadata[key];
