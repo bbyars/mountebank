@@ -55,7 +55,7 @@
     "query-string": "6.10.1",
     "smtp-server": "^3.4.6",
     "winston": "3.2.1",
-    "xmldom": "0.1.30",
+    "xmldom": "0.3.0",
     "xpath": "0.0.27",
     "yargs": "15.2.0"
   },
