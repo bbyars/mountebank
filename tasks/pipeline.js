@@ -92,7 +92,7 @@ module.exports = function (grunt) {
     grunt.registerTask('waitFor:travis', 'Wait for Travis build to finish', function () {
         const done = this.async(),
             buildNumber = fs.readFileSync('travis-' + version + '.txt'),
-            timeoutPerStatus = 20 * 60 * 1000,
+            timeoutPerStatus = 30 * 60 * 1000,
             interval = 3000;
 
         let start = new Date(),
