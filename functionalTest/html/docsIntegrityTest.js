@@ -6,7 +6,7 @@ const Q = require('q'),
     isPersistent = process.env.MB_PERSISTENT === 'true',
     docs = require('./docsTester/docs'),
     isWindows = require('os').platform().indexOf('win') === 0,
-    timeout = parseInt(process.env.MB_SLOW_TEST_TIMEOUT || 3000);
+    timeout = parseInt(process.env.MB_SLOW_TEST_TIMEOUT || 4000);
 
 function validateDocs (page) {
     promiseIt(`${page} should be up-to-date`, function () {
