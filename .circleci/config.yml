@@ -85,13 +85,21 @@ jobs:
 
   package-source:
     docker:
-      - image: circleci/ruby:2.4.4-stretch-node
+      - image: circleci/ruby:2.4.4-stretch
     environment:
       - MB_SLOW_TEST_TIMEOUT: 7000
       - MB_PORT: 3535
     steps:
       - attach_workspace:
           at: .
+      - run:
+          name: Update Node.js and npm
+          command: |
+            curl -sSL "https://nodejs.org/dist/v12.9.1/node-v12.9.1-linux-x64.tar.xz" | sudo tar --strip-components=2 -xJ -C /usr/local/bin/ node-v12.9.1-linux-x64/bin/node
+            curl https://www.npmjs.com/install.sh | sudo bash
+      - run:
+          name: Check current version of node
+          command: node -v
       # fpm install started failing even after bundle update
       - run: gem install fpm
       - run: bundle install --without development
@@ -101,13 +109,21 @@ jobs:
 
   package-tarball:
     docker:
-      - image: circleci/ruby:2.4.4-stretch-node
+      - image: circleci/ruby:2.4.4-stretch
     environment:
       - MB_SLOW_TEST_TIMEOUT: 7000
       - MB_PORT: 3535
     steps:
       - attach_workspace:
           at: .
+      - run:
+          name: Update Node.js and npm
+          command: |
+            curl -sSL "https://nodejs.org/dist/v12.9.1/node-v12.9.1-linux-x64.tar.xz" | sudo tar --strip-components=2 -xJ -C /usr/local/bin/ node-v12.9.1-linux-x64/bin/node
+            curl https://www.npmjs.com/install.sh | sudo bash
+      - run:
+          name: Check current version of node
+          command: node -v
       # fpm install started failing even after bundle update
       - run: gem install fpm
       - run: bundle install --without development
@@ -117,13 +133,21 @@ jobs:
 
   package-zip:
     docker:
-      - image: circleci/ruby:2.4.4-stretch-node
+      - image: circleci/ruby:2.4.4-stretch
     environment:
       - MB_SLOW_TEST_TIMEOUT: 7000
       - MB_PORT: 3535
     steps:
       - attach_workspace:
           at: .
+      - run:
+          name: Update Node.js and npm
+          command: |
+            curl -sSL "https://nodejs.org/dist/v12.9.1/node-v12.9.1-linux-x64.tar.xz" | sudo tar --strip-components=2 -xJ -C /usr/local/bin/ node-v12.9.1-linux-x64/bin/node
+            curl https://www.npmjs.com/install.sh | sudo bash
+      - run:
+          name: Check current version of node
+          command: node -v
       # fpm install started failing even after bundle update
       - run: gem install fpm
       - run: bundle install --without development
@@ -137,13 +161,21 @@ jobs:
 
   package-deb:
     docker:
-      - image: circleci/ruby:2.4.4-stretch-node
+      - image: circleci/ruby:2.4.4-stretch
     environment:
       - MB_SLOW_TEST_TIMEOUT: 7000
       - MB_PORT: 3535
     steps:
       - attach_workspace:
           at: .
+      - run:
+          name: Update Node.js and npm
+          command: |
+            curl -sSL "https://nodejs.org/dist/v12.9.1/node-v12.9.1-linux-x64.tar.xz" | sudo tar --strip-components=2 -xJ -C /usr/local/bin/ node-v12.9.1-linux-x64/bin/node
+            curl https://www.npmjs.com/install.sh | sudo bash
+      - run:
+          name: Check current version of node
+          command: node -v
       # fpm install started failing even after bundle update
       - run: gem install fpm
       - run: bundle install --without development
@@ -161,6 +193,14 @@ jobs:
       - attach_workspace:
           at: .
       # fpm install started failing even after bundle update
+      - run:
+          name: Update Node.js and npm
+          command: |
+            curl -sSL "https://nodejs.org/dist/v12.9.1/node-v12.9.1-linux-x64.tar.xz" | sudo tar --strip-components=2 -xJ -C /usr/local/bin/ node-v12.9.1-linux-x64/bin/node
+            curl https://www.npmjs.com/install.sh | sudo bash
+      - run:
+          name: Check current version of node
+          command: node -v
       - run: gem install fpm
       - run: bundle install --without development
       - run: ln -s dist/mountebank/src src
@@ -202,10 +242,18 @@ jobs:
 
   deploy:
     docker:
-      - image: circleci/ruby:2.4.4-stretch-node
+      - image: circleci/ruby:2.4.4-stretch
     steps:
       - attach_workspace:
           at: .
+      - run:
+          name: Update Node.js and npm
+          command: |
+            curl -sSL "https://nodejs.org/dist/v12.9.1/node-v12.9.1-linux-x64.tar.xz" | sudo tar --strip-components=2 -xJ -C /usr/local/bin/ node-v12.9.1-linux-x64/bin/node
+            curl https://www.npmjs.com/install.sh | sudo bash
+      - run:
+          name: Check current version of node
+          command: node -v
       - run: ls -al dist
         # $BASH_ENV workaround due to env var isolation: https://discuss.circleci.com/t/exporting-environment-variables-from-sourced-scripts/4564/4
       - run: if [ -n "`grep publish=true build.properties`" ]; then echo export MB_PUBLISH=true >> "$BASH_ENV"; else echo export MB_PUBLISH=false >> "$BASH_ENV"; fi
