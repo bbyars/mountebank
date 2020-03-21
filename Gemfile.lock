@@ -4,20 +4,20 @@ GEM
     addressable (2.4.0)
     arr-pm (0.0.10)
       cabin (> 0)
-    backports (3.11.4)
+    backports (3.17.0)
     cabin (0.9.0)
     childprocess (0.9.0)
       ffi (~> 1.0, >= 1.0.11)
     clamp (1.0.1)
     dotenv (2.5.0)
     dpl (1.10.6)
-    ethon (0.11.0)
+    ethon (0.12.0)
       ffi (>= 1.3.0)
-    faraday (0.15.4)
+    faraday (0.17.3)
       multipart-post (>= 1.2, < 3)
-    faraday_middleware (0.12.2)
+    faraday_middleware (0.14.0)
       faraday (>= 0.7.4, < 1.0)
-    ffi (1.9.25)
+    ffi (1.12.2)
     fpm (1.10.2)
       arr-pm (~> 0.0.10)
       backports (>= 2.6.2)
@@ -42,8 +42,8 @@ GEM
     json (1.8.6)
     launchy (2.4.3)
       addressable (~> 2.3)
-    multi_json (1.13.1)
-    multipart-post (2.0.0)
+    multi_json (1.14.1)
+    multipart-post (2.1.1)
     mustache (0.99.8)
     net-http-persistent (2.9.4)
     net-http-pipeline (1.0.1)
@@ -61,7 +61,7 @@ GEM
       ffi (~> 1.9)
       io-like (~> 0.3)
     stud (0.0.23)
-    travis (1.8.9)
+    travis (1.8.11)
       backports
       faraday (~> 0.9)
       faraday_middleware (~> 0.9, >= 0.9.1)
@@ -80,7 +80,7 @@ PLATFORMS
 DEPENDENCIES
   dpl
   fpm
-  travis
+  travis (>= 1.8.9)
 
 BUNDLED WITH
    1.17.3
