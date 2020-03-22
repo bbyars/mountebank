@@ -6,16 +6,10 @@ description = 'Information about the currently running imposters'
 <% include _header %>
 
 <link rel='stylesheet' type='text/css' href='/stylesheets/imposters.css' />
-<script src="//ajax.googleapis.com/ajax/libs/jqueryui/1.10.4/jquery-ui.min.js"></script>
-<script src="/q/q.js"></script>
-<script src='/scripts/imposters.js'></script>
 
 <h1>Imposters</h1>
 
-<p><em>This page is intended to host a single page app providing a user interface to both explore the
-mountebank API, and to use mountebank without having to use the API. That's no small effort and
-unlikely to get prioritized. If you'd like to take on the task, mountebank will offer you his
-undying gratitude. In the meantime, you may explore other UIs, like the one created by
+<p><em>You may explore other UIs, like the one created by
 <a href='http://donhenton.github.io/mountebank-UI/public_html/index.html#/'>Don Henton</a>.</em></p>
 
 <% if (heroku) { -%>
@@ -26,7 +20,6 @@ this website locally.</p>
 
 <table id='imposters'>
   <tr>
-    <th style='width: 3em'>&nbsp;</th>
     <th style='width: 15em;'>name</th>
     <th style='width: 6em;'>protocol</th>
     <th style='width: 5em;'>port</th>
@@ -36,140 +29,7 @@ this website locally.</p>
   <% imposters.forEach(imposter => { %>
   <% include _imposter %>
   <% }); -%>
-
-  <tr>
-    <td colspan='5'><a href='#' class='add-icon' title='add'></a></td>
-  </tr>
 </table>
 
-<p>Request:</p>
-<pre><code id='api-request'></code></pre>
-
-<p>Response:</p>
-<pre><code id='api-response'></code></pre>
-
-<div id='add-dialog'>
-  <form name='addImposter'>
-    <p>An <em>imposter</em> represents a test double listening to a specific protocol on a specific port.  By default,
-      imposters will record all requests to them, allowing you to verify certain calls were made.</p>
-
-    <div>
-      <label for='protocol'>Protocol</label>
-      <select name='protocol' id='protocol' required='required'>
-        <option value='http'>http</option>
-        <option value='https'>https</option>
-        <option value='tcp'>tcp</option>
-        <option value='smtp'>smtp</option>
-      </select>
-      <span>defines how mountebank responds to requests</span>
-    </div>
-
-    <div>
-      <label for='port'>Port</label>
-      <input type='text' name='port' id='port' maxlength='6' pattern='\d+' placeholder='3000' class='optional' />
-      <span>mountebank will choose one for you if you leave it blank</span>
-    </div>
-
-    <div>
-      <label for='name'>Name</label>
-      <input type='text' name='name' id='name' maxlength='50' placeholder='product service' class='optional' />
-      <span>optional - shows up in the logs and table on this page</span>
-    </div>
-
-    <div id='mode-block' style='display: none;'>
-      <label for='mode'>Mode</label>
-      <select name='mode' id='mode'>
-        <option value='text'>text</option>
-        <option value='binary'>binary</option>
-      </select>
-      <span>defaults to text - determines the encoding mountebank uses</span>
-    </div>
-
-    <h3>Stubs</h3>
-    <p>A <em>stub</em> tells the imposter how to respond when the request meets certain conditions.</p>
-
-    <table id='stubs'>
-      <tr>
-        <th style='width: 1em'>index</th>
-        <th style='width: 49%;'>predicates</th>
-        <th style='width: 49%;'>responses</th>
-      </tr>
-
-      <tr class='template'>
-        <td style='width: 1em;'></td>
-        <td>
-          <pre><code>[ ]</code></pre>
-          <a href='#' class='add-icon' title='add'></a>
-          <select>
-            <option value='equals'>equals</option>
-            <option value='deepEquals'>deepEquals</option>
-            <option value='contains'>contains</option>
-            <option value='startsWith'>startsWith</option>
-            <option value='endsWith'>endsWith</option>
-            <option value='matches'>matches</option>
-            <option value='exists'>exists</option>
-            <option value='not'>not</option>
-            <option value='or'>or</option>
-            <option value='and'>and</option>
-            <option value='inject'>inject</option>
-          </select>
-          <span></span>
-        </td>
-        <td>
-          <pre><code>[ ]</code></pre>
-          <a href='#' class='add-icon' title='add'></a>
-          <select>
-            <option value='is'>is</option>
-            <option value='proxy'>proxy</option>
-            <option value='inject'>inject</option>
-          </select>
-          <span></span>
-        </td>
-      </tr>
-
-      <tr>
-        <td colspan='3'><a href='#' class='add-icon' title='add'></a></td>
-      </tr>
-    </table>
-  </form>
-</div>
-
-<div id='add-http-predicate-dialog'>
-  <form id='addHttpPredicate'>
-    <div>
-      <label for='httpRequestField'>Request Field</label>
-      <select name='httpRequestField' id='httpRequestField' required='required'>
-        <option value='data'>data</option>
-        <option value='requestFrom'>requestFrom</option>
-      </select>
-      <span>the request field - see the <a href='/docs/protocols/http'>protocol docs</a></span>
-    </div>
-
-    <div>
-      <label for='httpRequestValue'>Request Value</label>
-      <input type='text' name='httpRequestValue' id='httpRequestValue' placeholder='/path' required='required' />
-      <span>the predicate value</span>
-    </div>
-  </form>
-</div>
-
-<div id='add-tcp-predicate-dialog'>
-  <form id='addTcpPredicate'>
-    <div>
-      <label for='tcpRequestField'>Request Field</label>
-      <select name='tcpRequestField' id='tcpRequestField' required='required'>
-        <option value='data'>data</option>
-        <option value='requestFrom'>requestFrom</option>
-      </select>
-      <span>the request field - see the <a href='/docs/protocols/tcp'>protocol docs</a></span>
-    </div>
-
-    <div>
-      <label for='tcpRequestValue'>Request Value</label>
-      <input type='text' name='tcpRequestValue' id='tcpRequestValue' placeholder='base64 encoded method name' required='required' />
-      <span>the predicate value, base64 encoded if the mode is binary</span>
-    </div>
-  </form>
-</div>
 
 <% include _footer %>
