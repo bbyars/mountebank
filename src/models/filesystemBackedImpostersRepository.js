@@ -405,6 +405,7 @@ function create (config, logger) {
 
             /**
              * Adds a response to the stub
+             * @memberOf module:models/filesystemBackedImpostersRepository#
              * @param {Object} response - the new response
              * @returns {Object} - the promise
              */
@@ -442,6 +443,7 @@ function create (config, logger) {
 
             /**
              * Returns the next response for the stub, taking into consideration repeat behavior and cycling back the beginning
+             * @memberOf module:models/filesystemBackedImpostersRepository#
              * @returns {Object} - the promise
              */
             cloned.nextResponse = () => {
@@ -460,6 +462,7 @@ function create (config, logger) {
 
             /**
              * Records a match for debugging purposes
+             * @memberOf module:models/filesystemBackedImpostersRepository#
              * @param {Object} request - the request
              * @param {Object} response - the response
              * @param {Object} responseConfig - the config that generated the response
@@ -482,6 +485,7 @@ function create (config, logger) {
 
         /**
          * Returns the number of stubs for the imposter
+         * @memberOf module:models/filesystemBackedImpostersRepository#
          * @returns {Object} - the promise
          */
         function count () {
@@ -490,6 +494,7 @@ function create (config, logger) {
 
         /**
          * Returns the first stub whose predicates matches the filter
+         * @memberOf module:models/filesystemBackedImpostersRepository#
          * @param {Function} filter - the filter function
          * @param {Number} startIndex - the index to to start searching
          * @returns {Object} - the promise
@@ -507,6 +512,7 @@ function create (config, logger) {
 
         /**
          * Adds a new stub to imposter
+         * @memberOf module:models/filesystemBackedImpostersRepository#
          * @param {Object} stub - the stub to add
          * @returns {Object} - the promise
          */
@@ -521,6 +527,7 @@ function create (config, logger) {
 
         /**
          * Inserts a new stub at the given index
+         * @memberOf module:models/filesystemBackedImpostersRepository#
          * @param {Object} stub - the stub to add
          * @param {Number} index - the index to insert the new stub at
          * @returns {Object} - the promise
@@ -536,6 +543,7 @@ function create (config, logger) {
 
         /**
          * Deletes the stub at the given index
+         * @memberOf module:models/filesystemBackedImpostersRepository#
          * @param {Number} index - the index of the stub to delete
          * @returns {Object} - the promise
          */
@@ -557,6 +565,7 @@ function create (config, logger) {
 
         /**
          * Overwrites all stubs with a new list
+         * @memberOf module:models/filesystemBackedImpostersRepository#
          * @param {Object} newStubs - the new list of stubs
          * @returns {Object} - the promise
          */
@@ -575,6 +584,7 @@ function create (config, logger) {
 
         /**
          * Overwrites the stub at the given index
+         * @memberOf module:models/filesystemBackedImpostersRepository#
          * @param {Object} stub - the new stub
          * @param {Number} index - the index of the stub to overwrite
          * @returns {Object} - the promise
@@ -595,6 +605,7 @@ function create (config, logger) {
 
         /**
          * Returns a JSON-convertible representation
+         * @memberOf module:models/filesystemBackedImpostersRepository#
          * @param {Object} options - The formatting options
          * @param {Boolean} options.debug - If true, includes debug information
          * @returns {Object} - the promise resolving to the JSON object
@@ -625,6 +636,7 @@ function create (config, logger) {
 
         /**
          * Removes the saved proxy responses
+         * @memberOf module:models/filesystemBackedImpostersRepository#
          * @returns {Object} - Promise
          */
         function deleteSavedProxyResponses () {
@@ -639,6 +651,7 @@ function create (config, logger) {
 
         /**
          * Adds a request for the imposter
+         * @memberOf module:models/filesystemBackedImpostersRepository#
          * @param {Object} request - the request
          * @returns {Object} - the promise
          */
@@ -653,6 +666,7 @@ function create (config, logger) {
 
         /**
          * Returns the saved requests for the imposter
+         * @memberOf module:models/filesystemBackedImpostersRepository#
          * @returns {Object} - the promise resolving to the array of requests
          */
         function loadRequests () {
@@ -661,6 +675,7 @@ function create (config, logger) {
 
         /**
          * Deletes the requests directory for an imposter
+         * @memberOf module:models/filesystemBackedImpostersRepository#
          * @returns {Object} - Promise
          */
         function deleteSavedRequests () {
@@ -693,6 +708,7 @@ function create (config, logger) {
 
     /**
      * Returns the stubs repository for the imposter
+     * @memberOf module:models/filesystemBackedImpostersRepository#
      * @param {Number} id - the id of the imposter
      * @returns {Object} - the stubs repository
      */
@@ -705,6 +721,7 @@ function create (config, logger) {
      * (which can't be persisted) can be rehydrated to a loaded imposter.
      * This means that any data in the function closures will be held in
      * memory.
+     * @memberOf module:models/filesystemBackedImpostersRepository#
      * @param {Object} imposter - the imposter
      */
     function addReference (imposter) {
@@ -726,6 +743,7 @@ function create (config, logger) {
 
     /**
      * Adds a new imposter
+     * @memberOf module:models/filesystemBackedImpostersRepository#
      * @param {Object} imposter - the imposter to add
      * @returns {Object} - the promise
      */
@@ -748,6 +766,7 @@ function create (config, logger) {
 
     /**
      * Gets the imposter by id
+     * @memberOf module:models/filesystemBackedImpostersRepository#
      * @param {Number} id - the id of the imposter (e.g. the port)
      * @returns {Object} - the promise resolving to the imposter
      */
@@ -767,6 +786,7 @@ function create (config, logger) {
 
     /**
      * Gets all imposters
+     * @memberOf module:models/filesystemBackedImpostersRepository#
      * @returns {Object} - all imposters keyed by port
      */
     function all () {
@@ -775,6 +795,7 @@ function create (config, logger) {
 
     /**
      * Returns whether an imposter at the given id exists or not
+     * @memberOf module:models/filesystemBackedImpostersRepository#
      * @param {Number} id - the id (e.g. the port)
      * @returns {boolean}
      */
@@ -794,6 +815,7 @@ function create (config, logger) {
 
     /**
      * Deletes the imposter at the given id
+     * @memberOf module:models/filesystemBackedImpostersRepository#
      * @param {Number} id - the id (e.g. the port)
      * @returns {Object} - the deletion promise
      */
@@ -810,6 +832,7 @@ function create (config, logger) {
 
     /**
      * Deletes all imposters synchronously; used during shutdown
+     * @memberOf module:models/filesystemBackedImpostersRepository#
      */
     function stopAllSync () {
         Object.keys(imposterFns).forEach(shutdown);
@@ -817,6 +840,7 @@ function create (config, logger) {
 
     /**
      * Deletes all imposters
+     * @memberOf module:models/filesystemBackedImpostersRepository#
      * @returns {Object} - the deletion promise
      */
     function deleteAll () {

@@ -45,6 +45,7 @@ function wrap (stub = {}) {
 
     /**
      * Adds a new response to the stub (e.g. during proxying)
+     * @memberOf module:models/inMemoryImpostersRepository#
      * @param {Object} response - the response to add
      * @returns {Object} - the promise
      */
@@ -57,6 +58,7 @@ function wrap (stub = {}) {
 
     /**
      * Selects the next response from the stub, including repeat behavior and circling back to the beginning
+     * @memberOf module:models/inMemoryImpostersRepository#
      * @returns {Object} - the response
      * @returns {Object} - the promise
      */
@@ -74,6 +76,7 @@ function wrap (stub = {}) {
 
     /**
      * Records a match for debugging purposes
+     * @memberOf module:models/inMemoryImpostersRepository#
      * @param {Object} request - the request
      * @param {Object} response - the response
      * @param {Object} responseConfig - the config that generated the response
@@ -114,6 +117,7 @@ function createStubsRepository () {
 
     /**
      * Returns the first stub whose predicates match the filter, or a default one if none match
+     * @memberOf module:models/inMemoryImpostersRepository#
      * @param {Function} filter - the filter function
      * @param {Number} startIndex - the index to to start searching
      * @returns {Object}
@@ -129,6 +133,7 @@ function createStubsRepository () {
 
     /**
      * Adds a new stub
+     * @memberOf module:models/inMemoryImpostersRepository#
      * @param {Object} stub - the stub to add
      * @returns {Object} - the promise
      */
@@ -140,6 +145,7 @@ function createStubsRepository () {
 
     /**
      * Inserts a new stub at the given index
+     * @memberOf module:models/inMemoryImpostersRepository#
      * @param {Object} stub - the stub to insert
      * @param {Number} index - the index to add the stub at
      * @returns {Object} - the promise
@@ -152,6 +158,7 @@ function createStubsRepository () {
 
     /**
      * Overwrites the list of stubs with a new list
+     * @memberOf module:models/inMemoryImpostersRepository#
      * @param {Object} newStubs - the new list of stubs
      * @returns {Object} - the promise
      */
@@ -166,6 +173,7 @@ function createStubsRepository () {
 
     /**
      * Overwrites the stub at the given index with the new stub
+     * @memberOf module:models/inMemoryImpostersRepository#
      * @param {Object} newStub - the new stub
      * @param {Number} index - the index of the old stuib
      * @returns {Object} - the promise
@@ -183,6 +191,7 @@ function createStubsRepository () {
 
     /**
      * Deletes the stub at the given index
+     * @memberOf module:models/inMemoryImpostersRepository#
      * @param {Number} index - the index of the stub to delete
      * @returns {Object} - the promise
      */
@@ -199,6 +208,7 @@ function createStubsRepository () {
 
     /**
      * Returns a JSON-convertible representation
+     * @memberOf module:models/inMemoryImpostersRepository#
      * @param {Object} options - The formatting options
      * @param {Boolean} options.debug - If true, includes debug information
      * @returns {Object} - the promise resolving to the JSON object
@@ -222,6 +232,7 @@ function createStubsRepository () {
 
     /**
      * Removes the saved proxy responses
+     * @memberOf module:models/inMemoryImpostersRepository#
      * @returns {Object} - Promise
      */
     function deleteSavedProxyResponses () {
@@ -236,6 +247,7 @@ function createStubsRepository () {
 
     /**
      * Adds a request for the imposter
+     * @memberOf module:models/inMemoryImpostersRepository#
      * @param {Object} request - the request
      * @returns {Object} - the promise
      */
@@ -250,6 +262,7 @@ function createStubsRepository () {
 
     /**
      * Returns the saved requests for the imposter
+     * @memberOf module:models/inMemoryImpostersRepository#
      * @returns {Object} - the promise resolving to the array of requests
      */
     function loadRequests () {
@@ -258,6 +271,7 @@ function createStubsRepository () {
 
     /**
      * Clears the saved requests list
+     * @memberOf module:models/inMemoryImpostersRepository#
      * @param {Object} request - the request
      * @returns {Object} - Promise
      */
@@ -293,6 +307,7 @@ function create () {
 
     /**
      * Adds a new imposter
+     * @memberOf module:models/inMemoryImpostersRepository#
      * @param {Object} imposter - the imposter to add
      * @returns {Object} - the promise
      */
@@ -308,6 +323,7 @@ function create () {
 
     /**
      * Gets the imposter by id
+     * @memberOf module:models/inMemoryImpostersRepository#
      * @param {Number} id - the id of the imposter (e.g. the port)
      * @returns {Object} - the imposter
      */
@@ -317,6 +333,7 @@ function create () {
 
     /**
      * Gets all imposters
+     * @memberOf module:models/inMemoryImpostersRepository#
      * @returns {Object} - all imposters keyed by port
      */
     function all () {
@@ -325,6 +342,7 @@ function create () {
 
     /**
      * Returns whether an imposter at the given id exists or not
+     * @memberOf module:models/inMemoryImpostersRepository#
      * @param {Number} id - the id (e.g. the port)
      * @returns {boolean}
      */
@@ -334,6 +352,7 @@ function create () {
 
     /**
      * Deletes the imposter at the given id
+     * @memberOf module:models/inMemoryImpostersRepository#
      * @param {Number} id - the id (e.g. the port)
      * @returns {Object} - the deletion promise
      */
@@ -352,6 +371,7 @@ function create () {
 
     /**
      * Deletes all imposters synchronously; used during shutdown
+     * @memberOf module:models/inMemoryImpostersRepository#
      */
     function stopAllSync () {
         Object.keys(imposters).forEach(id => {
@@ -363,6 +383,7 @@ function create () {
 
     /**
      * Deletes all imposters
+     * @memberOf module:models/inMemoryImpostersRepository#
      * @returns {Object} - the deletion promise
      */
     function deleteAll () {
@@ -378,6 +399,7 @@ function create () {
 
     /**
      * Returns the stub repository for the given id
+     * @memberOf module:models/inMemoryImpostersRepository#
      * @param {Number} id - the imposter's id
      * @returns {Object} - the stub repository
      */

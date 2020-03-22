@@ -354,6 +354,7 @@ function create (stubs, proxy, callbackURL) {
      * saving state indexed by proxyResolutionKey. The protocol implementation sends the proxy
      * to the downstream system and calls mountebank again with the response so mountebank
      * can save it and add behaviors
+     * @memberOf module:models/responseResolver#
      * @param {Object} proxyResponse - the proxy response from the protocol implementation
      * @param {Number} proxyResolutionKey - the key into the saved proxy state
      * @param {Object} logger - the logger
