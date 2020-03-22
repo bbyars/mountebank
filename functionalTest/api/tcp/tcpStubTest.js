@@ -87,7 +87,7 @@ describe('tcp imposter', function () {
             }).then(response => {
                 assert.strictEqual(response.toString(), '');
 
-                return tcp.send('test', port, 100);
+                return tcp.send('test', port, 250);
             }).then(response => {
                 assert.strictEqual(response.toString(), 'MATCH');
             }).finally(() => api.del('/imposters'));
