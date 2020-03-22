@@ -44,7 +44,8 @@ description = 'Command line parameters for starting mountebank'
     database initially and persist all operations to disk in real time, significantly reducing the memory footprint.
 
     <p class='info-icon'>This option allows you to scale imposters with multiple processes (running on multiple
-    hosts behind a load balancer to avoid port collision), with the state of all processes synced in real time.</td>
+    hosts behind a load balancer to avoid port collision), with the state of all processes synced in real time.
+    All mountebank processes will need to share the same volume.</td>
 
     <td>Without this option, all configuration will be in memory. Keeping everything in memory can be a
     significant performance hit when there is a lot of test data, for example, during proxy recording.</td>
