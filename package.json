@@ -43,7 +43,7 @@
     "errorhandler": "1.5.1",
     "escape-html": "^1.0.3",
     "express": "^4.16.3",
-    "fs-extra": "8.1.0",
+    "fs-extra": "9.0.0",
     "https-proxy-agent": "^5.0.0",
     "http-proxy-agent": "^4.0.0",
     "json-stable-stringify": "1.0.1",
