@@ -26,7 +26,7 @@ jobs:
       - checkout
       - restore_cache:
           key: dependency-cache-{{ checksum "package.json" }}
-      - run: ./build lint test dist version trigger:travis codeclimate sonar
+      - run: ./build lint test dist version trigger:travis codeclimate sonar jsdoc deploy:docs
       - save_cache:
           key: dependency-cache-{{ checksum "package.json" }}
           paths:
