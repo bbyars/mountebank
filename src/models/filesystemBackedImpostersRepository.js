@@ -620,7 +620,7 @@ function create (config, logger) {
         }
 
         function isRecordedResponse (response) {
-            return response.is && response.is._proxyResponseTime; // eslint-disable-line no-underscore-dangle
+            return response.is && typeof response.is._proxyResponseTime === 'number'; // eslint-disable-line no-underscore-dangle
         }
 
         /**
