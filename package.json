@@ -60,9 +60,9 @@
     "yargs": "15.3.0"
   },
   "devDependencies": {
-    "firebase-tools": "^7.0.0",
-    "grunt": "^1.0.3",
-    "grunt-cli": "^1.2.0",
+    "firebase-tools": "^7.15.1",
+    "grunt": "^1.1.0",
+    "grunt-cli": "^1.3.2",
     "grunt-contrib-csslint": "~2.0.0",
     "grunt-css": "^0.5.4",
     "grunt-eslint": "^22.0.0",
@@ -73,8 +73,8 @@
     "jsdoc": "^3.6.3",
     "jsdom": "~16.0.1",
     "mocha": "7.1.1",
-    "nc": "^1.0.2",
-    "snyk": "^1.230.6",
+    "nc": "^1.0.3",
+    "snyk": "^1.303.0",
     "time-grunt": "2.0.0",
     "w3cjs": "~0.4.0"
   },
