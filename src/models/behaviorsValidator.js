@@ -1,5 +1,14 @@
 'use strict';
 
+/**
+ * The module that does validation of behavior configuration
+ * @module
+ */
+
+/**
+ * Creates the validator
+ * @returns {{validate: validate}}
+ */
 function create () {
     const exceptions = require('../util/errors');
 
@@ -137,6 +146,7 @@ function create () {
 
     /**
      * Validates the behavior configuration and returns all errors
+     * @memberOf module:models/behaviorsValidator#
      * @param {Object} config - The behavior configuration
      * @param {Object} validationSpec - the specification to validate against
      * @returns {Object} The array of errors

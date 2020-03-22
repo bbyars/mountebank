@@ -97,6 +97,10 @@ function isBuiltInProtocol (protocol) {
 }
 
 function loadCustomProtocols (protofile, logger) {
+    if (typeof protofile === 'undefined') {
+        return {};
+    }
+
     const fs = require('fs'),
         path = require('path'),
         filename = path.join(process.cwd(), protofile);

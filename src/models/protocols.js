@@ -1,6 +1,12 @@
 'use strict';
 
 /**
+ * Abstracts the protocol configuration between the built-in in-memory implementations and out of process
+ * implementations
+ * @module
+ */
+
+/**
  * Loads the imposter creation functions for all built in and custom protocols
  * @param builtInProtocols {Object} - the in-memory protocol implementations that ship with mountebank
  * @param customProtocols {Object} - custom out-of-process protocol implementations

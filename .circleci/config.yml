@@ -26,7 +26,7 @@ jobs:
       - checkout
       - restore_cache:
           key: dependency-cache-{{ checksum "package.json" }}
-      - run: ./build lint test dist version trigger:travis codeclimate sonar
+      - run: ./build lint test dist version trigger:travis codeclimate sonar jsdoc deploy:docs
       - save_cache:
           key: dependency-cache-{{ checksum "package.json" }}
           paths:
@@ -129,7 +129,7 @@ jobs:
       - run: bundle install --without development
       - run: ln -s dist/mountebank/src src
       - run: ln -s dist/mountebank/package.json package.json
-      - run: node_modules/grunt-cli/bin/grunt dist:tarball:x86 test:tarball:x64 deploy:s3
+      - run: node_modules/grunt-cli/bin/grunt test:tarball:x64 deploy:s3
 
   package-zip:
     docker:
