@@ -80,7 +80,7 @@ PLATFORMS
 DEPENDENCIES
   dpl
   fpm
-  travis
+  travis (>= 1.8.9)
 
 BUNDLED WITH
    1.17.3
