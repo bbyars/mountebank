@@ -5,8 +5,7 @@ const assert = require('assert'),
     api = require('../api/api').create(),
     httpClient = require('../api/http/baseHttpClient').create('http'),
     xpath = require('xpath'),
-    DOMParser = require('xmldom').DOMParser,
-    isWindows = require('os').platform().indexOf('win') === 0;
+    DOMParser = require('xmldom').DOMParser;
 
 function entryCount (body) {
     const doc = new DOMParser().parseFromString(body),
