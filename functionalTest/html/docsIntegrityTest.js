@@ -18,23 +18,20 @@ function validateDocs (page) {
 }
 
 describe('docs', function () {
-    // TODO: Hack - getting ECONNRESET errors on windows / appveyor
-    if (!isWindows) {
-        this.timeout(timeout);
+    this.timeout(timeout);
 
-        [
-            '/docs/api/mocks',
-            '/docs/api/proxies',
-            '/docs/api/injection',
-            '/docs/api/xpath',
-            '/docs/api/json',
-            '/docs/protocols/https',
-            '/docs/protocols/http',
-            '/docs/api/jsonpath'
-        ].forEach(page => {
-            validateDocs(page);
-        });
-    }
+    [
+        '/docs/api/mocks',
+        '/docs/api/proxies',
+        '/docs/api/injection',
+        '/docs/api/xpath',
+        '/docs/api/json',
+        '/docs/protocols/https',
+        '/docs/protocols/http',
+        '/docs/api/jsonpath'
+    ].forEach(page => {
+        validateDocs(page);
+    });
 
     // The logs change for out of process imposters
     if (tcpIsInProcess) {
