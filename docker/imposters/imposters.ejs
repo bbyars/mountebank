@@ -1,0 +1,30 @@
+{
+  "imposters": [
+    {
+      "port": 8080,
+      "protocol": "http",
+      "stubs": [
+        {
+          "predicates": [
+            {
+              "deepEquals": {
+                "method": "GET"
+              }
+            }
+          ],
+          "responses": [
+            {
+              "is": {
+                "statusCode": 200,
+                "body": {
+                  "status": "Imposter Running!"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+
