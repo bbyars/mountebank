@@ -47,7 +47,7 @@
     "http-proxy-agent": "^4.0.1",
     "https-proxy-agent": "^5.0.0",
     "json-stable-stringify": "1.0.1",
-    "jsonpath-plus": "^3.0.0",
+    "jsonpath-plus": "^4.0.0",
     "mailparser": "^2.7.7",
     "nodemailer": "^6.4.6",
     "proper-lockfile": "^4.1.1",
