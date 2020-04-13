@@ -52,7 +52,7 @@
     "nodemailer": "^6.4.6",
     "proper-lockfile": "^4.1.1",
     "q": "1.5.1",
-    "query-string": "6.10.1",
+    "query-string": "6.12.0",
     "smtp-server": "^3.6.0",
     "winston": "3.2.1",
     "xmldom": "0.3.0",
