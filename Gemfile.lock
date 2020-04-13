@@ -61,7 +61,7 @@ GEM
       ffi (~> 1.9)
       io-like (~> 0.3)
     stud (0.0.23)
-    travis (1.8.11)
+    travis (1.8.12)
       backports
       faraday (~> 0.9)
       faraday_middleware (~> 0.9, >= 0.9.1)
@@ -80,7 +80,7 @@ PLATFORMS
 DEPENDENCIES
   dpl
   fpm
-  travis (>= 1.8.9)
+  travis (>= 1.8.11)
 
 BUNDLED WITH
    1.17.3
