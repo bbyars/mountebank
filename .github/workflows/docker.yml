@@ -1,0 +1,28 @@
+---
+name: Docker
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      IMAGE: docker.pkg.github.com/bbyars/mountebank/mountebank
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v1
+    - name: Login docker registry
+      run: |
+        docker login docker.pkg.github.com -u $GITHUB_ACTOR -p $GITHUB_TOKEN
+    - name: Build docker image
+      run: |
+        docker build -f docker/Dockerfile ./docker \
+        --build-arg version=${GITHUB_REF:11} \
+        -t $IMAGE:${GITHUB_REF:11} -t $IMAGE:latest
+    - name: Publish docker image
+      run: |
+        docker push $IMAGE:${GITHUB_REF:11}
+        docker push $IMAGE:latest
