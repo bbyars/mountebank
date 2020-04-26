@@ -264,7 +264,6 @@ function create (options) {
         '/support',
         '/license',
         '/faqs',
-        '/thoughtworks',
         '/docs/gettingStarted',
         '/docs/install',
         '/docs/mentalModel',
