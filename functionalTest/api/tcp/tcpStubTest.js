@@ -136,6 +136,24 @@ describe('tcp imposter', function () {
                 }).finally(() => api.del('/imposters'));
         });
 
+        promiseIt('should allow keepalive proxies', function () {
+            const proxyPort = port + 1,
+                proxyStub = { responses: [{ is: { data: 'PROXIED' } }] },
+                proxyRequest = { protocol: 'tcp', port: proxyPort, stubs: [proxyStub], name: 'PROXY' },
+                stub = { responses: [{ proxy: { to: `tcp://localhost:${proxyPort}`, keepalive: true } }] },
+                request = { protocol: 'tcp', port, stubs: [stub], name: 'MAIN' };
+
+            return api.post('/imposters', proxyRequest)
+                .then(() => api.post('/imposters', request))
+                .then(() => tcp.send('request', port))
+                .then(response => {
+                    assert.strictEqual(response.toString(), 'PROXIED');
+                    return tcp.send('request', port);
+                }).then(response => {
+                    assert.strictEqual(response.toString(), 'PROXIED');
+                }).finally(() => api.del('/imposters'));
+        });
+
         if (!airplaneMode) {
             promiseIt('should allow proxy stubs to invalid hosts', function () {
                 const stub = { responses: [{ proxy: { to: 'tcp://remotehost:8000' } }] },

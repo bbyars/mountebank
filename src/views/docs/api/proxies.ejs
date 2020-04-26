@@ -66,9 +66,7 @@ in newly created <code>predicates</code>.</p>
   </tr>
 </table>
 
-<p>http and https proxies add additional optional parameters for situations where the
-origin server expects to use mutual authentication and will request a client certificate, or
-for when you need to change the proxied request headers:</p>
+<p>http and https proxies add additional optional parameters:</p>
 
 <table>
   <tr>
@@ -113,6 +111,23 @@ for when you need to change the proxied request headers:</p>
     <td><code>{}</code></td>
     <td>object</td>
     <td>Key-value pairs of headers to inject into the proxied <i>request</i>.</td>
+  </tr>
+</table>
+
+<p>tcp proxies support the following optional configuration:</p>
+
+<table>
+  <tr>
+    <th>Parameter</th>
+    <th style='min-width: 4em;'>Default</th>
+    <th>Type</th>
+    <th>Description</th>
+  </tr>
+  <tr>
+    <td><code>keepalive</code></td>
+    <td><code>false</code></td>
+    <td>boolean</td>
+    <td>If true, mountebank will not close the connection on each proxied request</td>
   </tr>
 </table>
 
