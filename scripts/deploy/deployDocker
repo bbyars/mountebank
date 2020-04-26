@@ -1,0 +1,20 @@
+#!/bin/sh
+
+set -e
+
+PUBLISH=$1
+VERSION=$2
+
+echo "Deploying docker (PUBLISH=$PUBLISH)..."
+
+(
+if [ "$PUBLISH" = "true" ]; then
+    cp Dockerfile dist/mountebank
+    cd dist/mountebank
+    docker build -t bbyars/mountebank:$VERSION -t bbyars/mountebank:latest .
+    docker login -u $DOCKER_USER -p "$DOCKER_PASSWORD"
+    # docker push bbyars/mountebank:$VERSION
+    docker push bbyars/mountebank:latest
+    rm Dockerfile
+fi
+)

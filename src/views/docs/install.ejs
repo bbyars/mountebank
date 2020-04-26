@@ -27,6 +27,13 @@ var versionPath = encodeURIComponent(version);
     <th>Description</th>
   </tr>
   <tr>
+    <td>Docker image</td>
+    <td>No</td>
+    <td>No</td>
+    <td><a href='https://hub.docker.com/repository/registry-1.docker.io/bbyars/mountebank'>Docker hub</a></td>
+    <td>Can run with a command like <code>docker run --rm -p 2525:2525 -p 8080:8080 mountebank:<%= version %>%> mb start --configfile imposters.ejs</code></td>
+  </tr>
+  <tr>
     <td>Self-contained archives</td>
     <td>No</td>
     <td>No</td>

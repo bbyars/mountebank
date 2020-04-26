@@ -53,6 +53,7 @@ jobs:
             - .git
             - travis-*.txt
             - build.properties
+            - Dockerfile
 
   nodev10:
     docker:
@@ -263,7 +264,7 @@ jobs:
       - run: bundle install --without development
       - run: ln -s dist/mountebank/src src
       - run: ln -s dist/mountebank/package.json package.json
-      - run: node_modules/grunt-cli/bin/grunt deploy:s3 deploy:heroku deploy:npm
+      - run: node_modules/grunt-cli/bin/grunt deploy:s3 deploy:heroku deploy:npm deploy:docker
 
 workflows:
   version: 2

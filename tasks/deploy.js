@@ -27,4 +27,8 @@ module.exports = function (grunt) {
     grunt.registerTask('deploy:docs', 'Deploy source docs', function () {
         run('scripts/deploy/deployFirebase', [version]).done(this.async(), failTask('deploy:docs'));
     });
+
+    grunt.registerTask('deploy:docker', 'Deploy Docker image', function () {
+        run('scripts/deploy/deployDocker', [publish, version]).done(this.async(), failTask('deploy:docker'));
+    });
 };
