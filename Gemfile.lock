@@ -1,14 +1,21 @@
 GEM
   remote: https://rubygems.org/
   specs:
-    addressable (2.4.0)
+    activesupport (5.2.4.2)
+      concurrent-ruby (~> 1.0, >= 1.0.2)
+      i18n (>= 0.7, < 2)
+      minitest (~> 5.1)
+      tzinfo (~> 1.1)
+    addressable (2.7.0)
+      public_suffix (>= 2.0.2, < 5.0)
     arr-pm (0.0.10)
       cabin (> 0)
-    backports (3.17.0)
+    backports (3.17.1)
     cabin (0.9.0)
     childprocess (0.9.0)
       ffi (~> 1.0, >= 1.0.11)
     clamp (1.0.1)
+    concurrent-ruby (1.1.6)
     dotenv (2.7.5)
     dpl (1.10.15)
     ethon (0.12.0)
@@ -29,19 +36,23 @@ GEM
       pleaserun (~> 0.0.29)
       ruby-xz (~> 0.2.3)
       stud
-    gh (0.15.1)
-      addressable (~> 2.4.0)
-      backports
+    gh (0.16.0)
+      activesupport (~> 5.0)
+      addressable (~> 2.4)
       faraday (~> 0.8)
+      faraday_middleware (~> 0.14)
       multi_json (~> 1.0)
       net-http-persistent (~> 2.9)
       net-http-pipeline
     highline (1.7.10)
+    i18n (1.8.2)
+      concurrent-ruby (~> 1.0)
     insist (1.0.0)
     io-like (0.3.1)
     json (1.8.6)
-    launchy (2.4.3)
-      addressable (~> 2.3)
+    launchy (2.5.0)
+      addressable (~> 2.7)
+    minitest (5.14.0)
     multi_json (1.14.1)
     multipart-post (2.1.1)
     mustache (0.99.8)
@@ -54,6 +65,7 @@ GEM
       insist
       mustache (= 0.99.8)
       stud
+    public_suffix (4.0.4)
     pusher-client (0.6.2)
       json
       websocket (~> 1.0)
@@ -61,7 +73,8 @@ GEM
       ffi (~> 1.9)
       io-like (~> 0.3)
     stud (0.0.23)
-    travis (1.8.12)
+    thread_safe (0.3.6)
+    travis (1.8.13)
       backports
       faraday (~> 0.9)
       faraday_middleware (~> 0.9, >= 0.9.1)
@@ -72,6 +85,8 @@ GEM
       typhoeus (~> 0.6, >= 0.6.8)
     typhoeus (0.8.0)
       ethon (>= 0.8.0)
+    tzinfo (1.2.7)
+      thread_safe (~> 0.1)
     websocket (1.2.8)
 
 PLATFORMS
@@ -80,7 +95,7 @@ PLATFORMS
 DEPENDENCIES
   dpl
   fpm
-  travis (>= 1.8.11)
+  travis (>= 1.8.12)
 
 BUNDLED WITH
    1.17.3
