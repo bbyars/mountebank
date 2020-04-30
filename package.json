@@ -21,7 +21,9 @@
   "scripts": {
     "start": "bin/mb",
     "restart": "bin/mb restart",
-    "stop": "bin/mb stop"
+    "stop": "bin/mb stop",
+    "snyk-protect": "snyk protect",
+    "prepare": "npm run snyk-protect"
   },
   "keywords": [
     "test",
@@ -57,7 +59,8 @@
     "winston": "3.2.1",
     "xmldom": "0.3.0",
     "xpath": "0.0.27",
-    "yargs": "15.3.0"
+    "yargs": "15.3.0",
+    "snyk": "^1.316.1"
   },
   "devDependencies": {
     "firebase-tools": "^8.0.0",
@@ -74,7 +77,6 @@
     "jsdom": "~16.2.2",
     "mocha": "7.1.1",
     "nc": "^1.0.3",
-    "snyk": "^1.303.0",
     "time-grunt": "2.0.0",
     "w3cjs": "~0.4.0"
   },
