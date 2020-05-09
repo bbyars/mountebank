@@ -665,7 +665,7 @@ const assert = require('assert'),
                 });
             });
 
-            promiseIt('should compose multiple behaviors together', function () {
+            promiseIt('should compose multiple behaviors together (old interface for backwards compatibility)', function () {
                 const shellFn = function exec () {
                         console.log(process.argv[3].replace('${SALUTATION}', 'Hello'));
                     },
@@ -716,6 +716,41 @@ const assert = require('assert'),
                     assert.strictEqual(response.body, 'No behaviors');
                 }).finally(() => {
                     fs.unlinkSync('shellTransformTest.js');
+                    return api.del('/imposters');
+                });
+            });
+
+            promiseIt('should apply behaviors in sequence', function () {
+                const first = config => {
+                        config.response.body += '1';
+                    },
+                    second = config => {
+                        config.response.body += '2';
+                    },
+                    third = config => {
+                        config.response.body += '3';
+                    },
+                    stub = {
+                        responses: [
+                            {
+                                is: { body: '' },
+                                _behaviors: [
+                                    { decorate: first.toString() },
+                                    { decorate: third.toString() },
+                                    { decorate: second.toString() }
+                                ]
+                            }
+                        ]
+                    },
+                    stubs = [stub],
+                    request = { protocol, port, stubs: stubs };
+
+                return api.post('/imposters', request).then(response => {
+                    assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body, null, 2));
+                    return client.get('/', port);
+                }).then(response => {
+                    assert.strictEqual(response.body, '132');
+                }).finally(() => {
                     return api.del('/imposters');
                 });
             });

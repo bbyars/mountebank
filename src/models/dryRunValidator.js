@@ -133,10 +133,19 @@ function create (options) {
             response.proxy.predicateGenerators.some(generator => generator.inject);
     }
 
+    function hasBehavior (response, type, valueFilter) {
+        if (typeof valueFilter === 'undefined') {
+            valueFilter = () => true;
+        }
+        return (response._behaviors || []).some(behavior => {
+            return typeof behavior[type] !== 'undefined' && valueFilter(behavior[type]);
+        });
+    }
+
     function hasStubInjection (stub) {
         const hasResponseInjections = stub.responses.some(response => {
-                const hasDecorator = response._behaviors && response._behaviors.decorate,
-                    hasWaitFunction = response._behaviors && typeof response._behaviors.wait === 'string';
+                const hasDecorator = hasBehavior(response, 'decorate'),
+                    hasWaitFunction = hasBehavior(response, 'wait', value => typeof value === 'string');
 
                 return response.inject || hasDecorator || hasWaitFunction || hasPredicateGeneratorInjection(response);
             }),
@@ -146,7 +155,7 @@ function create (options) {
     }
 
     function hasShellExecution (stub) {
-        return stub.responses.some(response => response._behaviors && response._behaviors.shellTransform);
+        return stub.responses.some(response => hasBehavior(response, 'shellTransform'));
     }
 
     function addStubInjectionErrors (stub, errors) {

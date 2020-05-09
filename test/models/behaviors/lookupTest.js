@@ -8,25 +8,16 @@ const assert = require('assert'),
 
 describe('behaviors', function () {
     describe('#lookup', function () {
-        it('should not be valid if not an array', function () {
-            const errors = behaviors.validate({ lookup: {} });
-            assert.deepEqual(errors, [{
-                code: 'bad data',
-                message: 'lookup behavior "lookup" field must be an array',
-                source: { lookup: {} }
-            }]);
-        });
-
         it('should not be valid if missing "key" field', function () {
             const config = {
                     fromDataSource: { csv: { path: '', keyColumn: '', columnInto: ['key'] } },
                     into: 'TOKEN'
                 },
-                errors = behaviors.validate({ lookup: [config] });
+                errors = behaviors.validate([{ lookup: config }]);
             assert.deepEqual(errors, [{
                 code: 'bad data',
                 message: 'lookup behavior "key" field required',
-                source: config
+                source: { lookup: config }
             }]);
         });
 
@@ -36,11 +27,11 @@ describe('behaviors', function () {
                     fromDataSource: { csv: { path: '', keyColumn: '', columnInto: ['key'] } },
                     into: 'TOKEN'
                 },
-                errors = behaviors.validate({ lookup: [config] });
+                errors = behaviors.validate([{ lookup: config }]);
             assert.deepEqual(errors, [{
                 code: 'bad data',
                 message: 'lookup behavior "key.from" field required',
-                source: config
+                source: { lookup: config }
             }]);
         });
 
@@ -50,11 +41,11 @@ describe('behaviors', function () {
                     fromDataSource: { csv: { path: '', keyColumn: '', columnInto: ['key'] } },
                     into: 'TOKEN'
                 },
-                errors = behaviors.validate({ lookup: [config] });
+                errors = behaviors.validate([{ lookup: config }]);
             assert.deepEqual(errors, [{
                 code: 'bad data',
                 message: 'lookup behavior "key.using" field required',
-                source: config
+                source: { lookup: config }
             }]);
         });
 
@@ -64,11 +55,11 @@ describe('behaviors', function () {
                     fromDataSource: { csv: { path: '', keyColumn: '', columnInto: ['key'] } },
                     into: 'TOKEN'
                 },
-                errors = behaviors.validate({ lookup: [config] });
+                errors = behaviors.validate([{ lookup: config }]);
             assert.deepEqual(errors, [{
                 code: 'bad data',
                 message: 'lookup behavior "key.using" field must be an object',
-                source: config
+                source: { lookup: config }
             }]);
         });
 
@@ -78,11 +69,11 @@ describe('behaviors', function () {
                     fromDataSource: { csv: { path: '', keyColumn: '', columnInto: ['key'] } },
                     into: 'TOKEN'
                 },
-                errors = behaviors.validate({ lookup: [config] });
+                errors = behaviors.validate([{ lookup: config }]);
             assert.deepEqual(errors, [{
                 code: 'bad data',
                 message: 'lookup behavior "key.using.method" field required',
-                source: config
+                source: { lookup: config }
             }]);
         });
 
@@ -92,11 +83,11 @@ describe('behaviors', function () {
                     fromDataSource: { csv: { path: '', keyColumn: '', columnInto: ['key'] } },
                     into: 'TOKEN'
                 },
-                errors = behaviors.validate({ lookup: [config] });
+                errors = behaviors.validate([{ lookup: config }]);
             assert.deepEqual(errors, [{
                 code: 'bad data',
                 message: 'lookup behavior "key.using.method" field must be one of [regex, xpath, jsonpath]',
-                source: config
+                source: { lookup: config }
             }]);
         });
 
@@ -106,11 +97,11 @@ describe('behaviors', function () {
                     fromDataSource: { csv: { path: '', keyColumn: '', columnInto: ['key'] } },
                     into: 'TOKEN'
                 },
-                errors = behaviors.validate({ lookup: [config] });
+                errors = behaviors.validate([{ lookup: config }]);
             assert.deepEqual(errors, [{
                 code: 'bad data',
                 message: 'lookup behavior "key.using.selector" field required',
-                source: config
+                source: { lookup: config }
             }]);
         });
 
@@ -119,11 +110,11 @@ describe('behaviors', function () {
                     key: { from: 'data', using: { method: 'regex', selector: '.*' } },
                     into: 'TOKEN'
                 },
-                errors = behaviors.validate({ lookup: [config] });
+                errors = behaviors.validate([{ lookup: config }]);
             assert.deepEqual(errors, [{
                 code: 'bad data',
                 message: 'lookup behavior "fromDataSource" field required',
-                source: config
+                source: { lookup: config }
             }]);
         });
 
@@ -133,11 +124,11 @@ describe('behaviors', function () {
                     fromDataSource: 'csv',
                     into: 'TOKEN'
                 },
-                errors = behaviors.validate({ lookup: [config] });
+                errors = behaviors.validate([{ lookup: config }]);
             assert.deepEqual(errors, [{
                 code: 'bad data',
                 message: 'lookup behavior "fromDataSource" field must be an object',
-                source: config
+                source: { lookup: config }
             }]);
         });
 
@@ -147,11 +138,11 @@ describe('behaviors', function () {
                     fromDataSource: { invalid: {} },
                     into: 'TOKEN'
                 },
-                errors = behaviors.validate({ lookup: [config] });
+                errors = behaviors.validate([{ lookup: config }]);
             assert.deepEqual(errors, [{
                 code: 'bad data',
                 message: 'lookup behavior "fromDataSource" field must be one of [csv]',
-                source: config
+                source: { lookup: config }
             }]);
         });
 
@@ -161,11 +152,11 @@ describe('behaviors', function () {
                     fromDataSource: { sql: {}, csv: { path: '', keyColumn: '', columnInto: ['key'] } },
                     into: 'TOKEN'
                 },
-                errors = behaviors.validate({ lookup: [config] });
+                errors = behaviors.validate([{ lookup: config }]);
             assert.deepEqual(errors, [{
                 code: 'bad data',
                 message: 'lookup behavior "fromDataSource" field must have exactly one key',
-                source: config
+                source: { lookup: config }
             }]);
         });
 
@@ -174,11 +165,11 @@ describe('behaviors', function () {
                     key: { from: 'data', using: { method: 'regex', selector: '.*' } },
                     fromDataSource: { csv: { path: '', keyColumn: '', columnInto: ['key'] } }
                 },
-                errors = behaviors.validate({ lookup: [config] });
+                errors = behaviors.validate([{ lookup: config }]);
             assert.deepEqual(errors, [{
                 code: 'bad data',
                 message: 'lookup behavior "into" field required',
-                source: config
+                source: { lookup: config }
             }]);
         });
 
@@ -200,14 +191,14 @@ describe('behaviors', function () {
                     response = { data: 'Hello, ${you}["occupation"]' },
                     logger = Logger.create(),
                     config = {
-                        lookup: [{
+                        lookup: {
                             key: { from: 'data', using: { method: 'regex', selector: '\\w+$' } },
                             fromDataSource: { csv: { path: 'INVALID.csv', keyColumn: 'name', delimiter: '|' } },
                             into: '${you}'
-                        }]
+                        }
                     };
 
-                return behaviors.execute(request, response, config, logger).then(actualResponse => {
+                return behaviors.execute(request, response, [config], logger).then(actualResponse => {
                     assert.deepEqual(actualResponse, { data: 'Hello, ${you}["occupation"]' });
                     logger.error.assertLogged('Cannot read INVALID.csv: ');
                 });
@@ -218,14 +209,14 @@ describe('behaviors', function () {
                     response = { data: 'Hello, ${you}["occupation"]' },
                     logger = Logger.create(),
                     config = {
-                        lookup: [{
+                        lookup: {
                             key: { from: 'data', using: { method: 'regex', selector: '\\w+$' } },
                             fromDataSource: { csv: { path: 'lookupTest.csv', keyColumn: 'name' } },
                             into: '${you}'
-                        }]
+                        }
                     };
 
-                return behaviors.execute(request, response, config, logger).then(actualResponse => {
+                return behaviors.execute(request, response, [config], logger).then(actualResponse => {
                     assert.deepEqual(actualResponse, { data: 'Hello, tester' });
                 });
             });
@@ -235,17 +226,17 @@ describe('behaviors', function () {
                     response = { data: "Hello, ${you}['occupation']" },
                     logger = Logger.create(),
                     config = {
-                        lookup: [{
+                        lookup: {
                             key: {
                                 from: 'data',
                                 using: { method: 'regex', selector: 'MOUNT\\w+$', options: { ignoreCase: true } }
                             },
                             fromDataSource: { csv: { path: 'lookupTest.csv', keyColumn: 'name' } },
                             into: '${you}'
-                        }]
+                        }
                     };
 
-                return behaviors.execute(request, response, config, logger).then(actualResponse => {
+                return behaviors.execute(request, response, [config], logger).then(actualResponse => {
                     assert.deepEqual(actualResponse, { data: 'Hello, tester' });
                 });
             });
@@ -255,17 +246,17 @@ describe('behaviors', function () {
                     response = { data: 'Hello, ${you}[occupation]' },
                     logger = Logger.create(),
                     config = {
-                        lookup: [{
+                        lookup: {
                             key: {
                                 from: 'data',
                                 using: { method: 'regex', selector: 'mount\\w+$', options: { multiline: true } }
                             },
                             fromDataSource: { csv: { path: 'lookupTest.csv', keyColumn: 'name' } },
                             into: '${you}'
-                        }]
+                        }
                     };
 
-                return behaviors.execute(request, response, config, logger).then(actualResponse => {
+                return behaviors.execute(request, response, [config], logger).then(actualResponse => {
                     assert.deepEqual(actualResponse, { data: 'Hello, tester' });
                 });
             });
@@ -275,17 +266,17 @@ describe('behaviors', function () {
                     response = { data: 'Hello, ${you}[occupation]' },
                     logger = Logger.create(),
                     config = {
-                        lookup: [{
+                        lookup: {
                             key: {
                                 from: 'data',
                                 using: { method: 'regex', selector: 'Mi nombre es (\\w+)$' }
                             },
                             fromDataSource: { csv: { path: 'lookupTest.csv', keyColumn: 'name' } },
                             into: '${you}'
-                        }]
+                        }
                     };
 
-                return behaviors.execute(request, response, config, logger).then(actualResponse => {
+                return behaviors.execute(request, response, [config], logger).then(actualResponse => {
                     assert.deepEqual(actualResponse, { data: 'Hello, ${you}[occupation]' });
                 });
             });
@@ -295,14 +286,14 @@ describe('behaviors', function () {
                     response = { outer: { inner: 'Hello, ${you}["occupation"]' } },
                     logger = Logger.create(),
                     config = {
-                        lookup: [{
+                        lookup: {
                             key: { from: 'data', using: { method: 'regex', selector: '\\w+$' } },
                             fromDataSource: { csv: { path: 'lookupTest.csv', keyColumn: 'name' } },
                             into: '${you}'
-                        }]
+                        }
                     };
 
-                return behaviors.execute(request, response, config, logger).then(actualResponse => {
+                return behaviors.execute(request, response, [config], logger).then(actualResponse => {
                     assert.deepEqual(actualResponse, { outer: { inner: 'Hello, tester' } });
                 });
             });
@@ -312,14 +303,14 @@ describe('behaviors', function () {
                     response = { data: '${you}[location]', outer: { inner: 'Hello, ${you}[occupation]' } },
                     logger = Logger.create(),
                     config = {
-                        lookup: [{
+                        lookup: {
                             key: { from: 'data', using: { method: 'regex', selector: '\\w+$' } },
                             fromDataSource: { csv: { path: 'lookupTest.csv', keyColumn: 'name' } },
                             into: '${you}'
-                        }]
+                        }
                     };
 
-                return behaviors.execute(request, response, config, logger).then(actualResponse => {
+                return behaviors.execute(request, response, [config], logger).then(actualResponse => {
                     assert.deepEqual(actualResponse, { data: 'worldwide', outer: { inner: 'Hello, tester' } });
                 });
             });
@@ -329,14 +320,14 @@ describe('behaviors', function () {
                     response = { data: 'Hello, ${you}[occupation]' },
                     logger = Logger.create(),
                     config = {
-                        lookup: [{
+                        lookup: {
                             key: { from: { data: 'name' }, using: { method: 'regex', selector: '\\w+$' } },
                             fromDataSource: { csv: { path: 'lookupTest.csv', keyColumn: 'name' } },
                             into: '${you}'
-                        }]
+                        }
                     };
 
-                return behaviors.execute(request, response, config, logger).then(actualResponse => {
+                return behaviors.execute(request, response, [config], logger).then(actualResponse => {
                     assert.deepEqual(actualResponse, { data: 'Hello, tester' });
                 });
             });
@@ -346,14 +337,14 @@ describe('behaviors', function () {
                     response = { data: 'Hello, ${you}[occupation]' },
                     logger = Logger.create(),
                     config = {
-                        lookup: [{
+                        lookup: {
                             key: { from: { data: 'NAME' }, using: { method: 'regex', selector: '\\w+$' } },
                             fromDataSource: { csv: { path: 'lookupTest.csv', keyColumn: 'name' } },
                             into: '${you}'
-                        }]
+                        }
                     };
 
-                return behaviors.execute(request, response, config, logger).then(actualResponse => {
+                return behaviors.execute(request, response, [config], logger).then(actualResponse => {
                     assert.deepEqual(actualResponse, { data: 'Hello, tester' });
                 });
             });
@@ -363,7 +354,7 @@ describe('behaviors', function () {
                     response = { data: 'Hello, ${you}[occupation]' },
                     logger = Logger.create(),
                     config = {
-                        lookup: [{
+                        lookup: {
                             key: {
                                 from: 'name',
                                 using: { method: 'regex', selector: 'My name is (\\w+)' },
@@ -371,10 +362,10 @@ describe('behaviors', function () {
                             },
                             fromDataSource: { csv: { path: 'lookupTest.csv', keyColumn: 'name' } },
                             into: '${you}'
-                        }]
+                        }
                     };
 
-                return behaviors.execute(request, response, config, logger).then(actualResponse => {
+                return behaviors.execute(request, response, [config], logger).then(actualResponse => {
                     assert.deepEqual(actualResponse, { data: 'Hello, tester' });
                 });
             });
@@ -384,14 +375,14 @@ describe('behaviors', function () {
                     response = { data: 'Hello, ${you}[occupation]' },
                     logger = Logger.create(),
                     config = {
-                        lookup: [{
+                        lookup: {
                             key: { from: 'data', using: { method: 'regex', selector: '\\w+' } },
                             fromDataSource: { csv: { path: 'lookupTest.csv', keyColumn: 'name' } },
                             into: '${you}'
-                        }]
+                        }
                     };
 
-                return behaviors.execute(request, response, config, logger).then(actualResponse => {
+                return behaviors.execute(request, response, [config], logger).then(actualResponse => {
                     assert.deepEqual(actualResponse, { data: 'Hello, mountebank' });
                 });
             });
@@ -401,14 +392,14 @@ describe('behaviors', function () {
                     response = { data: 'Hello, ${you}["occupation"]' },
                     logger = Logger.create(),
                     config = {
-                        lookup: [{
+                        lookup: {
                             key: { from: 'field', using: { method: 'xpath', selector: '//name' } },
                             fromDataSource: { csv: { path: 'lookupTest.csv', keyColumn: 'name' } },
                             into: '${you}'
-                        }]
+                        }
                     };
 
-                return behaviors.execute(request, response, config, logger).then(actualResponse => {
+                return behaviors.execute(request, response, [config], logger).then(actualResponse => {
                     assert.deepEqual(actualResponse, { data: 'Hello, tester' });
                 });
             });
@@ -418,14 +409,14 @@ describe('behaviors', function () {
                     response = { data: 'Hello, ${you}[occupation]' },
                     logger = Logger.create(),
                     config = {
-                        lookup: [{
+                        lookup: {
                             key: { from: 'field', using: { method: 'xpath', selector: '//title' } },
                             fromDataSource: { csv: { path: 'lookupTest.csv', keyColumn: 'name' } },
                             into: '${you}'
-                        }]
+                        }
                     };
 
-                return behaviors.execute(request, response, config, logger).then(actualResponse => {
+                return behaviors.execute(request, response, [config], logger).then(actualResponse => {
                     assert.deepEqual(actualResponse, { data: 'Hello, ${you}[occupation]' });
                 });
             });
@@ -435,14 +426,14 @@ describe('behaviors', function () {
                     response = { data: 'Hello, ${you}[occupation]' },
                     logger = Logger.create(),
                     config = {
-                        lookup: [{
+                        lookup: {
                             key: { from: 'field', using: { method: 'xpath', selector: '//title' } },
                             fromDataSource: { csv: { path: 'lookupTest.csv', keyColumn: 'name' } },
                             into: '${you}'
-                        }]
+                        }
                     };
 
-                return behaviors.execute(request, response, config, logger).then(actualResponse => {
+                return behaviors.execute(request, response, [config], logger).then(actualResponse => {
                     assert.deepEqual(actualResponse, { data: 'Hello, ${you}[occupation]' });
                     logger.warn.assertLogged('[xmldom error]\tinvalid doc source\n@#[line:undefined,col:undefined] (source: "")');
                 });
@@ -453,14 +444,14 @@ describe('behaviors', function () {
                     response = { data: 'Hello, ${you}[occupation]' },
                     logger = Logger.create(),
                     config = {
-                        lookup: [{
+                        lookup: {
                             key: { from: 'field', using: { method: 'xpath', selector: '//tool/@name' } },
                             fromDataSource: { csv: { path: 'lookupTest.csv', keyColumn: 'name' } },
                             into: '${you}'
-                        }]
+                        }
                     };
 
-                return behaviors.execute(request, response, config, logger).then(actualResponse => {
+                return behaviors.execute(request, response, [config], logger).then(actualResponse => {
                     assert.deepEqual(actualResponse, { data: 'Hello, tester' });
                 });
             });
@@ -470,14 +461,14 @@ describe('behaviors', function () {
                     response = { data: 'Hello, ${you}["occupation"]' },
                     logger = Logger.create(),
                     config = {
-                        lookup: [{
+                        lookup: {
                             key: { from: 'field', using: { method: 'xpath', selector: '//name/text()' } },
                             fromDataSource: { csv: { path: 'lookupTest.csv', keyColumn: 'name' } },
                             into: '${you}'
-                        }]
+                        }
                     };
 
-                return behaviors.execute(request, response, config, logger).then(actualResponse => {
+                return behaviors.execute(request, response, [config], logger).then(actualResponse => {
                     assert.deepEqual(actualResponse, { data: 'Hello, tester' });
                 });
             });
@@ -487,7 +478,7 @@ describe('behaviors', function () {
                     response = { data: 'Hello, ${you}[occupation]' },
                     logger = Logger.create(),
                     config = {
-                        lookup: [{
+                        lookup: {
                             key: {
                                 from: 'field',
                                 using: {
@@ -498,10 +489,10 @@ describe('behaviors', function () {
                             },
                             fromDataSource: { csv: { path: 'lookupTest.csv', keyColumn: 'name' } },
                             into: '${you}'
-                        }]
+                        }
                     };
 
-                return behaviors.execute(request, response, config, logger).then(actualResponse => {
+                return behaviors.execute(request, response, [config], logger).then(actualResponse => {
                     assert.deepEqual(actualResponse, { data: 'Hello, tester' });
                 });
             });
@@ -511,14 +502,14 @@ describe('behaviors', function () {
                     response = { data: 'Hello ${you}[occupation]' },
                     logger = Logger.create(),
                     config = {
-                        lookup: [{
+                        lookup: {
                             key: { from: 'field', using: { method: 'xpath', selector: '//name' }, index: 2 },
                             fromDataSource: { csv: { path: 'lookupTest.csv', keyColumn: 'name' } },
                             into: '${you}'
-                        }]
+                        }
                     };
 
-                return behaviors.execute(request, response, config, logger).then(actualResponse => {
+                return behaviors.execute(request, response, [config], logger).then(actualResponse => {
                     assert.deepEqual(actualResponse, { data: 'Hello mountebank' });
                 });
             });
@@ -528,14 +519,14 @@ describe('behaviors', function () {
                     response = { data: 'Hello, ${you}[occupation]' },
                     logger = Logger.create(),
                     config = {
-                        lookup: [{
+                        lookup: {
                             key: { from: 'field', using: { method: 'jsonpath', selector: '$..name' } },
                             fromDataSource: { csv: { path: 'lookupTest.csv', keyColumn: 'name' } },
                             into: '${you}[occupation]'
-                        }]
+                        }
                     };
 
-                return behaviors.execute(request, response, config, logger).then(actualResponse => {
+                return behaviors.execute(request, response, [config], logger).then(actualResponse => {
                     assert.deepEqual(actualResponse, { data: 'Hello, ${you}[occupation]' });
                     logger.warn.assertLogged('Cannot parse as JSON: "mountebank"');
                 });
@@ -546,14 +537,14 @@ describe('behaviors', function () {
                     response = { data: 'Hello, ${you}[occupation]' },
                     logger = Logger.create(),
                     config = {
-                        lookup: [{
+                        lookup: {
                             key: { from: 'field', using: { method: 'jsonpath', selector: '$..name' } },
                             fromDataSource: { csv: { path: 'lookupTest.csv', keyColumn: 'name' } },
                             into: '${you}'
-                        }]
+                        }
                     };
 
-                return behaviors.execute(request, response, config, logger).then(actualResponse => {
+                return behaviors.execute(request, response, [config], logger).then(actualResponse => {
                     assert.deepEqual(actualResponse, { data: 'Hello, tester' });
                 });
             });
@@ -563,14 +554,14 @@ describe('behaviors', function () {
                     response = { data: 'Hello, ${you}[occupation]' },
                     logger = Logger.create(),
                     config = {
-                        lookup: [{
+                        lookup: {
                             key: { from: 'field', using: { method: 'jsonpath', selector: '$..title' } },
                             fromDataSource: { csv: { path: 'lookupTest.csv', keyColumn: 'name' } },
                             into: '${you}'
-                        }]
+                        }
                     };
 
-                return behaviors.execute(request, response, config, logger).then(actualResponse => {
+                return behaviors.execute(request, response, [config], logger).then(actualResponse => {
                     assert.deepEqual(actualResponse, { data: 'Hello, ${you}[occupation]' });
                 });
             });
@@ -581,14 +572,14 @@ describe('behaviors', function () {
                     response = { data: 'Hello, ${you}[occupation]' },
                     logger = Logger.create(),
                     config = {
-                        lookup: [{
+                        lookup: {
                             key: { from: 'field', using: { method: 'jsonpath', selector: '$..name' }, index: 1 },
                             fromDataSource: { csv: { path: 'lookupTest.csv', keyColumn: 'name' } },
                             into: '${you}'
-                        }]
+                        }
                     };
 
-                return behaviors.execute(request, response, config, logger).then(actualResponse => {
+                return behaviors.execute(request, response, [config], logger).then(actualResponse => {
                     assert.deepEqual(actualResponse, { data: 'Hello, The Price Is Right' });
                 });
             });
@@ -599,14 +590,14 @@ describe('behaviors', function () {
                     response = { data: 'Hello, ${you}[occupation]' },
                     logger = Logger.create(),
                     config = {
-                        lookup: [{
+                        lookup: {
                             key: { from: 'field', using: { method: 'jsonpath', selector: '$..name' }, index: 10 },
                             fromDataSource: { csv: { path: 'lookupTest.csv', keyColumn: 'name' } },
                             into: '${you}'
-                        }]
+                        }
                     };
 
-                return behaviors.execute(request, response, config, logger).then(actualResponse => {
+                return behaviors.execute(request, response, [config], logger).then(actualResponse => {
                     assert.deepEqual(actualResponse, { data: 'Hello, ${you}[occupation]' });
                 });
             });
@@ -616,14 +607,14 @@ describe('behaviors', function () {
                     response = { data: 'Hello, ${you}[location]' },
                     logger = Logger.create(),
                     config = {
-                        lookup: [{
+                        lookup: {
                             key: { from: 'field', using: { method: 'regex', selector: '.*' } },
                             fromDataSource: { csv: { path: 'lookupTest.csv', keyColumn: 'occupation' } },
                             into: '${you}'
-                        }]
+                        }
                     };
 
-                return behaviors.execute(request, response, config, logger).then(actualResponse => {
+                return behaviors.execute(request, response, [config], logger).then(actualResponse => {
                     assert.deepEqual(actualResponse, { data: 'Hello, Darrington, Washington' });
                 });
             });
@@ -634,11 +625,11 @@ describe('behaviors', function () {
                         fromDataSource: { csv: '' },
                         into: 'TOKEN'
                     },
-                    errors = behaviors.validate({ lookup: [config] });
+                    errors = behaviors.validate([{ lookup: config }]);
                 assert.deepEqual(errors, [{
                     code: 'bad data',
                     message: 'lookup behavior "fromDataSource.csv" field must be an object',
-                    source: config
+                    source: { lookup: config }
                 }]);
             });
 
@@ -648,11 +639,11 @@ describe('behaviors', function () {
                         fromDataSource: { csv: { keyColumn: '', columnInto: ['key'] } },
                         into: 'TOKEN'
                     },
-                    errors = behaviors.validate({ lookup: [config] });
+                    errors = behaviors.validate([{ lookup: config }]);
                 assert.deepEqual(errors, [{
                     code: 'bad data',
                     message: 'lookup behavior "fromDataSource.csv.path" field required',
-                    source: config
+                    source: { lookup: config }
                 }]);
             });
 
@@ -662,11 +653,11 @@ describe('behaviors', function () {
                         fromDataSource: { csv: { path: 0, keyColumn: '', columnInto: ['key'] } },
                         into: 'TOKEN'
                     },
-                    errors = behaviors.validate({ lookup: [config] });
+                    errors = behaviors.validate([{ lookup: config }]);
                 assert.deepEqual(errors, [{
                     code: 'bad data',
                     message: 'lookup behavior "fromDataSource.csv.path" field must be a string, representing the path to the CSV file',
-                    source: config
+                    source: { lookup: config }
                 }]);
             });
 
@@ -676,11 +667,11 @@ describe('behaviors', function () {
                         fromDataSource: { csv: { path: '', columnInto: ['key'] } },
                         into: 'TOKEN'
                     },
-                    errors = behaviors.validate({ lookup: [config] });
+                    errors = behaviors.validate([{ lookup: config }]);
                 assert.deepEqual(errors, [{
                     code: 'bad data',
                     message: 'lookup behavior "fromDataSource.csv.keyColumn" field required',
-                    source: config
+                    source: { lookup: config }
                 }]);
             });
 
@@ -690,11 +681,11 @@ describe('behaviors', function () {
                         fromDataSource: { csv: { path: '', keyColumn: 0, columnInto: ['key'] } },
                         into: 'TOKEN'
                     },
-                    errors = behaviors.validate({ lookup: [config] });
+                    errors = behaviors.validate([{ lookup: config }]);
                 assert.deepEqual(errors, [{
                     code: 'bad data',
                     message: 'lookup behavior "fromDataSource.csv.keyColumn" field must be a string, representing the column header to select against the "key" field',
-                    source: config
+                    source: { lookup: config }
                 }]);
             });
 
@@ -717,14 +708,14 @@ describe('behaviors', function () {
                         response = { data: 'Hello from ${you}[location]' },
                         logger = Logger.create(),
                         config = {
-                            lookup: [{
+                            lookup: {
                                 key: { from: 'field', using: { method: 'jsonpath', selector: '$..name' } },
                                 fromDataSource: { csv: { path: 'lookupDelimiterTest.csv', keyColumn: 'name' } },
                                 into: '${you}'
-                            }]
+                            }
                         };
 
-                    return behaviors.execute(request, response, config, logger).then(actualResponse => {
+                    return behaviors.execute(request, response, [config], logger).then(actualResponse => {
                         assert.deepEqual(actualResponse, { data: 'Hello from ${you}[location]' });
                         logger.error.assertLogged('CSV headers "name|occupation|location" with delimiter "," does not contain keyColumn:"name"');
                     });
@@ -735,18 +726,17 @@ describe('behaviors', function () {
                         response = { data: 'Regards from ${you}[location]' },
                         logger = Logger.create(),
                         config = {
-                            lookup: [{
+                            lookup: {
                                 key: { from: 'field', using: { method: 'jsonpath', selector: '$..name' } },
                                 fromDataSource: { csv: { path: 'lookupDelimiterTest.csv', keyColumn: 'name', delimiter: '|' } },
                                 into: '${you}'
-                            }]
+                            }
                         };
 
-                    return behaviors.execute(request, response, config, logger).then(actualResponse => {
+                    return behaviors.execute(request, response, [config], logger).then(actualResponse => {
                         assert.deepEqual(actualResponse, { data: 'Regards from Peru' });
                     });
                 });
-
 
             });
         });

@@ -6,11 +6,12 @@
  */
 
 function repeatsFor (response) {
-    if (response._behaviors && response._behaviors.repeat) {
-        return response._behaviors.repeat;
+    const repeatBehavior = (response._behaviors || []).find(behavior => typeof behavior.repeat !== 'undefined');
+    if (typeof repeatBehavior === 'undefined') {
+        return 1;
     }
     else {
-        return 1;
+        return repeatBehavior.repeat;
     }
 }
 

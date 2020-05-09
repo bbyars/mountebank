@@ -25,6 +25,45 @@ function upcastShellTransformToArray (request) {
 }
 
 /**
+ * The original _behaviors took an object with undefined ordering
+ * The new syntax expects an array, creating a behaviors pipeline
+ * @param {Object} request - the request to upcast
+ */
+function upcastBehaviorsToArray (request) {
+    const isObject = require('../util/helpers').isObject,
+        util = require('util');
+
+    (request.stubs || []).forEach(stub => {
+        (stub.responses || []).forEach(response => {
+            if (isObject(response._behaviors) && !util.isArray(response._behaviors)) {
+                const behaviors = [];
+
+                // This was the old line of code that executed the behaviors, which defined the order:
+                //     return combinators.compose(decorateFn, shellTransformFn, copyFn, lookupFn, waitFn, Q)(response);
+                // The repeat behavior was handled outside the behaviors.js file, and was logically executed first.
+                ['repeat', 'wait', 'lookup', 'copy', 'shellTransform', 'decorate'].forEach(key => {
+                    if (typeof response._behaviors[key] !== 'undefined') {
+                        if (util.isArray(response._behaviors[key])) {
+                            response._behaviors[key].forEach(element => {
+                                const obj = {};
+                                obj[key] = element;
+                                behaviors.push(obj);
+                            });
+                        }
+                        else {
+                            const obj = {};
+                            obj[key] = response._behaviors[key];
+                            behaviors.push(obj);
+                        }
+                    }
+                });
+                response._behaviors = behaviors;
+            }
+        });
+    });
+}
+
+/**
  * The original tcp proxy.to was an object with a host and port field
  * The new syntax uses a tcp:// url for symmetry with http/s
  * @param {Object} request - the request to upcast
@@ -53,6 +92,7 @@ function upcastTcpProxyDestinationToUrl (request) {
 function upcast (request) {
     upcastShellTransformToArray(request);
     upcastTcpProxyDestinationToUrl(request);
+    upcastBehaviorsToArray(request);
 }
 
 /**

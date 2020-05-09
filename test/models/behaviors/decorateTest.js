@@ -14,7 +14,7 @@ describe('behaviors', function () {
                 fn = (req, responseToDecorate) => { responseToDecorate.key = 'CHANGED'; },
                 config = { decorate: fn.toString() };
 
-            return behaviors.execute(request, response, config, logger).then(actualResponse => {
+            return behaviors.execute(request, response, [config], logger).then(actualResponse => {
                 assert.deepEqual(actualResponse, { key: 'CHANGED' });
             });
         });
@@ -26,7 +26,7 @@ describe('behaviors', function () {
                 fn = () => ({ newKey: 'NEW-VALUE' }),
                 config = { decorate: fn.toString() };
 
-            return behaviors.execute(request, response, config, logger).then(actualResponse => {
+            return behaviors.execute(request, response, [config], logger).then(actualResponse => {
                 assert.deepEqual(actualResponse, { newKey: 'NEW-VALUE' });
             });
         });
@@ -38,7 +38,7 @@ describe('behaviors', function () {
                 fn = (req, resp, log) => { log.info('test entry'); },
                 config = { decorate: fn.toString() };
 
-            return behaviors.execute(request, response, config, logger).then(() => {
+            return behaviors.execute(request, response, [config], logger).then(() => {
                 logger.info.assertLogged('test entry');
             });
         });
@@ -50,7 +50,7 @@ describe('behaviors', function () {
                 fn = () => { throw Error('BOOM!!!'); },
                 config = { decorate: fn.toString() };
 
-            return behaviors.execute(request, response, config, logger).then(() => {
+            return behaviors.execute(request, response, [config], logger).then(() => {
                 assert.fail('should have rejected');
             }, error => {
                 assert.ok(error.message.indexOf('invalid decorator injection') >= 0);
@@ -59,7 +59,7 @@ describe('behaviors', function () {
         });
 
         it('should not be valid if not a string', function () {
-            const errors = behaviors.validate({ decorate: {} });
+            const errors = behaviors.validate([{ decorate: {} }]);
             assert.deepEqual(errors, [{
                 code: 'bad data',
                 message: 'decorate behavior "decorate" field must be a string, representing a JavaScript function',

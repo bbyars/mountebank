@@ -159,7 +159,7 @@ describe('responseResolver', function () {
                         wait = stubResponses[0][0].is._proxyResponseTime; // eslint-disable-line no-underscore-dangle
                     assert.ok(wait > 90); // allow some variability
                     assert.deepEqual(stubResponses, [
-                        [{ is: { data: 'value', _proxyResponseTime: wait }, _behaviors: { wait: wait } }],
+                        [{ is: { data: 'value', _proxyResponseTime: wait }, _behaviors: [{ wait: wait }] }],
                         [{ proxy: { to: 'where', addWaitBehavior: true } }]
                     ]);
                 });
@@ -194,8 +194,8 @@ describe('responseResolver', function () {
                     assert.deepEqual(stubResponses, [
                         [{ proxy: { to: 'where', mode: 'proxyAlways', addWaitBehavior: true } }],
                         [
-                            { is: { data: 1, _proxyResponseTime: firstWait }, _behaviors: { wait: firstWait } },
-                            { is: { data: 2, _proxyResponseTime: secondWait }, _behaviors: { wait: secondWait } }
+                            { is: { data: 1, _proxyResponseTime: firstWait }, _behaviors: [{ wait: firstWait }] },
+                            { is: { data: 2, _proxyResponseTime: secondWait }, _behaviors: [{ wait: secondWait }] }
                         ]
                     ]);
                 });
@@ -209,7 +209,7 @@ describe('responseResolver', function () {
                 logger = Logger.create(),
                 response = {
                     proxy: { to: 'where' },
-                    _behaviors: { decorate: decorateFunc.toString() }
+                    _behaviors: [{ decorate: decorateFunc.toString() }]
                 },
                 request = {};
 
@@ -221,7 +221,7 @@ describe('responseResolver', function () {
                     const stubResponses = all.map(stub => proxyResponses(stub.responses));
                     assert.deepEqual(stubResponses, [
                         [{ is: { data: 'RESPONSE-DECORATED' } }],
-                        [{ proxy: { to: 'where' }, _behaviors: { decorate: decorateFunc.toString() } }]
+                        [{ proxy: { to: 'where' }, _behaviors: [{ decorate: decorateFunc.toString() }] }]
                     ]);
                 });
         });
@@ -241,7 +241,7 @@ describe('responseResolver', function () {
                 .then(all => {
                     const stubResponses = all.map(stub => proxyResponses(stub.responses));
                     assert.deepEqual(stubResponses, [
-                        [{ is: { data: 'value' }, _behaviors: { decorate: decorateFunc } }],
+                        [{ is: { data: 'value' }, _behaviors: [{ decorate: decorateFunc }] }],
                         [{ proxy: { to: 'where', addDecorateBehavior: decorateFunc } }]
                     ]);
                 });
@@ -267,8 +267,8 @@ describe('responseResolver', function () {
                     assert.deepEqual(stubResponses, [
                         [{ proxy: { to: 'where', mode: 'proxyAlways', addDecorateBehavior: decorateFunc } }],
                         [
-                            { is: { data: 'value' }, _behaviors: { decorate: decorateFunc } },
-                            { is: { data: 'value' }, _behaviors: { decorate: decorateFunc } }
+                            { is: { data: 'value' }, _behaviors: [{ decorate: decorateFunc }] },
+                            { is: { data: 'value' }, _behaviors: [{ decorate: decorateFunc }] }
                         ]
                     ]);
                 });
@@ -1039,7 +1039,7 @@ describe('responseResolver', function () {
                 logger = Logger.create(),
                 responseConfig = {
                     is: 'value',
-                    _behaviors: { wait: 50 }
+                    _behaviors: [{ wait: 50 }]
                 },
                 request = { key: 'request' };
 
@@ -1061,7 +1061,7 @@ describe('responseResolver', function () {
                 fn = () => 50,
                 responseConfig = {
                     is: 'value',
-                    _behaviors: { wait: fn.toString() }
+                    _behaviors: [{ wait: fn.toString() }]
                 },
                 request = { key: 'request' };
 
@@ -1083,7 +1083,7 @@ describe('responseResolver', function () {
                 },
                 responseConfig = {
                     is: 'value',
-                    _behaviors: { wait: fn.toString() }
+                    _behaviors: [{ wait: fn.toString() }]
                 },
                 request = { key: 'request' };
 
@@ -1240,7 +1240,7 @@ describe('responseResolver', function () {
                 logger = Logger.create(),
                 proxyResponse = {
                     proxy: { to: 'where', mode: 'proxyOnce' },
-                    _behaviors: { decorate: decorateFunc.toString() }
+                    _behaviors: [{ decorate: decorateFunc.toString() }]
                 },
                 request = {};
 
@@ -1284,7 +1284,7 @@ describe('responseResolver', function () {
                         wait = stubResponses[0][0].is._proxyResponseTime; // eslint-disable-line no-underscore-dangle
                     assert.ok(wait > 90); // allow some variability
                     assert.deepEqual(stubResponses, [
-                        [{ is: { data: 'RESPONSE', _proxyResponseTime: wait }, _behaviors: { wait: wait } }],
+                        [{ is: { data: 'RESPONSE', _proxyResponseTime: wait }, _behaviors: [{ wait: wait }] }],
                         [proxyResponse]
                     ]);
                 });

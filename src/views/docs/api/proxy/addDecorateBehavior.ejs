@@ -82,9 +82,11 @@ Host: localhost:<%= port %></code>
         "body": "downstream service response"<change to=''>,</change>
         <change to=''>...</change>
       },
-      <strong class='highlight1'>"_behaviors": {
-        "decorate": "config => { config.response.body = config.response.body + ' DECORATED!'; }"
-      }</strong>
+      <strong class='highlight1'>"_behaviors": [
+        {
+          "decorate": "config => { config.response.body = config.response.body + ' DECORATED!'; }"
+        }
+      ]</strong>
     }]
   },
   {

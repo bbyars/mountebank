@@ -6,7 +6,7 @@ const assert = require('assert'),
 describe('behaviors', function () {
     describe('#repeat', function () {
         it('should not be valid if it is less than 0', function () {
-            const errors = behaviors.validate({ repeat: 0 });
+            const errors = behaviors.validate([{ repeat: 0 }]);
             assert.deepEqual(errors, [{
                 code: 'bad data',
                 message: 'repeat behavior "repeat" field must be an integer greater than 0',
@@ -15,7 +15,7 @@ describe('behaviors', function () {
         });
 
         it('should not be valid if boolean', function () {
-            const errors = behaviors.validate({ repeat: true });
+            const errors = behaviors.validate([{ repeat: true }]);
             assert.deepEqual(errors, [{
                 code: 'bad data',
                 message: 'repeat behavior "repeat" field must be a number',

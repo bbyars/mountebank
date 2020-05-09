@@ -40,12 +40,12 @@ const fromSchema = {
             _required: true,
             _allowedTypes: { number: { positiveInteger: true } }
         },
-        copy: [{
+        copy: {
             from: fromSchema,
             into: intoSchema,
             using: usingSchema
-        }],
-        lookup: [{
+        },
+        lookup: {
             key: {
                 _required: true,
                 _allowedTypes: { object: {} },
@@ -76,12 +76,12 @@ const fromSchema = {
                 }
             },
             into: intoSchema
-        }],
-        shellTransform: [{
+        },
+        shellTransform: {
             _required: true,
             _allowedTypes: { string: {} },
             _additionalContext: 'the path to a command line application'
-        }],
+        },
         decorate: {
             _required: true,
             _allowedTypes: { string: {} },
@@ -103,7 +103,7 @@ function validate (config) {
  * Waits a specified number of milliseconds before sending the response.  Due to the approximate
  * nature of the timer, there is no guarantee that it will wait the given amount, but it will be close.
  * @param {Object} request - The request object
- * @param {Object} responsePromise -kThe promise returning the response
+ * @param {Object} responsePromise - The promise returning the response
  * @param {number} millisecondsOrFn - The number of milliseconds to wait before returning, or a function returning milliseconds
  * @param {Object} logger - The mountebank logger, useful for debugging
  * @returns {Object} A promise resolving to the response
@@ -194,21 +194,16 @@ function execShell (command, request, response, logger) {
  * stdout as the new response
  * @param {Object} request - Will be the first arg to the command
  * @param {Object} responsePromise - The promise chain for building the response, which will be the second arg
- * @param {string} commandArray - The list of shell commands to execute, in order
+ * @param {string} command - The shell command to execute
  * @param {Object} logger - The mountebank logger, useful in debugging
  * @returns {Object}
  */
-function shellTransform (request, responsePromise, commandArray, logger) {
+function shellTransform (request, responsePromise, command, logger) {
     if (request.isDryRun) {
         return responsePromise;
     }
 
-    // Run them all in sequence
-    let result = responsePromise;
-    commandArray.forEach(function (command) {
-        result = result.then(response => execShell(command, request, response, logger));
-    });
-    return result;
+    return responsePromise.then(response => execShell(command, request, response, logger));
 }
 
 /**
@@ -381,22 +376,19 @@ function replaceArrayValuesIn (response, token, values, logger) {
  * Copies a value from the request and replaces response tokens with that value
  * @param {Object} originalRequest - The request object, in case post-processing depends on it
  * @param {Object} responsePromise - The promise returning the response
- * @param {Function} copyArray - The list of values to copy
+ * @param {Function} copyConfig - The config to copy
  * @param {Object} logger - The mountebank logger, useful in debugging
  * @returns {Object}
  */
-function copy (originalRequest, responsePromise, copyArray, logger) {
+function copy (originalRequest, responsePromise, copyConfig, logger) {
     return responsePromise.then(response => {
-        const Q = require('q');
+        const Q = require('q'),
+            from = getFrom(originalRequest, copyConfig.from),
+            using = copyConfig.using || {},
+            fnMap = { regex: regexValue, xpath: xpathValue, jsonpath: jsonpathValue },
+            values = fnMap[using.method](from, copyConfig, logger);
 
-        copyArray.forEach(function (copyConfig) {
-            const from = getFrom(originalRequest, copyConfig.from),
-                using = copyConfig.using || {},
-                fnMap = { regex: regexValue, xpath: xpathValue, jsonpath: jsonpathValue },
-                values = fnMap[using.method](from, copyConfig, logger);
-
-            replaceArrayValuesIn(response, copyConfig.into, values, logger);
-        });
+        replaceArrayValuesIn(response, copyConfig.into, values, logger);
         return Q(response);
     });
 }
@@ -497,21 +489,19 @@ function replaceObjectValuesIn (response, token, values, logger) {
  * Looks up request values from a data source and replaces response tokens with the resulting data
  * @param {Object} originalRequest - The request object
  * @param {Object} responsePromise - The promise returning the response
- * @param {Function} lookupArray - The list of lookup configurations
+ * @param {Function} lookupConfig - The lookup configurations
  * @param {Object} logger - The mountebank logger, useful in debugging
  * @returns {Object}
  */
-function lookup (originalRequest, responsePromise, lookupArray, logger) {
+function lookup (originalRequest, responsePromise, lookupConfig, logger) {
     return responsePromise.then(response => {
-        const Q = require('q'),
-            lookupPromises = lookupArray.map(function (lookupConfig) {
-                return lookupRow(lookupConfig, originalRequest, logger).then(function (row) {
-                    replaceObjectValuesIn(response, lookupConfig.into, row, logger);
-                });
-            });
-        return Q.all(lookupPromises).then(() => Q(response));
-    }).catch(error => {
-        logger.error(error);
+        return lookupRow(lookupConfig, originalRequest, logger).then(function (row) {
+            replaceObjectValuesIn(response, lookupConfig.into, row, logger);
+            return response;
+        }).catch(error => {
+            logger.error(error);
+            return response;
+        });
     });
 }
 
@@ -524,34 +514,32 @@ function lookup (originalRequest, responsePromise, lookupArray, logger) {
  * @returns {Object}
  */
 function execute (request, response, behaviors, logger) {
-    if (!behaviors) {
+    if (!behaviors || behaviors.length === 0) {
         return require('q')(response);
     }
 
     const Q = require('q'),
-        combinators = require('../util/combinators'),
-        waitFn = behaviors.wait ?
-            result => wait(request, result, behaviors.wait, logger) :
-            combinators.identity,
-        copyFn = behaviors.copy ?
-            result => copy(request, result, behaviors.copy, logger) :
-            combinators.identity,
-        lookupFn = behaviors.lookup ?
-            result => lookup(request, result, behaviors.lookup, logger) :
-            combinators.identity,
-        shellTransformFn = behaviors.shellTransform ?
-            result => shellTransform(request, result, behaviors.shellTransform, logger) :
-            combinators.identity,
-        decorateFn = behaviors.decorate ?
-            result => decorate(request, result, behaviors.decorate, logger) :
-            combinators.identity;
+        fnMap = {
+            wait: wait,
+            copy: copy,
+            lookup: lookup,
+            shellTransform: shellTransform,
+            decorate: decorate
+        };
+    let result = Q(response);
 
     logger.debug('using stub response behavior ' + JSON.stringify(behaviors));
-
-    return combinators.compose(decorateFn, shellTransformFn, copyFn, lookupFn, waitFn, Q)(response);
+    behaviors.forEach(behavior => {
+        Object.keys(behavior).forEach(key => {
+            if (fnMap[key]) {
+                result = fnMap[key](request, result, behavior[key], logger);
+            }
+        });
+    });
+    return result;
 }
 
 module.exports = {
     validate,
-    execute: execute
+    execute
 };

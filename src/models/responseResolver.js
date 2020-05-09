@@ -197,16 +197,16 @@ function create (stubs, proxy, callbackURL) {
 
     function newIsResponse (response, proxyConfig) {
         const result = { is: response };
-        const addBehaviors = {};
+        const addBehaviors = [];
 
         if (proxyConfig.addWaitBehavior && response._proxyResponseTime) { // eslint-disable-line no-underscore-dangle
-            addBehaviors.wait = response._proxyResponseTime; // eslint-disable-line no-underscore-dangle
+            addBehaviors.push({ wait: response._proxyResponseTime }); // eslint-disable-line no-underscore-dangle
         }
         if (proxyConfig.addDecorateBehavior) {
-            addBehaviors.decorate = proxyConfig.addDecorateBehavior;
+            addBehaviors.push({ decorate: proxyConfig.addDecorateBehavior });
         }
 
-        if (Object.keys(addBehaviors).length > 0) {
+        if (addBehaviors.length > 0) {
             result._behaviors = addBehaviors;
         }
         return result;
