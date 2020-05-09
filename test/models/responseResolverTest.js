@@ -14,7 +14,7 @@ describe('responseResolver', function () {
 
     function cleanedProxyResponse (response) {
         if (helpers.defined(response.is)) {
-            delete response.is._proxyResponseTime; // eslint-disable-line no-underscore-dangle
+            delete response.is._proxyResponseTime;
         }
         return response;
     }
@@ -156,7 +156,7 @@ describe('responseResolver', function () {
                 .then(() => stubs.toJSON())
                 .then(all => {
                     const stubResponses = all.map(stub => stub.responses),
-                        wait = stubResponses[0][0].is._proxyResponseTime; // eslint-disable-line no-underscore-dangle
+                        wait = stubResponses[0][0].is._proxyResponseTime;
                     assert.ok(wait > 90); // allow some variability
                     assert.deepEqual(stubResponses, [
                         [{ is: { data: 'value', _proxyResponseTime: wait }, _behaviors: [{ wait: wait }] }],
@@ -189,8 +189,8 @@ describe('responseResolver', function () {
                 }).then(() => stubs.toJSON())
                 .then(all => {
                     const stubResponses = all.map(stub => stub.responses),
-                        firstWait = stubResponses[1][0].is._proxyResponseTime, // eslint-disable-line no-underscore-dangle
-                        secondWait = stubResponses[1][1].is._proxyResponseTime; // eslint-disable-line no-underscore-dangle
+                        firstWait = stubResponses[1][0].is._proxyResponseTime,
+                        secondWait = stubResponses[1][1].is._proxyResponseTime;
                     assert.deepEqual(stubResponses, [
                         [{ proxy: { to: 'where', mode: 'proxyAlways', addWaitBehavior: true } }],
                         [
@@ -1158,8 +1158,8 @@ describe('responseResolver', function () {
     describe('#resolveProxy', function () {
         function jsonResponse (response) {
             delete response.recordMatch;
-            if (helpers.defined(response._proxyResponseTime)) { // eslint-disable-line no-underscore-dangle
-                delete response._proxyResponseTime; // eslint-disable-line no-underscore-dangle
+            if (helpers.defined(response._proxyResponseTime)) {
+                delete response._proxyResponseTime;
             }
             return response;
         }
@@ -1281,7 +1281,7 @@ describe('responseResolver', function () {
                     return stubs.toJSON();
                 }).then(all => {
                     const stubResponses = all.map(stub => stub.responses),
-                        wait = stubResponses[0][0].is._proxyResponseTime; // eslint-disable-line no-underscore-dangle
+                        wait = stubResponses[0][0].is._proxyResponseTime;
                     assert.ok(wait > 90); // allow some variability
                     assert.deepEqual(stubResponses, [
                         [{ is: { data: 'RESPONSE', _proxyResponseTime: wait }, _behaviors: [{ wait: wait }] }],

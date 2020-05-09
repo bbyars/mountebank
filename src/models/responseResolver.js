@@ -199,8 +199,8 @@ function create (stubs, proxy, callbackURL) {
         const result = { is: response };
         const addBehaviors = [];
 
-        if (proxyConfig.addWaitBehavior && response._proxyResponseTime) { // eslint-disable-line no-underscore-dangle
-            addBehaviors.push({ wait: response._proxyResponseTime }); // eslint-disable-line no-underscore-dangle
+        if (proxyConfig.addWaitBehavior && response._proxyResponseTime) {
+            addBehaviors.push({ wait: response._proxyResponseTime });
         }
         if (proxyConfig.addDecorateBehavior) {
             addBehaviors.push({ decorate: proxyConfig.addDecorateBehavior });
@@ -256,7 +256,6 @@ function create (stubs, proxy, callbackURL) {
 
         if (inProcessProxy) {
             return proxy.to(responseConfig.proxy.to, request, responseConfig.proxy, requestDetails).then(response => {
-                // eslint-disable-next-line no-underscore-dangle
                 response._proxyResponseTime = new Date() - startTime;
 
                 // Run behaviors here to persist decorated response
@@ -366,7 +365,6 @@ function create (stubs, proxy, callbackURL) {
             Q = require('q');
 
         if (pendingProxyConfig) {
-            // eslint-disable-next-line no-underscore-dangle
             proxyResponse._proxyResponseTime = new Date() - pendingProxyConfig.startTime;
 
             return behaviors.execute(pendingProxyConfig.request, proxyResponse, pendingProxyConfig.responseConfig._behaviors, logger)
