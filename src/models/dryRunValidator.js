@@ -179,10 +179,26 @@ function create (options) {
         });
     }
 
+    function addRepeatErrorsTo (errors, response) {
+        const repeat = response.repeat,
+            type = typeof repeat,
+            error = exceptions.ValidationError('"repeat" field must be an integer greater than 0', {
+                source: response
+            });
+
+        if (['undefined', 'number', 'string'].indexOf(type) < 0) {
+            errors.push(error);
+        }
+        if ((type === 'string' && parseInt(repeat) <= 0) || (type === 'number' && repeat <= 0)) {
+            errors.push(error);
+        }
+    }
+
     function addBehaviorErrors (stub, errors) {
         stub.responses.forEach(response => {
             const behaviors = require('./behaviors');
             addAllTo(errors, behaviors.validate(response._behaviors));
+            addRepeatErrorsTo(errors, response);
         });
     }
 

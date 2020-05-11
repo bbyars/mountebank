@@ -389,7 +389,7 @@ types.forEach(function (type) {
                 });
 
                 promiseIt('should handle repeat behavior on nextResponse()', function () {
-                    const stub = { responses: [{ is: 'first', _behaviors: [{ repeat: 2 }] }, { is: 'second' }] },
+                    const stub = { responses: [{ is: 'first', repeat: 2 }, { is: 'second' }] },
                         imposter = { port: 1, stubs: [stub] };
                     let matchedStub;
 

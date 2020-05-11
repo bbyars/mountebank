@@ -369,8 +369,7 @@ describe('dryRunValidator', function () {
             const request = { stubs: [{ responses: [{
                     is: { statusCode: 400 },
                     _behaviors: [
-                        { wait: -1 },
-                        { repeat: -1 }
+                        { wait: -1 }
                     ]
                 }] }] },
                 validator = Validator.create({ testRequest });
@@ -383,11 +382,48 @@ describe('dryRunValidator', function () {
                             code: 'bad data',
                             message: 'wait behavior "wait" field must be an integer greater than or equal to 0',
                             source: { wait: -1 }
-                        },
+                        }
+                    ]
+                });
+            });
+        });
+
+        promiseIt('should error on invalid response repeat number', function () {
+            const request = { stubs: [{ responses: [{
+                    is: { statusCode: 400 },
+                    repeat: 0
+                }] }] },
+                validator = Validator.create({ testRequest });
+
+            return validator.validate(request, Logger.create()).then(result => {
+                assert.deepEqual(result, {
+                    isValid: false,
+                    errors: [
                         {
                             code: 'bad data',
-                            message: 'repeat behavior "repeat" field must be an integer greater than 0',
-                            source: { repeat: -1 }
+                            message: '"repeat" field must be an integer greater than 0',
+                            source: { is: { statusCode: 400 }, repeat: 0 }
+                        }
+                    ]
+                });
+            });
+        });
+
+        promiseIt('should error on invalid response repeat type', function () {
+            const request = { stubs: [{ responses: [{
+                    is: { statusCode: 400 },
+                    repeat: true
+                }] }] },
+                validator = Validator.create({ testRequest });
+
+            return validator.validate(request, Logger.create()).then(result => {
+                assert.deepEqual(result, {
+                    isValid: false,
+                    errors: [
+                        {
+                            code: 'bad data',
+                            message: '"repeat" field must be an integer greater than 0',
+                            source: { is: { statusCode: 400 }, repeat: true }
                         }
                     ]
                 });

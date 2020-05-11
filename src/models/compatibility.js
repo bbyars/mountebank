@@ -40,8 +40,7 @@ function upcastBehaviorsToArray (request) {
 
                 // This was the old line of code that executed the behaviors, which defined the order:
                 //     return combinators.compose(decorateFn, shellTransformFn, copyFn, lookupFn, waitFn, Q)(response);
-                // The repeat behavior was handled outside the behaviors.js file, and was logically executed first.
-                ['repeat', 'wait', 'lookup', 'copy', 'shellTransform', 'decorate'].forEach(key => {
+                ['wait', 'lookup', 'copy', 'shellTransform', 'decorate'].forEach(key => {
                     if (typeof response._behaviors[key] !== 'undefined') {
                         if (util.isArray(response._behaviors[key])) {
                             response._behaviors[key].forEach(element => {
@@ -57,6 +56,14 @@ function upcastBehaviorsToArray (request) {
                         }
                     }
                 });
+
+                // The repeat behavior can't be stacked multiple times and sequence of execution doesn't matter,
+                // so putting it in the array risks confusion and additional error checking. Pulling it outside
+                // the array clearly indicates it only applies once to the entire response.
+                if (typeof response._behaviors.repeat !== 'undefined') {
+                    response.repeat = response._behaviors.repeat;
+                }
+
                 response._behaviors = behaviors;
             }
         });

@@ -754,6 +754,68 @@ const assert = require('assert'),
                     return api.del('/imposters');
                 });
             });
+
+            promiseIt('should apply multiple behaviors in sequence with repeat (new format)', function () {
+                const shellFn = function exec () {
+                        const response = JSON.parse(process.env.MB_RESPONSE);
+                        response.body += '-shellTransform';
+                        console.log(JSON.stringify(response));
+                    },
+                    decorator = config => {
+                        config.response.body += '-${decorate}';
+                    },
+                    stub = {
+                        responses: [
+                            {
+                                is: { body: '' },
+                                repeat: 2,
+                                _behaviors: [
+                                    { decorate: decorator.toString() },
+                                    {
+                                        copy: {
+                                            from: 'path',
+                                            into: '${decorate}',
+                                            using: { method: 'regex', selector: '.+' }
+                                        }
+                                    },
+                                    { shellTransform: 'node ./shellTransformTest.js' },
+                                    { wait: 100 },
+                                    { decorate: decorator.toString() },
+                                    { wait: 150 }
+                                ]
+                            },
+                            {
+                                is: { body: 'no behaviors' }
+                            }
+                        ]
+                    },
+                    stubs = [stub],
+                    request = { protocol, port, stubs: stubs };
+                let start;
+
+                fs.writeFileSync('shellTransformTest.js', util.format('%s\nexec();', shellFn.toString()));
+
+                return api.post('/imposters', request).then(response => {
+                    assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body, null, 2));
+                    start = new Date();
+                    return client.get('/first', port);
+                }).then(response => {
+                    assert.strictEqual(response.body, '-/first-shellTransform-${decorate}');
+                    const time = new Date() - start;
+
+                    // Occasionally there's some small inaccuracies
+                    assert.ok(time >= 220, `actual time: ${time}`);
+                    return client.get('/second', port);
+                }).then(response => {
+                    assert.strictEqual(response.body, '-/second-shellTransform-${decorate}');
+                    return client.get('/third', port);
+                }).then(response => {
+                    assert.strictEqual(response.body, 'no behaviors');
+                }).finally(() => {
+                    fs.unlinkSync('shellTransformTest.js');
+                    return api.del('/imposters');
+                });
+            });
         });
     });
 });

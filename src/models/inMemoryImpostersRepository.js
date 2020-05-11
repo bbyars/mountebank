@@ -6,13 +6,7 @@
  */
 
 function repeatsFor (response) {
-    const repeatBehavior = (response._behaviors || []).find(behavior => typeof behavior.repeat !== 'undefined');
-    if (typeof repeatBehavior === 'undefined') {
-        return 1;
-    }
-    else {
-        return repeatBehavior.repeat;
-    }
+    return response.repeat || 1;
 }
 
 function repeatTransform (responses) {

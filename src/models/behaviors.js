@@ -36,10 +36,6 @@ const fromSchema = {
             _required: true,
             _allowedTypes: { string: {}, number: { nonNegativeInteger: true } }
         },
-        repeat: {
-            _required: true,
-            _allowedTypes: { number: { positiveInteger: true } }
-        },
         copy: {
             from: fromSchema,
             into: intoSchema,

@@ -351,9 +351,9 @@ describe('filesystemBackedImpostersRepository', function () {
                     stub = {
                         predicates: [{ equals: { field: 'request' } }],
                         responses: [
-                            { is: { field: 'first-response' }, _behaviors: [{ repeat: 2 }] },
+                            { is: { field: 'first-response' }, repeat: 2 },
                             { is: { field: 'second-response' } },
-                            { is: { field: 'third-response' }, _behaviors: [{ repeat: 3 }] }
+                            { is: { field: 'third-response' }, repeat: 3 }
                         ]
                     },
                     imposter = { port: 3000, stubs: [] };

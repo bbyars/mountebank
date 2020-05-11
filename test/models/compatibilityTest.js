@@ -66,8 +66,8 @@ describe('compatibility', function () {
             assert.deepEqual(request, {
                 stubs: [{
                     responses: [{
+                        repeat: 2,
                         _behaviors: [
-                            { repeat: 2 },
                             { wait: 100 },
                             { lookup: { from: 'lookup' } },
                             { copy: { from: 'copy' } },
@@ -100,8 +100,8 @@ describe('compatibility', function () {
             assert.deepEqual(request, {
                 stubs: [{
                     responses: [{
+                        repeat: 2,
                         _behaviors: [
-                            { repeat: 2 },
                             { wait: 100 },
                             { lookup: { from: 'lookup-1' } },
                             { lookup: { from: 'lookup-2' } },

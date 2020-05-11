@@ -461,7 +461,7 @@ describe('imposter', function () {
         });
 
         promiseIt('should repeat a response and continue looping', function () {
-            const firstResponse = { is: 'first response', _behaviors: [{ repeat: 2 }] },
+            const firstResponse = { is: 'first response', repeat: 2 },
                 secondResponse = { is: 'second response' },
                 request = { stubs: [{ responses: [firstResponse, secondResponse] }] };
             let imposter;
