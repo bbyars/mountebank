@@ -24,12 +24,12 @@
             &quot;body&quot;: &quot;The time is ${TIME}&quot;,
             &quot;_mode&quot;: &quot;text&quot;
           },</span>
-<span id='imposter-stubs-_behaviors'><%- indent(10) %>&quot;_behaviors&quot;: {</span>
-<span id='imposter-stubs-_behaviors-wait'><%- indent(12) %>&quot;wait&quot;: 500,</span>
-<span id='imposter-stubs-_behaviors-repeat'><%- indent(12) %>&quot;repeat&quot;: 3,</span>
-<span id='imposter-stubs-_behaviors-decorate'><%- indent(12) %>&quot;decorate&quot;: &quot;(request, response) => { response.body = response.body.replace('${TIME}', 'now'); }&quot;,</span>
-<span id='imposter-stubs-_behaviors-shellTransform'><%- indent(12) %>&quot;shellTransform&quot;: [&quot;transformResponse&quot;],</span>
-<span id='imposter-stubs-_behaviors-copy'><%- indent(12) %>&quot;copy&quot;: [
+<span id='imposter-stubs-behaviors'><%- indent(10) %>&quot;behaviors&quot;: {</span>
+<span id='imposter-stubs-behaviors-wait'><%- indent(12) %>&quot;wait&quot;: 500,</span>
+<span id='imposter-stubs-behaviors-repeat'><%- indent(12) %>&quot;repeat&quot;: 3,</span>
+<span id='imposter-stubs-behaviors-decorate'><%- indent(12) %>&quot;decorate&quot;: &quot;(request, response) => { response.body = response.body.replace('${TIME}', 'now'); }&quot;,</span>
+<span id='imposter-stubs-behaviors-shellTransform'><%- indent(12) %>&quot;shellTransform&quot;: [&quot;transformResponse&quot;],</span>
+<span id='imposter-stubs-behaviors-copy'><%- indent(12) %>&quot;copy&quot;: [
                 {
                     "from": { "headers": "If-Modified-Since" },
                     "into": "${DATE}",
@@ -57,7 +57,7 @@
                     }
                 }
             ],</span>
-<span id='imposter-stubs-_behaviors-lookup'><%- indent(12) %>&quot;lookup&quot;: [
+<span id='imposter-stubs-behaviors-lookup'><%- indent(12) %>&quot;lookup&quot;: [
                 {
                     "key": {
                       "from": { "headers": "If-Modified-Since" },

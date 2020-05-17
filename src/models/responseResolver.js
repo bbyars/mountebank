@@ -207,7 +207,7 @@ function create (stubs, proxy, callbackURL) {
         }
 
         if (addBehaviors.length > 0) {
-            result._behaviors = addBehaviors;
+            result.behaviors = addBehaviors;
         }
         return result;
     }
@@ -259,7 +259,7 @@ function create (stubs, proxy, callbackURL) {
                 response._proxyResponseTime = new Date() - startTime;
 
                 // Run behaviors here to persist decorated response
-                return Q(behaviors.execute(request, response, responseConfig._behaviors, logger));
+                return Q(behaviors.execute(request, response, responseConfig.behaviors, logger));
             }).then(response => {
                 return recordProxyResponse(responseConfig, request, response, logger).then(() => response);
             });
@@ -335,7 +335,7 @@ function create (stubs, proxy, callbackURL) {
                 return Q(response);
             }
             else {
-                return Q(behaviors.execute(request, response, responseConfig._behaviors, logger));
+                return Q(behaviors.execute(request, response, responseConfig.behaviors, logger));
             }
         }).then(response => {
             if (inProcessProxy) {
@@ -367,7 +367,7 @@ function create (stubs, proxy, callbackURL) {
         if (pendingProxyConfig) {
             proxyResponse._proxyResponseTime = new Date() - pendingProxyConfig.startTime;
 
-            return behaviors.execute(pendingProxyConfig.request, proxyResponse, pendingProxyConfig.responseConfig._behaviors, logger)
+            return behaviors.execute(pendingProxyConfig.request, proxyResponse, pendingProxyConfig.responseConfig.behaviors, logger)
                 .then(response => {
                     return recordProxyResponse(pendingProxyConfig.responseConfig, pendingProxyConfig.request, response, logger)
                         .then(() => {

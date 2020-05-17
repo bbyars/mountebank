@@ -1,7 +1,7 @@
 'use strict';
 
 /**
- * The functionality behind the _behaviors field in the API, supporting post-processing responses
+ * The functionality behind the behaviors field in the API, supporting post-processing responses
  * @module
  */
 

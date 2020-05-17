@@ -108,7 +108,7 @@
   <p class='info-icon'>More information: <a href='/docs/api/stubs'>stubs</a></p>
 </div>
 
-<div id='imposter-stubs-_behaviors-description'>
+<div id='imposter-stubs-behaviors-description'>
   <p>Behaviors alter the generated response in some way.  The following behaviors are supported:</p>
 
   <ul class='bullet-list indent'>
@@ -123,20 +123,20 @@
   <p>More information: <a href='/docs/api/behaviors'>behaviors</a></p>
 </div>
 
-<div id='imposter-stubs-_behaviors-wait-description'>
+<div id='imposter-stubs-behaviors-wait-description'>
   <p>Adds latency to a response by waiting a specified number of milliseconds before sending the response.</p>
 
   <p class='info-icon'>More information: <a href='/docs/api/behaviors'>behaviors</a></p>
 </div>
 
-<div id='imposter-stubs-_behaviors-repeat-description'>
+<div id='imposter-stubs-behaviors-repeat-description'>
     <p>Causes the response to repeat a given number of times before returning the next response
         in the <code>responses</code> array.</p>
 
     <p class='info-icon'>More information: <a href='/docs/api/behaviors'>behaviors</a></p>
 </div>
 
-<div id='imposter-stubs-_behaviors-decorate-description'>
+<div id='imposter-stubs-behaviors-decorate-description'>
   <p>Post-processes the response before sending it.  Since post-processing requires JavaScript
     injection, the <code><a href='/docs/commandLine'>--allowInjection</a></code> flag must be passed.
     Post-processing opens up a world of opportunities - you can use a <code>decorate</code> behavior
@@ -151,7 +151,7 @@
   <p class='info-icon'>More information: <a href='/docs/api/behaviors'>behaviors</a></p>
 </div>
 
-<div id='imposter-stubs-_behaviors-shellTransform-description'>
+<div id='imposter-stubs-behaviors-shellTransform-description'>
   <p>Post-processes the response before sending it.  Unlike a <code>decorate</code>, the post-processing
     occurs through a sequence of command line applications, which still requires the <code><a href='/docs/commandLine'>
     --allowInjection</a></code> flag to be set. The command line application will be passed two parameters
@@ -164,14 +164,14 @@
   <p class='info-icon'>More information: <a href='/docs/api/behaviors'>behaviors</a></p>
 </div>
 
-<div id='imposter-stubs-_behaviors-copy-description'>
+<div id='imposter-stubs-behaviors-copy-description'>
     <p>Post-processes the response by replacing the given tokens with values from the specified request fields.
     You can select the appropriate values from the request using regular expressions, xpath, or jsonpath.</p>
 
     <p class='info-icon'>More information: <a href='/docs/api/behaviors'>behaviors</a></p>
 </div>
 
-<div id='imposter-stubs-_behaviors-lookup-description'>
+<div id='imposter-stubs-behaviors-lookup-description'>
     <p>Post-processes the response by looking up data from an external data source using a key
     selected from the request. The given tokens in the response are replaced with the looked up values.
     You can select the appropriate keys from the request using regular expressions, xpath, or jsonpath.</p>

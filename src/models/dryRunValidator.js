@@ -137,7 +137,7 @@ function create (options) {
         if (typeof valueFilter === 'undefined') {
             valueFilter = () => true;
         }
-        return (response._behaviors || []).some(behavior => {
+        return (response.behaviors || []).some(behavior => {
             return typeof behavior[type] !== 'undefined' && valueFilter(behavior[type]);
         });
     }
@@ -197,7 +197,7 @@ function create (options) {
     function addBehaviorErrors (stub, errors) {
         stub.responses.forEach(response => {
             const behaviors = require('./behaviors');
-            addAllTo(errors, behaviors.validate(response._behaviors));
+            addAllTo(errors, behaviors.validate(response.behaviors));
             addRepeatErrorsTo(errors, response);
         });
     }

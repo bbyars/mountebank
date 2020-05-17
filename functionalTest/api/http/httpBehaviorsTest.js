@@ -734,7 +734,7 @@ const assert = require('assert'),
                         responses: [
                             {
                                 is: { body: '' },
-                                _behaviors: [
+                                behaviors: [
                                     { decorate: first.toString() },
                                     { decorate: third.toString() },
                                     { decorate: second.toString() }
@@ -769,7 +769,7 @@ const assert = require('assert'),
                             {
                                 is: { body: '' },
                                 repeat: 2,
-                                _behaviors: [
+                                behaviors: [
                                     { decorate: decorator.toString() },
                                     {
                                         copy: {

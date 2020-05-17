@@ -24,49 +24,57 @@ function upcastShellTransformToArray (request) {
     });
 }
 
+function canUpcastBehaviors (response) {
+    const isObject = require('../util/helpers').isObject;
+
+    return typeof response.behaviors === 'undefined'
+        && typeof response.repeat === 'undefined'
+        && isObject(response._behaviors);
+}
+
+function upcastResponseBehaviors (response) {
+    const util = require('util'),
+        behaviors = [],
+        add = (key, value) => {
+            const obj = {};
+            obj[key] = value;
+            behaviors.push(obj);
+        };
+
+    // This was the old line of code that executed the behaviors, which defined the order:
+    //     return combinators.compose(decorateFn, shellTransformFn, copyFn, lookupFn, waitFn, Q)(response);
+    ['wait', 'lookup', 'copy', 'shellTransform', 'decorate'].forEach(key => {
+        if (typeof response._behaviors[key] !== 'undefined') {
+            if (util.isArray(response._behaviors[key])) {
+                response._behaviors[key].forEach(element => add(key, element));
+            }
+            else {
+                add(key, response._behaviors[key]);
+            }
+        }
+    });
+
+    // The repeat behavior can't be stacked multiple times and sequence of execution doesn't matter,
+    // so putting it in the array risks confusion and additional error checking. Pulling it outside
+    // the array clearly indicates it only applies once to the entire response.
+    if (typeof response._behaviors.repeat !== 'undefined') {
+        response.repeat = response._behaviors.repeat;
+    }
+
+    response.behaviors = behaviors;
+    delete response._behaviors;
+}
+
 /**
  * The original _behaviors took an object with undefined ordering
  * The new syntax expects an array, creating a behaviors pipeline
  * @param {Object} request - the request to upcast
  */
 function upcastBehaviorsToArray (request) {
-    const isObject = require('../util/helpers').isObject,
-        util = require('util');
-
     (request.stubs || []).forEach(stub => {
-        (stub.responses || []).forEach(response => {
-            if (isObject(response._behaviors) && !util.isArray(response._behaviors)) {
-                const behaviors = [];
-
-                // This was the old line of code that executed the behaviors, which defined the order:
-                //     return combinators.compose(decorateFn, shellTransformFn, copyFn, lookupFn, waitFn, Q)(response);
-                ['wait', 'lookup', 'copy', 'shellTransform', 'decorate'].forEach(key => {
-                    if (typeof response._behaviors[key] !== 'undefined') {
-                        if (util.isArray(response._behaviors[key])) {
-                            response._behaviors[key].forEach(element => {
-                                const obj = {};
-                                obj[key] = element;
-                                behaviors.push(obj);
-                            });
-                        }
-                        else {
-                            const obj = {};
-                            obj[key] = response._behaviors[key];
-                            behaviors.push(obj);
-                        }
-                    }
-                });
-
-                // The repeat behavior can't be stacked multiple times and sequence of execution doesn't matter,
-                // so putting it in the array risks confusion and additional error checking. Pulling it outside
-                // the array clearly indicates it only applies once to the entire response.
-                if (typeof response._behaviors.repeat !== 'undefined') {
-                    response.repeat = response._behaviors.repeat;
-                }
-
-                response._behaviors = behaviors;
-            }
-        });
+        (stub.responses || [])
+            .filter(canUpcastBehaviors)
+            .forEach(upcastResponseBehaviors);
     });
 }
 

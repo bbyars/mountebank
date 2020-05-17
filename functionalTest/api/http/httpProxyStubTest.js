@@ -385,7 +385,7 @@ describe('http proxy stubs', function () {
                 return api.get(`/imposters/${port}`);
             }).then(response => {
                 const stubResponse = response.body.stubs[0].responses[0];
-                assert.strictEqual(stubResponse._behaviors[0].wait, stubResponse.is._proxyResponseTime, JSON.stringify(stubResponse, null, 4));
+                assert.strictEqual(stubResponse.behaviors[0].wait, stubResponse.is._proxyResponseTime, JSON.stringify(stubResponse, null, 4));
             }).finally(() => api.del('/imposters'));
     });
 

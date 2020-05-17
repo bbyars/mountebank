@@ -67,7 +67,7 @@ describe('compatibility', function () {
                 stubs: [{
                     responses: [{
                         repeat: 2,
-                        _behaviors: [
+                        behaviors: [
                             { wait: 100 },
                             { lookup: { from: 'lookup' } },
                             { copy: { from: 'copy' } },
@@ -101,7 +101,7 @@ describe('compatibility', function () {
                 stubs: [{
                     responses: [{
                         repeat: 2,
-                        _behaviors: [
+                        behaviors: [
                             { wait: 100 },
                             { lookup: { from: 'lookup-1' } },
                             { lookup: { from: 'lookup-2' } },
@@ -111,6 +111,50 @@ describe('compatibility', function () {
                             { shellTransform: 'shell-2' },
                             { decorate: '(config) => {}' }
                         ]
+                    }]
+                }]
+            });
+        });
+
+        it('should ignore _behaviors if behaviors already exists', function () {
+            const request = {
+                stubs: [{
+                    responses: [{
+                        _behaviors: { repeat: 2 },
+                        behaviors: []
+                    }]
+                }]
+            };
+
+            compatibility.upcast(request);
+
+            assert.deepEqual(request, {
+                stubs: [{
+                    responses: [{
+                        _behaviors: { repeat: 2 },
+                        behaviors: []
+                    }]
+                }]
+            });
+        });
+
+        it('should ignore _behaviors if repeat already exists', function () {
+            const request = {
+                stubs: [{
+                    responses: [{
+                        _behaviors: { repeat: 2 },
+                        repeat: 2
+                    }]
+                }]
+            };
+
+            compatibility.upcast(request);
+
+            assert.deepEqual(request, {
+                stubs: [{
+                    responses: [{
+                        _behaviors: { repeat: 2 },
+                        repeat: 2
                     }]
                 }]
             });

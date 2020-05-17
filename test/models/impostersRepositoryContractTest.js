@@ -454,7 +454,7 @@ types.forEach(function (type) {
                             responses: [{ is: { field: 1 } }, { is: { field: 2 } }]
                         },
                         second = {
-                            responses: [{ is: { key: 'value' }, _behaviors: [{ repeat: 2 }] }]
+                            responses: [{ is: { key: 'value' }, behaviors: [{ repeat: 2 }] }]
                         },
                         imposter = { port: 1, stubs: [first, second] };
 

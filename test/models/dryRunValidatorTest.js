@@ -121,7 +121,7 @@ describe('dryRunValidator', function () {
                 },
                 request = {
                     stubs: [{
-                        responses: [{ is: { statusCode: 400 }, _behaviors: [{ decorate: decorator.toString() }] }]
+                        responses: [{ is: { statusCode: 400 }, behaviors: [{ decorate: decorator.toString() }] }]
                     }]
                 },
                 validator = Validator.create({ testRequest, allowInjection: true });
@@ -181,7 +181,7 @@ describe('dryRunValidator', function () {
                 },
                 request = {
                     stubs: [{
-                        responses: [{ is: { statusCode: 400 }, _behaviors: [{ decorate: decorator.toString() }] }]
+                        responses: [{ is: { statusCode: 400 }, behaviors: [{ decorate: decorator.toString() }] }]
                     }]
                 },
                 validator = Validator.create({ testRequest, allowInjection: false });
@@ -368,7 +368,7 @@ describe('dryRunValidator', function () {
         promiseIt('should add behavior validation errors', function () {
             const request = { stubs: [{ responses: [{
                     is: { statusCode: 400 },
-                    _behaviors: [
+                    behaviors: [
                         { wait: -1 }
                     ]
                 }] }] },
@@ -433,7 +433,7 @@ describe('dryRunValidator', function () {
         promiseIt('should allow functions as wait behavior if injections allowed', function () {
             const request = { stubs: [{ responses: [{
                     is: { statusCode: 400 },
-                    _behaviors: [{ wait: '() => { return 1000; }' }]
+                    behaviors: [{ wait: '() => { return 1000; }' }]
                 }] }] },
                 validator = Validator.create({ testRequest, allowInjection: true });
 
@@ -448,7 +448,7 @@ describe('dryRunValidator', function () {
         promiseIt('should not allow functions as wait behavior if injections not allowed', function () {
             const response = {
                     is: { statusCode: 400 },
-                    _behaviors: [{ wait: '() => { return 1000; }' }]
+                    behaviors: [{ wait: '() => { return 1000; }' }]
                 },
                 request = { stubs: [{ responses: [response] }] },
                 validator = Validator.create({ testRequest, allowInjection: false });
@@ -503,7 +503,7 @@ describe('dryRunValidator', function () {
         promiseIt('should not be valid for shellTransform if injections are disallowed', function () {
             const request = {
                     stubs: [{
-                        responses: [{ is: {}, _behaviors: [{ shellTransform: 'command' }] }]
+                        responses: [{ is: {}, behaviors: [{ shellTransform: 'command' }] }]
                     }]
                 },
                 validator = Validator.create({ testRequest, allowInjection: false });
