@@ -63,9 +63,9 @@ Content-Type: application/json
           "is": {
             "body": "The time is <strong class='highlight1'>${TIME}</strong>"
           },
-          "_behaviors": {
-            "decorate": "(config) => { var pad = function (number) { return (number &lt; 10) ? '0' + number : number.toString(); }, now = new Date(), time = pad(now.getHours()) + ':' + pad(now.getMinutes()) + ':' + pad(now.getSeconds()); config.response.body = config.response.body.replace('${TIME}', time); }"
-          }
+          "behaviors": [
+            { "decorate": "(config) => { var pad = function (number) { return (number &lt; 10) ? '0' + number : number.toString(); }, now = new Date(), time = pad(now.getHours()) + ':' + pad(now.getMinutes()) + ':' + pad(now.getSeconds()); config.response.body = config.response.body.replace('${TIME}', time); }" }
+          ]
         }
       ]
     }
@@ -116,9 +116,9 @@ Content-Type: application/json
       "responses": [
         {
           "proxy": { "to": "http://localhost:5545" },
-          "_behaviors": {
-            "decorate": "(config) => { <strong class='highlight1'>config.response.headers['X-Test'] = 'True';</strong> }"
-          }
+          "behaviors": [
+            { "decorate": "(config) => { <strong class='highlight1'>config.response.headers['X-Test'] = 'True';</strong> }" }
+          ]
         }
       ]
     }

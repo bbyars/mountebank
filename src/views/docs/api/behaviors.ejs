@@ -7,7 +7,8 @@ description = 'Additional behaviors supported by all mountebank responses'
 
 <h1>Stub Behaviors</h1>
 
-<p>You can alter the response created by adding to the <code>behaviors</code> array. At the moment, mountebank accepts
+<p>You can alter the response created by adding to the <code>behaviors</code> array, which acts as a
+middleware pipeline of transformations to the response. At the moment, mountebank accepts
 the following behaviors:</p>
 
 <table id='behaviors'>
@@ -24,10 +25,6 @@ the following behaviors:</p>
       flag on proxies will automatically add this behavior with the actual time it took to call the
       downstream service</p>
     </td>
-  </tr>
-  <tr>
-    <td><code>repeat</code></td>
-    <td>Repeats a response a set number of times before moving on to the next response.</td>
   </tr>
   <tr>
     <td><code>copy</code></td>
@@ -69,12 +66,29 @@ the following behaviors:</p>
   </tr>
 </table>
 
-<p>Multiple behaviors can be added to a response.  However, only one of each type of behavior
-can exist on a single response.</p>
+<p>Multiple behaviors can be added to a response, and they will be executed in array order. While
+each object in the array may contain only one type of behavior, you are free to repeat any
+behavior as many times as you want. For example, take a look at the following response:</p>
+
+<pre><code>{
+  "is": " { ... },
+  "behaviors": [
+    { "copy": { ... } },
+    { "decorate": "..." },
+    { "lookup": "..." },
+    { "shellTransform": "..." },
+    { "decorate": "..." },
+    { "wait": 500 },
+    { "shellTransform": "..." }
+  ]
+}</code></pre>
+
+<p>The ability to compose multiple behaviors together gives you complete control over the
+response transformation.</p>
 
 <h2>Examples</h2>
 
-<p>Select the behavior below for relevant examples:</p>
+<p>Select the behavior below for relevant examples, which explore each type of behavior in isolation:</p>
 
 <section class='accordion'>
   <div>
@@ -84,15 +98,6 @@ can exist on a single response.</p>
     </a>
     <section>
       <% include behaviors/wait %>
-    </section>
-  </div>
-  <div>
-    <a class='section-toggler'
-       id='behavior-repeat' name='behavior-repeat' href='#behavior-repeat'>
-      repeat
-    </a>
-    <section>
-      <% include behaviors/repeat %>
     </section>
   </div>
   <div>

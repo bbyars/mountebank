@@ -108,12 +108,18 @@
   <p class='info-icon'>More information: <a href='/docs/api/stubs'>stubs</a></p>
 </div>
 
+<div id='imposter-stubs-responses-repeat-description'>
+    <p>Causes the response to repeat a given number of times before returning the next response
+        in the <code>responses</code> array.</p>
+
+    <p class='info-icon'>More information: <a href='/docs/api/stubs'>stub responses</a></p>
+</div>
+
 <div id='imposter-stubs-behaviors-description'>
   <p>Behaviors alter the generated response in some way.  The following behaviors are supported:</p>
 
   <ul class='bullet-list indent'>
     <li><code>wait</code> - adds latency to the response</li>
-    <li><code>repeat</code> - repeats the response a given number of times</li>
     <li><code>decorate</code> - post-processes the response using a JavaScript function</li>
     <li><code>shellTransform</code> - post-processes the response using a command line application</li>
     <li><code>copy</code> - copies a value from the request into the response</li>
@@ -129,20 +135,13 @@
   <p class='info-icon'>More information: <a href='/docs/api/behaviors'>behaviors</a></p>
 </div>
 
-<div id='imposter-stubs-behaviors-repeat-description'>
-    <p>Causes the response to repeat a given number of times before returning the next response
-        in the <code>responses</code> array.</p>
-
-    <p class='info-icon'>More information: <a href='/docs/api/behaviors'>behaviors</a></p>
-</div>
-
 <div id='imposter-stubs-behaviors-decorate-description'>
   <p>Post-processes the response before sending it.  Since post-processing requires JavaScript
     injection, the <code><a href='/docs/commandLine'>--allowInjection</a></code> flag must be passed.
     Post-processing opens up a world of opportunities - you can use a <code>decorate</code> behavior
-    to add data to a proxied response or substitute data from the request into the response, for
+    to add data to a proxied response or substitute dynamic data into the response, for
     example.  The value passed into the <code>decorate</code> behavior is a JavaScript function that
-    can take up to three values: the request, the response, and a logger.  You can either mutate the
+    can take up to an object containing the request, the response, and a logger.  You can either mutate the
     response passed in (and return nothing), or return an altogether new response.</p>
 
   <p class='warning-icon'>JavaScript injection requires the
@@ -153,9 +152,9 @@
 
 <div id='imposter-stubs-behaviors-shellTransform-description'>
   <p>Post-processes the response before sending it.  Unlike a <code>decorate</code>, the post-processing
-    occurs through a sequence of command line applications, which still requires the <code><a href='/docs/commandLine'>
-    --allowInjection</a></code> flag to be set. The command line application will be passed two parameters
-    representing the request JSON and the response JSON, and should write the transformed response
+    occurs through a command line application, which still requires the <code><a href='/docs/commandLine'>
+    --allowInjection</a></code> flag to be set. The command line application will be passed the request JSON
+    and the response JSON through environment variables, and should write the transformed response
     JSON to <code>stdout</code>.</p>
 
   <p class='warning-icon'>Shell execution requires the
