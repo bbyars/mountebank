@@ -147,18 +147,35 @@ function create () {
         const errors = [];
 
         (behaviors || []).forEach(config => {
+            const validBehaviors = [],
+                unrecognizedKeys = [];
+
             Object.keys(config).forEach(key => {
-                const addErrorFn = function (field, message, subConfig) {
+                const addError = function (field, message, subConfig) {
                         errors.push(exceptions.ValidationError(`${key} behavior "${field}" field ${message}`,
                             { source: subConfig || config }));
                     },
                     spec = {};
 
                 if (validationSpec[key]) {
+                    validBehaviors.push(key);
                     spec[key] = validationSpec[key];
-                    addErrorsFor(config, '', spec, addErrorFn);
+                    addErrorsFor(config, '', spec, addError);
+                }
+                else {
+                    unrecognizedKeys.push({ key: key, source: config });
                 }
             });
+
+            // Allow adding additional custom fields to valid behaviors but ensure there is a valid behavior
+            if (validBehaviors.length === 0 && unrecognizedKeys.length > 0) {
+                errors.push(exceptions.ValidationError(`Unrecognized behavior: "${unrecognizedKeys[0].key}"`,
+                    { source: unrecognizedKeys[0].source }));
+            }
+            if (validBehaviors.length > 1) {
+                errors.push(exceptions.ValidationError('Each behavior object must have only one behavior type',
+                    { source: config }));
+            }
         });
 
         return errors;

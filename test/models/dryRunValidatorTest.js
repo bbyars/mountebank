@@ -543,5 +543,70 @@ describe('dryRunValidator', function () {
                 });
             });
         });
+
+        promiseIt('should error on unrecognized behavior', function () {
+            const request = {
+                    stubs: [{
+                        responses: [{
+                            is: { key: 'value' },
+                            behaviors: [{ wait: 100 }, { INVALID: 100 }, { decorate: '() => {}' }]
+                        }]
+                    }]
+                },
+                validator = Validator.create({ testRequest, allowInjection: true });
+
+            return validator.validate(request, Logger.create()).then(result => {
+                assert.deepEqual(result, {
+                    isValid: false,
+                    errors: [{
+                        code: 'bad data',
+                        message: 'Unrecognized behavior: "INVALID"',
+                        source: { INVALID: 100 }
+                    }]
+                });
+            });
+        });
+
+        promiseIt('should not error on valid behavior with unrecognized field', function () {
+            const request = {
+                    stubs: [{
+                        responses: [{
+                            is: { key: 'value' },
+                            behaviors: [{ wait: 100, INVALID: 100 }]
+                        }]
+                    }]
+                },
+                validator = Validator.create({ testRequest, allowInjection: true });
+
+            return validator.validate(request, Logger.create()).then(result => {
+                assert.deepEqual(result, {
+                    isValid: true,
+                    errors: []
+                });
+            });
+        });
+
+        promiseIt('should error on two valid behaviors in same object', function () {
+            const request = {
+                    stubs: [{
+                        responses: [{
+                            is: { key: 'value' },
+                            behaviors: [{ wait: 100, decorate: '() => {}' }]
+                        }]
+                    }]
+                },
+                validator = Validator.create({ testRequest, allowInjection: true });
+
+            return validator.validate(request, Logger.create()).then(result => {
+                assert.deepEqual(result, {
+                    isValid: false,
+                    errors: [{
+                        code: 'bad data',
+                        message: 'Each behavior object must have only one behavior type',
+                        source: { wait: 100, decorate: '() => {}' }
+                    }]
+                });
+            });
+        });
     });
 });
