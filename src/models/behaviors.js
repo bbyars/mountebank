@@ -99,20 +99,20 @@ function validate (config) {
  * Waits a specified number of milliseconds before sending the response.  Due to the approximate
  * nature of the timer, there is no guarantee that it will wait the given amount, but it will be close.
  * @param {Object} request - The request object
- * @param {Object} responsePromise - The promise returning the response
+ * @param {Object} response - The response
  * @param {number} millisecondsOrFn - The number of milliseconds to wait before returning, or a function returning milliseconds
  * @param {Object} logger - The mountebank logger, useful for debugging
  * @returns {Object} A promise resolving to the response
  */
-function wait (request, responsePromise, millisecondsOrFn, logger) {
-    if (request.isDryRun) {
-        return responsePromise;
-    }
-
-    const util = require('util'),
-        fn = util.format('(%s)()', millisecondsOrFn),
+function wait (request, response, millisecondsOrFn, logger) {
+    const fn = `(${millisecondsOrFn})()`,
         Q = require('q'),
         exceptions = require('../util/errors');
+
+    if (request.isDryRun) {
+        return Q(response);
+    }
+
     let milliseconds = parseInt(millisecondsOrFn);
 
     if (isNaN(milliseconds)) {
@@ -128,7 +128,7 @@ function wait (request, responsePromise, millisecondsOrFn, logger) {
     }
 
     logger.debug('Waiting %s ms...', milliseconds);
-    return responsePromise.delay(milliseconds);
+    return Q(response).delay(milliseconds);
 }
 
 function quoteForShell (obj) {
@@ -188,63 +188,63 @@ function execShell (command, request, response, logger) {
 /**
  * Runs the response through a shell function, passing the JSON in as stdin and using
  * stdout as the new response
- * @param {Object} request - Will be the first arg to the command
- * @param {Object} responsePromise - The promise chain for building the response, which will be the second arg
+ * @param {Object} request - The request
+ * @param {Object} response - The response
  * @param {string} command - The shell command to execute
  * @param {Object} logger - The mountebank logger, useful in debugging
  * @returns {Object}
  */
-function shellTransform (request, responsePromise, command, logger) {
+function shellTransform (request, response, command, logger) {
+    const Q = require('q');
+
     if (request.isDryRun) {
-        return responsePromise;
+        return Q(response);
     }
 
-    return responsePromise.then(response => execShell(command, request, response, logger));
+    return execShell(command, request, response, logger);
 }
 
 /**
  * Runs the response through a post-processing function provided by the user
  * @param {Object} originalRequest - The request object, in case post-processing depends on it
- * @param {Object} responsePromise - The promise returning the response
+ * @param {Object} response - The response
  * @param {Function} fn - The function that performs the post-processing
  * @param {Object} logger - The mountebank logger, useful in debugging
  * @returns {Object}
  */
-function decorate (originalRequest, responsePromise, fn, logger) {
+function decorate (originalRequest, response, fn, logger) {
+    const Q = require('q'),
+        helpers = require('../util/helpers'),
+        config = {
+            request: helpers.clone(originalRequest),
+            response,
+            logger
+        },
+        injected = `(${fn})(config, response, logger);`,
+        exceptions = require('../util/errors'),
+        compatibility = require('./compatibility');
+
     if (originalRequest.isDryRun === true) {
-        return responsePromise;
+        return Q(response);
     }
 
-    return responsePromise.then(response => {
-        const Q = require('q'),
-            helpers = require('../util/helpers'),
-            config = {
-                request: helpers.clone(originalRequest),
-                response,
-                logger
-            },
-            injected = `(${fn})(config, response, logger);`,
-            exceptions = require('../util/errors'),
-            compatibility = require('./compatibility');
+    compatibility.downcastInjectionConfig(config);
 
-        compatibility.downcastInjectionConfig(config);
-
-        try {
-            // Support functions that mutate response in place and those
-            // that return a new response
-            let result = eval(injected);
-            if (!result) {
-                result = response;
-            }
-            return Q(result);
+    try {
+        // Support functions that mutate response in place and those
+        // that return a new response
+        let result = eval(injected);
+        if (!result) {
+            result = response;
         }
-        catch (error) {
-            logger.error('injection X=> ' + error);
-            logger.error('    full source: ' + JSON.stringify(injected));
-            logger.error('    config: ' + JSON.stringify(config));
-            return Q.reject(exceptions.InjectionError('invalid decorator injection', { source: injected, data: error.message }));
-        }
-    });
+        return Q(result);
+    }
+    catch (error) {
+        logger.error('injection X=> ' + error);
+        logger.error('    full source: ' + JSON.stringify(injected));
+        logger.error('    config: ' + JSON.stringify(config));
+        return Q.reject(exceptions.InjectionError('invalid decorator injection', { source: injected, data: error.message }));
+    }
 }
 
 function getKeyIgnoringCase (obj, expectedKey) {
@@ -371,22 +371,19 @@ function replaceArrayValuesIn (response, token, values, logger) {
 /**
  * Copies a value from the request and replaces response tokens with that value
  * @param {Object} originalRequest - The request object, in case post-processing depends on it
- * @param {Object} responsePromise - The promise returning the response
+ * @param {Object} response - The response
  * @param {Function} copyConfig - The config to copy
  * @param {Object} logger - The mountebank logger, useful in debugging
  * @returns {Object}
  */
-function copy (originalRequest, responsePromise, copyConfig, logger) {
-    return responsePromise.then(response => {
-        const Q = require('q'),
-            from = getFrom(originalRequest, copyConfig.from),
-            using = copyConfig.using || {},
-            fnMap = { regex: regexValue, xpath: xpathValue, jsonpath: jsonpathValue },
-            values = fnMap[using.method](from, copyConfig, logger);
+function copy (originalRequest, response, copyConfig, logger) {
+    const from = getFrom(originalRequest, copyConfig.from),
+        using = copyConfig.using || {},
+        fnMap = { regex: regexValue, xpath: xpathValue, jsonpath: jsonpathValue },
+        values = fnMap[using.method](from, copyConfig, logger);
 
-        replaceArrayValuesIn(response, copyConfig.into, values, logger);
-        return Q(response);
-    });
+    replaceArrayValuesIn(response, copyConfig.into, values, logger);
+    return response;
 }
 
 function containsKey (headers, keyColumn) {
@@ -484,20 +481,18 @@ function replaceObjectValuesIn (response, token, values, logger) {
 /**
  * Looks up request values from a data source and replaces response tokens with the resulting data
  * @param {Object} originalRequest - The request object
- * @param {Object} responsePromise - The promise returning the response
+ * @param {Object} response - The response
  * @param {Function} lookupConfig - The lookup configurations
  * @param {Object} logger - The mountebank logger, useful in debugging
  * @returns {Object}
  */
-function lookup (originalRequest, responsePromise, lookupConfig, logger) {
-    return responsePromise.then(response => {
-        return lookupRow(lookupConfig, originalRequest, logger).then(function (row) {
-            replaceObjectValuesIn(response, lookupConfig.into, row, logger);
-            return response;
-        }).catch(error => {
-            logger.error(error);
-            return response;
-        });
+function lookup (originalRequest, response, lookupConfig, logger) {
+    return lookupRow(lookupConfig, originalRequest, logger).then(function (row) {
+        replaceObjectValuesIn(response, lookupConfig.into, row, logger);
+        return response;
+    }).catch(error => {
+        logger.error(error);
+        return response;
     });
 }
 
@@ -528,7 +523,7 @@ function execute (request, response, behaviors, logger) {
     behaviors.forEach(behavior => {
         Object.keys(behavior).forEach(key => {
             if (fnMap[key]) {
-                result = fnMap[key](request, result, behavior[key], logger);
+                result = result.then(newResponse => fnMap[key](request, newResponse, behavior[key], logger));
             }
         });
     });
