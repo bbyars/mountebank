@@ -109,10 +109,6 @@ function wait (request, response, millisecondsOrFn, logger) {
         Q = require('q'),
         exceptions = require('../util/errors');
 
-    if (request.isDryRun) {
-        return Q(response);
-    }
-
     let milliseconds = parseInt(millisecondsOrFn);
 
     if (isNaN(milliseconds)) {
@@ -195,12 +191,6 @@ function execShell (command, request, response, logger) {
  * @returns {Object}
  */
 function shellTransform (request, response, command, logger) {
-    const Q = require('q');
-
-    if (request.isDryRun) {
-        return Q(response);
-    }
-
     return execShell(command, request, response, logger);
 }
 
@@ -223,10 +213,6 @@ function decorate (originalRequest, response, fn, logger) {
         injected = `(${fn})(config, response, logger);`,
         exceptions = require('../util/errors'),
         compatibility = require('./compatibility');
-
-    if (originalRequest.isDryRun === true) {
-        return Q(response);
-    }
 
     compatibility.downcastInjectionConfig(config);
 
@@ -505,10 +491,6 @@ function lookup (originalRequest, response, lookupConfig, logger) {
  * @returns {Object}
  */
 function execute (request, response, behaviors, logger) {
-    if (!behaviors || behaviors.length === 0) {
-        return require('q')(response);
-    }
-
     const Q = require('q'),
         fnMap = {
             wait: wait,
@@ -518,6 +500,10 @@ function execute (request, response, behaviors, logger) {
             decorate: decorate
         };
     let result = Q(response);
+
+    if (!behaviors || behaviors.length === 0 || request.isDryRun) {
+        return result;
+    }
 
     logger.debug('using stub response behavior ' + JSON.stringify(behaviors));
     behaviors.forEach(behavior => {
