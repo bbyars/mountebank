@@ -245,7 +245,7 @@ function create (stubs, proxy, callbackURL) {
         }
     }
 
-    function proxyAndRecord (responseConfig, request, logger, requestDetails) {
+    function proxyAndRecord (responseConfig, request, logger, requestDetails, imposterState) {
         const Q = require('q'),
             startTime = new Date(),
             behaviors = require('./behaviors');
@@ -259,7 +259,7 @@ function create (stubs, proxy, callbackURL) {
                 response._proxyResponseTime = new Date() - startTime;
 
                 // Run behaviors here to persist decorated response
-                return Q(behaviors.execute(request, response, responseConfig.behaviors, logger));
+                return Q(behaviors.execute(request, response, responseConfig.behaviors, logger, imposterState));
             }).then(response => {
                 return recordProxyResponse(responseConfig, request, response, logger).then(() => response);
             });
@@ -290,7 +290,7 @@ function create (stubs, proxy, callbackURL) {
             return Q(helpers.clone(responseConfig.is));
         }
         else if (responseConfig.proxy) {
-            return proxyAndRecord(responseConfig, request, logger, requestDetails);
+            return proxyAndRecord(responseConfig, request, logger, requestDetails, imposterState);
         }
         else if (responseConfig.inject) {
             return inject(request, responseConfig.inject, logger, imposterState).then(Q);
@@ -335,7 +335,7 @@ function create (stubs, proxy, callbackURL) {
                 return Q(response);
             }
             else {
-                return Q(behaviors.execute(request, response, responseConfig.behaviors, logger));
+                return Q(behaviors.execute(request, response, responseConfig.behaviors, logger, imposterState));
             }
         }).then(response => {
             if (inProcessProxy) {
@@ -357,9 +357,10 @@ function create (stubs, proxy, callbackURL) {
      * @param {Object} proxyResponse - the proxy response from the protocol implementation
      * @param {Number} proxyResolutionKey - the key into the saved proxy state
      * @param {Object} logger - the logger
+     * @param {Object} imposterState - the user controlled state variable
      * @returns {Object} - Promise resolving to the response
      */
-    function resolveProxy (proxyResponse, proxyResolutionKey, logger) {
+    function resolveProxy (proxyResponse, proxyResolutionKey, logger, imposterState) {
         const pendingProxyConfig = pendingProxyResolutions[proxyResolutionKey],
             behaviors = require('./behaviors'),
             Q = require('q');
@@ -367,7 +368,7 @@ function create (stubs, proxy, callbackURL) {
         if (pendingProxyConfig) {
             proxyResponse._proxyResponseTime = new Date() - pendingProxyConfig.startTime;
 
-            return behaviors.execute(pendingProxyConfig.request, proxyResponse, pendingProxyConfig.responseConfig.behaviors, logger)
+            return behaviors.execute(pendingProxyConfig.request, proxyResponse, pendingProxyConfig.responseConfig.behaviors, logger, imposterState)
                 .then(response => {
                     return recordProxyResponse(pendingProxyConfig.responseConfig, pendingProxyConfig.request, response, logger)
                         .then(() => {

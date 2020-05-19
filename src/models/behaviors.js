@@ -200,17 +200,19 @@ function shellTransform (request, response, command, logger) {
  * @param {Object} response - The response
  * @param {Function} fn - The function that performs the post-processing
  * @param {Object} logger - The mountebank logger, useful in debugging
+ * @param {Object} imposterState - The user controlled state variable
  * @returns {Object}
  */
-function decorate (originalRequest, response, fn, logger) {
+function decorate (originalRequest, response, fn, logger, imposterState) {
     const Q = require('q'),
         helpers = require('../util/helpers'),
         config = {
             request: helpers.clone(originalRequest),
             response,
-            logger
+            logger,
+            state: imposterState
         },
-        injected = `(${fn})(config, response, logger);`,
+        injected = `(${fn})(config, response, logger);`, // backwards compatibility
         exceptions = require('../util/errors'),
         compatibility = require('./compatibility');
 
@@ -488,9 +490,10 @@ function lookup (originalRequest, response, lookupConfig, logger) {
  * @param {Object} response - The response generated from the stubs
  * @param {Object} behaviors - The behaviors specified in the API
  * @param {Object} logger - The mountebank logger, useful for debugging
+ * @param {Object} imposterState - the user-controlled state variable
  * @returns {Object}
  */
-function execute (request, response, behaviors, logger) {
+function execute (request, response, behaviors, logger, imposterState) {
     const Q = require('q'),
         fnMap = {
             wait: wait,
@@ -509,7 +512,7 @@ function execute (request, response, behaviors, logger) {
     behaviors.forEach(behavior => {
         Object.keys(behavior).forEach(key => {
             if (fnMap[key]) {
-                result = result.then(newResponse => fnMap[key](request, newResponse, behavior[key], logger));
+                result = result.then(newResponse => fnMap[key](request, newResponse, behavior[key], logger, imposterState));
             }
         });
     });

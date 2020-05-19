@@ -66,5 +66,27 @@ describe('behaviors', function () {
                 source: { decorate: {} }
             }]);
         });
+
+        promiseIt('should allow access to the imposter state', function () {
+            const request = {},
+                response = {},
+                state = {},
+                logger = Logger.create(),
+                fn = config => {
+                    if (!config.state.hits) {
+                        config.state.hits = 0;
+                    }
+                    config.state.hits += 1;
+                    return { hits: config.state.hits };
+                },
+                behavior = { decorate: fn.toString() };
+
+            return behaviors.execute(request, response, [behavior], logger, state).then(actualResponse => {
+                assert.deepEqual(actualResponse, { hits: 1 });
+                return behaviors.execute(request, actualResponse, [behavior], logger, state);
+            }).then(actualResponse => {
+                assert.deepEqual(actualResponse, { hits: 2 });
+            });
+        });
     });
 });
