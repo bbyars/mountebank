@@ -103,7 +103,7 @@ function loadCustomProtocols (protofile, logger) {
 
     const fs = require('fs'),
         path = require('path'),
-        filename = path.join(process.cwd(), protofile);
+        filename = path.resolve(path.relative(process.cwd(), protofile));
 
     if (fs.existsSync(filename)) {
         try {
