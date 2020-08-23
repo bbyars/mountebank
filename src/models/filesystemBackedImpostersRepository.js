@@ -96,7 +96,8 @@ function create (config, logger) {
     function prettyError (err, filepath) {
         const errors = require('../util/errors');
 
-        if (err.code === 'EACCES') {
+        // I started getting EROFS after upgrading to OSX Catalina 10.15.6
+        if (err.code === 'EACCES' || err.code === 'EROFS') {
             return errors.InsufficientAccessError({ path: filepath });
         }
         else {
