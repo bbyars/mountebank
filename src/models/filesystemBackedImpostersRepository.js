@@ -80,6 +80,8 @@
  * @module
  */
 
+
+
 /**
  * Creates the repository
  * @param {Object} config - The database configuration
@@ -165,16 +167,20 @@ function create (config, logger) {
     function rename (oldPath, newPath) {
         const deferred = Q.defer(),
             fs = require('fs');
-
-        fs.rename(oldPath, newPath, err => {
-            if (err) {
+        fs.stat(oldPath, (err, stats)=>{
+            if(err) {
                 deferred.reject(prettyError(err, oldPath));
+            } else if(stats.isFile()){ // adding a wrapper around the rename to ensure the write is complete.
+                fs.rename(oldPath, newPath, err => {
+                    if (err) {
+                        deferred.reject(prettyError(err, oldPath));
+                    }
+                    else {
+                        deferred.resolve(newPath);
+                    }
+                });
             }
-            else {
-                deferred.resolve(newPath);
-            }
-        });
-
+        })
         return deferred.promise;
     }
 
@@ -201,7 +207,7 @@ function create (config, logger) {
             options = {
                 realpath: false,
                 retries: {
-                    retries: 10,
+                    retries: 15,
                     factor: 1.47394, // https://www.wolframalpha.com/input/?i=Sum%5B50*x%5Ek%2C+%7Bk%2C+0%2C+9%7D%5D+%3D+5000
                     minTimeout: 50,
                     maxTimeout: 5000,
@@ -216,7 +222,11 @@ function create (config, logger) {
 
         // with realpath = false, the file doesn't have to exist, but the directory does
         return ensureDir(filepath)
-            .then(() => locker.lock(filepath, options))
+            .then(() => new Promise(resolve=>
+                setTimeout( ()=>
+                    resolve(locker.lock(filepath, options))
+                    , 0)
+            ))
             .then(release => {
                 const lockStart = new Date(),
                     lockWait = lockStart - start;
@@ -229,10 +239,13 @@ function create (config, logger) {
                     .then(() => {
                         const lockHeld = new Date() - lockStart;
                         logger.debug(`Released file lock on ${filepath} for ${caller}-${currentLockId} after ${lockHeld}ms`);
-                        return release();
+
+                        return release()
+
                     });
             })
             .catch(err => {
+                logger.warn(err)
                 locker.unlock(filepath, { realpath: false }).catch(unlockErr => {
                     logger.error(`Failed to unlock ${filepath} for ${caller}-${currentLockId}: ${unlockErr}`);
                 });
