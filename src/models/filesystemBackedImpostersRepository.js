@@ -80,8 +80,6 @@
  * @module
  */
 
-
-
 /**
  * Creates the repository
  * @param {Object} config - The database configuration
