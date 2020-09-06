@@ -1,7 +1,7 @@
 GEM
   remote: https://rubygems.org/
   specs:
-    activesupport (5.2.4.2)
+    activesupport (5.2.4.3)
       concurrent-ruby (~> 1.0, >= 1.0.2)
       i18n (>= 0.7, < 2)
       minitest (~> 5.1)
@@ -10,12 +10,12 @@ GEM
       public_suffix (>= 2.0.2, < 5.0)
     arr-pm (0.0.10)
       cabin (> 0)
-    backports (3.17.1)
+    backports (3.18.2)
     cabin (0.9.0)
     childprocess (0.9.0)
       ffi (~> 1.0, >= 1.0.11)
     clamp (1.0.1)
-    concurrent-ruby (1.1.6)
+    concurrent-ruby (1.1.7)
     dotenv (2.7.5)
     dpl (1.10.15)
     ethon (0.12.0)
@@ -24,7 +24,7 @@ GEM
       multipart-post (>= 1.2, < 3)
     faraday_middleware (0.14.0)
       faraday (>= 0.7.4, < 1.0)
-    ffi (1.12.2)
+    ffi (1.13.1)
     fpm (1.11.0)
       arr-pm (~> 0.0.10)
       backports (>= 2.6.2)
@@ -45,15 +45,15 @@ GEM
       net-http-persistent (~> 2.9)
       net-http-pipeline
     highline (1.7.10)
-    i18n (1.8.2)
+    i18n (1.8.5)
       concurrent-ruby (~> 1.0)
     insist (1.0.0)
     io-like (0.3.1)
     json (1.8.6)
     launchy (2.5.0)
       addressable (~> 2.7)
-    minitest (5.14.0)
-    multi_json (1.14.1)
+    minitest (5.14.2)
+    multi_json (1.15.0)
     multipart-post (2.1.1)
     mustache (0.99.8)
     net-http-persistent (2.9.4)
@@ -65,7 +65,7 @@ GEM
       insist
       mustache (= 0.99.8)
       stud
-    public_suffix (4.0.4)
+    public_suffix (4.0.6)
     pusher-client (0.6.2)
       json
       websocket (~> 1.0)
@@ -95,7 +95,7 @@ PLATFORMS
 DEPENDENCIES
   dpl
   fpm
-  travis (>= 1.8.12)
+  travis (>= 1.8.13)
 
 BUNDLED WITH
    1.17.3
