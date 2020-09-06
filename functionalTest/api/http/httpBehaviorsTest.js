@@ -665,7 +665,7 @@ const assert = require('assert'),
                 });
             });
 
-            promiseIt('should compose multiple behaviors together', function () {
+            promiseIt('should compose multiple behaviors together (old interface for backwards compatibility)', function () {
                 const shellFn = function exec () {
                         console.log(process.argv[3].replace('${SALUTATION}', 'Hello'));
                     },
@@ -714,6 +714,103 @@ const assert = require('assert'),
                     return client.get('/?punctuation=!', port);
                 }).then(response => {
                     assert.strictEqual(response.body, 'No behaviors');
+                }).finally(() => {
+                    fs.unlinkSync('shellTransformTest.js');
+                    return api.del('/imposters');
+                });
+            });
+
+            promiseIt('should apply behaviors in sequence', function () {
+                const first = config => {
+                        config.response.body += '1';
+                    },
+                    second = config => {
+                        config.response.body += '2';
+                    },
+                    third = config => {
+                        config.response.body += '3';
+                    },
+                    stub = {
+                        responses: [
+                            {
+                                is: { body: '' },
+                                behaviors: [
+                                    { decorate: first.toString() },
+                                    { decorate: third.toString() },
+                                    { decorate: second.toString() }
+                                ]
+                            }
+                        ]
+                    },
+                    stubs = [stub],
+                    request = { protocol, port, stubs: stubs };
+
+                return api.post('/imposters', request).then(response => {
+                    assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body, null, 2));
+                    return client.get('/', port);
+                }).then(response => {
+                    assert.strictEqual(response.body, '132');
+                }).finally(() => {
+                    return api.del('/imposters');
+                });
+            });
+
+            promiseIt('should apply multiple behaviors in sequence with repeat (new format)', function () {
+                const shellFn = function exec () {
+                        const response = JSON.parse(process.env.MB_RESPONSE);
+                        response.body += '-shellTransform';
+                        console.log(JSON.stringify(response));
+                    },
+                    decorator = config => {
+                        config.response.body += '-${decorate}';
+                    },
+                    stub = {
+                        responses: [
+                            {
+                                is: { body: '' },
+                                repeat: 2,
+                                behaviors: [
+                                    { decorate: decorator.toString() },
+                                    {
+                                        copy: {
+                                            from: 'path',
+                                            into: '${decorate}',
+                                            using: { method: 'regex', selector: '.+' }
+                                        }
+                                    },
+                                    { shellTransform: 'node ./shellTransformTest.js' },
+                                    { wait: 100 },
+                                    { decorate: decorator.toString() },
+                                    { wait: 150 }
+                                ]
+                            },
+                            {
+                                is: { body: 'no behaviors' }
+                            }
+                        ]
+                    },
+                    stubs = [stub],
+                    request = { protocol, port, stubs: stubs };
+                let start;
+
+                fs.writeFileSync('shellTransformTest.js', util.format('%s\nexec();', shellFn.toString()));
+
+                return api.post('/imposters', request).then(response => {
+                    assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body, null, 2));
+                    start = new Date();
+                    return client.get('/first', port);
+                }).then(response => {
+                    assert.strictEqual(response.body, '-/first-shellTransform-${decorate}');
+                    const time = new Date() - start;
+
+                    // Occasionally there's some small inaccuracies
+                    assert.ok(time >= 220, `actual time: ${time}`);
+                    return client.get('/second', port);
+                }).then(response => {
+                    assert.strictEqual(response.body, '-/second-shellTransform-${decorate}');
+                    return client.get('/third', port);
+                }).then(response => {
+                    assert.strictEqual(response.body, 'no behaviors');
                 }).finally(() => {
                     fs.unlinkSync('shellTransformTest.js');
                     return api.del('/imposters');
