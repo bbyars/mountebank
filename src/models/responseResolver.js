@@ -160,7 +160,6 @@ function create (stubs, proxy, callbackURL) {
                 }
                 else if (key === 'predicateOperator') {
                     hasPredicateOperator = true;
-                    predicateOperator = matcher[key];
                 }
             });
 
