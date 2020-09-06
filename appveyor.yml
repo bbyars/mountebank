@@ -15,6 +15,7 @@ environment:
   matrix:
     - MB_APPVEYOR_CONFIG: "NODE_VERSION=12|MB_GRUNT_TASK=persistent outOfProcessImposters default|MB_PORT=3535"
     - MB_APPVEYOR_CONFIG: "NODE_VERSION=10|MB_GRUNT_TASK=test:zip|MB__PORT=3535"
+    - MB_APPVEYOR_CONFIG: "NODE_VERSION=12|MB_GRUNT_TASK=test:dbPerformance"
 
 cache:
   - node_modules -> package.json
