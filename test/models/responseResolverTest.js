@@ -14,7 +14,7 @@ describe('responseResolver', function () {
 
     function cleanedProxyResponse (response) {
         if (helpers.defined(response.is)) {
-            delete response.is._proxyResponseTime; // eslint-disable-line no-underscore-dangle
+            delete response.is._proxyResponseTime;
         }
         return response;
     }
@@ -156,10 +156,10 @@ describe('responseResolver', function () {
                 .then(() => stubs.toJSON())
                 .then(all => {
                     const stubResponses = all.map(stub => stub.responses),
-                        wait = stubResponses[0][0].is._proxyResponseTime; // eslint-disable-line no-underscore-dangle
+                        wait = stubResponses[0][0].is._proxyResponseTime;
                     assert.ok(wait > 90); // allow some variability
                     assert.deepEqual(stubResponses, [
-                        [{ is: { data: 'value', _proxyResponseTime: wait }, _behaviors: { wait: wait } }],
+                        [{ is: { data: 'value', _proxyResponseTime: wait }, behaviors: [{ wait: wait }] }],
                         [{ proxy: { to: 'where', addWaitBehavior: true } }]
                     ]);
                 });
@@ -189,13 +189,13 @@ describe('responseResolver', function () {
                 }).then(() => stubs.toJSON())
                 .then(all => {
                     const stubResponses = all.map(stub => stub.responses),
-                        firstWait = stubResponses[1][0].is._proxyResponseTime, // eslint-disable-line no-underscore-dangle
-                        secondWait = stubResponses[1][1].is._proxyResponseTime; // eslint-disable-line no-underscore-dangle
+                        firstWait = stubResponses[1][0].is._proxyResponseTime,
+                        secondWait = stubResponses[1][1].is._proxyResponseTime;
                     assert.deepEqual(stubResponses, [
                         [{ proxy: { to: 'where', mode: 'proxyAlways', addWaitBehavior: true } }],
                         [
-                            { is: { data: 1, _proxyResponseTime: firstWait }, _behaviors: { wait: firstWait } },
-                            { is: { data: 2, _proxyResponseTime: secondWait }, _behaviors: { wait: secondWait } }
+                            { is: { data: 1, _proxyResponseTime: firstWait }, behaviors: [{ wait: firstWait }] },
+                            { is: { data: 2, _proxyResponseTime: secondWait }, behaviors: [{ wait: secondWait }] }
                         ]
                     ]);
                 });
@@ -209,7 +209,7 @@ describe('responseResolver', function () {
                 logger = Logger.create(),
                 response = {
                     proxy: { to: 'where' },
-                    _behaviors: { decorate: decorateFunc.toString() }
+                    behaviors: [{ decorate: decorateFunc.toString() }]
                 },
                 request = {};
 
@@ -221,7 +221,7 @@ describe('responseResolver', function () {
                     const stubResponses = all.map(stub => proxyResponses(stub.responses));
                     assert.deepEqual(stubResponses, [
                         [{ is: { data: 'RESPONSE-DECORATED' } }],
-                        [{ proxy: { to: 'where' }, _behaviors: { decorate: decorateFunc.toString() } }]
+                        [{ proxy: { to: 'where' }, behaviors: [{ decorate: decorateFunc.toString() }] }]
                     ]);
                 });
         });
@@ -241,7 +241,7 @@ describe('responseResolver', function () {
                 .then(all => {
                     const stubResponses = all.map(stub => proxyResponses(stub.responses));
                     assert.deepEqual(stubResponses, [
-                        [{ is: { data: 'value' }, _behaviors: { decorate: decorateFunc } }],
+                        [{ is: { data: 'value' }, behaviors: [{ decorate: decorateFunc }] }],
                         [{ proxy: { to: 'where', addDecorateBehavior: decorateFunc } }]
                     ]);
                 });
@@ -267,8 +267,8 @@ describe('responseResolver', function () {
                     assert.deepEqual(stubResponses, [
                         [{ proxy: { to: 'where', mode: 'proxyAlways', addDecorateBehavior: decorateFunc } }],
                         [
-                            { is: { data: 'value' }, _behaviors: { decorate: decorateFunc } },
-                            { is: { data: 'value' }, _behaviors: { decorate: decorateFunc } }
+                            { is: { data: 'value' }, behaviors: [{ decorate: decorateFunc }] },
+                            { is: { data: 'value' }, behaviors: [{ decorate: decorateFunc }] }
                         ]
                     ]);
                 });
@@ -1039,7 +1039,7 @@ describe('responseResolver', function () {
                 logger = Logger.create(),
                 responseConfig = {
                     is: 'value',
-                    _behaviors: { wait: 50 }
+                    behaviors: [{ wait: 50 }]
                 },
                 request = { key: 'request' };
 
@@ -1061,7 +1061,7 @@ describe('responseResolver', function () {
                 fn = () => 50,
                 responseConfig = {
                     is: 'value',
-                    _behaviors: { wait: fn.toString() }
+                    behaviors: [{ wait: fn.toString() }]
                 },
                 request = { key: 'request' };
 
@@ -1083,7 +1083,7 @@ describe('responseResolver', function () {
                 },
                 responseConfig = {
                     is: 'value',
-                    _behaviors: { wait: fn.toString() }
+                    behaviors: [{ wait: fn.toString() }]
                 },
                 request = { key: 'request' };
 
@@ -1158,8 +1158,8 @@ describe('responseResolver', function () {
     describe('#resolveProxy', function () {
         function jsonResponse (response) {
             delete response.recordMatch;
-            if (helpers.defined(response._proxyResponseTime)) { // eslint-disable-line no-underscore-dangle
-                delete response._proxyResponseTime; // eslint-disable-line no-underscore-dangle
+            if (helpers.defined(response._proxyResponseTime)) {
+                delete response._proxyResponseTime;
             }
             return response;
         }
@@ -1240,7 +1240,7 @@ describe('responseResolver', function () {
                 logger = Logger.create(),
                 proxyResponse = {
                     proxy: { to: 'where', mode: 'proxyOnce' },
-                    _behaviors: { decorate: decorateFunc.toString() }
+                    behaviors: [{ decorate: decorateFunc.toString() }]
                 },
                 request = {};
 
@@ -1281,10 +1281,10 @@ describe('responseResolver', function () {
                     return stubs.toJSON();
                 }).then(all => {
                     const stubResponses = all.map(stub => stub.responses),
-                        wait = stubResponses[0][0].is._proxyResponseTime; // eslint-disable-line no-underscore-dangle
+                        wait = stubResponses[0][0].is._proxyResponseTime;
                     assert.ok(wait > 90); // allow some variability
                     assert.deepEqual(stubResponses, [
-                        [{ is: { data: 'RESPONSE', _proxyResponseTime: wait }, _behaviors: { wait: wait } }],
+                        [{ is: { data: 'RESPONSE', _proxyResponseTime: wait }, behaviors: [{ wait: wait }] }],
                         [proxyResponse]
                     ]);
                 });

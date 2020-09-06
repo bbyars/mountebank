@@ -56,8 +56,9 @@ what that means, so he always returns <code>true</code> or <code>false</code>.</
     </tr>
     <tr>
         <td><code>state</code></td>
-        <td>An initially empty object that will be shared between both predicate
-        and response injection functions. You can use it to capture shared state.</td>
+        <td>An initially empty object that will be shared between predicate
+        and response injection functions as well as the <code>decorate</code> behavior.
+        You can use it to capture and mutate shared state.</td>
     </tr>
     <tr>
         <td><code>logger</code></td>
@@ -177,7 +178,8 @@ object takes a single parameter which will contain the following fields:</p>
         <td>mountebank maintains this variable for you
             that will be empty on the first injection.  The same variable will be passed into
             every <code>inject</code> function, allowing you to remember state between calls,
-            even between stubs. It will be shared with predicate <code>inject</code> functions.</td>
+            even between stubs. It will be shared with predicate <code>inject</code> functions
+            and <code>decorate</code> behaviors.</td>
     </tr>
     <tr>
         <td><code>callback</code></td>

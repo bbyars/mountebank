@@ -121,7 +121,7 @@ describe('dryRunValidator', function () {
                 },
                 request = {
                     stubs: [{
-                        responses: [{ is: { statusCode: 400 }, _behaviors: { decorate: decorator.toString() } }]
+                        responses: [{ is: { statusCode: 400 }, behaviors: [{ decorate: decorator.toString() }] }]
                     }]
                 },
                 validator = Validator.create({ testRequest, allowInjection: true });
@@ -181,7 +181,7 @@ describe('dryRunValidator', function () {
                 },
                 request = {
                     stubs: [{
-                        responses: [{ is: { statusCode: 400 }, _behaviors: { decorate: decorator.toString() } }]
+                        responses: [{ is: { statusCode: 400 }, behaviors: [{ decorate: decorator.toString() }] }]
                     }]
                 },
                 validator = Validator.create({ testRequest, allowInjection: false });
@@ -368,10 +368,9 @@ describe('dryRunValidator', function () {
         promiseIt('should add behavior validation errors', function () {
             const request = { stubs: [{ responses: [{
                     is: { statusCode: 400 },
-                    _behaviors: {
-                        wait: -1,
-                        repeat: -1
-                    }
+                    behaviors: [
+                        { wait: -1 }
+                    ]
                 }] }] },
                 validator = Validator.create({ testRequest });
 
@@ -382,12 +381,49 @@ describe('dryRunValidator', function () {
                         {
                             code: 'bad data',
                             message: 'wait behavior "wait" field must be an integer greater than or equal to 0',
-                            source: { wait: -1, repeat: -1 }
-                        },
+                            source: { wait: -1 }
+                        }
+                    ]
+                });
+            });
+        });
+
+        promiseIt('should error on invalid response repeat number', function () {
+            const request = { stubs: [{ responses: [{
+                    is: { statusCode: 400 },
+                    repeat: 0
+                }] }] },
+                validator = Validator.create({ testRequest });
+
+            return validator.validate(request, Logger.create()).then(result => {
+                assert.deepEqual(result, {
+                    isValid: false,
+                    errors: [
                         {
                             code: 'bad data',
-                            message: 'repeat behavior "repeat" field must be an integer greater than 0',
-                            source: { wait: -1, repeat: -1 }
+                            message: '"repeat" field must be an integer greater than 0',
+                            source: { is: { statusCode: 400 }, repeat: 0 }
+                        }
+                    ]
+                });
+            });
+        });
+
+        promiseIt('should error on invalid response repeat type', function () {
+            const request = { stubs: [{ responses: [{
+                    is: { statusCode: 400 },
+                    repeat: true
+                }] }] },
+                validator = Validator.create({ testRequest });
+
+            return validator.validate(request, Logger.create()).then(result => {
+                assert.deepEqual(result, {
+                    isValid: false,
+                    errors: [
+                        {
+                            code: 'bad data',
+                            message: '"repeat" field must be an integer greater than 0',
+                            source: { is: { statusCode: 400 }, repeat: true }
                         }
                     ]
                 });
@@ -397,7 +433,7 @@ describe('dryRunValidator', function () {
         promiseIt('should allow functions as wait behavior if injections allowed', function () {
             const request = { stubs: [{ responses: [{
                     is: { statusCode: 400 },
-                    _behaviors: { wait: '() => { return 1000; }' }
+                    behaviors: [{ wait: '() => { return 1000; }' }]
                 }] }] },
                 validator = Validator.create({ testRequest, allowInjection: true });
 
@@ -412,7 +448,7 @@ describe('dryRunValidator', function () {
         promiseIt('should not allow functions as wait behavior if injections not allowed', function () {
             const response = {
                     is: { statusCode: 400 },
-                    _behaviors: { wait: '() => { return 1000; }' }
+                    behaviors: [{ wait: '() => { return 1000; }' }]
                 },
                 request = { stubs: [{ responses: [response] }] },
                 validator = Validator.create({ testRequest, allowInjection: false });
@@ -467,7 +503,7 @@ describe('dryRunValidator', function () {
         promiseIt('should not be valid for shellTransform if injections are disallowed', function () {
             const request = {
                     stubs: [{
-                        responses: [{ is: {}, _behaviors: { shellTransform: ['command'] } }]
+                        responses: [{ is: {}, behaviors: [{ shellTransform: 'command' }] }]
                     }]
                 },
                 validator = Validator.create({ testRequest, allowInjection: false });
@@ -503,6 +539,71 @@ describe('dryRunValidator', function () {
                         code: 'invalid injection',
                         message: 'JavaScript injection is not allowed unless mb is run with the --allowInjection flag',
                         source: request.stubs[0]
+                    }]
+                });
+            });
+        });
+
+        promiseIt('should error on unrecognized behavior', function () {
+            const request = {
+                    stubs: [{
+                        responses: [{
+                            is: { key: 'value' },
+                            behaviors: [{ wait: 100 }, { INVALID: 100 }, { decorate: '() => {}' }]
+                        }]
+                    }]
+                },
+                validator = Validator.create({ testRequest, allowInjection: true });
+
+            return validator.validate(request, Logger.create()).then(result => {
+                assert.deepEqual(result, {
+                    isValid: false,
+                    errors: [{
+                        code: 'bad data',
+                        message: 'Unrecognized behavior: "INVALID"',
+                        source: { INVALID: 100 }
+                    }]
+                });
+            });
+        });
+
+        promiseIt('should not error on valid behavior with unrecognized field', function () {
+            const request = {
+                    stubs: [{
+                        responses: [{
+                            is: { key: 'value' },
+                            behaviors: [{ wait: 100, INVALID: 100 }]
+                        }]
+                    }]
+                },
+                validator = Validator.create({ testRequest, allowInjection: true });
+
+            return validator.validate(request, Logger.create()).then(result => {
+                assert.deepEqual(result, {
+                    isValid: true,
+                    errors: []
+                });
+            });
+        });
+
+        promiseIt('should error on two valid behaviors in same object', function () {
+            const request = {
+                    stubs: [{
+                        responses: [{
+                            is: { key: 'value' },
+                            behaviors: [{ wait: 100, decorate: '() => {}' }]
+                        }]
+                    }]
+                },
+                validator = Validator.create({ testRequest, allowInjection: true });
+
+            return validator.validate(request, Logger.create()).then(result => {
+                assert.deepEqual(result, {
+                    isValid: false,
+                    errors: [{
+                        code: 'bad data',
+                        message: 'Each behavior object must have only one behavior type',
+                        source: { wait: 100, decorate: '() => {}' }
                     }]
                 });
             });

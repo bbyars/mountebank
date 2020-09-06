@@ -85,7 +85,7 @@
         "no-throw-literal": 2,
         "no-trailing-spaces": 2,
         "no-undef-init": 2,
-        "no-underscore-dangle": [2, { "allow": ["_links", "_behaviors", "_mode"] }],
+        "no-underscore-dangle": [2, { "allow": ["_links", "_behaviors", "_mode", "_proxyResponseTime"] }],
         "no-unneeded-ternary": 2,
         "no-unused-expressions": 2,
         "no-useless-call": 2,

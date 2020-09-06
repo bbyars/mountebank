@@ -92,7 +92,7 @@ describe('--host', function () {
                 .then(() => http.responseFor({ method: 'GET', path: '/', hostname: 'localhost', port: mb.port }))
                 .then(
                     () => { assert.fail(`should not have connected (hostname: ${hostname})`); },
-                    error => { assert.strictEqual(error.errno, 'ECONNREFUSED'); })
+                    error => { assert.strictEqual(error.code, 'ECONNREFUSED'); })
                 .finally(() => mb.stop());
         });
 
@@ -125,7 +125,7 @@ describe('--host', function () {
                         assert.fail('should not have connected to localhost');
                     },
                     error => {
-                        assert.strictEqual(error.errno, 'ECONNREFUSED');
+                        assert.strictEqual(error.code, 'ECONNREFUSED');
                     }
                 )
                 .finally(() => mb.stop());
@@ -151,7 +151,7 @@ describe('--host', function () {
                 })
                 .then(
                     () => { assert.fail('should not have connected to localhost'); },
-                    error => { assert.strictEqual(error.errno, 'ECONNREFUSED'); }
+                    error => { assert.strictEqual(error.code, 'ECONNREFUSED'); }
                 )
                 .finally(() => mb.stop());
         });
@@ -170,7 +170,8 @@ describe('--host', function () {
                 .then(() => client.send(message, imposter.port, 'localhost'))
                 .then(
                     () => { assert.fail('should not have connected to localhost'); },
-                    error => { assert.strictEqual(error.errno, 'ECONNREFUSED'); }
+                    // ESOCKET in node v14, ECONNREFUSED before
+                    error => { assert.ok(['ECONNREFUSED', 'ESOCKET'].indexOf(error.code) >= 0); }
                 )
                 .finally(() => mb.stop());
         });

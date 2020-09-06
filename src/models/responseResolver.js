@@ -197,17 +197,17 @@ function create (stubs, proxy, callbackURL) {
 
     function newIsResponse (response, proxyConfig) {
         const result = { is: response };
-        const addBehaviors = {};
+        const addBehaviors = [];
 
-        if (proxyConfig.addWaitBehavior && response._proxyResponseTime) { // eslint-disable-line no-underscore-dangle
-            addBehaviors.wait = response._proxyResponseTime; // eslint-disable-line no-underscore-dangle
+        if (proxyConfig.addWaitBehavior && response._proxyResponseTime) {
+            addBehaviors.push({ wait: response._proxyResponseTime });
         }
         if (proxyConfig.addDecorateBehavior) {
-            addBehaviors.decorate = proxyConfig.addDecorateBehavior;
+            addBehaviors.push({ decorate: proxyConfig.addDecorateBehavior });
         }
 
-        if (Object.keys(addBehaviors).length > 0) {
-            result._behaviors = addBehaviors;
+        if (addBehaviors.length > 0) {
+            result.behaviors = addBehaviors;
         }
         return result;
     }
@@ -245,7 +245,7 @@ function create (stubs, proxy, callbackURL) {
         }
     }
 
-    function proxyAndRecord (responseConfig, request, logger, requestDetails) {
+    function proxyAndRecord (responseConfig, request, logger, requestDetails, imposterState) {
         const Q = require('q'),
             startTime = new Date(),
             behaviors = require('./behaviors');
@@ -256,11 +256,10 @@ function create (stubs, proxy, callbackURL) {
 
         if (inProcessProxy) {
             return proxy.to(responseConfig.proxy.to, request, responseConfig.proxy, requestDetails).then(response => {
-                // eslint-disable-next-line no-underscore-dangle
                 response._proxyResponseTime = new Date() - startTime;
 
                 // Run behaviors here to persist decorated response
-                return Q(behaviors.execute(request, response, responseConfig._behaviors, logger));
+                return Q(behaviors.execute(request, response, responseConfig.behaviors, logger, imposterState));
             }).then(response => {
                 return recordProxyResponse(responseConfig, request, response, logger).then(() => response);
             });
@@ -291,7 +290,7 @@ function create (stubs, proxy, callbackURL) {
             return Q(helpers.clone(responseConfig.is));
         }
         else if (responseConfig.proxy) {
-            return proxyAndRecord(responseConfig, request, logger, requestDetails);
+            return proxyAndRecord(responseConfig, request, logger, requestDetails, imposterState);
         }
         else if (responseConfig.inject) {
             return inject(request, responseConfig.inject, logger, imposterState).then(Q);
@@ -336,7 +335,7 @@ function create (stubs, proxy, callbackURL) {
                 return Q(response);
             }
             else {
-                return Q(behaviors.execute(request, response, responseConfig._behaviors, logger));
+                return Q(behaviors.execute(request, response, responseConfig.behaviors, logger, imposterState));
             }
         }).then(response => {
             if (inProcessProxy) {
@@ -358,18 +357,18 @@ function create (stubs, proxy, callbackURL) {
      * @param {Object} proxyResponse - the proxy response from the protocol implementation
      * @param {Number} proxyResolutionKey - the key into the saved proxy state
      * @param {Object} logger - the logger
+     * @param {Object} imposterState - the user controlled state variable
      * @returns {Object} - Promise resolving to the response
      */
-    function resolveProxy (proxyResponse, proxyResolutionKey, logger) {
+    function resolveProxy (proxyResponse, proxyResolutionKey, logger, imposterState) {
         const pendingProxyConfig = pendingProxyResolutions[proxyResolutionKey],
             behaviors = require('./behaviors'),
             Q = require('q');
 
         if (pendingProxyConfig) {
-            // eslint-disable-next-line no-underscore-dangle
             proxyResponse._proxyResponseTime = new Date() - pendingProxyConfig.startTime;
 
-            return behaviors.execute(pendingProxyConfig.request, proxyResponse, pendingProxyConfig.responseConfig._behaviors, logger)
+            return behaviors.execute(pendingProxyConfig.request, proxyResponse, pendingProxyConfig.responseConfig.behaviors, logger, imposterState)
                 .then(response => {
                     return recordProxyResponse(pendingProxyConfig.responseConfig, pendingProxyConfig.request, response, logger)
                         .then(() => {
