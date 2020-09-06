@@ -77,6 +77,12 @@
  * Keeping all imposter information under a directory (instead of having metadata outside the directory)
  * allows us to remove the imposter by simply removing the directory.
  *
+ * There are some extra checks on filesystem operations due to antivirus software, solar flares,
+ * gremlins, etc. graceful-fs solves some of these, but apparently not all.
+ * As a breadcrumb trail, two things changed when I started getting errors under load locally: I upgraded to
+ * OSX Catalina, and I tested on a slower machine after an accident with a gin and tonic on my previous
+ * developer-spec'd machine. I would love some help in making those operations more robust!
+ *
  * @module
  */
 
@@ -132,7 +138,7 @@ function create (config, logger) {
 
     function readFile (filepath, defaultContents) {
         const deferred = Q.defer(),
-            fs = require('fs'),
+            fs = require('fs-extra'),
             errors = require('../util/errors');
 
         fs.readFile(filepath, 'utf8', (err, data) => {
@@ -164,7 +170,7 @@ function create (config, logger) {
 
     function rename (oldPath, newPath) {
         const deferred = Q.defer(),
-            fs = require('fs');
+            fs = require('fs-extra');
         fs.stat(oldPath, (statErr, stats) => {
             if (statErr) {
                 deferred.reject(prettyError(statErr, oldPath));
@@ -201,7 +207,7 @@ function create (config, logger) {
         return deferred.promise;
     }
 
-    function readAndWriteFile (filepath, caller, transformer, defaultContents) {
+    function lockFile (filepath) {
         const locker = require('proper-lockfile'),
             options = {
                 realpath: false,
@@ -211,24 +217,31 @@ function create (config, logger) {
                     minTimeout: 50,
                     maxTimeout: 5000,
                     randomize: true
-                }
-            },
+                },
+                stale: 6000
+            };
+
+        // with realpath = false, the file doesn't have to exist, but the directory does
+        return ensureDir(filepath)
+            .then(() => {
+                // There appears to be a race condition releasing the lock in proper-lockfile
+                // The setImmediate triggers another event loop which lets the previous
+                // lock properly release
+                const deferred = Q.defer();
+                setImmediate(() => deferred.resolve(locker.lock(filepath, options)));
+                return deferred.promise;
+            });
+    }
+
+    function readAndWriteFile (filepath, caller, transformer, defaultContents) {
+        const locker = require('proper-lockfile'),
             tmpfile = filepath + '.tmp',
             currentLockId = locks,
             start = new Date();
 
         locks += 1;
 
-        // with realpath = false, the file doesn't have to exist, but the directory does
-        return ensureDir(filepath)
-            .then(() => {
-                const deferred = Q.defer();
-                setTimeout(() =>
-                    deferred.resolve(locker.lock(filepath, options))
-                , 0);
-                return deferred.promise;
-            }
-            )
+        return lockFile(filepath)
             .then(release => {
                 const lockStart = new Date(),
                     lockWait = lockStart - start;
