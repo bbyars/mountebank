@@ -55,6 +55,14 @@ function create () {
         return fieldName.indexOf('_') !== 0;
     }
 
+    function isTopLevelSpec (spec) {
+        const helpers = require('../util/helpers');
+
+        // True of copy and lookup behaviors that define the metadata below the top level keys
+        return helpers.isObject(spec)
+            && Object.keys(spec).filter(nonMetadata).length === Object.keys(spec).length;
+
+    }
     function enumFieldFor (field) {
         const isObject = require('../util/helpers').isObject;
 
@@ -75,23 +83,6 @@ function create () {
         // eslint-disable-next-line no-underscore-dangle
         if (fieldSpec._required) {
             addErrorFn(path, 'required');
-        }
-    }
-
-    function addArrayErrors (fieldSpec, path, field, addErrorFn) {
-        const util = require('util');
-
-        if (!util.isArray(field)) {
-            addErrorFn(path, 'must be an array');
-        }
-        else {
-            field.forEach(function (subConfig) {
-                // Scope error message to array element instead of entire array
-                const newAddErrorFn = function (fieldName, message) {
-                    return addErrorFn(fieldName, message, subConfig);
-                };
-                addErrorsFor(subConfig, '', fieldSpec[0], newAddErrorFn);
-            });
         }
     }
 
@@ -126,8 +117,7 @@ function create () {
 
     function addErrorsFor (config, pathPrefix, spec, addErrorFn) {
         Object.keys(spec).filter(nonMetadata).forEach(fieldName => {
-            const util = require('util'),
-                helpers = require('../util/helpers'),
+            const helpers = require('../util/helpers'),
                 fieldSpec = spec[fieldName],
                 path = pathFor(pathPrefix, fieldName),
                 field = navigate(config, path);
@@ -135,8 +125,10 @@ function create () {
             if (!helpers.defined(field)) {
                 addMissingFieldError(fieldSpec, path, addErrorFn);
             }
-            else if (util.isArray(fieldSpec)) {
-                addArrayErrors(fieldSpec, path, field, addErrorFn);
+            else if (isTopLevelSpec(fieldSpec)) {
+                // Recurse but reset pathPrefix so error message is cleaner
+                // e.g. 'copy behavior "from" field required' instead of 'copy behavior "copy.from" field required'
+                addErrorsFor(field, '', fieldSpec, addErrorFn);
             }
             else {
                 addTypeErrors(fieldSpec, path, field, config, addErrorFn);
@@ -147,25 +139,42 @@ function create () {
     /**
      * Validates the behavior configuration and returns all errors
      * @memberOf module:models/behaviorsValidator#
-     * @param {Object} config - The behavior configuration
+     * @param {Object} behaviors - The behaviors list
      * @param {Object} validationSpec - the specification to validate against
      * @returns {Object} The array of errors
      */
-    function validate (config, validationSpec) {
+    function validate (behaviors, validationSpec) {
         const errors = [];
 
-        Object.keys(config || {}).forEach(key => {
-            const util = require('util'),
-                addErrorFn = function (field, message, subConfig) {
-                    errors.push(exceptions.ValidationError(
-                        util.format('%s behavior "%s" field %s', key, field, message),
-                        { source: subConfig || config }));
-                },
-                spec = {};
+        (behaviors || []).forEach(config => {
+            const validBehaviors = [],
+                unrecognizedKeys = [];
 
-            if (validationSpec[key]) {
-                spec[key] = validationSpec[key];
-                addErrorsFor(config, '', spec, addErrorFn);
+            Object.keys(config).forEach(key => {
+                const addError = function (field, message, subConfig) {
+                        errors.push(exceptions.ValidationError(`${key} behavior "${field}" field ${message}`,
+                            { source: subConfig || config }));
+                    },
+                    spec = {};
+
+                if (validationSpec[key]) {
+                    validBehaviors.push(key);
+                    spec[key] = validationSpec[key];
+                    addErrorsFor(config, '', spec, addError);
+                }
+                else {
+                    unrecognizedKeys.push({ key: key, source: config });
+                }
+            });
+
+            // Allow adding additional custom fields to valid behaviors but ensure there is a valid behavior
+            if (validBehaviors.length === 0 && unrecognizedKeys.length > 0) {
+                errors.push(exceptions.ValidationError(`Unrecognized behavior: "${unrecognizedKeys[0].key}"`,
+                    { source: unrecognizedKeys[0].source }));
+            }
+            if (validBehaviors.length > 1) {
+                errors.push(exceptions.ValidationError('Each behavior object must have only one behavior type',
+                    { source: config }));
             }
         });
 

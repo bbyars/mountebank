@@ -8,10 +8,10 @@
 <span id='imposter-cert'><%- indent(2) %>&quot;cert&quot;: &quot;-----BEGIN CERTIFICATE-----\nMIIB6TCCAVICCQCZgxbBD0CG4zANBgkqhkiG9w0BAQUFADA5MQswCQYDVQQGEwJV\nUzETMBEGA1UECBMKU29tZS1TdGF0ZTEVMBMGA1UEChMMVGhvdWdodFdvcmtzMB4X\nDTEzMTIyOTE2NDAzN1oXDTE0MDEyODE2NDAzN1owOTELMAkGA1UEBhMCVVMxEzAR\nBgNVBAgTClNvbWUtU3RhdGUxFTATBgNVBAoTDFRob3VnaHRXb3JrczCBnzANBgkq\nhkiG9w0BAQEFAAOBjQAwgYkCgYEAq77HtOGJMbVRmoMrxiQrL7+y03yyubkf2SCS\ng2Ap7hfgagczOJZKPDt/b8fi8/RXxddV5fgjdWmN+2Lqy2DpXt3Qv6rJUm0A3tky\nTe5XFR1bLHj73DuSBMabzRVeS2LZsgjCiR8aZyKa7/7a1LKOaG6s814RVT1fUkGx\nR/7JyJ8CAwEAATANBgkqhkiG9w0BAQUFAAOBgQCPhixeKxIy+ftrfPikwjYo1uxp\ngQ18FdVN1pbI//IIx1o8kJuX8yZzO95PsCOU0GbIRCkFMhBlqHiD9H0/W/GvWzjf\n7WFW15lL61y/kH1J0wqEgoaMrUDjHZvKVr0HrN+vSxHlNQcSNFJ2KdvZ5a9dhpGf\nXOdprCdUUXzSoJWCCg==\n-----END CERTIFICATE-----&quot;,</span>
 <span id='imposter-mutualAuth'><%- indent(2) %>&quot;mutualAuth&quot;: false,</span>
 <span id='imposter-defaultResponse'><%- indent(2) %>&quot;defaultResponse&quot;: {
-      &quot;statusCode&quot;: 400,
-      &quot;body&quot;: &quot;Bad Request&quot;,
-      &quot;headers&quot;: {}
-    },</span>
+    &quot;statusCode&quot;: 400,
+    &quot;body&quot;: &quot;Bad Request&quot;,
+    &quot;headers&quot;: {}
+  },</span>
 <span id='imposter-stubs'><%- indent(2) %>&quot;stubs&quot;: [</span>
     {
 <span id='imposter-stubs-responses'><%- indent(6) %>&quot;responses&quot;: [</span>
@@ -24,61 +24,44 @@
             &quot;body&quot;: &quot;The time is ${TIME}&quot;,
             &quot;_mode&quot;: &quot;text&quot;
           },</span>
-<span id='imposter-stubs-_behaviors'><%- indent(10) %>&quot;_behaviors&quot;: {</span>
-<span id='imposter-stubs-_behaviors-wait'><%- indent(12) %>&quot;wait&quot;: 500,</span>
-<span id='imposter-stubs-_behaviors-repeat'><%- indent(12) %>&quot;repeat&quot;: 3,</span>
-<span id='imposter-stubs-_behaviors-decorate'><%- indent(12) %>&quot;decorate&quot;: &quot;(request, response) => { response.body = response.body.replace('${TIME}', 'now'); }&quot;,</span>
-<span id='imposter-stubs-_behaviors-shellTransform'><%- indent(12) %>&quot;shellTransform&quot;: [&quot;transformResponse&quot;],</span>
-<span id='imposter-stubs-_behaviors-copy'><%- indent(12) %>&quot;copy&quot;: [
-                {
-                    "from": { "headers": "If-Modified-Since" },
-                    "into": "${DATE}",
-                    "using": {
-                        "method": "regex",
-                        "selector": "(\\w+), (\\d+) (\\w+) (\\d+)",
-                        "options": { "ignoreCase": true, "multiline": true }
-                    }
-                },
-                {
-                    "from": "body",
-                    "into": "${NAME}",
-                    "using": {
-                        "method": "xpath",
-                        "selector": "//test:name",
-                        "ns": { "test": "http://example.com/test" }
-                    }
-                },
-                {
-                    "from": { "query": "json" },
-                    "into": "(VALUE)",
-                    "using": {
-                        "method": "jsonpath",
-                        "selector": "$..value"
-                    }
+<span id='imposter-stubs-responses-repeat'><%- indent(10) %>&quot;repeat&quot;: 3,</span>
+<span id='imposter-stubs-behaviors'><%- indent(10) %>&quot;behaviors&quot;: [</span>
+<span id='imposter-stubs-behaviors-wait'><%- indent(12) %>{ &quot;wait&quot;: 500 },</span>
+<span id='imposter-stubs-behaviors-decorate'><%- indent(12) %>{ &quot;decorate&quot;: &quot;config => { config.response.body = config.response.body.replace('${TIME}', 'now'); }&quot; },</span>
+<span id='imposter-stubs-behaviors-shellTransform'><%- indent(12) %>{ &quot;shellTransform&quot;: &quot;transformResponse&quot; },</span>
+<span id='imposter-stubs-behaviors-copy'><%- indent(12) %>{
+              &quot;copy&quot;: {
+                &quot;from&quot;: &quot;body&quot;,
+                &quot;into&quot;: &quot;${NAME}&quot;,
+                &quot;using&quot;: {
+                  &quot;method&quot;: &quot;xpath&quot;,
+                  &quot;selector&quot;: &quot;//test:name&quot;,
+                  &quot;ns&quot;: { &quot;test&quot;: &quot;http://example.com/test&quot; }
                 }
-            ],</span>
-<span id='imposter-stubs-_behaviors-lookup'><%- indent(12) %>&quot;lookup&quot;: [
-                {
-                    "key": {
-                      "from": { "headers": "If-Modified-Since" },
-                      "using": {
-                        "method": "regex",
-                        "selector": "(\\w+), (\\d+) (\\w+) (\\d+)",
-                        "options": { "ignoreCase": true, "multiline": true }
-                      },
-                      "index": 2
-                    },
-                    "fromDataSource": {
-                      "csv": {
-                        "path": "values.csv",
-                        "keyColumn": "month",
-                        "delimiter": ","
-                      }
-                    },
-                    "into": "${row}"
-                }
-            ]</span>
-          }
+              }
+            },</span>
+<span id='imposter-stubs-behaviors-lookup'><%- indent(12) %>{
+              &quot;lookup&quot;: {
+                &quot;key&quot;: {
+                  &quot;from&quot;: { &quot;headers&quot;: &quot;If-Modified-Since&quot; },
+                  &quot;using&quot;: {
+                    &quot;method&quot;: &quot;regex&quot;,
+                    &quot;selector&quot;: &quot;(\\w+), (\\d+) (\\w+) (\\d+)&quot;,
+                    &quot;options&quot;: { &quot;ignoreCase&quot;: true, &quot;multiline&quot;: true }
+                  },
+                  &quot;index&quot;: 2
+                },
+                &quot;fromDataSource&quot;: {
+                  &quot;csv&quot;: {
+                    &quot;path&quot;: &quot;values.csv&quot;,
+                    &quot;keyColumn&quot;: &quot;month&quot;,
+                    &quot;delimiter&quot;: &quot;,&quot;
+                  }
+                },
+                &quot;into&quot;: &quot;${row}&quot;
+              }
+            }</span>
+          ]
         },
         {
 <span id='imposter-stubs-responses-proxy'><%- indent(10) %>&quot;proxy&quot;: {</span>
@@ -99,24 +82,24 @@
                 &quot;caseSensitive&quot;: true,
                 &quot;except&quot;: &quot;^The^&quot;,
                 &quot;jsonpath&quot;: {
-                    &quot;selector&quot;: &quot;$..book&quot;
+                  &quot;selector&quot;: &quot;$..book&quot;
                 },
                 &quot;xpath&quot;: {
-                    &quot;selector&quot;: &quot;//book/@title&quot;,
-                    &quot;ns&quot;: {
-                        &quot;isbn&quot;: &quot;http://schemas.isbn.org/ns/1999/basic.dtd&quot;
-                    }
+                  &quot;selector&quot;: &quot;//book/@title&quot;,
+                  &quot;ns&quot;: {
+                    &quot;isbn&quot;: &quot;http://schemas.isbn.org/ns/1999/basic.dtd&quot;
+                  }
                 },
                 &quot;inject&quot;: &quot;function (config) { return []; }&quot;
               }
             ],</span>
 <span id='imposter-stubs-responses-proxy-injectHeaders'><%- indent(12) %>&quot;injectHeaders&quot;: {
-                &quot;X-Custom-Header&quot;: &quot;Served by mountebank&quot;
+              &quot;X-Custom-Header&quot;: &quot;Served by mountebank&quot;
             }</span>
           }
         },
         {
-<span id='imposter-stubs-responses-inject'><%- indent(10) %>&quot;inject&quot;: &quot;function (request, state, logger, callback) { callback({ body: 'It worked!' }); }&quot;</span>
+<span id='imposter-stubs-responses-inject'><%- indent(10) %>&quot;inject&quot;: &quot;function (config) { config.callback({ body: 'It worked!' }); }&quot;</span>
         }
       ],
 <span id='imposter-stubs-predicates'><%- indent(6) %>&quot;predicates&quot;: [</span>
@@ -137,7 +120,7 @@
           }
         },
         {
-<span id='imposter-stubs-predicates-inject'><%- indent(8) %>&quot;inject&quot;: &quot;function (request, logger) { return request.body.length &lt; 100; }&quot;</span>
+<span id='imposter-stubs-predicates-inject'><%- indent(8) %>&quot;inject&quot;: &quot;function (config) { return config.request.body.length &lt; 100; }&quot;</span>
         }
       ],
 <span id='imposter-stubs-matches' class='response'><%- indent(6) %>&quot;matches&quot;: [
@@ -170,7 +153,7 @@
     }
   ],</span>
 <span id='imposter-endOfRequestResolver'><%- indent(2) %>&quot;endOfRequestResolver&quot;: {
-    &quot;inject&quot;: &quot;function (request, logger) { return request.length &gt;= 100; }&quot;</span>
+    &quot;inject&quot;: &quot;function (config) { return config.request.length &gt;= 100; }&quot;</span>
   },
 <span id='imposter-requests' class='response'><%- indent(2) %>&quot;requests&quot;: [
     {

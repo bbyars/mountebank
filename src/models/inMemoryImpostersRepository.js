@@ -6,12 +6,7 @@
  */
 
 function repeatsFor (response) {
-    if (response._behaviors && response._behaviors.repeat) {
-        return response._behaviors.repeat;
-    }
-    else {
-        return 1;
-    }
+    return response.repeat || 1;
 }
 
 function repeatTransform (responses) {
@@ -227,7 +222,7 @@ function createStubsRepository () {
     }
 
     function isRecordedResponse (response) {
-        return response.is && typeof response.is._proxyResponseTime === 'number'; // eslint-disable-line no-underscore-dangle
+        return response.is && typeof response.is._proxyResponseTime === 'number';
     }
 
     /**

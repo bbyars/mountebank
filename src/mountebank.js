@@ -65,6 +65,10 @@ function getLocalIPs () {
     return result;
 }
 
+function ipWithoutZoneId (ip) {
+    return ip.replace(/%\w+/, '').toLowerCase();
+}
+
 function createIPVerification (options) {
     const allowedIPs = getLocalIPs();
 
@@ -82,7 +86,7 @@ function createIPVerification (options) {
                 return false;
             }
             else {
-                const allowed = allowedIPs.some(allowedIP => allowedIP === ip.toLowerCase());
+                const allowed = allowedIPs.some(allowedIP => allowedIP === ipWithoutZoneId(ip));
                 if (!allowed) {
                     logger.warn(`Blocking incoming connection from ${ip}. Turn off --localOnly or add to --ipWhitelist to allow`);
                 }
@@ -103,7 +107,7 @@ function loadCustomProtocols (protofile, logger) {
 
     const fs = require('fs'),
         path = require('path'),
-        filename = path.join(process.cwd(), protofile);
+        filename = path.resolve(path.relative(process.cwd(), protofile));
 
     if (fs.existsSync(filename)) {
         try {
@@ -264,7 +268,6 @@ function create (options) {
         '/support',
         '/license',
         '/faqs',
-        '/thoughtworks',
         '/docs/gettingStarted',
         '/docs/install',
         '/docs/mentalModel',

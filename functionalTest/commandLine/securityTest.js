@@ -205,10 +205,12 @@ describe('security', function () {
             }).then(
                 () => Q({ ip: ip.address, canConnect: true }),
                 error => {
-                    if (error.errno === 'EADDRNOTAVAIL' && ip.address.indexOf('%') < 0) {
+                    if (error.code === 'EADDRNOTAVAIL' && ip.address.indexOf('%') < 0) {
                         // If you run ifconfig, some of the addresses have the interface name
-                        // appended (I'm not sure why). Node doesn't return them that way,
+                        // appended. Node doesn't return them that way,
                         // but apparently needs it sometimes to bind to that address.
+                        // Apparently it has to do with link local addresses:
+                        // https://stackoverflow.com/questions/34259279/node-js-cant-bind-a-udp6-socket-to-a-specific-address
                         return connectToHTTPServerUsing({
                             address: `${ip.address}%${ip.iface}`,
                             family: ip.family,
@@ -237,7 +239,7 @@ describe('security', function () {
             });
 
             socket.once('error', error => {
-                if (error.errno === 'EADDRNOTAVAIL' && ip.address.indexOf('%') < 0) {
+                if (error.code === 'EADDRNOTAVAIL' && ip.address.indexOf('%') < 0) {
                     const ipWithInterface = {
                         address: `${ip.address}%${ip.iface}`,
                         family: ip.family,
@@ -253,16 +255,24 @@ describe('security', function () {
             return deferred.promise;
         }
 
+        function denied (attempt) {
+            return !attempt.canConnect && attempt.error.code === 'ECONNRESET';
+        }
+
+        function allowed (attempt) {
+            return attempt.canConnect;
+        }
+
         promiseIt('should only allow local requests if --localOnly used', function () {
             return mb.start(['--localOnly'])
                 .then(() => Q.all(nonLocalIPs().map(ip => connectToHTTPServerUsing(ip))))
                 .then(rejections => {
-                    const allBlocked = rejections.every(attempt => !attempt.canConnect && attempt.error.code === 'ECONNRESET');
+                    const allBlocked = rejections.every(denied);
                     assert.ok(allBlocked, 'Allowed nonlocal connection: ' + JSON.stringify(rejections, null, 2));
 
                     return Q.all(localIPs().map(ip => connectToHTTPServerUsing(ip)));
                 }).then(accepts => {
-                    const allAccepted = accepts.every(attempt => attempt.canConnect);
+                    const allAccepted = accepts.every(allowed);
                     assert.ok(allAccepted, 'Blocked local connection: ' + JSON.stringify(accepts, null, 2));
                 })
                 .finally(() => mb.stop());
@@ -278,12 +288,12 @@ describe('security', function () {
                     return Q.all(nonLocalIPs().map(ip => connectToHTTPServerUsing(ip, imposter.port)));
                 })
                 .then(rejections => {
-                    const allBlocked = rejections.every(attempt => !attempt.canConnect && attempt.error.code === 'ECONNRESET');
+                    const allBlocked = rejections.every(denied);
                     assert.ok(allBlocked, 'Allowed nonlocal connection: ' + JSON.stringify(rejections, null, 2));
 
                     return Q.all(localIPs().map(ip => connectToHTTPServerUsing(ip, imposter.port)));
                 }).then(accepts => {
-                    const allAccepted = accepts.every(attempt => attempt.canConnect);
+                    const allAccepted = accepts.every(allowed);
                     assert.ok(allAccepted, 'Blocked local connection: ' + JSON.stringify(accepts, null, 2));
                 })
                 .finally(() => mb.stop());
@@ -303,12 +313,12 @@ describe('security', function () {
                     return Q.all(nonLocalIPs().map(ip => connectToTCPServerUsing(ip, imposter.port)));
                 })
                 .then(rejections => {
-                    const allBlocked = rejections.every(attempt => !attempt.canConnect && attempt.error.code === 'ECONNRESET');
+                    const allBlocked = rejections.every(denied);
                     assert.ok(allBlocked, 'Allowed nonlocal connection: ' + JSON.stringify(rejections, null, 2));
 
                     return Q.all(localIPs().map(ip => connectToTCPServerUsing(ip, imposter.port)));
                 }).then(accepts => {
-                    const allAccepted = accepts.every(attempt => attempt.canConnect);
+                    const allAccepted = accepts.every(allowed);
                     assert.ok(allAccepted, 'Blocked local connection: ' + JSON.stringify(accepts, null, 2));
                 })
                 .finally(() => mb.stop());
@@ -320,7 +330,7 @@ describe('security', function () {
             return mb.start()
                 .then(() => Q.all(allIPs.map(ip => connectToHTTPServerUsing(ip))))
                 .then(results => {
-                    const allAccepted = results.every(attempt => attempt.canConnect);
+                    const allAccepted = results.every(allowed);
                     assert.ok(allAccepted, 'Blocked local connection: ' + JSON.stringify(results, null, 2));
                 })
                 .finally(() => mb.stop());
@@ -343,7 +353,7 @@ describe('security', function () {
                     return Q.all(blockedIPs.map(ip => connectToHTTPServerUsing(ip)));
                 })
                 .then(results => {
-                    const allBlocked = results.every(attempt => !attempt.canConnect && attempt.error.code === 'ECONNRESET');
+                    const allBlocked = results.every(denied);
                     assert.ok(allBlocked, 'Allowed non-whitelisted connection: ' + JSON.stringify(results, null, 2));
                 })
                 .finally(() => mb.stop());

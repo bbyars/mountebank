@@ -44,7 +44,7 @@ function create (header, server, loadRequests) {
         imposter.stubs.forEach(stub => {
             stub.responses.forEach(response => {
                 if (helpers.defined(response.is)) {
-                    delete response.is._proxyResponseTime; // eslint-disable-line no-underscore-dangle
+                    delete response.is._proxyResponseTime;
                 }
             });
         });

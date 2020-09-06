@@ -5,7 +5,8 @@ const assert = require('assert'),
     api = require('../api/api').create(),
     httpClient = require('../api/http/baseHttpClient').create('http'),
     xpath = require('xpath'),
-    DOMParser = require('xmldom').DOMParser;
+    DOMParser = require('xmldom').DOMParser,
+    timeout = parseInt(process.env.MB_SLOW_TEST_TIMEOUT || 3000);
 
 function entryCount (body) {
     const doc = new DOMParser().parseFromString(body),
@@ -20,6 +21,8 @@ function getNextLink (body) {
 }
 
 describe('the feed', function () {
+    this.timeout(timeout);
+
     promiseIt('should default to page 1 with 10 entries', function () {
         return httpClient.get('/feed', api.port).then(response => {
             assert.strictEqual(response.statusCode, 200);

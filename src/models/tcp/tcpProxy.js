@@ -42,9 +42,11 @@ function create (logger, encoding, isEndOfRequest) {
      * Proxies a tcp request to the destination
      * @param {string} proxyDestination - The URL to proxy to (e.g. tcp://127.0.0.1:3535)
      * @param {Object} originalRequest - The tcp request to forward
+     * @param {Object} options - Proxy options
+     * @param {Boolean} options.keepalive - Whether to keep the connection alive or not
      * @returns {Object} - A promise resolving to the response
      */
-    function to (proxyDestination, originalRequest) {
+    function to (proxyDestination, originalRequest, options = {}) {
         const Q = require('q'),
             deferred = Q.defer();
 
@@ -75,7 +77,9 @@ function create (logger, encoding, isEndOfRequest) {
                 packets.push(data);
                 const requestBuffer = Buffer.concat(packets);
                 if (isEndOfRequest(requestBuffer)) {
-                    socket.end();
+                    if (!options.keepalive) {
+                        socket.end();
+                    }
                     const response = { data: requestBuffer.toString(encoding) };
                     log('<=', response);
                     deferred.resolve(response);

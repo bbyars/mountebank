@@ -29,6 +29,10 @@ module.exports = grunt => {
             performance: {
                 options: { reporter: 'spec' },
                 src: ['performanceTest/**/*.js']
+            },
+            dbPerformance: {
+                options: { reporter: 'spec' },
+                src: ['performanceTest/databaseConcurrencyTest.js']
             }
         },
         eslint: {
@@ -110,6 +114,7 @@ module.exports = grunt => {
     grunt.registerTask('test:functional', 'Run the functional tests',
         ['mb:start', 'try', 'mochaTest:functional', 'finally', 'mb:stop', 'checkForErrors']);
     grunt.registerTask('test:performance', 'Run the performance tests', ['mochaTest:performance']);
+    grunt.registerTask('test:dbPerformance', 'Run the database performance tests', ['mochaTest:dbPerformance']);
     grunt.registerTask('test', 'Run all non-performance tests', ['test:unit', 'test:functional']);
     grunt.registerTask('lint', 'Run all lint checks', ['jsCheck', 'deadCheck', 'eslint']);
     grunt.registerTask('default', ['lint', 'test']);

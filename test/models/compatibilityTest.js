@@ -5,26 +5,6 @@ const assert = require('assert'),
 
 describe('compatibility', function () {
     describe('#upcast', function () {
-        it('should change string shellTransform to array', function () {
-            const request = {
-                stubs: [{
-                    responses: [{
-                        _behaviors: { shellTransform: 'command' }
-                    }]
-                }]
-            };
-
-            compatibility.upcast(request);
-
-            assert.deepEqual(request, {
-                stubs: [{
-                    responses: [{
-                        _behaviors: { shellTransform: ['command'] }
-                    }]
-                }]
-            });
-        });
-
         it('should switch tcp proxy objects to URL strings', function () {
             const request = {
                 protocol: 'tcp',
@@ -62,6 +42,121 @@ describe('compatibility', function () {
                         responses: [{ proxy: { to: 'tcp://host-2:port-2' } }]
                     }
                 ]
+            });
+        });
+
+        it('should convert _behaviors object to array in the right order', function () {
+            const request = {
+                stubs: [{
+                    responses: [{
+                        _behaviors: {
+                            decorate: '(config) => {}',
+                            shellTransform: 'shellTransform.js',
+                            copy: [{ from: 'copy' }],
+                            lookup: [{ from: 'lookup' }],
+                            wait: 100,
+                            repeat: 2
+                        }
+                    }]
+                }]
+            };
+
+            compatibility.upcast(request);
+
+            assert.deepEqual(request, {
+                stubs: [{
+                    responses: [{
+                        repeat: 2,
+                        behaviors: [
+                            { wait: 100 },
+                            { lookup: { from: 'lookup' } },
+                            { copy: { from: 'copy' } },
+                            { shellTransform: 'shellTransform.js' },
+                            { decorate: '(config) => {}' }
+                        ]
+                    }]
+                }]
+            });
+        });
+
+        it('should convert _behavior arrays to multiple objects', function () {
+            const request = {
+                stubs: [{
+                    responses: [{
+                        _behaviors: {
+                            repeat: 2,
+                            wait: 100,
+                            lookup: [{ from: 'lookup-1' }, { from: 'lookup-2' }],
+                            copy: [{ from: 'copy-1' }, { from: 'copy-2' }],
+                            shellTransform: ['shell-1', 'shell-2'],
+                            decorate: '(config) => {}'
+                        }
+                    }]
+                }]
+            };
+
+            compatibility.upcast(request);
+
+            assert.deepEqual(request, {
+                stubs: [{
+                    responses: [{
+                        repeat: 2,
+                        behaviors: [
+                            { wait: 100 },
+                            { lookup: { from: 'lookup-1' } },
+                            { lookup: { from: 'lookup-2' } },
+                            { copy: { from: 'copy-1' } },
+                            { copy: { from: 'copy-2' } },
+                            { shellTransform: 'shell-1' },
+                            { shellTransform: 'shell-2' },
+                            { decorate: '(config) => {}' }
+                        ]
+                    }]
+                }]
+            });
+        });
+
+        it('should ignore _behaviors if behaviors already exists', function () {
+            const request = {
+                stubs: [{
+                    responses: [{
+                        _behaviors: { repeat: 2 },
+                        behaviors: []
+                    }]
+                }]
+            };
+
+            compatibility.upcast(request);
+
+            assert.deepEqual(request, {
+                stubs: [{
+                    responses: [{
+                        _behaviors: { repeat: 2 },
+                        behaviors: []
+                    }]
+                }]
+            });
+        });
+
+        it('should ignore _behaviors if repeat already exists', function () {
+            const request = {
+                stubs: [{
+                    responses: [{
+                        _behaviors: { repeat: 2 },
+                        repeat: 2
+                    }]
+                }]
+            };
+
+            compatibility.upcast(request);
+
+            assert.deepEqual(request, {
+                stubs: [{
+                    responses: [{
+                        _behaviors: { repeat: 2 },
+                        repeat: 2
+                    }]
+                }]
             });
         });
     });
