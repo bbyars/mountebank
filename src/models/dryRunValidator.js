@@ -133,10 +133,19 @@ function create (options) {
             response.proxy.predicateGenerators.some(generator => generator.inject);
     }
 
+    function hasBehavior (response, type, valueFilter) {
+        if (typeof valueFilter === 'undefined') {
+            valueFilter = () => true;
+        }
+        return (response.behaviors || []).some(behavior => {
+            return typeof behavior[type] !== 'undefined' && valueFilter(behavior[type]);
+        });
+    }
+
     function hasStubInjection (stub) {
         const hasResponseInjections = stub.responses.some(response => {
-                const hasDecorator = response._behaviors && response._behaviors.decorate,
-                    hasWaitFunction = response._behaviors && typeof response._behaviors.wait === 'string';
+                const hasDecorator = hasBehavior(response, 'decorate'),
+                    hasWaitFunction = hasBehavior(response, 'wait', value => typeof value === 'string');
 
                 return response.inject || hasDecorator || hasWaitFunction || hasPredicateGeneratorInjection(response);
             }),
@@ -146,7 +155,7 @@ function create (options) {
     }
 
     function hasShellExecution (stub) {
-        return stub.responses.some(response => response._behaviors && response._behaviors.shellTransform);
+        return stub.responses.some(response => hasBehavior(response, 'shellTransform'));
     }
 
     function addStubInjectionErrors (stub, errors) {
@@ -170,10 +179,26 @@ function create (options) {
         });
     }
 
+    function addRepeatErrorsTo (errors, response) {
+        const repeat = response.repeat,
+            type = typeof repeat,
+            error = exceptions.ValidationError('"repeat" field must be an integer greater than 0', {
+                source: response
+            });
+
+        if (['undefined', 'number', 'string'].indexOf(type) < 0) {
+            errors.push(error);
+        }
+        if ((type === 'string' && parseInt(repeat) <= 0) || (type === 'number' && repeat <= 0)) {
+            errors.push(error);
+        }
+    }
+
     function addBehaviorErrors (stub, errors) {
         stub.responses.forEach(response => {
             const behaviors = require('./behaviors');
-            addAllTo(errors, behaviors.validate(response._behaviors));
+            addAllTo(errors, behaviors.validate(response.behaviors));
+            addRepeatErrorsTo(errors, response);
         });
     }
 

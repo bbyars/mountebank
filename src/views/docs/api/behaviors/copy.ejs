@@ -6,12 +6,12 @@
   </tr>
   <tr>
     <td><code>copy</code></td>
-    <td>An array</td>
-    <td>A list of objects specifying the request field and response token, as well as a way
+    <td>An object</td>
+    <td>An object specifying the request field and response token, as well as a way
     of selecting the value from the request field</td>
   </tr>
   <tr>
-    <td><code>copy[].from</code></td>
+    <td><code>copy.from</code></td>
     <td>A string or an object</td>
     <td>The name of the request field to copy from, or, if the request field is an object,
     then an object specifying the path to the request field. For example,
@@ -19,7 +19,7 @@
     are both valid.</td>
   </tr>
   <tr>
-    <td><code>copy[].into</code></td>
+    <td><code>copy.into</code></td>
     <td>A string</td>
     <td>The token to replace in the response with the selected request value. There is
     no need to specify which field in the response the token will be in; all response
@@ -31,18 +31,18 @@
     <code>${NAME}[1]</code> will be replaced by the second match, and so on.</td>
   </tr>
   <tr>
-    <td><code>copy[].using</code></td>
+    <td><code>copy.using</code></td>
     <td>An object</td>
     <td>The configuration needed to select values from the response</td>
   </tr>
   <tr>
-    <td><code>copy[].using.method</code></td>
+    <td><code>copy.using.method</code></td>
     <td>An string</td>
     <td>The method used to select the value(s) from the request. Allowed values are <code>regex</code>,
     <code>xpath</code>, and <code>jsonpath</code>.</td>
   </tr>
   <tr>
-    <td><code>copy[].using.selector</code></td>
+    <td><code>copy.using.selector</code></td>
     <td>An string</td>
     <td>The selector used to select the value(s) from the request. For a <code>regex</code>, this would
     be the pattern, and the replacement value will be the entire match. Match groups using parentheses are supported
@@ -51,23 +51,23 @@
     value does not match the selector (including through XML or JSON parsing errors), nothing is replaced.</td>
   </tr>
   <tr>
-    <td><code>copy[].using.ns</code></td>
+    <td><code>copy.using.ns</code></td>
     <td>An object</td>
     <td>For <code>xpath</code> selectors, the <code>ns</code> object maps namespace aliases to URLs</td>
   </tr>
   <tr>
-    <td><code>copy[].using.options</code></td>
+    <td><code>copy.using.options</code></td>
     <td>An object</td>
     <td>For <code>regex</code> selectors, the <code>options</code> object describes the regular expression options</td>
   </tr>
   <tr>
-    <td><code>copy[].using.options.ignoreCase</code></td>
+    <td><code>copy.using.options.ignoreCase</code></td>
     <td>A boolean</td>
     <td>Uses a <a href='https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/RegExp/ignoreCase'>case-insensitive</a>
     regular expression</td>
   </tr>
   <tr>
-    <td><code>copy[].using.options.multiline</code></td>
+    <td><code>copy.using.options.multiline</code></td>
     <td>A boolean</td>
     <td>Uses a <a href='https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/RegExp/multiline'>multiline</a>
     regular expression</td>
@@ -110,19 +110,23 @@ Content-Type: application/json
             },
             "body": "The request name was <strong class='highlight3'>${name}</strong>. Hello, <strong class='highlight3'>${name}</strong>!"
           },
-          "_behaviors": {
-            "copy": [
-              {
+          "behaviors": [
+            {
+              "copy": {
                 "from": "path",
                 "into": "<strong class='highlight1'>${code}</strong>",
                 "using": { "method": "regex", "selector": "\\d+" }
-              },
-              {
+              }
+            },
+            {
+              "copy": {
                 "from": { "headers": "X-Request" },
                 "into": "<strong class='highlight2'>${header}</strong>",
                 "using": { "method": "regex", "selector": ".+" }
-              },
-              {
+              }
+            },
+            {
+              "copy": {
                 "from": { "query": "name" },
                 "into": "<strong class='highlight3'>${name}</strong>",
                 "using": {
@@ -131,8 +135,8 @@ Content-Type: application/json
                   "options": { "ignoreCase": true }
                 }
               }
-            ]
-          }
+            }
+          ]
         }
       ]
     }
@@ -192,19 +196,21 @@ Content-Type: application/json
           "is": {
             "body": "Have you read <strong class='highlight1'>BOOK</strong>?"
           },
-          "_behaviors": {
-            "copy": [{
-              "from": "body",
-              "into": "<strong class='highlight1'>BOOK</strong>",
-              "using": {
-                "method": "xpath",
-                "selector": "//isbn:title",
-                "ns": {
-                  "isbn": "http://schemas.isbn.org/ns/1999/basic.dtd"
+          "behaviors": [
+            {
+              "copy": {
+                "from": "body",
+                "into": "<strong class='highlight1'>BOOK</strong>",
+                "using": {
+                  "method": "xpath",
+                  "selector": "//isbn:title",
+                  "ns": {
+                    "isbn": "http://schemas.isbn.org/ns/1999/basic.dtd"
+                  }
                 }
               }
-            }]
-          }
+            }
+          ]
         }
       ]
     }
@@ -273,16 +279,18 @@ Content-Type: application/json
           "is": {
             "data": "Have you read <strong class='highlight1'>BOOK</strong>?"
           },
-          "_behaviors": {
-            "copy": [{
-              "from": "data",
-              "into": "<strong class='highlight1'>BOOK</strong>",
-              "using": {
-                "method": "jsonpath",
-                "selector": "$..title"
+          "behaviors": [
+            {
+              "copy": {
+                "from": "data",
+                "into": "<strong class='highlight1'>BOOK</strong>",
+                "using": {
+                  "method": "jsonpath",
+                  "selector": "$..title"
+                }
               }
-            }]
-          }
+            }
+          ]
         }
       ]
     }
@@ -344,17 +352,19 @@ Content-Type: application/json
           "is": {
             "body": "<strong class='highlight2'>${BOOK}[1]</strong>: <strong class='highlight1'>${SUMMARY}[0]</strong>\n<strong class='highlight2'>${BOOK}[2]</strong>: <strong class='highlight1'>${SUMMARY}[1]</strong>\n<strong class='highlight2'>${BOOK}[3]</strong>: <strong class='highlight1'>${SUMMARY}[2]</strong>"
           },
-          "_behaviors": {
-            "copy": [
-              {
+          "behaviors": [
+            {
+              "copy": {
                 "from": "body",
                 "into": "<strong class='highlight1'>${SUMMARY}</strong>",
                 "using": {
                   "method": "jsonpath",
                   "selector": "$..summary"
                 }
-              },
-              {
+              }
+            },
+            {
+              "copy": {
                 "from": { "query": "books" },
                 "into": "<strong class='highlight2'>${BOOK}</strong>",
                 "using": {
@@ -362,8 +372,8 @@ Content-Type: application/json
                   "selector": "([^,]+),([^,]+),(.+)$"
                 }
               }
-            ]
-          }
+            }
+          ]
         }
       ]
     }

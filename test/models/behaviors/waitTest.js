@@ -14,7 +14,7 @@ describe('behaviors', function () {
                 start = new Date(),
                 config = { wait: 1000 };
 
-            return behaviors.execute(request, response, config, logger).then(actualResponse => {
+            return behaviors.execute(request, response, [config], logger).then(actualResponse => {
                 const time = new Date() - start;
                 assert.ok(time < 50, 'Took ' + time + ' milliseconds');
                 assert.deepEqual(actualResponse, { key: 'value' });
@@ -28,7 +28,7 @@ describe('behaviors', function () {
                 start = new Date(),
                 config = { wait: 100 };
 
-            return behaviors.execute(request, response, config, logger).then(actualResponse => {
+            return behaviors.execute(request, response, [config], logger).then(actualResponse => {
                 const time = new Date() - start;
                 assert.ok(time > 90, 'Took ' + time + ' milliseconds'); // allows for approximate timing
                 assert.deepEqual(actualResponse, { key: 'value' });
@@ -43,7 +43,7 @@ describe('behaviors', function () {
                 start = new Date(),
                 config = { wait: fn.toString() };
 
-            return behaviors.execute(request, response, config, logger).then(actualResponse => {
+            return behaviors.execute(request, response, [config], logger).then(actualResponse => {
                 const time = new Date() - start;
                 assert.ok(time > 90, 'Took ' + time + ' milliseconds'); // allows for approximate timing
                 assert.deepEqual(actualResponse, { key: 'value' });
@@ -57,7 +57,7 @@ describe('behaviors', function () {
                 fn = () => { throw Error('BOOM!!!'); },
                 config = { wait: fn.toString() };
 
-            return behaviors.execute(request, response, config, logger).then(() => {
+            return behaviors.execute(request, response, [config], logger).then(() => {
                 assert.fail('should have rejected');
             }, error => {
                 assert.ok(error.message.indexOf('invalid wait injection') >= 0);
@@ -72,7 +72,7 @@ describe('behaviors', function () {
                 start = new Date(),
                 config = { wait: '100' };
 
-            return behaviors.execute(request, response, config, logger).then(actualResponse => {
+            return behaviors.execute(request, response, [config], logger).then(actualResponse => {
                 const time = new Date() - start;
                 assert.ok(time > 90, 'Took ' + time + ' milliseconds'); // allows for approximate timing
                 assert.deepEqual(actualResponse, { key: 'value' });
@@ -80,7 +80,7 @@ describe('behaviors', function () {
         });
 
         it('should not be valid if below zero', function () {
-            const errors = behaviors.validate({ wait: -1 });
+            const errors = behaviors.validate([{ wait: -1 }]);
             assert.deepEqual(errors, [{
                 code: 'bad data',
                 message: 'wait behavior "wait" field must be an integer greater than or equal to 0',
@@ -89,12 +89,12 @@ describe('behaviors', function () {
         });
 
         it('should be valid if a string is passed in for the function', function () {
-            const errors = behaviors.validate({ wait: '() => {}' });
+            const errors = behaviors.validate([{ wait: '() => {}' }]);
             assert.deepEqual(errors, []);
         });
 
         it('should not be valid if a boolean is passed in', function () {
-            const errors = behaviors.validate({ wait: true });
+            const errors = behaviors.validate([{ wait: true }]);
             assert.deepEqual(errors, [{
                 code: 'bad data',
                 message: 'wait behavior "wait" field must be a string or a number',

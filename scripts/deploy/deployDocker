@@ -13,7 +13,7 @@ if [ "$PUBLISH" = "true" ]; then
     cd dist/mountebank
     docker build -t bbyars/mountebank:$VERSION -t bbyars/mountebank:latest .
     docker login -u $DOCKER_USER -p "$DOCKER_PASSWORD"
-    # docker push bbyars/mountebank:$VERSION
+    docker push bbyars/mountebank:$VERSION
     docker push bbyars/mountebank:latest
     rm Dockerfile
 fi

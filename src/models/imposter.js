@@ -138,7 +138,7 @@ function create (Protocol, creationRequest, baseLogger, config, isAllowedConnect
     }
 
     function getProxyResponseFor (proxyResponse, proxyResolutionKey) {
-        return resolver.resolveProxy(proxyResponse, proxyResolutionKey, logger).then(response => {
+        return resolver.resolveProxy(proxyResponse, proxyResolutionKey, logger, imposterState).then(response => {
             let promise = Q();
             if (config.recordMatches && unresolvedProxies[String(proxyResolutionKey)].recordMatch) {
                 promise = unresolvedProxies[String(proxyResolutionKey)].recordMatch(response);

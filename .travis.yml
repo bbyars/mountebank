@@ -19,6 +19,9 @@ matrix:
     - os: osx
       env:
         - MB_GRUNT_TASK='dist version persistent outOfProcessImposters test'
+    - os: osx
+      env:
+        - MB_GRUNT_TASK='test:dbPerformance'
 
 install:
   - export NODE_VERSION=${NODE_VERSION:-12} # Default node version = LTS version

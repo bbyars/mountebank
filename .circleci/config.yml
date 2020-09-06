@@ -245,6 +245,7 @@ jobs:
     docker:
       - image: circleci/ruby:2.4.4-stretch
     steps:
+      - setup_remote_docker
       - attach_workspace:
           at: .
       - run:
