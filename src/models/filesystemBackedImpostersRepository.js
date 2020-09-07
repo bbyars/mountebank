@@ -168,24 +168,28 @@ function create (config, logger) {
         return deferred.promise;
     }
 
-    function rename (oldPath, newPath) {
+    function rename (oldPath, newPath, attempts = 1) {
         const deferred = Q.defer(),
             fs = require('fs-extra');
-        fs.stat(oldPath, (statErr, stats) => {
-            if (statErr) {
-                deferred.reject(prettyError(statErr, oldPath));
+
+        fs.rename(oldPath, newPath, err => {
+            if (err && err.code === 'ENOENT' && attempts < 15) {
+                // Antivirus software, etc, appears to cause this issue, making an fs.rename
+                // (or an fs.stat) throw an ENOENT, but the file has been written. As far as
+                // I can tell, there's some lack of atomicity at the OS system call level
+                // under certain conditions
+                setTimeout(() => {
+                    deferred.resolve(rename(oldPath, newPath, attempts + 1));
+                }, attempts * 100);
             }
-            else if (stats.isFile()) { // adding a wrapper around the rename to ensure the write is complete.
-                fs.rename(oldPath, newPath, err => {
-                    if (err) {
-                        deferred.reject(prettyError(err, oldPath));
-                    }
-                    else {
-                        deferred.resolve(newPath);
-                    }
-                });
+            else if (err) {
+                deferred.reject(prettyError(err, oldPath));
+            }
+            else {
+                deferred.resolve(newPath);
             }
         });
+
         return deferred.promise;
     }
 
@@ -213,12 +217,12 @@ function create (config, logger) {
                 realpath: false,
                 retries: {
                     retries: 15,
-                    factor: 1.47394, // https://www.wolframalpha.com/input/?i=Sum%5B50*x%5Ek%2C+%7Bk%2C+0%2C+9%7D%5D+%3D+5000
-                    minTimeout: 50,
-                    maxTimeout: 5000,
+                    factor: 1.43123, // https://www.wolframalpha.com/input/?i=Sum%5B20*x%5Ek%2C+%7Bk%2C+0%2C+14%7D%5D+%3D+10000
+                    minTimeout: 20,
+                    maxTimeout: 10000,
                     randomize: true
                 },
-                stale: 6000
+                stale: 10000
             };
 
         // with realpath = false, the file doesn't have to exist, but the directory does
