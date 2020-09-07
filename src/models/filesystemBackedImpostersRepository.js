@@ -175,7 +175,7 @@ function create (config, logger) {
         fs.rename(oldPath, newPath, err => {
             if (err && err.code === 'ENOENT' && attempts < 15) {
                 // Antivirus software, etc, appears to cause this issue, making an fs.rename
-                // (or an fs.stat) throw an ENOENT, but the file has been written. As far as
+                // (or an fs.stat) throw an ENOENT, but the file _has_ been written. As far as
                 // I can tell, there's some lack of atomicity at the OS system call level
                 // under certain conditions
                 setTimeout(() => {
@@ -259,15 +259,17 @@ function create (config, logger) {
                         const lockHeld = new Date() - lockStart;
                         logger.debug(`Released file lock on ${filepath} for ${caller}-${currentLockId} after ${lockHeld}ms`);
 
-                        return release();
-
+                        return release()
+                            .catch(err => {
+                                // Ignore lock already released errors
+                                if (err.code !== 'ERELEASED') {
+                                    throw err;
+                                }
+                            });
                     });
             })
             .catch(err => {
-                logger.warn(err);
-                locker.unlock(filepath, { realpath: false }).catch(unlockErr => {
-                    logger.error(`Failed to unlock ${filepath} for ${caller}-${currentLockId}: ${unlockErr}`);
-                });
+                locker.unlock(filepath, { realpath: false }).catch(() => {});
                 return Q.reject(err);
             });
     }
