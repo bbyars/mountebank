@@ -121,9 +121,20 @@ As soon as you write anything to stdout, mountebank assumes you have finished in
 
 <h2>The API</h2>
 
-<p>When a network request comes in, you translate it to a simplified JSON format and <code>POST</code>
-    it to the <code>callbackURLTemplate</code> (with ":port" replaced with the actual server port).
-    Mountebank will respond with one of the three following responses:</p>
+<p>When a network request comes in, you translate it to a simplified JSON format and wrap that
+inside an object with a top-level <code>"request"</code> key. For example, the following could
+represent a messaging protocol with custom request fields for the <code>message</code> and <code>transactionId</code>:</p>
+
+<pre><code>{
+  "request": {
+     "message": "Hello, world!",
+     "transactionId": 123
+  }
+}</code></pre>
+
+<p>The next step is to <code>POST</code> that body to the <code>callbackURLTemplate</code>
+(with ":port" replaced with the actual server port if you changed it). Mountebank will respond with
+one of the three following responses:</p>
 
 <h3>Standard response</h3>
 
