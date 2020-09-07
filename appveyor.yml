@@ -10,7 +10,7 @@ platform:
 
 environment:
   global:
-    MB_SLOW_TEST_TIMEOUT: 60000
+    MB_SLOW_TEST_TIMEOUT: 120000
 
   matrix:
     - MB_APPVEYOR_CONFIG: "NODE_VERSION=12|MB_GRUNT_TASK=persistent outOfProcessImposters default test:dbPerformance|MB_PORT=3535"
