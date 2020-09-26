@@ -196,12 +196,13 @@ describe('security', function () {
 
         function connectToHTTPServerUsing (ip, destinationPort = mb.port) {
             return httpClient.responseFor({
-                method: 'GET',
-                path: '/',
+                method: 'POST',
+                path: '/imposters',
                 hostname: 'localhost',
                 port: destinationPort,
                 localAddress: ip.address,
-                family: ip.family
+                family: ip.family,
+                body: { protocol: 'http' }
             }).then(
                 () => Q({ ip: ip.address, canConnect: true }),
                 error => {
@@ -269,6 +270,11 @@ describe('security', function () {
                 .then(rejections => {
                     const allBlocked = rejections.every(denied);
                     assert.ok(allBlocked, 'Allowed nonlocal connection: ' + JSON.stringify(rejections, null, 2));
+
+                    // Ensure mountebank rejected the request as well
+                    return mb.get('/imposters');
+                }).then(response => {
+                    assert.deepEqual(response.body, { imposters: [] }, JSON.stringify(response.body, null, 2));
 
                     return Q.all(localIPs().map(ip => connectToHTTPServerUsing(ip)));
                 }).then(accepts => {

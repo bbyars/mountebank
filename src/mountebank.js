@@ -348,7 +348,7 @@ function create (options) {
             });
 
             if (!isAllowedConnection(ipAddress, logger)) {
-                socket.end();
+                socket.destroy();
             }
         });
 
