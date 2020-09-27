@@ -24,6 +24,11 @@ function create (releases, options) {
         return path.join(__dirname, '/../views/', releaseViewFor(version));
     };
 
+    function versionInWhitelist (version) {
+        // Prevent path traversal attack like v2.3.0%2f..%2f..%2f_header
+        return feedReleases.some(release => version.toLowerCase() === release.version);
+    }
+
     /**
      * The function that responds to GET /feed
      * @memberOf module:controllers/feedController#
@@ -86,7 +91,7 @@ function create (releases, options) {
                 releaseVersion: version.replace('v', '')
             };
 
-        if (fs.existsSync(releaseFilenameFor(version))) {
+        if (versionInWhitelist(version) && fs.existsSync(releaseFilenameFor(version))) {
             response.render('_header', config, (headerError, header) => {
                 if (headerError) { throw headerError; }
                 response.render(releaseViewFor(version), config, (bodyError, body) => {
