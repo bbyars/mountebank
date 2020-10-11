@@ -95,8 +95,7 @@ function create (protocols, imposters, logger, allowInjection) {
      */
     function resetRequests (request, response) {
         return imposters.get(request.params.id).then(imposter => {
-            return imposters.stubsFor(request.params.id).deleteSavedRequests()
-                .then(() => imposter.toJSON());
+            return imposter.resetRequests().then(() => imposter.toJSON());
         }).then(json => {
             response.format({
                 json: () => { response.send(json); },

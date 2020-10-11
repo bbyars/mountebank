@@ -492,4 +492,27 @@ describe('imposter', function () {
             });
         });
     });
+
+    describe('#resetRequests', function () {
+        promiseIt('should delete requests and reset numberOfRequests', function () {
+            return Imposter.create(Protocol, {}, logger, { recordRequests: true }, allow).then(imposter => {
+                return imposter.getResponseFor({})
+                    .then(() => server.stubs.loadRequests())
+                    .then(requests => {
+                        assert.strictEqual(1, requests.length);
+                        return imposter.toJSON();
+                    }).then(json => {
+                        assert.strictEqual(1, json.numberOfRequests);
+                        return imposter.resetRequests();
+                    }).then(() => {
+                        return server.stubs.loadRequests();
+                    }).then(requests => {
+                        assert.strictEqual(0, requests.length);
+                        return imposter.toJSON();
+                    }).then(json => {
+                        assert.strictEqual(0, json.numberOfRequests);
+                    });
+            });
+        });
+    });
 });
