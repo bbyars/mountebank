@@ -209,7 +209,6 @@ Accept: application/json</code></pre>
 
         <assertResponse>
 <pre><code>HTTP/1.1 200 OK
-Access-Control-Allow-Origin: *
 Vary: Accept
 Content-Type: application/json; charset=utf-8
 Content-Length: 226

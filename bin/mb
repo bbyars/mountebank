@@ -271,7 +271,8 @@ const aliases = {
         m: 'mock',
         p: 'port',
         r: 'removeProxies',
-        w: 'ipWhitelist'
+        w: 'ipWhitelist',
+        o: 'origin'
     },
     options = {
         port: {
@@ -391,6 +392,12 @@ const aliases = {
             alias: aliases.r,
             global: false
         },
+        origin: {
+            default: false,
+            description: 'A safe origin for CORS requests',
+            type: 'string',
+            global: false
+        },
         heroku: {
             default: false,
             type: 'boolean',
@@ -413,7 +420,8 @@ const aliases = {
         mock: options.mock,
         debug: options.debug,
         heroku: options.heroku,
-        protofile: options.protofile
+        protofile: options.protofile,
+        origin: options.origin
     };
 
 const argv = yargs

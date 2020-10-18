@@ -113,6 +113,10 @@ description = 'Command line parameters for starting mountebank'
     be allowed). Any request to the primary <code>mb</code> socket or an imposter socket that isn't
     whitelisted will be dropped.</td>
     <td><code>*</code>, representing all IP addresses</td>
+  </tr><tr>
+    <td><code>--origin</code></td>
+    <td>A safe origin for CORS requests. Use the flag multiple times to enable multiple origins.</td>
+    <td><code>false</code>, which disables CORS to prevent CSRF attacks.</td>
   </tr>
   <tr>
     <td><code>--debug</code></td>
