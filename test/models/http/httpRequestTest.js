@@ -120,5 +120,22 @@ describe('HttpRequest', function () {
 
             return promise;
         });
+
+        promiseIt('should set body from data gzipped events', function () {
+            request.rawHeaders = [
+                'Content-Encoding', 'gzip',
+                'Host', '127.0.0.1:8000'
+            ];
+
+            const utf8_test_content = 'АБВГДЕЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ 色は匂へど散りぬるを'
+
+            const promise = httpRequest.createFrom(request).then(mbRequest => assert.strictEqual(mbRequest.body, utf8_test_content));
+
+            const zlib = require('zlib');
+            request.emit('data', zlib.gzipSync(utf8_test_content));
+            request.emit('end');
+
+            return promise;
+        });
     });
 });
