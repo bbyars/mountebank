@@ -97,10 +97,11 @@ function getConfig (options) {
 // usage: stringify(includeFile)
 // note: Trying to make this backwards compatible. However, the intent is to change
 // the signature to just require `includeFile`.
-function stringify (filename, includeFile) {
+function stringify (filename, includeFile, data) {
     const resolvedPath = makePathInABackwardsCompatibleWay(filename, includeFile);
     const contents = fs.readFileSync(resolvedPath, 'utf8'),
         rendered = ejs.render(contents, {
+            data: data,
             filename: CONFIG_FILE_PATH,
             stringify: stringify,
             inject: stringify // backwards compatibility
