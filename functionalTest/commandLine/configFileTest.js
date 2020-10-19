@@ -118,7 +118,15 @@ describe('--configfile', function () {
         return mb.start(args)
             .then(() => http.get('/', 4542))
             .then(response => {
-                assert.deepEqual(response.body, { success: true, injectedValue: 12345 });
+                assert.deepStrictEqual(response.body, { success: true, injectedValue: '1111' });
+                return http.get('/', 4542);
+            })
+            .then(response => {
+                assert.deepStrictEqual(response.body, { success: true, injectedValue: '2222' });
+                return http.get('/', 4542);
+            })
+            .then(response => {
+                assert.deepStrictEqual(response.body, { success: true, injectedValue: '3333' });
             })
             .finally(() => mb.stop());
     });
