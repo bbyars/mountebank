@@ -1,0 +1,13 @@
+{
+  "protocol": "http",
+  "port": 4542,
+  "stubs": [
+    {
+      "responses": [
+        {
+          "inject": "<%- stringify(filename, 'services/response.ejs', {testValue: '12345'}) %>"
+        }
+      ]
+    }
+  ]
+}
