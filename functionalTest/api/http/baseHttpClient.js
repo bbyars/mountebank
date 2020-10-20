@@ -53,7 +53,10 @@ function create (protocol) {
         request.on('error', deferred.reject);
 
         if (spec.body) {
-            if (typeof spec.body === 'object') {
+            if (spec.mode === 'binary') {
+                request.write(spec.body);
+            }
+            else if (typeof spec.body === 'object') {
                 request.write(JSON.stringify(spec.body));
             }
             else {

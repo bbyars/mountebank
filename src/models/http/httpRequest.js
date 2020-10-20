@@ -62,7 +62,15 @@ function createFrom (request) {
         const contentEncoding = headersHelper.getHeader('Content-Encoding', headers);
         const zlib = require('zlib');
         let buffer = Buffer.concat(chunks);
-        request.body = (contentEncoding === 'gzip') ? zlib.gunzipSync(buffer).toString() : buffer.toString();
+        if (contentEncoding === 'gzip') {
+            try {
+                request.body = zlib.gunzipSync(buffer).toString();
+            }
+            catch (error) { /* do nothing */ }
+        }
+        else {
+            request.body = buffer.toString();
+        }
         deferred.resolve(transform(request));
     });
     return deferred.promise;

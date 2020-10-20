@@ -457,6 +457,40 @@ const assert = require('assert'),
                 }).finally(() => api.del('/imposters'));
             });
 
+            promiseIt('should support predicate from gzipped request (issue #499)', function () {
+                const zlib = require('zlib');
+
+                const spec = {
+                    path: '/',
+                    port,
+                    method: 'POST',
+                    headers: {
+                        'Content-Encoding': 'gzip'
+                    },
+                    mode: 'binary',
+                    body: zlib.gzipSync('{"key": "value", "arr": [3,2,1]}')
+                };
+
+                const stub = {
+                    responses: [{ is: { body: 'SUCCESS' } }],
+                    predicates: [
+                        { equals: { body: { key: 'value' } } },
+                        { equals: { body: { arr: 3 } } },
+                        { deepEquals: { body: { key: 'value', arr: [2, 1, 3] } } },
+                        { matches: { body: { key: '^v' } } }
+                    ]
+                };
+
+                const request = { protocol, port, stubs: [stub] };
+
+                return api.post('/imposters', request).then(response => {
+                    assert.strictEqual(response.statusCode, 201);
+                    return client.responseFor(spec);
+                }).then(response => {
+                    assert.strictEqual(response.body.toString(), 'SUCCESS');
+                }).finally(() => api.del('/imposters'));
+            });
+
             promiseIt('should support overwriting the stubs without restarting the imposter', function () {
                 const stub = { responses: [{ is: { body: 'ORIGINAL' } }] },
                     request = { protocol, port, stubs: [stub] };
