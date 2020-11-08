@@ -212,7 +212,10 @@ multi-line strings in separate files.  The example below is loosely based on the
 <a href='/docs/api/injection#response-injection'>response injection</a> example described on
 the Injection page, and shows the use of the <code>stringify</code> function. The path passed in
 to <code>stringify</code> is relative to the root file referenced in the <code>--configfile</code>
-command line parameter.</p>
+command line parameter. You can also pass a custom object, referenced as <code>data</code> in child
+templates, as the second parameter of <code>stringify</code>. This is useful if you want to reuse
+the same template but add some dynamic data. For an example, look at the <code>stringify</code> call in
+templates/originServer.ejs below, and using the custom field in templates/originXMLResponse.ejs.</p>
 
 <p>Assuming the files below are in a relative directory called <code>templates</code>, you can
 initialize <code>mb</code> with the following command:</p>
@@ -240,7 +243,7 @@ mb --configfile templates/imposters.ejs --allowInjection
   "stubs": [
     {
       "predicates": [{ "contains": { "headers": { "Content-Type": "xml" } } }],
-      "responses": [{ "is": { "body": "&lt;%- stringify('originXMLResponse.ejs') %&gt;" }}]
+      "responses": [{ "is": { "body": "&lt;%- stringify('originXMLResponse.ejs', { value: 'first }) %&gt;" }}]
     },
     {
       "responses": [{ "inject": "&lt;%- stringify('originServerResponse.ejs') %&gt;" }]
@@ -252,9 +255,7 @@ mb --configfile templates/imposters.ejs --allowInjection
 <p>templates/originXMLResponse.ejs</p>
 <pre><code>
 &lt;rootNode&gt;
-  &lt;childNode&gt;first&lt;/childNode&gt;
-  &lt;childNode&gt;second&lt;/childNode&gt;
-  &lt;childNode&gt;third&lt;/childNode&gt;
+  &lt;childNode&gt;<%= '<' + '%= data.value %' + '>' %>&lt;/childNode&gt;
 &lt;/rootNode&gt;
 </code></pre>
 
