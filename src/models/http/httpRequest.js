@@ -54,10 +54,25 @@ function isUrlEncodedForm (contentType) {
 function createFrom (request) {
     const Q = require('q'),
         deferred = Q.defer();
-    request.body = '';
-    request.setEncoding('utf8');
-    request.on('data', chunk => { request.body += chunk; });
-    request.on('end', () => { deferred.resolve(transform(request)); });
+    let chunks = [];
+    request.on('data', chunk => { chunks.push(Buffer.from(chunk)); });
+    request.on('end', () => {
+        const headersHelper = require('./headersHelper');
+        const headers = headersHelper.headersFor(request.rawHeaders);
+        const contentEncoding = headersHelper.getHeader('Content-Encoding', headers);
+        const zlib = require('zlib');
+        let buffer = Buffer.concat(chunks);
+        if (contentEncoding === 'gzip') {
+            try {
+                request.body = zlib.gunzipSync(buffer).toString();
+            }
+            catch (error) { /* do nothing */ }
+        }
+        else {
+            request.body = buffer.toString();
+        }
+        deferred.resolve(transform(request));
+    });
     return deferred.promise;
 }
 

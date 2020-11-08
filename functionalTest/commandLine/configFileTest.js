@@ -141,4 +141,27 @@ describe('--configfile', function () {
             })
             .finally(() => mb.stop());
     });
+
+    promiseIt('should evaluate gzipped equests (issue #477)', function () {
+        const zlib = require('zlib');
+        const args = ['--debug', '--configfile', path.join(__dirname, 'gzip.json')];
+
+        return mb.start(args)
+            .then(() => {
+                let buffer = zlib.gzipSync('{"title": "Harry Potter"}');
+                return http.responseFor({
+                    method: 'POST',
+                    path: '/',
+                    port: 4542,
+                    headers: { 'Content-Encoding': 'gzip' },
+                    mode: 'binary',
+                    body: buffer
+                });
+            })
+            .then(response => {
+                assert.deepEqual(response.body.code, 'SUCCESS');
+            })
+            .finally(() => mb.stop());
+    });
+
 });
