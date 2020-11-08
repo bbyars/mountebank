@@ -112,6 +112,25 @@ describe('--configfile', function () {
             .finally(() => mb.stop());
     });
 
+    promiseIt('should evaluate stringify functions with injected data when loading configuration files', function () {
+        const args = ['--configfile', path.join(__dirname, 'dataStringify/imposters.ejs'), '--allowInjection', '--localOnly'];
+
+        return mb.start(args)
+            .then(() => http.get('/', 4542))
+            .then(response => {
+                assert.deepStrictEqual(response.body, { success: true, injectedValue: '1111' });
+                return http.get('/', 4542);
+            })
+            .then(response => {
+                assert.deepStrictEqual(response.body, { success: true, injectedValue: '2222' });
+                return http.get('/', 4542);
+            })
+            .then(response => {
+                assert.deepStrictEqual(response.body, { success: true, injectedValue: '3333' });
+            })
+            .finally(() => mb.stop());
+    });
+
     promiseIt('should not render through ejs when --noParse option provided', function () {
         const args = ['--configfile', path.join(__dirname, 'noparse.json'), '--noParse'];
 
