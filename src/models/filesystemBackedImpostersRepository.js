@@ -77,11 +77,8 @@
  * Keeping all imposter information under a directory (instead of having metadata outside the directory)
  * allows us to remove the imposter by simply removing the directory.
  *
- * There are some extra checks on filesystem operations due to antivirus software, solar flares,
+ * There are some extra checks on filesystem operations (atomicWriteFile) due to antivirus software, solar flares,
  * gremlins, etc. graceful-fs solves some of these, but apparently not all.
- * As a breadcrumb trail, two things changed when I started getting errors under load locally: I upgraded to
- * OSX Catalina, and I tested on a slower machine after an accident with a gin and tonic on my previous
- * developer-spec'd machine. I would love some help in making those operations more robust!
  *
  * @module
  */
@@ -97,7 +94,27 @@ function create (config, logger) {
     let counter = 0,
         locks = 0;
     const Q = require('q'),
-        imposterFns = {};
+        imposterFns = {},
+        prometheus = require('prom-client'),
+        metrics = {
+            lockAcquireDuration: new prometheus.Histogram({
+                name: 'mb_lock_acquire_duration_seconds',
+                help: 'Time it takes to acquire a file lock',
+                buckets: [0.1, 0.2, 0.5, 1, 3, 5, 10, 30],
+                labelNames: ['caller']
+            }),
+            lockHoldDuration: new prometheus.Histogram({
+                name: 'mb_lock_hold_duration_seconds',
+                help: 'Time a file lock is held',
+                buckets: [0.1, 0.2, 0.5, 1, 2],
+                labelNames: ['caller']
+            }),
+            lockErrors: new prometheus.Counter({
+                name: 'mb_lock_errors_total',
+                help: 'Number of lock errors',
+                labelNames: ['caller', 'code']
+            })
+        };
 
     function prettyError (err, filepath) {
         const errors = require('../util/errors');
@@ -168,21 +185,12 @@ function create (config, logger) {
         return deferred.promise;
     }
 
-    function rename (oldPath, newPath, attempts = 1) {
+    function rename (oldPath, newPath) {
         const deferred = Q.defer(),
             fs = require('fs-extra');
 
         fs.rename(oldPath, newPath, err => {
-            if (err && err.code === 'ENOENT' && attempts < 15) {
-                // Antivirus software, etc, appears to cause this issue, making an fs.rename
-                // (or an fs.stat) throw an ENOENT, but the file _has_ been written. As far as
-                // I can tell, there's some lack of atomicity at the OS system call level
-                // under certain conditions
-                setTimeout(() => {
-                    deferred.resolve(rename(oldPath, newPath, attempts + 1));
-                }, attempts * 100);
-            }
-            else if (err) {
+            if (err) {
                 deferred.reject(prettyError(err, oldPath));
             }
             else {
@@ -211,53 +219,60 @@ function create (config, logger) {
         return deferred.promise;
     }
 
+    function atomicWriteFile (filepath, obj, attempts = 1) {
+        const tmpfile = filepath + '.tmp';
+
+        return writeFile(tmpfile, obj)
+            .then(() => rename(tmpfile, filepath))
+            .catch(err => {
+                if (err.code === 'ENOENT' && attempts < 15) {
+                    logger.debug(`Attempt ${attempts} failed with ENOENT error on atomic write of  ${filepath}. Retrying...`);
+                    return Q.delay(10).then(() => atomicWriteFile(filepath, obj, attempts + 1));
+                }
+                else {
+                    return Q.reject(err);
+                }
+            });
+    }
+
     function lockFile (filepath) {
         const locker = require('proper-lockfile'),
             options = {
                 realpath: false,
                 retries: {
                     retries: 15,
-                    factor: 1.43123, // https://www.wolframalpha.com/input/?i=Sum%5B20*x%5Ek%2C+%7Bk%2C+0%2C+14%7D%5D+%3D+10000
-                    minTimeout: 20,
-                    maxTimeout: 10000,
-                    randomize: true
+                    minTimeout: 10,
+                    maxTimeout: 5000,
+                    randomize: true,
+                    factor: 1.5
                 },
-                stale: 10000
+                stale: 20000
             };
 
         // with realpath = false, the file doesn't have to exist, but the directory does
         return ensureDir(filepath)
-            .then(() => {
-                // There appears to be a race condition releasing the lock in proper-lockfile
-                // The setImmediate triggers another event loop which lets the previous
-                // lock properly release
-                const deferred = Q.defer();
-                setImmediate(() => deferred.resolve(locker.lock(filepath, options)));
-                return deferred.promise;
-            });
+            .then(() => locker.lock(filepath, options));
     }
 
     function readAndWriteFile (filepath, caller, transformer, defaultContents) {
         const locker = require('proper-lockfile'),
-            tmpfile = filepath + '.tmp',
             currentLockId = locks,
-            start = new Date();
+            observeLockAcquireDuration = metrics.lockAcquireDuration.startTimer({ caller });
 
         locks += 1;
 
         return lockFile(filepath)
             .then(release => {
-                const lockStart = new Date(),
-                    lockWait = lockStart - start;
-                logger.debug(`Acquired file lock on ${filepath} for ${caller}-${currentLockId} after ${lockWait}ms`);
+                const acquireLockSeconds = observeLockAcquireDuration(),
+                    observeLockHoldDuration = metrics.lockHoldDuration.startTimer({ caller });
+                logger.debug(`Acquired file lock on ${filepath} for ${caller}-${currentLockId} after ${acquireLockSeconds}s`);
 
                 return readFile(filepath, defaultContents)
                     .then(original => transformer(original))
-                    .then(transformed => writeFile(tmpfile, transformed))
-                    .then(() => rename(tmpfile, filepath))
+                    .then(transformed => atomicWriteFile(filepath, transformed))
                     .then(() => {
-                        const lockHeld = new Date() - lockStart;
-                        logger.debug(`Released file lock on ${filepath} for ${caller}-${currentLockId} after ${lockHeld}ms`);
+                        const lockHeld = observeLockHoldDuration();
+                        logger.debug(`Released file lock on ${filepath} for ${caller}-${currentLockId} after ${lockHeld}s`);
 
                         return release()
                             .catch(err => {
@@ -269,6 +284,7 @@ function create (config, logger) {
                     });
             })
             .catch(err => {
+                metrics.lockErrors.inc({ caller, code: err.code });
                 locker.unlock(filepath, { realpath: false }).catch(() => {});
                 return Q.reject(err);
             });

@@ -13,7 +13,7 @@ environment:
     MB_SLOW_TEST_TIMEOUT: 120000
 
   matrix:
-    - MB_APPVEYOR_CONFIG: "NODE_VERSION=12|MB_GRUNT_TASK=persistent outOfProcessImposters default|MB_PORT=3535"
+    - MB_APPVEYOR_CONFIG: "NODE_VERSION=14|MB_GRUNT_TASK=persistent outOfProcessImposters default test:dbPerformance|MB_PORT=3535"
     - MB_APPVEYOR_CONFIG: "NODE_VERSION=10|MB_GRUNT_TASK=test:zip|MB__PORT=3535"
 
 cache:

@@ -183,7 +183,10 @@ function create (options) {
         configController = require('./controllers/configController').create(thisPackage.version, options),
         feedController = require('./controllers/feedController').create(releases, options),
         validateImposterExists = middleware.createImposterValidator(imposters),
-        fs = require('fs');
+        fs = require('fs'),
+        prometheus = require('prom-client');
+
+    prometheus.collectDefaultMetrics({ prefix: 'mb_' });
 
     function loadAllImpostersFromDatabase () {
         if (!options.datadir || !fs.existsSync(options.datadir)) {
@@ -258,6 +261,12 @@ function create (options) {
     app.get('/feed', feedController.getFeed);
     app.get('/releases', feedController.getReleases);
     app.get('/releases/:version', feedController.getRelease);
+
+    app.get('/metrics', async function (request, response) {
+        const register = require('prom-client').register;
+        response.set('Content-Type', register.contentType);
+        response.end(await register.metrics());
+    });
 
     app.get('/sitemap', (request, response) => {
         response.type('text/plain');
