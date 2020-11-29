@@ -9,13 +9,13 @@ function create (header, server, loadRequests) {
             port: server.port
         };
 
+        if (header.name) {
+            result.name = header.name;
+        }
         if (!options.replayable) {
             result.numberOfRequests = numberOfRequests;
         }
         if (!options.list) {
-            if (header.name) {
-                result.name = header.name;
-            }
             result.recordRequests = Boolean(header.recordRequests);
 
             Object.keys(server.metadata).forEach(key => {
