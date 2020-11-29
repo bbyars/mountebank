@@ -147,17 +147,25 @@ function execShell (command, request, response, logger) {
         deferred = Q.defer(),
         util = require('util'),
         exec = require('child_process').exec,
-        fullCommand = util.format('%s %s %s', command, quoteForShell(request), quoteForShell(response)),
         env = require('../util/helpers').clone(process.env),
-        maxBuffer = require('buffer').constants.MAX_STRING_LENGTH;
+        maxBuffer = require('buffer').constants.MAX_STRING_LENGTH,
+        isWindows = require('os').platform().indexOf('win') === 0,
+        maxShellCommandLength = isWindows ? 2048 : 100000;
 
     logger.debug('Shelling out to %s', command);
-    logger.debug(fullCommand);
 
     // Switched to environment variables because of inconsistencies in Windows shell quoting
     // Leaving the CLI args for backwards compatibility
     env.MB_REQUEST = JSON.stringify(request);
     env.MB_RESPONSE = JSON.stringify(response);
+
+    // Windows has a pretty low character limit to the command line. When we're in danger
+    // of the character limit, we'll remove the command line arguments under the assumption
+    // that backwards compatibility doesn't matter when it never would have worked to begin with
+    let fullCommand = util.format('%s %s %s', command, quoteForShell(request), quoteForShell(response));
+    if (fullCommand.length >= maxShellCommandLength) {
+        fullCommand = command;
+    }
 
     exec(fullCommand, { env, maxBuffer }, (error, stdout, stderr) => {
         if (error) {
