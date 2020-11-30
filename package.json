@@ -48,7 +48,7 @@
     "https-proxy-agent": "^5.0.0",
     "json-stable-stringify": "1.0.1",
     "jsonpath-plus": "^4.0.0",
-    "mailparser": "^2.7.7",
+    "mailparser": "^3.0.1",
     "nodemailer": "^6.4.6",
     "prom-client": "^12.0.0",
     "proper-lockfile": "^4.1.1",
