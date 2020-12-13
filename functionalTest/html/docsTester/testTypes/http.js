@@ -66,7 +66,10 @@ function properCase (text) {
 function format (response) {
     let result = util.format('HTTP/1.1 %s %s', response.statusCode, messageFor(response.statusCode));
     Object.keys(response.headers).forEach(header => {
-        result += util.format('\n%s: %s', properCase(header), response.headers[header]);
+        // Introduced in node v14, causes portability issues between versions
+        if (header.toLowerCase() !== 'keep-alive') {
+            result += util.format('\n%s: %s', properCase(header), response.headers[header]);
+        }
     });
     if (response.body) {
         result += '\n\n';

@@ -6,17 +6,17 @@
   </tr>
   <tr>
     <td><code>lookup</code></td>
-    <td>An array</td>
-    <td>A list of objects specifying the key (copied from a request field), the data source,
+    <td>An object</td>
+    <td>An object specifying the key (copied from a request field), the data source,
     and the response token</td>
   </tr>
   <tr>
-    <td><code>lookup[].key</code></td>
+    <td><code>lookup.key</code></td>
     <td>An object</td>
     <td>The information on how to select the key from the request.</td>
   </tr>
   <tr>
-    <td><code>lookup[].key.from</code></td>
+    <td><code>lookup.key.from</code></td>
     <td>A string or an object</td>
     <td>The name of the request field to select from, or, if the request field is an object,
     then an object specifying the path to the request field. For example,
@@ -24,18 +24,18 @@
     are both valid.</td>
   </tr>
   <tr>
-    <td><code>lookup[].key.using</code></td>
+    <td><code>lookup.key.using</code></td>
     <td>An object</td>
     <td>The configuration needed to select the key from the response</td>
   </tr>
   <tr>
-    <td><code>lookup[].key.using.method</code></td>
+    <td><code>lookup.key.using.method</code></td>
     <td>A string</td>
     <td>The method used to select the key from the request. Allowed values are <code>regex</code>,
     <code>xpath</code>, and <code>jsonpath</code>.</td>
   </tr>
   <tr>
-    <td><code>lookup[].key.using.selector</code></td>
+    <td><code>lookup.key.using.selector</code></td>
     <td>A string</td>
     <td>The selector used to select the key from the request. For a <code>regex</code>, this would
     be the pattern, and the replacement value will be the entire match by default.
@@ -43,29 +43,29 @@
     value does not match the selector (including through XML or JSON parsing errors), nothing is replaced.</td>
   </tr>
   <tr>
-    <td><code>lookup[].key.using.ns</code></td>
+    <td><code>lookup.key.using.ns</code></td>
     <td>An object</td>
     <td>For <code>xpath</code> selectors, the <code>ns</code> object maps namespace aliases to URLs</td>
   </tr>
   <tr>
-    <td><code>lookup[].key.using.options</code></td>
+    <td><code>lookup.key.using.options</code></td>
     <td>An object</td>
     <td>For <code>regex</code> selectors, the <code>options</code> object describes the regular expression options</td>
   </tr>
   <tr>
-    <td><code>lookup[].key.using.options.ignoreCase</code></td>
+    <td><code>lookup.key.using.options.ignoreCase</code></td>
     <td>A boolean</td>
     <td>Uses a <a href='https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/RegExp/ignoreCase'>case-insensitive</a>
     regular expression</td>
   </tr>
   <tr>
-    <td><code>lookup[].key.using.options.multiline</code></td>
+    <td><code>lookup.key.using.options.multiline</code></td>
     <td>A boolean</td>
     <td>Uses a <a href='https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/RegExp/multiline'>multiline</a>
     regular expression</td>
   </tr>
   <tr>
-    <td><code>lookup[].key.index</code></td>
+    <td><code>lookup.key.index</code></td>
     <td>An int (defaults to 0)</td>
     <td>Each of the selection options returns an array: <code>regex</code> returns an array of parenthesized
     gropus (with the entire match in the 0th index), and <code>jsonpath</code> and <code>xpath</code>
@@ -73,34 +73,34 @@
     the lookup key into the data source.</td>
   </tr>
   <tr>
-    <td><code>lookup[].fromDataSource</code></td>
+    <td><code>lookup.fromDataSource</code></td>
     <td>An object</td>
     <td>Configuration for the external data source to lookup data based on the key. Each
     <code>lookup</code> configuration may only specify one data source.</td>
   </tr>
   <tr>
-    <td><code>lookup[].fromDataSource.csv</code></td>
+    <td><code>lookup.fromDataSource.csv</code></td>
     <td>An object</td>
     <td>Configuration for using a CSV file as the data source</td>
   </tr>
   <tr>
-    <td><code>lookup[].fromDataSource.csv.path</code></td>
+    <td><code>lookup.fromDataSource.csv.path</code></td>
     <td>A string</td>
     <td>The path to the CSV file, which must be readable by the <code>mb</code> process</td>
   </tr>
   <tr>
-    <td><code>lookup[].fromDataSource.csv.keyColumn</code></td>
+    <td><code>lookup.fromDataSource.csv.keyColumn</code></td>
     <td>A string</td>
     <td>The header of the column to scan for a match against the key. If a match is
     found, the entire row will be returned.</td>
   </tr>
   <tr>
-    <td><code>lookup[].fromDataSource.csv.delimiter</code></td>
+    <td><code>lookup.fromDataSource.csv.delimiter</code></td>
     <td>A string(default to comma ,)</td>
     <td>The delimiter separated colums in CSV file.</td>
   </tr>
   <tr>
-    <td><code>lookup[].into</code></td>
+    <td><code>lookup.into</code></td>
     <td>A string</td>
     <td>The token to replace in the response with the selected request value. There is
     no need to specify which field in the response the token will be in; all response
@@ -165,23 +165,25 @@ Content-Type: application/json
             },
             "body": "Hello <strong class='highlight1'>${row}['Name']</strong>, have you done your <strong class='highlight1'>${row}['jobs']</strong> today?"
           },
-          "_behaviors": {
-            "lookup": [{
-              "key": <strong class='highlight2'>{
-                "from": "path",
-                "using": { "method": "regex", "selector": "/(.*)$" },
-                "index": 1
-              }</strong>,
-              "fromDataSource": {
-                "csv": {
-                  "path": "values.csv",
-                  "keyColumn": "Name",
-                  "delimiter": ","
-                }
-              },
-              "into": "<strong class='highlight1'>${row}</strong>"
-            }]
-          }
+          "behaviors": [
+            {
+              "lookup": {
+                "key": <strong class='highlight2'>{
+                  "from": "path",
+                  "using": { "method": "regex", "selector": "/(.*)$" },
+                  "index": 1
+                }</strong>,
+                "fromDataSource": {
+                  "csv": {
+                    "path": "values.csv",
+                    "keyColumn": "Name",
+                    "delimiter": ","
+                  }
+                },
+                "into": "<strong class='highlight1'>${row}</strong>"
+              }
+            }
+          ]
         }
       ]
     }

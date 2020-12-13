@@ -8,7 +8,7 @@ else
     OS=linux
 fi
 
-VERSION=3.2.0.1227
+VERSION=4.0.0.1744
 
 echo "Downloading sonar-scanner..."
 wget https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-${VERSION}-${OS}.zip
@@ -17,15 +17,19 @@ rm sonar-scanner-cli-${VERSION}-${OS}.zip
 
 # Necessary for sonar-scanner to run correctly
 PATH=$PATH:`pwd`/sonar-scanner-${VERSION}-${OS}/bin
-echo sonar.host.url=https://sonarqube.com >> sonar-scanner-${VERSION}-${OS}/conf/sonar-scanner.properties
+echo sonar.host.url=https://sonarcloud.io >> sonar-scanner-${VERSION}-${OS}/conf/sonar-scanner.properties
 
 echo "Running sonar-scanner..."
 sonar-scanner \
     -Dsonar.projectKey=mountebank \
     -Dsonar.projectName=mountebank \
+    -Dsonar.links.homepage=http://www.mbtest.org \
+    -Dsonar.links.ci=https://circleci.com/gh/bbyars/workflows/mountebank \
+    -Dsonar.links.issue=https://github.com/bbyars/mountebank/issues \
+    -Dsonar.links.scm=https://github.com/bbyars/mountebank \
     -Dsonar.sources=src \
     -Dsonar.tests=test,functionalTest,performanceTest \
-    -Dsonar.host.url=https://sonarqube.com \
+    -Dsonar.host.url=https://sonarcloud.io \
     -Dsonar.organization=bbyars-github \
     -Dsonar.login=$SONARQUBE_LOGIN
 

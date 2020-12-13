@@ -19,3 +19,10 @@ patch:
   'npm:extend:20180424':
     - snyk > proxy-agent > pac-proxy-agent > get-uri > extend:
         patched: '2019-08-17T08:01:25.812Z'
+  SNYK-JS-HTTPSPROXYAGENT-469131:
+    - https-proxy-agent:
+        patched: '2019-10-03T22:06:49.004Z'
+    - snyk > proxy-agent > https-proxy-agent:
+        patched: '2019-10-03T22:06:49.004Z'
+    - snyk > proxy-agent > pac-proxy-agent > https-proxy-agent:
+        patched: '2019-10-03T22:06:49.004Z'

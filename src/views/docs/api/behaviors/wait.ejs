@@ -35,9 +35,9 @@ Content-Type: application/json
       "responses": [
         {
           "is": { "body": "This took at least half a second to send" },
-          "_behaviors": {
-            "wait": 500
-          }
+          "behaviors": [
+            { "wait": 500 }
+          ]
         }
       ]
     }
@@ -88,9 +88,9 @@ Content-Type: application/json
       "responses": [
         {
           "is": { "body": "This took at least 100 to 1000 ms to send" },
-          "_behaviors": {
-            "wait": "function() { return Math.floor(Math.random() * 901) + 100; }"
-          }
+          "behaviors": [
+            { "wait": "function() { return Math.floor(Math.random() * 901) + 100; }" }
+          ]
         }
       ]
     }
@@ -98,7 +98,7 @@ Content-Type: application/json
 }</code></pre>
     </step>
 
-<p>Now when the function is called, it will take at least 100 ms to 1000 ms to respond.</p>
+<p>The result of the function determines the wait time:</p>
 
     <step type='http'>
 <pre><code>GET / HTTP/1.1

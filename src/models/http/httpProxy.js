@@ -13,6 +13,28 @@ process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
  * @returns {Object}
  */
 function create (logger) {
+    const BINARY_MIME_TYPES = [
+        'audio/',
+        'application/epub+zip',
+        'application/gzip',
+        'application/java-archive',
+        'application/msword',
+        'application/octet-stream',
+        'application/pdf',
+        'application/rtf',
+        'application/vnd.ms-excel',
+        'application/vnd.ms-fontobject',
+        'application/vnd.ms-powerpoint',
+        'application/vnd.visio',
+        'application/x-shockwave-flash',
+        'application/x-tar',
+        'application/zip',
+        'font/',
+        'image/',
+        'model/',
+        'video/'
+    ];
+
     function addInjectedHeadersTo (request, headersToInject) {
         Object.keys(headersToInject || {}).forEach(key => {
             request.headers[key] = headersToInject[key];
@@ -87,12 +109,12 @@ function create (logger) {
         if (originalRequest.body &&
             !headersHelper.hasHeader('Transfer-Encoding', originalRequest.headers) &&
             !headersHelper.hasHeader('Content-Length', originalRequest.headers)) {
-            options.headers['Content-Length'] = Buffer.byteLength(originalRequest.body, 'binary');
+            options.headers['Content-Length'] = Buffer.byteLength(originalRequest.body);
         }
 
         const proxiedRequest = protocol.request(options);
         if (originalRequest.body) {
-            proxiedRequest.write(originalRequest.body, 'binary');
+            proxiedRequest.write(originalRequest.body);
         }
         return proxiedRequest;
     }
@@ -105,11 +127,7 @@ function create (logger) {
             return true;
         }
 
-        if (contentType === 'application/octet-stream') {
-            return true;
-        }
-
-        return ['audio', 'image', 'video'].some(typeName => contentType.indexOf(typeName) === 0);
+        return BINARY_MIME_TYPES.some(typeName => contentType.indexOf(typeName) >= 0);
     }
 
     function proxy (proxiedRequest) {

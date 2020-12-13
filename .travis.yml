@@ -11,20 +11,17 @@ env:
 matrix:
   include:
     - os: osx
-      sudo: true
       env:
         - MB_GRUNT_TASK='dist version test:pkg deploy:s3'
     - os: osx
-      sudo: false
       env:
         - MB_GRUNT_TASK='dist version test:tarball:x64 deploy:s3'
     - os: osx
-      sudo: false
       env:
-        - MB_GRUNT_TASK='dist version outOfProcessImposters test'
+        - MB_GRUNT_TASK='dist version persistent outOfProcessImposters test test:dbPerformance'
 
 install:
-  - export NODE_VERSION=${NODE_VERSION:-10} # Default node version = LTS version
+  - export NODE_VERSION=${NODE_VERSION:-14} # Default node version = LTS version
   - rm -rf ~/.nvm
   - git clone https://github.com/creationix/nvm.git ~/.nvm
   - source ~/.nvm/nvm.sh
@@ -38,8 +35,9 @@ install:
   # fpm install started failing even after bundle update
   - ruby --version
   - gem install fpm
-  - gem install bundler
-  - bundle install --without development
+  - gem install dpl
+  #- gem install bundler
+  #- bundle install --without development
 
 script:
   - ./build $MB_GRUNT_TASK

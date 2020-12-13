@@ -24,9 +24,11 @@ function assertValid (path, html) {
                 line: message.lastLine,
                 message: message.message
             }));
+
+            console.log(`Testing ${path}...`);
             assert.strictEqual(0, errors.length,
                 `Errors for ${path}: ${JSON.stringify(errors, null, 2)}`);
-            console.log(`${path} is valid}`);
+            console.log(`...${path} is valid`);
             deferred.resolve();
         }
     });
@@ -68,7 +70,7 @@ function getHTML (path) {
 // MB_AIRPLANE_MODE because these require network access
 // MB_RUN_WEB_TESTS because these are slow, occasionally fragile, and there's
 // no value running them with every node in the build matrix
-if (process.env.MB_AIRPLANE_MODE !== 'true' && process.env.MB_RUN_WEB_TESTS === 'true') {
+if (process.env.MB_AIRPLANE_MODE !== 'true' && process.env.MB_RUN_WEB_TESTS === 'true' && process.env.MB_COMMENT === 'true') {
     describe('all pages in the mountebank website', function () {
         this.timeout(60000);
 

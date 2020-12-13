@@ -70,6 +70,11 @@ will happily assist you.</p>
     <td></td>
   </tr>
   <tr>
+    <td><a href='#delete-requests'>Delete saved requests from an imposter</a></td>
+    <td></td>
+    <td><a href='/docs/api/contracts?type=imposter'>imposter</a></td>
+  </tr>
+  <tr>
     <td><a href='#put-imposters'>Overwrite all imposters with a new set of imposters</a></td>
     <td><a href='/docs/api/contracts?type=imposters'>imposters</a></td>
     <td><a href='/docs/api/contracts?type=imposters'>imposters</a></td>
@@ -115,7 +120,6 @@ Accept: application/json</code></pre>
 
         <assertResponse>
 <pre><code>HTTP/1.1 200 OK
-Access-Control-Allow-Origin: *
 Vary: Accept
 Content-Type: application/json; charset=utf-8
 Content-Length: 226
@@ -172,7 +176,6 @@ Content-Type: application/json
 
         <assertResponse>
 <pre><code>HTTP/1.1 201 Created
-Access-Control-Allow-Origin: *
 Location: http://localhost:<%= port %>/imposters/4545
 Content-Type: application/json; charset=utf-8
 Content-Length: 298
@@ -210,8 +213,7 @@ http://localhost:4545. To retrieve a list of all imposters, simply issue a <code
 
 <ul class='bullet-list'>
   <li>You want to perform <a href='/docs/api/mocks'>mock verifications</a> by inspecting the
-    <a href='/docs/api/mocks'><code>requests</code> array</a> (you must run <code>mb</code> with the
-    <a href='/docs/commandLine'> <code>--mock</code> command line parameter</a> for this to work).</li>
+    <a href='/docs/api/mocks'><code>requests</code> array</a>).</li>
   <li>You want to debug <a href='/docs/api/predicates'>stub predicates</a> by inspecting the
     <a href='/docs/api/stubs#matches-array'><code>matches</code> array</a> (you must run
     <code>mb</code> with the <a href='/docs/commandLine'> <code>--debug</code> command line
@@ -233,8 +235,7 @@ http://localhost:4545. To retrieve a list of all imposters, simply issue a <code
     <td>boolean</td>
     <td>Set to <code>true</code> to retrieve the minimum amount of information for
       <a href='#post-imposters'>creating the imposter</a> in the future.  This leaves
-      out the <a href='/docs/api/mocks'><code>requests</code> array</a>, the
-      <a href='/docs/api/stubs#matches-array'> <code>matches</code> array</a>, and any hypermedia.</td>
+      out the <a href='/docs/api/mocks'><code>requests</code> array</a> and any hypermedia.</td>
   </tr>
   <tr>
     <td><code>removeProxies</code></td>
@@ -254,7 +255,6 @@ Accept: application/json
 
         <assertResponse>
 <pre><code>HTTP/1.1 200 OK
-Access-Control-Allow-Origin: *
 Vary: Accept
 Content-Type: application/json; charset=utf-8
 Content-Length: 298
@@ -290,7 +290,6 @@ Accept: application/json</code></pre>
 
         <assertResponse>
 <pre><code>HTTP/1.1 200 OK
-Access-Control-Allow-Origin: *
 Vary: Accept
 Content-Type: application/json; charset=utf-8
 Content-Length: 82
@@ -337,7 +336,6 @@ Accept: application/json
 
         <assertResponse>
 <pre><code>HTTP/1.1 200 OK
-Access-Control-Allow-Origin: *
 Content-Type: application/json; charset=utf-8
 Content-Length: 548
 Date: <volatile>Wed, 19 Jun 2019 01:00:55 GMT</volatile>
@@ -394,7 +392,6 @@ Accept: application/json
 
         <assertResponse>
 <pre><code>HTTP/1.1 200 OK
-Access-Control-Allow-Origin: *
 Content-Type: application/json; charset=utf-8
 Content-Length: 550
 Date: <volatile>Wed, 19 Jun 2019 01:00:55 GMT</volatile>
@@ -449,7 +446,6 @@ Accept: application/json
 
         <assertResponse>
 <pre><code>HTTP/1.1 200 OK
-Access-Control-Allow-Origin: *
 Content-Type: application/json; charset=utf-8
 Content-Length: 543
 Date: <volatile>Wed, 19 Jun 2019 01:00:55 GMT</volatile>
@@ -495,7 +491,6 @@ Accept: application/json</code></pre>
 
         <assertResponse>
 <pre><code>HTTP/1.1 200 OK
-Access-Control-Allow-Origin: *
 Content-Type: application/json; charset=utf-8
 Content-Length: 298
 Date: <volatile>Wed, 19 Jun 2019 01:00:55 GMT</volatile>
@@ -541,9 +536,7 @@ at the <code>requests</code> array for <a href='/docs/api/mocks'>mock verificati
     <td>boolean</td>
     <td>Set to <code>true</code> to retrieve the minimum amount of information for
       <a href='#post-imposters'>creating the imposter</a> in the future.  This leaves
-      out the <a href='/docs/api/mocks'><code>requests</code> array</a>, the
-      <a href='/docs/api/stubs#matches-array'>
-      <code>matches</code> array</a>, and any hypermedia.</td>
+      out the <a href='/docs/api/mocks'><code>requests</code> array</a> and any hypermedia.</td>
   </tr>
   <tr>
     <td><code>removeProxies</code></td>
@@ -562,7 +555,6 @@ Accept: application/json</code></pre>
 
         <assertResponse>
 <pre><code>HTTP/1.1 200 OK
-Access-Control-Allow-Origin: *
 Content-Type: application/json; charset=utf-8
 Content-Length: 298
 Date: <volatile>Sun, 05 Jan 2014 16:59:33 GMT</volatile>
@@ -594,6 +586,15 @@ available. However, if you need to clear them but keep the stubs intact, you can
 
 <p class='info-icon'>Note that you can prevent the proxy from saving responses by setting the <code>mode</code>
 to <a href='/docs/api/proxies#proxy-modes'><code>proxyTransparent</code></a>.</p>
+
+<h3 id='delete-requests'>Delete saved requests from an imposter</h3>
+
+<pre><code>DELETE /imposters/:port/savedRequests</code></pre>
+
+<p><b>Response contract</b>: <a href='/docs/api/contracts?type=imposter'>imposter</a></p>
+
+<p>Clear an imposter's recorded requests (used for <a href='/docs/api/mocks'>mock verification</a>) while leaving the rest of the imposter intact.
+On a successful request, mountebank will return the updated imposter resource.</p>
 
 <h3 id='put-imposters'>Overwrite all imposters with a new set of imposters</h3>
 
@@ -641,7 +642,6 @@ Content-Type: application/json
         <assertResponse>
 <pre><code>
 HTTP/1.1 200 OK
-Access-Control-Allow-Origin: *
 Content-Type: application/json; charset=utf-8
 Content-Length: 898
 Date: <volatile>Sun, 05 Jan 2014 16:59:33 GMT</volatile>
@@ -705,8 +705,7 @@ either <a href='#get-imposter'>get the single imposter</a> or use the
     <td>boolean</td>
     <td>Set to <code>true</code> to retrieve the minimum amount of information for replaying
       the set of imposters in the future through a <a href='#put-imposters'>mass create</a>
-      call.  This leaves out the <a href='/docs/api/mocks'><code>requests</code> array</a>, the
-      <a href='/docs/api/stubs#matches-array'><code>matches</code> array</a>,
+      call.  This leaves out the <a href='/docs/api/mocks'><code>requests</code> array</a>
       and any hypermedia.</td>
   </tr>
   <tr>
@@ -726,7 +725,6 @@ Accept: application/json</code></pre>
 
         <assertResponse>
 <pre><code>HTTP/1.1 200 OK
-Access-Control-Allow-Origin: *
 Vary: Accept
 Content-Type: application/json; charset=utf-8
 Content-Length: 898
@@ -789,8 +787,7 @@ to <a href='#put-imposters'>mass create</a> the same imposters in the future.</p
     <td><code>replayable</code></td>
     <td>boolean</td>
     <td>Defaults to true.  Set to <code>false</code> to retrieve the
-      <a href='/docs/api/stubs#matches-array'><code>matches</code></a>
-      and <a href='/docs/api/mocks'><code>requests</code></a> arrays with the response.  You can still
+      <a href='/docs/api/mocks'><code>requests</code></a> arrays with the response.  You can still
       <a href='#put-imposters'>mass create</a> using this JSON; it just has extraneous information.</td>
   </tr>
   <tr>
@@ -810,7 +807,6 @@ Accept: application/json</code></pre>
 
         <assertResponse>
 <pre><code>HTTP/1.1 200 OK
-Access-Control-Allow-Origin: *
 Content-Type: application/json; charset=utf-8
 Content-Length: 370
 Date: <volatile>Sun, 05 Jan 2014 16:58:25 GMT</volatile>
@@ -858,7 +854,6 @@ Accept: application/json</code></pre>
 
         <assertResponse>
 <pre><code>HTTP/1.1 200 OK
-Access-Control-Allow-Origin: *
 Vary: Accept
 Content-Type: application/json; charset=utf-8
 Content-Length: <volatile>550</volatile>
@@ -868,18 +863,22 @@ Connection: keep-alive
 {
   "version": "<%= version %>",
   "options": {
-    "noParse": false,
-    "nologfile": false,
-    "allowInjection": true,
-    "localOnly": true,
-    "mock": true,
-    "debug": true,
     "port": <%= port %>,
     "pidfile": "mb-grunt.pid",
     "logfile": "mb-grunt.log",
+    "allowInjection": true,
+    "mock": true,
+    "localOnly": true, <% if (process.env.MB_PERSISTENT === 'true') { %>
+    "datadir": ".mbdb", <% } %>
+    "noParse": false,
+    "nologfile": false,
     "loglevel": "info",
-    "ipWhitelist": ["*"],
-    "protofile": "protocols.json"
+    "ipWhitelist": [
+      "*"
+    ],
+    "debug": false,
+    "protofile": "protocols.json",
+    "origin": false
   },
   "process": {
     "nodeVersion": <volatile>"v5.8.0"</volatile>,
@@ -928,7 +927,6 @@ Accept: application/json</code></pre>
 
         <assertResponse>
 <pre><code>HTTP/1.1 200 OK
-Access-Control-Allow-Origin: *
 Vary: Accept
 Content-Type: application/json; charset=utf-8
 Content-Length: <volatile>5249</volatile>
@@ -938,14 +936,14 @@ Connection: keep-alive
 {
   "logs": [
     {
-      "message": "[mb:<%= port %>] mountebank v<%= version %> now taking orders - point your browser to http://localhost:<%= port %>/ for help",
-      "level": "info",
-      "timestamp": "<volatile>2015-10-20T03:33:23.018Z</volatile>"
-    },
-    {
       "message": "[mb:<%= port %>] Running with --allowInjection set. See http://localhost:<%= port %>/docs/security for security info",
       "level": "warn",
       "timestamp": "<volatile>2015-10-20T03:33:23.019Z</volatile>"
+    },
+    {
+      "message": "[mb:<%= port %>] mountebank v<%= version %> now taking orders - point your browser to http://localhost:<%= port %>/ for help",
+      "level": "info",
+      "timestamp": "<volatile>2015-10-20T03:33:23.018Z</volatile>"
     }
   ]
 }</code></pre>

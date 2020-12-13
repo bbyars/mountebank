@@ -20,6 +20,7 @@ mkdir $MB_DIRNAME
 
 cd $MB_DIRNAME
 
+echo "Getting node from $URL"
 wget -q $URL
 echo "Extracting..."
 tar xzf $NODE_FILENAME.tar.gz > /dev/null

@@ -33,7 +33,8 @@ describe('smtp imposter', function () {
                     to: ['"To 1" <to1@mb.org>'],
                     subject: 'subject 1',
                     text: 'text 1'
-                }, port)).then(() => client.send({
+                }, port))
+                .then(() => client.send({
                     envelopeFrom: 'envelopeFrom2@mb.org',
                     envelopeTo: ['envelopeTo2@mb.org'],
                     from: '"From 2" <from2@mb.org>',

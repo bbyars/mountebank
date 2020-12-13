@@ -30,31 +30,6 @@ describe('http proxy stubs', function () {
         });
     }
 
-    promiseIt('should reflect default mode after first proxy if no mode passed in', function () {
-        const originServerPort = port + 1,
-            originServerStub = { responses: [{ is: { body: 'origin server' } }] },
-            originServerRequest = {
-                protocol: 'http',
-                port: originServerPort,
-                stubs: [originServerStub],
-                name: 'origin'
-            },
-            proxyStub = { responses: [{ proxy: { to: `http://localhost:${originServerPort}` } }] },
-            proxyRequest = { protocol: 'http', port, stubs: [proxyStub], name: 'proxy' };
-
-        return api.post('/imposters', originServerRequest)
-            .then(() => api.post('/imposters', proxyRequest))
-            .then(response => {
-                assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body, null, 2));
-                return client.get('/', port);
-            }).then(response => {
-                assert.strictEqual(response.body, 'origin server');
-                return api.get(`/imposters/${port}`);
-            }).then(response => {
-                assert.strictEqual(response.body.stubs[1].responses[0].proxy.mode, 'proxyOnce', response.body);
-            }).finally(() => api.del('/imposters'));
-    });
-
     promiseIt('should record new stubs in order in front of proxy resolver using proxyOnce mode', function () {
         const originServerPort = port + 1,
             originServerFn = (request, state) => {
@@ -322,12 +297,12 @@ describe('http proxy stubs', function () {
                 return client.get('/?first=1&second=2', port);
             }).then(response => {
                 assert.strictEqual(response.body, '1. {"first":"1","second":"2"}');
-                return client.get('/?second=2', port);
-            }).then(response => {
-                assert.strictEqual(response.body, '2. {"second":"2"}');
                 return client.get('/?first=2&second=2', port);
             }).then(response => {
-                assert.strictEqual(response.body, '3. {"first":"2","second":"2"}');
+                assert.strictEqual(response.body, '2. {"first":"2","second":"2"}');
+                return client.get('/?first=3&second=2', port);
+            }).then(response => {
+                assert.strictEqual(response.body, '3. {"first":"3","second":"2"}');
                 return client.get('/?first=1&second=2&third=3', port);
             }).then(response => {
                 assert.strictEqual(response.body, '1. {"first":"1","second":"2"}');
@@ -410,8 +385,7 @@ describe('http proxy stubs', function () {
                 return api.get(`/imposters/${port}`);
             }).then(response => {
                 const stubResponse = response.body.stubs[0].responses[0];
-                // eslint-disable-next-line no-underscore-dangle
-                assert.strictEqual(stubResponse._behaviors.wait, stubResponse.is._proxyResponseTime, JSON.stringify(stubResponse, null, 4));
+                assert.strictEqual(stubResponse.behaviors[0].wait, stubResponse.is._proxyResponseTime, JSON.stringify(stubResponse, null, 4));
             }).finally(() => api.del('/imposters'));
     });
 
@@ -754,22 +728,22 @@ describe('http proxy stubs', function () {
             .then(() => api.post('/imposters', proxyRequest))
             .then(response => {
                 assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body, null, 2));
-                return client.get('/', port);
+                return client.get('/', proxyRequest.port);
             })
             .then(response => {
                 assert.strictEqual(response.body, 'origin server');
-                return api.del(`/imposters/${port}/requests`);
+                return api.del(`/imposters/${proxyRequest.port}/requests`);
             })
             .then(response => {
                 assert.strictEqual(response.statusCode, 200, JSON.stringify(response.body, null, 2));
-                return api.get(`/imposters/${port}`);
+                return api.get(`/imposters/${proxyRequest.port}`);
             })
             .then(response => {
                 response.body.stubs.forEach(stub => {
                     delete stub.matches;
                     delete stub._links;
                 });
-                assert.deepEqual(proxyRequest.stubs, response.body.stubs, JSON.stringify(response.body.stubs, null, 2));
+                assert.deepEqual(response.body.stubs, proxyRequest.stubs, JSON.stringify(response.body.stubs, null, 2));
             })
             .finally(() => api.del('/imposters'));
     });

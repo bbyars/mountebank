@@ -13,7 +13,7 @@
  * @returns {Object}
  */
 function create (stubs, proxy, callbackURL) {
-    // imjectState is deprecated in favor of imposterState, but kept for backwards compatibility
+    // injectState is deprecated in favor of imposterState, but kept for backwards compatibility
     const injectState = {}, // eslint-disable-line no-unused-vars
         pendingProxyResolutions = {},
         inProcessProxy = Boolean(proxy);
@@ -52,7 +52,8 @@ function create (stubs, proxy, callbackURL) {
             catch (error) {
                 logger.error(`injection X=> ${error}`);
                 logger.error(`    full source: ${JSON.stringify(injected)}`);
-                logger.error(`    config: ${JSON.stringify(config)}`);
+                logger.error(`    config.request: ${JSON.stringify(config.request)}`);
+                logger.error(`    config.state: ${JSON.stringify(config.state)}`);
                 deferred.reject(exceptions.InjectionError('invalid response injection', {
                     source: injected,
                     data: error.message
@@ -102,6 +103,24 @@ function create (stubs, proxy, callbackURL) {
         return result;
     }
 
+    const path = [];
+
+    function buildExists (request, fieldName, matchers, initialRequest) {
+        const isObject = require('../util/helpers').isObject,
+            setDeep = require('../util/helpers').setDeep;
+        Object.keys(request).forEach(key => {
+            path.push(key);
+            if (isObject(request[key])) {
+                buildExists(request[key], fieldName, matchers[key], initialRequest);
+            }
+            else {
+                const booleanValue = (typeof fieldName !== 'undefined' && fieldName !== null && fieldName !== '');
+                setDeep(initialRequest, path, booleanValue);
+            }
+        });
+        return initialRequest;
+    }
+
     function predicatesFor (request, matchers, logger) {
         const predicates = [];
 
@@ -124,11 +143,13 @@ function create (stubs, proxy, callbackURL) {
             }
 
             const basePredicate = {};
+            let hasPredicateOperator = false;
+            let predicateOperator; // eslint-disable-line no-unused-vars
             let valueOf = field => field;
 
             // Add parameters
             Object.keys(matcher).forEach(key => {
-                if (key !== 'matches') {
+                if (key !== 'matches' && key !== 'predicateOperator') {
                     basePredicate[key] = matcher[key];
                 }
                 if (key === 'xpath') {
@@ -137,16 +158,24 @@ function create (stubs, proxy, callbackURL) {
                 else if (key === 'jsonpath') {
                     valueOf = field => jsonpathValue(matcher.jsonpath, field, logger);
                 }
+                else if (key === 'predicateOperator') {
+                    hasPredicateOperator = true;
+                }
             });
 
             Object.keys(matcher.matches).forEach(fieldName => {
                 const helpers = require('../util/helpers'),
                     matcherValue = matcher.matches[fieldName],
                     predicate = helpers.clone(basePredicate);
-
-                if (matcherValue === true) {
+                if (matcherValue === true && hasPredicateOperator === false) {
                     predicate.deepEquals = {};
                     predicate.deepEquals[fieldName] = valueOf(request[fieldName]);
+                }
+                else if (hasPredicateOperator === true && matcher.predicateOperator === 'exists') {
+                    predicate[matcher.predicateOperator] = buildExists(request, fieldName, matcherValue, request);
+                }
+                else if (hasPredicateOperator === true && matcher.predicateOperator !== 'exists') {
+                    predicate[matcher.predicateOperator] = valueOf(request);
                 }
                 else {
                     predicate.equals = {};
@@ -165,102 +194,73 @@ function create (stubs, proxy, callbackURL) {
         return stringify(obj1) === stringify(obj2);
     }
 
-    function stubIndexFor (responseConfig) {
-        const stubList = stubs.stubs();
-        for (var i = 0; i < stubList.length; i += 1) {
-            if (stubList[i].responses.some(response => deepEqual(response, responseConfig))) {
-                break;
-            }
-        }
-        return i;
-    }
-
-    function indexOfStubToAddResponseTo (responseConfig, request, logger) {
-        const predicates = predicatesFor(request, responseConfig.proxy.predicateGenerators || [], logger),
-            stubList = stubs.stubs();
-
-        for (let index = stubIndexFor(responseConfig) + 1; index < stubList.length; index += 1) {
-            if (deepEqual(predicates, stubList[index].predicates)) {
-                return index;
-            }
-        }
-        return -1;
-    }
-
-    function canAddResponseToExistingStub (responseConfig, request, logger) {
-        return indexOfStubToAddResponseTo(responseConfig, request, logger) >= 0;
-    }
-
     function newIsResponse (response, proxyConfig) {
         const result = { is: response };
-        const addBehaviors = {};
+        const addBehaviors = [];
 
-        if (proxyConfig.addWaitBehavior && response._proxyResponseTime) { // eslint-disable-line no-underscore-dangle
-            addBehaviors.wait = response._proxyResponseTime; // eslint-disable-line no-underscore-dangle
+        if (proxyConfig.addWaitBehavior && response._proxyResponseTime) {
+            addBehaviors.push({ wait: response._proxyResponseTime });
         }
         if (proxyConfig.addDecorateBehavior) {
-            addBehaviors.decorate = proxyConfig.addDecorateBehavior;
+            addBehaviors.push({ decorate: proxyConfig.addDecorateBehavior });
         }
 
-        if (Object.keys(addBehaviors).length) {
-            result._behaviors = addBehaviors;
+        if (addBehaviors.length > 0) {
+            result.behaviors = addBehaviors;
         }
         return result;
     }
 
-    function addNewResponse (responseConfig, request, response, logger) {
-        const stubResponse = newIsResponse(response, responseConfig.proxy),
-            responseIndex = indexOfStubToAddResponseTo(responseConfig, request, logger);
+    function recordProxyAlways (newPredicates, newResponse, responseConfig) {
+        const filter = stubPredicates => deepEqual(newPredicates, stubPredicates);
 
-        stubs.stubs()[responseIndex].addResponse(stubResponse);
-    }
-
-    function addNewStub (responseConfig, request, response, logger) {
-        const predicates = predicatesFor(request, responseConfig.proxy.predicateGenerators || [], logger),
-            stubResponse = newIsResponse(response, responseConfig.proxy),
-            newStub = { predicates: predicates, responses: [stubResponse] };
-
-        if (responseConfig.proxy.mode === 'proxyAlways') {
-            stubs.addStub(newStub);
-        }
-        else {
-            stubs.addStub(newStub, responseConfig);
-        }
+        return responseConfig.stubIndex().then(index => {
+            return stubs.first(filter, index + 1);
+        }).then(match => {
+            if (match.success) {
+                return match.stub.addResponse(newResponse);
+            }
+            else {
+                return stubs.add({ predicates: newPredicates, responses: [newResponse] });
+            }
+        });
     }
 
     function recordProxyResponse (responseConfig, request, response, logger) {
+        const newPredicates = predicatesFor(request, responseConfig.proxy.predicateGenerators || [], logger),
+            newResponse = newIsResponse(response, responseConfig.proxy);
+
         // proxyTransparent prevents the request from being recorded, and always transparently issues the request.
         if (responseConfig.proxy.mode === 'proxyTransparent') {
-            return;
+            return require('q')();
         }
-
-        if (responseConfig.proxy.mode === 'proxyAlways' && canAddResponseToExistingStub(responseConfig, request, logger)) {
-            addNewResponse(responseConfig, request, response, logger);
+        else if (responseConfig.proxy.mode === 'proxyOnce') {
+            return responseConfig.stubIndex().then(index => {
+                return stubs.insertAtIndex({ predicates: newPredicates, responses: [newResponse] }, index);
+            });
         }
         else {
-            addNewStub(responseConfig, request, response, logger);
+            return recordProxyAlways(newPredicates, newResponse, responseConfig);
         }
     }
 
-    function proxyAndRecord (responseConfig, request, logger, requestDetails) {
+    function proxyAndRecord (responseConfig, request, logger, requestDetails, imposterState) {
         const Q = require('q'),
             startTime = new Date(),
             behaviors = require('./behaviors');
 
         if (['proxyOnce', 'proxyAlways', 'proxyTransparent'].indexOf(responseConfig.proxy.mode) < 0) {
-            responseConfig.setMetadata('proxy', { mode: 'proxyOnce' });
+            responseConfig.proxy.mode = 'proxyOnce';
         }
 
         if (inProcessProxy) {
             return proxy.to(responseConfig.proxy.to, request, responseConfig.proxy, requestDetails).then(response => {
-                // eslint-disable-next-line no-underscore-dangle
                 response._proxyResponseTime = new Date() - startTime;
 
                 // Run behaviors here to persist decorated response
-                return Q(behaviors.execute(request, response, responseConfig._behaviors, logger));
+                return Q(behaviors.execute(request, response, responseConfig.behaviors, logger, imposterState));
             }).then(response => {
-                recordProxyResponse(responseConfig, request, response, logger);
-                return Q(response);
+                return recordProxyResponse(responseConfig, request, response, logger).then(() => response);
             });
         }
         else {
@@ -289,7 +289,7 @@ function create (stubs, proxy, callbackURL) {
             return Q(helpers.clone(responseConfig.is));
         }
         else if (responseConfig.proxy) {
-            return proxyAndRecord(responseConfig, request, logger, requestDetails);
+            return proxyAndRecord(responseConfig, request, logger, requestDetails, imposterState);
         }
         else if (responseConfig.inject) {
             return inject(request, responseConfig.inject, logger, imposterState).then(Q);
@@ -334,7 +334,7 @@ function create (stubs, proxy, callbackURL) {
                 return Q(response);
             }
             else {
-                return Q(behaviors.execute(request, response, responseConfig._behaviors, logger));
+                return Q(behaviors.execute(request, response, responseConfig.behaviors, logger, imposterState));
             }
         }).then(response => {
             if (inProcessProxy) {
@@ -352,26 +352,28 @@ function create (stubs, proxy, callbackURL) {
      * saving state indexed by proxyResolutionKey. The protocol implementation sends the proxy
      * to the downstream system and calls mountebank again with the response so mountebank
      * can save it and add behaviors
+     * @memberOf module:models/responseResolver#
      * @param {Object} proxyResponse - the proxy response from the protocol implementation
      * @param {Number} proxyResolutionKey - the key into the saved proxy state
      * @param {Object} logger - the logger
+     * @param {Object} imposterState - the user controlled state variable
      * @returns {Object} - Promise resolving to the response
      */
-    function resolveProxy (proxyResponse, proxyResolutionKey, logger) {
+    function resolveProxy (proxyResponse, proxyResolutionKey, logger, imposterState) {
         const pendingProxyConfig = pendingProxyResolutions[proxyResolutionKey],
             behaviors = require('./behaviors'),
             Q = require('q');
 
         if (pendingProxyConfig) {
-            // eslint-disable-next-line no-underscore-dangle
             proxyResponse._proxyResponseTime = new Date() - pendingProxyConfig.startTime;
 
-            return behaviors.execute(pendingProxyConfig.request, proxyResponse, pendingProxyConfig.responseConfig._behaviors, logger)
+            return behaviors.execute(pendingProxyConfig.request, proxyResponse, pendingProxyConfig.responseConfig.behaviors, logger, imposterState)
                 .then(response => {
-                    recordProxyResponse(pendingProxyConfig.responseConfig, pendingProxyConfig.request, response, logger);
-                    response.recordMatch = () => { pendingProxyConfig.responseConfig.recordMatch(response); };
-                    delete pendingProxyResolutions[proxyResolutionKey];
-                    return Q(response);
+                    return recordProxyResponse(pendingProxyConfig.responseConfig, pendingProxyConfig.request, response, logger)
+                        .then(() => {
+                            delete pendingProxyResolutions[proxyResolutionKey];
+                            return Q(response);
+                        });
                 });
         }
         else {

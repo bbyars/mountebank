@@ -49,5 +49,6 @@ module.exports = {
     InvalidJSONError: createWithMessage('invalid JSON', 'Unable to parse body as JSON'),
     CommunicationError: createWithMessage('communication', 'Error communicating with mountebank'),
     ProtocolError: create('cannot start server'),
+    DatabaseError: create('corrupted database'),
     details
 };

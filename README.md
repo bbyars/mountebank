@@ -82,19 +82,6 @@ of guarantees around either support turn-around time or release dates. If your c
 that require more confidence and are willing to pay a reasonable services fee to obtain that confidence,
 you can contact me directly at brandon.byars@gmail.com.
 
-## Build Status
-
-[![CircleCI](https://circleci.com/gh/bbyars/mountebank.svg?style=svg)](https://circleci.com/gh/bbyars/mountebank)
-[![Greenkeeper badge](https://badges.greenkeeper.io/bbyars/mountebank.svg)](https://greenkeeper.io/)
-[![Test Coverage][codeclimate-coverage-badge]][codeclimate-coverage]
-[![Codacy Badge](https://api.codacy.com/project/badge/Grade/c030a6aebe274e21b4ce11a74e01fa12)](https://www.codacy.com/app/brandonbyars/mountebank?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=bbyars/mountebank&amp;utm_campaign=Badge_Grade)
-[![Code Climate][codeclimate-badge]][codeclimate]
-
-For cross-OS compatibility, mountebank uses [TravisCI](https://travis-ci.org/bbyars/mountebank),
-[Appveyor](https://ci.appveyor.com/project/bbyars/mountebank), and [CircleCI](https://circleci.com/gh/bbyars/mountebank).
-Only CircleCI runs on commit (TravisCI and Appveyor are triggered in the CircleCI pipeline), and you can view the success of the TravisCI
-and Appveyor builds in [CircleCI](https://circleci.com/gh/bbyars/mountebank) as the "osx" and "windows" jobs, respectively.
-
 ## Building
 
 `./build` should do the trick on Mac and Linux, and `build.bat` on Windows, assuming you have a supported version

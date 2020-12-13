@@ -133,5 +133,11 @@ describe('predicates', function () {
                 request = { query: { key: ['123', '234'] } };
             assert.ok(!predicates.evaluate(predicate, request));
         });
+
+        it('should match numbers as strings', function () {
+            const predicate = { equals: { query: { key: 23 } } },
+                request = { query: { key: '23' } };
+            assert.ok(predicates.evaluate(predicate, request));
+        });
     });
 });

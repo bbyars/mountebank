@@ -96,7 +96,7 @@ function create (options, logger, responseFn) {
                         return responseFn(jsonRequest);
                     }).done(mbResponse => {
                         if (mbResponse.blocked) {
-                            socket.end();
+                            socket.destroy();
                             return;
                         }
                         const processedResponse = mbResponse.data || defaultResponse.data,

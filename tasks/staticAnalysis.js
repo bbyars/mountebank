@@ -51,7 +51,7 @@ module.exports = function (grunt) {
                     }));
                 });
             },
-            exclusions = ['node_modules', 'dist', 'staticAnalysis.js', 'testHelpers.js', '*.pid', 'jquery', 'docs'];
+            exclusions = ['node_modules', 'dist', 'staticAnalysis.js', 'testHelpers.js', '*.pid', 'jquery', 'docs', '*.csv'];
 
         forEachFileIn('.', check, { exclude: exclusions, filetype: '.js' });
 
@@ -68,7 +68,7 @@ module.exports = function (grunt) {
                     errors.push(`${file} appears to do a typecheck against object without using helpers.isObject`);
                 }
             },
-            exclusions = ['node_modules', 'dist', 'functionalTest', 'staticAnalysis.js', 'helpers.js', '*.pid', 'jquery', 'docs'];
+            exclusions = ['node_modules', 'dist', 'functionalTest', 'staticAnalysis.js', 'helpers.js', '*.pid', 'jquery', 'docs', '*.csv'];
 
         forEachFileIn('.', check, { exclude: exclusions, filetype: '.js' });
 
@@ -93,7 +93,7 @@ module.exports = function (grunt) {
                     }
                 });
             },
-            exclusions = ['node_modules', 'docs', '.git', '.DS_Store', '.idea', 'images', 'dist', 'mountebank.iml', 'mb.log', '*.pid', 'package-lock.json'],
+            exclusions = ['node_modules', 'docs', '.git', '.DS_Store', '.idea', 'images', 'dist', 'mountebank.iml', 'mb.log', '*.pid', 'package-lock.json', '*.csv'],
             errors = [],
             whitelist = [
                 'grunt',

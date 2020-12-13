@@ -37,18 +37,36 @@ function create (options) {
         return clonedStub;
     }
 
-    function reposToTestFor (stub, encoding) {
+    function reposToTestFor (stub) {
         // Test with predicates (likely won't match) to make sure predicates don't blow up
         // Test without predicates (always matches) to make sure response doesn't blow up
         const stubsToValidateWithPredicates = stub.responses.map(response => stubForResponse(stub, response, true)),
             stubsToValidateWithoutPredicates = stub.responses.map(response => stubForResponse(stub, response, false)),
-            stubsToValidate = stubsToValidateWithPredicates.concat(stubsToValidateWithoutPredicates);
+            stubsToValidate = stubsToValidateWithPredicates.concat(stubsToValidateWithoutPredicates),
+            promises = stubsToValidate.map(stubToValidate => {
+                const stubRepository = require('./inMemoryImpostersRepository').create().createStubsRepository();
+                return stubRepository.add(stubToValidate).then(() => stubRepository);
+            }),
+            Q = require('q');
 
-        return stubsToValidate.map(stubToValidate => {
-            const stubRepository = require('./stubRepository').create(encoding);
-            stubRepository.addStub(stubToValidate);
-            return stubRepository;
-        });
+        return Q.all(promises);
+    }
+
+    // We call map before calling every so we make sure to call every
+    // predicate during dry run validation rather than short-circuiting
+    function trueForAll (list, predicate) {
+        return list.map(predicate).every(result => result);
+    }
+
+    function findFirstMatch (stubRepository, request, encoding, logger) {
+        const filter = stubPredicates => {
+            const predicates = require('./predicates');
+
+            return trueForAll(stubPredicates,
+                predicate => predicates.evaluate(predicate, request, encoding, logger, {}));
+        };
+
+        return stubRepository.first(filter);
     }
 
     function resolverFor (stubRepository) {
@@ -73,16 +91,19 @@ function create (options) {
                 info: combinators.noop,
                 warn: combinators.noop,
                 error: logger.error
-            },
-            dryRunRepositories = reposToTestFor(stub, encoding);
+            };
 
         options.testRequest = options.testRequest || {};
         options.testRequest.isDryRun = true;
-        return Q.all(dryRunRepositories.map(stubRepository => {
-            const responseConfig = stubRepository.getResponseFor(options.testRequest, dryRunLogger, {}),
-                resolver = resolverFor(stubRepository);
-            return resolver.resolve(responseConfig, options.testRequest, dryRunLogger, {});
-        }));
+        return reposToTestFor(stub).then(dryRunRepositories => {
+            return Q.all(dryRunRepositories.map(stubRepository => {
+                return findFirstMatch(stubRepository, options.testRequest, encoding, dryRunLogger).then(match => {
+                    return match.stub.nextResponse().then(responseConfig => {
+                        return resolverFor(stubRepository).resolve(responseConfig, options.testRequest, dryRunLogger, {});
+                    });
+                });
+            }));
+        });
     }
 
     function addDryRunErrors (stub, encoding, errors, logger) {
@@ -112,10 +133,19 @@ function create (options) {
             response.proxy.predicateGenerators.some(generator => generator.inject);
     }
 
+    function hasBehavior (response, type, valueFilter) {
+        if (typeof valueFilter === 'undefined') {
+            valueFilter = () => true;
+        }
+        return (response.behaviors || []).some(behavior => {
+            return typeof behavior[type] !== 'undefined' && valueFilter(behavior[type]);
+        });
+    }
+
     function hasStubInjection (stub) {
         const hasResponseInjections = stub.responses.some(response => {
-                const hasDecorator = response._behaviors && response._behaviors.decorate,
-                    hasWaitFunction = response._behaviors && typeof response._behaviors.wait === 'string';
+                const hasDecorator = hasBehavior(response, 'decorate'),
+                    hasWaitFunction = hasBehavior(response, 'wait', value => typeof value === 'string');
 
                 return response.inject || hasDecorator || hasWaitFunction || hasPredicateGeneratorInjection(response);
             }),
@@ -125,7 +155,7 @@ function create (options) {
     }
 
     function hasShellExecution (stub) {
-        return stub.responses.some(response => response._behaviors && response._behaviors.shellTransform);
+        return stub.responses.some(response => hasBehavior(response, 'shellTransform'));
     }
 
     function addStubInjectionErrors (stub, errors) {
@@ -149,10 +179,26 @@ function create (options) {
         });
     }
 
+    function addRepeatErrorsTo (errors, response) {
+        const repeat = response.repeat,
+            type = typeof repeat,
+            error = exceptions.ValidationError('"repeat" field must be an integer greater than 0', {
+                source: response
+            });
+
+        if (['undefined', 'number', 'string'].indexOf(type) < 0) {
+            errors.push(error);
+        }
+        if ((type === 'string' && parseInt(repeat) <= 0) || (type === 'number' && repeat <= 0)) {
+            errors.push(error);
+        }
+    }
+
     function addBehaviorErrors (stub, errors) {
         stub.responses.forEach(response => {
             const behaviors = require('./behaviors');
-            addAllTo(errors, behaviors.validate(response._behaviors));
+            addAllTo(errors, behaviors.validate(response.behaviors));
+            addRepeatErrorsTo(errors, response);
         });
     }
 
@@ -209,20 +255,17 @@ function create (options) {
         const stubs = request.stubs || [],
             encoding = request.mode === 'binary' ? 'base64' : 'utf8',
             validationPromises = stubs.map(stub => errorsForStub(stub, encoding, logger)),
-            Q = require('q'),
-            deferred = Q.defer();
+            Q = require('q');
 
         validationPromises.push(Q(errorsForRequest(request)));
         if (typeof options.additionalValidation === 'function') {
             validationPromises.push(Q(options.additionalValidation(request)));
         }
 
-        Q.all(validationPromises).done(errorsForAllStubs => {
+        return Q.all(validationPromises).then(errorsForAllStubs => {
             const allErrors = errorsForAllStubs.reduce((stubErrors, accumulator) => accumulator.concat(stubErrors), []);
-            deferred.resolve({ isValid: allErrors.length === 0, errors: allErrors });
+            return { isValid: allErrors.length === 0, errors: allErrors };
         });
-
-        return deferred.promise;
     }
 
     return { validate };

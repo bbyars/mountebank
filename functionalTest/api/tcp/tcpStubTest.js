@@ -87,7 +87,7 @@ describe('tcp imposter', function () {
             }).then(response => {
                 assert.strictEqual(response.toString(), '');
 
-                return tcp.send('test', port, 100);
+                return tcp.send('test', port, 250);
             }).then(response => {
                 assert.strictEqual(response.toString(), 'MATCH');
             }).finally(() => api.del('/imposters'));
@@ -101,8 +101,8 @@ describe('tcp imposter', function () {
                 request = { protocol: 'tcp', port, mode: 'binary', stubs: [stub] };
 
             return api.post('/imposters', request).then(response => {
-                assert.strictEqual(response.statusCode, 400);
-                assert.strictEqual(response.body.errors[0].data, 'the matches predicate is not allowed in binary mode');
+                assert.strictEqual(response.statusCode, 400, JSON.stringify(response.body, null, 4));
+                assert.strictEqual(response.body.errors[0].message, 'the matches predicate is not allowed in binary mode');
             }).finally(() => api.del('/imposters'));
         });
 
@@ -132,6 +132,24 @@ describe('tcp imposter', function () {
                 .then(() => api.post('/imposters', request))
                 .then(() => tcp.send('request', port))
                 .then(response => {
+                    assert.strictEqual(response.toString(), 'PROXIED');
+                }).finally(() => api.del('/imposters'));
+        });
+
+        promiseIt('should allow keepalive proxies', function () {
+            const proxyPort = port + 1,
+                proxyStub = { responses: [{ is: { data: 'PROXIED' } }] },
+                proxyRequest = { protocol: 'tcp', port: proxyPort, stubs: [proxyStub], name: 'PROXY' },
+                stub = { responses: [{ proxy: { to: `tcp://localhost:${proxyPort}`, keepalive: true } }] },
+                request = { protocol: 'tcp', port, stubs: [stub], name: 'MAIN' };
+
+            return api.post('/imposters', proxyRequest)
+                .then(() => api.post('/imposters', request))
+                .then(() => tcp.send('request', port))
+                .then(response => {
+                    assert.strictEqual(response.toString(), 'PROXIED');
+                    return tcp.send('request', port);
+                }).then(response => {
                     assert.strictEqual(response.toString(), 'PROXIED');
                 }).finally(() => api.del('/imposters'));
         });

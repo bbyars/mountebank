@@ -52,6 +52,16 @@ array takes the following fields:</p>
     scope is limited to the selected value in the request field.</td>
   </tr>
   <tr>
+    <td><code>predicateOperator</code></td>
+    <td><code>deepEquals</code> or <code>equals</code></td>
+    <td>string</td>
+    <td>Allows you to override the predicate operator used in the generated predicate.
+    This is most often used to substitute an <code>exists</code> operator, e.g., for
+    whether the given xpath expression exists in the incoming request or not. At times,
+    it may be useful to use a <code>contains</code> operator if future requests can
+    add more information to the field.</td>
+  </tr>
+  <tr>
     <td><code>inject</code></td>
     <td><code>null</code></td>
     <td>string</td>

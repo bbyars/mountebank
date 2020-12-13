@@ -457,19 +457,55 @@ const assert = require('assert'),
                 }).finally(() => api.del('/imposters'));
             });
 
+            promiseIt('should support predicate from gzipped request (issue #499)', function () {
+                const zlib = require('zlib');
+
+                const spec = {
+                    path: '/',
+                    port,
+                    method: 'POST',
+                    headers: {
+                        'Content-Encoding': 'gzip'
+                    },
+                    mode: 'binary',
+                    body: zlib.gzipSync('{"key": "value", "arr": [3,2,1]}')
+                };
+
+                const stub = {
+                    responses: [{ is: { body: 'SUCCESS' } }],
+                    predicates: [
+                        { equals: { body: { key: 'value' } } },
+                        { equals: { body: { arr: 3 } } },
+                        { deepEquals: { body: { key: 'value', arr: [2, 1, 3] } } },
+                        { matches: { body: { key: '^v' } } }
+                    ]
+                };
+
+                const request = { protocol, port, stubs: [stub] };
+
+                return api.post('/imposters', request).then(response => {
+                    assert.strictEqual(response.statusCode, 201);
+                    return client.responseFor(spec);
+                }).then(response => {
+                    assert.strictEqual(response.body.toString(), 'SUCCESS');
+                }).finally(() => api.del('/imposters'));
+            });
+
             promiseIt('should support overwriting the stubs without restarting the imposter', function () {
                 const stub = { responses: [{ is: { body: 'ORIGINAL' } }] },
                     request = { protocol, port, stubs: [stub] };
 
                 return api.post('/imposters', request)
-                    .then(() => api.put(`/imposters/${port}/stubs`, {
-                        stubs: [
-                            { responses: [{ is: { body: 'FIRST' } }] },
-                            { responses: [{ is: { body: 'ORIGINAL' } }] },
-                            { responses: [{ is: { body: 'THIRD' } }] }
-                        ]
-                    }))
                     .then(response => {
+                        assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body));
+                        return api.put(`/imposters/${port}/stubs`, {
+                            stubs: [
+                                { responses: [{ is: { body: 'FIRST' } }] },
+                                { responses: [{ is: { body: 'ORIGINAL' } }] },
+                                { responses: [{ is: { body: 'THIRD' } }] }
+                            ]
+                        });
+                    }).then(response => {
                         assert.strictEqual(response.statusCode, 200);
                         assert.deepEqual(response.body.stubs, [
                             {
@@ -511,7 +547,7 @@ const assert = require('assert'),
                         return api.put(`/imposters/${port}/stubs/1`, changedStub);
                     })
                     .then(response => {
-                        assert.strictEqual(response.statusCode, 200);
+                        assert.strictEqual(response.statusCode, 200, JSON.stringify(response.body));
                         assert.deepEqual(response.body.stubs, [
                             {
                                 responses: [{ is: { body: 'first' } }],
@@ -649,6 +685,24 @@ const assert = require('assert'),
                         assert.strictEqual(response.body, 'third');
                     })
                     .finally(() => api.del('/imposters'));
+            });
+
+            promiseIt('should support matching cirillic characters (issue #477)', function () {
+                const request = {
+                    port,
+                    protocol,
+                    stubs: [{
+                        predicates: [{ deepEquals: { body: { тест: '2' } } }],
+                        responses: [{ is: { body: 'Matched' } }]
+                    }]
+                };
+
+                return api.post('/imposters', request).then(response => {
+                    assert.strictEqual(201, response.statusCode, JSON.stringify(response.body, null, 4));
+                    return client.post('/', '{ "тест": "2" }', port);
+                }).then(response => {
+                    assert.strictEqual(response.body, 'Matched');
+                }).finally(() => api.del('/imposters'));
             });
         });
     });

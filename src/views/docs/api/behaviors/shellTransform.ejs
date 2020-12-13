@@ -6,8 +6,8 @@
   </tr>
   <tr>
     <td><code>shellTransform</code></td>
-    <td>An array of strings</td>
-    <td>Each array element represents the path of a command line application. The application should
+    <td>A string</td>
+    <td>Represents the path to a command line application. The application should
         retrieve the JSON-encoded <code>request</code> and <code>response</code> from the environment
         and print out the transformed <code>response</code> to <code>stdout</code>.
 
@@ -18,19 +18,13 @@
 </table>
 
 <p>The <code>shellTransform</code> behavior plays a similar role as the <code>decorate</code> behavior,
-enabling a programmatic transformation of the response. However, there are a couple of important
-differences:</p>
+enabling a programmatic transformation of the response. However, you don't have to write the transformation
+logic in JavaScript -- it can be in the language of your choice.</p>
 
-<ul class='bullet-list'>
-  <li>The <code>shellTransform</code> behavior can apply a sequenced series of transformations, and</li>
-  <li>You don't have to write the transformation logic in JavaScript.</li>
-</ul>
+<p class='warning-icon'>Since it allows shelling out to another application,
+the <a href='/docs/commandLine'>--allowInjection</a> flag must be passed in to <code>mb</code> on startup.</p>
 
-<p>The <code>shellTransform</code> behavior serves as a way of adding "middleware" to the response
-transformation. Each shell command can represent a single transformation, and they will be executed
-in order. Since it allows shelling out to another application,
-the <a href='/docs/commandLine'>--allowInjection</a> flag must be passed in to <code>mb</code> on startup.
-mountebank will add to environment variables:</p>
+<p>mountebank will expose the following environment variables to your shell application:</p>
 
 <ul class='bullet-list'>
     <li><code>MB_REQUEST</code> which contains the JSON request as a string, and</li>
@@ -38,8 +32,7 @@ mountebank will add to environment variables:</p>
 </ul>
 
 <p>The application should write to stdout a JSON representation of
-the transformed response, which will be passed to the next shell command in the list, or returned
-over the wire if not more transformations are needed.</p>
+the transformed response.</p>
 
 <p>We'll show a simple example of shelling out to plug in response values based on an external data source.</p>
 
@@ -80,9 +73,9 @@ Content-Type: application/json
       "responses": [
         {
           "is": { "body": "Hello, <strong class='highlight1'>${YOU}!</strong>" },
-          "_behaviors": {
-            "shellTransform": ["node addName.js"]
-          }
+          "behaviors": [
+            { "shellTransform": "node addName.js" }
+          ]
         }
       ]
     }

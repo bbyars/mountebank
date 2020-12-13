@@ -6,7 +6,7 @@ const JSDOM = require('jsdom').JSDOM,
     url = require('url'),
     httpClient = require('../api/http/baseHttpClient').create('http'),
     httpsClient = require('../api/http/baseHttpClient').create('https'),
-    whitelistPatterns = ['https://s3.amazonaws.com', '^#'];
+    whitelistPatterns = ['https://s3.amazonaws.com', '^#', 'http://mbtest.org/feed'];
 
 function isProtocolAgnostic (href) {
     return href.indexOf('//') === 0;

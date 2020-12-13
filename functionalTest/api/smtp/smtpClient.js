@@ -20,7 +20,7 @@ function messageText (message) {
     return result;
 }
 
-function send (message, port, host) {
+function send (message, port, host = '127.0.0.1') {
     if (!port) {
         throw Error('you forgot to pass the port again');
     }

@@ -27,13 +27,19 @@ var versionPath = encodeURIComponent(version);
     <th>Description</th>
   </tr>
   <tr>
+    <td>Docker image</td>
+    <td>No</td>
+    <td>No</td>
+    <td><a href='https://hub.docker.com/repository/registry-1.docker.io/bbyars/mountebank'>Docker hub</a></td>
+    <td>Can run with a command like <code>docker run --rm -p 2525:2525 -p 8080:8080 mountebank:<%= version %>%> mb start --configfile imposters.ejs</code></td>
+  </tr>
+  <tr>
     <td>Self-contained archives</td>
     <td>No</td>
     <td>No</td>
     <td style="min-width: 5em;">
       <ul>
         <li><a href="https://s3.amazonaws.com/mountebank/v<%= versionWithoutPatch %>/mountebank-v<%= versionPath %>-darwin-x64.tar.gz">osx</a></li>
-        <li><a href="https://s3.amazonaws.com/mountebank/v<%= versionWithoutPatch %>/mountebank-v<%= versionPath %>-linux-x86.tar.gz">linux x86</a></li>
         <li><a href="https://s3.amazonaws.com/mountebank/v<%= versionWithoutPatch %>/mountebank-v<%= versionPath %>-linux-x64.tar.gz">linux x64</a></li>
         <li><a href="https://s3.amazonaws.com/mountebank/v<%= versionWithoutPatch %>/mountebank-v<%= versionPath %>-win-x86.zip">win x86<sup>*</sup></a></li>
         <li><a href="https://s3.amazonaws.com/mountebank/v<%= versionWithoutPatch %>/mountebank-v<%= versionPath %>-win-x64.zip">win x64<sup>*</sup></a></li>

@@ -150,7 +150,11 @@ function create (port, includeStdout) {
         return httpClient.responseFor({ method: 'PUT', path: endpoint, port, body, hostname: host });
     }
 
-    return { port, url: `http://localhost:${port}`, start, restart, stop, save, get, post, put, replay };
+    function del (endpoint) {
+        return httpClient.responseFor({ method: 'DELETE', path: endpoint, port, hostname: host });
+    }
+
+    return { port, url: `http://localhost:${port}`, start, restart, stop, save, get, post, put, del, replay };
 }
 
 module.exports = { create };

@@ -8,7 +8,7 @@
 /**
  * Creates the imposters controller
  * @param {Object} protocols - the protocol implementations supported by mountebank
- * @param {Object} imposters - The map of ports to imposters
+ * @param {Object} imposters - The imposters repository
  * @param {Object} logger - The logger
  * @param {Boolean} allowInjection - Whether injection is allowed or not
  * @returns {{get, post, del, put}}
@@ -19,15 +19,6 @@ function create (protocols, imposters, logger, allowInjection) {
 
     const queryIsFalse = (query, key) => !helpers.defined(query[key]) || query[key].toLowerCase() !== 'false';
     const queryBoolean = (query, key) => helpers.defined(query[key]) && query[key].toLowerCase() === 'true';
-
-    function deleteAllImposters () {
-        const Q = require('q'),
-            ids = Object.keys(imposters),
-            promises = ids.map(id => imposters[id].stop());
-
-        ids.forEach(id => { delete imposters[id]; });
-        return Q.all(promises);
-    }
 
     function validatePort (port, errors) {
         const portIsValid = !helpers.defined(port) || (port.toString().indexOf('.') === -1 && port > 0 && port < 65536);
@@ -85,12 +76,16 @@ function create (protocols, imposters, logger, allowInjection) {
         response.send({ errors: [error] });
     }
 
-    function getJSON (options) {
-        return Object.keys(imposters).reduce((accumulator, id) => accumulator.concat(imposters[id].toJSON(options)), []);
-    }
-
     function requestDetails (request) {
         return `${helpers.socketName(request.socket)} => ${JSON.stringify(request.body)}`;
+    }
+
+    function getAllJSON (queryOptions) {
+        const Q = require('q');
+        return imposters.all().then(allImposters => {
+            const promises = allImposters.map(imposter => imposter.toJSON(queryOptions));
+            return Q.all(promises);
+        });
     }
 
     /**
@@ -98,23 +93,22 @@ function create (protocols, imposters, logger, allowInjection) {
      * @memberOf module:controllers/impostersController#
      * @param {Object} request - the HTTP request
      * @param {Object} response - the HTTP response
+     * @returns {Object} - the promise
      */
     function get (request, response) {
-        response.format({
-            json: () => {
-                const url = require('url'),
-                    query = url.parse(request.url, true).query,
-                    options = {
-                        replayable: queryBoolean(query, 'replayable'),
-                        removeProxies: queryBoolean(query, 'removeProxies'),
-                        list: !(queryBoolean(query, 'replayable') || queryBoolean(query, 'removeProxies'))
-                    };
+        const url = require('url'),
+            query = url.parse(request.url, true).query,
+            options = {
+                replayable: queryBoolean(query, 'replayable'),
+                removeProxies: queryBoolean(query, 'removeProxies'),
+                list: !(queryBoolean(query, 'replayable') || queryBoolean(query, 'removeProxies'))
+            };
 
-                response.send({ imposters: getJSON(options) });
-            },
-            html: () => {
-                response.render('imposters', { imposters: getJSON() });
-            }
+        return getAllJSON(options).then(impostersJSON => {
+            response.format({
+                json: () => { response.send({ imposters: impostersJSON }); },
+                html: () => { response.render('imposters', { imposters: impostersJSON }); }
+            });
         });
     }
 
@@ -126,28 +120,28 @@ function create (protocols, imposters, logger, allowInjection) {
      * @returns {Object} A promise for testing purposes
      */
     function post (request, response) {
-        const protocol = request.body.protocol,
-            validationPromise = validate(request.body);
-
         logger.debug(requestDetails(request));
 
-        return validationPromise.then(validation => {
-            const Q = require('q');
+        return validate(request.body).then(validation => {
+            const Q = require('q'),
+                protocol = request.body.protocol;
 
-            if (validation.isValid) {
-                return protocols[protocol].createImposterFrom(request.body).then(imposter => {
-                    imposters[imposter.port] = imposter;
-                    response.setHeader('Location', imposter.url);
-                    response.statusCode = 201;
-                    response.send(imposter.toJSON());
-                }, error => {
-                    respondWithCreationError(response, error);
-                });
-            }
-            else {
+            if (!validation.isValid) {
                 respondWithValidationErrors(response, validation.errors);
                 return Q(false);
             }
+
+            return protocols[protocol].createImposterFrom(request.body)
+                .then(imposter => imposters.add(imposter))
+                .then(imposter => {
+                    response.setHeader('Location', imposter.url);
+                    response.statusCode = 201;
+                    return imposter.toJSON();
+                }).then(json => {
+                    response.send(json);
+                }, error => {
+                    respondWithCreationError(response, error);
+                });
         });
     }
 
@@ -165,10 +159,13 @@ function create (protocols, imposters, logger, allowInjection) {
                 // default to replayable for backwards compatibility
                 replayable: queryIsFalse(query, 'replayable'),
                 removeProxies: queryBoolean(query, 'removeProxies')
-            },
-            json = getJSON(options);
+            };
+        let json;
 
-        return deleteAllImposters().then(() => {
+        return getAllJSON(options).then(impostersJSON => {
+            json = impostersJSON;
+            return imposters.deleteAll();
+        }).then(() => {
             response.send({ imposters: json });
         });
     }
@@ -196,28 +193,30 @@ function create (protocols, imposters, logger, allowInjection) {
 
         return Q.all(validationPromises).then(validations => {
             const isValid = validations.every(validation => validation.isValid);
+            let allImposters;
 
-            if (isValid) {
-                return deleteAllImposters().then(() => {
-                    const creationPromises = requestImposters.map(imposter =>
-                        protocols[imposter.protocol].createImposterFrom(imposter)
-                    );
-                    return Q.all(creationPromises);
-                }).then(allImposters => {
-                    const json = allImposters.map(imposter => imposter.toJSON({ list: true }));
-                    allImposters.forEach(imposter => {
-                        imposters[imposter.port] = imposter;
-                    });
-                    response.send({ imposters: json });
-                }, error => {
-                    respondWithCreationError(response, error);
-                });
-            }
-            else {
+            if (!isValid) {
                 const validationErrors = validations.reduce((accumulator, validation) => accumulator.concat(validation.errors), []);
                 respondWithValidationErrors(response, validationErrors);
                 return Q(false);
             }
+
+            return imposters.deleteAll().then(() => {
+                const creationPromises = requestImposters.map(imposter =>
+                    protocols[imposter.protocol].createImposterFrom(imposter)
+                );
+                return Q.all(creationPromises);
+            }).then(all => {
+                allImposters = all;
+                return Q.all(allImposters.map(imposters.add));
+            }).then(() => {
+                const promises = allImposters.map(imposter => imposter.toJSON({ list: true }));
+                return Q.all(promises);
+            }).then(json => {
+                response.send({ imposters: json });
+            }, error => {
+                respondWithCreationError(response, error);
+            });
         });
     }
 

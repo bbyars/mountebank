@@ -83,39 +83,5 @@ describe('tcp imposter', function () {
                 })
                 .finally(() => api.del('/imposters'));
         });
-
-        promiseIt('should record matches against stubs', function () {
-            const stub = { responses: [{ is: { data: '1' } }, { is: { data: '2' } }] },
-                request = { protocol: 'tcp', port, stubs: [stub] };
-
-            return api.post('/imposters', request)
-                .then(() => tcp.send('first', port))
-                .then(() => tcp.send('second', port))
-                .then(() => api.get(`/imposters/${port}`))
-                .then(response => {
-                    const stubs = JSON.stringify(response.body.stubs),
-                        withTimeRemoved = stubs.replace(/"timestamp":"[^"]+"/g, '"timestamp":"NOW"'),
-                        withClientPortRemoved = withTimeRemoved.replace(/"requestFrom":"[a-f:.\d]+"/g, '"requestFrom":"HERE"'),
-                        actualWithoutEphemeralData = JSON.parse(withClientPortRemoved);
-
-                    assert.deepEqual(actualWithoutEphemeralData, [{
-                        responses: [{ is: { data: '1' } }, { is: { data: '2' } }],
-                        matches: [
-                            {
-                                timestamp: 'NOW',
-                                request: { requestFrom: 'HERE', data: 'first', ip: '::ffff:127.0.0.1' },
-                                response: { data: '1' }
-                            },
-                            {
-                                timestamp: 'NOW',
-                                request: { requestFrom: 'HERE', data: 'second', ip: '::ffff:127.0.0.1' },
-                                response: { data: '2' }
-                            }
-                        ],
-                        _links: { self: { href: `${api.url}/imposters/${port}/stubs/0` } }
-                    }]);
-                })
-                .finally(() => api.del('/imposters'));
-        });
     });
 });

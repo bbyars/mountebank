@@ -1,0 +1,47 @@
+{
+    "port": 4542,
+    "protocol": "http",
+    "name": "gzip request",
+    "stubs": [
+        {
+            "responses": [
+                {
+                    "is": {
+                        "headers": {
+                            "Content-Type": "application/json"
+                        },
+                        "body": {
+                            "code": "SUCCESS",
+                            "author": "J.K. Rowling"
+                        }
+                    }
+                }
+            ],
+            "predicates": [
+                {
+                    "equals": {
+                        "body": {
+                            "title": "Harry Potter"
+                        }
+                    },
+                    "caseSensitive": true,
+                    "comment": "case sensitivity applies to the key as well as the value"
+                }
+            ]
+        },
+        {
+            "responses": [
+                {
+                    "is": {
+                        "headers": {
+                            "Content-Type": "application/json"
+                        },
+                        "body": {
+                            "code": "FAILED TO MATCH"
+                        }
+                    }
+                }
+            ]
+        }
+    ]
+}
