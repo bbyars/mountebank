@@ -258,6 +258,7 @@ const assert = require('assert'),
                     .then(() => api.get(`/imposters/${port}`))
                     .then(response => {
                         assert.deepEqual(response.body.requests, []);
+                        assert.strictEqual(0, response.body.numberOfRequests);
                     })
                     .finally(() => api.del('/imposters'));
             });

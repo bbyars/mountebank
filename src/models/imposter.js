@@ -148,6 +148,13 @@ function create (Protocol, creationRequest, baseLogger, config, isAllowedConnect
         });
     }
 
+    function resetRequests () {
+        return stubs.deleteSavedRequests().then(() => {
+            numberOfRequests = 0;
+            return Q(true);
+        });
+    }
+
     domain.on('error', errorHandler);
     domain.run(() => {
         if (!helpers.defined(creationRequest.host) && helpers.defined(config.host)) {
@@ -188,7 +195,8 @@ function create (Protocol, creationRequest, baseLogger, config, isAllowedConnect
                 toJSON,
                 stop,
                 getResponseFor,
-                getProxyResponseFor
+                getProxyResponseFor,
+                resetRequests
             });
         });
     });

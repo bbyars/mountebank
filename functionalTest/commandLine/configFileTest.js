@@ -112,6 +112,25 @@ describe('--configfile', function () {
             .finally(() => mb.stop());
     });
 
+    promiseIt('should evaluate stringify functions with injected data when loading configuration files', function () {
+        const args = ['--configfile', path.join(__dirname, 'dataStringify/imposters.ejs'), '--allowInjection', '--localOnly'];
+
+        return mb.start(args)
+            .then(() => http.get('/', 4542))
+            .then(response => {
+                assert.deepStrictEqual(response.body, { success: true, injectedValue: '1111' });
+                return http.get('/', 4542);
+            })
+            .then(response => {
+                assert.deepStrictEqual(response.body, { success: true, injectedValue: '2222' });
+                return http.get('/', 4542);
+            })
+            .then(response => {
+                assert.deepStrictEqual(response.body, { success: true, injectedValue: '3333' });
+            })
+            .finally(() => mb.stop());
+    });
+
     promiseIt('should not render through ejs when --noParse option provided', function () {
         const args = ['--configfile', path.join(__dirname, 'noparse.json'), '--noParse'];
 
@@ -122,4 +141,27 @@ describe('--configfile', function () {
             })
             .finally(() => mb.stop());
     });
+
+    promiseIt('should evaluate gzipped equests (issue #477)', function () {
+        const zlib = require('zlib');
+        const args = ['--debug', '--configfile', path.join(__dirname, 'gzip.json')];
+
+        return mb.start(args)
+            .then(() => {
+                let buffer = zlib.gzipSync('{"title": "Harry Potter"}');
+                return http.responseFor({
+                    method: 'POST',
+                    path: '/',
+                    port: 4542,
+                    headers: { 'Content-Encoding': 'gzip' },
+                    mode: 'binary',
+                    body: buffer
+                });
+            })
+            .then(response => {
+                assert.deepEqual(response.body.code, 'SUCCESS');
+            })
+            .finally(() => mb.stop());
+    });
+
 });

@@ -120,7 +120,6 @@ Accept: application/json</code></pre>
 
         <assertResponse>
 <pre><code>HTTP/1.1 200 OK
-Access-Control-Allow-Origin: *
 Vary: Accept
 Content-Type: application/json; charset=utf-8
 Content-Length: 226
@@ -177,7 +176,6 @@ Content-Type: application/json
 
         <assertResponse>
 <pre><code>HTTP/1.1 201 Created
-Access-Control-Allow-Origin: *
 Location: http://localhost:<%= port %>/imposters/4545
 Content-Type: application/json; charset=utf-8
 Content-Length: 298
@@ -257,7 +255,6 @@ Accept: application/json
 
         <assertResponse>
 <pre><code>HTTP/1.1 200 OK
-Access-Control-Allow-Origin: *
 Vary: Accept
 Content-Type: application/json; charset=utf-8
 Content-Length: 298
@@ -293,7 +290,6 @@ Accept: application/json</code></pre>
 
         <assertResponse>
 <pre><code>HTTP/1.1 200 OK
-Access-Control-Allow-Origin: *
 Vary: Accept
 Content-Type: application/json; charset=utf-8
 Content-Length: 82
@@ -340,7 +336,6 @@ Accept: application/json
 
         <assertResponse>
 <pre><code>HTTP/1.1 200 OK
-Access-Control-Allow-Origin: *
 Content-Type: application/json; charset=utf-8
 Content-Length: 548
 Date: <volatile>Wed, 19 Jun 2019 01:00:55 GMT</volatile>
@@ -397,7 +392,6 @@ Accept: application/json
 
         <assertResponse>
 <pre><code>HTTP/1.1 200 OK
-Access-Control-Allow-Origin: *
 Content-Type: application/json; charset=utf-8
 Content-Length: 550
 Date: <volatile>Wed, 19 Jun 2019 01:00:55 GMT</volatile>
@@ -452,7 +446,6 @@ Accept: application/json
 
         <assertResponse>
 <pre><code>HTTP/1.1 200 OK
-Access-Control-Allow-Origin: *
 Content-Type: application/json; charset=utf-8
 Content-Length: 543
 Date: <volatile>Wed, 19 Jun 2019 01:00:55 GMT</volatile>
@@ -498,7 +491,6 @@ Accept: application/json</code></pre>
 
         <assertResponse>
 <pre><code>HTTP/1.1 200 OK
-Access-Control-Allow-Origin: *
 Content-Type: application/json; charset=utf-8
 Content-Length: 298
 Date: <volatile>Wed, 19 Jun 2019 01:00:55 GMT</volatile>
@@ -563,7 +555,6 @@ Accept: application/json</code></pre>
 
         <assertResponse>
 <pre><code>HTTP/1.1 200 OK
-Access-Control-Allow-Origin: *
 Content-Type: application/json; charset=utf-8
 Content-Length: 298
 Date: <volatile>Sun, 05 Jan 2014 16:59:33 GMT</volatile>
@@ -602,7 +593,7 @@ to <a href='/docs/api/proxies#proxy-modes'><code>proxyTransparent</code></a>.</p
 
 <p><b>Response contract</b>: <a href='/docs/api/contracts?type=imposter'>imposter</a></p>
 
-<p>Clear an imposter's recorded requests (used for <a href='/docs/api/mocks'>mock verification</a>) while leaving the rest of the imposter intact. 
+<p>Clear an imposter's recorded requests (used for <a href='/docs/api/mocks'>mock verification</a>) while leaving the rest of the imposter intact.
 On a successful request, mountebank will return the updated imposter resource.</p>
 
 <h3 id='put-imposters'>Overwrite all imposters with a new set of imposters</h3>
@@ -651,7 +642,6 @@ Content-Type: application/json
         <assertResponse>
 <pre><code>
 HTTP/1.1 200 OK
-Access-Control-Allow-Origin: *
 Content-Type: application/json; charset=utf-8
 Content-Length: 898
 Date: <volatile>Sun, 05 Jan 2014 16:59:33 GMT</volatile>
@@ -735,7 +725,6 @@ Accept: application/json</code></pre>
 
         <assertResponse>
 <pre><code>HTTP/1.1 200 OK
-Access-Control-Allow-Origin: *
 Vary: Accept
 Content-Type: application/json; charset=utf-8
 Content-Length: 898
@@ -818,7 +807,6 @@ Accept: application/json</code></pre>
 
         <assertResponse>
 <pre><code>HTTP/1.1 200 OK
-Access-Control-Allow-Origin: *
 Content-Type: application/json; charset=utf-8
 Content-Length: 370
 Date: <volatile>Sun, 05 Jan 2014 16:58:25 GMT</volatile>
@@ -866,7 +854,6 @@ Accept: application/json</code></pre>
 
         <assertResponse>
 <pre><code>HTTP/1.1 200 OK
-Access-Control-Allow-Origin: *
 Vary: Accept
 Content-Type: application/json; charset=utf-8
 Content-Length: <volatile>550</volatile>
@@ -890,7 +877,8 @@ Connection: keep-alive
       "*"
     ],
     "debug": false,
-    "protofile": "protocols.json"
+    "protofile": "protocols.json",
+    "origin": false
   },
   "process": {
     "nodeVersion": <volatile>"v5.8.0"</volatile>,
@@ -939,7 +927,6 @@ Accept: application/json</code></pre>
 
         <assertResponse>
 <pre><code>HTTP/1.1 200 OK
-Access-Control-Allow-Origin: *
 Vary: Accept
 Content-Type: application/json; charset=utf-8
 Content-Length: <volatile>5249</volatile>

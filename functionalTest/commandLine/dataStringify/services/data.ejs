@@ -1,0 +1,34 @@
+{
+    "protocol": "http",
+    "port": 4542,
+    "stubs": [
+        {
+            "responses": [
+                {
+                    "is": {
+                        "headers": {
+                            "Content-Type": "application/json"
+                        },
+                        "body": "<%- stringify(filename, 'services/body.ejs', {testValue: '1111'}) %>"
+                    }
+                },
+                {
+                    "is": {
+                        "headers": {
+                            "Content-Type": "application/json"
+                        },
+                        "body": "<%- stringify(filename, 'services/body.ejs', {testValue: '2222'}) %>"
+                    }
+                },
+                {
+                    "is": {
+                        "headers": {
+                            "Content-Type": "application/json"
+                        },
+                        "body": "<%- stringify(filename, 'services/body.ejs', {testValue: '3333'}) %>"
+                    }
+                }
+            ]
+        }
+    ]
+}

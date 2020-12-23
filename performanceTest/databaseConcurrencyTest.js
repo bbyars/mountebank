@@ -38,7 +38,15 @@ describe('database concurrency', function () {
                 start = new Date(),
                 runs = responses.length * 100;
 
-            return repo.add({ responses })
+            // Uncomment to expose prometheus metrics on http://localhost:2525/metrics
+            // const options = {
+            //     port: 2525,
+            //     logfile: 'mb.log',
+            //     ipWhitelist: ['*']
+            // };
+            // return require('../src/mountebank').create(options)
+            return Q(true) // comment this out if uncommenting above
+                .then(() => repo.add({ responses }))
                 .then(() => repo.first(() => true))
                 .then(saved => {
                     const promises = [];

@@ -4,7 +4,7 @@
 {
     "extends": "eslint:recommended",
     "parserOptions": {
-        "ecmaVersion": 6
+        "ecmaVersion": 2020
     },
     "env": {
         "node": true,
@@ -110,7 +110,6 @@
         "strict": [2, "global"],
         "valid-jsdoc": [2, {"requireReturn": false, "requireReturnDescription": false}],
         "yoda": 2,
-
         "no-console": "off"
     }
 }

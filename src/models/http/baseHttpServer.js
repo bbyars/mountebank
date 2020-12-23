@@ -122,7 +122,7 @@ module.exports = function (createBaseServer) {
                     return responseFn(simpleRequest, { rawUrl: request.url });
                 }).done(mbResponse => {
                     if (mbResponse.blocked) {
-                        request.socket.end();
+                        request.socket.destroy();
                         return;
                     }
 

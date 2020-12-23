@@ -13,17 +13,21 @@ function createBaseServer (options) {
             cert: options.cert || fs.readFileSync(path.join(__dirname, '/cert/mb-cert.pem'), 'utf8'),
             mutualAuth: Boolean(options.mutualAuth)
         },
-        createNodeServer = () =>
-            // client certs will not reject the request.  It does set the request.client.authorized variable
-            // to false for all self-signed certs; use rejectUnauthorized: true and a ca: field set to an array
-            // containing the client cert to see request.client.authorized = true
-            require('https').createServer({
-                key: metadata.key,
-                cert: metadata.cert,
-                requestCert: metadata.mutualAuth,
-                rejectUnauthorized: false
-            })
-        ;
+        // client certs will not reject the request.  It does set the request.client.authorized variable
+        // to false for all self-signed certs; use rejectUnauthorized: true and a ca: field set to an array
+        // containing the client cert to see request.client.authorized = true
+        config = {
+            key: metadata.key,
+            cert: metadata.cert,
+            mutualAuth: metadata.cert,
+            rejectUnauthorized: false
+        },
+        createNodeServer = () => require('https').createServer(config);
+
+    if (options.ciphers) {
+        metadata.ciphers = options.ciphers.toUpperCase();
+        config.ciphers = options.ciphers.toUpperCase();
+    }
 
     return { metadata, createNodeServer };
 }
