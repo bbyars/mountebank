@@ -8,7 +8,30 @@ description = 'Command line parameters for starting mountebank'
 <h1>Command Line</h1>
 
 <p>Running <code>mb</code> by itself will start up the API (and this site)
-  on port 2525.  Here are the options for <code>mb</code>:</p>
+on port 2525. However, mountebank has a rich set of configuration options,
+which can be passed either on the command line interface (CLI) itself or
+through an rc ("run commands") file. For example, take the following command line:</p>
+
+<pre><code>mb start --port 3000 --host mbserver.local --datadir .mbdb --allowInjection</code></pre>
+
+<p>With just a few options, the CLI is already becoming unwieldy, which is why you
+might prefer using the <code>rcfile</code> CLI option to put all the startup
+configuration in a file.</p>
+
+<pre><code>mb start --rcfile .mbrc</code></pre>
+
+<p>To get the same behavior as the first command, <code>.mbrc</code> should
+contain the following:</p>
+
+<pre><code>{
+  "port": 3000,
+  "host": "mbserver.local",
+  "datadir": ".mbdb",
+  "allowInjection": true
+}</code></pre>
+
+<p>The table below lists all the options for <code>mb</code> as you would pass
+them on the command line, with the double dash prefix:</p>
 
 <table>
   <tr>
@@ -27,6 +50,13 @@ description = 'Command line parameters for starting mountebank'
       run from the same directory as the <code>start</code> command, or be provided the
       <code>--pidfile</code> parameter to let <code>mb</code> know where to find the pidfile.</p></td>
     <td><code>start</code></td>
+  </tr>
+  <tr>
+    <td><code>--rcfile .mbrc</code></td>
+    <td>The run commands file containing startup configuration. When the same option is listed
+    in both the <code>rcfile</code> and the command line, the command line option takes
+    precedence.</td>
+    <td><code>N/A</code></td>
   </tr>
   <tr>
     <td><code>--port 2525</code></td>

@@ -276,6 +276,12 @@ const aliases = {
         o: 'origin'
     },
     options = {
+        rcfile: {
+            description: 'the startup file ("run commands") containing CLI options',
+            nargs: 1,
+            type: 'string',
+            global: false
+        },
         port: {
             default: 2525,
             description: 'the port to run the mountebank server on',
@@ -494,11 +500,11 @@ const argv = yargs
     .epilog('mb help [command] provides more details\n\nFor more information, see http://www.mbtest.org/docs/commandLine')
     .argv;
 
-function fixAliases () {
-    Object.keys(argv).forEach(key => {
+function fixAliases (args) {
+    Object.keys(args).forEach(key => {
         if (aliases[key]) {
-            argv[aliases[key]] = argv[key];
-            delete argv[key];
+            args[aliases[key]] = args[key];
+            delete args[key];
         }
     });
 }
@@ -507,37 +513,82 @@ function fixAliases () {
 // figure out how to make it default when the command is absent, which I need to default to start.
 // You can set what yargs considers to be the default command by .command(['start', '*']), but
 // that changes the help docs in ways I don't want.
-function fixDefaults () {
-    if (argv._.length === 0) {
+function fixDefaults (args) {
+    if (args._.length === 0) {
         Object.keys(startOptions).forEach(key => {
-            if (typeof argv[key] === 'undefined') {
-                argv[key] = startOptions[key].default;
+            if (typeof args[key] === 'undefined') {
+                args[key] = startOptions[key].default;
             }
         });
     }
 }
 
-function fixIPWhitelist (command) {
+function fixIPWhitelist (command, args) {
     if (command === 'start' || command === 'restart') {
-        argv.ipWhitelist = argv.ipWhitelist.split('|');
+        args.ipWhitelist = args.ipWhitelist.split('|');
     }
 }
 
 // Prevent noise from being logged
-function removeNoise () {
-    delete argv._;
-    delete argv.$0;
-    delete argv.version;
+function removeNoise (args) {
+    delete args._;
+    delete args.$0;
+    delete args.version;
+}
+
+function argIsPassedOnCLI (key) {
+    // The really tricky part is that yargs is automatically adding the
+    // defaults if the user didn't pass it, in which case the rcfile should
+    // override it. The default will appear in args (the yargs argv object)
+    // but not in process.argv (the raw command line args node capture), so
+    // we have to dip into that object to be sure we should use the rcfile.
+    // To be sure, we also have to test against the shortened CLI alias
+    // (e.g. --port and -p mean the same thing)
+    if (process.argv.indexOf(`--${key}`) >= 0) {
+        return true;
+    }
+    return Object.keys(aliases).some(alias => {
+        return aliases[alias] === key && process.argv.indexOf(`-${alias}`) >= 0;
+    });
+}
+
+function addStartupFile (args) {
+    if (typeof args.rcfile !== 'string' || args.rcfile === '') {
+        return;
+    }
+    if (!fs.existsSync(args.rcfile)) {
+        console.error(`Cannot find rcfile ${args.rcfile}`);
+        return;
+    }
+    try {
+        const rc = JSON.parse(fs.readFileSync(args.rcfile));
+
+        // CLI options take priority over anything in the rcfile.
+        Object.keys(rc).forEach(key => {
+            if (!argIsPassedOnCLI(key)) {
+                args[key] = rc[key];
+            }
+        });
+    }
+    catch (ex) {
+        console.error(`Cannot parse rcfile ${args.rcfile}: ${ex}`);
+        return;
+    }
+}
+
+function getCommandLineArgs (command, args) {
+    fixAliases(args);
+    fixDefaults(args);
+    fixIPWhitelist(command, args);
+    removeNoise(args);
+    addStartupFile(args);
+    return args;
 }
 
 try {
     const command = argv._.length === 0 ? 'start' : argv._[0],
-        server = serverAt(argv);
-
-    fixAliases();
-    fixDefaults();
-    fixIPWhitelist(command);
-    removeNoise();
+        args = getCommandLineArgs(command, argv),
+        server = serverAt(args);
 
     switch (command) {
         case 'start':

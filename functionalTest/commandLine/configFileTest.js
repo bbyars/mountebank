@@ -142,7 +142,7 @@ describe('--configfile', function () {
             .finally(() => mb.stop());
     });
 
-    promiseIt('should evaluate gzipped equests (issue #477)', function () {
+    promiseIt('should evaluate gzipped requests (issue #477)', function () {
         const zlib = require('zlib');
         const args = ['--debug', '--configfile', path.join(__dirname, 'gzip.json')];
 
