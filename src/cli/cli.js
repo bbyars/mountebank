@@ -1,6 +1,6 @@
 'use strict';
 
-const fs = require('fs'),
+const fs = require('fs-extra'),
     yargs = require('yargs'),
     aliases = {
         d: 'debug',
@@ -241,7 +241,7 @@ const fs = require('fs'),
             })
         .version()
         .wrap(null)
-        .epilog('mb help [command] provides more details\n\nFor more information, see http://www.mbtest.org/docs/commandLine')
+        .epilog('mb [command] --help provides more details\n\nFor more information, see http://www.mbtest.org/docs/commandLine')
         .argv;
 
 function fixAliases (args) {

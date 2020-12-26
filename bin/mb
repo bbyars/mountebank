@@ -5,7 +5,7 @@
 const mountebank = require('../src/mountebank'),
     api = require('../src/cli/api'),
     cli = require('../src/cli/cli'),
-    fs = require('fs'),
+    fs = require('fs-extra'),
     Q = require('q');
 
 function processExists (pid) {
