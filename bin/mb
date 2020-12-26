@@ -343,6 +343,12 @@ const aliases = {
             choices: ['debug', 'info', 'warn', 'error'],
             global: false
         },
+        log: {
+            description: 'logging configuration',
+            nargs: 1,
+            type: 'string',
+            global: false
+        },
         allowInjection: {
             default: false,
             description: 'set to allow JavaScript injection',
@@ -421,6 +427,7 @@ const aliases = {
         nologfile: options.nologfile,
         logfile: options.logfile,
         loglevel: options.loglevel,
+        log: options.log,
         allowInjection: options.allowInjection,
         localOnly: options.localOnly,
         ipWhitelist: options.ipWhitelist,
@@ -529,27 +536,84 @@ function fixIPWhitelist (command, args) {
     }
 }
 
+function rawArgvIndexFor (key) {
+    // Use raw process.argv to ensure user actually passed the parameter, bypassing
+    // yargs defaulting. Also check alias.
+    let index = process.argv.indexOf(`--${key}`);
+    if (index < 0) {
+        const aliasKeys = Object.keys(aliases);
+        for (let i = 0; i < aliasKeys.length; i += 1) {
+            let alias = aliasKeys[i];
+            if (aliases[alias] === key) {
+                index = process.argv.indexOf(`-${alias}`);
+            }
+        }
+    }
+    return index;
+}
+
+function argIsPassedOnCLI (key) {
+    return rawArgvIndexFor(key) >= 0;
+}
+
+function argvOrDefaultFor (key) {
+    const index = rawArgvIndexFor(key);
+    if (index >= 0) {
+        return process.argv[index + 1];
+    }
+    else {
+        return options[key].default;
+    }
+}
+
+function parseLogConfiguration (args) {
+    // Not defaulted in yargs so we can test yargs value without defaulting interfering.
+    // This is needed for backwards compatibility with older CLI options.
+    const defaultConfig = {
+        level: 'info',
+        transports: {
+            console: {
+                colorize: true,
+                format: '%level: %message'
+            },
+            file: {
+                path: 'mb.log',
+                format: 'json'
+            }
+        }
+    };
+
+    if (typeof args.log === 'string') {
+        try {
+            args.log = JSON.parse(args.log);
+        }
+        catch (ex) {
+            console.error(`Cannot parse --log as JSON: ${ex}`);
+            args.log = defaultConfig;
+        }
+    }
+    else {
+        // Backwards compatibility with older CLI options. Using raw process.argv
+        // to ensure user actually passed the parameter, bypassing yargs defaulting
+        args.log = defaultConfig;
+        args.log.level = argvOrDefaultFor('loglevel');
+        args.log.transports.file.path = argvOrDefaultFor('logfile');
+        if (argIsPassedOnCLI('nologfile')) {
+            delete args.log.transports.file;
+        }
+    }
+
+    // Remove the old values to not confuse users retrieving configuration later
+    delete args.loglevel;
+    delete args.logfile;
+    delete args.nologfile;
+}
+
 // Prevent noise from being logged
 function removeNoise (args) {
     delete args._;
     delete args.$0;
     delete args.version;
-}
-
-function argIsPassedOnCLI (key) {
-    // The really tricky part is that yargs is automatically adding the
-    // defaults if the user didn't pass it, in which case the rcfile should
-    // override it. The default will appear in args (the yargs argv object)
-    // but not in process.argv (the raw command line args node capture), so
-    // we have to dip into that object to be sure we should use the rcfile.
-    // To be sure, we also have to test against the shortened CLI alias
-    // (e.g. --port and -p mean the same thing)
-    if (process.argv.indexOf(`--${key}`) >= 0) {
-        return true;
-    }
-    return Object.keys(aliases).some(alias => {
-        return aliases[alias] === key && process.argv.indexOf(`-${alias}`) >= 0;
-    });
 }
 
 function addStartupFile (args) {
@@ -572,7 +636,6 @@ function addStartupFile (args) {
     }
     catch (ex) {
         console.error(`Cannot parse rcfile ${args.rcfile}: ${ex}`);
-        return;
     }
 }
 
@@ -580,6 +643,7 @@ function getCommandLineArgs (command, args) {
     fixAliases(args);
     fixDefaults(args);
     fixIPWhitelist(command, args);
+    parseLogConfiguration(args);
     removeNoise(args);
     addStartupFile(args);
     return args;

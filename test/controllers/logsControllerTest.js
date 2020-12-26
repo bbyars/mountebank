@@ -11,6 +11,28 @@ describe('logsController', function () {
             fs.unlinkSync('logsControllerTest.log');
         });
 
+        it('should return empty array if logfile is false', function () {
+            const response = FakeResponse.create(),
+                controller = Controller.create(false);
+
+            controller.get({ url: '/logs' }, response);
+
+            assert.deepStrictEqual(response.body, {
+                logs: []
+            });
+        });
+
+        it('should return empty array if logfile does not exist', function () {
+            const response = FakeResponse.create(),
+                controller = Controller.create('logsControllerTest.log');
+
+            controller.get({ url: '/logs' }, response);
+
+            assert.deepStrictEqual(response.body, {
+                logs: []
+            });
+        });
+
         it('should return full contents of logfile as JSON array by default', function () {
             const response = FakeResponse.create(),
                 controller = Controller.create('logsControllerTest.log');

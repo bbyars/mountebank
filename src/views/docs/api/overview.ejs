@@ -865,20 +865,30 @@ Connection: keep-alive
   "options": {
     "port": <%= port %>,
     "pidfile": "mb-grunt.pid",
-    "logfile": "mb-grunt.log",
     "allowInjection": true,
     "mock": true,
     "localOnly": true, <% if (process.env.MB_PERSISTENT === 'true') { %>
     "datadir": ".mbdb", <% } %>
     "noParse": false,
-    "nologfile": false,
-    "loglevel": "info",
     "ipWhitelist": [
       "*"
     ],
     "debug": false,
     "protofile": "protocols.json",
-    "origin": false
+    "origin": false,
+    "log": {
+      "level": "info",
+      "transports": {
+        "console": {
+          "colorize": true,
+          "format": "%level: %message"
+        },
+        "file": {
+          "path": "mb-grunt.log",
+          "format": "json"
+        }
+      }
+    }
   },
   "process": {
     "nodeVersion": <volatile>"v5.8.0"</volatile>,

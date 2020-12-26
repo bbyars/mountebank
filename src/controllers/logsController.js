@@ -11,6 +11,21 @@
  * @returns {{get: get}}
  */
 function create (logfile) {
+    function getLogEntries () {
+        const fs = require('fs');
+
+        if (!logfile || !fs.existsSync(logfile)) {
+            return [];
+        }
+        try {
+            const json = '[' + fs.readFileSync(logfile).toString().split('\n').join(',').replace(/,$/, '') + ']';
+            return JSON.parse(json);
+        }
+        catch (ex) {
+            return [];
+        }
+    }
+
     /**
      * The function that responds to GET /logs
      * @memberOf module:controllers/logsController#
@@ -18,9 +33,7 @@ function create (logfile) {
      * @param {Object} response - the HTTP response
      */
     function get (request, response) {
-        const fs = require('fs'),
-            json = '[' + fs.readFileSync(logfile).toString().split('\n').join(',').replace(/,$/, '') + ']',
-            allLogs = JSON.parse(json),
+        const allLogs = getLogEntries(),
             url = require('url'),
             query = url.parse(request.url, true).query,
             startIndex = parseInt(query.startIndex || 0),

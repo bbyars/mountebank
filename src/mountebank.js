@@ -19,27 +19,51 @@ function initializeLogfile (filename) {
     }
 }
 
+function logFormat (config) {
+    const template = config.replace(/\$/g, '\\$') // prevent injection attacks
+        .replace(/%level/g, '${info.level}')
+        .replace(/%message/g, '${info.message}')
+        .replace(/%timestamp/g, '${info.timestamp}');
+
+    // eslint-disable-next-line no-new-func
+    return new Function('info', `return \`${template}\`;`);
+}
+
+function createWinstonFormat (format, config) {
+    const formatters = [format.timestamp()];
+    if (config.colorize) {
+        formatters.push(format.colorize());
+    }
+    if (config.format === 'json') {
+        formatters.push(format.json());
+    }
+    else {
+        formatters.push(format.printf(logFormat(config.format)));
+    }
+    return format.combine(...formatters);
+}
+
 function createLogger (options) {
     const winston = require('winston'),
-        format = winston.format,
-        consoleFormat = format.printf(info => `${info.level}: ${info.message}`),
-        winstonLogger = winston.createLogger({
-            level: options.loglevel,
-            transports: [new winston.transports.Console({
-                format: format.combine(format.colorize(), consoleFormat)
-            })]
-        }),
+        winstonLogger = winston.createLogger({ level: options.log.level }),
         ScopedLogger = require('./util/scopedLogger'),
-        logger = ScopedLogger.create(winstonLogger, `[mb:${options.port}] `);
+        logger = ScopedLogger.create(winstonLogger, `[mb:${options.port}] `),
+        consoleConfig = options.log.transports.console,
+        fileConfig = options.log.transports.file;
 
-    if (!options.nologfile) {
-        initializeLogfile(options.logfile);
+    if (consoleConfig) {
+        winstonLogger.add(new winston.transports.Console({
+            format: createWinstonFormat(winston.format, consoleConfig)
+        }));
+    }
+    if (fileConfig) {
+        initializeLogfile(fileConfig.path);
         winstonLogger.add(new winston.transports.File({
-            filename: options.logfile,
+            filename: fileConfig.path,
             maxsize: '20m',
             maxFiles: 5,
             tailable: true,
-            format: format.combine(format.timestamp(), format.json())
+            format: createWinstonFormat(winston.format, fileConfig)
         }));
     }
 
@@ -144,7 +168,7 @@ function loadProtocols (options, baseURL, logger, isAllowedConnection, imposters
             callbackURLTemplate: `${baseURL}/imposters/:port/_requests`,
             recordRequests: options.mock,
             recordMatches: options.debug,
-            loglevel: options.loglevel,
+            loglevel: options.log.level,
             allowInjection: options.allowInjection,
             host: options.host
         };
@@ -179,7 +203,8 @@ function create (options) {
             protocols, imposters, logger, options.allowInjection),
         imposterController = require('./controllers/imposterController').create(
             protocols, imposters, logger, options.allowInjection),
-        logsController = require('./controllers/logsController').create(options.logfile),
+        logfile = options.log.transports.file ? options.log.transports.file.path : false,
+        logsController = require('./controllers/logsController').create(logfile),
         configController = require('./controllers/configController').create(thisPackage.version, options),
         feedController = require('./controllers/feedController').create(releases, options),
         validateImposterExists = middleware.createImposterValidator(imposters),
