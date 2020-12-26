@@ -17,14 +17,21 @@ function logFormat (config) {
     const template = config.replace(/\$/g, '\\$') // prevent injection attacks
         .replace(/%level/g, '${info.level}')
         .replace(/%message/g, '${info.message}')
-        .replace(/%timestamp/g, '${info.timestamp}');
+        .replace(/%timestamp/g, '${info.timestamp}')
+        .replace(/%host/g, '${info.host}')
+        .replace(/%pid/g, '${info.pid}');
 
     // eslint-disable-next-line no-new-func
     return new Function('info', `return \`${template}\`;`);
 }
 
 function createWinstonFormat (format, config) {
-    const formatters = [format.timestamp()];
+    const hostAndPid = format(info => {
+            info.host = require('os').hostname();
+            info.pid = process.pid;
+            return info;
+        }),
+        formatters = [format.timestamp(), hostAndPid()];
     if (config.colorize) {
         formatters.push(format.colorize());
     }
