@@ -170,4 +170,60 @@ function load (builtInProtocols, customProtocols, options, isAllowedConnection, 
     return result;
 }
 
-module.exports = { load };
+function isBuiltInProtocol (protocol) {
+    return ['tcp', 'smtp', 'http', 'https'].indexOf(protocol) >= 0;
+}
+
+function loadCustomProtocols (protofile, logger) {
+    if (typeof protofile === 'undefined') {
+        return {};
+    }
+
+    const fs = require('fs-extra'),
+        path = require('path'),
+        filename = path.resolve(path.relative(process.cwd(), protofile));
+
+    if (fs.existsSync(filename)) {
+        try {
+            const customProtocols = require(filename);
+            Object.keys(customProtocols).forEach(proto => {
+                if (isBuiltInProtocol(proto)) {
+                    logger.warn(`Using custom ${proto} implementation instead of the built-in one`);
+                }
+                else {
+                    logger.info(`Loaded custom protocol ${proto}`);
+                }
+            });
+            return customProtocols;
+        }
+        catch (e) {
+            logger.error(`${protofile} contains invalid JSON -- no custom protocols loaded`);
+            return {};
+        }
+    }
+    else {
+        return {};
+    }
+}
+
+function loadProtocols (options, baseURL, logger, isAllowedConnection, imposters) {
+    const builtInProtocols = {
+            tcp: require('./tcp/tcpServer'),
+            http: require('./http/httpServer'),
+            https: require('./https/httpsServer'),
+            smtp: require('./smtp/smtpServer')
+        },
+        customProtocols = loadCustomProtocols(options.protofile, logger),
+        config = {
+            callbackURLTemplate: `${baseURL}/imposters/:port/_requests`,
+            recordRequests: options.mock,
+            recordMatches: options.debug,
+            loglevel: options.log.level,
+            allowInjection: options.allowInjection,
+            host: options.host
+        };
+
+    return load(builtInProtocols, customProtocols, config, isAllowedConnection, logger, imposters);
+}
+
+module.exports = { load, loadProtocols };

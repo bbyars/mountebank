@@ -2,65 +2,9 @@
 
 /**
  * The entry point for mountebank.  This module creates the mountebank server,
- * configures all middleware, starts the logger, and manages all routing
+ * configures all middleware and manages all routing
  * @module
  */
-
-function isBuiltInProtocol (protocol) {
-    return ['tcp', 'smtp', 'http', 'https'].indexOf(protocol) >= 0;
-}
-
-function loadCustomProtocols (protofile, logger) {
-    if (typeof protofile === 'undefined') {
-        return {};
-    }
-
-    const fs = require('fs'),
-        path = require('path'),
-        filename = path.resolve(path.relative(process.cwd(), protofile));
-
-    if (fs.existsSync(filename)) {
-        try {
-            const customProtocols = require(filename);
-            Object.keys(customProtocols).forEach(proto => {
-                if (isBuiltInProtocol(proto)) {
-                    logger.warn(`Using custom ${proto} implementation instead of the built-in one`);
-                }
-                else {
-                    logger.info(`Loaded custom protocol ${proto}`);
-                }
-            });
-            return customProtocols;
-        }
-        catch (e) {
-            logger.error(`${protofile} contains invalid JSON -- no custom protocols loaded`);
-            return {};
-        }
-    }
-    else {
-        return {};
-    }
-}
-
-function loadProtocols (options, baseURL, logger, isAllowedConnection, imposters) {
-    const builtInProtocols = {
-            tcp: require('./models/tcp/tcpServer'),
-            http: require('./models/http/httpServer'),
-            https: require('./models/https/httpsServer'),
-            smtp: require('./models/smtp/smtpServer')
-        },
-        customProtocols = loadCustomProtocols(options.protofile, logger),
-        config = {
-            callbackURLTemplate: `${baseURL}/imposters/:port/_requests`,
-            recordRequests: options.mock,
-            recordMatches: options.debug,
-            loglevel: options.log.level,
-            allowInjection: options.allowInjection,
-            host: options.host
-        };
-
-    return require('./models/protocols').load(builtInProtocols, customProtocols, config, isAllowedConnection, logger, imposters);
-}
 
 /**
  * Creates the mountebank server
@@ -83,7 +27,7 @@ function create (options) {
         logger = require('./util/logger').createLogger(options),
         isAllowedConnection = require('./util/ip').createIPVerification(options),
         imposters = require('./models/impostersRepository').create(options, logger),
-        protocols = loadProtocols(options, baseURL, logger, isAllowedConnection, imposters),
+        protocols = require('./models/protocols').loadProtocols(options, baseURL, logger, isAllowedConnection, imposters),
         homeController = require('./controllers/homeController').create(releases),
         impostersController = require('./controllers/impostersController').create(
             protocols, imposters, logger, options.allowInjection),
@@ -94,7 +38,7 @@ function create (options) {
         configController = require('./controllers/configController').create(thisPackage.version, options),
         feedController = require('./controllers/feedController').create(releases, options),
         validateImposterExists = middleware.createImposterValidator(imposters),
-        fs = require('fs'),
+        fs = require('fs-extra'),
         prometheus = require('prom-client');
 
     prometheus.collectDefaultMetrics({ prefix: 'mb_' });
