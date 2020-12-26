@@ -917,6 +917,43 @@ function create (config, logger) {
             });
     }
 
+    /**
+     * Loads all saved imposters at startup
+     * @memberOf module:models/filesystemBackedImpostersRepository#
+     * @param {Object} protocols - The protocol map, used to instantiate a new instance
+     * @returns {Object} - a promise
+     */
+    function loadAll (protocols) {
+        const fs = require('fs-extra');
+
+        if (!config.datadir || !fs.existsSync(config.datadir)) {
+            return Q();
+        }
+
+        const dirs = fs.readdirSync(config.datadir),
+            promises = dirs.map(dir => {
+                const imposterFilename = `${config.datadir}/${dir}/imposter.json`;
+                if (!fs.existsSync(imposterFilename)) {
+                    logger.warn(`Skipping ${dir} during loading; missing imposter.json`);
+                    return Q();
+                }
+
+                const imposterConfig = JSON.parse(fs.readFileSync(imposterFilename)),
+                    protocol = protocols[imposterConfig.protocol];
+
+                if (protocol) {
+                    logger.info(`Loading ${imposterConfig.protocol}:${dir} from datadir`);
+                    return protocol.createImposterFrom(imposterConfig)
+                        .then(imposter => addReference(imposter));
+                }
+                else {
+                    logger.error(`Cannot load imposter ${dir}; no protocol loaded for ${config.protocol}`);
+                    return Q();
+                }
+            });
+        return Q.all(promises);
+    }
+
     return {
         add,
         addReference,
@@ -926,7 +963,8 @@ function create (config, logger) {
         del,
         stopAllSync,
         deleteAll,
-        stubsFor
+        stubsFor,
+        loadAll
     };
 }
 

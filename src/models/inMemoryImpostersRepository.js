@@ -407,6 +407,16 @@ function create () {
         return stubRepos[String(id)];
     }
 
+    /**
+     * Called at startup to load saved imposters.
+     * Does nothing for in memory repository
+     * @memberOf module:models/inMemoryImpostersRepository#
+     * @returns {Object} - a promise
+     */
+    function loadAll () {
+        return Q();
+    }
+
     return {
         add,
         get,
@@ -416,7 +426,8 @@ function create () {
         stopAllSync,
         deleteAll,
         stubsFor,
-        createStubsRepository
+        createStubsRepository,
+        loadAll
     };
 }
 
