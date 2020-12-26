@@ -6,70 +6,6 @@
  * @module
  */
 
-function initializeLogfile (filename) {
-    // Ensure new logfile on startup so the /logs only shows for this process
-    const path = require('path'),
-        fs = require('fs'),
-        extension = path.extname(filename),
-        pattern = new RegExp(`${extension}$`),
-        newFilename = filename.replace(pattern, `1${extension}`);
-
-    if (fs.existsSync(filename)) {
-        fs.renameSync(filename, newFilename);
-    }
-}
-
-function logFormat (config) {
-    const template = config.replace(/\$/g, '\\$') // prevent injection attacks
-        .replace(/%level/g, '${info.level}')
-        .replace(/%message/g, '${info.message}')
-        .replace(/%timestamp/g, '${info.timestamp}');
-
-    // eslint-disable-next-line no-new-func
-    return new Function('info', `return \`${template}\`;`);
-}
-
-function createWinstonFormat (format, config) {
-    const formatters = [format.timestamp()];
-    if (config.colorize) {
-        formatters.push(format.colorize());
-    }
-    if (config.format === 'json') {
-        formatters.push(format.json());
-    }
-    else {
-        formatters.push(format.printf(logFormat(config.format)));
-    }
-    return format.combine(...formatters);
-}
-
-function createLogger (options) {
-    const winston = require('winston'),
-        winstonLogger = winston.createLogger({ level: options.log.level }),
-        ScopedLogger = require('./util/scopedLogger'),
-        logger = ScopedLogger.create(winstonLogger, `[mb:${options.port}] `),
-        consoleConfig = options.log.transports.console,
-        fileConfig = options.log.transports.file;
-
-    if (consoleConfig) {
-        winstonLogger.add(new winston.transports.Console({
-            format: createWinstonFormat(winston.format, consoleConfig)
-        }));
-    }
-    if (fileConfig) {
-        initializeLogfile(fileConfig.path);
-        winstonLogger.add(new winston.transports.File({
-            filename: fileConfig.path,
-            maxsize: '20m',
-            maxFiles: 5,
-            tailable: true,
-            format: createWinstonFormat(winston.format, fileConfig)
-        }));
-    }
-
-    return logger;
-}
-
 function getLocalIPs () {
     const os = require('os'),
         interfaces = os.networkInterfaces(),
@@ -194,7 +130,7 @@ function create (options) {
         app = express(),
         hostname = options.host || 'localhost',
         baseURL = `http://${hostname}:${options.port}`,
-        logger = createLogger(options),
+        logger = require('./util/logger').createLogger(options),
         isAllowedConnection = createIPVerification(options),
         imposters = require('./models/impostersRepository').create(options, logger),
         protocols = loadProtocols(options, baseURL, logger, isAllowedConnection, imposters),
