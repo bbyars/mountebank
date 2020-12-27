@@ -5,6 +5,16 @@ description = 'The version, command line parameters, and process information abo
 
 <% include _header %>
 
+<%
+function isJSONObject (value) {
+  return typeof value === 'object' && !Array.isArray(value);
+}
+
+function prettyPrint (value) {
+  return isJSONObject(value) ? JSON.stringify(value, null, 2) : value;
+}
+%>
+
 <h1>Config</h1>
 
 <table>
@@ -15,7 +25,8 @@ description = 'The version, command line parameters, and process information abo
 <% Object.keys(options).forEach(key =>{ %>
   <tr>
     <td><%= key %></td>
-    <td><%= options[key] %></td>
+    <td><% if (isJSONObject(options[key])) { -%><pre><code><% } -%><%= prettyPrint(options[key]) %><% if (isJSONObject(options[key])) { -%></code></pre><% } -%>
+    </td>
   </tr>
 <% }); -%>
 </table>

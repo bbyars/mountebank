@@ -15,14 +15,15 @@ function create (logfile) {
         const fs = require('fs');
 
         if (!logfile || !fs.existsSync(logfile)) {
-            return [];
+            return [{ level: 'error', message: 'No logfile' }];
         }
         try {
-            const json = '[' + fs.readFileSync(logfile).toString().split('\n').join(',').replace(/,$/, '') + ']';
+            const entries = fs.readFileSync(logfile).toString().split('\n'),
+                json = '[' + entries.join(',').replace(/,$/, '') + ']';
             return JSON.parse(json);
         }
         catch (ex) {
-            return [];
+            return [{ level: 'error', message: 'This page only works for JSON file logging' }];
         }
     }
 
