@@ -6,7 +6,7 @@
  */
 
 function sortObjects (a, b) {
-    const stringify = require('json-stable-stringify'),
+    const stringify = require('safe-stable-stringify'),
         isObject = require('../util/helpers').isObject;
 
     if (isObject(a) && isObject(b)) {
@@ -313,7 +313,7 @@ function create (operator, predicateFn) {
 function deepEquals (predicate, request, encoding) {
     const expected = normalize(forceStrings(predicate.deepEquals), predicate, { encoding: encoding }),
         actual = normalize(forceStrings(request), predicate, { encoding: encoding, withSelectors: true, shouldForceStrings: true }),
-        stringify = require('json-stable-stringify'),
+        stringify = require('safe-stable-stringify'),
         isObject = require('../util/helpers').isObject;
 
     return Object.keys(expected).every(fieldName => {

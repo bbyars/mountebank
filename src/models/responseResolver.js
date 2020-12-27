@@ -190,7 +190,7 @@ function create (stubs, proxy, callbackURL) {
     }
 
     function deepEqual (obj1, obj2) {
-        const stringify = require('json-stable-stringify');
+        const stringify = require('safe-stable-stringify');
         return stringify(obj1) === stringify(obj2);
     }
 
