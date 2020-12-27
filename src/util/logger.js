@@ -45,6 +45,12 @@ function createWinstonFormat (format, config) {
 }
 
 function createLogger (options) {
+    if (!options.log) {
+        options.log = { level: 'info' };
+    }
+    if (!options.log.transports) {
+        options.log.transports = {};
+    }
     const winston = require('winston'),
         winstonLogger = winston.createLogger({ level: options.log.level }),
         ScopedLogger = require('./scopedLogger'),

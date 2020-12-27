@@ -250,13 +250,13 @@ function create (config, logger) {
             options = {
                 realpath: false,
                 retries: {
-                    retries: 15,
+                    retries: 20,
                     minTimeout: 10,
                     maxTimeout: 5000,
                     randomize: true,
                     factor: 1.5
                 },
-                stale: 20000
+                stale: 30000
             };
 
         // with realpath = false, the file doesn't have to exist, but the directory does
