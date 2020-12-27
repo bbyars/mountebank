@@ -48,7 +48,7 @@ const fs = require('fs-extra'),
             global: false
         },
         datadir: {
-            description: 'the database directory, useful for persistence and performance',
+            description: 'the directory to persist all imposter data',
             nargs: 1,
             type: 'string',
             global: false
@@ -68,14 +68,14 @@ const fs = require('fs-extra'),
         },
         logfile: {
             default: 'mb.log',
-            description: 'file used for all log',
+            description: 'path to use for logging',
             nargs: 1,
             type: 'string',
             global: false
         },
         loglevel: {
             default: 'info',
-            description: 'level for terminal logs',
+            description: 'level for logging',
             nargs: 1,
             type: 'string',
             choices: ['debug', 'info', 'warn', 'error'],
@@ -103,14 +103,13 @@ const fs = require('fs-extra'),
         },
         ipWhitelist: {
             default: '*',
-            description: 'pipe-delimited list of allowed IP address patterns to connect to the mountebank admin port',
-            type: 'string',
+            description: 'pipe-delimited list of allowed IP addresses',
             alias: aliases.w,
             global: false
         },
         mock: {
             default: false,
-            description: 'remember requests for mock verification',
+            description: '[Deprecated] remember requests (use "recordRequests" per imposter instead)',
             type: 'boolean',
             alias: aliases.m,
             global: false
@@ -145,7 +144,7 @@ const fs = require('fs-extra'),
         },
         origin: {
             default: false,
-            description: 'A safe origin for CORS requests',
+            description: 'safe origin for CORS requests',
             type: 'string',
             global: false
         },
@@ -173,7 +172,8 @@ const fs = require('fs-extra'),
         debug: options.debug,
         heroku: options.heroku,
         protofile: options.protofile,
-        origin: options.origin
+        origin: options.origin,
+        rcfile: options.rcfile
     },
     argv = yargs
         .usage('Usage: mb [command=start] [options...]')
@@ -194,7 +194,7 @@ const fs = require('fs-extra'),
                 .usage('Usage: mb stop [--pidfile file.pid]')
                 .help('help')
                 .wrap(null)
-                .options({ pidfile: options.pidfile })
+                .options({ pidfile: options.pidfile, rcfile: options.rcfile })
                 .example('mb stop', 'Stops the process identified in mb.pid')
                 .example('mb stop --pidfile test.pid', 'Stops the process identified in test.pid')
                 .epilog('For more information, see http://www.mbtest.org/docs/commandLine');
@@ -219,7 +219,8 @@ const fs = require('fs-extra'),
                     port: options.port,
                     savefile: options.savefile,
                     removeProxies: options.removeProxies,
-                    host: options.host
+                    host: options.host,
+                    rcfile: options.rcfile
                 })
                 .example('mb save --savefile config.json --removeProxies --port 3000',
                     'Saves the config without proxies into config.json by querying port 3000')
@@ -233,7 +234,7 @@ const fs = require('fs-extra'),
                     .usage('Usage: mb replay [--port 3000]')
                     .help('help')
                     .wrap(null)
-                    .options({ port: options.port, host: options.host })
+                    .options({ port: options.port, host: options.host, rcfile: options.rcfile })
                     .example('mb replay --port 3000',
                         'Resets the configuration of mountebank running on port 3000 to remove all proxies')
                     .example('mb replay', 'Resets the configuration of mountebank running on port 2525 to remove all proxies')

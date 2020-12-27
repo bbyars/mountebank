@@ -1,0 +1,60 @@
+<pre><code>mb save [options]</code></pre>
+
+<p>While you can always use the <a href='/docs/api/overview'>API</a> to capture the current configuration
+of imposters, mountebank provides a convenient command line mechanism to save the configuration
+into a file that can be used to start a subsequent process of <code>mb</code> using the
+<code>--configfile</code> command line option. With a running <code>mb</code> process operating on port
+3000, you can execute the following command:</p>
+
+<pre><code>mb save --port 3000 --savefile saved.json --removeProxies</code></pre>
+
+<p>All of the parameters are optional with the defaults listed in the table below. You could then
+restart mountebank with the following command:</p>
+
+<pre><code>mb restart --port 3000 --configfile saved.json</code></pre>
+
+<p>The <code>save</code> command takes the following options:</p>
+
+<table>
+  <tr>
+    <th style='width: 12em;'>Option</th>
+    <th>Description</th>
+    <th>Default</th>
+  </tr>
+  <tr>
+    <td><code>--port 2525</code></td>
+    <td>The port of the running the mountebank server</td>
+    <td><code>2525</code></td>
+  </tr>
+  <tr>
+    <td><code>--host mbserver.local</code></td>
+    <td>The hostname of the running mountebank server</td>
+    <td><code>localhost</code></td>
+  </tr>
+  <tr>
+    <td><code>--savefile saved.json</code></td>
+    <td>The file to save imposters to</td>
+    <td><code>mb.json</code></td>
+  </tr>
+  <tr>
+    <td><code>--removeProxies</code></td>
+    <td>Remove proxies from the saved configuration, useful when you want to switch
+        from record to replay mode. Corresponds to the
+      <code><a href='/docs/api/overview#get-imposters'>removeProxies</a></code> API
+      query parameter</td>
+    <td><code>false</code></td>
+  </tr>
+  <tr>
+    <td><code>--rcfile .mbrc</code></td>
+    <td>The run commands file containing startup configuration (a JSON-equivalent representation
+    of the command line arguments). When the same option is listed
+    in both the <code>rcfile</code> and the command line, the command line option takes
+    precedence.</td>
+    <td><code>N/A</code></td>
+  </tr>
+  <tr>
+    <td><code>--help</code></td>
+    <td>Show help for the command</td>
+    <td><code>N/A</code></td>
+  </tr>
+</table>

@@ -1,0 +1,206 @@
+<p><code>start</code> is the default <code>mb</code> command, meaning:</p>
+
+<pre><code>mb start [options]</code></pre>
+
+<p>is identical to</p>
+
+<pre><code>mb [options]</code></pre>
+
+<p>Running <code>mb</code> by itself, without any options, will start up the API
+on port 2525. It will also spin up this website on http://localhost:2525/, giving
+you accurate documentation for the version of mountebank you're running, as the
+official site only contains the latest docs. The following options are available:</p>
+
+<table>
+  <tr>
+    <th style='width: 12em;'>Option</th>
+    <th>Description</th>
+    <th>Default</th>
+  </tr>
+  <tr>
+    <td><code>--port 2525</code></td>
+    <td>The port to run the main mountebank server on</td>
+    <td><code>2525</code></td>
+  </tr>
+  <tr>
+    <td><code>--host mbserver.local</code></td>
+    <td>The hostname to bind the main mountebank server to</td>
+    <td><em>all hosts</em></td>
+  </tr>
+  <tr>
+    <td><code>--datadir .mbdb</code></td>
+    <td>The root directory for persisting all imposter changes. When used, mountebank
+      will start all imposters saved in the directory initially and persist all operations
+      to disk in real time, significantly reducing the memory footprint.
+
+    <p class='info-icon'>This option allows you to scale imposters with multiple processes
+      (running on multiple hosts behind a load balancer to avoid port collision), with the state
+      of all processes synced in real time. All mountebank processes will need to share the same volume.</td>
+
+    <td>Without this option, all configuration will be in memory. Keeping everything in memory can be a
+    significant performance hit when there is a lot of test data, for example, during proxy recording.</td>
+  </tr>
+  <tr>
+    <td><code>--configfile imposters.ejs</code></td>
+    <td>If present, mountebank will load the contents of the specified file.  See
+    <a href='#config-file'>below</a> for details.
+
+    <p class='warning-icon'>If both the <code>datadir</code> and <code>configfile</code> options are
+    used, mountebank will initially load all imposters from the <code>datadir</code> and then add all from
+    the <code>configfile</code>. This means that when the same imposter port is saved in both places, what
+    is in the <code>datadir</code> will be immediately overwritten by what's in the <code>configfile</code>!</p></td>
+    <td><code>N/A</code></td>
+  </tr>
+  <tr>
+    <td><code>--noParse</code></td>
+    <td>By default, mountebank will render config files through EJS templating to
+    allow modularizing rich configuration. Use this flag if you aren't using templating
+    and have special character sequences in your configuration that
+    cause rendering errors.</td>
+    <td><code>false</code></td>
+  </tr>
+  <tr>
+    <td><code>--logfile mb.log</code></td>
+    <td>The file for mountebank to store the logs in</td>
+    <td><code>mb.log</code></td>
+  </tr>
+  <tr>
+    <td><code>--loglevel debug</code></td>
+    <td>The logging level, one of <code>debug, info, warn, error</code></td>
+    <td><code>info</code></td>
+  </tr>
+  <tr>
+    <td><code>--nologfile</code></td>
+    <td>Prevent logging to the filesystem</td>
+    <td><code>false</code></td>
+  </tr>
+  <tr>
+    <td><code>--log</code></td>
+    <td>Advanced logging configuration, when you want to customize the log formats. While you
+    can pass the JSON string on the command line, it's easier to put it in the <code>rcfile</code>.
+    If you pass <code>log</code>, the simpler logging configuration options
+    (<code>loglevel</code>, <code>logfile</code>, <code>nologfile</code>) will be ignored.
+
+    <p>You can set the format to "json" to log all fields as JSON, or set it to a string to
+    customize the format. The supported fields are:</p>
+
+    <ul class='bullet-list'>
+      <li>%level</li>
+      <li>%timestamp</li>
+      <li>%host</li>
+      <li>%pid</li>
+      <li>%message</li>
+    </ul>
+    </td>
+    <td><pre><code>{
+  "level": "info",
+  "transports": {
+    "console": {
+      "colorize": true,
+      "format": "%level: %message"
+    },
+    "file": {
+      "path": "mb.log",
+      "format": "json"
+    }
+  }
+}</code></pre></td>
+  </tr>
+  <tr>
+    <td><code>--allowInjection</code></td>
+    <td>mountebank supports JavaScript injection for <a href='/docs/api/predicates'>predicates</a>,
+      <a href='/docs/api/injection'>stub responses</a>, <a href='/docs/api/behaviors'>behavior decoration</a>,
+      <a href='/docs/api/behaviors'>wait behavior functions</a> and
+      <a href='/docs/protocols/tcp#endOfRequestResolver'>tcp request resolution</a>, but they are
+      disabled by default.  Including this parameter will enable them.
+
+      <p class='warning-icon'>Note that allowing injection means that an attacker can run random
+      code on the machine running <code>mb</code>. Please see the <a href='/docs/security'>security page</a>
+      for tips on securing your system.</p>
+    </td>
+    <td><code>false</code></td>
+  </tr>
+  <tr>
+    <td><code>--localOnly</code></td>
+    <td>Only accept requests from localhost. You should ALWAYS do this when running mountebank with
+        <code>allowInjection</code> directly on your developer machine, but will need to use
+        <code>ipWhitelist</code> otherwise (or if running in Docker),</td>
+    <td><code>false</code></td>
+  </tr>
+  <tr>
+    <td><code>--ipWhitelist</code></td>
+    <td>A pipe-delimited string of remote IP addresses to whitelist (local IP addresses will always
+    be allowed). Any request to the primary <code>mb</code> socket or an imposter socket that isn't
+    whitelisted will be dropped.</td>
+    <td><code>*</code>, representing all IP addresses</td>
+  </tr>
+  <tr>
+    <td><code>--origin</code></td>
+    <td>A safe origin for CORS requests. Use the flag multiple times to enable multiple origins.</td>
+    <td><code>false</code>, which disables CORS to prevent CSRF attacks.</td>
+  </tr>
+  <tr>
+    <td><code>--protofile</code></td>
+    <td>File to load custom <a href='/docs/protocols/custom'>protocol implementations</a> from.</td>
+    <td><code>protocols.json</code></td>
+  </tr>
+  <tr>
+    <td><code>--rcfile .mbrc</code></td>
+    <td>The run commands file containing startup configuration. The <code>rcfile</code>
+      format is a JSON-equivalent representation of the command line option. For example,
+      the following command line is very complex:
+
+<pre><code>mb --port 3000 --allowInjection --origin 'http://first.com' --origin 'http://second.com' \
+--log '{ "level": "warn", "transports": { "console": { "format": "json" } } }'</code></pre>
+
+      You could simplify it by putting the configuration in a file and running
+
+<pre><code>mb start --rcfile .mbrc</code></pre>
+
+      The file .mbrc would look like the following:
+
+<pre><code>{
+  "port": 3000,
+  "allowInjection": true,
+  "origin": ["http://first.com", "http://second.com"],
+  "log": {
+    "level": "warn",
+    "transports": {
+      "console": {
+        "format": "json"
+      }
+    }
+  }
+}</code></pre>
+
+      When the same option is listed in both the <code>rcfile</code> and the command line,
+      the command line option takes precedence.
+    </td>
+    <td><code>N/A</code></td>
+  </tr>
+  <tr>
+    <td><code>--debug</code></td>
+    <td>Include a <code>matches</code> array with each stub in the body of a
+      <a href='/docs/api/overview#get-imposter'>GET imposter</a> response
+      for debugging why a particular stub did or did not match a request.
+      Every time a response from the stub is used, a match will be added containing
+      the request, the response configuration, the actual generated response (even
+      if it is proxied), and the overall processing time.
+    <td><code>false</code></td>
+  </tr>
+  <tr>
+    <td><code>--pidfile</code></td>
+    <td>The file where the process id is stored for the <code>mb stop</code> command</td>
+    <td><code>mb.pid</code></td>
+  </tr>
+  <tr>
+    <td><code>--version</code></td>
+    <td>Print the version out to the console and exit.</td>
+    <td><code>N/A</code></td>
+  </tr>
+  <tr>
+    <td><code>--help</code></td>
+    <td>Show help for the command</td>
+    <td><code>N/A</code></td>
+  </tr>
+</table>

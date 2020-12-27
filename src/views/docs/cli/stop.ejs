@@ -1,0 +1,32 @@
+<pre><code>mb stop [options]</code></pre>
+
+<p>Stops <code>mb</code>, shutting down all open sockets. Generally, <code>mb stop</code>
+must be run from the same directory as the <code>mb start</code> command, although
+that is configurable with the <code>pidfile</code> option:</p>
+
+<table>
+  <tr>
+    <th style='width: 12em;'>Option</th>
+    <th>Description</th>
+    <th>Default</th>
+  </tr>
+  <tr>
+    <td><code>--pidfile</code></td>
+    <td>The path to the pidfile, which stores the process id of the running <code>mb</code> process.
+        Must match the pidfile passed in the <code>mb start</code> command.</td>
+    <td><code>mb.pid</code></td>
+  </tr>
+  <tr>
+    <td><code>--rcfile .mbrc</code></td>
+    <td>The run commands file containing startup configuration (a JSON-equivalent representation
+      of the command line arguments). When the same option is listed
+    in both the <code>rcfile</code> and the command line, the command line option takes
+    precedence.</td>
+    <td><code>N/A</code></td>
+  </tr>
+  <tr>
+    <td><code>--help</code></td>
+    <td>Show help for the command</td>
+    <td><code>N/A</code></td>
+  </tr>
+</table>

@@ -5,231 +5,68 @@ description = 'Command line parameters for starting mountebank'
 
 <% include ../_header %>
 
-<h1>Command Line</h1>
+<h1>Configuring mountebank</h1>
 
-<p>Running <code>mb</code> by itself will start up the API (and this site)
-on port 2525. However, mountebank has a rich set of configuration options,
-which can be passed either on the command line interface (CLI) itself or
-through an rc ("run commands") file. For example, take the following command line:</p>
+<p>The basic command line structure is:</p>
 
-<pre><code>mb start --port 3000 --host mbserver.local --datadir .mbdb --allowInjection</code></pre>
+<pre><code>mb [command=start] [options...]</code></pre>
 
-<p>With just a few options, the CLI is already becoming unwieldy, which is why you
-might prefer using the <code>rcfile</code> CLI option to put all the startup
-configuration in a file.</p>
+<p>As mountebank has grown in functionality, the number of commands and options
+has increased significantly. The links below attempt to simplify that configuration
+based on the core mountebank commands.</p>
 
-<pre><code>mb start --rcfile .mbrc</code></pre>
+<section class='accordion'>
+  <div>
+    <a class='section-toggler' id='start' name='start' href='#start'>mb start</a>
+    <section>
+      <% include cli/start %>
+    </section>
+  </div>
+  <div>
+    <a class='section-toggler' id='stop' name='stop' href='#stop'>mb stop</a>
+    <section>
+      <% include cli/stop %>
+    </section>
+  </div>
+  <div>
+    <a class='section-toggler' id='restart' name='restart' href='#restart'>mb restart</a>
+    <section>
+      <% include cli/restart %>
+    </section>
+  </div>
+  <div>
+    <a class='section-toggler' id='save' name='save' href='#save'>mb save</a>
+    <section>
+      <% include cli/save %>
+    </section>
+  </div>
+  <div>
+    <a class='section-toggler' id='replay' name='replay' href='#replay'>mb replay</a>
+    <section>
+      <% include cli/replay %>
+    </section>
+  </div>
+  <div>
+    <a class='section-toggler' id='help' name='help' href='#help'>mb help</a>
+    <section>
+      <% include cli/help %>
+    </section>
+  </div>
+</section>
 
-<p>To get the same behavior as the first command, <code>.mbrc</code> should
-contain the following:</p>
-
-<pre><code>{
-  "port": 3000,
-  "host": "mbserver.local",
-  "datadir": ".mbdb",
-  "allowInjection": true
-}</code></pre>
-
-<p>The table below lists all the options for <code>mb</code> as you would pass
-them on the command line, with the double dash prefix:</p>
-
-<table>
-  <tr>
-    <th style='width: 12em;'>Option</th>
-    <th>Description</th>
-    <th>Default</th>
-  </tr>
-  <tr>
-    <td><code><em>command</em></code></td>
-    <td>One of <code>start</code>, <code>stop</code>, <code>restart</code>,
-      <code><a href='#save'>save</a></code> (which saves off the current imposter configuration),
-      <code><a href='#replay'>replay</a></code> (which removes proxies), or
-      <code>help</code> (which shows the usage information).
-
-      <p class='info-icon'>Note that <code>stop</code> and <code>restart</code> must either be
-      run from the same directory as the <code>start</code> command, or be provided the
-      <code>--pidfile</code> parameter to let <code>mb</code> know where to find the pidfile.</p></td>
-    <td><code>start</code></td>
-  </tr>
-  <tr>
-    <td><code>--rcfile .mbrc</code></td>
-    <td>The run commands file containing startup configuration. When the same option is listed
-    in both the <code>rcfile</code> and the command line, the command line option takes
-    precedence.</td>
-    <td><code>N/A</code></td>
-  </tr>
-  <tr>
-    <td><code>--port 2525</code></td>
-    <td>The port to run the main mountebank server on.</td>
-    <td><code>2525</code></td>
-  </tr>
-  <tr>
-    <td><code>--host mbserver.local</code></td>
-    <td>The hostname to bind the main mountebank server on.</td>
-    <td><em>all hosts</em></td>
-  </tr>
-  <tr>
-    <td><code>--datadir .mbdb</code></td>
-    <td>The root directory for the database. When used, mountebank will start all imposters saved in the
-    database initially and persist all operations to disk in real time, significantly reducing the memory footprint.
-
-    <p class='info-icon'>This option allows you to scale imposters with multiple processes (running on multiple
-    hosts behind a load balancer to avoid port collision), with the state of all processes synced in real time.
-    All mountebank processes will need to share the same volume.</td>
-
-    <td>Without this option, all configuration will be in memory. Keeping everything in memory can be a
-    significant performance hit when there is a lot of test data, for example, during proxy recording.</td>
-  </tr>
-  <tr>
-    <td><code>--configfile imposters.ejs</code></td>
-    <td>If present, mountebank will load the contents of the specified file.  See
-    <a href='#config-file'>below</a> for details.
-
-    <p class='warning-icon'>If both the <code>--datadir</code> and <code>--configfile</code> options are
-    used, mountebank will initially load all imposters from the <code>datadir</code> and then add all from
-    the <code>configfile</code>. This means that when the same imposter port is saved in both places, what
-    is in the <code>datadir</code> will be immediately overwritten by what's in the <code>configfile</code>!</p></td>
-    <td><code>N/A</code></td>
-  </tr>
-  <tr>
-    <td><code>--noParse</code></td>
-    <td>By default, mountebank will render config files through EJS templating to
-    allow modularizing rich configuration. Use this flag if you aren't using templating
-    and have special character sequences in your configuration that
-    cause rendering errors.</td>
-    <td><code>false</code></td>
-  </tr>
-  <tr>
-    <td><code>--logfile mb.log</code></td>
-    <td>The file for mountebank to store the logs in.  You can view the contents
-      on the <a href='/logs'>logs</a> page.  Please include this with any support
-      requests after running with <code>--loglevel debug</code>.</td>
-    <td><code>mb.log</code></td>
-  </tr>
-  <tr>
-    <td><code>--loglevel debug</code></td>
-    <td>The logging level, one of <code>debug, info, warn, error</code></td>
-    <td><code>info</code></td>
-  </tr>
-  <tr>
-    <td><code>--nologfile</code></td>
-    <td>Prevent logging to the filesystem</td>
-    <td><code>false</code></td>
-  </tr>
-  <tr>
-    <td><code>--allowInjection</code></td>
-    <td>mountebank supports JavaScript injection for <a href='/docs/api/predicates'>predicates</a>,
-      <a href='/docs/api/injection'>stub responses</a>, <a href='/docs/api/behaviors'>behavior decoration</a>,
-      <a href='/docs/api/behaviors'>wait behavior functions</a> and
-      <a href='/docs/protocols/tcp#endOfRequestResolver'>tcp request resolution</a>, but they are
-      disabled by default.  Including this parameter will enable them.
-
-      <p class='warning-icon'>Note that allowing injection means that an attacker can run random
-      code on the machine running <code>mb</code>. Please see the <a href='/docs/security'>security page</a>
-      for tips on securing your system.</p>
-    </td>
-    <td><code>false</code></td>
-  </tr>
-  <tr>
-    <td><code>--localOnly</code></td>
-    <td>Only accept requests from localhost. You should ALWAYS do this when running mountebank with
-        <code>--allowInjection</code> directly on your developer machine, but will need to use
-        <code>--ipWhitelist</code> otherwise (or if running in Docker),</td>
-    <td><code>false</code></td>
-  </tr>
-  <tr>
-    <td><code>--ipWhitelist</code></td>
-    <td>A pipe-delimited string of remote IP addresses to whitelist (local IP addresses will always
-    be allowed). Any request to the primary <code>mb</code> socket or an imposter socket that isn't
-    whitelisted will be dropped.</td>
-    <td><code>*</code>, representing all IP addresses</td>
-  </tr><tr>
-    <td><code>--origin</code></td>
-    <td>A safe origin for CORS requests. Use the flag multiple times to enable multiple origins.</td>
-    <td><code>false</code>, which disables CORS to prevent CSRF attacks.</td>
-  </tr>
-  <tr>
-    <td><code>--debug</code></td>
-    <td>Include a <code>matches</code> array with each stub in the body of a
-      <a href='/docs/api/overview#get-imposter'>GET imposter</a> response
-      for debugging why a particular stub did or did not match a request.
-      Every time a response from the stub is used, a match will be added containing
-      the request, the response configuration, the actual generated response (even
-      if it is proxied), and the overall processing time.
-    <td><code>false</code></td>
-  </tr>
-  <tr>
-    <td><code>--pidfile</code></td>
-    <td>The file where the pid is stored for the <code>stop</code> command</td>
-    <td><code>mb.pid</code></td>
-  </tr>
-  <tr>
-    <td><code>--version</code></td>
-    <td>Print the version out to the console and exit.</td>
-    <td><code>N/A</code></td>
-  </tr>
-  <tr>
-    <td><code>--savefile saved.json</code></td>
-    <td>The file to save imposters to when using the <code><a href='#save'>save</a></code> command</td>
-    <td><code>mb.json</code></td>
-  </tr>
-  <tr>
-    <td><code>--removeProxies</code></td>
-    <td>Remove proxies from the saved configuration (only relevant when using the
-      <code><a href='#save'>save</a></code> command). Corresponds to the
-      <code><a href='/docs/api/overview#get-imposters'>removeProxies</a></code> API
-      query parameter</td>
-    <td><code>false</code></td>
-  </tr>
-  <tr>
-    <td><code>--protofile</code></td>
-    <td>File to load custom <a href='/docs/protocols/custom'>protocol implementations</a> from.</td>
-    <td><code>protocols.json</code></td>
-  </tr>
-</table>
-
-<p>Note that <code>mb</code> is not persistent.  Stopping and restarting <code>mb</code>
-will lose all stubs and all requests.</p>
-
-<h2 id='save'>Saving mountebank configuration</h2>
-
-<p>While you can always use the <a href='/docs/api/overview'>API</a> to capture the current configuration
-of imposters, mountebank provides a convenient command line mechanism to save the configuration
-into a file that can be used to start a subsequent process of <code>mb</code> using the
-<code>--configfile</code> command line option. With a running <code>mb</code> process operating on port
-3000, you can execute the following command:</p>
-
-<pre><code>mb save --port 3000 --savefile saved.json --removeProxies</code></pre>
-
-<p>All of the parameters are optional with the defaults listed in the table above. You could then
-restart mountebank with the following command:</p>
-
-<pre><code>mb restart --port 3000 --configfile saved.json</code></pre>
-
-<h2 id='replay'>Switching to replay mode</h2>
-
-<p>Everything in mountebank is API-first, which means you can use the <a href='/docs/api/overview'>API</a>
-to remove proxies after you've captured the traffic you want. However, the <code>replay</code>
-command makes it easy to do this on the command line. Assuming you're running <code>mb</code> on port
-3000, you can execute the following command:</p>
-
-<pre><code>mb replay --port 3000</code></pre>
-
-<p>That will reset the imposter configuration by sending a <code>PUT</code> command to /imposters
-based on the current configuration, excluding the proxies (using the
-<code>?removeProxies=true</code> query parameter). This is a convenient way to switch from record
-mode using proxies to replay mode.</p>
+<p>Note that <code>mb</code> is not persistent by default. Absent the <code>datadir</code> option,
+stopping and restarting <code>mb</code> will lose all stubs and all requests.</p>
 
 <h2 id='config-file'>Config Files</h2>
 
 <p>Sometimes it's more convenient to load imposters via a config file rather than loading them on
-a per-test basis through the API.  The <code>--configfile</code> option supports that
+a per-test basis through the API.  The <code>configfile</code> option supports that
 by sending a <a href='/docs/api/overview#put-imposters'><code>PUT</code> command</a>
 to <code>/imposters</code>.  View the <a href='/docs/api/contracts?type=imposters'>JSON contract</a>
 to see what the contents should look like.</p>
 
 <p>Creating one file containing a set of complex configurations for multiple imposters
-can be unwieldy. Through the <code>--configfile</code> command line option, <code>mb</code>
+can be unwieldy. Through the <code>configfile</code> command line option, <code>mb</code>
 supports using <a href='https://github.com/tj/ejs'>EJS</a>
 templates, which allow you to put contents into separate files and use an
 <a href='https://github.com/tj/ejs#user-content-includes'>EJS include</a> directive to merge the
@@ -241,7 +78,7 @@ templating to turn them into JSON-friendly single line strings.</p>
 multi-line strings in separate files.  The example below is loosely based on the
 <a href='/docs/api/injection#response-injection'>response injection</a> example described on
 the Injection page, and shows the use of the <code>stringify</code> function. The path passed in
-to <code>stringify</code> is relative to the root file referenced in the <code>--configfile</code>
+to <code>stringify</code> is relative to the root file referenced in the <code>configfile</code>
 command line parameter. You can also pass a custom object, referenced as <code>data</code> in child
 templates, as the second parameter of <code>stringify</code>. This is useful if you want to reuse
 the same template but add some dynamic data. For an example, look at the <code>stringify</code> call in
@@ -251,7 +88,7 @@ templates/originServer.ejs below, and using the custom field in templates/origin
 initialize <code>mb</code> with the following command:</p>
 
 <pre><code>
-mb --configfile templates/imposters.ejs --allowInjection
+mb --configfile templates/imposters.ejs --allowInjection --localOnly
 </code></pre>
 
 <p>templates/imposters.ejs</p>
