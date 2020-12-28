@@ -80,7 +80,7 @@ function create (Protocol, creationRequest, baseLogger, config, isAllowedConnect
                 logger.debug(`using predicate match: ${JSON.stringify(match.stub.predicates || {})}`);
             }
             else {
-                logger.debug('no predicate match');
+                logger.info('no predicate match, using default response');
             }
             return match;
         });
