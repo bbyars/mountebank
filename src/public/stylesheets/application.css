@@ -39,6 +39,13 @@ header p {
     color: #2b2b2b;
 }
 
+#q {
+    position: absolute;
+    bottom: 70px;
+    left: 700px;
+    width: 18em;
+}
+
 header nav {
     position: absolute;
     bottom: 0;

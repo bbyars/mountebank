@@ -37,28 +37,23 @@
         <a href='/'><img src='/images/mountebank.png' alt='mountebank' /></a>
         <p>mountebank - over the wire test doubles</p>
 
+        <form method='GET' action='http://www.google.com/search'>
+          <input type='hidden' name='domains' value='www.mbtest.org' />
+          <input type='hidden' name='sitesearch' value='www.mbtest.org' />
+          <input type='search' name='q' id='q' results='5' autosave='mb' placeholder='Search...'/>
+          <input type='submit' value='Search...' id='searchButton' />
+        </form>
+
         <nav class='horizontal'>
           <ul>
             <li><a href='/'>home</a></li>
             <li><a href='/imposters'>imposters</a></li>
             <li><a href='/logs'>logs</a></li>
             <li><a href='/config'>config</a></li>
+            <li><a href='/metrics' title='Prometheus metrics'>metrics</a></li>
             <li><a href='/feed' class='feed-icon' title='subscribe for release updates'></a></li>
-            <li>
-              <form method='GET' action='http://www.google.com/search'>
-                <input type='hidden' name='domains' value='www.mbtest.org' />
-                <input type='hidden' name='sitesearch' value='www.mbtest.org' />
-                <input type='search' name='q' results='5' autosave='mb' placeholder='Search...' />
-                <input type='submit' value='Search...' id='searchButton' />
-              </form>
-            </li>
           </ul>
         </nav>
-
-        <a href='https://github.com/bbyars/mountebank'>
-          <img style='position: absolute; top: 0; right: 0; border: 0;'
-               src='/images/forkme_right_orange_ff7600.png' alt='Fork me on GitHub'>
-        </a>
       </header>
 
       <hr />
