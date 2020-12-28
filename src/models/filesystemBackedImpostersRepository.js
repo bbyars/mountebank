@@ -83,33 +83,26 @@
  * @module
  */
 
-const metrics = {};
-
-function registerMetrics () {
-    // Metrics can only be initialized once for the process, so we have to ensure
-    // a singleton pattern (should only matter for test runs)
-    if (Object.keys(metrics).length > 0) {
-        return;
-    }
-    const prometheus = require('prom-client');
-    metrics.lockAcquireDuration = new prometheus.Histogram({
-        name: 'mb_lock_acquire_duration_seconds',
-        help: 'Time it takes to acquire a file lock',
-        buckets: [0.1, 0.2, 0.5, 1, 3, 5, 10, 30],
-        labelNames: ['caller']
-    });
-    metrics.lockHoldDuration = new prometheus.Histogram({
-        name: 'mb_lock_hold_duration_seconds',
-        help: 'Time a file lock is held',
-        buckets: [0.1, 0.2, 0.5, 1, 2],
-        labelNames: ['caller']
-    });
-    metrics.lockErrors = new prometheus.Counter({
-        name: 'mb_lock_errors_total',
-        help: 'Number of lock errors',
-        labelNames: ['caller', 'code']
-    });
-}
+const prometheus = require('prom-client'),
+    metrics = {
+        lockAcquireDuration: new prometheus.Histogram({
+            name: 'mb_lock_acquire_duration_seconds',
+            help: 'Time it takes to acquire a file lock',
+            buckets: [0.1, 0.2, 0.5, 1, 3, 5, 10, 30],
+            labelNames: ['caller']
+        }),
+        lockHoldDuration: new prometheus.Histogram({
+            name: 'mb_lock_hold_duration_seconds',
+            help: 'Time a file lock is held',
+            buckets: [0.1, 0.2, 0.5, 1, 2],
+            labelNames: ['caller']
+        }),
+        lockErrors: new prometheus.Counter({
+            name: 'mb_lock_errors_total',
+            help: 'Number of lock errors',
+            labelNames: ['caller', 'code']
+        })
+    };
 
 /**
  * Creates the repository
@@ -123,8 +116,6 @@ function create (config, logger) {
         locks = 0;
     const Q = require('q'),
         imposterFns = {};
-
-    registerMetrics();
 
     function prettyError (err, filepath) {
         const errors = require('../util/errors');

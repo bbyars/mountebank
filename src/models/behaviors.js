@@ -5,6 +5,16 @@
  * @module
  */
 
+const prometheus = require('prom-client'),
+    metrics = {
+        behaviorDuration: new prometheus.Histogram({
+            name: 'mb_behavior_duration_seconds',
+            help: 'Time it takes to run all the behaviors',
+            buckets: [0.05, 0.1, 0.2, 0.5, 1, 3],
+            labelNames: ['imposter']
+        })
+    };
+
 // The following schemas are used by both the lookup and copy behaviors and should be kept consistent
 const fromSchema = {
         _required: true,
@@ -516,6 +526,7 @@ function execute (request, response, behaviors, logger, imposterState) {
         return result;
     }
 
+    const observeBehaviorDuration = metrics.behaviorDuration.startTimer();
     logger.debug('using stub response behavior ' + JSON.stringify(behaviors));
     behaviors.forEach(behavior => {
         Object.keys(behavior).forEach(key => {
@@ -524,7 +535,10 @@ function execute (request, response, behaviors, logger, imposterState) {
             }
         });
     });
-    return result;
+    return result.then(transformed => {
+        observeBehaviorDuration({ imposter: logger.scopePrefix });
+        return transformed;
+    });
 }
 
 module.exports = {

@@ -5,6 +5,21 @@
  * @module
  */
 
+const prometheus = require('prom-client'),
+    metrics = {
+        proxyDuration: new prometheus.Histogram({
+            name: 'mb_proxy_duration_seconds',
+            help: 'Time it takes to get the response from the downstream service',
+            buckets: [0.1, 0.2, 0.5, 1, 3, 5, 10, 30],
+            labelNames: ['imposter']
+        }),
+        proxyCount: new prometheus.Counter({
+            name: 'mb_proxy_total',
+            help: 'Number of times a request was proxied to a downstream service',
+            labelNames: ['imposter']
+        })
+    };
+
 /**
  * Creates the resolver
  * @param {Object} stubs - The stubs repository
@@ -246,8 +261,11 @@ function create (stubs, proxy, callbackURL) {
 
     function proxyAndRecord (responseConfig, request, logger, requestDetails, imposterState) {
         const Q = require('q'),
+            behaviors = require('./behaviors'),
             startTime = new Date(),
-            behaviors = require('./behaviors');
+            observeProxyDuration = metrics.proxyDuration.startTimer();
+
+        metrics.proxyCount.inc({ imposter: logger.scopePrefix });
 
         if (['proxyOnce', 'proxyAlways', 'proxyTransparent'].indexOf(responseConfig.proxy.mode) < 0) {
             responseConfig.proxy.mode = 'proxyOnce';
@@ -255,6 +273,7 @@ function create (stubs, proxy, callbackURL) {
 
         if (inProcessProxy) {
             return proxy.to(responseConfig.proxy.to, request, responseConfig.proxy, requestDetails).then(response => {
+                observeProxyDuration({ imposter: logger.scopePrefix });
                 response._proxyResponseTime = new Date() - startTime;
 
                 // Run behaviors here to persist decorated response
@@ -267,8 +286,9 @@ function create (stubs, proxy, callbackURL) {
             pendingProxyResolutions[nextProxyResolutionKey] = {
                 responseConfig: responseConfig,
                 request: request,
-                startTime: new Date(),
-                requestDetails: requestDetails
+                requestDetails: requestDetails,
+                observeProxyDuration: observeProxyDuration,
+                startTime: startTime
             };
             nextProxyResolutionKey += 1;
             return Q({
@@ -365,6 +385,7 @@ function create (stubs, proxy, callbackURL) {
             Q = require('q');
 
         if (pendingProxyConfig) {
+            pendingProxyConfig.observeProxyDuration({ imposter: logger.scopePrefix });
             proxyResponse._proxyResponseTime = new Date() - pendingProxyConfig.startTime;
 
             return behaviors.execute(pendingProxyConfig.request, proxyResponse, pendingProxyConfig.responseConfig.behaviors, logger, imposterState)

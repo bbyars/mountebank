@@ -8,6 +8,38 @@
  * @module
  */
 
+
+const prometheus = require('prom-client'),
+    metrics = {
+        predicateMatchDuration: new prometheus.Histogram({
+            name: 'mb_predicate_match_duration_seconds',
+            help: 'Time it takes to match the predicates and select a stub',
+            buckets: [0.01, 0.05, 0.1, 0.2, 0.5, 1],
+            labelNames: ['imposter']
+        }),
+        noMatchCount: new prometheus.Counter({
+            name: 'mb_no_match_total',
+            help: 'Number of times no stub matched the request',
+            labelNames: ['imposter']
+        }),
+        requestCount: new prometheus.Counter({
+            name: 'mb_request_total',
+            help: 'Number of requests to the imposter',
+            labelNames: ['imposter']
+        }),
+        responseGenerationDuration: new prometheus.Histogram({
+            name: 'mb_response_generation_duration_seconds',
+            help: 'Time it takes to generate the response from a stub',
+            buckets: [0.01, 0.05, 0.1, 0.2, 0.5, 1, 3, 5, 10, 30],
+            labelNames: ['imposter']
+        }),
+        blockedIPCount: new prometheus.Counter({
+            name: 'mb_blocked_ip_total',
+            help: 'Number of times a connection was blocked from a non-whitelisted IP address',
+            labelNames: ['imposter']
+        })
+    };
+
 function createErrorHandler (deferred, port) {
     return error => {
         const errors = require('../util/errors');
@@ -69,17 +101,20 @@ function create (Protocol, creationRequest, baseLogger, config, isAllowedConnect
 
     function findFirstMatch (request) {
         const filter = stubPredicates => {
-            const predicates = require('./predicates');
+                const predicates = require('./predicates');
 
-            return stubPredicates.every(predicate =>
-                predicates.evaluate(predicate, request, encoding, logger, imposterState));
-        };
+                return stubPredicates.every(predicate =>
+                    predicates.evaluate(predicate, request, encoding, logger, imposterState));
+            },
+            observePredicateMatchDuration = metrics.predicateMatchDuration.startTimer();
 
         return stubs.first(filter).then(match => {
+            observePredicateMatchDuration({ imposter: logger.scopePrefix });
             if (match.success) {
                 logger.debug(`using predicate match: ${JSON.stringify(match.stub.predicates || {})}`);
             }
             else {
+                metrics.noMatchCount.inc({ imposter: logger.scopePrefix });
                 logger.info('no predicate match, using default response');
             }
             return match;
@@ -114,23 +149,28 @@ function create (Protocol, creationRequest, baseLogger, config, isAllowedConnect
     // without having to change the path / query options on the stored request
     function getResponseFor (request, requestDetails) {
         if (!isAllowedConnection(request.ip, logger)) {
+            metrics.blockedIPCount.inc({ imposter: logger.scopePrefix });
             return Q({ blocked: true, code: 'unauthorized ip address' });
         }
 
         const start = new Date();
 
+        metrics.requestCount.inc({ imposter: logger.scopePrefix });
         numberOfRequests += 1;
         if (recordRequests) {
             stubs.addRequest(request);
         }
 
         return findFirstMatch(request).then(match => {
+            const observeResponseGenerationDuration = metrics.responseGenerationDuration.startTimer();
+
             return match.stub.nextResponse().then(responseConfig => {
                 logger.debug(`generating response from ${JSON.stringify(responseConfig)}`);
                 return resolver.resolve(responseConfig, request, logger, imposterState, requestDetails).then(response => {
                     if (config.recordMatches) {
                         return recordMatch(match.stub, request, response, responseConfig, start).then(() => response);
                     }
+                    observeResponseGenerationDuration({ imposter: logger.scopePrefix });
                     return response;
                 });
             });
