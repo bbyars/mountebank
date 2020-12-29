@@ -870,6 +870,7 @@ Connection: keep-alive
     "localOnly": true, <% if (process.env.MB_PERSISTENT === 'true') { %>
     "datadir": ".mbdb", <% } %>
     "noParse": false,
+    "formatter": "mountebank-formatters",
     "ipWhitelist": [
       "*"
     ],

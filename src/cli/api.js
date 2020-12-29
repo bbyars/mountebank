@@ -63,7 +63,7 @@ function logConnectionErrorAndExit (options, err) {
 }
 
 function loadConfig (options) {
-    const formatter = require('mountebank-formatters'),
+    const formatter = require(options.formatter),
         Q = require('q');
 
     return Q(formatter.load(options))
@@ -77,7 +77,7 @@ function loadConfig (options) {
 }
 
 function save (options) {
-    const formatter = require('mountebank-formatters'),
+    const formatter = require(options.formatter),
         Q = require('q');
 
     getImposters(options)
