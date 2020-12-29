@@ -1,7 +1,10 @@
 FROM node:14-alpine
 
-COPY package*.json bin src releases.json ./
+WORKDIR /app
+COPY bin/ bin/
+COPY src/ src/
+COPY package*.json releases.json LICENSE README.md ./
 RUN npm install --production && npm cache clean -f
 
 EXPOSE 2525
-CMD ["mb"]
+ENTRYPOINT ["node", "bin/mb"]
