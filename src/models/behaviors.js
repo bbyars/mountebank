@@ -346,6 +346,7 @@ function globalStringReplace (str, substring, newSubstring, logger) {
 function globalObjectReplace (obj, replacer) {
     const isObject = require('../util/helpers').isObject;
 
+    var renames = {};
     Object.keys(obj).forEach(key => {
         if (typeof obj[key] === 'string') {
             obj[key] = replacer(obj[key]);
@@ -353,6 +354,14 @@ function globalObjectReplace (obj, replacer) {
         else if (isObject(obj[key])) {
             globalObjectReplace(obj[key], replacer);
         }
+        var newKey = replacer(key);
+        if (newKey !== key) {
+            renames[key] = newKey;
+        }
+    });
+    Object.keys(renames).forEach(key => {
+        obj[renames[key]] = obj[key];
+        delete obj[key];
     });
 }
 
