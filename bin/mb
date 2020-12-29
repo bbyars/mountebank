@@ -39,7 +39,12 @@ function serverAt (options) {
             process.on('SIGINT', shutdown);
             process.on('SIGTERM', shutdown);
 
-            return api.loadConfig(options, server);
+            if (options.configfile) {
+                return api.loadConfig(options, server);
+            }
+            else {
+                return Q();
+            }
         }).then(() => {
             // Useful for build plugins that need to wait for mb to be fully initialized
             // They can wait for the pidfile to be written
@@ -87,7 +92,7 @@ function serverAt (options) {
     }
 
     function restart () {
-        return stop().then(start).done();
+        stop().then(start).done();
     }
 
     return {

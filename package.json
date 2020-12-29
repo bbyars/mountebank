@@ -1,6 +1,5 @@
 {
   "name": "mountebank",
-  "preferGlobal": true,
   "version": "2.4.0",
   "author": "Brandon Byars <brandon.byars@gmail.com>",
   "description": "Over the wire test doubles",
@@ -48,6 +47,7 @@
     "https-proxy-agent": "5.0.0",
     "jsonpath-plus": "4.0.0",
     "mailparser": "3.0.1",
+    "mountebank-formatters": "0.0.2",
     "nodemailer": "6.4.17",
     "prom-client": "13.0.0",
     "proper-lockfile": "4.1.1",
@@ -81,11 +81,6 @@
   },
   "engines": {
     "node": ">=10"
-  },
-  "greenkeeper": {
-    "ignore": [
-      "q"
-    ]
   },
   "snyk": true,
   "contributors": [
