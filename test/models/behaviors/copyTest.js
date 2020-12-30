@@ -347,6 +347,23 @@ describe('behaviors', function () {
             });
         });
 
+        promiseIt('should support replacing token key with jsonpath selector', function () {
+            const request = { field: JSON.stringify({ name: 'mountebank' }) },
+                response = { data: { '${you}': '${you}' } },
+                logger = Logger.create(),
+                config = {
+                    copy: {
+                        from: 'field',
+                        into: '${you}',
+                        using: { method: 'jsonpath', selector: '$..name' }
+                    }
+                };
+
+            return behaviors.execute(request, response, [config], logger).then(actualResponse => {
+                assert.deepEqual(actualResponse, { data: { mountebank: 'mountebank' } });
+            });
+        });
+
         promiseIt('should not replace token if jsonpath selector does not match', function () {
             const request = { field: JSON.stringify({ name: 'mountebank' }) },
                 response = { data: 'Hello, ${you}' },
