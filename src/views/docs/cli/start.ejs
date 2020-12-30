@@ -52,6 +52,19 @@ official site only contains the latest docs. The following options are available
     <td><code>N/A</code></td>
   </tr>
   <tr>
+    <td><code>--formatter path/to/module</code></td>
+    <td>Historically, mountebank supported EJS templating when using the <code>configfile</code> option,
+    and was limited to saving all configuration in a single file when calling <code>mb save</code>. For
+    backwards compatibility, that remains the default option, even though EJS has subsequently made
+    breaking changes.
+
+    <p>A custom formatter allows you to save test data in whatever format you want (including in ways
+    that convert between other service virtualization products). See <a href='#custom-formatters'>below</a>
+    for more details. In the context of <code>mb start</code>, the formatter will be used to parse the <code>configfile</code>.</p>
+    </td>
+    <td><a href='https://github.com/bbyars/mountebank-formatters'>mountebank-formatters</a></td>
+  </tr>
+  <tr>
     <td><code>--noParse</code></td>
     <td>By default, mountebank will render config files through EJS templating to
     allow modularizing rich configuration. Use this flag if you aren't using templating

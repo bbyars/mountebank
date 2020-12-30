@@ -37,6 +37,15 @@ restart mountebank with the following command:</p>
     <td><code>mb.json</code></td>
   </tr>
   <tr>
+    <td><code>--formatter path/to/module</code></td>
+    <td>Historically, mountebank was limited to saving all configuration in a single file when
+    calling <code>mb save</code>. A custom formatter allows you to save test data in whatever format
+    you want (including in ways that convert between other service virtualization products). See
+    <a href='#custom-formatters'>below</a> for more details.</p>
+    </td>
+    <td><a href='https://github.com/bbyars/mountebank-formatters'>mountebank-formatters</a></td>
+  </tr>
+  <tr>
     <td><code>--removeProxies</code></td>
     <td>Remove proxies from the saved configuration, useful when you want to switch
         from record to replay mode. Corresponds to the

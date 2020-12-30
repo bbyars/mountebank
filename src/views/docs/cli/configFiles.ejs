@@ -1,0 +1,134 @@
+<p>The default <code>formatter</code> for mountebank allows you to use EJS (version 2.x) templates
+to split the test data into multiple files. This is particularly useful for separating out JavaScript injection
+functions and XML or JSON HTTP response bodies because you store them as multi-line files and rely on
+templating to turn them into JSON-friendly single line strings. It remains the default for backwards
+compatibility, even though EJS 3.x has made breaking changes.</p>
+
+<p>mountebank will pass a <code>stringify</code> function into your templates that allows you to put
+multi-line strings in separate files.  The example below is loosely based on the
+<a href='/docs/api/injection#response-injection'>response injection</a> example described on
+the Injection page, and shows the use of the <code>stringify</code> function. The path passed in
+to <code>stringify</code> is relative to the root file referenced in the <code>configfile</code>
+command line parameter. You can also pass a custom object, referenced as <code>data</code> in child
+templates, as the second parameter of <code>stringify</code>. This is useful if you want to reuse
+the same template but add some dynamic data. For an example, look at the <code>stringify</code> call in
+templates/originServer.ejs below, and using the custom field in templates/originXMLResponse.ejs.</p>
+
+<p>Assuming the files below are in a relative directory called <code>templates</code>, you can
+initialize <code>mb</code> with the following command:</p>
+
+<pre><code>mb --configfile templates/imposters.ejs --allowInjection --localOnly</code></pre>
+
+<p>templates/imposters.ejs</p>
+<pre><code>{
+  "imposters": [
+    &lt;% include originServer.ejs %&gt;,
+    &lt;% include proxyServer.ejs %&gt;
+  ]
+}</code></pre>
+
+<p>templates/originServer.ejs</p>
+<pre><code>{
+  "port": 5555,
+  "protocol": "http",
+  "name": "origin",
+  "stubs": [
+    {
+      "predicates": [{ "contains": { "headers": { "Content-Type": "xml" } } }],
+      "responses": [{ "is": { "body": "&lt;%- stringify('originXMLResponse.ejs', { value: 'first }) %&gt;" }}]
+    },
+    {
+      "responses": [{ "inject": "&lt;%- stringify('originServerResponse.ejs') %&gt;" }]
+    }
+  ]
+}</code></pre>
+
+<p>templates/originXMLResponse.ejs</p>
+<pre><code>&lt;rootNode&gt;
+  &lt;childNode&gt;<%= '<' + '%= data.value %' + '>' %>&lt;/childNode&gt;
+&lt;/rootNode&gt;</code></pre>
+
+<p>templates/originServerResponse.ejs</p>
+<pre><code>(request, state, logger) => {
+    logger.info('origin called');
+    state.requests = state.requests || 0;
+    state.requests += 1;
+    return {
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ count: state.requests })
+    };
+}</code></pre>
+
+<p>templates/proxyServer.ejs</p>
+<pre><code>{
+  "port": 4546,
+  "protocol": "http",
+  "name": "proxy",
+  "stubs": [
+    {
+      "responses": [{ "inject": "&lt;%- stringify('counter.ejs') %&gt;" }],
+      "predicates": [{
+        "equals": {
+          "method": "GET",
+          "path": "/counter"
+        }
+      }]
+    },
+    {
+      "responses": [{ "inject": "&lt;%- stringify('proxy.ejs') %&gt;" }]
+    }
+  ]
+}</code></pre>
+
+<p>templates/counter.ejs</p>
+<pre><code>function (request, state) {
+    var count = state.requests ? Object.keys(state.requests).length : 0,
+        util = require('util');
+
+    return {
+        body: util.format('There have been %s proxied calls', count)
+    };
+}</code></pre>
+
+<p>templates/proxy.ejs</p>
+<pre><code>function (request, state, logger, callback) {
+    var cacheKey = request.method + ' ' + request.path;
+
+    if (typeof state.requests === 'undefined') {
+        state.requests = {};
+    }
+
+    if (state.requests[cacheKey]) {
+        logger.info('Using previous response');
+        callback(state.requests[cacheKey]);
+    }
+
+    var http = require('http'),
+        options = {
+            method: request.method,
+            hostname: 'localhost',
+            port: 5555,
+            path: request.path,
+            headers: request.headers
+        },
+        httpRequest = http.request(options, response => {
+            var body = '';
+            response.setEncoding('utf8');
+            response.on('data', chunk => {
+                body += chunk;
+            });
+            response.on('end', () => {
+                var stubResponse = {
+                        statusCode: response.statusCode,
+                        headers: response.headers,
+                        body
+                    };
+                logger.info('Successfully proxied: ' + JSON.stringify(stubResponse));
+                state.requests[cacheKey] = stubResponse;
+                callback(stubResponse);
+            });
+        });
+    httpRequest.end();
+}</code></pre>

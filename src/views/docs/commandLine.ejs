@@ -11,6 +11,8 @@ description = 'Command line parameters for starting mountebank'
 
 <pre><code>mb [command=start] [options...]</code></pre>
 
+<h2>mountebank commands</h2>
+
 <p>As mountebank has grown in functionality, the number of commands and options
 has increased significantly. The links below attempt to simplify that configuration
 based on the core mountebank commands.</p>
@@ -54,169 +56,37 @@ based on the core mountebank commands.</p>
   </div>
 </section>
 
+<h2>Saving test data: config files and formatters</h2>
+
 <p>Note that <code>mb</code> is not persistent by default. Absent the <code>datadir</code> option,
-stopping and restarting <code>mb</code> will lose all stubs and all requests.</p>
+stopping and restarting <code>mb</code> will lose all stubs and all requests. The following two
+<code>mb</code> commands work in tandem to allow you to save and reload test data:</p>
 
-<h2 id='config-file'>Config Files</h2>
+<pre><code>mb save --savefile mb.json --formatter path/to/module
+mb restart --configfile mb.json --formatter path/to/module</code></pre>
 
-<p>Sometimes it's more convenient to load imposters via a config file rather than loading them on
-a per-test basis through the API.  The <code>configfile</code> option supports that
-by sending a <a href='/docs/api/overview#put-imposters'><code>PUT</code> command</a>
-to <code>/imposters</code>.  View the <a href='/docs/api/contracts?type=imposters'>JSON contract</a>
+<p>The <code>configfile</code> sends a <a href='/docs/api/overview#change-stubs'><code>PUT</code> command</a>
+to <code>/imposters</code>. View the <a href='/docs/api/contracts?type=imposters'>JSON contract</a>
 to see what the contents should look like.</p>
 
-<p>Creating one file containing a set of complex configurations for multiple imposters
-can be unwieldy. Through the <code>configfile</code> command line option, <code>mb</code>
-supports using <a href='https://github.com/tj/ejs'>EJS</a>
-templates, which allow you to put contents into separate files and use an
-<a href='https://github.com/tj/ejs#user-content-includes'>EJS include</a> directive to merge the
-contents into one file.  This is particularly useful for separating out JavaScript injection
-functions and XML or JSON HTTP response bodies because you store them as multi-line files and rely on
-templating to turn them into JSON-friendly single line strings.</p>
+<p>The <code>formatter</code> is optional. If specified, it gives you total control over the format of
+the test data saved to disk, which allows you to split the content in separate files or convert
+to a format used by other service virtualization tools. The links below describe the default
+formatter for configuration files as well as how to define a custom formatter.</p>
 
-<p>mountebank will pass a <code>stringify</code> function into your templates that allows you to put
-multi-line strings in separate files.  The example below is loosely based on the
-<a href='/docs/api/injection#response-injection'>response injection</a> example described on
-the Injection page, and shows the use of the <code>stringify</code> function. The path passed in
-to <code>stringify</code> is relative to the root file referenced in the <code>configfile</code>
-command line parameter. You can also pass a custom object, referenced as <code>data</code> in child
-templates, as the second parameter of <code>stringify</code>. This is useful if you want to reuse
-the same template but add some dynamic data. For an example, look at the <code>stringify</code> call in
-templates/originServer.ejs below, and using the custom field in templates/originXMLResponse.ejs.</p>
-
-<p>Assuming the files below are in a relative directory called <code>templates</code>, you can
-initialize <code>mb</code> with the following command:</p>
-
-<pre><code>
-mb --configfile templates/imposters.ejs --allowInjection --localOnly
-</code></pre>
-
-<p>templates/imposters.ejs</p>
-<pre><code>
-{
-  "imposters": [
-    &lt;% include originServer.ejs %&gt;,
-    &lt;% include proxyServer.ejs %&gt;
-  ]
-}
-</code></pre>
-
-<p>templates/originServer.ejs</p>
-<pre><code>
-{
-  "port": 5555,
-  "protocol": "http",
-  "name": "origin",
-  "stubs": [
-    {
-      "predicates": [{ "contains": { "headers": { "Content-Type": "xml" } } }],
-      "responses": [{ "is": { "body": "&lt;%- stringify('originXMLResponse.ejs', { value: 'first }) %&gt;" }}]
-    },
-    {
-      "responses": [{ "inject": "&lt;%- stringify('originServerResponse.ejs') %&gt;" }]
-    }
-  ]
-}
-</code></pre>
-
-<p>templates/originXMLResponse.ejs</p>
-<pre><code>
-&lt;rootNode&gt;
-  &lt;childNode&gt;<%= '<' + '%= data.value %' + '>' %>&lt;/childNode&gt;
-&lt;/rootNode&gt;
-</code></pre>
-
-<p>templates/originServerResponse.ejs</p>
-<pre><code>
-(request, state, logger) => {
-    logger.info('origin called');
-    state.requests = state.requests || 0;
-    state.requests += 1;
-    return {
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ count: state.requests })
-    };
-}
-</code></pre>
-
-<p>templates/proxyServer.ejs</p>
-<pre><code>
-{
-  "port": 4546,
-  "protocol": "http",
-  "name": "proxy",
-  "stubs": [
-    {
-      "responses": [{ "inject": "&lt;%- stringify('counter.ejs') %&gt;" }],
-      "predicates": [{
-        "equals": {
-          "method": "GET",
-          "path": "/counter"
-        }
-      }]
-    },
-    {
-      "responses": [{ "inject": "&lt;%- stringify('proxy.ejs') %&gt;" }]
-    }
-  ]
-}
-</code></pre>
-
-<p>templates/counter.ejs</p>
-<pre><code>
-function (request, state) {
-    var count = state.requests ? Object.keys(state.requests).length : 0,
-        util = require('util');
-
-    return {
-        body: util.format('There have been %s proxied calls', count)
-    };
-}
-</code></pre>
-
-<p>templates/proxy.ejs</p>
-<pre><code>
-function (request, state, logger, callback) {
-    var cacheKey = request.method + ' ' + request.path;
-
-    if (typeof state.requests === 'undefined') {
-        state.requests = {};
-    }
-
-    if (state.requests[cacheKey]) {
-        logger.info('Using previous response');
-        callback(state.requests[cacheKey]);
-    }
-
-    var http = require('http'),
-        options = {
-            method: request.method,
-            hostname: 'localhost',
-            port: 5555,
-            path: request.path,
-            headers: request.headers
-        },
-        httpRequest = http.request(options, response => {
-            var body = '';
-            response.setEncoding('utf8');
-            response.on('data', chunk => {
-                body += chunk;
-            });
-            response.on('end', () => {
-                var stubResponse = {
-                        statusCode: response.statusCode,
-                        headers: response.headers,
-                        body
-                    };
-                logger.info('Successfully proxied: ' + JSON.stringify(stubResponse));
-                state.requests[cacheKey] = stubResponse;
-                callback(stubResponse);
-            });
-        });
-    httpRequest.end();
-}
-</code></pre>
+<section class='accordion'>
+    <div>
+        <a class='section-toggler' id='config-files' name='config-files' href='#config-files'>Default config file parsing</a>
+        <section>
+            <% include cli/configFiles %>
+        </section>
+    </div>
+    <div>
+        <a class='section-toggler' id='custom-formatters' name='custom-formatters' href='#custom-formatters'>Custom formatters</a>
+        <section>
+            <% include cli/customFormatters %>
+        </section>
+    </div>
+</section>
 
 <% include ../_footer %>

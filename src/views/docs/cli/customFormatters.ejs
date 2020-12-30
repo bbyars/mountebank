@@ -1,0 +1,53 @@
+<p>A <code>formatter</code> is a CommonJS module that exports two functions: <code>load</code>, used
+to load the configuration when the <code>configfile</code> option is passed to <code>mb start</code>,
+and <code>save</code>, used to save the configuration for <code>mb save</code>. The formatter
+gives you total control over how the test data is stored, allowing you to improve readability
+(which suffers by default from JSON's single line requirement for strings) or to convert between
+formats of other service virtualization tools.</p>
+
+<p>The <a href='https://github.com/bbyars/mountebank-formatters'>default formatter</a> that ships with mountebank is
+described above ("Default config file parsing"). The example below shows a simple (and silly) formatter
+that encodes all data as Base64.</p>
+
+<pre><code>'use strict';
+
+function encode (obj) {
+    return Buffer.from(JSON.stringify(obj)).toString('base64');
+}
+
+function decode (text) {
+    return Buffer.from(text, 'base64').toString('utf8');
+}
+
+function load (options) {
+    const fs = require('fs'),
+        contents = fs.readFileSync(options.configfile, { encoding: 'utf8' });
+    return JSON.parse(decode(contents));
+}
+
+function save (options, imposters) {
+    const fs = require('fs');
+
+    if (options.customName && imposters.imposters.length > 0) {
+        imposters.imposters[0].name = options.customName;
+    }
+    fs.writeFileSync(options.savefile, encode(imposters));
+}
+
+module.exports = { load, save };</code></pre>
+
+<p class='info-icon'>All CLI options are passed to both the <code>load</code> and <code>save</code> functions, allowing
+you to define custom options specific to your formatter. You can see an example of this in the
+<code>save</code> function, which takes a <code>customName</code> option and makes it the saved
+name of the first imposter.</p>
+
+<p class='info-icon'>The code above shows a synchronous implementation, but mountebank will accept
+a promise return value.</p>
+
+<p>Assuming the module is saved as 'customFormatter.js', the following commands will use it
+for saving and loading:</p>
+
+<pre><code>mb save --savefile mb.json --formatter customFormatter
+mb restart --configfile mb.json --formatter customFormatter</code></pre>
+
+
