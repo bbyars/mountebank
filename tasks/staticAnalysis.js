@@ -160,4 +160,35 @@ module.exports = function (grunt) {
             done();
         });
     });
+
+    grunt.registerTask('licenseCheck', 'Check for restrictive licenses', function () {
+        var done = this.async(),
+            checker = require('license-checker'),
+            validLicenses = ['MIT', 'ISC', 'Apache', 'BSD'];
+
+        checker.init({
+            start: path.join(__dirname, '..'),
+            production: true
+        }, function (err, packages) {
+            if (err) {
+                throw err;
+            }
+            else {
+                const failures = {};
+                Object.keys(packages).forEach(name => {
+                    const supported = validLicenses.some(license => {
+                        return packages[name].licenses.indexOf(license) >= 0;
+                    });
+                    if (!supported) {
+                        failures[name] = packages[name];
+                    }
+                });
+                if (Object.keys(failures).length > 0) {
+                    console.error(JSON.stringify(failures, null, 2));
+                    grunt.warn('The licenses above are not accepted. Either change the dependency or add the license to the valid list.');
+                }
+                done();
+            }
+        });
+    });
 };

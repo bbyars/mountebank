@@ -73,6 +73,7 @@
     "istanbul": "0.4.5",
     "jsdoc": "3.6.6",
     "jsdom": "16.4.0",
+    "license-checker": "25.0.1",
     "mocha": "8.2.1",
     "nc": "1.0.3",
     "snyk": "1.437.3",

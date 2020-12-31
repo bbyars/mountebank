@@ -116,7 +116,7 @@ module.exports = grunt => {
     grunt.registerTask('test:performance', 'Run the performance tests', ['mochaTest:performance']);
     grunt.registerTask('test:dbPerformance', 'Run the database performance tests', ['mochaTest:dbPerformance']);
     grunt.registerTask('test', 'Run all non-performance tests', ['test:unit', 'test:functional']);
-    grunt.registerTask('lint', 'Run all lint checks', ['jsCheck', 'deadCheck', 'eslint']);
+    grunt.registerTask('lint', 'Run all lint checks', ['jsCheck', 'deadCheck', 'eslint', 'licenseCheck']);
     grunt.registerTask('default', ['lint', 'test']);
     grunt.registerTask('airplane', 'Build that avoids tests requiring network access', ['setAirplaneMode', 'default']);
 
