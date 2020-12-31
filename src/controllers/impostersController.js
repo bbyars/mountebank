@@ -40,8 +40,7 @@ function create (protocols, imposters, logger, allowInjection) {
     }
 
     function validate (request) {
-        const Q = require('q'),
-            errors = [],
+        const errors = [],
             compatibility = require('../models/compatibility');
 
         compatibility.upcast(request);
@@ -50,7 +49,7 @@ function create (protocols, imposters, logger, allowInjection) {
         validateProtocol(request.protocol, errors);
 
         if (errors.length > 0) {
-            return Q({ isValid: false, errors });
+            return Promise.resolve({ isValid: false, errors });
         }
         else {
             const Protocol = protocols[request.protocol],
@@ -80,12 +79,10 @@ function create (protocols, imposters, logger, allowInjection) {
         return `${helpers.socketName(request.socket)} => ${JSON.stringify(request.body)}`;
     }
 
-    function getAllJSON (queryOptions) {
-        const Q = require('q');
-        return imposters.all().then(allImposters => {
-            const promises = allImposters.map(imposter => imposter.toJSON(queryOptions));
-            return Q.all(promises);
-        });
+    async function getAllJSON (queryOptions) {
+        const allImposters = await imposters.all(),
+            promises = allImposters.map(imposter => imposter.toJSON(queryOptions));
+        return Promise.all(promises);
     }
 
     /**
@@ -95,20 +92,19 @@ function create (protocols, imposters, logger, allowInjection) {
      * @param {Object} response - the HTTP response
      * @returns {Object} - the promise
      */
-    function get (request, response) {
+    async function get (request, response) {
         const url = require('url'),
             query = url.parse(request.url, true).query,
             options = {
                 replayable: queryBoolean(query, 'replayable'),
                 removeProxies: queryBoolean(query, 'removeProxies'),
                 list: !(queryBoolean(query, 'replayable') || queryBoolean(query, 'removeProxies'))
-            };
+            },
+            impostersJSON = await getAllJSON(options);
 
-        return getAllJSON(options).then(impostersJSON => {
-            response.format({
-                json: () => { response.send({ imposters: impostersJSON }); },
-                html: () => { response.render('imposters', { imposters: impostersJSON }); }
-            });
+        response.format({
+            json: () => response.send({ imposters: impostersJSON }),
+            html: () => response.render('imposters', { imposters: impostersJSON })
         });
     }
 
@@ -119,30 +115,28 @@ function create (protocols, imposters, logger, allowInjection) {
      * @param {Object} response - the HTTP response
      * @returns {Object} A promise for testing purposes
      */
-    function post (request, response) {
+    async function post (request, response) {
         logger.debug(requestDetails(request));
+        const validation = await validate(request.body),
+            protocol = request.body.protocol;
 
-        return validate(request.body).then(validation => {
-            const Q = require('q'),
-                protocol = request.body.protocol;
+        if (validation.isValid) {
+            try {
+                const imposter = await protocols[protocol].createImposterFrom(request.body);
+                await imposters.add(imposter);
+                const json = await imposter.toJSON();
 
-            if (!validation.isValid) {
-                respondWithValidationErrors(response, validation.errors);
-                return Q(false);
+                response.setHeader('Location', imposter.url);
+                response.statusCode = 201;
+                response.send(json);
             }
-
-            return protocols[protocol].createImposterFrom(request.body)
-                .then(imposter => imposters.add(imposter))
-                .then(imposter => {
-                    response.setHeader('Location', imposter.url);
-                    response.statusCode = 201;
-                    return imposter.toJSON();
-                }).then(json => {
-                    response.send(json);
-                }, error => {
-                    respondWithCreationError(response, error);
-                });
-        });
+            catch (error) {
+                respondWithCreationError(response, error);
+            }
+        }
+        else {
+            respondWithValidationErrors(response, validation.errors);
+        }
     }
 
     /**
@@ -152,22 +146,18 @@ function create (protocols, imposters, logger, allowInjection) {
      * @param {Object} response - the HTTP response
      * @returns {Object} A promise for testing purposes
      */
-    function del (request, response) {
+    async function del (request, response) {
         const url = require('url'),
             query = url.parse(request.url, true).query,
             options = {
                 // default to replayable for backwards compatibility
                 replayable: queryIsFalse(query, 'replayable'),
                 removeProxies: queryBoolean(query, 'removeProxies')
-            };
-        let json;
+            },
+            json = await getAllJSON(options);
 
-        return getAllJSON(options).then(impostersJSON => {
-            json = impostersJSON;
-            return imposters.deleteAll();
-        }).then(() => {
-            response.send({ imposters: json });
-        });
+        await imposters.deleteAll();
+        response.send({ imposters: json });
     }
 
     /**
@@ -177,9 +167,8 @@ function create (protocols, imposters, logger, allowInjection) {
      * @param {Object} response - the HTTP response
      * @returns {Object} A promise for testing purposes
      */
-    function put (request, response) {
-        const Q = require('q'),
-            requestImposters = request.body.imposters || [],
+    async function put (request, response) {
+        const requestImposters = request.body.imposters || [],
             validationPromises = requestImposters.map(imposter => validate(imposter));
 
         logger.debug(requestDetails(request));
@@ -188,36 +177,34 @@ function create (protocols, imposters, logger, allowInjection) {
             respondWithValidationErrors(response, [
                 exceptions.ValidationError("'imposters' is a required field")
             ]);
-            return Q(false);
+            return false;
         }
 
-        return Q.all(validationPromises).then(validations => {
-            const isValid = validations.every(validation => validation.isValid);
-            let allImposters;
+        const validations = await Promise.all(validationPromises),
+            isValid = validations.every(validation => validation.isValid);
 
-            if (!isValid) {
-                const validationErrors = validations.reduce((accumulator, validation) => accumulator.concat(validation.errors), []);
-                respondWithValidationErrors(response, validationErrors);
-                return Q(false);
-            }
+        if (!isValid) {
+            const validationErrors = validations.reduce((accumulator, validation) => accumulator.concat(validation.errors), []);
+            respondWithValidationErrors(response, validationErrors);
+            return false;
+        }
 
-            return imposters.deleteAll().then(() => {
-                const creationPromises = requestImposters.map(imposter =>
+        await imposters.deleteAll();
+        try {
+            const creationPromises = requestImposters.map(imposter =>
                     protocols[imposter.protocol].createImposterFrom(imposter)
-                );
-                return Q.all(creationPromises);
-            }).then(all => {
-                allImposters = all;
-                return Q.all(allImposters.map(imposters.add));
-            }).then(() => {
-                const promises = allImposters.map(imposter => imposter.toJSON({ list: true }));
-                return Q.all(promises);
-            }).then(json => {
-                response.send({ imposters: json });
-            }, error => {
-                respondWithCreationError(response, error);
-            });
-        });
+                ),
+                allImposters = await Promise.all(creationPromises);
+            await Promise.all(allImposters.map(imposters.add));
+
+            const promises = allImposters.map(imposter => imposter.toJSON({ list: true })),
+                json = await Promise.all(promises);
+            response.send({ imposters: json });
+        }
+        catch (error) {
+            respondWithCreationError(response, error);
+        }
+        return true;
     }
 
     return { get, post, del, put };

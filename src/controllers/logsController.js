@@ -42,8 +42,8 @@ function create (logfile) {
             logs = allLogs.slice(startIndex, endIndex + 1);
 
         response.format({
-            json: () => { response.send({ logs: logs }); },
-            html: () => { response.render('logs', { logs: logs, escape: require('escape-html') }); }
+            json: () => response.send({ logs: logs }),
+            html: () => response.render('logs', { logs: logs, escape: require('escape-html') })
         });
     }
 
