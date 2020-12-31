@@ -10,7 +10,8 @@
         "node": true,
         "browser": true,
         "jquery": true,
-        "mocha": true
+        "mocha": true,
+        "es6": true
     },
     "rules": {
         "accessor-pairs": 2,

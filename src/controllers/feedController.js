@@ -82,7 +82,7 @@ function create (releases, options) {
      * @param {Object} response - The HTTP response
      */
     function getRelease (request, response) {
-        const fs = require('fs'),
+        const fs = require('fs-extra'),
             version = request.params.version,
             config = {
                 host: request.headers.host,

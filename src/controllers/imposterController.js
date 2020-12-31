@@ -31,28 +31,19 @@ function create (protocols, imposters, logger, allowInjection) {
      * @param {Object} response - the HTTP response
      * @returns {Object} - the promise
      */
-    function get (request, response) {
+    async function get (request, response) {
         const url = require('url'),
             query = url.parse(request.url, true).query,
             options = {
                 replayable: queryBoolean(query, 'replayable'),
                 removeProxies: queryBoolean(query, 'removeProxies')
-            };
+            },
+            imposter = await imposters.get(request.params.id),
+            json = await imposter.toJSON(options);
 
-        return imposters.get(request.params.id).then(imposter => {
-            return imposter.toJSON(options);
-        }).then(json => {
-            response.format({
-                json: () => { response.send(json); },
-                html: () => {
-                    if (request.headers['x-requested-with']) {
-                        response.render('_imposter', { imposter: json });
-                    }
-                    else {
-                        response.render('imposter', { imposter: json });
-                    }
-                }
-            });
+        response.format({
+            json: () => response.send(json),
+            html: () => response.render('imposter', { imposter: json })
         });
     }
 
@@ -64,24 +55,16 @@ function create (protocols, imposters, logger, allowInjection) {
      * @param {Object} response - the HTTP response
      * @returns {Object} A promise for testing
      */
-    function resetProxies (request, response) {
-        const options = { replayable: false, removeProxies: false };
+    async function resetProxies (request, response) {
+        const options = { replayable: false, removeProxies: false },
+            imposter = await imposters.get(request.params.id);
 
-        return imposters.get(request.params.id).then(imposter => {
-            return imposters.stubsFor(request.params.id).deleteSavedProxyResponses()
-                .then(() => imposter.toJSON(options));
-        }).then(json => {
-            response.format({
-                json: () => { response.send(json); },
-                html: () => {
-                    if (request.headers['x-requested-with']) {
-                        response.render('_imposter', { imposter: json });
-                    }
-                    else {
-                        response.render('imposter', { imposter: json });
-                    }
-                }
-            });
+        await imposters.stubsFor(request.params.id).deleteSavedProxyResponses();
+        const json = await imposter.toJSON(options);
+
+        response.format({
+            json: () => response.send(json),
+            html: () => response.render('imposter', { imposter: json })
         });
     }
 
@@ -93,21 +76,14 @@ function create (protocols, imposters, logger, allowInjection) {
      * @param {Object} response - the HTTP response
      * @returns {Object} A promise for testing
      */
-    function resetRequests (request, response) {
-        return imposters.get(request.params.id).then(imposter => {
-            return imposter.resetRequests().then(() => imposter.toJSON());
-        }).then(json => {
-            response.format({
-                json: () => { response.send(json); },
-                html: () => {
-                    if (request.headers['x-requested-with']) {
-                        response.render('_imposter', { imposter: json });
-                    }
-                    else {
-                        response.render('imposter', { imposter: json });
-                    }
-                }
-            });
+    async function resetRequests (request, response) {
+        const imposter = await imposters.get(request.params.id);
+        await imposter.resetRequests();
+        const json = await imposter.toJSON();
+
+        response.format({
+            json: () => response.send(json),
+            html: () => response.render('imposter', { imposter: json })
         });
     }
 
@@ -118,28 +94,23 @@ function create (protocols, imposters, logger, allowInjection) {
      * @param {Object} response - the HTTP response
      * @returns {Object} A promise for testing
      */
-    function del (request, response) {
-        const Q = require('q'),
-            url = require('url'),
+    async function del (request, response) {
+        const url = require('url'),
             query = url.parse(request.url, true).query,
             options = {
                 replayable: queryBoolean(query, 'replayable'),
                 removeProxies: queryBoolean(query, 'removeProxies')
-            };
+            },
+            imposter = await imposters.get(request.params.id);
 
-        return imposters.get(request.params.id).then(imposter => {
-            if (imposter) {
-                return imposter.toJSON(options).then(json => {
-                    return imposters.del(request.params.id).then(() => {
-                        response.send(json);
-                    });
-                });
-            }
-            else {
-                response.send({});
-                return Q(true);
-            }
-        });
+        if (imposter) {
+            const json = await imposter.toJSON(options);
+            await imposters.del(request.params.id);
+            response.send(json);
+        }
+        else {
+            response.send({});
+        }
     }
 
     /**
@@ -151,10 +122,11 @@ function create (protocols, imposters, logger, allowInjection) {
      * @param {Object} response - the HTTP response
      * @returns {Object} - the promise
      */
-    function postRequest (request, response) {
-        return imposters.get(request.params.id)
-            .then(imposter => imposter.getResponseFor(request.body.request))
-            .then(jsonResponse => response.send(jsonResponse));
+    async function postRequest (request, response) {
+        const imposter = await imposters.get(request.params.id),
+            jsonResponse = await imposter.getResponseFor(request.body.request);
+
+        response.send(jsonResponse);
     }
 
     /**
@@ -166,18 +138,17 @@ function create (protocols, imposters, logger, allowInjection) {
      * @param {Object} response - the HTTP response
      * @returns {Object} - the promise
      */
-    function postProxyResponse (request, response) {
+    async function postProxyResponse (request, response) {
         const proxyResolutionKey = request.params.proxyResolutionKey,
-            proxyResponse = request.body.proxyResponse;
+            proxyResponse = request.body.proxyResponse,
+            imposter = await imposters.get(request.params.id),
+            json = await imposter.getProxyResponseFor(proxyResponse, proxyResolutionKey);
 
-        return imposters.get(request.params.id).then(imposter =>
-            imposter.getProxyResponseFor(proxyResponse, proxyResolutionKey)
-        ).then(json => response.send(json));
+        response.send(json);
     }
 
-    function validateStubs (imposter, newStubs) {
-        const errors = [],
-            Q = require('q');
+    async function validateStubs (imposter, newStubs) {
+        const errors = [];
 
         if (!helpers.defined(newStubs)) {
             errors.push(exceptions.ValidationError("'stubs' is a required field"));
@@ -187,30 +158,28 @@ function create (protocols, imposters, logger, allowInjection) {
         }
 
         if (errors.length > 0) {
-            return Q({ isValid: false, errors });
+            return Promise.resolve({ isValid: false, errors });
         }
 
-        return imposter.toJSON().then(request => {
-            const compatibility = require('../models/compatibility'),
-                Protocol = protocols[request.protocol],
-                validator = require('../models/dryRunValidator').create({
-                    testRequest: Protocol.testRequest,
-                    testProxyResponse: Protocol.testProxyResponse,
-                    additionalValidation: Protocol.validate,
-                    allowInjection: allowInjection
-                });
+        const request = await imposter.toJSON(),
+            compatibility = require('../models/compatibility'),
+            Protocol = protocols[request.protocol],
+            validator = require('../models/dryRunValidator').create({
+                testRequest: Protocol.testRequest,
+                testProxyResponse: Protocol.testProxyResponse,
+                additionalValidation: Protocol.validate,
+                allowInjection: allowInjection
+            });
 
-            request.stubs = newStubs;
-            compatibility.upcast(request);
-            return validator.validate(request, logger);
-        });
+        request.stubs = newStubs;
+        compatibility.upcast(request);
+        return validator.validate(request, logger);
     }
 
     function respondWithValidationErrors (response, validationErrors, statusCode = 400) {
         logger.error(`error changing stubs: ${JSON.stringify(exceptions.details(validationErrors))}`);
         response.statusCode = statusCode;
         response.send({ errors: validationErrors });
-        return require('q')();
     }
 
     /**
@@ -221,31 +190,29 @@ function create (protocols, imposters, logger, allowInjection) {
      * @param {Object} response - the HTTP response
      * @returns {Object} - promise for testing
      */
-    function putStubs (request, response) {
-        return imposters.get(request.params.id).then(imposter => {
-            const stubs = imposters.stubsFor(request.params.id),
-                newStubs = request.body.stubs;
+    async function putStubs (request, response) {
+        const imposter = await imposters.get(request.params.id),
+            stubs = imposters.stubsFor(request.params.id),
+            newStubs = request.body.stubs,
+            result = await validateStubs(imposter, newStubs);
 
-            return validateStubs(imposter, newStubs).then(result => {
-                if (!result.isValid) {
-                    return respondWithValidationErrors(response, result.errors);
-                }
-
-                return stubs.overwriteAll(newStubs).then(() => {
-                    return imposter.toJSON().then(json => response.send(json));
-                });
-            });
-        });
+        if (result.isValid) {
+            await stubs.overwriteAll(newStubs);
+            const json = await imposter.toJSON();
+            response.send(json);
+        }
+        else {
+            respondWithValidationErrors(response, result.errors);
+        }
     }
 
-    function validateStubIndex (stubs, index) {
-        return stubs.toJSON().then(allStubs => {
-            const errors = [];
-            if (typeof allStubs[index] === 'undefined') {
-                errors.push(exceptions.ValidationError("'stubIndex' must be a valid integer, representing the array index position of the stub to replace"));
-            }
-            return { isValid: errors.length === 0, errors };
-        });
+    async function validateStubIndex (stubs, index) {
+        const allStubs = await stubs.toJSON();
+        const errors = [];
+        if (typeof allStubs[index] === 'undefined') {
+            errors.push(exceptions.ValidationError("'stubIndex' must be a valid integer, representing the array index position of the stub to replace"));
+        }
+        return { isValid: errors.length === 0, errors };
     }
 
     /**
@@ -256,27 +223,27 @@ function create (protocols, imposters, logger, allowInjection) {
      * @param {Object} response - the HTTP response
      * @returns {Object} - promise for testing
      */
-    function putStub (request, response) {
-        return imposters.get(request.params.id).then(imposter => {
-            const stubs = imposters.stubsFor(request.params.id);
+    async function putStub (request, response) {
+        const imposter = await imposters.get(request.params.id),
+            stubs = imposters.stubsFor(request.params.id),
+            validation = await validateStubIndex(stubs, request.params.stubIndex);
 
-            return validateStubIndex(stubs, request.params.stubIndex).then(validation => {
-                if (!validation.isValid) {
-                    return respondWithValidationErrors(response, validation.errors, 404);
-                }
+        if (validation.isValid) {
+            const newStub = request.body,
+                result = await validateStubs(imposter, [newStub]);
 
-                const newStub = request.body;
-                return validateStubs(imposter, [newStub]).then(result => {
-                    if (!result.isValid) {
-                        return respondWithValidationErrors(response, result.errors);
-                    }
-
-                    return stubs.overwriteAtIndex(newStub, request.params.stubIndex)
-                        .then(() => imposter.toJSON())
-                        .then(json => response.send(json));
-                });
-            });
-        });
+            if (result.isValid) {
+                await stubs.overwriteAtIndex(newStub, request.params.stubIndex);
+                const json = await imposter.toJSON();
+                response.send(json);
+            }
+            else {
+                respondWithValidationErrors(response, result.errors);
+            }
+        }
+        else {
+            respondWithValidationErrors(response, validation.errors, 404);
+        }
     }
 
     function validateNewStubIndex (index, allStubs) {
@@ -297,31 +264,28 @@ function create (protocols, imposters, logger, allowInjection) {
      * @param {Object} response - the HTTP response
      * @returns {Object} - promise for testing
      */
-    function postStub (request, response) {
-        return imposters.get(request.params.id).then(imposter => {
-            const stubs = imposters.stubsFor(request.params.id);
+    async function postStub (request, response) {
+        const imposter = await imposters.get(request.params.id),
+            stubs = imposters.stubsFor(request.params.id),
+            allStubs = await stubs.toJSON(),
+            newStub = request.body.stub,
+            index = typeof request.body.index === 'undefined' ? allStubs.length : request.body.index,
+            indexValidation = validateNewStubIndex(index, allStubs);
 
-            return stubs.toJSON().then(allStubs => {
-                const newStub = request.body.stub,
-                    index = typeof request.body.index === 'undefined' ? allStubs.length : request.body.index,
-                    indexValidation = validateNewStubIndex(index, allStubs);
-
-                logger.error(JSON.stringify(indexValidation));
-                if (!indexValidation.isValid) {
-                    return respondWithValidationErrors(response, indexValidation.errors);
-                }
-
-                return validateStubs(imposter, [newStub]).then(result => {
-                    if (!result.isValid) {
-                        return respondWithValidationErrors(response, result.errors);
-                    }
-
-                    return stubs.insertAtIndex(newStub, index).then(() => {
-                        return imposter.toJSON().then(json => response.send(json));
-                    });
-                });
-            });
-        });
+        if (indexValidation.isValid) {
+            const result = await validateStubs(imposter, [newStub]);
+            if (result.isValid) {
+                await stubs.insertAtIndex(newStub, index);
+                const json = await imposter.toJSON();
+                response.send(json);
+            }
+            else {
+                respondWithValidationErrors(response, result.errors);
+            }
+        }
+        else {
+            respondWithValidationErrors(response, indexValidation.errors);
+        }
     }
 
     /**
@@ -332,20 +296,19 @@ function create (protocols, imposters, logger, allowInjection) {
      * @param {Object} response - the HTTP response
      * @returns {Object} - promise for testing
      */
-    function deleteStub (request, response) {
-        return imposters.get(request.params.id).then(imposter => {
-            const stubs = imposters.stubsFor(request.params.id);
+    async function deleteStub (request, response) {
+        const imposter = await imposters.get(request.params.id),
+            stubs = imposters.stubsFor(request.params.id),
+            validation = await validateStubIndex(stubs, request.params.stubIndex);
 
-            return validateStubIndex(stubs, request.params.stubIndex).then(validation => {
-                if (!validation.isValid) {
-                    return respondWithValidationErrors(response, validation.errors, 404);
-                }
-
-                return stubs.deleteAtIndex(request.params.stubIndex).then(() => {
-                    return imposter.toJSON().then(json => response.send(json));
-                });
-            });
-        });
+        if (validation.isValid) {
+            await stubs.deleteAtIndex(request.params.stubIndex);
+            const json = await imposter.toJSON();
+            response.send(json);
+        }
+        else {
+            respondWithValidationErrors(response, validation.errors, 404);
+        }
     }
 
     return {

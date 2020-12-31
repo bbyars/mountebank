@@ -138,13 +138,14 @@ describe('ImposterController', function () {
                 });
         });
 
-        promiseIt('should send request even if no imposter exists', function () {
+        it('should send request even if no imposter exists', function (done) {
             const response = FakeResponse.create(),
                 repo = ImpostersRepo.create(),
                 controller = Controller.create({}, repo);
 
-            return controller.del({ url: '/imposters/1', params: { id: 1 } }, response).then(() => {
+            controller.del({ url: '/imposters/1', params: { id: 1 } }, response).then(() => {
                 assert.deepEqual(response.body, {});
+                done();
             });
         });
 
