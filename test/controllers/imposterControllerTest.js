@@ -138,15 +138,13 @@ describe('ImposterController', function () {
                 });
         });
 
-        it('should send request even if no imposter exists', function (done) {
+        it('should send request even if no imposter exists', async function () {
             const response = FakeResponse.create(),
                 repo = ImpostersRepo.create(),
                 controller = Controller.create({}, repo);
 
-            controller.del({ url: '/imposters/1', params: { id: 1 } }, response).then(() => {
-                assert.deepEqual(response.body, {});
-                done();
-            });
+            await controller.del({ url: '/imposters/1', params: { id: 1 } }, response);
+            assert.deepEqual(response.body, {});
         });
 
         promiseIt('should return replayable JSON for imposter at given id if replayable querystring set', function () {

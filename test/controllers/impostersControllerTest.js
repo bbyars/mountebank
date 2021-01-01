@@ -29,14 +29,12 @@ describe('ImpostersController', function () {
     });
 
     describe('#get', function () {
-        it('should send an empty array if no imposters', function (done) {
+        it('should send an empty array if no imposters', async function () {
             const impostersRepo = ImpostersRepo.create(),
                 controller = Controller.create({}, impostersRepo, null, false);
 
-            controller.get({ url: '/imposters' }, response).then(() => {
-                assert.deepEqual(response.body, { imposters: [] });
-                done();
-            });
+            await controller.get({ url: '/imposters' }, response);
+            assert.deepEqual(response.body, { imposters: [] });
         });
 
         promiseIt('should send list JSON for all imposters by default', function () {
@@ -112,137 +110,114 @@ describe('ImpostersController', function () {
             controller = Controller.create({ http: Protocol }, imposters, logger, false);
         });
 
-        it('should return a 201 with the Location header set', function (done) {
+        it('should return a 201 with the Location header set', async function () {
             request.body = { port: 3535, protocol: 'http' };
             imposter.url = 'http://localhost/servers/3535';
 
-            controller.post(request, response).then(() => {
-                assert.strictEqual(response.headers.Location, 'http://localhost/servers/3535');
-                assert.strictEqual(response.statusCode, 201);
-                done();
-            });
+            await controller.post(request, response);
+            assert.strictEqual(response.headers.Location, 'http://localhost/servers/3535');
+            assert.strictEqual(response.statusCode, 201);
         });
 
-        it('should return imposter JSON', function (done) {
+        it('should return imposter JSON', async function () {
             request.body = { port: 3535, protocol: 'http' };
 
-            controller.post(request, response).then(() => {
-                assert.strictEqual(response.body, 'JSON');
-                done();
-            });
+            await controller.post(request, response);
+            assert.strictEqual(response.body, 'JSON');
         });
 
-        it('should add new imposter to list of all imposters', function (done) {
+        it('should add new imposter to list of all imposters', async function () {
             imposter.port = 3535;
             request.body = { protocol: 'http' };
 
-            controller.post(request, response).then(() =>
-                imposters.all()
-            ).then(allImposters => {
-                assert.deepEqual(allImposters, [imposter]);
-                done();
-            });
+            await controller.post(request, response);
+            const allImposters = await imposters.all();
+            assert.deepEqual(allImposters, [imposter]);
         });
 
-        it('should return a 400 for a floating point port', function (done) {
+        it('should return a 400 for a floating point port', async function () {
             request.body = { protocol: 'http', port: '123.45' };
 
-            controller.post(request, response).then(() => {
-                assert.strictEqual(response.statusCode, 400);
-                assert.deepEqual(response.body, {
-                    errors: [{
-                        code: 'bad data',
-                        message: "invalid value for 'port'"
-                    }]
-                });
-                done();
+            await controller.post(request, response);
+            assert.strictEqual(response.statusCode, 400);
+            assert.deepEqual(response.body, {
+                errors: [{
+                    code: 'bad data',
+                    message: "invalid value for 'port'"
+                }]
             });
         });
 
-        it('should return a 400 for a missing protocol', function (done) {
+        it('should return a 400 for a missing protocol', async function () {
             request.body = { port: 3535 };
 
-            controller.post(request, response).then(() => {
-                assert.strictEqual(response.statusCode, 400);
-                assert.deepEqual(response.body, {
-                    errors: [{
-                        code: 'bad data',
-                        message: "'protocol' is a required field"
-                    }]
-                });
-                done();
+            await controller.post(request, response);
+            assert.strictEqual(response.statusCode, 400);
+            assert.deepEqual(response.body, {
+                errors: [{
+                    code: 'bad data',
+                    message: "'protocol' is a required field"
+                }]
             });
         });
 
-        it('should return a 400 for unsupported protocols', function (done) {
+        it('should return a 400 for unsupported protocols', async function () {
             request.body = { port: 3535, protocol: 'unsupported' };
 
-            controller.post(request, response).then(() => {
-                assert.strictEqual(response.statusCode, 400);
-                assert.strictEqual(response.body.errors.length, 1);
-                assert.strictEqual(response.body.errors[0].code, 'bad data');
-                done();
-            });
+            await controller.post(request, response);
+            assert.strictEqual(response.statusCode, 400);
+            assert.strictEqual(response.body.errors.length, 1);
+            assert.strictEqual(response.body.errors[0].code, 'bad data');
         });
 
-        it('should aggregate multiple errors', function (done) {
+        it('should aggregate multiple errors', async function () {
             request.body = { port: -1, protocol: 'invalid' };
 
-            controller.post(request, response).then(() => {
-                assert.strictEqual(response.body.errors.length, 2, response.body.errors);
-                done();
-            });
+            await controller.post(request, response);
+            assert.strictEqual(response.body.errors.length, 2, response.body.errors);
         });
 
-        it('should return a 403 for insufficient access', function (done) {
+        it('should return a 403 for insufficient access', async function () {
             Protocol.createImposterFrom = mock().returns(Q.reject({
                 code: 'insufficient access',
                 key: 'value'
             }));
             request.body = { port: 3535, protocol: 'http' };
 
-            controller.post(request, response).then(() => {
-                assert.strictEqual(response.statusCode, 403);
-                assert.deepEqual(response.body, {
-                    errors: [{
-                        code: 'insufficient access',
-                        key: 'value'
-                    }]
-                });
-                done();
+            await controller.post(request, response);
+            assert.strictEqual(response.statusCode, 403);
+            assert.deepEqual(response.body, {
+                errors: [{
+                    code: 'insufficient access',
+                    key: 'value'
+                }]
             });
         });
 
-        it('should return a 400 for other protocol creation errors', function (done) {
+        it('should return a 400 for other protocol creation errors', async function () {
             Protocol.createImposterFrom = mock().returns(Q.reject('ERROR'));
             request.body = { port: 3535, protocol: 'http' };
 
-            controller.post(request, response).then(() => {
-                assert.strictEqual(response.statusCode, 400);
-                assert.deepEqual(response.body, { errors: ['ERROR'] });
-                done();
-            });
+            await controller.post(request, response);
+            assert.strictEqual(response.statusCode, 400);
+            assert.deepEqual(response.body, { errors: ['ERROR'] });
         });
 
-        it('should not call protocol validation if there are common validation failures', function (done) {
+        it('should not call protocol validation if there are common validation failures', async function () {
             Protocol.Validator = { create: mock() };
             request.body = { protocol: 'invalid' };
 
-            controller.post(request, response).then(() => {
-                assert.ok(!Protocol.Validator.create.wasCalled());
-                done();
-            });
+            await controller.post(request, response);
+            assert.ok(!Protocol.Validator.create.wasCalled());
         });
 
-        it('should validate with Protocol if there are no common validation failures', function (done) {
+        it('should validate with Protocol if there are no common validation failures', async function () {
             Protocol.validate = mock().returns(Q(['ERRORS']));
             request.body = { port: 3535, protocol: 'http' };
 
-            controller.post(request, response).then(() => {
-                assert.strictEqual(response.statusCode, 400);
-                assert.deepEqual(response.body, { errors: ['ERRORS'] });
-                done();
-            });
+            await controller.post(request, response);
+            assert.strictEqual(response.statusCode, 400);
+            assert.deepEqual(response.body, { errors: ['ERRORS'] });
         });
     });
 
@@ -383,7 +358,7 @@ describe('ImpostersController', function () {
                 });
         });
 
-        it('should return imposter list JSON for all imposters', function (done) {
+        it('should return imposter list JSON for all imposters', async function () {
             let creates = 0;
             const first = { port: 1, toJSON: mock().returns(Q({ first: true })) },
                 second = { port: 2, toJSON: mock().returns(Q({ second: true })) },
@@ -400,12 +375,10 @@ describe('ImpostersController', function () {
 
             request.body = { imposters: [{ protocol: 'http' }, { protocol: 'http' }] };
 
-            controller.put(request, response).then(() => {
-                assert.deepEqual(response.body, { imposters: [{ first: true }, { second: true }] });
-                assert.ok(first.toJSON.wasCalledWith({ list: true }), first.toJSON.message());
-                assert.ok(second.toJSON.wasCalledWith({ list: true }), second.toJSON.message());
-                done();
-            });
+            await controller.put(request, response);
+            assert.deepEqual(response.body, { imposters: [{ first: true }, { second: true }] });
+            assert.ok(first.toJSON.wasCalledWith({ list: true }), first.toJSON.message());
+            assert.ok(second.toJSON.wasCalledWith({ list: true }), second.toJSON.message());
         });
 
         promiseIt('should replace imposters list', function () {
@@ -436,24 +409,22 @@ describe('ImpostersController', function () {
                 });
         });
 
-        it('should return a 400 for any invalid imposter', function (done) {
+        it('should return a 400 for any invalid imposter', async function () {
             const controller = Controller.create({ http: Protocol }, { imposters: {} }, logger, false);
 
             request.body = { imposters: [{ protocol: 'http' }, {}] };
 
-            controller.put(request, response).then(() => {
-                assert.strictEqual(response.statusCode, 400);
-                assert.deepEqual(response.body, {
-                    errors: [{
-                        code: 'bad data',
-                        message: "'protocol' is a required field"
-                    }]
-                });
-                done();
+            await controller.put(request, response);
+            assert.strictEqual(response.statusCode, 400);
+            assert.deepEqual(response.body, {
+                errors: [{
+                    code: 'bad data',
+                    message: "'protocol' is a required field"
+                }]
             });
         });
 
-        it('should return a 403 for insufficient access on any imposter', function (done) {
+        it('should return a 403 for insufficient access on any imposter', async function () {
             let creates = 0;
             const imposters = {
                     deleteAll: mock().returns(Q(true)),
@@ -470,21 +441,19 @@ describe('ImpostersController', function () {
                     });
                 }
                 else {
-                    return Q({});
+                    return Promise.resolve({});
                 }
             };
 
             request.body = { imposters: [{ protocol: 'http' }, { protocol: 'http' }] };
 
-            controller.put(request, response).then(() => {
-                assert.strictEqual(response.statusCode, 403);
-                assert.deepEqual(response.body, {
-                    errors: [{
-                        code: 'insufficient access',
-                        key: 'value'
-                    }]
-                });
-                done();
+            await controller.put(request, response);
+            assert.strictEqual(response.statusCode, 403);
+            assert.deepEqual(response.body, {
+                errors: [{
+                    code: 'insufficient access',
+                    key: 'value'
+                }]
             });
         });
     });
