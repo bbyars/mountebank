@@ -1,26 +1,29 @@
 'use strict';
 
 const assert = require('assert'),
-    util = require('util'),
-    promiseIt = require('../../testHelpers').promiseIt,
     behaviors = require('../../../src/models/behaviors'),
     Logger = require('../../fakes/fakeLogger'),
     fs = require('fs');
 
 describe('behaviors', function () {
     describe('#shellTransform', function () {
-        promiseIt('should not execute during dry run', function () {
+        afterEach(function () {
+            if (fs.existsSync('shellTransformTest.js')) {
+                fs.unlinkSync('shellTransformTest.js');
+            }
+        });
+
+        it('should not execute during dry run', async function () {
             const request = { isDryRun: true },
                 response = { data: 'ORIGINAL' },
                 logger = Logger.create(),
-                config = { shellTransform: 'echo Should not reach here' };
+                config = { shellTransform: 'echo Should not reach here' },
+                actualResponse = await behaviors.execute(request, response, [config], logger);
 
-            return behaviors.execute(request, response, [config], logger).then(actualResponse => {
-                assert.deepEqual(actualResponse, { data: 'ORIGINAL' });
-            });
+            assert.deepEqual(actualResponse, { data: 'ORIGINAL' });
         });
 
-        promiseIt('should return output of command', function () {
+        it('should return output of command', async function () {
             const request = {},
                 response = { data: 'ORIGINAL' },
                 logger = Logger.create(),
@@ -29,16 +32,13 @@ describe('behaviors', function () {
                 },
                 config = { shellTransform: 'node shellTransformTest.js' };
 
-            fs.writeFileSync('shellTransformTest.js', util.format('%s\nexec();', shellFn.toString()));
+            fs.writeFileSync('shellTransformTest.js', `${shellFn.toString()}\nexec();`);
+            const actualResponse = await behaviors.execute(request, response, [config], logger);
 
-            return behaviors.execute(request, response, [config], logger).then(actualResponse => {
-                assert.deepEqual(actualResponse, { data: 'CHANGED' });
-            }).finally(() => {
-                fs.unlinkSync('shellTransformTest.js');
-            });
+            assert.deepEqual(actualResponse, { data: 'CHANGED' });
         });
 
-        promiseIt('should pass request and response to shell command', function () {
+        it('should pass request and response to shell command', async function () {
             const request = { data: 'FROM REQUEST' },
                 response = { data: 'UNCHANGED', requestData: '' },
                 logger = Logger.create(),
@@ -52,30 +52,29 @@ describe('behaviors', function () {
                 },
                 config = { shellTransform: 'node shellTransformTest.js' };
 
-            fs.writeFileSync('shellTransformTest.js', util.format('%s\nexec();', shellFn.toString()));
+            fs.writeFileSync('shellTransformTest.js', `${shellFn.toString()}\nexec();`);
+            const actualResponse = await behaviors.execute(request, response, [config], logger);
 
-            return behaviors.execute(request, response, [config], logger).then(actualResponse => {
-                assert.deepEqual(actualResponse, { data: 'UNCHANGED', requestData: 'FROM REQUEST' });
-            }).finally(() => {
-                fs.unlinkSync('shellTransformTest.js');
-            });
+            assert.deepEqual(actualResponse, { data: 'UNCHANGED', requestData: 'FROM REQUEST' });
         });
 
-        promiseIt('should reject promise if file does not exist', function () {
+        it('should reject promise if file does not exist', async function () {
             const request = {},
                 response = {},
                 logger = Logger.create(),
                 config = { shellTransform: 'fileDoesNotExist' };
 
-            return behaviors.execute(request, response, [config], logger).then(() => {
+            try {
+                await behaviors.execute(request, response, [config], logger);
                 assert.fail('Promise resolved, should have been rejected');
-            }, error => {
+            }
+            catch (error) {
                 // Error message is OS-dependent
                 assert.ok(error.indexOf('fileDoesNotExist') >= 0, error);
-            });
+            }
         });
 
-        promiseIt('should reject if command returned non-zero status code', function () {
+        it('should reject if command returned non-zero status code', async function () {
             const request = {},
                 response = {},
                 logger = Logger.create(),
@@ -85,19 +84,19 @@ describe('behaviors', function () {
                 },
                 config = { shellTransform: 'node shellTransformTest.js' };
 
-            fs.writeFileSync('shellTransformTest.js', util.format('%s\nexec();', shellFn.toString()));
+            fs.writeFileSync('shellTransformTest.js', `${shellFn.toString()}\nexec();`);
 
-            return behaviors.execute(request, response, [config], logger).then(() => {
+            try {
+                await behaviors.execute(request, response, [config], logger);
                 assert.fail('Promise resolved, should have been rejected');
-            }, error => {
+            }
+            catch (error) {
                 assert.ok(error.indexOf('Command failed') >= 0, error);
                 assert.ok(error.indexOf('BOOM!!!') >= 0, error);
-            }).finally(() => {
-                fs.unlinkSync('shellTransformTest.js');
-            });
+            }
         });
 
-        promiseIt('should reject if command does not return valid JSON', function () {
+        it('should reject if command does not return valid JSON', async function () {
             const request = {},
                 response = {},
                 logger = Logger.create(),
@@ -106,15 +105,15 @@ describe('behaviors', function () {
                 },
                 config = { shellTransform: 'node shellTransformTest.js' };
 
-            fs.writeFileSync('shellTransformTest.js', util.format('%s\nexec();', shellFn.toString()));
+            fs.writeFileSync('shellTransformTest.js', `${shellFn.toString()}\nexec();`);
 
-            return behaviors.execute(request, response, [config], logger).then(() => {
+            try {
+                await behaviors.execute(request, response, [config], logger);
                 assert.fail('Promise resolved, should have been rejected');
-            }, error => {
+            }
+            catch (error) {
                 assert.ok(error.indexOf('Shell command returned invalid JSON') >= 0, error);
-            }).finally(() => {
-                fs.unlinkSync('shellTransformTest.js');
-            });
+            }
         });
 
         it('should not be valid if not a string', function () {
@@ -126,7 +125,7 @@ describe('behaviors', function () {
             }]);
         });
 
-        promiseIt('should correctly shell quote inner quotes (issue #419)', function () {
+        it('should correctly shell quote inner quotes (issue #419)', async function () {
             const request = { body: '{"fastSearch": "abctef abc def"}' },
                 response = {},
                 logger = Logger.create(),
@@ -139,16 +138,13 @@ describe('behaviors', function () {
                 },
                 config = { shellTransform: 'node shellTransformTest.js' };
 
-            fs.writeFileSync('shellTransformTest.js', util.format('%s\nexec();', shellFn.toString()));
+            fs.writeFileSync('shellTransformTest.js', `${shellFn.toString()}\nexec();`);
+            const actualResponse = await behaviors.execute(request, response, [config], logger);
 
-            return behaviors.execute(request, response, [config], logger).then(actualResponse => {
-                assert.deepEqual(actualResponse, { requestData: '{"fastSearch": "abctef abc def"}' });
-            }).finally(() => {
-                fs.unlinkSync('shellTransformTest.js');
-            });
+            assert.deepEqual(actualResponse, { requestData: '{"fastSearch": "abctef abc def"}' });
         });
 
-        promiseIt('should allow large files (issue #518)', function () {
+        it('should allow large files (issue #518)', async function () {
             const request = { key: 'value' },
                 response = { field: 0 },
                 logger = Logger.create(),
@@ -160,15 +156,12 @@ describe('behaviors', function () {
                 },
                 config = { shellTransform: 'node shellTransformTest.js' };
 
-            fs.writeFileSync('shellTransformTest.js', util.format('%s\nexec();', shellFn.toString()));
+            fs.writeFileSync('shellTransformTest.js', `${shellFn.toString()}\nexec();`);
+            const actualResponse = await behaviors.execute(request, response, [config], logger);
 
-            return behaviors.execute(request, response, [config], logger).then(actualResponse => {
-                assert.deepEqual(actualResponse, {
-                    field: 0,
-                    added: new Array(1024 * 1024 * 2).join('x')
-                });
-            }).finally(() => {
-                fs.unlinkSync('shellTransformTest.js');
+            assert.deepEqual(actualResponse, {
+                field: 0,
+                added: new Array(1024 * 1024 * 2).join('x')
             });
         });
     });

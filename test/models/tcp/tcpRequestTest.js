@@ -1,23 +1,21 @@
 'use strict';
 
 const assert = require('assert'),
-    TcpRequest = require('../../../src/models/tcp/tcpRequest'),
-    promiseIt = require('../../testHelpers').promiseIt;
+    TcpRequest = require('../../../src/models/tcp/tcpRequest');
 
 describe('tcpRequest', function () {
     describe('#createFrom', function () {
-        promiseIt('should echo data', function () {
-            return TcpRequest.createFrom({ socket: {}, data: 'DATA' }).then(request => {
-                assert.strictEqual(request.data, 'DATA');
-            });
+        it('should echo data', async function () {
+            const request = await TcpRequest.createFrom({ socket: {}, data: 'DATA' });
+
+            assert.strictEqual(request.data, 'DATA');
         });
 
-        it('should format requestFrom from socket', function () {
-            const socket = { remoteAddress: 'HOST', remotePort: 'PORT' };
+        it('should format requestFrom from socket', async function () {
+            const socket = { remoteAddress: 'HOST', remotePort: 'PORT' },
+                request = await TcpRequest.createFrom({ socket: socket, data: '' });
 
-            return TcpRequest.createFrom({ socket: socket, data: '' }).then(request => {
-                assert.strictEqual(request.requestFrom, 'HOST:PORT');
-            });
+            assert.strictEqual(request.requestFrom, 'HOST:PORT');
         });
     });
 });

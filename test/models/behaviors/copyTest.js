@@ -1,13 +1,12 @@
 'use strict';
 
 const assert = require('assert'),
-    promiseIt = require('../../testHelpers').promiseIt,
     behaviors = require('../../../src/models/behaviors'),
     Logger = require('../../fakes/fakeLogger');
 
 describe('behaviors', function () {
     describe('#copy', function () {
-        promiseIt('should support copying regex match from request', function () {
+        it('should support copying regex match from request', async function () {
             const request = { data: 'My name is mountebank' },
                 response = { data: 'Hello, ${you}' },
                 logger = Logger.create(),
@@ -17,14 +16,13 @@ describe('behaviors', function () {
                         into: '${you}',
                         using: { method: 'regex', selector: '\\w+$' }
                     }
-                };
+                },
+                actualResponse = await behaviors.execute(request, response, [config], logger);
 
-            return behaviors.execute(request, response, [config], logger).then(actualResponse => {
-                assert.deepEqual(actualResponse, { data: 'Hello, mountebank' });
-            });
+            assert.deepEqual(actualResponse, { data: 'Hello, mountebank' });
         });
 
-        promiseIt('should support copying regex match from request with ignoreCase', function () {
+        it('should support copying regex match from request with ignoreCase', async function () {
             const request = { data: 'My name is mountebank' },
                 response = { data: 'Hello, ${you}' },
                 logger = Logger.create(),
@@ -38,14 +36,13 @@ describe('behaviors', function () {
                             options: { ignoreCase: true }
                         }
                     }
-                };
+                },
+                actualResponse = await behaviors.execute(request, response, [config], logger);
 
-            return behaviors.execute(request, response, [config], logger).then(actualResponse => {
-                assert.deepEqual(actualResponse, { data: 'Hello, mountebank' });
-            });
+            assert.deepEqual(actualResponse, { data: 'Hello, mountebank' });
         });
 
-        promiseIt('should support copying regex match from request with multiline', function () {
+        it('should support copying regex match from request with multiline', async function () {
             const request = { data: 'First line\nMy name is mountebank\nThird line' },
                 response = { data: 'Hello, ${you}' },
                 logger = Logger.create(),
@@ -59,14 +56,13 @@ describe('behaviors', function () {
                             options: { multiline: true }
                         }
                     }
-                };
+                },
+                actualResponse = await behaviors.execute(request, response, [config], logger);
 
-            return behaviors.execute(request, response, [config], logger).then(actualResponse => {
-                assert.deepEqual(actualResponse, { data: 'Hello, mountebank' });
-            });
+            assert.deepEqual(actualResponse, { data: 'Hello, mountebank' });
         });
 
-        promiseIt('should not replace if regex does not match', function () {
+        it('should not replace if regex does not match', async function () {
             const request = { data: 'My name is mountebank' },
                 response = { data: 'Hello, ${you}' },
                 logger = Logger.create(),
@@ -79,14 +75,13 @@ describe('behaviors', function () {
                             selector: 'Mi nombre es (\\w+)$'
                         }
                     }
-                };
+                },
+                actualResponse = await behaviors.execute(request, response, [config], logger);
 
-            return behaviors.execute(request, response, [config], logger).then(actualResponse => {
-                assert.deepEqual(actualResponse, { data: 'Hello, ${you}' });
-            });
+            assert.deepEqual(actualResponse, { data: 'Hello, ${you}' });
         });
 
-        promiseIt('should support copying regex match into object response field', function () {
+        it('should support copying regex match into object response field', async function () {
             const request = { data: 'My name is mountebank' },
                 response = { outer: { inner: 'Hello, ${you}' } },
                 logger = Logger.create(),
@@ -96,14 +91,13 @@ describe('behaviors', function () {
                         into: '${you}',
                         using: { method: 'regex', selector: '\\w+$' }
                     }
-                };
+                },
+                actualResponse = await behaviors.execute(request, response, [config], logger);
 
-            return behaviors.execute(request, response, [config], logger).then(actualResponse => {
-                assert.deepEqual(actualResponse, { outer: { inner: 'Hello, mountebank' } });
-            });
+            assert.deepEqual(actualResponse, { outer: { inner: 'Hello, mountebank' } });
         });
 
-        promiseIt('should support copying regex match into all response fields', function () {
+        it('should support copying regex match into all response fields', async function () {
             const request = { data: 'My name is mountebank' },
                 response = { data: '${you}', outer: { inner: 'Hello, ${you}' } },
                 logger = Logger.create(),
@@ -113,14 +107,13 @@ describe('behaviors', function () {
                         into: '${you}',
                         using: { method: 'regex', selector: '\\w+$' }
                     }
-                };
+                },
+                actualResponse = await behaviors.execute(request, response, [config], logger);
 
-            return behaviors.execute(request, response, [config], logger).then(actualResponse => {
-                assert.deepEqual(actualResponse, { data: 'mountebank', outer: { inner: 'Hello, mountebank' } });
-            });
+            assert.deepEqual(actualResponse, { data: 'mountebank', outer: { inner: 'Hello, mountebank' } });
         });
 
-        promiseIt('should support copying regex match from object request field', function () {
+        it('should support copying regex match from object request field', async function () {
             const request = { data: { name: 'My name is mountebank', other: 'ignore' } },
                 response = { data: 'Hello, ${you}' },
                 logger = Logger.create(),
@@ -130,14 +123,13 @@ describe('behaviors', function () {
                         into: '${you}',
                         using: { method: 'regex', selector: '\\w+$' }
                     }
-                };
+                },
+                actualResponse = await behaviors.execute(request, response, [config], logger);
 
-            return behaviors.execute(request, response, [config], logger).then(actualResponse => {
-                assert.deepEqual(actualResponse, { data: 'Hello, mountebank' });
-            });
+            assert.deepEqual(actualResponse, { data: 'Hello, mountebank' });
         });
 
-        promiseIt('should support copying regex match from object request field ignoring case of key', function () {
+        it('should support copying regex match from object request field ignoring case of key', async function () {
             const request = { data: { name: 'My name is mountebank', other: 'ignore' } },
                 response = { data: 'Hello, ${you}' },
                 logger = Logger.create(),
@@ -147,14 +139,13 @@ describe('behaviors', function () {
                         into: '${you}',
                         using: { method: 'regex', selector: '\\w+$' }
                     }
-                };
+                },
+                actualResponse = await behaviors.execute(request, response, [config], logger);
 
-            return behaviors.execute(request, response, [config], logger).then(actualResponse => {
-                assert.deepEqual(actualResponse, { data: 'Hello, mountebank' });
-            });
+            assert.deepEqual(actualResponse, { data: 'Hello, mountebank' });
         });
 
-        promiseIt('should support copying regex indexed groups from request', function () {
+        it('should support copying regex indexed groups from request', async function () {
             const request = { name: 'The date is 2016-12-29' },
                 response = { data: 'Year ${DATE}[1], Month ${DATE}[2], Day ${DATE}[3]: ${DATE}' },
                 logger = Logger.create(),
@@ -164,14 +155,13 @@ describe('behaviors', function () {
                         into: '${DATE}',
                         using: { method: 'regex', selector: '(\\d{4})-(\\d{2})-(\\d{2})' }
                     }
-                };
+                },
+                actualResponse = await behaviors.execute(request, response, [config], logger);
 
-            return behaviors.execute(request, response, [config], logger).then(actualResponse => {
-                assert.deepEqual(actualResponse, { data: 'Year 2016, Month 12, Day 29: 2016-12-29' });
-            });
+            assert.deepEqual(actualResponse, { data: 'Year 2016, Month 12, Day 29: 2016-12-29' });
         });
 
-        promiseIt('should default to first value in multi-valued request field', function () {
+        it('should default to first value in multi-valued request field', async function () {
             const request = { data: ['first', 'second', 'third'] },
                 response = { data: 'Grabbed the ${num}' },
                 logger = Logger.create(),
@@ -181,14 +171,13 @@ describe('behaviors', function () {
                         into: '${num}',
                         using: { method: 'regex', selector: '\\w+$' }
                     }
-                };
+                },
+                actualResponse = await behaviors.execute(request, response, [config], logger);
 
-            return behaviors.execute(request, response, [config], logger).then(actualResponse => {
-                assert.deepEqual(actualResponse, { data: 'Grabbed the first' });
-            });
+            assert.deepEqual(actualResponse, { data: 'Grabbed the first' });
         });
 
-        promiseIt('should support copying xpath match into response', function () {
+        it('should support copying xpath match into response', async function () {
             const request = { field: '<doc><name>mountebank</name></doc>' },
                 response = { data: 'Hello, ${you}' },
                 logger = Logger.create(),
@@ -198,14 +187,13 @@ describe('behaviors', function () {
                         into: '${you}',
                         using: { method: 'xpath', selector: '//name' }
                     }
-                };
+                },
+                actualResponse = await behaviors.execute(request, response, [config], logger);
 
-            return behaviors.execute(request, response, [config], logger).then(actualResponse => {
-                assert.deepEqual(actualResponse, { data: 'Hello, mountebank' });
-            });
+            assert.deepEqual(actualResponse, { data: 'Hello, mountebank' });
         });
 
-        promiseIt('should ignore xpath if does not match', function () {
+        it('should ignore xpath if does not match', async function () {
             const request = { field: '<doc><name>mountebank</name></doc>' },
                 response = { data: 'Hello, ${you}' },
                 logger = Logger.create(),
@@ -215,14 +203,13 @@ describe('behaviors', function () {
                         into: '${you}',
                         using: { method: 'xpath', selector: '//title' }
                     }
-                };
+                },
+                actualResponse = await behaviors.execute(request, response, [config], logger);
 
-            return behaviors.execute(request, response, [config], logger).then(actualResponse => {
-                assert.deepEqual(actualResponse, { data: 'Hello, ${you}' });
-            });
+            assert.deepEqual(actualResponse, { data: 'Hello, ${you}' });
         });
 
-        promiseIt('should ignore xpath if field is not xml', function () {
+        it('should ignore xpath if field is not xml', async function () {
             const request = { field: '' },
                 response = { data: 'Hello, ${you}' },
                 logger = Logger.create(),
@@ -232,15 +219,14 @@ describe('behaviors', function () {
                         into: '${you}',
                         using: { method: 'xpath', selector: '//title' }
                     }
-                };
+                },
+                actualResponse = await behaviors.execute(request, response, [config], logger);
 
-            return behaviors.execute(request, response, [config], logger).then(actualResponse => {
-                assert.deepEqual(actualResponse, { data: 'Hello, ${you}' });
-                logger.warn.assertLogged('[xmldom error]\tinvalid doc source\n@#[line:undefined,col:undefined] (source: "")');
-            });
+            assert.deepEqual(actualResponse, { data: 'Hello, ${you}' });
+            logger.warn.assertLogged('[xmldom error]\tinvalid doc source\n@#[line:undefined,col:undefined] (source: "")');
         });
 
-        promiseIt('should support replacing token with xml attribute', function () {
+        it('should support replacing token with xml attribute', async function () {
             const request = { field: '<doc><tool name="mountebank">Service virtualization</tool></doc>' },
                 response = { data: 'Hello, ${you}' },
                 logger = Logger.create(),
@@ -250,14 +236,13 @@ describe('behaviors', function () {
                         into: '${you}',
                         using: { method: 'xpath', selector: '//tool/@name' }
                     }
-                };
+                },
+                actualResponse = await behaviors.execute(request, response, [config], logger);
 
-            return behaviors.execute(request, response, [config], logger).then(actualResponse => {
-                assert.deepEqual(actualResponse, { data: 'Hello, mountebank' });
-            });
+            assert.deepEqual(actualResponse, { data: 'Hello, mountebank' });
         });
 
-        promiseIt('should support replacing token with xml direct text', function () {
+        it('should support replacing token with xml direct text', async function () {
             const request = { field: '<doc><name>mountebank</name></doc>' },
                 response = { data: 'Hello, ${you}' },
                 logger = Logger.create(),
@@ -267,14 +252,13 @@ describe('behaviors', function () {
                         into: '${you}',
                         using: { method: 'xpath', selector: '//name/text()' }
                     }
-                };
+                },
+                actualResponse = await behaviors.execute(request, response, [config], logger);
 
-            return behaviors.execute(request, response, [config], logger).then(actualResponse => {
-                assert.deepEqual(actualResponse, { data: 'Hello, mountebank' });
-            });
+            assert.deepEqual(actualResponse, { data: 'Hello, mountebank' });
         });
 
-        promiseIt('should support replacing token with namespaced xml field', function () {
+        it('should support replacing token with namespaced xml field', async function () {
             const request = { field: '<doc xmlns:mb="http://example.com/mb"><mb:name>mountebank</mb:name></doc>' },
                 response = { data: 'Hello, ${you}' },
                 logger = Logger.create(),
@@ -288,14 +272,13 @@ describe('behaviors', function () {
                             ns: { mb: 'http://example.com/mb' }
                         }
                     }
-                };
+                },
+                actualResponse = await behaviors.execute(request, response, [config], logger);
 
-            return behaviors.execute(request, response, [config], logger).then(actualResponse => {
-                assert.deepEqual(actualResponse, { data: 'Hello, mountebank' });
-            });
+            assert.deepEqual(actualResponse, { data: 'Hello, mountebank' });
         });
 
-        promiseIt('should support multiple indexed xpath matches into response', function () {
+        it('should support multiple indexed xpath matches into response', async function () {
             const request = { field: '<doc><num>3</num><num>2</num><num>1</num></doc>' },
                 response = { data: '${NUM}, ${NUM}[1], ${NUM}[2]' },
                 logger = Logger.create(),
@@ -305,14 +288,13 @@ describe('behaviors', function () {
                         into: '${NUM}',
                         using: { method: 'xpath', selector: '//num' }
                     }
-                };
+                },
+                actualResponse = await behaviors.execute(request, response, [config], logger);
 
-            return behaviors.execute(request, response, [config], logger).then(actualResponse => {
-                assert.deepEqual(actualResponse, { data: '3, 2, 1' });
-            });
+            assert.deepEqual(actualResponse, { data: '3, 2, 1' });
         });
 
-        promiseIt('should ignore jsonpath selector if field is not json', function () {
+        it('should ignore jsonpath selector if field is not json', async function () {
             const request = { field: 'mountebank' },
                 response = { data: 'Hello, ${you}' },
                 logger = Logger.create(),
@@ -322,15 +304,14 @@ describe('behaviors', function () {
                         into: '${you}',
                         using: { method: 'jsonpath', selector: '$..name' }
                     }
-                };
+                },
+                actualResponse = await behaviors.execute(request, response, [config], logger);
 
-            return behaviors.execute(request, response, [config], logger).then(actualResponse => {
-                assert.deepEqual(actualResponse, { data: 'Hello, ${you}' });
-                logger.warn.assertLogged('Cannot parse as JSON: "mountebank"');
-            });
+            assert.deepEqual(actualResponse, { data: 'Hello, ${you}' });
+            logger.warn.assertLogged('Cannot parse as JSON: "mountebank"');
         });
 
-        promiseIt('should support replacing token with jsonpath selector', function () {
+        it('should support replacing token with jsonpath selector', async function () {
             const request = { field: JSON.stringify({ name: 'mountebank' }) },
                 response = { data: 'Hello, ${you}' },
                 logger = Logger.create(),
@@ -340,14 +321,13 @@ describe('behaviors', function () {
                         into: '${you}',
                         using: { method: 'jsonpath', selector: '$..name' }
                     }
-                };
+                },
+                actualResponse = await behaviors.execute(request, response, [config], logger);
 
-            return behaviors.execute(request, response, [config], logger).then(actualResponse => {
-                assert.deepEqual(actualResponse, { data: 'Hello, mountebank' });
-            });
+            assert.deepEqual(actualResponse, { data: 'Hello, mountebank' });
         });
 
-        promiseIt('should support replacing token key with jsonpath selector', function () {
+        it('should support replacing token key with jsonpath selector', async function () {
             const request = { field: JSON.stringify({ name: 'mountebank' }) },
                 response = { data: { '${you}': '${you}' } },
                 logger = Logger.create(),
@@ -357,14 +337,13 @@ describe('behaviors', function () {
                         into: '${you}',
                         using: { method: 'jsonpath', selector: '$..name' }
                     }
-                };
+                },
+                actualResponse = await behaviors.execute(request, response, [config], logger);
 
-            return behaviors.execute(request, response, [config], logger).then(actualResponse => {
-                assert.deepEqual(actualResponse, { data: { mountebank: 'mountebank' } });
-            });
+            assert.deepEqual(actualResponse, { data: { mountebank: 'mountebank' } });
         });
 
-        promiseIt('should not replace token if jsonpath selector does not match', function () {
+        it('should not replace token if jsonpath selector does not match', async function () {
             const request = { field: JSON.stringify({ name: 'mountebank' }) },
                 response = { data: 'Hello, ${you}' },
                 logger = Logger.create(),
@@ -374,14 +353,13 @@ describe('behaviors', function () {
                         into: '${you}',
                         using: { method: 'jsonpath', selector: '$..title' }
                     }
-                };
+                },
+                actualResponse = await behaviors.execute(request, response, [config], logger);
 
-            return behaviors.execute(request, response, [config], logger).then(actualResponse => {
-                assert.deepEqual(actualResponse, { data: 'Hello, ${you}' });
-            });
+            assert.deepEqual(actualResponse, { data: 'Hello, ${you}' });
         });
 
-        promiseIt('should support replacing multiple indexed tokens with jsonpath selector', function () {
+        it('should support replacing multiple indexed tokens with jsonpath selector', async function () {
             const request = { field: JSON.stringify({ numbers: [{ key: 3 }, { key: 2 }, { key: 1 }] }) },
                 response = { data: '${NUM}, ${NUM}[1], ${NUM}[2]' },
                 logger = Logger.create(),
@@ -391,14 +369,13 @@ describe('behaviors', function () {
                         into: '${NUM}',
                         using: { method: 'jsonpath', selector: '$..key' }
                     }
-                };
+                },
+                actualResponse = await behaviors.execute(request, response, [config], logger);
 
-            return behaviors.execute(request, response, [config], logger).then(actualResponse => {
-                assert.deepEqual(actualResponse, { data: '3, 2, 1' });
-            });
+            assert.deepEqual(actualResponse, { data: '3, 2, 1' });
         });
 
-        promiseIt('should accept null response fields (issue #394)', function () {
+        it('should accept null response fields (issue #394)', async function () {
             const request = { field: JSON.stringify({ name: 'mountebank' }) },
                 response = { first: null, second: 'TOKEN' },
                 logger = Logger.create(),
@@ -408,11 +385,10 @@ describe('behaviors', function () {
                         into: 'TOKEN',
                         using: { method: 'jsonpath', selector: '$..name' }
                     }
-                };
+                },
+                actualResponse = await behaviors.execute(request, response, [config], logger);
 
-            return behaviors.execute(request, response, [config], logger).then(actualResponse => {
-                assert.deepEqual(actualResponse, { first: null, second: 'mountebank' });
-            });
+            assert.deepEqual(actualResponse, { first: null, second: 'mountebank' });
         });
 
         it('should not be valid if missing "from" field', function () {
@@ -429,6 +405,7 @@ describe('behaviors', function () {
         it('should not be valid if "from" field is not a string or an object', function () {
             const config = { from: 0, into: 'TOKEN', using: { method: 'regex', selector: '.*' } },
                 errors = behaviors.validate([{ copy: config }]);
+
             assert.deepEqual(errors, [{
                 code: 'bad data',
                 message: 'copy behavior "from" field must be a string or an object, representing the request field to select from',
@@ -443,6 +420,7 @@ describe('behaviors', function () {
                     using: { method: 'regex', selector: '.*' }
                 },
                 errors = behaviors.validate([{ copy: config }]);
+
             assert.deepEqual(errors, [{
                 code: 'bad data',
                 message: 'copy behavior "from" field must have exactly one key',
@@ -457,6 +435,7 @@ describe('behaviors', function () {
                     using: { method: 'regex', selector: '.*' }
                 },
                 errors = behaviors.validate([{ copy: config }]);
+
             assert.deepEqual(errors, [{
                 code: 'bad data',
                 message: 'copy behavior "from" field must have exactly one key',
@@ -467,6 +446,7 @@ describe('behaviors', function () {
         it('should not be valid if missing "into" field', function () {
             const config = { from: 'field', using: { method: 'regex', selector: '.*' } },
                 errors = behaviors.validate([{ copy: config }]);
+
             assert.deepEqual(errors, [{
                 code: 'bad data',
                 message: 'copy behavior "into" field required',
@@ -477,6 +457,7 @@ describe('behaviors', function () {
         it('should not be valid if "into" field is not a string', function () {
             const config = { from: 'field', into: 0, using: { method: 'regex', selector: '.*' } },
                 errors = behaviors.validate([{ copy: config }]);
+
             assert.deepEqual(errors, [{
                 code: 'bad data',
                 message: 'copy behavior "into" field must be a string, representing the token to replace in response fields',
@@ -487,6 +468,7 @@ describe('behaviors', function () {
         it('should not be valid if missing "using" field', function () {
             const config = { from: 'field', into: 'TOKEN' },
                 errors = behaviors.validate([{ copy: config }]);
+
             assert.deepEqual(errors, [{
                 code: 'bad data',
                 message: 'copy behavior "using" field required',
@@ -497,6 +479,7 @@ describe('behaviors', function () {
         it('should not be valid if "using.method" field is missing', function () {
             const config = { from: 'field', into: 'TOKEN', using: { selector: '.*' } },
                 errors = behaviors.validate([{ copy: config }]);
+
             assert.deepEqual(errors, [{
                 code: 'bad data',
                 message: 'copy behavior "using.method" field required',
@@ -507,6 +490,7 @@ describe('behaviors', function () {
         it('should not be valid if "using.method" field is not supported', function () {
             const config = { from: 'field', into: 'TOKEN', using: { method: 'INVALID', selector: '.*' } },
                 errors = behaviors.validate([{ copy: config }]);
+
             assert.deepEqual(errors, [{
                 code: 'bad data',
                 message: 'copy behavior "using.method" field must be one of [regex, xpath, jsonpath]',
@@ -517,6 +501,7 @@ describe('behaviors', function () {
         it('should not be valid if "using.selector" field is missing', function () {
             const config = { from: 'field', into: 'TOKEN', using: { method: 'regex' } },
                 errors = behaviors.validate([{ copy: config }]);
+
             assert.deepEqual(errors, [{
                 code: 'bad data',
                 message: 'copy behavior "using.selector" field required',

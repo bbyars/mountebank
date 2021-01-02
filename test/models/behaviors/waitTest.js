@@ -1,82 +1,79 @@
 'use strict';
 
 const assert = require('assert'),
-    promiseIt = require('../../testHelpers').promiseIt,
     behaviors = require('../../../src/models/behaviors'),
     Logger = require('../../fakes/fakeLogger');
 
 describe('behaviors', function () {
     describe('#wait', function () {
-        promiseIt('should not execute during dry run', function () {
+        it('should not execute during dry run', async function () {
             const request = { isDryRun: true },
                 response = { key: 'value' },
                 logger = Logger.create(),
                 start = new Date(),
-                config = { wait: 1000 };
+                config = { wait: 1000 },
+                actualResponse = await behaviors.execute(request, response, [config], logger),
+                time = new Date() - start;
 
-            return behaviors.execute(request, response, [config], logger).then(actualResponse => {
-                const time = new Date() - start;
-                assert.ok(time < 50, 'Took ' + time + ' milliseconds');
-                assert.deepEqual(actualResponse, { key: 'value' });
-            });
+            assert.ok(time < 50, 'Took ' + time + ' milliseconds');
+            assert.deepEqual(actualResponse, { key: 'value' });
         });
 
-        promiseIt('should wait specified number of milliseconds', function () {
+        it('should wait specified number of milliseconds', async function () {
             const request = {},
                 response = { key: 'value' },
                 logger = Logger.create(),
                 start = new Date(),
-                config = { wait: 100 };
+                config = { wait: 100 },
+                actualResponse = await behaviors.execute(request, response, [config], logger),
+                time = new Date() - start;
 
-            return behaviors.execute(request, response, [config], logger).then(actualResponse => {
-                const time = new Date() - start;
-                assert.ok(time > 90, 'Took ' + time + ' milliseconds'); // allows for approximate timing
-                assert.deepEqual(actualResponse, { key: 'value' });
-            });
+            assert.ok(time > 90, 'Took ' + time + ' milliseconds'); // allows for approximate timing
+            assert.deepEqual(actualResponse, { key: 'value' });
         });
 
-        promiseIt('should allow function to specify latency', function () {
+        it('should allow function to specify latency', async function () {
             const request = {},
                 response = { key: 'value' },
                 logger = Logger.create(),
                 fn = () => 100,
                 start = new Date(),
-                config = { wait: fn.toString() };
+                config = { wait: fn.toString() },
+                actualResponse = await behaviors.execute(request, response, [config], logger),
+                time = new Date() - start;
 
-            return behaviors.execute(request, response, [config], logger).then(actualResponse => {
-                const time = new Date() - start;
-                assert.ok(time > 90, 'Took ' + time + ' milliseconds'); // allows for approximate timing
-                assert.deepEqual(actualResponse, { key: 'value' });
-            });
+            assert.ok(time > 90, 'Took ' + time + ' milliseconds'); // allows for approximate timing
+            assert.deepEqual(actualResponse, { key: 'value' });
         });
 
-        promiseIt('should log error and reject function if function throws error', function () {
+        it('should log error and reject function if function throws error', async function () {
             const request = {},
                 response = { key: 'value' },
                 logger = Logger.create(),
                 fn = () => { throw Error('BOOM!!!'); },
                 config = { wait: fn.toString() };
 
-            return behaviors.execute(request, response, [config], logger).then(() => {
+            try {
+                await behaviors.execute(request, response, [config], logger);
                 assert.fail('should have rejected');
-            }, error => {
+            }
+            catch (error) {
                 assert.ok(error.message.indexOf('invalid wait injection') >= 0);
                 logger.error.assertLogged(fn.toString());
-            });
+            }
         });
 
-        promiseIt('should treat a string as milliseconds if it can be parsed as a number', function () {
+        it('should treat a string as milliseconds if it can be parsed as a number', async function () {
             const request = {},
                 response = { key: 'value' },
                 logger = Logger.create(),
                 start = new Date(),
-                config = { wait: '100' };
+                config = { wait: '100' },
+                actualResponse = await behaviors.execute(request, response, [config], logger),
+                time = new Date() - start;
 
-            return behaviors.execute(request, response, [config], logger).then(actualResponse => {
-                const time = new Date() - start;
-                assert.ok(time > 90, 'Took ' + time + ' milliseconds'); // allows for approximate timing
-                assert.deepEqual(actualResponse, { key: 'value' });
-            });
+            assert.ok(time > 90, 'Took ' + time + ' milliseconds'); // allows for approximate timing
+            assert.deepEqual(actualResponse, { key: 'value' });
         });
 
         it('should not be valid if below zero', function () {

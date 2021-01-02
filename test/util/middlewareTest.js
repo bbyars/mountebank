@@ -3,8 +3,7 @@
 const middleware = require('../../src/util/middleware'),
     assert = require('assert'),
     mock = require('../mock').mock,
-    FakeResponse = require('../fakes/fakeResponse'),
-    promiseIt = require('../testHelpers').promiseIt;
+    FakeResponse = require('../fakes/fakeResponse');
 
 describe('middleware', function () {
     let request, response, next;
@@ -174,26 +173,24 @@ describe('middleware', function () {
     });
 
     describe('#validateImposterExists', function () {
-        const Q = require('q');
-
-        promiseIt('should return 404 if imposter does not exist', function () {
-            const repo = { exists: mock().returns(Q(false)) },
+        it('should return 404 if imposter does not exist', async function () {
+            const repo = { exists: mock().returns(Promise.resolve(false)) },
                 middlewareFn = middleware.createImposterValidator(repo);
             request.params.id = 1;
 
-            return middlewareFn(request, response, next).then(() => {
-                assert.strictEqual(response.statusCode, 404);
-            });
+            await middlewareFn(request, response, next);
+
+            assert.strictEqual(response.statusCode, 404);
         });
 
-        promiseIt('should call next if imposter exists', function () {
-            const repo = { exists: mock().returns(Q(true)) },
+        it('should call next if imposter exists', async function () {
+            const repo = { exists: mock().returns(Promise.resolve(true)) },
                 middlewareFn = middleware.createImposterValidator(repo);
             request.params.id = 1;
 
-            return middlewareFn(request, response, next).then(() => {
-                assert(next.wasCalled());
-            });
+            await middlewareFn(request, response, next);
+
+            assert(next.wasCalled());
         });
     });
 

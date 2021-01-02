@@ -2,65 +2,60 @@
 
 const assert = require('assert'),
     Validator = require('../../src/models/dryRunValidator'),
-    promiseIt = require('../testHelpers').promiseIt,
     Logger = require('../fakes/fakeLogger'),
     testRequest = { requestFrom: '', path: '/', query: {}, method: 'GET', headers: {}, body: '' };
 
 describe('dryRunValidator', function () {
     describe('#validate', function () {
-        promiseIt('should be valid for an empty request', function () {
+        it('should be valid for an empty request', async function () {
             const request = {},
-                validator = Validator.create({ testRequest });
+                validator = Validator.create({ testRequest }),
+                result = await validator.validate(request, Logger.create());
 
-            return validator.validate(request, Logger.create()).then(result => {
-                assert.deepEqual(result, {
-                    isValid: true,
-                    errors: []
-                });
+            assert.deepEqual(result, {
+                isValid: true,
+                errors: []
             });
         });
 
-        promiseIt('should not be valid for a missing responses field', function () {
+        it('should not be valid for a missing responses field', async function () {
             const request = { stubs: [{}] },
-                validator = Validator.create({ testRequest });
+                validator = Validator.create({ testRequest }),
+                result = await validator.validate(request, Logger.create());
 
-            return validator.validate(request, Logger.create()).then(result => {
-                assert.deepEqual(result, {
-                    isValid: false,
-                    errors: [{
-                        code: 'bad data',
-                        message: "'responses' must be a non-empty array",
-                        source: {}
-                    }]
-                });
+            assert.deepEqual(result, {
+                isValid: false,
+                errors: [{
+                    code: 'bad data',
+                    message: "'responses' must be a non-empty array",
+                    source: {}
+                }]
             });
         });
 
-        promiseIt('should be valid for an empty stubs list', function () {
+        it('should be valid for an empty stubs list', async function () {
             const request = { stubs: [] },
-                validator = Validator.create({ testRequest });
+                validator = Validator.create({ testRequest }),
+                result = await validator.validate(request, Logger.create());
 
-            return validator.validate(request, Logger.create()).then(result => {
-                assert.deepEqual(result, {
-                    isValid: true,
-                    errors: []
-                });
+            assert.deepEqual(result, {
+                isValid: true,
+                errors: []
             });
         });
 
-        promiseIt('should be valid for valid stub', function () {
+        it('should be valid for valid stub', async function () {
             const request = { stubs: [{ responses: [{ is: { statusCode: 400 } }] }] },
-                validator = Validator.create({ testRequest });
+                validator = Validator.create({ testRequest }),
+                result = await validator.validate(request, Logger.create());
 
-            return validator.validate(request, Logger.create()).then(result => {
-                assert.deepEqual(result, {
-                    isValid: true,
-                    errors: []
-                });
+            assert.deepEqual(result, {
+                isValid: true,
+                errors: []
             });
         });
 
-        promiseIt('should be valid for a valid predicate', function () {
+        it('should be valid for a valid predicate', async function () {
             const request = {
                     stubs: [{
                         responses: [{ is: { body: 'test' } }],
@@ -72,50 +67,47 @@ describe('dryRunValidator', function () {
                         ]
                     }]
                 },
-                validator = Validator.create({ testRequest });
+                validator = Validator.create({ testRequest }),
+                result = await validator.validate(request, Logger.create());
 
-            return validator.validate(request, Logger.create()).then(result => {
-                assert.deepEqual(result, {
-                    isValid: true,
-                    errors: []
-                });
+            assert.deepEqual(result, {
+                isValid: true,
+                errors: []
             });
         });
 
-        promiseIt('should be valid for a well formed predicate inject if injections are allowed', function () {
+        it('should be valid for a well formed predicate inject if injections are allowed', async function () {
             const request = {
                     stubs: [{
                         predicates: [{ inject: '() => { return true; }' }],
                         responses: [{ is: { body: 'Matched' } }]
                     }]
                 },
-                validator = Validator.create({ testRequest, allowInjection: true });
+                validator = Validator.create({ testRequest, allowInjection: true }),
+                result = await validator.validate(request, Logger.create());
 
-            return validator.validate(request, Logger.create()).then(result => {
-                assert.deepEqual(result, {
-                    isValid: true,
-                    errors: []
-                });
+            assert.deepEqual(result, {
+                isValid: true,
+                errors: []
             });
         });
 
-        promiseIt('should be true for a well formed response inject if injections are allowed', function () {
+        it('should be true for a well formed response inject if injections are allowed', async function () {
             const request = {
                     stubs: [{
                         responses: [{ inject: '() => { return {}; }' }]
                     }]
                 },
-                validator = Validator.create({ testRequest, allowInjection: true });
+                validator = Validator.create({ testRequest, allowInjection: true }),
+                result = await validator.validate(request, Logger.create());
 
-            return validator.validate(request, Logger.create()).then(result => {
-                assert.deepEqual(result, {
-                    isValid: true,
-                    errors: []
-                });
+            assert.deepEqual(result, {
+                isValid: true,
+                errors: []
             });
         });
 
-        promiseIt('should be true for a well formed decorator behavior if injections are allowed', function () {
+        it('should be true for a well formed decorator behavior if injections are allowed', async function () {
             const decorator = (request, response) => {
                     response.body = 'Hello';
                 },
@@ -124,58 +116,55 @@ describe('dryRunValidator', function () {
                         responses: [{ is: { statusCode: 400 }, behaviors: [{ decorate: decorator.toString() }] }]
                     }]
                 },
-                validator = Validator.create({ testRequest, allowInjection: true });
+                validator = Validator.create({ testRequest, allowInjection: true }),
+                result = await validator.validate(request, Logger.create());
 
-            return validator.validate(request, Logger.create()).then(result => {
-                assert.deepEqual(result, {
-                    isValid: true,
-                    errors: []
-                });
+            assert.deepEqual(result, {
+                isValid: true,
+                errors: []
             });
         });
 
-        promiseIt('should not be valid for response injection if injections are disallowed', function () {
+        it('should not be valid for response injection if injections are disallowed', async function () {
             const request = {
                     stubs: [{
                         responses: [{ inject: '() => { return {}; }' }]
                     }]
                 },
-                validator = Validator.create({ testRequest, allowInjection: false });
+                validator = Validator.create({ testRequest, allowInjection: false }),
+                result = await validator.validate(request, Logger.create());
 
-            return validator.validate(request, Logger.create()).then(result => {
-                assert.deepEqual(result, {
-                    isValid: false,
-                    errors: [{
-                        code: 'invalid injection',
-                        message: 'JavaScript injection is not allowed unless mb is run with the --allowInjection flag',
-                        source: request.stubs[0]
-                    }]
-                });
+            assert.deepEqual(result, {
+                isValid: false,
+                errors: [{
+                    code: 'invalid injection',
+                    message: 'JavaScript injection is not allowed unless mb is run with the --allowInjection flag',
+                    source: request.stubs[0]
+                }]
             });
         });
 
-        promiseIt('should not be valid for predicate injections if allowInjection is false', function () {
+        it('should not be valid for predicate injections if allowInjection is false', async function () {
             const request = {
                     stubs: [{
                         predicates: [{ inject: '() => { return true; }' }],
                         responses: [{ is: { body: 'Matched' } }]
                     }]
                 },
-                validator = Validator.create({ testRequest, allowInjection: false });
+                validator = Validator.create({ testRequest, allowInjection: false }),
+                result = await validator.validate(request, Logger.create());
 
-            return validator.validate(request, Logger.create()).then(result => {
-                assert.deepEqual(result, {
-                    isValid: false,
-                    errors: [{
-                        code: 'invalid injection',
-                        message: 'JavaScript injection is not allowed unless mb is run with the --allowInjection flag',
-                        source: request.stubs[0]
-                    }]
-                });
+            assert.deepEqual(result, {
+                isValid: false,
+                errors: [{
+                    code: 'invalid injection',
+                    message: 'JavaScript injection is not allowed unless mb is run with the --allowInjection flag',
+                    source: request.stubs[0]
+                }]
             });
         });
 
-        promiseIt('should be false for a well formed decorator behavior if injections are not allowed', function () {
+        it('should be false for a well formed decorator behavior if injections are not allowed', async function () {
             const decorator = (request, response) => {
                     response.body = 'Hello';
                 },
@@ -184,79 +173,75 @@ describe('dryRunValidator', function () {
                         responses: [{ is: { statusCode: 400 }, behaviors: [{ decorate: decorator.toString() }] }]
                     }]
                 },
-                validator = Validator.create({ testRequest, allowInjection: false });
+                validator = Validator.create({ testRequest, allowInjection: false }),
+                result = await validator.validate(request, Logger.create());
 
-            return validator.validate(request, Logger.create()).then(result => {
-                assert.deepEqual(result, {
-                    isValid: false,
-                    errors: [{
-                        code: 'invalid injection',
-                        message: 'JavaScript injection is not allowed unless mb is run with the --allowInjection flag',
-                        source: request.stubs[0]
-                    }]
-                });
+            assert.deepEqual(result, {
+                isValid: false,
+                errors: [{
+                    code: 'invalid injection',
+                    message: 'JavaScript injection is not allowed unless mb is run with the --allowInjection flag',
+                    source: request.stubs[0]
+                }]
             });
         });
 
-        promiseIt('should be valid with a valid proxy response', function () {
+        it('should be valid with a valid proxy response', async function () {
             const request = {
                     stubs: [{
                         responses: [{ proxy: { to: 'http://google.com' } }]
                     }]
                 },
-                validator = Validator.create({ testRequest });
+                validator = Validator.create({ testRequest }),
+                result = await validator.validate(request, Logger.create());
 
-            return validator.validate(request, Logger.create()).then(result => {
-                assert.deepEqual(result, {
-                    isValid: true,
-                    errors: []
-                });
+            assert.deepEqual(result, {
+                isValid: true,
+                errors: []
             });
         });
 
-        promiseIt('should not be valid if any stub is invalid', function () {
+        it('should not be valid if any stub is invalid', async function () {
             const request = {
                     stubs: [
                         { responses: [{ is: { statusCode: 400 } }] },
                         {}
                     ]
                 },
-                validator = Validator.create({ testRequest });
+                validator = Validator.create({ testRequest }),
+                result = await validator.validate(request, Logger.create());
 
-            return validator.validate(request, Logger.create()).then(result => {
-                assert.deepEqual(result, {
-                    isValid: false,
-                    errors: [{
-                        code: 'bad data',
-                        message: "'responses' must be a non-empty array",
-                        source: {}
-                    }]
-                });
+            assert.deepEqual(result, {
+                isValid: false,
+                errors: [{
+                    code: 'bad data',
+                    message: "'responses' must be a non-empty array",
+                    source: {}
+                }]
             });
         });
 
-        promiseIt('should detect an invalid predicate', function () {
+        it('should detect an invalid predicate', async function () {
             const request = {
                     stubs: [{
                         responses: [{}],
                         predicates: [{ invalidPredicate: { path: '/test' } }]
                     }]
                 },
-                validator = Validator.create({ testRequest });
+                validator = Validator.create({ testRequest }),
+                result = await validator.validate(request, Logger.create());
 
-            return validator.validate(request, Logger.create()).then(result => {
-                assert.deepEqual(result, {
-                    isValid: false,
-                    errors: [{
-                        code: 'bad data',
-                        message: 'missing predicate',
-                        source: { invalidPredicate: { path: '/test' } }
-                    }]
-                });
+            assert.deepEqual(result, {
+                isValid: false,
+                errors: [{
+                    code: 'bad data',
+                    message: 'missing predicate',
+                    source: { invalidPredicate: { path: '/test' } }
+                }]
             });
         });
 
-        promiseIt('should detect an invalid predicate mixed with valid predicates', function () {
+        it('should detect an invalid predicate mixed with valid predicates', async function () {
             const request = {
                     stubs: [{
                         responses: [{}],
@@ -266,62 +251,59 @@ describe('dryRunValidator', function () {
                         ]
                     }]
                 },
-                validator = Validator.create({ testRequest });
+                validator = Validator.create({ testRequest }),
+                result = await validator.validate(request, Logger.create());
 
-            return validator.validate(request, Logger.create()).then(result => {
-                assert.deepEqual(result, {
-                    isValid: false,
-                    errors: [{
-                        code: 'bad data',
-                        message: 'missing predicate',
-                        source: { invalidPredicate: { body: 'value' } }
-                    }]
-                });
+            assert.deepEqual(result, {
+                isValid: false,
+                errors: [{
+                    code: 'bad data',
+                    message: 'missing predicate',
+                    source: { invalidPredicate: { body: 'value' } }
+                }]
             });
         });
 
-        promiseIt('should detect a malformed predicate', function () {
+        it('should detect a malformed predicate', async function () {
             const request = {
                     stubs: [{
                         responses: [{}],
                         predicates: [{ headers: [{ exists: 'Test' }] }]
                     }]
                 },
-                validator = Validator.create({ testRequest });
+                validator = Validator.create({ testRequest }),
+                result = await validator.validate(request, Logger.create());
 
-            return validator.validate(request, Logger.create()).then(result => {
-                assert.deepEqual(result, {
-                    isValid: false,
-                    errors: [{
-                        code: 'bad data',
-                        message: 'missing predicate',
-                        source: { headers: [{ exists: 'Test' }] }
-                    }]
-                });
+            assert.deepEqual(result, {
+                isValid: false,
+                errors: [{
+                    code: 'bad data',
+                    message: 'missing predicate',
+                    source: { headers: [{ exists: 'Test' }] }
+                }]
             });
         });
 
-        promiseIt('should reject unrecognized response resolver', function () {
+        it('should reject unrecognized response resolver', async function () {
             const request = {
                     stubs: [{
                         responses: [{ invalid: 'INVALID' }]
                     }]
                 },
-                validator = Validator.create({ testRequest });
+                validator = Validator.create({ testRequest }),
+                result = await validator.validate(request, Logger.create());
 
-            return validator.validate(request, Logger.create()).then(result => {
-                assert.deepEqual(result, {
-                    isValid: false,
-                    errors: [{
-                        code: 'bad data',
-                        message: 'unrecognized response type',
-                        source: request.stubs[0].responses[0]
-                    }]
-                });
+            assert.deepEqual(result, {
+                isValid: false,
+                errors: [{
+                    code: 'bad data',
+                    message: 'unrecognized response type',
+                    source: request.stubs[0].responses[0]
+                }]
             });
         });
 
-        promiseIt('should not be valid if any response is invalid', function () {
+        it('should not be valid if any response is invalid', async function () {
             const request = {
                     stubs: [{
                         responses: [
@@ -330,197 +312,187 @@ describe('dryRunValidator', function () {
                         ]
                     }]
                 },
-                validator = Validator.create({ testRequest });
+                validator = Validator.create({ testRequest }),
+                result = await validator.validate(request, Logger.create());
 
-            return validator.validate(request, Logger.create()).then(result => {
-                assert.deepEqual(result, {
-                    isValid: false,
-                    errors: [{
-                        code: 'bad data',
-                        message: 'unrecognized response type',
-                        source: request.stubs[0].responses[1]
-                    }]
-                });
+            assert.deepEqual(result, {
+                isValid: false,
+                errors: [{
+                    code: 'bad data',
+                    message: 'unrecognized response type',
+                    source: request.stubs[0].responses[1]
+                }]
             });
         });
 
-        promiseIt('should not be valid if any response is invalid even if the predicates are false during dry run', function () {
+        it('should not be valid if any response is invalid even if the predicates are false during dry run', async function () {
             const request = {
                     stubs: [{
                         responses: [{ invalid: true }],
                         predicates: [{ equals: { path: '/does-not-match' } }]
                     }]
                 },
-                validator = Validator.create({ testRequest });
+                validator = Validator.create({ testRequest }),
+                result = await validator.validate(request, Logger.create());
 
-            return validator.validate(request, Logger.create()).then(result => {
-                assert.deepEqual(result, {
-                    isValid: false,
-                    errors: [{
-                        code: 'bad data',
-                        message: 'unrecognized response type',
-                        source: request.stubs[0].responses[0]
-                    }]
-                });
+            assert.deepEqual(result, {
+                isValid: false,
+                errors: [{
+                    code: 'bad data',
+                    message: 'unrecognized response type',
+                    source: request.stubs[0].responses[0]
+                }]
             });
         });
 
-        promiseIt('should add behavior validation errors', function () {
+        it('should add behavior validation errors', async function () {
             const request = { stubs: [{ responses: [{
                     is: { statusCode: 400 },
                     behaviors: [
                         { wait: -1 }
                     ]
                 }] }] },
-                validator = Validator.create({ testRequest });
+                validator = Validator.create({ testRequest }),
+                result = await validator.validate(request, Logger.create());
 
-            return validator.validate(request, Logger.create()).then(result => {
-                assert.deepEqual(result, {
-                    isValid: false,
-                    errors: [
-                        {
-                            code: 'bad data',
-                            message: 'wait behavior "wait" field must be an integer greater than or equal to 0',
-                            source: { wait: -1 }
-                        }
-                    ]
-                });
+            assert.deepEqual(result, {
+                isValid: false,
+                errors: [
+                    {
+                        code: 'bad data',
+                        message: 'wait behavior "wait" field must be an integer greater than or equal to 0',
+                        source: { wait: -1 }
+                    }
+                ]
             });
         });
 
-        promiseIt('should error on invalid response repeat number', function () {
+        it('should error on invalid response repeat number', async function () {
             const request = { stubs: [{ responses: [{
                     is: { statusCode: 400 },
                     repeat: 0
                 }] }] },
-                validator = Validator.create({ testRequest });
+                validator = Validator.create({ testRequest }),
+                result = await validator.validate(request, Logger.create());
 
-            return validator.validate(request, Logger.create()).then(result => {
-                assert.deepEqual(result, {
-                    isValid: false,
-                    errors: [
-                        {
-                            code: 'bad data',
-                            message: '"repeat" field must be an integer greater than 0',
-                            source: { is: { statusCode: 400 }, repeat: 0 }
-                        }
-                    ]
-                });
+            assert.deepEqual(result, {
+                isValid: false,
+                errors: [
+                    {
+                        code: 'bad data',
+                        message: '"repeat" field must be an integer greater than 0',
+                        source: { is: { statusCode: 400 }, repeat: 0 }
+                    }
+                ]
             });
         });
 
-        promiseIt('should error on invalid response repeat type', function () {
+        it('should error on invalid response repeat type', async function () {
             const request = { stubs: [{ responses: [{
                     is: { statusCode: 400 },
                     repeat: true
                 }] }] },
-                validator = Validator.create({ testRequest });
+                validator = Validator.create({ testRequest }),
+                result = await validator.validate(request, Logger.create());
 
-            return validator.validate(request, Logger.create()).then(result => {
-                assert.deepEqual(result, {
-                    isValid: false,
-                    errors: [
-                        {
-                            code: 'bad data',
-                            message: '"repeat" field must be an integer greater than 0',
-                            source: { is: { statusCode: 400 }, repeat: true }
-                        }
-                    ]
-                });
+            assert.deepEqual(result, {
+                isValid: false,
+                errors: [
+                    {
+                        code: 'bad data',
+                        message: '"repeat" field must be an integer greater than 0',
+                        source: { is: { statusCode: 400 }, repeat: true }
+                    }
+                ]
             });
         });
 
-        promiseIt('should allow functions as wait behavior if injections allowed', function () {
+        it('should allow functions as wait behavior if injections allowed', async function () {
             const request = { stubs: [{ responses: [{
                     is: { statusCode: 400 },
                     behaviors: [{ wait: '() => { return 1000; }' }]
                 }] }] },
-                validator = Validator.create({ testRequest, allowInjection: true });
+                validator = Validator.create({ testRequest, allowInjection: true }),
+                result = await validator.validate(request, Logger.create());
 
-            return validator.validate(request, Logger.create()).then(result => {
-                assert.deepEqual(result, {
-                    isValid: true,
-                    errors: []
-                });
+            assert.deepEqual(result, {
+                isValid: true,
+                errors: []
             });
         });
 
-        promiseIt('should not allow functions as wait behavior if injections not allowed', function () {
+        it('should not allow functions as wait behavior if injections not allowed', async function () {
             const response = {
                     is: { statusCode: 400 },
                     behaviors: [{ wait: '() => { return 1000; }' }]
                 },
                 request = { stubs: [{ responses: [response] }] },
-                validator = Validator.create({ testRequest, allowInjection: false });
+                validator = Validator.create({ testRequest, allowInjection: false }),
+                result = await validator.validate(request, Logger.create());
 
-            return validator.validate(request, Logger.create()).then(result => {
-                assert.deepEqual(result, {
-                    isValid: false,
-                    errors: [{
-                        code: 'invalid injection',
-                        message: 'JavaScript injection is not allowed unless mb is run with the --allowInjection flag',
-                        source: { responses: [response] }
-                    }]
-                });
+            assert.deepEqual(result, {
+                isValid: false,
+                errors: [{
+                    code: 'invalid injection',
+                    message: 'JavaScript injection is not allowed unless mb is run with the --allowInjection flag',
+                    source: { responses: [response] }
+                }]
             });
         });
 
-        promiseIt('should be false for a well formed endOfRequestResolver if injections are not allowed', function () {
+        it('should be false for a well formed endOfRequestResolver if injections are not allowed', async function () {
             const endOfRequestResolver = () => true,
                 request = {
                     protocol: 'tcp',
                     stubs: [{ responses: [{ is: { data: 'test' } }] }],
                     endOfRequestResolver: { inject: endOfRequestResolver.toString() }
                 },
-                validator = Validator.create({ testRequest, allowInjection: false });
+                validator = Validator.create({ testRequest, allowInjection: false }),
+                result = await validator.validate(request, Logger.create());
 
-            return validator.validate(request, Logger.create()).then(result => {
-                assert.deepEqual(result, {
-                    isValid: false,
-                    errors: [{
-                        code: 'invalid injection',
-                        message: 'JavaScript injection is not allowed unless mb is run with the --allowInjection flag',
-                        source: request.endOfRequestResolver
-                    }]
-                });
+            assert.deepEqual(result, {
+                isValid: false,
+                errors: [{
+                    code: 'invalid injection',
+                    message: 'JavaScript injection is not allowed unless mb is run with the --allowInjection flag',
+                    source: request.endOfRequestResolver
+                }]
             });
         });
 
-        promiseIt('should be true for a well formed endOfRequestResolver if injections are allowed', function () {
+        it('should be true for a well formed endOfRequestResolver if injections are allowed', async function () {
             const endOfRequestResolver = () => true,
                 request = {
                     protocol: 'tcp',
                     stubs: [{ responses: [{ is: { data: 'test' } }] }],
                     endOfRequestResolver: { inject: endOfRequestResolver.toString() }
                 },
-                validator = Validator.create({ testRequest, allowInjection: true });
+                validator = Validator.create({ testRequest, allowInjection: true }),
+                result = await validator.validate(request, Logger.create());
 
-            return validator.validate(request, Logger.create()).then(result => {
-                assert.ok(result.isValid);
-            });
+            assert.ok(result.isValid);
         });
 
-        promiseIt('should not be valid for shellTransform if injections are disallowed', function () {
+        it('should not be valid for shellTransform if injections are disallowed', async function () {
             const request = {
                     stubs: [{
                         responses: [{ is: {}, behaviors: [{ shellTransform: 'command' }] }]
                     }]
                 },
-                validator = Validator.create({ testRequest, allowInjection: false });
+                validator = Validator.create({ testRequest, allowInjection: false }),
+                result = await validator.validate(request, Logger.create());
 
-            return validator.validate(request, Logger.create()).then(result => {
-                assert.deepEqual(result, {
-                    isValid: false,
-                    errors: [{
-                        code: 'invalid injection',
-                        message: 'Shell execution is not allowed unless mb is run with the --allowInjection flag',
-                        source: request.stubs[0]
-                    }]
-                });
+            assert.deepEqual(result, {
+                isValid: false,
+                errors: [{
+                    code: 'invalid injection',
+                    message: 'Shell execution is not allowed unless mb is run with the --allowInjection flag',
+                    source: request.stubs[0]
+                }]
             });
         });
 
-        promiseIt('should not be valid for proxy addDecorateBehavior if injections are disallowed', function () {
+        it('should not be valid for proxy addDecorateBehavior if injections are disallowed', async function () {
             const proxy = {
                     to: 'http://google.com',
                     addDecorateBehavior: '(request, response) => { response.body = ""; }'
@@ -530,21 +502,20 @@ describe('dryRunValidator', function () {
                         responses: [{ proxy: proxy }]
                     }]
                 },
-                validator = Validator.create({ testRequest, allowInjection: false });
+                validator = Validator.create({ testRequest, allowInjection: false }),
+                result = await validator.validate(request, Logger.create());
 
-            return validator.validate(request, Logger.create()).then(result => {
-                assert.deepEqual(result, {
-                    isValid: false,
-                    errors: [{
-                        code: 'invalid injection',
-                        message: 'JavaScript injection is not allowed unless mb is run with the --allowInjection flag',
-                        source: request.stubs[0]
-                    }]
-                });
+            assert.deepEqual(result, {
+                isValid: false,
+                errors: [{
+                    code: 'invalid injection',
+                    message: 'JavaScript injection is not allowed unless mb is run with the --allowInjection flag',
+                    source: request.stubs[0]
+                }]
             });
         });
 
-        promiseIt('should error on unrecognized behavior', function () {
+        it('should error on unrecognized behavior', async function () {
             const request = {
                     stubs: [{
                         responses: [{
@@ -553,21 +524,20 @@ describe('dryRunValidator', function () {
                         }]
                     }]
                 },
-                validator = Validator.create({ testRequest, allowInjection: true });
+                validator = Validator.create({ testRequest, allowInjection: true }),
+                result = await validator.validate(request, Logger.create());
 
-            return validator.validate(request, Logger.create()).then(result => {
-                assert.deepEqual(result, {
-                    isValid: false,
-                    errors: [{
-                        code: 'bad data',
-                        message: 'Unrecognized behavior: "INVALID"',
-                        source: { INVALID: 100 }
-                    }]
-                });
+            assert.deepEqual(result, {
+                isValid: false,
+                errors: [{
+                    code: 'bad data',
+                    message: 'Unrecognized behavior: "INVALID"',
+                    source: { INVALID: 100 }
+                }]
             });
         });
 
-        promiseIt('should not error on valid behavior with unrecognized field', function () {
+        it('should not error on valid behavior with unrecognized field', async function () {
             const request = {
                     stubs: [{
                         responses: [{
@@ -576,17 +546,16 @@ describe('dryRunValidator', function () {
                         }]
                     }]
                 },
-                validator = Validator.create({ testRequest, allowInjection: true });
+                validator = Validator.create({ testRequest, allowInjection: true }),
+                result = await validator.validate(request, Logger.create());
 
-            return validator.validate(request, Logger.create()).then(result => {
-                assert.deepEqual(result, {
-                    isValid: true,
-                    errors: []
-                });
+            assert.deepEqual(result, {
+                isValid: true,
+                errors: []
             });
         });
 
-        promiseIt('should error on two valid behaviors in same object', function () {
+        it('should error on two valid behaviors in same object', async function () {
             const request = {
                     stubs: [{
                         responses: [{
@@ -595,17 +564,16 @@ describe('dryRunValidator', function () {
                         }]
                     }]
                 },
-                validator = Validator.create({ testRequest, allowInjection: true });
+                validator = Validator.create({ testRequest, allowInjection: true }),
+                result = await validator.validate(request, Logger.create());
 
-            return validator.validate(request, Logger.create()).then(result => {
-                assert.deepEqual(result, {
-                    isValid: false,
-                    errors: [{
-                        code: 'bad data',
-                        message: 'Each behavior object must have only one behavior type',
-                        source: { wait: 100, decorate: '() => {}' }
-                    }]
-                });
+            assert.deepEqual(result, {
+                isValid: false,
+                errors: [{
+                    code: 'bad data',
+                    message: 'Each behavior object must have only one behavior type',
+                    source: { wait: 100, decorate: '() => {}' }
+                }]
             });
         });
     });

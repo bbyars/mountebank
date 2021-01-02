@@ -1,61 +1,59 @@
 'use strict';
 
 const assert = require('assert'),
-    promiseIt = require('../../testHelpers').promiseIt,
     behaviors = require('../../../src/models/behaviors'),
     Logger = require('../../fakes/fakeLogger');
 
 describe('behaviors', function () {
     describe('#decorate', function () {
-        promiseIt('should allow changing the response directly', function () {
+        it('should allow changing the response directly', async function () {
             const request = {},
                 response = { key: 'ORIGINAL' },
                 logger = Logger.create(),
                 fn = (req, responseToDecorate) => { responseToDecorate.key = 'CHANGED'; },
-                config = { decorate: fn.toString() };
+                config = { decorate: fn.toString() },
+                actualResponse = await behaviors.execute(request, response, [config], logger);
 
-            return behaviors.execute(request, response, [config], logger).then(actualResponse => {
-                assert.deepEqual(actualResponse, { key: 'CHANGED' });
-            });
+            assert.deepEqual(actualResponse, { key: 'CHANGED' });
         });
 
-        promiseIt('should allow returning response', function () {
+        it('should allow returning response', async function () {
             const request = {},
                 response = { key: 'VALUE' },
                 logger = Logger.create(),
                 fn = () => ({ newKey: 'NEW-VALUE' }),
-                config = { decorate: fn.toString() };
+                config = { decorate: fn.toString() },
+                actualResponse = await behaviors.execute(request, response, [config], logger);
 
-            return behaviors.execute(request, response, [config], logger).then(actualResponse => {
-                assert.deepEqual(actualResponse, { newKey: 'NEW-VALUE' });
-            });
+            assert.deepEqual(actualResponse, { newKey: 'NEW-VALUE' });
         });
 
-        promiseIt('should allow logging in the decoration function', function () {
+        it('should allow logging in the decoration function', async function () {
             const request = {},
                 response = { key: 'VALUE' },
                 logger = Logger.create(),
                 fn = (req, resp, log) => { log.info('test entry'); },
                 config = { decorate: fn.toString() };
 
-            return behaviors.execute(request, response, [config], logger).then(() => {
-                logger.info.assertLogged('test entry');
-            });
+            await behaviors.execute(request, response, [config], logger);
+            logger.info.assertLogged('test entry');
         });
 
-        promiseIt('should log error and reject function if function throws error', function () {
+        it('should log error and reject function if function throws error', async function () {
             const request = {},
                 response = { key: 'value' },
                 logger = Logger.create(),
                 fn = () => { throw Error('BOOM!!!'); },
                 config = { decorate: fn.toString() };
 
-            return behaviors.execute(request, response, [config], logger).then(() => {
+            try {
+                await behaviors.execute(request, response, [config], logger);
                 assert.fail('should have rejected');
-            }, error => {
+            }
+            catch (error) {
                 assert.ok(error.message.indexOf('invalid decorator injection') >= 0);
                 logger.error.assertLogged(fn.toString());
-            });
+            }
         });
 
         it('should not be valid if not a string', function () {
@@ -67,7 +65,7 @@ describe('behaviors', function () {
             }]);
         });
 
-        promiseIt('should allow access to the imposter state', function () {
+        it('should allow access to the imposter state', async function () {
             const request = {},
                 response = {},
                 state = {},
@@ -79,14 +77,12 @@ describe('behaviors', function () {
                     config.state.hits += 1;
                     return { hits: config.state.hits };
                 },
-                behavior = { decorate: fn.toString() };
+                behavior = { decorate: fn.toString() },
+                firstResponse = await behaviors.execute(request, response, [behavior], logger, state),
+                secondResponse = await behaviors.execute(request, firstResponse, [behavior], logger, state);
 
-            return behaviors.execute(request, response, [behavior], logger, state).then(actualResponse => {
-                assert.deepEqual(actualResponse, { hits: 1 });
-                return behaviors.execute(request, actualResponse, [behavior], logger, state);
-            }).then(actualResponse => {
-                assert.deepEqual(actualResponse, { hits: 2 });
-            });
+            assert.deepEqual(firstResponse, { hits: 1 });
+            assert.deepEqual(secondResponse, { hits: 2 });
         });
     });
 });

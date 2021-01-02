@@ -1,11 +1,9 @@
 'use strict';
 
 const assert = require('assert'),
-    promiseIt = require('../testHelpers').promiseIt,
     mock = require('../mock').mock,
     FakeLogger = require('../fakes/fakeLogger'),
     fs = require('fs'),
-    Q = require('q'),
     loader = require('../../src/models/protocols'),
     ImpostersRepository = require('../../src/models/inMemoryImpostersRepository');
 
@@ -20,78 +18,89 @@ describe('protocols', function () {
             repository = ImpostersRepository.create();
         });
 
+        afterEach(function () {
+            if (fs.existsSync('protocol-test.js')) {
+                fs.unlinkSync('protocol-test.js');
+            }
+        });
+
         it('should return only builtins if no customProtocols passed in', function () {
             const builtIns = { proto: { create: mock() } },
                 protocols = loader.load(builtIns, {}, config, allow, logger, repository);
+
             assert.deepEqual(Object.keys(protocols), ['proto']);
         });
 
         describe('#outOfProcessCreate', function () {
-            promiseIt('should error if invalid command passed', function () {
+            it('should error if invalid command passed', async function () {
                 const customProtocols = { test: { createCommand: 'no-such-command' } },
                     protocols = loader.load({}, customProtocols, config, allow, logger, repository);
 
-                return protocols.test.createServer({}, logger).then(() => {
+                try {
+                    await protocols.test.createServer({}, logger);
                     assert.fail('should have errored');
-                }, error => {
+                }
+                catch (error) {
                     delete error.details;
                     assert.deepEqual(error, {
                         code: 'cannot start server',
                         message: 'Invalid configuration for protocol "test": cannot run "no-such-command"',
                         source: 'no-such-command'
                     });
-                });
+                }
             });
 
-            promiseIt('should return even if invalid JSON written on stdout', function () {
+            it('should return even if invalid JSON written on stdout', async function () {
                 const fn = () => { console.log('TESTING 1 2 3'); };
                 fs.writeFileSync('protocol-test.js', `const fn = ${fn.toString()}; fn();`);
 
                 const customProtocols = { test: { createCommand: 'node ./protocol-test.js' } },
-                    protocols = loader.load({}, customProtocols, config, allow, logger, repository);
+                    protocols = loader.load({}, customProtocols, config, allow, logger, repository),
+                    server = await protocols.test.createServer({}, logger);
 
-                return protocols.test.createServer({}, logger).then(server => {
-                    assert.deepEqual(server.metadata, {});
-                }).finally(() => fs.unlinkSync('protocol-test.js'));
+                assert.deepEqual(server.metadata, {});
             });
 
-            promiseIt('should default to the port in the creationRequest', function () {
+            it('should default to the port in the creationRequest', async function () {
                 const fn = () => { console.log('{}'); };
                 fs.writeFileSync('protocol-test.js', `const fn = ${fn.toString()}; fn();`);
 
                 const customProtocols = { test: { createCommand: 'node ./protocol-test.js' } },
-                    protocols = loader.load({}, customProtocols, config, allow, logger, repository);
+                    protocols = loader.load({}, customProtocols, config, allow, logger, repository),
+                    server = await protocols.test.createServer({ port: 3000 }, logger);
 
-                return protocols.test.createServer({ port: 3000 }, logger).then(server => {
-                    assert.strictEqual(server.port, 3000);
-                }).finally(() => fs.unlinkSync('protocol-test.js'));
+                assert.strictEqual(server.port, 3000);
             });
 
-            promiseIt('should allow changing port by writing it as JSON to stdout', function () {
+            it('should allow changing port by writing it as JSON to stdout', async function () {
                 const fn = () => { console.log(JSON.stringify({ port: 3000 })); };
                 fs.writeFileSync('protocol-test.js', `const fn = ${fn.toString()}; fn();`);
 
                 const customProtocols = { test: { createCommand: 'node ./protocol-test.js' } },
-                    protocols = loader.load({}, customProtocols, config, allow, logger, repository);
+                    protocols = loader.load({}, customProtocols, config, allow, logger, repository),
+                    server = await protocols.test.createServer({}, logger);
 
-                return protocols.test.createServer({}, logger).then(server => {
-                    assert.strictEqual(server.port, 3000);
-                }).finally(() => fs.unlinkSync('protocol-test.js'));
+                assert.strictEqual(server.port, 3000);
             });
 
-            promiseIt('should allow returning metadata by writing it as JSON to stdout', function () {
+            it('should allow returning metadata by writing it as JSON to stdout', async function () {
                 const fn = () => { console.log(JSON.stringify({ mode: 'text' })); };
                 fs.writeFileSync('protocol-test.js', `const fn = ${fn.toString()}; fn();`);
 
                 const customProtocols = { test: { createCommand: 'node ./protocol-test.js' } },
-                    protocols = loader.load({}, customProtocols, config, allow, logger, repository);
+                    protocols = loader.load({}, customProtocols, config, allow, logger, repository),
+                    server = await protocols.test.createServer({}, logger);
 
-                return protocols.test.createServer({}, logger).then(server => {
-                    assert.deepEqual(server.metadata, { mode: 'text' });
-                }).finally(() => fs.unlinkSync('protocol-test.js'));
+                assert.deepEqual(server.metadata, { mode: 'text' });
             });
 
-            promiseIt('should pipe stdout to the logger', function () {
+            async function delay (duration) {
+                return new Promise(resolve => {
+                    setTimeout(resolve, duration);
+                });
+            }
+
+            it('should pipe stdout to the logger', async function () {
                 const fn = () => {
                     console.log(JSON.stringify({}));
                     console.log('debug testing 1 2 3');
@@ -104,57 +113,57 @@ describe('protocols', function () {
                 const customProtocols = { test: { createCommand: 'node ./protocol-test.js' } },
                     protocols = loader.load({}, customProtocols, config, allow, logger, repository);
 
+                await protocols.test.createServer({}, logger);
+
                 // Sleep to allow the log statements to finish
-                return protocols.test.createServer({}, logger).then(() => Q.delay(100)).then(() => {
-                    logger.debug.assertLogged('testing 1 2 3');
-                    logger.info.assertLogged('testing 2 3 4');
-                    logger.warn.assertLogged('testing 3 4 5');
-                    logger.error.assertLogged('testing 4 5 6');
-                }).finally(() => fs.unlinkSync('protocol-test.js'));
+                await delay(100);
+
+                logger.debug.assertLogged('testing 1 2 3');
+                logger.info.assertLogged('testing 2 3 4');
+                logger.warn.assertLogged('testing 3 4 5');
+                logger.error.assertLogged('testing 4 5 6');
             });
 
-            promiseIt('should pass port and callback url to process', function () {
+            it('should pass port and callback url to process', async function () {
                 const fn = () => { console.log(JSON.stringify({ args: process.argv.splice(2) })); };
                 fs.writeFileSync('protocol-test.js', `const fn = ${fn.toString()}; fn();`);
 
                 config.callbackURLTemplate = 'CALLBACK-URL';
                 const customProtocols = { test: { createCommand: 'node ./protocol-test.js' } },
                     protocols = loader.load({}, customProtocols, config, allow, logger, repository),
-                    creationRequest = { port: 3000 };
+                    creationRequest = { port: 3000 },
+                    server = await protocols.test.createServer(creationRequest, logger);
 
-                return protocols.test.createServer(creationRequest, logger).then(server => {
-                    assert.deepEqual(server.metadata.args, [
-                        JSON.stringify({
-                            port: 3000,
-                            callbackURLTemplate: 'CALLBACK-URL',
-                            loglevel: 'info'
-                        })
-                    ]);
-                }).finally(() => fs.unlinkSync('protocol-test.js'));
+                assert.deepEqual(server.metadata.args, [
+                    JSON.stringify({
+                        port: 3000,
+                        callbackURLTemplate: 'CALLBACK-URL',
+                        loglevel: 'info'
+                    })
+                ]);
             });
 
-            promiseIt('should pass custom defaultResponse to process', function () {
+            it('should pass custom defaultResponse to process', async function () {
                 const fn = () => { console.log(JSON.stringify({ args: process.argv.splice(2) })); };
                 fs.writeFileSync('protocol-test.js', `const fn = ${fn.toString()}; fn();`);
 
                 config.callbackURLTemplate = 'CALLBACK-URL';
                 const customProtocols = { test: { createCommand: 'node ./protocol-test.js' } },
                     protocols = loader.load({}, customProtocols, config, allow, logger, repository),
-                    creationRequest = { port: 3000, defaultResponse: { key: 'default' } };
+                    creationRequest = { port: 3000, defaultResponse: { key: 'default' } },
+                    server = await protocols.test.createServer(creationRequest, logger);
 
-                return protocols.test.createServer(creationRequest, logger).then(server => {
-                    assert.deepEqual(server.metadata.args, [
-                        JSON.stringify({
-                            port: 3000,
-                            callbackURLTemplate: 'CALLBACK-URL',
-                            loglevel: 'info',
-                            defaultResponse: { key: 'default' }
-                        })
-                    ]);
-                }).finally(() => fs.unlinkSync('protocol-test.js'));
+                assert.deepEqual(server.metadata.args, [
+                    JSON.stringify({
+                        port: 3000,
+                        callbackURLTemplate: 'CALLBACK-URL',
+                        loglevel: 'info',
+                        defaultResponse: { key: 'default' }
+                    })
+                ]);
             });
 
-            promiseIt('should pass custom customProtocolFields to process', function () {
+            it('should pass custom customProtocolFields to process', async function () {
                 const fn = () => { console.log(JSON.stringify({ args: process.argv.splice(2) })); };
                 fs.writeFileSync('protocol-test.js', `const fn = ${fn.toString()}; fn();`);
 
@@ -174,19 +183,18 @@ describe('protocols', function () {
                         recordRequests: false,
                         key1: 'FIRST',
                         key2: 'SECOND'
-                    };
+                    },
+                    server = await protocols.test.createServer(creationRequest, logger);
 
-                return protocols.test.createServer(creationRequest, logger).then(server => {
-                    assert.deepEqual(server.metadata.args, [
-                        JSON.stringify({
-                            port: 3000,
-                            callbackURLTemplate: 'CALLBACK-URL',
-                            loglevel: 'info',
-                            key1: 'FIRST',
-                            key2: 'SECOND'
-                        })
-                    ]);
-                }).finally(() => fs.unlinkSync('protocol-test.js'));
+                assert.deepEqual(server.metadata.args, [
+                    JSON.stringify({
+                        port: 3000,
+                        callbackURLTemplate: 'CALLBACK-URL',
+                        loglevel: 'info',
+                        key1: 'FIRST',
+                        key2: 'SECOND'
+                    })
+                ]);
             });
         });
     });

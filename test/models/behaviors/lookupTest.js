@@ -1,7 +1,6 @@
 'use strict';
 
 const assert = require('assert'),
-    promiseIt = require('../../testHelpers').promiseIt,
     behaviors = require('../../../src/models/behaviors'),
     Logger = require('../../fakes/fakeLogger'),
     fs = require('fs');
@@ -14,6 +13,7 @@ describe('behaviors', function () {
                     into: 'TOKEN'
                 },
                 errors = behaviors.validate([{ lookup: config }]);
+
             assert.deepEqual(errors, [{
                 code: 'bad data',
                 message: 'lookup behavior "key" field required',
@@ -28,6 +28,7 @@ describe('behaviors', function () {
                     into: 'TOKEN'
                 },
                 errors = behaviors.validate([{ lookup: config }]);
+
             assert.deepEqual(errors, [{
                 code: 'bad data',
                 message: 'lookup behavior "key.from" field required',
@@ -42,6 +43,7 @@ describe('behaviors', function () {
                     into: 'TOKEN'
                 },
                 errors = behaviors.validate([{ lookup: config }]);
+
             assert.deepEqual(errors, [{
                 code: 'bad data',
                 message: 'lookup behavior "key.using" field required',
@@ -56,6 +58,7 @@ describe('behaviors', function () {
                     into: 'TOKEN'
                 },
                 errors = behaviors.validate([{ lookup: config }]);
+
             assert.deepEqual(errors, [{
                 code: 'bad data',
                 message: 'lookup behavior "key.using" field must be an object',
@@ -70,6 +73,7 @@ describe('behaviors', function () {
                     into: 'TOKEN'
                 },
                 errors = behaviors.validate([{ lookup: config }]);
+
             assert.deepEqual(errors, [{
                 code: 'bad data',
                 message: 'lookup behavior "key.using.method" field required',
@@ -84,6 +88,7 @@ describe('behaviors', function () {
                     into: 'TOKEN'
                 },
                 errors = behaviors.validate([{ lookup: config }]);
+
             assert.deepEqual(errors, [{
                 code: 'bad data',
                 message: 'lookup behavior "key.using.method" field must be one of [regex, xpath, jsonpath]',
@@ -98,6 +103,7 @@ describe('behaviors', function () {
                     into: 'TOKEN'
                 },
                 errors = behaviors.validate([{ lookup: config }]);
+
             assert.deepEqual(errors, [{
                 code: 'bad data',
                 message: 'lookup behavior "key.using.selector" field required',
@@ -125,6 +131,7 @@ describe('behaviors', function () {
                     into: 'TOKEN'
                 },
                 errors = behaviors.validate([{ lookup: config }]);
+
             assert.deepEqual(errors, [{
                 code: 'bad data',
                 message: 'lookup behavior "fromDataSource" field must be an object',
@@ -139,6 +146,7 @@ describe('behaviors', function () {
                     into: 'TOKEN'
                 },
                 errors = behaviors.validate([{ lookup: config }]);
+
             assert.deepEqual(errors, [{
                 code: 'bad data',
                 message: 'lookup behavior "fromDataSource" field must be one of [csv]',
@@ -153,6 +161,7 @@ describe('behaviors', function () {
                     into: 'TOKEN'
                 },
                 errors = behaviors.validate([{ lookup: config }]);
+
             assert.deepEqual(errors, [{
                 code: 'bad data',
                 message: 'lookup behavior "fromDataSource" field must have exactly one key',
@@ -166,6 +175,7 @@ describe('behaviors', function () {
                     fromDataSource: { csv: { path: '', keyColumn: '', columnInto: ['key'] } }
                 },
                 errors = behaviors.validate([{ lookup: config }]);
+
             assert.deepEqual(errors, [{
                 code: 'bad data',
                 message: 'lookup behavior "into" field required',
@@ -186,7 +196,7 @@ describe('behaviors', function () {
                 fs.unlinkSync('lookupTest.csv');
             });
 
-            promiseIt('should log error and report nothing if file does not exist', function () {
+            it('should log error and report nothing if file does not exist', async function () {
                 const request = { data: 'My name is mountebank' },
                     response = { data: 'Hello, ${you}["occupation"]' },
                     logger = Logger.create(),
@@ -196,15 +206,14 @@ describe('behaviors', function () {
                             fromDataSource: { csv: { path: 'INVALID.csv', keyColumn: 'name', delimiter: '|' } },
                             into: '${you}'
                         }
-                    };
+                    },
+                    actualResponse = await behaviors.execute(request, response, [config], logger);
 
-                return behaviors.execute(request, response, [config], logger).then(actualResponse => {
-                    assert.deepEqual(actualResponse, { data: 'Hello, ${you}["occupation"]' });
-                    logger.error.assertLogged('Cannot read INVALID.csv: ');
-                });
+                assert.deepEqual(actualResponse, { data: 'Hello, ${you}["occupation"]' });
+                logger.error.assertLogged('Cannot read INVALID.csv: ');
             });
 
-            promiseIt('should support lookup keyed by regex match from request', function () {
+            it('should support lookup keyed by regex match from request', async function () {
                 const request = { data: 'My name is mountebank' },
                     response = { data: 'Hello, ${you}["occupation"]' },
                     logger = Logger.create(),
@@ -214,14 +223,13 @@ describe('behaviors', function () {
                             fromDataSource: { csv: { path: 'lookupTest.csv', keyColumn: 'name' } },
                             into: '${you}'
                         }
-                    };
+                    },
+                    actualResponse = await behaviors.execute(request, response, [config], logger);
 
-                return behaviors.execute(request, response, [config], logger).then(actualResponse => {
-                    assert.deepEqual(actualResponse, { data: 'Hello, tester' });
-                });
+                assert.deepEqual(actualResponse, { data: 'Hello, tester' });
             });
 
-            promiseIt('should support lookup keyed by regex match from request with ignoreCase', function () {
+            it('should support lookup keyed by regex match from request with ignoreCase', async function () {
                 const request = { data: 'My name is mountebank' },
                     response = { data: "Hello, ${you}['occupation']" },
                     logger = Logger.create(),
@@ -234,14 +242,13 @@ describe('behaviors', function () {
                             fromDataSource: { csv: { path: 'lookupTest.csv', keyColumn: 'name' } },
                             into: '${you}'
                         }
-                    };
+                    },
+                    actualResponse = await behaviors.execute(request, response, [config], logger);
 
-                return behaviors.execute(request, response, [config], logger).then(actualResponse => {
-                    assert.deepEqual(actualResponse, { data: 'Hello, tester' });
-                });
+                assert.deepEqual(actualResponse, { data: 'Hello, tester' });
             });
 
-            promiseIt('should support lookup keyed by regex match from request with multiline', function () {
+            it('should support lookup keyed by regex match from request with multiline', async function () {
                 const request = { data: 'First line\nMy name is mountebank\nThird line' },
                     response = { data: 'Hello, ${you}[occupation]' },
                     logger = Logger.create(),
@@ -254,14 +261,13 @@ describe('behaviors', function () {
                             fromDataSource: { csv: { path: 'lookupTest.csv', keyColumn: 'name' } },
                             into: '${you}'
                         }
-                    };
+                    },
+                    actualResponse = await behaviors.execute(request, response, [config], logger);
 
-                return behaviors.execute(request, response, [config], logger).then(actualResponse => {
-                    assert.deepEqual(actualResponse, { data: 'Hello, tester' });
-                });
+                assert.deepEqual(actualResponse, { data: 'Hello, tester' });
             });
 
-            promiseIt('should not replace if regex does not match', function () {
+            it('should not replace if regex does not match', async function () {
                 const request = { data: 'My name is mountebank' },
                     response = { data: 'Hello, ${you}[occupation]' },
                     logger = Logger.create(),
@@ -274,14 +280,13 @@ describe('behaviors', function () {
                             fromDataSource: { csv: { path: 'lookupTest.csv', keyColumn: 'name' } },
                             into: '${you}'
                         }
-                    };
+                    },
+                    actualResponse = await behaviors.execute(request, response, [config], logger);
 
-                return behaviors.execute(request, response, [config], logger).then(actualResponse => {
-                    assert.deepEqual(actualResponse, { data: 'Hello, ${you}[occupation]' });
-                });
+                assert.deepEqual(actualResponse, { data: 'Hello, ${you}[occupation]' });
             });
 
-            promiseIt('should support lookup replace keyed by regex match into object response field', function () {
+            it('should support lookup replace keyed by regex match into object response field', async function () {
                 const request = { data: 'My name is mountebank' },
                     response = { outer: { inner: 'Hello, ${you}["occupation"]' } },
                     logger = Logger.create(),
@@ -291,14 +296,13 @@ describe('behaviors', function () {
                             fromDataSource: { csv: { path: 'lookupTest.csv', keyColumn: 'name' } },
                             into: '${you}'
                         }
-                    };
+                    },
+                    actualResponse = await behaviors.execute(request, response, [config], logger);
 
-                return behaviors.execute(request, response, [config], logger).then(actualResponse => {
-                    assert.deepEqual(actualResponse, { outer: { inner: 'Hello, tester' } });
-                });
+                assert.deepEqual(actualResponse, { outer: { inner: 'Hello, tester' } });
             });
 
-            promiseIt('should support lookup replacement into all response fields', function () {
+            it('should support lookup replacement into all response fields', async function () {
                 const request = { data: 'My name is mountebank' },
                     response = { data: '${you}[location]', outer: { inner: 'Hello, ${you}[occupation]' } },
                     logger = Logger.create(),
@@ -308,14 +312,13 @@ describe('behaviors', function () {
                             fromDataSource: { csv: { path: 'lookupTest.csv', keyColumn: 'name' } },
                             into: '${you}'
                         }
-                    };
+                    },
+                    actualResponse = await behaviors.execute(request, response, [config], logger);
 
-                return behaviors.execute(request, response, [config], logger).then(actualResponse => {
-                    assert.deepEqual(actualResponse, { data: 'worldwide', outer: { inner: 'Hello, tester' } });
-                });
+                assert.deepEqual(actualResponse, { data: 'worldwide', outer: { inner: 'Hello, tester' } });
             });
 
-            promiseIt('should support lookup replacement from object request field', function () {
+            it('should support lookup replacement from object request field', async function () {
                 const request = { data: { name: 'My name is mountebank', other: 'ignore' } },
                     response = { data: 'Hello, ${you}[occupation]' },
                     logger = Logger.create(),
@@ -325,14 +328,13 @@ describe('behaviors', function () {
                             fromDataSource: { csv: { path: 'lookupTest.csv', keyColumn: 'name' } },
                             into: '${you}'
                         }
-                    };
+                    },
+                    actualResponse = await behaviors.execute(request, response, [config], logger);
 
-                return behaviors.execute(request, response, [config], logger).then(actualResponse => {
-                    assert.deepEqual(actualResponse, { data: 'Hello, tester' });
-                });
+                assert.deepEqual(actualResponse, { data: 'Hello, tester' });
             });
 
-            promiseIt('should support lookup replacement from object request field ignoring case of key', function () {
+            it('should support lookup replacement from object request field ignoring case of key', async function () {
                 const request = { data: { name: 'My name is mountebank', other: 'ignore' } },
                     response = { data: 'Hello, ${you}[occupation]' },
                     logger = Logger.create(),
@@ -342,14 +344,13 @@ describe('behaviors', function () {
                             fromDataSource: { csv: { path: 'lookupTest.csv', keyColumn: 'name' } },
                             into: '${you}'
                         }
-                    };
+                    },
+                    actualResponse = await behaviors.execute(request, response, [config], logger);
 
-                return behaviors.execute(request, response, [config], logger).then(actualResponse => {
-                    assert.deepEqual(actualResponse, { data: 'Hello, tester' });
-                });
+                assert.deepEqual(actualResponse, { data: 'Hello, tester' });
             });
 
-            promiseIt('should support lookup replacement keyed by regex indexed group from request', function () {
+            it('should support lookup replacement keyed by regex indexed group from request', async function () {
                 const request = { name: 'My name is mountebank' },
                     response = { data: 'Hello, ${you}[occupation]' },
                     logger = Logger.create(),
@@ -363,14 +364,13 @@ describe('behaviors', function () {
                             fromDataSource: { csv: { path: 'lookupTest.csv', keyColumn: 'name' } },
                             into: '${you}'
                         }
-                    };
+                    },
+                    actualResponse = await behaviors.execute(request, response, [config], logger);
 
-                return behaviors.execute(request, response, [config], logger).then(actualResponse => {
-                    assert.deepEqual(actualResponse, { data: 'Hello, tester' });
-                });
+                assert.deepEqual(actualResponse, { data: 'Hello, tester' });
             });
 
-            promiseIt('should default to first value in multi-valued request field', function () {
+            it('should default to first value in multi-valued request field', async function () {
                 const request = { data: ['Brandon', 'mountebank', 'Bob Barker'] },
                     response = { data: 'Hello, ${you}[occupation]' },
                     logger = Logger.create(),
@@ -380,14 +380,13 @@ describe('behaviors', function () {
                             fromDataSource: { csv: { path: 'lookupTest.csv', keyColumn: 'name' } },
                             into: '${you}'
                         }
-                    };
+                    },
+                    actualResponse = await behaviors.execute(request, response, [config], logger);
 
-                return behaviors.execute(request, response, [config], logger).then(actualResponse => {
-                    assert.deepEqual(actualResponse, { data: 'Hello, mountebank' });
-                });
+                assert.deepEqual(actualResponse, { data: 'Hello, mountebank' });
             });
 
-            promiseIt('should support lookup keyed by xpath match into response', function () {
+            it('should support lookup keyed by xpath match into response', async function () {
                 const request = { field: '<doc><name>mountebank</name></doc>' },
                     response = { data: 'Hello, ${you}["occupation"]' },
                     logger = Logger.create(),
@@ -397,14 +396,13 @@ describe('behaviors', function () {
                             fromDataSource: { csv: { path: 'lookupTest.csv', keyColumn: 'name' } },
                             into: '${you}'
                         }
-                    };
+                    },
+                    actualResponse = await behaviors.execute(request, response, [config], logger);
 
-                return behaviors.execute(request, response, [config], logger).then(actualResponse => {
-                    assert.deepEqual(actualResponse, { data: 'Hello, tester' });
-                });
+                assert.deepEqual(actualResponse, { data: 'Hello, tester' });
             });
 
-            promiseIt('should ignore xpath if does not match', function () {
+            it('should ignore xpath if does not match', async function () {
                 const request = { field: '<doc><name>mountebank</name></doc>' },
                     response = { data: 'Hello, ${you}[occupation]' },
                     logger = Logger.create(),
@@ -414,14 +412,13 @@ describe('behaviors', function () {
                             fromDataSource: { csv: { path: 'lookupTest.csv', keyColumn: 'name' } },
                             into: '${you}'
                         }
-                    };
+                    },
+                    actualResponse = await behaviors.execute(request, response, [config], logger);
 
-                return behaviors.execute(request, response, [config], logger).then(actualResponse => {
-                    assert.deepEqual(actualResponse, { data: 'Hello, ${you}[occupation]' });
-                });
+                assert.deepEqual(actualResponse, { data: 'Hello, ${you}[occupation]' });
             });
 
-            promiseIt('should ignore xpath if field is not xml', function () {
+            it('should ignore xpath if field is not xml', async function () {
                 const request = { field: '' },
                     response = { data: 'Hello, ${you}[occupation]' },
                     logger = Logger.create(),
@@ -431,15 +428,14 @@ describe('behaviors', function () {
                             fromDataSource: { csv: { path: 'lookupTest.csv', keyColumn: 'name' } },
                             into: '${you}'
                         }
-                    };
+                    },
+                    actualResponse = await behaviors.execute(request, response, [config], logger);
 
-                return behaviors.execute(request, response, [config], logger).then(actualResponse => {
-                    assert.deepEqual(actualResponse, { data: 'Hello, ${you}[occupation]' });
-                    logger.warn.assertLogged('[xmldom error]\tinvalid doc source\n@#[line:undefined,col:undefined] (source: "")');
-                });
+                assert.deepEqual(actualResponse, { data: 'Hello, ${you}[occupation]' });
+                logger.warn.assertLogged('[xmldom error]\tinvalid doc source\n@#[line:undefined,col:undefined] (source: "")');
             });
 
-            promiseIt('should support lookup keyed by xml attribute', function () {
+            it('should support lookup keyed by xml attribute', async function () {
                 const request = { field: '<doc><tool name="mountebank">Service virtualization</tool></doc>' },
                     response = { data: 'Hello, ${you}[occupation]' },
                     logger = Logger.create(),
@@ -449,14 +445,13 @@ describe('behaviors', function () {
                             fromDataSource: { csv: { path: 'lookupTest.csv', keyColumn: 'name' } },
                             into: '${you}'
                         }
-                    };
+                    },
+                    actualResponse = await behaviors.execute(request, response, [config], logger);
 
-                return behaviors.execute(request, response, [config], logger).then(actualResponse => {
-                    assert.deepEqual(actualResponse, { data: 'Hello, tester' });
-                });
+                assert.deepEqual(actualResponse, { data: 'Hello, tester' });
             });
 
-            promiseIt('should support lookup keyed by xml direct text', function () {
+            it('should support lookup keyed by xml direct text', async function () {
                 const request = { field: '<doc><name>mountebank</name></doc>' },
                     response = { data: 'Hello, ${you}["occupation"]' },
                     logger = Logger.create(),
@@ -466,14 +461,13 @@ describe('behaviors', function () {
                             fromDataSource: { csv: { path: 'lookupTest.csv', keyColumn: 'name' } },
                             into: '${you}'
                         }
-                    };
+                    },
+                    actualResponse = await behaviors.execute(request, response, [config], logger);
 
-                return behaviors.execute(request, response, [config], logger).then(actualResponse => {
-                    assert.deepEqual(actualResponse, { data: 'Hello, tester' });
-                });
+                assert.deepEqual(actualResponse, { data: 'Hello, tester' });
             });
 
-            promiseIt('should support lookup keyed by namespaced xml field', function () {
+            it('should support lookup keyed by namespaced xml field', async function () {
                 const request = { field: '<doc xmlns:mb="http://example.com/mb"><mb:name>mountebank</mb:name></doc>' },
                     response = { data: 'Hello, ${you}[occupation]' },
                     logger = Logger.create(),
@@ -490,14 +484,13 @@ describe('behaviors', function () {
                             fromDataSource: { csv: { path: 'lookupTest.csv', keyColumn: 'name' } },
                             into: '${you}'
                         }
-                    };
+                    },
+                    actualResponse = await behaviors.execute(request, response, [config], logger);
 
-                return behaviors.execute(request, response, [config], logger).then(actualResponse => {
-                    assert.deepEqual(actualResponse, { data: 'Hello, tester' });
-                });
+                assert.deepEqual(actualResponse, { data: 'Hello, tester' });
             });
 
-            promiseIt('should support lookup keyed by indexed xpath match', function () {
+            it('should support lookup keyed by indexed xpath match', async function () {
                 const request = { field: '<doc><name>Bob Barker</name><name>mountebank</name><name>Brandon</name></doc>' },
                     response = { data: 'Hello ${you}[occupation]' },
                     logger = Logger.create(),
@@ -507,14 +500,13 @@ describe('behaviors', function () {
                             fromDataSource: { csv: { path: 'lookupTest.csv', keyColumn: 'name' } },
                             into: '${you}'
                         }
-                    };
+                    },
+                    actualResponse = await behaviors.execute(request, response, [config], logger);
 
-                return behaviors.execute(request, response, [config], logger).then(actualResponse => {
-                    assert.deepEqual(actualResponse, { data: 'Hello mountebank' });
-                });
+                assert.deepEqual(actualResponse, { data: 'Hello mountebank' });
             });
 
-            promiseIt('should ignore jsonpath selector if field is not json', function () {
+            it('should ignore jsonpath selector if field is not json', async function () {
                 const request = { field: 'mountebank' },
                     response = { data: 'Hello, ${you}[occupation]' },
                     logger = Logger.create(),
@@ -524,15 +516,14 @@ describe('behaviors', function () {
                             fromDataSource: { csv: { path: 'lookupTest.csv', keyColumn: 'name' } },
                             into: '${you}[occupation]'
                         }
-                    };
+                    },
+                    actualResponse = await behaviors.execute(request, response, [config], logger);
 
-                return behaviors.execute(request, response, [config], logger).then(actualResponse => {
-                    assert.deepEqual(actualResponse, { data: 'Hello, ${you}[occupation]' });
-                    logger.warn.assertLogged('Cannot parse as JSON: "mountebank"');
-                });
+                assert.deepEqual(actualResponse, { data: 'Hello, ${you}[occupation]' });
+                logger.warn.assertLogged('Cannot parse as JSON: "mountebank"');
             });
 
-            promiseIt('should support lookup keyed on jsonpath selector', function () {
+            it('should support lookup keyed on jsonpath selector', async function () {
                 const request = { field: JSON.stringify({ name: 'mountebank' }) },
                     response = { data: 'Hello, ${you}[occupation]' },
                     logger = Logger.create(),
@@ -542,14 +533,13 @@ describe('behaviors', function () {
                             fromDataSource: { csv: { path: 'lookupTest.csv', keyColumn: 'name' } },
                             into: '${you}'
                         }
-                    };
+                    },
+                    actualResponse = await behaviors.execute(request, response, [config], logger);
 
-                return behaviors.execute(request, response, [config], logger).then(actualResponse => {
-                    assert.deepEqual(actualResponse, { data: 'Hello, tester' });
-                });
+                assert.deepEqual(actualResponse, { data: 'Hello, tester' });
             });
 
-            promiseIt('should not replace token if jsonpath selector does not match', function () {
+            it('should not replace token if jsonpath selector does not match', async function () {
                 const request = { field: JSON.stringify({ name: 'mountebank' }) },
                     response = { data: 'Hello, ${you}[occupation]' },
                     logger = Logger.create(),
@@ -559,14 +549,13 @@ describe('behaviors', function () {
                             fromDataSource: { csv: { path: 'lookupTest.csv', keyColumn: 'name' } },
                             into: '${you}'
                         }
-                    };
+                    },
+                    actualResponse = await behaviors.execute(request, response, [config], logger);
 
-                return behaviors.execute(request, response, [config], logger).then(actualResponse => {
-                    assert.deepEqual(actualResponse, { data: 'Hello, ${you}[occupation]' });
-                });
+                assert.deepEqual(actualResponse, { data: 'Hello, ${you}[occupation]' });
             });
 
-            promiseIt('should support lookup keyed on indexed token with jsonpath selector', function () {
+            it('should support lookup keyed on indexed token with jsonpath selector', async function () {
                 const request = { field: JSON.stringify({
                         people: [{ name: 'mountebank' }, { name: 'Bob Barker' }, { name: 'Brandon' }] }) },
                     response = { data: 'Hello, ${you}[occupation]' },
@@ -577,14 +566,13 @@ describe('behaviors', function () {
                             fromDataSource: { csv: { path: 'lookupTest.csv', keyColumn: 'name' } },
                             into: '${you}'
                         }
-                    };
+                    },
+                    actualResponse = await behaviors.execute(request, response, [config], logger);
 
-                return behaviors.execute(request, response, [config], logger).then(actualResponse => {
-                    assert.deepEqual(actualResponse, { data: 'Hello, The Price Is Right' });
-                });
+                assert.deepEqual(actualResponse, { data: 'Hello, The Price Is Right' });
             });
 
-            promiseIt('should not replace if index exceeds options', function () {
+            it('should not replace if index exceeds options', async function () {
                 const request = { field: JSON.stringify({
                         people: [{ name: 'mountebank' }, { name: 'Bob Barker' }, { name: 'Brandon' }] }) },
                     response = { data: 'Hello, ${you}[occupation]' },
@@ -595,14 +583,13 @@ describe('behaviors', function () {
                             fromDataSource: { csv: { path: 'lookupTest.csv', keyColumn: 'name' } },
                             into: '${you}'
                         }
-                    };
+                    },
+                    actualResponse = await behaviors.execute(request, response, [config], logger);
 
-                return behaviors.execute(request, response, [config], logger).then(actualResponse => {
-                    assert.deepEqual(actualResponse, { data: 'Hello, ${you}[occupation]' });
-                });
+                assert.deepEqual(actualResponse, { data: 'Hello, ${you}[occupation]' });
             });
 
-            promiseIt('should support lookup of value with embedded comma', function () {
+            it('should support lookup of value with embedded comma', async function () {
                 const request = { field: 'The Price Is Right' },
                     response = { data: 'Hello, ${you}[location]' },
                     logger = Logger.create(),
@@ -612,11 +599,10 @@ describe('behaviors', function () {
                             fromDataSource: { csv: { path: 'lookupTest.csv', keyColumn: 'occupation' } },
                             into: '${you}'
                         }
-                    };
+                    },
+                    actualResponse = await behaviors.execute(request, response, [config], logger);
 
-                return behaviors.execute(request, response, [config], logger).then(actualResponse => {
-                    assert.deepEqual(actualResponse, { data: 'Hello, Darrington, Washington' });
-                });
+                assert.deepEqual(actualResponse, { data: 'Hello, Darrington, Washington' });
             });
 
             it('should not be valid if "fromDataSource.csv" is not an object', function () {
@@ -626,6 +612,7 @@ describe('behaviors', function () {
                         into: 'TOKEN'
                     },
                     errors = behaviors.validate([{ lookup: config }]);
+
                 assert.deepEqual(errors, [{
                     code: 'bad data',
                     message: 'lookup behavior "fromDataSource.csv" field must be an object',
@@ -640,6 +627,7 @@ describe('behaviors', function () {
                         into: 'TOKEN'
                     },
                     errors = behaviors.validate([{ lookup: config }]);
+
                 assert.deepEqual(errors, [{
                     code: 'bad data',
                     message: 'lookup behavior "fromDataSource.csv.path" field required',
@@ -654,6 +642,7 @@ describe('behaviors', function () {
                         into: 'TOKEN'
                     },
                     errors = behaviors.validate([{ lookup: config }]);
+
                 assert.deepEqual(errors, [{
                     code: 'bad data',
                     message: 'lookup behavior "fromDataSource.csv.path" field must be a string, representing the path to the CSV file',
@@ -668,6 +657,7 @@ describe('behaviors', function () {
                         into: 'TOKEN'
                     },
                     errors = behaviors.validate([{ lookup: config }]);
+
                 assert.deepEqual(errors, [{
                     code: 'bad data',
                     message: 'lookup behavior "fromDataSource.csv.keyColumn" field required',
@@ -682,6 +672,7 @@ describe('behaviors', function () {
                         into: 'TOKEN'
                     },
                     errors = behaviors.validate([{ lookup: config }]);
+
                 assert.deepEqual(errors, [{
                     code: 'bad data',
                     message: 'lookup behavior "fromDataSource.csv.keyColumn" field must be a string, representing the column header to select against the "key" field',
@@ -703,7 +694,7 @@ describe('behaviors', function () {
                     fs.unlinkSync('lookupDelimiterTest.csv');
                 });
 
-                promiseIt('should not be lookup if "CSV headers" does not contains "keyColumn"', () => {
+                it('should not be lookup if "CSV headers" does not contains "keyColumn"', async function () {
                     const request = { field: JSON.stringify({ name: 'jeanpaulct' }) },
                         response = { data: 'Hello from ${you}[location]' },
                         logger = Logger.create(),
@@ -713,15 +704,14 @@ describe('behaviors', function () {
                                 fromDataSource: { csv: { path: 'lookupDelimiterTest.csv', keyColumn: 'name' } },
                                 into: '${you}'
                             }
-                        };
+                        },
+                        actualResponse = await behaviors.execute(request, response, [config], logger);
 
-                    return behaviors.execute(request, response, [config], logger).then(actualResponse => {
-                        assert.deepEqual(actualResponse, { data: 'Hello from ${you}[location]' });
-                        logger.error.assertLogged('CSV headers "name|occupation|location" with delimiter "," does not contain keyColumn:"name"');
-                    });
+                    assert.deepEqual(actualResponse, { data: 'Hello from ${you}[location]' });
+                    logger.error.assertLogged('CSV headers "name|occupation|location" with delimiter "," does not contain keyColumn:"name"');
                 });
 
-                promiseIt('should be lookup with custom delimiter', () => {
+                it('should be lookup with custom delimiter', async function () {
                     const request = { field: JSON.stringify({ name: 'jeanpaulct' }) },
                         response = { data: 'Regards from ${you}[location]' },
                         logger = Logger.create(),
@@ -731,13 +721,11 @@ describe('behaviors', function () {
                                 fromDataSource: { csv: { path: 'lookupDelimiterTest.csv', keyColumn: 'name', delimiter: '|' } },
                                 into: '${you}'
                             }
-                        };
+                        },
+                        actualResponse = await behaviors.execute(request, response, [config], logger);
 
-                    return behaviors.execute(request, response, [config], logger).then(actualResponse => {
-                        assert.deepEqual(actualResponse, { data: 'Regards from Peru' });
-                    });
+                    assert.deepEqual(actualResponse, { data: 'Regards from Peru' });
                 });
-
             });
         });
     });

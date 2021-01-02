@@ -2,13 +2,14 @@
 
 const assert = require('assert'),
     mock = require('../../mock').mock,
-    JSDOM = require('jsdom').JSDOM;
+    JSDOM = require('jsdom').JSDOM,
+    jquery = require('../../../src/public/scripts/jquery/jquery-3.3.1.min.js');
 
 function initJQuery (htmlDocument) {
     const window = global.window = new JSDOM(htmlDocument).window;
     window.scrollTo = () => {}; // not implemented in jsdom 11.x
     global.document = window.document;
-    global.$ = require('../../testHelpers').jquery(window);
+    global.$ = jquery(window);
     return window;
 }
 

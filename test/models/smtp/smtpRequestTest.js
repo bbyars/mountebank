@@ -1,12 +1,11 @@
 'use strict';
 
 const assert = require('assert'),
-    SmtpRequest = require('../../../src/models/smtp/smtpRequest'),
-    promiseIt = require('../../testHelpers').promiseIt;
+    SmtpRequest = require('../../../src/models/smtp/smtpRequest');
 
 describe('smtpRequest', function () {
     describe('#createFrom', function () {
-        promiseIt('should parse SMTP data', function () {
+        it('should parse SMTP data', async function () {
             let session = {
                     remoteAddress: 'RemoteAddress',
                     envelope: {
@@ -27,24 +26,24 @@ describe('smtpRequest', function () {
             stream.push('\r\nBody');
             stream.push(null);
 
-            return SmtpRequest.createFrom({ source: stream, session: session }).then(smtpRequest => {
-                assert.deepEqual(smtpRequest, {
-                    requestFrom: 'RemoteAddress',
-                    envelopeFrom: 'EnvelopeFrom',
-                    envelopeTo: ['EnvelopeTo'],
-                    from: { address: 'from@mb.org', name: 'From' },
-                    to: [{ address: 'to1@mb.org', name: 'To1' }, { address: 'to2@mb.org', name: 'To2' }],
-                    cc: [{ address: 'cc1@mb.org', name: 'CC1' }, { address: 'cc2@mb.org', name: 'CC2' }],
-                    bcc: [{ address: 'bcc1@mb.org', name: 'BCC1' }, { address: 'bcc2@mb.org', name: 'BCC2' }],
-                    subject: 'Subject',
-                    priority: 'normal',
-                    references: [],
-                    inReplyTo: [],
-                    ip: 'RemoteAddress',
-                    text: 'Body',
-                    html: '',
-                    attachments: []
-                });
+            const smtpRequest = await SmtpRequest.createFrom({ source: stream, session: session });
+
+            assert.deepEqual(smtpRequest, {
+                requestFrom: 'RemoteAddress',
+                envelopeFrom: 'EnvelopeFrom',
+                envelopeTo: ['EnvelopeTo'],
+                from: { address: 'from@mb.org', name: 'From' },
+                to: [{ address: 'to1@mb.org', name: 'To1' }, { address: 'to2@mb.org', name: 'To2' }],
+                cc: [{ address: 'cc1@mb.org', name: 'CC1' }, { address: 'cc2@mb.org', name: 'CC2' }],
+                bcc: [{ address: 'bcc1@mb.org', name: 'BCC1' }, { address: 'bcc2@mb.org', name: 'BCC2' }],
+                subject: 'Subject',
+                priority: 'normal',
+                references: [],
+                inReplyTo: [],
+                ip: 'RemoteAddress',
+                text: 'Body',
+                html: '',
+                attachments: []
             });
         });
     });

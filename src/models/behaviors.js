@@ -114,9 +114,8 @@ function validate (config) {
  * @param {Object} logger - The mountebank logger, useful for debugging
  * @returns {Object} A promise resolving to the response
  */
-function wait (request, response, millisecondsOrFn, logger) {
+async function wait (request, response, millisecondsOrFn, logger) {
     const fn = `(${millisecondsOrFn})()`,
-        Q = require('q'),
         exceptions = require('../util/errors');
 
     let milliseconds = parseInt(millisecondsOrFn);
@@ -128,13 +127,15 @@ function wait (request, response, millisecondsOrFn, logger) {
         catch (error) {
             logger.error('injection X=> ' + error);
             logger.error('    full source: ' + JSON.stringify(fn));
-            return Q.reject(exceptions.InjectionError('invalid wait injection',
+            return Promise.reject(exceptions.InjectionError('invalid wait injection',
                 { source: millisecondsOrFn, data: error.message }));
         }
     }
 
     logger.debug('Waiting %s ms...', milliseconds);
-    return Q(response).delay(milliseconds);
+    return new Promise(resolve => {
+        setTimeout(() => resolve(response), milliseconds);
+    });
 }
 
 function quoteForShell (obj) {
@@ -153,16 +154,13 @@ function quoteForShell (obj) {
 }
 
 function execShell (command, request, response, logger) {
-    const Q = require('q'),
-        deferred = Q.defer(),
-        util = require('util'),
-        exec = require('child_process').exec,
+    const exec = require('child_process').exec,
         env = require('../util/helpers').clone(process.env),
         maxBuffer = require('buffer').constants.MAX_STRING_LENGTH,
         isWindows = require('os').platform().indexOf('win') === 0,
         maxShellCommandLength = isWindows ? 2048 : 100000;
 
-    logger.debug('Shelling out to %s', command);
+    logger.debug(`Shelling out to ${command}`);
 
     // Switched to environment variables because of inconsistencies in Windows shell quoting
     // Leaving the CLI args for backwards compatibility
@@ -172,31 +170,30 @@ function execShell (command, request, response, logger) {
     // Windows has a pretty low character limit to the command line. When we're in danger
     // of the character limit, we'll remove the command line arguments under the assumption
     // that backwards compatibility doesn't matter when it never would have worked to begin with
-    let fullCommand = util.format('%s %s %s', command, quoteForShell(request), quoteForShell(response));
+    let fullCommand = `${command} ${quoteForShell(request)} ${quoteForShell(response)}`;
     if (fullCommand.length >= maxShellCommandLength) {
         fullCommand = command;
     }
 
-    exec(fullCommand, { env, maxBuffer }, (error, stdout, stderr) => {
-        if (error) {
-            console.log('ERROR');
-            console.log(error);
-            if (stderr) {
-                logger.error(stderr);
+    return new Promise((resolve, reject) => {
+        exec(fullCommand, { env, maxBuffer }, (error, stdout, stderr) => {
+            if (error) {
+                if (stderr) {
+                    logger.error(stderr);
+                }
+                reject(error.message);
             }
-            deferred.reject(error.message);
-        }
-        else {
-            logger.debug("Shell returned '%s'", stdout);
-            try {
-                deferred.resolve(Q(JSON.parse(stdout)));
+            else {
+                logger.debug(`Shell returned '${stdout}'`);
+                try {
+                    resolve(JSON.parse(stdout));
+                }
+                catch (err) {
+                    reject(`Shell command returned invalid JSON: '${stdout}'`);
+                }
             }
-            catch (err) {
-                deferred.reject(util.format("Shell command returned invalid JSON: '%s'", stdout));
-            }
-        }
+        });
     });
-    return deferred.promise;
 }
 
 /**
@@ -222,8 +219,7 @@ function shellTransform (request, response, command, logger) {
  * @returns {Object}
  */
 function decorate (originalRequest, response, fn, logger, imposterState) {
-    const Q = require('q'),
-        helpers = require('../util/helpers'),
+    const helpers = require('../util/helpers'),
         config = {
             request: helpers.clone(originalRequest),
             response,
@@ -243,13 +239,13 @@ function decorate (originalRequest, response, fn, logger, imposterState) {
         if (!result) {
             result = response;
         }
-        return Q(result);
+        return Promise.resolve(result);
     }
     catch (error) {
         logger.error('injection X=> ' + error);
         logger.error('    full source: ' + JSON.stringify(injected));
         logger.error('    config: ' + JSON.stringify(config));
-        return Q.reject(exceptions.InjectionError('invalid decorator injection', { source: injected, data: error.message }));
+        return Promise.reject(exceptions.InjectionError('invalid decorator injection', { source: injected, data: error.message }));
     }
 }
 
@@ -344,9 +340,9 @@ function globalStringReplace (str, substring, newSubstring, logger) {
 }
 
 function globalObjectReplace (obj, replacer) {
-    const isObject = require('../util/helpers').isObject;
+    const isObject = require('../util/helpers').isObject,
+        renames = {};
 
-    var renames = {};
     Object.keys(obj).forEach(key => {
         if (typeof obj[key] === 'string') {
             obj[key] = replacer(obj[key]);
@@ -416,53 +412,50 @@ function createRowObject (headers, rowArray) {
 }
 
 function selectRowFromCSV (csvConfig, keyValue, logger) {
-    const fs = require('fs'),
-        Q = require('q'),
+    const fs = require('fs-extra'),
         helpers = require('../util/helpers'),
         delimiter = csvConfig.delimiter || ',',
         inputStream = fs.createReadStream(csvConfig.path),
         parser = require('csv-parse')({ delimiter: delimiter }),
-        pipe = inputStream.pipe(parser),
-        deferred = Q.defer();
+        pipe = inputStream.pipe(parser);
     let headers;
 
-    inputStream.on('error', e => {
-        logger.error('Cannot read ' + csvConfig.path + ': ' + e);
-        deferred.resolve({});
-    });
+    return new Promise(resolve => {
+        inputStream.on('error', e => {
+            logger.error('Cannot read ' + csvConfig.path + ': ' + e);
+            resolve({});
+        });
 
-    pipe.on('data', function (rowArray) {
-        if (!helpers.defined(headers)) {
-            headers = rowArray;
-            const keyOnHeader = containsKey(headers, csvConfig.keyColumn);
-            if (!keyOnHeader) {
-                logger.error('CSV headers "' + headers + '" with delimiter "' + delimiter + '" does not contain keyColumn:"' + csvConfig.keyColumn + '"');
-                deferred.resolve({});
+        pipe.on('data', function (rowArray) {
+            if (!helpers.defined(headers)) {
+                headers = rowArray;
+                const keyOnHeader = containsKey(headers, csvConfig.keyColumn);
+                if (!keyOnHeader) {
+                    logger.error('CSV headers "' + headers + '" with delimiter "' + delimiter + '" does not contain keyColumn:"' + csvConfig.keyColumn + '"');
+                    resolve({});
+                }
             }
-        }
-        else {
-            const row = createRowObject(headers, rowArray);
-            if (helpers.defined(row[csvConfig.keyColumn]) && row[csvConfig.keyColumn].localeCompare(keyValue) === 0) {
-                deferred.resolve(row);
+            else {
+                const row = createRowObject(headers, rowArray);
+                if (helpers.defined(row[csvConfig.keyColumn]) && row[csvConfig.keyColumn].localeCompare(keyValue) === 0) {
+                    resolve(row);
+                }
             }
-        }
-    });
+        });
 
-    pipe.on('error', e => {
-        logger.debug('Error: ' + e);
-        deferred.resolve({});
-    });
+        pipe.on('error', e => {
+            logger.debug('Error: ' + e);
+            resolve({});
+        });
 
-    pipe.on('end', () => {
-        deferred.resolve({});
+        pipe.on('end', () => {
+            resolve({});
+        });
     });
-
-    return deferred.promise;
 }
 
 function lookupRow (lookupConfig, originalRequest, logger) {
-    const Q = require('q'),
-        from = getFrom(originalRequest, lookupConfig.key.from),
+    const from = getFrom(originalRequest, lookupConfig.key.from),
         fnMap = { regex: regexValue, xpath: xpathValue, jsonpath: jsonpathValue },
         keyValues = fnMap[lookupConfig.key.using.method](from, lookupConfig.key, logger),
         index = lookupConfig.key.index || 0;
@@ -471,7 +464,7 @@ function lookupRow (lookupConfig, originalRequest, logger) {
         return selectRowFromCSV(lookupConfig.fromDataSource.csv, keyValues[index], logger);
     }
     else {
-        return Q({});
+        return Promise.resolve({});
     }
 }
 
@@ -501,14 +494,16 @@ function replaceObjectValuesIn (response, token, values, logger) {
  * @param {Object} logger - The mountebank logger, useful in debugging
  * @returns {Object}
  */
-function lookup (originalRequest, response, lookupConfig, logger) {
-    return lookupRow(lookupConfig, originalRequest, logger).then(function (row) {
+async function lookup (originalRequest, response, lookupConfig, logger) {
+    try {
+        const row = await lookupRow(lookupConfig, originalRequest, logger);
         replaceObjectValuesIn(response, lookupConfig.into, row, logger);
         return response;
-    }).catch(error => {
+    }
+    catch (error) {
         logger.error(error);
         return response;
-    });
+    }
 }
 
 /**
@@ -520,22 +515,20 @@ function lookup (originalRequest, response, lookupConfig, logger) {
  * @param {Object} imposterState - the user-controlled state variable
  * @returns {Object}
  */
-function execute (request, response, behaviors, logger, imposterState) {
-    const Q = require('q'),
-        fnMap = {
-            wait: wait,
-            copy: copy,
-            lookup: lookup,
-            shellTransform: shellTransform,
-            decorate: decorate
-        };
-    let result = Q(response);
+async function execute (request, response, behaviors, logger, imposterState) {
+    const fnMap = {
+        wait: wait,
+        copy: copy,
+        lookup: lookup,
+        shellTransform: shellTransform,
+        decorate: decorate
+    };
+    let result = Promise.resolve(response);
 
     if (!behaviors || behaviors.length === 0 || request.isDryRun) {
         return result;
     }
 
-    const observeBehaviorDuration = metrics.behaviorDuration.startTimer();
     logger.debug('using stub response behavior ' + JSON.stringify(behaviors));
     behaviors.forEach(behavior => {
         Object.keys(behavior).forEach(key => {
@@ -544,10 +537,11 @@ function execute (request, response, behaviors, logger, imposterState) {
             }
         });
     });
-    return result.then(transformed => {
-        observeBehaviorDuration({ imposter: logger.scopePrefix });
-        return transformed;
-    });
+
+    const observeBehaviorDuration = metrics.behaviorDuration.startTimer(),
+        transformed = await result;
+    observeBehaviorDuration({ imposter: logger.scopePrefix });
+    return transformed;
 }
 
 module.exports = {

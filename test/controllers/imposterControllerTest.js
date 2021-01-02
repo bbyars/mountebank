@@ -4,9 +4,7 @@ const assert = require('assert'),
     mock = require('../mock').mock,
     Controller = require('../../src/controllers/imposterController'),
     ImpostersRepo = require('../../src/models/inMemoryImpostersRepository'),
-    FakeResponse = require('../fakes/fakeResponse'),
-    Q = require('q'),
-    promiseIt = require('../testHelpers').promiseIt;
+    FakeResponse = require('../fakes/fakeResponse');
 
 function imposterize (config) {
     const cloned = JSON.parse(JSON.stringify(config)),
@@ -22,120 +20,113 @@ function imposterize (config) {
 
 describe('ImposterController', function () {
     describe('#get', function () {
-        promiseIt('should return JSON for imposter at given id', function () {
+        it('should return JSON for imposter at given id', async function () {
             const response = FakeResponse.create(),
-                first = { port: 1, toJSON: mock().returns(Q('firstJSON')) },
-                second = { port: 2, toJSON: mock().returns(Q('secondJSON')) },
+                first = { port: 1, toJSON: mock().returns(Promise.resolve('firstJSON')) },
+                second = { port: 2, toJSON: mock().returns(Promise.resolve('secondJSON')) },
                 repo = ImpostersRepo.create(),
                 controller = Controller.create({}, repo);
 
-            return repo.add(imposterize(first))
-                .then(() => repo.add(imposterize(second)))
-                .then(() => controller.get({ url: '/imposters/2', params: { id: 2 } }, response))
-                .then(() => {
-                    assert.strictEqual(response.body, 'secondJSON');
-                });
+            await repo.add(imposterize(first));
+            await repo.add(imposterize(second));
+            await controller.get({ url: '/imposters/2', params: { id: 2 } }, response);
+
+            assert.strictEqual(response.body, 'secondJSON');
         });
 
-        promiseIt('should return replayable JSON for imposter at given id if replayable querystring set', function () {
+        it('should return replayable JSON for imposter at given id if replayable querystring set', async function () {
             const response = FakeResponse.create(),
-                firstImposter = { port: 1, toJSON: mock().returns(Q('firstJSON')) },
-                second = { port: 2, toJSON: mock().returns(Q('secondJSON')) },
+                firstImposter = { port: 1, toJSON: mock().returns(Promise.resolve('firstJSON')) },
+                second = { port: 2, toJSON: mock().returns(Promise.resolve('secondJSON')) },
                 repo = ImpostersRepo.create(),
                 controller = Controller.create({}, repo);
 
-            return repo.add(imposterize(firstImposter))
-                .then(() => repo.add(imposterize(second)))
-                .then(() => controller.get({ url: '/imposters/2?replayable=true', params: { id: 2 } }, response))
-                .then(() => {
-                    assert.strictEqual(response.body, 'secondJSON');
-                    assert.ok(second.toJSON.wasCalledWith({ replayable: true, removeProxies: false }), second.toJSON.message());
-                });
+            await repo.add(imposterize(firstImposter));
+            await repo.add(imposterize(second));
+            await controller.get({ url: '/imposters/2?replayable=true', params: { id: 2 } }, response);
+
+            assert.strictEqual(response.body, 'secondJSON');
+            assert.ok(second.toJSON.wasCalledWith({ replayable: true, removeProxies: false }), second.toJSON.message());
         });
 
-        promiseIt('should return removeProxies JSON for imposter at given id if removeProxies querystring set', function () {
+        it('should return removeProxies JSON for imposter at given id if removeProxies querystring set', async function () {
             const response = FakeResponse.create(),
-                first = { port: 1, toJSON: mock().returns(Q('firstJSON')) },
-                second = { port: 2, toJSON: mock().returns(Q('secondJSON')) },
+                first = { port: 1, toJSON: mock().returns(Promise.resolve('firstJSON')) },
+                second = { port: 2, toJSON: mock().returns(Promise.resolve('secondJSON')) },
                 repo = ImpostersRepo.create(),
                 controller = Controller.create({}, repo);
 
-            return repo.add(imposterize(first))
-                .then(() => repo.add(imposterize(second)))
-                .then(() => controller.get({ url: '/imposters/2?removeProxies=true', params: { id: 2 } }, response))
-                .then(() => {
-                    assert.strictEqual(response.body, 'secondJSON');
-                    assert.ok(second.toJSON.wasCalledWith({ replayable: false, removeProxies: true }), second.toJSON.message());
-                });
+            await repo.add(imposterize(first));
+            await repo.add(imposterize(second));
+            await controller.get({ url: '/imposters/2?removeProxies=true', params: { id: 2 } }, response);
+
+            assert.strictEqual(response.body, 'secondJSON');
+            assert.ok(second.toJSON.wasCalledWith({ replayable: false, removeProxies: true }), second.toJSON.message());
         });
 
-        promiseIt('should return replayable and removeProxies JSON for imposter at given id if both querystring values set', function () {
+        it('should return replayable and removeProxies JSON for imposter at given id if both querystring values set', async function () {
             const response = FakeResponse.create(),
-                first = { port: 1, toJSON: mock().returns(Q('firstJSON')) },
-                second = { port: 2, toJSON: mock().returns(Q('secondJSON')) },
+                first = { port: 1, toJSON: mock().returns(Promise.resolve('firstJSON')) },
+                second = { port: 2, toJSON: mock().returns(Promise.resolve('secondJSON')) },
                 repo = ImpostersRepo.create(),
                 controller = Controller.create({}, repo);
 
-            return repo.add(imposterize(first))
-                .then(() => repo.add(imposterize(second)))
-                .then(() => controller.get({ url: '/imposters/2?removeProxies=true&replayable=true', params: { id: 2 } }, response))
-                .then(() => {
-                    assert.strictEqual(response.body, 'secondJSON');
-                    assert.ok(second.toJSON.wasCalledWith({ replayable: true, removeProxies: true }), second.toJSON.message());
-                });
+            await repo.add(imposterize(first));
+            await repo.add(imposterize(second));
+            await controller.get({ url: '/imposters/2?removeProxies=true&replayable=true', params: { id: 2 } }, response);
+
+            assert.strictEqual(response.body, 'secondJSON');
+            assert.ok(second.toJSON.wasCalledWith({ replayable: true, removeProxies: true }), second.toJSON.message());
         });
 
-        promiseIt('should return normal JSON for imposter at given id if both replayable and removeProxies querystrings are false', function () {
+        it('should return normal JSON for imposter at given id if both replayable and removeProxies querystrings are false', async function () {
             const response = FakeResponse.create(),
-                first = { port: 1, toJSON: mock().returns(Q('firstJSON')) },
-                second = { port: 2, toJSON: mock().returns(Q('secondJSON')) },
+                first = { port: 1, toJSON: mock().returns(Promise.resolve('firstJSON')) },
+                second = { port: 2, toJSON: mock().returns(Promise.resolve('secondJSON')) },
                 repo = ImpostersRepo.create(),
                 controller = Controller.create({}, repo);
 
-            return repo.add(imposterize(first))
-                .then(() => repo.add(imposterize(second)))
-                .then(() => controller.get({ url: '/imposters/2?replayable=false&removeProxies=false', params: { id: 2 } }, response))
-                .then(() => {
-                    assert.strictEqual(response.body, 'secondJSON');
-                    assert.ok(second.toJSON.wasCalledWith({ replayable: false, removeProxies: false }), second.toJSON.message());
-                });
+            await repo.add(imposterize(first));
+            await repo.add(imposterize(second));
+            await controller.get({ url: '/imposters/2?replayable=false&removeProxies=false', params: { id: 2 } }, response);
+
+            assert.strictEqual(response.body, 'secondJSON');
+            assert.ok(second.toJSON.wasCalledWith({ replayable: false, removeProxies: false }), second.toJSON.message());
         });
     });
 
     describe('#del', function () {
-        promiseIt('should stop the imposter', function () {
+        it('should stop the imposter', async function () {
             const response = FakeResponse.create(),
                 imposter = {
                     port: 1,
-                    stop: mock().returns(Q(true)),
-                    toJSON: mock().returns(Q('JSON'))
+                    stop: mock().returns(Promise.resolve(true)),
+                    toJSON: mock().returns(Promise.resolve('JSON'))
                 },
                 repo = ImpostersRepo.create(),
                 controller = Controller.create({}, repo);
 
-            return repo.add(imposterize(imposter))
-                .then(() => controller.del({ url: '/imposters/1', params: { id: 1 } }, response))
-                .then(() => {
-                    assert(imposter.stop.wasCalled());
-                });
+            await repo.add(imposterize(imposter));
+            await controller.del({ url: '/imposters/1', params: { id: 1 } }, response);
+
+            assert.ok(imposter.stop.wasCalled());
         });
 
-        promiseIt('should remove the imposter from the list', function () {
+        it('should remove the imposter from the list', async function () {
             const response = FakeResponse.create(),
                 imposter = {
                     port: 1,
-                    stop: mock().returns(Q(true)),
-                    toJSON: mock().returns(Q('JSON'))
+                    stop: mock().returns(Promise.resolve(true)),
+                    toJSON: mock().returns(Promise.resolve('JSON'))
                 },
                 repo = ImpostersRepo.create(),
                 controller = Controller.create({}, repo);
 
-            return repo.add(imposterize(imposter))
-                .then(() => controller.del({ url: '/imposters/1', params: { id: 1 } }, response))
-                .then(() => repo.all())
-                .then(all => {
-                    assert.deepEqual(all, []);
-                });
+            await repo.add(imposterize(imposter));
+            await controller.del({ url: '/imposters/1', params: { id: 1 } }, response);
+
+            const all = await repo.all();
+            assert.deepEqual(all, []);
         });
 
         it('should send request even if no imposter exists', async function () {
@@ -147,101 +138,96 @@ describe('ImposterController', function () {
             assert.deepEqual(response.body, {});
         });
 
-        promiseIt('should return replayable JSON for imposter at given id if replayable querystring set', function () {
+        it('should return replayable JSON for imposter at given id if replayable querystring set', async function () {
             const response = FakeResponse.create(),
                 imposter = {
                     port: 1,
-                    stop: mock().returns(Q(true)),
-                    toJSON: mock().returns(Q('JSON'))
+                    stop: mock().returns(Promise.resolve(true)),
+                    toJSON: mock().returns(Promise.resolve('JSON'))
                 },
                 repo = ImpostersRepo.create(),
                 controller = Controller.create({}, repo);
 
-            return repo.add(imposterize(imposter))
-                .then(() => controller.del({ url: '/imposters/1?replayable=true', params: { id: 1 } }, response))
-                .then(() => {
-                    assert.ok(imposter.toJSON.wasCalledWith({ replayable: true, removeProxies: false }), imposter.toJSON.message());
-                });
+            await repo.add(imposterize(imposter));
+            await controller.del({ url: '/imposters/1?replayable=true', params: { id: 1 } }, response);
+
+            assert.ok(imposter.toJSON.wasCalledWith({ replayable: true, removeProxies: false }), imposter.toJSON.message());
         });
 
-        promiseIt('should return removeProxies JSON for imposter at given id if removeProxies querystring set', function () {
+        it('should return removeProxies JSON for imposter at given id if removeProxies querystring set', async function () {
             const response = FakeResponse.create(),
                 imposter = {
                     port: 1,
-                    stop: mock().returns(Q(true)),
-                    toJSON: mock().returns(Q('JSON'))
+                    stop: mock().returns(Promise.resolve(true)),
+                    toJSON: mock().returns(Promise.resolve('JSON'))
                 },
                 repo = ImpostersRepo.create(),
                 controller = Controller.create({}, repo);
 
-            return repo.add(imposterize(imposter))
-                .then(() => controller.del({ url: '/imposters/1?removeProxies=true', params: { id: 1 } }, response))
-                .then(() => {
-                    assert.ok(imposter.toJSON.wasCalledWith({ replayable: false, removeProxies: true }), imposter.toJSON.message());
-                });
+            await repo.add(imposterize(imposter));
+            await controller.del({ url: '/imposters/1?removeProxies=true', params: { id: 1 } }, response);
+
+            assert.ok(imposter.toJSON.wasCalledWith({ replayable: false, removeProxies: true }), imposter.toJSON.message());
         });
 
-        promiseIt('should return replayable and removeProxies JSON for imposter at given id if both querystring values set', function () {
+        it('should return replayable and removeProxies JSON for imposter at given id if both querystring values set', async function () {
             const response = FakeResponse.create(),
                 imposter = {
                     port: 1,
-                    stop: mock().returns(Q(true)),
-                    toJSON: mock().returns(Q('JSON'))
+                    stop: mock().returns(Promise.resolve(true)),
+                    toJSON: mock().returns(Promise.resolve('JSON'))
                 },
                 repo = ImpostersRepo.create(),
                 controller = Controller.create({}, repo);
 
-            return repo.add(imposterize(imposter))
-                .then(() => controller.del({ url: '/imposters/1?removeProxies=true&replayable=true', params: { id: 1 } }, response))
-                .then(() => {
-                    assert.ok(imposter.toJSON.wasCalledWith({ replayable: true, removeProxies: true }), imposter.toJSON.message());
-                });
+            await repo.add(imposterize(imposter));
+            await controller.del({ url: '/imposters/1?removeProxies=true&replayable=true', params: { id: 1 } }, response);
+
+            assert.ok(imposter.toJSON.wasCalledWith({ replayable: true, removeProxies: true }), imposter.toJSON.message());
         });
 
-        promiseIt('should send default JSON for the deleted the imposter if both replayable and removeProxies querystrings are missing', function () {
+        it('should send default JSON for the deleted the imposter if both replayable and removeProxies querystrings are missing', async function () {
             const response = FakeResponse.create(),
                 imposter = {
                     port: 1,
-                    stop: mock().returns(Q(true)),
-                    toJSON: mock().returns(Q('JSON'))
+                    stop: mock().returns(Promise.resolve(true)),
+                    toJSON: mock().returns(Promise.resolve('JSON'))
                 },
                 repo = ImpostersRepo.create(),
                 controller = Controller.create({}, repo);
 
-            return repo.add(imposterize(imposter))
-                .then(() => controller.del({ url: '/imposters/1', params: { id: 1 } }, response))
-                .then(() => {
-                    assert.ok(imposter.toJSON.wasCalledWith({ replayable: false, removeProxies: false }), imposter.toJSON.message());
-                });
+            await repo.add(imposterize(imposter));
+            await controller.del({ url: '/imposters/1', params: { id: 1 } }, response);
+
+            assert.ok(imposter.toJSON.wasCalledWith({ replayable: false, removeProxies: false }), imposter.toJSON.message());
         });
     });
 
     describe('#putStubs', function () {
-        promiseIt('should return a 400 if no stubs element', function () {
+        it('should return a 400 if no stubs element', async function () {
             const response = FakeResponse.create(),
                 imposter = {
                     port: 1,
-                    toJSON: mock().returns(Q({})),
+                    toJSON: mock().returns(Promise.resolve({})),
                     overwriteStubs: mock()
                 },
                 logger = require('../fakes/fakeLogger').create(),
                 repo = ImpostersRepo.create(),
                 controller = Controller.create({}, repo, logger, false);
 
-            return repo.add(imposterize(imposter))
-                .then(() => controller.putStubs({ params: { id: 1 }, body: {} }, response))
-                .then(() => {
-                    assert.strictEqual(response.statusCode, 400);
-                    assert.strictEqual(response.body.errors.length, 1);
-                    assert.strictEqual(response.body.errors[0].code, 'bad data');
-                });
+            await repo.add(imposterize(imposter));
+            await controller.putStubs({ params: { id: 1 }, body: {} }, response);
+
+            assert.strictEqual(response.statusCode, 400);
+            assert.strictEqual(response.body.errors.length, 1);
+            assert.strictEqual(response.body.errors[0].code, 'bad data');
         });
 
-        promiseIt('should return a 400 if no stubs is not an array', function () {
+        it('should return a 400 if no stubs is not an array', async function () {
             const response = FakeResponse.create(),
                 imposter = {
                     port: 1,
-                    toJSON: mock().returns(Q({})),
+                    toJSON: mock().returns(Promise.resolve({})),
                     overwriteStubs: mock()
                 },
                 repo = ImpostersRepo.create(),
@@ -252,22 +238,21 @@ describe('ImposterController', function () {
                     body: { stubs: 1 }
                 };
 
-            return repo.add(imposterize(imposter))
-                .then(() => controller.putStubs(request, response))
-                .then(() => {
-                    assert.strictEqual(response.statusCode, 400);
-                    assert.strictEqual(response.body.errors.length, 1);
-                    assert.strictEqual(response.body.errors[0].code, 'bad data');
-                });
+            await repo.add(imposterize(imposter));
+            await controller.putStubs(request, response);
+
+            assert.strictEqual(response.statusCode, 400);
+            assert.strictEqual(response.body.errors.length, 1);
+            assert.strictEqual(response.body.errors[0].code, 'bad data');
         });
 
-        promiseIt('should return a 400 if no stub fails dry run validation', function () {
+        it('should return a 400 if no stub fails dry run validation', async function () {
             const response = FakeResponse.create(),
                 imposter = {
                     port: 1,
                     protocol: 'test',
                     creationRequest: { port: 1, protocol: 'test', stubs: [{}] },
-                    toJSON: mock().returns(Q({ port: 1, protocol: 'test', stubs: [{}] }))
+                    toJSON: mock().returns(Promise.resolve({ port: 1, protocol: 'test', stubs: [{}] }))
                 },
                 repo = ImpostersRepo.create(),
                 Protocol = { testRequest: {} },
@@ -278,21 +263,20 @@ describe('ImposterController', function () {
                     body: { stubs: [{ responses: [{ invalid: 1 }] }] }
                 };
 
-            return repo.add(imposterize(imposter))
-                .then(() => controller.putStubs(request, response))
-                .then(() => {
-                    assert.strictEqual(response.statusCode, 400);
-                    assert.strictEqual(response.body.errors.length, 1);
-                    assert.strictEqual(response.body.errors[0].code, 'bad data');
-                });
+            await repo.add(imposterize(imposter));
+            await controller.putStubs(request, response);
+
+            assert.strictEqual(response.statusCode, 400);
+            assert.strictEqual(response.body.errors.length, 1);
+            assert.strictEqual(response.body.errors[0].code, 'bad data');
         });
 
-        promiseIt('should return a 400 if trying to add injection without --allowInjection set', function () {
+        it('should return a 400 if trying to add injection without --allowInjection set', async function () {
             const response = FakeResponse.create(),
                 imposter = {
                     port: 1,
                     protocol: 'test',
-                    toJSON: mock().returns(Q({ protocol: 'test' }))
+                    toJSON: mock().returns(Promise.resolve({ protocol: 'test' }))
                 },
                 repo = ImpostersRepo.create(),
                 Protocol = { testRequest: {} },
@@ -303,23 +287,22 @@ describe('ImposterController', function () {
                     body: { stubs: [{ responses: [{ inject: '() => {}' }] }] }
                 };
 
-            return repo.add(imposterize(imposter))
-                .then(() => controller.putStubs(request, response))
-                .then(() => {
-                    assert.strictEqual(response.statusCode, 400);
-                    assert.strictEqual(response.body.errors.length, 1);
-                    assert.strictEqual(response.body.errors[0].code, 'invalid injection');
-                });
+            await repo.add(imposterize(imposter));
+            await controller.putStubs(request, response);
+
+            assert.strictEqual(response.statusCode, 400);
+            assert.strictEqual(response.body.errors.length, 1);
+            assert.strictEqual(response.body.errors[0].code, 'invalid injection');
         });
     });
 
     describe('#putStub', function () {
-        promiseIt('should return a 404 if stubIndex is not an integer', function () {
+        it('should return a 404 if stubIndex is not an integer', async function () {
             const response = FakeResponse.create(),
                 imposter = {
                     port: 1,
                     protocol: 'test',
-                    stubsJSON: mock().returns(Q([]))
+                    stubsJSON: mock().returns(Promise.resolve([]))
                 },
                 repo = ImpostersRepo.create(),
                 Protocol = { testRequest: {} },
@@ -330,24 +313,23 @@ describe('ImposterController', function () {
                     body: { stubs: [{ responses: [{ is: 'response' }] }] }
                 };
 
-            return repo.add(imposterize(imposter))
-                .then(() => controller.putStub(request, response))
-                .then(() => {
-                    assert.strictEqual(response.statusCode, 404);
-                    assert.strictEqual(response.body.errors.length, 1);
-                    assert.deepEqual(response.body.errors[0], {
-                        code: 'bad data',
-                        message: "'stubIndex' must be a valid integer, representing the array index position of the stub to replace"
-                    });
-                });
+            await repo.add(imposterize(imposter));
+            await controller.putStub(request, response);
+
+            assert.strictEqual(response.statusCode, 404);
+            assert.strictEqual(response.body.errors.length, 1);
+            assert.deepEqual(response.body.errors[0], {
+                code: 'bad data',
+                message: "'stubIndex' must be a valid integer, representing the array index position of the stub to replace"
+            });
         });
 
-        promiseIt('should return a 404 if stubIndex is less than 0', function () {
+        it('should return a 404 if stubIndex is less than 0', async function () {
             const response = FakeResponse.create(),
                 imposter = {
                     port: 1,
                     protocol: 'test',
-                    stubsJSON: mock().returns(Q([]))
+                    stubsJSON: mock().returns(Promise.resolve([]))
                 },
                 repo = ImpostersRepo.create(),
                 Protocol = { testRequest: {} },
@@ -358,24 +340,23 @@ describe('ImposterController', function () {
                     body: { stubs: [{ responses: [{ is: 'response' }] }] }
                 };
 
-            return repo.add(imposterize(imposter))
-                .then(() => controller.putStub(request, response))
-                .then(() => {
-                    assert.strictEqual(response.statusCode, 404);
-                    assert.strictEqual(response.body.errors.length, 1);
-                    assert.deepEqual(response.body.errors[0], {
-                        code: 'bad data',
-                        message: "'stubIndex' must be a valid integer, representing the array index position of the stub to replace"
-                    });
-                });
+            await repo.add(imposterize(imposter));
+            await controller.putStub(request, response);
+
+            assert.strictEqual(response.statusCode, 404);
+            assert.strictEqual(response.body.errors.length, 1);
+            assert.deepEqual(response.body.errors[0], {
+                code: 'bad data',
+                message: "'stubIndex' must be a valid integer, representing the array index position of the stub to replace"
+            });
         });
 
-        promiseIt('should return a 404 if stubIndex is greater then highest index of stubs array', function () {
+        it('should return a 404 if stubIndex is greater then highest index of stubs array', async function () {
             const response = FakeResponse.create(),
                 imposter = {
                     port: 1,
                     protocol: 'test',
-                    stubsJSON: mock().returns(Q([0, 1, 2]))
+                    stubsJSON: mock().returns(Promise.resolve([0, 1, 2]))
                 },
                 repo = ImpostersRepo.create(),
                 Protocol = { testRequest: {} },
@@ -386,24 +367,23 @@ describe('ImposterController', function () {
                     body: { stubs: [{ responses: [{ is: 'response' }] }] }
                 };
 
-            return repo.add(imposterize(imposter))
-                .then(() => controller.putStub(request, response))
-                .then(() => {
-                    assert.strictEqual(response.statusCode, 404);
-                    assert.strictEqual(response.body.errors.length, 1);
-                    assert.deepEqual(response.body.errors[0], {
-                        code: 'bad data',
-                        message: "'stubIndex' must be a valid integer, representing the array index position of the stub to replace"
-                    });
-                });
+            await repo.add(imposterize(imposter));
+            await controller.putStub(request, response);
+
+            assert.strictEqual(response.statusCode, 404);
+            assert.strictEqual(response.body.errors.length, 1);
+            assert.deepEqual(response.body.errors[0], {
+                code: 'bad data',
+                message: "'stubIndex' must be a valid integer, representing the array index position of the stub to replace"
+            });
         });
 
-        promiseIt('should return a 400 if no stub fails dry run validation', function () {
+        it('should return a 400 if no stub fails dry run validation', async function () {
             const response = FakeResponse.create(),
                 imposter = {
                     port: 1,
                     protocol: 'test',
-                    toJSON: mock().returns(Q({ protocol: 'test' })),
+                    toJSON: mock().returns(Promise.resolve({ protocol: 'test' })),
                     creationRequest: { port: 1, protocol: 'test', stubs: [{}] }
                 },
                 repo = ImpostersRepo.create(),
@@ -415,25 +395,24 @@ describe('ImposterController', function () {
                     body: { responses: [{ INVALID: 'response' }] }
                 };
 
-            return repo.add(imposter)
-                .then(() => controller.putStub(request, response))
-                .then(() => {
-                    assert.strictEqual(response.statusCode, 400);
-                    assert.strictEqual(response.body.errors.length, 1);
-                    assert.deepEqual(response.body.errors[0], {
-                        code: 'bad data',
-                        message: 'unrecognized response type',
-                        source: { INVALID: 'response' }
-                    });
-                });
+            await repo.add(imposter);
+            await controller.putStub(request, response);
+
+            assert.strictEqual(response.statusCode, 400);
+            assert.strictEqual(response.body.errors.length, 1);
+            assert.deepEqual(response.body.errors[0], {
+                code: 'bad data',
+                message: 'unrecognized response type',
+                source: { INVALID: 'response' }
+            });
         });
 
-        promiseIt('should return a 400 if no adding inject without --allowInjection', function () {
+        it('should return a 400 if no adding inject without --allowInjection', async function () {
             const response = FakeResponse.create(),
                 imposter = {
                     port: 1,
                     protocol: 'test',
-                    toJSON: mock().returns(Q({ protocol: 'test' })),
+                    toJSON: mock().returns(Promise.resolve({ protocol: 'test' })),
                     creationRequest: { port: 1, protocol: 'test', stubs: [{}] }
                 },
                 repo = ImpostersRepo.create(),
@@ -445,27 +424,26 @@ describe('ImposterController', function () {
                     body: { responses: [{ inject: '() => {}' }] }
                 };
 
-            return repo.add(imposter)
-                .then(() => controller.putStub(request, response))
-                .then(() => {
-                    assert.strictEqual(response.statusCode, 400);
-                    assert.strictEqual(response.body.errors.length, 1);
-                    assert.deepEqual(response.body.errors[0], {
-                        code: 'invalid injection',
-                        message: 'JavaScript injection is not allowed unless mb is run with the --allowInjection flag',
-                        source: { responses: [{ inject: '() => {}' }] }
-                    });
-                });
+            await repo.add(imposter);
+            await controller.putStub(request, response);
+
+            assert.strictEqual(response.statusCode, 400);
+            assert.strictEqual(response.body.errors.length, 1);
+            assert.deepEqual(response.body.errors[0], {
+                code: 'invalid injection',
+                message: 'JavaScript injection is not allowed unless mb is run with the --allowInjection flag',
+                source: { responses: [{ inject: '() => {}' }] }
+            });
         });
     });
 
     describe('#deleteStub', function () {
-        promiseIt('should return a 404 if stubIndex is greater then highest index of stubs array', function () {
+        it('should return a 404 if stubIndex is greater then highest index of stubs array', async function () {
             const response = FakeResponse.create(),
                 imposter = {
                     port: 1,
                     protocol: 'test',
-                    stubsJSON: mock().returns(Q([0, 1, 2]))
+                    stubsJSON: mock().returns(Promise.resolve([0, 1, 2]))
                 },
                 repo = ImpostersRepo.create(),
                 Protocol = { testRequest: {} },
@@ -476,16 +454,15 @@ describe('ImposterController', function () {
                     body: { stubs: [{ responses: [{ is: 'response' }] }] }
                 };
 
-            return repo.add(imposterize(imposter))
-                .then(() => controller.deleteStub(request, response))
-                .then(() => {
-                    assert.strictEqual(response.statusCode, 404);
-                    assert.strictEqual(response.body.errors.length, 1);
-                    assert.deepEqual(response.body.errors[0], {
-                        code: 'bad data',
-                        message: "'stubIndex' must be a valid integer, representing the array index position of the stub to replace"
-                    });
-                });
+            await repo.add(imposterize(imposter));
+            await controller.deleteStub(request, response);
+
+            assert.strictEqual(response.statusCode, 404);
+            assert.strictEqual(response.body.errors.length, 1);
+            assert.deepEqual(response.body.errors[0], {
+                code: 'bad data',
+                message: "'stubIndex' must be a valid integer, representing the array index position of the stub to replace"
+            });
         });
     });
 });

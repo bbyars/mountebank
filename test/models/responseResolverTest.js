@@ -4,9 +4,7 @@ const assert = require('assert'),
     ResponseResolver = require('../../src/models/responseResolver'),
     createStubsRepository = require('../../src/models/inMemoryImpostersRepository').create().createStubsRepository,
     helpers = require('../../src/util/helpers'),
-    promiseIt = require('../testHelpers').promiseIt,
     mock = require('../mock').mock,
-    Q = require('q'),
     Logger = require('../fakes/fakeLogger'),
     util = require('util');
 
@@ -23,155 +21,151 @@ describe('responseResolver', function () {
         return responses.map(response => cleanedProxyResponse(response));
     }
 
-    function stubListFor (stubs) {
-        return stubs.toJSON().then(result => {
-            result.forEach(stub => {
-                stub.responses = proxyResponses(stub.responses);
-            });
-            return result;
+    async function stubListFor (stubs) {
+        const result = await stubs.toJSON();
+        result.forEach(stub => {
+            stub.responses = proxyResponses(stub.responses);
+        });
+        return result;
+    }
+
+    async function getResponseFrom (stubs) {
+        // Simulates what the imposter / stubRepository do
+        const match = await stubs.first(predicates => predicates.length === 0),
+            response = await match.stub.nextResponse();
+        return response;
+    }
+
+    async function delay (duration) {
+        return new Promise(resolve => {
+            setTimeout(resolve, duration);
         });
     }
 
-    function getResponseFrom (stubs) {
-        // Simulates what the imposter / stubRepository do
-        return stubs.first(predicates => predicates.length === 0)
-            .then(match => match.stub.nextResponse());
-    }
-
     describe('#resolve', function () {
-        promiseIt('should resolve "is" without transformation', function () {
+        it('should resolve "is" without transformation', async function () {
             const proxy = {},
                 stubs = createStubsRepository(),
                 resolver = ResponseResolver.create(stubs, proxy),
                 logger = Logger.create(),
                 responseConfig = { is: 'value' };
 
-            return resolver.resolve(responseConfig, 'request', logger, {}).then(response => {
-                assert.strictEqual(response, 'value');
-            });
+            const response = await resolver.resolve(responseConfig, 'request', logger, {});
+
+            assert.strictEqual(response, 'value');
         });
 
-        promiseIt('should resolve "proxy" by delegating to the proxy for in process resolution', function () {
-            const proxy = { to: mock().returns(Q({ key: 'value' })) },
+        it('should resolve "proxy" by delegating to the proxy for in process resolution', async function () {
+            const proxy = { to: mock().returns(Promise.resolve({ key: 'value' })) },
                 stubs = createStubsRepository(),
                 resolver = ResponseResolver.create(stubs, proxy),
                 logger = Logger.create();
 
             // Call through the stubRepository to have it add the setMetadata function
-            return stubs.add({ responses: [{ proxy: { to: 'where' } }] })
-                .then(() => getResponseFrom(stubs))
-                .then(responseConfig => resolver.resolve(responseConfig, 'request', logger, {}))
-                .then(response => {
-                    assert.strictEqual(response.key, 'value');
-                    assert.ok(proxy.to.wasCalledWith('where', 'request', {
-                        to: 'where',
-                        mode: 'proxyOnce'
-                    }), proxy.to.message());
-                });
+            await stubs.add({ responses: [{ proxy: { to: 'where' } }] });
+            const responseConfig = await getResponseFrom(stubs),
+                response = await resolver.resolve(responseConfig, 'request', logger, {});
+
+            assert.strictEqual(response.key, 'value');
+            assert.ok(proxy.to.wasCalledWith('where', 'request', {
+                to: 'where',
+                mode: 'proxyOnce'
+            }), proxy.to.message());
         });
 
-        promiseIt('should resolve "proxy" by returning proxy configuration for out of process resolution', function () {
+        it('should resolve "proxy" by returning proxy configuration for out of process resolution', async function () {
             const stubs = createStubsRepository(),
                 resolver = ResponseResolver.create(stubs, null, 'CALLBACK URL'),
                 logger = Logger.create();
 
             // Call through the stubRepository to have it add the setMetadata function
-            return stubs.add({ responses: [{ proxy: { to: 'where' } }] })
-                .then(() => getResponseFrom(stubs))
-                .then(responseConfig => resolver.resolve(responseConfig, 'request', logger, {}))
-                .then(response => {
-                    assert.deepEqual(response, {
-                        proxy: { to: 'where', mode: 'proxyOnce' },
-                        request: 'request',
-                        callbackURL: 'CALLBACK URL/0'
-                    });
-                });
+            await stubs.add({ responses: [{ proxy: { to: 'where' } }] });
+            const responseConfig = await getResponseFrom(stubs),
+                response = await resolver.resolve(responseConfig, 'request', logger, {});
+
+            assert.deepEqual(response, {
+                proxy: { to: 'where', mode: 'proxyOnce' },
+                request: 'request',
+                callbackURL: 'CALLBACK URL/0'
+            });
         });
 
-        promiseIt('should default to "proxyOnce" mode', function () {
-            const proxy = { to: mock().returns(Q({ key: 'value' })) },
+        it('should default to "proxyOnce" mode', async function () {
+            const proxy = { to: mock().returns(Promise.resolve({ key: 'value' })) },
                 stubs = createStubsRepository(),
                 resolver = ResponseResolver.create(stubs, proxy),
                 logger = Logger.create();
 
             // Call through the stubRepository to have it add the setMetadata function
-            return stubs.add({ responses: [{ proxy: { to: 'where' } }] }).then(() => {
-                return getResponseFrom(stubs);
-            }).then(responseConfig => {
-                return resolver.resolve(responseConfig, 'request', logger, {}).then(() => {
-                    assert.strictEqual(responseConfig.proxy.mode, 'proxyOnce');
-                });
-            });
+            await stubs.add({ responses: [{ proxy: { to: 'where' } }] });
+            const responseConfig = await getResponseFrom(stubs);
+            await resolver.resolve(responseConfig, 'request', logger, {});
+
+            assert.strictEqual(responseConfig.proxy.mode, 'proxyOnce');
         });
 
-        promiseIt('should change unrecognized mode to "proxyOnce" mode', function () {
-            const proxy = { to: mock().returns(Q({ key: 'value' })) },
+        it('should change unrecognized mode to "proxyOnce" mode', async function () {
+            const proxy = { to: mock().returns(Promise.resolve({ key: 'value' })) },
                 stubs = createStubsRepository(),
                 resolver = ResponseResolver.create(stubs, proxy),
                 logger = Logger.create();
 
             // Call through the stubRepository to have it add the setMetadata function
-            return stubs.add({ responses: [{ proxy: { to: 'where', mode: 'unrecognized' } }] }).then(() => {
-                return getResponseFrom(stubs);
-            }).then(responseConfig => {
-                return resolver.resolve(responseConfig, 'request', logger, {}).then(() => {
-                    assert.strictEqual(responseConfig.proxy.mode, 'proxyOnce');
-                });
-            });
+            await stubs.add({ responses: [{ proxy: { to: 'where', mode: 'unrecognized' } }] });
+            const responseConfig = await getResponseFrom(stubs);
+            await resolver.resolve(responseConfig, 'request', logger, {});
+
+            assert.strictEqual(responseConfig.proxy.mode, 'proxyOnce');
         });
 
-        promiseIt('should resolve proxy in proxyOnce mode by adding a new "is" stub to the front of the list', function () {
-            const proxy = { to: mock().returns(Q({ key: 'value' })) },
+        it('should resolve proxy in proxyOnce mode by adding a new "is" stub to the front of the list', async function () {
+            const proxy = { to: mock().returns(Promise.resolve({ key: 'value' })) },
                 stubs = createStubsRepository(),
                 resolver = ResponseResolver.create(stubs, proxy),
                 logger = Logger.create();
 
-            return stubs.add({ responses: [], predicates: [{ equals: { ignore: 'true' } }] })
-                .then(() => stubs.add({ responses: [{ proxy: { to: 'where' } }] }))
-                .then(() => getResponseFrom(stubs))
-                .then(responseConfig => resolver.resolve(responseConfig, {}, logger, {}))
-                .then(response => {
-                    assert.strictEqual(response.key, 'value');
-                    return stubs.toJSON();
-                }).then(all => {
-                    const stubResponses = all.map(stub => proxyResponses(stub.responses));
-                    assert.deepEqual(stubResponses, [
-                        [],
-                        [{ is: { key: 'value' } }],
-                        [{ proxy: { to: 'where' } }]
-                    ]);
-                });
+            await stubs.add({ responses: [], predicates: [{ equals: { ignore: 'true' } }] });
+            await stubs.add({ responses: [{ proxy: { to: 'where' } }] });
+            const responseConfig = await getResponseFrom(stubs),
+                response = await resolver.resolve(responseConfig, {}, logger, {}),
+                all = await stubs.toJSON(),
+                stubResponses = all.map(stub => proxyResponses(stub.responses));
+
+            assert.strictEqual(response.key, 'value');
+            assert.deepEqual(stubResponses, [
+                [],
+                [{ is: { key: 'value' } }],
+                [{ proxy: { to: 'where' } }]
+            ]);
         });
 
-        promiseIt('should support adding wait behavior to newly created stub for in process imposters', function () {
-            const proxy = { to: mock().returns(Q.delay(100).then(() => Q({ data: 'value' }))) },
+        it('should support adding wait behavior to newly created stub for in process imposters', async function () {
+            const proxy = { to: mock().returns(delay(100).then(() => Promise.resolve({ data: 'value' }))) },
                 stubs = createStubsRepository(),
                 resolver = ResponseResolver.create(stubs, proxy),
                 logger = Logger.create(),
                 request = {};
 
-            return stubs.add({ responses: [{ proxy: { to: 'where', addWaitBehavior: true } }] })
-                .then(() => getResponseFrom(stubs))
-                .then(responseConfig => resolver.resolve(responseConfig, request, logger, {}))
-                .then(() => stubs.toJSON())
-                .then(all => {
-                    const stubResponses = all.map(stub => stub.responses),
-                        wait = stubResponses[0][0].is._proxyResponseTime;
-                    assert.ok(wait > 90); // allow some variability
-                    assert.deepEqual(stubResponses, [
-                        [{ is: { data: 'value', _proxyResponseTime: wait }, behaviors: [{ wait: wait }] }],
-                        [{ proxy: { to: 'where', addWaitBehavior: true } }]
-                    ]);
-                });
+            await stubs.add({ responses: [{ proxy: { to: 'where', addWaitBehavior: true } }] });
+            const responseConfig = await getResponseFrom(stubs);
+            await resolver.resolve(responseConfig, request, logger, {});
+            const all = await stubs.toJSON(),
+                stubResponses = all.map(stub => stub.responses),
+                wait = stubResponses[0][0].is._proxyResponseTime;
+
+            assert.ok(wait > 90); // allow some variability
+            assert.deepEqual(stubResponses, [
+                [{ is: { data: 'value', _proxyResponseTime: wait }, behaviors: [{ wait: wait }] }],
+                [{ proxy: { to: 'where', addWaitBehavior: true } }]
+            ]);
         });
 
-        promiseIt('should support adding wait behavior to newly created response in proxyAlways mode', function () {
+        it('should support adding wait behavior to newly created response in proxyAlways mode', async function () {
             let call = 0;
-            function proxyReturn () {
-                return Q.delay(100).then(() => {
-                    call += 1;
-                    return Q({ data: call });
-                });
+            async function proxyReturn () {
+                await delay(100);
+                call += 1;
+                return { data: call };
             }
 
             const proxy = { to: proxyReturn },
@@ -180,30 +174,30 @@ describe('responseResolver', function () {
                 logger = Logger.create(),
                 request = {};
 
-            return stubs.add({ responses: [{ proxy: { to: 'where', mode: 'proxyAlways', addWaitBehavior: true } }] })
-                .then(() => getResponseFrom(stubs))
-                .then(responseConfig => {
-                    // First call adds the stub, second call adds a response
-                    return resolver.resolve(responseConfig, request, logger, {})
-                        .then(() => resolver.resolve(responseConfig, request, logger, {}));
-                }).then(() => stubs.toJSON())
-                .then(all => {
-                    const stubResponses = all.map(stub => stub.responses),
-                        firstWait = stubResponses[1][0].is._proxyResponseTime,
-                        secondWait = stubResponses[1][1].is._proxyResponseTime;
-                    assert.deepEqual(stubResponses, [
-                        [{ proxy: { to: 'where', mode: 'proxyAlways', addWaitBehavior: true } }],
-                        [
-                            { is: { data: 1, _proxyResponseTime: firstWait }, behaviors: [{ wait: firstWait }] },
-                            { is: { data: 2, _proxyResponseTime: secondWait }, behaviors: [{ wait: secondWait }] }
-                        ]
-                    ]);
-                });
+            await stubs.add({ responses: [{ proxy: { to: 'where', mode: 'proxyAlways', addWaitBehavior: true } }] });
+            const responseConfig = await getResponseFrom(stubs);
+
+            // First call adds the stub, second call adds a response
+            await resolver.resolve(responseConfig, request, logger, {});
+            await resolver.resolve(responseConfig, request, logger, {});
+
+            const all = await stubs.toJSON(),
+                stubResponses = all.map(stub => stub.responses),
+                firstWait = stubResponses[1][0].is._proxyResponseTime,
+                secondWait = stubResponses[1][1].is._proxyResponseTime;
+
+            assert.deepEqual(stubResponses, [
+                [{ proxy: { to: 'where', mode: 'proxyAlways', addWaitBehavior: true } }],
+                [
+                    { is: { data: 1, _proxyResponseTime: firstWait }, behaviors: [{ wait: firstWait }] },
+                    { is: { data: 2, _proxyResponseTime: secondWait }, behaviors: [{ wait: secondWait }] }
+                ]
+            ]);
         });
 
-        promiseIt('should run behaviors on proxy response before recording it', function () {
+        it('should run behaviors on proxy response before recording it', async function () {
             const decorateFunc = (request, response) => { response.data += '-DECORATED'; };
-            const proxy = { to: mock().returns(Q({ data: 'RESPONSE' })) },
+            const proxy = { to: mock().returns(Promise.resolve({ data: 'RESPONSE' })) },
                 stubs = createStubsRepository(),
                 resolver = ResponseResolver.create(stubs, proxy),
                 logger = Logger.create(),
@@ -213,69 +207,66 @@ describe('responseResolver', function () {
                 },
                 request = {};
 
-            return stubs.add({ responses: [response] })
-                .then(() => getResponseFrom(stubs))
-                .then(responseConfig => resolver.resolve(responseConfig, request, logger, {}))
-                .then(() => stubs.toJSON())
-                .then(all => {
-                    const stubResponses = all.map(stub => proxyResponses(stub.responses));
-                    assert.deepEqual(stubResponses, [
-                        [{ is: { data: 'RESPONSE-DECORATED' } }],
-                        [{ proxy: { to: 'where' }, behaviors: [{ decorate: decorateFunc.toString() }] }]
-                    ]);
-                });
+            await stubs.add({ responses: [response] });
+            const responseConfig = await getResponseFrom(stubs);
+            await resolver.resolve(responseConfig, request, logger, {});
+            const all = await stubs.toJSON(),
+                stubResponses = all.map(stub => proxyResponses(stub.responses));
+
+            assert.deepEqual(stubResponses, [
+                [{ is: { data: 'RESPONSE-DECORATED' } }],
+                [{ proxy: { to: 'where' }, behaviors: [{ decorate: decorateFunc.toString() }] }]
+            ]);
         });
 
-        promiseIt('should support adding decorate behavior to newly created stub', function () {
+        it('should support adding decorate behavior to newly created stub', async function () {
             const decorateFunc = '(request, response) => {}';
-            const proxy = { to: mock().returns(Q({ data: 'value' })) },
+            const proxy = { to: mock().returns(Promise.resolve({ data: 'value' })) },
                 stubs = createStubsRepository(),
                 resolver = ResponseResolver.create(stubs, proxy),
                 logger = Logger.create(),
                 request = {};
 
-            return stubs.add({ responses: [{ proxy: { to: 'where', addDecorateBehavior: decorateFunc } }] })
-                .then(() => getResponseFrom(stubs))
-                .then(responseConfig => resolver.resolve(responseConfig, request, logger, {}))
-                .then(() => stubs.toJSON())
-                .then(all => {
-                    const stubResponses = all.map(stub => proxyResponses(stub.responses));
-                    assert.deepEqual(stubResponses, [
-                        [{ is: { data: 'value' }, behaviors: [{ decorate: decorateFunc }] }],
-                        [{ proxy: { to: 'where', addDecorateBehavior: decorateFunc } }]
-                    ]);
-                });
+            await stubs.add({ responses: [{ proxy: { to: 'where', addDecorateBehavior: decorateFunc } }] });
+            const responseConfig = await getResponseFrom(stubs);
+            await resolver.resolve(responseConfig, request, logger, {});
+            const all = await stubs.toJSON(),
+                stubResponses = all.map(stub => proxyResponses(stub.responses));
+
+            assert.deepEqual(stubResponses, [
+                [{ is: { data: 'value' }, behaviors: [{ decorate: decorateFunc }] }],
+                [{ proxy: { to: 'where', addDecorateBehavior: decorateFunc } }]
+            ]);
         });
 
-        promiseIt('should support adding decorate behavior to newly created response in proxyAlways mode', function () {
+        it('should support adding decorate behavior to newly created response in proxyAlways mode', async function () {
             const decorateFunc = '(request, response) => {}';
-            const proxy = { to: mock().returns(Q({ data: 'value' })) },
+            const proxy = { to: mock().returns(Promise.resolve({ data: 'value' })) },
                 stubs = createStubsRepository(),
                 resolver = ResponseResolver.create(stubs, proxy),
                 logger = Logger.create(),
                 request = {};
 
-            return stubs.add({ responses: [{ proxy: { to: 'where', mode: 'proxyAlways', addDecorateBehavior: decorateFunc } }] })
-                .then(() => getResponseFrom(stubs))
-                .then(responseConfig => {
-                    // First call adds the stub, second call adds a response
-                    return resolver.resolve(responseConfig, request, logger, {})
-                        .then(() => resolver.resolve(responseConfig, request, logger, stubs));
-                }).then(() => stubs.toJSON())
-                .then(all => {
-                    const stubResponses = all.map(stub => proxyResponses(stub.responses));
-                    assert.deepEqual(stubResponses, [
-                        [{ proxy: { to: 'where', mode: 'proxyAlways', addDecorateBehavior: decorateFunc } }],
-                        [
-                            { is: { data: 'value' }, behaviors: [{ decorate: decorateFunc }] },
-                            { is: { data: 'value' }, behaviors: [{ decorate: decorateFunc }] }
-                        ]
-                    ]);
-                });
+            await stubs.add({ responses: [{ proxy: { to: 'where', mode: 'proxyAlways', addDecorateBehavior: decorateFunc } }] });
+            const responseConfig = await getResponseFrom(stubs);
+
+            // First call adds the stub, second call adds a response
+            await resolver.resolve(responseConfig, request, logger, {});
+            await resolver.resolve(responseConfig, request, logger, stubs);
+            const all = await stubs.toJSON(),
+                stubResponses = all.map(stub => proxyResponses(stub.responses));
+
+            assert.deepEqual(stubResponses, [
+                [{ proxy: { to: 'where', mode: 'proxyAlways', addDecorateBehavior: decorateFunc } }],
+                [
+                    { is: { data: 'value' }, behaviors: [{ decorate: decorateFunc }] },
+                    { is: { data: 'value' }, behaviors: [{ decorate: decorateFunc }] }
+                ]
+            ]);
         });
 
-        promiseIt('should resolve "proxy" and remember full objects as "deepEquals" predicates', function () {
-            const proxy = { to: mock().returns(Q({ key: 'value' })) },
+        it('should resolve "proxy" and remember full objects as "deepEquals" predicates', async function () {
+            const proxy = { to: mock().returns(Promise.resolve({ key: 'value' })) },
                 stubs = createStubsRepository(),
                 resolver = ResponseResolver.create(stubs, proxy),
                 logger = Logger.create(),
@@ -287,34 +278,33 @@ describe('responseResolver', function () {
                 },
                 request = { key: { nested: { first: 'one', second: 'two' }, third: 'three' } };
 
-            return stubs.add({ responses: [response] })
-                .then(() => getResponseFrom(stubs))
-                .then(responseConfig => resolver.resolve(responseConfig, request, logger, {}))
-                .then(() => stubListFor(stubs))
-                .then(stubList => {
-                    assert.deepEqual(stubList, [
-                        {
-                            predicates: [{
-                                deepEquals: {
-                                    key: {
-                                        nested: { first: 'one', second: 'two' },
-                                        third: 'three'
-                                    }
-                                }
-                            }],
-                            responses: [{ is: { key: 'value' } }]
-                        },
-                        {
-                            responses: [{
-                                proxy: { to: 'where', predicateGenerators: [{ matches: { key: true } }] }
-                            }]
+            await stubs.add({ responses: [response] });
+            const responseConfig = await getResponseFrom(stubs);
+            await resolver.resolve(responseConfig, request, logger, {});
+            const stubList = await stubListFor(stubs);
+
+            assert.deepEqual(stubList, [
+                {
+                    predicates: [{
+                        deepEquals: {
+                            key: {
+                                nested: { first: 'one', second: 'two' },
+                                third: 'three'
+                            }
                         }
-                    ]);
-                });
+                    }],
+                    responses: [{ is: { key: 'value' } }]
+                },
+                {
+                    responses: [{
+                        proxy: { to: 'where', predicateGenerators: [{ matches: { key: true } }] }
+                    }]
+                }
+            ]);
         });
 
-        promiseIt('should resolve "proxy" and remember nested keys as "equals" predicates', function () {
-            const proxy = { to: mock().returns(Q({ key: 'value' })) },
+        it('should resolve "proxy" and remember nested keys as "equals" predicates', async function () {
+            const proxy = { to: mock().returns(Promise.resolve({ key: 'value' })) },
                 stubs = createStubsRepository(),
                 resolver = ResponseResolver.create(stubs, proxy),
                 logger = Logger.create(),
@@ -327,31 +317,30 @@ describe('responseResolver', function () {
                 },
                 request = { key: { nested: { first: 'one', second: 'two' }, third: 'three' } };
 
-            return stubs.add({ responses: [response] })
-                .then(() => getResponseFrom(stubs))
-                .then(responseConfig => resolver.resolve(responseConfig, request, logger, {}))
-                .then(() => stubListFor(stubs))
-                .then(stubList => {
-                    assert.deepEqual(stubList, [
-                        {
-                            predicates: [{ equals: { key: { nested: { first: 'one' } } } }],
-                            responses: [{ is: { key: 'value' } }]
-                        },
-                        {
-                            responses: [{
-                                proxy: {
-                                    to: 'where',
-                                    mode: 'proxyOnce',
-                                    predicateGenerators: [{ matches: { key: { nested: { first: true } } } }]
-                                }
-                            }]
+            await stubs.add({ responses: [response] });
+            const responseConfig = await getResponseFrom(stubs);
+            await resolver.resolve(responseConfig, request, logger, {});
+            const stubList = await stubListFor(stubs);
+
+            assert.deepEqual(stubList, [
+                {
+                    predicates: [{ equals: { key: { nested: { first: 'one' } } } }],
+                    responses: [{ is: { key: 'value' } }]
+                },
+                {
+                    responses: [{
+                        proxy: {
+                            to: 'where',
+                            mode: 'proxyOnce',
+                            predicateGenerators: [{ matches: { key: { nested: { first: true } } } }]
                         }
-                    ]);
-                });
+                    }]
+                }
+            ]);
         });
 
-        promiseIt('should add predicate parameters from predicateGenerators', function () {
-            const proxy = { to: mock().returns(Q({ key: 'value' })) },
+        it('should add predicate parameters from predicateGenerators', async function () {
+            const proxy = { to: mock().returns(Promise.resolve({ key: 'value' })) },
                 stubs = createStubsRepository(),
                 resolver = ResponseResolver.create(stubs, proxy),
                 logger = Logger.create(),
@@ -368,29 +357,28 @@ describe('responseResolver', function () {
                 },
                 request = { key: 'Test' };
 
-            return stubs.add({ responses: [response] })
-                .then(() => getResponseFrom(stubs))
-                .then(responseConfig => resolver.resolve(responseConfig, request, logger, {}))
-                .then(() => stubListFor(stubs))
-                .then(stubList => {
-                    assert.deepEqual(stubList, [
-                        {
-                            predicates: [{
-                                deepEquals: { key: 'Test' },
-                                caseSensitive: true,
-                                except: 'xxx'
-                            }],
-                            responses: [{ is: { key: 'value' } }]
-                        },
-                        {
-                            responses: [response]
-                        }
-                    ]);
-                });
+            await stubs.add({ responses: [response] });
+            const responseConfig = await getResponseFrom(stubs);
+            await resolver.resolve(responseConfig, request, logger, {});
+            const stubList = await stubListFor(stubs);
+
+            assert.deepEqual(stubList, [
+                {
+                    predicates: [{
+                        deepEquals: { key: 'Test' },
+                        caseSensitive: true,
+                        except: 'xxx'
+                    }],
+                    responses: [{ is: { key: 'value' } }]
+                },
+                {
+                    responses: [response]
+                }
+            ]);
         });
 
-        promiseIt('should choose predicate operator from predicateGenerators', function () {
-            const proxy = { to: mock().returns(Q({ key: 'value' })) },
+        it('should choose predicate operator from predicateGenerators', async function () {
+            const proxy = { to: mock().returns(Promise.resolve({ key: 'value' })) },
                 stubs = createStubsRepository(),
                 resolver = ResponseResolver.create(stubs, proxy),
                 logger = Logger.create(),
@@ -406,27 +394,26 @@ describe('responseResolver', function () {
                 },
                 request = { key: 'Test' };
 
-            return stubs.add({ responses: [response] })
-                .then(() => getResponseFrom(stubs))
-                .then(responseConfig => resolver.resolve(responseConfig, request, logger, {}))
-                .then(() => stubListFor(stubs))
-                .then(stubList => {
-                    assert.deepEqual(stubList, [
-                        {
-                            predicates: [{
-                                contains: { key: 'Test' }
-                            }],
-                            responses: [{ is: { key: 'value' } }]
-                        },
-                        {
-                            responses: [response]
-                        }
-                    ]);
-                });
+            await stubs.add({ responses: [response] });
+            const responseConfig = await getResponseFrom(stubs);
+            await resolver.resolve(responseConfig, request, logger, {});
+            const stubList = await stubListFor(stubs);
+
+            assert.deepEqual(stubList, [
+                {
+                    predicates: [{
+                        contains: { key: 'Test' }
+                    }],
+                    responses: [{ is: { key: 'value' } }]
+                },
+                {
+                    responses: [response]
+                }
+            ]);
         });
 
-        promiseIt('should format exists matcher from predicateOperator', function () {
-            const proxy = { to: mock().returns(Q({ key: 'value' })) },
+        it('should format exists matcher from predicateOperator', async function () {
+            const proxy = { to: mock().returns(Promise.resolve({ key: 'value' })) },
                 stubs = createStubsRepository(),
                 resolver = ResponseResolver.create(stubs, proxy),
                 logger = Logger.create(),
@@ -442,27 +429,26 @@ describe('responseResolver', function () {
                 },
                 request = { key: 'Test' };
 
-            return stubs.add({ responses: [response] })
-                .then(() => getResponseFrom(stubs))
-                .then(responseConfig => resolver.resolve(responseConfig, request, logger, {}))
-                .then(() => stubListFor(stubs))
-                .then(stubList => {
-                    assert.deepEqual(stubList, [
-                        {
-                            predicates: [{
-                                exists: { key: true }
-                            }],
-                            responses: [{ is: { key: 'value' } }]
-                        },
-                        {
-                            responses: [response]
-                        }
-                    ]);
-                });
+            await stubs.add({ responses: [response] });
+            const responseConfig = await getResponseFrom(stubs);
+            await resolver.resolve(responseConfig, request, logger, {});
+            const stubList = await stubListFor(stubs);
+
+            assert.deepEqual(stubList, [
+                {
+                    predicates: [{
+                        exists: { key: true }
+                    }],
+                    responses: [{ is: { key: 'value' } }]
+                },
+                {
+                    responses: [response]
+                }
+            ]);
         });
 
-        promiseIt('should format exists matcher from predicateOperator with nested match', function () {
-            const proxy = { to: mock().returns(Q({ key: 'value' })) },
+        it('should format exists matcher from predicateOperator with nested match', async function () {
+            const proxy = { to: mock().returns(Promise.resolve({ key: 'value' })) },
                 stubs = createStubsRepository(),
                 resolver = ResponseResolver.create(stubs, proxy),
                 logger = Logger.create(),
@@ -478,27 +464,26 @@ describe('responseResolver', function () {
                 },
                 request = { key: { nested: 'Test' } };
 
-            return stubs.add({ responses: [response] })
-                .then(() => getResponseFrom(stubs))
-                .then(responseConfig => resolver.resolve(responseConfig, request, logger, {}))
-                .then(() => stubListFor(stubs))
-                .then(stubList => {
-                    assert.deepEqual(stubList, [
-                        {
-                            predicates: [{
-                                exists: { key: { nested: true } }
-                            }],
-                            responses: [{ is: { key: 'value' } }]
-                        },
-                        {
-                            responses: [response]
-                        }
-                    ]);
-                });
+            await stubs.add({ responses: [response] });
+            const responseConfig = await getResponseFrom(stubs);
+            await resolver.resolve(responseConfig, request, logger, {});
+            const stubList = await stubListFor(stubs);
+
+            assert.deepEqual(stubList, [
+                {
+                    predicates: [{
+                        exists: { key: { nested: true } }
+                    }],
+                    responses: [{ is: { key: 'value' } }]
+                },
+                {
+                    responses: [response]
+                }
+            ]);
         });
 
-        promiseIt('should support "inject" predicateGenerators', function () {
-            const proxy = { to: mock().returns(Q({ key: 'value' })) },
+        it('should support "inject" predicateGenerators', async function () {
+            const proxy = { to: mock().returns(Promise.resolve({ key: 'value' })) },
                 stubs = createStubsRepository(),
                 resolver = ResponseResolver.create(stubs, proxy),
                 logger = Logger.create(),
@@ -513,33 +498,32 @@ describe('responseResolver', function () {
                 },
                 request = { key: 'Test' };
 
-            return stubs.add({ responses: [response] })
-                .then(() => getResponseFrom(stubs))
-                .then(responseConfig => resolver.resolve(responseConfig, request, logger, {}))
-                .then(() => stubListFor(stubs))
-                .then(stubList => {
-                    assert.deepEqual(stubList, [
-                        {
-                            predicates: [{
-                                deepEquals: { key: 'Test' },
-                                caseSensitive: true
-                            }, {
-                                not: {
-                                    equals: { foo: 'bar' }
-                                }
-                            }],
-                            responses: [{ is: { key: 'value' } }]
-                        },
-                        {
-                            responses: [response]
+            await stubs.add({ responses: [response] });
+            const responseConfig = await getResponseFrom(stubs);
+            await resolver.resolve(responseConfig, request, logger, {});
+            const stubList = await stubListFor(stubs);
+
+            assert.deepEqual(stubList, [
+                {
+                    predicates: [{
+                        deepEquals: { key: 'Test' },
+                        caseSensitive: true
+                    }, {
+                        not: {
+                            equals: { foo: 'bar' }
                         }
-                    ]);
-                });
+                    }],
+                    responses: [{ is: { key: 'value' } }]
+                },
+                {
+                    responses: [response]
+                }
+            ]);
         });
 
-        promiseIt('should log "inject" predicateGenerator exceptions', function () {
+        it('should log "inject" predicateGenerator exceptions', async function () {
             const errorsLogged = [],
-                proxy = { to: mock().returns(Q({ key: 'value' })) },
+                proxy = { to: mock().returns(Promise.resolve({ key: 'value' })) },
                 stubs = createStubsRepository(),
                 resolver = ResponseResolver.create(stubs, proxy),
                 logger = Logger.create(),
@@ -559,19 +543,21 @@ describe('responseResolver', function () {
                 errorsLogged.push(message);
             };
 
-            return stubs.add({ responses: [response] })
-                .then(() => getResponseFrom(stubs))
-                .then(responseConfig => resolver.resolve(responseConfig, request, logger, {}))
-                .then(() => {
-                    assert.fail('should have thrown exception');
-                }).catch(error => {
-                    assert.strictEqual(error.message, 'invalid predicateGenerator injection');
-                    assert.ok(errorsLogged.indexOf('injection X=> Error: BOOM!!!') >= 0);
-                });
+            await stubs.add({ responses: [response] });
+            const responseConfig = await getResponseFrom(stubs);
+
+            try {
+                await resolver.resolve(responseConfig, request, logger, {});
+                assert.fail('should have thrown exception');
+            }
+            catch (error) {
+                assert.strictEqual(error.message, 'invalid predicateGenerator injection');
+                assert.ok(errorsLogged.indexOf('injection X=> Error: BOOM!!!') >= 0);
+            }
         });
 
-        promiseIt('should add xpath predicate parameter in predicateGenerators with one match', function () {
-            const proxy = { to: mock().returns(Q({ key: 'value' })) },
+        it('should add xpath predicate parameter in predicateGenerators with one match', async function () {
+            const proxy = { to: mock().returns(Promise.resolve({ key: 'value' })) },
                 stubs = createStubsRepository(),
                 resolver = ResponseResolver.create(stubs, proxy),
                 logger = Logger.create(),
@@ -587,28 +573,27 @@ describe('responseResolver', function () {
                 },
                 request = { field: '<books><book><title>Harry Potter</title></book></books>' };
 
-            return stubs.add({ responses: [response] })
-                .then(() => getResponseFrom(stubs))
-                .then(responseConfig => resolver.resolve(responseConfig, request, logger, {}))
-                .then(() => stubListFor(stubs))
-                .then(stubList => {
-                    assert.deepEqual(stubList, [
-                        {
-                            predicates: [{
-                                deepEquals: { field: 'Harry Potter' },
-                                xpath: { selector: '//title' }
-                            }],
-                            responses: [{ is: { key: 'value' } }]
-                        },
-                        {
-                            responses: [response]
-                        }
-                    ]);
-                });
+            await stubs.add({ responses: [response] });
+            const responseConfig = await getResponseFrom(stubs);
+            await resolver.resolve(responseConfig, request, logger, {});
+            const stubList = await stubListFor(stubs);
+
+            assert.deepEqual(stubList, [
+                {
+                    predicates: [{
+                        deepEquals: { field: 'Harry Potter' },
+                        xpath: { selector: '//title' }
+                    }],
+                    responses: [{ is: { key: 'value' } }]
+                },
+                {
+                    responses: [response]
+                }
+            ]);
         });
 
-        promiseIt('should add xpath predicate parameter in predicateGenerators with one match and a nested match key', function () {
-            const proxy = { to: mock().returns(Q({ key: 'value' })) },
+        it('should add xpath predicate parameter in predicateGenerators with one match and a nested match key', async function () {
+            const proxy = { to: mock().returns(Promise.resolve({ key: 'value' })) },
                 stubs = createStubsRepository(),
                 resolver = ResponseResolver.create(stubs, proxy),
                 logger = Logger.create(),
@@ -624,28 +609,27 @@ describe('responseResolver', function () {
                 },
                 request = { parent: { child: '<books><book><title>Harry Potter</title></book></books>' } };
 
-            return stubs.add({ responses: [response] })
-                .then(() => getResponseFrom(stubs))
-                .then(responseConfig => resolver.resolve(responseConfig, request, logger, {}))
-                .then(() => stubListFor(stubs))
-                .then(stubList => {
-                    assert.deepEqual(stubList, [
-                        {
-                            predicates: [{
-                                equals: { parent: { child: 'Harry Potter' } },
-                                xpath: { selector: '//title' }
-                            }],
-                            responses: [{ is: { key: 'value' } }]
-                        },
-                        {
-                            responses: [response]
-                        }
-                    ]);
-                });
+            await stubs.add({ responses: [response] });
+            const responseConfig = await getResponseFrom(stubs);
+            await resolver.resolve(responseConfig, request, logger, {});
+            const stubList = await stubListFor(stubs);
+
+            assert.deepEqual(stubList, [
+                {
+                    predicates: [{
+                        equals: { parent: { child: 'Harry Potter' } },
+                        xpath: { selector: '//title' }
+                    }],
+                    responses: [{ is: { key: 'value' } }]
+                },
+                {
+                    responses: [response]
+                }
+            ]);
         });
 
-        promiseIt('should add xpath predicate parameter in predicateGenerators with multiple matches', function () {
-            const proxy = { to: mock().returns(Q({ key: 'value' })) },
+        it('should add xpath predicate parameter in predicateGenerators with multiple matches', async function () {
+            const proxy = { to: mock().returns(Promise.resolve({ key: 'value' })) },
                 stubs = createStubsRepository(),
                 resolver = ResponseResolver.create(stubs, proxy),
                 logger = Logger.create(),
@@ -669,31 +653,30 @@ describe('responseResolver', function () {
                       '</root>',
                 request = { field: xml };
 
-            return stubs.add({ responses: [response] })
-                .then(() => getResponseFrom(stubs))
-                .then(responseConfig => resolver.resolve(responseConfig, request, logger, {}))
-                .then(() => stubListFor(stubs))
-                .then(stubList => {
-                    assert.deepEqual(stubList, [
-                        {
-                            predicates: [{
-                                deepEquals: { field: ['Harry Potter', 'The Hobbit', 'Game of Thrones'] },
-                                xpath: {
-                                    selector: '//isbn:title',
-                                    ns: { isbn: 'http://schemas.isbn.org/ns/1999/basic.dtd' }
-                                }
-                            }],
-                            responses: [{ is: { key: 'value' } }]
-                        },
-                        {
-                            responses: [response]
+            await stubs.add({ responses: [response] });
+            const responseConfig = await getResponseFrom(stubs);
+            await resolver.resolve(responseConfig, request, logger, {});
+            const stubList = await stubListFor(stubs);
+
+            assert.deepEqual(stubList, [
+                {
+                    predicates: [{
+                        deepEquals: { field: ['Harry Potter', 'The Hobbit', 'Game of Thrones'] },
+                        xpath: {
+                            selector: '//isbn:title',
+                            ns: { isbn: 'http://schemas.isbn.org/ns/1999/basic.dtd' }
                         }
-                    ]);
-                });
+                    }],
+                    responses: [{ is: { key: 'value' } }]
+                },
+                {
+                    responses: [response]
+                }
+            ]);
         });
 
-        promiseIt('should add xpath predicate parameter in predicateGenerators even if no xpath match', function () {
-            const proxy = { to: mock().returns(Q({ key: 'value' })) },
+        it('should add xpath predicate parameter in predicateGenerators even if no xpath match', async function () {
+            const proxy = { to: mock().returns(Promise.resolve({ key: 'value' })) },
                 stubs = createStubsRepository(),
                 resolver = ResponseResolver.create(stubs, proxy),
                 logger = Logger.create(),
@@ -709,28 +692,27 @@ describe('responseResolver', function () {
                 },
                 request = { field: '<books />' };
 
-            return stubs.add({ responses: [response] })
-                .then(() => getResponseFrom(stubs))
-                .then(responseConfig => resolver.resolve(responseConfig, request, logger, {}))
-                .then(() => stubListFor(stubs))
-                .then(stubList => {
-                    assert.deepEqual(stubList, [
-                        {
-                            predicates: [{
-                                deepEquals: { field: '' },
-                                xpath: { selector: '//title' }
-                            }],
-                            responses: [{ is: { key: 'value' } }]
-                        },
-                        {
-                            responses: [response]
-                        }
-                    ]);
-                });
+            await stubs.add({ responses: [response] });
+            const responseConfig = await getResponseFrom(stubs);
+            await resolver.resolve(responseConfig, request, logger, {});
+            const stubList = await stubListFor(stubs);
+
+            assert.deepEqual(stubList, [
+                {
+                    predicates: [{
+                        deepEquals: { field: '' },
+                        xpath: { selector: '//title' }
+                    }],
+                    responses: [{ is: { key: 'value' } }]
+                },
+                {
+                    responses: [response]
+                }
+            ]);
         });
 
-        promiseIt('should add xpath predicate parameter in predicateGenerators even if scalar xpath match', function () {
-            const proxy = { to: mock().returns(Q({ key: 'value' })) },
+        it('should add xpath predicate parameter in predicateGenerators even if scalar xpath match', async function () {
+            const proxy = { to: mock().returns(Promise.resolve({ key: 'value' })) },
                 stubs = createStubsRepository(),
                 resolver = ResponseResolver.create(stubs, proxy),
                 logger = Logger.create(),
@@ -746,28 +728,27 @@ describe('responseResolver', function () {
                 },
                 request = { field: '<doc><title>first</title><title>second</title></doc>' };
 
-            return stubs.add({ responses: [response] })
-                .then(() => getResponseFrom(stubs))
-                .then(responseConfig => resolver.resolve(responseConfig, request, logger, {}))
-                .then(() => stubListFor(stubs))
-                .then(stubList => {
-                    assert.deepEqual(stubList, [
-                        {
-                            predicates: [{
-                                deepEquals: { field: 2 },
-                                xpath: { selector: 'count(//title)' }
-                            }],
-                            responses: [{ is: { key: 'value' } }]
-                        },
-                        {
-                            responses: [response]
-                        }
-                    ]);
-                });
+            await stubs.add({ responses: [response] });
+            const responseConfig = await getResponseFrom(stubs);
+            await resolver.resolve(responseConfig, request, logger, {});
+            const stubList = await stubListFor(stubs);
+
+            assert.deepEqual(stubList, [
+                {
+                    predicates: [{
+                        deepEquals: { field: 2 },
+                        xpath: { selector: 'count(//title)' }
+                    }],
+                    responses: [{ is: { key: 'value' } }]
+                },
+                {
+                    responses: [response]
+                }
+            ]);
         });
 
-        promiseIt('should add xpath predicate parameter in predicateGenerators even if boolean match', function () {
-            const proxy = { to: mock().returns(Q({ key: 'value' })) },
+        it('should add xpath predicate parameter in predicateGenerators even if boolean match', async function () {
+            const proxy = { to: mock().returns(Promise.resolve({ key: 'value' })) },
                 stubs = createStubsRepository(),
                 resolver = ResponseResolver.create(stubs, proxy),
                 logger = Logger.create(),
@@ -783,28 +764,27 @@ describe('responseResolver', function () {
                 },
                 request = { field: '<doc></doc>' };
 
-            return stubs.add({ responses: [response] })
-                .then(() => getResponseFrom(stubs))
-                .then(responseConfig => resolver.resolve(responseConfig, request, logger, {}))
-                .then(() => stubListFor(stubs))
-                .then(stubList => {
-                    assert.deepEqual(stubList, [
-                        {
-                            predicates: [{
-                                deepEquals: { field: false },
-                                xpath: { selector: 'boolean(//title)' }
-                            }],
-                            responses: [{ is: { key: 'value' } }]
-                        },
-                        {
-                            responses: [response]
-                        }
-                    ]);
-                });
+            await stubs.add({ responses: [response] });
+            const responseConfig = await getResponseFrom(stubs);
+            await resolver.resolve(responseConfig, request, logger, {});
+            const stubList = await stubListFor(stubs);
+
+            assert.deepEqual(stubList, [
+                {
+                    predicates: [{
+                        deepEquals: { field: false },
+                        xpath: { selector: 'boolean(//title)' }
+                    }],
+                    responses: [{ is: { key: 'value' } }]
+                },
+                {
+                    responses: [response]
+                }
+            ]);
         });
 
-        promiseIt('should add jsonpath predicate parameter in predicateGenerators with one match', function () {
-            const proxy = { to: mock().returns(Q({ key: 'value' })) },
+        it('should add jsonpath predicate parameter in predicateGenerators with one match', async function () {
+            const proxy = { to: mock().returns(Promise.resolve({ key: 'value' })) },
                 stubs = createStubsRepository(),
                 resolver = ResponseResolver.create(stubs, proxy),
                 logger = Logger.create(),
@@ -820,28 +800,27 @@ describe('responseResolver', function () {
                 },
                 request = { field: { title: 'Harry Potter' } };
 
-            return stubs.add({ responses: [response] })
-                .then(() => getResponseFrom(stubs))
-                .then(responseConfig => resolver.resolve(responseConfig, request, logger, {}))
-                .then(() => stubListFor(stubs))
-                .then(stubList => {
-                    assert.deepEqual(stubList, [
-                        {
-                            predicates: [{
-                                deepEquals: { field: 'Harry Potter' },
-                                jsonpath: { selector: '$..title' }
-                            }],
-                            responses: [{ is: { key: 'value' } }]
-                        },
-                        {
-                            responses: [response]
-                        }
-                    ]);
-                });
+            await stubs.add({ responses: [response] });
+            const responseConfig = await getResponseFrom(stubs);
+            await resolver.resolve(responseConfig, request, logger, {});
+            const stubList = await stubListFor(stubs);
+
+            assert.deepEqual(stubList, [
+                {
+                    predicates: [{
+                        deepEquals: { field: 'Harry Potter' },
+                        jsonpath: { selector: '$..title' }
+                    }],
+                    responses: [{ is: { key: 'value' } }]
+                },
+                {
+                    responses: [response]
+                }
+            ]);
         });
 
-        promiseIt('should add jsonpath predicate parameter in predicateGenerators with multiple matches', function () {
-            const proxy = { to: mock().returns(Q({ key: 'value' })) },
+        it('should add jsonpath predicate parameter in predicateGenerators with multiple matches', async function () {
+            const proxy = { to: mock().returns(Promise.resolve({ key: 'value' })) },
                 stubs = createStubsRepository(),
                 resolver = ResponseResolver.create(stubs, proxy),
                 logger = Logger.create(),
@@ -865,28 +844,27 @@ describe('responseResolver', function () {
                     }
                 };
 
-            return stubs.add({ responses: [response] })
-                .then(() => getResponseFrom(stubs))
-                .then(responseConfig => resolver.resolve(responseConfig, request, logger, {}))
-                .then(() => stubListFor(stubs))
-                .then(stubList => {
-                    assert.deepEqual(stubList, [
-                        {
-                            predicates: [{
-                                deepEquals: { field: ['Harry Potter', 'The Hobbit', 'Game of Thrones'] },
-                                jsonpath: { selector: '$.books[*].title' }
-                            }],
-                            responses: [{ is: { key: 'value' } }]
-                        },
-                        {
-                            responses: [response]
-                        }
-                    ]);
-                });
+            await stubs.add({ responses: [response] });
+            const responseConfig = await getResponseFrom(stubs);
+            await resolver.resolve(responseConfig, request, logger, {});
+            const stubList = await stubListFor(stubs);
+
+            assert.deepEqual(stubList, [
+                {
+                    predicates: [{
+                        deepEquals: { field: ['Harry Potter', 'The Hobbit', 'Game of Thrones'] },
+                        jsonpath: { selector: '$.books[*].title' }
+                    }],
+                    responses: [{ is: { key: 'value' } }]
+                },
+                {
+                    responses: [response]
+                }
+            ]);
         });
 
-        promiseIt('should add jsonpath predicate parameter in predicateGenerators with no match', function () {
-            const proxy = { to: mock().returns(Q({ key: 'value' })) },
+        it('should add jsonpath predicate parameter in predicateGenerators with no match', async function () {
+            const proxy = { to: mock().returns(Promise.resolve({ key: 'value' })) },
                 stubs = createStubsRepository(),
                 resolver = ResponseResolver.create(stubs, proxy),
                 logger = Logger.create(),
@@ -902,28 +880,27 @@ describe('responseResolver', function () {
                 },
                 request = { field: false };
 
-            return stubs.add({ responses: [response] })
-                .then(() => getResponseFrom(stubs))
-                .then(responseConfig => resolver.resolve(responseConfig, request, logger, {}))
-                .then(() => stubListFor(stubs))
-                .then(stubList => {
-                    assert.deepEqual(stubList, [
-                        {
-                            predicates: [{
-                                deepEquals: { field: '' },
-                                jsonpath: { selector: '$..title' }
-                            }],
-                            responses: [{ is: { key: 'value' } }]
-                        },
-                        {
-                            responses: [response]
-                        }
-                    ]);
-                });
+            await stubs.add({ responses: [response] });
+            const responseConfig = await getResponseFrom(stubs);
+            await resolver.resolve(responseConfig, request, logger, {});
+            const stubList = await stubListFor(stubs);
+
+            assert.deepEqual(stubList, [
+                {
+                    predicates: [{
+                        deepEquals: { field: '' },
+                        jsonpath: { selector: '$..title' }
+                    }],
+                    responses: [{ is: { key: 'value' } }]
+                },
+                {
+                    responses: [response]
+                }
+            ]);
         });
 
-        promiseIt('should log warning if request not JSON', function () {
-            const proxy = { to: mock().returns(Q({ key: 'value' })) },
+        it('should log warning if request not JSON', async function () {
+            const proxy = { to: mock().returns(Promise.resolve({ key: 'value' })) },
                 stubs = createStubsRepository(),
                 resolver = ResponseResolver.create(stubs, proxy),
                 logger = Logger.create(),
@@ -939,28 +916,27 @@ describe('responseResolver', function () {
                 },
                 request = { field: 'Hello, world' };
 
-            return stubs.add({ responses: [response] })
-                .then(() => getResponseFrom(stubs))
-                .then(responseConfig => resolver.resolve(responseConfig, request, logger, {}))
-                .then(() => stubListFor(stubs))
-                .then(stubList => {
-                    assert.deepEqual(stubList, [
-                        {
-                            predicates: [{
-                                deepEquals: { field: '' },
-                                jsonpath: { selector: '$..title' }
-                            }],
-                            responses: [{ is: { key: 'value' } }]
-                        },
-                        {
-                            responses: [response]
-                        }
-                    ]);
-                    logger.warn.assertLogged('Cannot parse as JSON: "Hello, world"');
-                });
+            await stubs.add({ responses: [response] });
+            const responseConfig = await getResponseFrom(stubs);
+            await resolver.resolve(responseConfig, request, logger, {});
+            const stubList = await stubListFor(stubs);
+
+            assert.deepEqual(stubList, [
+                {
+                    predicates: [{
+                        deepEquals: { field: '' },
+                        jsonpath: { selector: '$..title' }
+                    }],
+                    responses: [{ is: { key: 'value' } }]
+                },
+                {
+                    responses: [response]
+                }
+            ]);
+            logger.warn.assertLogged('Cannot parse as JSON: "Hello, world"');
         });
 
-        promiseIt('should allow "inject" response', function () {
+        it('should allow "inject" response', async function () {
             const stubs = createStubsRepository(),
                 resolver = ResponseResolver.create(stubs, {}),
                 logger = Logger.create(),
@@ -968,12 +944,12 @@ describe('responseResolver', function () {
                 responseConfig = { inject: fn.toString() },
                 request = { data: 'request' };
 
-            return resolver.resolve(responseConfig, request, logger, {}).then(response => {
-                assert.strictEqual(response, 'request injected');
-            });
+            const response = await resolver.resolve(responseConfig, request, logger, {});
+
+            assert.strictEqual(response, 'request injected');
         });
 
-        promiseIt('should log injection exceptions', function () {
+        it('should log injection exceptions', async function () {
             const stubs = createStubsRepository(),
                 resolver = ResponseResolver.create(stubs, {}),
                 logger = Logger.create(),
@@ -982,15 +958,17 @@ describe('responseResolver', function () {
                 },
                 responseConfig = { inject: fn };
 
-            return resolver.resolve(responseConfig, {}, logger, {}).then(() => {
+            try {
+                await resolver.resolve(responseConfig, {}, logger, {});
                 assert.fail('should not have resolved');
-            }, error => {
+            }
+            catch (error) {
                 assert.strictEqual(error.message, 'invalid response injection');
                 logger.error.assertLogged('injection X=> Error: BOOM!!!');
-            });
+            }
         });
 
-        promiseIt('should allow injection request state across calls to resolve', function () {
+        it('should allow injection request state across calls to resolve', async function () {
             const stubs = createStubsRepository(),
                 resolver = ResponseResolver.create(stubs, {}),
                 logger = Logger.create(),
@@ -1002,15 +980,14 @@ describe('responseResolver', function () {
                 responseConfig = { inject: fn.toString() },
                 request = { key: 'request' };
 
-            return resolver.resolve(responseConfig, request, logger, {}).then(response => {
-                assert.strictEqual(response, 1);
-                return resolver.resolve(responseConfig, request, logger, []);
-            }).then(response => {
-                assert.strictEqual(response, 2);
-            });
+            const firstResponse = await resolver.resolve(responseConfig, request, logger, {}),
+                secondResponse = await resolver.resolve(responseConfig, request, logger, []);
+
+            assert.strictEqual(firstResponse, 1);
+            assert.strictEqual(secondResponse, 2);
         });
 
-        promiseIt('should allow injection imposter state across calls to resolve', function () {
+        it('should allow injection imposter state across calls to resolve', async function () {
             const stubs = createStubsRepository(),
                 resolver = ResponseResolver.create(stubs, {}),
                 mockedLogger = Logger.create(),
@@ -1023,15 +1000,14 @@ describe('responseResolver', function () {
                 responseConfig = { inject: fn.toString() },
                 request = { key: 'request' };
 
-            return resolver.resolve(responseConfig, request, mockedLogger, imposterState).then(response => {
-                assert.strictEqual(response, 'barbar1');
-                return resolver.resolve(responseConfig, request, mockedLogger, imposterState);
-            }).then(response => {
-                assert.strictEqual(response, 'barbar2');
-            });
+            const firstResponse = await resolver.resolve(responseConfig, request, mockedLogger, imposterState),
+                secondResponse = await resolver.resolve(responseConfig, request, mockedLogger, imposterState);
+
+            assert.strictEqual(firstResponse, 'barbar1');
+            assert.strictEqual(secondResponse, 'barbar2');
         });
 
-        promiseIt('should allow wait behavior', function () {
+        it('should allow wait behavior', async function () {
             const start = Date.now();
 
             const stubs = createStubsRepository(),
@@ -1043,16 +1019,14 @@ describe('responseResolver', function () {
                 },
                 request = { key: 'request' };
 
-            return resolver.resolve(responseConfig, request, logger, {}).then(() => {
-                const end = Date.now();
-                const elapsed = end - start;
+            await resolver.resolve(responseConfig, request, logger, {});
+            const elapsed = Date.now() - start;
 
-                // allow some approximation
-                assert.ok(elapsed >= 45, 'Did not wait longer than 50 ms, only waited for ' + elapsed);
-            });
+            // allow some approximation
+            assert.ok(elapsed >= 45, 'Did not wait longer than 50 ms, only waited for ' + elapsed);
         });
 
-        promiseIt('should allow wait behavior based on a function', function () {
+        it('should allow wait behavior based on a function', async function () {
             const start = Date.now();
 
             const stubs = createStubsRepository(),
@@ -1065,16 +1039,14 @@ describe('responseResolver', function () {
                 },
                 request = { key: 'request' };
 
-            return resolver.resolve(responseConfig, request, logger, {}).then(() => {
-                const end = Date.now();
-                const elapsed = end - start;
+            await resolver.resolve(responseConfig, request, logger, {});
+            const elapsed = Date.now() - start;
 
-                // allow for some lack of precision
-                assert.ok(elapsed >= 48, 'Did not wait longer than 50 ms, only waited for ' + elapsed);
-            });
+            // allow for some lack of precision
+            assert.ok(elapsed >= 48, 'Did not wait longer than 50 ms, only waited for ' + elapsed);
         });
 
-        promiseIt('should reject the promise when the wait function fails', function () {
+        it('should reject the promise when the wait function fails', async function () {
             const stubs = createStubsRepository(),
                 resolver = ResponseResolver.create(stubs, {}),
                 logger = Logger.create(),
@@ -1087,14 +1059,16 @@ describe('responseResolver', function () {
                 },
                 request = { key: 'request' };
 
-            return resolver.resolve(responseConfig, request, logger, {}).then(() => {
+            try {
+                await resolver.resolve(responseConfig, request, logger, {});
                 assert.fail('Promise resolved, should have been rejected');
-            }, error => {
+            }
+            catch (error) {
                 assert.equal(error.message, 'invalid wait injection');
-            });
+            }
         });
 
-        promiseIt('should allow asynchronous injection', function () {
+        it('should allow asynchronous injection', async function () {
             const stubs = createStubsRepository(),
                 resolver = ResponseResolver.create(stubs, {}),
                 fn = (request, state, logger, callback) => {
@@ -1105,12 +1079,12 @@ describe('responseResolver', function () {
                 responseConfig = { inject: fn },
                 request = { key: 'request' };
 
-            return resolver.resolve(responseConfig, request, { debug: mock() }, {}).then(response => {
-                assert.strictEqual(response, 'value');
-            });
+            const response = await resolver.resolve(responseConfig, request, { debug: mock() }, {});
+
+            assert.strictEqual(response, 'value');
         });
 
-        promiseIt('should not be able to change state through inject', function () {
+        it('should not be able to change state through inject', async function () {
             const stubs = createStubsRepository(),
                 resolver = ResponseResolver.create(stubs, {}),
                 logger = Logger.create(),
@@ -1121,12 +1095,12 @@ describe('responseResolver', function () {
                 responseConfig = { inject: fn.toString() },
                 request = { key: 'ORIGINAL' };
 
-            return resolver.resolve(responseConfig, request, logger, {}).then(() => {
-                assert.strictEqual(request.key, 'ORIGINAL');
-            });
+            await resolver.resolve(responseConfig, request, logger, {});
+
+            assert.strictEqual(request.key, 'ORIGINAL');
         });
 
-        promiseIt('should not run injection during dry run validation', function () {
+        it('should not run injection during dry run validation', async function () {
             const stubs = createStubsRepository(),
                 resolver = ResponseResolver.create(stubs, {}),
                 logger = Logger.create(),
@@ -1136,22 +1110,24 @@ describe('responseResolver', function () {
                 responseConfig = { inject: fn.toString() },
                 request = { isDryRun: true };
 
-            return resolver.resolve(responseConfig, request, logger, {}).then(response => {
-                assert.deepEqual(response, {});
-            });
+            const response = await resolver.resolve(responseConfig, request, logger, {});
+
+            assert.deepEqual(response, {});
         });
 
-        promiseIt('should throw error if multiple response types given', function () {
+        it('should throw error if multiple response types given', async function () {
             const stubs = createStubsRepository(),
                 resolver = ResponseResolver.create(stubs, {}),
                 logger = Logger.create(),
                 responseConfig = { is: 'value', proxy: { to: 'http://www.google.com' } };
 
-            return resolver.resolve(responseConfig, {}, logger, {}).then(() => {
+            try {
+                await resolver.resolve(responseConfig, {}, logger, {});
                 assert.fail('should not have resolved');
-            }, error => {
+            }
+            catch (error) {
                 assert.strictEqual(error.message, 'each response object must have only one response type');
-            });
+            }
         });
     });
 
@@ -1164,76 +1140,72 @@ describe('responseResolver', function () {
             return response;
         }
 
-        promiseIt('should error if called with invalid proxyResolutionKey', function () {
+        it('should error if called with invalid proxyResolutionKey', async function () {
             const stubs = createStubsRepository(),
                 resolver = ResponseResolver.create(stubs, null, 'CALLBACK-URL'),
                 logger = Logger.create();
 
-            return resolver.resolveProxy({ field: 'value' }, 0, logger).then(() => {
+            try {
+                await resolver.resolveProxy({ field: 'value' }, 0, logger);
                 assert.fail('should have errored');
-            }, error => {
+            }
+            catch (error) {
                 assert.deepEqual(error, {
                     code: 'no such resource',
                     message: 'invalid proxy resolution key',
                     source: 'CALLBACK-URL/0'
                 });
                 logger.error.assertLogged('Invalid proxy resolution key: 0');
-            });
+            }
         });
 
-        promiseIt('should save new response in front of proxy for "proxyOnce" mode', function () {
+        it('should save new response in front of proxy for "proxyOnce" mode', async function () {
             const stubs = createStubsRepository(),
                 resolver = ResponseResolver.create(stubs, null, 'CALLBACK-URL'),
                 logger = Logger.create(),
                 responseConfig = { proxy: { to: 'where', mode: 'proxyOnce' } },
                 request = {};
 
-            return stubs.add({ responses: [responseConfig] }).then(() => {
-                responseConfig.stubIndex = () => Q(0);
-                return resolver.resolve(responseConfig, request, logger, {});
-            }).then(response => {
-                const proxyResolutionKey = parseInt(response.callbackURL.replace('CALLBACK-URL/', ''));
-                return resolver.resolveProxy({ data: 'RESPONSE' }, proxyResolutionKey, logger);
-            }).then(response => {
-                assert.deepEqual(jsonResponse(response), { data: 'RESPONSE' });
-                return stubs.toJSON();
-            }).then(all => {
-                const stubResponses = all.map(stub => proxyResponses(stub.responses));
-                delete responseConfig.stubIndex;
-                assert.deepEqual(stubResponses, [
-                    [{ is: { data: 'RESPONSE' } }],
-                    [responseConfig]
-                ]);
-            });
+            await stubs.add({ responses: [responseConfig] });
+            responseConfig.stubIndex = () => Promise.resolve(0);
+            const firstResponse = await resolver.resolve(responseConfig, request, logger, {});
+            const proxyResolutionKey = parseInt(firstResponse.callbackURL.replace('CALLBACK-URL/', ''));
+            const secondResponse = await resolver.resolveProxy({ data: 'RESPONSE' }, proxyResolutionKey, logger),
+                all = await stubs.toJSON(),
+                stubResponses = all.map(stub => proxyResponses(stub.responses));
+
+            assert.deepEqual(jsonResponse(secondResponse), { data: 'RESPONSE' });
+            delete responseConfig.stubIndex;
+            assert.deepEqual(stubResponses, [
+                [{ is: { data: 'RESPONSE' } }],
+                [responseConfig]
+            ]);
         });
 
-        promiseIt('should save new response after proxy for "proxyAlways" mode', function () {
+        it('should save new response after proxy for "proxyAlways" mode', async function () {
             const stubs = createStubsRepository(),
                 resolver = ResponseResolver.create(stubs, null, 'CALLBACK-URL'),
                 logger = Logger.create(),
                 responseConfig = { proxy: { to: 'where', mode: 'proxyAlways' } },
                 request = {};
 
-            return stubs.add({ responses: [responseConfig] }).then(() => {
-                responseConfig.stubIndex = () => Q(0);
-                return resolver.resolve(responseConfig, request, logger, {});
-            }).then(response => {
-                const proxyResolutionKey = parseInt(response.callbackURL.replace('CALLBACK-URL/', ''));
-                return resolver.resolveProxy({ data: 'RESPONSE' }, proxyResolutionKey, logger);
-            }).then(response => {
-                assert.deepEqual(jsonResponse(response), { data: 'RESPONSE' });
-                return stubs.toJSON();
-            }).then(all => {
-                const stubResponses = all.map(stub => proxyResponses(stub.responses));
-                delete responseConfig.stubIndex;
-                assert.deepEqual(stubResponses, [
-                    [responseConfig],
-                    [{ is: { data: 'RESPONSE' } }]
-                ]);
-            });
+            await stubs.add({ responses: [responseConfig] });
+            responseConfig.stubIndex = () => Promise.resolve(0);
+            const firstResponse = await resolver.resolve(responseConfig, request, logger, {});
+            const proxyResolutionKey = parseInt(firstResponse.callbackURL.replace('CALLBACK-URL/', ''));
+            const secondResponse = await resolver.resolveProxy({ data: 'RESPONSE' }, proxyResolutionKey, logger),
+                all = await stubs.toJSON(),
+                stubResponses = all.map(stub => proxyResponses(stub.responses));
+
+            assert.deepEqual(jsonResponse(secondResponse), { data: 'RESPONSE' });
+            delete responseConfig.stubIndex;
+            assert.deepEqual(stubResponses, [
+                [responseConfig],
+                [{ is: { data: 'RESPONSE' } }]
+            ]);
         });
 
-        promiseIt('should run behaviors from original proxy config on proxy response before recording it', function () {
+        it('should run behaviors from original proxy config on proxy response before recording it', async function () {
             const decorateFunc = (request, response) => { response.data += '-DECORATED'; },
                 stubs = createStubsRepository(),
                 resolver = ResponseResolver.create(stubs, null, 'CALLBACK-URL'),
@@ -1244,77 +1216,70 @@ describe('responseResolver', function () {
                 },
                 request = {};
 
-            return stubs.add({ responses: [proxyResponse] })
-                .then(() => getResponseFrom(stubs))
-                .then(responseConfig => resolver.resolve(responseConfig, request, logger, {}))
-                .then(response => {
-                    const proxyResolutionKey = parseInt(response.callbackURL.replace('CALLBACK-URL/', ''));
-                    return resolver.resolveProxy({ data: 'RESPONSE' }, proxyResolutionKey, logger);
-                }).then(response => {
-                    assert.deepEqual(jsonResponse(response), { data: 'RESPONSE-DECORATED' });
-                    return stubs.toJSON();
-                }).then(all => {
-                    const stubResponses = all.map(stub => proxyResponses(stub.responses));
-                    assert.deepEqual(stubResponses, [
-                        [{ is: { data: 'RESPONSE-DECORATED' } }],
-                        [proxyResponse]
-                    ]);
-                });
+            await stubs.add({ responses: [proxyResponse] });
+            const responseConfig = await getResponseFrom(stubs),
+                firstResponse = await resolver.resolve(responseConfig, request, logger, {}),
+                proxyResolutionKey = parseInt(firstResponse.callbackURL.replace('CALLBACK-URL/', '')),
+                secondResponse = await resolver.resolveProxy({ data: 'RESPONSE' }, proxyResolutionKey, logger),
+                all = await stubs.toJSON(),
+                stubResponses = all.map(stub => proxyResponses(stub.responses));
+
+            assert.deepEqual(jsonResponse(secondResponse), { data: 'RESPONSE-DECORATED' });
+            assert.deepEqual(stubResponses, [
+                [{ is: { data: 'RESPONSE-DECORATED' } }],
+                [proxyResponse]
+            ]);
         });
 
-        promiseIt('should add wait behavior based on the proxy resolution time', function () {
+        it('should add wait behavior based on the proxy resolution time', async function () {
             const stubs = createStubsRepository(),
                 resolver = ResponseResolver.create(stubs, null, 'CALLBACK-URL'),
                 logger = Logger.create(),
                 proxyResponse = { proxy: { to: 'where', mode: 'proxyOnce', addWaitBehavior: true } },
                 request = {};
 
-            return stubs.add({ responses: [proxyResponse] })
-                .then(() => getResponseFrom(stubs))
-                .then(responseConfig => resolver.resolve(responseConfig, request, logger, {}))
-                .then(response => {
-                    const proxyResolutionKey = parseInt(response.callbackURL.replace('CALLBACK-URL/', ''));
-                    return Q.delay(proxyResolutionKey, 100);
-                }).then(proxyResolutionKey =>
-                    resolver.resolveProxy({ data: 'RESPONSE' }, proxyResolutionKey, logger)
-                ).then(() => {
-                    return stubs.toJSON();
-                }).then(all => {
-                    const stubResponses = all.map(stub => stub.responses),
-                        wait = stubResponses[0][0].is._proxyResponseTime;
-                    assert.ok(wait > 90); // allow some variability
-                    assert.deepEqual(stubResponses, [
-                        [{ is: { data: 'RESPONSE', _proxyResponseTime: wait }, behaviors: [{ wait: wait }] }],
-                        [proxyResponse]
-                    ]);
-                });
+            await stubs.add({ responses: [proxyResponse] });
+            const responseConfig = await getResponseFrom(stubs),
+                response = await resolver.resolve(responseConfig, request, logger, {}),
+                proxyResolutionKey = parseInt(response.callbackURL.replace('CALLBACK-URL/', ''));
+            await delay(100);
+            await resolver.resolveProxy({ data: 'RESPONSE' }, proxyResolutionKey, logger);
+            const all = await stubs.toJSON(),
+                stubResponses = all.map(stub => stub.responses),
+                wait = stubResponses[0][0].is._proxyResponseTime;
+
+            assert.ok(wait > 90); // allow some variability
+            assert.deepEqual(stubResponses, [
+                [{ is: { data: 'RESPONSE', _proxyResponseTime: wait }, behaviors: [{ wait: wait }] }],
+                [proxyResponse]
+            ]);
         });
 
-        promiseIt('should not resolve the same proxyResolutionKey twice', function () {
+        it('should not resolve the same proxyResolutionKey twice', async function () {
             const stubs = createStubsRepository(),
                 resolver = ResponseResolver.create(stubs, null, 'CALLBACK-URL'),
                 logger = Logger.create(),
                 proxyResponse = { proxy: { to: 'where' } },
                 request = {};
-            let proxyResolutionKey;
 
-            return stubs.add({ responses: [proxyResponse] })
-                .then(() => getResponseFrom(stubs))
-                .then(responseConfig => resolver.resolve(responseConfig, request, logger, {}))
-                .then(response => {
-                    proxyResolutionKey = parseInt(response.callbackURL.replace('CALLBACK-URL/', ''));
+            await stubs.add({ responses: [proxyResponse] });
+            const responseConfig = await getResponseFrom(stubs),
+                response = await resolver.resolve(responseConfig, request, logger, {}),
+                proxyResolutionKey = parseInt(response.callbackURL.replace('CALLBACK-URL/', ''));
+            await resolver.resolveProxy({ data: 'RESPONSE' }, proxyResolutionKey, logger);
 
-                    return resolver.resolveProxy({ data: 'RESPONSE' }, proxyResolutionKey, logger);
-                }).then(() => resolver.resolveProxy({ data: 'RESPONSE' }, proxyResolutionKey, logger)).then(() => {
-                    assert.fail('should have errored');
-                }, error => {
-                    assert.deepEqual(error, {
-                        code: 'no such resource',
-                        message: 'invalid proxy resolution key',
-                        source: 'CALLBACK-URL/0'
-                    });
-                    logger.error.assertLogged('Invalid proxy resolution key: 0');
+            try {
+                await resolver.resolveProxy({ data: 'RESPONSE' }, proxyResolutionKey, logger);
+                assert.fail('should have errored');
+            }
+            catch (error) {
+                assert.deepEqual(error, {
+                    code: 'no such resource',
+                    message: 'invalid proxy resolution key',
+                    source: 'CALLBACK-URL/0'
                 });
+                logger.error.assertLogged('Invalid proxy resolution key: 0');
+            }
         });
     });
 });
