@@ -40,18 +40,18 @@ const prometheus = require('prom-client'),
         })
     };
 
-function createErrorHandler (reject, port) {
+function createErrorHandler (deferred, port) {
     return error => {
         const errors = require('../util/errors');
 
         if (error.errno === 'EADDRINUSE') {
-            reject(errors.ResourceConflictError(`Port ${port} is already in use`));
+            deferred.reject(errors.ResourceConflictError(`Port ${port} is already in use`));
         }
         else if (error.errno === 'EACCES') {
-            reject(errors.InsufficientAccessError());
+            deferred.reject(errors.InsufficientAccessError());
         }
         else {
-            reject(error);
+            deferred.reject(error);
         }
     };
 }
@@ -75,39 +75,40 @@ function create (Protocol, creationRequest, baseLogger, config, isAllowedConnect
         return scope;
     }
 
-    return new Promise((resolve, reject) => {
-        const domain = require('domain').create(),
-            errorHandler = createErrorHandler(reject, creationRequest.port),
-            compatibility = require('./compatibility'),
-            logger = require('../util/scopedLogger').create(baseLogger, scopeFor(creationRequest.port)),
-            helpers = require('../util/helpers'),
-            imposterState = {},
-            unresolvedProxies = {},
-            header = helpers.clone(creationRequest);
+    const Q = require('q'),
+        deferred = Q.defer(),
+        domain = require('domain').create(),
+        errorHandler = createErrorHandler(deferred, creationRequest.port),
+        compatibility = require('./compatibility'),
+        logger = require('../util/scopedLogger').create(baseLogger, scopeFor(creationRequest.port)),
+        helpers = require('../util/helpers'),
+        imposterState = {},
+        unresolvedProxies = {},
+        header = helpers.clone(creationRequest);
 
-        // Free up the memory by allowing garbage collection of stubs when using filesystemBackedImpostersRepository
-        delete header.stubs;
+    // Free up the memory by allowing garbage collection of stubs when using filesystemBackedImpostersRepository
+    delete header.stubs;
 
-        let stubs;
-        let resolver;
-        let encoding;
-        let numberOfRequests = 0;
+    let stubs;
+    let resolver;
+    let encoding;
+    let numberOfRequests = 0;
 
-        compatibility.upcast(creationRequest);
+    compatibility.upcast(creationRequest);
 
-        // If the CLI --mock flag is passed, we record even if the imposter level recordRequests = false
-        const recordRequests = config.recordRequests || creationRequest.recordRequests;
+    // If the CLI --mock flag is passed, we record even if the imposter level recordRequests = false
+    const recordRequests = config.recordRequests || creationRequest.recordRequests;
 
-        async function findFirstMatch (request) {
-            const filter = stubPredicates => {
-                    const predicates = require('./predicates');
+    function findFirstMatch (request) {
+        const filter = stubPredicates => {
+                const predicates = require('./predicates');
 
-                    return stubPredicates.every(predicate =>
-                        predicates.evaluate(predicate, request, encoding, logger, imposterState));
-                },
-                observePredicateMatchDuration = metrics.predicateMatchDuration.startTimer(),
-                match = await stubs.first(filter);
+                return stubPredicates.every(predicate =>
+                    predicates.evaluate(predicate, request, encoding, logger, imposterState));
+            },
+            observePredicateMatchDuration = metrics.predicateMatchDuration.startTimer();
 
+        return stubs.first(filter).then(match => {
             observePredicateMatchDuration({ imposter: logger.scopePrefix });
             if (match.success) {
                 logger.debug(`using predicate match: ${JSON.stringify(match.stub.predicates || {})}`);
@@ -117,83 +118,90 @@ function create (Protocol, creationRequest, baseLogger, config, isAllowedConnect
                 logger.info('no predicate match, using default response');
             }
             return match;
+        });
+    }
+
+    function recordMatch (stub, request, response, responseConfig, start) {
+        if (response.proxy) {
+            // Out of process proxying, so we don't have the actual response yet.
+            const parts = response.callbackURL.split('/'),
+                proxyResolutionKey = parts[parts.length - 1];
+
+            unresolvedProxies[proxyResolutionKey] = {
+                recordMatch: proxyResponse => {
+                    return stub.recordMatch(request, proxyResponse, responseConfig, new Date() - start);
+                }
+            };
+            return Q();
+        }
+        else if (response.response) {
+            // Out of process responses wrap the result in an outer response object
+            return stub.recordMatch(request, response.response, responseConfig, new Date() - start);
+        }
+        else {
+            // In process resolution
+            return stub.recordMatch(request, response, responseConfig, new Date() - start);
+        }
+    }
+
+    // requestDetails are not stored with the imposter
+    // It was created to pass the raw URL to maintain the exact querystring during http proxying
+    // without having to change the path / query options on the stored request
+    function getResponseFor (request, requestDetails) {
+        if (!isAllowedConnection(request.ip, logger)) {
+            metrics.blockedIPCount.inc({ imposter: logger.scopePrefix });
+            return Q({ blocked: true, code: 'unauthorized ip address' });
         }
 
-        function recordMatch (stub, request, response, responseConfig, start) {
-            if (response.proxy) {
-                // Out of process proxying, so we don't have the actual response yet.
-                const parts = response.callbackURL.split('/'),
-                    proxyResolutionKey = parts[parts.length - 1];
+        const start = new Date();
 
-                unresolvedProxies[proxyResolutionKey] = {
-                    recordMatch: proxyResponse => {
-                        return stub.recordMatch(request, proxyResponse, responseConfig, new Date() - start);
+        metrics.requestCount.inc({ imposter: logger.scopePrefix });
+        numberOfRequests += 1;
+        if (recordRequests) {
+            stubs.addRequest(request);
+        }
+
+        return findFirstMatch(request).then(match => {
+            const observeResponseGenerationDuration = metrics.responseGenerationDuration.startTimer();
+
+            return match.stub.nextResponse().then(responseConfig => {
+                logger.debug(`generating response from ${JSON.stringify(responseConfig)}`);
+                return resolver.resolve(responseConfig, request, logger, imposterState, requestDetails).then(response => {
+                    if (config.recordMatches) {
+                        return recordMatch(match.stub, request, response, responseConfig, start).then(() => response);
                     }
-                };
-                return Promise.resolve();
-            }
-            else if (response.response) {
-                // Out of process responses wrap the result in an outer response object
-                return stub.recordMatch(request, response.response, responseConfig, new Date() - start);
-            }
-            else {
-                // In process resolution
-                return stub.recordMatch(request, response, responseConfig, new Date() - start);
-            }
-        }
+                    observeResponseGenerationDuration({ imposter: logger.scopePrefix });
+                    return response;
+                });
+            });
+        });
+    }
 
-        // requestDetails are not stored with the imposter
-        // It was created to pass the raw URL to maintain the exact querystring during http proxying
-        // without having to change the path / query options on the stored request
-        async function getResponseFor (request, requestDetails) {
-            if (!isAllowedConnection(request.ip, logger)) {
-                metrics.blockedIPCount.inc({ imposter: logger.scopePrefix });
-                return Promise.resolve({ blocked: true, code: 'unauthorized ip address' });
-            }
-
-            const start = new Date();
-
-            metrics.requestCount.inc({ imposter: logger.scopePrefix });
-            numberOfRequests += 1;
-            if (recordRequests) {
-                stubs.addRequest(request);
-            }
-
-            const match = await findFirstMatch(request),
-                observeResponseGenerationDuration = metrics.responseGenerationDuration.startTimer(),
-                responseConfig = await match.stub.nextResponse();
-
-            logger.debug(`generating response from ${JSON.stringify(responseConfig)}`);
-            const response = await resolver.resolve(responseConfig, request, logger, imposterState, requestDetails);
-            if (config.recordMatches) {
-                await recordMatch(match.stub, request, response, responseConfig, start);
-            }
-            observeResponseGenerationDuration({ imposter: logger.scopePrefix });
-            return response;
-        }
-
-        async function getProxyResponseFor (proxyResponse, proxyResolutionKey) {
-            const response = await resolver.resolveProxy(proxyResponse, proxyResolutionKey, logger, imposterState);
+    function getProxyResponseFor (proxyResponse, proxyResolutionKey) {
+        return resolver.resolveProxy(proxyResponse, proxyResolutionKey, logger, imposterState).then(response => {
+            let promise = Q();
             if (config.recordMatches && unresolvedProxies[String(proxyResolutionKey)].recordMatch) {
-                await unresolvedProxies[String(proxyResolutionKey)].recordMatch(response);
+                promise = unresolvedProxies[String(proxyResolutionKey)].recordMatch(response);
             }
             delete unresolvedProxies[String(proxyResolutionKey)];
-            return response;
-        }
+            return promise.then(() => response);
+        });
+    }
 
-        async function resetRequests () {
-            await stubs.deleteSavedRequests();
+    function resetRequests () {
+        return stubs.deleteSavedRequests().then(() => {
             numberOfRequests = 0;
-            return true;
+            return Q(true);
+        });
+    }
+
+    domain.on('error', errorHandler);
+    domain.run(() => {
+        if (!helpers.defined(creationRequest.host) && helpers.defined(config.host)) {
+            creationRequest.host = config.host;
         }
 
-        domain.on('error', errorHandler);
-        domain.run(async function () {
-            if (!helpers.defined(creationRequest.host) && helpers.defined(config.host)) {
-                creationRequest.host = config.host;
-            }
-
-            const server = await Protocol.createServer(creationRequest, logger, getResponseFor);
+        Protocol.createServer(creationRequest, logger, getResponseFor).done(server => {
             if (creationRequest.port !== server.port) {
                 creationRequest.port = server.port;
                 logger.changeScope(scopeFor(server.port));
@@ -205,22 +213,22 @@ function create (Protocol, creationRequest, baseLogger, config, isAllowedConnect
             encoding = server.encoding;
 
             function stop () {
-                return new Promise(stopResolve => {
-                    server.close(() => {
-                        logger.info('Ciao for now');
-                        return stopResolve({});
-                    });
+                const stopDeferred = Q.defer();
+                server.close(() => {
+                    logger.info('Ciao for now');
+                    return stopDeferred.resolve({});
                 });
+                return stopDeferred.promise;
             }
 
             function loadRequests () {
-                return recordRequests ? stubs.loadRequests() : Promise.resolve([]);
+                return recordRequests ? stubs.loadRequests() : require('q')([]);
             }
 
             const printer = require('./imposterPrinter').create(header, server, loadRequests),
                 toJSON = options => printer.toJSON(numberOfRequests, options);
 
-            return resolve({
+            return deferred.resolve({
                 port: server.port,
                 url: '/imposters/' + server.port,
                 creationRequest: creationRequest,
@@ -232,6 +240,8 @@ function create (Protocol, creationRequest, baseLogger, config, isAllowedConnect
             });
         });
     });
+
+    return deferred.promise;
 }
 
 module.exports = { create };
