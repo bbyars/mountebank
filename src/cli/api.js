@@ -1,42 +1,40 @@
 'use strict';
 
 function curl (options, method, path, body) {
-    const Q = require('q'),
-        deferred = Q.defer(),
-        http = require('http'),
-        requestOptions = {
-            method: method,
-            path: path,
-            port: options.port,
-            hostname: options.host || 'localhost',
-            headers: {
-                'Content-Type': 'application/json',
-                Connection: 'close'
-            }
-        },
-
-        request = http.request(requestOptions, response => {
-            response.body = '';
-            response.setEncoding('utf8');
-            response.on('data', chunk => { response.body += chunk; });
-            response.on('end', () => {
-                if (response.statusCode === 200) {
-                    response.body = JSON.parse(response.body);
-                    deferred.resolve(response);
+    return new Promise((resolve, reject) => {
+        const http = require('http'),
+            requestOptions = {
+                method: method,
+                path: path,
+                port: options.port,
+                hostname: options.host || 'localhost',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Connection: 'close'
                 }
-                else {
-                    deferred.reject(new Error(`${response.statusCode}\n${response.body}`));
-                }
+            },
+            request = http.request(requestOptions, response => {
+                response.body = '';
+                response.setEncoding('utf8');
+                response.on('data', chunk => { response.body += chunk; });
+                response.on('end', () => {
+                    if (response.statusCode === 200) {
+                        response.body = JSON.parse(response.body);
+                        resolve(response);
+                    }
+                    else {
+                        reject(new Error(`${response.statusCode}\n${response.body}`));
+                    }
+                });
             });
-        });
 
-    request.on('error', deferred.reject);
+        request.on('error', reject);
 
-    if (body) {
-        request.write(JSON.stringify(body, null, 2));
-    }
-    request.end();
-    return deferred.promise;
+        if (body) {
+            request.write(JSON.stringify(body, null, 2));
+        }
+        request.end();
+    });
 }
 
 function putImposters (options, body) {
@@ -53,6 +51,9 @@ function getImposters (options) {
 
 function logConnectionErrorAndExit (options, err) {
     const host = options.host || 'localhost';
+    if (err.code === 'ENOENT') {
+        console.error(`No such file: ${options.configfile}`);
+    }
     if (err.code === 'ECONNREFUSED') {
         console.error(`No mb process running on http://${host}:${options.port}`);
     }
@@ -62,37 +63,40 @@ function logConnectionErrorAndExit (options, err) {
     process.exit(1);
 }
 
-function loadConfig (options) {
-    const formatter = require(options.formatter),
-        Q = require('q');
+async function loadConfig (options) {
+    const formatter = require(options.formatter);
 
-    return Q(formatter.load(options))
-        .catch(e => {
-            const message = e.code !== 'ENOENT' ? e : `No such file: ${options.configfile}`;
-            console.error(message);
-            process.exit(1);
-        })
-        .then(imposters => putImposters(options, imposters))
-        .catch(e => logConnectionErrorAndExit(options, e));
+    try {
+        const imposters = await Promise.resolve(formatter.load(options));
+        await putImposters(options, imposters);
+    }
+    catch (e) {
+        logConnectionErrorAndExit(options, e);
+    }
 }
 
-function save (options) {
-    const formatter = require(options.formatter),
-        Q = require('q');
+async function save (options) {
+    const formatter = require(options.formatter);
 
-    getImposters(options)
-        .then(response => Q(formatter.save(options, response.body)))
-        .catch(e => logConnectionErrorAndExit(options, e))
-        .done();
+    try {
+        const response = await getImposters(options);
+        await Promise.resolve(formatter.save(options, response.body));
+    }
+    catch (e) {
+        logConnectionErrorAndExit(options, e);
+    }
 }
 
-function replay (options) {
+async function replay (options) {
     options.removeProxies = true;
 
-    getImposters(options)
-        .then(response => putImposters(options, response.body))
-        .catch(e => logConnectionErrorAndExit(e, options))
-        .done();
+    try {
+        const response = await getImposters(options);
+        await putImposters(options, response.body);
+    }
+    catch (e) {
+        logConnectionErrorAndExit(e, options);
+    }
 }
 
 module.exports = {

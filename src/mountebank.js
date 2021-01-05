@@ -11,9 +11,8 @@
  * @param {object} options - The command line options
  * @returns {Object} An object with a close method to stop the server
  */
-function create (options) {
-    const Q = require('q'),
-        express = require('express'),
+async function create (options) {
+    const express = require('express'),
         cors = require('cors'),
         errorHandler = require('errorhandler'),
         path = require('path'),
@@ -139,9 +138,10 @@ function create (options) {
         logger.warn(`Running with --allowInjection set. See ${baseURL}/docs/security for security info`);
     }
 
-    return imposters.loadAll(protocols).then(() => {
-        const deferred = Q.defer(),
-            connections = {},
+    await imposters.loadAll(protocols);
+
+    return new Promise(resolve => {
+        const connections = {},
             server = app.listen(options.port, options.host, () => {
                 logger.info(`mountebank v${thisPackage.version} now taking orders - point your browser to ${baseURL}/ for help`);
                 logger.debug(`config: ${JSON.stringify({
@@ -153,7 +153,7 @@ function create (options) {
                     }
                 })}`);
 
-                deferred.resolve({
+                resolve({
                     close: callback => {
                         server.close(() => {
                             logger.info('Adios - see you soon?');
@@ -185,8 +185,6 @@ function create (options) {
                 socket.destroy();
             }
         });
-
-        return deferred.promise;
     });
 }
 

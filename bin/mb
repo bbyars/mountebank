@@ -5,8 +5,7 @@
 const mountebank = require('../src/mountebank'),
     api = require('../src/cli/api'),
     cli = require('../src/cli/cli'),
-    fs = require('fs-extra'),
-    Q = require('q');
+    fs = require('fs-extra');
 
 function processExists (pid) {
     try {
@@ -21,86 +20,82 @@ function processExists (pid) {
 }
 
 function serverAt (options) {
-    function start () {
-        mountebank.create(options).then(server => {
-            function shutdown () {
-                server.close(() => {
-                    try {
-                        if (fs.existsSync(options.pidfile)) {
-                            fs.unlinkSync(options.pidfile);
-                        }
-                    }
-                    finally {
-                        process.exit();
-                    }
-                });
-            }
+    async function start () {
+        const server = await mountebank.create(options);
 
-            process.on('SIGINT', shutdown);
-            process.on('SIGTERM', shutdown);
+        function shutdown () {
+            server.close(() => {
+                try {
+                    if (fs.existsSync(options.pidfile)) {
+                        fs.unlinkSync(options.pidfile);
+                    }
+                }
+                finally {
+                    process.exit();
+                }
+            });
+        }
 
-            if (options.configfile) {
-                return api.loadConfig(options, server);
-            }
-            else {
-                return Q();
-            }
-        }).then(() => {
-            // Useful for build plugins that need to wait for mb to be fully initialized
-            // They can wait for the pidfile to be written
-            fs.writeFileSync(options.pidfile, process.pid.toString());
-        }).done();
+        process.on('SIGINT', shutdown);
+        process.on('SIGTERM', shutdown);
+
+        if (options.configfile) {
+            await api.loadConfig(options, server);
+        }
+
+        // Useful for build plugins that need to wait for mb to be fully initialized
+        // They can wait for the pidfile to be written
+        fs.writeFileSync(options.pidfile, process.pid.toString());
     }
 
     function stop () {
         if (!fs.existsSync(options.pidfile)) {
-            return Q(true);
+            return Promise.resolve(true);
         }
 
         const pid = fs.readFileSync(options.pidfile);
         if (!processExists(pid)) {
             fs.unlinkSync(options.pidfile);
-            return Q(true);
+            return Promise.resolve(true);
         }
 
-        const deferred = Q.defer(),
-            startTime = new Date(),
-            timeout = 1000,
-            waitForClose = () => {
-                const elapsedTime = new Date() - startTime;
-                if (!fs.existsSync(options.pidfile)) {
-                    deferred.resolve();
-                }
-                else if (elapsedTime > timeout) {
-                    try {
-                        // For Windows, which doesn't register signal handlers
-                        fs.unlinkSync(options.pidfile);
+        return new Promise(resolve => {
+            const startTime = new Date(),
+                timeout = 1000,
+                waitForClose = () => {
+                    const elapsedTime = new Date() - startTime;
+                    if (!fs.existsSync(options.pidfile)) {
+                        resolve();
                     }
-                    catch (err) { /* ignore */ }
-                    finally {
-                        deferred.resolve();
+                    else if (elapsedTime > timeout) {
+                        try {
+                            // For Windows, which doesn't register signal handlers
+                            fs.unlinkSync(options.pidfile);
+                        }
+                        catch (err) { /* ignore */ }
+                        finally {
+                            resolve();
+                        }
                     }
-                }
-                else {
-                    setTimeout(waitForClose, 100);
-                }
-            };
+                    else {
+                        setTimeout(waitForClose, 100);
+                    }
+                };
 
-        process.kill(pid);
-        waitForClose();
-        return deferred.promise;
+            process.kill(pid);
+            waitForClose();
+        });
     }
 
-    function restart () {
-        stop().then(start).done();
+    async function restart () {
+        await stop();
+        await start();
     }
 
     return {
         start: start,
-        stop: () => { stop().done(() => { process.exit(); }); },
-        restart: restart,
-        save: () => api.save(options),
-        replay: () => api.replay(options)
+        stop: stop,
+        restart: restart
     };
 }
 
@@ -118,10 +113,10 @@ try {
             server.restart();
             break;
         case 'save':
-            server.save();
+            api.save(cli.args);
             break;
         case 'replay':
-            server.replay();
+            api.replay(cli.args);
             break;
         case 'help':
             cli.help();
