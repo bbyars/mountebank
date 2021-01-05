@@ -12,7 +12,7 @@
  */
 function create (logfile) {
     function getLogEntries () {
-        const fs = require('fs');
+        const fs = require('fs-extra');
 
         if (!logfile || !fs.existsSync(logfile)) {
             return [{ level: 'error', message: 'No logfile' }];

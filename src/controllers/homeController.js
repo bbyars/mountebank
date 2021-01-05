@@ -19,7 +19,9 @@ function create (releases) {
         };
     }
 
-    const isRecent = notice => notice.when !== '';
+    function isRecent (notice) {
+        return notice.when !== '';
+    }
 
     /**
      * The function that responds to GET /

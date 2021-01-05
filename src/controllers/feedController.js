@@ -17,12 +17,14 @@ function create (releases, options) {
     // Init once since we hope many consumers poll the heroku feed and we don't have monitoring
     feedReleases.reverse();
 
-    const releaseViewFor = version => `releases/${version}.ejs`;
+    function releaseViewFor (version) {
+        return `releases/${version}.ejs`;
+    }
 
-    const releaseFilenameFor = version => {
+    function releaseFilenameFor (version) {
         const path = require('path');
         return path.join(__dirname, '/../views/', releaseViewFor(version));
-    };
+    }
 
     function versionInWhitelist (version) {
         // Prevent path traversal attack like v2.3.0%2f..%2f..%2f_header
@@ -36,7 +38,7 @@ function create (releases, options) {
      * @param {Object} response - The HTTP response
      */
     function getFeed (request, response) {
-        const fs = require('fs'),
+        const fs = require('fs-extra'),
             ejs = require('ejs'),
             page = parseInt(request.query.page || '1'),
             nextPage = page + 1,
