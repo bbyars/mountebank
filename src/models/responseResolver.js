@@ -35,47 +35,42 @@ function create (stubs, proxy, callbackURL) {
     let nextProxyResolutionKey = 0;
 
     function inject (request, fn, logger, imposterState) {
-        const Q = require('q'),
-            helpers = require('../util/helpers'),
-            deferred = Q.defer(),
-            config = {
-                request: helpers.clone(request),
-                state: imposterState,
-                logger: logger,
-                callback: deferred.resolve
-            },
-            compatibility = require('./compatibility');
-
-        compatibility.downcastInjectionConfig(config);
-
-        // Leave parameters for older interface
-        const injected = `(${fn})(config, injectState, logger, deferred.resolve, imposterState);`,
-            exceptions = require('../util/errors');
-
-        if (request.isDryRun === true) {
-            Q.delay(1).then(() => {
-                deferred.resolve({});
-            });
+        if (request.isDryRun) {
+            return Promise.resolve({});
         }
-        else {
+
+        return new Promise((done, reject) => {
+            // Leave parameters for older interface
+            const injected = `(${fn})(config, injectState, logger, done, imposterState);`,
+                helpers = require('../util/helpers'),
+                config = {
+                    request: helpers.clone(request),
+                    state: imposterState,
+                    logger: logger,
+                    callback: done
+                },
+                compatibility = require('./compatibility');
+
+            compatibility.downcastInjectionConfig(config);
+
             try {
                 const response = eval(injected);
                 if (helpers.defined(response)) {
-                    deferred.resolve(response);
+                    done(response);
                 }
             }
             catch (error) {
+                const exceptions = require('../util/errors');
                 logger.error(`injection X=> ${error}`);
                 logger.error(`    full source: ${JSON.stringify(injected)}`);
                 logger.error(`    config.request: ${JSON.stringify(config.request)}`);
                 logger.error(`    config.state: ${JSON.stringify(config.state)}`);
-                deferred.reject(exceptions.InjectionError('invalid response injection', {
+                reject(exceptions.InjectionError('invalid response injection', {
                     source: injected,
                     data: error.message
                 }));
             }
-        }
-        return deferred.promise;
+        });
     }
 
     function selectionValue (nodes) {
@@ -210,8 +205,8 @@ function create (stubs, proxy, callbackURL) {
     }
 
     function newIsResponse (response, proxyConfig) {
-        const result = { is: response };
-        const addBehaviors = [];
+        const result = { is: response },
+            addBehaviors = [];
 
         if (proxyConfig.addWaitBehavior && response._proxyResponseTime) {
             addBehaviors.push({ wait: response._proxyResponseTime });
@@ -226,42 +221,34 @@ function create (stubs, proxy, callbackURL) {
         return result;
     }
 
-    function recordProxyAlways (newPredicates, newResponse, responseConfig) {
-        const filter = stubPredicates => deepEqual(newPredicates, stubPredicates);
+    async function recordProxyAlways (newPredicates, newResponse, responseConfig) {
+        const filter = stubPredicates => deepEqual(newPredicates, stubPredicates),
+            index = await responseConfig.stubIndex(),
+            match = await stubs.first(filter, index + 1);
 
-        return responseConfig.stubIndex().then(index => {
-            return stubs.first(filter, index + 1);
-        }).then(match => {
-            if (match.success) {
-                return match.stub.addResponse(newResponse);
-            }
-            else {
-                return stubs.add({ predicates: newPredicates, responses: [newResponse] });
-            }
-        });
+        if (match.success) {
+            return await match.stub.addResponse(newResponse);
+        }
+        else {
+            return await stubs.add({ predicates: newPredicates, responses: [newResponse] });
+        }
     }
 
-    function recordProxyResponse (responseConfig, request, response, logger) {
+    async function recordProxyResponse (responseConfig, request, response, logger) {
         const newPredicates = predicatesFor(request, responseConfig.proxy.predicateGenerators || [], logger),
             newResponse = newIsResponse(response, responseConfig.proxy);
 
-        // proxyTransparent prevents the request from being recorded, and always transparently issues the request.
-        if (responseConfig.proxy.mode === 'proxyTransparent') {
-            return require('q')();
+        if (responseConfig.proxy.mode === 'proxyOnce') {
+            const index = await responseConfig.stubIndex();
+            await stubs.insertAtIndex({ predicates: newPredicates, responses: [newResponse] }, index);
         }
-        else if (responseConfig.proxy.mode === 'proxyOnce') {
-            return responseConfig.stubIndex().then(index => {
-                return stubs.insertAtIndex({ predicates: newPredicates, responses: [newResponse] }, index);
-            });
-        }
-        else {
-            return recordProxyAlways(newPredicates, newResponse, responseConfig);
+        else if (responseConfig.proxy.mode === 'proxyAlways') {
+            await recordProxyAlways(newPredicates, newResponse, responseConfig);
         }
     }
 
-    function proxyAndRecord (responseConfig, request, logger, requestDetails, imposterState) {
-        const Q = require('q'),
-            behaviors = require('./behaviors'),
+    async function proxyAndRecord (responseConfig, request, logger, requestDetails, imposterState) {
+        const behaviors = require('./behaviors'),
             startTime = new Date(),
             observeProxyDuration = metrics.proxyDuration.startTimer();
 
@@ -272,15 +259,14 @@ function create (stubs, proxy, callbackURL) {
         }
 
         if (inProcessProxy) {
-            return proxy.to(responseConfig.proxy.to, request, responseConfig.proxy, requestDetails).then(response => {
-                observeProxyDuration({ imposter: logger.scopePrefix });
-                response._proxyResponseTime = new Date() - startTime;
+            const response = await proxy.to(responseConfig.proxy.to, request, responseConfig.proxy, requestDetails);
+            observeProxyDuration({ imposter: logger.scopePrefix });
+            response._proxyResponseTime = new Date() - startTime;
 
-                // Run behaviors here to persist decorated response
-                return Q(behaviors.execute(request, response, responseConfig.behaviors, logger, imposterState));
-            }).then(response => {
-                return recordProxyResponse(responseConfig, request, response, logger).then(() => response);
-            });
+            // Run behaviors here to persist decorated response
+            const transformed = await behaviors.execute(request, response, responseConfig.behaviors, logger, imposterState);
+            await recordProxyResponse(responseConfig, request, transformed, logger);
+            return transformed;
         }
         else {
             pendingProxyResolutions[nextProxyResolutionKey] = {
@@ -291,31 +277,30 @@ function create (stubs, proxy, callbackURL) {
                 startTime: startTime
             };
             nextProxyResolutionKey += 1;
-            return Q({
+            return {
                 proxy: responseConfig.proxy,
                 request: request,
                 callbackURL: `${callbackURL}/${nextProxyResolutionKey - 1}`
-            });
+            };
         }
     }
 
     function processResponse (responseConfig, request, logger, imposterState, requestDetails) {
-        const Q = require('q'),
-            helpers = require('../util/helpers'),
+        const helpers = require('../util/helpers'),
             exceptions = require('../util/errors');
 
         if (responseConfig.is) {
             // Clone to prevent accidental state changes downstream
-            return Q(helpers.clone(responseConfig.is));
+            return Promise.resolve(helpers.clone(responseConfig.is));
         }
         else if (responseConfig.proxy) {
             return proxyAndRecord(responseConfig, request, logger, requestDetails, imposterState);
         }
         else if (responseConfig.inject) {
-            return inject(request, responseConfig.inject, logger, imposterState).then(Q);
+            return inject(request, responseConfig.inject, logger, imposterState);
         }
         else {
-            return Q.reject(exceptions.ValidationError('unrecognized response type',
+            return Promise.reject(exceptions.ValidationError('unrecognized response type',
                 { source: helpers.clone(responseConfig) }));
         }
     }
@@ -336,34 +321,30 @@ function create (stubs, proxy, callbackURL) {
      * @param {Object} options - Additional options not carried with the request
      * @returns {Object} - Promise resolving to the response
      */
-    function resolve (responseConfig, request, logger, imposterState, options) {
-        const Q = require('q'),
-            exceptions = require('../util/errors'),
+    async function resolve (responseConfig, request, logger, imposterState, options) {
+        const exceptions = require('../util/errors'),
             helpers = require('../util/helpers'),
             behaviors = require('./behaviors');
 
         if (hasMultipleTypes(responseConfig)) {
-            return Q.reject(exceptions.ValidationError('each response object must have only one response type',
+            return Promise.reject(exceptions.ValidationError('each response object must have only one response type',
                 { source: responseConfig }));
         }
 
-        return processResponse(responseConfig, helpers.clone(request), logger, imposterState, options).then(response => {
-            // We may have already run the behaviors in the proxy call to persist the decorated response
-            // in the new stub. If so, we need to ensure we don't re-run it
-            if (responseConfig.proxy) {
-                return Q(response);
-            }
-            else {
-                return Q(behaviors.execute(request, response, responseConfig.behaviors, logger, imposterState));
-            }
-        }).then(response => {
-            if (inProcessProxy) {
-                return Q(response);
-            }
-            else {
-                return responseConfig.proxy ? Q(response) : Q({ response });
-            }
-        });
+        let response = await processResponse(responseConfig, helpers.clone(request), logger, imposterState, options);
+
+        // We may have already run the behaviors in the proxy call to persist the decorated response
+        // in the new stub. If so, we need to ensure we don't re-run it
+        if (!responseConfig.proxy) {
+            response = await behaviors.execute(request, response, responseConfig.behaviors, logger, imposterState);
+        }
+
+        if (inProcessProxy) {
+            return response;
+        }
+        else {
+            return responseConfig.proxy ? response : { response };
+        }
     }
 
     /**
@@ -379,29 +360,25 @@ function create (stubs, proxy, callbackURL) {
      * @param {Object} imposterState - the user controlled state variable
      * @returns {Object} - Promise resolving to the response
      */
-    function resolveProxy (proxyResponse, proxyResolutionKey, logger, imposterState) {
+    async function resolveProxy (proxyResponse, proxyResolutionKey, logger, imposterState) {
         const pendingProxyConfig = pendingProxyResolutions[proxyResolutionKey],
-            behaviors = require('./behaviors'),
-            Q = require('q');
+            behaviors = require('./behaviors');
 
         if (pendingProxyConfig) {
             pendingProxyConfig.observeProxyDuration({ imposter: logger.scopePrefix });
             proxyResponse._proxyResponseTime = new Date() - pendingProxyConfig.startTime;
 
-            return behaviors.execute(pendingProxyConfig.request, proxyResponse, pendingProxyConfig.responseConfig.behaviors, logger, imposterState)
-                .then(response => {
-                    return recordProxyResponse(pendingProxyConfig.responseConfig, pendingProxyConfig.request, response, logger)
-                        .then(() => {
-                            delete pendingProxyResolutions[proxyResolutionKey];
-                            return Q(response);
-                        });
-                });
+            const response = await behaviors.execute(pendingProxyConfig.request, proxyResponse,
+                pendingProxyConfig.responseConfig.behaviors, logger, imposterState);
+            await recordProxyResponse(pendingProxyConfig.responseConfig, pendingProxyConfig.request, response, logger);
+            delete pendingProxyResolutions[proxyResolutionKey];
+            return response;
         }
         else {
             const errors = require('../util/errors');
 
             logger.error('Invalid proxy resolution key: ' + proxyResolutionKey);
-            return Q.reject(errors.MissingResourceError('invalid proxy resolution key',
+            return Promise.reject(errors.MissingResourceError('invalid proxy resolution key',
                 { source: `${callbackURL}/${proxyResolutionKey}` }));
         }
     }

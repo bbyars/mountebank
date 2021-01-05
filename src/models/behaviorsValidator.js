@@ -29,15 +29,14 @@ function create () {
     }
 
     function typeErrorMessageFor (allowedTypes, additionalContext) {
-        const util = require('util'),
-            spellings = { number: 'a', object: 'an', string: 'a' };
-        let message = util.format('must be %s %s', spellings[allowedTypes[0]], allowedTypes[0]);
+        const spellings = { number: 'a', object: 'an', string: 'a' };
+        let message = `must be ${spellings[allowedTypes[0]]} ${allowedTypes[0]}`;
 
         for (let i = 1; i < allowedTypes.length; i += 1) {
-            message += util.format(' or %s %s', spellings[allowedTypes[i]], allowedTypes[i]);
+            message += ` or ${spellings[allowedTypes[i]]} ${allowedTypes[i]}`;
         }
         if (additionalContext) {
-            message += ', representing ' + additionalContext;
+            message += `, representing ${additionalContext}`;
         }
         return message;
     }
@@ -47,7 +46,7 @@ function create () {
             return fieldName;
         }
         else {
-            return pathPrefix + '.' + fieldName;
+            return `${pathPrefix}.${fieldName}`;
         }
     }
 
@@ -88,8 +87,7 @@ function create () {
 
     function addTypeErrors (fieldSpec, path, field, config, addErrorFn) {
         /* eslint complexity: 0 */
-        const util = require('util'),
-            helpers = require('../util/helpers'),
+        const helpers = require('../util/helpers'),
             fieldType = typeof field,
             allowedTypes = Object.keys(fieldSpec._allowedTypes), // eslint-disable-line no-underscore-dangle
             typeSpec = fieldSpec._allowedTypes[fieldType]; // eslint-disable-line no-underscore-dangle
@@ -102,7 +100,7 @@ function create () {
                 addErrorFn(path, 'must have exactly one key');
             }
             else if (typeSpec.enum && !matchesEnum(field, typeSpec.enum)) {
-                addErrorFn(path, util.format('must be one of [%s]', typeSpec.enum.join(', ')));
+                addErrorFn(path, `must be one of [${typeSpec.enum.join(', ')}]`);
             }
             else if (typeSpec.nonNegativeInteger && field < 0) {
                 addErrorFn(path, 'must be an integer greater than or equal to 0');
