@@ -112,10 +112,9 @@ const prometheus = require('prom-client'),
  * @returns {Object}
  */
 function create (config, logger) {
+    const imposterFns = {};
     let counter = 0,
         locks = 0;
-    const Q = require('q'),
-        imposterFns = {};
 
     function prettyError (err, filepath) {
         const errors = require('../util/errors');
@@ -129,114 +128,119 @@ function create (config, logger) {
         }
     }
 
-    function writeFile (filepath, obj) {
+    async function writeFile (filepath, obj) {
         const fs = require('fs-extra'),
             path = require('path'),
-            dir = path.dirname(filepath),
-            deferred = Q.defer();
+            dir = path.dirname(filepath);
 
-        fs.ensureDir(dir, mkdirErr => {
-            if (mkdirErr) {
-                deferred.reject(prettyError(mkdirErr, dir));
-            }
-            else {
-                fs.writeFile(filepath, JSON.stringify(obj, null, 2), err => {
-                    if (err) {
-                        deferred.reject(prettyError(err, filepath));
-                    }
-                    else {
-                        deferred.resolve(filepath);
-                    }
-                });
-            }
+        return new Promise((resolve, reject) => {
+            fs.ensureDir(dir, mkdirErr => {
+                if (mkdirErr) {
+                    reject(prettyError(mkdirErr, dir));
+                }
+                else {
+                    fs.writeFile(filepath, JSON.stringify(obj, null, 2), err => {
+                        if (err) {
+                            reject(prettyError(err, filepath));
+                        }
+                        else {
+                            resolve(filepath);
+                        }
+                    });
+                }
+            });
         });
-
-        return deferred.promise;
     }
 
     function readFile (filepath, defaultContents) {
-        const deferred = Q.defer(),
-            fs = require('fs-extra'),
+        const fs = require('fs-extra'),
             errors = require('../util/errors');
 
-        fs.readFile(filepath, 'utf8', (err, data) => {
-            if (err && err.code === 'ENOENT') {
-                if (typeof defaultContents === 'undefined') {
-                    logger.error(`Corrupted database: missing file ${filepath}`);
-                    deferred.reject(errors.DatabaseError('file not found', { details: err.message }));
+        return new Promise((resolve, reject) => {
+            fs.readFile(filepath, 'utf8', (err, data) => {
+                if (err && err.code === 'ENOENT') {
+                    if (typeof defaultContents === 'undefined') {
+                        logger.error(`Corrupted database: missing file ${filepath}`);
+                        reject(errors.DatabaseError('file not found', { details: err.message }));
+                    }
+                    else {
+                        resolve(defaultContents);
+                    }
+                }
+                else if (err) {
+                    reject(prettyError(err, filepath));
                 }
                 else {
-                    deferred.resolve(defaultContents);
+                    try {
+                        resolve(JSON.parse(data));
+                    }
+                    catch (parseErr) {
+                        logger.error(`Corrupted database: invalid JSON for ${filepath}`);
+                        reject(errors.DatabaseError(`invalid JSON in ${filepath}`, { details: parseErr.message }));
+                    }
                 }
-            }
-            else if (err) {
-                deferred.reject(prettyError(err, filepath));
-            }
-            else {
-                try {
-                    deferred.resolve(JSON.parse(data));
-                }
-                catch (parseErr) {
-                    logger.error(`Corrupted database: invalid JSON for ${filepath}`);
-                    deferred.reject(errors.DatabaseError(`invalid JSON in ${filepath}`, { details: parseErr.message }));
-                }
-            }
+            });
         });
-
-        return deferred.promise;
     }
 
     function rename (oldPath, newPath) {
-        const deferred = Q.defer(),
-            fs = require('fs-extra');
+        const fs = require('fs-extra');
 
-        fs.rename(oldPath, newPath, err => {
-            if (err) {
-                deferred.reject(prettyError(err, oldPath));
-            }
-            else {
-                deferred.resolve(newPath);
-            }
+        return new Promise((resolve, reject) => {
+            fs.rename(oldPath, newPath, err => {
+                if (err) {
+                    reject(prettyError(err, oldPath));
+                }
+                else {
+                    resolve(newPath);
+                }
+            });
         });
-
-        return deferred.promise;
     }
 
     function ensureDir (filepath) {
         const fs = require('fs-extra'),
             path = require('path'),
-            dir = path.dirname(filepath),
-            deferred = Q.defer();
+            dir = path.dirname(filepath);
 
-        fs.ensureDir(dir, err => {
-            if (err) {
-                deferred.reject(prettyError(err, dir));
-            }
-            else {
-                deferred.resolve(dir);
-            }
-        });
-
-        return deferred.promise;
-    }
-
-    function atomicWriteFile (filepath, obj, attempts = 1) {
-        const tmpfile = filepath + '.tmp';
-
-        return writeFile(tmpfile, obj)
-            .then(() => rename(tmpfile, filepath))
-            .catch(err => {
-                if (err.code === 'ENOENT' && attempts < 15) {
-                    logger.debug(`Attempt ${attempts} failed with ENOENT error on atomic write of  ${filepath}. Retrying...`);
-                    return Q.delay(10).then(() => atomicWriteFile(filepath, obj, attempts + 1));
+        return new Promise((resolve, reject) => {
+            fs.ensureDir(dir, err => {
+                if (err) {
+                    reject(prettyError(err, dir));
                 }
                 else {
-                    return Q.reject(err);
+                    resolve(dir);
                 }
             });
+        });
     }
 
-    function lockFile (filepath) {
+    function delay (duration) {
+        return new Promise(resolve => {
+            setTimeout(resolve, duration);
+        });
+    }
+
+    async function atomicWriteFile (filepath, obj, attempts = 1) {
+        const tmpfile = filepath + '.tmp';
+
+        try {
+            await writeFile(tmpfile, obj);
+            await rename(tmpfile, filepath);
+        }
+        catch (err) {
+            if (err.code === 'ENOENT' && attempts < 15) {
+                logger.debug(`Attempt ${attempts} failed with ENOENT error on atomic write of ${filepath}. Retrying...`);
+                await delay(10);
+                await atomicWriteFile(filepath, obj, attempts + 1);
+            }
+            else {
+                throw err;
+            }
+        }
+    }
+
+    async function lockFile (filepath) {
         const locker = require('proper-lockfile'),
             options = {
                 realpath: false,
@@ -251,60 +255,56 @@ function create (config, logger) {
             };
 
         // with realpath = false, the file doesn't have to exist, but the directory does
-        return ensureDir(filepath)
-            .then(() => locker.lock(filepath, options));
+        await ensureDir(filepath);
+        return await locker.lock(filepath, options);
     }
 
-    function readAndWriteFile (filepath, caller, transformer, defaultContents) {
+    async function readAndWriteFile (filepath, caller, transformer, defaultContents) {
         const locker = require('proper-lockfile'),
             currentLockId = locks,
             observeLockAcquireDuration = metrics.lockAcquireDuration.startTimer({ caller });
 
         locks += 1;
 
-        return lockFile(filepath)
-            .then(release => {
-                const acquireLockSeconds = observeLockAcquireDuration(),
-                    observeLockHoldDuration = metrics.lockHoldDuration.startTimer({ caller });
-                logger.debug(`Acquired file lock on ${filepath} for ${caller}-${currentLockId} after ${acquireLockSeconds}s`);
+        try {
+            const release = await lockFile(filepath),
+                acquireLockSeconds = observeLockAcquireDuration(),
+                observeLockHoldDuration = metrics.lockHoldDuration.startTimer({ caller });
 
-                return readFile(filepath, defaultContents)
-                    .then(original => transformer(original))
-                    .then(transformed => atomicWriteFile(filepath, transformed))
-                    .then(() => {
-                        const lockHeld = observeLockHoldDuration();
-                        logger.debug(`Released file lock on ${filepath} for ${caller}-${currentLockId} after ${lockHeld}s`);
+            logger.debug(`Acquired file lock on ${filepath} for ${caller}-${currentLockId} after ${acquireLockSeconds}s`);
 
-                        return release()
-                            .catch(err => {
-                                // Ignore lock already released errors
-                                if (err.code !== 'ERELEASED') {
-                                    throw err;
-                                }
-                            });
-                    });
-            })
-            .catch(err => {
+            const original = await readFile(filepath, defaultContents),
+                transformed = await transformer(original);
+
+            await atomicWriteFile(filepath, transformed);
+            await release();
+
+            const lockHeld = observeLockHoldDuration();
+            logger.debug(`Released file lock on ${filepath} for ${caller}-${currentLockId} after ${lockHeld}s`);
+        }
+        catch (err) {
+            // Ignore lock already released errors
+            if (err.code !== 'ERELEASED') {
                 metrics.lockErrors.inc({ caller, code: err.code });
                 locker.unlock(filepath, { realpath: false }).catch(() => {});
-                return Q.reject(err);
-            });
+                throw err;
+            }
+        }
     }
 
-    function remove (path) {
-        const deferred = Q.defer(),
-            fs = require('fs-extra');
+    async function remove (path) {
+        const fs = require('fs-extra');
 
-        fs.remove(path, err => {
-            if (err) {
-                deferred.reject(err);
-            }
-            else {
-                deferred.resolve({});
-            }
+        return new Promise((resolve, reject) => {
+            fs.remove(path, err => {
+                if (err) {
+                    reject(err);
+                }
+                else {
+                    resolve({});
+                }
+            });
         });
-
-        return deferred.promise;
     }
 
     function filenameFor (timestamp) {
@@ -341,40 +341,39 @@ function create (config, logger) {
     }
 
     function readdir (path) {
-        const deferred = Q.defer(),
-            fs = require('fs-extra');
+        const fs = require('fs-extra');
 
-        fs.readdir(path, (err, files) => {
-            if (err && err.code === 'ENOENT') {
-                // Nothing saved yet
-                deferred.resolve([]);
-            }
-            else if (err) {
-                deferred.reject(err);
-            }
-            else {
-                deferred.resolve(files);
-            }
+        return new Promise((resolve, reject) => {
+            fs.readdir(path, (err, files) => {
+                if (err && err.code === 'ENOENT') {
+                    // Nothing saved yet
+                    resolve([]);
+                }
+                else if (err) {
+                    reject(err);
+                }
+                else {
+                    resolve(files);
+                }
+            });
         });
-        return deferred.promise;
     }
 
-    function loadAllInDir (path) {
-        return readdir(path).then(files => {
-            const promises = files
+    async function loadAllInDir (path) {
+        const files = await readdir(path),
+            reads = files
                 .filter(file => file.indexOf('.json') > 0)
                 .sort(timeSorter)
                 .map(file => readFile(`${path}/${file}`));
 
-            return Q.all(promises);
-        });
+        return await Promise.all(reads);
     }
 
     function repeatsFor (response) {
         return response.repeat || 1;
     }
 
-    function saveStubMetaAndResponses (stub, baseDir) {
+    async function saveStubMetaAndResponses (stub, baseDir) {
         const stubDefinition = {
                 meta: { dir: `stubs/${filenameFor(new Date())}` }
             },
@@ -384,7 +383,7 @@ function create (config, logger) {
                 nextIndex: 0
             },
             responses = stub.responses || [],
-            promises = [];
+            writes = [];
 
         if (stub.predicates) {
             stubDefinition.predicates = stub.predicates;
@@ -398,11 +397,12 @@ function create (config, logger) {
                 meta.orderWithRepeats.push(i);
             }
 
-            promises.push(writeFile(`${baseDir}/${stubDefinition.meta.dir}/${responseFile}`, responses[i]));
+            writes.push(writeFile(`${baseDir}/${stubDefinition.meta.dir}/${responseFile}`, responses[i]));
         }
 
-        promises.push(writeFile(`${baseDir}/${stubDefinition.meta.dir}/meta.json`, meta));
-        return Q.all(promises).then(() => stubDefinition);
+        writes.push(writeFile(`${baseDir}/${stubDefinition.meta.dir}/meta.json`, meta));
+        await Promise.all(writes);
+        return stubDefinition;
     }
 
     function stubRepository (baseDir) {
@@ -439,12 +439,12 @@ function create (config, logger) {
 
             if (typeof stub === 'undefined') {
                 return {
-                    addResponse: () => Q(),
-                    nextResponse: () => Q({
+                    addResponse: () => Promise.resolve(),
+                    nextResponse: () => Promise.resolve({
                         is: {},
-                        stubIndex: () => Q(0)
+                        stubIndex: () => Promise.resolve(0)
                     }),
-                    recordMatch: () => Q()
+                    recordMatch: () => Promise.resolve()
                 };
             }
 
@@ -456,9 +456,9 @@ function create (config, logger) {
              * @param {Object} response - the new response
              * @returns {Object} - the promise
              */
-            cloned.addResponse = response => {
+            cloned.addResponse = async response => {
                 let responseFile;
-                return readAndWriteFile(metaPath(stubDir), 'addResponse', meta => {
+                await readAndWriteFile(metaPath(stubDir), 'addResponse', async meta => {
                     const responseIndex = meta.responseFiles.length;
                     responseFile = `responses/${filenameFor(new Date())}.json`;
 
@@ -467,19 +467,19 @@ function create (config, logger) {
                         meta.orderWithRepeats.push(responseIndex);
                     }
 
-                    return writeFile(responsePath(stubDir, responseFile), response).then(() => meta);
+                    await writeFile(responsePath(stubDir, responseFile), response);
+                    return meta;
                 });
             };
 
-            function stubIndex () {
-                return readHeader().then(header => {
-                    for (let i = 0; i < header.stubs.length; i += 1) {
-                        if (header.stubs[i].meta.dir === stubDir) {
-                            return i;
-                        }
+            async function stubIndex () {
+                const header = await readHeader();
+                for (let i = 0; i < header.stubs.length; i += 1) {
+                    if (header.stubs[i].meta.dir === stubDir) {
+                        return i;
                     }
-                    return 0;
-                });
+                }
+                return 0;
             }
 
             function createResponse (responseConfig) {
@@ -493,18 +493,21 @@ function create (config, logger) {
              * @memberOf module:models/filesystemBackedImpostersRepository#
              * @returns {Object} - the promise
              */
-            cloned.nextResponse = () => {
+            cloned.nextResponse = async () => {
                 let responseFile;
-                return readAndWriteFile(metaPath(stubDir), 'nextResponse', meta => {
+                await readAndWriteFile(metaPath(stubDir), 'nextResponse', async meta => {
                     const maxIndex = meta.orderWithRepeats.length,
                         responseIndex = meta.orderWithRepeats[meta.nextIndex % maxIndex];
 
                     responseFile = meta.responseFiles[responseIndex];
 
                     meta.nextIndex = (meta.nextIndex + 1) % maxIndex;
-                    return Q(meta);
-                }).then(() => readFile(responsePath(stubDir, responseFile)))
-                    .then(responseConfig => createResponse(responseConfig));
+                    return meta;
+                });
+
+                // No need to read the response file while the lock is held
+                const responseConfig = await readFile(responsePath(stubDir, responseFile));
+                return createResponse(responseConfig);
             };
 
             /**
@@ -516,7 +519,7 @@ function create (config, logger) {
              * @param {Number} processingTime - the time to match the predicate and generate the full response
              * @returns {Object} - the promise
              */
-            cloned.recordMatch = (request, response, responseConfig, processingTime) => {
+            cloned.recordMatch = async (request, response, responseConfig, processingTime) => {
                 const match = {
                     timestamp: new Date().toJSON(),
                     request,
@@ -524,7 +527,7 @@ function create (config, logger) {
                     responseConfig,
                     processingTime
                 };
-                return writeFile(matchPath(stubDir, match), match);
+                await writeFile(matchPath(stubDir, match), match);
             };
 
             return cloned;
@@ -535,8 +538,9 @@ function create (config, logger) {
          * @memberOf module:models/filesystemBackedImpostersRepository#
          * @returns {Object} - the promise
          */
-        function count () {
-            return readHeader().then(imposter => imposter.stubs.length);
+        async function count () {
+            const imposter = await readHeader();
+            return imposter.stubs.length;
         }
 
         /**
@@ -546,15 +550,15 @@ function create (config, logger) {
          * @param {Number} startIndex - the index to to start searching
          * @returns {Object} - the promise
          */
-        function first (filter, startIndex = 0) {
-            return readHeader().then(header => {
-                for (let i = startIndex; i < header.stubs.length; i += 1) {
-                    if (filter(header.stubs[i].predicates || [])) {
-                        return { success: true, stub: wrap(header.stubs[i]) };
-                    }
+        async function first (filter, startIndex = 0) {
+            const header = await readHeader();
+
+            for (let i = startIndex; i < header.stubs.length; i += 1) {
+                if (filter(header.stubs[i].predicates || [])) {
+                    return { success: true, stub: wrap(header.stubs[i]) };
                 }
-                return { success: false, stub: wrap() };
-            });
+            }
+            return { success: false, stub: wrap() };
         }
 
         /**
@@ -563,12 +567,12 @@ function create (config, logger) {
          * @param {Object} stub - the stub to add
          * @returns {Object} - the promise
          */
-        function add (stub) { // eslint-disable-line no-shadow
-            return saveStubMetaAndResponses(stub, baseDir).then(stubDefinition => {
-                return readAndWriteHeader('addStub', header => {
-                    header.stubs.push(stubDefinition);
-                    return header;
-                });
+        async function add (stub) { // eslint-disable-line no-shadow
+            const stubDefinition = await saveStubMetaAndResponses(stub, baseDir);
+
+            await readAndWriteHeader('addStub', async header => {
+                header.stubs.push(stubDefinition);
+                return header;
             });
         }
 
@@ -579,12 +583,12 @@ function create (config, logger) {
          * @param {Number} index - the index to insert the new stub at
          * @returns {Object} - the promise
          */
-        function insertAtIndex (stub, index) {
-            return saveStubMetaAndResponses(stub, baseDir).then(stubDefinition => {
-                return readAndWriteHeader('insertStubAtIndex', header => {
-                    header.stubs.splice(index, 0, stubDefinition);
-                    return header;
-                });
+        async function insertAtIndex (stub, index) {
+            const stubDefinition = await saveStubMetaAndResponses(stub, baseDir);
+
+            await readAndWriteHeader('insertStubAtIndex', async header => {
+                header.stubs.splice(index, 0, stubDefinition);
+                return header;
             });
         }
 
@@ -594,20 +598,22 @@ function create (config, logger) {
          * @param {Number} index - the index of the stub to delete
          * @returns {Object} - the promise
          */
-        function deleteAtIndex (index) {
+        async function deleteAtIndex (index) {
             let stubDir;
 
-            return readAndWriteHeader('deleteStubAtIndex', header => {
+            await readAndWriteHeader('deleteStubAtIndex', async header => {
                 const errors = require('../util/errors');
 
                 if (typeof header.stubs[index] === 'undefined') {
-                    return Q.reject(errors.MissingResourceError(`no stub at index ${index}`));
+                    throw errors.MissingResourceError(`no stub at index ${index}`);
                 }
 
                 stubDir = header.stubs[index].meta.dir;
                 header.stubs.splice(index, 1);
                 return header;
-            }).then(() => remove(`${baseDir}/${stubDir}`));
+            });
+
+            await remove(`${baseDir}/${stubDir}`);
         }
 
         /**
@@ -616,17 +622,18 @@ function create (config, logger) {
          * @param {Object} newStubs - the new list of stubs
          * @returns {Object} - the promise
          */
-        function overwriteAll (newStubs) {
-            return readAndWriteHeader('overwriteAllStubs', header => {
+        async function overwriteAll (newStubs) {
+            await readAndWriteHeader('overwriteAllStubs', async header => {
                 header.stubs = [];
-                return remove(`${baseDir}/stubs`).then(() => header);
-            }).then(() => {
-                let addSequence = Q(true);
-                newStubs.forEach(stub => {
-                    addSequence = addSequence.then(() => add(stub));
-                });
-                return addSequence;
+                await remove(`${baseDir}/stubs`);
+                return header;
             });
+
+            let addSequence = Promise.resolve();
+            newStubs.forEach(stub => {
+                addSequence = addSequence.then(() => add(stub));
+            });
+            await addSequence;
         }
 
         /**
@@ -636,17 +643,18 @@ function create (config, logger) {
          * @param {Number} index - the index of the stub to overwrite
          * @returns {Object} - the promise
          */
-        function overwriteAtIndex (stub, index) {
-            return deleteAtIndex(index).then(() => insertAtIndex(stub, index));
+        async function overwriteAtIndex (stub, index) {
+            await deleteAtIndex(index);
+            await insertAtIndex(stub, index);
         }
 
-        function loadResponses (stub) {
-            return readFile(metaPath(stub.meta.dir))
-                .then(meta => Q.all(meta.responseFiles.map(responseFile =>
-                    readFile(responsePath(stub.meta.dir, responseFile)))));
+        async function loadResponses (stub) {
+            const meta = await readFile(metaPath(stub.meta.dir));
+            return Promise.all(meta.responseFiles.map(responseFile =>
+                readFile(responsePath(stub.meta.dir, responseFile))));
         }
 
-        function loadMatches (stub) {
+        async function loadMatches (stub) {
             return loadAllInDir(`${baseDir}/${stub.meta.dir}/matches`);
         }
 
@@ -657,24 +665,22 @@ function create (config, logger) {
          * @param {Boolean} options.debug - If true, includes debug information
          * @returns {Object} - the promise resolving to the JSON object
          */
-        function toJSON (options = {}) {
-            return readHeader().then(header => {
-                const responsePromises = header.stubs.map(loadResponses),
-                    debugPromises = options.debug ? header.stubs.map(loadMatches) : [];
+        async function toJSON (options = {}) {
+            const header = await readHeader(),
+                responsePromises = header.stubs.map(loadResponses),
+                stubResponses = await Promise.all(responsePromises),
+                debugPromises = options.debug ? header.stubs.map(loadMatches) : [],
+                matches = await Promise.all(debugPromises);
 
-                return Q.all(responsePromises).then(stubResponses => {
-                    return Q.all(debugPromises).then(matches => {
-                        header.stubs.forEach((stub, index) => {
-                            stub.responses = stubResponses[index];
-                            if (options.debug && matches[index].length > 0) {
-                                stub.matches = matches[index];
-                            }
-                            delete stub.meta;
-                        });
-                        return header.stubs;
-                    });
-                });
+            header.stubs.forEach((stub, index) => {
+                stub.responses = stubResponses[index];
+                if (options.debug && matches[index].length > 0) {
+                    stub.matches = matches[index];
+                }
+                delete stub.meta;
             });
+
+            return header.stubs;
         }
 
         function isRecordedResponse (response) {
@@ -686,14 +692,14 @@ function create (config, logger) {
          * @memberOf module:models/filesystemBackedImpostersRepository#
          * @returns {Object} - Promise
          */
-        function deleteSavedProxyResponses () {
-            return toJSON().then(allStubs => {
-                allStubs.forEach(stub => {
-                    stub.responses = stub.responses.filter(response => !isRecordedResponse(response));
-                });
-                allStubs = allStubs.filter(stub => stub.responses.length > 0);
-                return overwriteAll(allStubs);
+        async function deleteSavedProxyResponses () {
+            const allStubs = await toJSON();
+            allStubs.forEach(stub => {
+                stub.responses = stub.responses.filter(response => !isRecordedResponse(response));
             });
+
+            const nonProxyStubs = allStubs.filter(stub => stub.responses.length > 0);
+            return await overwriteAll(nonProxyStubs);
         }
 
         /**
@@ -702,13 +708,12 @@ function create (config, logger) {
          * @param {Object} request - the request
          * @returns {Object} - the promise
          */
-        function addRequest (request) {
-            const helpers = require('../util/helpers');
+        async function addRequest (request) {
+            const helpers = require('../util/helpers'),
+                recordedRequest = helpers.clone(request);
 
-            const recordedRequest = helpers.clone(request);
             recordedRequest.timestamp = new Date().toJSON();
-
-            return writeFile(requestPath(recordedRequest), recordedRequest);
+            await writeFile(requestPath(recordedRequest), recordedRequest);
         }
 
         /**
@@ -716,8 +721,8 @@ function create (config, logger) {
          * @memberOf module:models/filesystemBackedImpostersRepository#
          * @returns {Object} - the promise resolving to the array of requests
          */
-        function loadRequests () {
-            return loadAllInDir(`${baseDir}/requests`);
+        async function loadRequests () {
+            return await loadAllInDir(`${baseDir}/requests`);
         }
 
         /**
@@ -725,8 +730,8 @@ function create (config, logger) {
          * @memberOf module:models/filesystemBackedImpostersRepository#
          * @returns {Object} - Promise
          */
-        function deleteSavedRequests () {
-            return remove(`${baseDir}/requests`);
+        async function deleteSavedRequests () {
+            await remove(`${baseDir}/requests`);
         }
 
         return {
@@ -794,21 +799,19 @@ function create (config, logger) {
      * @param {Object} imposter - the imposter to add
      * @returns {Object} - the promise
      */
-    function add (imposter) {
+    async function add (imposter) {
         const imposterConfig = imposter.creationRequest,
             stubs = imposterConfig.stubs || [],
-            promises = stubs.map(stub => saveStubMetaAndResponses(stub, imposterDir(imposter.port)));
+            saveStubs = stubs.map(stub => saveStubMetaAndResponses(stub, imposterDir(imposter.port))),
+            stubDefinitions = await Promise.all(saveStubs);
 
         delete imposterConfig.requests;
+        imposterConfig.port = imposter.port;
+        imposterConfig.stubs = stubDefinitions;
+        await writeFile(headerFile(imposter.port), imposterConfig);
 
-        return Q.all(promises).then(stubDefinitions => {
-            imposterConfig.port = imposter.port;
-            imposterConfig.stubs = stubDefinitions;
-            return writeFile(headerFile(imposter.port), imposterConfig);
-        }).then(() => {
-            addReference(imposter);
-            return imposter;
-        });
+        addReference(imposter);
+        return imposter;
     }
 
     /**
@@ -817,18 +820,15 @@ function create (config, logger) {
      * @param {Number} id - the id of the imposter (e.g. the port)
      * @returns {Object} - the promise resolving to the imposter
      */
-    function get (id) {
-        return readFile(headerFile(id), null).then(header => {
-            if (header === null) {
-                return Q(null);
-            }
+    async function get (id) {
+        const header = await readFile(headerFile(id), null);
+        if (header === null) {
+            return null;
+        }
 
-            return stubsFor(id).toJSON().then(stubs => {
-                header.stubs = stubs;
-                rehydrate(header);
-                return header;
-            });
-        });
+        header.stubs = await stubsFor(id).toJSON();
+        rehydrate(header);
+        return header;
     }
 
     /**
@@ -836,8 +836,8 @@ function create (config, logger) {
      * @memberOf module:models/filesystemBackedImpostersRepository#
      * @returns {Object} - all imposters keyed by port
      */
-    function all () {
-        return Q.all(Object.keys(imposterFns).map(get));
+    async function all () {
+        return await Promise.all(Object.keys(imposterFns).map(get));
     }
 
     /**
@@ -846,18 +846,20 @@ function create (config, logger) {
      * @param {Number} id - the id (e.g. the port)
      * @returns {boolean}
      */
-    function exists (id) {
-        return Q(Object.keys(imposterFns).indexOf(String(id)) >= 0);
+    async function exists (id) {
+        return Object.keys(imposterFns).indexOf(String(id)) >= 0;
     }
 
-    function shutdown (id) {
+    async function shutdown (id) {
         if (typeof imposterFns[String(id)] === 'undefined') {
-            return Q();
+            return;
         }
 
-        const fn = imposterFns[String(id)].stop;
+        const stop = imposterFns[String(id)].stop;
         delete imposterFns[String(id)];
-        return fn ? fn() : Q();
+        if (stop) {
+            await stop();
+        }
     }
 
     /**
@@ -866,15 +868,16 @@ function create (config, logger) {
      * @param {Number} id - the id (e.g. the port)
      * @returns {Object} - the deletion promise
      */
-    function del (id) {
-        return get(id).then(imposter => {
-            const promises = [shutdown(id)];
-            if (imposter !== null) {
-                promises.push(remove(imposterDir(id)));
-            }
+    async function del (id) {
+        const imposter = await get(id),
+            cleanup = [shutdown(id)];
 
-            return Q.all(promises).then(() => imposter);
-        });
+        if (imposter !== null) {
+            cleanup.push(remove(imposterDir(id)));
+        }
+
+        await Promise.all(cleanup);
+        return imposter;
     }
 
     /**
@@ -890,22 +893,39 @@ function create (config, logger) {
      * @memberOf module:models/filesystemBackedImpostersRepository#
      * @returns {Object} - the deletion promise
      */
-    function deleteAll () {
+    async function deleteAll () {
         const ids = Object.keys(imposterFns),
             dirs = ids.map(imposterDir),
-            promises = ids.map(shutdown).concat(dirs.map(remove));
+            deleteImposter = ids.map(shutdown).concat(dirs.map(remove));
 
         // Remove only the directories for imposters we have a reference to
-        return Q.all(promises)
-            .then(() => readdir(config.datadir))
-            .then(entries => {
-                if (entries.length === 0) {
-                    return remove(config.datadir);
-                }
-                else {
-                    return Q();
-                }
-            });
+        await Promise.all(deleteImposter);
+        const entries = await readdir(config.datadir);
+        if (entries.length === 0) {
+            await remove(config.datadir);
+        }
+    }
+
+    async function loadImposterFrom (dir, protocols) {
+        const fs = require('fs-extra'),
+            imposterFilename = `${config.datadir}/${dir}/imposter.json`;
+
+        if (!fs.existsSync(imposterFilename)) {
+            logger.warn(`Skipping ${dir} during loading; missing imposter.json`);
+            return;
+        }
+
+        const imposterConfig = JSON.parse(fs.readFileSync(imposterFilename)),
+            protocol = protocols[imposterConfig.protocol];
+
+        if (protocol) {
+            logger.info(`Loading ${imposterConfig.protocol}:${dir} from datadir`);
+            const imposter = await protocol.createImposterFrom(imposterConfig);
+            addReference(imposter);
+        }
+        else {
+            logger.error(`Cannot load imposter ${dir}; no protocol loaded for ${config.protocol}`);
+        }
     }
 
     /**
@@ -914,35 +934,15 @@ function create (config, logger) {
      * @param {Object} protocols - The protocol map, used to instantiate a new instance
      * @returns {Object} - a promise
      */
-    function loadAll (protocols) {
+    async function loadAll (protocols) {
         const fs = require('fs-extra');
-
         if (!config.datadir || !fs.existsSync(config.datadir)) {
-            return Q();
+            return;
         }
 
         const dirs = fs.readdirSync(config.datadir),
-            promises = dirs.map(dir => {
-                const imposterFilename = `${config.datadir}/${dir}/imposter.json`;
-                if (!fs.existsSync(imposterFilename)) {
-                    logger.warn(`Skipping ${dir} during loading; missing imposter.json`);
-                    return Q();
-                }
-
-                const imposterConfig = JSON.parse(fs.readFileSync(imposterFilename)),
-                    protocol = protocols[imposterConfig.protocol];
-
-                if (protocol) {
-                    logger.info(`Loading ${imposterConfig.protocol}:${dir} from datadir`);
-                    return protocol.createImposterFrom(imposterConfig)
-                        .then(imposter => addReference(imposter));
-                }
-                else {
-                    logger.error(`Cannot load imposter ${dir}; no protocol loaded for ${config.protocol}`);
-                    return Q();
-                }
-            });
-        return Q.all(promises);
+            promises = dirs.map(async dir => loadImposterFrom(dir, protocols));
+        await Promise.all(promises);
     }
 
     return {

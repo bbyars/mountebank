@@ -33,8 +33,7 @@ function createResponse (responseConfig, stubIndexFn) {
 }
 
 function wrap (stub = {}) {
-    const Q = require('q'),
-        helpers = require('../util/helpers'),
+    const helpers = require('../util/helpers'),
         cloned = helpers.clone(stub),
         statefulResponses = repeatTransform(cloned.responses || []);
 
@@ -44,11 +43,11 @@ function wrap (stub = {}) {
      * @param {Object} response - the response to add
      * @returns {Object} - the promise
      */
-    cloned.addResponse = response => {
+    cloned.addResponse = async response => {
         cloned.responses = cloned.responses || [];
         cloned.responses.push(response);
         statefulResponses.push(response);
-        return Q(response);
+        return response;
     };
 
     /**
@@ -57,15 +56,15 @@ function wrap (stub = {}) {
      * @returns {Object} - the response
      * @returns {Object} - the promise
      */
-    cloned.nextResponse = () => {
+    cloned.nextResponse = async () => {
         const responseConfig = statefulResponses.shift();
 
         if (responseConfig) {
             statefulResponses.push(responseConfig);
-            return Q(createResponse(responseConfig, cloned.stubIndex));
+            return createResponse(responseConfig, cloned.stubIndex);
         }
         else {
-            return Q(createResponse());
+            return createResponse();
         }
     };
 
@@ -78,7 +77,7 @@ function wrap (stub = {}) {
      * @param {Number} processingTime - the time to match the predicate and generate the full response
      * @returns {Object} - the promise
      */
-    cloned.recordMatch = (request, response, responseConfig, processingTime) => {
+    cloned.recordMatch = async (request, response, responseConfig, processingTime) => {
         cloned.matches = cloned.matches || [];
         cloned.matches.push({
             timestamp: new Date().toJSON(),
@@ -87,7 +86,6 @@ function wrap (stub = {}) {
             responseConfig,
             processingTime
         });
-        return Q();
     };
 
     return cloned;
@@ -98,15 +96,14 @@ function wrap (stub = {}) {
  * @returns {Object}
  */
 function createStubsRepository () {
-    const stubs = [],
-        Q = require('q');
+    const stubs = [];
     let requests = [];
 
     function reindex () {
         // stubIndex() is used to find the right spot to insert recorded
         // proxy responses. We reindex after every state change
         stubs.forEach((stub, index) => {
-            stub.stubIndex = () => Q(index);
+            stub.stubIndex = async () => index;
         });
     }
 
@@ -117,13 +114,13 @@ function createStubsRepository () {
      * @param {Number} startIndex - the index to to start searching
      * @returns {Object}
      */
-    function first (filter, startIndex = 0) {
+    async function first (filter, startIndex = 0) {
         for (let i = startIndex; i < stubs.length; i += 1) {
             if (filter(stubs[i].predicates || [])) {
-                return Q({ success: true, stub: stubs[i] });
+                return { success: true, stub: stubs[i] };
             }
         }
-        return Q({ success: false, stub: wrap() });
+        return { success: false, stub: wrap() };
     }
 
     /**
@@ -132,10 +129,9 @@ function createStubsRepository () {
      * @param {Object} stub - the stub to add
      * @returns {Object} - the promise
      */
-    function add (stub) {
+    async function add (stub) {
         stubs.push(wrap(stub));
         reindex();
-        return Q();
     }
 
     /**
@@ -145,10 +141,9 @@ function createStubsRepository () {
      * @param {Number} index - the index to add the stub at
      * @returns {Object} - the promise
      */
-    function insertAtIndex (stub, index) {
+    async function insertAtIndex (stub, index) {
         stubs.splice(index, 0, wrap(stub));
         reindex();
-        return Q();
     }
 
     /**
@@ -157,13 +152,12 @@ function createStubsRepository () {
      * @param {Object} newStubs - the new list of stubs
      * @returns {Object} - the promise
      */
-    function overwriteAll (newStubs) {
+    async function overwriteAll (newStubs) {
         while (stubs.length > 0) {
             stubs.pop();
         }
         newStubs.forEach(stub => add(stub));
         reindex();
-        return Q();
     }
 
     /**
@@ -173,15 +167,14 @@ function createStubsRepository () {
      * @param {Number} index - the index of the old stuib
      * @returns {Object} - the promise
      */
-    function overwriteAtIndex (newStub, index) {
+    async function overwriteAtIndex (newStub, index) {
         const errors = require('../util/errors');
         if (typeof stubs[index] === 'undefined') {
-            return Q.reject(errors.MissingResourceError(`no stub at index ${index}`));
+            throw errors.MissingResourceError(`no stub at index ${index}`);
         }
 
         stubs[index] = wrap(newStub);
         reindex();
-        return Q();
     }
 
     /**
@@ -190,15 +183,14 @@ function createStubsRepository () {
      * @param {Number} index - the index of the stub to delete
      * @returns {Object} - the promise
      */
-    function deleteAtIndex (index) {
+    async function deleteAtIndex (index) {
         const errors = require('../util/errors');
         if (typeof stubs[index] === 'undefined') {
-            return Q.reject(errors.MissingResourceError(`no stub at index ${index}`));
+            throw errors.MissingResourceError(`no stub at index ${index}`);
         }
 
         stubs.splice(index, 1);
         reindex();
-        return Q();
     }
 
     /**
@@ -208,7 +200,7 @@ function createStubsRepository () {
      * @param {Boolean} options.debug - If true, includes debug information
      * @returns {Object} - the promise resolving to the JSON object
      */
-    function toJSON (options = {}) {
+    async function toJSON (options = {}) {
         const helpers = require('../util/helpers'),
             cloned = helpers.clone(stubs);
 
@@ -218,7 +210,7 @@ function createStubsRepository () {
             }
         });
 
-        return Q(cloned);
+        return cloned;
     }
 
     function isRecordedResponse (response) {
@@ -230,14 +222,13 @@ function createStubsRepository () {
      * @memberOf module:models/inMemoryImpostersRepository#
      * @returns {Object} - Promise
      */
-    function deleteSavedProxyResponses () {
-        return toJSON().then(allStubs => {
-            allStubs.forEach(stub => {
-                stub.responses = stub.responses.filter(response => !isRecordedResponse(response));
-            });
-            allStubs = allStubs.filter(stub => stub.responses.length > 0);
-            return overwriteAll(allStubs);
+    async function deleteSavedProxyResponses () {
+        const allStubs = await toJSON();
+        allStubs.forEach(stub => {
+            stub.responses = stub.responses.filter(response => !isRecordedResponse(response));
         });
+        const nonProxyStubs = allStubs.filter(stub => stub.responses.length > 0);
+        await overwriteAll(nonProxyStubs);
     }
 
     /**
@@ -246,13 +237,12 @@ function createStubsRepository () {
      * @param {Object} request - the request
      * @returns {Object} - the promise
      */
-    function addRequest (request) {
+    async function addRequest (request) {
         const helpers = require('../util/helpers');
 
         const recordedRequest = helpers.clone(request);
         recordedRequest.timestamp = new Date().toJSON();
         requests.push(recordedRequest);
-        return Q();
     }
 
     /**
@@ -260,8 +250,8 @@ function createStubsRepository () {
      * @memberOf module:models/inMemoryImpostersRepository#
      * @returns {Object} - the promise resolving to the array of requests
      */
-    function loadRequests () {
-        return Q(requests);
+    async function loadRequests () {
+        return requests;
     }
 
     /**
@@ -270,9 +260,8 @@ function createStubsRepository () {
      * @param {Object} request - the request
      * @returns {Object} - Promise
      */
-    function deleteSavedRequests () {
+    async function deleteSavedRequests () {
         requests = [];
-        return Q();
     }
 
     return {
@@ -297,8 +286,7 @@ function createStubsRepository () {
  */
 function create () {
     const imposters = {},
-        stubRepos = {},
-        Q = require('q');
+        stubRepos = {};
 
     /**
      * Adds a new imposter
@@ -306,14 +294,15 @@ function create () {
      * @param {Object} imposter - the imposter to add
      * @returns {Object} - the promise
      */
-    function add (imposter) {
+    async function add (imposter) {
         if (!imposter.stubs) {
             imposter.stubs = [];
         }
         imposters[String(imposter.port)] = imposter;
 
         const promises = (imposter.creationRequest.stubs || []).map(stubsFor(imposter.port).add);
-        return Q.all(promises).then(() => imposter);
+        await Promise.all(promises);
+        return imposter;
     }
 
     /**
@@ -322,8 +311,8 @@ function create () {
      * @param {Number} id - the id of the imposter (e.g. the port)
      * @returns {Object} - the imposter
      */
-    function get (id) {
-        return Q(imposters[String(id)] || null);
+    async function get (id) {
+        return imposters[String(id)] || null;
     }
 
     /**
@@ -331,8 +320,8 @@ function create () {
      * @memberOf module:models/inMemoryImpostersRepository#
      * @returns {Object} - all imposters keyed by port
      */
-    function all () {
-        return Q.all(Object.keys(imposters).map(get));
+    async function all () {
+        return await Promise.all(Object.keys(imposters).map(get));
     }
 
     /**
@@ -341,8 +330,8 @@ function create () {
      * @param {Number} id - the id (e.g. the port)
      * @returns {boolean}
      */
-    function exists (id) {
-        return Q(typeof imposters[String(id)] !== 'undefined');
+    async function exists (id) {
+        return typeof imposters[String(id)] !== 'undefined';
     }
 
     /**
@@ -351,17 +340,15 @@ function create () {
      * @param {Number} id - the id (e.g. the port)
      * @returns {Object} - the deletion promise
      */
-    function del (id) {
+    async function del (id) {
         const result = imposters[String(id)] || null;
         delete imposters[String(id)];
         delete stubRepos[String(id)];
 
         if (result) {
-            return result.stop().then(() => Q(result));
+            await result.stop();
         }
-        else {
-            return Q(result);
-        }
+        return result;
     }
 
     /**
@@ -381,7 +368,7 @@ function create () {
      * @memberOf module:models/inMemoryImpostersRepository#
      * @returns {Object} - the deletion promise
      */
-    function deleteAll () {
+    async function deleteAll () {
         const ids = Object.keys(imposters),
             promises = ids.map(id => imposters[id].stop());
 
@@ -389,7 +376,7 @@ function create () {
             delete imposters[id];
             delete stubRepos[id];
         });
-        return Q.all(promises);
+        await Promise.all(promises);
     }
 
     /**
@@ -413,8 +400,8 @@ function create () {
      * @memberOf module:models/inMemoryImpostersRepository#
      * @returns {Object} - a promise
      */
-    function loadAll () {
-        return Q();
+    async function loadAll () {
+        return Promise.resolve();
     }
 
     return {

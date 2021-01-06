@@ -178,7 +178,7 @@ async function create (options) {
             });
 
             socket.on('error', error => {
-                logger.error('%s transmission error X=> %s', name, JSON.stringify(error));
+                logger.error(`${name} transmission error X=> ${JSON.stringify(error)}`);
             });
 
             if (!isAllowedConnection(ipAddress, logger)) {

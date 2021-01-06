@@ -6,7 +6,7 @@ const assert = require('assert'),
     mb = require('../mb').create(port),
     isWindows = require('os').platform().indexOf('win') === 0,
     promiseIt = require('../testHelpers').promiseIt,
-    baseTimeout = parseInt(process.env.MB_SLOW_TEST_TIMEOUT || 3000),
+    baseTimeout = parseInt(process.env.MB_SLOW_TEST_TIMEOUT || 4000),
     timeout = isWindows ? 2 * baseTimeout : baseTimeout,
     BaseHttpClient = require('../api/http/baseHttpClient'),
     http = BaseHttpClient.create('http');

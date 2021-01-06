@@ -67,7 +67,7 @@ async function loadConfig (options) {
     const formatter = require(options.formatter);
 
     try {
-        const imposters = await Promise.resolve(formatter.load(options));
+        const imposters = await formatter.load(options);
         await putImposters(options, imposters);
     }
     catch (e) {
@@ -80,7 +80,7 @@ async function save (options) {
 
     try {
         const response = await getImposters(options);
-        await Promise.resolve(formatter.save(options, response.body));
+        await formatter.save(options, response.body);
     }
     catch (e) {
         logConnectionErrorAndExit(options, e);
