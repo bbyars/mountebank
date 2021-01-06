@@ -116,103 +116,53 @@ function create (config, logger) {
     let counter = 0,
         locks = 0;
 
-    function prettyError (err, filepath) {
-        const errors = require('../util/errors');
+    async function ensureDir (filepath) {
+        const fs = require('fs-extra'),
+            path = require('path'),
+            dir = path.dirname(filepath);
 
-        // I started getting EROFS after upgrading to OSX Catalina 10.15.6
-        if (err.code === 'EACCES' || err.code === 'EROFS') {
-            return errors.InsufficientAccessError({ path: filepath });
-        }
-        else {
-            return err;
-        }
+        await fs.ensureDir(dir);
     }
 
     async function writeFile (filepath, obj) {
-        const fs = require('fs-extra'),
-            path = require('path'),
-            dir = path.dirname(filepath);
-
-        return new Promise((resolve, reject) => {
-            fs.ensureDir(dir, mkdirErr => {
-                if (mkdirErr) {
-                    reject(prettyError(mkdirErr, dir));
-                }
-                else {
-                    fs.writeFile(filepath, JSON.stringify(obj, null, 2), err => {
-                        if (err) {
-                            reject(prettyError(err, filepath));
-                        }
-                        else {
-                            resolve(filepath);
-                        }
-                    });
-                }
-            });
-        });
+        const fs = require('fs-extra');
+        await ensureDir(filepath);
+        await fs.writeFile(filepath, JSON.stringify(obj, null, 2));
     }
 
-    function readFile (filepath, defaultContents) {
+    function tryParse (maybeJSON, filepath) {
+        try {
+            return JSON.parse(maybeJSON);
+        }
+        catch (parseErr) {
+            const errors = require('../util/errors');
+            logger.error(`Corrupted database: invalid JSON for ${filepath}`);
+            throw errors.DatabaseError(`invalid JSON in ${filepath}`, { details: parseErr.message });
+        }
+    }
+
+    async function readFile (filepath, defaultContents) {
         const fs = require('fs-extra'),
             errors = require('../util/errors');
 
-        return new Promise((resolve, reject) => {
-            fs.readFile(filepath, 'utf8', (err, data) => {
-                if (err && err.code === 'ENOENT') {
-                    if (typeof defaultContents === 'undefined') {
-                        logger.error(`Corrupted database: missing file ${filepath}`);
-                        reject(errors.DatabaseError('file not found', { details: err.message }));
-                    }
-                    else {
-                        resolve(defaultContents);
-                    }
-                }
-                else if (err) {
-                    reject(prettyError(err, filepath));
+        try {
+            const data = await fs.readFile(filepath, 'utf8');
+            return tryParse(data, filepath);
+        }
+        catch (err) {
+            if (err.code === 'ENOENT') {
+                if (typeof defaultContents === 'undefined') {
+                    logger.error(`Corrupted database: missing file ${filepath}`);
+                    throw errors.DatabaseError('file not found', { details: err.message });
                 }
                 else {
-                    try {
-                        resolve(JSON.parse(data));
-                    }
-                    catch (parseErr) {
-                        logger.error(`Corrupted database: invalid JSON for ${filepath}`);
-                        reject(errors.DatabaseError(`invalid JSON in ${filepath}`, { details: parseErr.message }));
-                    }
+                    return defaultContents;
                 }
-            });
-        });
-    }
-
-    function rename (oldPath, newPath) {
-        const fs = require('fs-extra');
-
-        return new Promise((resolve, reject) => {
-            fs.rename(oldPath, newPath, err => {
-                if (err) {
-                    reject(prettyError(err, oldPath));
-                }
-                else {
-                    resolve(newPath);
-                }
-            });
-        });
-    }
-
-    function ensureDir (filepath) {
-        const fs = require('fs-extra'),
-            path = require('path'),
-            dir = path.dirname(filepath);
-
-        return new Promise((resolve, reject) => {
-            fs.ensureDir(dir, err => {
-                if (err) {
-                    reject(prettyError(err, dir));
-                }
-                else {
-                    resolve(dir);
-                }
-            });
-        });
+            }
+            else {
+                throw err;
+            }
+        }
     }
 
     function delay (duration) {
@@ -222,11 +172,12 @@ function create (config, logger) {
     }
 
     async function atomicWriteFile (filepath, obj, attempts = 1) {
-        const tmpfile = filepath + '.tmp';
+        const tmpfile = filepath + '.tmp',
+            fs = require('fs-extra');
 
         try {
             await writeFile(tmpfile, obj);
-            await rename(tmpfile, filepath);
+            await fs.rename(tmpfile, filepath);
         }
         catch (err) {
             if (err.code === 'ENOENT' && attempts < 15) {
@@ -294,17 +245,7 @@ function create (config, logger) {
 
     async function remove (path) {
         const fs = require('fs-extra');
-
-        return new Promise((resolve, reject) => {
-            fs.remove(path, err => {
-                if (err) {
-                    reject(err);
-                }
-                else {
-                    resolve({});
-                }
-            });
-        });
+        await fs.remove(path);
     }
 
     function filenameFor (timestamp) {
