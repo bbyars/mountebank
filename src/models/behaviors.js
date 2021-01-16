@@ -271,11 +271,10 @@ function getFrom (obj, from) {
         return getFrom(obj[keys[0]], from[keys[0]]);
     }
     else {
-        const result = obj[getKeyIgnoringCase(obj, from)],
-            util = require('util');
+        const result = obj[getKeyIgnoringCase(obj, from)];
 
         // Some request fields, like query parameters, can be multi-valued
-        if (util.isArray(result)) {
+        if (Array.isArray(result)) {
             return result[0];
         }
         else {

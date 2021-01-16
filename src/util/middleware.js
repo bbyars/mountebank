@@ -17,8 +17,7 @@ function useAbsoluteUrls (port) {
             sendOriginal = response.send,
             host = request.headers.host || `localhost:${port}`,
             absolutize = link => `http://${host}${link}`,
-            isObject = require('../util/helpers').isObject,
-            util = require('util');
+            isObject = require('../util/helpers').isObject;
 
         response.setHeader = function () {
             const args = Array.prototype.slice.call(arguments);
@@ -58,12 +57,12 @@ function useAbsoluteUrls (port) {
 
                 // Special case stubs _links. Hard to manage in the traverse function because stubs is an array
                 // and we want to change stubs[]._links but not stubs[]._responses.is.body._links
-                if (util.isArray(body.stubs)) {
+                if (Array.isArray(body.stubs)) {
                     body.stubs.forEach(changeLinks);
                 }
-                else if (util.isArray(body.imposters)) {
+                else if (Array.isArray(body.imposters)) {
                     body.imposters.forEach(imposter => {
-                        if (util.isArray(imposter.stubs)) {
+                        if (Array.isArray(imposter.stubs)) {
                             imposter.stubs.forEach(changeLinks);
                         }
                     });

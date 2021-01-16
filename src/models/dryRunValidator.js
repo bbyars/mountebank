@@ -205,10 +205,9 @@ function create (options) {
     function errorsForStub (stub, encoding, logger) {
         const errors = [],
             Q = require('q'),
-            util = require('util'),
             deferred = Q.defer();
 
-        if (!util.isArray(stub.responses) || stub.responses.length === 0) {
+        if (!Array.isArray(stub.responses) || stub.responses.length === 0) {
             errors.push(exceptions.ValidationError("'responses' must be a non-empty array", {
                 source: stub
             }));

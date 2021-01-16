@@ -33,8 +33,7 @@ function canUpcastBehaviors (response) {
 }
 
 function upcastResponseBehaviors (response) {
-    const util = require('util'),
-        behaviors = [],
+    const behaviors = [],
         add = (key, value) => {
             const obj = {};
             obj[key] = value;
@@ -45,7 +44,7 @@ function upcastResponseBehaviors (response) {
     //     return combinators.compose(decorateFn, shellTransformFn, copyFn, lookupFn, waitFn, Q)(response);
     ['wait', 'lookup', 'copy', 'shellTransform', 'decorate'].forEach(key => {
         if (typeof response._behaviors[key] !== 'undefined') {
-            if (util.isArray(response._behaviors[key])) {
+            if (Array.isArray(response._behaviors[key])) {
                 response._behaviors[key].forEach(element => add(key, element));
             }
             else {

@@ -67,9 +67,7 @@ function select (type, selectFn, encoding) {
 }
 
 function orderIndependent (possibleArray) {
-    const util = require('util');
-
-    if (util.isArray(possibleArray)) {
+    if (Array.isArray(possibleArray)) {
         return possibleArray.sort(sortObjects);
     }
     else {

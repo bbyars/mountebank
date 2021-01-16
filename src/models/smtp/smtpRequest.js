@@ -7,11 +7,10 @@
 
 function addressValues (addresses) {
     // mailparser sometimes returns an array, sometimes an object, so we have to normalize
-    const util = require('util');
     if (!addresses) {
         addresses = [];
     }
-    if (!util.isArray(addresses)) {
+    if (!Array.isArray(addresses)) {
         addresses = [addresses];
     }
     return addresses.map(address => address.value[0]);

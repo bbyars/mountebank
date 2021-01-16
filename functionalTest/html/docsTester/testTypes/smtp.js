@@ -1,7 +1,6 @@
 'use strict';
 
 const Q = require('q'),
-    util = require('util'),
     smtpClient = require('../../../api/smtp/smtpClient');
 
 function camelCase (key) {
@@ -25,7 +24,7 @@ function parse (text) {
             break;
         }
         const header = parseHeader(lines[i]);
-        if (util.isArray(message[header.key])) {
+        if (Array.isArray(message[header.key])) {
             message[header.key].push(header.value);
         }
         else {
