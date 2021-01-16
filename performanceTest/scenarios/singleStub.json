@@ -1,0 +1,21 @@
+{
+    "protocol": "http",
+    "port": 3000,
+    "stubs": [{
+        "predicates": [{
+            "equals": { "path": "/test" }
+        }],
+        "responses": [
+            { "is": { "body": "1" } },
+            { "is": { "body": "2" } },
+            { "is": { "body": "3" } },
+            { "is": { "body": "4" } },
+            { "is": { "body": "5" } },
+            { "is": { "body": "6" } },
+            { "is": { "body": "7" } },
+            { "is": { "body": "8" } },
+            { "is": { "body": "9" } },
+            { "is": { "body": "10" } }
+        ]
+    }]
+}
