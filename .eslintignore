@@ -1,1 +1,2 @@
 src/public/scripts/jquery/**/*.js
+performanceTest/loadTest.js
