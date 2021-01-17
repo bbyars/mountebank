@@ -100,6 +100,10 @@ function create (options, logger, responseFn) {
                             socket.write(buffer);
                             logger.debug('%s <= %s', clientName, JSON.stringify(buffer.toString(encoding)));
                         }
+                    }, error => {
+                        const exceptions = require('../../util/errors');
+                        logger.error('%s X=> %s', clientName, JSON.stringify(exceptions.details(error)));
+                        socket.write(JSON.stringify({ errors: [error] }), 'utf8');
                     });
                 }
                 catch (error) {

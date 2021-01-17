@@ -127,6 +127,11 @@ module.exports = function (createBaseServer) {
                     if (stubResponse) {
                         logger.debug('%s <= %s', clientName, JSON.stringify(stubResponse));
                     }
+                }, error => {
+                    const exceptions = require('../../util/errors');
+                    logger.error('%s X=> %s', clientName, JSON.stringify(exceptions.details(error)));
+                    response.writeHead(500, { 'content-type': 'application/json' });
+                    response.end(JSON.stringify({ errors: [exceptions.details(error)] }), 'utf8');
                 });
             }
             catch (error) {
