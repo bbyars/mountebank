@@ -47,66 +47,63 @@ function create (logger, encoding, isEndOfRequest) {
      * @returns {Object} - A promise resolving to the response
      */
     function to (proxyDestination, originalRequest, options = {}) {
-        const Q = require('q'),
-            deferred = Q.defer();
+        return new Promise((resolve, reject) => {
+            try {
+                const proxyName = socketName(connectionInfoFor(proxyDestination)),
+                    log = (direction, what) => {
+                        logger.debug('Proxy %s %s %s %s %s',
+                            originalRequest.requestFrom, direction, JSON.stringify(format(what)), direction, proxyName);
+                    },
+                    buffer = Buffer.from(originalRequest.data, encoding),
+                    net = require('net'),
+                    socket = net.connect(connectionInfoFor(proxyDestination), () => {
+                        socket.write(buffer);
+                    }),
+                    packets = [];
 
-        try {
-            const proxyName = socketName(connectionInfoFor(proxyDestination)),
-                log = (direction, what) => {
-                    logger.debug('Proxy %s %s %s %s %s',
-                        originalRequest.requestFrom, direction, JSON.stringify(format(what)), direction, proxyName);
-                },
-                buffer = Buffer.from(originalRequest.data, encoding),
-                net = require('net'),
-                socket = net.connect(connectionInfoFor(proxyDestination), () => {
-                    socket.write(buffer);
-                }),
-                packets = [];
+                log('=>', originalRequest);
 
-            log('=>', originalRequest);
+                socket.on('end', () => {
+                    logger.debug('%s LAST-ACK', proxyName);
+                });
 
-            socket.on('end', () => {
-                logger.debug('%s LAST-ACK', proxyName);
-            });
+                socket.on('close', () => {
+                    logger.debug('%s CLOSED', proxyName);
+                });
 
-            socket.on('close', () => {
-                logger.debug('%s CLOSED', proxyName);
-            });
-
-            socket.on('data', data => {
-                packets.push(data);
-                const requestBuffer = Buffer.concat(packets);
-                if (isEndOfRequest(requestBuffer)) {
-                    if (!options.keepalive) {
-                        socket.end();
+                socket.on('data', data => {
+                    packets.push(data);
+                    const requestBuffer = Buffer.concat(packets);
+                    if (isEndOfRequest(requestBuffer)) {
+                        if (!options.keepalive) {
+                            socket.end();
+                        }
+                        const response = { data: requestBuffer.toString(encoding) };
+                        log('<=', response);
+                        resolve(response);
                     }
-                    const response = { data: requestBuffer.toString(encoding) };
-                    log('<=', response);
-                    deferred.resolve(response);
-                }
-            });
+                });
 
-            socket.once('error', error => {
-                const errors = require('../../util/errors');
+                socket.once('error', error => {
+                    const errors = require('../../util/errors');
 
-                logger.error(`Proxy ${proxyName} transmission error X=> ${JSON.stringify(error)}`);
+                    logger.error(`Proxy ${proxyName} transmission error X=> ${JSON.stringify(error)}`);
 
-                if (error.code === 'ENOTFOUND') {
-                    deferred.reject(errors.InvalidProxyError(`Cannot resolve ${JSON.stringify(proxyDestination)}`));
-                }
-                else if (error.code === 'ECONNREFUSED') {
-                    deferred.reject(errors.InvalidProxyError(`Unable to connect to ${JSON.stringify(proxyDestination)}`));
-                }
-                else {
-                    deferred.reject(error);
-                }
-            });
-        }
-        catch (e) {
-            deferred.reject(e);
-        }
-
-        return deferred.promise;
+                    if (error.code === 'ENOTFOUND') {
+                        reject(errors.InvalidProxyError(`Cannot resolve ${JSON.stringify(proxyDestination)}`));
+                    }
+                    else if (error.code === 'ECONNREFUSED') {
+                        reject(errors.InvalidProxyError(`Unable to connect to ${JSON.stringify(proxyDestination)}`));
+                    }
+                    else {
+                        reject(error);
+                    }
+                });
+            }
+            catch (e) {
+                reject(e);
+            }
+        });
     }
 
     return { to };

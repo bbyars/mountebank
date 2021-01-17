@@ -44,7 +44,7 @@ describe('tcp proxy', function () {
                 .finally(() => api.del('/imposters'));
         });
 
-        promiseIt('should obey endOfRequestResolver', function () {
+        it('should obey endOfRequestResolver', async function () {
             // We'll simulate a protocol that has a 4 byte message length at byte 0 indicating how many bytes follow
             const getRequest = length => {
                     const buffer = Buffer.alloc(length + 4);
@@ -70,52 +70,58 @@ describe('tcp proxy', function () {
             originServer.listen(port);
 
             const proxy = TcpProxy.create(logger, 'base64', resolver),
-                request = { data: 'test' };
-            return proxy.to(`tcp://localhost:${port}`, request).then(response => {
-                assert.strictEqual(response.data, largeRequest.toString('base64'), `Response length: ${response.data.length}`);
-            });
+                request = { data: 'test' },
+                response = await proxy.to(`tcp://localhost:${port}`, request);
+
+            assert.strictEqual(response.data, largeRequest.toString('base64'), `Response length: ${response.data.length}`);
         });
 
         if (!airplaneMode) {
-            promiseIt('should gracefully deal with DNS errors', function () {
+            it('should gracefully deal with DNS errors', async function () {
                 const proxy = TcpProxy.create(logger, 'utf8');
 
-                return proxy.to('tcp://no.such.domain:80', { data: 'hello, world!' }).then(() => {
+                try {
+                    await proxy.to('tcp://no.such.domain:80', { data: 'hello, world!' });
                     assert.fail('should not have resolved promise');
-                }, reason => {
+                }
+                catch (reason) {
                     assert.deepEqual(reason, {
                         code: 'invalid proxy',
                         message: 'Cannot resolve "tcp://no.such.domain:80"'
                     });
-                });
+                }
             });
         }
 
-        promiseIt('should gracefully deal with non listening ports', function () {
+        it('should gracefully deal with non listening ports', async function () {
             const proxy = TcpProxy.create(logger, 'utf8');
 
-            return proxy.to('tcp://localhost:18000', { data: 'hello, world!' }).then(() => {
+            try {
+                await proxy.to('tcp://localhost:18000', { data: 'hello, world!' });
                 assert.fail('should not have resolved promise');
-            }, reason => {
+            }
+            catch (reason) {
                 assert.deepEqual(reason, {
                     code: 'invalid proxy',
                     message: 'Unable to connect to "tcp://localhost:18000"'
                 });
-            });
+            }
         });
 
-        promiseIt('should reject non-tcp protocols', function () {
+        it('should reject non-tcp protocols', async function () {
             const proxy = TcpProxy.create(logger, 'utf8');
 
-            return proxy.to('http://localhost:80', { data: 'hello, world!' }).then(() => {
+            try {
+                await proxy.to('http://localhost:80', { data: 'hello, world!' });
                 assert.fail('should not have resolved promise');
-            }, reason => {
+            }
+            catch (reason) {
                 assert.deepEqual(reason, {
                     code: 'invalid proxy',
                     message: 'Unable to proxy to any protocol other than tcp',
                     source: 'http://localhost:80'
                 });
-            });
+            }
         });
     });
 });
