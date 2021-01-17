@@ -131,34 +131,31 @@ function create (logger) {
     }
 
     function proxy (proxiedRequest) {
-        const Q = require('q'),
-            deferred = Q.defer();
+        return new Promise(resolve => {
+            proxiedRequest.end();
 
-        proxiedRequest.end();
+            proxiedRequest.once('response', response => {
+                const packets = [];
 
-        proxiedRequest.once('response', response => {
-            const packets = [];
+                response.on('data', chunk => {
+                    packets.push(chunk);
+                });
 
-            response.on('data', chunk => {
-                packets.push(chunk);
-            });
-
-            response.on('end', () => {
-                const body = Buffer.concat(packets),
-                    mode = isBinaryResponse(response.headers) ? 'binary' : 'text',
-                    encoding = mode === 'binary' ? 'base64' : 'utf8',
-                    headersHelper = require('./headersHelper'),
-                    stubResponse = {
-                        statusCode: response.statusCode,
-                        headers: headersHelper.headersFor(response.rawHeaders),
-                        body: body.toString(encoding),
-                        _mode: mode
-                    };
-                deferred.resolve(stubResponse);
+                response.on('end', () => {
+                    const body = Buffer.concat(packets),
+                        mode = isBinaryResponse(response.headers) ? 'binary' : 'text',
+                        encoding = mode === 'binary' ? 'base64' : 'utf8',
+                        headersHelper = require('./headersHelper'),
+                        stubResponse = {
+                            statusCode: response.statusCode,
+                            headers: headersHelper.headersFor(response.rawHeaders),
+                            body: body.toString(encoding),
+                            _mode: mode
+                        };
+                    resolve(stubResponse);
+                });
             });
         });
-
-        return deferred.promise;
     }
 
     /**
@@ -183,32 +180,30 @@ function create (logger) {
                 originalRequest.requestFrom, direction, JSON.stringify(what), direction, proxyDestination);
         }
 
-        const Q = require('q'),
-            deferred = Q.defer(),
-            proxiedRequest = getProxyRequest(proxyDestination, originalRequest, options, requestDetails);
+        const proxiedRequest = getProxyRequest(proxyDestination, originalRequest, options, requestDetails);
 
         log('=>', originalRequest);
 
-        proxy(proxiedRequest).done(response => {
-            log('<=', response);
-            deferred.resolve(response);
+        return new Promise((resolve, reject) => {
+            proxiedRequest.once('error', error => {
+                const errors = require('../../util/errors');
+
+                if (error.code === 'ENOTFOUND') {
+                    reject(errors.InvalidProxyError(`Cannot resolve ${JSON.stringify(proxyDestination)}`));
+                }
+                else if (error.code === 'ECONNREFUSED' || error.code === 'ECONNRESET') {
+                    reject(errors.InvalidProxyError(`Unable to connect to ${JSON.stringify(proxyDestination)}`));
+                }
+                else {
+                    reject(error);
+                }
+            });
+
+            proxy(proxiedRequest).then(response => {
+                log('<=', response);
+                resolve(response);
+            });
         });
-
-        proxiedRequest.once('error', error => {
-            const errors = require('../../util/errors');
-
-            if (error.code === 'ENOTFOUND') {
-                deferred.reject(errors.InvalidProxyError(`Cannot resolve ${JSON.stringify(proxyDestination)}`));
-            }
-            else if (error.code === 'ECONNREFUSED' || error.code === 'ECONNRESET') {
-                deferred.reject(errors.InvalidProxyError(`Unable to connect to ${JSON.stringify(proxyDestination)}`));
-            }
-            else {
-                deferred.reject(error);
-            }
-        });
-
-        return deferred.promise;
     }
 
     return { to };
