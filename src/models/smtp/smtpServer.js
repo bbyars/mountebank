@@ -40,16 +40,10 @@ function create (options, logger, responseFn) {
             },
             onData (stream, socket, callback) {
                 const request = { session: socket, source: stream, callback: callback };
-                const domain = require('domain').create(),
-                    helpers = require('../../util/helpers'),
-                    clientName = helpers.socketName(socket),
-                    errorHandler = error => {
-                        const exceptions = require('../../util/errors');
-                        logger.error('%s X=> %s', clientName, JSON.stringify(exceptions.details(error)));
-                    };
+                const helpers = require('../../util/helpers'),
+                    clientName = helpers.socketName(socket);
 
-                domain.on('error', errorHandler);
-                domain.run(() => {
+                try {
                     require('./smtpRequest').createFrom(request).then(simpleRequest => {
                         logger.info(`${clientName} => Envelope from: ${JSON.stringify(simpleRequest.from)} to: ${JSON.stringify(simpleRequest.to)}`);
                         logger.debug('%s => %s', clientName, JSON.stringify(simpleRequest));
@@ -59,10 +53,28 @@ function create (options, logger, responseFn) {
                             logger.debug('%s <= %s', clientName, JSON.stringify(response));
                         }
                         return Q(true);
-                    }).done(() => Q(request.callback()), errorHandler);
-                });
+                    }).done(() => Q(request.callback()));
+                }
+                catch (error) {
+                    const exceptions = require('../../util/errors');
+                    logger.error('%s X=> %s', clientName, JSON.stringify(exceptions.details(error)));
+                }
             }
         });
+
+    server.on('error', error => {
+        const errors = require('../../util/errors');
+
+        if (error.errno === 'EADDRINUSE') {
+            deferred.reject(errors.ResourceConflictError(`Port ${options.port} is already in use`));
+        }
+        else if (error.errno === 'EACCES') {
+            deferred.reject(errors.InsufficientAccessError());
+        }
+        else {
+            deferred.reject(error);
+        }
+    });
 
     server.listen(options.port || 0, options.host, () => {
         deferred.resolve({

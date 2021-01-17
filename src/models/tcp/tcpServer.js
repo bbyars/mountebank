@@ -73,21 +73,13 @@ function create (options, logger, responseFn) {
             if (isEndOfRequest(requestData)) {
                 packets = [];
 
-                const domain = require('domain').create(),
-                    errorHandler = error => {
-                        const exceptions = require('../../util/errors');
-                        logger.error('%s X=> %s', clientName, JSON.stringify(exceptions.details(error)));
-                        socket.write(JSON.stringify({ errors: [error] }), 'utf8');
-                    };
-
                 let formattedRequestData = requestData.toString(encoding);
                 if (formattedRequestData.length > 20) {
                     formattedRequestData = formattedRequestData.substring(0, 20) + '...';
                 }
                 logger.info('%s => %s', clientName, formattedRequestData);
 
-                domain.on('error', errorHandler);
-                domain.run(() => {
+                try {
                     // Translate network request to JSON
                     require('./tcpRequest').createFrom(request).then(jsonRequest => {
                         logger.debug('%s => %s', clientName, JSON.stringify(jsonRequest.data.toString(encoding)));
@@ -108,10 +100,29 @@ function create (options, logger, responseFn) {
                             socket.write(buffer);
                             logger.debug('%s <= %s', clientName, JSON.stringify(buffer.toString(encoding)));
                         }
-                    }, errorHandler);
-                });
+                    });
+                }
+                catch (error) {
+                    const exceptions = require('../../util/errors');
+                    logger.error('%s X=> %s', clientName, JSON.stringify(exceptions.details(error)));
+                    socket.write(JSON.stringify({ errors: [error] }), 'utf8');
+                }
             }
         });
+    });
+
+    server.on('error', error => {
+        const errors = require('../../util/errors');
+
+        if (error.errno === 'EADDRINUSE') {
+            deferred.reject(errors.ResourceConflictError(`Port ${options.port} is already in use`));
+        }
+        else if (error.errno === 'EACCES') {
+            deferred.reject(errors.InsufficientAccessError());
+        }
+        else {
+            deferred.reject(error);
+        }
     });
 
     // Bind the socket to a port (the || 0 bit auto-selects a port if one isn't provided)

@@ -40,22 +40,6 @@ const prometheus = require('prom-client'),
         })
     };
 
-function createErrorHandler (deferred, port) {
-    return error => {
-        const errors = require('../util/errors');
-
-        if (error.errno === 'EADDRINUSE') {
-            deferred.reject(errors.ResourceConflictError(`Port ${port} is already in use`));
-        }
-        else if (error.errno === 'EACCES') {
-            deferred.reject(errors.InsufficientAccessError());
-        }
-        else {
-            deferred.reject(error);
-        }
-    };
-}
-
 /**
  * Create the imposter
  * @param {Object} Protocol - The protocol factory for creating servers of that protocol
@@ -77,8 +61,6 @@ function create (Protocol, creationRequest, baseLogger, config, isAllowedConnect
 
     const Q = require('q'),
         deferred = Q.defer(),
-        domain = require('domain').create(),
-        errorHandler = createErrorHandler(deferred, creationRequest.port),
         compatibility = require('./compatibility'),
         logger = require('../util/scopedLogger').create(baseLogger, scopeFor(creationRequest.port)),
         helpers = require('../util/helpers'),
@@ -195,8 +177,7 @@ function create (Protocol, creationRequest, baseLogger, config, isAllowedConnect
         });
     }
 
-    domain.on('error', errorHandler);
-    domain.run(() => {
+    try {
         if (!helpers.defined(creationRequest.host) && helpers.defined(config.host)) {
             creationRequest.host = config.host;
         }
@@ -238,8 +219,11 @@ function create (Protocol, creationRequest, baseLogger, config, isAllowedConnect
                 getProxyResponseFor,
                 resetRequests
             });
-        });
-    });
+        }, deferred.reject);
+    }
+    catch (error) {
+        deferred.reject(error);
+    }
 
     return deferred.promise;
 }

@@ -101,20 +101,12 @@ module.exports = function (createBaseServer) {
         });
 
         server.on('request', (request, response) => {
-            const domain = require('domain').create(),
-                helpers = require('../../util/helpers'),
-                clientName = helpers.socketName(request.socket),
-                errorHandler = error => {
-                    const exceptions = require('../../util/errors');
-                    logger.error('%s X=> %s', clientName, JSON.stringify(exceptions.details(error)));
-                    response.writeHead(500, { 'content-type': 'application/json' });
-                    response.end(JSON.stringify({ errors: [exceptions.details(error)] }), 'utf8');
-                };
+            const helpers = require('../../util/helpers'),
+                clientName = helpers.socketName(request.socket);
 
             logger.info(`${clientName} => ${request.method} ${request.url}`);
 
-            domain.on('error', errorHandler);
-            domain.run(() => {
+            try {
                 let simplifiedRequest;
                 require('./httpRequest').createFrom(request).then(simpleRequest => {
                     logger.debug('%s => %s', clientName, JSON.stringify(simpleRequest));
@@ -135,8 +127,28 @@ module.exports = function (createBaseServer) {
                     if (stubResponse) {
                         logger.debug('%s <= %s', clientName, JSON.stringify(stubResponse));
                     }
-                }, errorHandler);
-            });
+                });
+            }
+            catch (error) {
+                const exceptions = require('../../util/errors');
+                logger.error('%s X=> %s', clientName, JSON.stringify(exceptions.details(error)));
+                response.writeHead(500, { 'content-type': 'application/json' });
+                response.end(JSON.stringify({ errors: [exceptions.details(error)] }), 'utf8');
+            }
+        });
+
+        server.on('error', error => {
+            const errors = require('../../util/errors');
+
+            if (error.errno === 'EADDRINUSE') {
+                deferred.reject(errors.ResourceConflictError(`Port ${options.port} is already in use`));
+            }
+            else if (error.errno === 'EACCES') {
+                deferred.reject(errors.InsufficientAccessError());
+            }
+            else {
+                deferred.reject(error);
+            }
         });
 
         // Bind the socket to a port (the || 0 bit auto-selects a port if one isn't provided)

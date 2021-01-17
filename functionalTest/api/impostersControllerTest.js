@@ -9,7 +9,7 @@ const assert = require('assert'),
 describe('POST /imposters', function () {
 
     promiseIt('should return create new imposter with consistent hypermedia', function () {
-        let createdBody, imposterPath;
+        let createdBody;
 
         return api.post('/imposters', { protocol: 'http', port }).then(response => {
             createdBody = response.body;
@@ -21,7 +21,7 @@ describe('POST /imposters', function () {
         }).then(response => {
             assert.strictEqual(response.statusCode, 200);
             assert.deepEqual(response.body, createdBody);
-        }).finally(() => api.del(imposterPath));
+        }).finally(() => api.del('/imposters'));
     });
 
     promiseIt('should create imposter at provided port', function () {
@@ -30,7 +30,7 @@ describe('POST /imposters', function () {
             .then(response => {
                 assert.strictEqual(response.statusCode, 200, JSON.stringify(response.body));
             })
-            .finally(() => api.del(`/imposters/${port}`));
+            .finally(() => api.del('/imposters'));
     });
 
     promiseIt('should return 400 on invalid input', function () {
