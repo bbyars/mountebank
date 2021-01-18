@@ -182,7 +182,7 @@ function create (Protocol, creationRequest, baseLogger, config, isAllowedConnect
             creationRequest.host = config.host;
         }
 
-        Protocol.createServer(creationRequest, logger, getResponseFor).done(server => {
+        Protocol.createServer(creationRequest, logger, getResponseFor).then(server => {
             if (creationRequest.port !== server.port) {
                 creationRequest.port = server.port;
                 logger.changeScope(scopeFor(server.port));
