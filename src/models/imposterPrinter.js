@@ -26,16 +26,14 @@ function create (header, server, loadRequests) {
         return result;
     }
 
-    function addStubsTo (imposter, options) {
+    async function addStubsTo (imposter, options) {
         const newOptions = {};
         if (!options.replayable) {
             newOptions.debug = true;
         }
 
-        return server.stubs.toJSON(newOptions).then(all => {
-            imposter.stubs = all;
-            return imposter;
-        });
+        imposter.stubs = await server.stubs.toJSON(newOptions);
+        return imposter;
     }
 
     function removeNonEssentialInformationFrom (imposter) {
@@ -50,11 +48,9 @@ function create (header, server, loadRequests) {
         });
     }
 
-    function addRequestsTo (imposter) {
-        return loadRequests().then(requests => {
-            imposter.requests = requests;
-            return imposter;
-        });
+    async function addRequestsTo (imposter) {
+        imposter.requests = await loadRequests();
+        return imposter;
     }
 
     function removeProxiesFrom (imposter) {
@@ -78,38 +74,38 @@ function create (header, server, loadRequests) {
         }
     }
 
-    function toJSON (numberOfRequests, options = {}) {
+    async function toJSON (numberOfRequests, options = {}) {
         // I consider the order of fields represented important.  They won't matter for parsing,
         // but it makes a nicer user experience for developers viewing the JSON to keep the most
         // relevant information at the top. Some of the order of operations in this file represents
         // that (e.g. keeping the _links at the end), and is tested with some documentation tests.
-        const result = createHeader(numberOfRequests, options),
-            Q = require('q');
+        const result = createHeader(numberOfRequests, options);
 
         options = options || {};
 
         if (options.list) {
             addLinksTo(result);
-            return Q(result);
+            return result;
         }
 
-        const requestsPromise = options.replayable ? Q() : addRequestsTo(result);
-        return requestsPromise
-            .then(() => addStubsTo(result, options))
-            .then(() => {
-                if (options.replayable) {
-                    removeNonEssentialInformationFrom(result);
-                }
-                else {
-                    addLinksTo(result);
-                }
+        if (!options.replayable) {
+            await addRequestsTo(result);
+        }
 
-                if (options.removeProxies) {
-                    removeProxiesFrom(result);
-                }
+        await addStubsTo(result, options);
 
-                return result;
-            });
+        if (options.replayable) {
+            removeNonEssentialInformationFrom(result);
+        }
+        else {
+            addLinksTo(result);
+        }
+
+        if (options.removeProxies) {
+            removeProxiesFrom(result);
+        }
+
+        return result;
     }
 
     return { toJSON };
