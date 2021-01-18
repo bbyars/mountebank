@@ -38,76 +38,72 @@ function create (options, logger, responseFn) {
         }
     }
 
+    async function respond (payload, request, clientName, socket) {
+        let formattedRequestData = payload.toString(encoding);
+        if (formattedRequestData.length > 20) {
+            formattedRequestData = formattedRequestData.substring(0, 20) + '...';
+        }
+        logger.info('%s => %s', clientName, formattedRequestData);
+
+        try {
+            // Translate network request to JSON
+            const jsonRequest = await require('./tcpRequest').createFrom(request);
+            logger.debug('%s => %s', clientName, JSON.stringify(jsonRequest.data.toString(encoding)));
+
+            // call mountebank with JSON request
+            const mbResponse = await responseFn(jsonRequest),
+                processedResponse = mbResponse.data || defaultResponse.data,
+                buffer = Buffer.isBuffer(processedResponse)
+                    ? processedResponse
+                    : Buffer.from(processedResponse, encoding);
+
+            if (mbResponse.blocked) {
+                socket.destroy();
+                return;
+            }
+
+            if (buffer.length > 0) {
+                socket.write(buffer);
+                logger.debug('%s <= %s', clientName, JSON.stringify(buffer.toString(encoding)));
+            }
+        }
+        catch (error) {
+            const exceptions = require('../../util/errors');
+            logger.error('%s X=> %s', clientName, JSON.stringify(exceptions.details(error)));
+            socket.write(JSON.stringify({ errors: [error] }), 'utf8');
+        }
+    }
+
     server.on('connection', socket => {
         let packets = [];
         const clientName = helpers.socketName(socket);
 
         logger.debug('%s ESTABLISHED', clientName);
 
-        if (socket.on) {
-            connections[clientName] = socket;
+        connections[clientName] = socket;
 
-            socket.on('error', error => {
-                logger.error('%s transmission error X=> %s', clientName, JSON.stringify(error));
-            });
+        socket.on('error', error => {
+            logger.error('%s transmission error X=> %s', clientName, JSON.stringify(error));
+        });
 
-            socket.on('end', () => {
-                logger.debug('%s LAST-ACK', clientName);
-            });
+        socket.on('end', () => {
+            logger.debug('%s LAST-ACK', clientName);
+        });
 
-            socket.on('close', () => {
-                logger.debug('%s CLOSED', clientName);
-                delete connections[clientName];
-            });
-        }
+        socket.on('close', () => {
+            logger.debug('%s CLOSED', clientName);
+            delete connections[clientName];
+        });
 
-        socket.on('data', data => {
+        socket.on('data', async data => {
             packets.push(data);
 
-            const requestData = Buffer.concat(packets),
-                request = { socket: socket, data: requestData.toString(encoding) };
+            const payload = Buffer.concat(packets),
+                request = { socket: socket, data: payload.toString(encoding) };
 
-            if (isEndOfRequest(requestData)) {
+            if (isEndOfRequest(payload)) {
                 packets = [];
-
-                let formattedRequestData = requestData.toString(encoding);
-                if (formattedRequestData.length > 20) {
-                    formattedRequestData = formattedRequestData.substring(0, 20) + '...';
-                }
-                logger.info('%s => %s', clientName, formattedRequestData);
-
-                try {
-                    // Translate network request to JSON
-                    require('./tcpRequest').createFrom(request).then(jsonRequest => {
-                        logger.debug('%s => %s', clientName, JSON.stringify(jsonRequest.data.toString(encoding)));
-
-                        // call mountebank with JSON request
-                        return responseFn(jsonRequest);
-                    }).then(mbResponse => {
-                        if (mbResponse.blocked) {
-                            socket.destroy();
-                            return;
-                        }
-                        const processedResponse = mbResponse.data || defaultResponse.data,
-                            buffer = Buffer.isBuffer(processedResponse)
-                                ? processedResponse
-                                : Buffer.from(processedResponse, encoding);
-
-                        if (buffer.length > 0) {
-                            socket.write(buffer);
-                            logger.debug('%s <= %s', clientName, JSON.stringify(buffer.toString(encoding)));
-                        }
-                    }, error => {
-                        const exceptions = require('../../util/errors');
-                        logger.error('%s X=> %s', clientName, JSON.stringify(exceptions.details(error)));
-                        socket.write(JSON.stringify({ errors: [error] }), 'utf8');
-                    });
-                }
-                catch (error) {
-                    const exceptions = require('../../util/errors');
-                    logger.error('%s X=> %s', clientName, JSON.stringify(exceptions.details(error)));
-                    socket.write(JSON.stringify({ errors: [error] }), 'utf8');
-                }
+                await respond(payload, request, clientName, socket);
             }
         });
     });

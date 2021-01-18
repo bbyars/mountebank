@@ -98,39 +98,31 @@ module.exports = function (createBaseServer) {
             }
         });
 
-        server.on('request', (request, response) => {
+        server.on('request', async (request, response) => {
             const helpers = require('../../util/helpers'),
                 clientName = helpers.socketName(request.socket);
 
             logger.info(`${clientName} => ${request.method} ${request.url}`);
 
             try {
-                let simplifiedRequest;
-                require('./httpRequest').createFrom(request).then(simpleRequest => {
-                    logger.debug('%s => %s', clientName, JSON.stringify(simpleRequest));
-                    simplifiedRequest = simpleRequest;
-                    return responseFn(simpleRequest, { rawUrl: request.url });
-                }).then(mbResponse => {
-                    if (mbResponse.blocked) {
-                        request.socket.destroy();
-                        return;
-                    }
+                const simplifiedRequest = await require('./httpRequest').createFrom(request);
+                logger.debug('%s => %s', clientName, JSON.stringify(simplifiedRequest));
 
-                    const stubResponse = postProcess(mbResponse, simplifiedRequest),
-                        encoding = stubResponse._mode === 'binary' ? 'base64' : 'utf8';
+                const mbResponse = await responseFn(simplifiedRequest, { rawUrl: request.url }),
+                    stubResponse = postProcess(mbResponse, simplifiedRequest),
+                    encoding = stubResponse._mode === 'binary' ? 'base64' : 'utf8';
 
-                    response.writeHead(stubResponse.statusCode, stubResponse.headers);
-                    response.end(stubResponse.body.toString(), encoding);
+                if (mbResponse.blocked) {
+                    request.socket.destroy();
+                    return;
+                }
 
-                    if (stubResponse) {
-                        logger.debug('%s <= %s', clientName, JSON.stringify(stubResponse));
-                    }
-                }, error => {
-                    const exceptions = require('../../util/errors');
-                    logger.error('%s X=> %s', clientName, JSON.stringify(exceptions.details(error)));
-                    response.writeHead(500, { 'content-type': 'application/json' });
-                    response.end(JSON.stringify({ errors: [exceptions.details(error)] }), 'utf8');
-                });
+                response.writeHead(stubResponse.statusCode, stubResponse.headers);
+                response.end(stubResponse.body.toString(), encoding);
+
+                if (stubResponse) {
+                    logger.debug('%s <= %s', clientName, JSON.stringify(stubResponse));
+                }
             }
             catch (error) {
                 const exceptions = require('../../util/errors');
