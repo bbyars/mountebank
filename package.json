@@ -51,7 +51,6 @@
     "nodemailer": "6.4.17",
     "prom-client": "13.0.0",
     "proper-lockfile": "4.1.1",
-    "q": "1.5.1",
     "query-string": "6.13.7",
     "safe-stable-stringify": "1.1.1",
     "smtp-server": "3.8.0",
@@ -76,6 +75,7 @@
     "license-checker": "25.0.1",
     "mocha": "8.2.1",
     "nc": "1.0.3",
+    "q": "1.5.1",
     "snyk": "1.437.3",
     "time-grunt": "2.0.0",
     "w3cjs": "0.4.0"
