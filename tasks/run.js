@@ -1,15 +1,13 @@
 'use strict';
 
 const spawn = require('child_process').spawn,
-    os = require('os'),
-    Q = require('q');
+    os = require('os');
 
 function isWindows () {
     return os.platform().indexOf('win') === 0;
 }
 
-function run (command, args, options) {
-    const deferred = Q.defer();
+async function run (command, args, options) {
     let npmFailure = false, proc;
 
     if (isWindows()) {
@@ -19,30 +17,30 @@ function run (command, args, options) {
         command = 'cmd.exe';
     }
 
-    proc = spawn(command, args, options);
+    return new Promise((resolve, reject) => {
+        proc = spawn(command, args, options);
 
-    proc.stdout.on('data', function (data) {
-        console.log(data.toString('utf8').trim());
+        proc.stdout.on('data', function (data) {
+            console.log(data.toString('utf8').trim());
+        });
+
+        proc.stderr.on('data', function (data) {
+            console.error(data.toString('utf8').trim());
+            if (data.toString('utf8').indexOf('npm ERR!') >= 0) {
+                // Hack; dpl returns 0 exit code on npm publish failure
+                npmFailure = true;
+            }
+        });
+
+        proc.on('close', function (exitCode) {
+            if (exitCode === 0 && !npmFailure) {
+                resolve();
+            }
+            else {
+                reject(npmFailure ? 1 : exitCode);
+            }
+        });
     });
-
-    proc.stderr.on('data', function (data) {
-        console.error(data.toString('utf8').trim());
-        if (data.toString('utf8').indexOf('npm ERR!') >= 0) {
-            // Hack; dpl returns 0 exit code on npm publish failure
-            npmFailure = true;
-        }
-    });
-
-    proc.on('close', function (exitCode) {
-        if (exitCode === 0 && !npmFailure) {
-            deferred.resolve();
-        }
-        else {
-            deferred.reject(npmFailure ? 1 : exitCode);
-        }
-    });
-
-    return deferred.promise;
 }
 
 module.exports = { run };
