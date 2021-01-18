@@ -8,9 +8,7 @@
 module.exports = function (createBaseServer) {
 
     function create (options, logger, responseFn) {
-        const Q = require('q'),
-            deferred = Q.defer(),
-            connections = {},
+        const connections = {},
             defaultResponse = options.defaultResponse || {};
 
         function postProcess (stubResponse, request) {
@@ -112,7 +110,7 @@ module.exports = function (createBaseServer) {
                     logger.debug('%s => %s', clientName, JSON.stringify(simpleRequest));
                     simplifiedRequest = simpleRequest;
                     return responseFn(simpleRequest, { rawUrl: request.url });
-                }).done(mbResponse => {
+                }).then(mbResponse => {
                     if (mbResponse.blocked) {
                         request.socket.destroy();
                         return;
@@ -142,37 +140,37 @@ module.exports = function (createBaseServer) {
             }
         });
 
-        server.on('error', error => {
-            const errors = require('../../util/errors');
+        return new Promise((resolve, reject) => {
+            server.on('error', error => {
+                const errors = require('../../util/errors');
 
-            if (error.errno === 'EADDRINUSE') {
-                deferred.reject(errors.ResourceConflictError(`Port ${options.port} is already in use`));
-            }
-            else if (error.errno === 'EACCES') {
-                deferred.reject(errors.InsufficientAccessError());
-            }
-            else {
-                deferred.reject(error);
-            }
-        });
+                if (error.errno === 'EADDRINUSE') {
+                    reject(errors.ResourceConflictError(`Port ${options.port} is already in use`));
+                }
+                else if (error.errno === 'EACCES') {
+                    reject(errors.InsufficientAccessError());
+                }
+                else {
+                    reject(error);
+                }
+            });
 
-        // Bind the socket to a port (the || 0 bit auto-selects a port if one isn't provided)
-        server.listen(options.port || 0, options.host, () => {
-            deferred.resolve({
-                port: server.address().port,
-                metadata: baseServer.metadata,
-                close: callback => {
-                    server.close(callback);
-                    Object.keys(connections).forEach(socket => {
-                        connections[socket].destroy();
-                    });
-                },
-                proxy: require('./httpProxy').create(logger),
-                encoding: 'utf8'
+            // Bind the socket to a port (the || 0 bit auto-selects a port if one isn't provided)
+            server.listen(options.port || 0, options.host, () => {
+                resolve({
+                    port: server.address().port,
+                    metadata: baseServer.metadata,
+                    close: callback => {
+                        server.close(callback);
+                        Object.keys(connections).forEach(socket => {
+                            connections[socket].destroy();
+                        });
+                    },
+                    proxy: require('./httpProxy').create(logger),
+                    encoding: 'utf8'
+                });
             });
         });
-
-        return deferred.promise;
     }
 
     return {

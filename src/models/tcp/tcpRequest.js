@@ -11,10 +11,9 @@
  * @returns {Object} - A promise resolving to the mountebank tcp request
  */
 function createFrom (request) {
-    const Q = require('q'),
-        helpers = require('../../util/helpers');
+    const helpers = require('../../util/helpers');
 
-    return Q({
+    return Promise.resolve({
         requestFrom: helpers.socketName(request.socket),
         ip: request.socket.remoteAddress,
         data: request.data

@@ -42,20 +42,17 @@ function transform (session, email) {
  * @returns {Object}
  */
 function createFrom (request) {
-    const Q = require('q'),
-        deferred = Q.defer();
-
-    const simpleParser = require('mailparser').simpleParser;
-    simpleParser(request.source, (err, mail) => {
-        if (err) {
-            deferred.reject(err);
-        }
-        else {
-            deferred.resolve(transform(request.session, mail));
-        }
+    return new Promise((resolve, reject) => {
+        const simpleParser = require('mailparser').simpleParser;
+        simpleParser(request.source, (err, mail) => {
+            if (err) {
+                reject(err);
+            }
+            else {
+                resolve(transform(request.session, mail));
+            }
+        });
     });
-
-    return deferred.promise;
 }
 
 module.exports = { createFrom };

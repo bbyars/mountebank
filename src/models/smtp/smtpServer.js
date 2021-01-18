@@ -6,9 +6,7 @@
  */
 
 function create (options, logger, responseFn) {
-    const Q = require('q'),
-        deferred = Q.defer(),
-        connections = {},
+    const connections = {},
         SMTPServer = require('smtp-server').SMTPServer,
         server = new SMTPServer({
             maxAllowedUnauthenticatedCommands: 1000,
@@ -52,8 +50,12 @@ function create (options, logger, responseFn) {
                         if (response) {
                             logger.debug('%s <= %s', clientName, JSON.stringify(response));
                         }
-                        return Q(true);
-                    }).done(() => Q(request.callback()));
+                        return Promise.resolve(true);
+                    }).then(() => Promise.resolve(request.callback()))
+                        .catch(error => {
+                            const exceptions = require('../../util/errors');
+                            logger.error('%s X=> %s', clientName, JSON.stringify(exceptions.details(error)));
+                        });
                 }
                 catch (error) {
                     const exceptions = require('../../util/errors');
@@ -62,36 +64,36 @@ function create (options, logger, responseFn) {
             }
         });
 
-    server.on('error', error => {
-        const errors = require('../../util/errors');
+    return new Promise((resolve, reject) => {
+        server.on('error', error => {
+            const errors = require('../../util/errors');
 
-        if (error.errno === 'EADDRINUSE') {
-            deferred.reject(errors.ResourceConflictError(`Port ${options.port} is already in use`));
-        }
-        else if (error.errno === 'EACCES') {
-            deferred.reject(errors.InsufficientAccessError());
-        }
-        else {
-            deferred.reject(error);
-        }
-    });
+            if (error.errno === 'EADDRINUSE') {
+                reject(errors.ResourceConflictError(`Port ${options.port} is already in use`));
+            }
+            else if (error.errno === 'EACCES') {
+                reject(errors.InsufficientAccessError());
+            }
+            else {
+                reject(error);
+            }
+        });
 
-    server.listen(options.port || 0, options.host, () => {
-        deferred.resolve({
-            port: server.server.address().port,
-            metadata: {},
-            close: callback => {
-                server.close(callback);
-                Object.keys(connections).forEach(socket => {
-                    connections[socket].destroy();
-                });
-            },
-            proxy: {},
-            encoding: 'utf8'
+        server.listen(options.port || 0, options.host, () => {
+            resolve({
+                port: server.server.address().port,
+                metadata: {},
+                close: callback => {
+                    server.close(callback);
+                    Object.keys(connections).forEach(socket => {
+                        connections[socket].destroy();
+                    });
+                },
+                proxy: {},
+                encoding: 'utf8'
+            });
         });
     });
-
-    return deferred.promise;
 }
 
 module.exports = {

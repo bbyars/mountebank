@@ -52,28 +52,27 @@ function isUrlEncodedForm (contentType) {
  * @returns {Object} - Promise resolving to the simplified request
  */
 function createFrom (request) {
-    const Q = require('q'),
-        deferred = Q.defer();
-    let chunks = [];
-    request.on('data', chunk => { chunks.push(Buffer.from(chunk)); });
-    request.on('end', () => {
-        const headersHelper = require('./headersHelper');
-        const headers = headersHelper.headersFor(request.rawHeaders);
-        const contentEncoding = headersHelper.getHeader('Content-Encoding', headers);
-        const zlib = require('zlib');
-        let buffer = Buffer.concat(chunks);
-        if (contentEncoding === 'gzip') {
-            try {
-                request.body = zlib.gunzipSync(buffer).toString();
+    return new Promise(resolve => {
+        const chunks = [];
+        request.on('data', chunk => { chunks.push(Buffer.from(chunk)); });
+        request.on('end', () => {
+            const headersHelper = require('./headersHelper');
+            const headers = headersHelper.headersFor(request.rawHeaders);
+            const contentEncoding = headersHelper.getHeader('Content-Encoding', headers);
+            const zlib = require('zlib');
+            let buffer = Buffer.concat(chunks);
+            if (contentEncoding === 'gzip') {
+                try {
+                    request.body = zlib.gunzipSync(buffer).toString();
+                }
+                catch (error) { /* do nothing */ }
             }
-            catch (error) { /* do nothing */ }
-        }
-        else {
-            request.body = buffer.toString();
-        }
-        deferred.resolve(transform(request));
+            else {
+                request.body = buffer.toString();
+            }
+            resolve(transform(request));
+        });
     });
-    return deferred.promise;
 }
 
 module.exports = { createFrom };

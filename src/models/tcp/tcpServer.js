@@ -6,6 +6,13 @@
  */
 
 function create (options, logger, responseFn) {
+    const mode = options.mode ? options.mode : 'text',
+        encoding = mode === 'binary' ? 'base64' : 'utf8',
+        net = require('net'),
+        server = net.createServer(),
+        helpers = require('../../util/helpers'),
+        connections = {},
+        defaultResponse = options.defaultResponse || { data: '' };
 
     // Used to determine logical end of request; defaults to one packet but
     // changeable through injection
@@ -30,16 +37,6 @@ function create (options, logger, responseFn) {
             return false;
         }
     }
-
-    const mode = options.mode ? options.mode : 'text',
-        encoding = mode === 'binary' ? 'base64' : 'utf8',
-        Q = require('q'),
-        net = require('net'),
-        deferred = Q.defer(),
-        server = net.createServer(),
-        helpers = require('../../util/helpers'),
-        connections = {},
-        defaultResponse = options.defaultResponse || { data: '' };
 
     server.on('connection', socket => {
         let packets = [];
@@ -86,7 +83,7 @@ function create (options, logger, responseFn) {
 
                         // call mountebank with JSON request
                         return responseFn(jsonRequest);
-                    }).done(mbResponse => {
+                    }).then(mbResponse => {
                         if (mbResponse.blocked) {
                             socket.destroy();
                             return;
@@ -115,37 +112,37 @@ function create (options, logger, responseFn) {
         });
     });
 
-    server.on('error', error => {
-        const errors = require('../../util/errors');
+    return new Promise((resolve, reject) => {
+        server.on('error', error => {
+            const errors = require('../../util/errors');
 
-        if (error.errno === 'EADDRINUSE') {
-            deferred.reject(errors.ResourceConflictError(`Port ${options.port} is already in use`));
-        }
-        else if (error.errno === 'EACCES') {
-            deferred.reject(errors.InsufficientAccessError());
-        }
-        else {
-            deferred.reject(error);
-        }
-    });
+            if (error.errno === 'EADDRINUSE') {
+                reject(errors.ResourceConflictError(`Port ${options.port} is already in use`));
+            }
+            else if (error.errno === 'EACCES') {
+                reject(errors.InsufficientAccessError());
+            }
+            else {
+                reject(error);
+            }
+        });
 
-    // Bind the socket to a port (the || 0 bit auto-selects a port if one isn't provided)
-    server.listen(options.port || 0, options.host, () => {
-        deferred.resolve({
-            port: server.address().port,
-            metadata: { mode },
-            close: callback => {
-                server.close(() => { callback(); });
-                Object.keys(connections).forEach(socket => {
-                    connections[socket].destroy();
-                });
-            },
-            proxy: require('./tcpProxy').create(logger, encoding, isEndOfRequest),
-            encoding: encoding
+        // Bind the socket to a port (the || 0 bit auto-selects a port if one isn't provided)
+        server.listen(options.port || 0, options.host, () => {
+            resolve({
+                port: server.address().port,
+                metadata: { mode },
+                close: callback => {
+                    server.close(() => { callback(); });
+                    Object.keys(connections).forEach(socket => {
+                        connections[socket].destroy();
+                    });
+                },
+                proxy: require('./tcpProxy').create(logger, encoding, isEndOfRequest),
+                encoding: encoding
+            });
         });
     });
-
-    return deferred.promise;
 }
 
 module.exports = {
