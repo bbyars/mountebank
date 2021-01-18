@@ -27,7 +27,7 @@ function createResponse (responseConfig, stubIndexFn) {
     const helpers = require('../util/helpers'),
         cloned = helpers.clone(responseConfig || { is: {} });
 
-    cloned.stubIndex = stubIndexFn ? stubIndexFn : () => require('q')(0);
+    cloned.stubIndex = stubIndexFn ? stubIndexFn : () => Promise.resolve(0);
 
     return cloned;
 }
