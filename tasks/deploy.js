@@ -5,30 +5,53 @@ const run = require('./run').run,
     version = require('./version').getVersion();
 
 module.exports = function (grunt) {
-
-    function failTask (task) {
-        return exitCode => {
-            grunt.warn(task + ' failed', exitCode);
-        };
-    }
-
-    grunt.registerTask('deploy:s3', 'Deploy artifacts to S3', function () {
-        run('scripts/deploy/deployS3', []).done(this.async(), failTask('deploy:s3'));
+    grunt.registerTask('deploy:s3', 'Deploy artifacts to S3', async function () {
+        try {
+            await run('scripts/deploy/deployS3', []);
+            this.async();
+        }
+        catch (exitCode) {
+            grunt.warn('deploy:s3 failed', exitCode);
+        }
     });
 
-    grunt.registerTask('deploy:heroku', 'Deploy artifacts to Heroku', function () {
-        run('scripts/deploy/deployHeroku', [publish]).done(this.async(), failTask('deploy:heroku'));
+    grunt.registerTask('deploy:heroku', 'Deploy artifacts to Heroku', async function () {
+        try {
+            await run('scripts/deploy/deployHeroku', [publish]);
+            this.async();
+        }
+        catch (exitCode) {
+            grunt.warn('deploy:heroku', exitCode);
+        }
     });
 
-    grunt.registerTask('deploy:npm', 'Deploy artifacts to npm', function () {
-        run('scripts/deploy/deployNpm', [publish]).done(this.async(), failTask('deploy:npm'));
+    grunt.registerTask('deploy:npm', 'Deploy artifacts to npm', async function () {
+        try {
+            await run('scripts/deploy/deployNpm', [publish]);
+            this.async();
+        }
+        catch (exitCode) {
+            grunt.warn('deploy:npm', exitCode);
+        }
     });
 
-    grunt.registerTask('deploy:docs', 'Deploy source docs', function () {
-        run('scripts/deploy/deployFirebase', [version]).done(this.async(), failTask('deploy:docs'));
+    grunt.registerTask('deploy:docs', 'Deploy source docs', async function () {
+        try {
+            await run('scripts/deploy/deployFirebase', [version]);
+            this.async();
+        }
+        catch (exitCode) {
+            grunt.warn('deploy:docs', exitCode);
+        }
     });
 
-    grunt.registerTask('deploy:docker', 'Deploy Docker image', function () {
-        run('scripts/deploy/deployDocker', [publish, version]).done(this.async(), failTask('deploy:docker'));
+    grunt.registerTask('deploy:docker', 'Deploy Docker image', async function () {
+        try {
+            await run('scripts/deploy/deployDocker', [publish, version]);
+            this.async();
+        }
+        catch (exitCode) {
+            grunt.warn('deploy:docker', exitCode);
+        }
     });
 };

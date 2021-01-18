@@ -6,17 +6,9 @@ const fs = require('fs-extra'),
     run = require('./run').run;
 
 module.exports = function (grunt) {
-
-    function failTask (task) {
-        return exitCode => {
-            grunt.warn(task + ' failed', exitCode);
-        };
-    }
-
-    grunt.registerTask('dist', 'Create trimmed down distribution directory', function () {
+    grunt.registerTask('dist', 'Create trimmed down distribution directory', async function () {
         const done = this.async(),
-            newPackage = JSON.parse(JSON.stringify(require('../package.json'))),
-            failed = failTask('dist');
+            newPackage = JSON.parse(JSON.stringify(require('../package.json')));
 
         fs.removeSync('dist');
         fs.mkdirSync('dist');
@@ -30,11 +22,16 @@ module.exports = function (grunt) {
         delete newPackage.devDependencies;
         fs.writeFileSync('dist/mountebank/package.json', JSON.stringify(newPackage, null, 2));
 
-        run('npm', ['install', '--production'], { cwd: 'dist/mountebank' }).done(() => {
+        try {
+            await run('npm', ['install', '--production'], { cwd: 'dist/mountebank' });
+
             // Switch tests to use the mb from the dist directory to test what actually gets published
             process.env.MB_EXECUTABLE = 'dist/mountebank/bin/mb';
             done();
-        }, failed);
+        }
+        catch (exitCode) {
+            grunt.warn('dist failed', exitCode);
+        }
     });
 
     grunt.registerTask('version', 'Set the version number', function () {
@@ -45,22 +42,45 @@ module.exports = function (grunt) {
         fs.writeFileSync('./dist/mountebank/package.json', JSON.stringify(newPackage, null, 2) + '\n');
     });
 
-    grunt.registerTask('dist:tarball', 'Create OS-specific tarballs', function (arch) {
-        run('scripts/dist/createSelfContainedTarball', [os.platform(), arch || os.arch(), version]).done(
-            this.async(), failTask('dist:tarball'));
+    grunt.registerTask('dist:tarball', 'Create OS-specific tarballs', async function (arch) {
+        try {
+            await run('scripts/dist/createSelfContainedTarball', [os.platform(), arch || os.arch(), version]);
+            this.async();
+        }
+        catch (exitCode) {
+            grunt.warn('dist:tarball failed', exitCode);
+        }
     });
 
-    grunt.registerTask('dist:zip', 'Create OS-specific zips', function (arch) {
-        run('scripts/dist/createWindowsZip', [arch, version]).done(this.async(), failTask('dist:zip'));
+    grunt.registerTask('dist:zip', 'Create OS-specific zips', async function (arch) {
+        try {
+            await run('scripts/dist/createWindowsZip', [arch, version]);
+            this.async();
+        }
+        catch (exitCode) {
+            grunt.warn('dist:zip failed', exitCode);
+        }
     });
 
-    grunt.registerTask('dist:npm', 'Create npm tarball', function () {
+    grunt.registerTask('dist:npm', 'Create npm tarball', async function () {
         const filename = 'mountebank-v' + version + '-npm.tar.gz';
 
-        run('tar', ['czf', filename, 'mountebank'], { cwd: 'dist' }).done(this.async(), failTask('dist:npm'));
+        try {
+            await run('tar', ['czf', filename, 'mountebank'], { cwd: 'dist' });
+            this.async();
+        }
+        catch (exitCode) {
+            grunt.warn('dist:npm failed', exitCode);
+        }
     });
 
-    grunt.registerTask('dist:package', 'Create OS-specific package', function (type) {
-        run('scripts/dist/createPackage', [os.platform(), type, version]).done(this.async(), failTask('dist:package'));
+    grunt.registerTask('dist:package', 'Create OS-specific package', async function (type) {
+        try {
+            await run('scripts/dist/createPackage', [os.platform(), type, version]);
+            this.async();
+        }
+        catch (exitCode) {
+            grunt.warn('dist:package failed', exitCode);
+        }
     });
 };
