@@ -41,7 +41,8 @@ function bitness () {
 module.exports = function (grunt) {
 
     grunt.registerTask('download:zip', 'Download this version of the Windows zip file', async function (arch) {
-        const zipFile = util.format('mountebank-v%s-win-%s.zip', version, arch || bitness());
+        const zipFile = util.format('mountebank-v%s-win-%s.zip', version, arch || bitness()),
+            done = this.async();
 
         if (!fs.existsSync('dist')) {
             fs.mkdirSync('dist');
@@ -49,7 +50,7 @@ module.exports = function (grunt) {
 
         try {
             await download(zipFile, 'dist/' + zipFile);
-            this.async();
+            done();
         }
         catch (error) {
             grunt.warn(error);
@@ -57,7 +58,8 @@ module.exports = function (grunt) {
     });
 
     grunt.registerTask('download:rpm', 'Download this version of the rpm', async function () {
-        const rpmFile = util.format('mountebank-%s-1.x86_64.rpm', version.replace('-', '_'));
+        const rpmFile = util.format('mountebank-%s-1.x86_64.rpm', version.replace('-', '_')),
+            done = this.async();
 
         if (!fs.existsSync('dist')) {
             fs.mkdirSync('dist');
@@ -65,7 +67,7 @@ module.exports = function (grunt) {
 
         try {
             await download(rpmFile, 'dist/' + rpmFile);
-            this.async();
+            done();
         }
         catch (error) {
             grunt.warn(error);

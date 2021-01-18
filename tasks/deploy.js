@@ -6,9 +6,11 @@ const run = require('./run').run,
 
 module.exports = function (grunt) {
     grunt.registerTask('deploy:s3', 'Deploy artifacts to S3', async function () {
+        const done = this.async();
+
         try {
             await run('scripts/deploy/deployS3', []);
-            this.async();
+            done();
         }
         catch (exitCode) {
             grunt.warn('deploy:s3 failed', exitCode);
@@ -16,9 +18,11 @@ module.exports = function (grunt) {
     });
 
     grunt.registerTask('deploy:heroku', 'Deploy artifacts to Heroku', async function () {
+        const done = this.async();
+
         try {
             await run('scripts/deploy/deployHeroku', [publish]);
-            this.async();
+            done();
         }
         catch (exitCode) {
             grunt.warn('deploy:heroku', exitCode);
@@ -26,9 +30,11 @@ module.exports = function (grunt) {
     });
 
     grunt.registerTask('deploy:npm', 'Deploy artifacts to npm', async function () {
+        const done = this.async();
+
         try {
             await run('scripts/deploy/deployNpm', [publish]);
-            this.async();
+            done();
         }
         catch (exitCode) {
             grunt.warn('deploy:npm', exitCode);
@@ -36,9 +42,11 @@ module.exports = function (grunt) {
     });
 
     grunt.registerTask('deploy:docs', 'Deploy source docs', async function () {
+        const done = this.async();
+
         try {
             await run('scripts/deploy/deployFirebase', [version]);
-            this.async();
+            done();
         }
         catch (exitCode) {
             grunt.warn('deploy:docs', exitCode);
@@ -46,9 +54,11 @@ module.exports = function (grunt) {
     });
 
     grunt.registerTask('deploy:docker', 'Deploy Docker image', async function () {
+        const done = this.async();
+
         try {
             await run('scripts/deploy/deployDocker', [publish, version]);
-            this.async();
+            done();
         }
         catch (exitCode) {
             grunt.warn('deploy:docker', exitCode);
