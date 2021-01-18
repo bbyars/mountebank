@@ -2,9 +2,7 @@
 
 const assert = require('assert'),
     Repo = require('../src/models/filesystemBackedImpostersRepository'),
-    fs = require('fs-extra'),
-    promiseIt = require('../functionalTest/testHelpers').promiseIt,
-    Q = require('q');
+    fs = require('fs-extra');
 
 describe('database concurrency', function () {
     this.timeout(120000);
@@ -31,7 +29,7 @@ describe('database concurrency', function () {
             return Number(response.is.value);
         }
 
-        promiseIt('should handle concurrent load correctly and performantly', function () {
+        it('should handle concurrent load correctly and performantly', async function () {
             const repo = Repo.create({ datadir: '.mbtest' }, logger()).stubsFor(1000),
                 startingValues = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
                 responses = startingValues.map(responseFor),
@@ -44,33 +42,32 @@ describe('database concurrency', function () {
             //     logfile: 'mb.log',
             //     ipWhitelist: ['*']
             // };
-            // return require('../src/mountebank').create(options)
-            return Q(true) // comment this out if uncommenting above
-                .then(() => repo.add({ responses }))
-                .then(() => repo.first(() => true))
-                .then(saved => {
-                    const promises = [];
-                    for (let i = 0; i < runs; i += 1) {
-                        promises.push(saved.stub.nextResponse());
-                    }
-                    return Q.all(promises);
-                }).then(results => {
-                    const duration = new Date() - start,
-                        values = results.map(valueFrom),
-                        actual = {},
-                        expected = {};
+            // await require('../src/mountebank').create(options)
 
-                    console.log(`Took ${duration}ms for ${runs} calls (${duration / runs}ms per call)`);
-                    assert.ok(duration < runs * 70, `Took too long: ${duration}ms`);
+            await repo.add({ responses });
+            const saved = await repo.first(() => true),
+                promises = [];
 
-                    // It's OK if responses are returned out of order -- we're running more or less concurrently after all
-                    // The key for correctness is to ensure we get the right number in each bucket
-                    startingValues.forEach(i => {
-                        actual[i] = values.filter(value => value === i).length;
-                        expected[i] = runs / responses.length;
-                    });
-                    assert.deepEqual(actual, expected, 'Unexpected response counts');
-                });
+            for (let i = 0; i < runs; i += 1) {
+                promises.push(saved.stub.nextResponse());
+            }
+
+            const results = await Promise.all(promises),
+                duration = new Date() - start,
+                values = results.map(valueFrom),
+                actual = {},
+                expected = {};
+
+            console.log(`Took ${duration}ms for ${runs} calls (${duration / runs}ms per call)`);
+            assert.ok(duration < runs * 70, `Took too long: ${duration}ms`);
+
+            // It's OK if responses are returned out of order -- we're running more or less concurrently after all
+            // The key for correctness is to ensure we get the right number in each bucket
+            startingValues.forEach(i => {
+                actual[i] = values.filter(value => value === i).length;
+                expected[i] = runs / responses.length;
+            });
+            assert.deepEqual(actual, expected, 'Unexpected response counts');
         });
     });
 });

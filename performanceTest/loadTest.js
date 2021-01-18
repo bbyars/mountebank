@@ -1,3 +1,4 @@
+/*
 'use strict';
 
 import http from 'k6/http';
@@ -25,7 +26,7 @@ export default function () {
     let second = http.get('http://localhost:3000/');
     check(second, { 'status check': (res) => res.status === 200 });
 }
-
+*/
 /*
 export let options = {
     stages: [
