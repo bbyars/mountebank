@@ -46,10 +46,9 @@ function create (options) {
             promises = stubsToValidate.map(stubToValidate => {
                 const stubRepository = require('./inMemoryImpostersRepository').create().createStubsRepository();
                 return stubRepository.add(stubToValidate).then(() => stubRepository);
-            }),
-            Q = require('q');
+            });
 
-        return Q.all(promises);
+        return Promise.all(promises);
     }
 
     // We call map before calling every so we make sure to call every
@@ -70,12 +69,10 @@ function create (options) {
     }
 
     function resolverFor (stubRepository) {
-        const Q = require('q');
-
         // We can get a better test (running behaviors on proxied result) if the protocol gives
         // us a testProxyResult
         if (options.testProxyResponse) {
-            const dryRunProxy = { to: () => Q(options.testProxyResponse) };
+            const dryRunProxy = { to: () => Promise.resolve(options.testProxyResponse) };
             return require('./responseResolver').create(stubRepository, dryRunProxy);
         }
         else {
@@ -83,49 +80,38 @@ function create (options) {
         }
     }
 
-    function dryRun (stub, encoding, logger) {
-        const Q = require('q'),
-            combinators = require('../util/combinators'),
+    async function dryRunSingleRepo (stubRepository, encoding, dryRunLogger) {
+        const match = await findFirstMatch(stubRepository, options.testRequest, encoding, dryRunLogger),
+            responseConfig = await match.stub.nextResponse();
+
+        return resolverFor(stubRepository).resolve(responseConfig, options.testRequest, dryRunLogger, {});
+    }
+
+    async function dryRun (stub, encoding, logger) {
+        options.testRequest = options.testRequest || {};
+        options.testRequest.isDryRun = true;
+
+        const combinators = require('../util/combinators'),
             dryRunLogger = {
                 debug: combinators.noop,
                 info: combinators.noop,
                 warn: combinators.noop,
                 error: logger.error
-            };
+            },
+            dryRunRepositories = await reposToTestFor(stub),
+            dryRuns = dryRunRepositories.map(stubRepository => dryRunSingleRepo(stubRepository, encoding, dryRunLogger));
 
-        options.testRequest = options.testRequest || {};
-        options.testRequest.isDryRun = true;
-        return reposToTestFor(stub).then(dryRunRepositories => {
-            return Q.all(dryRunRepositories.map(stubRepository => {
-                return findFirstMatch(stubRepository, options.testRequest, encoding, dryRunLogger).then(match => {
-                    return match.stub.nextResponse().then(responseConfig => {
-                        return resolverFor(stubRepository).resolve(responseConfig, options.testRequest, dryRunLogger, {});
-                    });
-                });
-            }));
-        });
+        return Promise.all(dryRuns);
     }
 
-    function addDryRunErrors (stub, encoding, errors, logger) {
-        const Q = require('q'),
-            deferred = Q.defer();
-
+    async function addDryRunErrors (stub, encoding, errors, logger) {
         try {
-            dryRun(stub, encoding, logger).done(deferred.resolve, reason => {
-                reason.source = reason.source || JSON.stringify(stub);
-                errors.push(reason);
-                deferred.resolve();
-            });
+            await dryRun(stub, encoding, logger);
         }
-        catch (error) {
-            errors.push(exceptions.ValidationError('malformed stub request', {
-                data: error.message,
-                source: error.source || stub
-            }));
-            deferred.resolve();
+        catch (reason) {
+            reason.source = reason.source || JSON.stringify(stub);
+            errors.push(reason);
         }
-
-        return deferred.promise;
     }
 
     function hasPredicateGeneratorInjection (response) {
@@ -202,10 +188,8 @@ function create (options) {
         });
     }
 
-    function errorsForStub (stub, encoding, logger) {
-        const errors = [],
-            Q = require('q'),
-            deferred = Q.defer();
+    async function errorsForStub (stub, encoding, logger) {
+        const errors = [];
 
         if (!Array.isArray(stub.responses) || stub.responses.length === 0) {
             errors.push(exceptions.ValidationError("'responses' must be a non-empty array", {
@@ -217,18 +201,13 @@ function create (options) {
             addBehaviorErrors(stub, errors);
         }
 
-        if (errors.length > 0) {
+        if (errors.length === 0) {
             // no sense in dry-running if there are already problems;
             // it will just add noise to the errors
-            deferred.resolve(errors);
-        }
-        else {
-            addDryRunErrors(stub, encoding, errors, logger).done(() => {
-                deferred.resolve(errors);
-            });
+            await addDryRunErrors(stub, encoding, errors, logger);
         }
 
-        return deferred.promise;
+        return errors;
     }
 
     function errorsForRequest (request) {
@@ -250,21 +229,19 @@ function create (options) {
      * @param {Object} logger - The logger
      * @returns {Object} Promise resolving to an object containing isValid and an errors array
      */
-    function validate (request, logger) {
+    async function validate (request, logger) {
         const stubs = request.stubs || [],
             encoding = request.mode === 'binary' ? 'base64' : 'utf8',
-            validationPromises = stubs.map(stub => errorsForStub(stub, encoding, logger)),
-            Q = require('q');
+            validations = stubs.map(stub => errorsForStub(stub, encoding, logger));
 
-        validationPromises.push(Q(errorsForRequest(request)));
+        validations.push(Promise.resolve(errorsForRequest(request)));
         if (typeof options.additionalValidation === 'function') {
-            validationPromises.push(Q(options.additionalValidation(request)));
+            validations.push(Promise.resolve(options.additionalValidation(request)));
         }
 
-        return Q.all(validationPromises).then(errorsForAllStubs => {
-            const allErrors = errorsForAllStubs.reduce((stubErrors, accumulator) => accumulator.concat(stubErrors), []);
-            return { isValid: allErrors.length === 0, errors: allErrors };
-        });
+        const errorsForAllStubs = await Promise.all(validations),
+            allErrors = errorsForAllStubs.reduce((stubErrors, accumulator) => accumulator.concat(stubErrors), []);
+        return { isValid: allErrors.length === 0, errors: allErrors };
     }
 
     return { validate };
