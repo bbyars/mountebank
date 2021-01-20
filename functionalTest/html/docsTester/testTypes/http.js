@@ -1,7 +1,6 @@
 'use strict';
 
-const util = require('util'),
-    httpClient = require('../../../api/http/baseHttpClient').create('http');
+const httpClient = require('../../../api/http/baseHttpClient').create('http');
 
 function parseHeader (line) {
     const parts = line.split(':');
@@ -63,11 +62,11 @@ function properCase (text) {
 }
 
 function format (response) {
-    let result = util.format('HTTP/1.1 %s %s', response.statusCode, messageFor(response.statusCode));
+    let result = `HTTP/1.1 ${response.statusCode} ${messageFor(response.statusCode)}`;
     Object.keys(response.headers).forEach(header => {
         // Introduced in node v14, causes portability issues between versions
         if (header.toLowerCase() !== 'keep-alive') {
-            result += util.format('\n%s: %s', properCase(header), response.headers[header]);
+            result += `\n${properCase(header)}: ${response.headers[header]}`;
         }
     });
     if (response.body) {

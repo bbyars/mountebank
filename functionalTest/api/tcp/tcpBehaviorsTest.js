@@ -5,8 +5,7 @@ const assert = require('assert'),
     port = api.port + 1,
     timeout = parseInt(process.env.MB_SLOW_TEST_TIMEOUT || 2000),
     tcp = require('./tcpClient'),
-    fs = require('fs'),
-    util = require('util');
+    fs = require('fs-extra');
 
 describe('tcp imposter', function () {
     this.timeout(timeout);
@@ -73,7 +72,7 @@ describe('tcp imposter', function () {
                 stubs = [stub],
                 request = { protocol: 'tcp', port, stubs: stubs };
             await api.createImposter(request);
-            fs.writeFileSync('shellTransformTest.js', util.format('%s\nexec();', shellFn.toString()));
+            fs.writeFileSync('shellTransformTest.js', `${shellFn.toString()}\nexec();`);
 
             try {
                 const firstStart = new Date(),

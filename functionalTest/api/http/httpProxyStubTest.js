@@ -1,8 +1,7 @@
 'use strict';
 
 const assert = require('assert'),
-    fs = require('fs'),
-    util = require('util'),
+    fs = require('fs-extra'),
     api = require('../api').create(),
     client = require('./baseHttpClient').create('http'),
     isInProcessImposter = require('../../testHelpers').isInProcessImposter,
@@ -311,7 +310,7 @@ describe('http proxy stubs', function () {
             proxyRequest = { protocol: 'http', port, stubs: [proxyStub], name: 'proxy' };
         await api.createImposter(originServerRequest);
         await api.createImposter(proxyRequest);
-        fs.writeFileSync('shellTransformTest.js', util.format('%s\nexec();', shellFn.toString()));
+        fs.writeFileSync('shellTransformTest.js', `${shellFn.toString()}\nexec();`);
 
         try {
             const first = await client.get('/mountebank', port);

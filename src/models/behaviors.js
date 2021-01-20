@@ -140,16 +140,15 @@ async function wait (request, response, millisecondsOrFn, logger) {
 
 function quoteForShell (obj) {
     const json = JSON.stringify(obj),
-        isWindows = require('os').platform().indexOf('win') === 0,
-        util = require('util');
+        isWindows = require('os').platform().indexOf('win') === 0;
 
     if (isWindows) {
         // Confused? Me too. All other approaches I tried were spectacular failures
         // in both 1) keeping the JSON as a single CLI arg, and 2) maintaining the inner quotes
-        return util.format('"%s"', json.replace(/"/g, '\\"'));
+        return `"${json.replace(/"/g, '\\"')}"`;
     }
     else {
-        return util.format("'%s'", json);
+        return `'${json}'`;
     }
 }
 
@@ -364,8 +363,7 @@ function replaceArrayValuesIn (response, token, values, logger) {
     const replacer = field => {
         values.forEach(function (replacement, index) {
             // replace ${TOKEN}[1] with indexed element
-            const util = require('util'),
-                indexedToken = util.format('%s[%s]', token, index);
+            const indexedToken = `${token}[${index}]`;
             field = globalStringReplace(field, indexedToken, replacement, logger);
         });
         if (values.length > 0) {
@@ -470,11 +468,9 @@ function lookupRow (lookupConfig, originalRequest, logger) {
 function replaceObjectValuesIn (response, token, values, logger) {
     const replacer = field => {
         Object.keys(values).forEach(key => {
-            const util = require('util');
-
             // replace ${TOKEN}["key"] and ${TOKEN}['key'] and ${TOKEN}[key]
             ['"', "'", ''].forEach(function (quoteChar) {
-                const quoted = util.format('%s[%s%s%s]', token, quoteChar, key, quoteChar);
+                const quoted = `${token}[${quoteChar}${key}${quoteChar}]`;
                 field = globalStringReplace(field, quoted, values[key], logger);
             });
         });

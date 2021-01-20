@@ -84,11 +84,10 @@ initialize <code>mb</code> with the following command:</p>
 
 <p>templates/counter.ejs</p>
 <pre><code>function (request, state) {
-    var count = state.requests ? Object.keys(state.requests).length : 0,
-        util = require('util');
+    var count = state.requests ? Object.keys(state.requests).length : 0;
 
     return {
-        body: util.format('There have been %s proxied calls', count)
+        body: `There have been ${count} proxied calls`
     };
 }</code></pre>
 

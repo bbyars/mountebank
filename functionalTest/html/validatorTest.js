@@ -4,8 +4,7 @@ const assert = require('assert'),
     w3cjs = require('w3cjs'),
     api = require('../api/api').create(),
     httpClient = require('../api/http/baseHttpClient').create('http'),
-    currentVersion = require('../../package.json').version,
-    util = require('util');
+    currentVersion = require('../../package.json').version;
 
 function assertValid (path, html) {
     return new Promise(resolve => {
@@ -40,7 +39,7 @@ function removeKnownErrorsFrom (html) {
     result = result.replace("results='5' autosave='mb' ", '');
 
     docsTestFrameworkTags.forEach(tagName => {
-        const pattern = util.format('</?%s[^>]*>', tagName),
+        const pattern = `</?${tagName}[^>]*>`,
             regex = new RegExp(pattern, 'g');
         result = result.replace(regex, '');
     });

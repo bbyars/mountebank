@@ -255,7 +255,7 @@ Content-Type: application/json
   "stubs": [
     {
       "predicates": [<strong class='highlight1'>{ "equals": { "method": "GET", "path": "/counter" } }</strong>],
-      "responses": [{ "inject": "function (config) {\n    var count = config.state.requests ? Object.keys(config.state.requests).length : 0,\n        util = require('util');\n\n    return {\n        body: util.format('There have been %s proxied calls', count)\n    };\n}" }]
+      "responses": [{ "inject": "function (config) {\n    var count = config.state.requests ? Object.keys(config.state.requests).length : 0;\n\n    return {\n        body: `There have been ${count} proxied calls`\n    };\n}" }]
     },
     {
       "responses": [{ "inject": "function (config) {\n    var cacheKey = config.request.method + ' ' + config.request.path;\n\n    if (typeof config.state.requests === 'undefined') {\n        config.state.requests = {};\n    }\n\n    if (config.state.requests[cacheKey]) {\n        config.logger.info('Using previous response');\n        config.callback(config.state.requests[cacheKey]);\n    }\n\n    var http = require('http'),\n        options = {\n            method: config.request.method,\n            hostname: 'localhost',\n            port: 5555,\n            path: config.request.path,\n            headers: config.request.headers\n        },\n        httpRequest = http.request(options, response => {\n            var body = '';\n            response.setEncoding('utf8');\n            response.on('data', chunk => {\n                body += chunk;\n            });\n            response.on('end', () => {\n                var stubResponse = {\n                        statusCode: response.statusCode,\n                        headers: response.headers,\n                        body: body\n                    };\n                config.logger.info('Successfully proxied: ' + JSON.stringify(stubResponse));\n                config.state.requests[cacheKey] = stubResponse;\n                config.callback(stubResponse);\n            });\n        });\n    httpRequest.end();\n}" }]
@@ -274,11 +274,10 @@ stubs on one imposter, but not shared between imposters.  This function
 that takes advantage of the runtime environment.</p>
 
 <pre><code>function (config) {
-    var count = config.state.requests ? Object.keys(config.state.requests).length : 0,
-        util = require('util');
+    var count = config.state.requests ? Object.keys(config.state.requests).length : 0;
 
     return {
-        <strong class='highlight2'>body: util.format('There have been %s proxied calls', count)</strong>
+        <strong class='highlight2'>body: `There have been ${count} proxied calls`</strong>
     };
 }</code></pre>
 

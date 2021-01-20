@@ -3,7 +3,6 @@
 const fs = require('fs-extra'),
     https = require('https'),
     os = require('os'),
-    util = require('util'),
     version = require('./version').getVersion(),
     versionMajorMinor = version.replace(/\.\d+(-beta\.\d+)?$/, ''),
     urlPrefix = 'https://s3.amazonaws.com/mountebank/v' + versionMajorMinor;
@@ -41,7 +40,7 @@ function bitness () {
 module.exports = function (grunt) {
 
     grunt.registerTask('download:zip', 'Download this version of the Windows zip file', async function (arch) {
-        const zipFile = util.format('mountebank-v%s-win-%s.zip', version, arch || bitness()),
+        const zipFile = `mountebank-v${version}-win-${arch || bitness()}.zip`,
             done = this.async();
 
         if (!fs.existsSync('dist')) {
@@ -58,7 +57,7 @@ module.exports = function (grunt) {
     });
 
     grunt.registerTask('download:rpm', 'Download this version of the rpm', async function () {
-        const rpmFile = util.format('mountebank-%s-1.x86_64.rpm', version.replace('-', '_')),
+        const rpmFile = `mountebank-${version.replace('-', '_')}-1.x86_64.rpm`,
             done = this.async();
 
         if (!fs.existsSync('dist')) {

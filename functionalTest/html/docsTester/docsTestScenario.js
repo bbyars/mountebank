@@ -26,12 +26,10 @@ function create (endpoint, id) {
 
         await chainedExecutions;
         steps.forEach((step, stepIndex) => {
-            const util = require('util'),
-                failureMessage = util.format(
-                    '%s %s step %s failed; below is the actual result\n' +
-                    '-----------\n' +
-                    '%s\n' +
-                    '-----------', endpoint, id, stepIndex + 1, step.actualResponse);
+            const failureMessage = `${endpoint} ${id} step ${stepIndex + 1} failed; below is the actual result\n` +
+                                   '-----------\n' +
+                                   `${step.actualResponse}\n` +
+                                   '-----------';
 
             step.assertValid(step.actualResponse, failureMessage);
         });

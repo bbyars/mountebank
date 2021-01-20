@@ -1,8 +1,7 @@
 (request, state) => {
-    const count = state.requests ? Object.keys(state.requests).length : 0,
-        util = require('util');
+    const count = state.requests ? Object.keys(state.requests).length : 0;
 
     return {
-        body: util.format('There have been %s proxied calls', count)
+        body: `There have been ${count} proxied calls`
     };
 }
