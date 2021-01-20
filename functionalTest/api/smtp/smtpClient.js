@@ -1,6 +1,5 @@
 'use strict';
 
-const Q = require('q');
 const SMTPConnection = require('nodemailer/lib/smtp-connection');
 
 function addressOf (email) {
@@ -25,32 +24,31 @@ function send (message, port, host = '127.0.0.1') {
         throw Error('you forgot to pass the port again');
     }
 
-    let deferred = Q.defer();
-    let connection = new SMTPConnection({ port, host });
-
     message.cc = message.cc || [];
     message.bcc = message.bcc || [];
 
-    connection.on('error', deferred.reject);
+    return new Promise((resolve, reject) => {
+        const connection = new SMTPConnection({ port, host });
 
-    connection.connect(connectionError => {
-        if (connectionError) {
-            deferred.reject(connectionError);
-        }
-        let envelope = {
-            from: message.envelopeFrom || addressOf(message.from),
-            to: message.envelopeTo || message.to.concat(message.cc).concat(message.bcc).map(addressOf)
-        };
-        connection.send(envelope, messageText(message), (sendError, info) => {
-            if (sendError) {
-                deferred.reject(sendError);
+        connection.on('error', reject);
+
+        connection.connect(connectionError => {
+            if (connectionError) {
+                reject(connectionError);
             }
-            connection.quit();
-            deferred.resolve(info);
+            let envelope = {
+                from: message.envelopeFrom || addressOf(message.from),
+                to: message.envelopeTo || message.to.concat(message.cc).concat(message.bcc).map(addressOf)
+            };
+            connection.send(envelope, messageText(message), (sendError, info) => {
+                if (sendError) {
+                    reject(sendError);
+                }
+                connection.quit();
+                resolve(info);
+            });
         });
     });
-
-    return deferred.promise;
 }
 
 module.exports = {

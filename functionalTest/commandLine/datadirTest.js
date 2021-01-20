@@ -5,8 +5,7 @@ const assert = require('assert'),
     port = api.port + 1,
     mb = require('../mb').create(port),
     isWindows = require('os').platform().indexOf('win') === 0,
-    promiseIt = require('../testHelpers').promiseIt,
-    baseTimeout = parseInt(process.env.MB_SLOW_TEST_TIMEOUT || 4000),
+    baseTimeout = parseInt(process.env.MB_SLOW_TEST_TIMEOUT || 5000),
     timeout = isWindows ? 2 * baseTimeout : baseTimeout,
     BaseHttpClient = require('../api/http/baseHttpClient'),
     http = BaseHttpClient.create('http');
@@ -14,7 +13,11 @@ const assert = require('assert'),
 describe('--datadir', function () {
     this.timeout(timeout);
 
-    promiseIt('should load previously saved imposters until they are deleted', function () {
+    afterEach(async function () {
+        await mb.stop();
+    });
+
+    it('should load previously saved imposters until they are deleted', async function () {
         const imposter = {
             port: mb.port + 1,
             protocol: 'http',
@@ -25,75 +28,79 @@ describe('--datadir', function () {
                 ]
             }]
         };
+        await mb.start(['--datadir', '.mbtest']);
+        await mb.post('/imposters', imposter);
 
-        return mb.start(['--datadir', '.mbtest'])
-            .then(() => mb.post('/imposters', imposter))
-            .then(() => http.get('/', imposter.port))
-            .then(response => {
-                assert.strictEqual(response.body, 'first');
-                return mb.stop();
-            }).then(() => mb.start(['--datadir', '.mbtest']))
-            .then(() => http.get('/', imposter.port))
-            .then(response => {
-                assert.strictEqual(response.body, 'second');
-                return mb.del('/imposters');
-            }).then(() => mb.stop())
-            .then(() => mb.start(['--datadir', '.mbtest']))
-            .then(() => {
-                return http.get('/', imposter.port)
-                    .then(() => {
-                        assert.fail('should not have started previously deleted imposter');
-                    }).catch(error => {
-                        assert.strictEqual('ECONNREFUSED', error.code);
-                    });
-            }).finally(() => mb.stop());
+        const first = await http.get('/', imposter.port);
+        assert.strictEqual(first.body, 'first');
+
+        await mb.stop();
+        await mb.start(['--datadir', '.mbtest']);
+
+        const second = await http.get('/', imposter.port);
+        assert.strictEqual(second.body, 'second');
+
+        await mb.del('/imposters');
+        await mb.stop();
+        await mb.start(['--datadir', '.mbtest']);
+
+        try {
+            await http.get('/', imposter.port);
+            assert.fail('should not have started previously deleted imposter');
+        }
+        catch (error) {
+            assert.strictEqual('ECONNREFUSED', error.code);
+
+        }
     });
 
-    promiseIt('should allow configfile to overwrite imposters loaded from datadir', function () {
+    it('should allow configfile to overwrite imposters loaded from datadir', async function () {
         const imposter = {
                 port: 4545,
                 protocol: 'http',
                 stubs: [{ responses: [{ is: { body: 'SHOULD BE OVERWRITTEN' } }] }]
             },
             path = require('path');
+        await mb.start(['--datadir', '.mbtest']);
+        await mb.post('/imposters', imposter);
 
-        return mb.start(['--datadir', '.mbtest'])
-            .then(() => mb.post('/imposters', imposter))
-            .then(() => http.get('/orders/123', 4545))
-            .then(response => {
-                assert.strictEqual(response.body, 'SHOULD BE OVERWRITTEN');
-                return mb.stop();
-            }).then(() => mb.start(['--datadir', '.mbtest', '--configfile', path.join(__dirname, 'imposters/imposters.ejs')]))
-            .then(() => http.get('/orders/123', 4545))
-            .then(response => {
-                assert.strictEqual(response.body, 'Order 123');
-                return mb.del('/imposters');
-            }).finally(() => mb.stop());
+        const first = await http.get('/orders/123', 4545);
+        assert.strictEqual(first.body, 'SHOULD BE OVERWRITTEN');
+
+        await mb.stop();
+        await mb.start(['--datadir', '.mbtest', '--configfile', path.join(__dirname, 'imposters/imposters.ejs')]);
+
+        const second = await http.get('/orders/123', 4545);
+        assert.strictEqual(second.body, 'Order 123');
+
+        await mb.del('/imposters');
     });
 
-    promiseIt('should not delete files outside of imposter directories when deleting imposter', function () {
+    it('should not delete files outside of imposter directories when deleting imposter', async function () {
         const imposter = {
                 port: 5555,
                 protocol: 'http',
                 stubs: [{ responses: [{ is: { body: 'BODY' } }] }]
             },
             fs = require('fs-extra');
-
+        await mb.start(['--datadir', '.mbtest']);
         fs.ensureDirSync('.mbtest/5555');
         fs.writeFileSync('.mbtest/5555/INSIDE-IMPOSTER-DIR.txt', '');
         fs.ensureDirSync('.mbtest/meta');
         fs.writeFileSync('.mbtest/meta/OUTSIDE-IMPOSTER-DIR.txt', '');
 
-        return mb.start(['--datadir', '.mbtest'])
-            .then(() => mb.post('/imposters', imposter))
-            .then(() => http.get('/', imposter.port))
-            .then(response => {
-                assert.strictEqual(response.body, 'BODY');
-                return mb.del('/imposters');
-            }).then(() => {
-                assert.strictEqual(fs.existsSync('.mbtest/meta/OUTSIDE-IMPOSTER-DIR.txt'), true);
-                assert.strictEqual(fs.existsSync('.mbtest/5555/INSIDE-IMPOSTER-DIR.txt'), false);
-                fs.removeSync('.mbtest');
-            }).finally(() => mb.stop());
+        try {
+            await mb.post('/imposters', imposter);
+
+            const response = await http.get('/', imposter.port);
+            assert.strictEqual(response.body, 'BODY');
+
+            await mb.del('/imposters');
+            assert.strictEqual(fs.existsSync('.mbtest/meta/OUTSIDE-IMPOSTER-DIR.txt'), true);
+            assert.strictEqual(fs.existsSync('.mbtest/5555/INSIDE-IMPOSTER-DIR.txt'), false);
+        }
+        finally {
+            fs.removeSync('.mbtest');
+        }
     });
 });

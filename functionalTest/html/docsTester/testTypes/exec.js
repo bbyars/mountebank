@@ -1,23 +1,21 @@
 'use strict';
 
 const exec = require('child_process').exec,
-    Q = require('q'),
-    fs = require('fs'),
+    fs = require('fs-extra'),
     path = require('path');
 let nextTestId = 1;
 
 function execute (command) {
-    const deferred = Q.defer();
-
-    exec(command, (error, stdout) => {
-        if (error) {
-            deferred.reject(error);
-        }
-        else {
-            deferred.resolve(stdout);
-        }
+    return new Promise((resolve, reject) => {
+        exec(command, (error, stdout) => {
+            if (error) {
+                reject(error);
+            }
+            else {
+                resolve(stdout);
+            }
+        });
     });
-    return deferred.promise;
 }
 
 function usePortableNetcat (command) {
@@ -33,22 +31,21 @@ function usePortableNetcat (command) {
     return command.replace('| nc ', `| ${netcatPath} -q1 `);
 }
 
-function runStep (step) {
-    const deferred = Q.defer(),
-        filename = `test-${nextTestId}`;
+async function runStep (step) {
+    const filename = `test-${nextTestId}`;
 
     fs.writeFileSync(filename, usePortableNetcat(step.requestText), { mode: 484 /* 0744 */ });
     nextTestId += 1;
 
-    execute(`sh ./${filename}`).done(stdout => {
+    try {
+        const stdout = await execute(`sh ./${filename}`);
         fs.unlinkSync(filename);
-        deferred.resolve(stdout);
-    }, reason => {
+        return stdout;
+    }
+    catch (reason) {
         console.log(`Error executing following command: ${step.text}`);
-        deferred.reject(reason);
-    });
-
-    return deferred.promise;
+        throw reason;
+    }
 }
 
 module.exports = { runStep };

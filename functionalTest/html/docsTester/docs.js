@@ -3,7 +3,6 @@
 const api = require('../../api/api').create(),
     JSDOM = require('jsdom').JSDOM,
     DocsTestScenario = require('./docsTestScenario'),
-    Q = require('q'),
     assert = require('assert');
 
 /**
@@ -11,16 +10,15 @@ const api = require('../../api/api').create(),
  */
 
 function getDOM (endpoint) {
-    const deferred = Q.defer(),
-        url = api.url + endpoint;
+    const url = api.url + endpoint;
 
-    JSDOM.fromURL(url).then(dom => {
-        deferred.resolve(dom.window);
-    }).catch(errors => {
-        deferred.reject(errors);
+    return new Promise((resolve, reject) => {
+        JSDOM.fromURL(url).then(dom => {
+            resolve(dom.window);
+        }).catch(errors => {
+            reject(errors);
+        });
     });
-
-    return deferred.promise;
 }
 
 function asArray (iterable) {
@@ -212,21 +210,16 @@ function createScenarioFrom (testElement, endpoint) {
 /*
  * Each scenario is wrapped in a <testScenario name='scenario-name></testScenario> tag
  */
-function getScenarios (endpoint) {
-    const deferred = Q.defer();
+async function getScenarios (endpoint) {
+    const window = await getDOM(endpoint),
+        testElements = subElements(window.document, 'testScenario'),
+        testScenarios = {};
 
-    getDOM(endpoint).done(window => {
-        const testElements = subElements(window.document, 'testScenario'),
-            testScenarios = {};
-
-        testElements.forEach(testElement => {
-            const scenarioName = testElement.attributeValue('name');
-            testScenarios[scenarioName] = createScenarioFrom(testElement, endpoint);
-        });
-        deferred.resolve(testScenarios);
+    testElements.forEach(testElement => {
+        const scenarioName = testElement.attributeValue('name');
+        testScenarios[scenarioName] = createScenarioFrom(testElement, endpoint);
     });
-
-    return deferred.promise;
+    return testScenarios;
 }
 
 module.exports = { getScenarios };

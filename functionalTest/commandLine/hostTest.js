@@ -4,7 +4,6 @@ const assert = require('assert'),
     api = require('../api/api').create(),
     port = api.port + 1,
     mb = require('../mb').create(port),
-    promiseIt = require('../testHelpers').promiseIt,
     baseTimeout = parseInt(process.env.MB_SLOW_TEST_TIMEOUT || 3000),
     timeout = 2 * baseTimeout,
     hostname = require('os').hostname(),
@@ -16,49 +15,49 @@ const assert = require('assert'),
 describe('--host', function () {
     this.timeout(timeout);
 
-    promiseIt('should allow binding to specific host', function () {
-        return mb.start(['--host', hostname])
-            .then(() => mb.get('/'))
-            .then(response => {
-                const links = response.body._links,
-                    hrefs = Object.keys(links).map(key => links[key].href);
-                assert.ok(hrefs.length > 0, 'no hrefs to test');
-                hrefs.forEach(href => {
-                    assert.ok(href.indexOf(`http://${hostname}`) === 0, `${href} does not use hostname`);
-                });
-            })
-            .finally(() => mb.stop());
+    afterEach(async function () {
+        await mb.stop();
     });
 
-    promiseIt('should work with --configfile', function () {
+    it('should allow binding to specific host', async function () {
+        await mb.start(['--host', hostname]);
+
+        const response = await mb.get('/'),
+            links = response.body._links,
+            hrefs = Object.keys(links).map(key => links[key].href);
+
+        assert.ok(hrefs.length > 0, 'no hrefs to test');
+        hrefs.forEach(href => {
+            assert.ok(href.indexOf(`http://${hostname}`) === 0, `${href} does not use hostname`);
+        });
+    });
+
+    it('should work with --configfile', async function () {
         const args = ['--host', hostname, '--configfile', path.join(__dirname, 'noparse.json'), '--noParse'];
+        await mb.start(args);
 
-        return mb.start(args)
-            .then(() => http.responseFor({ method: 'GET', path: '/', hostname, port: 4545 }))
-            .then(response => {
-                assert.strictEqual(response.body, '<% should not render through ejs');
-            })
-            .finally(() => mb.stop());
+        const response = await http.responseFor({ method: 'GET', path: '/', hostname, port: 4545 });
+
+        assert.strictEqual(response.body, '<% should not render through ejs');
     });
 
-    promiseIt('should work with mb save', function () {
+    it('should work with mb save', async function () {
         const imposters = { imposters: [{ protocol: 'http', port: 3000, recordRequests: false, stubs: [] }] };
+        await mb.start(['--host', hostname]);
+        await mb.put('/imposters', imposters);
 
-        return mb.start(['--host', hostname])
-            .then(() => mb.put('/imposters', imposters))
-            .then(response => {
-                assert.strictEqual(response.statusCode, 200);
-                return mb.save(['--host', hostname]);
-            })
-            .then(() => {
-                assert.ok(fs.existsSync('mb.json'));
-                assert.deepEqual(JSON.parse(fs.readFileSync('mb.json')), imposters);
-                fs.unlinkSync('mb.json');
-            })
-            .finally(() => mb.stop());
+        await mb.save(['--host', hostname]);
+
+        try {
+            assert.ok(fs.existsSync('mb.json'));
+            assert.deepEqual(JSON.parse(fs.readFileSync('mb.json')), imposters);
+        }
+        finally {
+            fs.unlinkSync('mb.json');
+        }
     });
 
-    promiseIt('should work with mb replay', function () {
+    it('should work with mb replay', async function () {
         const originServerPort = mb.port + 1,
             originServerStub = { responses: [{ is: { body: 'ORIGIN' } }] },
             originServerRequest = { protocol: 'http', port: originServerPort, stubs: [originServerStub] },
@@ -66,114 +65,100 @@ describe('--host', function () {
             proxyDefinition = { to: `http://${hostname}:${originServerPort}`, mode: 'proxyAlways' },
             proxyStub = { responses: [{ proxy: proxyDefinition }] },
             proxyRequest = { protocol: 'http', port: proxyPort, stubs: [proxyStub] };
+        await mb.start(['--host', hostname]);
+        await mb.put('/imposters', { imposters: [originServerRequest, proxyRequest] });
 
-        return mb.start(['--host', hostname])
-            .then(() => mb.put('/imposters', { imposters: [originServerRequest, proxyRequest] }))
-            .then(response => {
-                assert.strictEqual(response.statusCode, 200, JSON.stringify(response.body));
-                return http.responseFor({ method: 'GET', path: '/', hostname, port: proxyPort });
-            })
-            .then(() => mb.replay(['--host', hostname]))
-            .then(() => mb.get('/imposters?replayable=true'))
-            .then(response => {
-                const imposters = response.body.imposters,
-                    oldProxyImposter = imposters.find(imposter => imposter.port === proxyPort),
-                    responses = oldProxyImposter.stubs[0].responses;
-                assert.strictEqual(responses.length, 1);
-                assert.strictEqual(responses[0].is.body, 'ORIGIN');
-            })
-            .finally(() => mb.stop());
+        await http.responseFor({ method: 'GET', path: '/', hostname, port: proxyPort });
+        await mb.replay(['--host', hostname]);
+        const response = await mb.get('/imposters?replayable=true'),
+            imposters = response.body.imposters,
+            oldProxyImposter = imposters.find(imposter => imposter.port === proxyPort),
+            responses = oldProxyImposter.stubs[0].responses;
+
+        assert.strictEqual(responses.length, 1);
+        assert.strictEqual(responses[0].is.body, 'ORIGIN');
     });
 
     // Travis adds hostname into /etc/hosts file
     if (process.env.TRAVIS !== 'true') {
-        promiseIt('should disallow localhost calls when bound to specific host', function () {
-            return mb.start(['--host', hostname])
-                .then(() => http.responseFor({ method: 'GET', path: '/', hostname: 'localhost', port: mb.port }))
-                .then(
-                    () => { assert.fail(`should not have connected (hostname: ${hostname})`); },
-                    error => { assert.strictEqual(error.code, 'ECONNREFUSED'); })
-                .finally(() => mb.stop());
+        it('should disallow localhost calls when bound to specific host', async function () {
+            await mb.start(['--host', hostname]);
+
+            try {
+                await http.responseFor({ method: 'GET', path: '/', hostname: 'localhost', port: mb.port });
+                assert.fail(`should not have connected (hostname: ${hostname})`);
+            }
+            catch (error) {
+                assert.strictEqual(error.code, 'ECONNREFUSED');
+            }
         });
 
-        promiseIt('should bind http imposter to provided host', function () {
+        it('should bind http imposter to provided host', async function () {
             const imposter = { protocol: 'http', port: mb.port + 1 };
+            await mb.start(['--host', hostname]);
+            await mb.post('/imposters', imposter);
 
-            return mb.start(['--host', hostname])
-                .then(() => mb.post('/imposters', imposter))
-                .then(response => {
-                    assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body, null, 2));
-                    return http.responseFor({
-                        method: 'GET',
-                        path: '/',
-                        hostname: hostname,
-                        port: imposter.port
-                    });
-                })
-                .then(response => {
-                    assert.strictEqual(response.statusCode, 200);
+            const hostCall = await http.responseFor({
+                method: 'GET',
+                path: '/',
+                hostname: hostname,
+                port: imposter.port
+            });
+            assert.strictEqual(hostCall.statusCode, 200);
 
-                    return http.responseFor({
-                        method: 'GET',
-                        path: '/',
-                        hostname: 'localhost',
-                        port: imposter.port
-                    });
-                })
-                .then(
-                    () => {
-                        assert.fail('should not have connected to localhost');
-                    },
-                    error => {
-                        assert.strictEqual(error.code, 'ECONNREFUSED');
-                    }
-                )
-                .finally(() => mb.stop());
+            try {
+                await http.responseFor({
+                    method: 'GET',
+                    path: '/',
+                    hostname: 'localhost',
+                    port: imposter.port
+                });
+                assert.fail('should not have connected to localhost');
+            }
+            catch (error) {
+                assert.strictEqual(error.code, 'ECONNREFUSED');
+            }
         });
 
-        promiseIt('should bind tcp imposter to provided host', function () {
+        it('should bind tcp imposter to provided host', async function () {
             const imposter = {
                     protocol: 'tcp',
                     port: mb.port + 1,
                     stubs: [{ responses: [{ is: { data: 'OK' } }] }]
                 },
                 client = require('../api/tcp/tcpClient');
+            await mb.start(['--host', hostname]);
+            await mb.post('/imposters', imposter);
 
-            return mb.start(['--host', hostname])
-                .then(() => mb.post('/imposters', imposter))
-                .then(response => {
-                    assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body, null, 2));
-                    return client.send('TEST', imposter.port, 0, hostname);
-                })
-                .then(response => {
-                    assert.strictEqual(response.toString(), 'OK');
-                    return client.send('TEST', imposter.port, 0, 'localhost');
-                })
-                .then(
-                    () => { assert.fail('should not have connected to localhost'); },
-                    error => { assert.strictEqual(error.code, 'ECONNREFUSED'); }
-                )
-                .finally(() => mb.stop());
+            const hostCall = await client.send('TEST', imposter.port, 0, hostname);
+            assert.strictEqual(hostCall.toString(), 'OK');
+
+            try {
+                await client.send('TEST', imposter.port, 0, 'localhost');
+                assert.fail('should not have connected to localhost');
+            }
+            catch (error) {
+                assert.strictEqual(error.code, 'ECONNREFUSED');
+            }
         });
 
-        promiseIt('should bind smtp imposter to provided host', function () {
+        it('should bind smtp imposter to provided host', async function () {
             const imposter = { protocol: 'smtp', port: mb.port + 1 },
                 message = { from: '"From" <from@mb.org>', to: ['"To" <to@mb.org>'], subject: 'subject', text: 'text' },
                 client = require('../api/smtp/smtpClient');
+            await mb.start(['--host', hostname]);
+            await mb.post('/imposters', imposter);
 
-            return mb.start(['--host', hostname])
-                .then(() => mb.post('/imposters', imposter))
-                .then(response => {
-                    assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body, null, 2));
-                    return client.send(message, imposter.port, hostname);
-                })
-                .then(() => client.send(message, imposter.port, 'localhost'))
-                .then(
-                    () => { assert.fail('should not have connected to localhost'); },
-                    // ESOCKET in node v14, ECONNREFUSED before
-                    error => { assert.ok(['ECONNREFUSED', 'ESOCKET'].indexOf(error.code) >= 0); }
-                )
-                .finally(() => mb.stop());
+            await client.send(message, imposter.port, hostname);
+
+            try {
+                await client.send(message, imposter.port, 'localhost');
+                assert.fail('should not have connected to localhost');
+            }
+            catch (error) {
+                // ESOCKET in node v14, ECONNREFUSED before
+                assert.ok(['ECONNREFUSED', 'ESOCKET'].indexOf(error.code) >= 0);
+            }
         });
     }
 });

@@ -3,11 +3,9 @@
 const assert = require('assert'),
     api = require('../api').create(),
     BaseHttpClient = require('./baseHttpClient'),
-    promiseIt = require('../../testHelpers').promiseIt,
     port = api.port + 1,
     timeout = parseInt(process.env.MB_SLOW_TEST_TIMEOUT || 2000),
-    fs = require('fs'),
-    util = require('util');
+    fs = require('fs-extra');
 
 ['http', 'https'].forEach(protocol => {
     const client = BaseHttpClient.create(protocol);
@@ -15,8 +13,12 @@ const assert = require('assert'),
     describe(`${protocol} imposter`, function () {
         this.timeout(timeout);
 
+        afterEach(async function () {
+            await api.del('/imposters');
+        });
+
         describe('POST /imposters with stubs', function () {
-            promiseIt('should add latency when using behaviors.wait', function () {
+            it('should add latency when using behaviors.wait', async function () {
                 const stub = {
                         responses: [{
                             is: { body: 'stub' },
@@ -24,23 +26,18 @@ const assert = require('assert'),
                         }]
                     },
                     stubs = [stub],
-                    request = { protocol, port, stubs: stubs };
-                let timer;
+                    imposter = { protocol, port, stubs: stubs };
+                await api.createImposter(imposter);
 
-                return api.post('/imposters', request).then(response => {
-                    assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body, null, 2));
-                    timer = new Date();
-                    return client.get('/', port);
-                }).then(response => {
-                    assert.strictEqual(response.body, 'stub');
-                    const time = new Date() - timer;
+                const start = new Date(),
+                    response = await client.get('/', port),
+                    time = new Date() - start;
 
-                    // Occasionally there's some small inaccuracies
-                    assert.ok(time >= 990, `actual time: ${time}`);
-                }).finally(() => api.del('/imposters'));
+                assert.strictEqual(response.body, 'stub');
+                assert.ok(time >= 990, `actual time: ${time}`); // Occasionally there's some small inaccuracies
             });
 
-            promiseIt('should add latency when using behaviors.wait as a function', function () {
+            it('should add latency when using behaviors.wait as a function', async function () {
                 const fn = () => 1000,
                     stub = {
                         responses: [{
@@ -49,23 +46,18 @@ const assert = require('assert'),
                         }]
                     },
                     stubs = [stub],
-                    request = { protocol, port, stubs: stubs };
-                let timer;
+                    imposter = { protocol, port, stubs: stubs };
+                await api.createImposter(imposter);
 
-                return api.post('/imposters', request).then(response => {
-                    assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body, null, 2));
-                    timer = new Date();
-                    return client.get('/', port);
-                }).then(response => {
-                    assert.strictEqual(response.body, 'stub');
-                    const time = new Date() - timer;
+                const start = new Date(),
+                    response = await client.get('/', port),
+                    time = new Date() - start;
 
-                    // Occasionally there's some small inaccuracies
-                    assert.ok(time >= 990, `actual time: ${time}`);
-                }).finally(() => api.del('/imposters'));
+                assert.strictEqual(response.body, 'stub');
+                assert.ok(time >= 990, `actual time: ${time}`); // Occasionally there's some small inaccuracies
             });
 
-            promiseIt('should support post-processing when using behaviors.decorate (old interface)', function () {
+            it('should support post-processing when using behaviors.decorate (old interface)', async function () {
                 const decorator = (request, response) => {
                         response.body = response.body.replace('${YEAR}', new Date().getFullYear());
                     },
@@ -76,17 +68,15 @@ const assert = require('assert'),
                         }]
                     },
                     stubs = [stub],
-                    request = { protocol, port, stubs: stubs };
+                    imposter = { protocol, port, stubs: stubs };
+                await api.createImposter(imposter);
 
-                return api.post('/imposters', request).then(response => {
-                    assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body, null, 2));
-                    return client.get('/', port);
-                }).then(response => {
-                    assert.strictEqual(response.body, `the year is ${new Date().getFullYear()}`);
-                }).finally(() => api.del('/imposters'));
+                const response = await client.get('/', port);
+
+                assert.strictEqual(response.body, `the year is ${new Date().getFullYear()}`);
             });
 
-            promiseIt('should support post-processing when using behaviors.decorate', function () {
+            it('should support post-processing when using behaviors.decorate', async function () {
                 const decorator = config => {
                         config.response.body = config.response.body.replace('${YEAR}', new Date().getFullYear());
                     },
@@ -97,17 +87,15 @@ const assert = require('assert'),
                         }]
                     },
                     stubs = [stub],
-                    request = { protocol, port, stubs: stubs };
+                    imposter = { protocol, port, stubs: stubs };
+                await api.createImposter(imposter);
 
-                return api.post('/imposters', request).then(response => {
-                    assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body, null, 2));
-                    return client.get('/', port);
-                }).then(response => {
-                    assert.strictEqual(response.body, `the year is ${new Date().getFullYear()}`);
-                }).finally(() => api.del('/imposters'));
+                const response = await client.get('/', port);
+
+                assert.strictEqual(response.body, `the year is ${new Date().getFullYear()}`);
             });
 
-            promiseIt('should fix content-length if set and adjusted using decoration (issue #155)', function () {
+            it('should fix content-length if set and adjusted using decoration (issue #155)', async function () {
                 const decorator = (request, response) => {
                         response.body = 'length-8';
                     },
@@ -121,18 +109,16 @@ const assert = require('assert'),
                         }]
                     },
                     stubs = [stub],
-                    request = { protocol, port, stubs: stubs };
+                    imposter = { protocol, port, stubs: stubs };
+                await api.createImposter(imposter);
 
-                return api.post('/imposters', request).then(response => {
-                    assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body, null, 2));
-                    return client.get('/', port);
-                }).then(response => {
-                    assert.strictEqual(response.body, 'length-8');
-                    assert.strictEqual(response.headers['content-length'], '8');
-                }).finally(() => api.del('/imposters'));
+                const response = await client.get('/', port);
+
+                assert.strictEqual(response.body, 'length-8');
+                assert.strictEqual(response.headers['content-length'], '8');
             });
 
-            promiseIt('should support using request parameters during decorating (old interface)', function () {
+            it('should support using request parameters during decorating (old interface)', async function () {
                 const decorator = (request, response) => {
                         response.body = response.body.replace('${PATH}', request.path);
                     },
@@ -143,17 +129,15 @@ const assert = require('assert'),
                         }]
                     },
                     stubs = [stub],
-                    request = { protocol, port, stubs: stubs };
+                    imposter = { protocol, port, stubs: stubs };
+                await api.createImposter(imposter);
 
-                return api.post('/imposters', request).then(response => {
-                    assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body, null, 2));
-                    return client.get('/test', port);
-                }).then(response => {
-                    assert.strictEqual(response.body, 'the path is /test');
-                }).finally(() => api.del('/imposters'));
+                const response = await client.get('/test', port);
+
+                assert.strictEqual(response.body, 'the path is /test');
             });
 
-            promiseIt('should support using request parameters during decorating', function () {
+            it('should support using request parameters during decorating', async function () {
                 const decorator = config => {
                         config.response.body = config.response.body.replace('${PATH}', config.request.path);
                     },
@@ -164,17 +148,15 @@ const assert = require('assert'),
                         }]
                     },
                     stubs = [stub],
-                    request = { protocol, port, stubs: stubs };
+                    imposter = { protocol, port, stubs: stubs };
+                await api.createImposter(imposter);
 
-                return api.post('/imposters', request).then(response => {
-                    assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body, null, 2));
-                    return client.get('/test', port);
-                }).then(response => {
-                    assert.strictEqual(response.body, 'the path is /test');
-                }).finally(() => api.del('/imposters'));
+                const response = await client.get('/test', port);
+
+                assert.strictEqual(response.body, 'the path is /test');
             });
 
-            promiseIt('should support using request parameters during decorating multiple times (issue #173)', function () {
+            it('should support using request parameters during decorating multiple times (issue #173)', async function () {
                 const decorator = (request, response) => {
                         response.body = response.body.replace('${id}', request.query.id);
                     },
@@ -185,24 +167,20 @@ const assert = require('assert'),
                         }]
                     },
                     stubs = [stub],
-                    request = { protocol, port, stubs: stubs };
+                    imposter = { protocol, port, stubs: stubs };
+                await api.createImposter(imposter);
 
-                return api.post('/imposters', request).then(response => {
-                    assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body, null, 2));
-                    return client.get('/test?id=100', port);
-                }).then(response => {
-                    assert.strictEqual(response.body, 'request 100');
-                    return api.get(`/imposters/${port}`);
-                }).then(() => client.get('/test?id=200', port)
-                ).then(response => {
-                    assert.strictEqual(response.body, 'request 200');
-                    return client.get('/test?id=300', port);
-                }).then(response => {
-                    assert.strictEqual(response.body, 'request 300');
-                }).finally(() => api.del('/imposters'));
+                const first = await client.get('/test?id=100', port);
+                assert.strictEqual(first.body, 'request 100');
+
+                const second = await client.get('/test?id=200', port);
+                assert.strictEqual(second.body, 'request 200');
+
+                const third = await client.get('/test?id=300', port);
+                assert.strictEqual(third.body, 'request 300');
             });
 
-            promiseIt('should support decorate functions that return a value (old interface)', function () {
+            it('should support decorate functions that return a value (old interface)', async function () {
                 const decorator = (request, response) => {
                         const clonedResponse = JSON.parse(JSON.stringify(response));
                         clonedResponse.body = 'This is a clone';
@@ -215,17 +193,15 @@ const assert = require('assert'),
                         }]
                     },
                     stubs = [stub],
-                    request = { protocol, port, stubs: stubs };
+                    imposter = { protocol, port, stubs: stubs };
+                await api.createImposter(imposter);
 
-                return api.post('/imposters', request).then(response => {
-                    assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body, null, 2));
-                    return client.get('/', port);
-                }).then(response => {
-                    assert.strictEqual(response.body, 'This is a clone');
-                }).finally(() => api.del('/imposters'));
+                const response = await client.get('/', port);
+
+                assert.strictEqual(response.body, 'This is a clone');
             });
 
-            promiseIt('should support decorate functions that return a value', function () {
+            it('should support decorate functions that return a value', async function () {
                 const decorator = config => {
                         const clonedResponse = JSON.parse(JSON.stringify(config.response));
                         clonedResponse.body = 'This is a clone';
@@ -238,17 +214,15 @@ const assert = require('assert'),
                         }]
                     },
                     stubs = [stub],
-                    request = { protocol, port, stubs: stubs };
+                    imposter = { protocol, port, stubs: stubs };
+                await api.createImposter(imposter);
 
-                return api.post('/imposters', request).then(response => {
-                    assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body, null, 2));
-                    return client.get('/', port);
-                }).then(response => {
-                    assert.strictEqual(response.body, 'This is a clone');
-                }).finally(() => api.del('/imposters'));
+                const response = await client.get('/', port);
+
+                assert.strictEqual(response.body, 'This is a clone');
             });
 
-            promiseIt('should not validate the decorate JavaScript function', function () {
+            it('should not validate the decorate JavaScript function', async function () {
                 const decorator = "response.body = 'This should not work';",
                     stub = {
                         responses: [{
@@ -257,14 +231,14 @@ const assert = require('assert'),
                         }]
                     },
                     stubs = [stub],
-                    request = { protocol, port, stubs: stubs };
+                    imposter = { protocol, port, stubs: stubs };
 
-                return api.post('/imposters', request).then(response => {
-                    assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body, null, 2));
-                }).finally(() => api.del('/imposters'));
+                const response = await api.createImposter(imposter);
+
+                assert.strictEqual(response.statusCode, 201);
             });
 
-            promiseIt('should repeat if behavior set and loop around responses with same repeat behavior (issue #165)', function () {
+            it('should repeat if behavior set and loop around responses with same repeat behavior (issue #165)', async function () {
                 const stub = {
                         responses: [
                             {
@@ -282,40 +256,36 @@ const assert = require('assert'),
                             { is: { body: 'third response' } }
                         ]
                     },
-                    request = { protocol, port, stubs: [stub] };
+                    imposter = { protocol, port, stubs: [stub] };
+                await api.createImposter(imposter);
 
-                return api.post('/imposters', request).then(response => {
-                    assert.strictEqual(response.statusCode, 201, response.body);
-                    return client.get('/', port);
-                }).then(response => {
-                    assert.strictEqual(response.statusCode, 400);
-                    assert.strictEqual(response.body, 'first response');
-                    return client.get('/', port);
-                }).then(response => {
-                    assert.strictEqual(response.body, 'first response');
-                    return client.get('/', port);
-                }).then(response => {
-                    assert.strictEqual(response.body, 'second response');
-                    return client.get('/', port);
-                }).then(response => {
-                    assert.strictEqual(response.body, 'second response');
-                    return client.get('/', port);
-                }).then(response => {
-                    assert.strictEqual(response.body, 'second response');
-                    return client.get('/', port);
-                }).then(response => {
-                    assert.strictEqual(response.body, 'third response');
-                    return client.get('/', port);
-                }).then(response => {
-                    assert.strictEqual(response.body, 'first response');
-                    return client.get('/', port);
-                }).then(response => {
-                    assert.strictEqual(response.body, 'first response');
-                    return client.get('/', port);
-                }).finally(() => api.del('/imposters'));
+                const first = await client.get('/', port);
+                assert.strictEqual(first.statusCode, 400);
+                assert.strictEqual(first.body, 'first response');
+
+                const second = await client.get('/', port);
+                assert.strictEqual(second.body, 'first response');
+
+                const third = await client.get('/', port);
+                assert.strictEqual(third.body, 'second response');
+
+                const fourth = await client.get('/', port);
+                assert.strictEqual(fourth.body, 'second response');
+
+                const fifth = await client.get('/', port);
+                assert.strictEqual(fifth.body, 'second response');
+
+                const sixth = await client.get('/', port);
+                assert.strictEqual(sixth.body, 'third response');
+
+                const seventh = await client.get('/', port);
+                assert.strictEqual(seventh.body, 'first response');
+
+                const eighth = await client.get('/', port);
+                assert.strictEqual(eighth.body, 'first response');
             });
 
-            promiseIt('should repeat consistently with headers (issue #158)', function () {
+            it('should repeat consistently with headers (issue #158)', async function () {
                 const stub = {
                         responses: [
                             {
@@ -328,23 +298,20 @@ const assert = require('assert'),
                             { is: { body: 'second response' } }
                         ]
                     },
-                    request = { protocol, port, stubs: [stub] };
+                    imposter = { protocol, port, stubs: [stub] };
+                await api.createImposter(imposter);
 
-                return api.post('/imposters', request).then(response => {
-                    assert.strictEqual(response.statusCode, 201, response.body);
-                    return client.get('/', port);
-                }).then(response => {
-                    assert.deepEqual(response.body, 'first response', 'first try');
-                    return client.get('/', port);
-                }).then(response => {
-                    assert.deepEqual(response.body, 'first response', 'second try');
-                    return client.get('/', port);
-                }).then(response => {
-                    assert.deepEqual(response.body, 'second response', 'third try');
-                }).finally(() => api.del('/imposters'));
+                const first = await client.get('/', port);
+                assert.deepEqual(first.body, 'first response', 'first try');
+
+                const second = await client.get('/', port);
+                assert.deepEqual(second.body, 'first response', 'second try');
+
+                const third = await client.get('/', port);
+                assert.deepEqual(third.body, 'second response', 'third try');
             });
 
-            promiseIt('should repeat with JSON key of repeat (issue #237)', function () {
+            it('should repeat with JSON key of repeat (issue #237)', async function () {
                 const stub = {
                         responses: [
                             {
@@ -359,23 +326,20 @@ const assert = require('assert'),
                             }
                         }]
                     },
-                    request = { protocol, port, stubs: [stub] };
+                    imposter = { protocol, port, stubs: [stub] };
+                await api.createImposter(imposter);
 
-                return api.post('/imposters', request).then(response => {
-                    assert.strictEqual(response.statusCode, 201, response.body);
-                    return client.post('/', { repeat: true }, port);
-                }).then(response => {
-                    assert.deepEqual(response.body, 'This should repeat 2 times', 'first try');
-                    return client.post('/', { repeat: true }, port);
-                }).then(response => {
-                    assert.deepEqual(response.body, 'This should repeat 2 times', 'second try');
-                    return client.post('/', { repeat: true }, port);
-                }).then(response => {
-                    assert.deepEqual(response.body, 'Then you should see this', 'third try');
-                }).finally(() => api.del('/imposters'));
+                const first = await client.post('/', { repeat: true }, port);
+                assert.deepEqual(first.body, 'This should repeat 2 times', 'first try');
+
+                const second = await client.post('/', { repeat: true }, port);
+                assert.deepEqual(second.body, 'This should repeat 2 times', 'second try');
+
+                const third = await client.post('/', { repeat: true }, port);
+                assert.deepEqual(third.body, 'Then you should see this', 'third try');
             });
 
-            promiseIt('should support shell transform without array for backwards compatibility', function () {
+            it('should support shell transform without array for backwards compatibility', async function () {
                 // The string version of the shellTransform behavior is left for backwards
                 // compatibility. It changed in v1.13.0 to accept an array.
                 const stub = {
@@ -385,25 +349,24 @@ const assert = require('assert'),
                         }]
                     },
                     stubs = [stub],
-                    request = { protocol, port, stubs: stubs },
+                    imposter = { protocol, port, stubs: stubs },
                     shellFn = function exec () {
                         console.log(process.argv[3].replace('{YOU}', 'mountebank'));
                     };
+                await api.createImposter(imposter);
+                fs.writeFileSync('shellTransformTest.js', `${shellFn.toString()}\nexec();`);
 
-                fs.writeFileSync('shellTransformTest.js', util.format('%s\nexec();', shellFn.toString()));
+                try {
+                    const response = await client.get('/', port);
 
-                return api.post('/imposters', request).then(response => {
-                    assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body, null, 2));
-                    return client.get('/', port);
-                }).then(response => {
                     assert.strictEqual(response.body, 'Hello, mountebank!');
-                }).finally(() => {
+                }
+                finally {
                     fs.unlinkSync('shellTransformTest.js');
-                    return api.del('/imposters');
-                });
+                }
             });
 
-            promiseIt('should support array of shell transforms in order', function () {
+            it('should support array of shell transforms in order', async function () {
                 const stub = {
                         responses: [{
                             is: { body: 1 },
@@ -413,7 +376,7 @@ const assert = require('assert'),
                         }]
                     },
                     stubs = [stub],
-                    request = { protocol, port, stubs: stubs },
+                    imposter = { protocol, port, stubs: stubs },
                     doubleFn = function double () {
                         const response = JSON.parse(process.argv[3]);
                         response.body *= 2;
@@ -424,23 +387,22 @@ const assert = require('assert'),
                         response.body += 1;
                         console.log(JSON.stringify(response));
                     };
+                await api.createImposter(imposter);
+                fs.writeFileSync('double.js', `${doubleFn.toString()}\ndouble();`);
+                fs.writeFileSync('increment.js', `${incrementFn.toString()}\nincrement();`);
 
-                fs.writeFileSync('double.js', util.format('%s\ndouble();', doubleFn.toString()));
-                fs.writeFileSync('increment.js', util.format('%s\nincrement();', incrementFn.toString()));
+                try {
+                    const response = await client.get('/', port);
 
-                return api.post('/imposters', request).then(response => {
-                    assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body, null, 2));
-                    return client.get('/', port);
-                }).then(response => {
                     assert.strictEqual(response.body, '3');
-                }).finally(() => {
+                }
+                finally {
                     fs.unlinkSync('double.js');
                     fs.unlinkSync('increment.js');
-                    return api.del('/imposters');
-                });
+                }
             });
 
-            promiseIt('should support copying from request fields using regex', function () {
+            it('should support copying from request fields using regex', async function () {
                 const stub = {
                         responses: [{
                             is: {
@@ -475,24 +437,22 @@ const assert = require('assert'),
                             }
                         }]
                     },
-                    request = { protocol, port, stubs: [stub] };
+                    imposter = { protocol, port, stubs: [stub] };
+                await api.createImposter(imposter);
 
-                return api.post('/imposters', request).then(response => {
-                    assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body, null, 2));
-                    return client.responseFor({
-                        port,
-                        method: 'GET',
-                        headers: { 'x-request': 'header value' },
-                        path: '/400/this-will-be-ignored?body=body%20is%20HERE'
-                    });
-                }).then(response => {
-                    assert.strictEqual(response.statusCode, 400);
-                    assert.strictEqual(response.headers['x-test'], 'header value');
-                    assert.strictEqual(response.body, 'HERE');
-                }).finally(() => api.del('/imposters'));
+                const response = await client.responseFor({
+                    port,
+                    method: 'GET',
+                    headers: { 'x-request': 'header value' },
+                    path: '/400/this-will-be-ignored?body=body%20is%20HERE'
+                });
+
+                assert.strictEqual(response.statusCode, 400);
+                assert.strictEqual(response.headers['x-test'], 'header value');
+                assert.strictEqual(response.body, 'HERE');
             });
 
-            promiseIt('should support copying from request fields using xpath', function () {
+            it('should support copying from request fields using xpath', async function () {
                 const stub = {
                         responses: [{
                             is: { body: 'Hello, NAME! Good to see you, NAME.' },
@@ -509,17 +469,15 @@ const assert = require('assert'),
                             }
                         }]
                     },
-                    request = { protocol, port, stubs: [stub] };
+                    imposter = { protocol, port, stubs: [stub] };
+                await api.createImposter(imposter);
 
-                return api.post('/imposters', request).then(response => {
-                    assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body, null, 2));
-                    return client.post('/', '<doc xmlns:mb="http://example.com/mb"><mb:name>mountebank</mb:name></doc>', port);
-                }).then(response => {
-                    assert.strictEqual(response.body, 'Hello, mountebank! Good to see you, mountebank.');
-                }).finally(() => api.del('/imposters'));
+                const response = await client.post('/', '<doc xmlns:mb="http://example.com/mb"><mb:name>mountebank</mb:name></doc>', port);
+
+                assert.strictEqual(response.body, 'Hello, mountebank! Good to see you, mountebank.');
             });
 
-            promiseIt('should support copying from request fields using jsonpath', function () {
+            it('should support copying from request fields using jsonpath', async function () {
                 const stub = {
                         responses: [{
                             is: { body: 'Hello, NAME! Good to see you, NAME.' },
@@ -532,17 +490,15 @@ const assert = require('assert'),
                             }
                         }]
                     },
-                    request = { protocol, port, stubs: [stub] };
+                    imposter = { protocol, port, stubs: [stub] };
+                await api.createImposter(imposter);
 
-                return api.post('/imposters', request).then(response => {
-                    assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body, null, 2));
-                    return client.post('/', JSON.stringify({ name: 'mountebank' }), port);
-                }).then(response => {
-                    assert.strictEqual(response.body, 'Hello, mountebank! Good to see you, mountebank.');
-                }).finally(() => api.del('/imposters'));
+                const response = await client.post('/', JSON.stringify({ name: 'mountebank' }), port);
+
+                assert.strictEqual(response.body, 'Hello, mountebank! Good to see you, mountebank.');
             });
 
-            promiseIt('should support lookup from CSV file keyed by regex', function () {
+            it('should support lookup from CSV file keyed by regex', async function () {
                 const stub = {
                         responses: [{
                             is: {
@@ -568,33 +524,32 @@ const assert = require('assert'),
                             }
                         }]
                     },
-                    request = { protocol, port, stubs: [stub] };
-
+                    imposter = { protocol, port, stubs: [stub] };
+                await api.createImposter(imposter);
                 fs.writeFileSync('lookupTest.csv',
                     'name,code,occupation,location\n' +
                     'mountebank,400,tester,worldwide\n' +
                     'Brandon,404,mountebank,Dallas\n' +
                     'Bob Barker,500,"The Price Is Right","Darrington, Washington"');
 
-                return api.post('/imposters', request).then(response => {
-                    assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body, null, 2));
-                    return client.responseFor({
+                try {
+                    const response = await client.responseFor({
                         port,
                         method: 'GET',
                         headers: { 'x-bob': 'The Price Is Right' },
                         path: '/mountebank'
                     });
-                }).then(response => {
+
                     assert.strictEqual(response.statusCode, 400);
                     assert.strictEqual(response.headers['x-occupation'], 'tester');
                     assert.strictEqual(response.body, 'Hello mountebank. Have you been to Darrington, Washington?');
-                }).finally(() => {
+                }
+                finally {
                     fs.unlinkSync('lookupTest.csv');
-                    return api.del('/imposters');
-                });
+                }
             });
 
-            promiseIt('should support lookup from CSV file keyed by xpath', function () {
+            it('should support lookup from CSV file keyed by xpath', async function () {
                 const stub = {
                         responses: [{
                             is: { body: "Hello, YOU[name]! How is YOU['location'] today?" },
@@ -614,26 +569,25 @@ const assert = require('assert'),
                             }
                         }]
                     },
-                    request = { protocol, port, stubs: [stub] };
-
+                    imposter = { protocol, port, stubs: [stub] };
+                await api.createImposter(imposter);
                 fs.writeFileSync('lookupTest.csv',
                     'name,occupation,location\n' +
                     'mountebank,tester,worldwide\n' +
                     'Brandon,mountebank,Dallas\n' +
                     'Bob Barker,"The Price Is Right","Darrington, Washington"');
 
-                return api.post('/imposters', request).then(response => {
-                    assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body, null, 2));
-                    return client.post('/', '<doc xmlns:mb="http://example.com/mb"><mb:name>mountebank</mb:name></doc>', port);
-                }).then(response => {
+                try {
+                    const response = await client.post('/', '<doc xmlns:mb="http://example.com/mb"><mb:name>mountebank</mb:name></doc>', port);
+
                     assert.strictEqual(response.body, 'Hello, Brandon! How is Dallas today?');
-                }).finally(() => {
+                }
+                finally {
                     fs.unlinkSync('lookupTest.csv');
-                    return api.del('/imposters');
-                });
+                }
             });
 
-            promiseIt('should support lookup from CSV file keyed by jsonpath', function () {
+            it('should support lookup from CSV file keyed by jsonpath', async function () {
                 const stub = {
                         responses: [{
                             is: { body: 'Hello, YOU["name"]! How is YOU[location] today?' },
@@ -646,26 +600,25 @@ const assert = require('assert'),
                             }
                         }]
                     },
-                    request = { protocol, port, stubs: [stub] };
-
+                    imposter = { protocol, port, stubs: [stub] };
+                await api.createImposter(imposter);
                 fs.writeFileSync('lookupTest.csv',
                     'name,occupation,location\n' +
                     'mountebank,tester,worldwide\n' +
                     'Brandon,mountebank,Dallas\n' +
                     'Bob Barker,"The Price Is Right","Darrington, Washington"');
 
-                return api.post('/imposters', request).then(response => {
-                    assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body, null, 2));
-                    return client.post('/', JSON.stringify({ occupation: 'mountebank' }), port);
-                }).then(response => {
+                try {
+                    const response = await client.post('/', JSON.stringify({ occupation: 'mountebank' }), port);
+
                     assert.strictEqual(response.body, 'Hello, Brandon! How is Dallas today?');
-                }).finally(() => {
+                }
+                finally {
                     fs.unlinkSync('lookupTest.csv');
-                    return api.del('/imposters');
-                });
+                }
             });
 
-            promiseIt('should compose multiple behaviors together (old interface for backwards compatibility)', function () {
+            it('should compose multiple behaviors together (old interface for backwards compatibility)', async function () {
                 const shellFn = function exec () {
                         console.log(process.argv[3].replace('${SALUTATION}', 'Hello'));
                     },
@@ -694,33 +647,32 @@ const assert = require('assert'),
                         ]
                     },
                     stubs = [stub],
-                    request = { protocol, port, stubs: stubs },
-                    timer = new Date();
+                    imposter = { protocol, port, stubs: stubs };
+                await api.createImposter(imposter);
+                fs.writeFileSync('shellTransformTest.js', `${shellFn.toString()}\nexec();`);
 
-                fs.writeFileSync('shellTransformTest.js', util.format('%s\nexec();', shellFn.toString()));
+                try {
+                    const firstStart = new Date(),
+                        firstResponse = await client.get('/?punctuation=!', port),
+                        firstTime = new Date() - firstStart;
+                    assert.strictEqual(firstResponse.body, 'Hello, mountebank!');
+                    assert.ok(firstTime >= 250, `actual time: ${firstTime}`);
 
-                return api.post('/imposters', request).then(response => {
-                    assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body, null, 2));
-                    return client.get('/?punctuation=!', port);
-                }).then(response => {
-                    const time = new Date() - timer;
-                    assert.strictEqual(response.body, 'Hello, mountebank!');
-                    assert.ok(time >= 250, `actual time: ${time}`);
-                    return client.get('/?punctuation=!', port);
-                }).then(response => {
-                    const time = new Date() - timer;
-                    assert.strictEqual(response.body, 'Hello, mountebank!');
-                    assert.ok(time >= 250, `actual time: ${time}`);
-                    return client.get('/?punctuation=!', port);
-                }).then(response => {
-                    assert.strictEqual(response.body, 'No behaviors');
-                }).finally(() => {
+                    const secondStart = new Date(),
+                        secondResponse = await client.get('/?punctuation=!', port),
+                        secondTime = new Date() - secondStart;
+                    assert.strictEqual(secondResponse.body, 'Hello, mountebank!');
+                    assert.ok(secondTime >= 250, `actual time: ${secondTime}`);
+
+                    const thirdResponse = await client.get('/?punctuation=!', port);
+                    assert.strictEqual(thirdResponse.body, 'No behaviors');
+                }
+                finally {
                     fs.unlinkSync('shellTransformTest.js');
-                    return api.del('/imposters');
-                });
+                }
             });
 
-            promiseIt('should apply behaviors in sequence', function () {
+            it('should apply behaviors in sequence', async function () {
                 const first = config => {
                         config.response.body += '1';
                     },
@@ -743,19 +695,15 @@ const assert = require('assert'),
                         ]
                     },
                     stubs = [stub],
-                    request = { protocol, port, stubs: stubs };
+                    imposter = { protocol, port, stubs: stubs };
+                await api.createImposter(imposter);
 
-                return api.post('/imposters', request).then(response => {
-                    assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body, null, 2));
-                    return client.get('/', port);
-                }).then(response => {
-                    assert.strictEqual(response.body, '132');
-                }).finally(() => {
-                    return api.del('/imposters');
-                });
+                const response = await client.get('/', port);
+
+                assert.strictEqual(response.body, '132');
             });
 
-            promiseIt('should apply multiple behaviors in sequence with repeat (new format)', function () {
+            it('should apply multiple behaviors in sequence with repeat (new format)', async function () {
                 const shellFn = function exec () {
                         const response = JSON.parse(process.env.MB_RESPONSE);
                         response.body += '-shellTransform';
@@ -790,31 +738,26 @@ const assert = require('assert'),
                         ]
                     },
                     stubs = [stub],
-                    request = { protocol, port, stubs: stubs };
-                let start;
+                    imposter = { protocol, port, stubs: stubs };
+                await api.createImposter(imposter);
+                fs.writeFileSync('shellTransformTest.js', `${shellFn.toString()}\nexec();`);
 
-                fs.writeFileSync('shellTransformTest.js', util.format('%s\nexec();', shellFn.toString()));
+                try {
+                    const start = new Date(),
+                        first = await client.get('/first', port),
+                        time = new Date() - start;
+                    assert.strictEqual(first.body, '-/first-shellTransform-${decorate}');
+                    assert.ok(time >= 220, `actual time: ${time}`); // Occasionally there's some small inaccuracies
 
-                return api.post('/imposters', request).then(response => {
-                    assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body, null, 2));
-                    start = new Date();
-                    return client.get('/first', port);
-                }).then(response => {
-                    assert.strictEqual(response.body, '-/first-shellTransform-${decorate}');
-                    const time = new Date() - start;
+                    const second = await client.get('/second', port);
+                    assert.strictEqual(second.body, '-/second-shellTransform-${decorate}');
 
-                    // Occasionally there's some small inaccuracies
-                    assert.ok(time >= 220, `actual time: ${time}`);
-                    return client.get('/second', port);
-                }).then(response => {
-                    assert.strictEqual(response.body, '-/second-shellTransform-${decorate}');
-                    return client.get('/third', port);
-                }).then(response => {
-                    assert.strictEqual(response.body, 'no behaviors');
-                }).finally(() => {
+                    const third = await client.get('/third', port);
+                    assert.strictEqual(third.body, 'no behaviors');
+                }
+                finally {
                     fs.unlinkSync('shellTransformTest.js');
-                    return api.del('/imposters');
-                });
+                }
             });
         });
     });

@@ -1,7 +1,6 @@
 'use strict';
 
-const Q = require('q'),
-    helpers = require('../../../src/util/helpers');
+const helpers = require('../../../src/util/helpers');
 
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 
@@ -19,9 +18,8 @@ function create (protocol) {
         return helpers.merge(defaults, spec);
     }
 
-    function responseFor (spec) {
-        const deferred = Q.defer(),
-            options = optionsFor(spec);
+    async function responseFor (spec) {
+        const options = optionsFor(spec);
 
         if (!options.port) {
             throw Error('silly rabbit, you forgot to pass the port again');
@@ -32,39 +30,41 @@ function create (protocol) {
         }
 
         options.agent = agent;
-        const request = driver.request(options, response => {
-            const packets = [];
 
-            response.on('data', chunk => packets.push(chunk));
+        return new Promise((resolve, reject) => {
+            const request = driver.request(options, response => {
+                const packets = [];
 
-            response.on('end', () => {
-                const buffer = Buffer.concat(packets),
-                    contentType = response.headers['content-type'] || '';
+                response.on('data', chunk => packets.push(chunk));
 
-                response.body = spec.mode === 'binary' ? buffer : buffer.toString('utf8');
+                response.on('end', () => {
+                    const buffer = Buffer.concat(packets),
+                        contentType = response.headers['content-type'] || '';
 
-                if (contentType.indexOf('application/json') === 0) {
-                    response.body = JSON.parse(response.body);
-                }
-                deferred.resolve(response);
+                    response.body = spec.mode === 'binary' ? buffer : buffer.toString('utf8');
+
+                    if (contentType.indexOf('application/json') === 0) {
+                        response.body = JSON.parse(response.body);
+                    }
+                    resolve(response);
+                });
             });
+
+            request.on('error', reject);
+
+            if (spec.body) {
+                if (spec.mode === 'binary') {
+                    request.write(spec.body);
+                }
+                else if (typeof spec.body === 'object') {
+                    request.write(JSON.stringify(spec.body));
+                }
+                else {
+                    request.write(spec.body);
+                }
+            }
+            request.end();
         });
-
-        request.on('error', deferred.reject);
-
-        if (spec.body) {
-            if (spec.mode === 'binary') {
-                request.write(spec.body);
-            }
-            else if (typeof spec.body === 'object') {
-                request.write(JSON.stringify(spec.body));
-            }
-            else {
-                request.write(spec.body);
-            }
-        }
-        request.end();
-        return deferred.promise;
     }
 
     function get (path, port) { return responseFor({ method: 'GET', path, port }); }

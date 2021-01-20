@@ -1,7 +1,6 @@
 'use strict';
 
-const Q = require('q'),
-    util = require('util'),
+const util = require('util'),
     httpClient = require('../../../api/http/baseHttpClient').create('http');
 
 function parseHeader (line) {
@@ -83,15 +82,10 @@ function format (response) {
     return result;
 }
 
-function runStep (spec) {
-    const deferred = Q.defer(),
-        requestSpec = parse(spec.requestText);
-
-    httpClient.responseFor(requestSpec).done(response => {
-        deferred.resolve(format(response));
-    });
-
-    return deferred.promise;
+async function runStep (spec) {
+    const requestSpec = parse(spec.requestText),
+        response = await httpClient.responseFor(requestSpec);
+    return format(response);
 }
 
 module.exports = { runStep };

@@ -3,7 +3,6 @@
 const assert = require('assert'),
     TcpProxy = require('../../../src/models/tcp/tcpProxy'),
     api = require('../api').create(),
-    promiseIt = require('../../testHelpers').promiseIt,
     port = api.port + 1,
     isWindows = require('os').platform().indexOf('win') === 0,
     net = require('net'),
@@ -13,35 +12,35 @@ const assert = require('assert'),
 describe('tcp proxy', function () {
     this.timeout(timeout);
 
+    afterEach(async function () {
+        await api.del('/imposters');
+    });
+
     const noOp = () => {},
         logger = { debug: noOp, info: noOp, warn: noOp, error: noOp };
 
     describe('#to', function () {
-        promiseIt('should send same request information to proxied socket', function () {
+        it('should send same request information to proxied socket', async function () {
             const stub = { responses: [{ is: { data: 'howdy!' } }] },
                 request = { protocol: 'tcp', port, stubs: [stub] },
                 proxy = TcpProxy.create(logger, 'utf8');
+            await api.createImposter(request);
 
-            return api.post('/imposters', request)
-                .then(() => proxy.to(`tcp://localhost:${port}`, { data: 'hello, world!' }))
-                .then(response => {
-                    assert.deepEqual(response.data.toString(), 'howdy!');
-                })
-                .finally(() => api.del('/imposters'));
+            const response = await proxy.to(`tcp://localhost:${port}`, { data: 'hello, world!' });
+
+            assert.deepEqual(response.data.toString(), 'howdy!');
         });
 
-        promiseIt('should proxy binary data', function () {
+        it('should proxy binary data', async function () {
             const buffer = Buffer.from([0, 1, 2, 3]),
                 stub = { responses: [{ is: { data: buffer.toString('base64') } }] },
                 request = { protocol: 'tcp', port, stubs: [stub], mode: 'binary' },
                 proxy = TcpProxy.create(logger, 'base64');
+            await api.createImposter(request);
 
-            return api.post('/imposters', request)
-                .then(() => proxy.to(`tcp://localhost:${port}`, { data: buffer }))
-                .then(response => {
-                    assert.deepEqual(Buffer.from(response.data, 'base64').toJSON().data, [0, 1, 2, 3]);
-                })
-                .finally(() => api.del('/imposters'));
+            const response = await proxy.to(`tcp://localhost:${port}`, { data: buffer });
+
+            assert.deepEqual(Buffer.from(response.data, 'base64').toJSON().data, [0, 1, 2, 3]);
         });
 
         it('should obey endOfRequestResolver', async function () {

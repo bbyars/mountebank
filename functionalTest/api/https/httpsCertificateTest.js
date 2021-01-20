@@ -2,10 +2,9 @@
 
 const assert = require('assert'),
     api = require('../api').create(),
-    promiseIt = require('../../testHelpers').promiseIt,
     port = api.port + 1,
     timeout = parseInt(process.env.MB_SLOW_TEST_TIMEOUT || 4000),
-    fs = require('fs'),
+    fs = require('fs-extra'),
     path = require('path'),
     client = require('../http/baseHttpClient').create('https'),
     key = fs.readFileSync(path.join(__dirname, '/cert/key.pem'), 'utf8'),
@@ -16,7 +15,11 @@ const assert = require('assert'),
 describe('https imposter', function () {
     this.timeout(timeout);
 
-    promiseIt('should support sending key/cert pair during imposter creation', function () {
+    afterEach(async function () {
+        await api.del('/imposters');
+    });
+
+    it('should support sending key/cert pair during imposter creation', async function () {
         const request = {
             protocol: 'https',
             port,
@@ -24,49 +27,43 @@ describe('https imposter', function () {
             cert
         };
 
-        return api.post('/imposters', request).then(response => {
-            assert.strictEqual(response.statusCode, 201);
-            assert.strictEqual(response.body.key, key);
-            assert.strictEqual(response.body.cert, cert);
-            return client.get('/', port);
-        }).then(response => {
-            assert.strictEqual(response.statusCode, 200);
-        }).finally(() => api.del('/imposters'));
+        const creationResponse = await api.createImposter(request);
+        assert.strictEqual(creationResponse.body.key, key);
+        assert.strictEqual(creationResponse.body.cert, cert);
+
+        const response = await client.get('/', port);
+        assert.strictEqual(response.statusCode, 200);
     });
 
-    promiseIt('should default key/cert pair during imposter creation if not provided', function () {
+    it('should default key/cert pair during imposter creation if not provided', async function () {
         const request = { protocol: 'https', port };
 
-        return api.post('/imposters', request).then(response => {
-            assert.strictEqual(response.statusCode, 201);
-            assert.strictEqual(response.body.key, defaultKey);
-            assert.strictEqual(response.body.cert, defaultCert);
-            return client.get('/', port);
-        }).then(response => {
-            assert.strictEqual(response.statusCode, 200);
-        }).finally(() => api.del('/imposters'));
+        const creationResponse = await api.createImposter(request);
+        assert.strictEqual(creationResponse.body.key, defaultKey);
+        assert.strictEqual(creationResponse.body.cert, defaultCert);
+
+        const response = await client.get('/', port);
+        assert.strictEqual(response.statusCode, 200);
     });
 
-    promiseIt('should work with mutual auth', function () {
+    it('should work with mutual auth', async function () {
         const request = { protocol: 'https', port, mutualAuth: true };
 
-        return api.post('/imposters', request).then(response => {
-            assert.strictEqual(response.statusCode, 201);
-            assert.strictEqual(response.body.mutualAuth, true);
-            return client.responseFor({
-                method: 'GET',
-                path: '/',
-                port,
-                agent: false,
-                key,
-                cert
-            });
-        }).then(response => {
-            assert.strictEqual(response.statusCode, 200);
-        }).finally(() => api.del('/imposters'));
+        const creationResponse = await api.createImposter(request);
+        assert.strictEqual(creationResponse.body.mutualAuth, true);
+
+        const response = await client.responseFor({
+            method: 'GET',
+            path: '/',
+            port,
+            agent: false,
+            key,
+            cert
+        });
+        assert.strictEqual(response.statusCode, 200);
     });
 
-    promiseIt('should support proxying to origin server requiring mutual auth', function () {
+    it('should support proxying to origin server requiring mutual auth', async function () {
         const originServerPort = port + 1,
             originServerRequest = {
                 protocol: 'https',
@@ -86,15 +83,11 @@ describe('https imposter', function () {
                 stubs: [{ responses: [{ proxy: proxy }] }],
                 name: 'proxy'
             };
+        await api.createImposter(originServerRequest);
+        await api.createImposter(proxyRequest);
 
-        return api.post('/imposters', originServerRequest).then(response => {
-            assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body, null, 2));
-            return api.post('/imposters', proxyRequest);
-        }).then(response => {
-            assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body, null, 2));
-            return client.get('/', port);
-        }).then(response => {
-            assert.strictEqual(response.body, 'origin server');
-        }).finally(() => api.del('/imposters'));
+        const response = await client.get('/', port);
+
+        assert.strictEqual(response.body, 'origin server');
     });
 });

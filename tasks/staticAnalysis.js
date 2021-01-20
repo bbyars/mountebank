@@ -51,7 +51,7 @@ module.exports = function (grunt) {
                     }));
                 });
             },
-            exclusions = ['node_modules', 'dist', 'staticAnalysis.js', 'testHelpers.js', '*.pid', 'jquery', 'docs', '*.csv'];
+            exclusions = ['node_modules', 'dist', 'staticAnalysis.js', '*.pid', 'jquery', 'docs', '*.csv'];
 
         forEachFileIn('.', check, { exclude: exclusions, filetype: '.js' });
 

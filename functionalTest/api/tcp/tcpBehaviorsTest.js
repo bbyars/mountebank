@@ -2,7 +2,6 @@
 
 const assert = require('assert'),
     api = require('../api').create(),
-    promiseIt = require('../../testHelpers').promiseIt,
     port = api.port + 1,
     timeout = parseInt(process.env.MB_SLOW_TEST_TIMEOUT || 2000),
     tcp = require('./tcpClient'),
@@ -12,8 +11,12 @@ const assert = require('assert'),
 describe('tcp imposter', function () {
     this.timeout(timeout);
 
+    afterEach(async function () {
+        await api.del('/imposters');
+    });
+
     describe('POST /imposters with stubs', function () {
-        promiseIt('should support decorating response from origin server', function () {
+        it('should support decorating response from origin server', async function () {
             const originServerPort = port + 1,
                 originServerStub = { responses: [{ is: { data: 'ORIGIN' } }] },
                 originServerRequest = {
@@ -31,17 +34,15 @@ describe('tcp imposter', function () {
                 },
                 proxyStub = { responses: [proxyResponse] },
                 proxyRequest = { protocol: 'tcp', port, stubs: [proxyStub], name: 'PROXY' };
+            await api.createImposter(originServerRequest);
+            await api.createImposter(proxyRequest);
 
-            return api.post('/imposters', originServerRequest)
-                .then(() => api.post('/imposters', proxyRequest))
-                .then(() => tcp.send('request', port))
-                .then(response => {
-                    assert.strictEqual(response.toString(), 'ORIGIN DECORATED');
-                })
-                .finally(() => api.del('/imposters'));
+            const response = await tcp.send('request', port);
+
+            assert.strictEqual(response.toString(), 'ORIGIN DECORATED');
         });
 
-        promiseIt('should compose multiple behaviors together', function () {
+        it('should compose multiple behaviors together', async function () {
             const shellFn = function exec () {
                     console.log(process.argv[3].replace('${SALUTATION}', 'Hello'));
                 },
@@ -70,30 +71,29 @@ describe('tcp imposter', function () {
                     ]
                 },
                 stubs = [stub],
-                request = { protocol: 'tcp', port, stubs: stubs },
-                timer = new Date();
-
+                request = { protocol: 'tcp', port, stubs: stubs };
+            await api.createImposter(request);
             fs.writeFileSync('shellTransformTest.js', util.format('%s\nexec();', shellFn.toString()));
 
-            return api.post('/imposters', request).then(response => {
-                assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body, null, 2));
-                return tcp.send('!', port);
-            }).then(response => {
-                const time = new Date() - timer;
-                assert.strictEqual(response.toString(), 'Hello, mountebank!');
-                assert.ok(time >= 250, 'actual time: ' + time);
-                return tcp.send('!', port);
-            }).then(response => {
-                const time = new Date() - timer;
-                assert.strictEqual(response.toString(), 'Hello, mountebank!');
-                assert.ok(time >= 250, 'actual time: ' + time);
-                return tcp.send('!', port);
-            }).then(response => {
-                assert.strictEqual(response.toString(), 'No behaviors');
-            }).finally(() => {
+            try {
+                const firstStart = new Date(),
+                    firstResponse = await tcp.send('!', port),
+                    firstTime = new Date() - firstStart;
+                assert.strictEqual(firstResponse.toString(), 'Hello, mountebank!');
+                assert.ok(firstTime >= 250, 'actual time: ' + firstTime);
+
+                const secondStart = new Date(),
+                    secondResponse = await tcp.send('!', port),
+                    secondTime = new Date() - secondStart;
+                assert.strictEqual(secondResponse.toString(), 'Hello, mountebank!');
+                assert.ok(secondTime >= 250, 'actual time: ' + secondTime);
+
+                const third = await tcp.send('!', port);
+                assert.strictEqual(third.toString(), 'No behaviors');
+            }
+            finally {
                 fs.unlinkSync('shellTransformTest.js');
-                return api.del('/imposters');
-            });
+            }
         });
     });
 });

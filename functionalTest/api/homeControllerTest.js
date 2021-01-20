@@ -1,25 +1,21 @@
 'use strict';
 
 const assert = require('assert'),
-    api = require('./api').create(),
-    promiseIt = require('../testHelpers').promiseIt;
+    api = require('./api').create();
 
 describe('GET /', function () {
-    promiseIt('should return correct hypermedia', function () {
-        let links;
+    it('should return correct hypermedia', async function () {
+        const homeResponse = await api.get('/');
+        assert.strictEqual(homeResponse.statusCode, 200);
 
-        return api.get('/').then(response => {
-            assert.strictEqual(response.statusCode, 200);
-            links = response.body._links;
-            return api.get(links.imposters.href);
-        }).then(response => {
-            assert.strictEqual(response.statusCode, 200);
-            return api.get(links.config.href);
-        }).then(response => {
-            assert.strictEqual(response.statusCode, 200);
-            return api.get(links.logs.href);
-        }).then(response => {
-            assert.strictEqual(response.statusCode, 200);
-        });
+        const links = homeResponse.body._links,
+            impostersResponse = await api.get(links.imposters.href);
+        assert.strictEqual(impostersResponse.statusCode, 200);
+
+        const configResponse = await api.get(links.config.href);
+        assert.strictEqual(configResponse.statusCode, 200);
+
+        const logsResponse = await api.get(links.logs.href);
+        assert.strictEqual(logsResponse.statusCode, 200);
     });
 });

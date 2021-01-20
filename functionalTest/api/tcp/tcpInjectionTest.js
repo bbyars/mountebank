@@ -3,73 +3,66 @@
 const assert = require('assert'),
     api = require('../api').create(),
     tcp = require('./tcpClient'),
-    promiseIt = require('../../testHelpers').promiseIt,
     port = api.port + 1,
     timeout = parseInt(process.env.MB_SLOW_TEST_TIMEOUT || 4000);
 
 describe('tcp imposter', function () {
     this.timeout(timeout);
 
+    afterEach(async function () {
+        await api.del('/imposters');
+    });
+
     describe('POST /imposters with injections', function () {
-        promiseIt('should allow javascript predicate for matching (old interface)', function () {
+        it('should allow javascript predicate for matching (old interface)', async function () {
             const fn = request => request.data.toString() === 'test',
                 stub = {
                     predicates: [{ inject: fn.toString() }],
                     responses: [{ is: { data: 'MATCHED' } }]
                 };
+            await api.createImposter({ protocol: 'tcp', port, stubs: [stub] });
 
-            return api.post('/imposters', { protocol: 'tcp', port, stubs: [stub] }).then(response => {
-                assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body));
+            const response = await tcp.send('test', port);
 
-                return tcp.send('test', port);
-            }).then(response => {
-                assert.strictEqual(response.toString(), 'MATCHED');
-            }).finally(() => api.del('/imposters'));
+            assert.strictEqual(response.toString(), 'MATCHED');
         });
 
-        promiseIt('should allow javascript predicate for matching', function () {
+        it('should allow javascript predicate for matching', async function () {
             const fn = config => config.request.data.toString() === 'test',
                 stub = {
                     predicates: [{ inject: fn.toString() }],
                     responses: [{ is: { data: 'MATCHED' } }]
                 };
+            await api.createImposter({ protocol: 'tcp', port, stubs: [stub] });
 
-            return api.post('/imposters', { protocol: 'tcp', port, stubs: [stub] }).then(response => {
-                assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body));
+            const response = await tcp.send('test', port);
 
-                return tcp.send('test', port);
-            }).then(response => {
-                assert.strictEqual(response.toString(), 'MATCHED');
-            }).finally(() => api.del('/imposters'));
+            assert.strictEqual(response.toString(), 'MATCHED');
         });
 
-        promiseIt('should allow synchronous javascript injection for responses (old interface)', function () {
+        it('should allow synchronous javascript injection for responses (old interface)', async function () {
             const fn = request => ({ data: `${request.data} INJECTED` }),
                 stub = { responses: [{ inject: fn.toString() }] },
                 request = { protocol: 'tcp', port, stubs: [stub] };
+            await api.createImposter(request);
 
-            return api.post('/imposters', request)
-                .then(() => tcp.send('request', port))
-                .then(response => {
-                    assert.strictEqual(response.toString(), 'request INJECTED');
-                })
-                .finally(() => api.del('/imposters'));
+            const response = await tcp.send('request', port);
+
+            assert.strictEqual(response.toString(), 'request INJECTED');
         });
 
-        promiseIt('should allow synchronous javascript injection for responses', function () {
+        it('should allow synchronous javascript injection for responses', async function () {
             const fn = config => ({ data: `${config.request.data} INJECTED` }),
                 stub = { responses: [{ inject: fn.toString() }] },
                 request = { protocol: 'tcp', port, stubs: [stub] };
+            await api.createImposter(request);
 
-            return api.post('/imposters', request)
-                .then(() => tcp.send('request', port))
-                .then(response => {
-                    assert.strictEqual(response.toString(), 'request INJECTED');
-                })
-                .finally(() => api.del('/imposters'));
+            const response = await tcp.send('request', port);
+
+            assert.strictEqual(response.toString(), 'request INJECTED');
         });
 
-        promiseIt('should allow javascript injection to keep state between requests (old interface)', function () {
+        it('should allow javascript injection to keep state between requests (old interface)', async function () {
             const fn = (request, state) => {
                     if (!state.calls) { state.calls = 0; }
                     state.calls += 1;
@@ -77,21 +70,16 @@ describe('tcp imposter', function () {
                 },
                 stub = { responses: [{ inject: fn.toString() }] },
                 request = { protocol: 'tcp', port, stubs: [stub] };
+            await api.createImposter(request);
 
-            return api.post('/imposters', request).then(response => {
-                assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body));
+            const first = await tcp.send('request', port);
+            assert.strictEqual(first.toString(), '1');
 
-                return tcp.send('request', port);
-            }).then(response => {
-                assert.strictEqual(response.toString(), '1');
-
-                return tcp.send('request', port);
-            }).then(response => {
-                assert.deepEqual(response.toString(), '2');
-            }).finally(() => api.del('/imposters'));
+            const second = await tcp.send('request', port);
+            assert.deepEqual(second.toString(), '2');
         });
 
-        promiseIt('should allow javascript injection to keep state between requests', function () {
+        it('should allow javascript injection to keep state between requests', async function () {
             const fn = config => {
                     if (!config.state.calls) { config.state.calls = 0; }
                     config.state.calls += 1;
@@ -99,21 +87,16 @@ describe('tcp imposter', function () {
                 },
                 stub = { responses: [{ inject: fn.toString() }] },
                 request = { protocol: 'tcp', port, stubs: [stub] };
+            await api.createImposter(request);
 
-            return api.post('/imposters', request).then(response => {
-                assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body));
+            const first = await tcp.send('request', port);
+            assert.strictEqual(first.toString(), '1');
 
-                return tcp.send('request', port);
-            }).then(response => {
-                assert.strictEqual(response.toString(), '1');
-
-                return tcp.send('request', port);
-            }).then(response => {
-                assert.deepEqual(response.toString(), '2');
-            }).finally(() => api.del('/imposters'));
+            const second = await tcp.send('request', port);
+            assert.deepEqual(second.toString(), '2');
         });
 
-        promiseIt('should allow asynchronous injection (old interface)', function () {
+        it('should allow asynchronous injection (old interface)', async function () {
             const originServerPort = port + 1,
                 originServerStub = { responses: [{ is: { body: 'origin server' } }] },
                 originServerRequest = {
@@ -137,19 +120,15 @@ describe('tcp imposter', function () {
                     // No return value!!!
                 },
                 stub = { responses: [{ inject: fn.toString().replace("'$PORT'", originServerPort) }] };
+            await api.createImposter(originServerRequest);
+            await api.createImposter({ protocol: 'tcp', port, stubs: [stub] });
 
-            return api.post('/imposters', originServerRequest).then(response => {
-                assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body, null, 4));
-                return api.post('/imposters', { protocol: 'tcp', port, stubs: [stub] });
-            }).then(response => {
-                assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body));
-                return tcp.send('GET / HTTP/1.1\r\nHost: www.google.com\r\n\r', port);
-            }).then(response => {
-                assert.strictEqual(response.toString().indexOf('HTTP/1.1'), 0);
-            }).finally(() => api.del('/imposters'));
+            const response = await tcp.send('GET / HTTP/1.1\r\nHost: www.google.com\r\n\r', port);
+
+            assert.strictEqual(response.toString().indexOf('HTTP/1.1'), 0);
         });
 
-        promiseIt('should allow asynchronous injection', function () {
+        it('should allow asynchronous injection', async function () {
             const originServerPort = port + 1,
                 originServerStub = { responses: [{ is: { body: 'origin server' } }] },
                 originServerRequest = {
@@ -173,19 +152,15 @@ describe('tcp imposter', function () {
                     // No return value!!!
                 },
                 stub = { responses: [{ inject: fn.toString().replace("'$PORT'", originServerPort) }] };
+            await api.createImposter(originServerRequest);
+            await api.createImposter({ protocol: 'tcp', port, stubs: [stub] });
 
-            return api.post('/imposters', originServerRequest).then(response => {
-                assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body, null, 4));
-                return api.post('/imposters', { protocol: 'tcp', port, stubs: [stub] });
-            }).then(response => {
-                assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body));
-                return tcp.send('GET / HTTP/1.1\r\nHost: www.google.com\r\n\r', port);
-            }).then(response => {
-                assert.strictEqual(response.toString().indexOf('HTTP/1.1'), 0);
-            }).finally(() => api.del('/imposters'));
+            const response = await tcp.send('GET / HTTP/1.1\r\nHost: www.google.com\r\n\r', port);
+
+            assert.strictEqual(response.toString().indexOf('HTTP/1.1'), 0);
         });
 
-        promiseIt('should allow binary requests extending beyond a single packet using endOfRequestResolver', function () {
+        it('should allow binary requests extending beyond a single packet using endOfRequestResolver', async function () {
             // We'll simulate a protocol that has a 4 byte message length at byte 0 indicating how many bytes follow
             const getRequest = length => {
                     const buffer = Buffer.alloc(length + 4);
@@ -210,21 +185,16 @@ describe('tcp imposter', function () {
                     mode: 'binary',
                     endOfRequestResolver: { inject: resolver.toString() }
                 };
+            await api.createImposter(request);
 
-            return api.post('/imposters', request)
-                .then(response => {
-                    assert.strictEqual(response.statusCode, 201);
-                    return tcp.send(largeRequest, port);
-                })
-                .then(() => api.get(`/imposters/${port}`))
-                .then(response => {
-                    assert.strictEqual(response.body.requests.length, 1);
-                    assert.strictEqual(response.body.requests[0].data, largeRequest.toString('base64'));
-                })
-                .finally(() => api.del('/imposters'));
+            await tcp.send(largeRequest, port);
+            const response = await api.get(`/imposters/${port}`);
+
+            assert.strictEqual(response.body.requests.length, 1);
+            assert.strictEqual(response.body.requests[0].data, largeRequest.toString('base64'));
         });
 
-        promiseIt('should allow text requests extending beyond a single packet using endOfRequestResolver', function () {
+        it('should allow text requests extending beyond a single packet using endOfRequestResolver', async function () {
             // We'll simulate HTTP
             // The last 'x' is added because new Array(5).join('x') creates 'xxxx' in JavaScript...
             const largeRequest = `Content-Length: 100000\n\n${new Array(100000).join('x')}x`,
@@ -242,18 +212,13 @@ describe('tcp imposter', function () {
                     mode: 'text',
                     endOfRequestResolver: { inject: resolver.toString() }
                 };
+            await api.createImposter(request);
 
-            return api.post('/imposters', request)
-                .then(response => {
-                    assert.strictEqual(response.statusCode, 201);
-                    return tcp.send(largeRequest, port);
-                })
-                .then(() => api.get(`/imposters/${port}`))
-                .then(response => {
-                    assert.strictEqual(response.body.requests.length, 1);
-                    assert.strictEqual(response.body.requests[0].data, largeRequest);
-                })
-                .finally(() => api.del('/imposters'));
+            await tcp.send(largeRequest, port);
+            const response = await api.get(`/imposters/${port}`);
+
+            assert.strictEqual(response.body.requests.length, 1);
+            assert.strictEqual(response.body.requests[0].data, largeRequest);
         });
     });
 });

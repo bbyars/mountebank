@@ -1,7 +1,6 @@
 'use strict';
 
-const Q = require('q'),
-    fs = require('fs'),
+const fs = require('fs-extra'),
     path = require('path'),
     spawn = require('child_process').spawn,
     exec = require('child_process').exec,
@@ -11,14 +10,20 @@ const Q = require('q'),
     pidfile = 'test.pid',
     logfile = 'mb-test.log';
 
+function delay (duration) {
+    return new Promise(resolve => {
+        setTimeout(() => resolve(), duration);
+    });
+}
+
 function create (port, includeStdout) {
 
     let host = 'localhost';
 
-    function whenFullyInitialized (operation, callback) {
+    async function whenFullyInitialized (operation, callback) {
         let count = 0,
             pidfileMustExist = operation === 'start',
-            spinWait = () => {
+            spinWait = async () => {
                 count += 1;
                 if (count > 20) {
                     console.log(`ERROR: mb ${operation} not initialized after 2 seconds`);
@@ -28,11 +33,12 @@ function create (port, includeStdout) {
                     callback({});
                 }
                 else {
-                    Q.delay(100).done(spinWait);
+                    await delay(100);
+                    await spinWait();
                 }
             };
 
-        spinWait();
+        await spinWait();
     }
 
     function spawnMb (args) {
@@ -64,9 +70,8 @@ function create (port, includeStdout) {
         return result;
     }
 
-    function start (args) {
-        const deferred = Q.defer(),
-            mbArgs = ['restart', '--port', port, '--logfile', logfile, '--pidfile', pidfile].concat(args || []),
+    async function start (args) {
+        const mbArgs = ['restart', '--port', port, '--logfile', logfile, '--pidfile', pidfile].concat(args || []),
             hostIndex = mbArgs.indexOf('--host');
 
         if (hostIndex >= 0) {
@@ -76,66 +81,66 @@ function create (port, includeStdout) {
             host = 'localhost';
         }
 
-        whenFullyInitialized('start', deferred.resolve);
-        const mb = spawnMb(mbArgs);
-        mb.on('error', deferred.reject);
-
-        return deferred.promise;
+        return new Promise((resolve, reject) => {
+            whenFullyInitialized('start', resolve);
+            const mb = spawnMb(mbArgs);
+            mb.on('error', reject);
+        });
     }
 
-    function stop () {
-        let deferred = Q.defer(),
-            command = `${mbPath} stop --pidfile ${pidfile}`;
+    async function stop () {
+        let command = `${mbPath} stop --pidfile ${pidfile}`;
 
         if (isWindows && mbPath.indexOf('.cmd') < 0) {
             command = `node ${command}`;
         }
-        exec(command, (error, stdout, stderr) => {
-            if (error) { throw error; }
-            if (stdout) { console.log(stdout); }
-            if (stderr) { console.error(stderr); }
 
-            whenFullyInitialized('stop', deferred.resolve);
+        return new Promise(resolve => {
+            exec(command, (error, stdout, stderr) => {
+                if (error) { throw error; }
+                if (stdout) { console.log(stdout); }
+                if (stderr) { console.error(stderr); }
+
+                whenFullyInitialized('stop', resolve);
+            });
         });
-
-        return deferred.promise;
     }
 
     // Can't simply call mb restart
     // The start function relies on whenFullyInitialized to wait for the pidfile to already exist
     // If it already does exist, and you're expecting mb restart to kill it, the function will
     // return before you're ready for it
-    function restart (args) {
-        return stop(args).then(() => start(args));
+    async function restart (args) {
+        await stop(args);
+        await start(args);
     }
 
-    function execCommand (command, args) {
-        let deferred = Q.defer(),
-            mbArgs = [command, '--port', port].concat(args || []),
+    async function execCommand (command, args) {
+        let mbArgs = [command, '--port', port].concat(args || []),
             stdout = '',
-            stderr = '',
-            mb = spawnMb(mbArgs);
+            stderr = '';
 
-        mb.on('error', deferred.reject);
-        mb.stdout.on('data', chunk => { stdout += chunk; });
-        mb.stderr.on('data', chunk => { stderr += chunk; });
-        mb.on('close', exitCode => {
-            deferred.resolve({
-                exitCode: exitCode,
-                stdout: stdout,
-                stderr: stderr
+        return new Promise((resolve, reject) => {
+            const mb = spawnMb(mbArgs);
+            mb.on('error', reject);
+            mb.stdout.on('data', chunk => { stdout += chunk; });
+            mb.stderr.on('data', chunk => { stderr += chunk; });
+            mb.on('close', exitCode => {
+                resolve({
+                    exitCode: exitCode,
+                    stdout: stdout,
+                    stderr: stderr
+                });
             });
         });
-
-        return deferred.promise;
     }
 
-    function save (args) {
-        return execCommand('save', args);
+    async function save (args) {
+        return await execCommand('save', args);
     }
 
-    function replay (args) {
-        return execCommand('replay', args);
+    async function replay (args) {
+        return await execCommand('replay', args);
     }
 
     function get (endpoint) {

@@ -4,7 +4,6 @@ if (process.env.MB_AIRPLANE_MODE !== 'true' && process.env.MB_RUN_WEB_TESTS === 
     const assert = require('assert'),
         api = require('../api/api').create(),
         crawler = require('./crawler'),
-        promiseIt = require('../testHelpers').promiseIt,
         expectedContentType = contentType => {
             if (!contentType) {
                 return true;
@@ -24,32 +23,28 @@ if (process.env.MB_AIRPLANE_MODE !== 'true' && process.env.MB_RUN_WEB_TESTS === 
     describe('The mountebank website', function () {
         this.timeout(180000);
 
-        promiseIt('should have no dead links and a valid sitemap', function () {
-            let crawlResults;
-            return crawler.create().crawl(`${api.url}/`, '').then(result => {
-                // Validate no broken links
-                const errors = { misses: {} };
-                errors.errors = result.errors;
-                Object.keys(result.hits).forEach(link => {
-                    if (!expectedStatusCode(link, result.hits[link].statusCode) ||
-                        !expectedContentType(result.hits[link].contentType)) {
-                        errors.misses[link] = result.hits[link];
-                    }
-                });
+        it('should have no dead links and a valid sitemap', async function () {
+            const crawlResults = await crawler.create().crawl(`${api.url}/`, ''),
+                errors = { misses: {} }; // Validate no broken links
 
-                assert.deepEqual(errors, { errors: [], misses: {} }, JSON.stringify(errors, null, 4));
-
-                crawlResults = result;
-                return api.get('/sitemap');
-            }).then(response => {
-                const siteLinks = Object.keys(crawlResults.hits)
-                        .filter(link => isLocalLink(link) && link.indexOf('#') < 0 && link.indexOf('?') < 0)
-                        .map(link => link.replace(api.url, 'http://www.mbtest.org')),
-                    linksNotInSitemap = siteLinks.filter(link => response.body.indexOf(link) < 0);
-
-                assert.strictEqual(200, response.statusCode);
-                assert.deepEqual(linksNotInSitemap, [], JSON.stringify(linksNotInSitemap));
+            errors.errors = crawlResults.errors;
+            Object.keys(crawlResults.hits).forEach(link => {
+                if (!expectedStatusCode(link, crawlResults.hits[link].statusCode) ||
+                    !expectedContentType(crawlResults.hits[link].contentType)) {
+                    errors.misses[link] = crawlResults.hits[link];
+                }
             });
+
+            assert.deepEqual(errors, { errors: [], misses: {} }, JSON.stringify(errors, null, 4));
+
+            const response = await api.get('/sitemap'),
+                siteLinks = Object.keys(crawlResults.hits)
+                    .filter(link => isLocalLink(link) && link.indexOf('#') < 0 && link.indexOf('?') < 0)
+                    .map(link => link.replace(api.url, 'http://www.mbtest.org')),
+                linksNotInSitemap = siteLinks.filter(link => response.body.indexOf(link) < 0);
+
+            assert.strictEqual(200, response.statusCode);
+            assert.deepEqual(linksNotInSitemap, [], JSON.stringify(linksNotInSitemap));
         });
     });
 }

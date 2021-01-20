@@ -10,25 +10,25 @@ const assert = require('assert'),
 describe('http proxy', function () {
     this.timeout(timeout);
 
+    afterEach(async function () {
+        await api.del('/imposters');
+    });
+
     const noOp = () => {},
         logger = { debug: noOp, info: noOp, warn: noOp, error: noOp },
         proxy = HttpProxy.create(logger);
 
     describe('#to', function () {
-        afterEach(async function () {
-            await api.del('/imposters');
-        });
-
         it('should send same request information to proxied url', async function () {
             const proxyRequest = { protocol: 'http', port },
                 request = { path: '/PATH', method: 'POST', body: 'BODY', headers: { 'X-Key': 'TRUE' } };
+            await api.createImposter(proxyRequest);
 
-            await api.post('/imposters', proxyRequest);
             const response = await proxy.to(`http://localhost:${port}`, request, {});
             assert.strictEqual(response.statusCode, 200, 'did not get a 200 from proxy');
 
-            const mbResponse = await api.get(`/imposters/${port}`);
-            const requests = mbResponse.body.requests;
+            const mbResponse = await api.get(`/imposters/${port}`),
+                requests = mbResponse.body.requests;
             assert.strictEqual(requests.length, 1);
             assert.strictEqual(requests[0].path, '/PATH');
             assert.strictEqual(requests[0].method, 'POST');
@@ -38,24 +38,22 @@ describe('http proxy', function () {
 
         it('should return proxied result', async function () {
             const stub = { responses: [{ is: { statusCode: 400, body: 'ERROR' } }] },
-                request = { protocol: 'http', port, stubs: [stub] },
-                createResponse = await api.post('/imposters', request);
-
-            assert.strictEqual(createResponse.statusCode, 201, JSON.stringify(createResponse.body));
+                request = { protocol: 'http', port, stubs: [stub] };
+            await api.createImposter(request);
 
             const response = await proxy.to(`http://localhost:${port}`, { path: '/', method: 'GET', headers: {} }, {});
+
             assert.strictEqual(response.statusCode, 400);
             assert.strictEqual(response.body, 'ERROR');
         });
 
         it('should proxy to https', async function () {
             const stub = { responses: [{ is: { statusCode: 400, body: 'ERROR' } }] },
-                request = { protocol: 'https', port, stubs: [stub] },
-                createResponse = await api.post('/imposters', request);
-
-            assert.strictEqual(createResponse.statusCode, 201, JSON.stringify(createResponse.body));
+                request = { protocol: 'https', port, stubs: [stub] };
+            await api.createImposter(request);
 
             const response = await proxy.to(`https://localhost:${port}`, { path: '/', method: 'GET', headers: {} }, {});
+
             assert.strictEqual(response.statusCode, 400);
             assert.strictEqual(response.body, 'ERROR');
         });
@@ -65,12 +63,11 @@ describe('http proxy', function () {
                     responses: [{ is: { statusCode: 400, body: 'ERROR' } }],
                     predicates: [{ equals: { headers: { host: `localhost:${port}` } } }]
                 },
-                request = { protocol: 'http', port, stubs: [stub] },
-                createResponse = await api.post('/imposters', request);
-
-            assert.strictEqual(createResponse.statusCode, 201, JSON.stringify(createResponse.body));
+                request = { protocol: 'http', port, stubs: [stub] };
+            await api.createImposter(request);
 
             const response = await proxy.to(`http://localhost:${port}`, { path: '/', method: 'GET', headers: { host: 'www.mbtest.org' } }, {});
+
             assert.strictEqual(response.statusCode, 400);
             assert.strictEqual(response.body, 'ERROR');
         });
@@ -117,11 +114,10 @@ describe('http proxy', function () {
                         }]
                     },
                     request = { protocol: 'http', port, stubs: [stub] };
-
-                const createResponse = await api.post('/imposters', request);
-                assert.strictEqual(createResponse.statusCode, 201, JSON.stringify(createResponse.body));
+                await api.createImposter(request);
 
                 const response = await proxy.to(`http://localhost:${port}`, { path: '/', method: 'GET', headers: {} }, {});
+
                 assert.strictEqual(response.body, buffer.toString('base64'));
                 assert.strictEqual(response._mode, 'binary');
             });
@@ -130,9 +126,9 @@ describe('http proxy', function () {
         if (!airplaneMode) {
             it('should proxy to different host', async function () {
                 const response = await proxy.to('https://google.com', { path: '/', method: 'GET', headers: {} }, {});
+
                 // sometimes 301, sometimes 302
                 assert.strictEqual(response.statusCode.toString().substring(0, 2), '30');
-
                 // https://www.google.com.br in Brasil, google.ca in Canada, etc
                 assert.ok(response.headers.Location.indexOf('google.') >= 0, response.headers.Location);
             });

@@ -2,7 +2,6 @@
 
 const JSDOM = require('jsdom').JSDOM,
     api = require('../api/api').create(),
-    Q = require('q'),
     url = require('url'),
     httpClient = require('../api/http/baseHttpClient').create('http'),
     httpsClient = require('../api/http/baseHttpClient').create('https'),
@@ -39,22 +38,20 @@ function isExternalPage (baseUrl) {
 }
 
 function getLinksFrom (baseUrl, html) {
-    const deferred = Q.defer();
+    return new Promise((resolve, reject) => {
+        if (isExternalPage(baseUrl)) {
+            // Don't crawl the internet
+            resolve([]);
+        }
 
-    if (isExternalPage(baseUrl)) {
-        // Don't crawl the internet
-        return Q([]);
-    }
-
-    try {
-        const window = new JSDOM(html).window;
-        deferred.resolve(parseLinksFrom(window));
-    }
-    catch (errors) {
-        deferred.reject(errors);
-    }
-
-    return deferred.promise;
+        try {
+            const window = new JSDOM(html).window;
+            resolve(parseLinksFrom(window));
+        }
+        catch (errors) {
+            reject(errors);
+        }
+    });
 }
 
 function isWhitelisted (href) {
@@ -95,33 +92,38 @@ function create () {
         return pages.errors.push({ href: href, referrer: referrer });
     }
 
-    function crawl (startingUrl, referrer) {
+    async function crawl (startingUrl, referrer) {
         const serverUrl = startingUrl.replace(/#.*$/, '').trim();
 
         if (serverUrl === '') {
-            return Q(true);
+            return true;
         }
         if (isWhitelisted(serverUrl)) {
-            return Q(true);
+            return true;
         }
         else if (isBadLink(serverUrl)) {
             addError(serverUrl, referrer);
-            return Q(true);
+            return true;
         }
         else if (alreadyCrawled(serverUrl)) {
             addReferrer(serverUrl, referrer);
-            return Q(true);
+            return true;
         }
         else {
-            pages.hits[serverUrl] = { from: [referrer] };
-            return getResponseFor(serverUrl).then(response => {
+            try {
+                pages.hits[serverUrl] = { from: [referrer] };
+                const response = await getResponseFor(serverUrl);
                 pages.hits[serverUrl].statusCode = response.statusCode;
                 pages.hits[serverUrl].contentType = response.headers['content-type'];
 
-                return getLinksFrom(serverUrl, response.body);
-            }).then(
-                links => Q.all(links.map(link => crawl(link, serverUrl))).then(() => Q(pages)),
-                e => { console.log(`ERROR with ${serverUrl}`); console.log(e); });
+                const links = await getLinksFrom(serverUrl, response.body);
+                await Promise.all(links.map(link => crawl(link, serverUrl)));
+                return pages;
+            }
+            catch (e) {
+                console.log(`ERROR with ${serverUrl}`); console.log(e);
+                return false;
+            }
         }
     }
 

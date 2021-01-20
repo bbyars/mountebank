@@ -1,19 +1,16 @@
 'use strict';
 
-const Q = require('q'),
-    promiseIt = require('../testHelpers').promiseIt,
-    tcpIsInProcess = require('../testHelpers').isInProcessImposter('tcp'),
+const tcpIsInProcess = require('../testHelpers').isInProcessImposter('tcp'),
     isPersistent = process.env.MB_PERSISTENT === 'true',
     docs = require('./docsTester/docs'),
     isWindows = require('os').platform().indexOf('win') === 0,
     timeout = parseInt(process.env.MB_SLOW_TEST_TIMEOUT || 4000);
 
-function validateDocs (page) {
-    promiseIt(`${page} should be up-to-date`, function () {
-        return docs.getScenarios(page).then(testScenarios => {
-            const tests = Object.keys(testScenarios).map(testName => testScenarios[testName].assertValid());
-            return Q.all(tests);
-        });
+async function validateDocs (page) {
+    it(`${page} should be up-to-date`, async function () {
+        const testScenarios = await docs.getScenarios(page),
+            tests = Object.keys(testScenarios).map(testName => testScenarios[testName].assertValid());
+        return Promise.all(tests);
     });
 }
 

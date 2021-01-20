@@ -3,27 +3,24 @@
 const assert = require('assert'),
     api = require('../api/api').create(),
     JSDOM = require('jsdom').JSDOM,
-    Q = require('q'),
-    promiseIt = require('../testHelpers').promiseIt,
     timeout = parseInt(process.env.MB_SLOW_TEST_TIMEOUT || 3000);
 
 
 function getDOM (endpoint) {
-    const deferred = Q.defer(),
-        url = api.url + endpoint;
+    const url = api.url + endpoint;
 
-    JSDOM.fromURL(url).then(dom => {
-        deferred.resolve(dom.window);
-    }).catch(errors => {
-        deferred.reject(errors);
+    return new Promise((resolve, reject) => {
+        JSDOM.fromURL(url).then(dom => {
+            resolve(dom.window);
+        }).catch(errors => {
+            reject(errors);
+        });
     });
-
-    return deferred.promise;
 }
 
-function getJSONFor (contract) {
-    return getDOM('/docs/api/contracts')
-        .then(window => Q(window.document.getElementById(`${contract}-specification`).innerHTML.replace(/<[^>]+>/g, '')));
+async function getJSONFor (contract) {
+    const window = await getDOM('/docs/api/contracts');
+    return window.document.getElementById(`${contract}-specification`).innerHTML.replace(/<[^>]+>/g, '');
 }
 
 function assertJSON (json) {
@@ -39,10 +36,9 @@ describe('contracts', function () {
     this.timeout(timeout);
 
     ['home', 'imposters', 'imposter', 'config', 'logs'].forEach(contractType => {
-        promiseIt(`${contractType} contract should be valid JSON`, function () {
-            return getJSONFor(contractType).then(json => {
-                assertJSON(json);
-            });
+        it(`${contractType} contract should be valid JSON`, async function () {
+            const json = await getJSONFor(contractType);
+            assertJSON(json);
         });
     });
 });

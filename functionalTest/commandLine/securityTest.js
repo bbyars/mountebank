@@ -3,50 +3,48 @@
 const assert = require('assert'),
     api = require('../api/api').create(),
     isWindows = require('os').platform().indexOf('win') === 0,
-    promiseIt = require('../testHelpers').promiseIt,
     port = api.port + 1,
     mb = require('../mb').create(port + 1),
     httpClient = require('../api/http/baseHttpClient').create('http'),
     baseTimeout = parseInt(process.env.MB_SLOW_TEST_TIMEOUT || 4000),
-    timeout = isWindows ? 2 * baseTimeout : baseTimeout,
-    Q = require('q');
+    timeout = isWindows ? 2 * baseTimeout : baseTimeout;
 
 describe('security', function () {
+    afterEach(async function () {
+        await mb.stop();
+    });
+
     describe('mb without --allowInjection', function () {
         this.timeout(timeout);
 
-        promiseIt('should return a 400 if response injection is used', function () {
+        it('should return a 400 if response injection is used', async function () {
             const fn = request => ({ body: `${request.method} INJECTED` }),
                 stub = { responses: [{ inject: fn.toString() }] },
                 request = { protocol: 'http', port, stubs: [stub] };
+            await mb.start();
 
-            return mb.start()
-                .then(() => mb.post('/imposters', request))
-                .then(response => {
-                    assert.strictEqual(response.statusCode, 400);
-                    assert.strictEqual(response.body.errors[0].code, 'invalid injection');
-                })
-                .finally(() => mb.stop());
+            const response = await mb.post('/imposters', request);
+
+            assert.strictEqual(response.statusCode, 400);
+            assert.strictEqual(response.body.errors[0].code, 'invalid injection');
         });
 
-        promiseIt('should return a 400 if predicate injection is used', function () {
+        it('should return a 400 if predicate injection is used', async function () {
             const fn = () => true,
                 stub = {
                     predicates: [{ inject: fn.toString() }],
                     responses: [{ is: { body: 'Hello, World! ' } }]
                 },
                 request = { protocol: 'http', port, stubs: [stub] };
+            await mb.start();
 
-            return mb.start()
-                .then(() => mb.post('/imposters', request))
-                .then(response => {
-                    assert.strictEqual(response.statusCode, 400);
-                    assert.strictEqual(response.body.errors[0].code, 'invalid injection');
-                })
-                .finally(() => mb.stop());
+            const response = await mb.post('/imposters', request);
+
+            assert.strictEqual(response.statusCode, 400);
+            assert.strictEqual(response.body.errors[0].code, 'invalid injection');
         });
 
-        promiseIt('should return a 400 if endOfResponseResolver is used', function () {
+        it('should return a 400 if endOfResponseResolver is used', async function () {
             const stub = { responses: [{ is: { data: 'success' } }] },
                 resolver = () => true,
                 request = {
@@ -56,87 +54,75 @@ describe('security', function () {
                     mode: 'text',
                     endOfRequestResolver: { inject: resolver.toString() }
                 };
+            await mb.start();
 
-            return mb.start()
-                .then(() => mb.post('/imposters', request))
-                .then(response => {
-                    assert.strictEqual(response.statusCode, 400);
-                    assert.strictEqual(response.body.errors[0].code, 'invalid injection');
-                })
-                .finally(() => mb.stop());
+            const response = await mb.post('/imposters', request);
+
+            assert.strictEqual(response.statusCode, 400);
+            assert.strictEqual(response.body.errors[0].code, 'invalid injection');
         });
 
-        promiseIt('should return a 400 if a decorate behavior is used', function () {
+        it('should return a 400 if a decorate behavior is used', async function () {
             const fn = response => response,
                 stub = { responses: [{ is: { body: 'Hello, World! ' }, _behaviors: { decorate: fn.toString() } }] },
                 request = { protocol: 'http', port, stubs: [stub] };
+            await mb.start();
 
-            return mb.start()
-                .then(() => mb.post('/imposters', request))
-                .then(response => {
-                    assert.strictEqual(response.statusCode, 400);
-                    assert.strictEqual(response.body.errors[0].code, 'invalid injection');
-                })
-                .finally(() => mb.stop());
+            const response = await mb.post('/imposters', request);
+
+            assert.strictEqual(response.statusCode, 400);
+            assert.strictEqual(response.body.errors[0].code, 'invalid injection');
         });
 
-        promiseIt('should return a 400 if a wait behavior function is used', function () {
+        it('should return a 400 if a wait behavior function is used', async function () {
             const fn = () => 1000,
                 stub = { responses: [{ is: { body: 'Hello, World! ' }, _behaviors: { wait: fn.toString() } }] },
                 request = { protocol: 'http', port, stubs: [stub] };
+            await mb.start();
 
-            return mb.start()
-                .then(() => mb.post('/imposters', request))
-                .then(response => {
-                    assert.strictEqual(response.statusCode, 400);
-                    assert.strictEqual(response.body.errors[0].code, 'invalid injection');
-                })
-                .finally(() => mb.stop());
+            const response = await mb.post('/imposters', request);
+
+            assert.strictEqual(response.statusCode, 400);
+            assert.strictEqual(response.body.errors[0].code, 'invalid injection');
         });
 
-        promiseIt('should allow a wait behavior that directly specifies latency', function () {
+        it('should allow a wait behavior that directly specifies latency', async function () {
             const stub = { responses: [{ is: { body: 'Hello, World! ' }, _behaviors: { wait: 100 } }] },
                 request = { protocol: 'http', port, stubs: [stub] };
+            await mb.start();
 
-            return mb.start()
-                .then(() => mb.post('/imposters', request))
-                .then(response => {
-                    assert.strictEqual(response.statusCode, 201);
-                })
-                .finally(() => mb.stop());
+            const response = await mb.post('/imposters', request);
+
+            assert.strictEqual(response.statusCode, 201);
         });
 
-        promiseIt('should return a 400 if a shellTransform behavior is used', function () {
+        it('should return a 400 if a shellTransform behavior is used', async function () {
             const stub = { responses: [{ is: {}, _behaviors: { shellTransform: 'command' } }] },
                 request = { protocol: 'http', port, stubs: [stub] };
+            await mb.start();
 
-            return mb.start()
-                .then(() => mb.post('/imposters', request))
-                .then(response => {
-                    assert.strictEqual(response.statusCode, 400);
-                    assert.strictEqual(response.body.errors[0].code, 'invalid injection');
-                })
-                .finally(() => mb.stop());
+            const response = await mb.post('/imposters', request);
+
+            assert.strictEqual(response.statusCode, 400);
+            assert.strictEqual(response.body.errors[0].code, 'invalid injection');
         });
 
-        promiseIt('should return a 400 if a proxy addDecorateBehavior is used', function () {
+        it('should return a 400 if a proxy addDecorateBehavior is used', async function () {
             const proxy = {
                     to: 'http://google.com',
                     addDecorateBehavior: '(request, response) => { response.body = ""; }'
                 },
                 stub = { responses: [{ proxy: proxy }] },
                 request = { protocol: 'http', port, stubs: [stub] };
+            await mb.start();
 
-            return mb.start()
-                .then(() => mb.post('/imposters', request))
-                .then(response => {
-                    assert.strictEqual(response.statusCode, 400);
-                    assert.strictEqual(response.body.errors[0].code, 'invalid injection');
-                })
-                .finally(() => mb.stop());
+            const response = await mb.post('/imposters', request);
+
+            assert.strictEqual(response.statusCode, 400);
+            assert.strictEqual(response.body.errors[0].code, 'invalid injection');
         });
 
-        promiseIt('should return a 400 if a predicateGenerator inject is used', function () {
+        it('should return a 400 if a predicateGenerator inject is used', async function () {
             const proxy = {
                     to: 'http://google.com',
                     predicateGenerators: [{
@@ -145,14 +131,12 @@ describe('security', function () {
                 },
                 stub = { responses: [{ proxy: proxy }] },
                 request = { protocol: 'http', port, stubs: [stub] };
+            await mb.start();
 
-            return mb.start()
-                .then(() => mb.post('/imposters', request))
-                .then(response => {
-                    assert.strictEqual(response.statusCode, 400);
-                    assert.strictEqual(response.body.errors[0].code, 'invalid injection');
-                })
-                .finally(() => mb.stop());
+            const response = await mb.post('/imposters', request);
+
+            assert.strictEqual(response.statusCode, 400);
+            assert.strictEqual(response.body.errors[0].code, 'invalid injection');
         });
     });
 
@@ -194,66 +178,71 @@ describe('security', function () {
             return ips(false);
         }
 
-        function connectToHTTPServerUsing (ip, destinationPort = mb.port) {
-            return httpClient.responseFor({
-                method: 'POST',
-                path: '/imposters',
-                hostname: 'localhost',
-                port: destinationPort,
-                localAddress: ip.address,
-                family: ip.family,
-                body: { protocol: 'http' }
-            }).then(
-                () => Q({ ip: ip.address, canConnect: true }),
-                error => {
-                    if (error.code === 'EADDRNOTAVAIL' && ip.address.indexOf('%') < 0) {
-                        // If you run ifconfig, some of the addresses have the interface name
-                        // appended. Node doesn't return them that way,
-                        // but apparently needs it sometimes to bind to that address.
-                        // Apparently it has to do with link local addresses:
-                        // https://stackoverflow.com/questions/34259279/node-js-cant-bind-a-udp6-socket-to-a-specific-address
-                        return connectToHTTPServerUsing({
-                            address: `${ip.address}%${ip.iface}`,
-                            family: ip.family,
-                            iface: ip.iface
-                        }, destinationPort);
-                    }
-                    else {
-                        return Q({ ip: ip.address, canConnect: false, error: error });
-                    }
-                }
-            );
-        }
-
-        function connectToTCPServerUsing (ip, destinationPort) {
-            const deferred = Q.defer(),
-                net = require('net'),
-                socket = net.createConnection({ family: ip.family, localAddress: ip.address, port: destinationPort },
-                    () => { socket.write('TEST'); });
-
-            socket.once('data', () => { deferred.resolve({ ip: ip.address, canConnect: true }); });
-
-            socket.once('end', () => {
-                if (deferred.promise.isPending()) {
-                    deferred.resolve({ ip: ip.address, canConnect: false, error: { code: 'ECONNRESET' } });
-                }
-            });
-
-            socket.once('error', error => {
+        async function connectToHTTPServerUsing (ip, destinationPort = mb.port) {
+            try {
+                await httpClient.responseFor({
+                    method: 'POST',
+                    path: '/imposters',
+                    hostname: 'localhost',
+                    port: destinationPort,
+                    localAddress: ip.address,
+                    family: ip.family,
+                    body: { protocol: 'http' }
+                });
+                return { ip: ip.address, canConnect: true };
+            }
+            catch (error) {
                 if (error.code === 'EADDRNOTAVAIL' && ip.address.indexOf('%') < 0) {
-                    const ipWithInterface = {
+                    // If you run ifconfig, some of the addresses have the interface name
+                    // appended. Node doesn't return them that way,
+                    // but apparently needs it sometimes to bind to that address.
+                    // Apparently it has to do with link local addresses:
+                    // https://stackoverflow.com/questions/34259279/node-js-cant-bind-a-udp6-socket-to-a-specific-address
+                    return connectToHTTPServerUsing({
                         address: `${ip.address}%${ip.iface}`,
                         family: ip.family,
                         iface: ip.iface
-                    };
-                    connectToTCPServerUsing(ipWithInterface, destinationPort).done(deferred.resolve);
+                    }, destinationPort);
                 }
                 else {
-                    deferred.resolve({ ip: ip.address, canConnect: false, error: error });
+                    return { ip: ip.address, canConnect: false, error: error };
                 }
-            });
+            }
+        }
 
-            return deferred.promise;
+        function connectToTCPServerUsing (ip, destinationPort) {
+            return new Promise(res => {
+                let isPending = true;
+                const net = require('net'),
+                    socket = net.createConnection({ family: ip.family, localAddress: ip.address, port: destinationPort },
+                        () => { socket.write('TEST'); }),
+                    resolve = result => {
+                        isPending = false;
+                        res(result);
+                    };
+
+                socket.once('data', () => { resolve({ ip: ip.address, canConnect: true }); });
+
+                socket.once('end', () => {
+                    if (isPending) {
+                        resolve({ ip: ip.address, canConnect: false, error: { code: 'ECONNRESET' } });
+                    }
+                });
+
+                socket.once('error', async error => {
+                    if (error.code === 'EADDRNOTAVAIL' && ip.address.indexOf('%') < 0) {
+                        const ipWithInterface = {
+                            address: `${ip.address}%${ip.iface}`,
+                            family: ip.family,
+                            iface: ip.iface
+                        };
+                        resolve(await connectToTCPServerUsing(ipWithInterface, destinationPort));
+                    }
+                    else {
+                        resolve({ ip: ip.address, canConnect: false, error: error });
+                    }
+                });
+            });
         }
 
         function denied (attempt) {
@@ -264,122 +253,97 @@ describe('security', function () {
             return attempt.canConnect;
         }
 
-        promiseIt('should only allow local requests if --localOnly used', function () {
-            return mb.start(['--localOnly'])
-                .then(() => Q.all(nonLocalIPs().map(ip => connectToHTTPServerUsing(ip))))
-                .then(rejections => {
-                    const allBlocked = rejections.every(denied);
-                    assert.ok(allBlocked, 'Allowed nonlocal connection: ' + JSON.stringify(rejections, null, 2));
+        it('should only allow local requests if --localOnly used', async function () {
+            await mb.start(['--localOnly']);
 
-                    // Ensure mountebank rejected the request as well
-                    return mb.get('/imposters');
-                }).then(response => {
-                    assert.deepEqual(response.body, { imposters: [] }, JSON.stringify(response.body, null, 2));
+            const rejections = await Promise.all(nonLocalIPs().map(ip => connectToHTTPServerUsing(ip))),
+                allBlocked = rejections.every(denied);
+            assert.ok(allBlocked, 'Allowed nonlocal connection: ' + JSON.stringify(rejections, null, 2));
 
-                    return Q.all(localIPs().map(ip => connectToHTTPServerUsing(ip)));
-                }).then(accepts => {
-                    const allAccepted = accepts.every(allowed);
-                    assert.ok(allAccepted, 'Blocked local connection: ' + JSON.stringify(accepts, null, 2));
-                })
-                .finally(() => mb.stop());
+            // Ensure mountebank rejected the request as well
+            const response = await mb.get('/imposters');
+            assert.deepEqual(response.body, { imposters: [] }, JSON.stringify(response.body, null, 2));
+
+            const accepts = await Promise.all(localIPs().map(ip => connectToHTTPServerUsing(ip))),
+                allAccepted = accepts.every(allowed);
+            assert.ok(allAccepted, 'Blocked local connection: ' + JSON.stringify(accepts, null, 2));
         });
 
-        promiseIt('should only allow local requests to http imposter if --localOnly used', function () {
+        it('should only allow local requests to http imposter if --localOnly used', async function () {
             const imposter = { protocol: 'http', port: mb.port + 1 };
+            await mb.start(['--localOnly']);
+            await mb.post('/imposters', imposter);
 
-            return mb.start(['--localOnly'])
-                .then(() => mb.post('/imposters', imposter))
-                .then(response => {
-                    assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body, null, 2));
-                    return Q.all(nonLocalIPs().map(ip => connectToHTTPServerUsing(ip, imposter.port)));
-                })
-                .then(rejections => {
-                    const allBlocked = rejections.every(denied);
-                    assert.ok(allBlocked, 'Allowed nonlocal connection: ' + JSON.stringify(rejections, null, 2));
+            const rejections = await Promise.all(nonLocalIPs().map(ip => connectToHTTPServerUsing(ip, imposter.port))),
+                allBlocked = rejections.every(denied);
+            assert.ok(allBlocked, 'Allowed nonlocal connection: ' + JSON.stringify(rejections, null, 2));
 
-                    return Q.all(localIPs().map(ip => connectToHTTPServerUsing(ip, imposter.port)));
-                }).then(accepts => {
-                    const allAccepted = accepts.every(allowed);
-                    assert.ok(allAccepted, 'Blocked local connection: ' + JSON.stringify(accepts, null, 2));
-                })
-                .finally(() => mb.stop());
+            const accepts = await Promise.all(localIPs().map(ip => connectToHTTPServerUsing(ip, imposter.port))),
+                allAccepted = accepts.every(allowed);
+            assert.ok(allAccepted, 'Blocked local connection: ' + JSON.stringify(accepts, null, 2));
         });
 
-        promiseIt('should only allow local requests to tcp imposter if --localOnly used', function () {
+        it('should only allow local requests to tcp imposter if --localOnly used', async function () {
             const imposter = {
                 protocol: 'tcp',
                 port: mb.port + 1,
                 stubs: [{ responses: [{ is: { data: 'OK' } }] }]
             };
+            await mb.start(['--localOnly', '--loglevel', 'debug']);
+            await mb.post('/imposters', imposter);
 
-            return mb.start(['--localOnly', '--loglevel', 'debug'])
-                .then(() => mb.post('/imposters', imposter))
-                .then(response => {
-                    assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body, null, 2));
-                    return Q.all(nonLocalIPs().map(ip => connectToTCPServerUsing(ip, imposter.port)));
-                })
-                .then(rejections => {
-                    const allBlocked = rejections.every(denied);
-                    assert.ok(allBlocked, 'Allowed nonlocal connection: ' + JSON.stringify(rejections, null, 2));
+            const rejections = await Promise.all(nonLocalIPs().map(ip => connectToTCPServerUsing(ip, imposter.port))),
+                allBlocked = rejections.every(denied);
+            assert.ok(allBlocked, 'Allowed nonlocal connection: ' + JSON.stringify(rejections, null, 2));
 
-                    return Q.all(localIPs().map(ip => connectToTCPServerUsing(ip, imposter.port)));
-                }).then(accepts => {
-                    const allAccepted = accepts.every(allowed);
-                    assert.ok(allAccepted, 'Blocked local connection: ' + JSON.stringify(accepts, null, 2));
-                })
-                .finally(() => mb.stop());
+            const accepts = await Promise.all(localIPs().map(ip => connectToTCPServerUsing(ip, imposter.port))),
+                allAccepted = accepts.every(allowed);
+            assert.ok(allAccepted, 'Blocked local connection: ' + JSON.stringify(accepts, null, 2));
         });
 
-        promiseIt('should allow non-local requests if --localOnly not used', function () {
-            const allIPs = localIPs().concat(nonLocalIPs());
+        it('should allow non-local requests if --localOnly not used', async function () {
+            await mb.start();
 
-            return mb.start()
-                .then(() => Q.all(allIPs.map(ip => connectToHTTPServerUsing(ip))))
-                .then(results => {
-                    const allAccepted = results.every(allowed);
-                    assert.ok(allAccepted, 'Blocked local connection: ' + JSON.stringify(results, null, 2));
-                })
-                .finally(() => mb.stop());
+            const allIPs = localIPs().concat(nonLocalIPs()),
+                results = await Promise.all(allIPs.map(ip => connectToHTTPServerUsing(ip))),
+                allAccepted = results.every(allowed);
+
+            assert.ok(allAccepted, 'Blocked local connection: ' + JSON.stringify(results, null, 2));
         });
 
-        promiseIt('should block IPs not on --ipWhitelist', function () {
+        it('should block IPs not on --ipWhitelist', async function () {
             if (nonLocalIPs().length < 2) {
                 console.log('Skipping test - not enough IPs to test with');
-                return Q(true);
+                return;
             }
 
             const allowedIP = nonLocalIPs()[0],
                 blockedIPs = nonLocalIPs().slice(1),
                 ipWhitelist = `127.0.0.1|${allowedIP.address}`;
+            await mb.start(['--ipWhitelist', ipWhitelist]);
 
-            return mb.start(['--ipWhitelist', ipWhitelist])
-                .then(() => connectToHTTPServerUsing(allowedIP))
-                .then(result => {
-                    assert.ok(result.canConnect, 'Could not connect to whitelisted IP: ' + JSON.stringify(result, null, 2));
-                    return Q.all(blockedIPs.map(ip => connectToHTTPServerUsing(ip)));
-                })
-                .then(results => {
-                    const allBlocked = results.every(denied);
-                    assert.ok(allBlocked, 'Allowed non-whitelisted connection: ' + JSON.stringify(results, null, 2));
-                })
-                .finally(() => mb.stop());
+            const result = await connectToHTTPServerUsing(allowedIP);
+            assert.ok(result.canConnect, 'Could not connect to whitelisted IP: ' + JSON.stringify(result, null, 2));
+
+            const results = await Promise.all(blockedIPs.map(ip => connectToHTTPServerUsing(ip))),
+                allBlocked = results.every(denied);
+
+            assert.ok(allBlocked, 'Allowed non-whitelisted connection: ' + JSON.stringify(results, null, 2));
         });
 
-        promiseIt('should ignore --ipWhitelist if --localOnly passed', function () {
+        it('should ignore --ipWhitelist if --localOnly passed', async function () {
             if (nonLocalIPs().length === 0) {
                 console.log('Skipping test - not enough IPs to test with');
-                return Q(true);
+                return;
             }
 
             const allowedIP = nonLocalIPs()[0],
                 ipWhitelist = `127.0.0.1|${allowedIP.address}`;
+            await mb.start(['--localOnly', '--ipWhitelist', ipWhitelist]);
 
-            return mb.start(['--localOnly', '--ipWhitelist', ipWhitelist])
-                .then(() => connectToHTTPServerUsing(allowedIP))
-                .then(result => {
-                    assert.ok(!result.canConnect, 'Should have blocked whitelisted IP: ' + JSON.stringify(result, null, 2));
-                })
-                .finally(() => mb.stop());
+            const result = await connectToHTTPServerUsing(allowedIP);
+
+            assert.ok(!result.canConnect, 'Should have blocked whitelisted IP: ' + JSON.stringify(result, null, 2));
         });
     });
 });

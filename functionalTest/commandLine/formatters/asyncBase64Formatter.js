@@ -13,35 +13,33 @@ function decode (text) {
 }
 
 function load (options) {
-    const fs = require('fs'),
-        Q = require('q'),
-        deferred = Q.defer();
+    const fs = require('fs-extra');
 
-    fs.readFile(options.configfile, { encoding: 'utf8' }, (err, data) => {
-        if (err) {
-            deferred.reject(err);
-        }
-        else {
-            deferred.resolve(JSON.parse(decode(data)));
-        }
+    return new Promise((resolve, reject) => {
+        fs.readFile(options.configfile, { encoding: 'utf8' }, (err, data) => {
+            if (err) {
+                reject(err);
+            }
+            else {
+                resolve(JSON.parse(decode(data)));
+            }
+        });
     });
-    return deferred.promise;
 }
 
 function save (options, imposters) {
-    const fs = require('fs'),
-        Q = require('q'),
-        deferred = Q.defer();
+    const fs = require('fs-extra');
 
-    fs.writeFile(options.savefile, encode(imposters), err => {
-        if (err) {
-            deferred.reject(err);
-        }
-        else {
-            deferred.resolve();
-        }
+    return new Promise((resolve, reject) => {
+        fs.writeFile(options.savefile, encode(imposters), err => {
+            if (err) {
+                reject(err);
+            }
+            else {
+                resolve();
+            }
+        });
     });
-    return deferred;
 }
 
 module.exports = { load, save };

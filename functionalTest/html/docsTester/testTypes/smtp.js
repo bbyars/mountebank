@@ -1,7 +1,6 @@
 'use strict';
 
-const Q = require('q'),
-    smtpClient = require('../../../api/smtp/smtpClient');
+const smtpClient = require('../../../api/smtp/smtpClient');
 
 function camelCase (key) {
     return key.substring(0, 1).toLowerCase() + key.substring(1);
@@ -35,15 +34,9 @@ function parse (text) {
     return message;
 }
 
-function runStep (step) {
-    const deferred = Q.defer(),
-        message = parse(step.requestText);
-
-    smtpClient.send(message, step.port).done(() => {
-        deferred.resolve({});
-    });
-
-    return deferred.promise;
+async function runStep (step) {
+    const message = parse(step.requestText);
+    await smtpClient.send(message, step.port);
 }
 
 module.exports = { runStep };

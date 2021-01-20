@@ -7,7 +7,6 @@ const assert = require('assert'),
     path = require('path'),
     isWindows = require('os').platform().indexOf('win') === 0,
     BaseHttpClient = require('../api/http/baseHttpClient'),
-    promiseIt = require('../testHelpers').promiseIt,
     baseTimeout = parseInt(process.env.MB_SLOW_TEST_TIMEOUT || 3000),
     timeout = isWindows ? 2 * baseTimeout : baseTimeout,
     smtp = require('../api/smtp/smtpClient'),
@@ -17,151 +16,124 @@ const assert = require('assert'),
 describe('--configfile', function () {
     this.timeout(timeout);
 
-    promiseIt('should support complex configuration with --configfile in multiple files', function () {
-        const args = ['--configfile', path.join(__dirname, 'imposters/imposters.ejs')];
+    afterEach(async function () {
+        await mb.stop();
+    });
 
-        return mb.start(args)
-            .then(() => http.post('/orders', '', 4545))
-            .then(response => {
-                assert.strictEqual(response.statusCode, 201);
-                assert.strictEqual(response.headers.location, 'http://localhost:4545/orders/123');
-                return http.post('/orders', '', 4545);
-            })
-            .then(response => {
-                assert.strictEqual(response.statusCode, 201);
-                assert.strictEqual(response.headers.location, 'http://localhost:4545/orders/234');
-                return http.get('/orders/123', 4545);
-            })
-            .then(response => {
-                assert.strictEqual(response.body, 'Order 123');
-                return http.get('/orders/234', 4545);
-            })
-            .then(response => {
-                assert.strictEqual(response.body, 'Order 234');
-                return https.get('/accounts/123', 5555);
-            })
-            .then(response => {
-                assert.strictEqual(response.statusCode, 401);
-                return https.responseFor({
-                    method: 'GET',
-                    path: '/accounts/123',
-                    port: 5555,
-                    headers: { authorization: 'Basic blah===' }
-                });
-            })
-            .then(response => {
-                assert.ok(response.body.indexOf('<id>123</id>') > 0);
-                return https.responseFor({
-                    method: 'GET',
-                    path: '/accounts/234',
-                    port: 5555,
-                    headers: { authorization: 'Basic blah===' }
-                });
-            })
-            .then(response => {
-                assert.strictEqual(response.statusCode, 404);
-                return smtp.send({
-                    from: '"From 1" <from1@mb.org>',
-                    to: ['"To 1" <to1@mb.org>'],
-                    subject: 'subject 1',
-                    text: 'text 1'
-                }, 6565);
-            })
-            .then(response => {
-                assert.strictEqual(response.response, '250 OK: message queued');
-                return https.get('/users/123', 7575);
-            }).then(response => {
-                assert.ok(response.body.indexOf('<users>') > -1);
-                assert.ok(response.body.indexOf('<id>123</id>') > 0);
-            })
-            .finally(() => mb.stop());
+    it('should support complex configuration with --configfile in multiple files', async function () {
+        const args = ['--configfile', path.join(__dirname, 'imposters/imposters.ejs')];
+        await mb.start(args);
+
+        const first = await http.post('/orders', '', 4545);
+        assert.strictEqual(first.statusCode, 201);
+        assert.strictEqual(first.headers.location, 'http://localhost:4545/orders/123');
+
+        const second = await http.post('/orders', '', 4545);
+        assert.strictEqual(second.statusCode, 201);
+        assert.strictEqual(second.headers.location, 'http://localhost:4545/orders/234');
+
+        const third = await http.get('/orders/123', 4545);
+        assert.strictEqual(third.body, 'Order 123');
+
+        const fourth = await http.get('/orders/234', 4545);
+        assert.strictEqual(fourth.body, 'Order 234');
+
+        const fifth = await https.get('/accounts/123', 5555);
+        assert.strictEqual(fifth.statusCode, 401);
+
+        const sixth = await https.responseFor({
+            method: 'GET',
+            path: '/accounts/123',
+            port: 5555,
+            headers: { authorization: 'Basic blah===' }
+        });
+        assert.ok(sixth.body.indexOf('<id>123</id>') > 0);
+
+        const seventh = await https.responseFor({
+            method: 'GET',
+            path: '/accounts/234',
+            port: 5555,
+            headers: { authorization: 'Basic blah===' }
+        });
+        assert.strictEqual(seventh.statusCode, 404);
+
+        const email = await smtp.send({
+            from: '"From 1" <from1@mb.org>',
+            to: ['"To 1" <to1@mb.org>'],
+            subject: 'subject 1',
+            text: 'text 1'
+        }, 6565);
+        assert.strictEqual(email.response, '250 OK: message queued');
+
+        const eighth = await https.get('/users/123', 7575);
+        assert.ok(eighth.body.indexOf('<users>') > -1);
+        assert.ok(eighth.body.indexOf('<id>123</id>') > 0);
     });
 
     // This is the response resolver injection example on /docs/api/injection
-    promiseIt('should evaluate stringify function in templates when loading configuration files', function () {
+    it('should evaluate stringify function in templates when loading configuration files', async function () {
         const args = ['--configfile', path.join(__dirname, 'templates/imposters.ejs'), '--allowInjection', '--localOnly'];
+        await mb.start(args);
 
-        return mb.start(args)
-            .then(() => http.get('/first', 4546))
-            .then(response => {
-                assert.deepEqual(response.body, { count: 1 });
-                return http.get('/second', 4546);
-            })
-            .then(response => {
-                assert.deepEqual(response.body, { count: 2 });
-                return http.get('/first', 4546);
-            })
-            .then(response => {
-                assert.deepEqual(response.body, { count: 1 });
-                return http.get('/counter', 4546);
-            })
-            .then(response => {
-                assert.strictEqual(response.body, 'There have been 2 proxied calls');
-            })
-            .finally(() => mb.stop());
+        const first = await http.get('/first', 4546);
+        assert.deepEqual(first.body, { count: 1 });
+
+        const second = await http.get('/second', 4546);
+        assert.deepEqual(second.body, { count: 2 });
+
+        const third = await http.get('/first', 4546);
+        assert.deepEqual(third.body, { count: 1 });
+
+        const fourth = await http.get('/counter', 4546);
+        assert.strictEqual(fourth.body, 'There have been 2 proxied calls');
     });
 
-    promiseIt('should evaluate nested stringify functions when loading configuration files', function () {
+    it('should evaluate nested stringify functions when loading configuration files', async function () {
         const args = ['--configfile', path.join(__dirname, 'nestedStringify/imposters.ejs'), '--allowInjection', '--localOnly'];
+        await mb.start(args);
 
-        return mb.start(args)
-            .then(() => http.get('/', 4542))
-            .then(response => {
-                assert.deepEqual(response.body, { success: true });
-            })
-            .finally(() => mb.stop());
+        const response = await http.get('/', 4542);
+        assert.deepEqual(response.body, { success: true });
     });
 
-    promiseIt('should evaluate stringify functions with injected data when loading configuration files', function () {
+    it('should evaluate stringify functions with injected data when loading configuration files', async function () {
         const args = ['--configfile', path.join(__dirname, 'dataStringify/imposters.ejs'), '--allowInjection', '--localOnly'];
+        await mb.start(args);
 
-        return mb.start(args)
-            .then(() => http.get('/', 4542))
-            .then(response => {
-                assert.deepStrictEqual(response.body, { success: true, injectedValue: '1111' });
-                return http.get('/', 4542);
-            })
-            .then(response => {
-                assert.deepStrictEqual(response.body, { success: true, injectedValue: '2222' });
-                return http.get('/', 4542);
-            })
-            .then(response => {
-                assert.deepStrictEqual(response.body, { success: true, injectedValue: '3333' });
-            })
-            .finally(() => mb.stop());
+        const first = await http.get('/', 4542);
+        assert.deepStrictEqual(first.body, { success: true, injectedValue: '1111' });
+
+        const second = await http.get('/', 4542);
+        assert.deepStrictEqual(second.body, { success: true, injectedValue: '2222' });
+
+        const third = await http.get('/', 4542);
+        assert.deepStrictEqual(third.body, { success: true, injectedValue: '3333' });
     });
 
-    promiseIt('should not render through ejs when --noParse option provided', function () {
+    it('should not render through ejs when --noParse option provided', async function () {
         const args = ['--configfile', path.join(__dirname, 'noparse.json'), '--noParse'];
+        await mb.start(args);
 
-        return mb.start(args)
-            .then(() => http.get('/', 4545))
-            .then(response => {
-                assert.strictEqual(response.body, '<% should not render through ejs');
-            })
-            .finally(() => mb.stop());
+        const response = await http.get('/', 4545);
+
+        assert.strictEqual(response.body, '<% should not render through ejs');
     });
 
-    promiseIt('should evaluate gzipped requests (issue #477)', function () {
-        const zlib = require('zlib');
-        const args = ['--debug', '--configfile', path.join(__dirname, 'gzip.json')];
+    it('should evaluate gzipped requests (issue #477)', async function () {
+        const zlib = require('zlib'),
+            args = ['--debug', '--configfile', path.join(__dirname, 'gzip.json')],
+            buffer = zlib.gzipSync('{"title": "Harry Potter"}');
+        await mb.start(args);
 
-        return mb.start(args)
-            .then(() => {
-                let buffer = zlib.gzipSync('{"title": "Harry Potter"}');
-                return http.responseFor({
-                    method: 'POST',
-                    path: '/',
-                    port: 4542,
-                    headers: { 'Content-Encoding': 'gzip' },
-                    mode: 'binary',
-                    body: buffer
-                });
-            })
-            .then(response => {
-                assert.deepEqual(response.body.code, 'SUCCESS');
-            })
-            .finally(() => mb.stop());
+        const response = await http.responseFor({
+            method: 'POST',
+            path: '/',
+            port: 4542,
+            headers: { 'Content-Encoding': 'gzip' },
+            mode: 'binary',
+            body: buffer
+        });
+
+        assert.deepEqual(response.body.code, 'SUCCESS');
     });
-
 });

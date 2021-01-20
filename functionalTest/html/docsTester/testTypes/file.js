@@ -1,7 +1,6 @@
 'use strict';
 
-const fs = require('fs'),
-    Q = require('q');
+const fs = require('fs-extra');
 
 function runStep (config) {
     if (config.delete === 'true') {
@@ -10,7 +9,7 @@ function runStep (config) {
     else {
         fs.writeFileSync(config.filename, config.requestText);
     }
-    return Q(config);
+    return Promise.resolve(config);
 }
 
 module.exports = { runStep };

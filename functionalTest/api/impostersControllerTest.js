@@ -2,113 +2,105 @@
 
 const assert = require('assert'),
     api = require('./api').create(),
-    promiseIt = require('../testHelpers').promiseIt,
     port = api.port + 1,
     client = require('./http/baseHttpClient').create('http');
 
 describe('POST /imposters', function () {
 
-    promiseIt('should return create new imposter with consistent hypermedia', function () {
-        let createdBody;
-
-        return api.post('/imposters', { protocol: 'http', port }).then(response => {
-            createdBody = response.body;
-
-            assert.strictEqual(response.statusCode, 201);
-            assert.strictEqual(response.headers.location, response.body._links.self.href);
-
-            return api.get(response.headers.location);
-        }).then(response => {
-            assert.strictEqual(response.statusCode, 200);
-            assert.deepEqual(response.body, createdBody);
-        }).finally(() => api.del('/imposters'));
+    afterEach(async function () {
+        await api.del('/imposters');
     });
 
-    promiseIt('should create imposter at provided port', function () {
-        return api.post('/imposters', { protocol: 'http', port })
-            .then(() => api.get('/', port))
-            .then(response => {
-                assert.strictEqual(response.statusCode, 200, JSON.stringify(response.body));
-            })
-            .finally(() => api.del('/imposters'));
+    it('should return create new imposter with consistent hypermedia', async function () {
+        const creationResponse = await api.createImposter({ protocol: 'http', port });
+        assert.strictEqual(creationResponse.headers.location, creationResponse.body._links.self.href);
+
+        const imposterResponse = await api.get(creationResponse.headers.location);
+        assert.strictEqual(imposterResponse.statusCode, 200);
+        assert.deepEqual(imposterResponse.body, creationResponse.body);
     });
 
-    promiseIt('should return 400 on invalid input', function () {
-        return api.post('/imposters', {}).then(response => {
-            assert.strictEqual(response.statusCode, 400);
-        });
+    it('should create imposter at provided port', async function () {
+        await api.createImposter({ protocol: 'http', port });
+
+        const response = await api.get('/', port);
+
+        assert.strictEqual(response.statusCode, 200, JSON.stringify(response.body));
     });
 
-    promiseIt('should return 400 on port conflict', function () {
-        return api.post('/imposters', { protocol: 'http', port: api.port }).then(response => {
-            assert.strictEqual(response.statusCode, 400);
-        });
+    it('should return 400 on invalid input', async function () {
+        const response = await api.post('/imposters', {});
+
+        assert.strictEqual(response.statusCode, 400);
     });
 
-    promiseIt('should return 400 on invalid JSON', function () {
-        return api.post('/imposters', 'invalid').then(response => {
-            assert.strictEqual(response.statusCode, 400);
-            assert.deepEqual(response.body, {
-                errors: [{
-                    code: 'invalid JSON',
-                    message: 'Unable to parse body as JSON',
-                    source: 'invalid'
-                }]
-            });
+    it('should return 400 on port conflict', async function () {
+        const response = await api.post('/imposters', { protocol: 'http', port: api.port });
+
+        assert.strictEqual(response.statusCode, 400);
+    });
+
+    it('should return 400 on invalid JSON', async function () {
+        const response = await api.post('/imposters', 'invalid');
+
+        assert.strictEqual(response.statusCode, 400);
+        assert.deepEqual(response.body, {
+            errors: [{
+                code: 'invalid JSON',
+                message: 'Unable to parse body as JSON',
+                source: 'invalid'
+            }]
         });
     });
 });
 
 describe('DELETE /imposters', function () {
-    promiseIt('returns 200 with empty array if no imposters had been created', function () {
-        return api.del('/imposters').then(response => {
-            assert.strictEqual(response.statusCode, 200);
-            assert.deepEqual(response.body, { imposters: [] });
-        });
+    it('returns 200 with empty array if no imposters had been created', async function () {
+        const response = await api.del('/imposters');
+
+        assert.strictEqual(response.statusCode, 200);
+        assert.deepEqual(response.body, { imposters: [] });
     });
 
-    it('deletes all imposters and returns replayable body', function (done) {
+    it('deletes all imposters and returns replayable body', async function () {
         const firstImposter = { protocol: 'http', port, name: 'imposter 1' },
             secondImposter = { protocol: 'http', port: port + 1, name: 'imposter 1' };
+        await api.createImposter(firstImposter);
+        await api.createImposter(secondImposter);
 
-        return api.post('/imposters', firstImposter).then(response => {
-            assert.strictEqual(response.statusCode, 201);
-            return api.post('/imposters', secondImposter);
-        }).then(response => {
-            assert.strictEqual(response.statusCode, 201);
-            return client.get('/', firstImposter.port);
-        }).then(() => api.del('/imposters')).then(response => {
-            assert.strictEqual(response.statusCode, 200);
-            assert.deepEqual(response.body, {
-                imposters: [
-                    {
-                        protocol: 'http',
-                        port: firstImposter.port,
-                        name: firstImposter.name,
-                        recordRequests: false,
-                        stubs: []
-                    },
-                    {
-                        protocol: 'http',
-                        port: secondImposter.port,
-                        name: secondImposter.name,
-                        recordRequests: false,
-                        stubs: []
-                    }
-                ]
-            });
+        await client.get('/', firstImposter.port);
+        const response = await api.del('/imposters');
 
-            return client.get('/', firstImposter.port);
-        }).done(() => {
-            assert.fail('did not close socket');
-            done();
-        }, error => {
-            assert.strictEqual(error.code, 'ECONNREFUSED');
-            done();
+        assert.strictEqual(response.statusCode, 200);
+        assert.deepEqual(response.body, {
+            imposters: [
+                {
+                    protocol: 'http',
+                    port: firstImposter.port,
+                    name: firstImposter.name,
+                    recordRequests: false,
+                    stubs: []
+                },
+                {
+                    protocol: 'http',
+                    port: secondImposter.port,
+                    name: secondImposter.name,
+                    recordRequests: false,
+                    stubs: []
+                }
+            ]
         });
+
+        try {
+            await client.get('/', firstImposter.port);
+            assert.fail('did not close socket');
+        }
+        catch (error) {
+            assert.strictEqual(error.code, 'ECONNREFUSED');
+        }
     });
 
-    promiseIt('supports returning a non-replayable body with proxies removed', function () {
+    it('supports returning a non-replayable body with proxies removed', async function () {
         const isImposter = {
                 protocol: 'http',
                 port,
@@ -121,54 +113,54 @@ describe('DELETE /imposters', function () {
                 name: 'imposter-proxy',
                 stubs: [{ responses: [{ proxy: { to: 'http://www.google.com' } }] }]
             };
+        await api.createImposter(isImposter);
+        await api.createImposter(proxyImposter);
 
-        return api.post('/imposters', isImposter).then(response => {
-            assert.strictEqual(response.statusCode, 201);
-            return api.post('/imposters', proxyImposter);
-        }).then(response => {
-            assert.strictEqual(response.statusCode, 201);
-            return api.del('/imposters?removeProxies=true&replayable=false');
-        }).then(response => {
-            assert.strictEqual(response.statusCode, 200);
-            assert.deepEqual(response.body, {
-                imposters: [
-                    {
-                        protocol: 'http',
-                        port: isImposter.port,
-                        name: isImposter.name,
-                        recordRequests: false,
-                        numberOfRequests: 0,
-                        requests: [],
-                        stubs: [{
-                            responses: [{ is: { body: 'Hello, World!' } }],
-                            _links: { self: { href: `${api.url}/imposters/${isImposter.port}/stubs/0` } }
-                        }],
-                        _links: {
-                            self: { href: `http://localhost:${api.port}/imposters/${isImposter.port}` },
-                            stubs: { href: `http://localhost:${api.port}/imposters/${isImposter.port}/stubs` }
-                        }
-                    },
-                    {
-                        protocol: 'http',
-                        port: proxyImposter.port,
-                        name: proxyImposter.name,
-                        recordRequests: false,
-                        numberOfRequests: 0,
-                        requests: [],
-                        stubs: [],
-                        _links: {
-                            self: { href: `http://localhost:${api.port}/imposters/${proxyImposter.port }` },
-                            stubs: { href: `http://localhost:${api.port}/imposters/${proxyImposter.port}/stubs` }
-                        }
+        const response = await api.del('/imposters?removeProxies=true&replayable=false');
+
+        assert.strictEqual(response.statusCode, 200);
+        assert.deepEqual(response.body, {
+            imposters: [
+                {
+                    protocol: 'http',
+                    port: isImposter.port,
+                    name: isImposter.name,
+                    recordRequests: false,
+                    numberOfRequests: 0,
+                    requests: [],
+                    stubs: [{
+                        responses: [{ is: { body: 'Hello, World!' } }],
+                        _links: { self: { href: `${api.url}/imposters/${isImposter.port}/stubs/0` } }
+                    }],
+                    _links: {
+                        self: { href: `http://localhost:${api.port}/imposters/${isImposter.port}` },
+                        stubs: { href: `http://localhost:${api.port}/imposters/${isImposter.port}/stubs` }
                     }
-                ]
-            });
+                },
+                {
+                    protocol: 'http',
+                    port: proxyImposter.port,
+                    name: proxyImposter.name,
+                    recordRequests: false,
+                    numberOfRequests: 0,
+                    requests: [],
+                    stubs: [],
+                    _links: {
+                        self: { href: `http://localhost:${api.port}/imposters/${proxyImposter.port }` },
+                        stubs: { href: `http://localhost:${api.port}/imposters/${proxyImposter.port}/stubs` }
+                    }
+                }
+            ]
         });
     });
 });
 
 describe('PUT /imposters', function () {
-    promiseIt('creates all imposters provided when no imposters previously exist', () => {
+    afterEach(async function () {
+        await api.del('/imposters');
+    });
+
+    it('creates all imposters provided when no imposters previously exist', async function () {
         const request = {
             imposters: [
                 { protocol: 'http', port, name: 'imposter 1' },
@@ -177,21 +169,20 @@ describe('PUT /imposters', function () {
             ]
         };
 
-        return api.put('/imposters', request).then(response => {
-            assert.strictEqual(response.statusCode, 200);
-            return client.get('/', port);
-        }).then(response => {
-            assert.strictEqual(response.statusCode, 200);
-            return client.get('/', port + 1);
-        }).then(response => {
-            assert.strictEqual(response.statusCode, 200);
-            return client.get('/', port + 2);
-        }).then(response => {
-            assert.strictEqual(response.statusCode, 200);
-        }).finally(() => api.del('/imposters'));
+        const creationResponse = await api.put('/imposters', request);
+        assert.strictEqual(creationResponse.statusCode, 200);
+
+        const first = await client.get('/', port);
+        assert.strictEqual(first.statusCode, 200);
+
+        const second = await client.get('/', port + 1);
+        assert.strictEqual(second.statusCode, 200);
+
+        const third = await client.get('/', port + 2);
+        assert.strictEqual(third.statusCode, 200);
     });
 
-    promiseIt('overwrites previous imposters', function () {
+    it('overwrites previous imposters', async function () {
         const postRequest = { protocol: 'smtp', port: port },
             putRequest = {
                 imposters: [
@@ -200,21 +191,18 @@ describe('PUT /imposters', function () {
                     { protocol: 'http', port: port + 2, name: 'imposter 3' }
                 ]
             };
+        await api.createImposter(postRequest);
 
-        return api.post('/imposters', postRequest).then(response => {
-            assert.strictEqual(response.statusCode, 201);
-            return api.put('/imposters', putRequest);
-        }).then(response => {
-            assert.strictEqual(response.statusCode, 200);
-            return client.get('/', port);
-        }).then(response => {
-            assert.strictEqual(response.statusCode, 200);
-            return client.get('/', port + 1);
-        }).then(response => {
-            assert.strictEqual(response.statusCode, 200);
-            return client.get('/', port + 2);
-        }).then(response => {
-            assert.strictEqual(response.statusCode, 200);
-        }).finally(() => api.del('/imposters'));
+        const putResponse = await api.put('/imposters', putRequest);
+        assert.strictEqual(putResponse.statusCode, 200);
+
+        const first = await client.get('/', port);
+        assert.strictEqual(first.statusCode, 200);
+
+        const second = await client.get('/', port + 1);
+        assert.strictEqual(second.statusCode, 200);
+
+        const third = await client.get('/', port + 2);
+        assert.strictEqual(third.statusCode, 200);
     });
 });

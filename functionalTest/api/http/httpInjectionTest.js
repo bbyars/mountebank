@@ -3,7 +3,6 @@
 const assert = require('assert'),
     api = require('../api').create(),
     BaseHttpClient = require('./baseHttpClient'),
-    promiseIt = require('../../testHelpers').promiseIt,
     port = api.port + 1,
     timeout = parseInt(process.env.MB_SLOW_TEST_TIMEOUT || 4000);
 
@@ -13,8 +12,12 @@ const assert = require('assert'),
     describe(`${protocol} imposter`, function () {
         this.timeout(timeout);
 
+        afterEach(async function () {
+            await api.del('/imposters');
+        });
+
         describe('POST /imposters with injections', function () {
-            promiseIt('should allow javascript predicate for matching (old interface)', function () {
+            it('should allow javascript predicate for matching (old interface)', async function () {
                 // note the lower-case keys for headers!!!
                 const fn = request => request.path === '/test',
                     stub = {
@@ -22,11 +25,9 @@ const assert = require('assert'),
                         responses: [{ is: { body: 'MATCHED' } }]
                     },
                     request = { protocol, port, stubs: [stub] };
+                await api.createImposter(request);
 
-                return api.post('/imposters', request).then(response => {
-                    assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body));
-
-                    const spec = {
+                const spec = {
                         path: '/test?key=value',
                         port,
                         method: 'POST',
@@ -35,14 +36,13 @@ const assert = require('assert'),
                             'Content-Type': 'text/plain'
                         },
                         body: 'BODY'
-                    };
-                    return client.responseFor(spec);
-                }).then(response => {
-                    assert.strictEqual(response.body, 'MATCHED');
-                }).finally(() => api.del('/imposters'));
+                    },
+                    response = await client.responseFor(spec);
+
+                assert.strictEqual(response.body, 'MATCHED');
             });
 
-            promiseIt('should allow javascript predicate for matching', function () {
+            it('should allow javascript predicate for matching', async function () {
                 // note the lower-case keys for headers!!!
                 const fn = config => config.request.path === '/test',
                     stub = {
@@ -50,11 +50,9 @@ const assert = require('assert'),
                         responses: [{ is: { body: 'MATCHED' } }]
                     },
                     request = { protocol, port, stubs: [stub] };
+                await api.createImposter(request);
 
-                return api.post('/imposters', request).then(response => {
-                    assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body));
-
-                    const spec = {
+                const spec = {
                         path: '/test?key=value',
                         port,
                         method: 'POST',
@@ -63,14 +61,13 @@ const assert = require('assert'),
                             'Content-Type': 'text/plain'
                         },
                         body: 'BODY'
-                    };
-                    return client.responseFor(spec);
-                }).then(response => {
-                    assert.strictEqual(response.body, 'MATCHED');
-                }).finally(() => api.del('/imposters'));
+                    },
+                    response = await client.responseFor(spec);
+
+                assert.strictEqual(response.body, 'MATCHED');
             });
 
-            promiseIt('should allow changing state in predicate injection (issue #495)', function () {
+            it('should allow changing state in predicate injection (issue #495)', async function () {
                 const fn = config => {
                         config.state.requests = config.state.requests || 0;
                         config.state.requests += 1;
@@ -84,71 +81,64 @@ const assert = require('assert'),
                         responses: [{ is: { body: 'UNMATCHED' } }]
                     },
                     request = { protocol, port, stubs: [matchedStub, unmatchedStub] };
+                await api.createImposter(request);
 
-                return api.post('/imposters', request).then(response => {
-                    assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body));
-                    return client.get('/', port);
-                }).then(response => {
-                    assert.strictEqual(response.body, 'UNMATCHED');
-                    return client.get('/', port);
-                }).then(response => {
-                    assert.strictEqual(response.body, 'MATCHED');
-                }).finally(() => api.del('/imposters'));
+                const first = await client.get('/', port);
+                assert.strictEqual(first.body, 'UNMATCHED');
+
+                const second = await client.get('/', port);
+                assert.strictEqual(second.body, 'MATCHED');
             });
 
-            promiseIt('should not validate a bad predicate injection', function () {
+            it('should not validate a bad predicate injection', async function () {
                 const stub = {
                         predicates: [{ inject: 'return true;' }],
                         responses: [{ is: { body: 'MATCHED' } }]
                     },
                     request = { protocol, port, stubs: [stub] };
 
-                return api.post('/imposters', request).then(response => {
-                    assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body));
-                }).finally(() => api.del('/imposters'));
+                const response = await api.createImposter(request);
+
+                assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body));
             });
 
-            promiseIt('should allow synchronous javascript injection for responses (old interface)', function () {
+            it('should allow synchronous javascript injection for responses (old interface)', async function () {
                 const fn = request => ({ body: `${request.method} INJECTED` }),
                     stub = { responses: [{ inject: fn.toString() }] },
                     request = { protocol, port, stubs: [stub] };
+                await api.createImposter(request);
 
-                return api.post('/imposters', request)
-                    .then(() => client.get('/', port))
-                    .then(response => {
-                        assert.strictEqual(response.body, 'GET INJECTED');
-                        assert.strictEqual(response.statusCode, 200);
-                        assert.strictEqual(response.headers.connection, 'close');
-                    })
-                    .finally(() => api.del('/imposters'));
+                const response = await client.get('/', port);
+
+                assert.strictEqual(response.body, 'GET INJECTED');
+                assert.strictEqual(response.statusCode, 200);
+                assert.strictEqual(response.headers.connection, 'close');
             });
 
-            promiseIt('should allow synchronous javascript injection for responses', function () {
+            it('should allow synchronous javascript injection for responses', async function () {
                 const fn = config => ({ body: `${config.request.method} INJECTED` }),
                     stub = { responses: [{ inject: fn.toString() }] },
                     request = { protocol, port, stubs: [stub] };
+                await api.createImposter(request);
 
-                return api.post('/imposters', request)
-                    .then(() => client.get('/', port))
-                    .then(response => {
-                        assert.strictEqual(response.body, 'GET INJECTED');
-                        assert.strictEqual(response.statusCode, 200);
-                        assert.strictEqual(response.headers.connection, 'close');
-                    })
-                    .finally(() => api.del('/imposters'));
+                const response = await client.get('/', port);
+
+                assert.strictEqual(response.body, 'GET INJECTED');
+                assert.strictEqual(response.statusCode, 200);
+                assert.strictEqual(response.headers.connection, 'close');
             });
 
-            promiseIt('should not validate a bad response injection', function () {
+            it('should not validate a bad response injection', async function () {
                 const fn = () => { throw new Error('BOOM'); },
                     stub = { responses: [{ inject: fn.toString() }] },
                     request = { protocol, port, stubs: [stub] };
 
-                return api.post('/imposters', request).then(response => {
-                    assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body));
-                }).finally(() => api.del('/imposters'));
+                const response = await api.createImposter(request);
+
+                assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body));
             });
 
-            promiseIt('should allow javascript injection to keep state between requests (old interface)', function () {
+            it('should allow javascript injection to keep state between requests (old interface)', async function () {
                 const fn = (request, state) => {
                         if (!state.calls) { state.calls = 0; }
                         state.calls += 1;
@@ -156,21 +146,16 @@ const assert = require('assert'),
                     },
                     stub = { responses: [{ inject: fn.toString() }] },
                     request = { protocol, port, stubs: [stub] };
+                await api.createImposter(request);
 
-                return api.post('/imposters', request).then(response => {
-                    assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body));
+                const first = await client.get('/', port);
+                assert.strictEqual(first.body, '1');
 
-                    return client.get('/', port);
-                }).then(response => {
-                    assert.strictEqual(response.body, '1');
-
-                    return client.get('/', port);
-                }).then(response => {
-                    assert.deepEqual(response.body, '2');
-                }).finally(() => api.del('/imposters'));
+                const second = await client.get('/', port);
+                assert.deepEqual(second.body, '2');
             });
 
-            promiseIt('should allow javascript injection to keep state between requests', function () {
+            it('should allow javascript injection to keep state between requests', async function () {
                 const fn = config => {
                         if (!config.state.calls) { config.state.calls = 0; }
                         config.state.calls += 1;
@@ -178,21 +163,16 @@ const assert = require('assert'),
                     },
                     stub = { responses: [{ inject: fn.toString() }] },
                     request = { protocol, port, stubs: [stub] };
+                await api.createImposter(request);
 
-                return api.post('/imposters', request).then(response => {
-                    assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body));
+                const first = await client.get('/', port);
+                assert.strictEqual(first.body, '1');
 
-                    return client.get('/', port);
-                }).then(response => {
-                    assert.strictEqual(response.body, '1');
-
-                    return client.get('/', port);
-                }).then(response => {
-                    assert.deepEqual(response.body, '2');
-                }).finally(() => api.del('/imposters'));
+                const second = await client.get('/', port);
+                assert.deepEqual(second.body, '2');
             });
 
-            promiseIt('should share state with predicate and response injection (old interface)', function () {
+            it('should share state with predicate and response injection (old interface)', async function () {
                 const responseFn = (request, injectState, logger, callback, imposterState) => {
                         imposterState.calls = imposterState.calls || 0;
                         imposterState.calls += 1;
@@ -217,22 +197,19 @@ const assert = require('assert'),
                         }
                     ],
                     request = { protocol, port, stubs };
+                await api.createImposter(request);
 
-                return api.post('/imposters', request).then(response => {
-                    assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body));
-                    return client.get('/', port);
-                }).then(response => {
-                    assert.strictEqual(response.body, 'INJECT');
-                    return client.get('/', port);
-                }).then(response => {
-                    assert.strictEqual(response.body, 'INJECT');
-                    return client.get('/', port);
-                }).then(response => {
-                    assert.strictEqual(response.body, 'IS');
-                }).finally(() => api.del('/imposters'));
+                const first = await client.get('/', port);
+                assert.strictEqual(first.body, 'INJECT');
+
+                const second = await client.get('/', port);
+                assert.strictEqual(second.body, 'INJECT');
+
+                const third = await client.get('/', port);
+                assert.strictEqual(third.body, 'IS');
             });
 
-            promiseIt('should share state with predicate and response injection', function () {
+            it('should share state with predicate and response injection', async function () {
                 const responseFn = config => {
                         config.state.calls = config.state.calls || 0;
                         config.state.calls += 1;
@@ -257,37 +234,32 @@ const assert = require('assert'),
                         }
                     ],
                     request = { protocol, port, stubs };
+                await api.createImposter(request);
 
-                return api.post('/imposters', request).then(response => {
-                    assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body));
-                    return client.get('/', port);
-                }).then(response => {
-                    assert.strictEqual(response.body, 'INJECT');
-                    return client.get('/', port);
-                }).then(response => {
-                    assert.strictEqual(response.body, 'INJECT');
-                    return client.get('/', port);
-                }).then(response => {
-                    assert.strictEqual(response.body, 'IS');
-                }).finally(() => api.del('/imposters'));
+                const first = await client.get('/', port);
+                assert.strictEqual(first.body, 'INJECT');
+
+                const second = await client.get('/', port);
+                assert.strictEqual(second.body, 'INJECT');
+
+                const third = await client.get('/', port);
+                assert.strictEqual(third.body, 'IS');
             });
 
-            promiseIt('should allow access to the global process object', function () {
+            it('should allow access to the global process object', async function () {
                 // https://github.com/bbyars/mountebank/issues/134
                 const fn = () => ({ body: process.env.USER || 'test' }),
                     stub = { responses: [{ inject: fn.toString() }] },
                     request = { protocol, port, stubs: [stub] };
+                await api.createImposter(request);
 
-                return api.post('/imposters', request).then(response => {
-                    assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body));
-                    return client.get('/', port);
-                }).then(response => {
-                    assert.strictEqual(response.body, process.env.USER || 'test');
-                }).finally(() => api.del('/imposters'));
+                const response = await client.get('/', port);
+
+                assert.strictEqual(response.body, process.env.USER || 'test');
             });
 
             if (process.env.MB_AIRPLANE_MODE !== 'true') {
-                promiseIt('should allow asynchronous injection', function () {
+                it('should allow asynchronous injection', async function () {
                     const fn = (request, state, logger, callback) => {
                             const http = require('http'),
                                 options = {
@@ -318,23 +290,20 @@ const assert = require('assert'),
                         },
                         stub = { responses: [{ inject: fn.toString() }] },
                         request = { protocol, port, stubs: [stub] };
+                    await api.createImposter(request);
 
-                    return api.post('/imposters', request).then(response => {
-                        assert.strictEqual(response.statusCode, 201, JSON.stringify(response.body));
+                    const response = await client.get('/', port);
 
-                        return client.get('/', port);
-                    }).then(response => {
-                        // sometimes 301, sometimes 302
-                        // 200 on new Mac with El Capitan?
-                        assert.ok(response.statusCode <= 302, response.statusCode);
-                        if (response.statusCode === 200) {
-                            assert.ok(response.body.indexOf('google') >= 0, response.body);
-                        }
-                        else {
-                            // google.com.br in Brasil, google.ca in Canada, etc
-                            assert.ok(response.headers.location.indexOf('google.') >= 0, response.headers.location);
-                        }
-                    }).finally(() => api.del('/imposters'));
+                    // sometimes 301, sometimes 302
+                    // 200 on new Mac with El Capitan?
+                    assert.ok(response.statusCode <= 302, response.statusCode);
+                    if (response.statusCode === 200) {
+                        assert.ok(response.body.indexOf('google') >= 0, response.body);
+                    }
+                    else {
+                        // google.com.br in Brasil, google.ca in Canada, etc
+                        assert.ok(response.headers.location.indexOf('google.') >= 0, response.headers.location);
+                    }
                 });
             }
         });

@@ -1,7 +1,6 @@
 'use strict';
 
 const assert = require('assert'),
-    promiseIt = require('../testHelpers').promiseIt,
     api = require('../api/api').create(),
     httpClient = require('../api/http/baseHttpClient').create('http'),
     xpath = require('xpath'),
@@ -23,17 +22,15 @@ function getNextLink (body) {
 describe('the feed', function () {
     this.timeout(timeout);
 
-    promiseIt('should default to page 1 with 10 entries', function () {
-        return httpClient.get('/feed', api.port).then(response => {
-            assert.strictEqual(response.statusCode, 200);
-            assert.strictEqual(response.headers['content-type'], 'application/atom+xml; charset=utf-8');
-            assert.strictEqual(entryCount(response.body), 10);
+    it('should default to page 1 with 10 entries', async function () {
+        const feedResponse = await httpClient.get('/feed', api.port);
+        assert.strictEqual(feedResponse.statusCode, 200);
+        assert.strictEqual(feedResponse.headers['content-type'], 'application/atom+xml; charset=utf-8');
+        assert.strictEqual(entryCount(feedResponse.body), 10);
 
-            return httpClient.get(getNextLink(response.body), api.port);
-        }).then(response => {
-            assert.strictEqual(response.statusCode, 200);
-            assert.ok(entryCount(response.body) > 0, 'No entries');
-        });
+        const nextPageResponse = await httpClient.get(getNextLink(feedResponse.body), api.port);
+        assert.strictEqual(nextPageResponse.statusCode, 200);
+        assert.ok(entryCount(nextPageResponse.body) > 0, 'No entries');
     });
 });
 

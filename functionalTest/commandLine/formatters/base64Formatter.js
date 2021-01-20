@@ -13,13 +13,13 @@ function decode (text) {
 }
 
 function load (options) {
-    const fs = require('fs'),
+    const fs = require('fs-extra'),
         contents = fs.readFileSync(options.configfile, { encoding: 'utf8' });
     return JSON.parse(decode(contents));
 }
 
 function save (options, imposters) {
-    const fs = require('fs');
+    const fs = require('fs-extra');
 
     if (options.customName && imposters.imposters.length > 0) {
         imposters.imposters[0].name = options.customName;
