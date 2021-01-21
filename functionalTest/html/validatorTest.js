@@ -75,14 +75,19 @@ if (process.env.MB_AIRPLANE_MODE !== 'true' && process.env.MB_RUN_WEB_TESTS === 
             const response = await api.get('/sitemap');
             assert.strictEqual(response.statusCode, 200);
 
-            const siteLinks = response.body.split('\n').map(link => link.replace('http://www.mbtest.org', '')).filter(path =>
-                    // save time by only checking latest releases, others should be immutable
-                    path !== '' &&
-                           blacklist.indexOf(path) < 0 &&
-                           (path.indexOf('/releases/') < 0 || path.indexOf(currentVersion) > 0)
-                ),
-                tests = siteLinks.map(link => getHTML(link).then(html => assertValid(link, html)));
-
+            const siteLinks = response.body
+                    .split('\n')
+                    .map(link => link.replace('http://www.mbtest.org', ''))
+                    .filter(path =>
+                        // save time by only checking latest releases, others should be immutable
+                        path !== '' &&
+                        blacklist.indexOf(path) < 0 &&
+                        (path.indexOf('/releases/') < 0 || path.indexOf(currentVersion) > 0)
+                    ),
+                tests = siteLinks.map(async link => {
+                    const html = await getHTML(link);
+                    assertValid(link, html);
+                });
             return Promise.all(tests);
         });
     });

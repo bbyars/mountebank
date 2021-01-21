@@ -125,9 +125,9 @@ types.forEach(function (type) {
 
         describe('#all', function () {
             it('should return an empty list if nothing added', async function () {
-                return repo.all().then(imposters => {
-                    assert.deepEqual(imposters, []);
-                });
+                const imposters = await repo.all();
+
+                assert.deepEqual(imposters, []);
             });
 
             it('should return all previously added', async function () {

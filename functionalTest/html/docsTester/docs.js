@@ -9,16 +9,10 @@ const api = require('../../api/api').create(),
  * All DOM parsing happens here, including processing the special HTML tags
  */
 
-function getDOM (endpoint) {
-    const url = api.url + endpoint;
-
-    return new Promise((resolve, reject) => {
-        JSDOM.fromURL(url).then(dom => {
-            resolve(dom.window);
-        }).catch(errors => {
-            reject(errors);
-        });
-    });
+async function getDOM (endpoint) {
+    const url = api.url + endpoint,
+        dom = await JSDOM.fromURL(url);
+    return dom.window;
 }
 
 function asArray (iterable) {

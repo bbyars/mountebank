@@ -6,16 +6,10 @@ const assert = require('assert'),
     timeout = parseInt(process.env.MB_SLOW_TEST_TIMEOUT || 3000);
 
 
-function getDOM (endpoint) {
-    const url = api.url + endpoint;
-
-    return new Promise((resolve, reject) => {
-        JSDOM.fromURL(url).then(dom => {
-            resolve(dom.window);
-        }).catch(errors => {
-            reject(errors);
-        });
-    });
+async function getDOM (endpoint) {
+    const url = api.url + endpoint,
+        dom = await JSDOM.fromURL(url);
+    return dom.window;
 }
 
 async function getJSONFor (contract) {

@@ -81,20 +81,19 @@ function useAbsoluteUrls (port) {
  * @returns {Function}
  */
 function createImposterValidator (imposters) {
-    return function validateImposterExists (request, response, next) {
-        const errors = require('./errors');
+    return async function validateImposterExists (request, response, next) {
+        const errors = require('./errors'),
+            exists = await imposters.exists(request.params.id);
 
-        return imposters.exists(request.params.id).then(exists => {
-            if (exists) {
-                next();
-            }
-            else {
-                response.statusCode = 404;
-                response.send({
-                    errors: [errors.MissingResourceError('Try POSTing to /imposters first?')]
-                });
-            }
-        });
+        if (exists) {
+            next();
+        }
+        else {
+            response.statusCode = 404;
+            response.send({
+                errors: [errors.MissingResourceError('Try POSTing to /imposters first?')]
+            });
+        }
     };
 }
 
