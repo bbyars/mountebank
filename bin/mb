@@ -21,6 +21,11 @@ function processExists (pid) {
 
 function serverAt (options) {
     async function start () {
+        // Set in case npm dependencies do anything with this
+        if (!process.env.NODE_ENV) {
+            process.env.NODE_ENV = 'production';
+        }
+
         const server = await mountebank.create(options);
 
         function shutdown () {
