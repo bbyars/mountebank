@@ -80,6 +80,7 @@ describe('--host', function () {
     });
 
     // Travis adds hostname into /etc/hosts file
+    // eslint-disable-next-line mocha/no-setup-in-describe
     if (process.env.TRAVIS !== 'true') {
         it('should disallow localhost calls when bound to specific host', async function () {
             await mb.start(['--host', hostname]);

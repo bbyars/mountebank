@@ -8,7 +8,7 @@ const middleware = require('../../src/util/middleware'),
 describe('middleware', function () {
     let request, response, next;
 
-    beforeEach(() => {
+    beforeEach(function () {
         request = { headers: {}, params: {} };
         response = FakeResponse.create();
         next = mock();
@@ -17,7 +17,7 @@ describe('middleware', function () {
     describe('#useAbsoluteUrls', function () {
         let send, setHeader;
 
-        beforeEach(() => {
+        beforeEach(function () {
             send = mock();
             setHeader = mock();
             response.send = send;

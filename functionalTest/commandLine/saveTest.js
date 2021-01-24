@@ -55,6 +55,7 @@ describe('mb save', function () {
         }
     });
 
+    // eslint-disable-next-line mocha/no-setup-in-describe
     if (process.env.MB_AIRPLANE_MODE !== 'true') {
         it('should allow removing proxies during save', async function () {
             const proxyStub = { responses: [{ proxy: { to: 'https://google.com' } }] },

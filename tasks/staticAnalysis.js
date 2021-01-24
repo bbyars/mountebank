@@ -106,7 +106,8 @@ module.exports = function (grunt) {
                 'nc',
                 'snyk',
                 'mountebank-formatters',
-                'eslint-plugin-node'
+                'eslint-plugin-node',
+                'eslint-plugin-mocha'
             ];
 
         dependencies.forEach(dependency => { usedCount[dependency] = 0; });

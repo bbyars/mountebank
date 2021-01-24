@@ -8,7 +8,7 @@ const Controller = require('../../src/controllers/logsController'),
 
 describe('logsController', function () {
     describe('#get', function () {
-        after(() => {
+        after(function () {
             fs.unlinkSync('logsControllerTest.log');
         });
 

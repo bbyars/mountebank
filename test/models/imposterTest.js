@@ -12,7 +12,7 @@ function deny () { return false; }
 describe('imposter', function () {
     let Protocol, metadata, server, logger;
 
-    beforeEach(() => {
+    beforeEach(function () {
         metadata = {};
         server = {
             stubs: createStubRepository(),

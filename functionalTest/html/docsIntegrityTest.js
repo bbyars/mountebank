@@ -16,6 +16,7 @@ async function validateDocs (page) {
 
 // Hack because the tests kept failing on Appveyor
 if (!isWindows) {
+    /* eslint-disable mocha/no-setup-in-describe */
     describe('docs', function () {
         this.timeout(timeout);
 

@@ -258,6 +258,7 @@ const assert = require('assert'),
                 assert.strictEqual(response.body, process.env.USER || 'test');
             });
 
+            // eslint-disable-next-line mocha/no-setup-in-describe
             if (process.env.MB_AIRPLANE_MODE !== 'true') {
                 it('should allow asynchronous injection', async function () {
                     const fn = (request, state, logger, callback) => {

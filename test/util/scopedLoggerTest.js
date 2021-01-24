@@ -6,6 +6,7 @@ const assert = require('assert'),
 
 describe('scopedLogger', function () {
     describe('#create', function () {
+        // eslint-disable-next-line mocha/no-setup-in-describe
         ['debug', 'info', 'warn', 'error'].forEach(level => {
             it('should prefix protocol name and port to all ' + level + ' calls', function () {
                 const logger = { debug: mock(), info: mock(), warn: mock(), error: mock() },

@@ -10,10 +10,12 @@ describe('tcpValidator', function () {
             assert.deepEqual(validator.validate({}), []);
         });
 
-        ['text', 'binary'].forEach(value => {
-            it(`should be valid for ${value} mode`, function () {
-                assert.deepEqual(validator.validate({ mode: value }), []);
-            });
+        it('should be valid for text mode', function () {
+            assert.deepEqual(validator.validate({ mode: 'text' }), []);
+        });
+
+        it('should be valid for binary mode', function () {
+            assert.deepEqual(validator.validate({ mode: 'binary' }), []);
         });
 
         it('should not be valid for incorrect mode', function () {

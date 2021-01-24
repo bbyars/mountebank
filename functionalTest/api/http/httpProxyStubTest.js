@@ -675,6 +675,7 @@ describe('http proxy stubs', function () {
         assert.deepEqual(third.body.stubs, proxyRequest.stubs, JSON.stringify(third.body.stubs, null, 2));
     });
 
+    // eslint-disable-next-line mocha/no-setup-in-describe
     if (isInProcessImposter('http')) {
         it('should not add = at end of of query key missing = in original request (issue #410)', async function () {
             const http = require('http'),

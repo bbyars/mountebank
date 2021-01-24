@@ -23,7 +23,7 @@ function imposterize (config) {
 describe('ImpostersController', function () {
     let response;
 
-    beforeEach(() => {
+    beforeEach(function () {
         response = FakeResponse.create();
     });
 
@@ -85,7 +85,7 @@ describe('ImpostersController', function () {
     describe('#post', function () {
         let request, imposter, imposters, Protocol, controller, logger;
 
-        beforeEach(() => {
+        beforeEach(function () {
             request = { body: {}, socket: { remoteAddress: 'host', remotePort: 'port' } };
             imposter = {
                 url: 'imposter-url',
@@ -308,7 +308,7 @@ describe('ImpostersController', function () {
     describe('#put', function () {
         let request, logger, Protocol;
 
-        beforeEach(() => {
+        beforeEach(function () {
             request = { body: {}, socket: { remoteAddress: 'host', remotePort: 'port' } };
             logger = FakeLogger.create();
             Protocol = {

@@ -10,7 +10,7 @@ describe('HttpRequest', function () {
     describe('#createFrom', function () {
         let request;
 
-        beforeEach(() => {
+        beforeEach(function () {
             request = inherit.from(events.EventEmitter, {
                 socket: { remoteAddress: '', remotePort: '' },
                 setEncoding: mock(),

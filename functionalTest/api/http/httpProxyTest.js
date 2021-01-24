@@ -5,7 +5,10 @@ const assert = require('assert'),
     api = require('../api').create(),
     port = api.port + 1,
     timeout = parseInt(process.env.MB_SLOW_TEST_TIMEOUT || 3000),
-    airplaneMode = process.env.MB_AIRPLANE_MODE === 'true';
+    airplaneMode = process.env.MB_AIRPLANE_MODE === 'true',
+    noOp = () => {},
+    logger = { debug: noOp, info: noOp, warn: noOp, error: noOp },
+    proxy = HttpProxy.create(logger);
 
 describe('http proxy', function () {
     this.timeout(timeout);
@@ -13,10 +16,6 @@ describe('http proxy', function () {
     afterEach(async function () {
         await api.del('/imposters');
     });
-
-    const noOp = () => {},
-        logger = { debug: noOp, info: noOp, warn: noOp, error: noOp },
-        proxy = HttpProxy.create(logger);
 
     describe('#to', function () {
         it('should send same request information to proxied url', async function () {
@@ -101,6 +100,7 @@ describe('http proxy', function () {
         }
 
 
+        // eslint-disable-next-line mocha/no-setup-in-describe
         ['application/octet-stream', 'audio/mpeg', 'audio/mp4', 'image/gif', 'image/jpeg', 'video/avi', 'video/mpeg'].forEach(mimeType => {
             it(`should base64 encode ${mimeType} responses`, async function () {
                 const buffer = Buffer.from([0, 1, 2, 3]),

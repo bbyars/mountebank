@@ -9,10 +9,6 @@ const assert = require('assert'),
 describe('mb replay', function () {
     this.timeout(timeout);
 
-    afterEach(async function () {
-        await mb.stop();
-    });
-
     it('should remove proxies', async function () {
         const originServerPort = mb.port + 1,
             originServerFn = (request, state) => {
@@ -50,7 +46,12 @@ describe('mb replay', function () {
             stubs = response.body.stubs,
             responses = stubs.map(stub => stub.responses.map(stubResponse => stubResponse.is.body));
 
-        assert.strictEqual(response.body.stubs.length, 2, JSON.stringify(response.body.stubs, null, 2));
-        assert.deepEqual(responses, [['1. /first', '3. /first'], ['2. /second']]);
+        try {
+            assert.strictEqual(response.body.stubs.length, 2, JSON.stringify(response.body.stubs, null, 2));
+            assert.deepEqual(responses, [['1. /first', '3. /first'], ['2. /second']]);
+        }
+        finally {
+            await mb.stop();
+        }
     });
 });

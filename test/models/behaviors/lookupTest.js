@@ -184,7 +184,7 @@ describe('behaviors', function () {
         });
 
         describe('csv', function () {
-            before(() => {
+            before(function () {
                 fs.writeFileSync('lookupTest.csv',
                     'name,occupation,location\n' +
                     'mountebank,tester,worldwide\n' +
@@ -192,7 +192,7 @@ describe('behaviors', function () {
                     'Bob Barker,"The Price Is Right","Darrington, Washington"');
             });
 
-            after(() => {
+            after(function () {
                 fs.unlinkSync('lookupTest.csv');
             });
 
@@ -680,8 +680,8 @@ describe('behaviors', function () {
                 }]);
             });
 
-            describe('csv-delimiter', () => {
-                before(() => {
+            describe('csv-delimiter', function () {
+                before(function () {
                     fs.writeFileSync('lookupDelimiterTest.csv',
                         'name|occupation|location\n' +
                         'mountebank|tester|worldwide\n' +
@@ -690,7 +690,7 @@ describe('behaviors', function () {
                         'jeanpaulct|developer|Peru');
                 });
 
-                after(() => {
+                after(function () {
                     fs.unlinkSync('lookupDelimiterTest.csv');
                 });
 

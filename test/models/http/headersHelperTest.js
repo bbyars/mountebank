@@ -5,27 +5,33 @@ const assert = require('assert'),
 
 describe('headersHelper', function () {
     describe('#getHeader', function () {
-        const request = {
-                headers: {
-                    'My-First-header': 'first-value',
-                    'my-Second-Header': 'second-value'
-                }
-            },
-            getHeader = headersHelper.getHeader;
-
         it('should search for the header with case-insensity', function () {
+            const request = {
+                    headers: {
+                        'My-First-header': 'first-value',
+                        'my-Second-Header': 'second-value'
+                    }
+                },
+                getHeader = headersHelper.getHeader;
+
             assert.equal(getHeader('my-first-headEr', request.headers), 'first-value');
             assert.equal(getHeader('my-SECOND-header', request.headers), 'second-value');
         });
 
         it('should return undefined if the header is not present', function () {
+            const request = {
+                    headers: {
+                        'My-First-header': 'first-value',
+                        'my-Second-Header': 'second-value'
+                    }
+                },
+                getHeader = headersHelper.getHeader;
+
             assert.equal(getHeader('Missing-Header', request.headers), undefined);
         });
     });
 
     describe('#setHeader', function () {
-        const setHeader = headersHelper.setHeader;
-
         it('should not change the casing if the header exists', function () {
             const request = {
                 headers: {
@@ -34,7 +40,7 @@ describe('headersHelper', function () {
                 }
             };
 
-            setHeader('my-first-headEr', 'new-value', request.headers);
+            headersHelper.setHeader('my-first-headEr', 'new-value', request.headers);
             assert.deepEqual(
                 request.headers,
                 {
@@ -52,7 +58,7 @@ describe('headersHelper', function () {
                 }
             };
 
-            setHeader('My-Third-Header', 'third-value', request.headers);
+            headersHelper.setHeader('My-Third-Header', 'third-value', request.headers);
             assert.deepEqual(
                 request.headers,
                 {
