@@ -80,8 +80,7 @@ function create (logger) {
         /* eslint complexity: 0 */
         const helpers = require('../../util/helpers'),
             headersHelper = require('./headersHelper'),
-            url = require('url'),
-            parts = url.parse(baseUrl),
+            parts = new URL(baseUrl),
             protocol = parts.protocol === 'https:' ? require('https') : require('http'),
             defaultPort = parts.protocol === 'https:' ? 443 : 80,
             options = {
@@ -180,14 +179,20 @@ function create (logger) {
                 originalRequest.requestFrom, direction, JSON.stringify(what), direction, proxyDestination);
         }
 
-        const proxiedRequest = getProxyRequest(proxyDestination, originalRequest, options, requestDetails);
-
-        log('=>', originalRequest);
-
         return new Promise((resolve, reject) => {
-            proxiedRequest.once('error', error => {
-                const errors = require('../../util/errors');
+            const errors = require('../../util/errors');
 
+            let proxiedRequest;
+            try {
+                proxiedRequest = getProxyRequest(proxyDestination, originalRequest, options, requestDetails);
+            }
+            catch (e) {
+                reject(errors.InvalidProxyError(`Unable to connect to ${JSON.stringify(proxyDestination)}`));
+            }
+
+            log('=>', originalRequest);
+
+            proxiedRequest.once('error', error => {
                 if (error.code === 'ENOTFOUND') {
                     reject(errors.InvalidProxyError(`Cannot resolve ${JSON.stringify(proxyDestination)}`));
                 }

@@ -17,8 +17,13 @@ function create (protocols, imposters, logger, allowInjection) {
     const exceptions = require('../util/errors'),
         helpers = require('../util/helpers');
 
-    const queryIsFalse = (query, key) => !helpers.defined(query[key]) || query[key].toLowerCase() !== 'false';
-    const queryBoolean = (query, key) => helpers.defined(query[key]) && query[key].toLowerCase() === 'true';
+    function isFlagFalse (query, key) {
+        return !helpers.defined(query[key]) || query[key].toLowerCase() !== 'false';
+    }
+
+    function isFlagSet (query, key) {
+        return helpers.defined(query[key]) && query[key].toLowerCase() === 'true';
+    }
 
     function validatePort (port, errors) {
         const portIsValid = !helpers.defined(port) || (port.toString().indexOf('.') === -1 && port > 0 && port < 65536);
@@ -93,12 +98,10 @@ function create (protocols, imposters, logger, allowInjection) {
      * @returns {Object} - the promise
      */
     async function get (request, response) {
-        const url = require('url'),
-            query = url.parse(request.url, true).query,
-            options = {
-                replayable: queryBoolean(query, 'replayable'),
-                removeProxies: queryBoolean(query, 'removeProxies'),
-                list: !(queryBoolean(query, 'replayable') || queryBoolean(query, 'removeProxies'))
+        const options = {
+                replayable: isFlagSet(request.query, 'replayable'),
+                removeProxies: isFlagSet(request.query, 'removeProxies'),
+                list: !(isFlagSet(request.query, 'replayable') || isFlagSet(request.query, 'removeProxies'))
             },
             impostersJSON = await getAllJSON(options);
 
@@ -147,12 +150,10 @@ function create (protocols, imposters, logger, allowInjection) {
      * @returns {Object} A promise for testing purposes
      */
     async function del (request, response) {
-        const url = require('url'),
-            query = url.parse(request.url, true).query,
-            options = {
+        const options = {
                 // default to replayable for backwards compatibility
-                replayable: queryIsFalse(query, 'replayable'),
-                removeProxies: queryBoolean(query, 'removeProxies')
+                replayable: isFlagFalse(request.query, 'replayable'),
+                removeProxies: isFlagSet(request.query, 'removeProxies')
             },
             json = await getAllJSON(options);
 

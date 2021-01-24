@@ -80,7 +80,7 @@ describe('behaviors', function () {
                 logger = Logger.create(),
                 shellFn = function exec () {
                     console.error('BOOM!!!');
-                    process.exit(1);
+                    process.exit(1); // eslint-disable-line no-process-exit
                 },
                 config = { shellTransform: 'node shellTransformTest.js' };
 

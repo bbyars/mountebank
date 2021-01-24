@@ -35,10 +35,8 @@ function create (logfile) {
      */
     function get (request, response) {
         const allLogs = getLogEntries(),
-            url = require('url'),
-            query = url.parse(request.url, true).query,
-            startIndex = parseInt(query.startIndex || 0),
-            endIndex = parseInt(query.endIndex || allLogs.length - 1),
+            startIndex = parseInt(request.query.startIndex || 0),
+            endIndex = parseInt(request.query.endIndex || allLogs.length - 1),
             logs = allLogs.slice(startIndex, endIndex + 1);
 
         response.format({

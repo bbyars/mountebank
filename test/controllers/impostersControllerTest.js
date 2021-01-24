@@ -5,7 +5,8 @@ const assert = require('assert'),
     Controller = require('../../src/controllers/impostersController'),
     FakeResponse = require('../fakes/fakeResponse'),
     FakeLogger = require('../fakes/fakeLogger'),
-    ImpostersRepo = require('../../src/models/inMemoryImpostersRepository');
+    ImpostersRepo = require('../../src/models/inMemoryImpostersRepository'),
+    Request = require('../fakes/fakeRequest');
 
 function imposterize (config) {
     const cloned = JSON.parse(JSON.stringify(config)),
@@ -31,7 +32,7 @@ describe('ImpostersController', function () {
             const impostersRepo = ImpostersRepo.create(),
                 controller = Controller.create({}, impostersRepo, null, false);
 
-            await controller.get({ url: '/imposters' }, response);
+            await controller.get(Request.to('/imposters'), response);
             assert.deepEqual(response.body, { imposters: [] });
         });
 
@@ -43,7 +44,7 @@ describe('ImpostersController', function () {
 
             await repo.add(imposterize(first));
             await repo.add(imposterize(second));
-            await controller.get({ url: '/imposters' }, response);
+            await controller.get(Request.to('/imposters'), response);
 
             assert.deepEqual(response.body, { imposters: ['firstJSON', 'secondJSON'] });
             assert.ok(first.toJSON.wasCalledWith({ replayable: false, removeProxies: false, list: true }), first.toJSON.message());
@@ -58,7 +59,7 @@ describe('ImpostersController', function () {
 
             await repo.add(imposterize(first));
             await repo.add(imposterize(second));
-            await controller.get({ url: '/imposters?replayable=true' }, response);
+            await controller.get(Request.to('/imposters?replayable=true'), response);
 
             assert.deepEqual(response.body, { imposters: ['firstJSON', 'secondJSON'] });
             assert.ok(first.toJSON.wasCalledWith({ replayable: true, removeProxies: false, list: false }), first.toJSON.message());
@@ -73,7 +74,7 @@ describe('ImpostersController', function () {
 
             await repo.add(imposterize(first));
             await repo.add(imposterize(second));
-            await controller.get({ url: '/imposters?replayable=true&removeProxies=true' }, response);
+            await controller.get(Request.to('/imposters?replayable=true&removeProxies=true'), response);
 
             assert.deepEqual(response.body, { imposters: ['firstJSON', 'secondJSON'] });
             assert.ok(first.toJSON.wasCalledWith({ replayable: true, removeProxies: true, list: false }), first.toJSON.message());
@@ -238,7 +239,7 @@ describe('ImpostersController', function () {
 
             await repo.add(imposterize(first));
             await repo.add(imposterize(second));
-            await controller.del({ url: '/imposters' }, response);
+            await controller.del(Request.to('/imposters'), response);
 
             const allImposters = await repo.all();
             assert.deepEqual(allImposters, []);
@@ -252,7 +253,7 @@ describe('ImpostersController', function () {
 
             await repo.add(imposterize(first));
             await repo.add(imposterize(second));
-            await controller.del({ url: '/imposters' }, response);
+            await controller.del(Request.to('/imposters'), response);
 
             assert.ok(first.stop.wasCalled());
             assert.ok(second.stop.wasCalled());
@@ -266,7 +267,7 @@ describe('ImpostersController', function () {
 
             await repo.add(imposterize(first));
             await repo.add(imposterize(second));
-            await controller.del({ url: '/imposters' }, response);
+            await controller.del(Request.to('/imposters'), response);
 
             assert.deepEqual(response.body, { imposters: ['firstJSON', 'secondJSON'] });
             assert.ok(first.toJSON.wasCalledWith({ replayable: true, removeProxies: false }), first.toJSON.message());
@@ -281,7 +282,7 @@ describe('ImpostersController', function () {
 
             await repo.add(imposterize(first));
             await repo.add(imposterize(second));
-            await controller.del({ url: '/imposters?replayable=false' }, response);
+            await controller.del(Request.to('/imposters?replayable=false'), response);
 
             assert.ok(first.toJSON.wasCalledWith({ replayable: false, removeProxies: false }), first.toJSON.message());
             assert.ok(second.toJSON.wasCalledWith({ replayable: false, removeProxies: false }), second.toJSON.message());
@@ -295,7 +296,7 @@ describe('ImpostersController', function () {
 
             await repo.add(imposterize(first));
             await repo.add(imposterize(second));
-            await controller.del({ url: '/imposters?removeProxies=true' }, response);
+            await controller.del(Request.to('/imposters?removeProxies=true'), response);
 
             assert.ok(first.toJSON.wasCalledWith({ replayable: true, removeProxies: true }),
                 first.toJSON.message());

@@ -105,7 +105,8 @@ module.exports = function (grunt) {
                 'firebase-tools',
                 'nc',
                 'snyk',
-                'mountebank-formatters'
+                'mountebank-formatters',
+                'eslint-plugin-node'
             ];
 
         dependencies.forEach(dependency => { usedCount[dependency] = 0; });

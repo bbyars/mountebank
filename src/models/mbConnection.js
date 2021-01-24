@@ -28,8 +28,7 @@ function createLogger (loglevel) {
 
 function postJSON (what, where) {
     return new Promise((resolve, reject) => {
-        const url = require('url'),
-            parts = url.parse(where),
+        const parts = new URL(where),
             driver = require(parts.protocol.replace(':', '')),
             options = {
                 hostname: parts.hostname,
@@ -48,7 +47,7 @@ function postJSON (what, where) {
                         body = buffer.toString('utf8');
 
                     if (response.statusCode !== 200) {
-                        reject(require('../../util/errors').CommunicationError({
+                        reject(require('../util/errors').CommunicationError({
                             statusCode: response.statusCode,
                             body: body
                         }));

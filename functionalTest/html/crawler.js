@@ -2,7 +2,6 @@
 
 const JSDOM = require('jsdom').JSDOM,
     api = require('../api/api').create(),
-    url = require('url'),
     httpClient = require('../api/http/baseHttpClient').create('http'),
     httpsClient = require('../api/http/baseHttpClient').create('https'),
     whitelistPatterns = ['https://s3.amazonaws.com', '^#', 'http://mbtest.org/feed'];
@@ -59,7 +58,7 @@ function isWhitelisted (href) {
 }
 
 function getResponseFor (href) {
-    const parts = url.parse(href),
+    const parts = new URL(href),
         client = parts.protocol === 'https:' ? httpsClient : httpClient,
         defaultPort = parts.protocol === 'https:' ? 443 : 80,
         spec = {

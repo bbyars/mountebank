@@ -60,7 +60,7 @@ function logConnectionErrorAndExit (options, err) {
     else {
         console.error(err);
     }
-    process.exit(1);
+    process.exit(1); // eslint-disable-line no-process-exit
 }
 
 async function loadConfig (options) {

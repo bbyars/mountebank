@@ -2,7 +2,10 @@
 // eslint-disable-next-line no-underscore-dangle
 /* eslint complexity: 0 */
 {
-    "extends": "eslint:recommended",
+    "extends": [
+        "eslint:recommended",
+        "plugin:node/recommended"
+    ],
     "parserOptions": {
         "ecmaVersion": 2020
     },

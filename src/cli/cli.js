@@ -399,7 +399,7 @@ function getCommandLineArgs (command, args) {
 function error (message) {
     console.error(`${message}\n`);
     yargs.showHelp();
-    process.exit(1);
+    process.exit(1); // eslint-disable-line no-process-exit
 }
 
 function help () {

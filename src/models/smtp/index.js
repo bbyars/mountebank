@@ -12,5 +12,5 @@ smtpServer.create(config, mbConnection.logger(), mbConnection.getResponse).then(
     console.log(JSON.stringify(metadata));
 }).catch(error => {
     console.error(JSON.stringify(error));
-    process.exit(1);
+    process.exit(1); // eslint-disable-line no-process-exit
 });

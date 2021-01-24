@@ -36,7 +36,7 @@ function serverAt (options) {
                     }
                 }
                 finally {
-                    process.exit();
+                    process.exit(); // eslint-disable-line no-process-exit
                 }
             });
         }

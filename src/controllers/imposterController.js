@@ -17,7 +17,7 @@ function create (protocols, imposters, logger, allowInjection) {
     const exceptions = require('../util/errors'),
         helpers = require('../util/helpers');
 
-    function queryBoolean (query, key) {
+    function isFlagSet (query, key) {
         if (!helpers.defined(query[key])) {
             return false;
         }
@@ -32,11 +32,9 @@ function create (protocols, imposters, logger, allowInjection) {
      * @returns {Object} - the promise
      */
     async function get (request, response) {
-        const url = require('url'),
-            query = url.parse(request.url, true).query,
-            options = {
-                replayable: queryBoolean(query, 'replayable'),
-                removeProxies: queryBoolean(query, 'removeProxies')
+        const options = {
+                replayable: isFlagSet(request.query, 'replayable'),
+                removeProxies: isFlagSet(request.query, 'removeProxies')
             },
             imposter = await imposters.get(request.params.id),
             json = await imposter.toJSON(options);
@@ -95,11 +93,9 @@ function create (protocols, imposters, logger, allowInjection) {
      * @returns {Object} A promise for testing
      */
     async function del (request, response) {
-        const url = require('url'),
-            query = url.parse(request.url, true).query,
-            options = {
-                replayable: queryBoolean(query, 'replayable'),
-                removeProxies: queryBoolean(query, 'removeProxies')
+        const options = {
+                replayable: isFlagSet(request.query, 'replayable'),
+                removeProxies: isFlagSet(request.query, 'removeProxies')
             },
             imposter = await imposters.get(request.params.id);
 
@@ -153,7 +149,7 @@ function create (protocols, imposters, logger, allowInjection) {
         if (!helpers.defined(newStubs)) {
             errors.push(exceptions.ValidationError("'stubs' is a required field"));
         }
-        else if (!require('util').isArray(newStubs)) {
+        else if (!Array.isArray(newStubs)) {
             errors.push(exceptions.ValidationError("'stubs' must be an array"));
         }
 

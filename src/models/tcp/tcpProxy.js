@@ -27,8 +27,7 @@ function create (logger, encoding, isEndOfRequest) {
     }
 
     function connectionInfoFor (proxyDestination) {
-        const url = require('url'),
-            parts = url.parse(proxyDestination),
+        const parts = new URL(proxyDestination),
             errors = require('../../util/errors');
 
         if (parts.protocol !== 'tcp:') {

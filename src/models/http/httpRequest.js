@@ -8,24 +8,22 @@
 
 function transform (request) {
     const helpers = require('../../util/helpers'),
-        url = require('url'),
-        queryString = require('query-string'),
-        parts = url.parse(request.url, true),
-        headersHelper = require('./headersHelper');
+        queryString = require('querystring'),
+        url = new URL(request.url, 'http://localhost'),
+        search = url.search === '' ? '' : url.search.substr(1),
+        headersHelper = require('./headersHelper'),
+        headers = headersHelper.headersFor(request.rawHeaders),
+        transformed = {
+            requestFrom: helpers.socketName(request.socket),
+            method: request.method,
+            path: url.pathname,
+            query: queryString.parse(search),
+            headers,
+            body: request.body,
+            ip: request.socket.remoteAddress
+        },
+        contentType = headersHelper.getHeader('Content-Type', headers);
 
-    const headers = headersHelper.headersFor(request.rawHeaders);
-
-    const transformed = {
-        requestFrom: helpers.socketName(request.socket),
-        method: request.method,
-        path: parts.pathname,
-        query: parts.query,
-        headers,
-        body: request.body,
-        ip: request.socket.remoteAddress
-    };
-
-    const contentType = headersHelper.getHeader('Content-Type', headers);
     if (request.body && isUrlEncodedForm(contentType)) {
         transformed.form = queryString.parse(request.body);
     }
@@ -38,10 +36,8 @@ function isUrlEncodedForm (contentType) {
         return false;
     }
 
-    const index = contentType.indexOf(';');
-    const type = index !== -1 ?
-        contentType.substr(0, index).trim() :
-        contentType.trim();
+    const index = contentType.indexOf(';'),
+        type = index !== -1 ? contentType.substr(0, index).trim() : contentType.trim();
 
     return type === 'application/x-www-form-urlencoded';
 }
@@ -56,11 +52,12 @@ function createFrom (request) {
         const chunks = [];
         request.on('data', chunk => { chunks.push(Buffer.from(chunk)); });
         request.on('end', () => {
-            const headersHelper = require('./headersHelper');
-            const headers = headersHelper.headersFor(request.rawHeaders);
-            const contentEncoding = headersHelper.getHeader('Content-Encoding', headers);
-            const zlib = require('zlib');
-            let buffer = Buffer.concat(chunks);
+            const headersHelper = require('./headersHelper'),
+                headers = headersHelper.headersFor(request.rawHeaders),
+                contentEncoding = headersHelper.getHeader('Content-Encoding', headers),
+                zlib = require('zlib'),
+                buffer = Buffer.concat(chunks);
+
             if (contentEncoding === 'gzip') {
                 try {
                     request.body = zlib.gunzipSync(buffer).toString();

@@ -3,7 +3,8 @@
 const Controller = require('../../src/controllers/logsController'),
     assert = require('assert'),
     fs = require('fs'),
-    FakeResponse = require('../fakes/fakeResponse');
+    FakeResponse = require('../fakes/fakeResponse'),
+    Request = require('../fakes/fakeRequest');
 
 describe('logsController', function () {
     describe('#get', function () {
@@ -15,7 +16,7 @@ describe('logsController', function () {
             const response = FakeResponse.create(),
                 controller = Controller.create(false);
 
-            controller.get({ url: '/logs' }, response);
+            controller.get(Request.to('/logs'), response);
 
             assert.deepStrictEqual(response.body, {
                 logs: [{ level: 'error', message: 'No logfile' }]
@@ -26,7 +27,7 @@ describe('logsController', function () {
             const response = FakeResponse.create(),
                 controller = Controller.create('logsControllerTest.log');
 
-            controller.get({ url: '/logs' }, response);
+            controller.get(Request.to('/logs'), response);
 
             assert.deepStrictEqual(response.body, {
                 logs: [{ level: 'error', message: 'No logfile' }]
@@ -38,7 +39,7 @@ describe('logsController', function () {
                 controller = Controller.create('logsControllerTest.log');
 
             fs.writeFileSync('logsControllerTest.log', 'info: message\n');
-            controller.get({ url: '/logs' }, response);
+            controller.get(Request.to('/logs'), response);
 
             assert.deepStrictEqual(response.body, {
                 logs: [{ level: 'error', message: 'This page only works for JSON file logging' }]
@@ -50,7 +51,7 @@ describe('logsController', function () {
                 controller = Controller.create('logsControllerTest.log');
 
             fs.writeFileSync('logsControllerTest.log', '{"key": "first"}\n{"key": "second"}\n');
-            controller.get({ url: '/logs' }, response);
+            controller.get(Request.to('/logs'), response);
 
             assert.deepEqual(response.body, {
                 logs: [
@@ -65,7 +66,7 @@ describe('logsController', function () {
                 controller = Controller.create('logsControllerTest.log');
 
             fs.writeFileSync('logsControllerTest.log', '{"key": "first"}\n{"key": "second"}\n{"key": "third"}');
-            controller.get({ url: '/logs?startIndex=1' }, response);
+            controller.get(Request.to('/logs?startIndex=1'), response);
 
             assert.deepEqual(response.body, {
                 logs: [
@@ -80,7 +81,7 @@ describe('logsController', function () {
                 controller = Controller.create('logsControllerTest.log');
 
             fs.writeFileSync('logsControllerTest.log', '{"key": "first"}\n{"key": "second"}\n{"key": "third"}');
-            controller.get({ url: '/logs?startIndex=0&endIndex=1' }, response);
+            controller.get(Request.to('/logs?startIndex=0&endIndex=1'), response);
 
             assert.deepEqual(response.body, {
                 logs: [
