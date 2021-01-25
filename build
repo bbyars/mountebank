@@ -19,5 +19,5 @@ if [ -n "$CIRCLE_BUILD_NUM" -a -z "$IS_PUBLISHED_VERSION" ]; then
     MB_VERSION="$MB_VERSION-beta.$CIRCLE_BUILD_NUM"
 fi
 
-npm install
+npm ci
 MB_VERSION=$MB_VERSION MB_SLOW_TEST_TIMEOUT=6000 MB_PORT=3535 node_modules/grunt-cli/bin/grunt "$@"
