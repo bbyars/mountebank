@@ -79,7 +79,7 @@ function create (logger) {
     function getProxyRequest (baseUrl, originalRequest, proxyOptions, requestDetails) {
         /* eslint complexity: 0 */
         const helpers = require('../../util/helpers'),
-            headersHelper = require('./headersHelper'),
+            headersMap = require('./headersMap'),
             parts = new URL(baseUrl),
             protocol = parts.protocol === 'https:' ? require('https') : require('http'),
             defaultPort = parts.protocol === 'https:' ? 443 : 80,
@@ -99,15 +99,15 @@ function create (logger) {
             };
 
         // Only set host header if not overridden via injectHeaders (issue #388)
-        if (!proxyOptions.injectHeaders || !headersHelper.hasHeader('host', proxyOptions.injectHeaders)) {
+        if (!proxyOptions.injectHeaders || !headersMap.of(proxyOptions.injectHeaders).has('host')) {
             options.headers.host = hostnameFor(parts.protocol, parts.hostname, options.port);
         }
         setProxyAgent(parts, options);
 
         // Avoid implicit chunked encoding (issue #132)
         if (originalRequest.body &&
-            !headersHelper.hasHeader('Transfer-Encoding', originalRequest.headers) &&
-            !headersHelper.hasHeader('Content-Length', originalRequest.headers)) {
+            !headersMap.of(originalRequest.headers).has('Transfer-Encoding') &&
+            !headersMap.of(originalRequest.headers).has('Content-Length')) {
             options.headers['Content-Length'] = Buffer.byteLength(originalRequest.body);
         }
 
@@ -144,10 +144,10 @@ function create (logger) {
                     const body = Buffer.concat(packets),
                         mode = isBinaryResponse(response.headers) ? 'binary' : 'text',
                         encoding = mode === 'binary' ? 'base64' : 'utf8',
-                        headersHelper = require('./headersHelper'),
+                        headersMap = require('./headersMap'),
                         stubResponse = {
                             statusCode: response.statusCode,
-                            headers: headersHelper.headersFor(response.rawHeaders),
+                            headers: headersMap.ofRaw(response.rawHeaders).all(),
                             body: body.toString(encoding),
                             _mode: mode
                         };

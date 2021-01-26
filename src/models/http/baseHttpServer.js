@@ -13,7 +13,7 @@ module.exports = function (createBaseServer) {
 
         function postProcess (stubResponse, request) {
             /* eslint complexity: 0 */
-            const headersHelper = require('./headersHelper'),
+            const headersMap = require('./headersMap'),
                 defaultHeaders = defaultResponse.headers || {},
                 response = {
                     statusCode: stubResponse.statusCode || defaultResponse.statusCode || 200,
@@ -21,7 +21,7 @@ module.exports = function (createBaseServer) {
                     body: stubResponse.body || defaultResponse.body || '',
                     _mode: stubResponse._mode || defaultResponse._mode || 'text'
                 },
-                responseHeaders = headersHelper.getJar(response.headers),
+                responseHeaders = headersMap.of(response.headers),
                 encoding = response._mode === 'binary' ? 'base64' : 'utf8',
                 isObject = require('../../util/helpers').isObject;
 
@@ -31,7 +31,7 @@ module.exports = function (createBaseServer) {
             }
 
             if (options.allowCORS) {
-                const requestHeaders = headersHelper.getJar(request.headers),
+                const requestHeaders = headersMap.of(request.headers),
                     isCrossOriginPreflight = request.method === 'OPTIONS' &&
                         requestHeaders.get('Access-Control-Request-Headers') &&
                         requestHeaders.get('Access-Control-Request-Method') &&
@@ -50,19 +50,12 @@ module.exports = function (createBaseServer) {
                 response.body = response.body.replace(/[^A-Za-z0-9=+/]+/g, '');
             }
 
-            if (!headersHelper.hasHeader('Connection', response.headers)) {
-                // Default to close connections, because a test case
-                // may shutdown the stub, which prevents new connections for
-                // the port, but that won't prevent the system under test
-                // from reusing an existing TCP connection after the stub
-                // has shutdown, causing difficult to track down bugs when
-                // multiple tests are run.
-                response.headers[headersHelper.headerNameFor('Connection', response.headers)] = 'close';
+            if (!responseHeaders.has('Connection')) {
+                responseHeaders.set('Connection', 'close');
             }
 
-            if (headersHelper.hasHeader('Content-Length', response.headers)) {
-                response.headers[headersHelper.headerNameFor('Content-Length', response.headers)] =
-                    Buffer.byteLength(response.body, encoding);
+            if (responseHeaders.has('Content-Length')) {
+                responseHeaders.set('Content-Length', Buffer.byteLength(response.body, encoding));
             }
 
             return response;

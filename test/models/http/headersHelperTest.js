@@ -1,128 +1,81 @@
 'use strict';
 
 const assert = require('assert'),
-    headersHelper = require('../../../src/models/http/headersHelper');
+    map = require('../../../src/models/http/headersMap');
 
-describe('headersHelper', function () {
-    describe('#getHeader', function () {
-        it('should search for the header with case-insensity', function () {
-            const request = {
-                    headers: {
-                        'My-First-header': 'first-value',
-                        'my-Second-Header': 'second-value'
-                    }
-                },
-                getHeader = headersHelper.getHeader;
-
-            assert.equal(getHeader('my-first-headEr', request.headers), 'first-value');
-            assert.equal(getHeader('my-SECOND-header', request.headers), 'second-value');
-        });
-
-        it('should return undefined if the header is not present', function () {
-            const request = {
-                    headers: {
-                        'My-First-header': 'first-value',
-                        'my-Second-Header': 'second-value'
-                    }
-                },
-                getHeader = headersHelper.getHeader;
-
-            assert.equal(getHeader('Missing-Header', request.headers), undefined);
-        });
-    });
-
-    describe('#setHeader', function () {
-        it('should not change the casing if the header exists', function () {
-            const request = {
-                headers: {
-                    'My-First-header': 'first-value',
-                    'my-Second-Header': 'second-value'
-                }
-            };
-
-            headersHelper.setHeader('my-first-headEr', 'new-value', request.headers);
-            assert.deepEqual(
-                request.headers,
-                {
-                    'My-First-header': 'new-value',
-                    'my-Second-Header': 'second-value'
-                }
-            );
-        });
-
-        it('should keep the casing intact for new headers', function () {
-            const request = {
-                headers: {
-                    'My-First-header': 'first-value',
-                    'my-Second-Header': 'second-value'
-                }
-            };
-
-            headersHelper.setHeader('My-Third-Header', 'third-value', request.headers);
-            assert.deepEqual(
-                request.headers,
-                {
-                    'My-First-header': 'first-value',
-                    'my-Second-Header': 'second-value',
-                    'My-Third-Header': 'third-value'
-                }
-            );
-        });
-    });
-
-    describe('#getJar', function () {
+describe('headersMap', function () {
+    describe('#of', function () {
         describe('#get', function () {
             it('should search for the header with case-insensity', function () {
-                const request = {
-                        headers: {
-                            'My-First-header': 'first-value',
-                            'my-Second-Header': 'second-value'
-                        }
-                    },
-                    headersJar = headersHelper.getJar(request.headers);
+                const headers = map.of({
+                    'My-First-header': 'first-value',
+                    'my-Second-Header': 'second-value'
+                });
 
-                assert.equal(headersJar.get('my-first-headEr'), 'first-value');
-                assert.equal(headersJar.get('my-SECOND-header'), 'second-value');
+                assert.strictEqual(headers.get('my-first-headEr'), 'first-value');
+                assert.strictEqual(headers.get('my-SECOND-header'), 'second-value');
             });
 
             it('should return undefined if the header is not present', function () {
-                const request = {
-                        headers: {
-                            'My-First-header': 'first-value',
-                            'my-Second-Header': 'second-value'
-                        }
-                    },
-                    headersJar = headersHelper.getJar(request.headers);
+                const headers = map.of({});
 
-                assert.equal(headersJar.get('Missing-Header'), undefined);
+                assert.strictEqual(typeof headers.get('Missing-Header'), 'undefined');
             });
         });
 
         describe('#set', function () {
             it('should not change the casing if the header exists', function () {
-                const request = {
-                        headers: {
-                            'My-First-header': 'first-value',
-                            'my-Second-Header': 'second-value'
-                        }
-                    },
-                    headersJar = headersHelper.getJar(request.headers);
+                const headers = map.of({
+                    'My-First-header': 'first-value',
+                    'my-Second-Header': 'second-value'
+                });
 
-                headersJar.set('my-first-headEr', 'new-value');
-                assert.equal(request.headers['My-First-header'], 'new-value');
+                headers.set('my-first-headEr', 'new-value');
+
+                assert.deepEqual(headers.all(), {
+                    'My-First-header': 'new-value',
+                    'my-Second-Header': 'second-value'
+                });
             });
 
             it('should keep the casing intact for new headers', function () {
-                const request = {
-                        headers: {
-                            'My-First-header': 'first-value',
-                            'my-Second-Header': 'second-value'
-                        }
-                    },
-                    headersJar = headersHelper.getJar(request.headers);
+                const headers = map.of({
+                    'My-First-header': 'first-value',
+                    'my-Second-Header': 'second-value'
+                });
 
-                headersJar.set('My-Third-Header', 'third-value');
-                assert.equal(request.headers['My-Third-Header'], 'third-value');
+                headers.set('My-Third-Header', 'third-value');
+
+                assert.deepEqual(headers.all(), {
+                    'My-First-header': 'first-value',
+                    'my-Second-Header': 'second-value',
+                    'My-Third-Header': 'third-value'
+                });
+            });
+        });
+
+        describe('#has', function () {
+            it('should return false if key does not exist', function () {
+                const headers = map.of({ first: 'one' });
+
+                assert.strictEqual(headers.has('key'), false);
+            });
+
+            it('should return true even if key does not match case', function () {
+                const headers = map.of({ key: 'value' });
+
+                assert.strictEqual(headers.has('KEY'), true);
+            });
+        });
+    });
+
+    describe('#ofRaw', function () {
+        it('should convert raw arrays into map, maintaining case', function () {
+            const headers = map.ofRaw(['FIRST', 'one', 'KeY', 'value']);
+
+            assert.deepStrictEqual(headers.all(), {
+                FIRST: 'one',
+                KeY: 'value'
             });
         });
     });

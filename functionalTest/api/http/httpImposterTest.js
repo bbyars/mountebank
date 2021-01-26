@@ -6,7 +6,7 @@ const assert = require('assert'),
     mb = require('../../mb').create(port + 1),
     timeout = parseInt(process.env.MB_SLOW_TEST_TIMEOUT || 4000),
     BaseHttpClient = require('./baseHttpClient'),
-    headersHelper = require('../../../src/models/http/headersHelper');
+    headersMap = require('../../../src/models/http/headersMap');
 
 ['http', 'https'].forEach(protocol => {
     const client = BaseHttpClient.create(protocol);
@@ -42,7 +42,7 @@ const assert = require('assert'),
                         },
                         port: creationResponse.body.port
                     }),
-                    headers = headersHelper.getJar(response.headers);
+                    headers = headersMap.of(response.headers);
 
                 assert.strictEqual(response.statusCode, 200);
                 assert.ok(!headers.get('access-control-allow-headers'));
@@ -64,7 +64,7 @@ const assert = require('assert'),
                         },
                         port: creationResponse.body.port
                     }),
-                    headers = headersHelper.getJar(response.headers);
+                    headers = headersMap.of(response.headers);
 
                 assert.strictEqual(response.statusCode, 200);
                 assert.equal(headers.get('access-control-allow-headers'), 'X-Custom-Header');
@@ -82,7 +82,7 @@ const assert = require('assert'),
                         // Missing the necessary headers.
                         port: creationResponse.body.port
                     }),
-                    headers = headersHelper.getJar(response.headers);
+                    headers = headersMap.of(response.headers);
 
                 assert.strictEqual(response.statusCode, 200);
                 assert.ok(!headers.get('access-control-allow-headers'));

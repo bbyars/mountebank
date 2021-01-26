@@ -11,18 +11,17 @@ function transform (request) {
         queryString = require('querystring'),
         url = new URL(request.url, 'http://localhost'),
         search = url.search === '' ? '' : url.search.substr(1),
-        headersHelper = require('./headersHelper'),
-        headers = headersHelper.headersFor(request.rawHeaders),
+        headersMap = require('./headersMap').ofRaw(request.rawHeaders),
         transformed = {
             requestFrom: helpers.socketName(request.socket),
             method: request.method,
             path: url.pathname,
             query: queryString.parse(search),
-            headers,
+            headers: headersMap.all(),
             body: request.body,
             ip: request.socket.remoteAddress
         },
-        contentType = headersHelper.getHeader('Content-Type', headers);
+        contentType = headersMap.get('Content-Type');
 
     if (request.body && isUrlEncodedForm(contentType)) {
         transformed.form = queryString.parse(request.body);
@@ -52,9 +51,8 @@ function createFrom (request) {
         const chunks = [];
         request.on('data', chunk => { chunks.push(Buffer.from(chunk)); });
         request.on('end', () => {
-            const headersHelper = require('./headersHelper'),
-                headers = headersHelper.headersFor(request.rawHeaders),
-                contentEncoding = headersHelper.getHeader('Content-Encoding', headers),
+            const headersMap = require('./headersMap').ofRaw(request.rawHeaders),
+                contentEncoding = headersMap.get('Content-Encoding'),
                 zlib = require('zlib'),
                 buffer = Buffer.concat(chunks);
 
