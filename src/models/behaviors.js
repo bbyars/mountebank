@@ -156,8 +156,7 @@ function execShell (command, request, response, logger) {
     const exec = require('child_process').exec,
         env = require('../util/helpers').clone(process.env),
         maxBuffer = require('buffer').constants.MAX_STRING_LENGTH,
-        isWindows = require('os').platform().indexOf('win') === 0,
-        maxShellCommandLength = isWindows ? 2048 : 100000;
+        maxShellCommandLength = 2048;
 
     logger.debug(`Shelling out to ${command}`);
 
