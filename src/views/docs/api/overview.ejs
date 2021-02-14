@@ -864,7 +864,7 @@ Connection: keep-alive
   "version": "<%= version %>",
   "options": {
     "port": <%= port %>,
-    "pidfile": "mb-grunt.pid",
+    "pidfile": "mb.pid",
     "allowInjection": true,
     "mock": true,
     "localOnly": true, <% if (process.env.MB_PERSISTENT === 'true') { %>
@@ -885,7 +885,7 @@ Connection: keep-alive
           "format": "%level: %message"
         },
         "file": {
-          "path": "mb-grunt.log",
+          "path": "mb.log",
           "format": "json"
         }
       }

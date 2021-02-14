@@ -12,5 +12,5 @@ if [ ! -e ./cc-test-reporter ]; then
 fi
 
 ./cc-test-reporter before-build
-node_modules/.bin/istanbul cover node_modules/.bin/grunt mochaTest:unit
+npm run test:cover
 ./cc-test-reporter after-build --coverage-input-type lcov --exit-code $?

@@ -68,7 +68,7 @@ module.exports = function (grunt) {
                     errors.push(`${file} appears to do a typecheck against object without using helpers.isObject`);
                 }
             },
-            exclusions = ['node_modules', 'dist', 'functionalTest', 'staticAnalysis.js', 'helpers.js', '*.pid', 'jquery', 'docs', '*.csv'];
+            exclusions = ['objectCheck.js', 'node_modules', 'dist', 'functionalTest', 'staticAnalysis.js', 'helpers.js', '*.pid', 'jquery', 'docs', '*.csv'];
 
         forEachFileIn('.', check, { exclude: exclusions, filetype: '.js' });
 
@@ -107,7 +107,10 @@ module.exports = function (grunt) {
                 'snyk',
                 'mountebank-formatters',
                 'eslint-plugin-node',
-                'eslint-plugin-mocha'
+                'eslint-plugin-mocha',
+                'concurrently',
+                'coveralls',
+                'nyc'
             ];
 
         dependencies.forEach(dependency => { usedCount[dependency] = 0; });

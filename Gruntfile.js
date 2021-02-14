@@ -63,8 +63,8 @@ module.exports = grunt => {
                 path: 'bin/mb',
                 pathEnvironmentVariable: 'MB_EXECUTABLE'
             },
-            start: ['--port', port, '--pidfile', 'mb-grunt.pid', '--logfile', 'mb-grunt.log', '--allowInjection', '--mock', '--localOnly'],
-            stop: ['--pidfile', 'mb-grunt.pid']
+            start: ['--port', port, '--pidfile', 'mb.pid', '--allowInjection', '--mock', '--localOnly'],
+            stop: ['--pidfile', 'mb.pid']
         },
         csslint: {
             strict: {

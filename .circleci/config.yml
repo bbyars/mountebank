@@ -11,7 +11,7 @@ jobs:
       - checkout
       - restore_cache:
           key: dependency-cache-{{ checksum "package.json" }}
-      - run: ./build lint test
+      - run: npm run test
       - save_cache:
           key: dependency-cache-{{ checksum "package.json" }}
           paths:
