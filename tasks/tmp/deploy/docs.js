@@ -15,6 +15,6 @@ if (!process.env.FIREBASE_TOKEN) {
 }
 
 console.log('Deploying docs to firebase...');
-fs.copyFileSync('./firebase.json', dir);
+fs.copyFileSync('./firebase.json', `${dir}/firebase.json`);
 execSync(`../../../node_modules/.bin/firebase deploy --token "${process.env.FIREBASE_TOKEN}" --project firebase-mountebank`,
     { cwd: dir, stdio: 'inherit' });
