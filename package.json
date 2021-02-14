@@ -21,7 +21,7 @@
     "start": "bin/mb",
     "restart": "bin/mb restart",
     "stop": "bin/mb stop",
-    "ci:build": "time npm run version && time npm run test && time scripts/codeclimate && time scripts/sonar && time npm run jsdoc && time npm run deploy:docs && time npm run deploy:coveralls",
+    "ci:build": "npm run version && npm run test && scripts/codeclimate && scripts/sonar && npm run jsdoc && npm run deploy:docs && npm run deploy:coveralls",
     "config:outOfProcess": "node tasks/tmp/outOfProcessImposters.js",
     "config:inProcess": "node tasks/tmp/InProcessImpsoters.js",
     "deploy:coveralls": "cat ./coverage/lcov.info | node_modules/coveralls/bin/coveralls.js",
