@@ -35,7 +35,7 @@ module.exports = function (grunt) {
     });
 
     grunt.registerTask('version', 'Set the version number', function () {
-        const newPackage = require('../dist/mountebank/package.json');
+        const newPackage = require('../package.json');
 
         newPackage.version = version;
         console.log('Using version ' + version);
