@@ -34,7 +34,7 @@
     "test:cover:codeclimate": "scripts/codeclimate",
     "test:functional": "node tasks/tmp/functionalTest.js",
     "test:performance": "mocha --forbid-only --forbid-pending performanceTest/**/*.js",
-    "test": "npm run lint && npm:test:cover && npm:test:functional",
+    "test": "npm run lint && npm run test:cover && npm run test:functional",
     "version": "node tasks/tmp/version.js"
   },
   "files": [
