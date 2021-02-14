@@ -26,20 +26,22 @@ jobs:
       - checkout
       - restore_cache:
           key: dependency-cache-{{ checksum "package.json" }}
-      - run: ./build lint test dist version trigger:travis codeclimate sonar jsdoc deploy:docs
+      - run: npm ci
+      - run: npm run ci:build
       - save_cache:
           key: dependency-cache-{{ checksum "package.json" }}
           paths:
             - node_modules
       - persist_to_workspace:
-          # Ignore src; use dist for all downstream jobs, but keep enough to run tests
           root: .
           paths:
+            - bin
+            - package*.json
             - functionalTest
             - performanceTest
             - test
             - tasks
-            - dist
+            - src
             - Gruntfile.js
             - node_modules
             - scripts
@@ -49,8 +51,6 @@ jobs:
             - Gemfile
             - Gemfile.lock
             - Procfile
-            # Needed for triggering Appveyor build
-            - .git
             - travis-*.txt
             - build.properties
             - Dockerfile
@@ -61,13 +61,11 @@ jobs:
     environment:
       - MB_SLOW_TEST_TIMEOUT: 7000
       - MB_PORT: 3535
+      - MB_PERSISTENT: true
     steps:
       - attach_workspace:
           at: .
-      - run: ln -s dist/mountebank/src src
-      - run: ln -s dist/mountebank/package.json package.json
-      - run: ln -s dist/mountebank/bin bin
-      - run: node_modules/grunt-cli/bin/grunt outOfProcessImposters test
+      - run: npm run outOfProcessImposters && npm run test:functional
 
   dbAndWeb:
     docker:
@@ -79,193 +77,188 @@ jobs:
     steps:
       - attach_workspace:
           at: .
-      - run: ln -s dist/mountebank/src src
-      - run: ln -s dist/mountebank/package.json package.json
-      - run: ln -s dist/mountebank/bin bin
-      - run: node_modules/grunt-cli/bin/grunt persistent outOfProcessImposters test
+      - run: npm run outOfProcessImposters && npm run test:functional
 
-  package-source:
-    docker:
-      - image: circleci/ruby:2.4.4-stretch
-    environment:
-      - MB_SLOW_TEST_TIMEOUT: 7000
-      - MB_PORT: 3535
-    steps:
-      - attach_workspace:
-          at: .
-      - run:
-          name: Update Node.js and npm
-          command: |
-            curl -sSL "https://nodejs.org/dist/v12.9.1/node-v12.9.1-linux-x64.tar.xz" | sudo tar --strip-components=2 -xJ -C /usr/local/bin/ node-v12.9.1-linux-x64/bin/node
-            curl https://www.npmjs.com/install.sh | sudo bash
-      - run:
-          name: Check current version of node
-          command: node -v
-      # fpm install started failing even after bundle update
-      - run: gem install fpm
-      - run: bundle install --without development
-      - run: ln -s dist/mountebank/src src
-      - run: ln -s dist/mountebank/package.json package.json
-      - run: node_modules/grunt-cli/bin/grunt test:npm deploy:s3
-
-  package-tarball:
-    docker:
-      - image: circleci/ruby:2.4.4-stretch
-    environment:
-      - MB_SLOW_TEST_TIMEOUT: 7000
-      - MB_PORT: 3535
-    steps:
-      - attach_workspace:
-          at: .
-      - run:
-          name: Update Node.js and npm
-          command: |
-            curl -sSL "https://nodejs.org/dist/v12.9.1/node-v12.9.1-linux-x64.tar.xz" | sudo tar --strip-components=2 -xJ -C /usr/local/bin/ node-v12.9.1-linux-x64/bin/node
-            curl https://www.npmjs.com/install.sh | sudo bash
-      - run:
-          name: Check current version of node
-          command: node -v
-      # fpm install started failing even after bundle update
-      - run: gem install fpm
-      - run: bundle install --without development
-      - run: ln -s dist/mountebank/src src
-      - run: ln -s dist/mountebank/package.json package.json
-      - run: node_modules/grunt-cli/bin/grunt test:tarball:x64 deploy:s3
-
-  package-zip:
-    docker:
-      - image: circleci/ruby:2.4.4-stretch
-    environment:
-      - MB_SLOW_TEST_TIMEOUT: 7000
-      - MB_PORT: 3535
-    steps:
-      - attach_workspace:
-          at: .
-      - run:
-          name: Update Node.js and npm
-          command: |
-            curl -sSL "https://nodejs.org/dist/v12.9.1/node-v12.9.1-linux-x64.tar.xz" | sudo tar --strip-components=2 -xJ -C /usr/local/bin/ node-v12.9.1-linux-x64/bin/node
-            curl https://www.npmjs.com/install.sh | sudo bash
-      - run:
-          name: Check current version of node
-          command: node -v
-      # fpm install started failing even after bundle update
-      - run: gem install fpm
-      - run: bundle install --without development
-      - run: ln -s dist/mountebank/src src
-      - run: ln -s dist/mountebank/package.json package.json
-      - run: node_modules/grunt-cli/bin/grunt dist:zip:x64 dist:zip:x86 deploy:s3 trigger:appveyor
-      - persist_to_workspace:
-          root: .
-          paths:
-            - appveyor-*.txt
-
-  package-deb:
-    docker:
-      - image: circleci/ruby:2.4.4-stretch
-    environment:
-      - MB_SLOW_TEST_TIMEOUT: 7000
-      - MB_PORT: 3535
-    steps:
-      - attach_workspace:
-          at: .
-      - run:
-          name: Update Node.js and npm
-          command: |
-            curl -sSL "https://nodejs.org/dist/v12.9.1/node-v12.9.1-linux-x64.tar.xz" | sudo tar --strip-components=2 -xJ -C /usr/local/bin/ node-v12.9.1-linux-x64/bin/node
-            curl https://www.npmjs.com/install.sh | sudo bash
-      - run:
-          name: Check current version of node
-          command: node -v
-      # fpm install started failing even after bundle update
-      - run: gem install fpm
-      - run: bundle install --without development
-      - run: ln -s dist/mountebank/src src
-      - run: ln -s dist/mountebank/package.json package.json
-      - run: node_modules/grunt-cli/bin/grunt test:deb deploy:s3
-
-  package-rpm:
-    docker:
-      - image: bbyars/mountebank-centos:latest
-    environment:
-      - MB_SLOW_TEST_TIMEOUT: 7000
-      - MB_PORT: 3535
-    steps:
-      - attach_workspace:
-          at: .
-      # fpm install started failing even after bundle update
-      - run:
-          name: Update Node.js and npm
-          command: |
-            curl -sSL "https://nodejs.org/dist/v12.9.1/node-v12.9.1-linux-x64.tar.xz" | sudo tar --strip-components=2 -xJ -C /usr/local/bin/ node-v12.9.1-linux-x64/bin/node
-            curl https://www.npmjs.com/install.sh | sudo bash
-      - run:
-          name: Check current version of node
-          command: node -v
-      - run: gem install fpm
-      - run: bundle install --without development
-      - run: ln -s dist/mountebank/src src
-      - run: ln -s dist/mountebank/package.json package.json
-      - run: node_modules/grunt-cli/bin/grunt test:rpm
-      # Can't use dpl on centos; refactor with non-dpl based script
-      - persist_to_workspace:
-          root: .
-          paths:
-            - dist/*.rpm
-
-  performance:
-    docker:
-      - image: circleci/node:12-stretch
-    environment:
-      - MB_EXECUTABLE: /home/circleci/project/dist/mountebank/bin/mb
-    steps:
-      - attach_workspace:
-          at: .
-      - run: ln -s dist/mountebank/src src
-      - run: ln -s dist/mountebank/package.json package.json
-      - run: node_modules/grunt-cli/bin/grunt test:performance
-
-  windows:
-    docker:
-      - image: circleci/node:12-stretch
-    steps:
-      - attach_workspace:
-          at: .
-      - run: node_modules/grunt-cli/bin/grunt waitFor:appveyor
-
-  osx:
-    docker:
-      - image: circleci/node:12-stretch
-    steps:
-      - attach_workspace:
-          at: .
-      - run: node_modules/grunt-cli/bin/grunt waitFor:travis
-
-  deploy:
-    docker:
-      - image: circleci/ruby:2.4.4-stretch
-    steps:
-      - setup_remote_docker
-      - attach_workspace:
-          at: .
-      - run:
-          name: Update Node.js and npm
-          command: |
-            curl -sSL "https://nodejs.org/dist/v12.9.1/node-v12.9.1-linux-x64.tar.xz" | sudo tar --strip-components=2 -xJ -C /usr/local/bin/ node-v12.9.1-linux-x64/bin/node
-            curl https://www.npmjs.com/install.sh | sudo bash
-      - run:
-          name: Check current version of node
-          command: node -v
-      - run: ls -al dist
-        # $BASH_ENV workaround due to env var isolation: https://discuss.circleci.com/t/exporting-environment-variables-from-sourced-scripts/4564/4
-      - run: if [ -n "`grep publish=true build.properties`" ]; then echo export MB_PUBLISH=true >> "$BASH_ENV"; else echo export MB_PUBLISH=false >> "$BASH_ENV"; fi
-      - run: echo "MB_PUBLISH=$MB_PUBLISH"
-      # fpm install started failing even after bundle update
-      - run: gem install fpm
-      - run: bundle install --without development
-      - run: ln -s dist/mountebank/src src
-      - run: ln -s dist/mountebank/package.json package.json
-      - run: node_modules/grunt-cli/bin/grunt deploy:s3 deploy:heroku deploy:npm deploy:docker
+#  package-source:
+#    docker:
+#      - image: circleci/ruby:2.4.4-stretch
+#    environment:
+#      - MB_SLOW_TEST_TIMEOUT: 7000
+#      - MB_PORT: 3535
+#    steps:
+#      - attach_workspace:
+#          at: .
+#      - run:
+#          name: Update Node.js and npm
+#          command: |
+#            curl -sSL "https://nodejs.org/dist/v12.9.1/node-v12.9.1-linux-x64.tar.xz" | sudo tar --strip-components=2 -xJ -C /usr/local/bin/ node-v12.9.1-linux-x64/bin/node
+#            curl https://www.npmjs.com/install.sh | sudo bash
+#      - run:
+#          name: Check current version of node
+#          command: node -v
+#      # fpm install started failing even after bundle update
+#      - run: gem install fpm
+#      - run: bundle install --without development
+#      - run: node_modules/grunt-cli/bin/grunt test:npm deploy:s3
+#
+#  package-tarball:
+#    docker:
+#      - image: circleci/ruby:2.4.4-stretch
+#    environment:
+#      - MB_SLOW_TEST_TIMEOUT: 7000
+#      - MB_PORT: 3535
+#    steps:
+#      - attach_workspace:
+#          at: .
+#      - run:
+#          name: Update Node.js and npm
+#          command: |
+#            curl -sSL "https://nodejs.org/dist/v12.9.1/node-v12.9.1-linux-x64.tar.xz" | sudo tar --strip-components=2 -xJ -C /usr/local/bin/ node-v12.9.1-linux-x64/bin/node
+#            curl https://www.npmjs.com/install.sh | sudo bash
+#      - run:
+#          name: Check current version of node
+#          command: node -v
+#      # fpm install started failing even after bundle update
+#      - run: gem install fpm
+#      - run: bundle install --without development
+#      - run: ln -s dist/mountebank/src src
+#      - run: ln -s dist/mountebank/package.json package.json
+#      - run: node_modules/grunt-cli/bin/grunt test:tarball:x64 deploy:s3
+#
+#  package-zip:
+#    docker:
+#      - image: circleci/ruby:2.4.4-stretch
+#    environment:
+#      - MB_SLOW_TEST_TIMEOUT: 7000
+#      - MB_PORT: 3535
+#    steps:
+#      - attach_workspace:
+#          at: .
+#      - run:
+#          name: Update Node.js and npm
+#          command: |
+#            curl -sSL "https://nodejs.org/dist/v12.9.1/node-v12.9.1-linux-x64.tar.xz" | sudo tar --strip-components=2 -xJ -C /usr/local/bin/ node-v12.9.1-linux-x64/bin/node
+#            curl https://www.npmjs.com/install.sh | sudo bash
+#      - run:
+#          name: Check current version of node
+#          command: node -v
+#      # fpm install started failing even after bundle update
+#      - run: gem install fpm
+#      - run: bundle install --without development
+#      - run: ln -s dist/mountebank/src src
+#      - run: ln -s dist/mountebank/package.json package.json
+#      - run: node_modules/grunt-cli/bin/grunt dist:zip:x64 dist:zip:x86 deploy:s3 trigger:appveyor
+#      - persist_to_workspace:
+#          root: .
+#          paths:
+#            - appveyor-*.txt
+#
+#  package-deb:
+#    docker:
+#      - image: circleci/ruby:2.4.4-stretch
+#    environment:
+#      - MB_SLOW_TEST_TIMEOUT: 7000
+#      - MB_PORT: 3535
+#    steps:
+#      - attach_workspace:
+#          at: .
+#      - run:
+#          name: Update Node.js and npm
+#          command: |
+#            curl -sSL "https://nodejs.org/dist/v12.9.1/node-v12.9.1-linux-x64.tar.xz" | sudo tar --strip-components=2 -xJ -C /usr/local/bin/ node-v12.9.1-linux-x64/bin/node
+#            curl https://www.npmjs.com/install.sh | sudo bash
+#      - run:
+#          name: Check current version of node
+#          command: node -v
+#      # fpm install started failing even after bundle update
+#      - run: gem install fpm
+#      - run: bundle install --without development
+#      - run: ln -s dist/mountebank/src src
+#      - run: ln -s dist/mountebank/package.json package.json
+#      - run: node_modules/grunt-cli/bin/grunt test:deb deploy:s3
+#
+#  package-rpm:
+#    docker:
+#      - image: bbyars/mountebank-centos:latest
+#    environment:
+#      - MB_SLOW_TEST_TIMEOUT: 7000
+#      - MB_PORT: 3535
+#    steps:
+#      - attach_workspace:
+#          at: .
+#      # fpm install started failing even after bundle update
+#      - run:
+#          name: Update Node.js and npm
+#          command: |
+#            curl -sSL "https://nodejs.org/dist/v12.9.1/node-v12.9.1-linux-x64.tar.xz" | sudo tar --strip-components=2 -xJ -C /usr/local/bin/ node-v12.9.1-linux-x64/bin/node
+#            curl https://www.npmjs.com/install.sh | sudo bash
+#      - run:
+#          name: Check current version of node
+#          command: node -v
+#      - run: gem install fpm
+#      - run: bundle install --without development
+#      - run: ln -s dist/mountebank/src src
+#      - run: ln -s dist/mountebank/package.json package.json
+#      - run: node_modules/grunt-cli/bin/grunt test:rpm
+#      # Can't use dpl on centos; refactor with non-dpl based script
+#      - persist_to_workspace:
+#          root: .
+#          paths:
+#            - dist/*.rpm
+#
+#  performance:
+#    docker:
+#      - image: circleci/node:12-stretch
+#    environment:
+#      - MB_EXECUTABLE: /home/circleci/project/dist/mountebank/bin/mb
+#    steps:
+#      - attach_workspace:
+#          at: .
+#      - run: ln -s dist/mountebank/src src
+#      - run: ln -s dist/mountebank/package.json package.json
+#      - run: node_modules/grunt-cli/bin/grunt test:performance
+#
+#  windows:
+#    docker:
+#      - image: circleci/node:12-stretch
+#    steps:
+#      - attach_workspace:
+#          at: .
+#      - run: node_modules/grunt-cli/bin/grunt waitFor:appveyor
+#
+#  osx:
+#    docker:
+#      - image: circleci/node:12-stretch
+#    steps:
+#      - attach_workspace:
+#          at: .
+#      - run: node_modules/grunt-cli/bin/grunt waitFor:travis
+#
+#  deploy:
+#    docker:
+#      - image: circleci/ruby:2.4.4-stretch
+#    steps:
+#      - setup_remote_docker
+#      - attach_workspace:
+#          at: .
+#      - run:
+#          name: Update Node.js and npm
+#          command: |
+#            curl -sSL "https://nodejs.org/dist/v12.9.1/node-v12.9.1-linux-x64.tar.xz" | sudo tar --strip-components=2 -xJ -C /usr/local/bin/ node-v12.9.1-linux-x64/bin/node
+#            curl https://www.npmjs.com/install.sh | sudo bash
+#      - run:
+#          name: Check current version of node
+#          command: node -v
+#      - run: ls -al dist
+#        # $BASH_ENV workaround due to env var isolation: https://discuss.circleci.com/t/exporting-environment-variables-from-sourced-scripts/4564/4
+#      - run: if [ -n "`grep publish=true build.properties`" ]; then echo export MB_PUBLISH=true >> "$BASH_ENV"; else echo export MB_PUBLISH=false >> "$BASH_ENV"; fi
+#      - run: echo "MB_PUBLISH=$MB_PUBLISH"
+#      # fpm install started failing even after bundle update
+#      - run: gem install fpm
+#      - run: bundle install --without development
+#      - run: ln -s dist/mountebank/src src
+#      - run: ln -s dist/mountebank/package.json package.json
+#      - run: node_modules/grunt-cli/bin/grunt deploy:s3 deploy:heroku deploy:npm deploy:docker
 
 workflows:
   version: 2
@@ -281,62 +274,62 @@ workflows:
               only: master
             tags:
               only: /^v.*/
-      - osx:
-          requires:
-            - build
-          filters:
-            branches:
-              only: master
-            tags:
-              only: /^v.*/
-      - package-source:
-          requires:
-            - build
-          filters:
-            branches:
-              only: master
-            tags:
-              only: /^v.*/
-      - package-zip:
-          requires:
-            - build
-          filters:
-            branches:
-              only: master
-            tags:
-              only: /^v.*/
-      - windows:
-          requires:
-            - package-zip
-          filters:
-            branches:
-              only: master
-            tags:
-              only: /^v.*/
-      - package-tarball:
-          requires:
-            - build
-          filters:
-            branches:
-              only: master
-            tags:
-              only: /^v.*/
-      - package-deb:
-          requires:
-            - build
-          filters:
-            branches:
-              only: master
-            tags:
-              only: /^v.*/
-      - package-rpm:
-          requires:
-            - build
-          filters:
-            branches:
-              only: master
-            tags:
-              only: /^v.*/
+#      - osx:
+#          requires:
+#            - build
+#          filters:
+#            branches:
+#              only: master
+#            tags:
+#              only: /^v.*/
+#      - package-source:
+#          requires:
+#            - build
+#          filters:
+#            branches:
+#              only: master
+#            tags:
+#              only: /^v.*/
+#      - package-zip:
+#          requires:
+#            - build
+#          filters:
+#            branches:
+#              only: master
+#            tags:
+#              only: /^v.*/
+#      - windows:
+#          requires:
+#            - package-zip
+#          filters:
+#            branches:
+#              only: master
+#            tags:
+#              only: /^v.*/
+#      - package-tarball:
+#          requires:
+#            - build
+#          filters:
+#            branches:
+#              only: master
+#            tags:
+#              only: /^v.*/
+#      - package-deb:
+#          requires:
+#            - build
+#          filters:
+#            branches:
+#              only: master
+#            tags:
+#              only: /^v.*/
+#      - package-rpm:
+#          requires:
+#            - build
+#          filters:
+#            branches:
+#              only: master
+#            tags:
+#              only: /^v.*/
       - dbAndWeb:
           requires:
             - build
@@ -353,25 +346,25 @@ workflows:
               only: master
             tags:
               only: /^v.*/
-      - performance:
-          requires:
-            - build
-          filters:
-            branches:
-              only: master
-            tags:
-              only: /^v.*/
-      - deploy:
-          requires:
-            - package-source
-            - package-zip
-            - package-tarball
-            - package-deb
-            - package-rpm
-            - dbAndWeb
-            - nodev10
-          filters:
-            branches:
-              only: master
-            tags:
-              only: /^v.*/
+#      - performance:
+#          requires:
+#            - build
+#          filters:
+#            branches:
+#              only: master
+#            tags:
+#              only: /^v.*/
+#      - deploy:
+#          requires:
+#            - package-source
+#            - package-zip
+#            - package-tarball
+#            - package-deb
+#            - package-rpm
+#            - dbAndWeb
+#            - nodev10
+#          filters:
+#            branches:
+#              only: master
+#            tags:
+#              only: /^v.*/

@@ -8,8 +8,6 @@ function isWindows () {
 }
 
 async function run (command, args, options) {
-    let npmFailure = false, proc;
-
     if (isWindows()) {
         // spawn on Windows requires an exe
         args.unshift(command);
@@ -17,27 +15,17 @@ async function run (command, args, options) {
         command = 'cmd.exe';
     }
 
+    options.stdio = 'inherit';
+
     return new Promise((resolve, reject) => {
-        proc = spawn(command, args, options);
-
-        proc.stdout.on('data', function (data) {
-            console.log(data.toString('utf8').trim());
-        });
-
-        proc.stderr.on('data', function (data) {
-            console.error(data.toString('utf8').trim());
-            if (data.toString('utf8').indexOf('npm ERR!') >= 0) {
-                // Hack; dpl returns 0 exit code on npm publish failure
-                npmFailure = true;
-            }
-        });
+        const proc = spawn(command, args, options);
 
         proc.on('close', function (exitCode) {
-            if (exitCode === 0 && !npmFailure) {
+            if (exitCode === 0) {
                 resolve();
             }
             else {
-                reject(npmFailure ? 1 : exitCode);
+                reject(exitCode);
             }
         });
     });

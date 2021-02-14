@@ -34,10 +34,6 @@ async function responseFor (options) {
 
         request.on('error', reject);
 
-        // Appveyor APIs appear to be deeply sensitive in ways that are deeply hard
-        // to comprehend to both the capitalization of some headers (e.g. Authorization)
-        // and maybe the ordering of some headers.  This block below fails if put in
-        // the options object passed into https.request above.
         if (options.body) {
             options.body = JSON.stringify(options.body);
             request.setHeader('Content-Type', 'application/json');
@@ -64,7 +60,6 @@ async function triggerBuild (version) {
                 config: {
                     env: {
                         global: {
-                            MB_TEST: 'yes',
                             MB_VERSION: version
                         }
                     }

@@ -67,6 +67,11 @@ function spawnMb (args) {
 async function start (args) {
     const mbArgs = ['restart', '--port', port, '--pidfile', pidfile].concat(args || []);
 
+    if (process.env.MB_PERSISTENT === 'true') {
+        mbArgs.push('--datadir');
+        mbArgs.push('.mbdb');
+    }
+
     return new Promise((resolve, reject) => {
         whenFullyInitialized('start', resolve);
         const mb = spawnMb(mbArgs);
