@@ -1,3 +1,5 @@
+'use strict';
+
 const run = require('../../run').run,
     fs = require('fs-extra'),
     thisPackage = require('../../../package.json'),
