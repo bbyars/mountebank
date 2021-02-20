@@ -16,6 +16,7 @@ jobs:
           key: dependency-cache-{{ checksum "package.json" }}
           paths:
             - node_modules
+
   build:
     docker:
       - image: circleci/node:12-stretch
@@ -35,19 +36,13 @@ jobs:
       - persist_to_workspace:
           root: .
           paths:
-            - bin
-            - package*.json
+            - dist
             - functionalTest
             - performanceTest
-            - test
+            - package.json
             - tasks
-            - src
-            - Gruntfile.js
             - node_modules
             - scripts
-            - circlebuild
-            - firebase.json
-            - .jsdoc
             - Gemfile
             - Gemfile.lock
             - Procfile
@@ -62,6 +57,7 @@ jobs:
       - MB_SLOW_TEST_TIMEOUT: 7000
       - MB_PORT: 3535
       - MB_PERSISTENT: true
+      - MB_EXECUTABLE: dist/mountebank/bin/mb
     steps:
       - attach_workspace:
           at: .
@@ -74,6 +70,7 @@ jobs:
       - MB_SLOW_TEST_TIMEOUT: 7000
       - MB_PORT: 3535
       - MB_RUN_WEB_TESTS=true
+      - MB_EXECUTABLE: dist/mountebank/bin/mb
     steps:
       - attach_workspace:
           at: .
@@ -100,7 +97,7 @@ jobs:
 #      - run: gem install fpm
 #      - run: bundle install --without development
 #      - run: node_modules/grunt-cli/bin/grunt test:npm deploy:s3
-#
+
 #  package-tarball:
 #    docker:
 #      - image: circleci/ruby:2.4.4-stretch
