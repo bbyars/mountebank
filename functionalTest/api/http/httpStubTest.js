@@ -4,8 +4,20 @@ const assert = require('assert'),
     api = require('../api').create(),
     BaseHttpClient = require('./baseHttpClient'),
     port = api.port + 1,
-    timeout = parseInt(process.env.MB_SLOW_TEST_TIMEOUT || 2000),
-    helpers = require('../../../src/util/helpers');
+    timeout = parseInt(process.env.MB_SLOW_TEST_TIMEOUT || 2000);
+
+function merge (defaults, overrides) {
+    const result = JSON.parse(JSON.stringify(defaults));
+    Object.keys(overrides).forEach(key => {
+        if (typeof overrides[key] === 'object' && overrides[key] !== null) {
+            result[key] = merge(result[key] || {}, overrides[key]);
+        }
+        else {
+            result[key] = overrides[key];
+        }
+    });
+    return result;
+}
 
 ['http', 'https'].forEach(protocol => {
     const client = BaseHttpClient.create(protocol);
@@ -91,27 +103,27 @@ const assert = require('assert'),
                     request = { protocol, port, stubs: [stub] };
                 await api.createImposter(request);
 
-                const first = await client.responseFor(helpers.merge(spec, { path: '/', body: 'TEST' }));
+                const first = await client.responseFor(merge(spec, { path: '/', body: 'TEST' }));
                 assert.strictEqual(first.statusCode, 200, 'should not have matched; wrong path');
 
-                const second = await client.responseFor(helpers.merge(spec, { path: '/test?key=different', body: 'TEST' }));
+                const second = await client.responseFor(merge(spec, { path: '/test?key=different', body: 'TEST' }));
                 assert.strictEqual(second.statusCode, 200, 'should not have matched; wrong query');
 
-                const third = await client.responseFor(helpers.merge(spec, { method: 'PUT', body: 'TEST' }));
+                const third = await client.responseFor(merge(spec, { method: 'PUT', body: 'TEST' }));
                 assert.strictEqual(third.statusCode, 200, 'should not have matched; wrong method');
 
-                const missingHeaderOptions = helpers.merge(spec, { body: 'TEST' });
+                const missingHeaderOptions = merge(spec, { body: 'TEST' });
                 delete missingHeaderOptions.headers['X-One'];
                 const fourth = await client.responseFor(missingHeaderOptions);
                 assert.strictEqual(fourth.statusCode, 200, 'should not have matched; missing header');
 
-                const fifth = await client.responseFor(helpers.merge(spec, { headers: { 'X-Two': 'Testing', body: 'TEST' } }));
+                const fifth = await client.responseFor(merge(spec, { headers: { 'X-Two': 'Testing', body: 'TEST' } }));
                 assert.strictEqual(fifth.statusCode, 200, 'should not have matched; wrong value for header');
 
-                const sixth = await client.responseFor(helpers.merge(spec, { body: 'TESTing' }));
+                const sixth = await client.responseFor(merge(spec, { body: 'TESTing' }));
                 assert.strictEqual(sixth.statusCode, 200, 'should not have matched; wrong value for body');
 
-                const seventh = await client.responseFor(helpers.merge(spec, { body: 'TEST' }));
+                const seventh = await client.responseFor(merge(spec, { body: 'TEST' }));
                 assert.strictEqual(seventh.statusCode, 400, 'should have matched');
             });
 

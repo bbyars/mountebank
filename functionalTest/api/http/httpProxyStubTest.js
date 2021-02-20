@@ -17,6 +17,98 @@ describe('http proxy stubs', function () {
         api.del('/imposters');
     });
 
+    it('should send same request information to proxied url', async function () {
+        const origin = { protocol: 'http', port, recordRequests: true },
+            proxy = {
+                protocol: 'http',
+                port: port + 1,
+                stubs: [{
+                    responses: [{ proxy: { to: `http://localhost:${port}` } }]
+                }]
+            },
+            request = { port: proxy.port, path: '/PATH', method: 'POST', body: 'BODY', headers: { 'X-Key': 'TRUE' } };
+        await api.createImposter(origin);
+        await api.createImposter(proxy);
+
+        const response = await client.responseFor(request);
+        assert.strictEqual(response.statusCode, 200, 'did not get a 200 from proxy');
+
+        const mbResponse = await api.get(`/imposters/${port}`),
+            requests = mbResponse.body.requests;
+        assert.strictEqual(requests.length, 1);
+        assert.strictEqual(requests[0].path, '/PATH');
+        assert.strictEqual(requests[0].method, 'POST');
+        assert.strictEqual(requests[0].body, 'BODY');
+        assert.strictEqual(requests[0].headers['X-Key'], 'TRUE');
+    });
+
+    it('should return proxied result', async function () {
+        const origin = {
+                protocol: 'http',
+                port,
+                stubs: [{ responses: [{ is: { statusCode: 400, body: 'ERROR' } }] }]
+            },
+            proxy = {
+                protocol: 'http',
+                port: port + 1,
+                stubs: [{ responses: [{ proxy: { to: `http://localhost:${origin.port}` } }] }]
+            };
+        await api.createImposter(origin);
+        await api.createImposter(proxy);
+
+        const response = await client.get('/', proxy.port);
+
+        assert.strictEqual(response.statusCode, 400);
+        assert.strictEqual(response.body, 'ERROR');
+    });
+
+    it('should proxy to https', async function () {
+        const origin = {
+                protocol: 'https',
+                port,
+                stubs: [{ responses: [{ is: { statusCode: 400, body: 'ERROR' } }] }] },
+            proxy = {
+                protocol: 'http',
+                port: port + 1,
+                stubs: [{ responses: [{ proxy: { to: `https://localhost:${origin.port}` } }] }]
+            };
+        await api.createImposter(origin);
+        await api.createImposter(proxy);
+
+        const response = await client.get('/', proxy.port);
+
+        assert.strictEqual(response.statusCode, 400);
+        assert.strictEqual(response.body, 'ERROR');
+    });
+
+    it('should update the host header to the origin server', async function () {
+        const origin = {
+                protocol: 'http',
+                port,
+                stubs: [{
+                    responses: [{ is: { statusCode: 400, body: 'ERROR' } }],
+                    predicates: [{ equals: { headers: { host: `localhost:${port}` } } }]
+                }]
+            },
+            proxy = {
+                protocol: 'http',
+                port: port + 1,
+                stubs: [{ responses: [{ proxy: { to: `http://localhost:${origin.port}` } }] }]
+            };
+        await api.createImposter(origin);
+        await api.createImposter(proxy);
+
+        const response = await client.responseFor({
+            port: proxy.port,
+            path: '/',
+            method: 'GET',
+            headers: { host: 'www.mbtest.org' }
+        });
+
+        assert.strictEqual(response.statusCode, 400);
+        assert.strictEqual(response.body, 'ERROR');
+    });
+
     if (!airplaneMode) {
         it('should allow proxy stubs to invalid domains', async function () {
             const stub = { responses: [{ proxy: { to: 'http://invalid.domain' } }] },
@@ -29,7 +121,69 @@ describe('http proxy stubs', function () {
             assert.strictEqual(response.body.errors[0].code, 'invalid proxy');
             assert.strictEqual(response.body.errors[0].message, 'Cannot resolve "http://invalid.domain"');
         });
+
+        it('should gracefully deal with bad urls', async function () {
+            const proxy = {
+                protocol: 'http',
+                port,
+                stubs: [{ responses: [{ proxy: { to: '1 + 2' } }] }]
+            };
+            await api.createImposter(proxy);
+
+            const response = await client.get('/', proxy.port);
+
+            assert.strictEqual(response.statusCode, 500);
+            assert.strictEqual(response.body.errors[0].code, 'invalid proxy');
+            assert.strictEqual(response.body.errors[0].message, 'Unable to connect to "1 + 2"');
+        });
+
+        it('should proxy to different host', async function () {
+            const proxy = {
+                protocol: 'http',
+                port,
+                stubs: [{ responses: [{ proxy: { to: 'https://google.com' } }] }]
+            };
+            await api.createImposter(proxy);
+
+            const response = await client.get('/', proxy.port);
+
+            // sometimes 301, sometimes 302
+            assert.strictEqual(response.statusCode.toString().substring(0, 2), '30');
+            // https://www.google.com.br in Brasil, google.ca in Canada, etc
+            assert.ok(response.headers.location.indexOf('google.') >= 0, response.headers.location);
+        });
     }
+
+    // eslint-disable-next-line mocha/no-setup-in-describe
+    ['application/octet-stream', 'audio/mpeg', 'audio/mp4', 'image/gif', 'image/jpeg', 'video/avi', 'video/mpeg'].forEach(mimeType => {
+        it(`should treat ${mimeType} as binary`, async function () {
+            const buffer = Buffer.from([0, 1, 2, 3]),
+                origin = {
+                    protocol: 'http',
+                    port,
+                    stubs: [{
+                        responses: [{
+                            is: {
+                                body: buffer.toString('base64'),
+                                headers: { 'content-type': mimeType },
+                                _mode: 'binary'
+                            }
+                        }]
+                    }]
+                },
+                proxy = {
+                    protocol: 'http',
+                    port: port + 1,
+                    stubs: [{ responses: [{ proxy: { to: `http://localhost:${origin.port}` } }] }]
+                };
+            await api.createImposter(proxy);
+            await api.createImposter(origin);
+
+            const response = await client.get('/', proxy.port);
+
+            assert.strictEqual(response.body, buffer.toString());
+        });
+    });
 
     it('should record new stubs in order in front of proxy resolver using proxyOnce mode', async function () {
         const originServerPort = port + 1,

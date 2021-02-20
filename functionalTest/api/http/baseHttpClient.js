@@ -1,7 +1,5 @@
 'use strict';
 
-const helpers = require('../../../src/util/helpers');
-
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 
 function create (protocol) {
@@ -9,13 +7,17 @@ function create (protocol) {
         agent = new driver.Agent({ keepAlive: true });
 
     function optionsFor (spec) {
-        const defaults = {
-            hostname: 'localhost',
-            headers: { accept: 'application/json' },
-            rejectUnauthorized: false
-        };
-
-        return helpers.merge(defaults, spec);
+        if (!spec.hostname) {
+            spec.hostname = 'localhost';
+        }
+        if (!spec.headers) {
+            spec.headers = {};
+        }
+        if (!Object.keys(spec.headers).some(key => key.toLowerCase() === 'accept')) {
+            spec.headers.accept = 'application/json';
+        }
+        spec.rejectUnauthorized = false;
+        return spec;
     }
 
     async function responseFor (spec) {

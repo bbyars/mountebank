@@ -8,9 +8,7 @@ const assert = require('assert'),
     path = require('path'),
     client = require('../http/baseHttpClient').create('https'),
     key = fs.readFileSync(path.join(__dirname, '/cert/key.pem'), 'utf8'),
-    cert = fs.readFileSync(path.join(__dirname, '/cert/cert.pem'), 'utf8'),
-    defaultKey = fs.readFileSync(path.join(__dirname, '../../../src/models/https/cert/mb-key.pem'), 'utf8'),
-    defaultCert = fs.readFileSync(path.join(__dirname, '../../../src/models/https/cert/mb-cert.pem'), 'utf8');
+    cert = fs.readFileSync(path.join(__dirname, '/cert/cert.pem'), 'utf8');
 
 describe('https imposter', function () {
     this.timeout(timeout);
@@ -37,12 +35,10 @@ describe('https imposter', function () {
 
     it('should default key/cert pair during imposter creation if not provided', async function () {
         const request = { protocol: 'https', port };
-
-        const creationResponse = await api.createImposter(request);
-        assert.strictEqual(creationResponse.body.key, defaultKey);
-        assert.strictEqual(creationResponse.body.cert, defaultCert);
+        await api.createImposter(request);
 
         const response = await client.get('/', port);
+
         assert.strictEqual(response.statusCode, 200);
     });
 

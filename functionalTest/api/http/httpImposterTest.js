@@ -5,8 +5,7 @@ const assert = require('assert'),
     port = api.port + 1,
     mb = require('../../mb').create(port + 1),
     timeout = parseInt(process.env.MB_SLOW_TEST_TIMEOUT || 4000),
-    BaseHttpClient = require('./baseHttpClient'),
-    headersMap = require('../../../src/models/http/headersMap');
+    BaseHttpClient = require('./baseHttpClient');
 
 ['http', 'https'].forEach(protocol => {
     const client = BaseHttpClient.create(protocol);
@@ -42,12 +41,12 @@ const assert = require('assert'),
                         },
                         port: creationResponse.body.port
                     }),
-                    headers = headersMap.of(response.headers);
+                    headers = Object.keys(response.headers).map(header => header.toLowerCase());
 
                 assert.strictEqual(response.statusCode, 200);
-                assert.ok(!headers.get('access-control-allow-headers'));
-                assert.ok(!headers.get('access-control-allow-methods'));
-                assert.ok(!headers.get('access-control-allow-origin'));
+                assert.ok(headers.indexOf('access-control-allow-headers') < 0);
+                assert.ok(headers.indexOf('access-control-allow-methods') < 0);
+                assert.ok(headers.indexOf('access-control-allow-origin') < 0);
             });
 
             it('should support CORS preflight requests if "allowCORS" option is enabled', async function () {
@@ -55,21 +54,20 @@ const assert = require('assert'),
                     creationResponse = await api.createImposter(request);
 
                 const response = await client.responseFor({
-                        method: 'OPTIONS',
-                        path: '/',
-                        headers: {
-                            'Access-Control-Request-Method': 'PUT',
-                            'Access-Control-Request-Headers': 'X-Custom-Header',
-                            Origin: 'localhost:8080'
-                        },
-                        port: creationResponse.body.port
-                    }),
-                    headers = headersMap.of(response.headers);
+                    method: 'OPTIONS',
+                    path: '/',
+                    headers: {
+                        'Access-Control-Request-Method': 'PUT',
+                        'Access-Control-Request-Headers': 'X-Custom-Header',
+                        Origin: 'localhost:8080'
+                    },
+                    port: creationResponse.body.port
+                });
 
                 assert.strictEqual(response.statusCode, 200);
-                assert.equal(headers.get('access-control-allow-headers'), 'X-Custom-Header');
-                assert.equal(headers.get('access-control-allow-methods'), 'PUT');
-                assert.equal(headers.get('access-control-allow-origin'), 'localhost:8080');
+                assert.strictEqual(response.headers['access-control-allow-headers'], 'X-Custom-Header');
+                assert.strictEqual(response.headers['access-control-allow-methods'], 'PUT');
+                assert.strictEqual(response.headers['access-control-allow-origin'], 'localhost:8080');
             });
 
             it('should not handle non-preflight requests when "allowCORS" is enabled', async function () {
@@ -82,12 +80,12 @@ const assert = require('assert'),
                         // Missing the necessary headers.
                         port: creationResponse.body.port
                     }),
-                    headers = headersMap.of(response.headers);
+                    headers = Object.keys(response.headers).map(header => header.toLowerCase());
 
                 assert.strictEqual(response.statusCode, 200);
-                assert.ok(!headers.get('access-control-allow-headers'));
-                assert.ok(!headers.get('access-control-allow-methods'));
-                assert.ok(!headers.get('access-control-allow-origin'));
+                assert.ok(headers.indexOf('access-control-allow-headers') < 0);
+                assert.ok(headers.indexOf('access-control-allow-methods') < 0);
+                assert.ok(headers.indexOf('access-control-allow-origin') < 0);
             });
 
             it('should default content type to json if not provided', async function () {
