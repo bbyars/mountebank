@@ -2,7 +2,7 @@
 
 const net = require('net');
 
-function send (message, serverPort, timeout, serverHost) {
+function send (message, serverPort, timeout, serverHost, expectedLength = 0) {
     const options = { port: serverPort };
 
     if (serverHost) {
@@ -10,14 +10,21 @@ function send (message, serverPort, timeout, serverHost) {
     }
 
     return new Promise((resolve, reject) => {
-        const socket = net.createConnection(options, () => { socket.write(message); });
+        const socket = net.createConnection(options, () => { socket.write(message); }),
+            packets = [];
 
         if (!serverPort) {
             throw Error('you forgot to pass the port again');
         }
 
         socket.once('error', reject);
-        socket.once('data', resolve);
+        socket.on('data', data => {
+            packets.push(data);
+            const payload = Buffer.concat(packets);
+            if (payload.length >= expectedLength) {
+                resolve(payload);
+            }
+        });
 
         if (timeout) {
             setTimeout(() => { resolve(''); }, timeout);
