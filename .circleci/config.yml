@@ -28,6 +28,7 @@ jobs:
       - restore_cache:
           key: dependency-cache-{{ checksum "package.json" }}
       - run: npm ci
+      - run: cd mbTest && npm ci
       - run: npm run ci:build
       - save_cache:
           key: dependency-cache-{{ checksum "package.json" }}
