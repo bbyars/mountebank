@@ -37,7 +37,6 @@
     "test:cover": "nyc --reporter=lcov --reporter=text npm run test:unit",
     "test:cover:codeclimate": "scripts/codeclimate",
     "test:functional": "node tasks/tmp/functionalTest.js",
-    "test:performance": "mocha --forbid-only --forbid-pending performanceTest/**/*.js",
     "test": "npm run test:cover && npm run test:functional",
     "version": "node tasks/tmp/version.js"
   },

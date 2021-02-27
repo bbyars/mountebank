@@ -38,7 +38,6 @@ jobs:
           paths:
             - dist
             - mbTest
-            - performanceTest
             - package.json
             - tasks
             - node_modules
