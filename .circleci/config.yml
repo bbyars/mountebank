@@ -36,6 +36,7 @@ jobs:
   package:
     docker:
       - image: circleci/ruby:2.4.4-stretch
+    steps:
       - run:
           name: Update Node.js and npm
           command: |
