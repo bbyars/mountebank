@@ -22,7 +22,6 @@
     "restart": "bin/mb restart",
     "stop": "bin/mb stop",
     "ci:build": "npm run version && npm test && scripts/codeclimate && scripts/sonar && npm run jsdoc && npm run deploy:docs && npm run deploy:coveralls && npm run dist",
-    "commit": "npm test",
     "config:outOfProcess": "node tasks/tmp/outOfProcessImposters.js",
     "config:inProcess": "node tasks/tmp/InProcessImpsoters.js",
     "deploy:coveralls": "cat ./coverage/lcov.info | node_modules/coveralls/bin/coveralls.js",
@@ -37,7 +36,7 @@
     "test:cover": "nyc --reporter=lcov --reporter=text npm run test:unit",
     "test:cover:codeclimate": "scripts/codeclimate",
     "test:functional": "node tasks/tmp/functionalTest.js",
-    "test": "npm run test:cover && npm run test:functional",
+    "test": "npm run lint && npm run test:cover && npm run test:functional",
     "version": "node tasks/tmp/version.js"
   },
   "files": [
