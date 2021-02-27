@@ -48,7 +48,7 @@ save it as <code>names.csv</code> in the directory we run <code>mb</code> from.<
 by the <code>lookup</code> behavior.</p>
 
 <testScenario name='shellTransform'>
-    <step type='file' filename='names.txt'>
+    <step type='file' filename='<%= process.cwd() %>/names.txt'>
 <pre><code>123|Frodo Baggins
 234|Samwise Gamgee
 345|Gandalf the White
@@ -74,7 +74,7 @@ Content-Type: application/json
         {
           "is": { "body": "Hello, <strong class='highlight1'>${YOU}!</strong>" },
           "behaviors": [
-            { "shellTransform": "node addName.js" }
+            { "shellTransform": "node <%= process.cwd() %>/addName.js" }
           ]
         }
       ]
@@ -88,17 +88,14 @@ Content-Type: application/json
 using a <code>decorate</code> function. However, that's just to keep it simple; the application
 could be written in any language.</p>
 
-<p>Let's create the <code>addName.js</code> file in the same directory we ran <code>mb</code> from.
-Since our shell command is <code>node addName.js</code>, the command line arguments passed in
-will look something like <br />
-<code>['node', 'addName.js', <em>requestJSON</em>, <em>responseJSON</em>]</code>.</p>
+<p>Let's create the <code>addName.js</code> file..</p>
 
-    <step type='file' filename='addName.js'>
+    <step type='file' filename='<%= process.cwd() %>/addName.js'>
 <pre><code>var request = JSON.parse(process.env.MB_REQUEST),
     response = JSON.parse(process.env.MB_RESPONSE),
     requestId = request.path.replace('/accounts/', ''),
     fs = require('fs'),
-    mappings = fs.readFileSync('names.txt', { encoding: 'utf8' }),
+    mappings = fs.readFileSync('<%= process.cwd() %>/names.txt', { encoding: 'utf8' }),
     lines = mappings.split('\n');
 
 for (let i = 0; i &lt; lines.length; i += 1) {
@@ -151,6 +148,6 @@ Hello, <strong class='highlight1'>Smeagol!</strong></code></pre>
 Host: localhost:<%= port %></code>
     </step>
 
-    <step type='file' filename='names.txt' delete='true'><code></code></step>
-    <step type='file' filename='addName.js' delete='true'><code></code></step>
+    <step type='file' filename='<%= process.cwd() %>/names.txt' delete='true'><code></code></step>
+    <step type='file' filename='<%= process.cwd() %>/addName.js' delete='true'><code></code></step>
 </testScenario>

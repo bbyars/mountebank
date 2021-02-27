@@ -131,7 +131,7 @@ selection using jsonpath and xpath.</p>
 <p>We'll use the following CSV file for these examples, saved as "values.csv" in the
 current working directory of the <code>mb</code> process (you can always use an absolute path):</p>
 
-    <step type='file' filename='values.csv'>
+    <step type='file' filename='<%= process.cwd() %>/values.csv'>
 <pre><code>State_ID,code,Name,price,tree,jobs
 1111111,400,liquid,235651,mango,farmer
 9856543,404,solid,54564564,orange,miner
@@ -175,7 +175,7 @@ Content-Type: application/json
                 }</strong>,
                 "fromDataSource": {
                   "csv": {
-                    "path": "values.csv",
+                    "path": "<%= process.cwd() %>/values.csv",
                     "keyColumn": "Name",
                     "delimiter": ","
                   }
@@ -215,6 +215,6 @@ Hello <strong class='highlight1'>liquid</strong>, have you done your <strong cla
 Host: localhost:<%= port %></code>
     </step>
 
-    <step type='file' filename='values.csv' delete='true'><code>
+    <step type='file' filename='<%= process.cwd() %>/values.csv' delete='true'><code>
     </code></step>
 </testScenario>

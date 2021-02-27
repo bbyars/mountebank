@@ -152,7 +152,7 @@ to get changes committed, but if not I'd prefer to keep the style consistent.
 ## Testing mountebank
 
 I almost never manually QA anything before releasing, so automated testing is essential to
-maintaining a quality product. There are four levels of testing in mountebank:
+maintaining a quality product. There are multiple levels of testing in mountebank:
 
 ### Unit tests
 
@@ -164,23 +164,26 @@ each test small in scope. Your best bet is probably copying an existing test and
 Nearly all (maybe all) unit tests are protocol-agnostic, and I often use fake protocol requests
 during the setup part of each test.
 
-### Functional tests
+### API tests
 
-These live in the `functionalTest` directory, and are out-of-process tests that verify three types
-of behavior:
+These live in the `mbTest/api` directory, and are out-of-process tests that verify
+API behavior. Each of these tests expects `mb` to be running and calls its API.
 
-* Protocol-specific API behavior, in the `functionalTest/api` directory. Each of these tests expects
-`mb` to be running and calls its API.
-* Command line behavior, in the `functionalTest/commandLine` directory. Each of these tests spins
-up a new instance of `mb` and verifies certain behaviors
-* Website integrity, in the `functionalTest/html` directory. These expect `mb` to be running and
-validate that there are no broken links, that each page is proper HTML, that the feed works, that
-the site map is valid, and that the documentation examples are valid. That last point is unique
+### CLI tests
+
+These live in the `mbTest/cli` directory. They are out-of-process tests, but each one spins
+up a new instance of `mb` to test various command line flag combinations.
+
+### Web tests
+
+These live in the `mbTest/web` directory and test against a running instance of `mb` to validate
+website integrity, including valid HTML, dead link checking, and ensuring the documentation
+examples are valid. That last point is unique
 enough that I consider it to be an entirely different type of test, described next.
 
 ### Documentation tests
 
-The `functionalTest/html/docsIntegrityTest.js` file looks for special HTML
+The `mbTest/web/docsIntegrityTest.js` file looks for special HTML
 tags that indicate the code blocks within are meant to be executed and validated within the docs.
 At first I wrote these tests as a check on my own laziness;
 I know from experience how hard it is to keep the docs up-to-date. They proved quite useful,
@@ -261,16 +264,14 @@ It expects a `port` attribute indicating the port of the imposter smtp service
    the `delete` attribute is set to "true", the file is deleted.
 
 As the doc tests get unwieldy to work with at times, I will often comment out all files except the
-one I'm troubleshooting in `functionalTest/html/docsIntegrityTest.js`.
+one I'm troubleshooting in `mbTest/web/docsIntegrityTest.js`.
 
 ### Performance tests
 
-I only have a few of these, to ensure a flat memory usage under normal circumstances and
-to ensure that the application startup time doesn't increase over time (as was happening
-as more package dependencies were added). Performance testing is a key use case of
+Performance testing is a key use case of
 mountebank, so if you have experience writing performance tests and want to add some to
 mountebank, I'd be eternally grateful. These are run in a special CI job and not as
-part of the pre-commit script.
+part of the pre-commit script, and exist in the `mbTest/perf` directory.
 
 ### Debugging
 

@@ -20,7 +20,7 @@ async function runTests () {
         process.exit(mbExitCode); // eslint-disable-line no-process-exit
     }
 
-    const mochaExitCode = await exec('node', ['node_modules/.bin/mocha', '--forbid-only', '--forbid-pending', 'functionalTest/**/*.js']);
+    const mochaExitCode = await exec('node', ['node_modules/.bin/mocha', '--forbid-only', '--forbid-pending', 'mbTest/api/**/*.js', 'mbTest/cli/**/*.js']);
     await exec('node', ['tasks/tmp/mb.js', 'stop']);
     return mochaExitCode;
 }

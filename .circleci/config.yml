@@ -37,7 +37,7 @@ jobs:
           root: .
           paths:
             - dist
-            - functionalTest
+            - mbTest
             - performanceTest
             - package.json
             - tasks

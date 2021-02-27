@@ -1,0 +1,34 @@
+{
+    "name": "mountebank-tests",
+    "version": "0.0.1",
+    "author": "Brandon Byars <brandon.byars@gmail.com>",
+    "description": "Black box tests for mountebank",
+    "homepage": "http://www.mbtest.org",
+    "license": "MIT",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/bbyars/mountebank.git"
+    },
+    "bugs": {
+        "url": "https://github.com/bbyars/mountebank/issues",
+        "email": "brandon.byars@gmail.com"
+    },
+    "scripts": {
+        "airplane": "MB_AIRPLANE_MODE=true npm test",
+        "perf": "MB_EXECUTABLE=\"${MB_EXECUTABLE:-../bin/mb}\" node_modules/.bin/mocha 'perf/**/*.js'",
+        "test": "MB_EXECUTABLE=\"${MB_EXECUTABLE:-../bin/mb}\" node_modules/.bin/mocha 'api/**/*.js' 'cli/**/*.js'",
+        "web": "MB_EXECUTABLE=\"${MB_EXECUTABLE:-../bin/mb}\" node_modules/.bin/mocha 'web/**/*.js'"
+    },
+    "dependencies": {
+        "fs-extra": "9.0.1",
+        "jsdom": "16.4.0",
+        "mocha": "8.2.1",
+        "mountebank": "file:..",
+        "nc": "1.0.3",
+        "nodemailer": "6.4.17",
+        "safe-stable-stringify": "1.1.1",
+        "w3cjs": "0.4.0",
+        "xmldom": "0.4.0",
+        "xpath": "0.0.32"
+    }
+}

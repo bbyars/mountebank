@@ -28,7 +28,7 @@ sonar-scanner \
     -Dsonar.links.issue=https://github.com/bbyars/mountebank/issues \
     -Dsonar.links.scm=https://github.com/bbyars/mountebank \
     -Dsonar.sources=src \
-    -Dsonar.tests=test,functionalTest,performanceTest \
+    -Dsonar.tests=test,mbTest \
     -Dsonar.host.url=https://sonarcloud.io \
     -Dsonar.organization=bbyars-github \
     -Dsonar.login=$SONARQUBE_LOGIN

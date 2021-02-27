@@ -6,7 +6,7 @@
 coverage
 dist
 docs
-functionalTest
+mbTest
 images
 metrics
 packages
