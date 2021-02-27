@@ -3,7 +3,7 @@
 set -e
 
 ARCH=$1
-MB_VERSION=$2
+MB_VERSION=`cat dist/mountebank/package.json | grep '"version"' | sed -E -e 's/.*"version": "([^"]*)",/\1/'`
 
 cd dist
 
@@ -26,13 +26,6 @@ cd $MB_FILENAME
 wget -q $URL
 
 cp -r ../mountebank .
-
-# This reduces the longest path (from 176 -> 109 when I wrote this)
-# which is critical to getting this to run on Windows with its MAX_PATH of 260 characters.
-# It's unusable as a zip file without this if you try to extract in Windows Explorer,
-# which is limited to MAX_PATH.  Other utilities (including node itself and 7zip) aren't restricted
-# by the path length
-npm dedupe
 
 echo "@echo off\r" > ./mb.cmd
 echo "\"%~dp0\\\\node.exe\" \"%~dp0\\\\mountebank\\\\bin\\\\mb\" %*" >> ./mb.cmd

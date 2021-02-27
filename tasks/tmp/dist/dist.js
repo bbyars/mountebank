@@ -38,7 +38,7 @@ async function packageMbTest () {
 
 async function packageTasks () {
     fs.ensureDirSync('dist/ci');
-    ['scripts', 'tasks', 'Gemfile', 'Gemfile.lock', 'Procfile'].forEach(file => {
+    ['scripts', 'tasks', 'Procfile'].forEach(file => {
         fs.copySync(file, `dist/ci/${file}`);
     });
 }

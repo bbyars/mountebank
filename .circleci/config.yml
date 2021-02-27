@@ -33,6 +33,25 @@ jobs:
           root: .
           paths: dist
 
+  package:
+    docker:
+      - image: circleci/ruby:2.4.4-stretch
+      - run:
+          name: Update Node.js and npm
+          command: |
+            curl -sSL "https://nodejs.org/dist/latest-v14.x/node-v14.16.0-linux-x64.tar.gz" | sudo tar --strip-components=2 -xJ -C /usr/local/bin/ node-v14.16.0-linux-x64/bin/node
+            curl https://www.npmjs.com/install.sh | sudo bash
+      - run:
+          name: Check current version of node
+          command: node -v
+      - run: gem install fpm
+      - run: dist/ci/scripts/dist/createSelfContainedTarball darwin x64
+      - run: dist/ci/scripts/dist/createSelfContainedTarball linux x64
+      - run: dist/ci/scripts/dist/createWindowsZip x86
+      - run: dist/ci/scripts/dist/createWindowsZip x64
+      - run: cd dist && npm pack mountebank
+      - run: dist/ci/scripts/deployS3
+
   nodev10:
     docker:
       - image: circleci/node:10-stretch
@@ -46,7 +65,7 @@ jobs:
           at: .
       - run: ls -al
       - run: node dist/ci/tasks/tmp/outOfProcessImposters.js
-      - run: dist/mountebank/bin mb start --allowInjection --mock --localOnly --protofile protocols.json
+      - run: dist/mountebank/bin/mb start --allowInjection --mock --localOnly --protofile protocols.json
       - run: cd dist/test && npm test
 
 #  dbAndWeb:
@@ -252,6 +271,14 @@ workflows:
             branches:
               only: /^pull\/.*$/
       - build:
+          filters:
+            branches:
+              only: master
+            tags:
+              only: /^v.*/
+      - package:
+          requires:
+            - build
           filters:
             branches:
               only: master

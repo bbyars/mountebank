@@ -1,14 +1,12 @@
 #!/bin/sh
 
-[ -e dist/s3 ] && rm -rf dist/s3
-mkdir dist/s3
-cp dist/*.* dist/s3
-
 set -e
 
 S3_DIR=$(cat dist/mountebank/package.json | grep '"version"' | sed -E -e 's/.*"version": "([0-9]+)\.([0-9]+)\.[^"]+",/v\1.\2/')
 
-echo "Deploying the following to S3 dir $S3_DIR:"
-ls -l dist/s3
-dpl --provider=s3 --access-key-id=AKIAIE2GUJRUIHGE2PWA --secret-access-key=$AWS_ACCESS_KEY \
-    --bucket=mountebank --local-dir=dist/s3 --upload-dir=$S3_DIR --skip-cleanup
+if [ ! -d s3cmd-2.1.0 ]; then
+    wget -q https://github.com/s3tools/s3cmd/releases/download/v2.1.0/s3cmd-2.1.0.tar.gz
+    tar xzvf s3cmd-2.1.0.tar.gz
+fi
+
+s3cmd-2.1.0/s3cmd --access_key=AKIAIE2GUJRUIHGE2PWA --secret_key=$AWS_ACCESS_KEY put $@ s3://mountebank/$S3_DIR/
