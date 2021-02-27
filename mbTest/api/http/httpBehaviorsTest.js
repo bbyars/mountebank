@@ -54,7 +54,7 @@ const assert = require('assert'),
                     time = new Date() - start;
 
                 assert.strictEqual(response.body, 'stub');
-                assert.ok(time >= 990, `actual time: ${time}`); // Occasionally there's some small inaccuracies
+                assert.ok(time >= 975, `actual time: ${time}`); // Occasionally there's some small inaccuracies
             });
 
             it('should support post-processing when using behaviors.decorate (old interface)', async function () {

@@ -3,52 +3,35 @@ version: 2.0
 jobs:
   pr:
     docker:
-      - image: circleci/node:12-stretch
+      - image: circleci/node:14-stretch
     environment:
-      - CC_TEST_REPORTER_ID=8bc3a050a2f8ef1cc460e5f4c72d18a689c8ae0981bf494031eb4eb28bbd0b0b
       - MB_SLOW_TEST_TIMEOUT: 7000
     steps:
       - checkout
-      - restore_cache:
-          key: dependency-cache-{{ checksum "package.json" }}
-      - run: npm run test
-      - save_cache:
-          key: dependency-cache-{{ checksum "package.json" }}
-          paths:
-            - node_modules
+      - run: npm ci
+      - run: cd mbTest && npm ci
+      - run: npm test
 
   build:
     docker:
-      - image: circleci/node:12-stretch
+      - image: circleci/node:14-stretch
     environment:
       - CC_TEST_REPORTER_ID=8bc3a050a2f8ef1cc460e5f4c72d18a689c8ae0981bf494031eb4eb28bbd0b0b
       - MB_SLOW_TEST_TIMEOUT: 7000
     steps:
       - checkout
-      - restore_cache:
-          key: dependency-cache-{{ checksum "package.json" }}
       - run: npm ci
       - run: cd mbTest && npm ci
-      - run: npm run ci:build
-      - save_cache:
-          key: dependency-cache-{{ checksum "package.json" }}
-          paths:
-            - node_modules
+      - run: node tasks/tmp/version.js
+      - run: npm test
+      - run: scripts/codeclimate
+      - run: cat ./coverage/lcov.info | node_modules/coveralls/bin/coveralls.js
+      - run: scripts/sonar
+      - run: npm run jsdoc && node tasks/tmp/deploy/docs.js
+      - run: node tasks/tmp/dist/dist.js
       - persist_to_workspace:
           root: .
-          paths:
-            - dist
-            - mbTest
-            - package.json
-            - tasks
-            - node_modules
-            - scripts
-            - Gemfile
-            - Gemfile.lock
-            - Procfile
-            - travis-*.txt
-            - build.properties
-            - Dockerfile
+          paths: dist
 
   nodev10:
     docker:
@@ -61,20 +44,23 @@ jobs:
     steps:
       - attach_workspace:
           at: .
-      - run: npm run config:outOfProcess && npm run test:functional
+      - run: ls -al
+      - run: node dist/ci/tasks/tmp/outOfProcessImposters.js
+      - run: dist/mountebank/bin mb start --allowInjection --mock --localOnly --protofile protocols.json
+      - run: cd dist/test && npm test
 
-  dbAndWeb:
-    docker:
-      - image: circleci/node:12-stretch
-    environment:
-      - MB_SLOW_TEST_TIMEOUT: 7000
-      - MB_PORT: 3535
-      - MB_RUN_WEB_TESTS=true
-      - MB_EXECUTABLE: dist/mountebank/bin/mb
-    steps:
-      - attach_workspace:
-          at: .
-      - run: npm run config:outOfProcess && npm run test:functional
+#  dbAndWeb:
+#    docker:
+#      - image: circleci/node:12-stretch
+#    environment:
+#      - MB_SLOW_TEST_TIMEOUT: 7000
+#      - MB_PORT: 3535
+#      - MB_RUN_WEB_TESTS=true
+#      - MB_EXECUTABLE: dist/mountebank/bin/mb
+#    steps:
+#      - attach_workspace:
+#          at: .
+#      - run: npm run config:outOfProcess && npm run test:functional
 
 #  package-source:
 #    docker:
@@ -327,14 +313,14 @@ workflows:
 #              only: master
 #            tags:
 #              only: /^v.*/
-      - dbAndWeb:
-          requires:
-            - build
-          filters:
-            branches:
-              only: master
-            tags:
-              only: /^v.*/
+#      - dbAndWeb:
+#          requires:
+#            - build
+#          filters:
+#            branches:
+#              only: master
+#            tags:
+#              only: /^v.*/
       - nodev10:
           requires:
             - build
