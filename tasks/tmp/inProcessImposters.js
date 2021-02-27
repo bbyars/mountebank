@@ -1,6 +1,6 @@
 'use strict';
 
-const fs = require('fs-extra');
+const fs = require('fs');
 if (fs.existsSync('protocols.json')) {
     fs.unlinkSync('protocols.json');
 }

@@ -13,6 +13,6 @@ const protocols = {
         https: { createCommand: `node ${root}/src/models/https/index.js` },
         tcp: { createCommand: `node ${root}/src/models/tcp/index.js` }
     },
-    fs = require('fs-extra');
+    fs = require('fs');
 
 fs.writeFileSync('protocols.json', JSON.stringify(protocols, null, 2));
