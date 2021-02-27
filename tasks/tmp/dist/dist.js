@@ -10,7 +10,6 @@ fs.ensureDirSync('dist/mountebank');
 thisPackage.files.forEach(source => {
     fs.copySync(source, `dist/mountebank/${source}`);
 });
-fs.removeSync('dist/src/public/images/sources');
 
 delete thisPackage.devDependencies;
 Object.keys(thisPackage.scripts).forEach(script => {

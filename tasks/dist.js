@@ -16,8 +16,6 @@ module.exports = function (grunt) {
         ['bin', 'src', 'package.json', 'package-lock.json', 'releases.json', 'README.md', 'LICENSE'].forEach(source => {
             fs.copySync(source, 'dist/mountebank/' + source);
         });
-        fs.removeSync('dist/mountebank/src/public/images/sources');
-
 
         delete newPackage.devDependencies;
         fs.writeFileSync('dist/mountebank/package.json', JSON.stringify(newPackage, null, 2));
