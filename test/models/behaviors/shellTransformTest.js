@@ -3,13 +3,14 @@
 const assert = require('assert'),
     behaviors = require('../../../src/models/behaviors'),
     Logger = require('../../fakes/fakeLogger'),
-    fs = require('fs');
+    fs = require('fs-extra'),
+    filename = '_shellTransform.js';
 
 describe('behaviors', function () {
     describe('#shellTransform', function () {
         afterEach(function () {
-            if (fs.existsSync('shellTransformTest.js')) {
-                fs.unlinkSync('shellTransformTest.js');
+            if (fs.existsSync(filename)) {
+                fs.unlinkSync(filename);
             }
         });
 
@@ -30,9 +31,9 @@ describe('behaviors', function () {
                 shellFn = function exec () {
                     console.log(JSON.stringify({ data: 'CHANGED' }));
                 },
-                config = { shellTransform: 'node shellTransformTest.js' };
+                config = { shellTransform: `node ${filename}` };
+            fs.writeFileSync(filename, `${shellFn.toString()}\nexec();`);
 
-            fs.writeFileSync('shellTransformTest.js', `${shellFn.toString()}\nexec();`);
             const actualResponse = await behaviors.execute(request, response, [config], logger);
 
             assert.deepEqual(actualResponse, { data: 'CHANGED' });
@@ -50,9 +51,9 @@ describe('behaviors', function () {
                     shellResponse.requestData = shellRequest.data;
                     console.log(JSON.stringify(shellResponse));
                 },
-                config = { shellTransform: 'node shellTransformTest.js' };
+                config = { shellTransform: `node ${filename}` };
+            fs.writeFileSync(filename, `${shellFn.toString()}\nexec();`);
 
-            fs.writeFileSync('shellTransformTest.js', `${shellFn.toString()}\nexec();`);
             const actualResponse = await behaviors.execute(request, response, [config], logger);
 
             assert.deepEqual(actualResponse, { data: 'UNCHANGED', requestData: 'FROM REQUEST' });
@@ -82,9 +83,8 @@ describe('behaviors', function () {
                     console.error('BOOM!!!');
                     process.exit(1); // eslint-disable-line no-process-exit
                 },
-                config = { shellTransform: 'node shellTransformTest.js' };
-
-            fs.writeFileSync('shellTransformTest.js', `${shellFn.toString()}\nexec();`);
+                config = { shellTransform: `node ${filename}` };
+            fs.writeFileSync(filename, `${shellFn.toString()}\nexec();`);
 
             try {
                 await behaviors.execute(request, response, [config], logger);
@@ -103,9 +103,8 @@ describe('behaviors', function () {
                 shellFn = function exec () {
                     console.log('This is not JSON');
                 },
-                config = { shellTransform: 'node shellTransformTest.js' };
-
-            fs.writeFileSync('shellTransformTest.js', `${shellFn.toString()}\nexec();`);
+                config = { shellTransform: `node ${filename}` };
+            fs.writeFileSync(filename, `${shellFn.toString()}\nexec();`);
 
             try {
                 await behaviors.execute(request, response, [config], logger);
@@ -136,9 +135,9 @@ describe('behaviors', function () {
                     shellResponse.requestData = shellRequest.body;
                     console.log(JSON.stringify(shellResponse));
                 },
-                config = { shellTransform: 'node shellTransformTest.js' };
+                config = { shellTransform: `node ${filename}` };
+            fs.writeFileSync(filename, `${shellFn.toString()}\nexec();`);
 
-            fs.writeFileSync('shellTransformTest.js', `${shellFn.toString()}\nexec();`);
             const actualResponse = await behaviors.execute(request, response, [config], logger);
 
             assert.deepEqual(actualResponse, { requestData: '{"fastSearch": "abctef abc def"}' });
@@ -154,9 +153,9 @@ describe('behaviors', function () {
                     shellResponse.added = new Array(1024 * 1024 * 2).join('x');
                     console.log(JSON.stringify(shellResponse));
                 },
-                config = { shellTransform: 'node shellTransformTest.js' };
+                config = { shellTransform: `node ${filename}` };
+            fs.writeFileSync(filename, `${shellFn.toString()}\nexec();`);
 
-            fs.writeFileSync('shellTransformTest.js', `${shellFn.toString()}\nexec();`);
             const actualResponse = await behaviors.execute(request, response, [config], logger);
 
             assert.deepEqual(actualResponse, {
