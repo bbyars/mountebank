@@ -33,6 +33,9 @@ async function packageMountebank () {
 async function packageMbTest () {
     distPackage('mbTest', 'test', pkg => {
         pkg.dependencies.mountebank = 'file:../mountebank';
+        const lockfile = JSON.parse(fs.readFileSync('dist/test/package-lock.json'));
+        lockfile.dependencies.mountebank.version = 'file:../mountebank';
+        fs.writeFileSync('dist/test/package-lock.json', JSON.stringify(lockfile, null, 2));
     });
 }
 
