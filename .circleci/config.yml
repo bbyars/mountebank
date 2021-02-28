@@ -19,6 +19,8 @@ executors:
   mac:
     macos:
       xcode: 12.4.0
+    environment:
+      - NODE_VERSION=v14.16.0
 
 jobs:
   pr:
@@ -91,8 +93,8 @@ jobs:
             scripts/dist/createSelfContainedTarball linux x64 $NODE_VERSION
             scripts/dist/createWindowsZip x86 $NODE_VERSION
             scripts/dist/createWindowsZip x64 $NODE_VERSION
-            scripts/dist/createPackage linux deb
-            scripts/dist/createPackage linux rpm
+            scripts/dist/createPackage linux deb $NODE_VERSION
+            scripts/dist/createPackage linux rpm $NODE_VERSION
       - run:
          name: Deploy to S3
          command: scripts/deploy/deployS3 dist/*.tar.gz dist/*.tgz dist/*.zip dist/*.deb dist/*.rpm
@@ -109,7 +111,7 @@ jobs:
             brew install wget
       - run:
           name: Create Packages
-          command: scripts/dist/createSelfContainedTarball osxpkg x64 $NODE_VERSION
+          command: scripts/dist/createPackage darwin osxpkg $NODE_VERSION
       - run:
          name: Deploy to S3
          command: scripts/deploy/deployS3 dist/*.pkg

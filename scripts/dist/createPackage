@@ -4,11 +4,12 @@ set -e
 
 PLATFORM=$1
 TYPE=$2
+NODE_VERSION=$3
 MB_VERSION=`cat dist/mountebank/package.json | grep '"version"' | sed -E -e 's/.*"version": "([^"]*)",/\1/'`
 MB_DIRNAME=mountebank-v$MB_VERSION-$PLATFORM-x64
 
 if [ ! -d "dist/$MB_DIRNAME" ]; then
-    scripts/dist/createSelfContainedDir $PLATFORM x64 $MB_VERSION
+    scripts/dist/createSelfContainedDir $PLATFORM x64 $MB_VERSION $NODE_VERSION
 fi
 
 echo Creating $TYPE...
