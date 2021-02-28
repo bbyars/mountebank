@@ -31,7 +31,11 @@ jobs:
       - run: node tasks/tmp/dist/dist.js
       - persist_to_workspace:
           root: .
-          paths: dist
+          paths:
+            - dist
+            - tasks
+            - scripts
+            - Procfile
 
   package:
     docker:
@@ -41,12 +45,12 @@ jobs:
           at: .
       - run: pwd
       - run: ls -al
-      - run: dist/ci/scripts/dist/createSelfContainedTarball darwin x64
-      - run: dist/ci/scripts/dist/createSelfContainedTarball linux x64
-      - run: dist/ci/scripts/dist/createWindowsZip x86
-      - run: dist/ci/scripts/dist/createWindowsZip x64
-      - run: cd dist && npm pack mountebank
-      - run: dist/ci/scripts/deployS3
+      - run: scripts/dist/createSelfContainedTarball darwin x64
+      - run: scripts/dist/createSelfContainedTarball linux x64
+      - run: scripts/dist/createWindowsZip x86
+      - run: scripts/dist/createWindowsZip x64
+      - run: cd dist && npm pack mountebank & cd ..
+      - run: scripts/deploy/deployS3 dist/*.tar.gz dist/*.tgz dist/*.zip
 
   nodev10:
     docker:
@@ -63,7 +67,7 @@ jobs:
       - run: ls -al
       - run: ls -al dist/test/node_modules
       - run: node dist/ci/tasks/tmp/outOfProcessImposters.js
-      - run: dist/mountebank/bin/mb start --allowInjection --mock --localOnly --protofile protocols.json &
+      - run: dist/mountebank/bin/mb start --allowInjection --mock --localOnly --protofile protocols.json --port $MB_PORT &
       - run: cd dist/test && npm test
       - run: dist/mountebank/bin/mb stop
 

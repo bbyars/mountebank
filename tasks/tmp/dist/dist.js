@@ -39,13 +39,6 @@ async function packageMbTest () {
     });
 }
 
-async function packageTasks () {
-    fs.ensureDirSync('dist/ci');
-    ['scripts', 'tasks', 'Procfile'].forEach(file => {
-        fs.copySync(file, `dist/ci/${file}`);
-    });
-}
-
 fs.removeSync('dist');
 packageMountebank()
     .then(() => packageMbTest())
