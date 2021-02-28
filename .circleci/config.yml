@@ -16,6 +16,9 @@ executors:
       - image: circleci/ruby:2.4.4-stretch
     environment:
       - NODE_VERSION=v14.16.0
+  mac:
+    macos:
+      xcode: 12.4.0
 
 jobs:
   pr:
@@ -94,6 +97,21 @@ jobs:
          name: Deploy to S3
          command: scripts/deploy/deployS3 dist/*.tar.gz dist/*.tgz dist/*.zip dist/*.deb dist/*.rpm
 
+  package-osx:
+    executor: mac
+    steps:
+      - attach_workspace:
+          at: .
+      - run:
+          name: Install Dependencies
+          command: gem install fpm
+      - run:
+          name: Create Packages
+          command: scripts/dist/createSelfContainedTarball osxpkg x64 $NODE_VERSION
+      - run:
+         name: Deploy to S3
+         command: scripts/deploy/deployS3 dist/*.pkg
+
   nodev10:
     executor: node-oldest
     environment:
@@ -105,15 +123,12 @@ jobs:
           at: .
       - run:
           name: Prepare
-          command: |
-            node tasks/tmp/outOfProcessImposters.js
-            dist/mountebank/bin/mb start --allowInjection --mock --localOnly --protofile protocols.json --port $MB_PORT &
+          command: node tasks/tmp/outOfProcessImposters.js
       - run:
           name: Test
-          command: (cd dist/test && npm test)
-      - run:
-          name: Shutdown
-          command: dist/mountebank/bin/mb stop
+          command: |
+            dist/mountebank/bin/mb start --allowInjection --mock --localOnly --protofile protocols.json --port $MB_PORT &
+            (cd dist/test && npm test)
       - store_test_results:
           path: testResults
 
@@ -326,6 +341,14 @@ workflows:
             tags:
               only: /^v.*/
       - package:
+          requires:
+            - build
+          filters:
+            branches:
+              only: master
+            tags:
+              only: /^v.*/
+      - package-osx:
           requires:
             - build
           filters:
