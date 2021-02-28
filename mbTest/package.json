@@ -38,14 +38,14 @@
         "node": ">=10"
     },
     "files": [
-      "api",
-      "cli",
-      "perf",
-      "web",
-      "api.js",
-      "baseHttpClient.js",
-      "mb.js",
-      "package.json",
-      "package-lock.json"
+        "api",
+        "cli",
+        "perf",
+        "web",
+        "api.js",
+        "baseHttpClient.js",
+        "mb.js",
+        "package.json",
+        "package-lock.json"
     ]
 }
