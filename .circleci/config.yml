@@ -59,10 +59,10 @@ jobs:
             scripts/dist/createSelfContainedTarball linux x64 $NODE_VERSION
             scripts/dist/createWindowsZip x86 $NODE_VERSION
             scripts/dist/createWindowsZip x64 $NODE_VERSION
-            cd dist && npm pack mountebank & cd ..
             scripts/dist/createPackage linux deb
             scripts/dist/createPackage linux osxpkg
             scripts/dist/createPackage linux rpm
+            cd dist && npm pack mountebank && cd ..
       - run:
          name: Deploy to S3
          command: scripts/deploy/deployS3 dist/*.tar.gz dist/*.tgz dist/*.zip dist/*.deb dist/*.rpm dist/*.pkg
