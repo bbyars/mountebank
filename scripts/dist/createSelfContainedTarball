@@ -4,12 +4,11 @@ set -e
 
 PLATFORM=$1
 ARCH=$2
+NODE_VERSION=$3
 MB_VERSION=`cat dist/mountebank/package.json | grep '"version"' | sed -E -e 's/.*"version": "([^"]*)",/\1/'`
 MB_DIRNAME=mountebank-v$MB_VERSION-$PLATFORM-$ARCH
 
-if [ ! -d "dist/$MB_DIRNAME" ]; then
-    scripts/dist/createSelfContainedDir $PLATFORM $ARCH $MB_VERSION
-fi
+scripts/dist/createSelfContainedDir $PLATFORM $ARCH $MB_VERSION $NODE_VERSION
 
 cd dist
 

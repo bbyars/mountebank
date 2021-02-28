@@ -5,12 +5,12 @@ set -e
 PLATFORM=$1
 ARCH=$2
 MB_VERSION=$3
+NODE_VERSION=$4
 
 cd dist
 
 echo Creating directory for $PLATFORM-$ARCH...
 
-NODE_VERSION=`node -v`
 NODE_FILENAME=node-$NODE_VERSION-$PLATFORM-$ARCH
 URL=https://nodejs.org/dist/$NODE_VERSION/$NODE_FILENAME.tar.gz
 MB_DIRNAME=mountebank-v$MB_VERSION-$PLATFORM-$ARCH

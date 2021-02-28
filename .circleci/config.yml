@@ -40,15 +40,17 @@ jobs:
   package:
     docker:
       - image: circleci/ruby:2.4.4-stretch
+    environment:
+      - NODE_VERSION=v14.16.0
     steps:
       - attach_workspace:
           at: .
       - run: pwd
       - run: ls -al
-      - run: scripts/dist/createSelfContainedTarball darwin x64
-      - run: scripts/dist/createSelfContainedTarball linux x64
-      - run: scripts/dist/createWindowsZip x86
-      - run: scripts/dist/createWindowsZip x64
+      - run: scripts/dist/createSelfContainedTarball darwin x64 $NODE_VERSION
+      - run: scripts/dist/createSelfContainedTarball linux x64 $NODE_VERSION
+      - run: scripts/dist/createWindowsZip x86 $NODE_VERSION
+      - run: scripts/dist/createWindowsZip x64 $NODE_VERSION
       - run: cd dist && npm pack mountebank & cd ..
       - run: scripts/deploy/deployS3 dist/*.tar.gz dist/*.tgz dist/*.zip
 
@@ -63,10 +65,7 @@ jobs:
     steps:
       - attach_workspace:
           at: .
-      - run: pwd
-      - run: ls -al
-      - run: ls -al dist/test/node_modules
-      - run: node dist/ci/tasks/tmp/outOfProcessImposters.js
+      - run: node tasks/tmp/outOfProcessImposters.js
       - run: dist/mountebank/bin/mb start --allowInjection --mock --localOnly --protofile protocols.json --port $MB_PORT &
       - run: cd dist/test && npm test
       - run: dist/mountebank/bin/mb stop
