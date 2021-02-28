@@ -37,6 +37,8 @@ jobs:
     docker:
       - image: circleci/ruby:2.4.4-stretch
     steps:
+      - attach_workspace:
+          at: .
       - run: dist/ci/scripts/dist/createSelfContainedTarball darwin x64
       - run: dist/ci/scripts/dist/createSelfContainedTarball linux x64
       - run: dist/ci/scripts/dist/createWindowsZip x86
