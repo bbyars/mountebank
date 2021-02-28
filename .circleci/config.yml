@@ -60,7 +60,7 @@ jobs:
       - run:
           name: Dist
           command: |
-            node tasks/tmp/dist/dist.js
+            node tasks/tmp/dist.js
             cd dist && npm pack mountebank
       - store_test_results:
           path: testResults
@@ -129,7 +129,7 @@ jobs:
       - run:
           name: Test
           command: |
-            dist/mountebank/bin/mb start --allowInjection --mock --localOnly --protofile protocols.json --port $MB_PORT &
+            node tasks/tmp/mb.js --allowInjection --mock --localOnly --protofile protocols.json
             (cd dist/test && npm test)
       - store_test_results:
           path: testResults

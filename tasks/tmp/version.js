@@ -1,6 +1,6 @@
 'use strict';
 
-const fs = require('fs-extra'),
+const fs = require('fs'),
     thisPackage = JSON.parse(fs.readFileSync('./package.json')),
     current = thisPackage.version,
     exec = require('child_process').exec;

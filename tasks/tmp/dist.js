@@ -1,6 +1,6 @@
 'use strict';
 
-const run = require('../../run').run,
+const run = require('../run').run,
     fs = require('fs-extra');
 
 async function distPackage (source, destination, packageTransformer) {

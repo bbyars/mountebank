@@ -1,7 +1,7 @@
 'use strict';
 
 const scan = require('./shared/scan'),
-    fs = require('fs-extra'),
+    fs = require('fs'),
     errors = [],
     check = function (file) {
         const contents = fs.readFileSync(file, 'utf8');

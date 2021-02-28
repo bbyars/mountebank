@@ -1,6 +1,6 @@
 'use strict';
 
-const fs = require('fs-extra'),
+const fs = require('fs'),
     path = require('path'),
     spawn = require('child_process').spawn,
     exec = require('child_process').exec,

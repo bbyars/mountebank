@@ -1,6 +1,6 @@
 'use strict';
 
-const fs = require('fs-extra'),
+const fs = require('fs'),
     path = require('path');
 
 function exclude (exclusions, file) {
