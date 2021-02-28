@@ -104,7 +104,9 @@ jobs:
           at: .
       - run:
           name: Install Dependencies
-          command: gem install fpm
+          command: |
+            gem install fpm
+            brew install wget
       - run:
           name: Create Packages
           command: scripts/dist/createSelfContainedTarball osxpkg x64 $NODE_VERSION
