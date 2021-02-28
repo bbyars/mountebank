@@ -1,11 +1,21 @@
-version: 2.0
+version: 2.1
 
-jobs:
-  pr:
+executors:
+  node-latest:
     docker:
       - image: circleci/node:14-stretch
     environment:
       - MB_SLOW_TEST_TIMEOUT: 7000
+  debian-ruby:
+    docker:
+      - image: circleci/ruby:2.4.4-stretch
+    environment:
+      - NODE_VERSION=v14.16.0
+
+jobs:
+  pr:
+    docker:
+      - image: node-latest
     steps:
       - checkout
       - run: npm ci
@@ -13,11 +23,9 @@ jobs:
       - run: npm test
 
   build:
-    docker:
-      - image: circleci/node:14-stretch
+    executor: node-latest
     environment:
       - CC_TEST_REPORTER_ID=8bc3a050a2f8ef1cc460e5f4c72d18a689c8ae0981bf494031eb4eb28bbd0b0b
-      - MB_SLOW_TEST_TIMEOUT: 7000
     steps:
       - checkout
       - run: npm ci
@@ -38,10 +46,7 @@ jobs:
             - Procfile
 
   package:
-    docker:
-      - image: circleci/ruby:2.4.4-stretch
-    environment:
-      - NODE_VERSION=v14.16.0
+    executor: debian-ruby
     steps:
       - attach_workspace:
           at: .
@@ -60,12 +65,11 @@ jobs:
             scripts/dist/createWindowsZip x86 $NODE_VERSION
             scripts/dist/createWindowsZip x64 $NODE_VERSION
             scripts/dist/createPackage linux deb
-            scripts/dist/createPackage linux osxpkg
             scripts/dist/createPackage linux rpm
             cd dist && npm pack mountebank && cd ..
       - run:
          name: Deploy to S3
-         command: scripts/deploy/deployS3 dist/*.tar.gz dist/*.tgz dist/*.zip dist/*.deb dist/*.rpm dist/*.pkg
+         command: scripts/deploy/deployS3 dist/*.tar.gz dist/*.tgz dist/*.zip dist/*.deb dist/*.rpm
 
 #  nodev10:
 #    docker:
