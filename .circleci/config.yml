@@ -131,7 +131,7 @@ jobs:
       - run:
           name: Test
           command: |
-            node tasks/tmp/mb.js --allowInjection --mock --localOnly --protofile protocols.json
+            node tasks/tmp/mb.js start --allowInjection --mock --localOnly --protofile protocols.json
             (cd dist/test && npm test)
       - store_test_results:
           path: testResults
