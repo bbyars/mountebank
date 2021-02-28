@@ -18,8 +18,11 @@ jobs:
       - image: node-latest
     steps:
       - checkout
-      - run: npm ci
-      - run: cd mbTest && npm ci
+      - run:
+          name: Install Dependencies
+          command: |
+            npm ci
+            cd mbTest && npm ci
       - run: npm test
 
   build:
@@ -28,15 +31,25 @@ jobs:
       - CC_TEST_REPORTER_ID=8bc3a050a2f8ef1cc460e5f4c72d18a689c8ae0981bf494031eb4eb28bbd0b0b
     steps:
       - checkout
-      - run: npm ci
-      - run: cd mbTest && npm ci
-      - run: node tasks/tmp/version.js
-      #- run: npm test
-      #- run: scripts/codeclimate
-      #- run: cat ./coverage/lcov.info | node_modules/coveralls/bin/coveralls.js
-      #- run: scripts/sonar
-      #- run: npm run jsdoc && node tasks/tmp/deploy/docs.js
-      - run: node tasks/tmp/dist/dist.js
+      - run:
+          name: Install Dependencies
+          command: |
+            npm ci
+            cd mbTest && npm ci
+      - run:
+          name: Version
+          command: node tasks/tmp/version.js
+      - run: npm test
+      - run:
+          name: Docs and Static Analysis
+          command: |
+            scripts/codeclimate
+            cat ./coverage/lcov.info | node_modules/coveralls/bin/coveralls.js
+            scripts/sonar
+            npm run jsdoc && node tasks/tmp/deploy/docs.js
+      - run:
+          name: Dist
+          command: node tasks/tmp/dist/dist.js
       - persist_to_workspace:
           root: .
           paths:
