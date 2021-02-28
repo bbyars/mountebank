@@ -147,6 +147,8 @@ describe('http proxy stubs', function () {
         });
 
         it('should proxy to different host', async function () {
+            this.retries(3);
+            
             const proxy = {
                 protocol: 'http',
                 port,
