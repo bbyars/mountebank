@@ -37,14 +37,6 @@ jobs:
     docker:
       - image: circleci/ruby:2.4.4-stretch
     steps:
-      - run:
-          name: Update Node.js and npm
-          command: |
-            curl -sSL "https://nodejs.org/dist/latest-v14.x/node-v14.16.0-linux-x64.tar.gz" | sudo tar --strip-components=2 -xJ -C /usr/local/bin/ node-v14.16.0-linux-x64/bin/node
-      - run:
-          name: Check current version of node
-          command: node -v
-      - run: gem install fpm
       - run: dist/ci/scripts/dist/createSelfContainedTarball darwin x64
       - run: dist/ci/scripts/dist/createSelfContainedTarball linux x64
       - run: dist/ci/scripts/dist/createWindowsZip x86
