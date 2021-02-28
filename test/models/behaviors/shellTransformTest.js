@@ -4,7 +4,7 @@ const assert = require('assert'),
     behaviors = require('../../../src/models/behaviors'),
     Logger = require('../../fakes/fakeLogger'),
     fs = require('fs-extra'),
-    filename = '_shellTransform.js';
+    filename = 'test/_shellTransform.js'; // Has to be in test dir so nyc doesn't instrument during coverage runs
 
 describe('behaviors', function () {
     describe('#shellTransform', function () {
