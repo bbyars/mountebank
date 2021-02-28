@@ -23,11 +23,11 @@ jobs:
       - run: npm ci
       - run: cd mbTest && npm ci
       - run: node tasks/tmp/version.js
-      - run: npm test
-      - run: scripts/codeclimate
-      - run: cat ./coverage/lcov.info | node_modules/coveralls/bin/coveralls.js
-      - run: scripts/sonar
-      - run: npm run jsdoc && node tasks/tmp/deploy/docs.js
+      #- run: npm test
+      #- run: scripts/codeclimate
+      #- run: cat ./coverage/lcov.info | node_modules/coveralls/bin/coveralls.js
+      #- run: scripts/sonar
+      #- run: npm run jsdoc && node tasks/tmp/deploy/docs.js
       - run: node tasks/tmp/dist/dist.js
       - persist_to_workspace:
           root: .
@@ -39,6 +39,8 @@ jobs:
     steps:
       - attach_workspace:
           at: .
+      - run: pwd
+      - run: ls -al
       - run: dist/ci/scripts/dist/createSelfContainedTarball darwin x64
       - run: dist/ci/scripts/dist/createSelfContainedTarball linux x64
       - run: dist/ci/scripts/dist/createWindowsZip x86
@@ -57,6 +59,8 @@ jobs:
     steps:
       - attach_workspace:
           at: .
+      - run: pwd
+      - run: ls -al
       - run: ls -al dist/test/node_modules
       - run: node dist/ci/tasks/tmp/outOfProcessImposters.js
       - run: dist/mountebank/bin/mb start --allowInjection --mock --localOnly --protofile protocols.json &
