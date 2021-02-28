@@ -23,7 +23,11 @@ jobs:
       - image: node-latest
     steps:
       - checkout
-      - run: npm ci
+      - run:
+          name: Install Dependencies
+          command: |
+            npm ci
+            cd mbTest && npm ci
       - run: npm test
       - store_test_results:
           path: testResults
@@ -36,7 +40,9 @@ jobs:
       - checkout
       - run:
           name: Install Dependencies
-          command: npm ci
+          command: |
+            npm ci
+            cd mbTest && npm ci
       - run:
           name: Version
           command: node tasks/tmp/version.js
