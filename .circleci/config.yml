@@ -65,7 +65,7 @@ jobs:
           at: .
       - run: ls -al
       - run: node dist/ci/tasks/tmp/outOfProcessImposters.js
-      - run: dist/mountebank/bin/mb start --allowInjection --mock --localOnly --protofile protocols.json
+      - run: dist/mountebank/bin/mb start --allowInjection --mock --localOnly --protofile protocols.json &
       - run: cd dist/test && npm test
 
 #  dbAndWeb:
