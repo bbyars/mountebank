@@ -47,4 +47,8 @@ fs.removeSync('dist');
 packageMountebank()
     .then(() => packageMbTest())
     .then(() => packageTasks())
-    .then(() => console.log('packages available in dist directory'));
+    .then(() => console.log('packages available in dist directory'))
+    .catch(error => {
+        console.error(error);
+        process.exit(1); // eslint-disable-line no-process-exit
+    });
