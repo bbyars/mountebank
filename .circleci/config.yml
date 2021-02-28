@@ -55,10 +55,11 @@ jobs:
     steps:
       - attach_workspace:
           at: .
-      - run: ls -al
+      - run: ls -al dist/test/node_modules
       - run: node dist/ci/tasks/tmp/outOfProcessImposters.js
       - run: dist/mountebank/bin/mb start --allowInjection --mock --localOnly --protofile protocols.json &
       - run: cd dist/test && npm test
+      - run: dist/mountebank/bin/mb stop
 
 #  dbAndWeb:
 #    docker:
