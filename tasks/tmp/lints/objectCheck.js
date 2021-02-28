@@ -9,7 +9,7 @@ const scan = require('./shared/scan'),
             errors.push(`${file} appears to do a typecheck against object without using helpers.isObject`);
         }
     },
-    exclusions = ['node_modules', 'mbTest', 'objectCheck.js', 'helpers.js', 'staticAnalysis.js'];
+    exclusions = ['node_modules', 'mbTest', 'dist', 'objectCheck.js', 'helpers.js', 'staticAnalysis.js'];
 
 scan.forEachFileIn('.', check, { exclude: exclusions, filetype: '.js' });
 

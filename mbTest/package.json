@@ -15,14 +15,17 @@
     },
     "scripts": {
         "airplane": "MB_AIRPLANE_MODE=true npm test",
-        "perf": "MB_EXECUTABLE=\"${MB_EXECUTABLE:-../bin/mb}\" node_modules/.bin/mocha 'perf/**/*.js'",
-        "test": "MB_EXECUTABLE=\"${MB_EXECUTABLE:-../bin/mb}\" node_modules/.bin/mocha 'api/**/*.js' 'cli/**/*.js'",
-        "web": "MB_EXECUTABLE=\"${MB_EXECUTABLE:-../bin/mb}\" node_modules/.bin/mocha 'web/**/*.js'"
+        "api": "MB_EXECUTABLE=\"${MB_EXECUTABLE:-../bin/mb}\" mocha --forbid-only --forbid-pending --reporter mocha-multi-reporters --reporter-options configFile=api/config.json 'api/**/*.js'",
+        "cli": "MB_EXECUTABLE=\"${MB_EXECUTABLE:-../bin/mb}\" mocha --forbid-only --forbid-pending --reporter mocha-multi-reporters --reporter-options configFile=cli/config.json 'cli/**/*.js'",
+        "perf": "MB_EXECUTABLE=\"${MB_EXECUTABLE:-../bin/mb}\" mocha --forbid-only --forbid-pending --reporter mocha-multi-reporters --reporter-options configFile=perf/config.json 'perf/**/*.js'",
+        "test": "npm run api && npm run cli",
+        "web": "MB_EXECUTABLE=\"${MB_EXECUTABLE:-../bin/mb}\" mocha --forbid-only --forbid-pending --reporter mocha-multi-reporters --reporter-options configFile=web/config.json 'web/**/*.js'"
     },
     "dependencies": {
         "fs-extra": "9.0.1",
         "jsdom": "16.4.0",
         "mocha": "8.2.1",
+        "mocha-multi-reporters": "1.5.1",
         "mountebank": "file:..",
         "nc": "1.0.3",
         "nodemailer": "6.4.17",

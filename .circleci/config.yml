@@ -6,6 +6,11 @@ executors:
       - image: circleci/node:14-stretch
     environment:
       - MB_SLOW_TEST_TIMEOUT: 7000
+  node-oldest:
+    docker:
+      - image: circleci/node:10-stretch
+    environment:
+      - MB_SLOW_TEST_TIMEOUT: 7000
   debian-ruby:
     docker:
       - image: circleci/ruby:2.4.4-stretch
@@ -18,12 +23,10 @@ jobs:
       - image: node-latest
     steps:
       - checkout
-      - run:
-          name: Install Dependencies
-          command: |
-            npm ci
-            cd mbTest && npm ci
+      - run: npm ci
       - run: npm test
+      - store_test_results:
+          path: testResults
 
   build:
     executor: node-latest
@@ -33,9 +36,7 @@ jobs:
       - checkout
       - run:
           name: Install Dependencies
-          command: |
-            npm ci
-            cd mbTest && npm ci
+          command: npm ci
       - run:
           name: Version
           command: node tasks/tmp/version.js
@@ -50,6 +51,8 @@ jobs:
       - run:
           name: Dist
           command: node tasks/tmp/dist/dist.js
+      - store_test_results:
+          path: testResults
       - persist_to_workspace:
           root: .
           paths:
@@ -83,21 +86,26 @@ jobs:
          name: Deploy to S3
          command: scripts/deploy/deployS3 dist/*.tar.gz dist/*.tgz dist/*.zip dist/*.deb dist/*.rpm
 
-#  nodev10:
-#    docker:
-#      - image: circleci/node:10-stretch
-#    environment:
-#      - MB_SLOW_TEST_TIMEOUT: 7000
-#      - MB_PORT: 3535
-#      - MB_PERSISTENT: true
-#      - MB_EXECUTABLE: dist/mountebank/bin/mb
-#    steps:
-#      - attach_workspace:
-#          at: .
-#      - run: node tasks/tmp/outOfProcessImposters.js
-#      - run: dist/mountebank/bin/mb start --allowInjection --mock --localOnly --protofile protocols.json --port $MB_PORT &
-#      - run: cd dist/test && npm test
-#      - run: dist/mountebank/bin/mb stop
+  nodev10:
+    executor: node-oldest
+    environment:
+      - MB_PORT: 3535
+      - MB_PERSISTENT: true
+      - MB_EXECUTABLE: dist/mountebank/bin/mb
+    steps:
+      - attach_workspace:
+          at: .
+      - run:
+          name: Prepare
+          command: |
+            node tasks/tmp/outOfProcessImposters.js
+            dist/mountebank/bin/mb start --allowInjection --mock --localOnly --protofile protocols.json --port $MB_PORT &
+      - run:
+          name: Test
+          command: (cd dist/test && npm test)
+      - run:
+          name: Shutdown
+          command: dist/mountebank/bin/mb stop
 
 #  dbAndWeb:
 #    docker:

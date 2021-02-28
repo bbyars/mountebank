@@ -16,3 +16,4 @@ metrics/
 .idea-bk
 .nyc_output/
 cc-test-reporter
+testResults
