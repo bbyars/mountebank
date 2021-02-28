@@ -50,6 +50,7 @@ jobs:
       - run: scripts/dist/createWindowsZip x86 $NODE_VERSION
       - run: scripts/dist/createWindowsZip x64 $NODE_VERSION
       - run: cd dist && npm pack mountebank & cd ..
+      - run: gem install fpm
       - run: scripts/dist/createPackage linux deb
       - run: scripts/dist/createPackage linux rpm
       - run: scripts/dist/createPackage linux osxpkg
