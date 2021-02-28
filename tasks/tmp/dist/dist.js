@@ -15,11 +15,11 @@ async function distPackage (source, destination, packageTransformer) {
     fs.writeFileSync(`dist/${destination}/package.json`, JSON.stringify(pkg, null, 2));
 
     await run('npm', ['ci'], { cwd: `dist/${destination}` });
-    await run('npm', ['prune'], { cwd: `dist/${destination}` });
+    await run('npm', ['dedupe'], { cwd: `dist/${destination}` });
 }
 
 async function packageMountebank () {
-    distPackage('.', 'mountebank', pkg => {
+    await distPackage('.', 'mountebank', pkg => {
         delete pkg.devDependencies;
         Object.keys(pkg.scripts).forEach(script => {
             // We don't package most tasks and don't want users running them anyhow
@@ -31,7 +31,7 @@ async function packageMountebank () {
 }
 
 async function packageMbTest () {
-    distPackage('mbTest', 'test', pkg => {
+    await distPackage('mbTest', 'test', pkg => {
         pkg.dependencies.mountebank = 'file:../mountebank';
         const lockfile = JSON.parse(fs.readFileSync('dist/test/package-lock.json'));
         lockfile.dependencies.mountebank.version = 'file:../mountebank';

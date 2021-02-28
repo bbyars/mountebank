@@ -17,6 +17,8 @@ async function run (command, args, options) {
 
     options.stdio = 'inherit';
 
+    console.log(`${command} ${args.join(' ')} with ${JSON.stringify(options)}`);
+
     return new Promise((resolve, reject) => {
         const proc = spawn(command, args, options);
 
