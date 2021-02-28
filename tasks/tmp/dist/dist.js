@@ -42,7 +42,6 @@ async function packageMbTest () {
 fs.removeSync('dist');
 packageMountebank()
     .then(() => packageMbTest())
-    .then(() => packageTasks())
     .then(() => console.log('packages available in dist directory'))
     .catch(error => {
         console.error(error);
