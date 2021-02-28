@@ -45,30 +45,29 @@ jobs:
     steps:
       - attach_workspace:
           at: .
-      - run: pwd
-      - run: ls -al
       - run: scripts/dist/createSelfContainedTarball darwin x64 $NODE_VERSION
       - run: scripts/dist/createSelfContainedTarball linux x64 $NODE_VERSION
       - run: scripts/dist/createWindowsZip x86 $NODE_VERSION
       - run: scripts/dist/createWindowsZip x64 $NODE_VERSION
       - run: cd dist && npm pack mountebank & cd ..
+      - run: sudo apt-get install python-dateutil
       - run: scripts/deploy/deployS3 dist/*.tar.gz dist/*.tgz dist/*.zip
 
-  nodev10:
-    docker:
-      - image: circleci/node:10-stretch
-    environment:
-      - MB_SLOW_TEST_TIMEOUT: 7000
-      - MB_PORT: 3535
-      - MB_PERSISTENT: true
-      - MB_EXECUTABLE: dist/mountebank/bin/mb
-    steps:
-      - attach_workspace:
-          at: .
-      - run: node tasks/tmp/outOfProcessImposters.js
-      - run: dist/mountebank/bin/mb start --allowInjection --mock --localOnly --protofile protocols.json --port $MB_PORT &
-      - run: cd dist/test && npm test
-      - run: dist/mountebank/bin/mb stop
+#  nodev10:
+#    docker:
+#      - image: circleci/node:10-stretch
+#    environment:
+#      - MB_SLOW_TEST_TIMEOUT: 7000
+#      - MB_PORT: 3535
+#      - MB_PERSISTENT: true
+#      - MB_EXECUTABLE: dist/mountebank/bin/mb
+#    steps:
+#      - attach_workspace:
+#          at: .
+#      - run: node tasks/tmp/outOfProcessImposters.js
+#      - run: dist/mountebank/bin/mb start --allowInjection --mock --localOnly --protofile protocols.json --port $MB_PORT &
+#      - run: cd dist/test && npm test
+#      - run: dist/mountebank/bin/mb stop
 
 #  dbAndWeb:
 #    docker:
