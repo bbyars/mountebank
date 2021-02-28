@@ -27,7 +27,7 @@ jobs:
           name: Install Dependencies
           command: |
             npm ci
-            cd mbTest && npm ci
+            cd mbTest && npm install
       - run: npm test
       - store_test_results:
           path: testResults
@@ -42,7 +42,7 @@ jobs:
           name: Install Dependencies
           command: |
             npm ci
-            cd mbTest && npm ci
+            cd mbTest && npm install
       - run:
           name: Version
           command: node tasks/tmp/version.js
