@@ -45,17 +45,27 @@ jobs:
     steps:
       - attach_workspace:
           at: .
-      - run: scripts/dist/createSelfContainedTarball darwin x64 $NODE_VERSION
-      - run: scripts/dist/createSelfContainedTarball linux x64 $NODE_VERSION
-      - run: scripts/dist/createWindowsZip x86 $NODE_VERSION
-      - run: scripts/dist/createWindowsZip x64 $NODE_VERSION
-      - run: cd dist && npm pack mountebank & cd ..
-      - run: gem install fpm
-      - run: scripts/dist/createPackage linux deb
-      - run: scripts/dist/createPackage linux rpm
-      - run: scripts/dist/createPackage linux osxpkg
-      - run: sudo apt-get install python-dateutil
-      - run: scripts/deploy/deployS3 dist/*.tar.gz dist/*.tgz dist/*.zip dist/*.deb dist/*.rpm dist/*.pkg
+      - run:
+          name: Install Dependencies
+          command: |
+            sudo apt-get update
+            sudo apt-get install rpm
+            sudo apt-get install python-dateutil
+            gem install fpm
+      - run:
+          name: Create Packages
+          command: |
+            scripts/dist/createSelfContainedTarball darwin x64 $NODE_VERSION
+            scripts/dist/createSelfContainedTarball linux x64 $NODE_VERSION
+            scripts/dist/createWindowsZip x86 $NODE_VERSION
+            scripts/dist/createWindowsZip x64 $NODE_VERSION
+            cd dist && npm pack mountebank & cd ..
+            scripts/dist/createPackage linux deb
+            scripts/dist/createPackage linux osxpkg
+            scripts/dist/createPackage linux rpm
+      - run:
+         name: Deploy to S3
+         command: scripts/deploy/deployS3 dist/*.tar.gz dist/*.tgz dist/*.zip dist/*.deb dist/*.rpm dist/*.pkg
 
 #  nodev10:
 #    docker:
