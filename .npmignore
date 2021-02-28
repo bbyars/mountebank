@@ -19,7 +19,6 @@ troubleshooting
 .dockerignore
 .eslint*
 .git*
-.istanbul*
 .jsdoc
 .mdlrc
 .ruby-version

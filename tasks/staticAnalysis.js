@@ -96,21 +96,16 @@ module.exports = function (grunt) {
             exclusions = ['node_modules', 'docs', '.git', '.DS_Store', '.idea', 'images', 'dist', 'mountebank.iml', 'mb.log', '*.pid', 'package-lock.json', '*.csv'],
             errors = [],
             whitelist = [
-                'grunt',
-                'mocha',
-                'istanbul',
-                'grunt-cli',
-                'jsdoc',
-                'grunt-contrib-csslint',
-                'firebase-tools',
-                'nc',
-                'snyk',
-                'mountebank-formatters',
+                'coveralls',
                 'eslint-plugin-node',
                 'eslint-plugin-mocha',
-                'concurrently',
-                'coveralls',
-                'nyc'
+                'firebase-tools',
+                'jsdoc',
+                'mocha',
+                'mountebank-formatters',
+                'nc',
+                'nyc',
+                'snyk'
             ];
 
         dependencies.forEach(dependency => { usedCount[dependency] = 0; });

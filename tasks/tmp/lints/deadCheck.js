@@ -30,22 +30,18 @@ const scan = require('./shared/scan'),
         '*.csv'
     ],
     whitelist = [
-        'concurrently',
-        'grunt',
-        'mocha',
-        'istanbul',
-        'grunt-cli',
-        'jsdoc',
-        'grunt-contrib-csslint',
-        'firebase-tools',
-        'mocha-multi-reporters',
-        'nc',
-        'snyk',
-        'mountebank-formatters',
+        'coveralls',
+        'eslint',
         'eslint-plugin-node',
         'eslint-plugin-mocha',
-        'coveralls',
-        'nyc'
+        'firebase-tools',
+        'jsdoc',
+        'mocha',
+        'mocha-multi-reporters',
+        'mountebank-formatters',
+        'nc',
+        'nyc',
+        'snyk'
     ],
     errors = [];
 
