@@ -15,4 +15,5 @@ const protocols = {
     },
     fs = require('fs');
 
-fs.writeFileSync('protocols.json', JSON.stringify(protocols, null, 2));
+const protocolFile = process.argv[2] || 'protocols.json';
+fs.writeFileSync(protocolFile, JSON.stringify(protocols, null, 2));
