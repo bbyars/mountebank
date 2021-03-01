@@ -15,7 +15,6 @@ async function distPackage (source, destination, packageTransformer) {
     fs.writeFileSync(`dist/${destination}/package.json`, JSON.stringify(pkg, null, 2));
 
     await run('npm', ['install', '--production'], { cwd: `dist/${destination}` });
-    await run('npm', ['dedupe'], { cwd: `dist/${destination}` });
 }
 
 async function packageMountebank () {
