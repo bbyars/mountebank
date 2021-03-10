@@ -72,7 +72,7 @@
     "safe-stable-stringify": "1.1.1",
     "smtp-server": "3.8.0",
     "winston": "3.3.3",
-    "xmldom": "0.4.0",
+    "xmldom": "0.5.0",
     "xpath": "0.0.32",
     "yargs": "16.2.0"
   },
