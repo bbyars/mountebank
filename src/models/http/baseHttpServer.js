@@ -67,6 +67,28 @@ module.exports = function (createBaseServer) {
         // Allow long wait behaviors
         server.timeout = 0;
 
+        server.on('connect', (response, client, head) => {
+            const net = require('net');
+            const host = response.socket.servername;
+            const port = response.socket.localPort;
+            // may we prefer this method instead?
+            const proxyServer = net.createConnection({ host, port }, () => {
+                client.on('error', err => {
+                    // 'ECONNRESET' IS no-op?
+                    if (err.code !== 'ECONNRESET') {
+                        console.log('CLIENT TO PROXY ERROR');
+                        console.log(err);
+                    }
+                });
+
+                logger.info('PROXY TO SERVER SET UP TO %s ON %s', host, port);
+                client.write('HTTP/1.1 200 Connection established\r\n\r\n');
+                proxyServer.write(head);
+                proxyServer.pipe(client);
+                client.pipe(proxyServer);
+            });
+        });
+
         server.on('connection', socket => {
             const helpers = require('../../util/helpers'),
                 name = helpers.socketName(socket);
