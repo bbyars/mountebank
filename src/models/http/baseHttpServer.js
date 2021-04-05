@@ -74,10 +74,9 @@ module.exports = function (createBaseServer) {
             // may we prefer this method instead?
             const proxyServer = net.createConnection({ host, port }, () => {
                 client.on('error', err => {
-                    // 'ECONNRESET' IS no-op?
+                    // 'ECONNRESET' appears to be a no-op?
                     if (err.code !== 'ECONNRESET') {
-                        console.log('CLIENT TO PROXY ERROR');
-                        console.log(err);
+                        logger.error('CLIENT TO PROXY ERROR: %o', err);
                     }
                 });
 
