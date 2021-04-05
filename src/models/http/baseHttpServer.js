@@ -79,6 +79,12 @@ module.exports = function (createBaseServer) {
                         logger.error('CLIENT TO PROXY ERROR: %o', err);
                     }
                 });
+                proxyServer.on('error', err => {
+                    // 'EPIPE' appears to be a no-op?
+                    if (err.code !== 'EPIPE') {
+                        logger.error('SERVER PROXY ERROR: %o', err);
+                    }
+                });
 
                 logger.info('PROXY TO SERVER SET UP TO %s ON %s', host, port);
                 client.write('HTTP/1.1 200 Connection established\r\n\r\n');
