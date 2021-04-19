@@ -13,6 +13,9 @@ process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
  * @returns {Object}
  */
 function create (logger) {
+    const BINARY_CONTENT_ENCODINGS = [
+        "gzip", "br", "compress", "deflate"
+    ];
     const BINARY_MIME_TYPES = [
         'audio/',
         'application/epub+zip',
@@ -122,7 +125,8 @@ function create (logger) {
         const contentEncoding = headers['content-encoding'] || '',
             contentType = headers['content-type'] || '';
 
-        if (contentEncoding.indexOf('gzip') >= 0) {
+        if (BINARY_CONTENT_ENCODINGS.some( binEncoding => contentEncoding.indexOf(binEncoding) > 0))
+        {
             return true;
         }
 
