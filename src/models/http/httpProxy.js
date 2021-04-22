@@ -125,7 +125,7 @@ function create (logger) {
         const contentEncoding = headers['content-encoding'] || '',
             contentType = headers['content-type'] || '';
 
-        if (BINARY_CONTENT_ENCODINGS.some( binEncoding => contentEncoding.indexOf(binEncoding) > 0))
+        if (BINARY_CONTENT_ENCODINGS.some( binEncoding => contentEncoding.indexOf(binEncoding) >= 0))
         {
             return true;
         }
