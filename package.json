@@ -25,6 +25,7 @@
     "config:inProcess": "node tasks/tmp/InProcessImposters.js",
     "jsdoc": "jsdoc src/**/*.js --destination docs --configure .jsdoc --pedantic --readme CONTRIBUTING.md --package package.json",
     "lint": "eslint src/ tasks/ test/ mbTest/ bin/mb && node tasks/tmp/lints/licenseCheck.js && node tasks/tmp/lints/deadCheck.js && node tasks/tmp/lints/objectCheck.js",
+    "postinstall": "cd mbTest && npm install",
     "test:unit": "mocha --forbid-only --forbid-pending --reporter mocha-multi-reporters --reporter-options configFile=test/config.json 'test/**/*.js'",
     "test:cover": "nyc --reporter=lcov --reporter=text npm run test:unit",
     "test:cover:codeclimate": "scripts/codeclimate",
