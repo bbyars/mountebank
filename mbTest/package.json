@@ -31,7 +31,7 @@
         "nodemailer": "6.4.17",
         "safe-stable-stringify": "1.1.1",
         "w3cjs": "0.4.0",
-        "xmldom": "0.4.0",
+        "xmldom": "0.5.0",
         "xpath": "0.0.32"
     },
     "engines": {
