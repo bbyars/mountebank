@@ -23,6 +23,7 @@
     },
     "dependencies": {
         "fs-extra": "9.0.1",
+        "hpagent": "0.1.1",
         "jsdom": "16.4.0",
         "mocha": "8.2.1",
         "mocha-multi-reporters": "1.5.1",
