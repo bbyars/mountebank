@@ -62,6 +62,12 @@ function createFrom (request) {
                 }
                 catch (error) { /* do nothing */ }
             }
+            else if (contentEncoding === 'br') {
+                try {
+                    request.body = zlib.brotliDecompressSync(buffer).toString();
+                }
+                catch (error) { /* do nothing */ }
+            }
             else {
                 request.body = buffer.toString();
             }
