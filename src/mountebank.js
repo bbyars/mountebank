@@ -42,7 +42,6 @@ async function createApp (options) {
         validateImposterExists = middleware.createImposterValidator(imposters),
         prometheus = require('prom-client');
 
-    prometheus.register.clear();
     prometheus.collectDefaultMetrics({ prefix: 'mb_' });
 
     app.use(middleware.useAbsoluteUrls(options.port));

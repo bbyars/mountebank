@@ -3,6 +3,7 @@
 const assert = require('assert'),
     express = require('express'),
     createApp = require('mountebank').createApp,
+    prometheus = require('../../node_modules/prom-client'),
     httpClient = require('../baseHttpClient').create('http'),
     port = parseInt(process.env.MB_PORT || 2525);
 
@@ -60,6 +61,7 @@ describe('Integration with existing server', function () {
     });
 
     afterEach(async function () {
+        prometheus.register.clear();
         await httpClient.del('/mountebank/imposters', port);
         await server.close();
     });
