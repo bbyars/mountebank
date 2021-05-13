@@ -182,6 +182,12 @@ function defaultIEtoHTML (request, response, next) {
  */
 function json (log) {
     return function (request, response, next) {
+        // Disable body parsing, if already parsed
+        if (request.headers['content-type'] === 'application/json' && typeof request.body === 'object') {
+            next();
+            return;
+        }
+
         request.body = '';
         request.setEncoding('utf8');
         request.on('data', chunk => {
