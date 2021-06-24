@@ -62,6 +62,10 @@ function create (options, logger, responseFn) {
                 return;
             }
 
+            if (mbResponse.fault && helpers.simulateFault(socket, mbResponse.fault, logger)) {
+                return;
+            }
+
             if (buffer.length > 0) {
                 socket.write(buffer);
                 logger.debug('%s <= %s', clientName, JSON.stringify(buffer.toString(encoding)));

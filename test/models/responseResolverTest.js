@@ -1129,6 +1129,21 @@ describe('responseResolver', function () {
                 assert.strictEqual(error.message, 'each response object must have only one response type');
             }
         });
+
+        it('should throw error if fault used with other response type', async function () {
+            const stubs = createStubsRepository(),
+                resolver = ResponseResolver.create(stubs, {}),
+                logger = Logger.create(),
+                responseConfig = { fault: 'value', proxy: { to: 'http://www.google.com' } };
+
+            try {
+                await resolver.resolve(responseConfig, {}, logger, {});
+                assert.fail('should not have resolved');
+            }
+            catch (error) {
+                assert.strictEqual(error.message, 'each response object must have only one response type');
+            }
+        });
     });
 
     describe('#resolveProxy', function () {
