@@ -54,21 +54,11 @@ jobs:
       - run:
           name: Version
           command: node tasks/tmp/version.js
-      - run: npm test
-      - run:
-          name: Docs and Static Analysis
-          command: |
-            scripts/codeclimate
-            cat ./coverage/lcov.info | node_modules/coveralls/bin/coveralls.js
-            npm run jsdoc && node tasks/tmp/deploy/docs.js
-      - sonarcloud/scan
       - run:
           name: Dist
           command: |
             node tasks/tmp/dist.js
             cd dist && npm pack mountebank
-      - store_test_results:
-          path: testResults
       - persist_to_workspace:
           root: .
           paths:
