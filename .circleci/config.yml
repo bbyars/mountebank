@@ -1,5 +1,8 @@
 version: 2.1
 
+orbs:
+    sonarcloud: sonarsource/sonarcloud@1.0.1
+
 executors:
   node-latest:
     docker:
@@ -57,8 +60,8 @@ jobs:
           command: |
             scripts/codeclimate
             cat ./coverage/lcov.info | node_modules/coveralls/bin/coveralls.js
-            scripts/sonar
             npm run jsdoc && node tasks/tmp/deploy/docs.js
+      - sonarcloud/scan
       - run:
           name: Dist
           command: |
@@ -344,6 +347,7 @@ workflows:
               only: master
             tags:
               only: /^v.*/
+          context: SonarCloud
       - package:
           requires:
             - build
