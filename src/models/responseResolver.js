@@ -309,6 +309,7 @@ function create (stubs, proxy, callbackURL) {
         }
     }
 
+    // eslint-disable-next-line complexity
     function hasMultipleTypes (responseConfig) {
         return (responseConfig.is && responseConfig.proxy) ||
                (responseConfig.is && responseConfig.inject) ||

@@ -16,7 +16,7 @@ describe('tcp imposter', function () {
 
     describe('POST /imposters with stubs', function () {
         it.skip('should drop the connection when fault CONNECTION_RESET_BY_PEER is specified', async function () {
-            const stub = { responses: [{fault: "CONNECTION_RESET_BY_PEER" }] },
+            const stub = { responses: [{ fault: 'CONNECTION_RESET_BY_PEER' }] },
                 request = { protocol: 'tcp', port, stubs: [stub], mode: 'text' };
             await api.createImposter(request);
 
@@ -30,7 +30,7 @@ describe('tcp imposter', function () {
         });
 
         it.skip('should write garbage then drop the connection when fault RANDOM_DATA_THEN_CLOSE is specified', async function () {
-            const stub = { responses: [{fault: "RANDOM_DATA_THEN_CLOSE" }] },
+            const stub = { responses: [{ fault: 'RANDOM_DATA_THEN_CLOSE' }] },
                 request = { protocol: 'tcp', port, stubs: [stub], mode: 'text' };
             await api.createImposter(request);
 
@@ -44,12 +44,12 @@ describe('tcp imposter', function () {
         });
 
         it.skip('should do nothing when undefined fault is specified', async function () {
-            const stub = { responses: [{fault: "NON_EXISTENT_FAULT" }] },
+            const stub = { responses: [{ fault: 'NON_EXISTENT_FAULT' }] },
                 request = { protocol: 'tcp', port, stubs: [stub], mode: 'text' };
             await api.createImposter(request);
             const response = await tcp.send('client', port);
             assert.strictEqual(response.statusCode, 200);
-            assert.strictEqual(response.body, "");
+            assert.strictEqual(response.body, '');
         });
 
     });

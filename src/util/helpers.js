@@ -87,17 +87,22 @@ function setDeep (obj, path, value) {
 }
 
 function simulateFault (socket, faultConfig, logger) {
-    if (faultConfig === "CONNECTION_RESET_BY_PEER") {
-        logger.debug("Closing the connection");
+    if (typeof faultConfig === 'undefined') {
+        return false;
+    }
+    if (faultConfig === 'CONNECTION_RESET_BY_PEER') {
+        logger.debug('Closing the connection');
         socket.destroy();
         return true;
-    } else if (faultConfig === "RANDOM_DATA_THEN_CLOSE") {
-        logger.debug("Sending garbage data then closing the connection");
-        socket.write(Buffer.from("Htijy%@tWXJ/hQ#[Q:7G@d'H4gu[QaX&", "utf-8"));
+    }
+    else if (faultConfig === 'RANDOM_DATA_THEN_CLOSE') {
+        logger.debug('Sending garbage data then closing the connection');
+        socket.write(Buffer.from('Htijy%@tWXJ/hQ#[Q:7G@dH4"gu[QaX&', 'utf-8'));
         socket.destroy();
         return true;
-    } else {
-        logger.error("Unexpected fault type [" + faultConfig + "], expected either 'CONNECTION_RESET_BY_PEER' or 'RANDOM_DATA_THEN_CLOSE'")
+    }
+    else {
+        logger.error('Unexpected fault type [' + faultConfig + '], expected either CONNECTION_RESET_BY_PEER or RANDOM_DATA_THEN_CLOSE');
         return false;
     }
 }

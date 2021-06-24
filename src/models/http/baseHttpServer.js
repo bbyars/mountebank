@@ -110,7 +110,7 @@ module.exports = function (createBaseServer) {
                     return;
                 }
 
-                if (mbResponse.fault && helpers.simulateFault(request.socket, mbResponse.fault, logger)) {
+                if (helpers.simulateFault(request.socket, mbResponse.fault, logger)) {
                     return;
                 }
 
