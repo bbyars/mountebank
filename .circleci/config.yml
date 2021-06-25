@@ -1,8 +1,5 @@
 version: 2.1
 
-orbs:
-    sonarcloud: sonarsource/sonarcloud@1.0.1
-
 executors:
   node-latest:
     docker:
@@ -54,11 +51,21 @@ jobs:
       - run:
           name: Version
           command: node tasks/tmp/version.js
+      - run: npm test
+      - run:
+          name: Docs and Static Analysis
+          command: |
+            scripts/codeclimate
+            cat ./coverage/lcov.info | node_modules/coveralls/bin/coveralls.js
+            scripts/sonar
+            npm run jsdoc && node tasks/tmp/deploy/docs.js
       - run:
           name: Dist
           command: |
             node tasks/tmp/dist.js
             cd dist && npm pack mountebank
+      - store_test_results:
+          path: testResults
       - persist_to_workspace:
           root: .
           paths:
@@ -337,7 +344,6 @@ workflows:
               only: master
             tags:
               only: /^v.*/
-          context: SonarCloud
       - package:
           requires:
             - build
