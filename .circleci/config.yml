@@ -337,7 +337,7 @@ workflows:
       - pr:
           filters:
             branches:
-              only: /^pull\/.*$/
+              ignore: master
       - build:
           filters:
             branches:
