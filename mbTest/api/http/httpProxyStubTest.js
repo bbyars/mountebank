@@ -842,38 +842,40 @@ describe('http proxy stubs', function () {
         assert.deepEqual(third.body.stubs, proxyRequest.stubs, JSON.stringify(third.body.stubs, null, 2));
     });
 
-    // eslint-disable-next-line mocha/no-setup-in-describe
-    if (isInProcessImposter('http')) {
-        it('should not add = at end of of query key missing = in original request (issue #410)', async function () {
-            const http = require('http'),
-                originServerPort = port + 1,
-                originServer = http.createServer((request, response) => {
-                    // Use base http library rather than imposter to get raw url
-                    response.end(request.url);
-                }),
-                proxyStub = { responses: [{ proxy: { to: `http://localhost:${originServerPort}`, mode: 'proxyAlways' } }] },
-                proxyRequest = { protocol: 'http', port, stubs: [proxyStub], name: 'proxy' };
+    it('should not add = at end of of query key missing = in original request (issue #410)', async function () {
+        if (isInProcessImposter('http')) {
+            console.log('Skipping test due to out of process http implementation');
+            return;
+        }
 
-            try {
-                originServer.listen(originServerPort);
-                originServer.stop = () => {
-                    return new Promise(resolve => {
-                        originServer.close(() => {
-                            resolve({});
-                        });
+        const http = require('http'),
+            originServerPort = port + 1,
+            originServer = http.createServer((request, response) => {
+                // Use base http library rather than imposter to get raw url
+                response.end(request.url);
+            }),
+            proxyStub = { responses: [{ proxy: { to: `http://localhost:${originServerPort}`, mode: 'proxyAlways' } }] },
+            proxyRequest = { protocol: 'http', port, stubs: [proxyStub], name: 'proxy' };
+
+        try {
+            originServer.listen(originServerPort);
+            originServer.stop = () => {
+                return new Promise(resolve => {
+                    originServer.close(() => {
+                        resolve({});
                     });
-                };
-                await api.createImposter(proxyRequest);
+                });
+            };
+            await api.createImposter(proxyRequest);
 
-                const first = await client.get('/path?WSDL', port);
-                assert.strictEqual(first.body, '/path?WSDL');
+            const first = await client.get('/path?WSDL', port);
+            assert.strictEqual(first.body, '/path?WSDL');
 
-                const second = await client.get('/path?WSDL=', port);
-                assert.strictEqual(second.body, '/path?WSDL=');
-            }
-            finally {
-                await originServer.stop();
-            }
-        });
-    }
+            const second = await client.get('/path?WSDL=', port);
+            assert.strictEqual(second.body, '/path?WSDL=');
+        }
+        finally {
+            await originServer.stop();
+        }
+    });
 });
