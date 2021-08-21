@@ -23,7 +23,7 @@ describe('http proxy stubs', function () {
     this.timeout(timeout);
 
     afterEach(async function () {
-        api.del('/imposters');
+        await api.del('/imposters');
     });
 
     it('should send same request information to proxied url', async function () {
