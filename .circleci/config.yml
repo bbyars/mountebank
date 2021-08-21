@@ -182,7 +182,7 @@ workflows:
               only: master
             tags:
               only: /^v.*/
-      - currentWithFileDBAndWebTests:
+      - currentWithFileDB:
           requires:
             - build
           filters:
@@ -191,6 +191,14 @@ workflows:
             tags:
               only: /^v.*/
       - performance:
+          requires:
+            - build
+          filters:
+            branches:
+              only: master
+            tags:
+              only: /^v.*/
+      - web:
           requires:
             - build
           filters:
