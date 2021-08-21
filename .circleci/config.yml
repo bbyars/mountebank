@@ -115,7 +115,7 @@ jobs:
           at: .
       - run:
           name: Test
-          command: (cd mbTest && npm run perf)
+          command: (cd dist/test && npm run perf)
       - store_test_results:
           path: testResults
 
@@ -129,7 +129,7 @@ jobs:
           at: .
       - run:
           name: Test
-          command: (cd mbTest && npm run web)
+          command: (cd dist/test && npm run web)
       - store_test_results:
           path: testResults
 
