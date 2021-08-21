@@ -102,7 +102,6 @@ async function create (options) {
         '/license',
         '/faqs',
         '/docs/gettingStarted',
-        '/docs/install',
         '/docs/mentalModel',
         '/docs/commandLine',
         '/docs/clientLibraries',

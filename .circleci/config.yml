@@ -129,7 +129,9 @@ jobs:
           at: .
       - run:
           name: Test
-          command: (cd dist/test && npm run web)
+          command: |
+            node tasks/tmp/mb.js start --allowInjection --mock --localOnly
+            (cd dist/test && npm run web)
       - store_test_results:
           path: testResults
 
