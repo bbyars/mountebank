@@ -5,17 +5,17 @@ executors:
     docker:
       - image: circleci/node:12-stretch
     environment:
-      - MB_SLOW_TEST_TIMEOUT: 7000
+      - MB_SLOW_TEST_TIMEOUT: 10000
   node-active:
     docker:
       - image: circleci/node:14-stretch
     environment:
-      - MB_SLOW_TEST_TIMEOUT: 7000
+      - MB_SLOW_TEST_TIMEOUT: 10000
   node-current:
     docker:
       - image: circleci/node:16-stretch
     environment:
-      - MB_SLOW_TEST_TIMEOUT: 7000
+      - MB_SLOW_TEST_TIMEOUT: 10000
 
 jobs:
   pr:
