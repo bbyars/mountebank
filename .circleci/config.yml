@@ -80,11 +80,11 @@ jobs:
           at: .
       - run:
           name: Prepare to run out of process protocol implementations
-          command: node tasks/tmp/createProtocolsFile.js protocols.json
+          command: node tasks/tmp/createProtocolsFile.js outOfProcess.json
       - run:
           name: Test
           command: |
-            node tasks/tmp/mb.js start --allowInjection --mock --localOnly --protofile protocols.json
+            node tasks/tmp/mb.js start --allowInjection --mock --localOnly --protofile outOfProcess.json
             (cd dist/test && npm test)
       - store_test_results:
           path: testResults

@@ -11,9 +11,11 @@ const assert = require('assert'),
     airplaneMode = process.env.MB_AIRPLANE_MODE === 'true',
     { HttpsProxyAgent } = require('hpagent');
 
-function isInProcessImposter (protocol) {
-    if (fs.existsSync('protocols.json')) {
-        const protocols = require(process.cwd() + '/protocols.json');
+async function isInProcessImposter (protocol) {
+    const response = await api.get('/config');
+    const protofile = `${response.body.process.cwd}/${response.body.options.protofile}`;
+    if (fs.existsSync(protofile)) {
+        const protocols = require(protofile);
         return Object.keys(protocols).indexOf(protocol) < 0;
     }
     else {
