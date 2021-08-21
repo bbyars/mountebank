@@ -74,7 +74,7 @@ jobs:
     environment:
       - MB_PORT: 3535
       - MB_PERSISTENT: true
-      - MB_EXECUTABLE: $CIRCLE_WORKING_DIRECTORY/dist/mountebank/bin/mb
+      - MB_EXECUTABLE: /home/circleci/project/dist/mountebank/bin/mb
     steps:
       - attach_workspace:
           at: .
@@ -94,7 +94,7 @@ jobs:
     environment:
       - MB_PORT: 3535
       - MB_RUN_WEB_TESTS: true
-      - MB_EXECUTABLE: $CIRCLE_WORKING_DIRECTORY/dist/mountebank/bin/mb
+      - MB_EXECUTABLE: /home/circleci/project/dist/mountebank/bin/mb
     steps:
       - attach_workspace:
           at: .
@@ -106,7 +106,7 @@ jobs:
     executor: node-active
     environment:
       - MB_PORT: 3535
-      - MB_EXECUTABLE: $CIRCLE_WORKING_DIRECTORY/dist/mountebank/bin/mb
+      - MB_EXECUTABLE: /home/circleci/project/dist/mountebank/bin/mb
     steps:
       - attach_workspace:
           at: .
