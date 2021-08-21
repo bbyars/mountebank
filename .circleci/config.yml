@@ -89,16 +89,19 @@ jobs:
       - store_test_results:
           path: testResults
 
-  currentWithFileDBAndWebTests:
+  currentWithFileDB:
     executor: node-current
     environment:
       - MB_PORT: 3535
-      - MB_RUN_WEB_TESTS: true
       - MB_EXECUTABLE: /home/circleci/project/dist/mountebank/bin/mb
     steps:
       - attach_workspace:
           at: .
-      - run: npm run config:outOfProcess && npm run test:functional
+      - run:
+          name: Test
+          command: |
+            node tasks/tmp/mb.js start --allowInjection --mock --localOnly --datadir .mbdb
+            (cd dist/test && npm test)
       - store_test_results:
           path: testResults
 
@@ -110,10 +113,25 @@ jobs:
     steps:
       - attach_workspace:
           at: .
-      - run: (cd mbTest && npm run perf)
+      - run:
+          name: Test
+          command: (cd mbTest && npm run perf)
       - store_test_results:
           path: testResults
 
+  web:
+    executor: node-active
+    environment:
+      - MB_PORT: 3535
+      - MB_EXECUTABLE: /home/circleci/project/dist/mountebank/bin/mb
+    steps:
+      - attach_workspace:
+          at: .
+      - run:
+          name: Test
+          command: (cd mbTest && npm run web)
+      - store_test_results:
+          path: testResults
 
 #
 #  deploy:
