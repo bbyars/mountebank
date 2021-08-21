@@ -89,8 +89,8 @@ jobs:
       - store_test_results:
           path: testResults
 
-  latestWithFileDBAndWebTests:
-    executor: node-latest
+  currentWithFileDBAndWebTests:
+    executor: node-current
     environment:
       - MB_PORT: 3535
       - MB_RUN_WEB_TESTS: true
@@ -164,7 +164,7 @@ workflows:
               only: master
             tags:
               only: /^v.*/
-      - latestWithFileDBAndWebTests:
+      - currentWithFileDBAndWebTests:
           requires:
             - build
           filters:
