@@ -1,31 +1,26 @@
 version: 2.1
 
 executors:
-  node-latest:
+  node-maintenance:
+    docker:
+      - image: circleci/node:12-stretch
+    environment:
+      - MB_SLOW_TEST_TIMEOUT: 7000
+  node-active:
     docker:
       - image: circleci/node:14-stretch
     environment:
-      - MB_SLOW_TEST_TIMEOUT: 7000
-  node-oldest:
+        - MB_SLOW_TEST_TIMEOUT: 7000
+  node-current:
     docker:
-      - image: circleci/node:10-stretch
+      - image: circleci/node:16-stretch
     environment:
       - MB_SLOW_TEST_TIMEOUT: 7000
-  debian-ruby:
-    docker:
-      - image: circleci/ruby:2.4.4-stretch
-    environment:
-      - NODE_VERSION=v14.16.0
-  mac:
-    macos:
-      xcode: 12.4.0
-    environment:
-      - NODE_VERSION=v14.16.0
 
 jobs:
   pr:
     docker:
-      - image: node-latest
+      - image: node-active
     steps:
       - checkout
       - run:
@@ -38,7 +33,7 @@ jobs:
           path: testResults
 
   build:
-    executor: node-latest
+    executor: node-active
     environment:
       - CC_TEST_REPORTER_ID=8bc3a050a2f8ef1cc460e5f4c72d18a689c8ae0981bf494031eb4eb28bbd0b0b
     steps:
@@ -74,50 +69,8 @@ jobs:
             - scripts
             - Procfile
 
-  package:
-    executor: debian-ruby
-    steps:
-      - attach_workspace:
-          at: .
-      - run:
-          name: Install Dependencies
-          command: |
-            sudo apt-get update
-            sudo apt-get install rpm
-            sudo apt-get install python-dateutil
-            gem install fpm
-      - run:
-          name: Create Packages
-          command: |
-            scripts/dist/createSelfContainedTarball darwin x64 $NODE_VERSION
-            scripts/dist/createSelfContainedTarball linux x64 $NODE_VERSION
-            scripts/dist/createWindowsZip x86 $NODE_VERSION
-            scripts/dist/createWindowsZip x64 $NODE_VERSION
-            scripts/dist/createPackage linux deb $NODE_VERSION
-            scripts/dist/createPackage linux rpm $NODE_VERSION
-      - run:
-         name: Deploy to S3
-         command: scripts/deploy/deployS3 dist/*.tar.gz dist/*.tgz dist/*.zip dist/*.deb dist/*.rpm
-
-  package-osx:
-    executor: mac
-    steps:
-      - attach_workspace:
-          at: .
-      - run:
-          name: Install Dependencies
-          command: |
-            gem install fpm
-            brew install wget
-      - run:
-          name: Create Packages
-          command: scripts/dist/createPackage darwin osxpkg $NODE_VERSION
-      - run:
-         name: Deploy to S3
-         command: scripts/deploy/deployS3 dist/*.pkg
-
-  nodev10:
-    executor: node-oldest
+  maintenanceOutOfProcessImposters:
+    executor: node-maintenance
     environment:
       - MB_PORT: 3535
       - MB_PERSISTENT: true
