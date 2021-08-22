@@ -68,8 +68,6 @@ There are two packages: mountebank itself, and a test package called mbTest (whi
 out-of-process tests against mountebank). First ensure all dependencies are installed for both packages:
 
     npm install
-    cd mbTest && npm install
-    cd ..
 
 Then, run all tests:
 

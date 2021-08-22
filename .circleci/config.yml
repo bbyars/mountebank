@@ -19,8 +19,7 @@ executors:
 
 jobs:
   pr:
-    docker:
-      - image: node-active
+    executor: node-active
     steps:
       - checkout
       - run:

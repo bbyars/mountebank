@@ -95,22 +95,24 @@ describe('tcp proxy', function () {
         assert.strictEqual(response.length, largeRequest.length, `Response length: ${response.length}`);
     });
 
-    if (!airplaneMode) {
-        it('should gracefully deal with DNS errors', async function () {
-            const proxy = {
-                protocol: 'tcp',
-                port,
-                stubs: [{ responses: [{ proxy: { to: 'tcp://no.such.domain:80' } }] }]
-            };
-            await api.createImposter(proxy);
+    it('should gracefully deal with DNS errors', async function () {
+        if (airplaneMode) {
+            console.log('Skipping due to airplane mode');
+            return;
+        }
+        const proxy = {
+            protocol: 'tcp',
+            port,
+            stubs: [{ responses: [{ proxy: { to: 'tcp://no.such.domain:80' } }] }]
+        };
+        await api.createImposter(proxy);
 
-            const response = await tcp.send('0', proxy.port),
-                message = JSON.parse(response.toString('utf8'));
+        const response = await tcp.send('0', proxy.port),
+            message = JSON.parse(response.toString('utf8'));
 
-            assert.strictEqual(message.errors[0].code, 'invalid proxy');
-            assert.strictEqual(message.errors[0].message, 'Cannot resolve "tcp://no.such.domain:80"');
-        });
-    }
+        assert.strictEqual(message.errors[0].code, 'invalid proxy');
+        assert.strictEqual(message.errors[0].message, 'Cannot resolve "tcp://no.such.domain:80"');
+    });
 
     it('should gracefully deal with non listening ports', async function () {
         const proxy = {
