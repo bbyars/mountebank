@@ -27,8 +27,7 @@ function usePortableNetcat (command) {
     // This feels ugly to do the replacement here, but I prefer it over doing the replacement
     // directly in the views because I want people to be able to copy the command from the
     // public site and run on their machines, and the variant without the -q is the most portable
-    const netcatPath = path.join(__dirname, '../../../../node_modules/.bin/nc');
-    return command.replace('| nc ', `| ${netcatPath} -q1 `);
+    return command.replace('| nc ', '| npx nc -q1 ');
 }
 
 async function runStep (step) {
@@ -38,13 +37,14 @@ async function runStep (step) {
     nextTestId += 1;
 
     try {
-        const stdout = await execute(`sh ./${filename}`);
-        fs.unlinkSync(filename);
-        return stdout;
+        return await execute(`sh ./${filename}`);
     }
     catch (reason) {
         console.log(`Error executing following command: ${step.text}`);
         throw reason;
+    }
+    finally {
+        fs.unlinkSync(filename);
     }
 }
 
