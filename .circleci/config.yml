@@ -130,7 +130,16 @@ jobs:
       - store_test_results:
           path: testResults
 
-#
+  publishNpm:
+    executor: node-active
+    steps:
+      - attach_workspace:
+          - at: .
+      - run:
+          name: Publish npm
+          command: scripts/publishNpm
+
+
 #  deploy:
 #    docker:
 #      - image: circleci/ruby:2.4.4-stretch
@@ -198,6 +207,17 @@ workflows:
       - web:
           requires:
             - build
+          filters:
+            branches:
+              only: master
+            tags:
+              only: /^v.*/
+      - publishNpm:
+          requires:
+            - maintenanceOutOfProcessImposters
+            - currentWithFileDB
+            - performance
+            - web
           filters:
             branches:
               only: master
