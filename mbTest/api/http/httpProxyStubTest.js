@@ -9,18 +9,6 @@ const assert = require('assert'),
     timeout = isWindows ? 10000 : parseInt(process.env.MB_SLOW_TEST_TIMEOUT || 2000),
     airplaneMode = process.env.MB_AIRPLANE_MODE === 'true';
 
-async function isInProcessImposter (protocol) {
-    const response = await api.get('/config');
-    const protofile = `${response.body.process.cwd}/${response.body.options.protofile}`;
-    if (fs.existsSync(protofile)) {
-        const protocols = require(protofile);
-        return Object.keys(protocols).indexOf(protocol) < 0;
-    }
-    else {
-        return true;
-    }
-}
-
 describe('http proxy stubs', function () {
     this.timeout(timeout);
 
@@ -843,8 +831,8 @@ describe('http proxy stubs', function () {
     });
 
     it('should not add = at end of of query key missing = in original request (issue #410)', async function () {
-        if (isInProcessImposter('http')) {
-            console.log('Skipping test due to out of process http implementation');
+        if (await api.isOutOfProcessImposter('http')) {
+            console.log('Workaround - skipping test due to out of process http implementation');
             return;
         }
 

@@ -73,7 +73,7 @@ function create (logger, encoding, isEndOfRequest) {
                 socket.on('data', data => {
                     packets.push(data);
                     const requestBuffer = Buffer.concat(packets);
-                    if (isEndOfRequest(requestBuffer)) {
+                    if (isEndOfRequest(requestBuffer, logger)) {
                         if (!options.keepalive) {
                             socket.end();
                         }
