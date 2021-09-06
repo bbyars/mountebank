@@ -1,8 +1,7 @@
 'use strict';
 
 const exec = require('child_process').exec,
-    fs = require('fs-extra'),
-    path = require('path');
+    fs = require('fs-extra');
 let nextTestId = 1;
 
 function execute (command) {
