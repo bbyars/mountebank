@@ -24,9 +24,7 @@ jobs:
       - checkout
       - run:
           name: Install Dependencies
-          command: |
-            npm ci
-            cd mbTest && npm install
+          command: npm ci
       - run: npm test
       - store_test_results:
           path: testResults
@@ -39,9 +37,7 @@ jobs:
       - checkout
       - run:
           name: Install Dependencies
-          command: |
-            npm ci
-            cd mbTest && npm install
+          command: npm ci
       - run:
           name: Version
           command: node tasks/tmp/version.js
