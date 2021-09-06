@@ -58,6 +58,11 @@ describe('tcp proxy', function () {
     });
 
     it('should obey endOfRequestResolver', async function () {
+        if (await api.isOutOfProcessImposter('tcp')) {
+            console.log('Workaround - Skipping test due to out of process tcp implementation');
+            return;
+        }
+
         // We'll simulate a protocol that has a 4 byte message length at byte 0 indicating how many bytes follow
         const getRequest = length => {
                 const buffer = Buffer.alloc(length + 4);
