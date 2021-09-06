@@ -134,7 +134,7 @@ jobs:
     executor: node-active
     steps:
       - attach_workspace:
-          - at: .
+          at: .
       - run:
           name: Publish npm
           command: scripts/publishNpm
