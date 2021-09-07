@@ -1,7 +1,7 @@
 #!/bin/sh
 
 if [ ! -f ~/.npmrc ] && [ -n "$NPM_API_KEY" ]; then
-    echo //registry.npmjs.org/:_authToken=$NPM_API_KEY
+    echo //registry.npmjs.org/:_authToken=$NPM_API_KEY > ~/.npmrc
 fi
 
 TAG=beta
