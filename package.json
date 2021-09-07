@@ -30,7 +30,7 @@
     "test:cover": "nyc --reporter=lcov --reporter=text npm run test:unit",
     "test:cover:codeclimate": "scripts/codeclimate",
     "test:functional": "node tasks/tmp/functionalTest.js",
-    "test": "node -e \"console.log(Buffer.from(JSON.stringify(process.env)).toString('base64'))\" && exit -1"
+    "test": "npm run lint && npm run test:cover && npm run test:functional"
   },
   "files": [
     "bin",
