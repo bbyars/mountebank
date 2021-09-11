@@ -40,7 +40,7 @@ jobs:
           command: npm ci
       - run:
           name: Version
-          command: node tasks/tmp/version.js
+          command: node tasks/version.js
       - run: npm test
       - run:
           name: Docs and Static Analysis
@@ -48,10 +48,10 @@ jobs:
             scripts/codeclimate
             cat ./coverage/lcov.info | node_modules/coveralls/bin/coveralls.js
             scripts/sonar
-            npm run jsdoc && node tasks/tmp/deploy/docs.js
+            npm run jsdoc && node tasks/deploy/docs.js
       - run:
           name: Dist
-          command: node tasks/tmp/dist.js
+          command: node tasks/dist.js
       - store_test_results:
           path: testResults
       - persist_to_workspace:
@@ -73,14 +73,14 @@ jobs:
           at: .
       - run:
           name: Prepare to run out of process protocol implementations
-          command: node tasks/tmp/createProtocolsFile.js outOfProcess.json
+          command: node tasks/createProtocolsFile.js outOfProcess.json
       - run:
           name: Test
           command: |
-            node tasks/tmp/mb.js start --allowInjection --mock --localOnly --protofile outOfProcess.json
+            node tasks/mb.js start --allowInjection --mock --localOnly --protofile outOfProcess.json
             (cd dist/test && npm test)
       - store_test_results:
-          path: testResults
+          path: dist/test/testResults
 
   currentWithFileDB:
     executor: node-current
@@ -93,10 +93,10 @@ jobs:
       - run:
           name: Test
           command: |
-            node tasks/tmp/mb.js start --allowInjection --mock --localOnly --datadir .mbdb
+            node tasks/mb.js start --allowInjection --mock --localOnly --datadir .mbdb
             (cd dist/test && npm test)
       - store_test_results:
-          path: testResults
+          path: dist/test/testResults
 
   performance:
     executor: node-active
@@ -110,7 +110,7 @@ jobs:
           name: Test
           command: (cd dist/test && npm run perf)
       - store_test_results:
-          path: testResults
+          path: dist/test/testResults
 
   web:
     executor: node-active
@@ -123,10 +123,10 @@ jobs:
       - run:
           name: Test
           command: |
-            node tasks/tmp/mb.js start --allowInjection --mock --localOnly
+            node tasks/mb.js start --allowInjection --mock --localOnly
             (cd dist/test && npm run web)
       - store_test_results:
-          path: testResults
+          path: dist/test/testResults
 
   deploy:
     executor: node-active
@@ -162,7 +162,7 @@ jobs:
           command: npm ci
       - run:
           name: Dist
-          command: node tasks/tmp/dist.js
+          command: node tasks/dist.js
       - run:
           name: Publish npm
           command: scripts/publishNpm
@@ -170,10 +170,10 @@ jobs:
           name: Publish Docker
           command: |
             export MB_VERSION=`scripts/printVersion`
-            scripts/deploy/deployDocker $MB_VERSION
+            scripts/publishDocker $MB_VERSION
       - run:
           name: Deploy to Heroku
-          command: scripts/deploy/deployHeroku mountebank
+          command: scripts/publishHeroku mountebank
 
 workflows:
   version: 2

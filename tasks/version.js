@@ -1,11 +1,24 @@
 'use strict';
 
-function getVersion () {
-    if (process.env.MB_VERSION) {
-        return process.env.MB_VERSION;
-    }
+const fs = require('fs'),
+    thisPackage = JSON.parse(fs.readFileSync('./package.json')),
+    current = thisPackage.version;
 
-    return require('../package.json').version;
+async function getVersion () {
+    const buildNumber = process.env.CIRCLE_BUILD_NUM;
+
+    if (typeof buildNumber === 'undefined') {
+        // Leave as is if not in CI
+        return current;
+    }
+    else {
+        return `${current}-beta.${buildNumber}`;
+    }
 }
 
-module.exports = { getVersion };
+getVersion().then(next => {
+    if (next !== current) {
+        thisPackage.version = next;
+        fs.writeFileSync('./package.json', JSON.stringify(thisPackage, null, 2) + '\n');
+    }
+});

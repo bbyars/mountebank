@@ -21,15 +21,15 @@
     "start": "bin/mb",
     "restart": "bin/mb restart",
     "stop": "bin/mb stop",
-    "config:outOfProcess": "node tasks/tmp/createProtocolsFile.js",
+    "config:outOfProcess": "node tasks/createProtocolsFile.js",
     "config:inProcess": "rm protocols.json",
     "jsdoc": "jsdoc src/**/*.js --destination docs --configure .jsdoc --pedantic --readme CONTRIBUTING.md --package package.json",
-    "lint": "eslint src/ tasks/ test/ mbTest/ bin/mb && node tasks/tmp/lints/licenseCheck.js && node tasks/tmp/lints/deadCheck.js && node tasks/tmp/lints/objectCheck.js",
+    "lint": "eslint src/ tasks/ test/ mbTest/ bin/mb && node tasks/lints/licenseCheck.js && node tasks/lints/deadCheck.js && node tasks/lints/objectCheck.js",
     "postinstall": "cd mbTest && npm install",
     "test:unit": "mocha --forbid-only --forbid-pending --reporter mocha-multi-reporters --reporter-options configFile=test/config.json 'test/**/*.js'",
     "test:cover": "nyc --reporter=lcov --reporter=text npm run test:unit",
     "test:cover:codeclimate": "scripts/codeclimate",
-    "test:functional": "node tasks/tmp/functionalTest.js",
+    "test:functional": "node tasks/functionalTest.js",
     "test": "npm run lint && npm run test:cover && npm run test:functional"
   },
   "files": [
@@ -91,7 +91,6 @@
     "nc": "1.0.3",
     "nyc": "^15.1.0",
     "snyk": "1.437.3",
-    "time-grunt": "2.0.0",
     "w3cjs": "0.4.0"
   },
   "engines": {
