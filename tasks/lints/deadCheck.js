@@ -2,7 +2,7 @@
 
 const scan = require('./shared/scan'),
     fs = require('fs'),
-    thisPackage = require('../../../package.json'),
+    thisPackage = require('../../package.json'),
     dependencies = Object.keys(thisPackage.dependencies).concat(Object.keys(thisPackage.devDependencies)),
     usedCount = {},
     dependencyCheck = file => {
