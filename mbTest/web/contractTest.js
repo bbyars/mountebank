@@ -28,7 +28,6 @@ function assertJSON (json) {
 describe('contracts', function () {
     this.timeout(timeout);
 
-    // eslint-disable-next-line mocha/no-setup-in-describe
     ['home', 'imposters', 'imposter', 'config', 'logs'].forEach(contractType => {
         it(`${contractType} contract should be valid JSON`, async function () {
             const json = await getJSONFor(contractType);

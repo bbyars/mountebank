@@ -9,21 +9,11 @@ const assert = require('assert'),
     timeout = isWindows ? 10000 : parseInt(process.env.MB_SLOW_TEST_TIMEOUT || 2000),
     airplaneMode = process.env.MB_AIRPLANE_MODE === 'true';
 
-function isInProcessImposter (protocol) {
-    if (fs.existsSync('protocols.json')) {
-        const protocols = require(process.cwd() + '/protocols.json');
-        return Object.keys(protocols).indexOf(protocol) < 0;
-    }
-    else {
-        return true;
-    }
-}
-
 describe('http proxy stubs', function () {
     this.timeout(timeout);
 
     afterEach(async function () {
-        api.del('/imposters');
+        await api.del('/imposters');
     });
 
     it('should send same request information to proxied url', async function () {
@@ -165,7 +155,6 @@ describe('http proxy stubs', function () {
         });
     }
 
-    // eslint-disable-next-line mocha/no-setup-in-describe
     ['application/octet-stream', 'audio/mpeg', 'audio/mp4', 'image/gif', 'image/jpeg', 'video/avi', 'video/mpeg'].forEach(mimeType => {
         it(`should treat ${mimeType} as binary`, async function () {
             const buffer = Buffer.from([0, 1, 2, 3]),
@@ -840,38 +829,40 @@ describe('http proxy stubs', function () {
         assert.deepEqual(third.body.stubs, proxyRequest.stubs, JSON.stringify(third.body.stubs, null, 2));
     });
 
-    // eslint-disable-next-line mocha/no-setup-in-describe
-    if (isInProcessImposter('http')) {
-        it('should not add = at end of of query key missing = in original request (issue #410)', async function () {
-            const http = require('http'),
-                originServerPort = port + 1,
-                originServer = http.createServer((request, response) => {
-                    // Use base http library rather than imposter to get raw url
-                    response.end(request.url);
-                }),
-                proxyStub = { responses: [{ proxy: { to: `http://localhost:${originServerPort}`, mode: 'proxyAlways' } }] },
-                proxyRequest = { protocol: 'http', port, stubs: [proxyStub], name: 'proxy' };
+    it('should not add = at end of of query key missing = in original request (issue #410)', async function () {
+        if (await api.isOutOfProcessImposter('http')) {
+            console.log('Workaround - skipping test due to out of process http implementation');
+            return;
+        }
 
-            try {
-                originServer.listen(originServerPort);
-                originServer.stop = () => {
-                    return new Promise(resolve => {
-                        originServer.close(() => {
-                            resolve({});
-                        });
+        const http = require('http'),
+            originServerPort = port + 1,
+            originServer = http.createServer((request, response) => {
+                // Use base http library rather than imposter to get raw url
+                response.end(request.url);
+            }),
+            proxyStub = { responses: [{ proxy: { to: `http://localhost:${originServerPort}`, mode: 'proxyAlways' } }] },
+            proxyRequest = { protocol: 'http', port, stubs: [proxyStub], name: 'proxy' };
+
+        try {
+            originServer.listen(originServerPort);
+            originServer.stop = () => {
+                return new Promise(resolve => {
+                    originServer.close(() => {
+                        resolve({});
                     });
-                };
-                await api.createImposter(proxyRequest);
+                });
+            };
+            await api.createImposter(proxyRequest);
 
-                const first = await client.get('/path?WSDL', port);
-                assert.strictEqual(first.body, '/path?WSDL');
+            const first = await client.get('/path?WSDL', port);
+            assert.strictEqual(first.body, '/path?WSDL');
 
-                const second = await client.get('/path?WSDL=', port);
-                assert.strictEqual(second.body, '/path?WSDL=');
-            }
-            finally {
-                await originServer.stop();
-            }
-        });
-    }
+            const second = await client.get('/path?WSDL=', port);
+            assert.strictEqual(second.body, '/path?WSDL=');
+        }
+        finally {
+            await originServer.stop();
+        }
+    });
 });
