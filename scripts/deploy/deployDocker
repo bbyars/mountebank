@@ -1,5 +1,7 @@
 #!/bin/sh
 
+set -e
+
 VERSION=$1
 TAG=beta
 if [ "$MB_RELEASE" = "true" ]; then

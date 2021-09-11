@@ -1,8 +1,10 @@
-#!/bin/sh
+#!/bin/bash
+
+set -e
 
 APP_NAME=$1
 
-if [[ $(command -v heroku) == "" ]]; then
+if [[ $(command -v heroku) = "" ]]; then
     echo "Installing heroku CLI"
     curl https://cli-assets.heroku.com/install.sh | sh
 fi

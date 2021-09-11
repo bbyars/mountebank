@@ -157,9 +157,9 @@ jobs:
       - setup_remote_docker:
           version: 20.10.7
       - checkout
-#      - run:
-#          name: Install Dependencies
-#          command: npm ci
+      - run:
+          name: Install Dependencies
+          command: npm ci
       - run:
           name: Dist
           command: node tasks/tmp/dist.js
