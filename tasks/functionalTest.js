@@ -15,7 +15,7 @@ function exec (command, args) {
 
 function mochaParamsFor (testType) {
     return [
-        'node_modules/.bin/mocha',
+        'node_modules/mocha/bin/mocha',
         '--forbid-only',
         '--forbid-pending',
         '--reporter',
