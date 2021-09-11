@@ -105,7 +105,6 @@ async function createApp (options) {
         '/license',
         '/faqs',
         '/docs/gettingStarted',
-        '/docs/install',
         '/docs/mentalModel',
         '/docs/commandLine',
         '/docs/clientLibraries',

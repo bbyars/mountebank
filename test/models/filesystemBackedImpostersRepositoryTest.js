@@ -5,7 +5,7 @@ const assert = require('assert'),
     Logger = require('../fakes/fakeLogger'),
     fs = require('fs-extra'),
     mock = require('../mock').mock,
-    timeout = parseInt(process.env.MB_SLOW_TEST_TIMEOUT || 3000); // times out on Appveyor
+    timeout = parseInt(process.env.MB_SLOW_TEST_TIMEOUT || 3000);
 
 describe('filesystemBackedImpostersRepository', function () {
     this.timeout(timeout);

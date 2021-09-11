@@ -1,0 +1,15 @@
+#!/bin/sh
+
+set -e
+
+VERSION=$1
+TAG=beta
+if [ "$MB_RELEASE" = "true" ]; then
+    TAG=latest
+fi
+
+cd dist/mountebank
+DOCKER_BUILDKIT=1 docker build -t bbyars/mountebank:$VERSION -t bbyars/mountebank:$TAG .
+docker login -u $DOCKER_USER -p "$DOCKER_PASSWORD"
+docker push bbyars/mountebank:$VERSION
+docker push bbyars/mountebank:$TAG
