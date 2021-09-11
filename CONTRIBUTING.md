@@ -313,13 +313,10 @@ I use [nvm](https://github.com/creationix/nvm) to install different versions of 
 
 ### The Continuous Integration Pipeline
 
-The pipeline is orchestrated in CircleCI, although it uses TravisCI and Appveyor for OSX and Windows tests.
-I've had bugs in different operating systems,
-in different versions of node, and in the packages available for download.  The CI system tests as many of those combinations
-as I reasonably can.
+The pipeline is orchestrated in [CircleCI](https://app.circleci.com/pipelines/github/bbyars/mountebank)
 
-Every successful build that isn't a pull request deploys to a [test site](http://mountebank-dev.herokuapp.com/) that will
-have a link to the artifacts for that prerelease version.
+Every successful build that isn't a pull request deploys to a [test site](http://mountebank-dev.herokuapp.com/)
+and a beta version of the npm and Docker image.
 
 ## Releasing mountebank
 

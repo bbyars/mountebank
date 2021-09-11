@@ -79,87 +79,83 @@ describe('--host', function () {
         assert.strictEqual(responses[0].is.body, 'ORIGIN');
     });
 
-    // Travis adds hostname into /etc/hosts file
-    // eslint-disable-next-line mocha/no-setup-in-describe
-    if (process.env.TRAVIS !== 'true') {
-        it('should disallow localhost calls when bound to specific host', async function () {
-            await mb.start(['--host', hostname]);
+    it('should disallow localhost calls when bound to specific host', async function () {
+        await mb.start(['--host', hostname]);
 
-            try {
-                await http.responseFor({ method: 'GET', path: '/', hostname: 'localhost', port: mb.port });
-                assert.fail(`should not have connected (hostname: ${hostname})`);
-            }
-            catch (error) {
-                assert.strictEqual(error.code, 'ECONNREFUSED');
-            }
+        try {
+            await http.responseFor({ method: 'GET', path: '/', hostname: 'localhost', port: mb.port });
+            assert.fail(`should not have connected (hostname: ${hostname})`);
+        }
+        catch (error) {
+            assert.strictEqual(error.code, 'ECONNREFUSED');
+        }
+    });
+
+    it('should bind http imposter to provided host', async function () {
+        const imposter = { protocol: 'http', port: mb.port + 1 };
+        await mb.start(['--host', hostname]);
+        await mb.post('/imposters', imposter);
+
+        const hostCall = await http.responseFor({
+            method: 'GET',
+            path: '/',
+            hostname: hostname,
+            port: imposter.port
         });
+        assert.strictEqual(hostCall.statusCode, 200);
 
-        it('should bind http imposter to provided host', async function () {
-            const imposter = { protocol: 'http', port: mb.port + 1 };
-            await mb.start(['--host', hostname]);
-            await mb.post('/imposters', imposter);
-
-            const hostCall = await http.responseFor({
+        try {
+            await http.responseFor({
                 method: 'GET',
                 path: '/',
-                hostname: hostname,
+                hostname: 'localhost',
                 port: imposter.port
             });
-            assert.strictEqual(hostCall.statusCode, 200);
+            assert.fail('should not have connected to localhost');
+        }
+        catch (error) {
+            assert.strictEqual(error.code, 'ECONNREFUSED');
+        }
+    });
 
-            try {
-                await http.responseFor({
-                    method: 'GET',
-                    path: '/',
-                    hostname: 'localhost',
-                    port: imposter.port
-                });
-                assert.fail('should not have connected to localhost');
-            }
-            catch (error) {
-                assert.strictEqual(error.code, 'ECONNREFUSED');
-            }
-        });
+    it('should bind tcp imposter to provided host', async function () {
+        const imposter = {
+                protocol: 'tcp',
+                port: mb.port + 1,
+                stubs: [{ responses: [{ is: { data: 'OK' } }] }]
+            },
+            client = require('../api/tcp/tcpClient');
+        await mb.start(['--host', hostname]);
+        await mb.post('/imposters', imposter);
 
-        it('should bind tcp imposter to provided host', async function () {
-            const imposter = {
-                    protocol: 'tcp',
-                    port: mb.port + 1,
-                    stubs: [{ responses: [{ is: { data: 'OK' } }] }]
-                },
-                client = require('../api/tcp/tcpClient');
-            await mb.start(['--host', hostname]);
-            await mb.post('/imposters', imposter);
+        const hostCall = await client.send('TEST', imposter.port, 0, hostname);
+        assert.strictEqual(hostCall.toString(), 'OK');
 
-            const hostCall = await client.send('TEST', imposter.port, 0, hostname);
-            assert.strictEqual(hostCall.toString(), 'OK');
+        try {
+            await client.send('TEST', imposter.port, 0, 'localhost');
+            assert.fail('should not have connected to localhost');
+        }
+        catch (error) {
+            assert.strictEqual(error.code, 'ECONNREFUSED');
+        }
+    });
 
-            try {
-                await client.send('TEST', imposter.port, 0, 'localhost');
-                assert.fail('should not have connected to localhost');
-            }
-            catch (error) {
-                assert.strictEqual(error.code, 'ECONNREFUSED');
-            }
-        });
+    it('should bind smtp imposter to provided host', async function () {
+        const imposter = { protocol: 'smtp', port: mb.port + 1 },
+            message = { from: '"From" <from@mb.org>', to: ['"To" <to@mb.org>'], subject: 'subject', text: 'text' },
+            client = require('../api/smtp/smtpClient');
+        await mb.start(['--host', hostname]);
+        await mb.post('/imposters', imposter);
 
-        it('should bind smtp imposter to provided host', async function () {
-            const imposter = { protocol: 'smtp', port: mb.port + 1 },
-                message = { from: '"From" <from@mb.org>', to: ['"To" <to@mb.org>'], subject: 'subject', text: 'text' },
-                client = require('../api/smtp/smtpClient');
-            await mb.start(['--host', hostname]);
-            await mb.post('/imposters', imposter);
+        await client.send(message, imposter.port, hostname);
 
-            await client.send(message, imposter.port, hostname);
-
-            try {
-                await client.send(message, imposter.port, 'localhost');
-                assert.fail('should not have connected to localhost');
-            }
-            catch (error) {
-                // ESOCKET in node v14, ECONNREFUSED before
-                assert.ok(['ECONNREFUSED', 'ESOCKET'].indexOf(error.code) >= 0);
-            }
-        });
-    }
+        try {
+            await client.send(message, imposter.port, 'localhost');
+            assert.fail('should not have connected to localhost');
+        }
+        catch (error) {
+            // ESOCKET in node v14, ECONNREFUSED before
+            assert.ok(['ECONNREFUSED', 'ESOCKET'].indexOf(error.code) >= 0);
+        }
+    });
 });
