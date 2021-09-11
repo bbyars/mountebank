@@ -17,6 +17,9 @@ executors:
     environment:
       - MB_SLOW_TEST_TIMEOUT: 10000
 
+orbs:
+  win: circleci/windows@2.2.0
+
 jobs:
   pr:
     executor: node-active
@@ -61,6 +64,19 @@ jobs:
             - tasks
             - scripts
             - Procfile
+
+  windows:
+    executor: win/default
+    environment:
+      - MB_SLOW_TEST_TIMEOUT: 10000
+    steps:
+      - checkout
+      - run:
+          name: Install Dependencies
+          command: npm ci
+      - run: npm test
+      - store_test_results:
+          path: testResults
 
   maintenanceOutOfProcessImposters:
     executor: node-maintenance
@@ -187,21 +203,28 @@ workflows:
           filters:
             branches:
               only: master
+      - windows:
+          filters:
+            branches:
+              only: master
       - maintenanceOutOfProcessImposters:
           requires:
             - build
+            - windows
           filters:
             branches:
               only: master
       - currentWithFileDB:
           requires:
             - build
+            - windows
           filters:
             branches:
               only: master
       - performance:
           requires:
             - build
+            - windows
           filters:
             branches:
               only: master
