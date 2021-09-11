@@ -1,21 +1,20 @@
 #!/bin/sh
 
-set -e
+APP_NAME=$1
 
-PUBLISH=$1
-
-echo "Deploying to heroku (PUBLISH=$PUBLISH)..."
-
-[ -e dist/heroku ] && rm -rf dist/heroku
-cp -R dist/mountebank dist/heroku
-cp Procfile dist/heroku
-
-(
-cd dist/heroku
-dpl --provider=heroku --api-key=$HEROKU_API_KEY --app=mountebank-dev --skip-cleanup
-
-if [ "$PUBLISH" = "true" ]; then
-    dpl --provider=heroku --api-key=$HEROKU_API_KEY --app=mountebank --skip-cleanup
+if [[ $(command -v heroku) == "" ]]; then
+    echo "Installing heroku CLI"
+    curl https://cli-assets.heroku.com/install.sh | sh
 fi
-cd ..
-)
+
+cd dist/mountebank
+
+# Add --heroku CLI flag to Docker image ($PORT is set by Heroku)
+mv Dockerfile Dockerfile.old
+cat Dockerfile.old | sed -E -e 's/CMD \["mb"\]/CMD mb --heroku --port $PORT/' > Dockerfile
+
+heroku container:login
+heroku container:push -a $APP_NAME web
+heroku container:release -a $APP_NAME web
+
+mv Dockerfile.old Dockerfile
