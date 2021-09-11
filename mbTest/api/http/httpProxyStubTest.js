@@ -187,7 +187,6 @@ describe('http proxy stubs', function () {
         });
     }
 
-    // eslint-disable-next-line mocha/no-setup-in-describe
     ['application/octet-stream', 'audio/mpeg', 'audio/mp4', 'image/gif', 'image/jpeg', 'video/avi', 'video/mpeg'].forEach(mimeType => {
         it(`should treat ${mimeType} as binary`, async function () {
             const buffer = Buffer.from([0, 1, 2, 3]),

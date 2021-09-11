@@ -99,7 +99,3 @@ Some tips for contributing are in the [CONTRIBUTING.md](https://github.com/bbyar
 [codeclimate]: https://codeclimate.com/github/bbyars/mountebank
 [codeclimate-coverage-badge]: https://codeclimate.com/github/bbyars/mountebank/badges/coverage.svg
 [codeclimate-coverage]: https://codeclimate.com/github/bbyars/mountebank/coverage
-[travis-badge]: https://travis-ci.org/bbyars/mountebank.png
-[travis]: https://travis-ci.org/bbyars/mountebank
-[appveyor-badge]: https://ci.appveyor.com/api/projects/status/acfhg44px95s4pk5?svg=true
-[appveyor]: https://ci.appveyor.com/project/bbyars/mountebank

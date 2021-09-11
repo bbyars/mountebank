@@ -146,7 +146,7 @@ describe('security', function () {
         function useInterface (name) {
             return name.indexOf('utun') < 0 // This causes problems on my Mac
                 && name.indexOf('awdl') < 0 // This causes problems on my Mac
-                && name.indexOf(' ') < 0; // This causes problems on Appveyor / Windows
+                && name.indexOf(' ') < 0; // This causes problems on Windows
         }
 
         function ips (local) {
