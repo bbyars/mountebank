@@ -131,7 +131,8 @@ jobs:
   deploy:
     executor: node-active
     steps:
-      - setup_remote_docker
+      - setup_remote_docker:
+          version: 20.10.7
       - attach_workspace:
           at: .
       - run:
@@ -153,7 +154,12 @@ jobs:
     environment:
       - MB_RELEASE: true
     steps:
+      - setup_remote_docker:
+          version: 20.10.7
       - checkout
+#      - run:
+#          name: Install Dependencies
+#          command: npm ci
       - run:
           name: Dist
           command: node tasks/tmp/dist.js
@@ -216,6 +222,8 @@ workflows:
               only: master
       - release:
           filters:
+            branches:
+              ignore: /.*/
             tags:
               only: /^v.*/
 
