@@ -4,8 +4,7 @@
 {
     "extends": [
         "eslint:recommended",
-        "plugin:node/recommended",
-        "plugin:mocha/recommended"
+        "plugin:node/recommended"
     ],
     "parserOptions": {
         "ecmaVersion": 2020
