@@ -1,7 +1,7 @@
 'use strict';
 
 const fs = require('fs'),
-    version = require('../../../package.json').version,
+    version = require('../../package.json').version,
     dir = `docs/mountebank/${version}`,
     execSync = require('child_process').execSync;
 
