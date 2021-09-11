@@ -5,5 +5,8 @@ if [ ! -f ~/.npmrc ] && [ -n "$NPM_API_KEY" ]; then
 fi
 
 TAG=beta
+if [ "$MB_RELEASE" = "true" ]; then
+    TAG=latest
+fi
 
 npm publish dist/mountebank --tag $TAG

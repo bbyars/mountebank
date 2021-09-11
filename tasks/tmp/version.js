@@ -2,29 +2,13 @@
 
 const fs = require('fs'),
     thisPackage = JSON.parse(fs.readFileSync('./package.json')),
-    current = thisPackage.version,
-    exec = require('child_process').exec;
-
-async function isReleaseVersion () {
-    return new Promise(resolve => {
-        exec('git describe --tags --exact-match', (error, stdout) => {
-            if (error) {
-                resolve(false);
-            }
-            else {
-                const releasePattern = /v\d+\.\d+\.\d+/;
-                resolve(releasePattern.test(stdout.trim()));
-            }
-        });
-    });
-}
+    current = thisPackage.version;
 
 async function getVersion () {
-    const isRelease = await isReleaseVersion(),
-        buildNumber = process.env.CIRCLE_BUILD_NUM;
+    const buildNumber = process.env.CIRCLE_BUILD_NUM;
 
-    if (isRelease || typeof buildNumber === 'undefined') {
-        // Leave as is if releasing or not in CI
+    if (typeof buildNumber === 'undefined') {
+        // Leave as is if not in CI
         return current;
     }
     else {
