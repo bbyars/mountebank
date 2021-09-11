@@ -142,10 +142,10 @@ jobs:
           name: Publish Docker
           command: |
             export MB_VERSION=`scripts/printVersion`
-            scripts/deploy/deployDocker $MB_VERSION
+            scripts/publishDocker $MB_VERSION
       - run:
           name: Deploy to Heroku
-          command: scripts/deploy/deployHeroku mountebank-dev
+          command: scripts/publishHeroku mountebank-dev
 
   # The release pipeline doesn't re-run tests as there should be no code commit, only a git tag to trigger release
   # It also doesn't change the version in the package.json or add a beta tag to npm
