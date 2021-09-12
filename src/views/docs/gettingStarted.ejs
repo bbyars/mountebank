@@ -15,8 +15,17 @@ description = 'A getting started guide for using mountebank'
 
 <pre><code>mb</code></pre>
 
-<p class='info-icon'>If you install mountebank locally (absent the -g flag on the
-npm install), you can use `npx mb` to run it.</p>
+<p><b>Alternative install methods:</b></p>
+
+<p>You can avoid a global install with <code>npm install mountebank</code>, in which
+case you can run mountebank using the <code>npx mb</code> command.</p>
+
+<p>You can download the <a href='https://hub.docker.com/repository/docker/bbyars/mountebank'>Docker image</a>
+and run with a command like:</p>
+
+<pre><code>docker run --rm -p 2525:2525 -p 8080:8080 bbyars/mountebank:<%= version %> mb start --configfile imposters.ejs</code></pre>
+
+<p><b>Use:</b></p>
 
 <p>By default, mountebank listens on port 2525, but that's not the port that your
 imposters (test doubles) will listen on.  To show a couple different kinds of
