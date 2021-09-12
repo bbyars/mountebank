@@ -3,7 +3,7 @@ title = 'getting started'
 description = 'A getting started guide for using mountebank'
 %>
 
-<% include ../_header %>
+<%- include('../_header') -%>
 
 <h1>Getting Started</h1>
 
@@ -131,4 +131,4 @@ curl -X DELETE http://localhost:<change to='<%= port %>'>2525</change>/imposters
 
 <p>Explore more in the links on the left.  Don't hesitate to <a href='/support'>ask</a> for help!</p>
 
-<% include ../_footer %>
+<%- include('../_footer') -%>
