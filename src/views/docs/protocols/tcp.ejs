@@ -3,7 +3,7 @@ title = 'tcp'
 description = 'The TCP protocol support provided by mountebank, which allows custom protocols'
 %>
 
-<% include ../../_header %>
+<%- include('../../_header') -%>
 
 <h1>tcp</h1>
 
@@ -424,4 +424,4 @@ Connection: keep-alive
 <p>The tcp protocol is a wonderful general purpose protocol, but can get tricky to map the application protocol
 message length to make it work.  As always, let <a href='/support'>mountebank know if he can help</a>.</p>
 
-<% include ../../_footer %>
+<%- include('../../_footer') -%>

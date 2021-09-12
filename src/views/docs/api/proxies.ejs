@@ -3,7 +3,7 @@ title = 'proxies'
 description = 'Using mountebank to record and playback through proxying to a real network dependency'
 %>
 
-<% include ../../_header %>
+<%- include('../../_header') -%>
 
 <h1>Proxies</h1>
 
@@ -147,7 +147,7 @@ response. Setting the <code>addWaitBehavior</code> flag will add that latency to
       Understanding predicateGenerators
     </a>
     <section>
-      <% include proxy/predicateGenerators %>
+      <%- include('proxy/predicateGenerators') -%>
     </section>
   </div>
   <div>
@@ -156,7 +156,7 @@ response. Setting the <code>addWaitBehavior</code> flag will add that latency to
       Understanding proxy modes
     </a>
     <section>
-      <% include proxy/proxyModes %>
+      <%- include('proxy/proxyModes') -%>
     </section>
   </div>
   <div>
@@ -165,7 +165,7 @@ response. Setting the <code>addWaitBehavior</code> flag will add that latency to
       Adding latency to the saved responses with addWaitBehavior
     </a>
     <section>
-      <% include proxy/addWaitBehavior %>
+      <%- include('proxy/addWaitBehavior') -%>
     </section>
   </div>
   <div>
@@ -174,7 +174,7 @@ response. Setting the <code>addWaitBehavior</code> flag will add that latency to
       Decorating saved responses with addDecorateBehavior
     </a>
     <section>
-      <% include proxy/addDecorateBehavior %>
+      <%- include('proxy/addDecorateBehavior') -%>
     </section>
   </div>
   <div>
@@ -183,9 +183,9 @@ response. Setting the <code>addWaitBehavior</code> flag will add that latency to
       Changing the proxied request headers with injectHeaders
     </a>
     <section>
-      <% include proxy/injectHeaders %>
+      <%- include('proxy/injectHeaders') -%>
     </section>
   </div>
 </section>
 
-<% include ../../_footer %>
+<%- include('../../_footer') -%>

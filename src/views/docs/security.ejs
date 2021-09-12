@@ -3,7 +3,7 @@ title = 'security'
 description = 'Securing mountebank against remote execution attacks'
 %>
 
-<% include ../_header %>
+<%- include('../_header') -%>
 
 <h1>Security</h1>
 
@@ -35,4 +35,4 @@ as core features in a future release of mountebank.</p>
 <p>By default, CORS is disabled to prevent CSRF attacks. To enable, you must explicitly pass safe origins
 on the command line using the <a href='/docs/commandLine'><code>--origin</code></a> flag.</p>
 
-<% include ../_footer %>
+<%- include('../_footer') -%>

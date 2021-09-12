@@ -31,6 +31,9 @@ function createWinstonFormat (format, config) {
     if (config.format === 'json') {
         formatters.push(format.json());
     }
+    else if (config.format === 'simple') {
+        formatters.push(format.simple());
+    }
     else {
         formatters.push(format.printf(logFormat(config.format)));
     }
