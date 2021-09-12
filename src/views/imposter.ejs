@@ -3,7 +3,7 @@ title = 'imposter information'
 description = 'Information about a specific mountebank imposter'
 %>
 
-<% include _header %>
+<%- include('_header') -%>
 
 <h1><%= imposter.protocol %> Imposter on port <%= imposter.port %></h1>
 
@@ -19,4 +19,4 @@ description = 'Information about a specific mountebank imposter'
 <pre><code><%= JSON.stringify(stub, null, 2) %></code></pre>
 <% }); -%>
 
-<% include _footer %>
+<%- include('_footer') -%>
