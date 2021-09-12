@@ -3,8 +3,7 @@
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 
 function create (protocol) {
-    const driver = require(protocol),
-        agent = new driver.Agent({ keepAlive: true });
+    const driver = require(protocol);
 
     function optionsFor (spec) {
         if (!spec.hostname) {
@@ -23,6 +22,10 @@ function create (protocol) {
     async function responseFor (spec) {
         const options = optionsFor(spec);
 
+        if (!spec.agent && !spec.createConnection) {
+            options.agent = new driver.Agent({ keepAlive: true });
+        }
+
         if (!options.port) {
             throw Error('silly rabbit, you forgot to pass the port again');
         }
@@ -30,8 +33,6 @@ function create (protocol) {
         if (spec.body && !options.headers['Content-Type']) {
             options.headers['Content-Type'] = 'application/json';
         }
-
-        options.agent = agent;
 
         return new Promise((resolve, reject) => {
             const request = driver.request(options, response => {
