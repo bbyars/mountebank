@@ -3,7 +3,7 @@ title = 'running imposters'
 description = 'Information about the currently running imposters'
 %>
 
-<% include _header %>
+<%- include('_header') -%>
 
 <link rel='stylesheet' type='text/css' href='/stylesheets/imposters.css' />
 
@@ -30,9 +30,9 @@ this website locally.</p>
   </tr>
 
   <% imposters.forEach(imposter => { %>
-  <% include _imposter %>
+  <%- include('_imposter') -%>
   <% }); -%>
 </table>
 
 
-<% include _footer %>
+<%- include('_footer') -%>

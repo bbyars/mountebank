@@ -11,7 +11,7 @@ function indent (spaces) {
 }
 %>
 
-<% include ../../_header %>
+<%- include('../../_header') -%>
 
 <h1>Contracts</h1>
 
@@ -31,25 +31,25 @@ are only meaningful in the response; they will be ignored in any requests.</p>
   </select> resource.</p>
 
 <div class='contract' id='specification'>
-  <% include contracts/home %>
-  <% include contracts/imposters %>
-  <% include contracts/imposter %>
-  <% include contracts/addStub %>
-  <% include contracts/stub %>
-  <% include contracts/stubs %>
-  <% include contracts/config %>
-  <% include contracts/logs %>
+  <%- include('contracts/home', { indent }) -%>
+  <%- include('contracts/imposters', { indent }) -%>
+  <%- include('contracts/imposter', { indent }) -%>
+  <%- include('contracts/addStub', { indent }) -%>
+  <%- include('contracts/stub', { indent }) -%>
+  <%- include('contracts/stubs', { indent }) -%>
+  <%- include('contracts/config', { indent }) -%>
+  <%- include('contracts/logs', { indent }) -%>
 </div>
 
 <div class='contract' id='specification-description'>
-  <% include contracts/home-description %>
-  <% include contracts/imposters-description %>
-  <% include contracts/imposter-description %>
-  <% include contracts/addStub-description %>
-  <% include contracts/stub-description %>
-  <% include contracts/stubs-description %>
-  <% include contracts/config-description %>
-  <% include contracts/logs-description %>
+  <%- include('contracts/home-description', { indent }) -%>
+  <%- include('contracts/imposters-description', { indent }) -%>
+  <%- include('contracts/imposter-description', { indent }) -%>
+  <%- include('contracts/addStub-description', { indent }) -%>
+  <%- include('contracts/stub-description', { indent }) -%>
+  <%- include('contracts/stubs-description', { indent }) -%>
+  <%- include('contracts/config-description', { indent }) -%>
+  <%- include('contracts/logs-description', { indent }) -%>
 </div>
 
 
@@ -130,4 +130,4 @@ are only meaningful in the response; they will be ignored in any requests.</p>
   });
 </script>
 
-<% include ../../_footer %>
+<%- include('../../_footer') -%>
