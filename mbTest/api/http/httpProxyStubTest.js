@@ -4,10 +4,12 @@ const assert = require('assert'),
     fs = require('fs-extra'),
     api = require('../../api').create(),
     client = require('../../baseHttpClient').create('http'),
+    clientSecure = require('../../baseHttpClient').create('https'),
     port = api.port + 1,
     isWindows = require('os').platform().indexOf('win') === 0,
     timeout = isWindows ? 10000 : parseInt(process.env.MB_SLOW_TEST_TIMEOUT || 2000),
-    airplaneMode = process.env.MB_AIRPLANE_MODE === 'true';
+    airplaneMode = process.env.MB_AIRPLANE_MODE === 'true',
+    { HttpsProxyAgent } = require('hpagent');
 
 describe('http proxy stubs', function () {
     this.timeout(timeout);
@@ -78,6 +80,36 @@ describe('http proxy stubs', function () {
 
         assert.strictEqual(response.statusCode, 400);
         assert.strictEqual(response.body, 'ERROR');
+    });
+
+    // https://github.com/bbyars/mountebank/issues/600
+    it('should handle the connect method', async function () {
+        const proxy = {
+            protocol: 'https',
+            port: port,
+            stubs: [
+                { responses: [{ proxy: { to: 'https://api.github.com:443' } }] }
+            ]
+        };
+        await api.createImposter(proxy);
+
+        const response = await clientSecure.responseFor({
+            host: 'api.github.com',
+            path: '/repos/bbyars/mountebank/contents/README.md',
+            port: 443,
+            agent: new HttpsProxyAgent({
+                keepAlive: true,
+                proxy: `https://localhost:${proxy.port}`
+            }),
+            headers: {
+                'User-Agent': 'Mountebank Proxy Test <http://mbtest.org>'
+            }
+        });
+
+        assert.strictEqual(response.statusCode, 200);
+        assert.strictEqual(response.body.name, 'README.md');
+        assert.strictEqual(response.body.path, 'README.md');
+        assert.strictEqual(response.body.type, 'file');
     });
 
     it('should update the host header to the origin server', async function () {
