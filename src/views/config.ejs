@@ -3,7 +3,7 @@ title = 'configuration'
 description = 'The version, command line parameters, and process information about this running mb process'
 %>
 
-<% include _header %>
+<%- include('_header') -%>
 
 <%
 function isJSONObject (value) {
@@ -68,4 +68,4 @@ function prettyPrint (value) {
   </tr>
 </table>
 
-<% include _footer %>
+<%- include('_footer') -%>

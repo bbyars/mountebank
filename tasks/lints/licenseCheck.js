@@ -1,7 +1,7 @@
 'use strict';
 
 const checker = require('license-checker'),
-    validLicenses = ['MIT', 'ISC', 'Apache', 'BSD'];
+    validLicenses = ['MIT', 'ISC', 'Apache', 'BSD', 'CC0'];
 
 checker.init({
     start: '.',

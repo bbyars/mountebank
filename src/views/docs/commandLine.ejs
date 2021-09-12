@@ -3,7 +3,7 @@ title = 'command line'
 description = 'Command line parameters for starting mountebank'
 %>
 
-<% include ../_header %>
+<%- include('../_header') -%>
 
 <h1>Configuring mountebank</h1>
 
@@ -21,37 +21,37 @@ based on the core mountebank commands.</p>
   <div>
     <a class='section-toggler' id='start' name='start' href='#start'>mb start</a>
     <section>
-      <% include cli/start %>
+      <%- include('cli/start') -%>
     </section>
   </div>
   <div>
     <a class='section-toggler' id='stop' name='stop' href='#stop'>mb stop</a>
     <section>
-      <% include cli/stop %>
+      <%- include('cli/stop') -%>
     </section>
   </div>
   <div>
     <a class='section-toggler' id='restart' name='restart' href='#restart'>mb restart</a>
     <section>
-      <% include cli/restart %>
+      <%- include('cli/restart') -%>
     </section>
   </div>
   <div>
     <a class='section-toggler' id='save' name='save' href='#save'>mb save</a>
     <section>
-      <% include cli/save %>
+      <%- include('cli/save') -%>
     </section>
   </div>
   <div>
     <a class='section-toggler' id='replay' name='replay' href='#replay'>mb replay</a>
     <section>
-      <% include cli/replay %>
+      <%- include('cli/replay') -%>
     </section>
   </div>
   <div>
     <a class='section-toggler' id='help' name='help' href='#help'>mb help</a>
     <section>
-      <% include cli/help %>
+      <%- include('cli/help') -%>
     </section>
   </div>
 </section>
@@ -78,15 +78,15 @@ formatter for configuration files as well as how to define a custom formatter.</
     <div>
         <a class='section-toggler' id='config-files' name='config-files' href='#config-files'>Default config file parsing</a>
         <section>
-            <% include cli/configFiles %>
+            <%- include('cli/configFiles') -%>
         </section>
     </div>
     <div>
         <a class='section-toggler' id='custom-formatters' name='custom-formatters' href='#custom-formatters'>Custom formatters</a>
         <section>
-            <% include cli/customFormatters %>
+            <%- include('cli/customFormatters') -%>
         </section>
     </div>
 </section>
 
-<% include ../_footer %>
+<%- include('../_footer') -%>

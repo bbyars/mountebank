@@ -3,7 +3,7 @@ title = 'custom protocols'
 description = 'How to create your own protocol implementation'
 %>
 
-<% include ../../_header %>
+<%- include('../../_header') -%>
 
 <h1>how to create your own protocol implementation</h1>
 
@@ -228,4 +228,4 @@ const config = JSON.parse(process.argv[2])
 <p>If you exit before writing to stdout, exit with a non-zero exit code. The user will get a 400
 error.</p>
 
-<% include ../../_footer %>
+<%- include('../../_footer') -%>
