@@ -45,7 +45,7 @@ function createLogger (options) {
         options.log = { level: 'info' };
     }
     if (!options.log.transports) {
-        options.log.transports = {};
+        options.log.transports = { console: { format: '%level: %message' } };
     }
     const winston = require('winston'),
         winstonLogger = winston.createLogger({ level: options.log.level }),
