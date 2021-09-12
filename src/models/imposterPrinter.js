@@ -12,6 +12,9 @@ function create (header, server, loadRequests) {
         if (header.name) {
             result.name = header.name;
         }
+        if (header.defaultResponse) {
+            result.defaultResponse = header.defaultResponse;
+        }
         if (!options.replayable) {
             result.numberOfRequests = numberOfRequests;
         }
