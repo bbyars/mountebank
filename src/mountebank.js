@@ -42,6 +42,8 @@ async function createApp (options) {
         validateImposterExists = middleware.createImposterValidator(imposters),
         prometheus = require('prom-client');
 
+    // Clear only matters when bound using directly in-process through JS rather than the CLI
+    prometheus.register.clear();
     prometheus.collectDefaultMetrics({ prefix: 'mb_' });
 
     app.use(middleware.useAbsoluteUrls(options.port));
@@ -151,7 +153,7 @@ async function createApp (options) {
  * @param {object} options - The command line options
  * @returns {Object} An object with a close method to stop the server
  */
-async function listenServer (app, options) {
+async function listen (app, options) {
     const thisPackage = require('../package.json'),
         helpers = require('./util/helpers'),
         hostname = options.host || 'localhost',
@@ -214,8 +216,7 @@ async function listenServer (app, options) {
  */
 async function create (options) {
     const app = await createApp(options);
-
-    return listenServer(app, options);
+    return await listen(app, options);
 }
 
-module.exports = { create, createApp, listenServer };
+module.exports = { create, createApp };

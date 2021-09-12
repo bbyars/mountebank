@@ -10,7 +10,7 @@ const defaults = {
     loglevel: 'info',
     allowInjection: false,
     localOnly: false,
-    ipWhitelist: '*'.split('|'),
+    ipWhitelist: ['*'],
     mock: false,
     debug: false,
     savefile: 'mb.json',
