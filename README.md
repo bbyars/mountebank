@@ -40,6 +40,9 @@ Run:
 There are a number of [command line options](https://www.mbtest.org/docs/commandLine) if you need
 to customize mountebank.
 
+All pre-release versions of mountebank are available with the `beta` [npm tag](https://www.npmjs.com/package/mountebank).
+No `beta` version is published unless it has passed all tests.
+
 ## Learn More
 
 After installing and running, view the docs in your browser at <http://localhost:2525>, or visit the
