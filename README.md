@@ -19,6 +19,7 @@ At the moment, the following protocols are implemented, either directly in the t
 * ldap
 * grpc
 * websockets
+* graphql
 
 mountebank supports mock verification, stubbing with advanced predicates, JavaScript injection,
 and record-playback through proxying.
