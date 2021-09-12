@@ -8,8 +8,7 @@ const assert = require('assert'),
     port = api.port + 1,
     isWindows = require('os').platform().indexOf('win') === 0,
     timeout = isWindows ? 10000 : parseInt(process.env.MB_SLOW_TEST_TIMEOUT || 2000),
-    airplaneMode = process.env.MB_AIRPLANE_MODE === 'true',
-    { HttpsProxyAgent } = require('hpagent');
+    airplaneMode = process.env.MB_AIRPLANE_MODE === 'true';
 
 describe('http proxy stubs', function () {
     this.timeout(timeout);
