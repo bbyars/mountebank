@@ -3,7 +3,7 @@ title = 'over the wire test doubles'
 description = 'mountebank is the first open source, cross-platform, multi-protocol service virtualization tool'
 %>
 
-<% include _header %>
+<%- include('_header') -%>
 
 <% if (notices.length > 0) { %>
 <div id='notice'>
@@ -86,4 +86,4 @@ open the corresponding socket.</p>
 <p>Not all of mountebank's goals are currently implemented, but fear not, for he has
   a team of top-notch open source developers, and they are legion.</p>
 
-<% include _footer %>
+<%- include('_footer') -%>

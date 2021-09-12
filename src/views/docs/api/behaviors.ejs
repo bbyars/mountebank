@@ -3,7 +3,7 @@ title = 'behaviors'
 description = 'Additional behaviors supported by all mountebank responses'
 %>
 
-<% include ../../_header %>
+<%- include('../../_header') -%>
 
 <h1>Stub Behaviors</h1>
 
@@ -97,7 +97,7 @@ response transformation.</p>
       wait
     </a>
     <section>
-      <% include behaviors/wait %>
+      <%- include('behaviors/wait') -%>
     </section>
   </div>
   <div>
@@ -106,7 +106,7 @@ response transformation.</p>
       copy
     </a>
     <section>
-      <% include behaviors/copy %>
+      <%- include('behaviors/copy') -%>
     </section>
   </div>
   <div>
@@ -115,7 +115,7 @@ response transformation.</p>
       lookup
     </a>
     <section>
-      <% include behaviors/lookup %>
+      <%- include('behaviors/lookup') -%>
     </section>
   </div>
   <div>
@@ -124,7 +124,7 @@ response transformation.</p>
       decorate
     </a>
     <section>
-      <% include behaviors/decorate %>
+      <%- include('behaviors/decorate') -%>
     </section>
   </div>
   <div>
@@ -133,9 +133,9 @@ response transformation.</p>
       shellTransform
     </a>
     <section>
-      <% include behaviors/shellTransform %>
+      <%- include('behaviors/shellTransform') -%>
     </section>
   </div>
 </section>
 
-<% include ../../_footer %>
+<%- include('../../_footer') -%>
