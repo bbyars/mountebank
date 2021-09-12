@@ -36,7 +36,8 @@ async function runTests () {
     const apiExitCode = await exec('node', mochaParamsFor('api'));
     await exec('node', ['tasks/mb.js', 'stop']);
     const cliExitCode = await exec('node', mochaParamsFor('cli'));
-    return apiExitCode + cliExitCode;
+    const jsExitCode = await exec('node', mochaParamsFor('js'));
+    return apiExitCode + cliExitCode + jsExitCode;
 }
 
 runTests().then(code => process.exit(code)); // eslint-disable-line no-process-exit

@@ -17,11 +17,13 @@
         "airplane": "MB_AIRPLANE_MODE=true npm test",
         "api": "MB_EXECUTABLE=\"${MB_EXECUTABLE:-../bin/mb}\" mocha --forbid-only --forbid-pending --reporter mocha-multi-reporters --reporter-options configFile=api/config.json 'api/**/*.js'",
         "cli": "MB_EXECUTABLE=\"${MB_EXECUTABLE:-../bin/mb}\" mocha --forbid-only --forbid-pending --reporter mocha-multi-reporters --reporter-options configFile=cli/config.json 'cli/**/*.js'",
+        "js": "MB_EXECUTABLE=\\\"${MB_EXECUTABLE:-../bin/mb}\\\" mocha --forbid-only --forbid-pending --reporter mocha-multi-reporters --reporter-options configFile=cli/config.json 'js/**/*.js'",
         "perf": "MB_EXECUTABLE=\"${MB_EXECUTABLE:-../bin/mb}\" mocha --forbid-only --forbid-pending --reporter mocha-multi-reporters --reporter-options configFile=perf/config.json 'perf/**/*.js'",
-        "test": "npm run api && npm run cli",
+        "test": "npm run api && npm run cli && npm run js",
         "web": "MB_EXECUTABLE=\"${MB_EXECUTABLE:-../bin/mb}\" mocha --forbid-only --forbid-pending --reporter mocha-multi-reporters --reporter-options configFile=web/config.json 'web/**/*.js'"
     },
     "dependencies": {
+        "express": "4.17.1",
         "fs-extra": "10.0.0",
         "hpagent": "0.1.1",
         "jsdom": "17.0.0",
