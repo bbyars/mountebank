@@ -862,11 +862,6 @@ describe('http proxy stubs', function () {
     });
 
     it('should not add = at end of of query key missing = in original request (issue #410)', async function () {
-        if (await api.isOutOfProcessImposter('http')) {
-            console.log('Workaround - skipping test due to out of process http implementation');
-            return;
-        }
-
         const http = require('http'),
             originServerPort = port + 1,
             originServer = http.createServer((request, response) => {

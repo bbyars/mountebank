@@ -30,6 +30,8 @@
     "test:cover": "nyc --reporter=lcov --reporter=text npm run test:unit",
     "test:cover:codeclimate": "scripts/codeclimate",
     "test:functional": "node tasks/functionalTest.js",
+    "test:perf": "cd mbTest && npm run perf",
+    "test:web": "cd mbTest && npm run web",
     "test": "npm run lint && npm run test:cover && npm run test:functional",
     "windows": "npm run test:cover && npm run test:functional"
   },
