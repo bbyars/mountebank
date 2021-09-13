@@ -135,7 +135,8 @@ function create (options, logger, responseFn) {
                     });
                 },
                 proxy: require('./tcpProxy').create(logger, encoding, isEndOfRequest),
-                encoding: encoding
+                encoding: encoding,
+                isEndOfRequest: isEndOfRequest
             });
         });
     });
