@@ -210,21 +210,18 @@ workflows:
       - maintenanceOutOfProcessImposters:
           requires:
             - build
-            - windows
           filters:
             branches:
               only: master
       - currentWithFileDB:
           requires:
             - build
-            - windows
           filters:
             branches:
               only: master
       - performance:
           requires:
             - build
-            - windows
           filters:
             branches:
               only: master
