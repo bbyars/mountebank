@@ -40,19 +40,35 @@ function createWinstonFormat (format, config) {
     return format.combine(...formatters);
 }
 
+function getFileConfig (transports) {
+    // Ensure file logging if no other transports added
+    if (transports.file) {
+        return transports.file;
+    }
+    else if (!transports.console) {
+        return {
+            path: 'mb.log',
+            format: 'json'
+        };
+    }
+    else {
+        return undefined;
+    }
+}
+
 function createLogger (options) {
     if (!options.log) {
         options.log = { level: 'info' };
     }
     if (!options.log.transports) {
-        options.log.transports = { console: { format: '%level: %message' } };
+        options.log.transports = {};
     }
     const winston = require('winston'),
         winstonLogger = winston.createLogger({ level: options.log.level }),
         ScopedLogger = require('./scopedLogger'),
         logger = ScopedLogger.create(winstonLogger, `[mb:${options.port}] `),
         consoleConfig = options.log.transports.console,
-        fileConfig = options.log.transports.file;
+        fileConfig = getFileConfig(options.log.transports);
 
     if (consoleConfig) {
         winstonLogger.add(new winston.transports.Console({
