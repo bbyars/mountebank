@@ -81,7 +81,7 @@ describe('tcp imposter', function () {
             });
         });
 
-        it('should return the provided end of request resolver', async function() {
+        it('should return the provided end of request resolver', async function () {
             const basicResolver = config => { return config.request.Length >= 100; },
                 request = {
                     protocol: 'tcp',
@@ -94,6 +94,6 @@ describe('tcp imposter', function () {
                 imposter = response.body;
 
             assert.strictEqual(imposter.endOfRequestResolver.inject, basicResolver.toString());
-        })
+        });
     });
 });
