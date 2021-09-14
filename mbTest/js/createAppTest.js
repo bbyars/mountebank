@@ -15,7 +15,6 @@ function listen (app) {
                     return new Promise(closeResolve => {
                         server.close(() => {
                             closeResolve();
-
                         });
 
                         Object.keys(connections).forEach(socket => {
