@@ -43,6 +43,7 @@
     "files": [
         "api",
         "cli",
+        "js",
         "perf",
         "web",
         "api.js",
