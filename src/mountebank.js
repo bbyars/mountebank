@@ -16,12 +16,6 @@ function applyDefaults (options) {
     // Minimal defaults to start bypassing the CLI (e.g. embedding in an express app)
     const defaults = {
         port: 2525,
-        log: {
-            file: {
-                file: 'mb.log',
-                format: 'json'
-            }
-        },
         ipWhitelist: ['*']
     };
     Object.keys(defaults).forEach(key => {

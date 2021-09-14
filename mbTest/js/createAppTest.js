@@ -8,7 +8,6 @@ const assert = require('assert'),
 
 function listen (app) {
     return new Promise((resolve, reject) => {
-        const connections = {};
         const server = app.listen(port, () => {
             resolve({
                 close: function () {
@@ -16,38 +15,23 @@ function listen (app) {
                         server.close(() => {
                             closeResolve();
                         });
-
-                        Object.keys(connections).forEach(socket => {
-                            connections[socket].destroy();
-                        });
                     });
                 }
             });
         });
 
         server.on('error', e => reject(e));
-
-        server.on('connection', socket => {
-            const name = socket.remoteAddress;
-            connections[name] = socket;
-
-            socket.on('close', () => {
-                delete connections[name];
-            });
-        });
     });
 }
 
 describe('Integration with existing server', function () {
-    this.timeout(10000);
+    this.timeout(20000);
 
-    let app;
-    let mbApp;
     let server;
 
     beforeEach(async function () {
-        app = express();
-        mbApp = await createApp({});
+        const app = express();
+        const mbApp = await createApp({});
 
         app.get('/', (req, res) => {
             res.status(200).send('ok');
