@@ -70,10 +70,10 @@ function create (protocol) {
         });
     }
 
-    function get (path, port) { return responseFor({ method: 'GET', path, port }); }
-    function post (path, body, port) { return responseFor({ method: 'POST', path, port, body }); }
-    function del (path, port) { return responseFor({ method: 'DELETE', path, port }); }
-    function put (path, body, port) { return responseFor({ method: 'PUT', path, port, body }); }
+    function get (path, port, headers) { return responseFor({ method: 'GET', path, port, headers }); }
+    function post (path, body, port, headers) { return responseFor({ method: 'POST', path, port, body, headers }); }
+    function del (path, port, headers) { return responseFor({ method: 'DELETE', path, port, headers }); }
+    function put (path, body, port, headers) { return responseFor({ method: 'PUT', path, port, body, headers }); }
 
     return { get, post, del, put, responseFor };
 }

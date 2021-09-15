@@ -3,11 +3,10 @@
 const assert = require('assert'),
     express = require('express'),
     createApp = require('mountebank').createApp,
-    httpClient = require('../baseHttpClient').create('http');
+    httpClient = require('../baseHttpClient').create('http'),
+    headers = { connection: 'close' }; // prevent hanging on to connections, delaying close
 
 describe('Integration with existing server', function () {
-    this.timeout(10000);
-
     let server;
     let port;
 
@@ -19,6 +18,10 @@ describe('Integration with existing server', function () {
 
             server.on('error', e => reject(e));
         });
+    }
+
+    async function close () {
+        return new Promise(resolve => server.close(resolve));
     }
 
     beforeEach(async function () {
@@ -37,30 +40,30 @@ describe('Integration with existing server', function () {
     });
 
     afterEach(async function () {
-        await httpClient.del('/mountebank/imposters', port);
-        server.close(); // don't await; I failed to troubleshoot why this was timing out, hence dynamic ports
+        await httpClient.del('/mountebank/imposters', port, headers);
+        await close();
     });
 
     it('should success respond on application path', async function () {
-        const response = await httpClient.get('/', port);
+        const response = await httpClient.get('/', port, headers);
 
         assert.strictEqual(response.body, 'ok');
     });
 
     it('should success respond on mountebank application path', async function () {
-        const response = await httpClient.get('/mountebank/config', port);
+        const response = await httpClient.get('/mountebank/config', port, headers);
 
         assert.ok(response.body.options.debug);
     });
 
     it('should return create new imposter with consistent hypermedia', async function () {
-        const creationResponse = await httpClient.post('/mountebank/imposters', { protocol: 'http' }, port);
+        const creationResponse = await httpClient.post('/mountebank/imposters', { protocol: 'http' }, port, headers);
         const imposter = creationResponse.body;
 
         assert.strictEqual(creationResponse.statusCode, 201, JSON.stringify(imposter, null, 2));
         assert.strictEqual(creationResponse.headers.location, imposter._links.self.href);
 
-        const imposterResponse = await httpClient.get(`/mountebank/imposters/${imposter.port}`, port);
+        const imposterResponse = await httpClient.get(`/mountebank/imposters/${imposter.port}`, port, headers);
 
         assert.strictEqual(imposterResponse.statusCode, 200);
         assert.deepEqual(imposter, creationResponse.body);
