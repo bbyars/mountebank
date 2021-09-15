@@ -80,5 +80,20 @@ describe('tcp imposter', function () {
                 }
             });
         });
+
+        it('should return the provided end of request resolver', async function () {
+            const basicResolver = config => { return config.request.Length >= 100; },
+                request = {
+                    protocol: 'tcp',
+                    port,
+                    endOfRequestResolver: { inject: basicResolver.toString() }
+                };
+
+            await api.createImposter(request);
+            const response = await api.get(`/imposters/${port}`),
+                imposter = response.body;
+
+            assert.strictEqual(imposter.endOfRequestResolver.inject, basicResolver.toString());
+        });
     });
 });

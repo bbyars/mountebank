@@ -25,6 +25,9 @@ function create (header, server, loadRequests) {
                 result[key] = server.metadata[key];
             });
         }
+        if (header.endOfRequestResolver) {
+            result.endOfRequestResolver = header.endOfRequestResolver;
+        }
 
         return result;
     }
