@@ -193,12 +193,14 @@ jobs:
 
 workflows:
   version: 2
-  pipeline:
+  pr:
     jobs:
       - pr:
           filters:
             branches:
               ignore: master
+  pipeline:
+    jobs:
       - build:
           filters:
             branches:
@@ -240,6 +242,8 @@ workflows:
           filters:
             branches:
               only: master
+  release:
+      jobs:
       - release:
           filters:
             branches:
