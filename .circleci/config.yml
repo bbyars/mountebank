@@ -79,6 +79,18 @@ jobs:
       - store_test_results:
           path: testResults
 
+  mac:
+    macos:
+      xcode: 11.3.0
+    steps:
+      - checkout
+      - run:
+          name: Install Dependencies
+          command: npm ci
+      - run: npm run windows
+      - store_test_results:
+          path: testResults
+
   maintenanceOutOfProcessImposters:
     executor: node-maintenance
     environment:
@@ -207,6 +219,10 @@ workflows:
             branches:
               only: master
       - windows:
+          filters:
+            branches:
+              only: master
+      - mac:
           filters:
             branches:
               only: master
