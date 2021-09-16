@@ -25,7 +25,7 @@ describe('smtp imposter', function () {
 
     describe('GET /imposters/:id', function () {
         it('should provide access to all requests', async function () {
-            const imposterRequest = { protocol: 'smtp', port };
+            const imposterRequest = { protocol: 'smtp', port, recordRequests: true };
             await api.createImposter(imposterRequest);
 
             await client.send({

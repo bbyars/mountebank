@@ -93,7 +93,7 @@ jobs:
       - run:
           name: Test
           command: |
-            node tasks/mb.js start --allowInjection --mock --localOnly --protofile outOfProcess.json
+            node tasks/mb.js start --allowInjection ---localOnly --protofile outOfProcess.json
             (cd dist/test && npm test)
       - store_test_results:
           path: dist/test/testResults
@@ -109,7 +109,7 @@ jobs:
       - run:
           name: Test
           command: |
-            node tasks/mb.js start --allowInjection --mock --localOnly --datadir .mbdb
+            node tasks/mb.js start --allowInjection --localOnly --datadir .mbdb
             (cd dist/test && npm test)
       - store_test_results:
           path: dist/test/testResults
@@ -139,7 +139,7 @@ jobs:
       - run:
           name: Test
           command: |
-            node tasks/mb.js start --allowInjection --mock --localOnly
+            node tasks/mb.js start --allowInjection --localOnly
             (cd dist/test && npm run web)
       - store_test_results:
           path: dist/test/testResults
@@ -193,12 +193,14 @@ jobs:
 
 workflows:
   version: 2
-  pipeline:
+  pr:
     jobs:
       - pr:
           filters:
             branches:
               ignore: master
+  pipeline:
+    jobs:
       - build:
           filters:
             branches:
@@ -240,6 +242,8 @@ workflows:
           filters:
             branches:
               only: master
+  release:
+      jobs:
       - release:
           filters:
             branches:

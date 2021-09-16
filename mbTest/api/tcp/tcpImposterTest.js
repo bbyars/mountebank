@@ -26,7 +26,7 @@ describe('tcp imposter', function () {
 
     describe('GET /imposters/:id', function () {
         it('should provide access to all requests', async function () {
-            const request = { protocol: 'tcp', port };
+            const request = { protocol: 'tcp', port, recordRequests: true };
             await api.createImposter(request);
 
             await tcp.fireAndForget('first', port);
