@@ -48,6 +48,7 @@ jobs:
       - run:
           name: Docs and Static Analysis
           command: |
+            npm run lint
             scripts/codeclimate
             cat ./coverage/lcov.info | node_modules/coveralls/bin/coveralls.js
             scripts/sonar
