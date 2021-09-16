@@ -160,7 +160,8 @@ describe('tcp imposter', function () {
                     protocol: 'tcp',
                     port,
                     stubs: [stub],
-                    mode: 'text'
+                    mode: 'text',
+                    recordRequests: true
                 };
             await api.createImposter(request);
 

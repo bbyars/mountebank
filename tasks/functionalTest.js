@@ -27,7 +27,7 @@ function mochaParamsFor (testType) {
 }
 
 async function runTests () {
-    const mbExitCode = await exec('node', ['tasks/mb.js', 'restart', '--allowInjection', '--mock', '--localOnly']);
+    const mbExitCode = await exec('node', ['tasks/mb.js', 'restart', '--allowInjection', '--localOnly']);
     if (mbExitCode !== 0) {
         console.error('mb failed to start');
         process.exit(mbExitCode); // eslint-disable-line no-process-exit

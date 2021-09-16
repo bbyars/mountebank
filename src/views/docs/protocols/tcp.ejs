@@ -182,6 +182,7 @@ Content-Type: application/json
       "responses": [{ "is": { "data": "SGVsbG8sIHdvcmxkIQ==" } }]
     }
   ],
+  "recordRequests": true,
   "endOfRequestResolver": {
     "inject": "function (requestData, logger) { var messageLength = requestData.readInt32BE(0); logger.info('Message length: ' + messageLength + ', so far: ' + requestData.length); return requestData.length === messageLength; }"
   }
@@ -207,7 +208,7 @@ Accept: application/json</code></pre>
   "protocol": "tcp",
   "port": 5555,
   "numberOfRequests": 1,
-  "recordRequests": false,
+  "recordRequests": true,
   "mode": "binary",
   "requests": [
     {
@@ -234,6 +235,7 @@ Connection: keep-alive
   "protocol": "tcp",
   "port": 5555,
   "numberOfRequests": 5,
+  "recordRequests": true,
   "mode": "binary",
   "requests": [
     {
@@ -309,6 +311,7 @@ Content-Type: application/json
       "responses": [{ "is": { "data": "HTTP/1.1 200 OK\nTransfer-Encoding:chunked\n\n" } }]
     }
   ],
+  "recordRequests": true,
   "endOfRequestResolver": {
     "inject": "function (requestData, logger) { var bodyLength = parseInt(/Content-Length: (\\d+)/.exec(requestData)[1]), headerEndIndex = requestData.indexOf('\\n\\n'), body = requestData.slice(headerEndIndex + 2); logger.info('Content-Length: ' + bodyLength + ', so far: ' + body.length); return body.length >= bodyLength; }"
   }
@@ -346,6 +349,7 @@ Connection: keep-alive
   "protocol": "tcp",
   "port": 4545,
   "numberOfRequests": 2,
+  "recordRequests": true,
   "mode": "text",
   "requests": [
     {
@@ -380,7 +384,7 @@ Connection: keep-alive
   "protocol": "tcp",
   "port": 4545,
   "numberOfRequests": 1,
-  "recordRequests": false,
+  "recordRequests": true,
   "mode": "text",
   "requests": [
     {
