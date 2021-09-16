@@ -260,6 +260,47 @@ types.forEach(function (type) {
             });
         });
 
+        describe('#loadAll', function () {
+            it('should load an empty set if nothing previously saved', async function () {
+                await repo.loadAll();
+
+                const imposters = await repo.all();
+
+                assert.deepStrictEqual(imposters, []);
+            });
+
+            it('should load previously saved imposters', async function () {
+                if (type.name === 'inMemoryImpostersRepository') {
+                    // Does not persist
+                    return;
+                }
+
+                const options = { log: { level: 'info' } };
+                // FakeLogger hangs, maybe something to do with the ScopedLogger wrapping it in imposter.js
+                const logger = require('../../src/util/logger').createLogger({
+                    console: {
+                        colorize: true,
+                        format: '%level: %message'
+                    }
+                });
+                const protocols = require('../../src/models/protocols').loadProtocols(options, '', logger, () => true, repo);
+                await repo.add(imposterize({ port: 2526, protocol: 'tcp' }));
+                await repo.add(imposterize({ port: 2527, protocol: 'tcp' }));
+                await repo.stopAll();
+
+                // Validate clean state
+                const imposters = await repo.all();
+                assert.deepStrictEqual(imposters, []);
+
+                await repo.loadAll(protocols);
+                const loaded = await repo.all();
+                const ports = loaded.map(imposter => imposter.port);
+
+                assert.deepStrictEqual(ports, [2526, 2527]);
+                await repo.stopAll();
+            });
+        });
+
         describe('#stubsFor', function () {
             describe('#count', function () {
                 it('should be 0 if no stubs on the imposter', async function () {

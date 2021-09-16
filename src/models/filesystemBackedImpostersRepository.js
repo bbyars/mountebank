@@ -822,6 +822,15 @@ function create (config, logger) {
     }
 
     /**
+     * Deletes all imposters; used during testing
+     * @memberOf module:models/filesystemBackedImpostersRepository#
+     */
+    async function stopAll () {
+        const promises = Object.keys(imposterFns).map(shutdown);
+        await Promise.all(promises);
+    }
+
+    /**
      * Deletes all imposters synchronously; used during shutdown
      * @memberOf module:models/filesystemBackedImpostersRepository#
      */
@@ -893,6 +902,7 @@ function create (config, logger) {
         all,
         exists,
         del,
+        stopAll,
         stopAllSync,
         deleteAll,
         stubsFor,
