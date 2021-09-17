@@ -29,6 +29,11 @@ jobs:
           name: Install Dependencies
           command: npm ci
       - run: npm test
+      - run:
+          name: Web tests
+          command: |
+            node tasks/mb.js start --allowInjection --localOnly
+            npm run test:web
       - store_test_results:
           path: testResults
 
