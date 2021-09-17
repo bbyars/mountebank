@@ -2,7 +2,7 @@
 
 const assert = require('assert'),
     express = require('express'),
-    createApp = require('mountebank/src/mountebank').createApp,
+    createApp = require('mountebank').createApp,
     httpClient = require('../baseHttpClient').create('http'),
     headers = { connection: 'close' }; // prevent hanging on to connections, delaying close
 
