@@ -33,11 +33,10 @@ async function runTests () {
         process.exit(mbExitCode); // eslint-disable-line no-process-exit
     }
 
-    const apiExitCode = await exec('node', mochaParamsFor('api'));
+    const testType = process.argv[2];
+    const exitCode = await exec('node', mochaParamsFor(testType));
     await exec('node', ['tasks/mb.js', 'stop']);
-    const cliExitCode = await exec('node', mochaParamsFor('cli'));
-    const jsExitCode = await exec('node', mochaParamsFor('js'));
-    return apiExitCode + cliExitCode + jsExitCode;
+    return exitCode;
 }
 
 runTests().then(code => process.exit(code)); // eslint-disable-line no-process-exit

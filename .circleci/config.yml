@@ -80,7 +80,12 @@ jobs:
       - run:
           name: Install Dependencies
           command: npm ci
-      - run: npm run windows
+      - run:
+          name: Test
+          command: |
+            npm run test:cover
+            node run test:api
+            npm run test:cli
       - store_test_results:
           path: testResults
 
@@ -102,7 +107,12 @@ jobs:
       - run:
           name: Install Dependencies
           command: npm ci
-      - run: npm run windows
+      - run:
+          name: Test
+          command: |
+            npm run test:cover
+            node run test:api
+            npm run test:cli
       - store_test_results:
           path: testResults
 

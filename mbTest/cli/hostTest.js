@@ -12,6 +12,13 @@ const assert = require('assert'),
     fs = require('fs-extra'),
     path = require('path');
 
+function cannotRouteToLocalHostname () {
+    // Not in /etc/hosts and no local DNS resolver in certain CircleCI contexts
+    const ci = process.env.CIRCLECI === 'true';
+    const os = require('os').platform();
+    return ci && os === 'darwin';
+}
+
 describe('--host', function () {
     this.timeout(timeout);
 
@@ -20,6 +27,11 @@ describe('--host', function () {
     });
 
     it('should allow binding to specific host', async function () {
+        if (cannotRouteToLocalHostname()) {
+            console.log('Skipping due to build environment');
+            return;
+        }
+
         await mb.start(['--host', hostname]);
 
         const response = await mb.get('/'),
@@ -33,6 +45,11 @@ describe('--host', function () {
     });
 
     it('should work with --configfile', async function () {
+        if (cannotRouteToLocalHostname()) {
+            console.log('Skipping due to build environment');
+            return;
+        }
+
         const args = ['--host', hostname, '--configfile', path.join(__dirname, 'noparse.json'), '--noParse'];
         await mb.start(args);
 
@@ -42,6 +59,11 @@ describe('--host', function () {
     });
 
     it('should work with mb save', async function () {
+        if (cannotRouteToLocalHostname()) {
+            console.log('Skipping due to build environment');
+            return;
+        }
+
         const imposters = { imposters: [{ protocol: 'http', port: 3000, recordRequests: false, stubs: [] }] };
         await mb.start(['--host', hostname]);
         await mb.put('/imposters', imposters);
@@ -58,6 +80,11 @@ describe('--host', function () {
     });
 
     it('should work with mb replay', async function () {
+        if (cannotRouteToLocalHostname()) {
+            console.log('Skipping due to build environment');
+            return;
+        }
+
         const originServerPort = mb.port + 1,
             originServerStub = { responses: [{ is: { body: 'ORIGIN' } }] },
             originServerRequest = { protocol: 'http', port: originServerPort, stubs: [originServerStub] },
@@ -92,6 +119,11 @@ describe('--host', function () {
     });
 
     it('should bind http imposter to provided host', async function () {
+        if (cannotRouteToLocalHostname()) {
+            console.log('Skipping due to build environment');
+            return;
+        }
+
         const imposter = { protocol: 'http', port: mb.port + 1 };
         await mb.start(['--host', hostname]);
         await mb.post('/imposters', imposter);
@@ -119,6 +151,11 @@ describe('--host', function () {
     });
 
     it('should bind tcp imposter to provided host', async function () {
+        if (cannotRouteToLocalHostname()) {
+            console.log('Skipping due to build environment');
+            return;
+        }
+
         const imposter = {
                 protocol: 'tcp',
                 port: mb.port + 1,
@@ -141,6 +178,11 @@ describe('--host', function () {
     });
 
     it('should bind smtp imposter to provided host', async function () {
+        if (cannotRouteToLocalHostname()) {
+            console.log('Skipping due to build environment');
+            return;
+        }
+
         const imposter = { protocol: 'smtp', port: mb.port + 1 },
             message = { from: '"From" <from@mb.org>', to: ['"To" <to@mb.org>'], subject: 'subject', text: 'text' },
             client = require('../api/smtp/smtpClient');
