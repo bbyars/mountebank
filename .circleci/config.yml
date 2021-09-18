@@ -84,7 +84,7 @@ jobs:
           name: Test
           command: |
             npm run test:cover
-            node run test:api
+            npm run test:api
             npm run test:cli
       - store_test_results:
           path: testResults
@@ -111,7 +111,7 @@ jobs:
           name: Test
           command: |
             npm run test:cover
-            node run test:api
+            npm run test:api
             npm run test:cli
       - store_test_results:
           path: testResults
