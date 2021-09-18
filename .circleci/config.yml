@@ -31,9 +31,7 @@ jobs:
       - run: npm test
       - run:
           name: Web tests
-          command: |
-            node tasks/mb.js start --allowInjection --localOnly
-            npm run test:web
+          command: npm run test:web
       - store_test_results:
           path: testResults
 
@@ -49,7 +47,6 @@ jobs:
       - run:
           name: Version
           command: node tasks/version.js
-      - run: npm test
       - run:
           name: Docs and Static Analysis
           command: |
@@ -85,7 +82,7 @@ jobs:
           command: |
             npm run test:cover
             npm run test:api
-            npm run test:cli
+            npm run test:cli:windows
       - store_test_results:
           path: testResults
 
@@ -254,32 +251,24 @@ workflows:
       - maintenanceOutOfProcessImposters:
           requires:
             - build
-            - windows
-            - mac
           filters:
             branches:
               only: master
       - currentWithFileDB:
           requires:
             - build
-            - windows
-            - mac
           filters:
             branches:
               only: master
       - performance:
           requires:
             - build
-            - windows
-            - mac
           filters:
             branches:
               only: master
       - web:
           requires:
             - build
-            - windows
-            - mac
           filters:
             branches:
               only: master

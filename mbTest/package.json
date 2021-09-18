@@ -17,6 +17,7 @@
         "airplane": "MB_AIRPLANE_MODE=true npm test",
         "api": "MB_EXECUTABLE=\"${MB_EXECUTABLE:-../bin/mb}\" mocha --forbid-only --forbid-pending --reporter mocha-multi-reporters --reporter-options configFile=api/config.json 'api/**/*.js'",
         "cli": "MB_EXECUTABLE=\"${MB_EXECUTABLE:-../bin/mb}\" mocha --forbid-only --forbid-pending --reporter mocha-multi-reporters --reporter-options configFile=cli/config.json 'cli/**/*.js'",
+        "cli:windows": "set MB_EXECUTABLE=../bin/mb && mocha --forbid-only --forbid-pending --reporter mocha-multi-reporters --reporter-options configFile=cli/config.json 'cli/**/*.js'",
         "js": "MB_EXECUTABLE=\\\"${MB_EXECUTABLE:-../bin/mb}\\\" mocha --forbid-only --forbid-pending --reporter mocha-multi-reporters --reporter-options configFile=cli/config.json 'js/**/*.js'",
         "perf": "MB_EXECUTABLE=\"${MB_EXECUTABLE:-../bin/mb}\" mocha --forbid-only --forbid-pending --reporter mocha-multi-reporters --reporter-options configFile=perf/config.json 'perf/**/*.js'",
         "test": "npm run api && npm run cli && npm run js",

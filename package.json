@@ -28,13 +28,13 @@
     "postinstall": "cd mbTest && npm install",
     "test:api": "node tasks/mbtest.js api",
     "test:cli": "cd mbTest && npm run cli",
+    "test:cli:windows": "cd mbTest && npm run cli:windows",
     "test:unit": "mocha --forbid-only --forbid-pending --reporter mocha-multi-reporters --reporter-options configFile=test/config.json 'test/**/*.js'",
     "test:cover": "nyc --reporter=lcov --reporter=text npm run test:unit",
-    "test:functional": "npm run test:api && npm run test:cli && npm run test:js",
     "test:js": "cd mbTest && npm run js",
     "test:perf": "cd mbTest && npm run perf",
     "test:web": "node tasks/mbtest.js web",
-    "test": "npm run lint && npm run test:cover && npm run test:functional"
+    "test": "npm run lint && npm run test:cover && npm run test:api && npm run test:cli && npm run test:js"
   },
   "files": [
     "bin",
