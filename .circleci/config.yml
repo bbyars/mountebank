@@ -82,7 +82,7 @@ jobs:
           command: |
             npm run test:cover
             npm run test:api
-            npm run test:cli:windows
+            npm run test:cli
       - store_test_results:
           path: testResults
 

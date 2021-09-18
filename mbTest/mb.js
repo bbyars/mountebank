@@ -47,15 +47,7 @@ function create (port, includeStdout) {
 
         if (isWindows) {
             args.unshift(mbPath);
-
-            if (mbPath.indexOf('.cmd') >= 0) {
-                // Accommodate the self-contained Windows zip files that ship with mountebank
-                args.unshift('/c');
-                command = 'cmd';
-            }
-            else {
-                command = 'node';
-            }
+            command = 'node';
         }
 
         result = spawn(command, args);

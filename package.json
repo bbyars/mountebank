@@ -28,7 +28,6 @@
     "postinstall": "cd mbTest && npm install",
     "test:api": "node tasks/mbtest.js api",
     "test:cli": "cd mbTest && npm run cli",
-    "test:cli:windows": "cd mbTest && npm run cli:windows",
     "test:unit": "mocha --forbid-only --forbid-pending --reporter mocha-multi-reporters --reporter-options configFile=test/config.json 'test/**/*.js'",
     "test:cover": "nyc --reporter=lcov --reporter=text npm run test:unit",
     "test:js": "cd mbTest && npm run js",
