@@ -41,8 +41,7 @@ checks:
   identical-code:
     enabled: false
 exclude_patterns:
-  - "src/**.js"
-  - "**.css"
-  - "**.md"
-  - "bin/mb"
-  - "scripts/**/*"
+  - "**/node_modules/"
+  - "dist"
+  - "test"
+  - "mbTest"
