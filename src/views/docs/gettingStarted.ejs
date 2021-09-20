@@ -20,10 +20,10 @@ description = 'A getting started guide for using mountebank'
 <p>You can avoid a global install with <code>npm install mountebank</code>, in which
 case you can run mountebank using the <code>npx mb</code> command.</p>
 
-<p>You can download the <a href='https://hub.docker.com/repository/docker/bbyars/mountebank'>Docker image</a>
-and run with a command like:</p>
+<p>Alternatively, you can download the Docker image and run:</p>
 
-<pre><code>docker run --rm -p 2525:2525 -p 8080:8080 bbyars/mountebank:<%= version %> mb start --configfile imposters.ejs</code></pre>
+<pre><code>docker pull bbyars/mountebank:<%= version %>
+docker run --rm -p 2525:2525 -p 8080:8080 bbyars/mountebank:<%= version %> mb start --configfile imposters.ejs</code></pre>
 
 <p><b>Use:</b></p>
 
