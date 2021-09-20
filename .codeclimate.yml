@@ -1,7 +1,5 @@
 version: 2
 plugins:
-  bundler-audit:
-    enabled: true
   csslint:
     enabled: true
   duplication:
