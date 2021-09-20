@@ -41,10 +41,8 @@ checks:
   identical-code:
     enabled: false
 exclude_patterns:
-  - Gemfile.lock
   - "src/**.js"
   - "**.css"
   - "**.md"
   - "bin/mb"
-  - "build"
   - "scripts/**/*"

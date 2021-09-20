@@ -159,7 +159,7 @@ jobs:
           at: .
       - run:
           name: Test
-          command: (cd dist/test && npm run perf)
+          command: npm run test:perf
       - store_test_results:
           path: dist/test/testResults
 
@@ -173,9 +173,7 @@ jobs:
           at: .
       - run:
           name: Test
-          command: |
-            node tasks/mb.js start --allowInjection --localOnly
-            (cd dist/test && npm run web)
+          command: npm run test:web
       - store_test_results:
           path: dist/test/testResults
 

@@ -18,11 +18,6 @@
   },
   "main": "./src/mountebank.js",
   "scripts": {
-    "start": "bin/mb",
-    "restart": "bin/mb restart",
-    "stop": "bin/mb stop",
-    "config:outOfProcess": "node tasks/createProtocolsFile.js",
-    "config:inProcess": "rm protocols.json",
     "jsdoc": "jsdoc src/**/*.js --destination docs --configure .jsdoc --pedantic --readme CONTRIBUTING.md --package package.json",
     "lint": "eslint src/ tasks/ test/ mbTest/ bin/mb && node tasks/lints/licenseCheck.js && node tasks/lints/deadCheck.js && node tasks/lints/objectCheck.js",
     "postinstall": "cd mbTest && npm install",
