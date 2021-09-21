@@ -1,0 +1,4 @@
+{
+    "reporter": ["lcov", "text"],
+    "exclude": ["bin/**", "mbTest/**", "node_modules/**", "scripts/**", "src/public/**", "tasks/**", "test/**"]
+}
