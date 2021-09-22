@@ -24,7 +24,7 @@
     "test:api": "node tasks/mbtest.js api",
     "test:cli": "cd mbTest && npm run cli",
     "test:unit": "mocha --forbid-only --forbid-pending --reporter mocha-multi-reporters --reporter-options configFile=test/config.json 'test/**/*.js'",
-    "test:cover": "nyc npm run test:unit",
+    "test:cover": "nyc --reporter=lcov --reporter=text --include='src/**' --exclude='src/public/**' npm run test:unit",
     "test:js": "cd mbTest && npm run js",
     "test:perf": "cd mbTest && npm run perf",
     "test:web": "node tasks/mbtest.js web",
