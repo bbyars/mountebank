@@ -36,7 +36,7 @@ async function runStep (step) {
     nextTestId += 1;
 
     try {
-        return await execute(`sh ./${filename}`);
+        return execute(`sh ./${filename}`);
     }
     catch (reason) {
         console.log(`Error executing following command: ${step.text}`);

@@ -135,9 +135,8 @@ In the spirit of being as lazy as possible towards maintaining code quality, I r
 You are welcome to fix any tech debt that you see in SaaS dashboards:
 
 * [Code Climate](https://codeclimate.com/github/bbyars/mountebank)
-* [Codacy](https://www.codacy.com/app/brandonbyars/mountebank/dashboard)
-* [Test Coverage](https://codeclimate.com/github/bbyars/mountebank/coverage)
-* [SonarQube](https://sonarqube.com/dashboard?id=mountebank)
+* [Codacy](https://app.codacy.com/gh/bbyars/mountebank/dashboard)
+* [SonarQube](https://sonarcloud.io/dashboard?id=mountebank&branch=master)
 
 There are several linting tools run locally as well:
 
