@@ -30,7 +30,7 @@ sonar-scanner \
     -Dsonar.sources=src \
     -Dsonar.exclusions=src/public/scripts/jquery \
     -Dsonar.tests=test,mbTest \
-    -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
+    -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info \
     -Dsonar.host.url=https://sonarcloud.io \
     -Dsonar.organization=bbyars-github \
     -Dsonar.login=$SONARQUBE_LOGIN
