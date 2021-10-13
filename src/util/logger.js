@@ -31,6 +31,9 @@ function createWinstonFormat (format, config) {
     if (config.format === 'json') {
         formatters.push(format.json());
     }
+    else if (config.format === 'simple') {
+        formatters.push(format.simple());
+    }
     else {
         formatters.push(format.printf(logFormat(config.format)));
     }
@@ -42,7 +45,12 @@ function createLogger (options) {
         options.log = { level: 'info' };
     }
     if (!options.log.transports) {
-        options.log.transports = {};
+        options.log.transports = {
+            file: {
+                path: 'mb.log',
+                format: 'json'
+            }
+        };
     }
     const winston = require('winston'),
         winstonLogger = winston.createLogger({ level: options.log.level }),

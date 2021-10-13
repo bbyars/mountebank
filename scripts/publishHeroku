@@ -1,0 +1,22 @@
+#!/bin/bash
+
+set -e
+
+APP_NAME=$1
+
+if [[ $(command -v heroku) = "" ]]; then
+    echo "Installing heroku CLI"
+    curl https://cli-assets.heroku.com/install.sh | sh
+fi
+
+cd dist/mountebank
+
+# Add --heroku CLI flag to Docker image ($PORT is set by Heroku)
+mv Dockerfile Dockerfile.old
+cat Dockerfile.old | sed -E -e 's/CMD \["mb"\]/CMD mb --heroku --port $PORT/' > Dockerfile
+
+heroku container:login
+heroku container:push -a $APP_NAME web
+heroku container:release -a $APP_NAME web
+
+mv Dockerfile.old Dockerfile

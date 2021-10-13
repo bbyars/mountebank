@@ -7,11 +7,25 @@
  */
 
 /**
- * Creates the mountebank server
+ * Creates the mountebank express application
  * @param {object} options - The command line options
  * @returns {Object} An object with a close method to stop the server
  */
-async function create (options) {
+
+function applyDefaults (options) {
+    // Minimal defaults to start bypassing the CLI (e.g. embedding in an express app)
+    const defaults = {
+        port: 2525,
+        ipWhitelist: ['*']
+    };
+    Object.keys(defaults).forEach(key => {
+        options[key] = typeof options[key] === 'undefined' ? defaults[key] : options[key];
+    });
+}
+
+async function createApp (options) {
+    applyDefaults(options);
+
     const express = require('express'),
         cors = require('cors'),
         errorHandler = require('errorhandler'),
@@ -19,7 +33,6 @@ async function create (options) {
         middleware = require('./util/middleware'),
         thisPackage = require('../package.json'),
         releases = require('../releases.json'),
-        helpers = require('./util/helpers'),
         app = express(),
         hostname = options.host || 'localhost',
         baseURL = `http://${hostname}:${options.port}`,
@@ -39,6 +52,8 @@ async function create (options) {
         validateImposterExists = middleware.createImposterValidator(imposters),
         prometheus = require('prom-client');
 
+    // Clear only matters when bound using directly in-process through JS rather than the CLI
+    prometheus.register.clear();
     prometheus.collectDefaultMetrics({ prefix: 'mb_' });
 
     app.use(middleware.useAbsoluteUrls(options.port));
@@ -139,6 +154,23 @@ async function create (options) {
 
     await imposters.loadAll(protocols);
 
+    return app;
+}
+
+/**
+ * Start the mountebank server
+ * @param {function} app - mountebank express application
+ * @param {object} options - The command line options
+ * @returns {Object} An object with a close method to stop the server
+ */
+async function listen (app, options) {
+    const thisPackage = require('../package.json'),
+        helpers = require('./util/helpers'),
+        hostname = options.host || 'localhost',
+        baseURL = `http://${hostname}:${options.port}`,
+        logger = require('./util/logger').createLogger(options),
+        isAllowedConnection = require('./util/ip').createIPVerification(options);
+
     return new Promise(resolve => {
         const connections = {},
             server = app.listen(options.port, options.host, () => {
@@ -187,4 +219,14 @@ async function create (options) {
     });
 }
 
-module.exports = { create };
+/**
+ * Creates the mountebank server
+ * @param {object} options - The command line options
+ * @returns {Object} An object with a close method to stop the server
+ */
+async function create (options) {
+    const app = await createApp(options);
+    return listen(app, options);
+}
+
+module.exports = { create, createApp };

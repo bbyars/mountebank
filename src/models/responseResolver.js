@@ -227,10 +227,10 @@ function create (stubs, proxy, callbackURL) {
             match = await stubs.first(filter, index + 1);
 
         if (match.success) {
-            return await match.stub.addResponse(newResponse);
+            return match.stub.addResponse(newResponse);
         }
         else {
-            return await stubs.add({ predicates: newPredicates, responses: [newResponse] });
+            return stubs.add({ predicates: newPredicates, responses: [newResponse] });
         }
     }
 

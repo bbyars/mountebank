@@ -3,7 +3,7 @@ title = 'stubs'
 description = 'Creating canned responses using mountebank'
 %>
 
-<% include ../../_header %>
+<%- include('../../_header') -%>
 
 <h1>Stub Responses</h1>
 
@@ -90,6 +90,7 @@ Content-Type: application/json
 {
   "port": 4545,
   "protocol": "http",
+  "recordRequests": true,
   "stubs": [
     {
       "predicates": [
@@ -200,7 +201,7 @@ Connection: keep-alive
   "protocol": "http",
   "port": 4545,
   "numberOfRequests": 2,
-  "recordRequests": false,
+  "recordRequests": true,
   "requests": [
     {
       "requestFrom": "<volatile>::ffff:127.0.0.1:60523</volatile>",
@@ -383,4 +384,4 @@ Host: localhost:<%= port %></code>
 </testScenario>
 
 
-<% include ../../_footer %>
+<%- include('../../_footer') -%>

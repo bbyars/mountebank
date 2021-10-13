@@ -80,15 +80,15 @@ function create (config) {
         return createLogger(config.loglevel);
     }
 
-    async function getProxyResponse (proxyConfig, request, proxyCallbackURL) {
-        const response = await proxy.to(proxyConfig.to, request, proxyConfig);
+    async function getProxyResponse (proxyConfig, request, proxyCallbackURL, requestDetails) {
+        const response = await proxy.to(proxyConfig.to, request, proxyConfig, requestDetails);
         return postJSON({ proxyResponse: response }, proxyCallbackURL);
     }
 
     async function getResponse (request, requestDetails) {
         const mbResponse = await postJSON({ request, requestDetails }, callbackURL);
         if (mbResponse.proxy) {
-            return getProxyResponse(mbResponse.proxy, mbResponse.request, mbResponse.callbackURL);
+            return getProxyResponse(mbResponse.proxy, mbResponse.request, mbResponse.callbackURL, requestDetails);
         }
         else if (mbResponse.response) {
             return mbResponse.response;

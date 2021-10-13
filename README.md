@@ -19,6 +19,7 @@ At the moment, the following protocols are implemented, either directly in the t
 * ldap
 * grpc
 * websockets
+* graphql
 
 mountebank supports mock verification, stubbing with advanced predicates, JavaScript injection,
 and record-playback through proxying.
@@ -39,6 +40,9 @@ Run:
 
 There are a number of [command line options](https://www.mbtest.org/docs/commandLine) if you need
 to customize mountebank.
+
+All pre-release versions of mountebank are available with the `beta` [npm tag](https://www.npmjs.com/package/mountebank).
+No `beta` version is published unless it has passed all tests.
 
 ## Learn More
 
@@ -99,7 +103,3 @@ Some tips for contributing are in the [CONTRIBUTING.md](https://github.com/bbyar
 [codeclimate]: https://codeclimate.com/github/bbyars/mountebank
 [codeclimate-coverage-badge]: https://codeclimate.com/github/bbyars/mountebank/badges/coverage.svg
 [codeclimate-coverage]: https://codeclimate.com/github/bbyars/mountebank/coverage
-[travis-badge]: https://travis-ci.org/bbyars/mountebank.png
-[travis]: https://travis-ci.org/bbyars/mountebank
-[appveyor-badge]: https://ci.appveyor.com/api/projects/status/acfhg44px95s4pk5?svg=true
-[appveyor]: https://ci.appveyor.com/project/bbyars/mountebank

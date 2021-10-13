@@ -26,13 +26,13 @@ describe('--rcfile', function () {
 
     it('should still start if rcfile is not JSON', async function () {
         await mb.start(['--rcfile', 'mbrc.json']);
-        fs.writeFileSync('mbrc.json', 'mock: true');
+        fs.writeFileSync('mbrc.json', 'debug: true');
 
         try {
             const response = await mb.get('/config');
 
             assert.strictEqual(200, response.statusCode);
-            assert.strictEqual(false, response.body.options.mock);
+            assert.strictEqual(false, response.body.options.debug);
         }
         finally {
             fs.unlinkSync('mbrc.json');

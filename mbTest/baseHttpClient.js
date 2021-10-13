@@ -3,8 +3,7 @@
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 
 function create (protocol) {
-    const driver = require(protocol),
-        agent = new driver.Agent({ keepAlive: true });
+    const driver = require(protocol);
 
     function optionsFor (spec) {
         if (!spec.hostname) {
@@ -23,6 +22,10 @@ function create (protocol) {
     async function responseFor (spec) {
         const options = optionsFor(spec);
 
+        if (!spec.agent && !spec.createConnection) {
+            options.agent = new driver.Agent({ keepAlive: true });
+        }
+
         if (!options.port) {
             throw Error('silly rabbit, you forgot to pass the port again');
         }
@@ -30,8 +33,6 @@ function create (protocol) {
         if (spec.body && !options.headers['Content-Type']) {
             options.headers['Content-Type'] = 'application/json';
         }
-
-        options.agent = agent;
 
         return new Promise((resolve, reject) => {
             const request = driver.request(options, response => {
@@ -69,10 +70,10 @@ function create (protocol) {
         });
     }
 
-    function get (path, port) { return responseFor({ method: 'GET', path, port }); }
-    function post (path, body, port) { return responseFor({ method: 'POST', path, port, body }); }
-    function del (path, port) { return responseFor({ method: 'DELETE', path, port }); }
-    function put (path, body, port) { return responseFor({ method: 'PUT', path, port, body }); }
+    function get (path, port, headers) { return responseFor({ method: 'GET', path, port, headers }); }
+    function post (path, body, port, headers) { return responseFor({ method: 'POST', path, port, body, headers }); }
+    function del (path, port, headers) { return responseFor({ method: 'DELETE', path, port, headers }); }
+    function put (path, body, port, headers) { return responseFor({ method: 'PUT', path, port, body, headers }); }
 
     return { get, post, del, put, responseFor };
 }

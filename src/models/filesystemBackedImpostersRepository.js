@@ -207,7 +207,7 @@ function create (config, logger) {
 
         // with realpath = false, the file doesn't have to exist, but the directory does
         await ensureDir(filepath);
-        return await locker.lock(filepath, options);
+        return locker.lock(filepath, options);
     }
 
     async function readAndWriteFile (filepath, caller, transformer, defaultContents) {
@@ -237,7 +237,7 @@ function create (config, logger) {
             // Ignore lock already released errors
             if (err.code !== 'ERELEASED') {
                 metrics.lockErrors.inc({ caller, code: err.code });
-                locker.unlock(filepath, { realpath: false }).catch(() => {});
+                locker.unlock(filepath, { realpath: false }).catch(() => { /* ignore */ });
                 throw err;
             }
         }
@@ -307,7 +307,7 @@ function create (config, logger) {
                 .sort(timeSorter)
                 .map(file => readFile(`${path}/${file}`));
 
-        return await Promise.all(reads);
+        return Promise.all(reads);
     }
 
     function repeatsFor (response) {
@@ -640,7 +640,7 @@ function create (config, logger) {
             });
 
             const nonProxyStubs = allStubs.filter(stub => stub.responses.length > 0);
-            return await overwriteAll(nonProxyStubs);
+            return overwriteAll(nonProxyStubs);
         }
 
         /**
@@ -663,7 +663,7 @@ function create (config, logger) {
          * @returns {Object} - the promise resolving to the array of requests
          */
         async function loadRequests () {
-            return await loadAllInDir(`${baseDir}/requests`);
+            return loadAllInDir(`${baseDir}/requests`);
         }
 
         /**
@@ -778,7 +778,7 @@ function create (config, logger) {
      * @returns {Object} - all imposters keyed by port
      */
     async function all () {
-        return await Promise.all(Object.keys(imposterFns).map(get));
+        return Promise.all(Object.keys(imposterFns).map(get));
     }
 
     /**
@@ -819,6 +819,15 @@ function create (config, logger) {
 
         await Promise.all(cleanup);
         return imposter;
+    }
+
+    /**
+     * Deletes all imposters; used during testing
+     * @memberOf module:models/filesystemBackedImpostersRepository#
+     */
+    async function stopAll () {
+        const promises = Object.keys(imposterFns).map(shutdown);
+        await Promise.all(promises);
     }
 
     /**
@@ -893,6 +902,7 @@ function create (config, logger) {
         all,
         exists,
         del,
+        stopAll,
         stopAllSync,
         deleteAll,
         stubsFor,

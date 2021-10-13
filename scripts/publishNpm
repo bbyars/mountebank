@@ -1,0 +1,12 @@
+#!/bin/sh
+
+if [ ! -f ~/.npmrc ] && [ -n "$NPM_API_KEY" ]; then
+    echo //registry.npmjs.org/:_authToken=$NPM_API_KEY > ~/.npmrc
+fi
+
+TAG=beta
+if [ "$MB_RELEASE" = "true" ]; then
+    TAG=latest
+fi
+
+npm publish dist/mountebank --tag $TAG

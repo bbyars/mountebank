@@ -17,6 +17,9 @@ executors:
     environment:
       - MB_SLOW_TEST_TIMEOUT: 10000
 
+orbs:
+  win: circleci/windows@2.2.0
+
 jobs:
   pr:
     executor: node-active
@@ -24,10 +27,11 @@ jobs:
       - checkout
       - run:
           name: Install Dependencies
-          command: |
-            npm ci
-            cd mbTest && npm install
+          command: npm ci
       - run: npm test
+      - run:
+          name: Web tests
+          command: npm run test:web
       - store_test_results:
           path: testResults
 
@@ -39,25 +43,21 @@ jobs:
       - checkout
       - run:
           name: Install Dependencies
-          command: |
-            npm ci
-            cd mbTest && npm install
+          command: npm ci
       - run:
           name: Version
-          command: node tasks/tmp/version.js
-      - run: npm test
+          command: node tasks/version.js
       - run:
           name: Docs and Static Analysis
           command: |
+            npm run lint
             scripts/codeclimate
             cat ./coverage/lcov.info | node_modules/coveralls/bin/coveralls.js
             scripts/sonar
-            npm run jsdoc && node tasks/tmp/deploy/docs.js
+            npm run jsdoc && node tasks/deploy/docs.js
       - run:
           name: Dist
-          command: |
-            node tasks/tmp/dist.js
-            cd dist && npm pack mountebank
+          command: node tasks/dist.js
       - store_test_results:
           path: testResults
       - persist_to_workspace:
@@ -67,6 +67,51 @@ jobs:
             - tasks
             - scripts
             - Procfile
+
+  windows:
+    executor: win/default
+    environment:
+      - MB_SLOW_TEST_TIMEOUT: 10000
+    steps:
+      - checkout
+      - run:
+          name: Install Dependencies
+          command: npm ci
+      - run:
+          name: Test
+          command: |
+            npm run test:cover
+            npm run test:api
+            npm run test:cli
+      - store_test_results:
+          path: testResults
+
+  mac:
+    macos:
+      xcode: 11.3.0
+    steps:
+      - checkout
+      - run:
+          name: install node
+          command: |
+            set +e
+            touch $BASH_ENV
+            curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.33.5/install.sh | bash
+            echo 'export NVM_DIR="$HOME/.nvm"' >> $BASH_ENV
+            echo '[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"' >> $BASH_ENV
+            echo nvm install 14 >> $BASH_ENV
+            echo nvm alias default 14 >> $BASH_ENV
+      - run:
+          name: Install Dependencies
+          command: npm ci
+      - run:
+          name: Test
+          command: |
+            npm run test:cover
+            npm run test:api
+            npm run test:cli
+      - store_test_results:
+          path: testResults
 
   maintenanceOutOfProcessImposters:
     executor: node-maintenance
@@ -79,14 +124,14 @@ jobs:
           at: .
       - run:
           name: Prepare to run out of process protocol implementations
-          command: node tasks/tmp/createProtocolsFile.js outOfProcess.json
+          command: node tasks/createProtocolsFile.js outOfProcess.json
       - run:
           name: Test
           command: |
-            node tasks/tmp/mb.js start --allowInjection --mock --localOnly --protofile outOfProcess.json
+            node tasks/mb.js start --allowInjection ---localOnly --protofile outOfProcess.json
             (cd dist/test && npm test)
       - store_test_results:
-          path: testResults
+          path: dist/test/testResults
 
   currentWithFileDB:
     executor: node-current
@@ -99,10 +144,10 @@ jobs:
       - run:
           name: Test
           command: |
-            node tasks/tmp/mb.js start --allowInjection --mock --localOnly --datadir .mbdb
+            node tasks/mb.js start --allowInjection --localOnly --datadir .mbdb
             (cd dist/test && npm test)
       - store_test_results:
-          path: testResults
+          path: dist/test/testResults
 
   performance:
     executor: node-active
@@ -114,9 +159,9 @@ jobs:
           at: .
       - run:
           name: Test
-          command: (cd dist/test && npm run perf)
+          command: cd dist/test && npm run perf
       - store_test_results:
-          path: testResults
+          path: dist/test/testResults
 
   web:
     executor: node-active
@@ -129,81 +174,119 @@ jobs:
       - run:
           name: Test
           command: |
-            node tasks/tmp/mb.js start --allowInjection --mock --localOnly
+            node tasks/mb.js start --allowInjection --localOnly
             (cd dist/test && npm run web)
       - store_test_results:
-          path: testResults
+          path: dist/test/testResults
 
-#
-#  deploy:
-#    docker:
-#      - image: circleci/ruby:2.4.4-stretch
-#    steps:
-#      - setup_remote_docker
-#      - attach_workspace:
-#          at: .
-#      - run:
-#          name: Update Node.js and npm
-#          command: |
-#            curl -sSL "https://nodejs.org/dist/v12.9.1/node-v12.9.1-linux-x64.tar.xz" | sudo tar --strip-components=2 -xJ -C /usr/local/bin/ node-v12.9.1-linux-x64/bin/node
-#            curl https://www.npmjs.com/install.sh | sudo bash
-#      - run:
-#          name: Check current version of node
-#          command: node -v
-#      - run: ls -al dist
-#        # $BASH_ENV workaround due to env var isolation: https://discuss.circleci.com/t/exporting-environment-variables-from-sourced-scripts/4564/4
-#      - run: if [ -n "`grep publish=true build.properties`" ]; then echo export MB_PUBLISH=true >> "$BASH_ENV"; else echo export MB_PUBLISH=false >> "$BASH_ENV"; fi
-#      - run: echo "MB_PUBLISH=$MB_PUBLISH"
-#      # fpm install started failing even after bundle update
-#      - run: gem install fpm
-#      - run: bundle install --without development
-#      - run: ln -s dist/mountebank/src src
-#      - run: ln -s dist/mountebank/package.json package.json
-#      - run: node_modules/grunt-cli/bin/grunt deploy:s3 deploy:heroku deploy:npm deploy:docker
+  deploy:
+    executor: node-active
+    steps:
+      - setup_remote_docker:
+          version: 20.10.7
+      - attach_workspace:
+          at: .
+      - run:
+          name: Publish npm
+          command: scripts/publishNpm
+      - run:
+          name: Publish Docker
+          command: |
+            export MB_VERSION=`scripts/printVersion`
+            scripts/publishDocker $MB_VERSION
+      - run:
+          name: Deploy to Heroku
+          command: scripts/publishHeroku mountebank-dev
+
+  # The release pipeline doesn't re-run tests as there should be no code commit, only a git tag to trigger release
+  # It also doesn't change the version in the package.json or add a beta tag to npm
+  release:
+    executor: node-active
+    environment:
+      - MB_RELEASE: true
+    steps:
+      - setup_remote_docker:
+          version: 20.10.7
+      - checkout
+      - run:
+          name: Install Dependencies
+          command: npm ci
+      - run:
+          name: Dist
+          command: node tasks/dist.js
+      - run:
+          name: Publish npm
+          command: scripts/publishNpm
+      - run:
+          name: Publish Docker
+          command: |
+            export MB_VERSION=`scripts/printVersion`
+            scripts/publishDocker $MB_VERSION
+      - run:
+          name: Deploy to Heroku
+          command: scripts/publishHeroku mountebank
 
 workflows:
   version: 2
-  pipeline:
+  pr:
     jobs:
       - pr:
           filters:
             branches:
               ignore: master
+  pipeline:
+    jobs:
       - build:
           filters:
             branches:
               only: master
-            tags:
-              only: /^v.*/
+      - windows:
+          filters:
+            branches:
+              only: master
+      - mac:
+          filters:
+            branches:
+              only: master
       - maintenanceOutOfProcessImposters:
           requires:
             - build
           filters:
             branches:
               only: master
-            tags:
-              only: /^v.*/
       - currentWithFileDB:
           requires:
             - build
           filters:
             branches:
               only: master
-            tags:
-              only: /^v.*/
       - performance:
           requires:
             - build
           filters:
             branches:
               only: master
-            tags:
-              only: /^v.*/
       - web:
           requires:
             - build
           filters:
             branches:
               only: master
+      - deploy:
+          requires:
+            - maintenanceOutOfProcessImposters
+            - currentWithFileDB
+            - performance
+            - web
+          filters:
+            branches:
+              only: master
+  release:
+      jobs:
+      - release:
+          filters:
+            branches:
+              ignore: /.*/
             tags:
               only: /^v.*/
+

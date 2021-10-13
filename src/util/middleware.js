@@ -182,6 +182,13 @@ function defaultIEtoHTML (request, response, next) {
  */
 function json (log) {
     return function (request, response, next) {
+        const helpers = require('./helpers');
+        // Disable body parsing, if already parsed
+        if (request.headers['content-type'] === 'application/json' && helpers.isObject(request.body)) {
+            next();
+            return;
+        }
+
         request.body = '';
         request.setEncoding('utf8');
         request.on('data', chunk => {
