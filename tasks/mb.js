@@ -110,11 +110,11 @@ async function execCommand (command, args) {
 }
 
 async function save (args) {
-    return await execCommand('save', args);
+    return execCommand('save', args);
 }
 
 async function replay (args) {
-    return await execCommand('replay', args);
+    return execCommand('replay', args);
 }
 
 async function execute (command, args) {

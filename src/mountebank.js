@@ -226,7 +226,7 @@ async function listen (app, options) {
  */
 async function create (options) {
     const app = await createApp(options);
-    return await listen(app, options);
+    return listen(app, options);
 }
 
 module.exports = { create, createApp };
