@@ -41,15 +41,7 @@ function shellCommand (args) {
 
     if (isWindows) {
         args.unshift(mbPath);
-
-        if (mbPath.indexOf('.cmd') >= 0) {
-            // Accommodate the self-contained Windows zip files that ship with mountebank
-            args.unshift('/c');
-            command = 'cmd';
-        }
-        else {
-            command = 'node';
-        }
+        command = 'node';
     }
 
     return command;
@@ -82,7 +74,7 @@ async function start (args) {
 async function stop () {
     let command = `${mbPath} stop --pidfile ${pidfile}`;
 
-    if (isWindows && mbPath.indexOf('.cmd') < 0) {
+    if (isWindows) {
         command = `node ${command}`;
     }
 
@@ -118,11 +110,11 @@ async function execCommand (command, args) {
 }
 
 async function save (args) {
-    return await execCommand('save', args);
+    return execCommand('save', args);
 }
 
 async function replay (args) {
-    return await execCommand('replay', args);
+    return execCommand('replay', args);
 }
 
 async function execute (command, args) {

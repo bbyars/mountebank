@@ -7,7 +7,6 @@ function create () {
     const logger = { calls: {} };
     logger.toString = function () { return JSON.stringify(logger.calls, null, 4); };
 
-
     ['debug', 'info', 'warn', 'error'].forEach(function (level) {
         logger.calls[level] = [];
         logger[level] = function () {

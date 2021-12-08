@@ -3,7 +3,7 @@
 const isPersistent = process.env.MB_PERSISTENT === 'true',
     docs = require('./docsTester/docs'),
     isWindows = require('os').platform().indexOf('win') === 0,
-    timeout = parseInt(process.env.MB_SLOW_TEST_TIMEOUT || 4000),
+    timeout = parseInt(process.env.MB_SLOW_TEST_TIMEOUT || 6000),
     fs = require('fs-extra');
 
 function isInProcessImposter (protocol) {
@@ -24,44 +24,40 @@ async function validateDocs (page) {
     });
 }
 
-// Hack because the tests kept failing on Appveyor
-if (!isWindows) {
-    /* eslint-disable mocha/no-setup-in-describe */
-    describe('docs', function () {
-        this.timeout(timeout);
+describe('docs', function () {
+    this.timeout(timeout);
 
+    [
+        '/docs/api/mocks',
+        '/docs/api/proxies',
+        '/docs/api/injection',
+        '/docs/api/xpath',
+        '/docs/api/json',
+        '/docs/protocols/https',
+        '/docs/protocols/http',
+        '/docs/api/jsonpath'
+    ].forEach(page => {
+        validateDocs(page);
+    });
+
+    // The logs change for out of process imposters
+    if (isInProcessImposter('tcp')) {
+        validateDocs('/docs/api/overview');
+    }
+
+    // For tcp out of process imposters or using the --datadir option, I can't get the netcat tests working,
+    // even with a -q1 replacement. The nc client ends the socket connection
+    // before the server has a chance to respond.
+    if (isInProcessImposter('tcp') && !isWindows && !isPersistent) {
         [
-            '/docs/api/mocks',
-            '/docs/api/proxies',
-            '/docs/api/injection',
-            '/docs/api/xpath',
-            '/docs/api/json',
-            '/docs/protocols/https',
-            '/docs/protocols/http',
-            '/docs/api/jsonpath'
+            '/docs/gettingStarted',
+            '/docs/api/predicates',
+            '/docs/api/behaviors',
+            '/docs/api/stubs',
+            '/docs/protocols/tcp'
         ].forEach(page => {
             validateDocs(page);
         });
-
-        // The logs change for out of process imposters
-        if (isInProcessImposter('tcp')) {
-            validateDocs('/docs/api/overview');
-        }
-
-        // For tcp out of process imposters or using the --datadir option, I can't get the netcat tests working,
-        // even with a -q1 replacement. The nc client ends the socket connection
-        // before the server has a chance to respond.
-        if (isInProcessImposter('tcp') && !isWindows && !isPersistent) {
-            [
-                '/docs/gettingStarted',
-                '/docs/api/predicates',
-                '/docs/api/behaviors',
-                '/docs/api/stubs',
-                '/docs/protocols/tcp'
-            ].forEach(page => {
-                validateDocs(page);
-            });
-        }
-    });
-}
+    }
+});
 

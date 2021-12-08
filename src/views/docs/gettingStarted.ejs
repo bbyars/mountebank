@@ -3,7 +3,7 @@ title = 'getting started'
 description = 'A getting started guide for using mountebank'
 %>
 
-<% include ../_header %>
+<%- include('../_header') -%>
 
 <h1>Getting Started</h1>
 
@@ -11,14 +11,21 @@ description = 'A getting started guide for using mountebank'
 
 <pre><code>npm install -g mountebank</code></pre>
 
-<p>The option above requires <a href='http://nodejs.org/api/'>node.js</a> to already be
-installed, but mountebank does not believe in making you fiddle with a tech stack just to get
-up and running.  Completely self-contained installation options are available on the
-<a href="/docs/install">install</a> page.
-
 <p><b>Run:</b></p>
 
 <pre><code>mb</code></pre>
+
+<p><b>Alternative install methods:</b></p>
+
+<p>You can avoid a global install with <code>npm install mountebank</code>, in which
+case you can run mountebank using the <code>npx mb</code> command.</p>
+
+<p>Alternatively, you can download the Docker image and run:</p>
+
+<pre><code>docker pull bbyars/mountebank:<%= version %>
+docker run --rm -p 2525:2525 -p 8080:8080 bbyars/mountebank:<%= version %> mb start --configfile imposters.ejs</code></pre>
+
+<p><b>Use:</b></p>
 
 <p>By default, mountebank listens on port 2525, but that's not the port that your
 imposters (test doubles) will listen on.  To show a couple different kinds of
@@ -136,4 +143,4 @@ curl -X DELETE http://localhost:<change to='<%= port %>'>2525</change>/imposters
 
 <p>Explore more in the links on the left.  Don't hesitate to <a href='/support'>ask</a> for help!</p>
 
-<% include ../_footer %>
+<%- include('../_footer') -%>

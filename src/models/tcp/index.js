@@ -6,7 +6,7 @@ const config = JSON.parse(process.argv[2]),
 
 tcpServer.create(config, mbConnection.logger(), mbConnection.getResponse).then(server => {
     mbConnection.setPort(server.port);
-    mbConnection.setProxy(require('./tcpProxy').create(mbConnection.logger(), server.encoding));
+    mbConnection.setProxy(require('./tcpProxy').create(mbConnection.logger(), server.encoding, server.isEndOfRequest));
 
     const metadata = server.metadata;
     metadata.port = server.port;

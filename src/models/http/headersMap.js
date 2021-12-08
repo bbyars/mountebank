@@ -34,7 +34,7 @@ function of (headers) {
      * @returns {*}
      */
     function get (headerName) {
-        return headers[headerNameFor(headerName, headers)];
+        return headers[headerNameFor(headerName)];
     }
 
     /**
@@ -44,7 +44,7 @@ function of (headers) {
      * @param {String} value - the value
      */
     function set (headerName, value) {
-        headers[headerNameFor(headerName, headers)] = value;
+        headers[headerNameFor(headerName)] = value;
     }
 
     /**

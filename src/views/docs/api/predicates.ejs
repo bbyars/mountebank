@@ -3,7 +3,7 @@ title = 'predicates'
 description = 'The predicates supported by mountebank'
 %>
 
-<% include ../../_header %>
+<%- include('../../_header') -%>
 
 <h1>Predicates</h1>
 
@@ -284,7 +284,7 @@ to binary before sending to the socket.</p>
       equals
     </a>
     <section>
-      <% include predicates/equals %>
+      <%- include('predicates/equals') -%>
     </section>
   </div>
   <div>
@@ -293,7 +293,7 @@ to binary before sending to the socket.</p>
       deepEquals
     </a>
     <section>
-      <% include predicates/deepEquals %>
+      <%- include('predicates/deepEquals') -%>
     </section>
   </div>
   <div>
@@ -302,7 +302,7 @@ to binary before sending to the socket.</p>
       contains
     </a>
     <section>
-      <% include predicates/contains %>
+      <%- include('predicates/contains') -%>
     </section>
   </div>
   <div>
@@ -311,7 +311,7 @@ to binary before sending to the socket.</p>
       startsWith
     </a>
     <section>
-      <% include predicates/startsWith %>
+      <%- include('predicates/startsWith') -%>
     </section>
   </div>
   <div>
@@ -320,7 +320,7 @@ to binary before sending to the socket.</p>
       endsWith
     </a>
     <section>
-      <% include predicates/endsWith %>
+      <%- include('predicates/endsWith') -%>
     </section>
   </div>
   <div>
@@ -329,7 +329,7 @@ to binary before sending to the socket.</p>
       matches
     </a>
     <section>
-      <% include predicates/matches %>
+      <%- include('predicates/matches') -%>
     </section>
   </div>
   <div>
@@ -338,7 +338,7 @@ to binary before sending to the socket.</p>
       exists
     </a>
     <section>
-      <% include predicates/exists %>
+      <%- include('predicates/exists') -%>
     </section>
   </div>
   <div>
@@ -347,7 +347,7 @@ to binary before sending to the socket.</p>
       not
     </a>
     <section>
-      <% include predicates/not %>
+      <%- include('predicates/not') -%>
     </section>
   </div>
   <div>
@@ -356,7 +356,7 @@ to binary before sending to the socket.</p>
       or
     </a>
     <section>
-      <% include predicates/or %>
+      <%- include('predicates/or') -%>
     </section>
   </div>
   <div>
@@ -365,7 +365,7 @@ to binary before sending to the socket.</p>
       and
     </a>
     <section>
-      <% include predicates/and %>
+      <%- include('predicates/and') -%>
     </section>
   </div>
   <div>
@@ -374,9 +374,9 @@ to binary before sending to the socket.</p>
       inject
     </a>
     <section>
-      <% include predicates/inject %>
+      <%- include('predicates/inject') -%>
     </section>
   </div>
 </section>
 
-<% include ../../_footer %>
+<%- include('../../_footer') -%>

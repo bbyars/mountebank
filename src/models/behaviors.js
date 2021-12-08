@@ -492,12 +492,11 @@ async function lookup (originalRequest, response, lookupConfig, logger) {
     try {
         const row = await lookupRow(lookupConfig, originalRequest, logger);
         replaceObjectValuesIn(response, lookupConfig.into, row, logger);
-        return response;
     }
     catch (error) {
         logger.error(error);
-        return response;
     }
+    return response;
 }
 
 /**

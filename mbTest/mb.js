@@ -47,15 +47,7 @@ function create (port, includeStdout) {
 
         if (isWindows) {
             args.unshift(mbPath);
-
-            if (mbPath.indexOf('.cmd') >= 0) {
-                // Accommodate the self-contained Windows zip files that ship with mountebank
-                args.unshift('/c');
-                command = 'cmd';
-            }
-            else {
-                command = 'node';
-            }
+            command = 'node';
         }
 
         result = spawn(command, args);
@@ -136,11 +128,11 @@ function create (port, includeStdout) {
     }
 
     async function save (args) {
-        return await execCommand('save', args);
+        return execCommand('save', args);
     }
 
     async function replay (args) {
-        return await execCommand('replay', args);
+        return execCommand('replay', args);
     }
 
     function get (endpoint) {

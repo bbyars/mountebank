@@ -100,7 +100,7 @@ const assert = require('assert'),
 
         describe('GET /imposters/:id', function () {
             it('should provide access to all requests', async function () {
-                const imposterRequest = { protocol, port };
+                const imposterRequest = { protocol, port, recordRequests: true };
                 await api.createImposter(imposterRequest);
 
                 await client.get('/first', port);
@@ -112,7 +112,7 @@ const assert = require('assert'),
             });
 
             it('should save headers in case-sensitive way', async function () {
-                const imposterRequest = { protocol, port };
+                const imposterRequest = { protocol, port, recordRequests: true };
                 await api.createImposter(imposterRequest);
 
                 await client.responseFor({

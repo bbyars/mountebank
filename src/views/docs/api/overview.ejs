@@ -3,7 +3,7 @@ title = 'API overview'
 description = "An overview of mountebank's RESTful API"
 %>
 
-<% include ../../_header %>
+<%- include('../../_header') -%>
 
 <h1>API Overview</h1>
 
@@ -866,7 +866,6 @@ Connection: keep-alive
     "port": <%= port %>,
     "pidfile": "mb.pid",
     "allowInjection": true,
-    "mock": true,
     "localOnly": true, <% if (process.env.MB_PERSISTENT === 'true') { %>
     "datadir": ".mbdb", <% } %>
     "noParse": false,
@@ -965,4 +964,4 @@ Connection: keep-alive
 <p>In the rare scenario where mountebank is hosted on a different server and you need access to the logs,
 they are accessible through this endpoint.</p>
 
-<% include ../../_footer %>
+<%- include('../../_footer') -%>

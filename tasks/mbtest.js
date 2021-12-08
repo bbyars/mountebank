@@ -15,7 +15,7 @@ function exec (command, args) {
 
 function mochaParamsFor (testType) {
     return [
-        'node_modules/.bin/mocha',
+        'node_modules/mocha/bin/mocha',
         '--forbid-only',
         '--forbid-pending',
         '--reporter',
@@ -27,16 +27,16 @@ function mochaParamsFor (testType) {
 }
 
 async function runTests () {
-    const mbExitCode = await exec('node', ['tasks/tmp/mb.js', 'restart', '--allowInjection', '--mock', '--localOnly']);
+    const mbExitCode = await exec('node', ['tasks/mb.js', 'restart', '--allowInjection', '--localOnly']);
     if (mbExitCode !== 0) {
         console.error('mb failed to start');
         process.exit(mbExitCode); // eslint-disable-line no-process-exit
     }
 
-    const apiExitCode = await exec('node', mochaParamsFor('api'));
-    await exec('node', ['tasks/tmp/mb.js', 'stop']);
-    const cliExitCode = await exec('node', mochaParamsFor('cli'));
-    return apiExitCode + cliExitCode;
+    const testType = process.argv[2];
+    const exitCode = await exec('node', mochaParamsFor(testType));
+    await exec('node', ['tasks/mb.js', 'stop']);
+    return exitCode;
 }
 
 runTests().then(code => process.exit(code)); // eslint-disable-line no-process-exit

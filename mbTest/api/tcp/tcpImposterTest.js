@@ -26,7 +26,7 @@ describe('tcp imposter', function () {
 
     describe('GET /imposters/:id', function () {
         it('should provide access to all requests', async function () {
-            const request = { protocol: 'tcp', port };
+            const request = { protocol: 'tcp', port, recordRequests: true };
             await api.createImposter(request);
 
             await tcp.fireAndForget('first', port);
@@ -79,6 +79,21 @@ describe('tcp imposter', function () {
                     stubs: { href: `${api.url}/imposters/${port}/stubs` }
                 }
             });
+        });
+
+        it('should return the provided end of request resolver', async function () {
+            const basicResolver = config => { return config.request.Length >= 100; },
+                request = {
+                    protocol: 'tcp',
+                    port,
+                    endOfRequestResolver: { inject: basicResolver.toString() }
+                };
+
+            await api.createImposter(request);
+            const response = await api.get(`/imposters/${port}`),
+                imposter = response.body;
+
+            assert.strictEqual(imposter.endOfRequestResolver.inject, basicResolver.toString());
         });
     });
 });

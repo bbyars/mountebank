@@ -37,14 +37,14 @@ function load (builtInProtocols, customProtocols, options, isAllowedConnection, 
 
     function outOfProcessCreate (protocolName, config) {
         function customFieldsFor (creationRequest) {
-            const result = {},
+            const fields = {},
                 commonFields = ['protocol', 'port', 'name', 'recordRequests', 'stubs', 'defaultResponse'];
             Object.keys(creationRequest).forEach(key => {
                 if (commonFields.indexOf(key) < 0) {
-                    result[key] = creationRequest[key];
+                    fields[key] = creationRequest[key];
                 }
             });
-            return result;
+            return fields;
         }
 
         return (creationRequest, logger) => new Promise((res, rej) => {

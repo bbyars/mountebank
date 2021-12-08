@@ -251,6 +251,9 @@ function merge (defaults, overrides) {
                 const third = await client.get('/differentStub', port);
                 assert.strictEqual(third.statusCode, 404);
                 assert.strictEqual(third.body, 'Not found');
+
+                const imposter = await api.get(`/imposters/${port}`);
+                assert.deepEqual(imposter.body.defaultResponse, defaultResponse);
             });
 
             it('should support keepalive connections', async function () {

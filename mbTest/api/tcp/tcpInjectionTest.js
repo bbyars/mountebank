@@ -183,7 +183,8 @@ describe('tcp imposter', function () {
                     port,
                     stubs: [stub],
                     mode: 'binary',
-                    endOfRequestResolver: { inject: resolver.toString() }
+                    endOfRequestResolver: { inject: resolver.toString() },
+                    recordRequests: true
                 };
             await api.createImposter(request);
 
@@ -210,7 +211,8 @@ describe('tcp imposter', function () {
                     port,
                     stubs: [stub],
                     mode: 'text',
-                    endOfRequestResolver: { inject: resolver.toString() }
+                    endOfRequestResolver: { inject: resolver.toString() },
+                    recordRequests: true
                 };
             await api.createImposter(request);
 

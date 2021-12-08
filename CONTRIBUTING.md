@@ -67,7 +67,7 @@ Many development decisions implicitly frame a tradeoff between the developers of
 recognize such a tradeoff, I always favor the users.  Here are a few examples, maybe you can think of more, or inform
 me of ways to overcome these tradeoffs in a mutually agreeable manner:
 
-* The build and CI infrastructure is quite complex and slow, but I'd prefer that over releasing flaky software
+* The build and CI infrastructure is slower than I'd like, but I'd prefer that over releasing flaky software
 * I aim for fairly comprehensive error handling with useful error messages to help users out
 * Windows support can be painful at times, but it is a core platform for mountebank
 
@@ -92,15 +92,14 @@ in the pull request comments
 The following steps will set up your development environment:
 
 * `npm install`
-* `npm install -g grunt-cli`
-* `grunt airplane`
+* `npm test`
 
-Note that running `./build` (Linux/Mac) or `build` (Windows) will run everything for you even without
-an `npm install`, and is what CI uses. The `grunt airplane` command is what I use before committing.
-You can also run `grunt`, which more accurately models what happens in CI, but there are some tests
+The `npm test` command is what I use before committing.
+There are some tests
 that may pass or fail depending on your ISP. These tests that require network connectivity and verify
 the correct behavior under DNS failures. If your ISP is kind enough to hijack the NXDOMAIN DNS response
 in an attempt to allow you to conveniently peruse their advertising page, those tests will fail.
+Setting MB_AIRPLANE_MODE=true will ignore those tests.
 
 When you're ready to commit, do the following
 
@@ -119,9 +118,6 @@ Instead prefer modules that return object literals.  If you need a creation func
 `create`, although I've certainly abused that with layers and layers of creations in places that I'm none
 too proud about.
 
-The code was written using ES4 and left that way for a long time to support node v4 and earlier.
-Now that node v4 is no longer supported, prefer using ES2015 features.
-
 ### Requiring Packages
 
 In the early days, the `mb` process started up quite quickly. Years later, that was no longer true,
@@ -139,9 +135,8 @@ In the spirit of being as lazy as possible towards maintaining code quality, I r
 You are welcome to fix any tech debt that you see in SaaS dashboards:
 
 * [Code Climate](https://codeclimate.com/github/bbyars/mountebank)
-* [Codacy](https://www.codacy.com/app/brandonbyars/mountebank/dashboard)
-* [Test Coverage](https://codeclimate.com/github/bbyars/mountebank/coverage)
-* [SonarQube](https://sonarqube.com/dashboard?id=mountebank)
+* [Codacy](https://app.codacy.com/gh/bbyars/mountebank/dashboard)
+* [SonarQube](https://sonarcloud.io/dashboard?id=mountebank&branch=master)
 
 There are several linting tools run locally as well:
 
@@ -281,9 +276,6 @@ this section, but if you're like me, you may find the tips below helpful:
 
 * mocha decorates test functions with an `only` function, that allows you to isolate test runs
   to a single context or a single function.  This works on both `describe` blocks and on `it` functions.
-  You'll notice that I use a `promiseIt` function for my asynchronous tests, which just wraps the `it`
-  function with promise resolution and error handling.  `promiseIt` also accepts an `only` function, so you
-  can do `promiseIt.only('test description', () => {/*...*/});`
 * Debugging asynchronous code is hard.  I'm not too proud to use `console.log`, and neither should you be.
 * The functional tests require a running instance of `mb`.  If you're struggling with a particular test,
   and you've isolated it using the `only` function, you may want to run `mb` with the `--loglevel debug`
@@ -313,13 +305,10 @@ I use [nvm](https://github.com/creationix/nvm) to install different versions of 
 
 ### The Continuous Integration Pipeline
 
-The pipeline is orchestrated in CircleCI, although it uses TravisCI and Appveyor for OSX and Windows tests.
-I've had bugs in different operating systems,
-in different versions of node, and in the packages available for download.  The CI system tests as many of those combinations
-as I reasonably can.
+The pipeline is orchestrated in [CircleCI](https://app.circleci.com/pipelines/github/bbyars/mountebank)
 
-Every successful build that isn't a pull request deploys to a [test site](http://mountebank-dev.herokuapp.com/) that will
-have a link to the artifacts for that prerelease version.
+Every successful build that isn't a pull request deploys to a [test site](http://mountebank-dev.herokuapp.com/)
+and a beta version of the npm and Docker image.
 
 ## Releasing mountebank
 

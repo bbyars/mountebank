@@ -3,6 +3,8 @@ node_modules/
 .DS_Store
 mb*.log
 *.pid
+*.swp
+*.swo
 /dist/
 !scripts/dist/
 mountebank.iml

@@ -1,69 +1,63 @@
 version: 2.1
 
 executors:
-  node-latest:
+  node-maintenance:
+    docker:
+      - image: circleci/node:12-stretch
+    environment:
+      - MB_SLOW_TEST_TIMEOUT: 10000
+  node-active:
     docker:
       - image: circleci/node:14-stretch
     environment:
-      - MB_SLOW_TEST_TIMEOUT: 7000
-  node-oldest:
+      - MB_SLOW_TEST_TIMEOUT: 10000
+  node-current:
     docker:
-      - image: circleci/node:10-stretch
+      - image: circleci/node:16-stretch
     environment:
-      - MB_SLOW_TEST_TIMEOUT: 7000
-  debian-ruby:
-    docker:
-      - image: circleci/ruby:2.4.4-stretch
-    environment:
-      - NODE_VERSION=v14.16.0
-  mac:
-    macos:
-      xcode: 12.4.0
-    environment:
-      - NODE_VERSION=v14.16.0
+      - MB_SLOW_TEST_TIMEOUT: 10000
+
+orbs:
+  win: circleci/windows@2.2.0
 
 jobs:
   pr:
-    docker:
-      - image: node-latest
+    executor: node-active
     steps:
       - checkout
       - run:
           name: Install Dependencies
-          command: |
-            npm ci
-            cd mbTest && npm install
+          command: npm ci
       - run: npm test
+      - run:
+          name: Web tests
+          command: npm run test:web
       - store_test_results:
           path: testResults
 
   build:
-    executor: node-latest
+    executor: node-active
     environment:
       - CC_TEST_REPORTER_ID=8bc3a050a2f8ef1cc460e5f4c72d18a689c8ae0981bf494031eb4eb28bbd0b0b
     steps:
       - checkout
       - run:
           name: Install Dependencies
-          command: |
-            npm ci
-            cd mbTest && npm install
+          command: npm ci
       - run:
           name: Version
-          command: node tasks/tmp/version.js
-      - run: npm test
+          command: node tasks/version.js
       - run:
           name: Docs and Static Analysis
           command: |
+            npm run lint
             scripts/codeclimate
             cat ./coverage/lcov.info | node_modules/coveralls/bin/coveralls.js
             scripts/sonar
-            npm run jsdoc && node tasks/tmp/deploy/docs.js
+            npm run jsdoc && node tasks/deploy/docs.js
       - run:
           name: Dist
-          command: |
-            node tasks/tmp/dist.js
-            cd dist && npm pack mountebank
+          command: node tasks/dist.js
       - store_test_results:
           path: testResults
       - persist_to_workspace:
@@ -74,383 +68,225 @@ jobs:
             - scripts
             - Procfile
 
-  package:
-    executor: debian-ruby
+  windows:
+    executor: win/default
+    environment:
+      - MB_SLOW_TEST_TIMEOUT: 10000
     steps:
-      - attach_workspace:
-          at: .
+      - checkout
       - run:
           name: Install Dependencies
-          command: |
-            sudo apt-get update
-            sudo apt-get install rpm
-            sudo apt-get install python-dateutil
-            gem install fpm
+          command: npm ci
       - run:
-          name: Create Packages
+          name: Test
           command: |
-            scripts/dist/createSelfContainedTarball darwin x64 $NODE_VERSION
-            scripts/dist/createSelfContainedTarball linux x64 $NODE_VERSION
-            scripts/dist/createWindowsZip x86 $NODE_VERSION
-            scripts/dist/createWindowsZip x64 $NODE_VERSION
-            scripts/dist/createPackage linux deb $NODE_VERSION
-            scripts/dist/createPackage linux rpm $NODE_VERSION
-      - run:
-         name: Deploy to S3
-         command: scripts/deploy/deployS3 dist/*.tar.gz dist/*.tgz dist/*.zip dist/*.deb dist/*.rpm
+            npm run test:cover
+            npm run test:api
+            npm run test:cli
+      - store_test_results:
+          path: testResults
 
-  package-osx:
-    executor: mac
+  mac:
+    macos:
+      xcode: 11.3.0
     steps:
-      - attach_workspace:
-          at: .
+      - checkout
+      - run:
+          name: install node
+          command: |
+            set +e
+            touch $BASH_ENV
+            curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.33.5/install.sh | bash
+            echo 'export NVM_DIR="$HOME/.nvm"' >> $BASH_ENV
+            echo '[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"' >> $BASH_ENV
+            echo nvm install 14 >> $BASH_ENV
+            echo nvm alias default 14 >> $BASH_ENV
       - run:
           name: Install Dependencies
+          command: npm ci
+      - run:
+          name: Test
           command: |
-            gem install fpm
-            brew install wget
-      - run:
-          name: Create Packages
-          command: scripts/dist/createPackage darwin osxpkg $NODE_VERSION
-      - run:
-         name: Deploy to S3
-         command: scripts/deploy/deployS3 dist/*.pkg
+            npm run test:cover
+            npm run test:api
+            npm run test:cli
+      - store_test_results:
+          path: testResults
 
-  nodev10:
-    executor: node-oldest
+  maintenanceOutOfProcessImposters:
+    executor: node-maintenance
     environment:
       - MB_PORT: 3535
       - MB_PERSISTENT: true
-      - MB_EXECUTABLE: dist/mountebank/bin/mb
+      - MB_EXECUTABLE: /home/circleci/project/dist/mountebank/bin/mb
     steps:
       - attach_workspace:
           at: .
       - run:
           name: Prepare to run out of process protocol implementations
-          command: node tasks/tmp/createProtocolsFile.js outOfProcess.json
+          command: node tasks/createProtocolsFile.js outOfProcess.json
       - run:
           name: Test
           command: |
-            node tasks/tmp/mb.js start --allowInjection --mock --localOnly --protofile outOfProcess.json
+            node tasks/mb.js start --allowInjection ---localOnly --protofile outOfProcess.json
             (cd dist/test && npm test)
       - store_test_results:
-          path: testResults
+          path: dist/test/testResults
 
-#  dbAndWeb:
-#    docker:
-#      - image: circleci/node:12-stretch
-#    environment:
-#      - MB_SLOW_TEST_TIMEOUT: 7000
-#      - MB_PORT: 3535
-#      - MB_RUN_WEB_TESTS=true
-#      - MB_EXECUTABLE: dist/mountebank/bin/mb
-#    steps:
-#      - attach_workspace:
-#          at: .
-#      - run: npm run config:outOfProcess && npm run test:functional
+  currentWithFileDB:
+    executor: node-current
+    environment:
+      - MB_PORT: 3535
+      - MB_EXECUTABLE: /home/circleci/project/dist/mountebank/bin/mb
+    steps:
+      - attach_workspace:
+          at: .
+      - run:
+          name: Test
+          command: |
+            node tasks/mb.js start --allowInjection --localOnly --datadir .mbdb
+            (cd dist/test && npm test)
+      - store_test_results:
+          path: dist/test/testResults
 
-#  package-source:
-#    docker:
-#      - image: circleci/ruby:2.4.4-stretch
-#    environment:
-#      - MB_SLOW_TEST_TIMEOUT: 7000
-#      - MB_PORT: 3535
-#    steps:
-#      - attach_workspace:
-#          at: .
-#      - run:
-#          name: Update Node.js and npm
-#          command: |
-#            curl -sSL "https://nodejs.org/dist/v12.9.1/node-v12.9.1-linux-x64.tar.xz" | sudo tar --strip-components=2 -xJ -C /usr/local/bin/ node-v12.9.1-linux-x64/bin/node
-#            curl https://www.npmjs.com/install.sh | sudo bash
-#      - run:
-#          name: Check current version of node
-#          command: node -v
-#      # fpm install started failing even after bundle update
-#      - run: gem install fpm
-#      - run: bundle install --without development
-#      - run: node_modules/grunt-cli/bin/grunt test:npm deploy:s3
+  performance:
+    executor: node-active
+    environment:
+      - MB_PORT: 3535
+      - MB_EXECUTABLE: /home/circleci/project/dist/mountebank/bin/mb
+    steps:
+      - attach_workspace:
+          at: .
+      - run:
+          name: Test
+          command: cd dist/test && npm run perf
+      - store_test_results:
+          path: dist/test/testResults
 
-#  package-tarball:
-#    docker:
-#      - image: circleci/ruby:2.4.4-stretch
-#    environment:
-#      - MB_SLOW_TEST_TIMEOUT: 7000
-#      - MB_PORT: 3535
-#    steps:
-#      - attach_workspace:
-#          at: .
-#      - run:
-#          name: Update Node.js and npm
-#          command: |
-#            curl -sSL "https://nodejs.org/dist/v12.9.1/node-v12.9.1-linux-x64.tar.xz" | sudo tar --strip-components=2 -xJ -C /usr/local/bin/ node-v12.9.1-linux-x64/bin/node
-#            curl https://www.npmjs.com/install.sh | sudo bash
-#      - run:
-#          name: Check current version of node
-#          command: node -v
-#      # fpm install started failing even after bundle update
-#      - run: gem install fpm
-#      - run: bundle install --without development
-#      - run: ln -s dist/mountebank/src src
-#      - run: ln -s dist/mountebank/package.json package.json
-#      - run: node_modules/grunt-cli/bin/grunt test:tarball:x64 deploy:s3
-#
-#  package-zip:
-#    docker:
-#      - image: circleci/ruby:2.4.4-stretch
-#    environment:
-#      - MB_SLOW_TEST_TIMEOUT: 7000
-#      - MB_PORT: 3535
-#    steps:
-#      - attach_workspace:
-#          at: .
-#      - run:
-#          name: Update Node.js and npm
-#          command: |
-#            curl -sSL "https://nodejs.org/dist/v12.9.1/node-v12.9.1-linux-x64.tar.xz" | sudo tar --strip-components=2 -xJ -C /usr/local/bin/ node-v12.9.1-linux-x64/bin/node
-#            curl https://www.npmjs.com/install.sh | sudo bash
-#      - run:
-#          name: Check current version of node
-#          command: node -v
-#      # fpm install started failing even after bundle update
-#      - run: gem install fpm
-#      - run: bundle install --without development
-#      - run: ln -s dist/mountebank/src src
-#      - run: ln -s dist/mountebank/package.json package.json
-#      - run: node_modules/grunt-cli/bin/grunt dist:zip:x64 dist:zip:x86 deploy:s3 trigger:appveyor
-#      - persist_to_workspace:
-#          root: .
-#          paths:
-#            - appveyor-*.txt
-#
-#  package-deb:
-#    docker:
-#      - image: circleci/ruby:2.4.4-stretch
-#    environment:
-#      - MB_SLOW_TEST_TIMEOUT: 7000
-#      - MB_PORT: 3535
-#    steps:
-#      - attach_workspace:
-#          at: .
-#      - run:
-#          name: Update Node.js and npm
-#          command: |
-#            curl -sSL "https://nodejs.org/dist/v12.9.1/node-v12.9.1-linux-x64.tar.xz" | sudo tar --strip-components=2 -xJ -C /usr/local/bin/ node-v12.9.1-linux-x64/bin/node
-#            curl https://www.npmjs.com/install.sh | sudo bash
-#      - run:
-#          name: Check current version of node
-#          command: node -v
-#      # fpm install started failing even after bundle update
-#      - run: gem install fpm
-#      - run: bundle install --without development
-#      - run: ln -s dist/mountebank/src src
-#      - run: ln -s dist/mountebank/package.json package.json
-#      - run: node_modules/grunt-cli/bin/grunt test:deb deploy:s3
-#
-#  package-rpm:
-#    docker:
-#      - image: bbyars/mountebank-centos:latest
-#    environment:
-#      - MB_SLOW_TEST_TIMEOUT: 7000
-#      - MB_PORT: 3535
-#    steps:
-#      - attach_workspace:
-#          at: .
-#      # fpm install started failing even after bundle update
-#      - run:
-#          name: Update Node.js and npm
-#          command: |
-#            curl -sSL "https://nodejs.org/dist/v12.9.1/node-v12.9.1-linux-x64.tar.xz" | sudo tar --strip-components=2 -xJ -C /usr/local/bin/ node-v12.9.1-linux-x64/bin/node
-#            curl https://www.npmjs.com/install.sh | sudo bash
-#      - run:
-#          name: Check current version of node
-#          command: node -v
-#      - run: gem install fpm
-#      - run: bundle install --without development
-#      - run: ln -s dist/mountebank/src src
-#      - run: ln -s dist/mountebank/package.json package.json
-#      - run: node_modules/grunt-cli/bin/grunt test:rpm
-#      # Can't use dpl on centos; refactor with non-dpl based script
-#      - persist_to_workspace:
-#          root: .
-#          paths:
-#            - dist/*.rpm
-#
-#  performance:
-#    docker:
-#      - image: circleci/node:12-stretch
-#    environment:
-#      - MB_EXECUTABLE: /home/circleci/project/dist/mountebank/bin/mb
-#    steps:
-#      - attach_workspace:
-#          at: .
-#      - run: ln -s dist/mountebank/src src
-#      - run: ln -s dist/mountebank/package.json package.json
-#      - run: node_modules/grunt-cli/bin/grunt test:performance
-#
-#  windows:
-#    docker:
-#      - image: circleci/node:12-stretch
-#    steps:
-#      - attach_workspace:
-#          at: .
-#      - run: node_modules/grunt-cli/bin/grunt waitFor:appveyor
-#
-#  osx:
-#    docker:
-#      - image: circleci/node:12-stretch
-#    steps:
-#      - attach_workspace:
-#          at: .
-#      - run: node_modules/grunt-cli/bin/grunt waitFor:travis
-#
-#  deploy:
-#    docker:
-#      - image: circleci/ruby:2.4.4-stretch
-#    steps:
-#      - setup_remote_docker
-#      - attach_workspace:
-#          at: .
-#      - run:
-#          name: Update Node.js and npm
-#          command: |
-#            curl -sSL "https://nodejs.org/dist/v12.9.1/node-v12.9.1-linux-x64.tar.xz" | sudo tar --strip-components=2 -xJ -C /usr/local/bin/ node-v12.9.1-linux-x64/bin/node
-#            curl https://www.npmjs.com/install.sh | sudo bash
-#      - run:
-#          name: Check current version of node
-#          command: node -v
-#      - run: ls -al dist
-#        # $BASH_ENV workaround due to env var isolation: https://discuss.circleci.com/t/exporting-environment-variables-from-sourced-scripts/4564/4
-#      - run: if [ -n "`grep publish=true build.properties`" ]; then echo export MB_PUBLISH=true >> "$BASH_ENV"; else echo export MB_PUBLISH=false >> "$BASH_ENV"; fi
-#      - run: echo "MB_PUBLISH=$MB_PUBLISH"
-#      # fpm install started failing even after bundle update
-#      - run: gem install fpm
-#      - run: bundle install --without development
-#      - run: ln -s dist/mountebank/src src
-#      - run: ln -s dist/mountebank/package.json package.json
-#      - run: node_modules/grunt-cli/bin/grunt deploy:s3 deploy:heroku deploy:npm deploy:docker
+  web:
+    executor: node-active
+    environment:
+      - MB_PORT: 3535
+      - MB_EXECUTABLE: /home/circleci/project/dist/mountebank/bin/mb
+    steps:
+      - attach_workspace:
+          at: .
+      - run:
+          name: Test
+          command: |
+            node tasks/mb.js start --allowInjection --localOnly
+            (cd dist/test && npm run web)
+      - store_test_results:
+          path: dist/test/testResults
+
+  deploy:
+    executor: node-active
+    steps:
+      - setup_remote_docker:
+          version: 20.10.7
+      - attach_workspace:
+          at: .
+      - run:
+          name: Publish npm
+          command: scripts/publishNpm
+      - run:
+          name: Publish Docker
+          command: |
+            export MB_VERSION=`scripts/printVersion`
+            scripts/publishDocker $MB_VERSION
+      - run:
+          name: Deploy to Heroku
+          command: scripts/publishHeroku mountebank-dev
+
+  # The release pipeline doesn't re-run tests as there should be no code commit, only a git tag to trigger release
+  # It also doesn't change the version in the package.json or add a beta tag to npm
+  release:
+    executor: node-active
+    environment:
+      - MB_RELEASE: true
+    steps:
+      - setup_remote_docker:
+          version: 20.10.7
+      - checkout
+      - run:
+          name: Install Dependencies
+          command: npm ci
+      - run:
+          name: Dist
+          command: node tasks/dist.js
+      - run:
+          name: Publish npm
+          command: scripts/publishNpm
+      - run:
+          name: Publish Docker
+          command: |
+            export MB_VERSION=`scripts/printVersion`
+            scripts/publishDocker $MB_VERSION
+      - run:
+          name: Deploy to Heroku
+          command: scripts/publishHeroku mountebank
 
 workflows:
   version: 2
-  full_build:
+  pr:
     jobs:
       - pr:
           filters:
             branches:
-              only: /^pull\/.*$/
+              ignore: master
+  pipeline:
+    jobs:
       - build:
           filters:
             branches:
               only: master
-            tags:
-              only: /^v.*/
-      - package:
+      - windows:
+          filters:
+            branches:
+              only: master
+      - mac:
+          filters:
+            branches:
+              only: master
+      - maintenanceOutOfProcessImposters:
           requires:
             - build
           filters:
             branches:
               only: master
-            tags:
-              only: /^v.*/
-      - package-osx:
+      - currentWithFileDB:
           requires:
             - build
           filters:
             branches:
               only: master
-            tags:
-              only: /^v.*/
-      - nodev10:
+      - performance:
           requires:
             - build
           filters:
             branches:
               only: master
+      - web:
+          requires:
+            - build
+          filters:
+            branches:
+              only: master
+      - deploy:
+          requires:
+            - maintenanceOutOfProcessImposters
+            - currentWithFileDB
+            - performance
+            - web
+          filters:
+            branches:
+              only: master
+  release:
+      jobs:
+      - release:
+          filters:
+            branches:
+              ignore: /.*/
             tags:
               only: /^v.*/
-#      - osx:
-#          requires:
-#            - build
-#          filters:
-#            branches:
-#              only: master
-#            tags:
-#              only: /^v.*/
-#      - package-source:
-#          requires:
-#            - build
-#          filters:
-#            branches:
-#              only: master
-#            tags:
-#              only: /^v.*/
-#      - package-zip:
-#          requires:
-#            - build
-#          filters:
-#            branches:
-#              only: master
-#            tags:
-#              only: /^v.*/
-#      - windows:
-#          requires:
-#            - package-zip
-#          filters:
-#            branches:
-#              only: master
-#            tags:
-#              only: /^v.*/
-#      - package-tarball:
-#          requires:
-#            - build
-#          filters:
-#            branches:
-#              only: master
-#            tags:
-#              only: /^v.*/
-#      - package-deb:
-#          requires:
-#            - build
-#          filters:
-#            branches:
-#              only: master
-#            tags:
-#              only: /^v.*/
-#      - package-rpm:
-#          requires:
-#            - build
-#          filters:
-#            branches:
-#              only: master
-#            tags:
-#              only: /^v.*/
-#      - dbAndWeb:
-#          requires:
-#            - build
-#          filters:
-#            branches:
-#              only: master
-#            tags:
-#              only: /^v.*/
-#      - performance:
-#          requires:
-#            - build
-#          filters:
-#            branches:
-#              only: master
-#            tags:
-#              only: /^v.*/
-#      - deploy:
-#          requires:
-#            - package-source
-#            - package-zip
-#            - package-tarball
-#            - package-deb
-#            - package-rpm
-#            - dbAndWeb
-#            - nodev10
-#          filters:
-#            branches:
-#              only: master
-#            tags:
-#              only: /^v.*/
+

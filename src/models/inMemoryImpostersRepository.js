@@ -321,7 +321,7 @@ function create () {
      * @returns {Object} - all imposters keyed by port
      */
     async function all () {
-        return await Promise.all(Object.keys(imposters).map(get));
+        return Promise.all(Object.keys(imposters).map(get));
     }
 
     /**
