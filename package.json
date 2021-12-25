@@ -53,6 +53,7 @@
     "service virtualization"
   ],
   "dependencies": {
+    "@xmldom/xmldom": "0.8.0",
     "cors": "2.8.5",
     "csv-parse": "4.16.3",
     "ejs": "3.1.6",
@@ -71,7 +72,6 @@
     "safe-stable-stringify": "1.1.1",
     "smtp-server": "3.9.0",
     "winston": "3.3.3",
-    "xmldom": "0.6.0",
     "xpath": "0.0.32",
     "yargs": "17.1.1"
   },

@@ -51,7 +51,7 @@ function nodeValue (node) {
  */
 function select (selector, ns, possibleXML, logger) {
     const xpath = require('xpath'),
-        DOMParser = require('xmldom').DOMParser,
+        DOMParser = require('@xmldom/xmldom').DOMParser,
         parser = new DOMParser({
             errorHandler: (level, message) => {
                 const warn = (logger || {}).warn || (() => {});
