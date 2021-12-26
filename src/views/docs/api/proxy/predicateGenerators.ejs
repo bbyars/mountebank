@@ -23,6 +23,12 @@ array takes the following fields:</p>
     requiring the entire object graph to match.</td>
   </tr>
   <tr>
+    <td><code>ignore</code></td>
+    <td><code>{}</code></td>
+    <td>object</td>
+    <td>Use this option to ignore specific key of field from request based on <code>match</code> field. </td>
+  </tr>
+  <tr>
     <td><code>caseSensitive</code></td>
     <td><code>false</code></td>
     <td>boolean</td>
@@ -399,7 +405,76 @@ Host: localhost:<%= port %></code>
 <code class='hidden'>DELETE /imposters/3000
 Host: localhost:<%= port %></code>
     </step>
+    <h3>ignore</h3>
 
+    <p>Support ignoring certain keys in predicateGenerators </p>
+
+    <step type='http'>
+<pre><code><span class='hidden'>POST /imposters HTTP/1.1
+Host: localhost:<%= port %>
+Accept: application/json
+Content-Type: application/json
+
+{
+  "port": 3000,
+  "protocol": "http",
+</span>"stubs": [{
+  "responses": [{
+    "proxy": {
+      "to": "<change to='http://localhost:3001'>http://origin-server.com</change>",
+      <strong class='highlight1'>"predicateGenerators": [{
+          "matches": { "query": true },
+          "ignore": { "query": "startDate" }
+      }]</strong>
+    }
+  }]
+}]<span class='hidden'>}</span></code></pre>
+    </step>
+
+    <p>Then we get a request</p>
+
+    <step type='http'>
+<pre><code><span>GET /path?limit=100&enhanced=true&startDate=2017-09-07&endDate=2017-10-11 HTTP/1.1
+
+</span></code></pre>
+    </step>
+
+    <p>The saved predicate should not have the <code>startDate</code> key.</p>
+
+    <step type='http'>
+        <code class='hidden'>GET /imposters/3000 HTTP/1.1
+            Host: localhost:<%= port %></code>
+
+        <assertResponse partial='true'>
+<pre><code><span class='hidden'>{
+</span>"stubs": [
+  {
+    <strong class='highlight1'>"predicates": [{
+      "deepEquals": { "query": { "limit": 100, "enhanced": true, "endDate": "2017-10-11" } }
+    }]</strong>,
+    "responses": [{
+      "is": { <change to='"statusCode": 200'><strong class='highlight2'>...</strong></change> }
+    }]
+  },
+  {
+    "responses": [{
+      "proxy": {
+        "to": "<change to='http://localhost:3001'>http://origin-server.com</change>",
+        "predicateGenerators": [{
+          "matches": { "query": true },
+          "ignore": { "query": "startDate" }
+        }]
+      }
+    }]
+  }
+]<span class='hidden'>}</span></code></pre>
+        </assertResponse>
+    </step>
+
+    <step type='http'>
+        <code class='hidden'>DELETE /imposters/3000
+            Host: localhost:<%= port %></code>
+    </step>
 <h3>inject</h3>
 
 <p>In advanced scenarios, you need more fine-grained control over the creation of the predicates.
