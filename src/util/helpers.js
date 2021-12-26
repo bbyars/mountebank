@@ -86,4 +86,25 @@ function setDeep (obj, path, value) {
     setDeep(obj[path[0]], path.slice(1), value);
 }
 
-module.exports = { defined, isObject, socketName, clone, merge, setDeep };
+/**
+ * Remove specific key and value from object
+ * @param {Object} obj Object to filter
+ * @param {Array|Object|String} filter keys to remove
+ * @returns {Object}
+ */
+
+function objFilter (obj, filter) {
+
+    if (typeof filter === 'string') {
+        delete obj[filter];
+    }
+    else if (Array.isArray(filter)) {
+        filter.filter(keyFilter => obj[keyFilter]).forEach(keyFilter => objFilter(obj, keyFilter));
+    }
+    else {
+        Object.keys(filter).filter(keyFilter => obj[keyFilter]).forEach(keyFilter => objFilter(obj[keyFilter], filter[keyFilter]));
+    }
+    return obj;
+}
+
+module.exports = { defined, isObject, socketName, clone, merge, setDeep, objFilter };
