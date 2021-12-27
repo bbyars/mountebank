@@ -1,98 +1,104 @@
 <p>Recording a rich set of test data through proxying requires also capturing the
-appropriate predicates from the request, so that saved responses are only replayed
-when the requests are similar. The <code>predicateGenerators</code> field defines the
-template for the generated predicates. Each object in the <code>predicateGenerators</code>
-array takes the following fields:</p>
+    appropriate predicates from the request, so that saved responses are only replayed
+    when the requests are similar. The <code>predicateGenerators</code> field defines the
+    template for the generated predicates. Each object in the <code>predicateGenerators</code>
+    array takes the following fields:</p>
 
 <table>
-  <tr>
-    <th>Parameter</th>
-    <th style='min-width: 4em;'>Default</th>
-    <th>Type</th>
-    <th>Description</th>
-  </tr>
-  <tr>
-    <td><code>matches</code></td>
-    <td><code>{}</code></td>
-    <td>object</td>
-    <td>The fields that need to be equal in subsequent requests to replay the saved response.
-    Set the field value <code>true</code> to generate a predicate based on it. Nested fields,
-    as in JSON fields or HTTP headers, are supported as well, as long as the leaf keys have
-    a <code>true</code> value. If you set the parent object key (e.g. <code>query</code>)
-    to <code>true</code>, the generated predicate will use <code>deepEquals</code>,
-    requiring the entire object graph to match.</td>
-  </tr>
-  <tr>
-    <td><code>ignore</code></td>
-    <td><code>{}</code></td>
-    <td>object</td>
-    <td>Use this option to ignore specific key of field from request based on <code>match</code> field. </td>
-  </tr>
-  <tr>
-    <td><code>caseSensitive</code></td>
-    <td><code>false</code></td>
-    <td>boolean</td>
-    <td>Determines if the match is case sensitive or not.  This includes keys for objects
-    such as query parameters.</td>
-  </tr>
-  <tr>
-    <td><code>except</code></td>
-    <td><code>""</code></td>
-    <td>string</td>
-    <td>Defines a regular expression that is stripped out of the request field
-    before matching.</td>
-  </tr>
-  <tr>
-    <td><code>xpath</code></td>
-    <td><code>null</code></td>
-    <td>object</td>
-    <td>Defines an object containing a <code>selector</code> string and, optionally, an
-    <code>ns</code> object field that defines a namespace map. The predicate's
-    scope is limited to the selected value in the request field.</td>
-  </tr>
-  <tr>
-    <td><code>jsonpath</code></td>
-    <td><code>null</code></td>
-    <td>object</td>
-    <td>Defines an object containing a <code>selector</code> string. The predicate's
-    scope is limited to the selected value in the request field.</td>
-  </tr>
-  <tr>
-    <td><code>predicateOperator</code></td>
-    <td><code>deepEquals</code> or <code>equals</code></td>
-    <td>string</td>
-    <td>Allows you to override the predicate operator used in the generated predicate.
-    This is most often used to substitute an <code>exists</code> operator, e.g., for
-    whether the given xpath expression exists in the incoming request or not. At times,
-    it may be useful to use a <code>contains</code> operator if future requests can
-    add more information to the field.</td>
-  </tr>
-  <tr>
-    <td><code>inject</code></td>
-    <td><code>null</code></td>
-    <td>string</td>
-    <td>Defines a JavaScript function that allows programmatic creation of the predicates.</td>
-  </tr>
+    <tr>
+        <th>Parameter</th>
+        <th style='min-width: 4em;'>Default</th>
+        <th>Type</th>
+        <th>Description</th>
+    </tr>
+    <tr>
+        <td><code>matches</code></td>
+        <td><code>{}</code></td>
+        <td>object</td>
+        <td>The fields that need to be equal in subsequent requests to replay the saved response.
+            Set the field value <code>true</code> to generate a predicate based on it. Nested fields,
+            as in JSON fields or HTTP headers, are supported as well, as long as the leaf keys have
+            a <code>true</code> value. If you set the parent object key (e.g. <code>query</code>)
+            to <code>true</code>, the generated predicate will use <code>deepEquals</code>,
+            requiring the entire object graph to match.
+        </td>
+    </tr>
+    <tr>
+        <td><code>ignore</code></td>
+        <td><code>{}</code></td>
+        <td>object</td>
+        <td>Use this option to ignore specific key of field from request based on <code>match</code> field.</td>
+    </tr>
+    <tr>
+        <td><code>caseSensitive</code></td>
+        <td><code>false</code></td>
+        <td>boolean</td>
+        <td>Determines if the match is case sensitive or not. This includes keys for objects
+            such as query parameters.
+        </td>
+    </tr>
+    <tr>
+        <td><code>except</code></td>
+        <td><code>""</code></td>
+        <td>string</td>
+        <td>Defines a regular expression that is stripped out of the request field
+            before matching.
+        </td>
+    </tr>
+    <tr>
+        <td><code>xpath</code></td>
+        <td><code>null</code></td>
+        <td>object</td>
+        <td>Defines an object containing a <code>selector</code> string and, optionally, an
+            <code>ns</code> object field that defines a namespace map. The predicate's
+            scope is limited to the selected value in the request field.
+        </td>
+    </tr>
+    <tr>
+        <td><code>jsonpath</code></td>
+        <td><code>null</code></td>
+        <td>object</td>
+        <td>Defines an object containing a <code>selector</code> string. The predicate's
+            scope is limited to the selected value in the request field.
+        </td>
+    </tr>
+    <tr>
+        <td><code>predicateOperator</code></td>
+        <td><code>deepEquals</code> or <code>equals</code></td>
+        <td>string</td>
+        <td>Allows you to override the predicate operator used in the generated predicate.
+            This is most often used to substitute an <code>exists</code> operator, e.g., for
+            whether the given xpath expression exists in the incoming request or not. At times,
+            it may be useful to use a <code>contains</code> operator if future requests can
+            add more information to the field.
+        </td>
+    </tr>
+    <tr>
+        <td><code>inject</code></td>
+        <td><code>null</code></td>
+        <td>string</td>
+        <td>Defines a JavaScript function that allows programmatic creation of the predicates.</td>
+    </tr>
 </table>
 
 <p>With the exception of <code>matches</code> and <code>inject</code>, the fields correspond to the standard
-<a href='/docs/api/predicates'>predicate parameters</a>. Each object in the
-<code>predicateGenerators</code> array generates an object in
-the newly created stub's <code>predicates</code> array. You can decide how strictly
-you want the generated predicates to match object fields. The following example
-matches the root <code>query</code> field in its entirety:</p>
+    <a href='/docs/api/predicates'>predicate parameters</a>. Each object in the
+    <code>predicateGenerators</code> array generates an object in
+    the newly created stub's <code>predicates</code> array. You can decide how strictly
+    you want the generated predicates to match object fields. The following example
+    matches the root <code>query</code> field in its entirety:</p>
 
 <testScenario name='predicate-generators'>
     <step type='http'>
-<code class='hidden'>POST /imposters HTTP/1.1
-Host: localhost:<%= port %>
-Accept: application/json
-Content-Type: application/json
+        <code class='hidden'>POST /imposters HTTP/1.1
+            Host: localhost:<%= port %>
+            Accept: application/json
+            Content-Type: application/json
 
-{
-  "port": 3001,
-  "protocol": "http"
-}</code>
+            {
+            "port": 3001,
+            "protocol": "http"
+            }</code>
     </step>
 
     <step type='http'>
@@ -117,20 +123,20 @@ Content-Type: application/json
 }]<span class='hidden'>}</span></code></pre>
     </step>
 
-<p>This will generate a <code>deepEquals</code> predicate at the same level, which requires
-that all keys and values in the querystring match (although the order can be different).
-We added the <code>caseSensitive</code> parameter, which will also require the cases of the
-query keys and values to match. If the incoming request is to <code>/test?q=mountebank&page=1</code>,
-the following stub will be generating (the saved response is elided for clarity):</p>
+    <p>This will generate a <code>deepEquals</code> predicate at the same level, which requires
+        that all keys and values in the querystring match (although the order can be different).
+        We added the <code>caseSensitive</code> parameter, which will also require the cases of the
+        query keys and values to match. If the incoming request is to <code>/test?q=mountebank&page=1</code>,
+        the following stub will be generating (the saved response is elided for clarity):</p>
 
     <step type='http'>
-<code class='hidden'>GET /test?q=mountebank&page=1 HTTP/1.1
-Host: localhost:3000</code>
+        <code class='hidden'>GET /test?q=mountebank&page=1 HTTP/1.1
+            Host: localhost:3000</code>
     </step>
 
     <step type='http'>
-<code class='hidden'>GET /imposters/3000 HTTP/1.1
-Host: localhost:<%= port %></code>
+        <code class='hidden'>GET /imposters/3000 HTTP/1.1
+            Host: localhost:<%= port %></code>
 
         <assertResponse partial='true'>
 <pre><code><span class='hidden'>{
@@ -167,11 +173,11 @@ Host: localhost:<%= port %></code>
     </step>
 
     <step type='http'>
-<code class='hidden'>DELETE /imposters/3000
-Host: localhost:<%= port %></code>
+        <code class='hidden'>DELETE /imposters/3000
+            Host: localhost:<%= port %></code>
     </step>
 
-<p>Just as with predicates, we could have also specified only the query key we cared about:</p>
+    <p>Just as with predicates, we could have also specified only the query key we cared about:</p>
 
     <step type='http'>
 <pre><code><span class='hidden'>POST /imposters HTTP/1.1
@@ -196,17 +202,17 @@ Content-Type: application/json
 }]<span class='hidden'>}</span></code></pre>
     </step>
 
-<p>The same request to <code>/test?q=mountebank&page=1</code> now generates a more
-limited predicate:</p>
+    <p>The same request to <code>/test?q=mountebank&page=1</code> now generates a more
+        limited predicate:</p>
 
     <step type='http'>
-<code class='hidden'>GET /test?q=mountebank&page=1 HTTP/1.1
-Host: localhost:3000</code>
+        <code class='hidden'>GET /test?q=mountebank&page=1 HTTP/1.1
+            Host: localhost:3000</code>
     </step>
 
     <step type='http'>
-<code class='hidden'>GET /imposters/3000 HTTP/1.1
-Host: localhost:<%= port %></code>
+        <code class='hidden'>GET /imposters/3000 HTTP/1.1
+            Host: localhost:<%= port %></code>
 
         <assertResponse partial='true'>
 <pre><code><span class='hidden'>{
@@ -240,19 +246,19 @@ Host: localhost:<%= port %></code>
     </step>
 
     <step type='http'>
-<code class='hidden'>DELETE /imposters/3000
-Host: localhost:<%= port %></code>
+        <code class='hidden'>DELETE /imposters/3000
+            Host: localhost:<%= port %></code>
     </step>
 
-<h3>xpath</h3>
+    <h3>xpath</h3>
 
-<p>The <a href='/docs/api/xpath'><code>xpath</code></a> and
-<a href='/docs/api/jsonpath'><code>jsonpath</code></a> predicate parameters work
-by limiting the scope of the generated predicate to the matching value in the
-proxied request. If the selector matches multiple values in the proxied request,
-they will all be part of the generated predicate, using standard predicate
-<a href='/docs/api/predicates#array-match'>array matching rules</a>. For example,
-following stub will look for <code>number</code> tags in the XML body:</p>
+    <p>The <a href='/docs/api/xpath'><code>xpath</code></a> and
+        <a href='/docs/api/jsonpath'><code>jsonpath</code></a> predicate parameters work
+        by limiting the scope of the generated predicate to the matching value in the
+        proxied request. If the selector matches multiple values in the proxied request,
+        they will all be part of the generated predicate, using standard predicate
+        <a href='/docs/api/predicates#array-match'>array matching rules</a>. For example,
+        following stub will look for <code>number</code> tags in the XML body:</p>
 
     <step type='http'>
 <pre><code><span class='hidden'>POST /imposters HTTP/1.1
@@ -276,7 +282,7 @@ Content-Type: application/json
 }]<span class='hidden'>}</span></code></pre>
     </step>
 
-<p>We'll send it the following XML body:</p>
+    <p>We'll send it the following XML body:</p>
 
     <step type='http'>
 <pre><code><span class='hidden'>POST / HTTP/1.1
@@ -289,13 +295,13 @@ Host: localhost:3000
 &lt;/doc&gt;</code></pre>
     </step>
 
-<p>Rather than matching the entire body, the generated predicate will require all three
-values matching the xpath selector in the original proxied request to be present (in any
-order):</p>
+    <p>Rather than matching the entire body, the generated predicate will require all three
+        values matching the xpath selector in the original proxied request to be present (in any
+        order):</p>
 
     <step type='http'>
-<code class='hidden'>GET /imposters/3000 HTTP/1.1
-Host: localhost:<%= port %></code>
+        <code class='hidden'>GET /imposters/3000 HTTP/1.1
+            Host: localhost:<%= port %></code>
 
         <assertResponse partial='true'>
 <pre><code><span class='hidden'>{
@@ -325,13 +331,13 @@ Host: localhost:<%= port %></code>
     </step>
 
     <step type='http'>
-<code class='hidden'>DELETE /imposters/3000
-Host: localhost:<%= port %></code>
+        <code class='hidden'>DELETE /imposters/3000
+            Host: localhost:<%= port %></code>
     </step>
 
-<h3>jsonpath</h3>
+    <h3>jsonpath</h3>
 
-<p>Similarly, the following stub looks for number elements in JSON:</p>
+    <p>Similarly, the following stub looks for number elements in JSON:</p>
 
     <step type='http'>
 <pre><code><span class='hidden'>POST /imposters HTTP/1.1
@@ -355,7 +361,7 @@ Content-Type: application/json
 }]<span class='hidden'>}</span></code></pre>
     </step>
 
-<p>We'll send it the following JSON body:</p>
+    <p>We'll send it the following JSON body:</p>
 
     <step type='http'>
 <pre><code><span class='hidden'>POST / HTTP/1.1
@@ -368,11 +374,11 @@ Host: localhost:3000
 ]</code></pre>
     </step>
 
-<p>Again, the generated predicate gets scoped to the jsonpath matches.</p>
+    <p>Again, the generated predicate gets scoped to the jsonpath matches.</p>
 
     <step type='http'>
-<code class='hidden'>GET /imposters/3000 HTTP/1.1
-Host: localhost:<%= port %></code>
+        <code class='hidden'>GET /imposters/3000 HTTP/1.1
+            Host: localhost:<%= port %></code>
 
         <assertResponse partial='true'>
 <pre><code><span class='hidden'>{
@@ -402,15 +408,15 @@ Host: localhost:<%= port %></code>
     </step>
 
     <step type='http'>
-<code class='hidden'>DELETE /imposters/3000
-Host: localhost:<%= port %></code>
+        <code class='hidden'>DELETE /imposters/3000
+            Host: localhost:<%= port %></code>
     </step>
     <h3>ignore</h3>
 
-    <p>Support ignoring certain keys in predicateGenerators </p>
+    <p>Support ignoring certain keys in predicateGenerators</p>
 
     <step type='http'>
-<pre><code><span class='hidden'>POST /imposters HTTP/1.1
+    <pre><code><span class='hidden'>POST /imposters HTTP/1.1
 Host: localhost:<%= port %>
 Accept: application/json
 Content-Type: application/json
@@ -423,20 +429,20 @@ Content-Type: application/json
     "proxy": {
       "to": "<change to='http://localhost:3001'>http://origin-server.com</change>",
       <strong class='highlight1'>"predicateGenerators": [{
-          "matches": { "query": true },
-          "ignore": { "query": "startDate" }
+        "matches": { "query": true },
+        "ignore": { "query": "startDate" }
       }]</strong>
     }
   }]
 }]<span class='hidden'>}</span></code></pre>
     </step>
 
-    <p>Then we get a request</p>
+    <p>Then we get a request <code>/path?limit=100&enhanced=true&startDate=2017-09-07&endDate=2017-10-11</code></p>
 
     <step type='http'>
-<pre><code><span>GET /path?limit=100&enhanced=true&startDate=2017-09-07&endDate=2017-10-11 HTTP/1.1
-
-</span></code></pre>
+        <code class='hidden'>GET /path?limit=100&enhanced=true&startDate=2017-09-07&endDate=2017-10-11 HTTP/1.1
+            Host: localhost:3000
+        </code>
     </step>
 
     <p>The saved predicate should not have the <code>startDate</code> key.</p>
@@ -446,11 +452,11 @@ Content-Type: application/json
             Host: localhost:<%= port %></code>
 
         <assertResponse partial='true'>
-<pre><code><span class='hidden'>{
+        <pre><code><span class='hidden'>{
 </span>"stubs": [
   {
     <strong class='highlight1'>"predicates": [{
-      "deepEquals": { "query": { "limit": 100, "enhanced": true, "endDate": "2017-10-11" } }
+      "deepEquals": { "query": { "limit": "100", "enhanced": "true", "endDate": "2017-10-11" } }
     }]</strong>,
     "responses": [{
       "is": { <change to='"statusCode": 200'><strong class='highlight2'>...</strong></change> }
@@ -461,8 +467,8 @@ Content-Type: application/json
       "proxy": {
         "to": "<change to='http://localhost:3001'>http://origin-server.com</change>",
         "predicateGenerators": [{
-          "matches": { "query": true },
-          "ignore": { "query": "startDate" }
+            "matches": { "query": true },
+            "ignore": { "query": "startDate" }
         }]
       }
     }]
@@ -475,39 +481,40 @@ Content-Type: application/json
         <code class='hidden'>DELETE /imposters/3000
             Host: localhost:<%= port %></code>
     </step>
-<h3>inject</h3>
+    <h3>inject</h3>
 
-<p>In advanced scenarios, you need more fine-grained control over the creation of the predicates.
-In such scenarios, you can use the <code>inject</code> option.</p>
+    <p>In advanced scenarios, you need more fine-grained control over the creation of the predicates.
+        In such scenarios, you can use the <code>inject</code> option.</p>
 
-<p class='warning-icon'>The <code>inject</code> option requires the <code>--allowInjection</code>
-command line option.</p>
+    <p class='warning-icon'>The <code>inject</code> option requires the <code>--allowInjection</code>
+        command line option.</p>
 
-<p>The <code>inject</code> field takes a string representing a JavaScript function that is expected
-to return an array of predicate objects. Since it provides full control over the predicate generation,
-the <code>inject</code> option will ignore any other parameters, like <code>xpath</code>. The function
-accepts a single object parameter, which contains the following fields:</p>
+    <p>The <code>inject</code> field takes a string representing a JavaScript function that is expected
+        to return an array of predicate objects. Since it provides full control over the predicate generation,
+        the <code>inject</code> option will ignore any other parameters, like <code>xpath</code>. The function
+        accepts a single object parameter, which contains the following fields:</p>
 
-<table>
-    <tr>
-        <th>Field</th>
-        <th>Description</th>
-    </tr>
-    <tr>
-        <td><code>request</code></td>
-        <td>The entire request object, containing all request fields</td>
-    </tr>
-    <tr>
-        <td><code>logger</code></td>
-        <td>A logger object with <code>debug</code>, <code>info</code>, <code>warn</code>,
-        and <code>error</code> functions to write to the mountebank logs.</td>
-    </tr>
-</table>
+    <table>
+        <tr>
+            <th>Field</th>
+            <th>Description</th>
+        </tr>
+        <tr>
+            <td><code>request</code></td>
+            <td>The entire request object, containing all request fields</td>
+        </tr>
+        <tr>
+            <td><code>logger</code></td>
+            <td>A logger object with <code>debug</code>, <code>info</code>, <code>warn</code>,
+                and <code>error</code> functions to write to the mountebank logs.
+            </td>
+        </tr>
+    </table>
 
-<p>In this example, we'll add a predicate if a specific header exists. Here's the injection
-function fully expanded:</p>
+    <p>In this example, we'll add a predicate if a specific header exists. Here's the injection
+        function fully expanded:</p>
 
-<pre><code>
+    <pre><code>
 function (config) {
   const predicate = { exists: { headers: { 'X-Transaction-Id': false } } };
   if (config.request.headers['X-Transaction-Id']) {
@@ -518,8 +525,8 @@ function (config) {
 }
 </code></pre>
 
-<p>First let's add the imposter. The function must be passed as a single string, which makes it largely
-unreadable inline.</p>
+    <p>First let's add the imposter. The function must be passed as a single string, which makes it largely
+        unreadable inline.</p>
 
     <step type='http'>
 <pre><code><span class='hidden'>POST /imposters HTTP/1.1
@@ -542,7 +549,7 @@ Content-Type: application/json
 }]<span class='hidden'>}</span></code></pre>
     </step>
 
-<p>We'll send it the following HTTP request:</p>
+    <p>We'll send it the following HTTP request:</p>
 
     <step type='http'>
 <pre><code>POST / HTTP/1.1
@@ -552,12 +559,12 @@ Host: localhost:3000
 SUCCESS</code></pre>
     </step>
 
-<p>Since the <code>X-Transaction-Id</code> header was passed, the generated predicate requires
-it to exist to replay the response later.</p>
+    <p>Since the <code>X-Transaction-Id</code> header was passed, the generated predicate requires
+        it to exist to replay the response later.</p>
 
     <step type='http'>
-<code class='hidden'>GET /imposters/3000 HTTP/1.1
-Host: localhost:<%= port %></code>
+        <code class='hidden'>GET /imposters/3000 HTTP/1.1
+            Host: localhost:<%= port %></code>
 
         <assertResponse partial='true'>
 <pre><code><span class='hidden'>{
@@ -585,12 +592,12 @@ Host: localhost:<%= port %></code>
     </step>
 
     <step type='http'>
-<code class='hidden'>DELETE /imposters/3000
-Host: localhost:<%= port %></code>
+        <code class='hidden'>DELETE /imposters/3000
+            Host: localhost:<%= port %></code>
     </step>
 
     <step type='http'>
-<code class='hidden'>DELETE /imposters/3001
-Host: localhost:<%= port %></code>
+        <code class='hidden'>DELETE /imposters/3001
+            Host: localhost:<%= port %></code>
     </step>
 </testScenario>
