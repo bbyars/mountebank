@@ -187,7 +187,6 @@ function create (stubs, proxy, callbackURL) {
                     predicate = helpers.clone(basePredicate);
                 if (matcherValue === true && hasPredicateOperator === false) {
                     predicate.deepEquals = {};
-                    // predicate.deepEquals[fieldName] = valueOf(request[fieldName]);
                     predicate.deepEquals[fieldName] = buildDeepEqual(request, fieldName, matcher, valueOf);
                 }
                 else if (hasPredicateOperator === true && matcher.predicateOperator === 'exists') {
