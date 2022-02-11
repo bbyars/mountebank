@@ -1,0 +1,31 @@
+<testScenario name='tcp and example'>
+    <step type='http'>
+<pre><code>POST /imposters HTTP/1.1
+Host: localhost:<%= port %>
+Accept: application/json
+Content-Type: application/json
+
+{
+  "port": 4554,
+  "protocol": "tcp",
+  "mode": "text",
+  "stubs": [<strong class='highlight1'>
+    {
+      "responses": [
+        {
+          "fault": "CONNECTION_RESET_BY_PEER"
+        }
+      ]
+    }</strong>
+  ]
+}</code></pre>
+    </step>
+
+    </step>
+
+    <step type='http'>
+        <code class='hidden'>DELETE /imposters/4554 HTTP/1.1
+            Host: localhost:<%= port %>
+            Accept: application/json</code>
+    </step>
+</testScenario>
