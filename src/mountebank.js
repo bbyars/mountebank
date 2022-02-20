@@ -133,6 +133,7 @@ async function createApp (options) {
         '/docs/api/injection',
         '/docs/api/behaviors',
         '/docs/api/errors',
+        '/docs/api/faults',
         '/docs/protocols/http',
         '/docs/protocols/https',
         '/docs/protocols/tcp',

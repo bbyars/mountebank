@@ -86,6 +86,27 @@ function setDeep (obj, path, value) {
     setDeep(obj[path[0]], path.slice(1), value);
 }
 
+function simulateFault (socket, faultConfig, logger) {
+    if (typeof faultConfig === 'undefined') {
+        return false;
+    }
+    if (faultConfig === 'CONNECTION_RESET_BY_PEER') {
+        logger.debug('Closing the connection');
+        socket.destroy();
+        return true;
+    }
+    else if (faultConfig === 'RANDOM_DATA_THEN_CLOSE') {
+        logger.debug('Sending garbage data then closing the connection');
+        socket.write(Buffer.from('Htijy%@tWXJ/hQ#[Q:7G@dH4"gu[QaX&', 'utf-8'));
+        socket.destroy();
+        return true;
+    }
+    else {
+        logger.error('Unexpected fault type [' + faultConfig + '], expected either CONNECTION_RESET_BY_PEER or RANDOM_DATA_THEN_CLOSE');
+        return false;
+    }
+}
+
 /**
  * Remove specific key and value from object
  * @param {Object} obj Object to filter
@@ -107,4 +128,4 @@ function objFilter (obj, filter) {
     return obj;
 }
 
-module.exports = { defined, isObject, socketName, clone, merge, setDeep, objFilter };
+module.exports = { defined, isObject, socketName, clone, merge, setDeep, simulateFault, objFilter };

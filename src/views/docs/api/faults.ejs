@@ -1,0 +1,57 @@
+<%
+title = 'fault simulation'
+description = 'Using mountebank to simulate network faults'
+%>
+
+<%- include('../../_header') -%>
+
+<h1>Fault Simulation</h1>
+
+<p>Fault simulation allows us to check how our application behaves when downstream dependencies don't respond as expected due to network failures.
+    Mountebank already has the ability to specify delays via "wait" but we may also want to test when the connection is abruptly reset or garbage data is returned, similar to some of Wiremock's <a href='http://wiremock.org/docs/simulating-faults/'>fault simulation functionality</a>
+</p>
+
+<p>Fault simulation has only been implemented for http, https and tcp protocols.
+The "fault" response type is mutually exclusive with respect to the other response types as it necessarily prevents any normal response being returned to the client.</p>
+
+<p>The <code>fault</code> response type takes a single parameter specifying which fault to simulate.</p>
+
+<table>
+    <tr>
+        <th>Parameter</th>
+        <th>Description</th>
+    </tr>
+    <tr>
+        <td><code>CONNECTION_RESET_BY_PEER</code></td>
+        <td>Close the connection.</td>
+    </tr>
+    <tr>
+        <td><code>RANDOM_DATA_THEN_CLOSE</code></td>
+        <td>Send garbage then close the connection.</td>
+    </tr>
+</table>
+
+<p>Select the behavior of the fault below for a relevant example:</p>
+
+<section class='accordion'>
+    <div>
+        <a class='section-toggler'
+           id='connection-reset' name='connection-reset' href='#connection-reset'>
+            Connection Reset by Peer
+        </a>
+        <section>
+            <%- include('fault/connectionReset') -%>
+        </section>
+    </div>
+    <div>
+        <a class='section-toggler'
+           id='random-data-then-close' name='random-data-then-close' href='#random-data-then-close'>
+            Random Data then Close
+        </a>
+        <section>
+            <%- include('fault/randomDataThenClose') -%>
+        </section>
+    </div>
+</section>
+
+<%- include('../../_footer') -%>
