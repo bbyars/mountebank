@@ -84,7 +84,7 @@ A few of these tests verify the correct behavior under DNS failures.  If your IS
 is kind enough to hijack the NXDOMAIN DNS response in an attempt to allow you to conveniently peruse their
 advertising page, those tests will fail.  I suggest that, under such circumstances, you talk to your ISP
 and let them know that their policies are causing mountebank tests to fail. You can also set
-the environment variable `MB_AIRPLANE=true`, which will avoid tests requiring your DNS resolver.
+the environment variable `MB_AIRPLANE_MODE=true`, which will avoid tests requiring your DNS resolver.
 
 ## Support
 
