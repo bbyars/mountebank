@@ -98,6 +98,14 @@ function create (stubs, proxy, callbackURL) {
         return selectionValue(nodes);
     }
 
+    function buildDeepEqual (request, fieldName, predicateGenerators, valueOf) {
+        if (!predicateGenerators.ignore) {
+            return valueOf(request[fieldName]);
+        }
+        const objFilter = require('../util/helpers').objFilter;
+        return valueOf(objFilter(request[fieldName], predicateGenerators.ignore[fieldName]));
+    }
+
     function buildEquals (request, matchers, valueOf) {
         const result = {},
             isObject = require('../util/helpers').isObject;
@@ -159,7 +167,7 @@ function create (stubs, proxy, callbackURL) {
 
             // Add parameters
             Object.keys(matcher).forEach(key => {
-                if (key !== 'matches' && key !== 'predicateOperator') {
+                if (key !== 'matches' && key !== 'predicateOperator' && key !== 'ignore') {
                     basePredicate[key] = matcher[key];
                 }
                 if (key === 'xpath') {
@@ -179,7 +187,7 @@ function create (stubs, proxy, callbackURL) {
                     predicate = helpers.clone(basePredicate);
                 if (matcherValue === true && hasPredicateOperator === false) {
                     predicate.deepEquals = {};
-                    predicate.deepEquals[fieldName] = valueOf(request[fieldName]);
+                    predicate.deepEquals[fieldName] = buildDeepEqual(request, fieldName, matcher, valueOf);
                 }
                 else if (hasPredicateOperator === true && matcher.predicateOperator === 'exists') {
                     predicate[matcher.predicateOperator] = buildExists(request, fieldName, matcherValue, request);
