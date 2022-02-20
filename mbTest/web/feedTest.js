@@ -4,7 +4,7 @@ const assert = require('assert'),
     api = require('../api').create(),
     httpClient = require('../baseHttpClient').create('http'),
     xpath = require('xpath'),
-    DOMParser = require('xmldom').DOMParser,
+    DOMParser = require('@xmldom/xmldom').DOMParser,
     timeout = parseInt(process.env.MB_SLOW_TEST_TIMEOUT || 3000);
 
 function entryCount (body) {

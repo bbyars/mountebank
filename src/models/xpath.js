@@ -13,6 +13,20 @@ function xpathSelect (selectFn, selector, doc) {
         return [];
     }
 
+    if (doc && doc.implementation) {
+        // Monkey patch due to some legacy case sensitivity check in xpath
+        // Couldn't find a way to patch xpath due to closures so patched the dom instead
+        const originalHasFeature = doc.implementation.hasFeature;
+        doc.implementation.hasFeature = (feature, version) => {
+            if (feature === 'HTML' && version === '2.0') {
+                return false;
+            }
+            else {
+                return originalHasFeature.apply(doc.implementation, [feature, version]);
+            }
+        };
+    }
+
     try {
         return selectFn(selector, doc);
     }
@@ -51,7 +65,7 @@ function nodeValue (node) {
  */
 function select (selector, ns, possibleXML, logger) {
     const xpath = require('xpath'),
-        DOMParser = require('xmldom').DOMParser,
+        DOMParser = require('@xmldom/xmldom').DOMParser,
         parser = new DOMParser({
             errorHandler: (level, message) => {
                 const warn = (logger || {}).warn || (() => {});
