@@ -107,4 +107,25 @@ function simulateFault (socket, faultConfig, logger) {
     }
 }
 
-module.exports = { defined, isObject, socketName, clone, merge, setDeep, simulateFault };
+/**
+ * Remove specific key and value from object
+ * @param {Object} obj Object to filter
+ * @param {Array|Object|String} filter keys to remove
+ * @returns {Object}
+ */
+
+function objFilter (obj, filter) {
+
+    if (typeof filter === 'string') {
+        delete obj[filter];
+    }
+    else if (Array.isArray(filter)) {
+        filter.filter(keyFilter => obj[keyFilter]).forEach(keyFilter => objFilter(obj, keyFilter));
+    }
+    else {
+        Object.keys(filter).filter(keyFilter => obj[keyFilter]).forEach(keyFilter => objFilter(obj[keyFilter], filter[keyFilter]));
+    }
+    return obj;
+}
+
+module.exports = { defined, isObject, socketName, clone, merge, setDeep, simulateFault, objFilter };
