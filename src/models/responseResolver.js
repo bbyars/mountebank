@@ -98,6 +98,14 @@ function create (stubs, proxy, callbackURL) {
         return selectionValue(nodes);
     }
 
+    function buildDeepEqual (request, fieldName, predicateGenerators, valueOf) {
+        if (!predicateGenerators.ignore) {
+            return valueOf(request[fieldName]);
+        }
+        const objFilter = require('../util/helpers').objFilter;
+        return valueOf(objFilter(request[fieldName], predicateGenerators.ignore[fieldName]));
+    }
+
     function buildEquals (request, matchers, valueOf) {
         const result = {},
             isObject = require('../util/helpers').isObject;
@@ -159,7 +167,7 @@ function create (stubs, proxy, callbackURL) {
 
             // Add parameters
             Object.keys(matcher).forEach(key => {
-                if (key !== 'matches' && key !== 'predicateOperator') {
+                if (key !== 'matches' && key !== 'predicateOperator' && key !== 'ignore') {
                     basePredicate[key] = matcher[key];
                 }
                 if (key === 'xpath') {
@@ -179,7 +187,7 @@ function create (stubs, proxy, callbackURL) {
                     predicate = helpers.clone(basePredicate);
                 if (matcherValue === true && hasPredicateOperator === false) {
                     predicate.deepEquals = {};
-                    predicate.deepEquals[fieldName] = valueOf(request[fieldName]);
+                    predicate.deepEquals[fieldName] = buildDeepEqual(request, fieldName, matcher, valueOf);
                 }
                 else if (hasPredicateOperator === true && matcher.predicateOperator === 'exists') {
                     predicate[matcher.predicateOperator] = buildExists(request, fieldName, matcherValue, request);
@@ -299,16 +307,24 @@ function create (stubs, proxy, callbackURL) {
         else if (responseConfig.inject) {
             return inject(request, responseConfig.inject, logger, imposterState);
         }
+        else if (responseConfig.fault) {
+            // Clone to prevent accidental state changes downstream
+            return Promise.resolve(helpers.clone(responseConfig));
+        }
         else {
             return Promise.reject(exceptions.ValidationError('unrecognized response type',
                 { source: helpers.clone(responseConfig) }));
         }
     }
 
+    // eslint-disable-next-line complexity
     function hasMultipleTypes (responseConfig) {
         return (responseConfig.is && responseConfig.proxy) ||
                (responseConfig.is && responseConfig.inject) ||
-               (responseConfig.proxy && responseConfig.inject);
+               (responseConfig.proxy && responseConfig.inject) ||
+               (responseConfig.fault && responseConfig.proxy) ||
+               (responseConfig.fault && responseConfig.is) ||
+               (responseConfig.fault && responseConfig.inject);
     }
 
     /**
@@ -335,7 +351,8 @@ function create (stubs, proxy, callbackURL) {
 
         // We may have already run the behaviors in the proxy call to persist the decorated response
         // in the new stub. If so, we need to ensure we don't re-run it
-        if (!responseConfig.proxy) {
+        // If we're doing fault simulation there's no need to execute the behaviours
+        if (!responseConfig.proxy && !responseConfig.fault) {
             response = await behaviors.execute(request, response, responseConfig.behaviors, logger, imposterState);
         }
 

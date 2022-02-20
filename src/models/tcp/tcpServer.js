@@ -38,6 +38,7 @@ function create (options, logger, responseFn) {
         }
     }
 
+    // eslint-disable-next-line complexity
     async function respond (payload, request, clientName, socket) {
         let formattedRequestData = payload.toString(encoding);
         if (formattedRequestData.length > 20) {
@@ -59,6 +60,10 @@ function create (options, logger, responseFn) {
 
             if (mbResponse.blocked) {
                 socket.destroy();
+                return;
+            }
+
+            if (helpers.simulateFault(socket, mbResponse.fault, logger)) {
                 return;
             }
 

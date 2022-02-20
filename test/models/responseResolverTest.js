@@ -898,7 +898,108 @@ describe('responseResolver', function () {
                 }
             ]);
         });
+        it('should not ignored a field from the request before recording', async function () {
+            const proxy = { to: mock().returns(Promise.resolve({ key: 'value' })) },
+                stubs = createStubsRepository(),
+                resolver = ResponseResolver.create(stubs, proxy),
+                logger = Logger.create(),
+                response = {
+                    proxy: {
+                        to: 'where',
+                        predicateGenerators: [{
+                            matches: { query: true },
+                            ignore: { query: 'deleteAt' }
+                        }],
+                        mode: 'proxyOnce'
+                    }
+                },
+                request = { query: { limit: 100, enhanced: true, endDate: '2017-10-11', startDate: '2017-09-07' } };
 
+            await stubs.add({ responses: [response] });
+            const responseConfig = await getResponseFrom(stubs);
+            await resolver.resolve(responseConfig, request, logger, {});
+            const stubList = await stubListFor(stubs);
+
+            assert.deepEqual(stubList, [
+                {
+                    predicates: [{
+                        deepEquals: request
+                    }],
+                    responses: [{ is: { key: 'value' } }]
+                },
+                {
+                    responses: [response]
+                }
+            ]);
+        });
+        it('should ignore one specific field from the request before recording', async function () {
+            const proxy = { to: mock().returns(Promise.resolve({ key: 'value' })) },
+                stubs = createStubsRepository(),
+                resolver = ResponseResolver.create(stubs, proxy),
+                logger = Logger.create(),
+                response = {
+                    proxy: {
+                        to: 'where',
+                        predicateGenerators: [{
+                            matches: { query: true },
+                            ignore: { query: 'startDate' }
+                        }],
+                        mode: 'proxyOnce'
+                    }
+                },
+                request = { query: { limit: 100, enhanced: true, endDate: '2017-10-11', startDate: '2017-09-07' } };
+
+            await stubs.add({ responses: [response] });
+            const responseConfig = await getResponseFrom(stubs);
+            await resolver.resolve(responseConfig, request, logger, {});
+            const stubList = await stubListFor(stubs);
+
+            assert.deepEqual(stubList, [
+                {
+                    predicates: [{
+                        deepEquals: { query: { limit: 100, enhanced: true, endDate: '2017-10-11' } }
+                    }],
+                    responses: [{ is: { key: 'value' } }]
+                },
+                {
+                    responses: [response]
+                }
+            ]);
+        });
+        it('should ignore multiple fields from the request before recording', async function () {
+            const proxy = { to: mock().returns(Promise.resolve({ key: 'value' })) },
+                stubs = createStubsRepository(),
+                resolver = ResponseResolver.create(stubs, proxy),
+                logger = Logger.create(),
+                response = {
+                    proxy: {
+                        to: 'where',
+                        predicateGenerators: [{
+                            matches: { field: true },
+                            ignore: { field: { mutable: { date: ['deleteAt', 'endDate'] } } }
+                        }],
+                        mode: 'proxyOnce'
+                    }
+                },
+                request = { field: { immutable: { id: '63e3a55f-ee87-457f-b808-cf986c28b312', categories: 'promotion-2021' }, mutable: { date: { endDate: '2017-10-11', startDate: '2017-09-07', creatAt: '2017-08-06', deleteAt: '2017-10-11' } } } };
+
+            await stubs.add({ responses: [response] });
+            const responseConfig = await getResponseFrom(stubs);
+            await resolver.resolve(responseConfig, request, logger, {});
+            const stubList = await stubListFor(stubs);
+
+            assert.deepEqual(stubList, [
+                {
+                    predicates: [{
+                        deepEquals: { field: { immutable: { id: '63e3a55f-ee87-457f-b808-cf986c28b312', categories: 'promotion-2021' }, mutable: { date: { startDate: '2017-09-07', creatAt: '2017-08-06' } } } }
+                    }],
+                    responses: [{ is: { key: 'value' } }]
+                },
+                {
+                    responses: [response]
+                }
+            ]);
+        });
         it('should log warning if request not JSON', async function () {
             const proxy = { to: mock().returns(Promise.resolve({ key: 'value' })) },
                 stubs = createStubsRepository(),
@@ -1120,6 +1221,21 @@ describe('responseResolver', function () {
                 resolver = ResponseResolver.create(stubs, {}),
                 logger = Logger.create(),
                 responseConfig = { is: 'value', proxy: { to: 'http://www.google.com' } };
+
+            try {
+                await resolver.resolve(responseConfig, {}, logger, {});
+                assert.fail('should not have resolved');
+            }
+            catch (error) {
+                assert.strictEqual(error.message, 'each response object must have only one response type');
+            }
+        });
+
+        it('should throw error if fault used with other response type', async function () {
+            const stubs = createStubsRepository(),
+                resolver = ResponseResolver.create(stubs, {}),
+                logger = Logger.create(),
+                responseConfig = { fault: 'value', proxy: { to: 'http://www.google.com' } };
 
             try {
                 await resolver.resolve(responseConfig, {}, logger, {});

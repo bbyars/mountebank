@@ -133,6 +133,10 @@ module.exports = function (createBaseServer) {
                     return;
                 }
 
+                if (helpers.simulateFault(request.socket, mbResponse.fault, logger)) {
+                    return;
+                }
+
                 response.writeHead(stubResponse.statusCode, stubResponse.headers);
                 response.end(stubResponse.body.toString(), encoding);
 
