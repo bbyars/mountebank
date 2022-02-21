@@ -412,7 +412,7 @@ function selectRowFromCSV (csvConfig, keyValue, logger) {
         helpers = require('../util/helpers'),
         delimiter = csvConfig.delimiter || ',',
         inputStream = fs.createReadStream(csvConfig.path),
-        parser = require('csv-parse').parse({ delimiter: delimiter }),
+        parser = require('csv-parse')({ delimiter: delimiter }),
         pipe = inputStream.pipe(parser);
     let headers;
 
