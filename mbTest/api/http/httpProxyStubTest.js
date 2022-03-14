@@ -892,4 +892,31 @@ describe('http proxy stubs', function () {
             await originServer.stop();
         }
     });
+
+    it('should save JSON bodies as JSON instead of text (issue #656)', async function () {
+        const originServerPort = port + 1,
+            originServerStub = { responses: [{ is: { body: { json: true } } }] },
+            originServerRequest = {
+                protocol: 'http',
+                port: originServerPort,
+                stubs: [originServerStub],
+                name: 'origin'
+            },
+            proxyStub = { responses: [{ proxy: { to: `http://localhost:${originServerPort}` } }] },
+            proxyRequest = {
+                protocol: 'http',
+                port,
+                stubs: [proxyStub],
+                name: 'proxy'
+            };
+        await api.createImposter(originServerRequest);
+        await api.createImposter(proxyRequest);
+
+        const requestToSaveProxiedCall = await client.get('/', proxyRequest.port);
+        assert.strictEqual(requestToSaveProxiedCall.body, '{\n    "json": true\n}');
+
+        const configRequest = await api.get(`/imposters/${proxyRequest.port}`);
+        // console.log(configRequest.body.stubs[0].responses[0].is);
+        assert.deepStrictEqual(configRequest.body.stubs[0].responses[0].is.body, { json: true });
+    });
 });

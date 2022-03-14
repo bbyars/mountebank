@@ -132,6 +132,15 @@ function create (logger) {
         return BINARY_MIME_TYPES.some(typeName => contentType.indexOf(typeName) >= 0);
     }
 
+    function maybeJSON (text) {
+        try {
+            return JSON.parse(text);
+        }
+        catch {
+            return text;
+        }
+    }
+
     function proxy (proxiedRequest) {
         return new Promise(resolve => {
             proxiedRequest.end();
@@ -151,7 +160,7 @@ function create (logger) {
                         stubResponse = {
                             statusCode: response.statusCode,
                             headers: headersMap.ofRaw(response.rawHeaders).all(),
-                            body: body.toString(encoding),
+                            body: maybeJSON(body.toString(encoding)),
                             _mode: mode
                         };
                     resolve(stubResponse);
