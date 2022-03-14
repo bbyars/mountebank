@@ -575,6 +575,22 @@ function merge (defaults, overrides) {
                 assert.strictEqual(getResponse.body, 'SECOND');
             });
 
+            it('should provide a good error message when adding stub with missing information', async function () {
+                const request = {
+                        protocol,
+                        port,
+                        stubs: [{ responses: [{ is: { body: 'first' } }] }]
+                    },
+                    newStub = { responses: [{ is: { body: 'SECOND' } }] },
+                    errorBody = { index: 1, STUBS: newStub };
+                await api.createImposter(request);
+
+                const postResponse = await api.post(`/imposters/${port}/stubs`, errorBody);
+                assert.strictEqual(postResponse.statusCode, 400);
+                assert.deepStrictEqual(postResponse.body.errors,
+                    [{ code: 'bad data', message: "must contain 'stub' field" }]);
+            });
+
             it('should support adding single stub at end without index ', async function () {
                 const request = {
                         protocol,

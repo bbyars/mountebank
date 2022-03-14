@@ -19,3 +19,4 @@ metrics/
 .nyc_output/
 cc-test-reporter
 testResults
+tmp/

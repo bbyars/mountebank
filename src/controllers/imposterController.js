@@ -242,11 +242,14 @@ function create (protocols, imposters, logger, allowInjection) {
         }
     }
 
-    function validateNewStubIndex (index, allStubs) {
+    function validateNewStub (index, allStubs, newStub) {
         const errors = [];
 
         if (typeof index !== 'number' || index < 0 || index > allStubs.length) {
             errors.push(exceptions.ValidationError("'index' must be between 0 and the length of the stubs array"));
+        }
+        if (typeof newStub === 'undefined') {
+            errors.push(exceptions.ValidationError("must contain 'stub' field"));
         }
 
         return { isValid: errors.length === 0, errors };
@@ -266,9 +269,9 @@ function create (protocols, imposters, logger, allowInjection) {
             allStubs = await stubs.toJSON(),
             newStub = request.body.stub,
             index = typeof request.body.index === 'undefined' ? allStubs.length : request.body.index,
-            indexValidation = validateNewStubIndex(index, allStubs);
+            validation = validateNewStub(index, allStubs, newStub);
 
-        if (indexValidation.isValid) {
+        if (validation.isValid) {
             const result = await validateStubs(imposter, [newStub]);
             if (result.isValid) {
                 await stubs.insertAtIndex(newStub, index);
@@ -280,7 +283,7 @@ function create (protocols, imposters, logger, allowInjection) {
             }
         }
         else {
-            respondWithValidationErrors(response, indexValidation.errors);
+            respondWithValidationErrors(response, validation.errors);
         }
     }
 
