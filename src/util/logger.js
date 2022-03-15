@@ -14,7 +14,7 @@ function initializeLogfile (filename) {
 }
 
 function logFormat (config) {
-    const template = config.replace(/\$/g, '\\$') // prevent injection attacks
+    const template = config.replace(/\$/g, '') // prevent injection attacks
         .replace(/%level/g, '${info.level}')
         .replace(/%message/g, '${info.message}')
         .replace(/%timestamp/g, '${info.timestamp}');
