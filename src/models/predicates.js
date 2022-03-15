@@ -90,7 +90,7 @@ function selectXPath (config, encoding, text) {
     return orderIndependent(select('xpath', selectFn, encoding));
 }
 
-function selectTransform (config, options) {
+function selectTransform (config, options, logger) {
     const combinators = require('../util/combinators'),
         helpers = require('../util/helpers'),
         cloned = helpers.clone(config);
@@ -104,7 +104,7 @@ function selectTransform (config, options) {
             cloned.jsonpath.selector = cloned.jsonpath.selector.toLowerCase();
         }
 
-        return combinators.curry(selectJSONPath, cloned.jsonpath, options.encoding, config, stringTransform);
+        return combinators.curry(selectJSONPath, cloned.jsonpath, options.encoding, config, stringTransform, logger);
     }
     else if (config.xpath) {
         if (!cloned.caseSensitive) {
@@ -127,11 +127,15 @@ function caseTransform (config) {
     return config.caseSensitive ? combinators.identity : lowercase;
 }
 
-function exceptTransform (config) {
+function exceptTransform (config, logger) {
     const combinators = require('../util/combinators'),
-        exceptRegexOptions = config.caseSensitive ? 'g' : 'gi';
+        exceptRegexOptions = config.caseSensitive ? 'g' : 'gi',
+        safe = require('safe-regex');
 
     if (config.except) {
+        if (!safe(config.except)) {
+            logger.warn(`If mountebank becomes unresponsive, it is because of this unsafe regular expression: ${config.except}`);
+        }
         return text => text.replace(new RegExp(config.except, exceptRegexOptions), '');
     }
     else {
@@ -149,10 +153,10 @@ function encodingTransform (encoding) {
     }
 }
 
-function tryJSON (value, predicateConfig) {
+function tryJSON (value, predicateConfig, logger) {
     try {
         const keyCaseTransform = predicateConfig.keyCaseSensitive === false ? lowercase : caseTransform(predicateConfig),
-            valueTransforms = [exceptTransform(predicateConfig), caseTransform(predicateConfig)];
+            valueTransforms = [exceptTransform(predicateConfig, logger), caseTransform(predicateConfig)];
 
         // We can't call normalize because we want to avoid the array sort transform,
         // which will mess up indexed selectors like $..title[1]
@@ -163,10 +167,11 @@ function tryJSON (value, predicateConfig) {
     }
 }
 
-function selectJSONPath (config, encoding, predicateConfig, stringTransform, text) {
+// eslint-disable-next-line max-params
+function selectJSONPath (config, encoding, predicateConfig, stringTransform, logger, text) {
     const jsonpath = require('./jsonpath'),
         combinators = require('../util/combinators'),
-        possibleJSON = stringTransform(tryJSON(text, predicateConfig)),
+        possibleJSON = stringTransform(tryJSON(text, predicateConfig, logger)),
         selectFn = combinators.curry(jsonpath.select, config.selector, possibleJSON);
 
     return orderIndependent(select('jsonpath', selectFn, encoding));
@@ -194,7 +199,7 @@ function transformAll (obj, keyTransforms, valueTransforms, arrayTransforms) {
     }
 }
 
-function normalize (obj, config, options) {
+function normalize (obj, config, options, logger) {
     // Needed to solve a tricky case conversion for "matches" predicates with jsonpath/xpath parameters
     if (typeof config.keyCaseSensitive === 'undefined') {
         config.keyCaseSensitive = config.caseSensitive;
@@ -205,10 +210,10 @@ function normalize (obj, config, options) {
         transforms = [];
 
     if (options.withSelectors) {
-        transforms.push(selectTransform(config, options));
+        transforms.push(selectTransform(config, options, logger));
     }
 
-    transforms.push(exceptTransform(config));
+    transforms.push(exceptTransform(config, logger));
     transforms.push(caseTransform(config));
     transforms.push(encodingTransform(options.encoding));
 
@@ -300,17 +305,17 @@ function predicateSatisfied (expected, actual, predicateConfig, predicateFn) {
 }
 
 function create (operator, predicateFn) {
-    return (predicate, request, encoding) => {
-        const expected = normalize(predicate[operator], predicate, { encoding: encoding }),
-            actual = normalize(request, predicate, { encoding: encoding, withSelectors: true });
+    return (predicate, request, encoding, logger) => {
+        const expected = normalize(predicate[operator], predicate, { encoding: encoding }, logger),
+            actual = normalize(request, predicate, { encoding: encoding, withSelectors: true }, logger);
 
         return predicateSatisfied(expected, actual, predicate, predicateFn);
     };
 }
 
-function deepEquals (predicate, request, encoding) {
-    const expected = normalize(forceStrings(predicate.deepEquals), predicate, { encoding: encoding }),
-        actual = normalize(forceStrings(request), predicate, { encoding: encoding, withSelectors: true, shouldForceStrings: true }),
+function deepEquals (predicate, request, encoding, logger) {
+    const expected = normalize(forceStrings(predicate.deepEquals), predicate, { encoding: encoding }, logger),
+        actual = normalize(forceStrings(request), predicate, { encoding: encoding, withSelectors: true, shouldForceStrings: true }, logger),
         stringify = require('safe-stable-stringify'),
         isObject = require('../util/helpers').isObject;
 
@@ -318,13 +323,13 @@ function deepEquals (predicate, request, encoding) {
         // Support predicates that reach into fields encoded in JSON strings (e.g. HTTP bodies)
         if (isObject(expected[fieldName]) && typeof actual[fieldName] === 'string') {
             const possibleJSON = tryJSON(actual[fieldName], predicate);
-            actual[fieldName] = normalize(forceStrings(possibleJSON), predicate, { encoding: encoding });
+            actual[fieldName] = normalize(forceStrings(possibleJSON), predicate, { encoding: encoding }, logger);
         }
         return stringify(expected[fieldName]) === stringify(actual[fieldName]);
     });
 }
 
-function matches (predicate, request, encoding) {
+function matches (predicate, request, encoding, logger) {
     // We want to avoid the lowerCase transform on values so we don't accidentally butcher
     // a regular expression with upper case metacharacters like \W and \S
     // However, we need to maintain the case transform for keys like http header names (issue #169)
@@ -333,16 +338,22 @@ function matches (predicate, request, encoding) {
         helpers = require('../util/helpers'),
         clone = helpers.merge(predicate, { caseSensitive: true, keyCaseSensitive: caseSensitive }),
         noexcept = helpers.merge(clone, { except: '' }),
-        expected = normalize(predicate.matches, noexcept, { encoding: encoding }),
-        actual = normalize(request, clone, { encoding: encoding, withSelectors: true }),
+        expected = normalize(predicate.matches, noexcept, { encoding: encoding }, logger),
+        actual = normalize(request, clone, { encoding: encoding, withSelectors: true }, logger),
         options = caseSensitive ? '' : 'i',
-        errors = require('../util/errors');
+        errors = require('../util/errors'),
+        safe = require('safe-regex');
 
     if (encoding === 'base64') {
         throw errors.ValidationError('the matches predicate is not allowed in binary mode');
     }
 
-    return predicateSatisfied(expected, actual, clone, (a, b) => new RegExp(a, options).test(b));
+    return predicateSatisfied(expected, actual, clone, (a, b) => {
+        if (!safe(a)) {
+            logger.warn(`If mountebank becomes unresponsive, it is because of this unsafe regular expression: ${a}`);
+        }
+        return new RegExp(a, options).test(b);
+    });
 }
 
 function not (predicate, request, encoding, logger, imposterState) {

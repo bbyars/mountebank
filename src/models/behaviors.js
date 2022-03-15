@@ -306,7 +306,12 @@ function getMatches (selectionFn, selector, logger) {
 
 function regexValue (from, config, logger) {
     const regex = new RegExp(config.using.selector, regexFlags(config.using.options)),
-        selectionFn = () => regex.exec(from);
+        selectionFn = () => regex.exec(from),
+        safe = require('safe-regex');
+
+    if (!safe(regex)) {
+        logger.warn(`If mountebank becomes unresponsive, it is because of this unsafe regular expression: ${config.using.selector}`);
+    }
     return getMatches(selectionFn, regex, logger);
 }
 

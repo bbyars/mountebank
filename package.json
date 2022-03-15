@@ -69,6 +69,7 @@
     "nodemailer": "6.7.2",
     "prom-client": "14.0.1",
     "proper-lockfile": "4.1.2",
+    "safe-regex": "^2.1.1",
     "safe-stable-stringify": "2.3.1",
     "smtp-server": "3.9.0",
     "winston": "3.6.0",
