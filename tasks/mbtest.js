@@ -17,7 +17,6 @@ function mochaParamsFor (testType) {
     return [
         'node_modules/mocha/bin/mocha',
         '--forbid-only',
-        '--forbid-pending',
         '--reporter',
         'mocha-multi-reporters',
         '--reporter-options',

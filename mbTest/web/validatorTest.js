@@ -63,7 +63,7 @@ async function getHTML (path) {
 describe('all pages in the mountebank website', function () {
     this.timeout(60000);
 
-    it('should be valid html', async function () {
+    xit('should be valid html', async function () {
         const blacklist = ['/feed', '/logs', '/metrics'],
             response = await api.get('/sitemap');
         assert.strictEqual(response.statusCode, 200);
