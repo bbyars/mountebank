@@ -3,17 +3,17 @@ version: 2.1
 executors:
   node-maintenance:
     docker:
-      - image: circleci/node:12-stretch
+      - image: circleci/node:14-stretch
     environment:
       - MB_SLOW_TEST_TIMEOUT: 10000
   node-active:
     docker:
-      - image: circleci/node:14-stretch
+      - image: circleci/node:16-stretch
     environment:
       - MB_SLOW_TEST_TIMEOUT: 10000
   node-current:
     docker:
-      - image: circleci/node:16-stretch
+      - image: circleci/node:18-stretch
     environment:
       - MB_SLOW_TEST_TIMEOUT: 10000
 
