@@ -8,12 +8,12 @@ executors:
       - MB_SLOW_TEST_TIMEOUT: 10000
   node-active:
     docker:
-      - image: circleci/node:16-stretch
+      - image: cimg/node:lts
     environment:
       - MB_SLOW_TEST_TIMEOUT: 10000
   node-current:
     docker:
-      - image: circleci/node:18-stretch
+      - image: cimg/node:current
     environment:
       - MB_SLOW_TEST_TIMEOUT: 10000
 
@@ -144,6 +144,7 @@ jobs:
       - run:
           name: Test
           command: |
+            node -v
             node tasks/mb.js start --allowInjection --localOnly --datadir .mbdb
             (cd dist/test && npm test)
       - store_test_results:
