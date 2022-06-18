@@ -18,7 +18,7 @@
         "cli": "mocha --forbid-only --forbid-pending --reporter mocha-multi-reporters --reporter-options configFile=cli/config.json 'cli/**/*.js'",
         "js": "mocha --forbid-only --forbid-pending --reporter mocha-multi-reporters --reporter-options configFile=cli/config.json 'js/**/*.js'",
         "perf": "mocha --forbid-only --forbid-pending --reporter mocha-multi-reporters --reporter-options configFile=perf/config.json 'perf/**/*.js'",
-        "web": "mocha --forbid-only --forbid-pending --reporter mocha-multi-reporters --reporter-options configFile=web/config.json 'web/**/*.js'",
+        "web": "mocha --forbid-only --reporter mocha-multi-reporters --reporter-options configFile=web/config.json 'web/**/*.js'",
         "test": "npm run api && npm run cli && npm run js",
         "airplane": "MB_AIRPLANE_MODE=true npm test"
     },
