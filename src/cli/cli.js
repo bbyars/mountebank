@@ -66,6 +66,12 @@ const fs = require('fs-extra'),
             type: 'string',
             global: false
         },
+        impostersRepositoryConfig: {
+            description: 'path to config file for custom imposters repository',
+            nargs: 1,
+            type: 'string',
+            global: false
+        },
         pidfile: {
             default: 'mb.pid',
             description: 'where the pid is stored for the stop command',
