@@ -8,12 +8,12 @@ executors:
       - MB_SLOW_TEST_TIMEOUT: 10000
   node-active:
     docker:
-      - image: circleci/node:14-stretch
+      - image: cimg/node:lts
     environment:
       - MB_SLOW_TEST_TIMEOUT: 10000
   node-current:
     docker:
-      - image: circleci/node:14-stretch
+      - image: cimg/node:lts
     environment:
       - MB_SLOW_TEST_TIMEOUT: 10000
 
@@ -41,6 +41,9 @@ jobs:
       - CC_TEST_REPORTER_ID=8bc3a050a2f8ef1cc460e5f4c72d18a689c8ae0981bf494031eb4eb28bbd0b0b
     steps:
       - checkout
+      - run:
+          name: Validate versions
+          command: node -v && npm -v
       - run:
           name: Install Dependencies
           command: npm ci
