@@ -23,7 +23,7 @@ case you can run mountebank using the <code>npx mb</code> command.</p>
 <p>Alternatively, you can download the Docker image and run:</p>
 
 <pre><code>docker pull bbyars/mountebank:<%= version %>
-docker run --rm -p 2525:2525 -p 8080:8080 bbyars/mountebank:<%= version %> mb start --configfile imposters.ejs</code></pre>
+docker run --rm -p 2525:2525 -p 4545:4545 -p 5555:5555 bbyars/mountebank:<%= version %> mb start </code></pre>
 
 <p><b>Use:</b></p>
 
