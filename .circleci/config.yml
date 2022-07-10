@@ -13,7 +13,7 @@ executors:
       - MB_SLOW_TEST_TIMEOUT: 10000
   node-current:
     docker:
-      - image: cimg/node:current
+      - image: cimg/node:lts
     environment:
       - MB_SLOW_TEST_TIMEOUT: 10000
 
