@@ -8,12 +8,12 @@ executors:
       - MB_SLOW_TEST_TIMEOUT: 10000
   node-active:
     docker:
-      - image: cimg/node:lts
+      - image: circleci/node:14-stretch
     environment:
       - MB_SLOW_TEST_TIMEOUT: 10000
   node-current:
     docker:
-      - image: cimg/node:current
+      - image: circleci/node:14-stretch
     environment:
       - MB_SLOW_TEST_TIMEOUT: 10000
 
