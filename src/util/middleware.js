@@ -34,7 +34,9 @@ function useAbsoluteUrls (port) {
                 changeLinks = function (obj) {
                     if (obj._links) {
                         Object.keys(obj._links).forEach(function (rel) {
-                            obj._links[rel].href = absolutize(obj._links[rel].href);
+                            if (obj._links[rel].href) {
+                                obj._links[rel].href = absolutize(obj._links[rel].href);
+                            }
                         });
                     }
                 },

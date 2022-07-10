@@ -82,36 +82,6 @@ describe('http proxy stubs', function () {
         assert.strictEqual(response.body, 'ERROR');
     });
 
-    // https://github.com/bbyars/mountebank/issues/600
-    it('should handle the connect method', async function () {
-        const proxy = {
-            protocol: 'https',
-            port: port,
-            stubs: [
-                { responses: [{ proxy: { to: 'https://api.github.com:443' } }] }
-            ]
-        };
-        await api.createImposter(proxy);
-
-        const response = await clientSecure.responseFor({
-            host: 'api.github.com',
-            path: '/repos/bbyars/mountebank/contents/README.md',
-            port: 443,
-            agent: new HttpsProxyAgent({
-                keepAlive: true,
-                proxy: `https://localhost:${proxy.port}`
-            }),
-            headers: {
-                'User-Agent': 'Mountebank Proxy Test <http://mbtest.org>'
-            }
-        });
-
-        assert.strictEqual(response.statusCode, 200);
-        assert.strictEqual(response.body.name, 'README.md');
-        assert.strictEqual(response.body.path, 'README.md');
-        assert.strictEqual(response.body.type, 'file');
-    });
-
     it('should update the host header to the origin server', async function () {
         const origin = {
                 protocol: 'http',
@@ -184,6 +154,36 @@ describe('http proxy stubs', function () {
             assert.strictEqual(response.statusCode.toString().substring(0, 2), '30');
             // https://www.google.com.br in Brasil, google.ca in Canada, etc
             assert.ok(response.headers.location.indexOf('google.') >= 0, response.headers.location);
+        });
+
+        // https://github.com/bbyars/mountebank/issues/600
+        it('should handle the connect method', async function () {
+            const proxy = {
+                protocol: 'https',
+                port: port,
+                stubs: [
+                    { responses: [{ proxy: { to: 'https://api.github.com:443' } }] }
+                ]
+            };
+            await api.createImposter(proxy);
+
+            const response = await clientSecure.responseFor({
+                host: 'api.github.com',
+                path: '/repos/bbyars/mountebank/contents/README.md',
+                port: 443,
+                agent: new HttpsProxyAgent({
+                    keepAlive: true,
+                    proxy: `https://localhost:${proxy.port}`
+                }),
+                headers: {
+                    'User-Agent': 'Mountebank Proxy Test <http://mbtest.org>'
+                }
+            });
+
+            assert.strictEqual(response.statusCode, 200);
+            assert.strictEqual(response.body.name, 'README.md');
+            assert.strictEqual(response.body.path, 'README.md');
+            assert.strictEqual(response.body.type, 'file');
         });
     }
 
