@@ -92,7 +92,8 @@
     "w3cjs": "0.4.0"
   },
   "engines": {
-    "node": ">=12"
+    "node": ">=12",
+    "npm": "~6"
   },
   "snyk": true,
   "contributors": [
