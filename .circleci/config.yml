@@ -26,6 +26,9 @@ jobs:
     steps:
       - checkout
       - run:
+          name: Switch to NPM Version 6
+          command: npm -g install npm@6
+      - run:
           name: Install Dependencies
           command: npm ci
       - run: npm test
