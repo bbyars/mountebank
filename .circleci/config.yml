@@ -86,7 +86,6 @@ jobs:
       - MB_SLOW_TEST_TIMEOUT: 10000
     steps:
       - checkout
-      - switch-npm-to-6
       - run:
           name: Install Dependencies
           command: npm ci
