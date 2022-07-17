@@ -1,5 +1,6 @@
 version: 2.1
 
+# npm v8 had bugs that prevent local file references and npm publish
 commands:
   switch-npm-to-6:
     steps:
@@ -20,7 +21,7 @@ executors:
       - MB_SLOW_TEST_TIMEOUT: 10000
   node-current:
     docker:
-      - image: cimg/node:lts
+      - image: cimg/node:current
     environment:
       - MB_SLOW_TEST_TIMEOUT: 10000
 
@@ -86,7 +87,6 @@ jobs:
       - MB_SLOW_TEST_TIMEOUT: 10000
     steps:
       - checkout
-      - switch-npm-to-6
       - run:
           name: Install Dependencies
           command: npm ci
@@ -200,6 +200,7 @@ jobs:
           version: 20.10.7
       - attach_workspace:
           at: .
+      - switch-npm-to-6
       - run:
           name: Publish npm
           command: scripts/publishNpm

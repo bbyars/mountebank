@@ -159,7 +159,7 @@ describe('security', function () {
                     interfaces[name].forEach(address => {
                         if (address.internal === local) {
                             result.push({
-                                family: address.family.replace('IPv', ''),
+                                family: parseInt(address.family.replace('IPv', '')),
                                 address: address.address,
                                 iface: name
                             });
@@ -214,8 +214,12 @@ describe('security', function () {
             return new Promise(res => {
                 let isPending = true;
                 const net = require('net'),
-                    socket = net.createConnection({ family: ip.family, localAddress: ip.address, port: destinationPort },
-                        () => { socket.write('TEST'); }),
+                    socket = net.createConnection({
+                        family: ip.family,
+                        localAddress: ip.address,
+                        port: destinationPort
+                    },
+                    () => { socket.write('TEST'); }),
                     resolve = result => {
                         isPending = false;
                         res(result);

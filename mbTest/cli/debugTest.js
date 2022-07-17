@@ -30,7 +30,8 @@ describe('--debug', function () {
             stubs = JSON.stringify(response.body.stubs),
             scrubbed = stubs.replace(/"timestamp":"[^"]+"/g, '"timestamp":"NOW"')
                 .replace(/"processingTime":\d+/g, '"processingTime":0')
-                .replace(/"requestFrom":"[a-f:.\d]+"/g, '"requestFrom":"HERE"'),
+                .replace(/"requestFrom":"[a-f:.\d]+"/g, '"requestFrom":"HERE"')
+                .replace(/::ffff:127.0.0.1/g, '::1'), // node v18 switched to native IPv6
             actualWithoutEphemeralData = JSON.parse(scrubbed);
 
         assert.deepEqual(actualWithoutEphemeralData, [{
@@ -38,14 +39,14 @@ describe('--debug', function () {
             matches: [
                 {
                     timestamp: 'NOW',
-                    request: { requestFrom: 'HERE', data: 'first', ip: '::ffff:127.0.0.1' },
+                    request: { requestFrom: 'HERE', data: 'first', ip: '::1' },
                     response: { data: '1' },
                     responseConfig: { is: { data: '1' } },
                     processingTime: 0
                 },
                 {
                     timestamp: 'NOW',
-                    request: { requestFrom: 'HERE', data: 'second', ip: '::ffff:127.0.0.1' },
+                    request: { requestFrom: 'HERE', data: 'second', ip: '::1' },
                     response: { data: '2' },
                     responseConfig: { is: { data: '2' } },
                     processingTime: 0
@@ -68,7 +69,8 @@ describe('--debug', function () {
             stubs = JSON.stringify(response.body.stubs),
             scrubbed = stubs.replace(/"timestamp":"[^"]+"/g, '"timestamp":"NOW"')
                 .replace(/"processingTime":\d+/g, '"processingTime":0')
-                .replace(/"requestFrom":"[a-f:.\d]+"/g, '"requestFrom":"HERE"'),
+                .replace(/"requestFrom":"[a-f:.\d]+"/g, '"requestFrom":"HERE"')
+                .replace(/::ffff:127.0.0.1/g, '::1'), // node v18 switched to native IPv6,
             actualWithoutEphemeralData = JSON.parse(scrubbed),
             requestHeaders = { accept: 'application/json', Host: `localhost:${serverPort}`, Connection: 'keep-alive' };
 
@@ -83,7 +85,7 @@ describe('--debug', function () {
                         query: { q: '1' },
                         method: 'GET',
                         headers: requestHeaders,
-                        ip: '::ffff:127.0.0.1',
+                        ip: '::1',
                         body: ''
                     },
                     response: {
@@ -102,7 +104,7 @@ describe('--debug', function () {
                         query: { q: '2' },
                         method: 'GET',
                         headers: requestHeaders,
-                        ip: '::ffff:127.0.0.1',
+                        ip: '::1',
                         body: ''
                     },
                     response: {
