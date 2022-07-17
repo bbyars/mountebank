@@ -129,6 +129,7 @@ jobs:
 
   maintenanceOutOfProcessImposters:
     executor: node-maintenance
+    resource_class: xlarge
     environment:
       - MB_PORT: 3535
       - MB_PERSISTENT: true
