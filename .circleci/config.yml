@@ -46,7 +46,7 @@ jobs:
 
   build:
     executor: node-active
-    resource-class: xlarge
+    resource_class: xlarge
     environment:
       - CC_TEST_REPORTER_ID=8bc3a050a2f8ef1cc460e5f4c72d18a689c8ae0981bf494031eb4eb28bbd0b0b
     steps:
@@ -84,7 +84,6 @@ jobs:
 
   windows:
     executor: win/default
-    resource-class: xlarge
     environment:
       - MB_SLOW_TEST_TIMEOUT: 10000
     steps:
