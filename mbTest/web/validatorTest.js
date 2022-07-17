@@ -5,6 +5,8 @@ const assert = require('assert'),
     api = require('../api').create(),
     httpClient = require('../baseHttpClient').create('http');
 
+w3cjs.setW3cCheckUrl('https://validator.w3.org/nu/');
+
 function assertValid (path, html) {
     return new Promise(resolve => {
         w3cjs.validate({
@@ -63,7 +65,7 @@ async function getHTML (path) {
 describe('all pages in the mountebank website', function () {
     this.timeout(60000);
 
-    xit('should be valid html', async function () {
+    it('should be valid html', async function () {
         const blacklist = ['/feed', '/logs', '/metrics'],
             response = await api.get('/sitemap');
         assert.strictEqual(response.statusCode, 200);
