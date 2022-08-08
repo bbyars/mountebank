@@ -9,7 +9,7 @@ if [ "$MB_RELEASE" = "true" ]; then
 fi
 
 cd dist/mountebank
-DOCKER_BUILDKIT=1 docker build -t bbyars/mountebank:$VERSION -t bbyars/mountebank:$TAG .
-docker login -u $DOCKER_USER -p "$DOCKER_PASSWORD"
+DOCKER_BUILDKIT=1 docker buildx build --platform=linux/arm64,linux/amd64 --no-cache --tag bbyars/mountebank:$VERSION --tag bbyars/mountebank:$TAG --push .
+docker login --username $DOCKER_USER --password "$DOCKER_PASSWORD"
 docker push bbyars/mountebank:$VERSION
 docker push bbyars/mountebank:$TAG
