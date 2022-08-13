@@ -9,6 +9,8 @@ if [ "$MB_RELEASE" = "true" ]; then
 fi
 
 cd dist/mountebank
+docker context create mountebank
+docker buildx create mountebank --use
 DOCKER_BUILDKIT=1 docker buildx build --platform=linux/arm64,linux/amd64 --no-cache --tag bbyars/mountebank:$VERSION --tag bbyars/mountebank:$TAG --push .
 docker login --username $DOCKER_USER --password "$DOCKER_PASSWORD"
 docker push bbyars/mountebank:$VERSION
