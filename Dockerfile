@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1
 
-FROM node:14-alpine
+FROM node:18-alpine
 
 WORKDIR /app
 
@@ -15,4 +15,4 @@ USER mountebank
 
 EXPOSE 2525
 
-CMD ["mb"]
+ENTRYPOINT ["mb"]
