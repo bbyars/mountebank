@@ -11,6 +11,8 @@ fi
 cd dist/mountebank
 docker context create mountebank
 docker buildx create mountebank --use
+# https://stackoverflow.com/questions/72167570/docker-buildx-nodejs-fail
+docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
 DOCKER_BUILDKIT=1 docker buildx build --platform=linux/arm64,linux/amd64 --no-cache --tag bbyars/mountebank:$VERSION --tag bbyars/mountebank:$TAG --push .
 docker login --username $DOCKER_USER --password "$DOCKER_PASSWORD"
 docker push bbyars/mountebank:$VERSION
