@@ -919,44 +919,4 @@ describe('http proxy stubs', function () {
         // console.log(configRequest.body.stubs[0].responses[0].is);
         assert.deepStrictEqual(configRequest.body.stubs[0].responses[0].is.body, { json: true });
     });
-
-    it.only('should allow adding behaviors to the saved proxy response', async function () {
-        const originServerPort = port + 1,
-            originServerStub = { responses: [{ is: { body: 'origin server' } }] },
-            originServerRequest = {
-                protocol: 'http',
-                port: originServerPort,
-                stubs: [originServerStub],
-                name: 'origin'
-            },
-            originDecorator = (request, response) => {
-                response.body += ' origin';
-            },
-            proxyDecorator = (request, response) => {
-                response.body += ' proxy';
-            },
-            proxyStub = {
-                responses: [{
-                    proxy: {
-                        to: `http://localhost:${originServerPort}`,
-                        behaviors: [{ decorate: originDecorator.toString() }]
-                    },
-                    behaviors: [{ decorate: proxyDecorator.toString() }]
-                }]
-            },
-            proxyRequest = {
-                protocol: 'http',
-                port,
-                stubs: [proxyStub],
-                name: 'proxy'
-            };
-        await api.createImposter(originServerRequest);
-        await api.createImposter(proxyRequest);
-
-        await client.get('/', proxyRequest.port); // Record the response
-
-        const configuration = await api.get(`/imposters/${port}`);
-        const savedResponse = configuration.body.stubs[0].responses[0];
-        assert.deepEqual(savedResponse.behaviors, [{ decorate: originDecorator.toString() }]);
-    });
 });
