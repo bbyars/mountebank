@@ -24,7 +24,7 @@ function createBaseServer (options) {
             mutualAuth: metadata.mutualAuth,
             rejectUnauthorized: metadata.rejectUnauthorized,
             ca: metadata.ca,
-            requestCert: !!metadata.rejectUnauthorized
+            requestCert: metadata.mutualAuth && metadata.rejectUnauthorized
         },
         createNodeServer = () => require('https').createServer(config);
 
