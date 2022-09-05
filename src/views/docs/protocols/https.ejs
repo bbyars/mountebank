@@ -113,6 +113,21 @@ switch in <code>curl</code>).  Alternatively, you may pass in the key pair yours
     <td>false</td>
     <td>If true, mountebank will allow all CORS preflight requests on the imposter.</td>
   </tr>
+  <tr>
+    <td><code>rejectUnauthorized</code></td>
+    <td>boolean</td>
+    <td>No</td>
+    <td>false</td>
+    <td>If true, mountebank will validate the certificate against the list of supplied CAs.</td>
+  </tr>
+  <tr>
+    <td><code>ca</code></td>
+    <td>Array of PEM-formatted certificates</td>
+    <td>No</td>
+    <td>null</td>
+    <td>Use when setting <code>rejectUnauthorized</code> to true to provide a list of certificates to validate against.
+        When <code>rejectUnauthorized</code> is true and <code>mutualAuth</code> is true, mountebank will request a client certificate.</td>
+  </tr>
 </table>
 
 <p>See the <a href='/docs/protocols/http'>http</a> page for examples.  Just be sure
