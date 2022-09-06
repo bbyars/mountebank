@@ -1,5 +1,7 @@
 'use strict';
 
+const errors = require('../util/errors.js');
+
 /**
  * Helper functions to navigate the mountebank API for out of process implementations.
  * Used to adapt the built-in (in-process) protocols to out of process.
@@ -47,7 +49,7 @@ function postJSON (what, where) {
                         body = buffer.toString('utf8');
 
                     if (response.statusCode !== 200) {
-                        reject(require('../util/errors').CommunicationError({
+                        reject(errors.CommunicationError({
                             statusCode: response.statusCode,
                             body: body
                         }));

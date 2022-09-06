@@ -1,5 +1,10 @@
 'use strict';
 
+const jsonPathPlus = require('jsonpath-plus'),
+    helpers = require('../util/helpers.js');
+
+const { JSONPath } = jsonPathPlus;
+
 /**
  * Shared logic for xpath selector
  * @module
@@ -13,8 +18,7 @@
  * @returns {Object}
  */
 function select (selector, possibleJSON, logger) {
-    const { JSONPath } = require('jsonpath-plus'),
-        isObject = require('../util/helpers').isObject;
+    const isObject = helpers.isObject;
 
     try {
         const json = isObject(possibleJSON) ? possibleJSON : JSON.parse(possibleJSON),

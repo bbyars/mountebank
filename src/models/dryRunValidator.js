@@ -1,5 +1,13 @@
 'use strict';
 
+const exceptions = require('../util/errors.js'),
+    helpers = require('../util/helpers.js'),
+    responseResolver = require('./responseResolver.js'),
+    inMemoryImpostersRepository = require('./inMemoryImpostersRepository.js'),
+    predicates = require('./predicates.js'),
+    combinators = require('../util/combinators.js'),
+    behaviors = require('./behaviors.js');
+
 /**
  * Validating a syntactically correct imposter creation statically is quite difficult.
  * This module validates dynamically by running test requests through each predicate and each stub
@@ -17,13 +25,10 @@
  * @returns {Object}
  */
 function create (options) {
-    const exceptions = require('../util/errors');
-
     function stubForResponse (originalStub, response, withPredicates) {
         // Each dry run only validates the first response, so we
         // explode the number of stubs to dry run each response separately
-        const helpers = require('../util/helpers'),
-            clonedStub = helpers.clone(originalStub),
+        const clonedStub = helpers.clone(originalStub),
             clonedResponse = helpers.clone(response);
         clonedStub.responses = [clonedResponse];
 
@@ -44,7 +49,7 @@ function create (options) {
             stubsToValidateWithoutPredicates = stub.responses.map(response => stubForResponse(stub, response, false)),
             stubsToValidate = stubsToValidateWithPredicates.concat(stubsToValidateWithoutPredicates),
             promises = stubsToValidate.map(async stubToValidate => {
-                const stubRepository = require('./inMemoryImpostersRepository').create().createStubsRepository();
+                const stubRepository = inMemoryImpostersRepository.create().createStubsRepository();
                 await stubRepository.add(stubToValidate);
                 return stubRepository;
             });
@@ -60,8 +65,6 @@ function create (options) {
 
     function findFirstMatch (stubRepository, request, encoding, logger) {
         const filter = stubPredicates => {
-            const predicates = require('./predicates');
-
             return trueForAll(stubPredicates,
                 predicate => predicates.evaluate(predicate, request, encoding, logger, {}));
         };
@@ -74,10 +77,10 @@ function create (options) {
         // us a testProxyResult
         if (options.testProxyResponse) {
             const dryRunProxy = { to: () => Promise.resolve(options.testProxyResponse) };
-            return require('./responseResolver').create(stubRepository, dryRunProxy);
+            return responseResolver.create(stubRepository, dryRunProxy);
         }
         else {
-            return require('./responseResolver').create(stubRepository, undefined, 'URL');
+            return responseResolver.create(stubRepository, undefined, 'URL');
         }
     }
 
@@ -92,8 +95,7 @@ function create (options) {
         options.testRequest = options.testRequest || {};
         options.testRequest.isDryRun = true;
 
-        const combinators = require('../util/combinators'),
-            dryRunLogger = {
+        const dryRunLogger = {
                 debug: combinators.noop,
                 info: combinators.noop,
                 warn: combinators.noop,
@@ -183,7 +185,6 @@ function create (options) {
 
     function addBehaviorErrors (stub, errors) {
         stub.responses.forEach(response => {
-            const behaviors = require('./behaviors');
             addAllTo(errors, behaviors.validate(response.behaviors));
             addRepeatErrorsTo(errors, response);
         });

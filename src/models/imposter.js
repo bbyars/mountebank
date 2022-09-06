@@ -8,37 +8,42 @@
  * @module
  */
 
-
 const prometheus = require('prom-client'),
-    metrics = {
-        predicateMatchDuration: new prometheus.Histogram({
-            name: 'mb_predicate_match_duration_seconds',
-            help: 'Time it takes to match the predicates and select a stub',
-            buckets: [0.01, 0.05, 0.1, 0.2, 0.5, 1],
-            labelNames: ['imposter']
-        }),
-        noMatchCount: new prometheus.Counter({
-            name: 'mb_no_match_total',
-            help: 'Number of times no stub matched the request',
-            labelNames: ['imposter']
-        }),
-        requestCount: new prometheus.Counter({
-            name: 'mb_request_total',
-            help: 'Number of requests to the imposter',
-            labelNames: ['imposter']
-        }),
-        responseGenerationDuration: new prometheus.Histogram({
-            name: 'mb_response_generation_duration_seconds',
-            help: 'Time it takes to generate the response from a stub',
-            buckets: [0.01, 0.05, 0.1, 0.2, 0.5, 1, 3, 5, 10, 30],
-            labelNames: ['imposter']
-        }),
-        blockedIPCount: new prometheus.Counter({
-            name: 'mb_blocked_ip_total',
-            help: 'Number of times a connection was blocked from a non-whitelisted IP address',
-            labelNames: ['imposter']
-        })
-    };
+    compatibility = require('./compatibility.js'),
+    scopedLogger = require('../util/scopedLogger.js'),
+    helpers = require('../util/helpers.js'),
+    predicates = require('./predicates.js'),
+    imposterPrinter = require('./imposterPrinter.js');
+
+const metrics = {
+    predicateMatchDuration: new prometheus.Histogram({
+        name: 'mb_predicate_match_duration_seconds',
+        help: 'Time it takes to match the predicates and select a stub',
+        buckets: [0.01, 0.05, 0.1, 0.2, 0.5, 1],
+        labelNames: ['imposter']
+    }),
+    noMatchCount: new prometheus.Counter({
+        name: 'mb_no_match_total',
+        help: 'Number of times no stub matched the request',
+        labelNames: ['imposter']
+    }),
+    requestCount: new prometheus.Counter({
+        name: 'mb_request_total',
+        help: 'Number of requests to the imposter',
+        labelNames: ['imposter']
+    }),
+    responseGenerationDuration: new prometheus.Histogram({
+        name: 'mb_response_generation_duration_seconds',
+        help: 'Time it takes to generate the response from a stub',
+        buckets: [0.01, 0.05, 0.1, 0.2, 0.5, 1, 3, 5, 10, 30],
+        labelNames: ['imposter']
+    }),
+    blockedIPCount: new prometheus.Counter({
+        name: 'mb_blocked_ip_total',
+        help: 'Number of times a connection was blocked from a non-whitelisted IP address',
+        labelNames: ['imposter']
+    })
+};
 
 /**
  * Create the imposter
@@ -59,9 +64,7 @@ async function create (Protocol, creationRequest, baseLogger, config, isAllowedC
         return scope;
     }
 
-    const compatibility = require('./compatibility'),
-        logger = require('../util/scopedLogger').create(baseLogger, scopeFor(creationRequest.port)),
-        helpers = require('../util/helpers'),
+    const logger = scopedLogger.create(baseLogger, scopeFor(creationRequest.port)),
         imposterState = {},
         unresolvedProxies = {},
         header = helpers.clone(creationRequest);
@@ -81,7 +84,6 @@ async function create (Protocol, creationRequest, baseLogger, config, isAllowedC
 
     async function findFirstMatch (request) {
         const filter = stubPredicates => {
-                const predicates = require('./predicates');
                 return stubPredicates.every(predicate =>
                     predicates.evaluate(predicate, request, encoding, logger, imposterState));
             },
@@ -196,7 +198,7 @@ async function create (Protocol, creationRequest, baseLogger, config, isAllowedC
                     return recordRequests ? stubs.loadRequests() : [];
                 }
 
-                const printer = require('./imposterPrinter').create(header, server, loadRequests),
+                const printer = imposterPrinter.create(header, server, loadRequests),
                     toJSON = options => printer.toJSON(numberOfRequests, options);
 
                 return resolve({

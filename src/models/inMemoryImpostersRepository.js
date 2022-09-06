@@ -1,5 +1,8 @@
 'use strict';
 
+const helpers = require('../util/helpers.js'),
+    errors = require('../util/errors.js');
+
 /**
  * An abstraction for loading imposters from in-memory
  * @module
@@ -24,8 +27,7 @@ function repeatTransform (responses) {
 }
 
 function createResponse (responseConfig, stubIndexFn) {
-    const helpers = require('../util/helpers'),
-        cloned = helpers.clone(responseConfig || { is: {} });
+    const cloned = helpers.clone(responseConfig || { is: {} });
 
     cloned.stubIndex = stubIndexFn ? stubIndexFn : () => Promise.resolve(0);
 
@@ -33,8 +35,7 @@ function createResponse (responseConfig, stubIndexFn) {
 }
 
 function wrap (stub = {}) {
-    const helpers = require('../util/helpers'),
-        cloned = helpers.clone(stub),
+    const cloned = helpers.clone(stub),
         statefulResponses = repeatTransform(cloned.responses || []);
 
     /**
@@ -168,7 +169,7 @@ function createStubsRepository () {
      * @returns {Object} - the promise
      */
     async function overwriteAtIndex (newStub, index) {
-        const errors = require('../util/errors');
+
         if (typeof stubs[index] === 'undefined') {
             throw errors.MissingResourceError(`no stub at index ${index}`);
         }
@@ -184,7 +185,6 @@ function createStubsRepository () {
      * @returns {Object} - the promise
      */
     async function deleteAtIndex (index) {
-        const errors = require('../util/errors');
         if (typeof stubs[index] === 'undefined') {
             throw errors.MissingResourceError(`no stub at index ${index}`);
         }
@@ -201,8 +201,7 @@ function createStubsRepository () {
      * @returns {Object} - the promise resolving to the JSON object
      */
     async function toJSON (options = {}) {
-        const helpers = require('../util/helpers'),
-            cloned = helpers.clone(stubs);
+        const cloned = helpers.clone(stubs);
 
         cloned.forEach(stub => {
             if (!options.debug) {
@@ -238,8 +237,6 @@ function createStubsRepository () {
      * @returns {Object} - the promise
      */
     async function addRequest (request) {
-        const helpers = require('../util/helpers');
-
         const recordedRequest = helpers.clone(request);
         recordedRequest.timestamp = new Date().toJSON();
         requests.push(recordedRequest);

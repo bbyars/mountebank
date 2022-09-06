@@ -1,5 +1,10 @@
 'use strict';
 
+const fs = require('fs-extra'),
+    path = require('path'),
+    fileSystemBackedImpostersRepository = require('./filesystemBackedImpostersRepository.js'),
+    inMemoryImpostersRepository = require('./inMemoryImpostersRepository.js');
+
 /**
  * An factory abstraction for loading imposters
  * @module
@@ -13,9 +18,7 @@
  */
 function create (config, logger) {
     if (config.impostersRepository) {
-        const fs = require('fs-extra'),
-            path = require('path'),
-            filename = path.resolve(path.relative(process.cwd(), config.impostersRepository));
+        const filename = path.resolve(path.relative(process.cwd(), config.impostersRepository));
 
         if (fs.existsSync(filename)) {
             try {
@@ -32,7 +35,7 @@ function create (config, logger) {
         }
     }
     else if (config.datadir) {
-        return require('./filesystemBackedImpostersRepository').create(config, logger);
+        return fileSystemBackedImpostersRepository.create(config, logger);
     }
     else {
         return this.inMemory();
@@ -40,7 +43,7 @@ function create (config, logger) {
 }
 
 function inMemory () {
-    return require('./inMemoryImpostersRepository').create();
+    return inMemoryImpostersRepository.create();
 }
 
 module.exports = { create, inMemory };

@@ -1,5 +1,7 @@
 'use strict';
 
+const helpers = require('../util/helpers');
+
 /**
  * The controller that exposes the mountebank configuration for the running process
  * @module
@@ -12,8 +14,7 @@
  * @returns {Object}
  */
 function create (version, options) {
-    const helpers = require('../util/helpers'),
-        publicOptions = helpers.clone(options);
+    const publicOptions = helpers.clone(options);
 
     delete publicOptions.heroku;
     delete publicOptions.version;

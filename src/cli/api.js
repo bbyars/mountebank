@@ -1,9 +1,10 @@
 'use strict';
 
+const http = require('http');
+
 function curl (options, method, path, body) {
     return new Promise((resolve, reject) => {
-        const http = require('http'),
-            requestOptions = {
+        const requestOptions = {
                 method: method,
                 path: path,
                 port: options.port,

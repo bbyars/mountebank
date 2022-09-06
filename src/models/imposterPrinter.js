@@ -1,5 +1,7 @@
 'use strict';
 
+const helpers = require('../util/helpers.js');
+
 function create (header, server, loadRequests) {
     const baseURL = `/imposters/${server.port}`;
 
@@ -43,8 +45,6 @@ function create (header, server, loadRequests) {
     }
 
     function removeNonEssentialInformationFrom (imposter) {
-        const helpers = require('../util/helpers');
-
         imposter.stubs.forEach(stub => {
             stub.responses.forEach(response => {
                 if (helpers.defined(response.is)) {

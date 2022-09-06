@@ -5,6 +5,13 @@
  * @module
  */
 
+const net = require('net'),
+    headersMap = require('./headersMap.js'),
+    errors = require('../../util/errors.js'),
+    httpProxy = require('./httpProxy.js'),
+    httpRequest = require('./httpRequest.js'),
+    helpers = require('../../util/helpers.js');
+
 module.exports = function (createBaseServer) {
 
     function create (options, logger, responseFn) {
@@ -13,8 +20,7 @@ module.exports = function (createBaseServer) {
 
         function postProcess (stubResponse, request) {
             /* eslint complexity: 0 */
-            const headersMap = require('./headersMap'),
-                defaultHeaders = defaultResponse.headers || {},
+            const defaultHeaders = defaultResponse.headers || {},
                 response = {
                     statusCode: stubResponse.statusCode || defaultResponse.statusCode || 200,
                     headers: stubResponse.headers || defaultHeaders,
@@ -23,7 +29,7 @@ module.exports = function (createBaseServer) {
                 },
                 responseHeaders = headersMap.of(response.headers),
                 encoding = response._mode === 'binary' ? 'base64' : 'utf8',
-                isObject = require('../../util/helpers').isObject;
+                isObject = helpers.isObject;
 
             if (isObject(response.body)) {
                 // Support JSON response bodies
@@ -68,7 +74,6 @@ module.exports = function (createBaseServer) {
         server.timeout = 0;
 
         server.on('connect', (response, client, head) => {
-            const net = require('net');
             const host = response.socket.servername;
             const port = response.socket.localPort;
             // may we prefer this method instead?
@@ -91,8 +96,7 @@ module.exports = function (createBaseServer) {
         });
 
         server.on('connection', socket => {
-            const helpers = require('../../util/helpers'),
-                name = helpers.socketName(socket);
+            const name = helpers.socketName(socket);
 
             logger.debug('%s ESTABLISHED', name);
 
@@ -115,13 +119,12 @@ module.exports = function (createBaseServer) {
         });
 
         server.on('request', async (request, response) => {
-            const helpers = require('../../util/helpers'),
-                clientName = helpers.socketName(request.socket);
+            const clientName = helpers.socketName(request.socket);
 
             logger.info(`${clientName} => ${request.method} ${request.url}`);
 
             try {
-                const simplifiedRequest = await require('./httpRequest').createFrom(request);
+                const simplifiedRequest = await httpRequest.createFrom(request);
                 logger.debug('%s => %s', clientName, JSON.stringify(simplifiedRequest));
 
                 const mbResponse = await responseFn(simplifiedRequest, { rawUrl: request.url }),
@@ -145,7 +148,7 @@ module.exports = function (createBaseServer) {
                 }
             }
             catch (error) {
-                const exceptions = require('../../util/errors');
+                const exceptions = errors;
                 logger.error('%s X=> %s', clientName, JSON.stringify(exceptions.details(error)));
                 response.writeHead(500, { 'content-type': 'application/json' });
                 response.end(JSON.stringify({ errors: [exceptions.details(error)] }), 'utf8');
@@ -154,8 +157,6 @@ module.exports = function (createBaseServer) {
 
         return new Promise((resolve, reject) => {
             server.on('error', error => {
-                const errors = require('../../util/errors');
-
                 if (error.errno === 'EADDRINUSE') {
                     reject(errors.ResourceConflictError(`Port ${options.port} is already in use`));
                 }
@@ -178,7 +179,7 @@ module.exports = function (createBaseServer) {
                             connections[socket].destroy();
                         });
                     },
-                    proxy: require('./httpProxy').create(logger),
+                    proxy: httpProxy.create(logger),
                     encoding: 'utf8'
                 });
             });

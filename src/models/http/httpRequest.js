@@ -1,5 +1,11 @@
 'use strict';
 
+const queryString = require('querystring'),
+    zlib = require('zlib'),
+    helpers = require('../../util/helpers.js'),
+    headersMapModule = require('./headersMap.js');
+
+
 /**
  * Transforms a node http/s request to a simplified mountebank http/s request
  * that will be shown in the API
@@ -7,11 +13,9 @@
  */
 
 function transform (request) {
-    const helpers = require('../../util/helpers'),
-        queryString = require('querystring'),
-        url = new URL(request.url, 'http://localhost'),
+    const url = new URL(request.url, 'http://localhost'),
         search = url.search === '' ? '' : url.search.substr(1),
-        headersMap = require('./headersMap').ofRaw(request.rawHeaders),
+        headersMap = headersMapModule.ofRaw(request.rawHeaders),
         transformed = {
             requestFrom: helpers.socketName(request.socket),
             method: request.method,
@@ -51,9 +55,8 @@ function createFrom (request) {
         const chunks = [];
         request.on('data', chunk => { chunks.push(Buffer.from(chunk)); });
         request.on('end', () => {
-            const headersMap = require('./headersMap').ofRaw(request.rawHeaders),
+            const headersMap = headersMapModule.ofRaw(request.rawHeaders),
                 contentEncoding = headersMap.get('Content-Encoding'),
-                zlib = require('zlib'),
                 buffer = Buffer.concat(chunks);
 
             if (contentEncoding === 'gzip') {

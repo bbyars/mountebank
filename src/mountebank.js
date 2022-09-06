@@ -1,5 +1,25 @@
 'use strict';
 
+const express = require('express'),
+    cors = require('cors'),
+    promClient = require('prom-client'),
+    errorHandler = require('errorhandler'),
+    path = require('path'),
+    middleware = require('./util/middleware'),
+    thisPackage = require('../package.json'),
+    releases = require('../releases.json'),
+    helpers = require('./util/helpers.js'),
+    utilLogger = require('./util/logger.js'),
+    utilIp = require('./util/ip.js'),
+    protocolsModule = require('./models/protocols.js'),
+    imposterRepositoryModule = require('./models/impostersRepository.js'),
+    homeControllerModule = require('./controllers/homeController.js'),
+    impostersControllerModule = require('./controllers/impostersController.js'),
+    imposterControllerModule = require('./controllers/imposterController.js'),
+    logsControllerModule = require('./controllers/logsController.js'),
+    configControllerModule = require('./controllers/configController.js'),
+    feedControllerModule = require('./controllers/feedController.js');
+
 /**
  * The entry point for mountebank.  This module creates the mountebank server,
  * configures all middleware and manages all routing
@@ -26,31 +46,24 @@ function applyDefaults (options) {
 async function createApp (options) {
     applyDefaults(options);
 
-    const express = require('express'),
-        cors = require('cors'),
-        errorHandler = require('errorhandler'),
-        path = require('path'),
-        middleware = require('./util/middleware'),
-        thisPackage = require('../package.json'),
-        releases = require('../releases.json'),
-        app = express(),
+    const app = express(),
         hostname = options.host || 'localhost',
         baseURL = `http://${hostname}:${options.port}`,
-        logger = require('./util/logger').createLogger(options),
-        isAllowedConnection = require('./util/ip').createIPVerification(options),
-        imposters = require('./models/impostersRepository').create(options, logger),
-        protocols = require('./models/protocols').loadProtocols(options, baseURL, logger, isAllowedConnection, imposters),
-        homeController = require('./controllers/homeController').create(releases),
-        impostersController = require('./controllers/impostersController').create(
+        logger = utilLogger.createLogger(options),
+        isAllowedConnection = utilIp.createIPVerification(options),
+        imposters = imposterRepositoryModule.create(options, logger),
+        protocols = protocolsModule.loadProtocols(options, baseURL, logger, isAllowedConnection, imposters),
+        homeController = homeControllerModule.create(releases),
+        impostersController = impostersControllerModule.create(
             protocols, imposters, logger, options.allowInjection),
-        imposterController = require('./controllers/imposterController').create(
+        imposterController = imposterControllerModule.create(
             protocols, imposters, logger, options.allowInjection),
         logfile = options.log.transports.file ? options.log.transports.file.path : false,
-        logsController = require('./controllers/logsController').create(logfile),
-        configController = require('./controllers/configController').create(thisPackage.version, options),
-        feedController = require('./controllers/feedController').create(releases, options),
+        logsController = logsControllerModule.create(logfile),
+        configController = configControllerModule.create(thisPackage.version, options),
+        feedController = feedControllerModule.create(releases, options),
         validateImposterExists = middleware.createImposterValidator(imposters),
-        prometheus = require('prom-client');
+        prometheus = promClient;
 
     // Clear only matters when bound using directly in-process through JS rather than the CLI
     prometheus.register.clear();
@@ -102,7 +115,7 @@ async function createApp (options) {
     app.get('/releases/:version', feedController.getRelease);
 
     app.get('/metrics', async function (request, response) {
-        const register = require('prom-client').register;
+        const register = promClient.register;
         response.set('Content-Type', register.contentType);
         response.end(await register.metrics());
     });
@@ -165,12 +178,10 @@ async function createApp (options) {
  * @returns {Object} An object with a close method to stop the server
  */
 async function listen (app, options) {
-    const thisPackage = require('../package.json'),
-        helpers = require('./util/helpers'),
-        hostname = options.host || 'localhost',
+    const hostname = options.host || 'localhost',
         baseURL = `http://${hostname}:${options.port}`,
-        logger = require('./util/logger').createLogger(options),
-        isAllowedConnection = require('./util/ip').createIPVerification(options);
+        logger = utilLogger.createLogger(options),
+        isAllowedConnection = utilIp.createIPVerification(options);
 
     return new Promise(resolve => {
         const connections = {},

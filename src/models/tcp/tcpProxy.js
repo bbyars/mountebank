@@ -1,5 +1,8 @@
 'use strict';
 
+const net = require('net'),
+    errors = require('../../util/errors.js');
+
 /**
  * Represents the tcp proxy implementation
  * @module
@@ -27,8 +30,7 @@ function create (logger, encoding, isEndOfRequest) {
     }
 
     function connectionInfoFor (proxyDestination) {
-        const parts = new URL(proxyDestination),
-            errors = require('../../util/errors');
+        const parts = new URL(proxyDestination);
 
         if (parts.protocol !== 'tcp:') {
             throw errors.InvalidProxyError('Unable to proxy to any protocol other than tcp',
@@ -54,7 +56,6 @@ function create (logger, encoding, isEndOfRequest) {
                             originalRequest.requestFrom, direction, JSON.stringify(format(what)), direction, proxyName);
                     },
                     buffer = Buffer.from(originalRequest.data, encoding),
-                    net = require('net'),
                     socket = net.connect(connectionInfoFor(proxyDestination), () => {
                         socket.write(buffer);
                     }),
@@ -84,8 +85,6 @@ function create (logger, encoding, isEndOfRequest) {
                 });
 
                 socket.once('error', error => {
-                    const errors = require('../../util/errors');
-
                     logger.error(`Proxy ${proxyName} transmission error X=> ${JSON.stringify(error)}`);
 
                     if (error.code === 'ENOTFOUND') {

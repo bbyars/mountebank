@@ -1,5 +1,8 @@
 'use strict';
 
+const helpers = require('../util/helpers.js'),
+    errors = require('./errors.js');
+
 /**
  * Express middleware functions to inject into the HTTP processing
  * @module
@@ -17,7 +20,7 @@ function useAbsoluteUrls (port) {
             sendOriginal = response.send,
             host = request.headers.host || `localhost:${port}`,
             absolutize = link => `http://${host}${link}`,
-            isObject = require('../util/helpers').isObject;
+            isObject = helpers.isObject;
 
         response.setHeader = function () {
             const args = Array.prototype.slice.call(arguments);
@@ -84,8 +87,7 @@ function useAbsoluteUrls (port) {
  */
 function createImposterValidator (imposters) {
     return async function validateImposterExists (request, response, next) {
-        const errors = require('./errors'),
-            exists = await imposters.exists(request.params.id);
+        const exists = await imposters.exists(request.params.id);
 
         if (exists) {
             next();
@@ -184,7 +186,6 @@ function defaultIEtoHTML (request, response, next) {
  */
 function json (log) {
     return function (request, response, next) {
-        const helpers = require('./helpers');
         // Disable body parsing, if already parsed
         if (request.headers['content-type'] === 'application/json' && helpers.isObject(request.body)) {
             next();
@@ -197,8 +198,6 @@ function json (log) {
             request.body += chunk;
         });
         request.on('end', function () {
-            const errors = require('./errors');
-
             if (request.body === '') {
                 next();
             }

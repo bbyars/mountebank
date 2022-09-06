@@ -1,5 +1,10 @@
 'use strict';
 
+const path = require('path'),
+    fsExtra = require('fs-extra'),
+    ejs = require('ejs'),
+    helpers = require('../util/helpers.js');
+
 /**
  * The controller that exposes information about releases
  * @module
@@ -11,8 +16,7 @@
  * @returns {Object} The controller
  */
 function create (releases, options) {
-    const helpers = require('../util/helpers'),
-        feedReleases = helpers.clone(releases);
+    const feedReleases = helpers.clone(releases);
 
     // Init once since we hope many consumers poll the heroku feed and we don't have monitoring
     feedReleases.reverse();
@@ -22,7 +26,6 @@ function create (releases, options) {
     }
 
     function releaseFilenameFor (version) {
-        const path = require('path');
         return path.join(__dirname, '/../views/', releaseViewFor(version));
     }
 
@@ -38,9 +41,7 @@ function create (releases, options) {
      * @param {Object} response - The HTTP response
      */
     function getFeed (request, response) {
-        const fs = require('fs-extra'),
-            ejs = require('ejs'),
-            page = parseInt(request.query.page || '1'),
+        const page = parseInt(request.query.page || '1'),
             nextPage = page + 1,
             entriesPerPage = 10,
             hasNextPage = feedReleases.slice((nextPage * entriesPerPage) - 10, entriesPerPage * nextPage).length > 0,
@@ -54,7 +55,7 @@ function create (releases, options) {
         // I'd prefer putting this as an include in the view, but EJS doesn't support dynamic includes
         config.releases.forEach(release => {
             if (!release.view) {
-                const contents = fs.readFileSync(releaseFilenameFor(release.version), { encoding: 'utf8' });
+                const contents = fsExtra.readFileSync(releaseFilenameFor(release.version), { encoding: 'utf8' });
                 release.view = ejs.render(contents, {
                     host: request.headers.host,
                     releaseMajorMinor: release.version.replace(/^v(\d+\.\d+).*/, '$1'),
@@ -84,8 +85,7 @@ function create (releases, options) {
      * @param {Object} response - The HTTP response
      */
     function getRelease (request, response) {
-        const fs = require('fs-extra'),
-            version = request.params.version,
+        const version = request.params.version,
             config = {
                 host: request.headers.host,
                 heroku: options.heroku,
@@ -93,7 +93,7 @@ function create (releases, options) {
                 releaseVersion: version.replace('v', '')
             };
 
-        if (versionInWhitelist(version) && fs.existsSync(releaseFilenameFor(version))) {
+        if (versionInWhitelist(version) && fsExtra.existsSync(releaseFilenameFor(version))) {
             response.render('_header', config, (headerError, header) => {
                 if (headerError) { throw headerError; }
                 response.render(releaseViewFor(version), config, (bodyError, body) => {

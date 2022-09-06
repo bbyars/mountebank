@@ -5,6 +5,8 @@
  * @module
  */
 
+const mailParser = require('mailparser');
+
 function addressValues (addresses) {
     // mailparser sometimes returns an array, sometimes an object, so we have to normalize
     if (!addresses) {
@@ -43,7 +45,7 @@ function transform (session, email) {
  */
 function createFrom (request) {
     return new Promise((resolve, reject) => {
-        const simpleParser = require('mailparser').simpleParser;
+        const simpleParser = mailParser.simpleParser;
         simpleParser(request.source, (err, mail) => {
             if (err) {
                 reject(err);

@@ -4,10 +4,11 @@
  * Error types returned by the API
  * @module
  */
+const inherit = require('./inherit.js'),
+    helpers = require('./helpers.js');
 
 function createError (code, message, options) {
-    const inherit = require('./inherit'),
-        result = inherit.from(Error, { code, message });
+    const result = inherit.from(Error, { code, message });
 
     if (options) {
         Object.keys(options).forEach(key => {
@@ -28,8 +29,7 @@ function createWithMessage (code, message) {
 // Produces a JSON.stringify-able Error object
 // (because message is on the prototype, it doesn't show by default)
 function details (error) {
-    const helpers = require('./helpers'),
-        prototypeProperties = {};
+    const prototypeProperties = {};
 
     ['message', 'name', 'stack'].forEach(key => {
         if (error[key]) {

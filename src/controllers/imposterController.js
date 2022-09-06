@@ -1,5 +1,10 @@
 'use strict';
 
+const exceptions = require('../util/errors.js'),
+    helpers = require('../util/helpers.js'),
+    compatibility = require('../models/compatibility.js'),
+    dryRunValidator = require('../models/dryRunValidator.js');
+
 /**
  * The controller that gets and deletes single imposters
  * @module
@@ -14,9 +19,6 @@
  * @returns {{get, del}}
  */
 function create (protocols, imposters, logger, allowInjection) {
-    const exceptions = require('../util/errors'),
-        helpers = require('../util/helpers');
-
     function isFlagSet (query, key) {
         if (!helpers.defined(query[key])) {
             return false;
@@ -158,9 +160,8 @@ function create (protocols, imposters, logger, allowInjection) {
         }
 
         const request = await imposter.toJSON(),
-            compatibility = require('../models/compatibility'),
             Protocol = protocols[request.protocol],
-            validator = require('../models/dryRunValidator').create({
+            validator = dryRunValidator.create({
                 testRequest: Protocol.testRequest,
                 testProxyResponse: Protocol.testProxyResponse,
                 additionalValidation: Protocol.validate,

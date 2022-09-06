@@ -1,14 +1,16 @@
 'use strict';
 
+const xpath = require('xpath'),
+    xmlDom = require('@xmldom/xmldom'),
+    errors = require('../util/errors.js'),
+    helpers = require('../util/helpers.js');
+
 /**
  * Shared logic for xpath selector
  * @module
  */
 
 function xpathSelect (selectFn, selector, doc) {
-    const errors = require('../util/errors'),
-        helpers = require('../util/helpers');
-
     if (!helpers.defined(doc)) {
         return [];
     }
@@ -64,8 +66,7 @@ function nodeValue (node) {
  * @returns {Object}
  */
 function select (selector, ns, possibleXML, logger) {
-    const xpath = require('xpath'),
-        DOMParser = require('@xmldom/xmldom').DOMParser,
+    const DOMParser = xmlDom.DOMParser,
         parser = new DOMParser({
             errorHandler: (level, message) => {
                 const warn = (logger || {}).warn || (() => {});

@@ -11,6 +11,9 @@
  * @param {Object} headers - the starting headers
  * @returns {Object} - the map
  */
+
+const helpers = require('../../util/helpers.js');
+
 function of (headers) {
     /**
      * Returns whether the map contains the given headerName, regardless of case
@@ -22,8 +25,7 @@ function of (headers) {
     }
 
     function headerNameFor (headerName) {
-        const helpers = require('../../util/helpers'),
-            result = Object.keys(headers).find(header => header.toLowerCase() === headerName.toLowerCase());
+        const result = Object.keys(headers).find(header => header.toLowerCase() === headerName.toLowerCase());
 
         return helpers.defined(result) ? result : headerName;
     }

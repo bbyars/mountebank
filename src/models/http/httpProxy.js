@@ -5,6 +5,16 @@
  * @module
  */
 
+const https = require('https'),
+    http = require('http'),
+    queryString = require('querystring'),
+    HttpProxyAgent = require('http-proxy-agent'),
+    HttpsProxyAgent = require('https-proxy-agent'),
+    helpers = require('../../util/helpers.js'),
+    headersMap = require('./headersMap.js'),
+    errors = require('../../util/errors.js');
+
+
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 
 /**
@@ -50,8 +60,7 @@ function create (logger) {
             return requestDetails.rawUrl;
         }
 
-        const querystring = require('querystring'),
-            tail = querystring.stringify(query);
+        const tail = queryString.stringify(query);
 
         if (tail === '') {
             return path;
@@ -68,8 +77,7 @@ function create (logger) {
     }
 
     function setProxyAgent (parts, options) {
-        const HttpProxyAgent = require('http-proxy-agent'),
-            HttpsProxyAgent = require('https-proxy-agent');
+
 
         if (process.env.http_proxy && parts.protocol === 'http:') {
             options.agent = new HttpProxyAgent(process.env.http_proxy);
@@ -81,10 +89,8 @@ function create (logger) {
 
     function getProxyRequest (baseUrl, originalRequest, proxyOptions, requestDetails) {
         /* eslint complexity: 0 */
-        const helpers = require('../../util/helpers'),
-            headersMap = require('./headersMap'),
-            parts = new URL(baseUrl),
-            protocol = parts.protocol === 'https:' ? require('https') : require('http'),
+        const parts = new URL(baseUrl),
+            protocol = parts.protocol === 'https:' ? https : http,
             defaultPort = parts.protocol === 'https:' ? 443 : 80,
             options = {
                 method: originalRequest.method,
@@ -156,7 +162,6 @@ function create (logger) {
                     const body = Buffer.concat(packets),
                         mode = isBinaryResponse(response.headers) ? 'binary' : 'text',
                         encoding = mode === 'binary' ? 'base64' : 'utf8',
-                        headersMap = require('./headersMap'),
                         stubResponse = {
                             statusCode: response.statusCode,
                             headers: headersMap.ofRaw(response.rawHeaders).all(),
@@ -192,8 +197,6 @@ function create (logger) {
         }
 
         return new Promise((resolve, reject) => {
-            const errors = require('../../util/errors');
-
             let proxiedRequest;
             try {
                 proxiedRequest = getProxyRequest(proxyDestination, originalRequest, options, requestDetails);

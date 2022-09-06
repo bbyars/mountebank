@@ -1,5 +1,10 @@
 'use strict';
 
+const exceptions = require('../util/errors.js'),
+    helpers = require('../util/helpers.js'),
+    compatibility = require('../models/compatibility.js'),
+    dryRunValidator = require('../models/dryRunValidator');
+
 /**
  * The controller that manages the list of imposters
  * @module
@@ -14,9 +19,6 @@
  * @returns {{get, post, del, put}}
  */
 function create (protocols, imposters, logger, allowInjection) {
-    const exceptions = require('../util/errors'),
-        helpers = require('../util/helpers');
-
     function isFlagFalse (query, key) {
         return !helpers.defined(query[key]) || query[key].toLowerCase() !== 'false';
     }
@@ -45,8 +47,7 @@ function create (protocols, imposters, logger, allowInjection) {
     }
 
     function validate (request) {
-        const errors = [],
-            compatibility = require('../models/compatibility');
+        const errors = [];
 
         compatibility.upcast(request);
 
@@ -58,7 +59,7 @@ function create (protocols, imposters, logger, allowInjection) {
         }
         else {
             const Protocol = protocols[request.protocol],
-                validator = require('../models/dryRunValidator').create({
+                validator = dryRunValidator.create({
                     testRequest: Protocol.testRequest,
                     testProxyResponse: Protocol.testProxyResponse,
                     additionalValidation: Protocol.validate,
