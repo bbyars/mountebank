@@ -171,6 +171,12 @@ const fs = require('fs-extra'),
             default: false,
             type: 'boolean',
             global: false
+        },
+        apikey: {
+            description: 'An optional API key. When provided, a user must add an API key to the header.',
+            default: null,
+            type: 'string',
+            global: false
         }
     },
     startOptions = {
@@ -195,7 +201,8 @@ const fs = require('fs-extra'),
         heroku: options.heroku,
         protofile: options.protofile,
         origin: options.origin,
-        rcfile: options.rcfile
+        rcfile: options.rcfile,
+        apikey: options.apikey
     },
     argv = yargs
         .usage('Usage: mb [command=start] [options...]')

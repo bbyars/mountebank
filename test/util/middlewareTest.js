@@ -330,4 +330,48 @@ describe('middleware', function () {
             assert.strictEqual(request.headers.accept, 'accept/any, application/json');
         });
     });
+
+    describe('#validateApiKey', function() {
+        it('should call next when expectedApiKey empty', function() {
+            const log = { error: mock() },
+                middlewareFn = middleware.validateApiKey('', log);
+            request = { method: 'METHOD', url: 'URL', headers: { accept: '' } };
+
+            middlewareFn(request, response, next);
+
+            assert(next.wasCalled());
+        });
+
+        it('should call next when expectedApiKey is set and matches x-api-key header', function() {
+            const log = { error: mock() },
+                middlewareFn = middleware.validateApiKey('abc123', log);
+            request = { method: 'METHOD', url: 'URL', headers: { accept: '', 'x-api-key': 'abc123' } };
+
+            middlewareFn(request, response, next);
+
+            assert(next.wasCalled());
+        });
+
+        it('should set response to 401 when x-api-key header is incorrect', function() {
+            const log = { error: mock() },
+                middlewareFn = middleware.validateApiKey('abc123', log);
+            request = { method: 'METHOD', url: 'URL', headers: { accept: '', 'x-api-key': 'abcxyz' } };
+
+            middlewareFn(request, response, next);
+
+            assert(!(next.wasCalled()));
+            assert.strictEqual(response.statusCode, 401);
+        });
+
+        it('should set response to 401 when x-api-key header is missing', function() {
+            const log = { error: mock() },
+                middlewareFn = middleware.validateApiKey('abc123', log);
+            request = { method: 'METHOD', url: 'URL', headers: { accept: '' } };
+
+            middlewareFn(request, response, next);
+
+            assert(!(next.wasCalled()));
+            assert.strictEqual(response.statusCode, 401);
+        });
+    })
 });
