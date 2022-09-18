@@ -50,5 +50,6 @@ module.exports = {
     CommunicationError: createWithMessage('communication', 'Error communicating with mountebank'),
     ProtocolError: create('cannot start server'),
     DatabaseError: create('corrupted database'),
+    UnauthorizedError: createWithMessage('unauthorized', 'If you set the apiKey option, make sure you are sending the correct apiKey in the x-api-key header.'),
     details
 };
