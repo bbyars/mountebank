@@ -222,14 +222,13 @@ function json (log) {
 
 function validateApiKey (expectedApiKey, log) {
     return function (request, response, next) {
-        if (!expectedApiKey)
-        {
+        if (!expectedApiKey) {
             next();
             return;
         }
 
         const errors = require('./errors');
-        
+
         if (!request.headers['x-api-key']) {
             log.error('The x-api-key header is required but was not provided');
             response.statusCode = 401;
@@ -239,21 +238,22 @@ function validateApiKey (expectedApiKey, log) {
             return;
         }
 
-        var crypto = require('crypto');
+        const crypto = require('crypto');
         const hash = crypto.createHash('sha512');
         if (crypto.timingSafeEqual(
             hash.copy().update(request.headers['x-api-key']).digest(),
             hash.copy().update(expectedApiKey).digest()
         )) {
             next();
-        } else {
+        }
+        else {
             log.error('The x-api-key header value does not match the expected API key');
             response.statusCode = 401;
             response.send({
                 errors: [errors.UnauthorizedError()]
             });
-        }        
-    }
+        }
+    };
 }
 
 module.exports = { useAbsoluteUrls, createImposterValidator, logger, globals, defaultIEtoHTML, json, validateApiKey };

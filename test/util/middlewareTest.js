@@ -331,8 +331,8 @@ describe('middleware', function () {
         });
     });
 
-    describe('#validateApiKey', function() {
-        it('should call next when expectedApiKey empty', function() {
+    describe('#validateApiKey', function () {
+        it('should call next when expectedApiKey empty', function () {
             const log = { error: mock() },
                 middlewareFn = middleware.validateApiKey('', log);
             request = { method: 'METHOD', url: 'URL', headers: { accept: '' } };
@@ -342,7 +342,7 @@ describe('middleware', function () {
             assert(next.wasCalled());
         });
 
-        it('should call next when expectedApiKey is set and matches x-api-key header', function() {
+        it('should call next when expectedApiKey is set and matches x-api-key header', function () {
             const log = { error: mock() },
                 middlewareFn = middleware.validateApiKey('abc123', log);
             request = { method: 'METHOD', url: 'URL', headers: { accept: '', 'x-api-key': 'abc123' } };
@@ -352,7 +352,7 @@ describe('middleware', function () {
             assert(next.wasCalled());
         });
 
-        it('should set response to 401 when x-api-key header is incorrect', function() {
+        it('should set response to 401 when x-api-key header is incorrect', function () {
             const log = { error: mock() },
                 middlewareFn = middleware.validateApiKey('abc123', log);
             request = { method: 'METHOD', url: 'URL', headers: { accept: '', 'x-api-key': 'abcxyz' } };
@@ -363,7 +363,7 @@ describe('middleware', function () {
             assert.strictEqual(response.statusCode, 401);
         });
 
-        it('should set response to 401 when x-api-key header is missing', function() {
+        it('should set response to 401 when x-api-key header is missing', function () {
             const log = { error: mock() },
                 middlewareFn = middleware.validateApiKey('abc123', log);
             request = { method: 'METHOD', url: 'URL', headers: { accept: '' } };
@@ -373,5 +373,5 @@ describe('middleware', function () {
             assert(!(next.wasCalled()));
             assert.strictEqual(response.statusCode, 401);
         });
-    })
+    });
 });
