@@ -6,7 +6,9 @@ commands:
     steps:
       - run:
           name: Switch to NPM Version 6
-          command: npm -g install npm@6
+          command: |
+            npm install npm@6
+            export PATH=node_modules/.bin:$PATH
 
 executors:
   node-maintenance:
