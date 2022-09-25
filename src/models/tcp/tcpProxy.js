@@ -88,7 +88,7 @@ function create (logger, encoding, isEndOfRequest) {
 
                     logger.error(`Proxy ${proxyName} transmission error X=> ${JSON.stringify(error)}`);
 
-                    if (error.code === 'ENOTFOUND') {
+                    if (error.code === 'ENOTFOUND' || error.code === 'EAI_AGAIN') {
                         reject(errors.InvalidProxyError(`Cannot resolve ${JSON.stringify(proxyDestination)}`));
                     }
                     else if (error.code === 'ECONNREFUSED') {
