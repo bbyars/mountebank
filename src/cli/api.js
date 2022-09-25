@@ -13,21 +13,26 @@ function curl (options, method, path, body) {
                     'Content-Type': 'application/json',
                     Connection: 'close'
                 }
-            },
-            request = http.request(requestOptions, response => {
-                response.body = '';
-                response.setEncoding('utf8');
-                response.on('data', chunk => { response.body += chunk; });
-                response.on('end', () => {
-                    if (response.statusCode === 200) {
-                        response.body = JSON.parse(response.body);
-                        resolve(response);
-                    }
-                    else {
-                        reject(new Error(`${response.statusCode}\n${response.body}`));
-                    }
-                });
+            };
+
+        if (options.apikey) {
+            requestOptions.headers['x-api-key'] = options.apikey;
+        }
+
+        const request = http.request(requestOptions, response => {
+            response.body = '';
+            response.setEncoding('utf8');
+            response.on('data', chunk => { response.body += chunk; });
+            response.on('end', () => {
+                if (response.statusCode === 200) {
+                    response.body = JSON.parse(response.body);
+                    resolve(response);
+                }
+                else {
+                    reject(new Error(`${response.statusCode}\n${response.body}`));
+                }
             });
+        });
 
         request.on('error', reject);
 

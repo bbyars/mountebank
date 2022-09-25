@@ -70,6 +70,7 @@ async function createApp (options) {
     prometheus.collectDefaultMetrics({ prefix: 'mb_' });
 
     app.use(middleware.useAbsoluteUrls(options.port));
+    app.use(middleware.validateApiKey(options.apikey, logger));
     app.use(middleware.logger(logger, ':method :url'));
     app.use(middleware.globals({ heroku: options.heroku, port: options.port, version: thisPackage.version }));
     app.use(middleware.defaultIEtoHTML);
