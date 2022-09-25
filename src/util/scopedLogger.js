@@ -2,7 +2,8 @@
 
 /** @module */
 
-const inherit = require('./inherit.js');
+const inherit = require('./inherit.js'),
+    util = require('util');
 
 function wrap (wrappedLogger, logger) {
     ['debug', 'info', 'warn', 'error'].forEach(level => {
@@ -12,7 +13,7 @@ function wrap (wrappedLogger, logger) {
 
             // Format here rather than use winston's splat formatter
             // to get rid of inconsistent "meta" log elements
-            const message = require('util').format.apply(null, args);
+            const message = util.format.apply(null, args);
             logger[level](message);
         };
     });

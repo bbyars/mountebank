@@ -226,8 +226,6 @@ function validateApiKey (expectedApiKey, log) {
             return;
         }
 
-        const errors = require('./errors');
-
         if (!request.headers['x-api-key']) {
             log.error('The x-api-key header is required but was not provided');
             response.statusCode = 401;
