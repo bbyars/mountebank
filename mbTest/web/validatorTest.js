@@ -71,7 +71,7 @@ describe('all pages in the mountebank website', function () {
         assert.strictEqual(response.statusCode, 200);
 
         const siteLinks = response.body
-                .split('\n')
+                .split(/\r?\n/)
                 .map(link => link.replace('http://www.mbtest.org', ''))
                 .filter(path => path !== '' && blacklist.indexOf(path) < 0),
             tests = siteLinks.map(async link => {
