@@ -866,6 +866,7 @@ Connection: keep-alive
     "port": <%= port %>,
     "pidfile": "mb.pid",
     "allowInjection": true,
+    "apikey": null,
     "localOnly": true, <% if (process.env.MB_PERSISTENT === 'true') { %>
     "datadir": ".mbdb", <% } %>
     "noParse": false,
