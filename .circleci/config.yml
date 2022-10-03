@@ -1,15 +1,5 @@
 version: 2.1
 
-# npm v8 had bugs that prevent local file references and npm publish
-commands:
-  switch-npm-to-6:
-    steps:
-      - run:
-          name: Switch to NPM Version 6
-          command: |
-            npm install npm@6
-            export PATH=node_modules/.bin:$PATH
-
 executors:
   node-maintenance:
     docker:
@@ -35,7 +25,6 @@ jobs:
     executor: node-active
     steps:
       - checkout
-      - switch-npm-to-6
       - run:
           name: Install Dependencies
           command: npm ci
@@ -53,7 +42,6 @@ jobs:
       - CC_TEST_REPORTER_ID=8bc3a050a2f8ef1cc460e5f4c72d18a689c8ae0981bf494031eb4eb28bbd0b0b
     steps:
       - checkout
-      - switch-npm-to-6
       - run:
           name: Validate versions
           command: node -v && npm -v
@@ -204,7 +192,6 @@ jobs:
           version: 20.10.7
       - attach_workspace:
           at: .
-      - switch-npm-to-6
       - run:
           name: Publish npm
           command: scripts/publishNpm
@@ -227,7 +214,6 @@ jobs:
       - setup_remote_docker:
           version: 20.10.7
       - checkout
-      - switch-npm-to-6
       - run:
           name: Install Dependencies
           command: npm ci

@@ -154,7 +154,7 @@ function load (builtInProtocols, customProtocols, options, isAllowedConnection, 
             }
 
             imposterProcess.stdout.on('data', data => {
-                const lines = data.toString('utf8').trim().split('\n');
+                const lines = data.toString('utf8').trim().split(/\r?\n/);
                 lines.forEach(line => {
                     if (isPending) {
                         resolveWithMetadata(line);

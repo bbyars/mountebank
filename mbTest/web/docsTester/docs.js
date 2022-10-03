@@ -81,7 +81,7 @@ function normalizeJSONSubstrings (text) {
 }
 
 function linesOf (text) {
-    return text.replace(/\r/g, '').split('\n');
+    return text.replace(/\r/g, '').split(/\r?\n/);
 }
 
 function collectVolatileLines (responseElement) {

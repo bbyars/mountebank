@@ -19,8 +19,7 @@
   "main": "./src/mountebank.js",
   "scripts": {
     "jsdoc": "jsdoc src/**/*.js --destination docs --configure .jsdoc --pedantic --readme CONTRIBUTING.md --package package.json",
-    "lint": "eslint src/ tasks/ test/ mbTest/ bin/mb && node tasks/lints/licenseCheck.js && node tasks/lints/deadCheck.js && node tasks/lints/objectCheck.js",
-    "postinstall": "cd mbTest && npm install",
+    "lint": "npx eslint src/ tasks/ test/ mbTest/ bin/mb && node tasks/lints/licenseCheck.js && node tasks/lints/deadCheck.js && node tasks/lints/objectCheck.js",
     "test:api": "node tasks/mbtest.js api",
     "test:cli": "cd mbTest && npm run cli",
     "test:unit": "mocha --forbid-only --forbid-pending --reporter mocha-multi-reporters --reporter-options configFile=test/config.json 'test/**/*.js'",
@@ -63,24 +62,24 @@
     "fs-extra": "10.1.0",
     "http-proxy-agent": "5.0.0",
     "https-proxy-agent": "5.0.1",
-    "jsonpath-plus": "7.0.0",
+    "jsonpath-plus": "7.2.0",
     "mailparser": "3.5.0",
     "mountebank-formatters": "0.0.2",
     "nodemailer": "6.7.8",
-    "prom-client": "14.0.1",
+    "prom-client": "14.1.0",
     "proper-lockfile": "4.1.2",
     "safe-regex": "^2.1.1",
-    "safe-stable-stringify": "2.3.1",
+    "safe-stable-stringify": "2.4.0",
     "smtp-server": "3.11.0",
-    "winston": "3.8.1",
+    "winston": "3.8.2",
     "xpath": "0.0.32",
     "yargs": "17.5.1"
   },
   "devDependencies": {
     "coveralls": "3.1.1",
-    "eslint": "8.22.0",
+    "eslint": "8.24.0",
     "eslint-plugin-node": "11.1.0",
-    "firebase-tools": "11.6.0",
+    "firebase-tools": "11.10.0",
     "jsdoc": "3.6.11",
     "jsdom": "20.0.0",
     "license-checker": "25.0.1",
@@ -88,12 +87,12 @@
     "mocha-multi-reporters": "1.5.1",
     "nc": "1.0.3",
     "nyc": "^15.1.0",
-    "snyk": "1.986.0",
-    "w3cjs": "0.4.0"
+    "snyk": "1.1012.0",
+    "w3cjs": "0.4.0",
+    "mbTest": "file:./mbTest"
   },
   "engines": {
-    "node": ">=14",
-    "npm": ">=6"
+    "node": ">=14"
   },
   "snyk": true
 }

@@ -19,7 +19,7 @@ function create (logfile) {
             return [{ level: 'error', message: 'No logfile' }];
         }
         try {
-            const entries = fs.readFileSync(logfile).toString().split('\n'),
+            const entries = fs.readFileSync(logfile).toString().split(/\r?\n/),
                 json = '[' + entries.join(',').replace(/,$/, '') + ']';
             return JSON.parse(json);
         }

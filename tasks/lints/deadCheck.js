@@ -41,7 +41,8 @@ const scan = require('./shared/scan'),
         'mountebank-formatters',
         'nc',
         'nyc',
-        'snyk'
+        'snyk',
+        'mbTest'
     ],
     errors = [];
 
