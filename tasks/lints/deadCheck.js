@@ -43,6 +43,7 @@ const scan = require('./shared/scan'),
         'nyc',
         'snyk',
         'mbTest'
+        'npm'
     ],
     errors = [];
 
