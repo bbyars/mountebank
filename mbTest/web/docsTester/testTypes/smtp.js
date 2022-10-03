@@ -15,7 +15,7 @@ function parseHeader (line) {
 }
 
 function parse (text) {
-    const lines = text.split('\n'),
+    const lines = text.split(/\r?\n/),
         message = { to: [], cc: [], bcc: [] };
 
     for (var i = 0; i < lines.length; i += 1) {

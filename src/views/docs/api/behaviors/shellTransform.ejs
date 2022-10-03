@@ -96,7 +96,7 @@ could be written in any language.</p>
     requestId = request.path.replace('/accounts/', ''),
     fs = require('fs'),
     mappings = fs.readFileSync('<%= process.cwd() %>/names.txt', { encoding: 'utf8' }),
-    lines = mappings.split('\n');
+    lines = mappings.split(/\r?\n/);
 
 for (let i = 0; i &lt; lines.length; i += 1) {
     var fields = lines[i].split('|'),

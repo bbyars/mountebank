@@ -205,7 +205,7 @@ function create (logger) {
             log('=>', originalRequest);
 
             proxiedRequest.once('error', error => {
-                if (error.code === 'ENOTFOUND') {
+                if (error.code === 'ENOTFOUND' || error.code === 'EAI_AGAIN') {
                     reject(errors.InvalidProxyError(`Cannot resolve ${JSON.stringify(proxyDestination)}`));
                 }
                 else if (error.code === 'ECONNREFUSED' || error.code === 'ECONNRESET') {

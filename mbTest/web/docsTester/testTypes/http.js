@@ -11,7 +11,7 @@ function parseHeader (line) {
 }
 
 function parse (text) {
-    const lines = text.split('\n'),
+    const lines = text.split(/\r?\n/),
         firstLineParts = lines[0].split(' '),
         spec = {
             method: firstLineParts[0],
