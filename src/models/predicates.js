@@ -1,13 +1,21 @@
 'use strict';
 
+const stringify = require('safe-stable-stringify'),
+    safeRegex = require('safe-regex'),
+    jsonpath = require('./jsonpath.js'),
+    helpers = require('../util/helpers.js'),
+    xPath = require('./xpath.js'),
+    combinators = require('../util/combinators.js'),
+    errors = require('../util/errors.js'),
+    compatibility = require('./compatibility.js');
+
 /**
  * All the predicates that determine whether a stub matches a request
  * @module
  */
 
 function sortObjects (a, b) {
-    const stringify = require('safe-stable-stringify'),
-        isObject = require('../util/helpers').isObject;
+    const isObject = helpers.isObject;
 
     if (isObject(a) && isObject(b)) {
         // Make best effort at sorting arrays of objects to make
@@ -23,7 +31,7 @@ function sortObjects (a, b) {
 }
 
 function forceStrings (value) {
-    const isObject = require('../util/helpers').isObject;
+    const isObject = helpers.isObject;
 
     if (value === null) {
         return 'null';
@@ -47,7 +55,6 @@ function forceStrings (value) {
 
 function select (type, selectFn, encoding) {
     if (encoding === 'base64') {
-        const errors = require('../util/errors');
         throw errors.ValidationError(`the ${type} predicate parameter is not allowed in binary mode`);
     }
 
@@ -83,17 +90,13 @@ function transformObject (obj, transform) {
 }
 
 function selectXPath (config, encoding, text) {
-    const xpath = require('./xpath'),
-        combinators = require('../util/combinators'),
-        selectFn = combinators.curry(xpath.select, config.selector, config.ns, text);
+    const selectFn = combinators.curry(xPath.select, config.selector, config.ns, text);
 
     return orderIndependent(select('xpath', selectFn, encoding));
 }
 
 function selectTransform (config, options, logger) {
-    const combinators = require('../util/combinators'),
-        helpers = require('../util/helpers'),
-        cloned = helpers.clone(config);
+    const cloned = helpers.clone(config);
 
     if (config.jsonpath) {
         const stringTransform = options.shouldForceStrings ? forceStrings : combinators.identity;
@@ -123,17 +126,14 @@ function lowercase (text) {
 }
 
 function caseTransform (config) {
-    const combinators = require('../util/combinators');
     return config.caseSensitive ? combinators.identity : lowercase;
 }
 
 function exceptTransform (config, logger) {
-    const combinators = require('../util/combinators'),
-        exceptRegexOptions = config.caseSensitive ? 'g' : 'gi',
-        safe = require('safe-regex');
+    const exceptRegexOptions = config.caseSensitive ? 'g' : 'gi';
 
     if (config.except) {
-        if (!safe(config.except)) {
+        if (!safeRegex(config.except)) {
             logger.warn(`If mountebank becomes unresponsive, it is because of this unsafe regular expression: ${config.except}`);
         }
         return text => text.replace(new RegExp(config.except, exceptRegexOptions), '');
@@ -144,7 +144,6 @@ function exceptTransform (config, logger) {
 }
 
 function encodingTransform (encoding) {
-    const combinators = require('../util/combinators');
     if (encoding === 'base64') {
         return text => Buffer.from(text, 'base64').toString();
     }
@@ -169,18 +168,15 @@ function tryJSON (value, predicateConfig, logger) {
 
 // eslint-disable-next-line max-params
 function selectJSONPath (config, encoding, predicateConfig, stringTransform, logger, text) {
-    const jsonpath = require('./jsonpath'),
-        combinators = require('../util/combinators'),
-        possibleJSON = stringTransform(tryJSON(text, predicateConfig, logger)),
+    const possibleJSON = stringTransform(tryJSON(text, predicateConfig, logger)),
         selectFn = combinators.curry(jsonpath.select, config.selector, possibleJSON);
 
     return orderIndependent(select('jsonpath', selectFn, encoding));
 }
 
 function transformAll (obj, keyTransforms, valueTransforms, arrayTransforms) {
-    const combinators = require('../util/combinators'),
-        apply = fns => combinators.compose.apply(null, fns),
-        isObject = require('../util/helpers').isObject;
+    const apply = fns => combinators.compose.apply(null, fns),
+        isObject = helpers.isObject;
 
     if (Array.isArray(obj)) {
         return apply(arrayTransforms)(obj.map(element => transformAll(element, keyTransforms, valueTransforms, arrayTransforms)));
@@ -224,7 +220,6 @@ function normalize (obj, config, options, logger) {
 }
 
 function testPredicate (expected, actual, predicateConfig, predicateFn) {
-    const helpers = require('../util/helpers');
     if (!helpers.defined(actual)) {
         actual = '';
     }
@@ -254,7 +249,6 @@ function expectedMatchesAtLeastOneValueInActualArray (expected, actualArray, pre
 }
 
 function expectedLeftOffArraySyntaxButActualIsArrayOfObjects (expected, actual, fieldName) {
-    const helpers = require('../util/helpers');
     return !Array.isArray(expected[fieldName]) && !helpers.defined(actual[fieldName]) && Array.isArray(actual);
 }
 
@@ -269,7 +263,7 @@ function predicateSatisfied (expected, actual, predicateConfig, predicateFn) {
     }
 
     return Object.keys(expected).every(fieldName => {
-        const isObject = require('../util/helpers').isObject;
+        const isObject = helpers.isObject;
 
         if (bothArrays(expected[fieldName], actual[fieldName])) {
             return allExpectedArrayValuesMatchActualArray(
@@ -316,8 +310,7 @@ function create (operator, predicateFn) {
 function deepEquals (predicate, request, encoding, logger) {
     const expected = normalize(forceStrings(predicate.deepEquals), predicate, { encoding: encoding }, logger),
         actual = normalize(forceStrings(request), predicate, { encoding: encoding, withSelectors: true, shouldForceStrings: true }, logger),
-        stringify = require('safe-stable-stringify'),
-        isObject = require('../util/helpers').isObject;
+        isObject = helpers.isObject;
 
     return Object.keys(expected).every(fieldName => {
         // Support predicates that reach into fields encoded in JSON strings (e.g. HTTP bodies)
@@ -335,21 +328,18 @@ function matches (predicate, request, encoding, logger) {
     // However, we need to maintain the case transform for keys like http header names (issue #169)
     // eslint-disable-next-line no-unneeded-ternary
     const caseSensitive = predicate.caseSensitive ? true : false, // convert to boolean even if undefined
-        helpers = require('../util/helpers'),
         clone = helpers.merge(predicate, { caseSensitive: true, keyCaseSensitive: caseSensitive }),
         noexcept = helpers.merge(clone, { except: '' }),
         expected = normalize(predicate.matches, noexcept, { encoding: encoding }, logger),
         actual = normalize(request, clone, { encoding: encoding, withSelectors: true }, logger),
-        options = caseSensitive ? '' : 'i',
-        errors = require('../util/errors'),
-        safe = require('safe-regex');
+        options = caseSensitive ? '' : 'i';
 
     if (encoding === 'base64') {
         throw errors.ValidationError('the matches predicate is not allowed in binary mode');
     }
 
     return predicateSatisfied(expected, actual, clone, (a, b) => {
-        if (!safe(a)) {
+        if (!safeRegex(a)) {
             logger.warn(`If mountebank becomes unresponsive, it is because of this unsafe regular expression: ${a}`);
         }
         return new RegExp(a, options).test(b);
@@ -377,18 +367,15 @@ function inject (predicate, request, encoding, logger, imposterState) {
         return true;
     }
 
-    const helpers = require('../util/helpers'),
-        config = {
-            request: helpers.clone(request),
-            state: imposterState,
-            logger: logger
-        },
-        compatibility = require('./compatibility');
+    const config = {
+        request: helpers.clone(request),
+        state: imposterState,
+        logger: logger
+    };
 
     compatibility.downcastInjectionConfig(config);
 
-    const injected = `(${predicate.inject})(config, logger, imposterState);`,
-        errors = require('../util/errors');
+    const injected = `(${predicate.inject})(config, logger, imposterState);`;
 
     try {
         return eval(injected);
@@ -438,8 +425,6 @@ const predicates = {
  */
 function evaluate (predicate, request, encoding, logger, imposterState) {
     const predicateFn = Object.keys(predicate).find(key => Object.keys(predicates).indexOf(key) >= 0),
-        errors = require('../util/errors'),
-        helpers = require('../util/helpers'),
         clone = helpers.clone(predicate);
 
     if (predicateFn) {

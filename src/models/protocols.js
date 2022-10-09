@@ -1,5 +1,17 @@
 'use strict';
 
+const responseResolver = require('./responseResolver'),
+    childProcess = require('child_process'),
+    fsExtra = require('fs-extra'),
+    path = require('path'),
+    errors = require('../util/errors.js'),
+    Imposter = require('./imposter.js'),
+    helpers = require('../util/helpers.js'),
+    tcpServer = require('./tcp/tcpServer.js'),
+    httpServer = require('./http/httpServer.js'),
+    httpsServer = require('./https/httpsServer.js'),
+    smtpServer = require('./smtp/smtpServer.js');
+
 /**
  * Abstracts the protocol configuration between the built-in in-memory implementations and out of process
  * implementations
@@ -22,7 +34,7 @@ function load (builtInProtocols, customProtocols, options, isAllowedConnection, 
         return async (creationRequest, logger, responseFn) => {
             const server = await createProtocol(creationRequest, logger, responseFn),
                 stubs = impostersRepository.stubsFor(server.port),
-                resolver = require('./responseResolver').create(stubs, server.proxy);
+                resolver = responseResolver.create(stubs, server.proxy);
 
             return {
                 port: server.port,
@@ -49,7 +61,7 @@ function load (builtInProtocols, customProtocols, options, isAllowedConnection, 
 
         return (creationRequest, logger) => new Promise((res, rej) => {
             let isPending = true;
-            const { spawn } = require('child_process'),
+            const { spawn } = childProcess,
                 command = config.createCommand.split(' ')[0],
                 args = config.createCommand.split(' ').splice(1),
                 port = creationRequest.port,
@@ -59,7 +71,7 @@ function load (builtInProtocols, customProtocols, options, isAllowedConnection, 
                     loglevel: options.loglevel,
                     allowInjection: options.allowInjection
                 },
-                configArgs = require('../util/helpers').merge(commonArgs, customFieldsFor(creationRequest)),
+                configArgs = helpers.merge(commonArgs, customFieldsFor(creationRequest)),
                 resolve = obj => {
                     isPending = false;
                     res(obj);
@@ -79,16 +91,16 @@ function load (builtInProtocols, customProtocols, options, isAllowedConnection, 
             let closeCalled = false;
 
             imposterProcess.on('error', error => {
-                const errors = require('../util/errors'),
-                    message = `Invalid configuration for protocol "${protocolName}": cannot run "${config.createCommand}"`;
+                const message = `Invalid configuration for protocol "${protocolName}": cannot run "${config.createCommand}"`;
+
                 reject(errors.ProtocolError(message,
                     { source: config.createCommand, details: error }));
             });
 
             imposterProcess.once('exit', code => {
                 if (code !== 0 && isPending) {
-                    const errors = require('../util/errors'),
-                        message = `"${protocolName}" start command failed (exit code ${code})`;
+                    const message = `"${protocolName}" start command failed (exit code ${code})`;
+
                     reject(errors.ProtocolError(message, { source: config.createCommand }));
                 }
                 else if (!closeCalled) {
@@ -112,7 +124,7 @@ function load (builtInProtocols, customProtocols, options, isAllowedConnection, 
                 const callbackURL = options.callbackURLTemplate.replace(':port', serverPort),
                     encoding = metadata.encoding || 'utf8',
                     stubs = impostersRepository.stubsFor(serverPort),
-                    resolver = require('./responseResolver').create(stubs, undefined, callbackURL);
+                    resolver = responseResolver.create(stubs, undefined, callbackURL);
 
                 delete metadata.encoding;
 
@@ -156,7 +168,6 @@ function load (builtInProtocols, customProtocols, options, isAllowedConnection, 
     }
 
     function createImposter (Protocol, creationRequest) {
-        const Imposter = require('./imposter');
         return Imposter.create(Protocol, creationRequest, mbLogger.baseLogger, options, isAllowedConnection);
     }
 
@@ -183,11 +194,9 @@ function loadCustomProtocols (protofile, logger) {
         return {};
     }
 
-    const fs = require('fs-extra'),
-        path = require('path'),
-        filename = path.resolve(path.relative(process.cwd(), protofile));
+    const filename = path.resolve(path.relative(process.cwd(), protofile));
 
-    if (fs.existsSync(filename)) {
+    if (fsExtra.existsSync(filename)) {
         try {
             const customProtocols = require(filename);
             Object.keys(customProtocols).forEach(proto => {
@@ -212,10 +221,10 @@ function loadCustomProtocols (protofile, logger) {
 
 function loadProtocols (options, baseURL, logger, isAllowedConnection, imposters) {
     const builtInProtocols = {
-            tcp: require('./tcp/tcpServer'),
-            http: require('./http/httpServer'),
-            https: require('./https/httpsServer'),
-            smtp: require('./smtp/smtpServer')
+            tcp: tcpServer,
+            http: httpServer,
+            https: httpsServer,
+            smtp: smtpServer
         },
         customProtocols = loadCustomProtocols(options.protofile, logger),
         config = {

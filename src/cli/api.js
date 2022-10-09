@@ -1,18 +1,19 @@
 'use strict';
 
+const http = require('http');
+
 function curl (options, method, path, body) {
     return new Promise((resolve, reject) => {
-        const http = require('http'),
-            requestOptions = {
-                method: method,
-                path: path,
-                port: options.port,
-                hostname: options.host || 'localhost',
-                headers: {
-                    'Content-Type': 'application/json',
-                    Connection: 'close'
-                }
-            };
+        const requestOptions = {
+            method: method,
+            path: path,
+            port: options.port,
+            hostname: options.host || 'localhost',
+            headers: {
+                'Content-Type': 'application/json',
+                Connection: 'close'
+            }
+        };
 
         if (options.apikey) {
             requestOptions.headers['x-api-key'] = options.apikey;

@@ -1,5 +1,8 @@
 'use strict';
 
+const exceptions = require('../util/errors.js'),
+    helpers = require('../util/helpers.js');
+
 /**
  * The module that does validation of behavior configuration
  * @module
@@ -10,8 +13,6 @@
  * @returns {{validate: validate}}
  */
 function create () {
-    const exceptions = require('../util/errors');
-
     function hasExactlyOneKey (obj) {
         const keys = Object.keys(obj);
         return keys.length === 1;
@@ -55,15 +56,13 @@ function create () {
     }
 
     function isTopLevelSpec (spec) {
-        const helpers = require('../util/helpers');
-
         // True of copy and lookup behaviors that define the metadata below the top level keys
         return helpers.isObject(spec)
             && Object.keys(spec).filter(nonMetadata).length === Object.keys(spec).length;
 
     }
     function enumFieldFor (field) {
-        const isObject = require('../util/helpers').isObject;
+        const isObject = helpers.isObject;
 
         // Can be the string value or the object key
         if (isObject(field) && Object.keys(field).length > 0) {
@@ -87,8 +86,7 @@ function create () {
 
     function addTypeErrors (fieldSpec, path, field, config, addErrorFn) {
         /* eslint complexity: 0 */
-        const helpers = require('../util/helpers'),
-            fieldType = typeof field,
+        const fieldType = typeof field,
             allowedTypes = Object.keys(fieldSpec._allowedTypes), // eslint-disable-line no-underscore-dangle
             typeSpec = fieldSpec._allowedTypes[fieldType]; // eslint-disable-line no-underscore-dangle
 
@@ -115,8 +113,7 @@ function create () {
 
     function addErrorsFor (config, pathPrefix, spec, addErrorFn) {
         Object.keys(spec).filter(nonMetadata).forEach(fieldName => {
-            const helpers = require('../util/helpers'),
-                fieldSpec = spec[fieldName],
+            const fieldSpec = spec[fieldName],
                 path = pathFor(pathPrefix, fieldName),
                 field = navigate(config, path);
 

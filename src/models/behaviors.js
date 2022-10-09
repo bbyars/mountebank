@@ -5,15 +5,29 @@
  * @module
  */
 
-const prometheus = require('prom-client'),
-    metrics = {
-        behaviorDuration: new prometheus.Histogram({
-            name: 'mb_behavior_duration_seconds',
-            help: 'Time it takes to run all the behaviors',
-            buckets: [0.05, 0.1, 0.2, 0.5, 1, 3],
-            labelNames: ['imposter']
-        })
-    };
+const os = require('os'),
+    fsExtra = require('fs-extra'),
+    childProcess = require('child_process'),
+    safeRegex = require('safe-regex'),
+    csvParse = require('csv-parse'),
+    buffer = require('buffer'),
+    prometheus = require('prom-client'),
+    xPath = require('./xpath'),
+    jsonPath = require('./jsonpath'),
+    helpers = require('../util/helpers.js'),
+    exceptions = require('../util/errors.js'),
+    behaviorsValidator = require('./behaviorsValidator.js'),
+    compatibility = require('./compatibility.js');
+
+
+const metrics = {
+    behaviorDuration: new prometheus.Histogram({
+        name: 'mb_behavior_duration_seconds',
+        help: 'Time it takes to run all the behaviors',
+        buckets: [0.05, 0.1, 0.2, 0.5, 1, 3],
+        labelNames: ['imposter']
+    })
+};
 
 // The following schemas are used by both the lookup and copy behaviors and should be kept consistent
 const fromSchema = {
@@ -101,7 +115,7 @@ const fromSchema = {
  * @returns {Object} The array of errors
  */
 function validate (config) {
-    const validator = require('./behaviorsValidator').create();
+    const validator = behaviorsValidator.create();
     return validator.validate(config, validations);
 }
 
@@ -115,8 +129,7 @@ function validate (config) {
  * @returns {Object} A promise resolving to the response
  */
 async function wait (request, response, millisecondsOrFn, logger) {
-    const fn = `(${millisecondsOrFn})()`,
-        exceptions = require('../util/errors');
+    const fn = `(${millisecondsOrFn})()`;
 
     let milliseconds = parseInt(millisecondsOrFn);
 
@@ -140,7 +153,7 @@ async function wait (request, response, millisecondsOrFn, logger) {
 
 function quoteForShell (obj) {
     const json = JSON.stringify(obj),
-        isWindows = require('os').platform().indexOf('win') === 0;
+        isWindows = os.platform().indexOf('win') === 0;
 
     if (isWindows) {
         // Confused? Me too. All other approaches I tried were spectacular failures
@@ -153,9 +166,9 @@ function quoteForShell (obj) {
 }
 
 function execShell (command, request, response, logger) {
-    const exec = require('child_process').exec,
-        env = require('../util/helpers').clone(process.env),
-        maxBuffer = require('buffer').constants.MAX_STRING_LENGTH,
+    const exec = childProcess.exec,
+        env = helpers.clone(process.env),
+        maxBuffer = buffer.constants.MAX_STRING_LENGTH,
         maxShellCommandLength = 2048;
 
     logger.debug(`Shelling out to ${command}`);
@@ -217,16 +230,13 @@ function shellTransform (request, response, command, logger) {
  * @returns {Object}
  */
 function decorate (originalRequest, response, fn, logger, imposterState) {
-    const helpers = require('../util/helpers'),
-        config = {
+    const config = {
             request: helpers.clone(originalRequest),
             response,
             logger,
             state: imposterState
         },
-        injected = `(${fn})(config, response, logger);`, // backwards compatibility
-        exceptions = require('../util/errors'),
-        compatibility = require('./compatibility');
+        injected = `(${fn})(config, response, logger);`; // backwards compatibility
 
     compatibility.downcastInjectionConfig(config);
 
@@ -259,7 +269,7 @@ function getKeyIgnoringCase (obj, expectedKey) {
 }
 
 function getFrom (obj, from) {
-    const isObject = require('../util/helpers').isObject;
+    const isObject = helpers.isObject;
 
     if (typeof obj === 'undefined') {
         return undefined;
@@ -306,10 +316,9 @@ function getMatches (selectionFn, selector, logger) {
 
 function regexValue (from, config, logger) {
     const regex = new RegExp(config.using.selector, regexFlags(config.using.options)),
-        selectionFn = () => regex.exec(from),
-        safe = require('safe-regex');
+        selectionFn = () => regex.exec(from);
 
-    if (!safe(regex)) {
+    if (!safeRegex(regex)) {
         logger.warn(`If mountebank becomes unresponsive, it is because of this unsafe regular expression: ${config.using.selector}`);
     }
     return getMatches(selectionFn, regex, logger);
@@ -317,16 +326,14 @@ function regexValue (from, config, logger) {
 
 function xpathValue (from, config, logger) {
     const selectionFn = () => {
-        const xpath = require('./xpath');
-        return xpath.select(config.using.selector, config.using.ns, from, logger);
+        return xPath.select(config.using.selector, config.using.ns, from, logger);
     };
     return getMatches(selectionFn, config.using.selector, logger);
 }
 
 function jsonpathValue (from, config, logger) {
     const selectionFn = () => {
-        const jsonpath = require('./jsonpath');
-        return jsonpath.select(config.using.selector, from, logger);
+        return jsonPath.select(config.using.selector, from, logger);
     };
     return getMatches(selectionFn, config.using.selector, logger);
 }
@@ -342,7 +349,7 @@ function globalStringReplace (str, substring, newSubstring, logger) {
 }
 
 function globalObjectReplace (obj, replacer) {
-    const isObject = require('../util/helpers').isObject,
+    const isObject = helpers.isObject,
         renames = {};
 
     Object.keys(obj).forEach(key => {
@@ -399,8 +406,8 @@ function copy (originalRequest, response, copyConfig, logger) {
 }
 
 function containsKey (headers, keyColumn) {
-    const helpers = require('../util/helpers'),
-        key = Object.values(headers).find(value => value === keyColumn);
+    const key = Object.values(headers).find(value => value === keyColumn);
+
     return helpers.defined(key);
 }
 
@@ -413,11 +420,9 @@ function createRowObject (headers, rowArray) {
 }
 
 function selectRowFromCSV (csvConfig, keyValue, logger) {
-    const fs = require('fs-extra'),
-        helpers = require('../util/helpers'),
-        delimiter = csvConfig.delimiter || ',',
-        inputStream = fs.createReadStream(csvConfig.path),
-        parser = require('csv-parse').parse({ delimiter: delimiter }),
+    const delimiter = csvConfig.delimiter || ',',
+        inputStream = fsExtra.createReadStream(csvConfig.path),
+        parser = csvParse.parse({ delimiter: delimiter }),
         pipe = inputStream.pipe(parser);
     let headers;
 

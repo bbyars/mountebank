@@ -1,5 +1,12 @@
 'use strict';
 
+const fsExtra = require('fs-extra'),
+    prometheus = require('prom-client'),
+    properLockFile = require('proper-lockfile'),
+    pathModule = require('path'),
+    helpers = require('../util/helpers.js'),
+    errors = require('../util/errors.js');
+
 /**
  * An abstraction for loading imposters from the filesystem
  * The root of the database is provided on the command line as --datadir
@@ -83,7 +90,7 @@
  * @module
  */
 
-const prometheus = require('prom-client'),
+const
     metrics = {
         lockAcquireDuration: new prometheus.Histogram({
             name: 'mb_lock_acquire_duration_seconds',
@@ -117,17 +124,14 @@ function create (config, logger) {
         locks = 0;
 
     async function ensureDir (filepath) {
-        const fs = require('fs-extra'),
-            path = require('path'),
-            dir = path.dirname(filepath);
+        const dir = pathModule.dirname(filepath);
 
-        await fs.ensureDir(dir);
+        await fsExtra.ensureDir(dir);
     }
 
     async function writeFile (filepath, obj) {
-        const fs = require('fs-extra');
         await ensureDir(filepath);
-        await fs.writeFile(filepath, JSON.stringify(obj, null, 2));
+        await fsExtra.writeFile(filepath, JSON.stringify(obj, null, 2));
     }
 
     function tryParse (maybeJSON, filepath) {
@@ -135,18 +139,14 @@ function create (config, logger) {
             return JSON.parse(maybeJSON);
         }
         catch (parseErr) {
-            const errors = require('../util/errors');
             logger.error(`Corrupted database: invalid JSON for ${filepath}`);
             throw errors.DatabaseError(`invalid JSON in ${filepath}`, { details: parseErr.message });
         }
     }
 
     async function readFile (filepath, defaultContents) {
-        const fs = require('fs-extra'),
-            errors = require('../util/errors');
-
         try {
-            const data = await fs.readFile(filepath, 'utf8');
+            const data = await fsExtra.readFile(filepath, 'utf8');
             return tryParse(data, filepath);
         }
         catch (err) {
@@ -172,12 +172,11 @@ function create (config, logger) {
     }
 
     async function atomicWriteFile (filepath, obj, attempts = 1) {
-        const tmpfile = filepath + '.tmp',
-            fs = require('fs-extra');
+        const tmpfile = filepath + '.tmp';
 
         try {
             await writeFile(tmpfile, obj);
-            await fs.rename(tmpfile, filepath);
+            await fsExtra.rename(tmpfile, filepath);
         }
         catch (err) {
             if (err.code === 'ENOENT' && attempts < 15) {
@@ -192,27 +191,25 @@ function create (config, logger) {
     }
 
     async function lockFile (filepath) {
-        const locker = require('proper-lockfile'),
-            options = {
-                realpath: false,
-                retries: {
-                    retries: 20,
-                    minTimeout: 10,
-                    maxTimeout: 5000,
-                    randomize: true,
-                    factor: 1.5
-                },
-                stale: 30000
-            };
+        const options = {
+            realpath: false,
+            retries: {
+                retries: 20,
+                minTimeout: 10,
+                maxTimeout: 5000,
+                randomize: true,
+                factor: 1.5
+            },
+            stale: 30000
+        };
 
         // with realpath = false, the file doesn't have to exist, but the directory does
         await ensureDir(filepath);
-        return locker.lock(filepath, options);
+        return properLockFile.lock(filepath, options);
     }
 
     async function readAndWriteFile (filepath, caller, transformer, defaultContents) {
-        const locker = require('proper-lockfile'),
-            currentLockId = locks,
+        const currentLockId = locks,
             observeLockAcquireDuration = metrics.lockAcquireDuration.startTimer({ caller });
 
         locks += 1;
@@ -237,15 +234,14 @@ function create (config, logger) {
             // Ignore lock already released errors
             if (err.code !== 'ERELEASED') {
                 metrics.lockErrors.inc({ caller, code: err.code });
-                locker.unlock(filepath, { realpath: false }).catch(() => { /* ignore */ });
+                properLockFile.unlock(filepath, { realpath: false }).catch(() => { /* ignore */ });
                 throw err;
             }
         }
     }
 
     async function remove (path) {
-        const fs = require('fs-extra');
-        await fs.remove(path);
+        await fsExtra.remove(path);
     }
 
     function filenameFor (timestamp) {
@@ -282,10 +278,8 @@ function create (config, logger) {
     }
 
     function readdir (path) {
-        const fs = require('fs-extra');
-
         return new Promise((resolve, reject) => {
-            fs.readdir(path, (err, files) => {
+            fsExtra.readdir(path, (err, files) => {
                 if (err && err.code === 'ENOENT') {
                     // Nothing saved yet
                     resolve([]);
@@ -374,8 +368,7 @@ function create (config, logger) {
         }
 
         function wrap (stub) {
-            const helpers = require('../util/helpers'),
-                cloned = helpers.clone(stub || {}),
+            const cloned = helpers.clone(stub || {}),
                 stubDir = stub ? stub.meta.dir : '';
 
             if (typeof stub === 'undefined') {
@@ -543,8 +536,6 @@ function create (config, logger) {
             let stubDir;
 
             await readAndWriteHeader('deleteStubAtIndex', async header => {
-                const errors = require('../util/errors');
-
                 if (typeof header.stubs[index] === 'undefined') {
                     throw errors.MissingResourceError(`no stub at index ${index}`);
                 }
@@ -650,8 +641,7 @@ function create (config, logger) {
          * @returns {Object} - the promise
          */
         async function addRequest (request) {
-            const helpers = require('../util/helpers'),
-                recordedRequest = helpers.clone(request);
+            const recordedRequest = helpers.clone(request);
 
             recordedRequest.timestamp = new Date().toJSON();
             await writeFile(requestPath(recordedRequest), recordedRequest);
@@ -857,15 +847,14 @@ function create (config, logger) {
     }
 
     async function loadImposterFrom (dir, protocols) {
-        const fs = require('fs-extra'),
-            imposterFilename = `${config.datadir}/${dir}/imposter.json`;
+        const imposterFilename = `${config.datadir}/${dir}/imposter.json`;
 
-        if (!fs.existsSync(imposterFilename)) {
+        if (!fsExtra.existsSync(imposterFilename)) {
             logger.warn(`Skipping ${dir} during loading; missing imposter.json`);
             return;
         }
 
-        const imposterConfig = JSON.parse(fs.readFileSync(imposterFilename)),
+        const imposterConfig = JSON.parse(fsExtra.readFileSync(imposterFilename)),
             protocol = protocols[imposterConfig.protocol];
 
         if (protocol) {
@@ -885,12 +874,11 @@ function create (config, logger) {
      * @returns {Object} - a promise
      */
     async function loadAll (protocols) {
-        const fs = require('fs-extra');
-        if (!config.datadir || !fs.existsSync(config.datadir)) {
+        if (!config.datadir || !fsExtra.existsSync(config.datadir)) {
             return;
         }
 
-        const dirs = fs.readdirSync(config.datadir),
+        const dirs = fsExtra.readdirSync(config.datadir),
             promises = dirs.map(async dir => loadImposterFrom(dir, protocols));
         await Promise.all(promises);
     }

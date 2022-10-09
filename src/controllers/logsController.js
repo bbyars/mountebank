@@ -1,5 +1,8 @@
 'use strict';
 
+const fs = require('fs-extra'),
+    escapeHtml = require('escape-html');
+
 /**
  * The controller that exposes the logs
  * @module
@@ -12,8 +15,6 @@
  */
 function create (logfile) {
     function getLogEntries () {
-        const fs = require('fs-extra');
-
         if (!logfile || !fs.existsSync(logfile)) {
             return [{ level: 'error', message: 'No logfile' }];
         }
@@ -41,7 +42,7 @@ function create (logfile) {
 
         response.format({
             json: () => response.send({ logs: logs }),
-            html: () => response.render('logs', { logs: logs, escape: require('escape-html') })
+            html: () => response.render('logs', { logs: logs, escape: escapeHtml })
         });
     }
 

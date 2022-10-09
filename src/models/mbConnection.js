@@ -1,5 +1,8 @@
 'use strict';
 
+const errors = require('../util/errors.js'),
+    util = require('util');
+
 /**
  * Helper functions to navigate the mountebank API for out of process implementations.
  * Used to adapt the built-in (in-process) protocols to out of process.
@@ -17,7 +20,7 @@ function createLogger (loglevel) {
         else {
             result[level] = function () {
                 const args = Array.prototype.slice.call(arguments),
-                    message = require('util').format.apply(this, args);
+                    message = util.format.apply(this, args);
 
                 console.log(`${level} ${message}`);
             };
@@ -47,7 +50,7 @@ function postJSON (what, where) {
                         body = buffer.toString('utf8');
 
                     if (response.statusCode !== 200) {
-                        reject(require('../util/errors').CommunicationError({
+                        reject(errors.CommunicationError({
                             statusCode: response.statusCode,
                             body: body
                         }));

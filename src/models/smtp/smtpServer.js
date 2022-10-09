@@ -1,5 +1,10 @@
 'use strict';
 
+const smtpServer = require('smtp-server'),
+    helpers = require('../../util/helpers.js'),
+    errors = require('../../util/errors.js'),
+    smtpRequest = require('./smtpRequest.js');
+
 /**
  * Represents an smtp imposter
  * @module
@@ -7,14 +12,13 @@
 
 function create (options, logger, responseFn) {
     const connections = {},
-        SMTPServer = require('smtp-server').SMTPServer,
+        SMTPServer = smtpServer.SMTPServer,
         server = new SMTPServer({
             maxAllowedUnauthenticatedCommands: 1000,
             disableReverseLookup: true,
             authOptional: true,
             onConnect (socket, callback) {
-                const helpers = require('../../util/helpers'),
-                    name = helpers.socketName(socket);
+                const name = helpers.socketName(socket);
 
                 logger.debug('%s ESTABLISHED', name);
 
@@ -37,12 +41,11 @@ function create (options, logger, responseFn) {
                 return callback();
             },
             onData (stream, socket, callback) {
-                const request = { session: socket, source: stream, callback: callback };
-                const helpers = require('../../util/helpers'),
+                const request = { session: socket, source: stream, callback: callback },
                     clientName = helpers.socketName(socket);
 
                 try {
-                    require('./smtpRequest').createFrom(request).then(simpleRequest => {
+                    smtpRequest.createFrom(request).then(simpleRequest => {
                         logger.info(`${clientName} => Envelope from: ${JSON.stringify(simpleRequest.from)} to: ${JSON.stringify(simpleRequest.to)}`);
                         logger.debug('%s => %s', clientName, JSON.stringify(simpleRequest));
                         return responseFn(simpleRequest);
@@ -53,21 +56,17 @@ function create (options, logger, responseFn) {
                         return Promise.resolve(true);
                     }).then(() => Promise.resolve(request.callback()))
                         .catch(error => {
-                            const exceptions = require('../../util/errors');
-                            logger.error('%s X=> %s', clientName, JSON.stringify(exceptions.details(error)));
+                            logger.error('%s X=> %s', clientName, JSON.stringify(errors.details(error)));
                         });
                 }
                 catch (error) {
-                    const exceptions = require('../../util/errors');
-                    logger.error('%s X=> %s', clientName, JSON.stringify(exceptions.details(error)));
+                    logger.error('%s X=> %s', clientName, JSON.stringify(errors.details(error)));
                 }
             }
         });
 
     return new Promise((resolve, reject) => {
         server.on('error', error => {
-            const errors = require('../../util/errors');
-
             if (error.errno === 'EADDRINUSE') {
                 reject(errors.ResourceConflictError(`Port ${options.port} is already in use`));
             }

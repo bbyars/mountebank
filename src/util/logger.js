@@ -1,10 +1,12 @@
 'use strict';
+const path = require('path'),
+    fs = require('fs-extra'),
+    winston = require('winston'),
+    scopedLogger = require('./scopedLogger.js');
 
 function initializeLogfile (filename) {
     // Ensure new logfile on startup so the /logs only shows for this process
-    const path = require('path'),
-        fs = require('fs-extra'),
-        extension = path.extname(filename),
+    const extension = path.extname(filename),
         pattern = new RegExp(`${extension}$`),
         newFilename = filename.replace(pattern, `1${extension}`);
 
@@ -52,10 +54,9 @@ function createLogger (options) {
             }
         };
     }
-    const winston = require('winston'),
-        winstonLogger = winston.createLogger({ level: options.log.level }),
-        ScopedLogger = require('./scopedLogger'),
-        logger = ScopedLogger.create(winstonLogger, `[mb:${options.port}] `),
+
+    const winstonLogger = winston.createLogger({ level: options.log.level }),
+        logger = scopedLogger.create(winstonLogger, `[mb:${options.port}] `),
         consoleConfig = options.log.transports.console,
         fileConfig = options.log.transports.file;
 

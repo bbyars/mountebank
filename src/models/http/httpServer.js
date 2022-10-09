@@ -1,5 +1,8 @@
 'use strict';
 
+const http = require('http'),
+    baseHttpServer = require('./baseHttpServer.js');
+
 /**
  * Represents an http imposter
  * @module
@@ -8,8 +11,8 @@
 function createBaseServer () {
     return {
         metadata: {},
-        createNodeServer: require('http').createServer
+        createNodeServer: http.createServer
     };
 }
 
-module.exports = require('./baseHttpServer')(createBaseServer);
+module.exports = baseHttpServer(createBaseServer);

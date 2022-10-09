@@ -1,5 +1,7 @@
 'use strict';
 
+const helpers = require('../util/helpers');
+
 /**
  * mountebank aims to evolve without requiring users to have to worry about versioning,
  * so breaking changes to the API are A Big Deal. This module exists to support transforming
@@ -25,7 +27,7 @@ function upcastShellTransformToArray (request) {
 }
 
 function canUpcastBehaviors (response) {
-    const isObject = require('../util/helpers').isObject;
+    const isObject = helpers.isObject;
 
     return typeof response.behaviors === 'undefined'
         && typeof response.repeat === 'undefined'
@@ -87,7 +89,7 @@ function upcastTcpProxyDestinationToUrl (request) {
         return;
     }
 
-    const isObject = require('../util/helpers').isObject;
+    const isObject = helpers.isObject;
 
     (request.stubs || []).forEach(stub => {
         (stub.responses || []).forEach(response => {

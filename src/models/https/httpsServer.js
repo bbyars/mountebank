@@ -1,14 +1,17 @@
 'use strict';
 
+const path = require('path'),
+    fs = require('fs'),
+    https = require('https'),
+    baseHttpServer = require('../http/baseHttpServer.js');
+
 /**
  * Represents an https imposter
  * @module
  */
 
 function createBaseServer (options) {
-    const path = require('path'),
-        fs = require('fs'),
-        metadata = {
+    const metadata = {
             key: options.key || fs.readFileSync(path.join(__dirname, '/cert/mb-key.pem'), 'utf8'),
             cert: options.cert || fs.readFileSync(path.join(__dirname, '/cert/mb-cert.pem'), 'utf8'),
             mutualAuth: Boolean(options.mutualAuth),
@@ -26,7 +29,7 @@ function createBaseServer (options) {
             ca: metadata.ca,
             requestCert: metadata.mutualAuth && metadata.rejectUnauthorized
         },
-        createNodeServer = () => require('https').createServer(config);
+        createNodeServer = () => https.createServer(config);
 
     if (options.ciphers) {
         metadata.ciphers = options.ciphers.toUpperCase();
@@ -36,4 +39,4 @@ function createBaseServer (options) {
     return { metadata, createNodeServer };
 }
 
-module.exports = require('../http/baseHttpServer')(createBaseServer);
+module.exports = baseHttpServer(createBaseServer);

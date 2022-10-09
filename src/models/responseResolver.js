@@ -1,24 +1,32 @@
 'use strict';
 
+const prometheus = require('prom-client'),
+    stringify = require('safe-stable-stringify'),
+    helpers = require('../util/helpers.js'),
+    compatibility = require('./compatibility.js'),
+    exceptions = require('../util/errors.js'),
+    xpath = require('./xpath.js'),
+    jsonpath = require('./jsonpath.js'),
+    behaviors = require('./behaviors.js');
+
 /**
  * Determines the response for a stub based on the user-provided response configuration
  * @module
  */
 
-const prometheus = require('prom-client'),
-    metrics = {
-        proxyDuration: new prometheus.Histogram({
-            name: 'mb_proxy_duration_seconds',
-            help: 'Time it takes to get the response from the downstream service',
-            buckets: [0.1, 0.2, 0.5, 1, 3, 5, 10, 30],
-            labelNames: ['imposter']
-        }),
-        proxyCount: new prometheus.Counter({
-            name: 'mb_proxy_total',
-            help: 'Number of times a request was proxied to a downstream service',
-            labelNames: ['imposter']
-        })
-    };
+const metrics = {
+    proxyDuration: new prometheus.Histogram({
+        name: 'mb_proxy_duration_seconds',
+        help: 'Time it takes to get the response from the downstream service',
+        buckets: [0.1, 0.2, 0.5, 1, 3, 5, 10, 30],
+        labelNames: ['imposter']
+    }),
+    proxyCount: new prometheus.Counter({
+        name: 'mb_proxy_total',
+        help: 'Number of times a request was proxied to a downstream service',
+        labelNames: ['imposter']
+    })
+};
 
 /**
  * Creates the resolver
@@ -42,14 +50,12 @@ function create (stubs, proxy, callbackURL) {
         return new Promise((done, reject) => {
             // Leave parameters for older interface
             const injected = `(${fn})(config, injectState, logger, done, imposterState);`,
-                helpers = require('../util/helpers'),
                 config = {
                     request: helpers.clone(request),
                     state: imposterState,
                     logger: logger,
                     callback: done
-                },
-                compatibility = require('./compatibility');
+                };
 
             compatibility.downcastInjectionConfig(config);
 
@@ -60,7 +66,6 @@ function create (stubs, proxy, callbackURL) {
                 }
             }
             catch (error) {
-                const exceptions = require('../util/errors');
                 logger.error(`injection X=> ${error}`);
                 logger.error(`    full source: ${JSON.stringify(injected)}`);
                 logger.error(`    config.request: ${JSON.stringify(config.request)}`);
@@ -74,7 +79,6 @@ function create (stubs, proxy, callbackURL) {
     }
 
     function selectionValue (nodes) {
-        const helpers = require('../util/helpers');
         if (!helpers.defined(nodes)) {
             return '';
         }
@@ -87,14 +91,14 @@ function create (stubs, proxy, callbackURL) {
     }
 
     function xpathValue (xpathConfig, possibleXML, logger) {
-        const xpath = require('./xpath'),
-            nodes = xpath.select(xpathConfig.selector, xpathConfig.ns, possibleXML, logger);
+        const nodes = xpath.select(xpathConfig.selector, xpathConfig.ns, possibleXML, logger);
+
         return selectionValue(nodes);
     }
 
     function jsonpathValue (jsonpathConfig, possibleJSON, logger) {
-        const jsonpath = require('./jsonpath'),
-            nodes = jsonpath.select(jsonpathConfig.selector, possibleJSON, logger);
+        const nodes = jsonpath.select(jsonpathConfig.selector, possibleJSON, logger);
+
         return selectionValue(nodes);
     }
 
@@ -102,13 +106,13 @@ function create (stubs, proxy, callbackURL) {
         if (!predicateGenerators.ignore) {
             return valueOf(request[fieldName]);
         }
-        const objFilter = require('../util/helpers').objFilter;
+        const objFilter = helpers.objFilter;
         return valueOf(objFilter(request[fieldName], predicateGenerators.ignore[fieldName]));
     }
 
     function buildEquals (request, matchers, valueOf) {
         const result = {},
-            isObject = require('../util/helpers').isObject;
+            isObject = helpers.isObject;
 
         Object.keys(matchers).forEach(key => {
             if (isObject(request[key])) {
@@ -124,8 +128,8 @@ function create (stubs, proxy, callbackURL) {
     const path = [];
 
     function buildExists (request, fieldName, matchers, initialRequest) {
-        const isObject = require('../util/helpers').isObject,
-            setDeep = require('../util/helpers').setDeep;
+        const isObject = helpers.isObject,
+            setDeep = helpers.setDeep;
         Object.keys(request).forEach(key => {
             path.push(key);
             if (isObject(request[key])) {
@@ -146,8 +150,8 @@ function create (stubs, proxy, callbackURL) {
             if (matcher.inject) {
                 // eslint-disable-next-line no-unused-vars
                 const config = { request, logger },
-                    injected = `(${matcher.inject})(config);`,
-                    errors = require('../util/errors');
+                    injected = `(${matcher.inject})(config);`;
+
                 try {
                     predicates.push(...eval(injected));
                 }
@@ -155,7 +159,7 @@ function create (stubs, proxy, callbackURL) {
                     logger.error(`injection X=> ${error}`);
                     logger.error(`    source: ${JSON.stringify(injected)}`);
                     logger.error(`    request: ${JSON.stringify(request)}`);
-                    throw errors.InjectionError('invalid predicateGenerator injection', { source: injected, data: error.message });
+                    throw exceptions.InjectionError('invalid predicateGenerator injection', { source: injected, data: error.message });
                 }
                 return;
             }
@@ -182,9 +186,9 @@ function create (stubs, proxy, callbackURL) {
             });
 
             Object.keys(matcher.matches).forEach(fieldName => {
-                const helpers = require('../util/helpers'),
-                    matcherValue = matcher.matches[fieldName],
+                const matcherValue = matcher.matches[fieldName],
                     predicate = helpers.clone(basePredicate);
+
                 if (matcherValue === true && hasPredicateOperator === false) {
                     predicate.deepEquals = {};
                     predicate.deepEquals[fieldName] = buildDeepEqual(request, fieldName, matcher, valueOf);
@@ -208,7 +212,6 @@ function create (stubs, proxy, callbackURL) {
     }
 
     function deepEqual (obj1, obj2) {
-        const stringify = require('safe-stable-stringify');
         return stringify(obj1) === stringify(obj2);
     }
 
@@ -256,8 +259,7 @@ function create (stubs, proxy, callbackURL) {
     }
 
     async function proxyAndRecord (responseConfig, request, logger, requestDetails, imposterState) {
-        const behaviors = require('./behaviors'),
-            startTime = new Date(),
+        const startTime = new Date(),
             observeProxyDuration = metrics.proxyDuration.startTimer();
 
         metrics.proxyCount.inc({ imposter: logger.scopePrefix });
@@ -294,9 +296,6 @@ function create (stubs, proxy, callbackURL) {
     }
 
     function processResponse (responseConfig, request, logger, imposterState, requestDetails) {
-        const helpers = require('../util/helpers'),
-            exceptions = require('../util/errors');
-
         if (responseConfig.is) {
             // Clone to prevent accidental state changes downstream
             return Promise.resolve(helpers.clone(responseConfig.is));
@@ -338,10 +337,6 @@ function create (stubs, proxy, callbackURL) {
      * @returns {Object} - Promise resolving to the response
      */
     async function resolve (responseConfig, request, logger, imposterState, options) {
-        const exceptions = require('../util/errors'),
-            helpers = require('../util/helpers'),
-            behaviors = require('./behaviors');
-
         if (hasMultipleTypes(responseConfig)) {
             return Promise.reject(exceptions.ValidationError('each response object must have only one response type',
                 { source: responseConfig }));
@@ -378,8 +373,7 @@ function create (stubs, proxy, callbackURL) {
      * @returns {Object} - Promise resolving to the response
      */
     async function resolveProxy (proxyResponse, proxyResolutionKey, logger, imposterState) {
-        const pendingProxyConfig = pendingProxyResolutions[proxyResolutionKey],
-            behaviors = require('./behaviors');
+        const pendingProxyConfig = pendingProxyResolutions[proxyResolutionKey];
 
         if (pendingProxyConfig) {
             pendingProxyConfig.observeProxyDuration({ imposter: logger.scopePrefix });
@@ -392,10 +386,8 @@ function create (stubs, proxy, callbackURL) {
             return response;
         }
         else {
-            const errors = require('../util/errors');
-
             logger.error('Invalid proxy resolution key: ' + proxyResolutionKey);
-            return Promise.reject(errors.MissingResourceError('invalid proxy resolution key',
+            return Promise.reject(exceptions.MissingResourceError('invalid proxy resolution key',
                 { source: `${callbackURL}/${proxyResolutionKey}` }));
         }
     }

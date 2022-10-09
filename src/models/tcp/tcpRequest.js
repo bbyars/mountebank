@@ -1,5 +1,7 @@
 'use strict';
 
+const helpers = require('../../util/helpers.js');
+
 /**
  * Transforms a raw tcp request into the API-friendly representation of one
  * @module
@@ -11,8 +13,6 @@
  * @returns {Object} - A promise resolving to the mountebank tcp request
  */
 function createFrom (request) {
-    const helpers = require('../../util/helpers');
-
     return Promise.resolve({
         requestFrom: helpers.socketName(request.socket),
         ip: request.socket.remoteAddress,

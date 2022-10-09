@@ -1,8 +1,9 @@
 'use strict';
 
+const os = require('os');
+
 function getLocalIPs () {
-    const os = require('os'),
-        interfaces = os.networkInterfaces(),
+    const interfaces = os.networkInterfaces(),
         result = [];
 
     Object.keys(interfaces).forEach(name => {

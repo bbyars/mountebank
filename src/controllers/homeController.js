@@ -1,5 +1,7 @@
 'use strict';
 
+const date = require('../util/date.js');
+
 /**
  * The controller that returns the base mountebank hypermedia
  * @module
@@ -12,7 +14,6 @@
  */
 function create (releases) {
     function createNotice (release) {
-        const date = require('../util/date');
         return {
             version: release.version,
             when: date.howLongAgo(release.date)

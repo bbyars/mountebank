@@ -1,4 +1,10 @@
 'use strict';
+const net = require('net'),
+    helpers = require('../../util/helpers.js'),
+    tcpRequest = require('./tcpRequest.js'),
+    tcpProxy = require('./tcpProxy.js'),
+    tcpValidator = require('./tcpValidator.js'),
+    errors = require('../../util/errors.js');
 
 /**
  * Represents a tcp imposter
@@ -8,9 +14,7 @@
 function create (options, logger, responseFn) {
     const mode = options.mode ? options.mode : 'text',
         encoding = mode === 'binary' ? 'base64' : 'utf8',
-        net = require('net'),
         server = net.createServer(),
-        helpers = require('../../util/helpers'),
         connections = {},
         defaultResponse = options.defaultResponse || { data: '' };
 
@@ -48,7 +52,7 @@ function create (options, logger, responseFn) {
 
         try {
             // Translate network request to JSON
-            const jsonRequest = await require('./tcpRequest').createFrom(request);
+            const jsonRequest = await tcpRequest.createFrom(request);
             logger.debug('%s => %s', clientName, JSON.stringify(jsonRequest.data.toString(encoding)));
 
             // call mountebank with JSON request
@@ -73,8 +77,7 @@ function create (options, logger, responseFn) {
             }
         }
         catch (error) {
-            const exceptions = require('../../util/errors');
-            logger.error('%s X=> %s', clientName, JSON.stringify(exceptions.details(error)));
+            logger.error('%s X=> %s', clientName, JSON.stringify(errors.details(error)));
             socket.write(JSON.stringify({ errors: [error] }), 'utf8');
         }
     }
@@ -115,8 +118,6 @@ function create (options, logger, responseFn) {
 
     return new Promise((resolve, reject) => {
         server.on('error', error => {
-            const errors = require('../../util/errors');
-
             if (error.errno === 'EADDRINUSE') {
                 reject(errors.ResourceConflictError(`Port ${options.port} is already in use`));
             }
@@ -139,7 +140,7 @@ function create (options, logger, responseFn) {
                         connections[socket].destroy();
                     });
                 },
-                proxy: require('./tcpProxy').create(logger, encoding, isEndOfRequest),
+                proxy: tcpProxy.create(logger, encoding, isEndOfRequest),
                 encoding: encoding,
                 isEndOfRequest: isEndOfRequest
             });
@@ -151,5 +152,5 @@ module.exports = {
     testRequest: { data: 'test' },
     testProxyResponse: { data: '' },
     create: create,
-    validate: require('./tcpValidator').validate
+    validate: tcpValidator.validate
 };

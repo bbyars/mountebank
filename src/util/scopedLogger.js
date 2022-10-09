@@ -2,6 +2,9 @@
 
 /** @module */
 
+const inherit = require('./inherit.js'),
+    util = require('util');
+
 function wrap (wrappedLogger, logger) {
     ['debug', 'info', 'warn', 'error'].forEach(level => {
         wrappedLogger[level] = function () {
@@ -10,7 +13,7 @@ function wrap (wrappedLogger, logger) {
 
             // Format here rather than use winston's splat formatter
             // to get rid of inconsistent "meta" log elements
-            const message = require('util').format.apply(null, args);
+            const message = util.format.apply(null, args);
             logger[level](message);
         };
     });
@@ -28,15 +31,14 @@ function create (logger, scope) {
         return scopeText.indexOf('[') === 0 ? scopeText : `[${scopeText}] `;
     }
 
-    const inherit = require('./inherit'),
-        wrappedLogger = inherit.from(logger, {
-            scopePrefix: formatScope(scope),
-            withScope: nestedScopePrefix => create(logger, `${wrappedLogger.scopePrefix}${nestedScopePrefix} `),
-            changeScope: newScope => {
-                wrappedLogger.scopePrefix = formatScope(newScope);
-                wrap(wrappedLogger, logger);
-            }
-        });
+    const wrappedLogger = inherit.from(logger, {
+        scopePrefix: formatScope(scope),
+        withScope: nestedScopePrefix => create(logger, `${wrappedLogger.scopePrefix}${nestedScopePrefix} `),
+        changeScope: newScope => {
+            wrappedLogger.scopePrefix = formatScope(newScope);
+            wrap(wrappedLogger, logger);
+        }
+    });
 
     wrap(wrappedLogger, logger);
     return wrappedLogger;
