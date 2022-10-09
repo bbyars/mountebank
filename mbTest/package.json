@@ -39,7 +39,7 @@
         "xpath": "0.0.32"
     },
     "engines": {
-        "node": ">=14"
+        "node": ">=16"
     },
     "files": [
         "api",

@@ -3,7 +3,7 @@ version: 2.1
 executors:
   node-maintenance:
     docker:
-      - image: circleci/node:14-stretch
+      - image: cimg/node:lts # eslint stopped supporting v14
     environment:
       - MB_SLOW_TEST_TIMEOUT: 10000
   node-active:
