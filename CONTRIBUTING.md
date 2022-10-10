@@ -73,7 +73,7 @@ me of ways to overcome these tradeoffs in a mutually agreeable manner:
 
 ## Coding mountebank
 
-I do everything I can to resist code entropy, following the ["no broken windows](https://pragprog.com/the-pragmatic-programmer/extracts/software-entropy)
+I do everything I can to resist code entropy, following the ["no broken windows"](https://pragprog.com/the-pragmatic-programmer/extracts/software-entropy)
 advice given by the Pragmatic Programmers. Like any old codebase
 mountebank has its share of warts. The following help to keep the code as clean as possible:
 
