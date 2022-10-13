@@ -1,6 +1,6 @@
 {
   "name": "mountebank",
-  "version": "2.8.0",
+  "version": "2.8.1",
   "author": "Brandon Byars <brandon.byars@gmail.com>",
   "description": "Over the wire test doubles",
   "homepage": "http://www.mbtest.org",
@@ -52,7 +52,7 @@
     "service virtualization"
   ],
   "dependencies": {
-    "@xmldom/xmldom": "0.8.2",
+    "@xmldom/xmldom": "0.8.3",
     "cors": "2.8.5",
     "csv-parse": "5.3.0",
     "ejs": "3.1.8",
