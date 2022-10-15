@@ -82,7 +82,7 @@ jobs:
       - run:
           command: wget https://nodejs.org/dist/latest-v18.x/node-v18.11.0-x86.msi -P C:\Users\circleci\Downloads\
           shell: cmd.exe
-      - run: MsiExec.exe /i C:\Users\circleci\Downloads\ode-v18.11.0-x86.msi /qn
+      - run: MsiExec.exe /i C:\Users\circleci\Downloads\node-v18.11.0-x86.msi /qn
       - run:
           name: Verify versions
           command: |
