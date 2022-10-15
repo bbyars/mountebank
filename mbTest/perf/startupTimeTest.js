@@ -30,7 +30,7 @@ describe('mb', function () {
                 millisecondsPer = milliseconds / RUNS;
             console.log(`Took ${seconds} seconds, averaging ${millisecondsPer} ms per restart`);
 
-            assert.ok(millisecondsPer < 800, `Averaged ${millisecondsPer}; should be under 500 (added buffer for CI determinism)`);
+            assert.ok(millisecondsPer < 1000, `Averaged ${millisecondsPer}; should be under 1000`);
         }
         finally {
             await mb.stop();

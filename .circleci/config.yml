@@ -89,6 +89,11 @@ jobs:
             nvm install 16.17.0
             nvm use 16.17.0
       - run:
+          name: Verify versions
+          command: |
+            node -v
+            npm -v
+      - run:
           name: Install Dependencies
           command: npm ci
       - run:
