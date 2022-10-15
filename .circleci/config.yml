@@ -73,21 +73,11 @@ jobs:
             - Procfile
 
   windows:
-    executor: win/default
+    executor: win/server-2022
     environment:
       - MB_SLOW_TEST_TIMEOUT: 10000
     steps:
       - checkout
-      - run: choco install wget -y
-      - run:
-          command: wget https://nodejs.org/dist/latest-v18.x/node-v18.11.0-x86.msi -P C:\Users\circleci\Downloads\
-          shell: cmd.exe
-      - run: MsiExec.exe /i C:\Users\circleci\Downloads\node-v18.11.0-x86.msi /qn
-      - run:
-          command: |
-            Start-Process powershell -verb runAs -Args "-start GeneralProfile"
-            nvm install 18.11.0
-            nvm use 18.11.0
       - run:
           name: Verify versions
           command: |
