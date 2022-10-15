@@ -84,6 +84,11 @@ jobs:
           shell: cmd.exe
       - run: MsiExec.exe /i C:\Users\circleci\Downloads\node-v18.11.0-x86.msi /qn
       - run:
+          command: |
+            Start-Process powershell -verb runAs -Args "-start GeneralProfile"
+            nvm install 18.11.0
+            nvm use 18.11.0
+      - run:
           name: Verify versions
           command: |
             node -v
