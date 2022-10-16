@@ -9,5 +9,4 @@ if [ "$MB_RELEASE" = "true" ]; then
     TAG=latest
 fi
 
-cd dist
-npm publish mountebank --tag $TAG
+npm publish dist/mountebank --tag $TAG
