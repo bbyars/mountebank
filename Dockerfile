@@ -15,4 +15,4 @@ USER mountebank
 
 EXPOSE 2525
 
-ENTRYPOINT ["mb", "start"]
+ENTRYPOINT ["mb"]
