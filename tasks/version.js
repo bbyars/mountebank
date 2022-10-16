@@ -1,24 +1,10 @@
 'use strict';
 
-const fs = require('fs'),
+const fs = require('fs-extra'),
     thisPackage = JSON.parse(fs.readFileSync('./package.json')),
-    current = thisPackage.version;
+    buildNumber = process.env.CIRCLE_BUILD_NUM;
 
-async function getVersion () {
-    const buildNumber = process.env.CIRCLE_BUILD_NUM;
-
-    if (typeof buildNumber === 'undefined') {
-        // Leave as is if not in CI
-        return current;
-    }
-    else {
-        return `${current}-beta.${buildNumber}`;
-    }
+if (typeof buildNumber !== 'undefined') {
+    thisPackage.version = `${thisPackage.version}-beta.${buildNumber}`;
+    fs.writeFileSync('./package.json', JSON.stringify(thisPackage, null, 2) + '\n');
 }
-
-getVersion().then(next => {
-    if (next !== current) {
-        thisPackage.version = next;
-        fs.writeFileSync('./package.json', JSON.stringify(thisPackage, null, 2) + '\n');
-    }
-});
