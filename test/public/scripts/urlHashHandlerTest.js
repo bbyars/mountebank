@@ -3,7 +3,7 @@
 const assert = require('assert'),
     mock = require('../../mock').mock,
     JSDOM = require('jsdom').JSDOM,
-    jquery = require('../../../src/public/scripts/jquery/jquery-3.3.1.min.js');
+    jquery = require('../../../src/public/scripts/jquery/jquery-3.6.1.min.js');
 
 function initJQuery (htmlDocument) {
     const window = global.window = new JSDOM(htmlDocument).window;
