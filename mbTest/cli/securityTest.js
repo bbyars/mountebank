@@ -10,13 +10,13 @@ const assert = require('assert'),
     timeout = isWindows ? 2 * baseTimeout : baseTimeout;
 
 describe('security', function () {
+    this.timeout(timeout);
+
     afterEach(async function () {
         await mb.stop();
     });
 
     describe('mb without --allowInjection', function () {
-        this.timeout(timeout);
-
         it('should return a 400 if response injection is used', async function () {
             const fn = request => ({ body: `${request.method} INJECTED` }),
                 stub = { responses: [{ inject: fn.toString() }] },

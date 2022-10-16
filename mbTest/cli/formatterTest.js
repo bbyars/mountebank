@@ -4,10 +4,9 @@ const assert = require('assert'),
     api = require('../api').create(),
     port = api.port + 1,
     mb = require('../mb').create(port),
-    isWindows = require('os').platform().indexOf('win') === 0,
     BaseHttpClient = require('../baseHttpClient'),
     baseTimeout = parseInt(process.env.MB_SLOW_TEST_TIMEOUT || 3000),
-    timeout = isWindows ? 2 * baseTimeout : baseTimeout,
+    timeout = 2 * baseTimeout,
     http = BaseHttpClient.create('http'),
     fs = require('fs-extra');
 
