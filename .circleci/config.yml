@@ -78,7 +78,7 @@ jobs:
       - MB_SLOW_TEST_TIMEOUT: 10000
     steps:
       - checkout
-      - run: npm update nvm-windows -g
+      - run: choco install nvm --version=1.1.9
       - run: choco install wget -y
       - run:
           command: wget https://nodejs.org/dist/latest-v18.x/node-v18.11.0-x86.msi -P C:\Users\circleci\Downloads\
@@ -94,6 +94,7 @@ jobs:
           command: |
             node -v
             npm -v
+            nvm -v
       - run:
           name: Install Dependencies
           command: npm ci
