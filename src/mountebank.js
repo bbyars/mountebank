@@ -61,7 +61,7 @@ async function createApp (options) {
         logfile = options.log.transports.file ? options.log.transports.file.path : false,
         logsController = logsControllerModule.create(logfile),
         configController = configControllerModule.create(thisPackage.version, options),
-        feedController = feedControllerModule.create(releases, options),
+        feedController = feedControllerModule.create(releases),
         validateImposterExists = middleware.createImposterValidator(imposters),
         prometheus = promClient;
 
@@ -72,7 +72,7 @@ async function createApp (options) {
     app.use(middleware.useAbsoluteUrls(options.port));
     app.use(middleware.validateApiKey(options.apikey, logger));
     app.use(middleware.logger(logger, ':method :url'));
-    app.use(middleware.globals({ heroku: options.heroku, port: options.port, version: thisPackage.version }));
+    app.use(middleware.globals({ port: options.port, version: thisPackage.version }));
     app.use(middleware.defaultIEtoHTML);
     app.use(middleware.json(logger));
     app.use(express.static(path.join(__dirname, 'public')));

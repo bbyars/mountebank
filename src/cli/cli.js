@@ -167,11 +167,6 @@ const fs = require('fs-extra'),
             type: 'string',
             global: false
         },
-        heroku: {
-            default: false,
-            type: 'boolean',
-            global: false
-        },
         apikey: {
             description: 'An optional API key. When provided, a user must add an API key to the header.',
             default: null,
@@ -198,7 +193,6 @@ const fs = require('fs-extra'),
         ipWhitelist: options.ipWhitelist,
         mock: options.mock,
         debug: options.debug,
-        heroku: options.heroku,
         protofile: options.protofile,
         origin: options.origin,
         rcfile: options.rcfile,

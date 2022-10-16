@@ -9,7 +9,7 @@ describe('feedController', function () {
         it('should prevent path traversal attacks', function () {
             const response = { status: mock().returns({ send: mock() }) },
                 releases = [{ version: 'v2.3.0', date: '2020-09-07' }],
-                controller = Controller.create(releases, { heroku: false }),
+                controller = Controller.create(releases),
                 request = {
                     headers: { host: 'localhost' },
                     params: { version: 'v2.3.0%2f..%2f..%2f_header' }

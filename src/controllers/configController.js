@@ -16,7 +16,6 @@ const helpers = require('../util/helpers');
 function create (version, options) {
     const publicOptions = helpers.clone(options);
 
-    delete publicOptions.heroku;
     delete publicOptions.version;
 
     if (!publicOptions.mock) {

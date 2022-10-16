@@ -15,7 +15,7 @@ const path = require('path'),
  * @param {Object} options - The command line options used to start mountebank
  * @returns {Object} The controller
  */
-function create (releases, options) {
+function create (releases) {
     const feedReleases = helpers.clone(releases);
 
     // Init once since we hope many consumers poll the heroku feed and we don't have monitoring
@@ -88,7 +88,6 @@ function create (releases, options) {
         const version = request.params.version,
             config = {
                 host: request.headers.host,
-                heroku: options.heroku,
                 releaseMajorMinor: version.replace(/^v(\d+\.\d+).*/, '$1'),
                 releaseVersion: version.replace('v', '')
             };
