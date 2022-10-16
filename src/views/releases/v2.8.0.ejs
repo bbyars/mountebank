@@ -1,0 +1,36 @@
+<h1>v<%= releaseVersion %></h1>
+
+<p class='info-icon'>Be sure to keep up with the latest releases by subscribing to the
+    <a href='http://mbtest.org/feed'>ATOM feed</a>.</p>
+
+<h2>New Features</h2>
+<ul class='bullet-list'>
+    <li>Support for multi-platform Docker builds to include ARM</li>
+    <li>Support for <code>rejectUnauthorized</code> flag on
+        <a href='//<%= host %>/docs/protocols/https'>https servers</a> to allow certificate validation.</li>
+</ul>
+
+<h2>Bug Fixes</h2>
+<ul class='bullet-list'>
+    <li>Reverted to ENTRYPOINT instead of CMD for Docker runs since <code>mb</code> is the only command</li>
+    <li>Performance improvements (JavaScript <code>require</code> optimizations)</li>
+    <li>Support for basic <a href='//<%= host %>/docs/commandLine#start'><code>apikey CLI parameter</code></a>
+        for validation</li>
+    <li>Security patches for dependencies</li>
+</ul>
+
+<h2>Contributors</h2>
+<p>Many thanks to the following kind folks for help with this release, either through bug reports,
+    suggestions, or direct code contributions:</p>
+
+<ul class='bullet-list'>
+    <li>Emanuel Zienecker</li>
+    <li>Peter Pompeii</li>
+    <li>Sampo Kivistö</li>
+    <li>Yeong Sheng, Tan</li>
+    <li>Jonathan James Choy</li>
+</ul>
+
+<h2>Install</h2>
+
+<pre><code>npm install -g mountebank@<%= releaseVersion %></code></pre>
