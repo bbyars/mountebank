@@ -13,8 +13,7 @@ cd dist/mountebank
 
 # $PORT is set by Heroku
 mv Dockerfile Dockerfile.old
-cat Dockerfile.old | sed -E -e 's/ENTRYPOINT \["mb"\]/ENTRYPOINT ["mb", "start", "--port", "$PORT"]/' > Dockerfile
-cat Dockerfile
+cat Dockerfile.old | sed -E -e 's/ENTRYPOINT \["mb"\]/CMD mb start --port $PORT/' > Dockerfile
 
 heroku container:login
 heroku container:push -a $APP_NAME web
