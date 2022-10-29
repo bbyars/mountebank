@@ -112,6 +112,15 @@ const
     };
 
 /**
+* Ensure writes are synchronous. This ensures the file is written to the underlying storage.
+* This is important when multiple instances of Mountebank are running and using an NFS as it ensures
+* consistent reads across the instances.
+*/
+const writeFileOptions = {
+    flag: 'rs+'
+};
+
+/**
  * Creates the repository
  * @param {Object} config - The database configuration
  * @param {String} config.datadir - The database directory
@@ -131,7 +140,7 @@ function create (config, logger) {
 
     async function writeFile (filepath, obj) {
         await ensureDir(filepath);
-        await fsExtra.writeFile(filepath, JSON.stringify(obj, null, 2));
+        await fsExtra.writeFile(filepath, JSON.stringify(obj, null, 2), writeFileOptions);
     }
 
     function tryParse (maybeJSON, filepath) {
