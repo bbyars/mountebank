@@ -129,10 +129,13 @@ function create (config, logger) {
         await fsExtra.ensureDir(dir);
     }
 
+    async function ensureFile (filepath) {
+        fsExtra.close(await fsExtra.open(filepath, 'as'));
+    }
+
     async function writeFile (filepath, obj) {
         await ensureDir(filepath);
-
-        await fsExtra.ensureFile(filepath);
+        await ensureFile(filepath);
         await fsExtra.writeFile(filepath, JSON.stringify(obj, null, 2), {
             flag: 'rs+'
         });
