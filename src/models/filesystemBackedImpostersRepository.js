@@ -140,7 +140,7 @@ function create (config, logger) {
 
     async function writeFile (filepath, obj) {
         await ensureDir(filepath);
-        await fsExtra.writeFile(filepath, JSON.stringify(obj, null, 2), writeFileOptions);
+        await fsExtra.writeFile(filepath, JSON.stringify(obj, null, 2));
     }
 
     function tryParse (maybeJSON, filepath) {
