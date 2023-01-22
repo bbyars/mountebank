@@ -79,7 +79,7 @@
     "coveralls": "3.1.1",
     "eslint": "8.25.0",
     "eslint-plugin-node": "11.1.0",
-    "firebase-tools": "11.14.4",
+    "firebase-tools": "11.21.0",
     "jsdoc": "3.6.11",
     "jsdom": "20.0.1",
     "license-checker": "25.0.1",
