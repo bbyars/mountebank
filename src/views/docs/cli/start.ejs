@@ -41,6 +41,14 @@ official site only contains the latest docs. The following options are available
     significant performance hit when there is a lot of test data, for example, during proxy recording.</td>
   </tr>
   <tr>
+    <td><code>--impostersRepository=./impostersRepo.js</code></td>
+    <td>Use a custom database instead of the built-in file-based data store that <code>datadir</code>
+    creates (when both are used, <code>impostersRepository</code> takes precedence). Creating
+    a custom database option is not documented and requires looking at the code, but the community
+    have created (or are creating) options. See <a href='//docs/communityExtensions'>community extensions</a>
+    for examples.</td>
+  </tr>
+  <tr>
     <td><code>--configfile imposters.ejs</code></td>
     <td>If present, mountebank will load the contents of the specified file.  See
     <a href='#config-file'>below</a> for details.
@@ -207,8 +215,8 @@ official site only contains the latest docs. The following options are available
   <tr>
     <td><code>--apikey myapikey</code></td>
     <td>
-      An optional API key. When this is provided, 
-      the Mountebank API will require that the x-api-key 
+      An optional API key. When this is provided,
+      the Mountebank API will require that the x-api-key
       header be supplied with a matching key.
     </td>
     <td><code>null</code></td>

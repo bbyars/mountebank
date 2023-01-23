@@ -115,10 +115,37 @@ a pull request to this page and he will add it to the list below.</p>
     </tr>
 </table>
 
+<h1>Persistence Stores</h1>
+
+<p>By default, mountebank stores everything in memory, which becomes a performance bottleneck
+at scale. The <a href='//docs/commandLine#start'><code>--datadir</code></a> option creates
+a local file-based data store, but the community has created (or is creating) more performant
+and robust options using first-class databases using the <code>--impostersRepository</code>
+command line option.</p>
+
+<table>
+    <tr>
+        <th>Database</th>
+        <th>Name</th>
+        <th>Author</th>
+    </tr>
+    <tr>
+        <td>Redis</td>
+        <td><a href='https://github.com/eljusto/mountebank-redis-repository'>mountebank-redis-repository</a></td>
+        <td>Boris Zhidkov</td>
+    </tr>
+    <tr>
+        <td>Mongo</td>
+        <td><a href='https://github.com/ibnc/mountebankMongo'>mountebankMongo</a></td>
+        <td>Isabelle Carter (who created the plugin capability)</td>
+    </tr>
+</table>
+
 <h1>Build Plugins</h1>
 
-<p>Since <code>mb</code> is another process to manage during your build, having a plugin for your build tool is handy.
-    If you have a plugin, please add it to this page or let me know about it.</p>
+<p>Since <code>mb</code> is another process to manage during your build, having a
+plugin for your build tool is handy. If you have a plugin, please add it to this page
+or let me know about it.</p>
 
 <table>
     <tr>

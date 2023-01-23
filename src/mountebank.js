@@ -133,7 +133,7 @@ async function createApp (options) {
         '/docs/gettingStarted',
         '/docs/mentalModel',
         '/docs/commandLine',
-        '/docs/clientLibraries',
+        '/docs/communityExtensions',
         '/docs/security',
         '/docs/api/overview',
         '/docs/api/contracts',
