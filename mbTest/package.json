@@ -14,12 +14,12 @@
         "airplane": "MB_AIRPLANE_MODE=true npm test"
     },
     "dependencies": {
-        "@xmldom/xmldom": "0.8.4",
+        "@xmldom/xmldom": "0.8.6",
         "express": "4.18.2",
         "fs-extra": "10.1.0",
         "hpagent": "1.0.0",
         "jsdom": "20.0.1",
-        "mocha": "10.1.0",
+        "mocha": "10.2.0",
         "mocha-multi-reporters": "1.5.1",
         "mountebank": "file:..",
         "nc": "1.0.3",
