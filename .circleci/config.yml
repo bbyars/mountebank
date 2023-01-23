@@ -82,9 +82,9 @@ jobs:
       - run: choco install nvm --version=1.1.9 -y
       - run: choco install wget -y
       - run:
-          command: wget https://nodejs.org/dist/latest-v18.x/node-v18.11.0-x86.msi -P C:\Users\circleci\Downloads\
+          command: wget https://nodejs.org/dist/latest-v18.x/node-v18.13.0-x86.msi -P C:\Users\circleci\Downloads\
           shell: cmd.exe
-      - run: MsiExec.exe /i C:\Users\circleci\Downloads\node-v18.11.0-x86.msi /qn
+      - run: MsiExec.exe /i C:\Users\circleci\Downloads\node-v18.13.0-x86.msi /qn
       - run:
           command: |
             Start-Process powershell -verb runAs -Args "-start GeneralProfile"
