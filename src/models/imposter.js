@@ -13,37 +13,8 @@ const prometheus = require('prom-client'),
     scopedLogger = require('../util/scopedLogger.js'),
     helpers = require('../util/helpers.js'),
     predicates = require('./predicates.js'),
-    imposterPrinter = require('./imposterPrinter.js');
-
-const metrics = {
-    predicateMatchDuration: new prometheus.Histogram({
-        name: 'mb_predicate_match_duration_seconds',
-        help: 'Time it takes to match the predicates and select a stub',
-        buckets: [0.01, 0.05, 0.1, 0.2, 0.5, 1],
-        labelNames: ['imposter']
-    }),
-    noMatchCount: new prometheus.Counter({
-        name: 'mb_no_match_total',
-        help: 'Number of times no stub matched the request',
-        labelNames: ['imposter']
-    }),
-    requestCount: new prometheus.Counter({
-        name: 'mb_request_total',
-        help: 'Number of requests to the imposter',
-        labelNames: ['imposter']
-    }),
-    responseGenerationDuration: new prometheus.Histogram({
-        name: 'mb_response_generation_duration_seconds',
-        help: 'Time it takes to generate the response from a stub',
-        buckets: [0.01, 0.05, 0.1, 0.2, 0.5, 1, 3, 5, 10, 30],
-        labelNames: ['imposter']
-    }),
-    blockedIPCount: new prometheus.Counter({
-        name: 'mb_blocked_ip_total',
-        help: 'Number of times a connection was blocked from a non-whitelisted IP address',
-        labelNames: ['imposter']
-    })
-};
+    imposterPrinter = require('./imposterPrinter.js'),
+    cachedObjects = {};
 
 /**
  * Create the imposter
@@ -55,6 +26,9 @@ const metrics = {
  * @returns {Object}
  */
 async function create (Protocol, creationRequest, baseLogger, config, isAllowedConnection) {
+
+    const metrics = getMetrics();
+
     function scopeFor (port) {
         let scope = `${creationRequest.protocol}:${port}`;
 
@@ -166,6 +140,53 @@ async function create (Protocol, creationRequest, baseLogger, config, isAllowedC
     async function resetRequests () {
         await stubs.deleteSavedRequests();
         numberOfRequests = 0;
+    }
+
+    function getMetrics () {
+        return metricsAlreadyCreated() ? getCreatedMetrics() : createImposterMetrics();
+    }
+
+    function metricsAlreadyCreated () {
+        return Boolean(cachedObjects.metrics);
+    }
+    function getCreatedMetrics () {
+        return cachedObjects.metrics;
+    }
+
+    function createImposterMetrics () {
+        const impostersMetrics = {
+            predicateMatchDuration: new prometheus.Histogram({
+                name: 'mb_predicate_match_duration_seconds',
+                help: 'Time it takes to match the predicates and select a stub',
+                buckets: [0.01, 0.05, 0.1, 0.2, 0.5, 1],
+                labelNames: ['imposter']
+            }),
+            noMatchCount: new prometheus.Counter({
+                name: 'mb_no_match_total',
+                help: 'Number of times no stub matched the request',
+                labelNames: ['imposter']
+            }),
+            requestCount: new prometheus.Counter({
+                name: 'mb_request_total',
+                help: 'Number of requests to the imposter',
+                labelNames: ['imposter']
+            }),
+            responseGenerationDuration: new prometheus.Histogram({
+                name: 'mb_response_generation_duration_seconds',
+                help: 'Time it takes to generate the response from a stub',
+                buckets: [0.01, 0.05, 0.1, 0.2, 0.5, 1, 3, 5, 10, 30],
+                labelNames: ['imposter']
+            }),
+            blockedIPCount: new prometheus.Counter({
+                name: 'mb_blocked_ip_total',
+                help: 'Number of times a connection was blocked from a non-whitelisted IP address',
+                labelNames: ['imposter']
+            })
+        };
+
+        cachedObjects.metrics = impostersMetrics;
+
+        return cachedObjects.metrics;
     }
 
     return new Promise((resolve, reject) => {
