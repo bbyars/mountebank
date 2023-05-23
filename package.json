@@ -65,7 +65,7 @@
     "jsonpath-plus": "7.2.0",
     "mailparser": "3.6.3",
     "mountebank-formatters": "0.0.2",
-    "nodemailer": "6.9.0",
+    "nodemailer": "6.9.2",
     "prom-client": "14.1.1",
     "proper-lockfile": "4.1.2",
     "safe-regex": "^2.1.1",
