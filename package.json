@@ -52,7 +52,7 @@
     "service virtualization"
   ],
   "dependencies": {
-    "@xmldom/xmldom": "0.8.6",
+    "@xmldom/xmldom": "0.8.7",
     "cors": "2.8.5",
     "csv-parse": "5.3.3",
     "ejs": "3.1.8",
