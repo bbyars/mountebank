@@ -74,6 +74,13 @@
     "xpath": "0.0.32",
     "yargs": "17.6.2"
   },
+  "overrides": {
+    "w3cjs": {
+        "pac-resolver": {
+            "netmask": "^2.0.1"
+        }
+    }
+  },
   "devDependencies": {
     "coveralls": "3.1.1",
     "eslint": "8.41.0",
