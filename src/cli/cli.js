@@ -47,13 +47,6 @@ const fs = require('fs-extra'),
             type: 'boolean',
             global: false
         },
-        formatter: {
-            default: 'mountebank-formatters',
-            description: 'the custom formatter module to interpret --configfile formats and to use during mb save operations',
-            nargs: 1,
-            type: 'string',
-            global: false
-        },
         datadir: {
             description: 'the directory to persist all imposter data',
             nargs: 1,

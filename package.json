@@ -7,14 +7,14 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/bbyars/mountebank.git"
+    "url": "git+https://github.com/bbyars/mountebank.git"
   },
   "bugs": {
     "url": "https://github.com/bbyars/mountebank/issues",
     "email": "brandon.byars@gmail.com"
   },
   "bin": {
-    "mb": "./bin/mb"
+    "mb": "bin/mb"
   },
   "main": "./src/mountebank.js",
   "scripts": {
@@ -64,7 +64,6 @@
     "https-proxy-agent": "5.0.1",
     "jsonpath-plus": "7.2.0",
     "mailparser": "3.6.3",
-    "mountebank-formatters": "0.0.2",
     "nodemailer": "6.9.2",
     "prom-client": "14.1.1",
     "proper-lockfile": "4.1.2",
@@ -94,5 +93,8 @@
   "engines": {
     "node": ">=16"
   },
-  "snyk": true
+  "snyk": true,
+  "directories": {
+    "test": "test"
+  }
 }
