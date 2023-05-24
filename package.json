@@ -19,13 +19,10 @@
   "main": "./src/mountebank.js",
   "scripts": {
     "jsdoc": "jsdoc src/**/*.js --destination docs --configure .jsdoc --pedantic --readme CONTRIBUTING.md --package package.json",
-    "lint": "eslint src/ tasks/ test/ mbTest/ bin/mb && node tasks/lints/licenseCheck.js && node tasks/lints/deadCheck.js && node tasks/lints/objectCheck.js",
+    "lint": "eslint src/ tasks/ test/ bin/mb && node tasks/lints/licenseCheck.js && node tasks/lints/deadCheck.js && node tasks/lints/objectCheck.js",
     "test:api": "node tasks/mbtest.js api",
-    "test:cli": "cd mbTest && npm run cli",
     "test:unit": "mocha --forbid-only --forbid-pending --reporter mocha-multi-reporters --reporter-options configFile=test/config.json 'test/**/*.js'",
     "test:cover": "nyc --reporter=lcov --reporter=text --include='src/**' --exclude='src/public/**' npm run test:unit",
-    "test:js": "cd mbTest && npm run js",
-    "test:perf": "cd mbTest && npm run perf",
     "test:web": "node tasks/mbtest.js web",
     "test": "npm run lint && npm run test:cover && npm run test:api && npm run test:cli && npm run test:js"
   },
@@ -76,26 +73,25 @@
   },
   "overrides": {
     "w3cjs": {
-        "pac-resolver": {
-            "netmask": "^2.0.1"
-        }
+      "pac-resolver": {
+        "netmask": "^2.0.1"
+      }
     }
   },
   "devDependencies": {
     "coveralls": "3.1.1",
     "eslint": "8.41.0",
     "eslint-plugin-node": "11.1.0",
-    "firebase-tools": "11.21.0",
+    "firebase-tools": "^12.2.1",
     "jsdoc": "4.0.0",
     "jsdom": "21.1.0",
     "license-checker": "25.0.1",
     "mocha": "10.2.0",
     "mocha-multi-reporters": "1.5.1",
-    "nc": "1.0.3",
+    "nc": "^0.0.0",
     "nyc": "^15.1.0",
     "snyk": "1.1088.0",
-    "w3cjs": "0.4.0",
-    "mbTest": "file:./mbTest"
+    "w3cjs": "^0.1.21"
   },
   "engines": {
     "node": ">=16"

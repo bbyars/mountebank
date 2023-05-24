@@ -1,7 +1,0 @@
-(request, state) => {
-    const count = state.requests ? Object.keys(state.requests).length : 0;
-
-    return {
-        body: `There have been ${count} proxied calls`
-    };
-}

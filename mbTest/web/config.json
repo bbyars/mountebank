@@ -1,6 +1,0 @@
-{
-  "reporterEnabled": "xunit, spec",
-  "xunitReporterOptions": {
-    "output": "testResults/web/results.xml"
-  }
-}

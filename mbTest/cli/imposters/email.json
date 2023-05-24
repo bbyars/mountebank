@@ -1,5 +1,0 @@
-{
-  "port": 6565,
-  "protocol": "smtp",
-  "name": "email server"
-}
