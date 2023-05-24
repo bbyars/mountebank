@@ -54,7 +54,7 @@
   "dependencies": {
     "@xmldom/xmldom": "0.8.7",
     "cors": "2.8.5",
-    "csv-parse": "5.3.3",
+    "csv-parse": "5.3.10",
     "ejs": "3.1.8",
     "errorhandler": "1.5.1",
     "escape-html": "1.0.3",
