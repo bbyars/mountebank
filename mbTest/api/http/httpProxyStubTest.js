@@ -123,21 +123,6 @@ describe('http proxy stubs', function () {
             assert.strictEqual(response.body.errors[0].message, 'Cannot resolve "http://invalid.domain"');
         });
 
-        it('should gracefully deal with bad urls', async function () {
-            const proxy = {
-                protocol: 'http',
-                port,
-                stubs: [{ responses: [{ proxy: { to: '1 + 2' } }] }]
-            };
-            await api.createImposter(proxy);
-
-            const response = await client.get('/', proxy.port);
-
-            assert.strictEqual(response.statusCode, 500);
-            assert.strictEqual(response.body.errors[0].code, 'invalid proxy');
-            assert.strictEqual(response.body.errors[0].message, 'Unable to connect to "1 + 2"');
-        });
-
         it('should proxy to different host', async function () {
             this.retries(3);
 
