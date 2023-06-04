@@ -81,7 +81,7 @@ function create (options) {
                     throw exceptions.ValidationError('Missing to');
                 }
                 const url = new URL(proxyTo);
-                if ((url.protocol === 'http' || url.protocol === 'https') && url.pathname !== '/') {
+                if (url.protocol.indexOf('http') === 0 && url.pathname !== '/') {
                     throw exceptions.ValidationError(`proxy.to must not contain a path '${url.pathname}'`);
                 }
                 return Promise.resolve(options.testProxyResponse);
