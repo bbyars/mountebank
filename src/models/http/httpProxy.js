@@ -77,8 +77,6 @@ function create (logger) {
     }
 
     function setProxyAgent (parts, options) {
-
-
         if (process.env.http_proxy && parts.protocol === 'http:') {
             options.agent = new HttpProxyAgent(process.env.http_proxy);
         }

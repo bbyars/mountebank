@@ -76,7 +76,16 @@ function create (options) {
         // We can get a better test (running behaviors on proxied result) if the protocol gives
         // us a testProxyResult
         if (options.testProxyResponse) {
-            const dryRunProxy = { to: () => Promise.resolve(options.testProxyResponse) };
+            const dryRunProxy = { to: proxyTo => {
+                if (proxyTo === undefined) {
+                    throw exceptions.ValidationError('Missing to');
+                }
+                const url = new URL(proxyTo);
+                if (url.protocol.indexOf('http') === 0 && url.pathname !== '/') {
+                    throw exceptions.ValidationError(`proxy.to must not contain a path '${url.pathname}'`);
+                }
+                return Promise.resolve(options.testProxyResponse);
+            } };
             return responseResolver.create(stubRepository, dryRunProxy);
         }
         else {
