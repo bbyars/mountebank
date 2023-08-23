@@ -1,0 +1,25 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Launch Program",
+            "skipFiles": [
+                "<node_internals>/**"
+            ],
+            "program": "${workspaceFolder}/bin/mb",
+            "args": [
+                "start",
+                "--port",
+                "2525",
+                "--allowInjection",
+                "--log",
+                "{\"level\":\"debug\",\"transports\":{\"console\":{\"colorize\":true,\"format\":\"MockProvider: %timestamp - %level: %message\"},\"file\":{\"path\":\"mb.log\",\"format\":\"json\"}}}"
+            ]
+        }
+    ]
+}

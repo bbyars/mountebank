@@ -556,6 +556,29 @@ function create (config, logger) {
         }
 
         /**
+         * Deletes the stub at the given index
+         * @memberOf module:models/filesystemBackedImpostersRepository#
+         * @param {string} stubId - the index of the stub to delete
+         * @returns {Object} - the promise
+         */
+        async function deleteWithId (stubId) {
+            let stubDir;
+
+            await readAndWriteHeader('deleteStubAtIndex', async header => {
+                const index = header.stubs.findIndex(s => s.stubId === stubId);
+                if (index === -1) {
+                    throw errors.MissingResourceError(`no stub with id ${stubId}`);
+                }
+
+                stubDir = header.stubs[index].meta.dir;
+                header.stubs.splice(index, 1);
+                return header;
+            });
+
+            await remove(`${baseDir}/${stubDir}`);
+        }
+
+        /**
          * Overwrites all stubs with a new list
          * @memberOf module:models/filesystemBackedImpostersRepository#
          * @param {Object} newStubs - the new list of stubs
@@ -680,6 +703,7 @@ function create (config, logger) {
             overwriteAll,
             overwriteAtIndex,
             deleteAtIndex,
+            deleteWithId,
             toJSON,
             deleteSavedProxyResponses,
             addRequest,

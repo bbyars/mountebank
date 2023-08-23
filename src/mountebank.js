@@ -104,6 +104,10 @@ async function createApp (options) {
     app.put('/imposters/:id/stubs/:stubIndex', validateImposterExists, imposterController.putStub);
     app.post('/imposters/:id/stubs', validateImposterExists, imposterController.postStub);
     app.delete('/imposters/:id/stubs/:stubIndex', validateImposterExists, imposterController.deleteStub);
+    // eslint-disable-next-line no-warning-comments
+    // TODO: @vgcpaulino changes;
+    app.delete('/imposters/:id/stubsById/:stubId', validateImposterExists, imposterController.deleteStubById);
+    app.delete('/imposters/:id/stubsById', validateImposterExists, imposterController.deleteStubsById);
 
     // Protocol implementation APIs
     app.post('/imposters/:id/_requests', validateImposterExists, imposterController.postRequest);

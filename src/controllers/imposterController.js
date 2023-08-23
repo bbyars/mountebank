@@ -4,6 +4,7 @@ const exceptions = require('../util/errors.js'),
     helpers = require('../util/helpers.js'),
     compatibility = require('../models/compatibility.js'),
     dryRunValidator = require('../models/dryRunValidator.js');
+const { randomUUID } = require('crypto');
 
 /**
  * The controller that gets and deletes single imposters
@@ -212,6 +213,17 @@ function create (protocols, imposters, logger, allowInjection) {
         return { isValid: errors.length === 0, errors };
     }
 
+    // eslint-disable-next-line no-warning-comments
+    // TODO: @vgcpaulino changes;
+    async function validateStubId (stubs, stubId) {
+        const allStubs = await stubs.toJSON();
+        const errors = [];
+        if (!allStubs.find(s => s.stubId === stubId)) {
+            errors.push(exceptions.ValidationError(`'stubId' must represent a valid value from the array of the stub (${stubId})`));
+        }
+        return { isValid: errors.length === 0, errors };
+    }
+
     /**
      * The function responding to PUT /imposters/:id/stubs/:stubIndex
      * Overwrites a single stub without restarting the imposter
@@ -275,6 +287,9 @@ function create (protocols, imposters, logger, allowInjection) {
         if (validation.isValid) {
             const result = await validateStubs(imposter, [newStub]);
             if (result.isValid) {
+                // eslint-disable-next-line no-warning-comments
+                // TODO: @vgcpaulino changes;
+                newStub.stubId = newStub.stubId || randomUUID();
                 await stubs.insertAtIndex(newStub, index);
                 const json = await imposter.toJSON();
                 response.send(json);
@@ -311,6 +326,61 @@ function create (protocols, imposters, logger, allowInjection) {
         }
     }
 
+    /**
+     * The function responding to DELETE /imposters/:port/stubs/:stubId
+     * Removes a single stub without restarting the imposter
+     * @memberOf module:controllers/imposterController#
+     * @param {Object} request - the HTTP request
+     * @param {Object} response - the HTTP response
+     * @returns {Object} - promise for testing
+     */
+    // eslint-disable-next-line no-warning-comments
+    // TODO: @vgcpaulino changes;
+    async function deleteStubById (request, response) {
+        const imposter = await imposters.get(request.params.id),
+            stubs = imposters.stubsFor(request.params.id),
+            validation = await validateStubId(stubs, request.params.stubId);
+        if (validation.isValid) {
+            await stubs.deleteWithId(request.params.stubId);
+            const json = await imposter.toJSON();
+            response.send(json);
+        }
+        else {
+            respondWithValidationErrors(response, validation.errors, 404);
+        }
+    }
+
+    // eslint-disable-next-line no-warning-comments
+    // TODO: @vgcpaulino changes;
+    async function deleteStubsById (request, response) {
+        const imposter = await imposters.get(request.params.id),
+            stubs = imposters.stubsFor(request.params.id);
+
+
+        let responseSuccessful = false, errors = [];
+        for (const stubId of request.body.stubs) {
+            const validation = await validateStubId(stubs, stubId);
+            if (validation.isValid) {
+                await stubs.deleteWithId(stubId);
+                responseSuccessful = true;
+            }
+            else {
+                errors.push(validation.errors);
+                responseSuccessful = false;
+                break;
+
+            }
+        }
+
+        if (responseSuccessful) {
+            const json = await imposter.toJSON();
+            response.send(json);
+        }
+        else {
+            respondWithValidationErrors(response, errors, 404);
+        }
+    }
+
     return {
         get,
         del,
@@ -321,7 +391,9 @@ function create (protocols, imposters, logger, allowInjection) {
         putStubs,
         putStub,
         postStub,
-        deleteStub
+        deleteStub,
+        deleteStubById,
+        deleteStubsById
     };
 }
 

@@ -4,6 +4,7 @@ const exceptions = require('../util/errors.js'),
     helpers = require('../util/helpers.js'),
     compatibility = require('../models/compatibility.js'),
     dryRunValidator = require('../models/dryRunValidator');
+const { randomUUID } = require('crypto');
 
 /**
  * The controller that manages the list of imposters
@@ -126,6 +127,11 @@ function create (protocols, imposters, logger, allowInjection) {
 
         if (validation.isValid) {
             try {
+                // eslint-disable-next-line no-warning-comments
+                // TODO: @vgcpaulino changes;
+                if (request.body.stubs && request.body.stubs.length > 0) {
+                    request.body.stubs.forEach(s => { s.stubId = s.stubId || randomUUID(); });
+                }
                 const imposter = await protocols[protocol].createImposterFrom(request.body);
                 await imposters.add(imposter);
                 const json = await imposter.toJSON();

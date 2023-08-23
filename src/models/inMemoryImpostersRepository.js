@@ -194,6 +194,22 @@ function createStubsRepository () {
     }
 
     /**
+     * Deletes the stub at the given index using the stub id
+     * @memberOf module:models/inMemoryImpostersRepository#
+     * @param {string} stubId - the id of the stub to delete
+     * @returns {Object} - the promise
+     */
+    async function deleteWithId (stubId) {
+        const index = stubs.findIndex(s => s.stubId === stubId);
+        if (index === -1) {
+            throw errors.MissingResourceError(`no stub at index ${index}`);
+        }
+
+        stubs.splice(index, 1);
+        reindex();
+    }
+
+    /**
      * Returns a JSON-convertible representation
      * @memberOf module:models/inMemoryImpostersRepository#
      * @param {Object} options - The formatting options
@@ -269,6 +285,7 @@ function createStubsRepository () {
         overwriteAll,
         overwriteAtIndex,
         deleteAtIndex,
+        deleteWithId,
         toJSON,
         deleteSavedProxyResponses,
         addRequest,
