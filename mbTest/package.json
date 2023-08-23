@@ -14,7 +14,7 @@
         "airplane": "MB_AIRPLANE_MODE=true npm test"
     },
     "dependencies": {
-        "@xmldom/xmldom": "0.8.6",
+        "@xmldom/xmldom": "0.8.10",
         "express": "4.18.2",
         "fs-extra": "10.1.0",
         "hpagent": "1.0.0",
@@ -23,10 +23,10 @@
         "mocha-multi-reporters": "1.5.1",
         "mountebank": "file:..",
         "nc": "1.0.3",
-        "nodemailer": "6.7.8",
-        "safe-stable-stringify": "2.4.0",
+        "nodemailer": "6.9.4",
+        "safe-stable-stringify": "2.4.3",
         "w3cjs": "0.4.0",
-        "xpath": "0.0.32"
+        "xpath": "0.0.33"
     },
     "engines": {
         "node": ">=16"
