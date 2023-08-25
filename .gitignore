@@ -20,3 +20,4 @@ metrics/
 cc-test-reporter
 testResults
 tmp/
+.vscode

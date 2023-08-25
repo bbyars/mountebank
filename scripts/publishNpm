@@ -10,4 +10,4 @@ if [ "$MB_RELEASE" = "true" ]; then
 fi
 
 cd dist/mountebank
-npm publish . --tag $TAG
+npm publish --access=public . --tag $TAG
