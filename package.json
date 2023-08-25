@@ -1,5 +1,5 @@
 {
-  "name": "mountebank",
+  "name": "@vgcpaulino/mountebank",
   "version": "2.9.1",
   "author": "Brandon Byars <brandon.byars@gmail.com>",
   "description": "Over the wire test doubles",
@@ -7,10 +7,10 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/bbyars/mountebank.git"
+    "url": "https://github.com/vgcpaulino/mountebank.git"
   },
   "bugs": {
-    "url": "https://github.com/bbyars/mountebank/issues",
+    "url": "https://github.com/vgcpaulino/mountebank/issues",
     "email": "brandon.byars@gmail.com"
   },
   "bin": {
