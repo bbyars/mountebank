@@ -1,6 +1,6 @@
 {
   "name": "@vgcpaulino/mountebank",
-  "version": "2.9.2",
+  "version": "2.9.3",
   "author": "Brandon Byars <brandon.byars@gmail.com>",
   "description": "Over the wire test doubles",
   "homepage": "http://www.mbtest.org",
