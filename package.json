@@ -70,7 +70,7 @@
     "proper-lockfile": "4.1.2",
     "safe-regex": "^2.1.1",
     "safe-stable-stringify": "2.4.3",
-    "smtp-server": "3.13.0",
+    "smtp-server": "3.13.2",
     "winston": "3.10.0",
     "xpath": "0.0.33",
     "yargs": "17.7.2"
