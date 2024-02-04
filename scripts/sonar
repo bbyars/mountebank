@@ -8,7 +8,7 @@ else
     OS=linux
 fi
 
-VERSION=4.0.0.1744
+VERSION=5.0.1.3006
 
 echo "Downloading sonar-scanner..."
 wget https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-${VERSION}-${OS}.zip
@@ -33,6 +33,6 @@ sonar-scanner \
     -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info \
     -Dsonar.host.url=https://sonarcloud.io \
     -Dsonar.organization=bbyars-github \
-    -Dsonar.login=$SONARQUBE_LOGIN
+    -Dsonar.token=$SONARQUBE_TOKEN
 
 rm -rf sonar-scanner-${VERSION}-${OS}
