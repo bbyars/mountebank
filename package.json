@@ -82,7 +82,7 @@
     "eslint-plugin-node": "11.1.0",
     "firebase-tools": "13.1.0",
     "jsdoc": "4.0.2",
-    "jsdom": "21.1.1",
+    "jsdom": "24.0.0",
     "license-checker": "25.0.1",
     "mocha": "10.2.0",
     "mocha-multi-reporters": "1.5.1",
@@ -93,7 +93,7 @@
     "mbTest": "file:./mbTest"
   },
   "engines": {
-    "node": ">=16"
+    "node": ">=18"
   },
   "snyk": true
 }

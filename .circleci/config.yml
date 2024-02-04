@@ -3,17 +3,17 @@ version: 2.1
 executors:
   node-maintenance:
     docker:
-      - image: cimg/node:16.20.2
+      - image: cimg/node:18.19.0
     environment:
       - MB_SLOW_TEST_TIMEOUT: 10000
   node-active:
     docker:
-      - image: cimg/node:18.17.1
+      - image: cimg/node:18.19.0
     environment:
       - MB_SLOW_TEST_TIMEOUT: 10000
   node-current:
     docker:
-      - image: cimg/node:20.5.1
+      - image: cimg/node:21.6.1
     environment:
       - MB_SLOW_TEST_TIMEOUT: 10000
 
