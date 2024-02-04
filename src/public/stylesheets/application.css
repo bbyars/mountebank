@@ -2,13 +2,13 @@
     font-family: 'Berkshire Swash';
     font-style: normal;
     font-weight: 400;
-    src: local('Berkshire Swash'), local('BerkshireSwash-Regular'), url(http://themes.googleusercontent.com/static/fonts/berkshireswash/v1/4RZJjVRPjYnC2939hKCAin6EbtqG7Ha48C3_z7erIWs.woff) format('woff');
+    src: local('Berkshire Swash'), local('BerkshireSwash-Regular'), url(https://themes.googleusercontent.com/static/fonts/berkshireswash/v1/4RZJjVRPjYnC2939hKCAin6EbtqG7Ha48C3_z7erIWs.woff) format('woff');
 }
 
 @font-face {
     font-family: 'FontAwesome';
-    src: url("http://netdna.bootstrapcdn.com/font-awesome/4.0.0/fonts/fontawesome-webfont.eot");
-    src: url("http://netdna.bootstrapcdn.com/font-awesome/4.0.0/fonts/fontawesome-webfont.eot?#iefix") format("embedded-opentype"), url("http://netdna.bootstrapcdn.com/font-awesome/4.0.0/fonts/fontawesome-webfont.woff") format("woff"), url("http://netdna.bootstrapcdn.com/font-awesome/4.0.0/fonts/fontawesome-webfont.ttf") format("truetype"), url("http://netdna.bootstrapcdn.com/font-awesome/4.0.0/fonts/fontawesome-webfont.svgfontawesomeregular") format("svg");
+    src: url("https://netdna.bootstrapcdn.com/font-awesome/4.0.0/fonts/fontawesome-webfont.eot");
+    src: url("https://netdna.bootstrapcdn.com/font-awesome/4.0.0/fonts/fontawesome-webfont.eot?#iefix") format("embedded-opentype"), url("http://netdna.bootstrapcdn.com/font-awesome/4.0.0/fonts/fontawesome-webfont.woff") format("woff"), url("http://netdna.bootstrapcdn.com/font-awesome/4.0.0/fonts/fontawesome-webfont.ttf") format("truetype"), url("http://netdna.bootstrapcdn.com/font-awesome/4.0.0/fonts/fontawesome-webfont.svgfontawesomeregular") format("svg");
     font-weight: normal;
     font-style: normal;
 }
