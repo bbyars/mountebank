@@ -27,7 +27,8 @@
     "test:js": "cd mbTest && npm run js",
     "test:perf": "cd mbTest && npm run perf",
     "test:web": "node tasks/mbtest.js web",
-    "test": "npm run lint && npm run test:cover && npm run test:api && npm run test:cli && npm run test:js"
+    "test": "npm run lint && npm run test:cover && npm run test:api && npm run test:cli && npm run test:js",
+    "airplane": "MB_AIRPLANE_MODE=true npm test"
   },
   "files": [
     "bin",
