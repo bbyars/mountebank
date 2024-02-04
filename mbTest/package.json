@@ -16,7 +16,7 @@
     "dependencies": {
         "@xmldom/xmldom": "0.8.10",
         "express": "4.18.2",
-        "fs-extra": "10.1.0",
+        "fs-extra": "11.2.0",
         "hpagent": "1.0.0",
         "jsdom": "20.0.1",
         "mocha": "10.2.0",
@@ -26,7 +26,7 @@
         "nodemailer": "6.9.4",
         "safe-stable-stringify": "2.4.3",
         "w3cjs": "0.4.0",
-        "xpath": "0.0.33"
+        "xpath": "0.0.34"
     },
     "engines": {
         "node": ">=16"
