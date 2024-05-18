@@ -645,12 +645,12 @@ function merge (defaults, overrides) {
                     port,
                     protocol,
                     stubs: [
-                        { predicates: [{ contains: { body: { number: 1 } } }], responses: [{ is: { body: 'Matched Exact Integer' } }]},
-                        { predicates: [{ contains: { body: { number: 2 } } }], responses: [{ is: { body: 'Matched Partial Integer' } }]},
-                        { predicates: [{ contains: { body: { number: 3.03 } } }], responses: [{ is: { body: 'Matched Exact Float' } }]},
-                        { predicates: [{ contains: { body: { number: 4.04 } } }], responses: [{ is: { body: 'Matched Partial Float' } }]},
-                        { predicates: [{ contains: { body: { number: -5 } } }], responses: [{ is: { body: 'Matched Exact Negative' } }]},
-                        { predicates: [{ contains: { body: { number: -6 } } }], responses: [{ is: { body: 'Matched Partial Negative' } }]}
+                        { predicates: [{ contains: { body: { number: 1 } } }], responses: [{ is: { body: 'Matched Exact Integer' } }] },
+                        { predicates: [{ contains: { body: { number: 2 } } }], responses: [{ is: { body: 'Matched Partial Integer' } }] },
+                        { predicates: [{ contains: { body: { number: 3.03 } } }], responses: [{ is: { body: 'Matched Exact Float' } }] },
+                        { predicates: [{ contains: { body: { number: 4.04 } } }], responses: [{ is: { body: 'Matched Partial Float' } }] },
+                        { predicates: [{ contains: { body: { number: -5 } } }], responses: [{ is: { body: 'Matched Exact Negative' } }] },
+                        { predicates: [{ contains: { body: { number: -6 } } }], responses: [{ is: { body: 'Matched Partial Negative' } }] }
                     ]
                 };
 
@@ -680,12 +680,12 @@ function merge (defaults, overrides) {
                     port,
                     protocol,
                     stubs: [
-                        { predicates: [{ startsWith: { body: { number: 1 } } }], responses: [{ is: { body: 'Matched Exact Integer' } }]},
-                        { predicates: [{ startsWith: { body: { number: 2 } } }], responses: [{ is: { body: 'Matched Partial Integer' } }]},
-                        { predicates: [{ startsWith: { body: { number: 3.03 } } }], responses: [{ is: { body: 'Matched Exact Float' } }]},
-                        { predicates: [{ startsWith: { body: { number: 44.0 } } }], responses: [{ is: { body: 'Matched Partial Float' } }]},
-                        { predicates: [{ startsWith: { body: { number: -5 } } }], responses: [{ is: { body: 'Matched Exact Negative' } }]},
-                        { predicates: [{ startsWith: { body: { number: -6 } } }], responses: [{ is: { body: 'Matched Partial Negative' } }]}
+                        { predicates: [{ startsWith: { body: { number: 1 } } }], responses: [{ is: { body: 'Matched Exact Integer' } }] },
+                        { predicates: [{ startsWith: { body: { number: 2 } } }], responses: [{ is: { body: 'Matched Partial Integer' } }] },
+                        { predicates: [{ startsWith: { body: { number: 3.03 } } }], responses: [{ is: { body: 'Matched Exact Float' } }] },
+                        { predicates: [{ startsWith: { body: { number: 44.0 } } }], responses: [{ is: { body: 'Matched Partial Float' } }] },
+                        { predicates: [{ startsWith: { body: { number: -5 } } }], responses: [{ is: { body: 'Matched Exact Negative' } }] },
+                        { predicates: [{ startsWith: { body: { number: -6 } } }], responses: [{ is: { body: 'Matched Partial Negative' } }] }
                     ]
                 };
 
@@ -715,12 +715,12 @@ function merge (defaults, overrides) {
                     port,
                     protocol,
                     stubs: [
-                        { predicates: [{ endsWith: { body: { number: 1 } } }], responses: [{ is: { body: 'Matched Exact Integer' } }]},
-                        { predicates: [{ endsWith: { body: { number: 2 } } }], responses: [{ is: { body: 'Matched Partial Integer' } }]},
-                        { predicates: [{ endsWith: { body: { number: 3.03 } } }], responses: [{ is: { body: 'Matched Exact Float' } }]},
-                        { predicates: [{ endsWith: { body: { number: 4.04 } } }], responses: [{ is: { body: 'Matched Partial Float' } }]},
-                        { predicates: [{ endsWith: { body: { number: -5 } } }], responses: [{ is: { body: 'Matched Exact Negative' } }]},
-                        { predicates: [{ endsWith: { body: { number: 6.06 } } }], responses: [{ is: { body: 'Matched Partial Negative' } }]}
+                        { predicates: [{ endsWith: { body: { number: 1 } } }], responses: [{ is: { body: 'Matched Exact Integer' } }] },
+                        { predicates: [{ endsWith: { body: { number: 2 } } }], responses: [{ is: { body: 'Matched Partial Integer' } }] },
+                        { predicates: [{ endsWith: { body: { number: 3.03 } } }], responses: [{ is: { body: 'Matched Exact Float' } }] },
+                        { predicates: [{ endsWith: { body: { number: 4.04 } } }], responses: [{ is: { body: 'Matched Partial Float' } }] },
+                        { predicates: [{ endsWith: { body: { number: -5 } } }], responses: [{ is: { body: 'Matched Exact Negative' } }] },
+                        { predicates: [{ endsWith: { body: { number: 6.06 } } }], responses: [{ is: { body: 'Matched Partial Negative' } }] }
                     ]
                 };
 
