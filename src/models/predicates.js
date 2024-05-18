@@ -398,21 +398,21 @@ function toString (value) {
     }
 }
 
-function contains(actual, expected) {
+function contains (actual, expected) {
     if (typeof actual === 'string') {
         return actual.indexOf(expected) >= 0;
     }
     return actual.toString().indexOf(expected) >= 0;
 }
 
-function startsWith(actual, expected) {
+function startsWith (actual, expected) {
     if (typeof actual === 'string') {
         return actual.indexOf(expected) === 0;
     }
     return actual.toString().indexOf(expected) === 0;
 }
 
-function endsWith(actual, expected) {
+function endsWith (actual, expected) {
     if (typeof actual === 'string') {
         return actual.indexOf(expected, actual.length - expected.length) >= 0;
     }
