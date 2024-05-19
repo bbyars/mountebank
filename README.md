@@ -1,3 +1,9 @@
+# bbyars/mountebank is no longer maintained
+
+Unfortunately, there are no easy exit ramps for hobbyist open source. I've greatly enjoyed building and maintaining mountebank, but after a decade, I find myself no longer having the energy or passion to continue to do so on nights, weekends, and holidays. Handing someone else that responsibility for a 10-year-old code base that they did not write is... challenging.
+
+Please fork at will, and thank you for being part of the community.
+
 # Welcome, friend
 
 mountebank is the only open source service virtualization tool that competes with the commercial offerings
