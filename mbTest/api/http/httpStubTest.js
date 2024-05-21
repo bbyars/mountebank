@@ -639,6 +639,111 @@ function merge (defaults, overrides) {
 
                 assert.strictEqual(response.body, 'Matched');
             });
+
+            it('should support matching request body with type number using contains', async function () {
+                const request = {
+                    port,
+                    protocol,
+                    stubs: [
+                        { predicates: [{ contains: { body: { number: 1 } } }], responses: [{ is: { body: 'Matched Exact Integer' } }] },
+                        { predicates: [{ contains: { body: { number: 2 } } }], responses: [{ is: { body: 'Matched Partial Integer' } }] },
+                        { predicates: [{ contains: { body: { number: 3.03 } } }], responses: [{ is: { body: 'Matched Exact Float' } }] },
+                        { predicates: [{ contains: { body: { number: 4.04 } } }], responses: [{ is: { body: 'Matched Partial Float' } }] },
+                        { predicates: [{ contains: { body: { number: -5 } } }], responses: [{ is: { body: 'Matched Exact Negative' } }] },
+                        { predicates: [{ contains: { body: { number: -6 } } }], responses: [{ is: { body: 'Matched Partial Negative' } }] }
+                    ]
+                };
+
+                await api.createImposter(request);
+
+                const matchedInteger = await client.post('/', '{ "number": 1 }', port);
+                const matchedPartialInteger = await client.post('/', '{ "number": 22 }', port);
+
+                const matchedExactFloat = await client.post('/', '{ "number": 3.03 }', port);
+                const matchedPartialFloat = await client.post('/', '{ "number": 44.04  }', port);
+
+                const matchedExactNegative = await client.post('/', '{ "number": -5 }', port);
+                const matchedPartialNegative = await client.post('/', '{ "number": -6.06 }', port);
+
+                assert.strictEqual(matchedInteger.body, 'Matched Exact Integer');
+                assert.strictEqual(matchedPartialInteger.body, 'Matched Partial Integer');
+
+                assert.strictEqual(matchedExactFloat.body, 'Matched Exact Float');
+                assert.strictEqual(matchedPartialFloat.body, 'Matched Partial Float');
+
+                assert.strictEqual(matchedExactNegative.body, 'Matched Exact Negative');
+                assert.strictEqual(matchedPartialNegative.body, 'Matched Partial Negative');
+            });
+
+            it('should support matching request body with type number using startsWith', async function () {
+                const request = {
+                    port,
+                    protocol,
+                    stubs: [
+                        { predicates: [{ startsWith: { body: { number: 1 } } }], responses: [{ is: { body: 'Matched Exact Integer' } }] },
+                        { predicates: [{ startsWith: { body: { number: 2 } } }], responses: [{ is: { body: 'Matched Partial Integer' } }] },
+                        { predicates: [{ startsWith: { body: { number: 3.03 } } }], responses: [{ is: { body: 'Matched Exact Float' } }] },
+                        { predicates: [{ startsWith: { body: { number: 44.0 } } }], responses: [{ is: { body: 'Matched Partial Float' } }] },
+                        { predicates: [{ startsWith: { body: { number: -5 } } }], responses: [{ is: { body: 'Matched Exact Negative' } }] },
+                        { predicates: [{ startsWith: { body: { number: -6 } } }], responses: [{ is: { body: 'Matched Partial Negative' } }] }
+                    ]
+                };
+
+                await api.createImposter(request);
+
+                const matchedInteger = await client.post('/', '{ "number": 1 }', port);
+                const matchedPartialInteger = await client.post('/', '{ "number": 21 }', port);
+
+                const matchedExactFloat = await client.post('/', '{ "number": 3.03 }', port);
+                const matchedPartialFloat = await client.post('/', '{ "number": 44.04  }', port);
+
+                const matchedExactNegative = await client.post('/', '{ "number": -5 }', port);
+                const matchedPartialNegative = await client.post('/', '{ "number": -6.06 }', port);
+
+                assert.strictEqual(matchedInteger.body, 'Matched Exact Integer');
+                assert.strictEqual(matchedPartialInteger.body, 'Matched Partial Integer');
+
+                assert.strictEqual(matchedExactFloat.body, 'Matched Exact Float');
+                assert.strictEqual(matchedPartialFloat.body, 'Matched Partial Float');
+
+                assert.strictEqual(matchedExactNegative.body, 'Matched Exact Negative');
+                assert.strictEqual(matchedPartialNegative.body, 'Matched Partial Negative');
+            });
+
+            it('should support matching request body with type number using endsWith', async function () {
+                const request = {
+                    port,
+                    protocol,
+                    stubs: [
+                        { predicates: [{ endsWith: { body: { number: 1 } } }], responses: [{ is: { body: 'Matched Exact Integer' } }] },
+                        { predicates: [{ endsWith: { body: { number: 2 } } }], responses: [{ is: { body: 'Matched Partial Integer' } }] },
+                        { predicates: [{ endsWith: { body: { number: 3.03 } } }], responses: [{ is: { body: 'Matched Exact Float' } }] },
+                        { predicates: [{ endsWith: { body: { number: 4.04 } } }], responses: [{ is: { body: 'Matched Partial Float' } }] },
+                        { predicates: [{ endsWith: { body: { number: -5 } } }], responses: [{ is: { body: 'Matched Exact Negative' } }] },
+                        { predicates: [{ endsWith: { body: { number: 6.06 } } }], responses: [{ is: { body: 'Matched Partial Negative' } }] }
+                    ]
+                };
+
+                await api.createImposter(request);
+
+                const matchedInteger = await client.post('/', '{ "number": 1 }', port);
+                const matchedPartialInteger = await client.post('/', '{ "number": 22 }', port);
+
+                const matchedExactFloat = await client.post('/', '{ "number": 3.03 }', port);
+                const matchedPartialFloat = await client.post('/', '{ "number": 44.04  }', port);
+
+                const matchedExactNegative = await client.post('/', '{ "number": -5 }', port);
+                const matchedPartialNegative = await client.post('/', '{ "number": -66.06 }', port);
+
+                assert.strictEqual(matchedInteger.body, 'Matched Exact Integer');
+                assert.strictEqual(matchedPartialInteger.body, 'Matched Partial Integer');
+
+                assert.strictEqual(matchedExactFloat.body, 'Matched Exact Float');
+                assert.strictEqual(matchedPartialFloat.body, 'Matched Partial Float');
+
+                assert.strictEqual(matchedExactNegative.body, 'Matched Exact Negative');
+                assert.strictEqual(matchedPartialNegative.body, 'Matched Partial Negative');
+            });
         });
     });
 });

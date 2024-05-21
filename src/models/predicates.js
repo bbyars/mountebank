@@ -398,12 +398,33 @@ function toString (value) {
     }
 }
 
+function contains (actual, expected) {
+    if (typeof actual === 'string') {
+        return actual.indexOf(expected) >= 0;
+    }
+    return actual.toString().indexOf(expected) >= 0;
+}
+
+function startsWith (actual, expected) {
+    if (typeof actual === 'string') {
+        return actual.indexOf(expected) === 0;
+    }
+    return actual.toString().indexOf(expected) === 0;
+}
+
+function endsWith (actual, expected) {
+    if (typeof actual === 'string') {
+        return actual.indexOf(expected, actual.length - expected.length) >= 0;
+    }
+    return actual.toString().indexOf(expected, actual.length - expected.length) >= 0;
+}
+
 const predicates = {
     equals: create('equals', (expected, actual) => toString(expected) === toString(actual)),
     deepEquals,
-    contains: create('contains', (expected, actual) => actual.indexOf(expected) >= 0),
-    startsWith: create('startsWith', (expected, actual) => actual.indexOf(expected) === 0),
-    endsWith: create('endsWith', (expected, actual) => actual.indexOf(expected, actual.length - expected.length) >= 0),
+    contains: create('contains', (expected, actual) => contains(actual, expected)),
+    startsWith: create('startsWith', (expected, actual) => startsWith(actual, expected)),
+    endsWith: create('endsWith', (expected, actual) => endsWith(actual, expected)),
     matches,
     exists: create('exists', function (expected, actual) {
         return expected ? (typeof actual !== 'undefined' && actual !== '') : (typeof actual === 'undefined' || actual === '');
