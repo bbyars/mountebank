@@ -147,11 +147,12 @@ describe('imposter', function () {
             server.port = 3535;
             metadata.key = 'value';
 
-            const imposter = await Imposter.create(Protocol, { protocol: 'test' }, logger, {}, allow),
+            const imposter = await Imposter.create(Protocol, { protocol: 'test', allowCORS: true }, logger, {}, allow),
                 json = await imposter.toJSON({ replayable: true });
 
             assert.deepEqual(json, {
                 protocol: 'test',
+                allowCORS: true,
                 port: 3535,
                 recordRequests: false,
                 stubs: [],

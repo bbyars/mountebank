@@ -30,6 +30,9 @@ function create (header, server, loadRequests) {
         if (header.endOfRequestResolver) {
             result.endOfRequestResolver = header.endOfRequestResolver;
         }
+        if (header.allowCORS) {
+            result.allowCORS = header.allowCORS;
+        }
 
         return result;
     }
