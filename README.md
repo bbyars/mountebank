@@ -36,7 +36,7 @@ and record-playback through proxying.
 
 ![how it works](https://github.com/bbyars/mountebank/blob/master/src/public/images/overview.gif?raw=true)
 
-See [getting started](https://www.mbtest.org/docs/gettingStarted) guide for more information.
+See [getting started](http://localhost:2525/docs/gettingStarted) guide for more information once you have it running locally.
 
 ## Install and Run
 
@@ -48,7 +48,7 @@ Run:
 
     mb
 
-There are a number of [command line options](https://www.mbtest.org/docs/commandLine) if you need
+There are a number of [command line options](http://localhost:2525/docs/commandLine) if you need
 to customize mountebank.
 
 All pre-release versions of mountebank are available with the `beta` [npm tag](https://www.npmjs.com/package/mountebank).
@@ -56,25 +56,11 @@ No `beta` version is published unless it has passed all tests.
 
 ## Learn More
 
-After installing and running, view the docs in your browser at <http://localhost:2525>, or visit the
-[public site](https://www.mbtest.org/).
+After installing and running, view the docs in your browser at <http://localhost:2525>.
 
 You can always learn more and support mountebank development by buying the book:
 
 [![Testing Microservices with Mountebank](https://github.com/bbyars/mountebank/blob/master/src/public/images/book.jpg)](https://www.manning.com/books/testing-microservices-with-mountebank?a_aid=mb&a_bid=ee3288f4)
-
-## Roadmap and Support
-
-mountebank is used by a large number of companies and I think it's important to convey my best guess as to what
-the feature roadmap is. I've adopted GitHub tools to manage the roadmap. Specifically, the
-[Roadmap project](https://github.com/bbyars/mountebank/projects/9) page shows the features by release. I generally
-re-prioritize and update the ETAs each release.
-
-Visit the [Google group](https://groups.google.com/forum/#!forum/mountebank-discuss)
-for any support questions.  Don't be shy!
-
-mountebank is provided free of charge and maintained in my free time. As such, I'm unable to make any kind
-of guarantees around either support turn-around time or release dates.
 
 ## Building
 
@@ -95,17 +81,6 @@ is kind enough to hijack the NXDOMAIN DNS response in an attempt to allow you to
 advertising page, those tests will fail.  I suggest that, under such circumstances, you talk to your ISP
 and let them know that their policies are causing mountebank tests to fail. You can also set
 the environment variable `MB_AIRPLANE_MODE=true`, which will avoid tests requiring your DNS resolver.
-
-## Support
-
-I make a good faith effort to monitor conversations in the [mountebank Google group](https://groups.google.com/g/mountebank-discuss).
-Given that mountebank is a free tool freely maintained in my (increasingly limited) free time,
-I make no promises about response time (or responses at all).
-
-## Contributing
-
-Contributions are welcome!
-Some tips for contributing are in the [CONTRIBUTING.md](https://github.com/bbyars/mountebank/blob/master/CONTRIBUTING.md).
 
 [npm-badge]: https://nodei.co/npm/mountebank.png?downloads=true&downloadRank=true&stars=true
 [npm]: https://www.npmjs.com/package/mountebank
