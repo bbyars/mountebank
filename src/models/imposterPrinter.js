@@ -2,7 +2,7 @@
 
 const helpers = require('../util/helpers.js');
 
-function create (header, server, loadRequests) {
+function create (header, server, loadRequests, imposterState) {
     const baseURL = `/imposters/${server.port}`;
 
     function createHeader (numberOfRequests, options) {
@@ -62,6 +62,16 @@ function create (header, server, loadRequests) {
         return imposter;
     }
 
+    function stateToJSON () {
+        try {
+            // Clone to prevent accidental state changes downstream
+            return helpers.clone(imposterState);
+        }
+        catch (error) {
+            return `Unable to serialize state: ${error.message}`;
+        }
+    }
+
     function removeProxiesFrom (imposter) {
         imposter.stubs.forEach(stub => {
             // eslint-disable-next-line no-prototype-builtins
@@ -117,7 +127,7 @@ function create (header, server, loadRequests) {
         return result;
     }
 
-    return { toJSON };
+    return { toJSON, stateToJSON };
 }
 
 module.exports = { create };
