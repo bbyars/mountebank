@@ -45,7 +45,8 @@ function messageFor (statusCode) {
         404: 'Not Found',
         405: 'Method Not Allowed',
         406: 'Not Acceptable',
-        500: 'Internal Server Error'
+        500: 'Internal Server Error',
+        503: 'Service Unavailable'
     };
     if (codes[statusCode]) {
         return codes[statusCode];

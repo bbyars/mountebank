@@ -1,0 +1,101 @@
+<table>
+  <tr>
+    <th>Parameter</th>
+    <th>Type</th>
+    <th>Description</th>
+  </tr>
+  <tr>
+    <td><code>errorRate</code></td>
+    <td>A number between 0 and 1</td>
+    <td>The probability that the response will be replaced with an error.
+    Defaults to 0 (no error injection).</td>
+  </tr>
+  <tr>
+    <td><code>errorStatusCode</code></td>
+    <td>A non-negative integer</td>
+    <td>The status code to return when injecting an error. Defaults to 500.</td>
+  </tr>
+  <tr>
+    <td><code>latencyRate</code></td>
+    <td>A number between 0 and 1</td>
+    <td>The probability that random latency will be added to the response.
+    Defaults to 0 (no latency injection).</td>
+  </tr>
+  <tr>
+    <td><code>maxLatencyMs</code></td>
+    <td>A non-negative integer</td>
+    <td>The maximum latency in milliseconds. When triggered, the injected latency
+    is a uniformly random value between 0 and this maximum. Defaults to 1000ms.
+    Set to 0 to disable latency injection even if <code>latencyRate</code> is set.</td>
+  </tr>
+</table>
+
+<p>The <code>chaos</code> behavior probabilistically injects errors and latency into a
+response, making it useful for resilience and chaos engineering tests. Error injection
+and latency injection are independent: you can enable either or both. Every other field
+is optional, defaulting to a behavior that does nothing.</p>
+
+<p class='warning-icon'>The <code>chaos</code> behavior's error injection only applies to
+the HTTP and HTTPS protocols. If you need to simulate connection-level problems (e.g.
+on TCP), see the <a href='/docs/api/faults'>fault</a> response instead.</p>
+
+<p>Here is a stub that always returns a 503 to demonstrate the error injection
+(in practice you would set <code>errorRate</code> below 1 so only a percentage of calls
+are affected):</p>
+
+<testScenario name='chaos'>
+    <step type='http'>
+<pre><code>POST /imposters HTTP/1.1
+Host: localhost:<%= port %>
+Accept: application/json
+Content-Type: application/json
+
+{
+  "port": 6545,
+  "protocol": "http",
+  "stubs": [
+    {
+      "responses": [
+        {
+          "is": { "statusCode": 200, "body": "ok" },
+          "behaviors": [
+            {
+              "chaos": {
+                "errorRate": 1,
+                "errorStatusCode": 503
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}</code></pre>
+    </step>
+
+    <step type='http'>
+<pre><code>GET / HTTP/1.1
+Host: localhost:6545</code></pre>
+
+        <assertResponse>
+<pre><code>HTTP/1.1 503 Service Unavailable
+Connection: close
+Date: <volatile>Thu, 01 Jan 2015 02:30:31 GMT</volatile>
+Transfer-Encoding: chunked</code></pre>
+        </assertResponse>
+    </step>
+
+    <step type='http'>
+<code class='hidden'>DELETE /imposters/6545 HTTP/1.1
+Host: localhost:<%= port %></code>
+    </step>
+</testScenario>
+
+<p>In practice, you would set <code>errorRate</code> and <code>latencyRate</code> to
+values below 1 (e.g. 0.1 for a 10% error rate), so repeated calls against the same
+imposter produce a mix of successful and erroneous responses. This is the whole point:
+it lets you exercise retry logic, circuit breakers, and timeout handling in the system
+under test without standing up a separate fault-injection proxy.</p>
+
+<p>If both <code>errorRate</code> and <code>latencyRate</code> trigger on the same
+request, latency is added first and then the response is replaced with the error.</p>

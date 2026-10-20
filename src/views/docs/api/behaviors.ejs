@@ -64,6 +64,13 @@ the following behaviors:</p>
     line flag must be set to support this behavior.</p>
     </td>
   </tr>
+  <tr>
+    <td><code>chaos</code></td>
+    <td>Probabilistically injects errors and latency into the response (HTTP/HTTPS only).
+    Useful for chaos engineering and resilience testing: random error responses, random
+    latency, or both. All parameters are optional and default to a no-op, so you can
+    enable just the parts you need.</td>
+  </tr>
 </table>
 
 <p>Multiple behaviors can be added to a response, and they will be executed in array order. While
@@ -134,6 +141,15 @@ response transformation.</p>
     </a>
     <section>
       <%- include('behaviors/shellTransform') -%>
+    </section>
+  </div>
+  <div>
+    <a class='section-toggler'
+       id='behavior-chaos' name='behavior-chaos' href='#behavior-chaos'>
+      chaos
+    </a>
+    <section>
+      <%- include('behaviors/chaos') -%>
     </section>
   </div>
 </section>

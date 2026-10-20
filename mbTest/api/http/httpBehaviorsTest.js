@@ -759,6 +759,62 @@ const assert = require('assert'),
                     fs.unlinkSync('shellTransformTest.js');
                 }
             });
+
+            it('should inject configured error status when using behaviors.chaos with errorRate 1', async function () {
+                const stub = {
+                        responses: [{
+                            is: { statusCode: 200, body: 'ok' },
+                            behaviors: [
+                                { chaos: { errorRate: 1, errorStatusCode: 503 } }
+                            ]
+                        }]
+                    },
+                    stubs = [stub],
+                    imposter = { protocol, port, stubs: stubs };
+                await api.createImposter(imposter);
+
+                const response = await client.get('/', port);
+
+                assert.strictEqual(response.statusCode, 503);
+            });
+
+            it('should not alter the response when using behaviors.chaos with errorRate 0', async function () {
+                const stub = {
+                        responses: [{
+                            is: { statusCode: 200, body: 'ok' },
+                            behaviors: [
+                                { chaos: { errorRate: 0, errorStatusCode: 503 } }
+                            ]
+                        }]
+                    },
+                    stubs = [stub],
+                    imposter = { protocol, port, stubs: stubs };
+                await api.createImposter(imposter);
+
+                const response = await client.get('/', port);
+
+                assert.strictEqual(response.statusCode, 200);
+                assert.strictEqual(response.body, 'ok');
+            });
+
+            it('should add latency when using behaviors.chaos with latencyRate 1', async function () {
+                const stub = {
+                        responses: [{
+                            is: { statusCode: 200, body: 'ok' },
+                            behaviors: [
+                                { chaos: { latencyRate: 1, maxLatencyMs: 1000 } }
+                            ]
+                        }]
+                    },
+                    stubs = [stub],
+                    imposter = { protocol, port, stubs: stubs };
+                await api.createImposter(imposter);
+
+                const response = await client.get('/', port);
+
+                assert.strictEqual(response.statusCode, 200);
+                assert.strictEqual(response.body, 'ok');
+            });
         });
     });
 });

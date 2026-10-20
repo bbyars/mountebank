@@ -106,6 +106,28 @@ const fromSchema = {
             _required: true,
             _allowedTypes: { string: {} },
             _additionalContext: 'a JavaScript function'
+        },
+        chaos: {
+            errorRate: {
+                _required: false,
+                _allowedTypes: { number: {} },
+                _additionalContext: 'probability between 0 and 1 of injecting an error response'
+            },
+            errorStatusCode: {
+                _required: false,
+                _allowedTypes: { number: { nonNegativeInteger: true } },
+                _additionalContext: 'the status code to return when injecting an error (defaults to 500)'
+            },
+            latencyRate: {
+                _required: false,
+                _allowedTypes: { number: {} },
+                _additionalContext: 'probability between 0 and 1 of injecting random latency'
+            },
+            maxLatencyMs: {
+                _required: false,
+                _allowedTypes: { number: { nonNegativeInteger: true } },
+                _additionalContext: 'maximum latency in milliseconds when injecting'
+            }
         }
     };
 
@@ -509,6 +531,52 @@ async function lookup (originalRequest, response, lookupConfig, logger) {
     return response;
 }
 
+async function maybeInjectLatency (config, logger) {
+    const latencyRate = config.latencyRate || 0,
+        maxLatencyMs = typeof config.maxLatencyMs === 'number' ? config.maxLatencyMs : 1000;
+
+    if (latencyRate <= 0 || maxLatencyMs <= 0) {
+        return;
+    }
+    if (Math.random() >= latencyRate) {
+        return;
+    }
+
+    const delay = Math.floor(Math.random() * maxLatencyMs);
+    logger.debug(`chaos: injecting ${delay}ms latency`);
+    await new Promise(resolve => setTimeout(resolve, delay));
+}
+
+function maybeInjectError (config, response, logger) {
+    const errorRate = config.errorRate || 0,
+        errorStatusCode = config.errorStatusCode || 500;
+
+    if (errorRate <= 0 || Math.random() >= errorRate) {
+        return;
+    }
+
+    logger.debug(`chaos: injecting error status ${errorStatusCode}`);
+    response.statusCode = errorStatusCode;
+    response.body = '';
+}
+
+/**
+ * Probabilistically injects faults into the response, useful for chaos engineering
+ * and resilience testing. Supports injecting errors (replacing the response with an
+ * error status code) and latency (delaying the response by a random amount up to maxLatencyMs).
+ * Both probabilities are independent and default to 0 (no chaos).
+ * @param {Object} request - The request
+ * @param {Object} response - The response
+ * @param {Object} config - The chaos configuration
+ * @param {Object} logger - The mountebank logger
+ * @returns {Promise<Object>}
+ */
+async function chaos (request, response, config, logger) {
+    await maybeInjectLatency(config, logger);
+    maybeInjectError(config, response, logger);
+    return response;
+}
+
 /**
  * The entry point to execute all behaviors provided in the API
  * @param {Object} request - The request object
@@ -524,7 +592,8 @@ async function execute (request, response, behaviors, logger, imposterState) {
         copy: copy,
         lookup: lookup,
         shellTransform: shellTransform,
-        decorate: decorate
+        decorate: decorate,
+        chaos: chaos
     };
     let result = Promise.resolve(response);
 
