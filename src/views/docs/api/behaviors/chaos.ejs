@@ -51,7 +51,7 @@ Accept: application/json
 Content-Type: application/json
 
 {
-  "port": 4545,
+  "port": 6545,
   "protocol": "http",
   "stubs": [
     {
@@ -75,7 +75,7 @@ Content-Type: application/json
 
     <step type='http'>
 <pre><code>GET / HTTP/1.1
-Host: localhost:4545</code></pre>
+Host: localhost:6545</code></pre>
 
         <assertResponse>
 <pre><code>HTTP/1.1 503 Service Unavailable
@@ -86,7 +86,7 @@ Transfer-Encoding: chunked</code></pre>
     </step>
 
     <step type='http'>
-<code class='hidden'>DELETE /imposters/4545 HTTP/1.1
+<code class='hidden'>DELETE /imposters/6545 HTTP/1.1
 Host: localhost:<%= port %></code>
     </step>
 </testScenario>
