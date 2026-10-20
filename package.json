@@ -78,7 +78,7 @@
   "devDependencies": {
     "eslint": "8.56.0",
     "eslint-plugin-node": "11.1.0",
-    "firebase-tools": "15.30.2",
+    "firebase-tools": "15.34.0",
     "jsdoc": "4.0.5",
     "jsdom": "26.1.0",
     "license-checker": "25.0.1",
