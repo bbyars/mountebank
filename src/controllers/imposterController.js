@@ -88,6 +88,19 @@ function create (protocols, imposters, logger, allowInjection) {
     }
 
     /**
+     * The function responding to GET /imposters/:id/state
+     * Returns the state shared by the imposter's injection functions
+     * @memberOf module:controllers/imposterController#
+     * @param {Object} request - the HTTP request
+     * @param {Object} response - the HTTP response
+     * @returns {Object} A promise for testing
+     */
+    async function getState (request, response) {
+        const imposter = await imposters.get(request.params.id);
+        response.send(imposter.getState());
+    }
+
+    /**
      * The function responding to DELETE /imposters/:id
      * @memberOf module:controllers/imposterController#
      * @param {Object} request - the HTTP request
@@ -316,6 +329,7 @@ function create (protocols, imposters, logger, allowInjection) {
         del,
         resetProxies,
         resetRequests,
+        getState,
         postRequest,
         postProxyResponse,
         putStubs,

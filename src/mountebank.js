@@ -95,6 +95,7 @@ async function createApp (options) {
     app.delete('/imposters/:id', imposterController.del);
     app.delete('/imposters/:id/savedProxyResponses', validateImposterExists, imposterController.resetProxies);
     app.delete('/imposters/:id/savedRequests', validateImposterExists, imposterController.resetRequests);
+    app.get('/imposters/:id/state', validateImposterExists, imposterController.getState);
 
     // deprecated but saved for backwards compatibility
     app.delete('/imposters/:id/requests', validateImposterExists, imposterController.resetProxies);

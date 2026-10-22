@@ -219,8 +219,9 @@ async function create (Protocol, creationRequest, baseLogger, config, isAllowedC
                     return recordRequests ? stubs.loadRequests() : [];
                 }
 
-                const printer = imposterPrinter.create(header, server, loadRequests),
-                    toJSON = options => printer.toJSON(numberOfRequests, options);
+                const printer = imposterPrinter.create(header, server, loadRequests, imposterState),
+                    toJSON = options => printer.toJSON(numberOfRequests, options),
+                    getState = () => printer.stateToJSON();
 
                 return resolve({
                     port: server.port,
@@ -230,7 +231,8 @@ async function create (Protocol, creationRequest, baseLogger, config, isAllowedC
                     stop,
                     getResponseFor,
                     getProxyResponseFor,
-                    resetRequests
+                    resetRequests,
+                    getState
                 });
             }, reject);
         }
